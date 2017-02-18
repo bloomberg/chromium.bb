@@ -28,6 +28,7 @@ class FakeTileManagerClient : public TileManagerClient {
       TreePriority tree_priority) override;
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override {}
   gfx::ColorSpace GetTileColorSpace() const override;
+  void RequestImplSideInvalidation() override {}
 };
 
 }  // namespace cc

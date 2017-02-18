@@ -121,6 +121,8 @@ class LayerTreeHostImplClient {
   virtual void OnDrawForCompositorFrameSink(
       bool resourceless_software_draw) = 0;
 
+  virtual void NeedsImplSideInvalidation() = 0;
+
  protected:
   virtual ~LayerTreeHostImplClient() {}
 };
@@ -249,6 +251,10 @@ class CC_EXPORT LayerTreeHostImpl
   void SetFullViewportDamage();
   void SetViewportDamage(const gfx::Rect& damage_rect);
 
+  // Analogous to a commit, this function is used to create a sync tree and
+  // add impl-side invalidations to it.
+  void InvalidateContentOnImplSide();
+
   void SetTreeLayerFilterMutated(ElementId element_id,
                                  LayerTreeImpl* tree,
                                  const FilterOperations& filters);
@@ -343,6 +349,7 @@ class CC_EXPORT LayerTreeHostImpl
       TreePriority tree_priority) override;
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
   gfx::ColorSpace GetTileColorSpace() const override;
+  void RequestImplSideInvalidation() override;
 
   // ScrollbarAnimationControllerClient implementation.
   void PostDelayedScrollbarAnimationTask(const base::Closure& task,
@@ -628,6 +635,11 @@ class CC_EXPORT LayerTreeHostImpl
   void RecreateTileResources();
 
   void AnimateInternal(bool active_tree);
+
+  // The function is called to update state on the sync tree after a commit
+  // finishes or after the sync tree was created to invalidate content on the
+  // impl thread.
+  void UpdateSyncTreeAfterCommitOrImplSideInvalidation();
 
   // Returns true if status changed.
   bool UpdateGpuRasterizationStatus();

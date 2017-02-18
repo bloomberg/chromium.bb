@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "cc/playback/image_hijack_canvas.h"
 
+#include "cc/test/skia_common.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +37,8 @@ TEST(ImageHijackCanvasTest, NonLazyImagesSkipped) {
   // Use a strict mock so that if *any* ImageDecodeCache methods are called, we
   // will hit an error.
   testing::StrictMock<MockImageDecodeCache> image_decode_cache;
-  ImageHijackCanvas canvas(100, 100, &image_decode_cache);
+  ImageIdFlatSet images_to_skip;
+  ImageHijackCanvas canvas(100, 100, &image_decode_cache, &images_to_skip);
 
   // Use an SkBitmap backed image to ensure that the image is not
   // lazy-generated.
@@ -60,6 +62,24 @@ TEST(ImageHijackCanvasTest, NonLazyImagesSkipped) {
   canvas.drawOval(paint_rect, image_paint);
   canvas.drawArc(paint_rect, 0, 40, true, image_paint);
   canvas.drawRRect(SkRRect::MakeRect(paint_rect), image_paint);
+}
+
+TEST(ImageHijackCanvasTest, ImagesToSkipAreSkipped) {
+  // Use a strict mock so that if *any* ImageDecodeCache methods are called, we
+  // will hit an error.
+  testing::StrictMock<MockImageDecodeCache> image_decode_cache;
+  ImageIdFlatSet images_to_skip;
+  sk_sp<SkImage> image = CreateDiscardableImage(gfx::Size(10, 10));
+  images_to_skip.insert(image->uniqueID());
+  ImageHijackCanvas canvas(100, 100, &image_decode_cache, &images_to_skip);
+
+  SkPaint paint;
+  canvas.drawImage(image, 0, 0, &paint);
+  canvas.drawImageRect(image, SkRect::MakeXYWH(0, 0, 10, 10),
+                       SkRect::MakeXYWH(10, 10, 10, 10), &paint);
+  paint.setShader(image->makeShader(SkShader::kClamp_TileMode,
+                                    SkShader::kClamp_TileMode, nullptr));
+  canvas.drawRect(SkRect::MakeXYWH(10, 10, 10, 10), paint);
 }
 
 }  // namespace

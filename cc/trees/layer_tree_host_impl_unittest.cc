@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
@@ -52,10 +53,12 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
+#include "cc/test/fake_recording_source.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
+#include "cc/test/skia_common.h"
 #include "cc/test/test_compositor_frame_sink.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -102,7 +105,8 @@ class LayerTreeHostImplTest : public testing::Test,
         did_request_next_frame_(false),
         did_request_prepare_tiles_(false),
         did_complete_page_scale_animation_(false),
-        reduce_memory_result_(true) {
+        reduce_memory_result_(true),
+        did_request_impl_side_invalidation_(false) {
     media::InitializeMediaLibrary();
   }
 
@@ -170,6 +174,9 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_->DidDrawAllLayers(*frame);
     last_on_draw_frame_ = std::move(frame);
   }
+  void NeedsImplSideInvalidation() override {
+    did_request_impl_side_invalidation_ = true;
+  }
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;
@@ -192,10 +199,13 @@ class LayerTreeHostImplTest : public testing::Test,
       TaskRunnerProvider* task_runner_provider) {
     if (host_impl_)
       host_impl_->ReleaseCompositorFrameSink();
+    host_impl_.reset();
+    InitializeImageWorker(settings);
     host_impl_ = LayerTreeHostImpl::Create(
         settings, this, task_runner_provider, &stats_instrumentation_,
         &task_graph_runner_,
-        AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr);
+        AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0,
+        image_worker_ ? image_worker_->task_runner() : nullptr);
     compositor_frame_sink_ = std::move(compositor_frame_sink);
     host_impl_->SetVisible(true);
     bool init = host_impl_->InitializeRenderer(compositor_frame_sink_.get());
@@ -493,6 +503,15 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_->DidFinishImplFrame();
   }
 
+  void InitializeImageWorker(const LayerTreeSettings& settings) {
+    if (settings.enable_checker_imaging) {
+      image_worker_ = base::MakeUnique<base::Thread>("ImageWorker");
+      ASSERT_TRUE(image_worker_->Start());
+    } else {
+      image_worker_.reset();
+    }
+  }
+
   FakeImplTaskRunnerProvider task_runner_provider_;
   DebugScopedSetMainThreadBlocked always_main_thread_blocked_;
 
@@ -508,11 +527,13 @@ class LayerTreeHostImplTest : public testing::Test,
   bool did_request_prepare_tiles_;
   bool did_complete_page_scale_animation_;
   bool reduce_memory_result_;
+  bool did_request_impl_side_invalidation_;
   base::Closure animation_task_;
   base::TimeDelta requested_animation_delay_;
   std::unique_ptr<LayerTreeHostImpl::FrameData> last_on_draw_frame_;
   RenderPassList last_on_draw_render_passes_;
   scoped_refptr<AnimationTimeline> timeline_;
+  std::unique_ptr<base::Thread> image_worker_;
 };
 
 // A test fixture for new animation timelines tests.
@@ -11742,6 +11763,82 @@ TEST_F(LayerTreeHostImplTest,
 TEST_F(LayerTreeHostImplTest,
        LayerTreeHostImplTestScrollbarStatesInNotMainThreadScorlling) {
   SetupMouseMoveAtTestScrollbarStates(false);
+}
+
+TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.enable_checker_imaging = true;
+  settings.default_tile_size = gfx::Size(256, 256);
+  settings.max_untiled_layer_size = gfx::Size(256, 256);
+  CreateHostImpl(settings, CreateCompositorFrameSink());
+  gfx::Size layer_size = gfx::Size(750, 750);
+
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_size);
+  recording_source->SetGenerateDiscardableImagesMetadata(true);
+  sk_sp<SkImage> checkerable_image =
+      CreateDiscardableImage(gfx::Size(500, 500));
+  recording_source->add_draw_image(checkerable_image, gfx::Point(0, 0));
+
+  SkColor non_solid_color = SkColorSetARGB(128, 45, 56, 67);
+  PaintFlags non_solid_flags;
+  non_solid_flags.setColor(non_solid_color);
+  recording_source->add_draw_rect_with_flags(gfx::Rect(510, 0, 200, 600),
+                                             non_solid_flags);
+  recording_source->add_draw_rect_with_flags(gfx::Rect(0, 510, 200, 400),
+                                             non_solid_flags);
+  recording_source->Rerecord();
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFromRecordingSource(recording_source.get(),
+                                                  false);
+
+  // Create the pending tree.
+  host_impl_->BeginCommit();
+  LayerTreeImpl* pending_tree = host_impl_->pending_tree();
+  host_impl_->SetViewportSize(layer_size);
+  pending_tree->SetRootLayerForTesting(
+      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, 1,
+                                                   raster_source));
+  FakePictureLayerImpl* root =
+      static_cast<FakePictureLayerImpl*>(*pending_tree->begin());
+  root->SetBounds(layer_size);
+  root->SetDrawsContent(true);
+  pending_tree->BuildPropertyTreesForTesting();
+
+  // CompleteCommit which should perform a PrepareTiles, adding tilings for the
+  // root layer, each one having a raster task.
+  host_impl_->CommitComplete();
+  EXPECT_EQ(root->num_tilings(), 1U);
+  const PictureLayerTiling* tiling = root->tilings()->tiling_at(0);
+  EXPECT_EQ(tiling->AllTilesForTesting().size(), 9U);
+  for (auto* tile : tiling->AllTilesForTesting())
+    EXPECT_TRUE(tile->HasRasterTask());
+
+  // Activate the pending tree and ensure that all tiles are rasterized.
+  while (!did_notify_ready_to_activate_)
+    base::RunLoop().RunUntilIdle();
+  for (auto* tile : tiling->AllTilesForTesting())
+    EXPECT_FALSE(tile->HasRasterTask());
+
+  // PrepareTiles should have scheduled a decode with the ImageDecodeService,
+  // ensure that it requests an impl-side invalidation.
+  while (!did_request_impl_side_invalidation_)
+    base::RunLoop().RunUntilIdle();
+
+  // Invalidate content on impl-side and ensure that the correct tiles are
+  // invalidated on the pending tree.
+  host_impl_->InvalidateContentOnImplSide();
+  pending_tree = host_impl_->pending_tree();
+  root = static_cast<FakePictureLayerImpl*>(*pending_tree->begin());
+  for (auto* tile : root->tilings()->tiling_at(0)->AllTilesForTesting()) {
+    if (tile->tiling_i_index() < 2 && tile->tiling_j_index() < 2)
+      EXPECT_TRUE(tile->HasRasterTask());
+    else
+      EXPECT_FALSE(tile->HasRasterTask());
+  }
+  Region expected_invalidation(
+      raster_source->GetRectForImage(checkerable_image->uniqueID()));
+  EXPECT_EQ(expected_invalidation, *(root->GetPendingInvalidation()));
 }
 
 }  // namespace

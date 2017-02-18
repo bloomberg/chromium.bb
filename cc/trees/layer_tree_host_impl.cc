@@ -236,8 +236,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
                     is_synchronous_single_threaded_
                         ? std::numeric_limits<size_t>::max()
                         : settings.scheduled_raster_task_limit,
-                    settings.use_partial_raster,
-                    settings.check_tile_priority_inversion),
+                    settings.ToTileManagerSettings()),
       pinch_gesture_active_(false),
       pinch_gesture_end_should_clear_scrolling_layer_(false),
       fps_counter_(
@@ -353,6 +352,14 @@ void LayerTreeHostImpl::BeginCommit() {
 void LayerTreeHostImpl::CommitComplete() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::CommitComplete");
 
+  UpdateSyncTreeAfterCommitOrImplSideInvalidation();
+  micro_benchmark_controller_.DidCompleteCommit();
+}
+
+void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
+  sync_tree()->InvalidateRegionForImages(
+      tile_manager_.TakeImagesToInvalidateOnSyncTree());
+
   if (CommitToActiveTree()) {
     // We have to activate animations here or "IsActive()" is true on the layers
     // but the animations aren't activated yet so they get ignored by
@@ -394,8 +401,6 @@ void LayerTreeHostImpl::CommitComplete() {
     if (CommitToActiveTree())
       NotifyReadyToDraw();
   }
-
-  micro_benchmark_controller_.DidCompleteCommit();
 }
 
 bool LayerTreeHostImpl::CanDraw() const {
@@ -1055,6 +1060,14 @@ void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
   viewport_damage_rect_.Union(damage_rect);
 }
 
+void LayerTreeHostImpl::InvalidateContentOnImplSide() {
+  DCHECK(!pending_tree_);
+
+  if (!CommitToActiveTree())
+    CreatePendingTree();
+  UpdateSyncTreeAfterCommitOrImplSideInvalidation();
+}
+
 DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   TRACE_EVENT1("cc", "LayerTreeHostImpl::PrepareToDraw", "SourceFrameNumber",
                active_tree_->source_frame_number());
@@ -1310,6 +1323,10 @@ gfx::ColorSpace LayerTreeHostImpl::GetTileColorSpace() const {
   if (!sync_tree())
     return gfx::ColorSpace();
   return sync_tree()->device_color_space();
+}
+
+void LayerTreeHostImpl::RequestImplSideInvalidation() {
+  client_->NeedsImplSideInvalidation();
 }
 
 void LayerTreeHostImpl::NotifyReadyToActivate() {
@@ -2037,6 +2054,7 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   if (!active_tree_->picture_layers().empty())
     DidModifyTilePriorities();
 
+  tile_manager_.DidActivateSyncTree();
   client_->OnCanDrawStateChanged(CanDraw());
   client_->DidActivateSyncTree();
   if (!tree_activation_callback_.is_null())

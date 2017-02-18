@@ -135,6 +135,8 @@ class CC_EXPORT PictureLayerTiling {
     all_tiles_done_ = all_tiles_done;
   }
 
+  WhichTree tree() const { return tree_; }
+
   void VerifyNoTileNeedsRaster() const {
 #if DCHECK_IS_ON()
     for (const auto& tile_pair : tiles_) {

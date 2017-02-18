@@ -424,6 +424,12 @@ void SingleThreadProxy::OnDrawForCompositorFrameSink(
   NOTREACHED() << "Implemented by ThreadProxy for synchronous compositor.";
 }
 
+void SingleThreadProxy::NeedsImplSideInvalidation() {
+  // TODO(khushalsagar): Plumb this to the scheduler when
+  // https://codereview.chromium.org/2659123004/ lands. See crbug.com/686267.
+  NOTIMPLEMENTED();
+}
+
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc,benchmark", "SingleThreadProxy::CompositeImmediately");
   DCHECK(task_runner_provider_->IsMainThread());

@@ -16,6 +16,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/playback/image_id.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
 #include "cc/tiles/tiling_set_eviction_queue.h"
@@ -97,6 +98,8 @@ class CC_EXPORT PictureLayerImpl
   void set_is_directly_composited_image(bool is_directly_composited_image) {
     is_directly_composited_image_ = is_directly_composited_image;
   }
+
+  void InvalidateRegionForImages(const ImageIdFlatSet& images_to_invalidate);
 
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl,

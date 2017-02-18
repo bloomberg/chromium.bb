@@ -119,12 +119,20 @@ class ScopedImagePaint {
   SkPaint paint_;
 };
 
+const SkImage* GetImageInPaint(const SkPaint& paint) {
+  SkShader* shader = paint.getShader();
+  return shader ? shader->isAImage(nullptr, nullptr) : nullptr;
+}
+
 }  // namespace
 
 ImageHijackCanvas::ImageHijackCanvas(int width,
                                      int height,
-                                     ImageDecodeCache* image_decode_cache)
-    : SkNWayCanvas(width, height), image_decode_cache_(image_decode_cache) {}
+                                     ImageDecodeCache* image_decode_cache,
+                                     const ImageIdFlatSet* images_to_skip)
+    : SkNWayCanvas(width, height),
+      image_decode_cache_(image_decode_cache),
+      images_to_skip_(images_to_skip) {}
 
 void ImageHijackCanvas::onDrawPicture(const SkPicture* picture,
                                       const SkMatrix* matrix,
@@ -139,9 +147,13 @@ void ImageHijackCanvas::onDrawImage(const SkImage* image,
                                     SkScalar y,
                                     const SkPaint* paint) {
   if (!image->isLazyGenerated()) {
+    DCHECK(!ShouldSkipImage(image));
     SkNWayCanvas::onDrawImage(image, x, y, paint);
     return;
   }
+
+  if (ShouldSkipImage(image))
+    return;
 
   SkMatrix ctm = getTotalMatrix();
 
@@ -173,9 +185,13 @@ void ImageHijackCanvas::onDrawImageRect(const SkImage* image,
                                         const SkPaint* paint,
                                         SrcRectConstraint constraint) {
   if (!image->isLazyGenerated()) {
+    DCHECK(!ShouldSkipImage(image));
     SkNWayCanvas::onDrawImageRect(image, src, dst, paint, constraint);
     return;
   }
+
+  if (ShouldSkipImage(image))
+    return;
 
   SkRect src_storage;
   if (!src) {
@@ -209,6 +225,9 @@ void ImageHijackCanvas::onDrawImageRect(const SkImage* image,
 }
 
 void ImageHijackCanvas::onDrawRect(const SkRect& r, const SkPaint& paint) {
+  if (ShouldSkipImageInPaint(paint))
+    return;
+
   base::Optional<ScopedImagePaint> image_paint =
       ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
   if (!image_paint.has_value()) {
@@ -219,6 +238,9 @@ void ImageHijackCanvas::onDrawRect(const SkRect& r, const SkPaint& paint) {
 }
 
 void ImageHijackCanvas::onDrawPath(const SkPath& path, const SkPaint& paint) {
+  if (ShouldSkipImageInPaint(paint))
+    return;
+
   base::Optional<ScopedImagePaint> image_paint =
       ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
   if (!image_paint.has_value()) {
@@ -229,6 +251,9 @@ void ImageHijackCanvas::onDrawPath(const SkPath& path, const SkPaint& paint) {
 }
 
 void ImageHijackCanvas::onDrawOval(const SkRect& r, const SkPaint& paint) {
+  if (ShouldSkipImageInPaint(paint))
+    return;
+
   base::Optional<ScopedImagePaint> image_paint =
       ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
   if (!image_paint.has_value()) {
@@ -243,6 +268,9 @@ void ImageHijackCanvas::onDrawArc(const SkRect& r,
                                   SkScalar sweep_angle,
                                   bool use_center,
                                   const SkPaint& paint) {
+  if (ShouldSkipImageInPaint(paint))
+    return;
+
   base::Optional<ScopedImagePaint> image_paint =
       ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
   if (!image_paint.has_value()) {
@@ -254,6 +282,9 @@ void ImageHijackCanvas::onDrawArc(const SkRect& r,
 }
 
 void ImageHijackCanvas::onDrawRRect(const SkRRect& rr, const SkPaint& paint) {
+  if (ShouldSkipImageInPaint(paint))
+    return;
+
   base::Optional<ScopedImagePaint> image_paint =
       ScopedImagePaint::TryCreate(image_decode_cache_, getTotalMatrix(), paint);
   if (!image_paint.has_value()) {
@@ -269,6 +300,15 @@ void ImageHijackCanvas::onDrawImageNine(const SkImage* image,
                                         const SkPaint* paint) {
   // No cc embedder issues image nine calls.
   NOTREACHED();
+}
+
+bool ImageHijackCanvas::ShouldSkipImage(const SkImage* image) const {
+  return images_to_skip_->find(image->uniqueID()) != images_to_skip_->end();
+}
+
+bool ImageHijackCanvas::ShouldSkipImageInPaint(const SkPaint& paint) const {
+  const SkImage* image = GetImageInPaint(paint);
+  return image ? ShouldSkipImage(image) : false;
 }
 
 }  // namespace cc

@@ -21,6 +21,11 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
                         TaskRunnerProvider* task_runner_provider,
                         TaskGraphRunner* task_graph_runner);
+  FakeLayerTreeHostImpl(
+      const LayerTreeSettings& settings,
+      TaskRunnerProvider* task_runner_provider,
+      TaskGraphRunner* task_graph_runner,
+      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner);
   ~FakeLayerTreeHostImpl() override;
 
   void ForcePrepareToDraw() {

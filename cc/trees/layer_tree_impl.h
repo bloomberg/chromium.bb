@@ -454,6 +454,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void BuildLayerListForTesting();
 
+  void InvalidateRegionForImages(const ImageIdFlatSet& images_to_invalidate);
+
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,

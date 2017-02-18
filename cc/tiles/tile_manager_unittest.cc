@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/playback/raster_source.h"
 #include "cc/playback/recording_source.h"
@@ -38,6 +39,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -48,6 +50,35 @@ using testing::StrictMock;
 
 namespace cc {
 namespace {
+
+// A version of simple task runner that lets the user control if all tasks
+// posted should run synchronously.
+class SynchronousSimpleTaskRunner : public base::TestSimpleTaskRunner {
+ public:
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override {
+    TestSimpleTaskRunner::PostDelayedTask(from_here, task, delay);
+    if (run_tasks_synchronously_)
+      RunUntilIdle();
+    return true;
+  }
+
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const base::Closure& task,
+                                  base::TimeDelta delay) override {
+    return PostDelayedTask(from_here, task, delay);
+  }
+
+  void set_run_tasks_synchronously(bool run_tasks_synchronously) {
+    run_tasks_synchronously_ = run_tasks_synchronously;
+  }
+
+ protected:
+  ~SynchronousSimpleTaskRunner() override = default;
+
+  bool run_tasks_synchronously_ = false;
+};
 
 class TileManagerTilePriorityQueueTest : public TestLayerTreeHostBase {
  public:
@@ -2261,6 +2292,95 @@ TEST_F(TileManagerReadyToDrawTest, ReadyToDrawRespectsRequirementChange) {
 
   EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
   EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
+}
+
+class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
+ public:
+  class MockImageGenerator : public SkImageGenerator {
+   public:
+    explicit MockImageGenerator(const gfx::Size& size)
+        : SkImageGenerator(
+              SkImageInfo::MakeN32Premul(size.width(), size.height())) {}
+
+   protected:
+    MOCK_METHOD5(onGetPixels,
+                 bool(const SkImageInfo&, void*, size_t, SkPMColor[], int*));
+  };
+
+  void TearDown() override {
+    // Allow all tasks on the image worker to run now. Any scheduled decodes
+    // will be aborted.
+    image_worker_task_runner()->set_run_tasks_synchronously(true);
+  }
+
+  LayerTreeSettings CreateSettings() override {
+    LayerTreeSettings settings;
+    settings.enable_checker_imaging = true;
+    settings.renderer_settings.buffer_to_texture_target_map =
+        DefaultBufferToTextureTargetMapForTesting();
+    return settings;
+  }
+
+  std::unique_ptr<FakeLayerTreeHostImpl> CreateHostImpl(
+      const LayerTreeSettings& settings,
+      TaskRunnerProvider* task_runner_provider,
+      TaskGraphRunner* task_graph_runner) override {
+    task_runner_ = make_scoped_refptr(new SynchronousSimpleTaskRunner);
+    return base::MakeUnique<FakeLayerTreeHostImpl>(
+        settings, task_runner_provider, task_graph_runner, task_runner_);
+  }
+
+  std::unique_ptr<TaskGraphRunner> CreateTaskGraphRunner() override {
+    return base::MakeUnique<SynchronousTaskGraphRunner>();
+  }
+
+  SynchronousSimpleTaskRunner* image_worker_task_runner() const {
+    return task_runner_.get();
+  }
+
+ private:
+  scoped_refptr<SynchronousSimpleTaskRunner> task_runner_;
+};
+
+TEST_F(CheckerImagingTileManagerTest,
+       NoImageDecodeDependencyForCheckeredTiles) {
+  const gfx::Size layer_bounds(512, 512);
+  SetupDefaultTrees(layer_bounds);
+
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  recording_source->SetGenerateDiscardableImagesMetadata(true);
+
+  sk_sp<SkImage> image = SkImage::MakeFromGenerator(
+      new testing::StrictMock<MockImageGenerator>(gfx::Size(512, 512)));
+  recording_source->add_draw_image(image, gfx::Point(0, 0));
+
+  recording_source->Rerecord();
+  scoped_refptr<RasterSource> raster_source =
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+
+  std::unique_ptr<PictureLayerImpl> layer_impl = PictureLayerImpl::Create(
+      host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  layer_impl->set_is_drawn_render_surface_layer_list_member(true);
+  PictureLayerTilingSet* tiling_set = layer_impl->picture_layer_tiling_set();
+
+  PictureLayerTiling* tiling = tiling_set->AddTiling(1.0f, raster_source);
+  tiling->set_resolution(HIGH_RESOLUTION);
+  tiling->CreateAllTilesForTesting();
+  tiling->SetTilePriorityRectsForTesting(
+      gfx::Rect(layer_bounds),   // Visible rect.
+      gfx::Rect(layer_bounds),   // Skewport rect.
+      gfx::Rect(layer_bounds),   // Soon rect.
+      gfx::Rect(layer_bounds));  // Eventually rect.
+
+  // PrepareTiles and synchronously run all tasks added to the TaskGraph. Since
+  // we are using a strict mock for the SkImageGenerator, if the decode runs as
+  // a part of raster tasks, the test should fail.
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  EXPECT_TRUE(host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
+  static_cast<SynchronousTaskGraphRunner*>(task_graph_runner())->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
 }
 
 }  // namespace

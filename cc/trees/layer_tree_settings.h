@@ -15,6 +15,7 @@
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/scheduler/scheduler_settings.h"
+#include "cc/tiles/tile_manager_settings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -29,6 +30,7 @@ class CC_EXPORT LayerTreeSettings {
   bool operator==(const LayerTreeSettings& other) const;
 
   SchedulerSettings ToSchedulerSettings() const;
+  TileManagerSettings ToTileManagerSettings() const;
 
   RendererSettings renderer_settings;
   bool single_thread_proxy_scheduler = true;
@@ -94,6 +96,11 @@ class CC_EXPORT LayerTreeSettings {
   // If set to true, this causes TileManager to verify that all required and NOW
   // tiles come before lower priority tiles.
   bool check_tile_priority_inversion = false;
+
+  // If set to true, the compositor may selectively defer image decodes to the
+  // Image Decode Service and raster tiles without images until the decode is
+  // ready.
+  bool enable_checker_imaging = false;
 
   LayerTreeDebugState initial_debug_state;
 };

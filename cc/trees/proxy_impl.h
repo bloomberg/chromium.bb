@@ -90,6 +90,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void DidPrepareTiles() override;
   void DidCompletePageScaleAnimationOnImplThread() override;
   void OnDrawForCompositorFrameSink(bool resourceless_software_draw) override;
+  void NeedsImplSideInvalidation() override;
 
   // SchedulerClient implementation
   void WillBeginImplFrame(const BeginFrameArgs& args) override;

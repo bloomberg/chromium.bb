@@ -78,6 +78,8 @@ class CC_EXPORT PictureLayerTilingSet {
       scoped_refptr<RasterSource> raster_source,
       const Region& layer_invalidation);
 
+  void UpdateTilingsForImplSideInvalidation(const Region& layer_invalidation);
+
   PictureLayerTiling* AddTiling(float contents_scale,
                                 scoped_refptr<RasterSource> raster_source);
   size_t num_tilings() const { return tilings_.size(); }

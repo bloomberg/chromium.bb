@@ -95,4 +95,13 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
   return scheduler_settings;
 }
 
+TileManagerSettings LayerTreeSettings::ToTileManagerSettings() const {
+  TileManagerSettings tile_manager_settings;
+  tile_manager_settings.use_partial_raster = use_partial_raster;
+  tile_manager_settings.check_tile_priority_inversion =
+      check_tile_priority_inversion;
+  tile_manager_settings.enable_checker_imaging = enable_checker_imaging;
+  return tile_manager_settings;
+}
+
 }  // namespace cc

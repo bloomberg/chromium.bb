@@ -316,6 +316,17 @@ void LayerTreeImpl::BuildLayerListForTesting() {
   }
 }
 
+void LayerTreeImpl::InvalidateRegionForImages(
+    const ImageIdFlatSet& images_to_invalidate) {
+  DCHECK(IsSyncTree());
+
+  if (images_to_invalidate.empty())
+    return;
+
+  for (auto* picture_layer : picture_layers_)
+    picture_layer->InvalidateRegionForImages(images_to_invalidate);
+}
+
 bool LayerTreeImpl::IsRootLayer(const LayerImpl* layer) const {
   return layer_list_.empty() ? false : layer_list_[0] == layer;
 }

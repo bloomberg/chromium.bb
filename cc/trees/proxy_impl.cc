@@ -432,6 +432,13 @@ void ProxyImpl::OnDrawForCompositorFrameSink(bool resourceless_software_draw) {
   scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
 }
 
+void ProxyImpl::NeedsImplSideInvalidation() {
+  DCHECK(IsImplThread());
+  // TODO(khushalsagar): Plumb this to the scheduler when
+  // https://codereview.chromium.org/2659123004/ lands. See crbug.com/686267.
+  NOTIMPLEMENTED();
+}
+
 void ProxyImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   layer_tree_host_impl_->WillBeginImplFrame(args);

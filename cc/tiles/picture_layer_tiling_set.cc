@@ -195,6 +195,15 @@ void PictureLayerTilingSet::UpdateRasterSourceDueToLCDChange(
   }
 }
 
+void PictureLayerTilingSet::UpdateTilingsForImplSideInvalidation(
+    const Region& layer_invalidation) {
+  for (const auto& tiling : tilings_) {
+    tiling->Invalidate(layer_invalidation);
+    tiling->CreateMissingTilesInLiveTilesRect();
+  }
+  state_since_last_tile_priority_update_.invalidated = true;
+}
+
 void PictureLayerTilingSet::VerifyTilings(
     const PictureLayerTilingSet* pending_twin_set) const {
 #if DCHECK_IS_ON()

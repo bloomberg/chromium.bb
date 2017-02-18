@@ -52,6 +52,9 @@ class CC_EXPORT ImageController {
       sk_sp<const SkImage> image,
       const ImageDecodedCallback& callback);
 
+ protected:
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
+
  private:
   struct ImageDecodeRequest {
     ImageDecodeRequest();
@@ -88,7 +91,6 @@ class CC_EXPORT ImageController {
   std::unordered_map<ImageDecodeRequestId, DrawImage> requested_locked_images_;
 
   base::SequencedTaskRunner* origin_task_runner_ = nullptr;
-  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
   // The variables defined below this lock (aside from weak_ptr_factory_) can
   // only be accessed when the lock is acquired.

@@ -1380,4 +1380,27 @@ bool PictureLayerImpl::HasValidTilePriorities() const {
          is_drawn_render_surface_layer_list_member();
 }
 
+void PictureLayerImpl::InvalidateRegionForImages(
+    const ImageIdFlatSet& images_to_invalidate) {
+  TRACE_EVENT_BEGIN0("cc", "PictureLayerImpl::InvalidateRegionForImages");
+
+  InvalidationRegion image_invalidation;
+  for (auto image_id : images_to_invalidate)
+    image_invalidation.Union(raster_source_->GetRectForImage(image_id));
+  Region invalidation;
+  image_invalidation.Swap(&invalidation);
+
+  if (invalidation.IsEmpty()) {
+    TRACE_EVENT_END1("cc", "PictureLayerImpl::InvalidateRegionForImages",
+                     "Invalidation", invalidation.ToString());
+    return;
+  }
+
+  invalidation_.Union(invalidation);
+  tilings_->UpdateTilingsForImplSideInvalidation(invalidation);
+  SetNeedsPushProperties();
+  TRACE_EVENT_END1("cc", "PictureLayerImpl::InvalidateRegionForImages",
+                   "Invalidation", invalidation.ToString());
+}
+
 }  // namespace cc

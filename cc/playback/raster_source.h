@@ -31,6 +31,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
  public:
   struct CC_EXPORT PlaybackSettings {
     PlaybackSettings();
+    PlaybackSettings(const PlaybackSettings&);
+    PlaybackSettings(PlaybackSettings&&);
+    ~PlaybackSettings();
 
     // If set to true, this indicates that the canvas has already been
     // rasterized into. This means that the canvas cannot be cleared safely.
@@ -42,6 +45,12 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
     // If set to true, we will use an image hijack canvas, which enables
     // compositor image caching.
     bool use_image_hijack_canvas;
+
+    // If non-empty, an image hijack canvas will be used to skip these images
+    // during raster.
+    // TODO(khushalsagar): Consolidate more settings for playback here? See
+    // crbug.com/691076.
+    ImageIdFlatSet images_to_skip;
   };
 
   static scoped_refptr<RasterSource> CreateFromRecordingSource(

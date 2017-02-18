@@ -5,8 +5,11 @@
 #ifndef CC_PLAYBACK_IMAGE_HIJACK_CANVAS_H_
 #define CC_PLAYBACK_IMAGE_HIJACK_CANVAS_H_
 
+#include <unordered_set>
+
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
+#include "cc/playback/image_id.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
 
 namespace cc {
@@ -17,7 +20,8 @@ class CC_EXPORT ImageHijackCanvas : public SkNWayCanvas {
  public:
   ImageHijackCanvas(int width,
                     int height,
-                    ImageDecodeCache* image_decode_cache);
+                    ImageDecodeCache* image_decode_cache,
+                    const ImageIdFlatSet* images_to_skip);
 
  private:
   // Ensure that pictures are unpacked by this canvas, instead of being
@@ -48,7 +52,11 @@ class CC_EXPORT ImageHijackCanvas : public SkNWayCanvas {
                        const SkRect& dst,
                        const SkPaint* paint) override;
 
+  bool ShouldSkipImage(const SkImage* image) const;
+  bool ShouldSkipImageInPaint(const SkPaint& paint) const;
+
   ImageDecodeCache* image_decode_cache_;
+  const ImageIdFlatSet* images_to_skip_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageHijackCanvas);
 };

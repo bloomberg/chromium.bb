@@ -25,6 +25,16 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
     const LayerTreeSettings& settings,
     TaskRunnerProvider* task_runner_provider,
     TaskGraphRunner* task_graph_runner)
+    : FakeLayerTreeHostImpl(settings,
+                            task_runner_provider,
+                            task_graph_runner,
+                            nullptr) {}
+
+FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
+    const LayerTreeSettings& settings,
+    TaskRunnerProvider* task_runner_provider,
+    TaskGraphRunner* task_graph_runner,
+    scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner)
     : LayerTreeHostImpl(settings,
                         &client_,
                         task_runner_provider,
@@ -32,7 +42,7 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
                         task_graph_runner,
                         AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                         0,
-                        nullptr),
+                        std::move(image_worker_task_runner)),
       notify_tile_state_changed_called_(false) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());
