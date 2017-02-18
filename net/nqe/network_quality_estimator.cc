@@ -415,8 +415,6 @@ void NetworkQualityEstimator::NotifyStartTransaction(
     effective_connection_type_at_last_main_frame_ = effective_connection_type_;
     estimated_quality_at_last_main_frame_ = network_quality_;
 
-    RecordMetricsOnMainFrameRequest();
-
     // Post the tasks which will run in the future and record the estimation
     // accuracy based on the observations received between now and the time of
     // task execution. Posting the task at different intervals makes it
@@ -444,8 +442,10 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
     return;
   }
 
-  if (request.load_flags() & LOAD_MAIN_FRAME_DEPRECATED)
+  if (request.load_flags() & LOAD_MAIN_FRAME_DEPRECATED) {
+    RecordMetricsOnMainFrameRequest();
     MaybeQueryExternalEstimateProvider();
+  }
 
   LoadTimingInfo load_timing_info;
   request.GetLoadTimingInfo(&load_timing_info);
