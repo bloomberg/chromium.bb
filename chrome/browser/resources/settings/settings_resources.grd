@@ -274,9 +274,11 @@
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_CERTIFICATE_LIST_HTML"
                    file="certificate_manager_page/certificate_list.html"
+                   preprocess="true"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_CERTIFICATE_LIST_JS"
                    file="certificate_manager_page/certificate_list.js"
+                   preprocess="true"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_CERTIFICATE_ENTRY_HTML"
                    file="certificate_manager_page/certificate_entry.html"
