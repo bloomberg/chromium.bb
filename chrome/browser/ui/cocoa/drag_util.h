@@ -26,7 +26,7 @@ BOOL IsUnsupportedDropData(Profile* profile, id<NSDraggingInfo> info);
 // Returns a drag image for a bookmark.
 NSImage* DragImageForBookmark(NSImage* favicon,
                               const base::string16& title,
-                              CGFloat title_width);
+                              CGFloat drag_image_width);
 
 }  // namespace drag_util
 
