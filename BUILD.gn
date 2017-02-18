@@ -931,6 +931,7 @@ if (!is_ios) {
     testonly = true
     data_deps = [
       "//content/shell:content_shell",
+      "//third_party/WebKit/public:blink_devtools_frontend_resources_files",
       "//third_party/mesa:osmesa",
       "//tools/imagediff",
     ]
@@ -968,6 +969,7 @@ if (!is_ios) {
       "//testing/xvfb.py",
       "//testing/scripts/run_isolated_script_test.py",
       "//third_party/WebKit/LayoutTests/",
+      "//third_party/WebKit/PerformanceTests/",
       "//third_party/WebKit/Tools/Scripts/",
       "$root_build_dir/resources/inspector/",
     ]

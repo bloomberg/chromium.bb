@@ -599,6 +599,12 @@ group("blink_devtools_frontend_resources") {
   ]
 }
 
+group("blink_devtools_frontend_resources_files") {
+  data_deps = [
+    "//third_party/WebKit/Source/devtools:devtools_all_files",
+  ]
+}
+
 group("blink_generate_devtools_grd") {
   public_deps = [
     "//third_party/WebKit/Source/devtools:generate_devtools_grd",
