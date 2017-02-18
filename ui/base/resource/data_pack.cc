@@ -5,15 +5,19 @@
 #include "ui/base/resource/data_pack.h"
 
 #include <errno.h>
+#include <set>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/synchronization/lock.h"
 
 // For details of the file layout, see
 // http://dev.chromium.org/developers/design-documents/linuxresourcesandlocalizedstrings
@@ -24,7 +28,7 @@ static const uint32_t kFileFormatVersion = 4;
 // Length of file header: version, entry count and text encoding type.
 static const size_t kHeaderLength = 2 * sizeof(uint32_t) + sizeof(uint8_t);
 
-#pragma pack(push,2)
+#pragma pack(push, 2)
 struct DataPackEntry {
   uint16_t resource_id;
   uint32_t file_offset;
@@ -63,6 +67,35 @@ enum LoadErrors {
 
 void LogDataPackError(LoadErrors error) {
   UMA_HISTOGRAM_ENUMERATION("DataPack.Load", error, LOAD_ERRORS_COUNT);
+}
+
+// Prints the given resource id the first time it's loaded if Chrome has been
+// started with --print-resource-ids. This output is then used to generate a
+// more optimal resource renumbering to improve startup speed. See
+// tools/gritsettings/README.md for more info.
+void MaybePrintResourceId(uint16_t resource_id) {
+  // This code is run in other binaries than Chrome which do not initialize the
+  // CommandLine object. Early return in those cases.
+  if (!base::CommandLine::InitializedForCurrentProcess())
+    return;
+
+  // Note: This switch isn't in ui/base/ui_base_switches.h because ui/base
+  // depends on ui/base/resource and thus it would cause a circular dependency.
+  static bool print_resource_ids =
+      base::CommandLine::ForCurrentProcess()->HasSwitch("print-resource-ids");
+  if (!print_resource_ids)
+    return;
+
+  // Note: These are leaked intentionally. However, it's only allocated if the
+  // above command line is specified, so it shouldn't affect regular users.
+  static std::set<uint16_t>* resource_ids_logged = new std::set<uint16_t>();
+  // DataPack doesn't require single-threaded access, so use a lock.
+  static base::Lock* lock = new base::Lock;
+  base::AutoLock auto_lock(*lock);
+  if (!base::ContainsKey(*resource_ids_logged, resource_id)) {
+    printf("Resource=%d\n", resource_id);
+    resource_ids_logged->insert(resource_id);
+  }
 }
 
 }  // namespace
@@ -258,6 +291,7 @@ bool DataPack::GetStringPiece(uint16_t resource_id,
     return false;
   }
 
+  MaybePrintResourceId(resource_id);
   size_t length = next_entry->file_offset - target->file_offset;
   data->set(reinterpret_cast<const char*>(data_source_->GetData() +
                                           target->file_offset),
