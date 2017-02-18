@@ -8,6 +8,9 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/compositor_frame_sink.h"
+#include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/compositor_frame_sink_support.h"
+#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -23,7 +26,8 @@ class SurfaceManager;
 // client's frame being the root surface of the Display.
 class CC_SURFACES_EXPORT DirectCompositorFrameSink
     : public CompositorFrameSink,
-      public SurfaceFactoryClient,
+      public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
+      public ExternalBeginFrameSourceClient,
       public NON_EXPORTED_BASE(DisplayClient) {
  public:
   // The underlying Display, SurfaceManager, and SurfaceIdAllocator must outlive
@@ -49,10 +53,6 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   void SubmitCompositorFrame(CompositorFrame frame) override;
   void ForceReclaimResources() override;
 
-  // SurfaceFactoryClient implementation.
-  void ReturnResources(const ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
-
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
@@ -60,7 +60,15 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   void DisplayDidDrawAndSwap() override;
 
  private:
-  void DidDrawCallback();
+  // CompositorFrameSinkSupportClient implementation:
+  void DidReceiveCompositorFrameAck() override;
+  void OnBeginFrame(const BeginFrameArgs& args) override;
+  void ReclaimResources(const ReturnedResourceArray& resources) override;
+  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
+                       const gfx::Rect& damage_rect) override;
+
+  // ExternalBeginFrameSourceClient implementation:
+  void OnNeedsBeginFrames(bool needs_begin_frame) override;
 
   // This class is only meant to be used on a single thread.
   base::ThreadChecker thread_checker_;
@@ -70,9 +78,10 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   SurfaceManager* surface_manager_;
   SurfaceIdAllocator surface_id_allocator_;
   Display* display_;
-  SurfaceFactory factory_;
   gfx::Size last_swap_frame_size_;
   bool is_lost_ = false;
+  std::unique_ptr<CompositorFrameSinkSupport> support_;
+  std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectCompositorFrameSink);
 };

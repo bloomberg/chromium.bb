@@ -169,6 +169,10 @@ void CompositorFrameSinkSupport::RemoveChildFrameSink(
   child_frame_sinks_.erase(it);
 }
 
+void CompositorFrameSinkSupport::ForceReclaimResources() {
+  surface_factory_.ClearSurface();
+}
+
 void CompositorFrameSinkSupport::ReferencedSurfacesChanged(
     const LocalSurfaceId& local_surface_id,
     const std::vector<SurfaceId>* active_referenced_surfaces,

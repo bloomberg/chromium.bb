@@ -29,14 +29,12 @@ DirectCompositorFrameSink::DirectCompositorFrameSink(
                           shared_bitmap_manager),
       frame_sink_id_(frame_sink_id),
       surface_manager_(surface_manager),
-      display_(display),
-      factory_(frame_sink_id, surface_manager, this) {
+      display_(display) {
   DCHECK(thread_checker_.CalledOnValidThread());
   capabilities_.can_force_reclaim_resources = true;
   // Display and DirectCompositorFrameSink share a GL context, so sync
   // points aren't needed when passing resources between them.
   capabilities_.delegated_sync_points_required = false;
-  factory_.set_needs_sync_points(false);
 }
 
 DirectCompositorFrameSink::DirectCompositorFrameSink(
@@ -47,8 +45,7 @@ DirectCompositorFrameSink::DirectCompositorFrameSink(
     : CompositorFrameSink(std::move(vulkan_context_provider)),
       frame_sink_id_(frame_sink_id),
       surface_manager_(surface_manager),
-      display_(display),
-      factory_(frame_sink_id_, surface_manager, this) {
+      display_(display) {
   DCHECK(thread_checker_.CalledOnValidThread());
   capabilities_.can_force_reclaim_resources = true;
 }
@@ -64,13 +61,20 @@ bool DirectCompositorFrameSink::BindToClient(
   if (!CompositorFrameSink::BindToClient(client))
     return false;
 
-  surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
-
   // We want the Display's output surface to hear about lost context, and since
   // this shares a context with it, we should not be listening for lost context
   // callbacks on the context here.
   if (auto* cp = context_provider())
     cp->SetLostContextCallback(base::Closure());
+
+  constexpr bool is_root = true;
+  constexpr bool handles_frame_sink_id_invalidation = false;
+  support_ = base::MakeUnique<CompositorFrameSinkSupport>(
+      this, surface_manager_, frame_sink_id_, is_root,
+      handles_frame_sink_id_invalidation,
+      capabilities_.delegated_sync_points_required);
+  begin_frame_source_ = base::MakeUnique<ExternalBeginFrameSource>(this);
+  client_->SetBeginFrameSource(begin_frame_source_.get());
 
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
@@ -79,10 +83,12 @@ bool DirectCompositorFrameSink::BindToClient(
 }
 
 void DirectCompositorFrameSink::DetachFromClient() {
+  client_->SetBeginFrameSource(nullptr);
+  begin_frame_source_.reset();
+
   // Unregister the SurfaceFactoryClient here instead of the dtor so that only
   // one client is alive for this namespace at any given time.
-  surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
-  factory_.EvictSurface();
+  support_.reset();
 
   CompositorFrameSink::DetachFromClient();
 }
@@ -96,27 +102,12 @@ void DirectCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   display_->SetLocalSurfaceId(delegated_local_surface_id_,
                               frame.metadata.device_scale_factor);
 
-  factory_.SubmitCompositorFrame(
-      delegated_local_surface_id_, std::move(frame),
-      base::Bind(&DirectCompositorFrameSink::DidDrawCallback,
-                 base::Unretained(this)));
+  support_->SubmitCompositorFrame(delegated_local_surface_id_,
+                                  std::move(frame));
 }
 
 void DirectCompositorFrameSink::ForceReclaimResources() {
-  if (delegated_local_surface_id_.is_valid())
-    factory_.ClearSurface();
-}
-
-void DirectCompositorFrameSink::ReturnResources(
-    const ReturnedResourceArray& resources) {
-  if (client_)
-    client_->ReclaimResources(resources);
-}
-
-void DirectCompositorFrameSink::SetBeginFrameSource(
-    BeginFrameSource* begin_frame_source) {
-  DCHECK(client_);
-  client_->SetBeginFrameSource(begin_frame_source);
+  support_->ForceReclaimResources();
 }
 
 void DirectCompositorFrameSink::DisplayOutputSurfaceLost() {
@@ -136,8 +127,27 @@ void DirectCompositorFrameSink::DisplayDidDrawAndSwap() {
   // be drawn.
 }
 
-void DirectCompositorFrameSink::DidDrawCallback() {
+void DirectCompositorFrameSink::DidReceiveCompositorFrameAck() {
   client_->DidReceiveCompositorFrameAck();
+}
+
+void DirectCompositorFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
+  begin_frame_source_->OnBeginFrame(args);
+}
+
+void DirectCompositorFrameSink::ReclaimResources(
+    const ReturnedResourceArray& resources) {
+  client_->ReclaimResources(resources);
+}
+
+void DirectCompositorFrameSink::WillDrawSurface(
+    const LocalSurfaceId& local_surface_id,
+    const gfx::Rect& damage_rect) {
+  // TODO(staraz): Implement this.
+}
+
+void DirectCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
+  support_->SetNeedsBeginFrame(needs_begin_frame);
 }
 
 }  // namespace cc
