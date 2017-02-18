@@ -23,7 +23,7 @@ extern "C" {
 
 #define USE_TEMPORALFILTER_12TAP 1
 
-typedef enum ATTRIBUTE_PACKED {
+typedef enum {
   EIGHTTAP_REGULAR,
   EIGHTTAP_SMOOTH,
   MULTITAP_SHARP,
