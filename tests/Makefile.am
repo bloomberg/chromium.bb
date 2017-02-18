@@ -181,7 +181,8 @@ dist_yaml_TESTS =				\
 	yaml/lt_harness.yaml			\
 	yaml/mn-MN_harness.yaml			\
 	yaml/multipass.yaml			\
-	yaml/nl-g0_harness.yaml		\
+	yaml/multipass-forward.yaml		\
+	yaml/nl-g0_harness.yaml			\
 	yaml/nl-NL-g0_harness.yaml		\
 	yaml/no_8dot_harness.yaml		\
 	yaml/no_g1_harness.yaml			\
