@@ -57,6 +57,11 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
 
 InputMethodWin::~InputMethodWin() {}
 
+void InputMethodWin::OnFocus() {
+  InputMethodBase::OnFocus();
+  RefreshInputLanguage();
+}
+
 bool InputMethodWin::OnUntranslatedIMEMessage(
     const base::NativeEvent& event,
     InputMethod::NativeEventResult* result) {
@@ -275,8 +280,7 @@ void InputMethodWin::OnInputLocaleChanged() {
   // which is known to be incompatible with TSF.
   // TODO(shuchen): Use ITfLanguageProfileNotifySink instead.
   OnInputMethodChanged();
-  imm32_manager_.SetInputLanguage();
-  UpdateIMEState();
+  RefreshInputLanguage();
 }
 
 bool InputMethodWin::IsInputLocaleCJK() const {
@@ -654,6 +658,20 @@ LRESULT InputMethodWin::OnQueryCharPosition(IMECHARPOSITION* char_positon) {
   char_positon->pt.y = rect.y();
   char_positon->cLineHeight = rect.height();
   return 1;  // returns non-zero value when succeeded.
+}
+
+void InputMethodWin::RefreshInputLanguage() {
+  TextInputType type_original = GetTextInputType();
+  imm32_manager_.SetInputLanguage();
+  if (type_original != GetTextInputType()) {
+    // Only update the IME state when necessary.
+    // It's unnecessary to report IME state, when:
+    // 1) Switching betweeen 2 top-level windows, and the switched-away window
+    //    receives OnInputLocaleChanged.
+    // 2) The text input type is not changed by |SetInputLanguage|.
+    // Please refer to crbug.com/679564.
+    UpdateIMEState();
+  }
 }
 
 bool InputMethodWin::IsWindowFocused(const TextInputClient* client) const {

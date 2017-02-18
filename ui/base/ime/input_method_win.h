@@ -23,6 +23,9 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
                  HWND toplevel_window_handle);
   ~InputMethodWin() override;
 
+  // Overridden from InputMethodBase:
+  void OnFocus() override;
+
   // Overridden from InputMethod:
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                 NativeEventResult* result) override;
@@ -87,6 +90,8 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   LRESULT OnDocumentFeed(RECONVERTSTRING* reconv);
   LRESULT OnReconvertString(RECONVERTSTRING* reconv);
   LRESULT OnQueryCharPosition(IMECHARPOSITION* char_positon);
+
+  void RefreshInputLanguage();
 
   // Returns true if the Win32 native window bound to |client| is considered
   // to be ready for receiving keyboard input.
