@@ -296,7 +296,7 @@ class CORE_EXPORT FrameSelection final
   DECLARE_TRACE();
 
  private:
-  friend class BlockPaintInvalidatorTest;
+  friend class CaretDisplayItemClientTest;
   friend class FrameSelectionTest;
   friend class PaintControllerPaintTestForSlimmingPaintV1AndV2;
   friend class SelectionControllerTest;

@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class BlockPaintInvalidatorTest : public RenderingTest {
+class CaretDisplayItemClientTest : public RenderingTest {
  protected:
   void SetUp() override {
     RenderingTest::SetUp();
@@ -42,9 +42,17 @@ class BlockPaintInvalidatorTest : public RenderingTest {
     document().body()->appendChild(text);
     return text;
   }
+
+  Element* appendBlock(const String& data) {
+    Element* block = document().createElement("div");
+    Text* text = document().createTextNode(data);
+    block->appendChild(text);
+    document().body()->appendChild(block);
+    return block;
+  }
 };
 
-TEST_F(BlockPaintInvalidatorTest, CaretPaintInvalidation) {
+TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
   document().page()->focusController().setActive(true);
   document().page()->focusController().setFocused(true);
@@ -129,6 +137,80 @@ TEST_F(BlockPaintInvalidatorTest, CaretPaintInvalidation) {
   ASSERT_EQ(1u, objectInvalidations->size());
   JSONObject::cast(objectInvalidations->at(0))->get("object")->asString(&s);
   EXPECT_EQ("Caret", s);
+  document().view()->setTracksPaintInvalidations(false);
+}
+
+TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
+  document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
+  document().page()->focusController().setActive(true);
+  document().page()->focusController().setFocused(true);
+  auto* blockElement1 = appendBlock("Block1");
+  auto* blockElement2 = appendBlock("Block2");
+  document().view()->updateAllLifecyclePhases();
+  auto* block1 = toLayoutBlock(blockElement1->layoutObject());
+  auto* block2 = toLayoutBlock(blockElement2->layoutObject());
+
+  // Focus the body.
+  document().body()->focus();
+  document().view()->updateAllLifecyclePhases();
+  LayoutRect caretVisualRect1 = caretDisplayItemClient().visualRect();
+  EXPECT_EQ(1, caretVisualRect1.width());
+  EXPECT_EQ(block1->visualRect().location(), caretVisualRect1.location());
+  EXPECT_TRUE(block1->shouldPaintCursorCaret());
+  EXPECT_FALSE(block2->shouldPaintCursorCaret());
+
+  // Move the caret into block2. Should invalidate both the old and new carets.
+  document().view()->setTracksPaintInvalidations(true);
+  selection().setSelection(SelectionInDOMTree::Builder()
+                               .collapse(Position(blockElement2, 0))
+                               .build());
+  document().view()->updateAllLifecyclePhases();
+
+  LayoutRect caretVisualRect2 = caretDisplayItemClient().visualRect();
+  EXPECT_EQ(1, caretVisualRect2.width());
+  EXPECT_EQ(block2->visualRect().location(), caretVisualRect2.location());
+  EXPECT_FALSE(block1->shouldPaintCursorCaret());
+  EXPECT_TRUE(block2->shouldPaintCursorCaret());
+
+  const auto* rasterInvalidations =
+      &getRasterInvalidationTracking()->trackedRasterInvalidations;
+  ASSERT_EQ(2u, rasterInvalidations->size());
+  EXPECT_EQ(enclosingIntRect(caretVisualRect1), (*rasterInvalidations)[0].rect);
+  EXPECT_EQ(block1, (*rasterInvalidations)[0].client);
+  EXPECT_EQ(PaintInvalidationCaret, (*rasterInvalidations)[0].reason);
+  EXPECT_EQ(enclosingIntRect(caretVisualRect2), (*rasterInvalidations)[1].rect);
+  EXPECT_EQ(block2, (*rasterInvalidations)[1].client);
+  EXPECT_EQ(PaintInvalidationCaret, (*rasterInvalidations)[1].reason);
+
+  std::unique_ptr<JSONArray> objectInvalidations =
+      document().view()->trackedObjectPaintInvalidationsAsJSON();
+  ASSERT_EQ(2u, objectInvalidations->size());
+  document().view()->setTracksPaintInvalidations(false);
+
+  // Move the caret back into block1.
+  document().view()->setTracksPaintInvalidations(true);
+  selection().setSelection(SelectionInDOMTree::Builder()
+                               .collapse(Position(blockElement1, 0))
+                               .build());
+  document().view()->updateAllLifecyclePhases();
+
+  EXPECT_EQ(caretVisualRect1, caretDisplayItemClient().visualRect());
+  EXPECT_TRUE(block1->shouldPaintCursorCaret());
+  EXPECT_FALSE(block2->shouldPaintCursorCaret());
+
+  rasterInvalidations =
+      &getRasterInvalidationTracking()->trackedRasterInvalidations;
+  ASSERT_EQ(2u, rasterInvalidations->size());
+  EXPECT_EQ(enclosingIntRect(caretVisualRect1), (*rasterInvalidations)[0].rect);
+  EXPECT_EQ(block1, (*rasterInvalidations)[0].client);
+  EXPECT_EQ(PaintInvalidationCaret, (*rasterInvalidations)[0].reason);
+  EXPECT_EQ(enclosingIntRect(caretVisualRect2), (*rasterInvalidations)[1].rect);
+  EXPECT_EQ(block2, (*rasterInvalidations)[1].client);
+  EXPECT_EQ(PaintInvalidationCaret, (*rasterInvalidations)[1].reason);
+
+  objectInvalidations =
+      document().view()->trackedObjectPaintInvalidationsAsJSON();
+  ASSERT_EQ(2u, objectInvalidations->size());
   document().view()->setTracksPaintInvalidations(false);
 }
 

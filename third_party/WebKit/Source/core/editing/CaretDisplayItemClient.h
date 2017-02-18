@@ -91,18 +91,32 @@ class CaretDisplayItemClient final : public DisplayItemClient {
   String debugName() const final;
 
  private:
+  void invalidatePaintInCurrentLayoutBlock(
+      const PaintInvalidatorContext&,
+      PaintInvalidationReason layoutBlockPaintInvalidationReason);
+
+  void invalidatePaintInPreviousLayoutBlock(
+      const PaintInvalidatorContext&,
+      PaintInvalidationReason layoutBlockPaintInvalidationReason);
+
   // These are updated by updateStyleAndLayoutIfNeeded().
   Color m_color;
   LayoutRect m_localRect;
   LayoutBlock* m_layoutBlock = nullptr;
 
-  // This is set to the previous m_layoutBlock if m_layoutLayout will change
-  // during updateStyleAndLayoutIfNeeded() and can be used in
-  // invalidatePaintIfNeeded() only.
+  // This is set to the previous value of m_layoutBlock during
+  // updateStyleAndLayoutIfNeeded() and can be used in invalidatePaintIfNeeded()
+  // only.
   const LayoutBlock* m_previousLayoutBlock = nullptr;
 
-  // This is updated by invalidatePaintIfNeeded().
+  // Visual rect of the caret in m_layoutBlock. This is updated by
+  // invalidatePaintIfNeeded().
   LayoutRect m_visualRect;
+
+  // This is set to the previous value of m_visualRect during
+  // updateStyleAndLayoutIfNeeded() and can be used in invalidatePaintIfNeeded()
+  // only.
+  LayoutRect m_previousVisualRect;
 
   bool m_needsPaintInvalidation = false;
 };

@@ -117,15 +117,17 @@ LayoutRect CaretDisplayItemClient::computeCaretRect(
 
 void CaretDisplayItemClient::updateStyleAndLayoutIfNeeded(
     const PositionWithAffinity& caretPosition) {
+  m_previousLayoutBlock = m_layoutBlock;
+  m_previousVisualRect = m_visualRect;
+
   LayoutBlock* newLayoutBlock = caretLayoutBlock(caretPosition.anchorNode());
   if (newLayoutBlock != m_layoutBlock) {
     if (m_layoutBlock)
       m_layoutBlock->setMayNeedPaintInvalidation();
-    m_previousLayoutBlock = m_layoutBlock;
     m_layoutBlock = newLayoutBlock;
-    m_needsPaintInvalidation = true;
-  } else {
-    m_previousLayoutBlock = nullptr;
+    if (newLayoutBlock)
+      m_needsPaintInvalidation = true;
+    m_visualRect = LayoutRect();
   }
 
   if (!newLayoutBlock) {
@@ -158,39 +160,44 @@ void CaretDisplayItemClient::invalidatePaintIfNeeded(
     const LayoutBlock& block,
     const PaintInvalidatorContext& context,
     PaintInvalidationReason layoutBlockPaintInvalidationReason) {
-  if (block == m_previousLayoutBlock) {
-    // Invalidate the previous caret if it was in a different block.
-    // m_previousLayoutBlock is set only when it's different from m_layoutBlock.
-    DCHECK(block != m_layoutBlock);
-
-    ObjectPaintInvalidatorWithContext objectInvalidator(*m_previousLayoutBlock,
-                                                        context);
-    if (!isImmediateFullPaintInvalidationReason(
-            layoutBlockPaintInvalidationReason)) {
-      objectInvalidator.fullyInvalidatePaint(PaintInvalidationCaret,
-                                             m_visualRect, LayoutRect());
-    }
-
-    // If m_layoutBlock is not null, the following will be done when
-    // the new caret is invalidated in m_layoutBlock.
-    if (!m_layoutBlock) {
-      context.paintingLayer->setNeedsRepaint();
-      objectInvalidator.invalidateDisplayItemClient(*this,
-                                                    PaintInvalidationCaret);
-      m_visualRect = LayoutRect();
-      m_needsPaintInvalidation = false;
-    }
-
-    m_previousLayoutBlock = nullptr;
+  if (block == m_layoutBlock) {
+    invalidatePaintInCurrentLayoutBlock(context,
+                                        layoutBlockPaintInvalidationReason);
     return;
   }
 
-  if (block != m_layoutBlock)
-    return;
+  if (block == m_previousLayoutBlock) {
+    invalidatePaintInPreviousLayoutBlock(context,
+                                         layoutBlockPaintInvalidationReason);
+  }
+}
 
-  // Invalidate the new caret, and the old caret if it was in the same block.
+void CaretDisplayItemClient::invalidatePaintInPreviousLayoutBlock(
+    const PaintInvalidatorContext& context,
+    PaintInvalidationReason layoutBlockPaintInvalidationReason) {
+  DCHECK(m_previousLayoutBlock);
+
+  ObjectPaintInvalidatorWithContext objectInvalidator(*m_previousLayoutBlock,
+                                                      context);
+  if (!isImmediateFullPaintInvalidationReason(
+          layoutBlockPaintInvalidationReason)) {
+    objectInvalidator.invalidatePaintUsingContainer(
+        *context.paintInvalidationContainer, m_previousVisualRect,
+        PaintInvalidationCaret);
+  }
+
+  context.paintingLayer->setNeedsRepaint();
+  objectInvalidator.invalidateDisplayItemClient(*this, PaintInvalidationCaret);
+  m_previousLayoutBlock = nullptr;
+}
+
+void CaretDisplayItemClient::invalidatePaintInCurrentLayoutBlock(
+    const PaintInvalidatorContext& context,
+    PaintInvalidationReason layoutBlockPaintInvalidationReason) {
+  DCHECK(m_layoutBlock);
+
   LayoutRect newVisualRect;
-  if (m_layoutBlock && !m_localRect.isEmpty()) {
+  if (!m_localRect.isEmpty()) {
     newVisualRect = m_localRect;
     context.mapLocalRectToPaintInvalidationBacking(*m_layoutBlock,
                                                    newVisualRect);
@@ -204,21 +211,20 @@ void CaretDisplayItemClient::invalidatePaintIfNeeded(
     }
   }
 
-  if (m_needsPaintInvalidation || newVisualRect != m_visualRect) {
-    m_needsPaintInvalidation = false;
+  if (!m_needsPaintInvalidation && newVisualRect == m_visualRect)
+    return;
 
-    ObjectPaintInvalidatorWithContext objectInvalidator(*m_layoutBlock,
-                                                        context);
-    if (!isImmediateFullPaintInvalidationReason(
-            layoutBlockPaintInvalidationReason)) {
-      objectInvalidator.fullyInvalidatePaint(PaintInvalidationCaret,
-                                             m_visualRect, newVisualRect);
-    }
+  m_needsPaintInvalidation = false;
 
-    context.paintingLayer->setNeedsRepaint();
-    objectInvalidator.invalidateDisplayItemClient(*this,
-                                                  PaintInvalidationCaret);
+  ObjectPaintInvalidatorWithContext objectInvalidator(*m_layoutBlock, context);
+  if (!isImmediateFullPaintInvalidationReason(
+          layoutBlockPaintInvalidationReason)) {
+    objectInvalidator.fullyInvalidatePaint(PaintInvalidationCaret, m_visualRect,
+                                           newVisualRect);
   }
+
+  context.paintingLayer->setNeedsRepaint();
+  objectInvalidator.invalidateDisplayItemClient(*this, PaintInvalidationCaret);
 
   m_visualRect = newVisualRect;
 }

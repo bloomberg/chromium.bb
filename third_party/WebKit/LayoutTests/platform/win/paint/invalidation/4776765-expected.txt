@@ -30,6 +30,10 @@
       "reason": "border box change"
     },
     {
+      "object": "Caret",
+      "reason": "caret"
+    },
+    {
       "object": "LayoutBlockFlow DIV id='div'",
       "reason": "layoutObject insertion"
     },
