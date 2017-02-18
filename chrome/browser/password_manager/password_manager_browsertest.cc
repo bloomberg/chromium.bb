@@ -1828,8 +1828,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   observing_autofill_client->Wait();
 }
 
+// Flaky on official builds (?): https://crbug.com/693717
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       ShowFormNotSecureOnUsernameField) {
+                       DISABLED_ShowFormNotSecureOnUsernameField) {
   password_manager::ContentPasswordManagerDriverFactory* driver_factory =
       password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
           WebContents());
