@@ -8,11 +8,8 @@ import logging
 
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.w3c.chromium_commit import ChromiumCommit
-from webkitpy.w3c.common import WPT_REPO_URL, CHROMIUM_WPT_DIR
+from webkitpy.w3c.common import WPT_GH_REPO_URL, CHROMIUM_WPT_DIR
 
-
-WPT_SSH_URL = 'git@github.com:w3c/web-platform-tests.git'
-REMOTE_NAME = 'github'
 
 _log = logging.getLogger(__name__)
 
@@ -34,14 +31,11 @@ class LocalWPT(object):
     def fetch(self):
         if self.host.filesystem.exists(self.path):
             _log.info('WPT checkout exists at %s, fetching latest', self.path)
-            self.run(['git', 'fetch', '--all'])
+            self.run(['git', 'fetch', 'origin'])
             self.run(['git', 'checkout', 'origin/master'])
         else:
-            _log.info('Cloning %s into %s', WPT_REPO_URL, self.path)
-            self.host.executive.run_command(['git', 'clone', WPT_REPO_URL, self.path])
-
-        if REMOTE_NAME not in self.run(['git', 'remote']):
-            self.run(['git', 'remote', 'add', REMOTE_NAME, WPT_SSH_URL])
+            _log.info('Cloning %s into %s', WPT_GH_REPO_URL, self.path)
+            self.host.executive.run_command(['git', 'clone', WPT_GH_REPO_URL, self.path])
 
     def run(self, command, **kwargs):
         """Runs a command in the local WPT directory."""
@@ -97,7 +91,7 @@ class LocalWPT(object):
         self.run(['git', 'apply', '-'], input=patch)
         self.run(['git', 'add', '.'])
         self.run(['git', 'commit', '--author', author, '-am', message])
-        self.run(['git', 'push', '-f', REMOTE_NAME, self.branch_name])
+        self.run(['git', 'push', '-f', 'origin', self.branch_name])
 
         return self.branch_name
 
