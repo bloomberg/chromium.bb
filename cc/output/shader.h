@@ -12,6 +12,7 @@
 #include "cc/base/cc_export.h"
 
 namespace gfx {
+class ColorTransform;
 class Point;
 class Size;
 }
@@ -137,6 +138,8 @@ enum ColorConversionMode {
   // applicable) to output RGB space, via a 3D texture represented as a 2D
   // texture.
   COLOR_CONVERSION_MODE_LUT,
+  // Conversion is done analytically in the shader.
+  COLOR_CONVERSION_MODE_SHADER,
 };
 
 // TODO(ccameron): Merge this with BlendMode.
@@ -285,6 +288,7 @@ class FragmentShader {
   UVTextureMode uv_texture_mode_ = UV_TEXTURE_MODE_UV;
 
   ColorConversionMode color_conversion_mode_ = COLOR_CONVERSION_MODE_NONE;
+  const gfx::ColorTransform* color_transform_ = nullptr;
 
   // YUV uniform locations.
   int y_texture_location_ = -1;
@@ -295,10 +299,9 @@ class FragmentShader {
   int ya_clamp_rect_location_ = -1;
   int uv_clamp_rect_location_ = -1;
 
-  // This matrix will convert from the values read in the YUV texture to
-  // RGB (including resource offset and scale). If we are using LUT based
-  // color conversion, then this will only perform resource offset and scale.
-  int yuv_and_resource_matrix_location_ = -1;
+  // The resource offset and multiplier to adjust for bit depth.
+  int resource_multiplier_location_ = -1;
+  int resource_offset_location_ = -1;
 
   // LUT YUV to color-converted RGB.
   int lut_texture_location_ = -1;

@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "third_party/qcms/src/qcms.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/icc_profile.h"
@@ -250,8 +251,9 @@ class ColorTransformStep {
 
   // Return true if this is a null transform.
   virtual bool IsNull() { return false; }
-
-  virtual void Transform(ColorTransform::TriStim* color, size_t num) = 0;
+  virtual void Transform(ColorTransform::TriStim* color, size_t num) const = 0;
+  virtual bool CanAppendShaderSource() { return false; }
+  virtual void AppendShaderSource(std::string* result) { NOTREACHED(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ColorTransformStep);
@@ -264,11 +266,16 @@ class ColorTransformInternal : public ColorTransform {
                          Intent intent);
   ~ColorTransformInternal() override;
 
-  // Perform transformation of colors, |colors| is both input and output.
-  void Transform(TriStim* colors, size_t num) override {
+  gfx::ColorSpace GetSrcColorSpace() const override { return src_; };
+  gfx::ColorSpace GetDstColorSpace() const override { return dst_; };
+
+  void Transform(TriStim* colors, size_t num) const override {
     for (const auto& step : steps_)
       step->Transform(colors, num);
   }
+  bool CanGetShaderSource() const override;
+  std::string GetShaderSource() const override;
+  bool IsIdentity() const override { return steps_.empty(); }
   size_t NumberOfStepsForTesting() const override { return steps_.size(); }
 
  private:
@@ -283,13 +290,23 @@ class ColorTransformInternal : public ColorTransform {
   ScopedQcmsProfile GetQCMSProfileIfNecessary(const ColorSpace& color_space);
 
   std::list<std::unique_ptr<ColorTransformStep>> steps_;
+  gfx::ColorSpace src_;
+  gfx::ColorSpace dst_;
 };
+
+#define SRC(...)                                                     \
+  do {                                                               \
+    *result += std::string("  ") + base::StringPrintf(__VA_ARGS__) + \
+               std::string("\n");                                    \
+  } while (0)
 
 class ColorTransformNull : public ColorTransformStep {
  public:
   ColorTransformNull* GetNull() override { return this; }
   bool IsNull() override { return true; }
-  void Transform(ColorTransform::TriStim* color, size_t num) override {}
+  void Transform(ColorTransform::TriStim* color, size_t num) const override {}
+  bool CanAppendShaderSource() override { return true; }
+  void AppendShaderSource(std::string* result) override {}
 };
 
 class ColorTransformMatrix : public ColorTransformStep {
@@ -311,9 +328,22 @@ class ColorTransformMatrix : public ColorTransformStep {
     return SkMatrixIsApproximatelyIdentity(matrix_.matrix());
   }
 
-  void Transform(ColorTransform::TriStim* colors, size_t num) override {
+  void Transform(ColorTransform::TriStim* colors, size_t num) const override {
     for (size_t i = 0; i < num; i++)
       matrix_.TransformPoint(colors + i);
+  }
+
+  bool CanAppendShaderSource() override { return true; }
+
+  void AppendShaderSource(std::string* result) override {
+    const SkMatrix44& m = matrix_.matrix();
+    SRC("color = mat3(%1.8e, %1.8e, %1.8e, %1.8e, %1.8e, %1.8e, %1.8e, %1.8e, "
+        "%1.8e) * color;",
+        m.get(0, 0), m.get(1, 0), m.get(2, 0),   // column 1
+        m.get(0, 1), m.get(1, 1), m.get(2, 1),   // column 2
+        m.get(0, 2), m.get(1, 2), m.get(2, 2));  // column 3
+    SRC("color += vec3(%1.8e, %1.8e, %1.8e);", m.get(0, 3), m.get(1, 3),
+        m.get(2, 3));
   }
 
  private:
@@ -331,7 +361,7 @@ class ColorTransformFromLinear : public ColorTransformStep {
   }
   ColorTransformFromLinear* GetFromLinear() override { return this; }
   bool IsNull() override { return transfer_ == ColorSpace::TransferID::LINEAR; }
-  void Transform(ColorTransform::TriStim* colors, size_t num) override {
+  void Transform(ColorTransform::TriStim* colors, size_t num) const override {
     if (fn_valid_) {
       for (size_t i = 0; i < num; i++) {
         colors[i].set_x(EvalSkTransferFn(fn_, colors[i].x()));
@@ -399,7 +429,7 @@ class ColorTransformToLinear : public ColorTransformStep {
     return c.x() * 0.2627f + c.y() * 0.6780f + c.z() * 0.0593f;
   }
 
-  ColorTransform::TriStim ClipToWhite(ColorTransform::TriStim& c) {
+  static ColorTransform::TriStim ClipToWhite(ColorTransform::TriStim& c) {
     float maximum = max(max(c.x(), c.y()), c.z());
     if (maximum > 1.0f) {
       float l = Luma(c);
@@ -412,7 +442,7 @@ class ColorTransformToLinear : public ColorTransformStep {
     return c;
   }
 
-  void Transform(ColorTransform::TriStim* colors, size_t num) override {
+  void Transform(ColorTransform::TriStim* colors, size_t num) const override {
     if (fn_valid_) {
       for (size_t i = 0; i < num; i++) {
         colors[i].set_x(EvalSkTransferFn(fn_, colors[i].x()));
@@ -476,7 +506,7 @@ class ColorTransformToBT2020CL : public ColorTransformStep {
 
   bool IsNull() override { return null_; }
 
-  void Transform(ColorTransform::TriStim* RYB, size_t num) override {
+  void Transform(ColorTransform::TriStim* RYB, size_t num) const override {
     for (size_t i = 0; i < num; i++) {
       float U, V;
       float B_Y = RYB[i].z() - RYB[i].y();
@@ -514,7 +544,7 @@ class ColorTransformFromBT2020CL : public ColorTransformStep {
 
   bool IsNull() override { return null_; }
 
-  void Transform(ColorTransform::TriStim* YUV, size_t num) override {
+  void Transform(ColorTransform::TriStim* YUV, size_t num) const override {
     if (null_)
       return;
     for (size_t i = 0; i < num; i++) {
@@ -587,6 +617,11 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   steps_.push_back(
       base::MakeUnique<ColorTransformMatrix>(Invert(GetTransferMatrix(from))));
 
+  // If the target color space is not defined, just apply the adjust and
+  // tranfer matrices.
+  if (!to.IsValid())
+    return;
+
   SkColorSpaceTransferFn to_linear_fn;
   bool to_linear_fn_valid = from.GetTransferFunction(&to_linear_fn);
   steps_.push_back(base::MakeUnique<ColorTransformToLinear>(
@@ -640,7 +675,7 @@ class QCMSColorTransform : public ColorTransformStep {
       return true;
     return false;
   }
-  void Transform(ColorTransform::TriStim* colors, size_t num) override {
+  void Transform(ColorTransform::TriStim* colors, size_t num) const override {
     CHECK(sizeof(ColorTransform::TriStim) == sizeof(float[3]));
     // QCMS doesn't like numbers outside 0..1
     for (size_t i = 0; i < num; i++) {
@@ -688,35 +723,54 @@ ScopedQcmsProfile GetXYZD50Profile() {
   return ScopedQcmsProfile(qcms_profile_create_rgb_with_gamma(w, xyz, 1.0f));
 }
 
-ColorTransformInternal::ColorTransformInternal(const ColorSpace& from,
-                                               const ColorSpace& to,
-                                               Intent intent) {
+ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
+                                               const ColorSpace& dst,
+                                               Intent intent)
+    : src_(src), dst_(dst) {
   // If no source color space is specified, do no transformation.
-  // TODO(ccameron): We may want to assume sRGB at some point in the future.
-  if (!from.IsValid())
+  // TODO(ccameron): We may want dst assume sRGB at some point in the future.
+  if (!src_.IsValid())
     return;
 
-  ScopedQcmsProfile from_profile = GetQCMSProfileIfNecessary(from);
-  ScopedQcmsProfile to_profile = GetQCMSProfileIfNecessary(to);
-  bool has_from_profile = !!from_profile;
-  bool has_to_profile = !!to_profile;
+  ScopedQcmsProfile src_profile = GetQCMSProfileIfNecessary(src_);
+  ScopedQcmsProfile dst_profile = GetQCMSProfileIfNecessary(dst_);
+  bool has_src_profile = !!src_profile;
+  bool has_dst_profile = !!dst_profile;
 
-  if (from_profile) {
+  if (src_profile) {
     steps_.push_back(base::MakeUnique<QCMSColorTransform>(
-        std::move(from_profile), GetXYZD50Profile()));
+        std::move(src_profile), GetXYZD50Profile()));
   }
 
   AppendColorSpaceToColorSpaceTransform(
-      has_from_profile ? ColorSpace::CreateXYZD50() : from,
-      has_to_profile ? ColorSpace::CreateXYZD50() : to, intent);
+      has_src_profile ? ColorSpace::CreateXYZD50() : src_,
+      has_dst_profile ? ColorSpace::CreateXYZD50() : dst_, intent);
 
-  if (to_profile) {
+  if (dst_profile) {
     steps_.push_back(base::MakeUnique<QCMSColorTransform>(
-        GetXYZD50Profile(), std::move(to_profile)));
+        GetXYZD50Profile(), std::move(dst_profile)));
   }
 
   if (intent != Intent::TEST_NO_OPT)
     Simplify();
+}
+
+std::string ColorTransformInternal::GetShaderSource() const {
+  std::string result;
+  result += "vec3 DoColorConversion(vec3 color) {\n";
+  for (const auto& step : steps_)
+    step->AppendShaderSource(&result);
+  result += "  return color;\n";
+  result += "}\n";
+  return result;
+}
+
+bool ColorTransformInternal::CanGetShaderSource() const {
+  for (const auto& step : steps_) {
+    if (!step->CanAppendShaderSource())
+      return false;
+  }
+  return true;
 }
 
 ColorTransformInternal::~ColorTransformInternal() {}

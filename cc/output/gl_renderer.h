@@ -298,6 +298,12 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   std::unordered_map<ProgramKey, std::unique_ptr<Program>, ProgramKeyHash>
       program_cache_;
 
+  const gfx::ColorTransform* GetColorTransform(const gfx::ColorSpace& src,
+                                               const gfx::ColorSpace& dst);
+  std::map<gfx::ColorSpace,
+           std::map<gfx::ColorSpace, std::unique_ptr<gfx::ColorTransform>>>
+      color_transform_cache_;
+
   gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
   std::unique_ptr<ContextCacheController::ScopedVisibility> context_visibility_;

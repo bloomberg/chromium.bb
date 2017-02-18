@@ -22,9 +22,19 @@ class GFX_EXPORT ColorTransform {
 
   ColorTransform();
   virtual ~ColorTransform();
+  virtual gfx::ColorSpace GetSrcColorSpace() const = 0;
+  virtual gfx::ColorSpace GetDstColorSpace() const = 0;
 
   // Perform transformation of colors, |colors| is both input and output.
-  virtual void Transform(TriStim* colors, size_t num) = 0;
+  virtual void Transform(TriStim* colors, size_t num) const = 0;
+
+  // Return GLSL shader source that defines a function DoColorConversion that
+  // converts a vec3 according to this transform.
+  virtual bool CanGetShaderSource() const = 0;
+  virtual std::string GetShaderSource() const = 0;
+
+  // Returns true if this transform is the identity.
+  virtual bool IsIdentity() const = 0;
 
   virtual size_t NumberOfStepsForTesting() const = 0;
 

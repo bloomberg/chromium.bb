@@ -51,16 +51,8 @@ void FloatToLUT(float* f, unsigned char* out, size_t num) {
 }  // namespace
 
 template <typename T>
-unsigned int ColorLUTCache::MakeLUT(const gfx::ColorSpace& from,
-                                    gfx::ColorSpace to,
+unsigned int ColorLUTCache::MakeLUT(const gfx::ColorTransform* transform,
                                     int lut_samples) {
-  if (to == gfx::ColorSpace()) {
-    to = gfx::ColorSpace::CreateSRGB();
-  }
-  std::unique_ptr<gfx::ColorTransform> transform(
-      gfx::ColorTransform::NewColorTransform(
-          from, to, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL));
-
   int lut_entries = lut_samples * lut_samples * lut_samples;
   float inverse = 1.0f / (lut_samples - 1);
   std::vector<T> lut(lut_entries * 4);
@@ -103,10 +95,8 @@ unsigned int ColorLUTCache::MakeLUT(const gfx::ColorSpace& from,
   return lut_texture;
 }
 
-ColorLUTCache::LUT ColorLUTCache::GetLUT(const gfx::ColorSpace& from,
-                                         const gfx::ColorSpace& to) {
-  CacheKey key(from, to);
-  auto iter = lut_cache_.Get(key);
+ColorLUTCache::LUT ColorLUTCache::GetLUT(const gfx::ColorTransform* transform) {
+  auto iter = lut_cache_.Get(transform);
   if (iter != lut_cache_.end()) {
     iter->second.last_used_frame = current_frame_;
     return iter->second.lut;
@@ -117,15 +107,15 @@ ColorLUTCache::LUT ColorLUTCache::GetLUT(const gfx::ColorSpace& from,
   // to produce values outside of 0-1, so we'll need to make a half-float
   // LUT. Also, we'll need to build a larger lut to maintain accuracy.
   // All LUT sizes should be odd a some transforms hav a knee at 0.5.
-  if (to == gfx::ColorSpace::CreateSCRGBLinear() && from.IsHDR() &&
-      texture_half_float_linear_) {
+  if (transform->GetDstColorSpace() == gfx::ColorSpace::CreateSCRGBLinear() &&
+      transform->GetSrcColorSpace().IsHDR() && texture_half_float_linear_) {
     lut.size = 37;
-    lut.texture = MakeLUT<uint16_t>(from, to, lut.size);
+    lut.texture = MakeLUT<uint16_t>(transform, lut.size);
   } else {
     lut.size = 17;
-    lut.texture = MakeLUT<unsigned char>(from, to, lut.size);
+    lut.texture = MakeLUT<unsigned char>(transform, lut.size);
   }
-  lut_cache_.Put(key, CacheVal(lut, current_frame_));
+  lut_cache_.Put(transform, CacheVal(lut, current_frame_));
   return lut;
 }
 

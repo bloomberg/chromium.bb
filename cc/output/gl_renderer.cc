@@ -63,6 +63,7 @@
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -2029,50 +2030,6 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
 
-// TODO(ccameron): This has been replicated in ui/gfx/color_transform.cc. Delete
-// one of the instances.
-void ComputeYUVToRGBMatrices(const gfx::ColorSpace& src_color_space,
-                             const gfx::ColorSpace& dst_color_space,
-                             uint32_t bits_per_channel,
-                             float resource_multiplier,
-                             float resource_offset,
-                             float* yuv_to_rgb_matrix) {
-  // Compute the matrix |full_transform| which converts input YUV values to RGB
-  // values.
-  SkMatrix44 full_transform;
-
-  // Start with the resource adjust.
-  full_transform.setScale(resource_multiplier, resource_multiplier,
-                          resource_multiplier);
-  full_transform.preTranslate(-resource_offset, -resource_offset,
-                              -resource_offset);
-
-  // If we're using a LUT for conversion, we only need the resource adjust,
-  // so just return this matrix.
-  if (dst_color_space.IsValid()) {
-    full_transform.asColMajorf(yuv_to_rgb_matrix);
-    return;
-  }
-
-  // Then apply the range adjust.
-  {
-    SkMatrix44 range_adjust;
-    src_color_space.GetRangeAdjustMatrix(&range_adjust);
-    full_transform.postConcat(range_adjust);
-  }
-
-  // Then apply the YUV to RGB full_transform.
-  {
-    SkMatrix44 rgb_to_yuv;
-    src_color_space.GetTransferMatrix(&rgb_to_yuv);
-    SkMatrix44 yuv_to_rgb;
-    rgb_to_yuv.invert(&yuv_to_rgb);
-    full_transform.postConcat(yuv_to_rgb);
-  }
-
-  full_transform.asColMajorf(yuv_to_rgb_matrix);
-}
-
 void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                                   const gfx::QuadF* clip_region) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
@@ -2205,12 +2162,10 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   if (alpha_texture_mode == YUV_HAS_ALPHA_TEXTURE)
     gl_->Uniform1i(current_program_->a_texture_location(), 4);
 
-  float yuv_to_rgb_matrix[16] = {0};
-  ComputeYUVToRGBMatrices(src_color_space, dst_color_space,
-                          quad->bits_per_channel, quad->resource_multiplier,
-                          quad->resource_offset, yuv_to_rgb_matrix);
-  gl_->UniformMatrix4fv(current_program_->yuv_and_resource_matrix_location(), 1,
-                        0, yuv_to_rgb_matrix);
+  gl_->Uniform1f(current_program_->resource_multiplier_location(),
+                 quad->resource_multiplier);
+  gl_->Uniform1f(current_program_->resource_offset_location(),
+                 quad->resource_offset);
 
   // The transform and vertex data are used to figure out the extents that the
   // un-antialiased quad should have and which vertex this is and the float
@@ -3032,8 +2987,9 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
                                const gfx::ColorSpace& src_color_space,
                                const gfx::ColorSpace& dst_color_space) {
   ProgramKey program_key = program_key_no_color;
-  if (src_color_space.IsValid() && dst_color_space.IsValid())
-    program_key.SetColorConversionMode(COLOR_CONVERSION_MODE_LUT);
+  const gfx::ColorTransform* color_transform =
+      GetColorTransform(src_color_space, dst_color_space);
+  program_key.SetColorTransform(color_transform);
 
   // Create and set the program if needed.
   std::unique_ptr<Program>& program = program_cache_[program_key];
@@ -3064,8 +3020,7 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
     gl_->Uniform4fv(current_program_->viewport_location(), 1, viewport);
   }
   if (current_program_->lut_texture_location() != -1) {
-    ColorLUTCache::LUT lut =
-        color_lut_cache_.GetLUT(src_color_space, dst_color_space);
+    ColorLUTCache::LUT lut = color_lut_cache_.GetLUT(color_transform);
     gl_->ActiveTexture(GL_TEXTURE5);
     gl_->BindTexture(GL_TEXTURE_2D, lut.texture);
     gl_->Uniform1i(current_program_->lut_texture_location(), 5);
@@ -3082,12 +3037,25 @@ const Program* GLRenderer::GetProgramIfInitialized(
   return found->second.get();
 }
 
+const gfx::ColorTransform* GLRenderer::GetColorTransform(
+    const gfx::ColorSpace& src,
+    const gfx::ColorSpace& dst) {
+  std::unique_ptr<gfx::ColorTransform>& transform =
+      color_transform_cache_[dst][src];
+  if (!transform) {
+    transform = gfx::ColorTransform::NewColorTransform(
+        src, dst, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+  }
+  return transform.get();
+}
+
 void GLRenderer::CleanupSharedObjects() {
   shared_geometry_ = nullptr;
 
   for (auto& iter : program_cache_)
     iter.second->Cleanup(gl_);
   program_cache_.clear();
+  color_transform_cache_.clear();
 
   if (offscreen_framebuffer_id_)
     gl_->DeleteFramebuffers(1, &offscreen_framebuffer_id_);

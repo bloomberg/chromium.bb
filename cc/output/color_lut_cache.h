@@ -11,6 +11,10 @@
 #include "base/macros.h"
 #include "ui/gfx/color_space.h"
 
+namespace gfx {
+class ColorTransform;
+}
+
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -28,18 +32,16 @@ class ColorLUTCache {
     int size;
   };
 
-  LUT GetLUT(const gfx::ColorSpace& from, const gfx::ColorSpace& to);
+  LUT GetLUT(const gfx::ColorTransform* transform);
 
   // End of frame, assume all LUTs handed out are no longer used.
   void Swap();
 
  private:
   template <typename T>
-  unsigned int MakeLUT(const gfx::ColorSpace& from,
-                       gfx::ColorSpace to,
-                       int lut_samples);
+  unsigned int MakeLUT(const gfx::ColorTransform* transform, int lut_samples);
 
-  typedef std::pair<gfx::ColorSpace, gfx::ColorSpace> CacheKey;
+  typedef const gfx::ColorTransform* CacheKey;
 
   struct CacheVal {
     CacheVal(LUT lut, uint32_t last_used_frame)

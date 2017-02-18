@@ -12,6 +12,10 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/shader.h"
 
+namespace gfx {
+class ColorTransform;
+}
+
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -99,9 +103,7 @@ class CC_EXPORT ProgramKey {
   bool operator==(const ProgramKey& other) const;
   bool operator!=(const ProgramKey& other) const;
 
-  void SetColorConversionMode(ColorConversionMode color_conversion_mode) {
-    color_conversion_mode_ = color_conversion_mode;
-  }
+  void SetColorTransform(const gfx::ColorTransform* transform);
 
  private:
   friend struct ProgramKeyHash;
@@ -126,6 +128,7 @@ class CC_EXPORT ProgramKey {
   UVTextureMode uv_texture_mode_ = UV_TEXTURE_MODE_NA;
 
   ColorConversionMode color_conversion_mode_ = COLOR_CONVERSION_MODE_NONE;
+  const gfx::ColorTransform* color_transform_ = nullptr;
 };
 
 struct ProgramKeyHash {
@@ -164,6 +167,7 @@ class Program : public ProgramBindingBase {
     fragment_shader_.mask_mode_ = key.mask_mode_;
     fragment_shader_.mask_for_background_ = key.mask_for_background_;
     fragment_shader_.color_conversion_mode_ = key.color_conversion_mode_;
+    fragment_shader_.color_transform_ = key.color_transform_;
 
     switch (key.type_) {
       case PROGRAM_TYPE_DEBUG_BORDER:
@@ -271,8 +275,11 @@ class Program : public ProgramBindingBase {
     return fragment_shader_.lut_texture_location_;
   }
   int lut_size_location() const { return fragment_shader_.lut_size_location_; }
-  int yuv_and_resource_matrix_location() const {
-    return fragment_shader_.yuv_and_resource_matrix_location_;
+  int resource_multiplier_location() const {
+    return fragment_shader_.resource_multiplier_location_;
+  }
+  int resource_offset_location() const {
+    return fragment_shader_.resource_offset_location_;
   }
   int ya_clamp_rect_location() const {
     return fragment_shader_.ya_clamp_rect_location_;
