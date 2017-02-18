@@ -295,7 +295,7 @@ typedef enum {
 } PALETTE_COLOR;
 #endif  // CONFIG_PALETTE
 
-#ifdef CONFIG_CLPF
+#ifdef CONFIG_CDEF
 #define CLPF_NOFLAG -1
 typedef enum {
   CLPF_NOSIZE = 0,

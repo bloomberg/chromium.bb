@@ -749,7 +749,7 @@ if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
 
 # Deringing Functions
 
-if (aom_config("CONFIG_DERING") eq "yes") {
+if (aom_config("CONFIG_CDEF") eq "yes") {
   add_proto qw/int od_dir_find8/, "const od_dering_in *img, int stride, int32_t *var, int coeff_shift";
   specialize qw/od_dir_find8 sse4_1/;
 
@@ -758,12 +758,6 @@ if (aom_config("CONFIG_DERING") eq "yes") {
 
   add_proto qw/int od_filter_dering_direction_8x8/, "int16_t *y, int ystride, const int16_t *in, int threshold, int dir";
   specialize qw/od_filter_dering_direction_8x8 sse4_1/;
-
-  add_proto qw/void od_filter_dering_orthogonal_4x4/, "int16_t *y, int ystride, const int16_t *in, int threshold, int dir";
-  specialize qw/od_filter_dering_orthogonal_4x4 sse4_1/;
-
-  add_proto qw/void od_filter_dering_orthogonal_8x8/, "int16_t *y, int ystride, const int16_t *in, int threshold, int dir";
-  specialize qw/od_filter_dering_orthogonal_8x8 sse4_1/;
 }
 
 # WARPED_MOTION / GLOBAL_MOTION functions

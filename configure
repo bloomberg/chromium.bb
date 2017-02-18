@@ -250,8 +250,7 @@ HAVE_LIST="
 EXPERIMENT_LIST="
     fp_mb_stats
     emulate_hardware
-    clpf
-    dering
+    cdef
     var_tx
     rect_tx
     ref_mv

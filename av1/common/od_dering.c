@@ -177,64 +177,6 @@ int od_filter_dering_direction_4x4_c(int16_t *y, int ystride, const int16_t *in,
   return (total_abs + 2) >> 2;
 }
 
-/* Smooth in the direction orthogonal to what was detected. */
-void od_filter_dering_orthogonal_8x8_c(int16_t *y, int ystride,
-                                       const int16_t *in, int threshold,
-                                       int dir) {
-  int i;
-  int j;
-  int offset;
-  if (dir > 0 && dir < 4)
-    offset = OD_FILT_BSTRIDE;
-  else
-    offset = 1;
-  for (i = 0; i < 8; i++) {
-    for (j = 0; j < 8; j++) {
-      int16_t yy;
-      int16_t sum;
-      int16_t p;
-      yy = in[i * OD_FILT_BSTRIDE + j];
-      sum = 0;
-      p = in[i * OD_FILT_BSTRIDE + j + offset] - yy;
-      if (abs(p) < threshold) sum += p;
-      p = in[i * OD_FILT_BSTRIDE + j - offset] - yy;
-      if (abs(p) < threshold) sum += p;
-      p = in[i * OD_FILT_BSTRIDE + j + 2 * offset] - yy;
-      if (abs(p) < threshold) sum += p;
-      p = in[i * OD_FILT_BSTRIDE + j - 2 * offset] - yy;
-      if (abs(p) < threshold) sum += p;
-      y[i * ystride + j] = yy + ((3 * sum + 8) >> 4);
-    }
-  }
-}
-
-/* Smooth in the direction orthogonal to what was detected. */
-void od_filter_dering_orthogonal_4x4_c(int16_t *y, int ystride,
-                                       const int16_t *in, int threshold,
-                                       int dir) {
-  int i;
-  int j;
-  int offset;
-  if (dir > 0 && dir < 4)
-    offset = OD_FILT_BSTRIDE;
-  else
-    offset = 1;
-  for (i = 0; i < 4; i++) {
-    for (j = 0; j < 4; j++) {
-      int16_t yy;
-      int16_t sum;
-      int16_t p;
-      yy = in[i * OD_FILT_BSTRIDE + j];
-      sum = 0;
-      p = in[i * OD_FILT_BSTRIDE + j + offset] - yy;
-      if (abs(p) < threshold) sum += p;
-      p = in[i * OD_FILT_BSTRIDE + j - offset] - yy;
-      if (abs(p) < threshold) sum += p;
-      y[i * ystride + j] = yy + ((5 * sum + 8) >> 4);
-    }
-  }
-}
-
 /* This table approximates x^0.16 with the index being log2(x). It is clamped
    to [-.5, 3]. The table is computed as:
    round(256*min(3, max(.5, 1.08*(sqrt(2)*2.^([0:17]+8)/256/256).^.16))) */
@@ -303,12 +245,6 @@ void od_dering(int16_t *y, int16_t *in, int xdec,
   od_filter_dering_direction_func filter_dering_direction[OD_DERINGSIZES] = {
     od_filter_dering_direction_4x4, od_filter_dering_direction_8x8
   };
-#ifndef CONFIG_CLPF
-  int filter2_thresh[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS];
-  od_filter_dering_orthogonal_func filter_dering_orthogonal[OD_DERINGSIZES] = {
-    od_filter_dering_orthogonal_4x4, od_filter_dering_orthogonal_8x8
-  };
-#endif
   bsize = OD_DERING_SIZE_LOG2 - xdec;
   if (pli == 0) {
     for (bi = 0; bi < dering_count; bi++) {
@@ -317,46 +253,29 @@ void od_dering(int16_t *y, int16_t *in, int xdec,
       bx = dlist[bi].bx;
       dir[by][bx] = od_dir_find8(&in[8 * by * OD_FILT_BSTRIDE + 8 * bx],
                                  OD_FILT_BSTRIDE, &var, coeff_shift);
-/* Deringing orthogonal to the direction uses a tighter threshold
-   because we want to be conservative. We've presumably already
-   achieved some deringing, so the amount of change is expected
-   to be low. Also, since we might be filtering across an edge, we
-   want to make sure not to blur it. That being said, we might want
-   to be a little bit more aggressive on pure horizontal/vertical
-   since the ringing there tends to be directional, so it doesn't
-   get removed by the directional filtering. */
-#ifndef CONFIG_CLPF
-      filter2_thresh[by][bx] =
-#endif
-          (filter_dering_direction[bsize - OD_LOG_BSIZE0])(
-              &y[bi << 2 * bsize], 1 << bsize,
-              &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)],
-              od_adjust_thresh(threshold, var), dir[by][bx]);
+      /* Deringing orthogonal to the direction uses a tighter threshold
+         because we want to be conservative. We've presumably already
+         achieved some deringing, so the amount of change is expected
+         to be low. Also, since we might be filtering across an edge, we
+         want to make sure not to blur it. That being said, we might want
+         to be a little bit more aggressive on pure horizontal/vertical
+         since the ringing there tends to be directional, so it doesn't
+         get removed by the directional filtering. */
+      (filter_dering_direction[bsize - OD_LOG_BSIZE0])(
+          &y[bi << 2 * bsize], 1 << bsize,
+          &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)],
+          od_adjust_thresh(threshold, var), dir[by][bx]);
     }
   } else {
     for (bi = 0; bi < dering_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
-#ifndef CONFIG_CLPF
-      filter2_thresh[by][bx] =
-#endif
-          (filter_dering_direction[bsize - OD_LOG_BSIZE0])(
-              &y[bi << 2 * bsize], 1 << bsize,
-              &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)], threshold,
-              dir[by][bx]);
+      (filter_dering_direction[bsize - OD_LOG_BSIZE0])(
+          &y[bi << 2 * bsize], 1 << bsize,
+          &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)], threshold,
+          dir[by][bx]);
     }
   }
   copy_dering_16bit_to_16bit(in, OD_FILT_BSTRIDE, y, dlist, dering_count,
                              bsize);
-#ifndef CONFIG_CLPF
-  for (bi = 0; bi < dering_count; bi++) {
-    by = dlist[bi].by;
-    bx = dlist[bi].bx;
-    if (filter2_thresh[by][bx] == 0) continue;
-    (filter_dering_orthogonal[bsize - OD_LOG_BSIZE0])(
-        &y[bi << 2 * bsize], 1 << bsize,
-        &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)],
-        filter2_thresh[by][bx], dir[by][bx]);
-  }
-#endif
 }

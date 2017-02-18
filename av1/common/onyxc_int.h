@@ -166,7 +166,7 @@ typedef struct AV1Common {
   // Marks if we need to use 16bit frame buffers (1: yes, 0: no).
   int use_highbitdepth;
 #endif
-#if CONFIG_CLPF
+#if CONFIG_CDEF
   // Two bits are used to signal the strength for all blocks and the
   // valid values are:
   // 0: no filtering
@@ -408,7 +408,7 @@ typedef struct AV1Common {
   BLOCK_SIZE sb_size;  // Size of the superblock used for this frame
   int mib_size;        // Size of the superblock in units of MI blocks
   int mib_size_log2;   // Log 2 of above.
-#if CONFIG_DERING
+#if CONFIG_CDEF
   int dering_level;
 #endif
 

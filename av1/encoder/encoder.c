@@ -16,14 +16,12 @@
 #include "./aom_config.h"
 
 #include "av1/common/alloccommon.h"
-#if CONFIG_CLPF
+#if CONFIG_CDEF
 #include "aom/aom_image.h"
 #include "av1/common/clpf.h"
 #include "av1/encoder/clpf_rdo.h"
-#endif
-#if CONFIG_DERING
 #include "av1/common/dering.h"
-#endif  // CONFIG_DERING
+#endif  // CONFIG_CDEF
 #include "av1/common/filter.h"
 #include "av1/common/idct.h"
 #include "av1/common/reconinter.h"
@@ -3491,7 +3489,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
       av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
 #endif
   }
-#if CONFIG_DERING
+#if CONFIG_CDEF
   if (is_lossless_requested(&cpi->oxcf)) {
     cm->dering_level = 0;
   } else {
@@ -3499,9 +3497,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
         av1_dering_search(cm->frame_to_show, cpi->Source, cm, xd);
     av1_dering_frame(cm->frame_to_show, cm, xd, cm->dering_level);
   }
-#endif  // CONFIG_DERING
-
-#if CONFIG_CLPF
   cm->clpf_strength_y = cm->clpf_strength_u = cm->clpf_strength_v = 0;
   cm->clpf_size = CLPF_64X64;
 
@@ -4909,7 +4904,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   if (cm->show_frame) dump_filtered_recon_frames(cpi);
 #endif  // DUMP_RECON_FRAMES
 
-#if CONFIG_CLPF
+#if CONFIG_CDEF
   aom_free(cm->clpf_blocks);
   cm->clpf_blocks = 0;
 #endif

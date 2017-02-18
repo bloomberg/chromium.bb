@@ -41,9 +41,6 @@ typedef struct {
 typedef int (*od_filter_dering_direction_func)(int16_t *y, int ystride,
                                                const int16_t *in, int threshold,
                                                int dir);
-typedef void (*od_filter_dering_orthogonal_func)(int16_t *y, int ystride,
-                                                 const int16_t *in,
-                                                 int threshold, int dir);
 void copy_dering_16bit_to_16bit(int16_t *dst, int dstride, int16_t *src,
                                 dering_list *dlist, int dering_count,
                                 int bsize);
@@ -56,10 +53,4 @@ int od_filter_dering_direction_4x4_c(int16_t *y, int ystride, const int16_t *in,
                                      int threshold, int dir);
 int od_filter_dering_direction_8x8_c(int16_t *y, int ystride, const int16_t *in,
                                      int threshold, int dir);
-void od_filter_dering_orthogonal_4x4_c(int16_t *y, int ystride,
-                                       const int16_t *in, int threshold,
-                                       int dir);
-void od_filter_dering_orthogonal_8x8_c(int16_t *y, int ystride,
-                                       const int16_t *in, int threshold,
-                                       int dir);
 #endif

@@ -28,14 +28,12 @@
 #include "aom_util/aom_thread.h"
 
 #include "av1/common/alloccommon.h"
-#if CONFIG_CLPF
+#if CONFIG_CDEF
 #include "aom/aom_image.h"
 #include "av1/common/clpf.h"
+#include "av1/common/dering.h"
 #endif
 #include "av1/common/common.h"
-#if CONFIG_DERING
-#include "av1/common/dering.h"
-#endif  // CONFIG_DERING
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
 #include "av1/common/entropymv.h"
@@ -1949,7 +1947,7 @@ static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
   }
 }
 #endif  // CONFIG_SUPERTX
-#if CONFIG_CLPF
+#if CONFIG_CDEF
 static int clpf_all_skip(const AV1_COMMON *cm, int mi_col, int mi_row,
                          int size) {
   int r, c;
@@ -2318,7 +2316,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     update_partition_context(xd, mi_row, mi_col, subsize, bsize);
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_DERING
+#if CONFIG_CDEF
 #if CONFIG_EXT_PARTITION
   if (cm->sb_size == BLOCK_128X128 && bsize == BLOCK_128X128) {
     if (cm->dering_level != 0 && !sb_all_skip(cm, mi_row, mi_col)) {
@@ -2340,9 +2338,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
           0;
     }
   }
-#endif
-
-#if CONFIG_CLPF
 #if CONFIG_EXT_PARTITION
   if (cm->sb_size == BLOCK_128X128 && bsize == BLOCK_128X128 &&
       cm->clpf_strength_y && cm->clpf_size != CLPF_NOSIZE) {
@@ -2420,7 +2415,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
         cm->clpf_blocks[br] = aom_read_literal(r, 1, ACCT_STR);
     }
   }
-#endif  // CONFIG_CLPF
+#endif  // CONFIG_CDEF
 }
 
 static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
@@ -2694,7 +2689,7 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   }
 }
 
-#if CONFIG_CLPF
+#if CONFIG_CDEF
 static void setup_clpf(AV1Decoder *pbi, struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
   const int width = pbi->cur_buf->buf.y_crop_width;
@@ -2727,13 +2722,11 @@ static int clpf_bit(UNUSED int k, UNUSED int l,
                     UNUSED unsigned int fb_size_log2, int8_t *bit) {
   return *bit;
 }
-#endif
 
-#if CONFIG_DERING
 static void setup_dering(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   cm->dering_level = aom_rb_read_literal(rb, DERING_LEVEL_BITS);
 }
-#endif  // CONFIG_DERING
+#endif  // CONFIG_CDEF
 
 static INLINE int read_delta_q(struct aom_read_bit_buffer *rb) {
   return aom_rb_read_bit(rb) ? aom_rb_read_inv_signed_literal(rb, 6) : 0;
@@ -4326,10 +4319,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_EXT_PARTITION
 
   setup_loopfilter(cm, rb);
-#if CONFIG_DERING
+#if CONFIG_CDEF
   setup_dering(cm, rb);
-#endif
-#if CONFIG_CLPF
   setup_clpf(pbi, rb);
 #endif
 #if CONFIG_LOOP_RESTORATION
@@ -4957,13 +4948,10 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   }
 #endif  // CONFIG_LOOP_RESTORATION
 
-#if CONFIG_DERING
+#if CONFIG_CDEF
   if (cm->dering_level && !cm->skip_loop_filter) {
     av1_dering_frame(&pbi->cur_buf->buf, cm, &pbi->mb, cm->dering_level);
   }
-#endif  // CONFIG_DERING
-
-#if CONFIG_CLPF
   if (!cm->skip_loop_filter) {
     const YV12_BUFFER_CONFIG *const frame = &pbi->cur_buf->buf;
     if (cm->clpf_strength_y) {

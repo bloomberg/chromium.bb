@@ -442,7 +442,7 @@ set(AOM_AV1_COMMON_SSSE3_INTRIN
 set(AOM_AV1_COMMON_SSE4_1_INTRIN
     # Requires CONFIG_FILTER_INTRA
     #"${AOM_ROOT}/av1/common/x86/filterintra_sse4.c"
-    # Requires CONFIG_DERING
+    # Requires CONFIG_CDEF
     #"${AOM_ROOT}/av1/common/x86/od_dering_sse4.c"
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm1d_sse4.c"
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm2d_sse4.c")
@@ -611,7 +611,7 @@ if (CONFIG_ANS)
   list(REMOVE_ITEM AOM_UNIT_TEST_SOURCES "${AOM_ROOT}/test/boolcoder_test.cc")
 endif ()
 
-if (CONFIG_CLPF)
+if (CONFIG_CDEF)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
       "${AOM_ROOT}/av1/common/clpf.c"

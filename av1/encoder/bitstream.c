@@ -23,12 +23,10 @@
 #include "aom_util/debug_util.h"
 #endif  // CONFIG_BITSTREAM_DEBUG
 
-#if CONFIG_CLPF
+#if CONFIG_CDEF
 #include "av1/common/clpf.h"
-#endif
-#if CONFIG_DERING
 #include "av1/common/dering.h"
-#endif  // CONFIG_DERING
+#endif  // CONFIG_CDEF
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
 #include "av1/common/entropymv.h"
@@ -2672,7 +2670,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
     update_partition_context(xd, mi_row, mi_col, subsize, bsize);
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_DERING
+#if CONFIG_CDEF
 #if CONFIG_EXT_PARTITION
   if (cm->sb_size == BLOCK_128X128 && bsize == BLOCK_128X128 &&
       cm->dering_level != 0 && !sb_all_skip(cm, mi_row, mi_col)) {
@@ -2692,7 +2690,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
   }
 #endif
 
-#if CONFIG_CLPF
+#if CONFIG_CDEF
 #if CONFIG_EXT_PARTITION
   if (cm->sb_size == BLOCK_128X128 && bsize == BLOCK_128X128 &&
       cm->clpf_blocks && cm->clpf_strength_y && cm->clpf_size != CLPF_NOSIZE) {
@@ -2763,7 +2761,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
         cm->clpf_blocks[br] != CLPF_NOFLAG)
       aom_write_literal(w, cm->clpf_blocks[br], 1);
   }
-#endif  // CONFIG_CLPF
+#endif  // CONFIG_CDEF
 }
 
 static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
@@ -3491,7 +3489,7 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   }
 }
 
-#if CONFIG_CLPF
+#if CONFIG_CDEF
 static void encode_clpf(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   aom_wb_write_literal(wb, cm->clpf_strength_y, 2);
   aom_wb_write_literal(wb, cm->clpf_strength_u, 2);
@@ -3502,11 +3500,11 @@ static void encode_clpf(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 }
 #endif
 
-#if CONFIG_DERING
+#if CONFIG_CDEF
 static void encode_dering(int level, struct aom_write_bit_buffer *wb) {
   aom_wb_write_literal(wb, level, DERING_LEVEL_BITS);
 }
-#endif  // CONFIG_DERING
+#endif  // CONFIG_CDEF
 
 static void write_delta_q(struct aom_write_bit_buffer *wb, int delta_q) {
   if (delta_q != 0) {
@@ -4443,10 +4441,8 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 #endif  // CONFIG_EXT_PARTITION
 
   encode_loopfilter(cm, wb);
-#if CONFIG_DERING
+#if CONFIG_CDEF
   encode_dering(cm->dering_level, wb);
-#endif  // CONFIG_DERING
-#if CONFIG_CLPF
   encode_clpf(cm, wb);
 #endif
 #if CONFIG_LOOP_RESTORATION
