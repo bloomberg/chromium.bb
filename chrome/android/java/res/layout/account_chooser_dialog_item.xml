@@ -18,10 +18,11 @@
         android:layout_height="40dp"
         android:contentDescription="@null"/>
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:layout_marginStart="16dp"
+        android:layout_weight="1"
         android:orientation="vertical">
         <TextView
             android:id="@+id/main_name"
@@ -42,11 +43,6 @@
             android:textColor="@color/descriptive_text_color"
             android:textSize="@dimen/account_chooser_dialog_title_descriptive_text_size"/>
     </LinearLayout>
-    <!-- Needed to make the following ImageButton align to the right. -->
-    <Space
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
     <ImageButton
         android:id="@+id/psl_info_btn"
         android:layout_height="wrap_content"
