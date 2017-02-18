@@ -70,6 +70,34 @@ using CacheEntryStatus = HttpResponseInfo::CacheEntryStatus;
 
 namespace {
 
+// Returns a simple text serialization of the given
+// |HttpResponseHeaders|. This is used by tests to verify that an
+// |HttpResponseHeaders| matches an expectation string.
+//
+//  * One line per header, written as:
+//        HEADER_NAME: HEADER_VALUE\n
+//  * The original case of header names is preserved.
+//  * Whitespace around head names/values is stripped.
+//  * Repeated headers are not aggregated.
+//  * Headers are listed in their original order.
+// TODO(tfarina): this is a duplicate function from
+// http_response_headers_unittest.cc:ToSimpleString(). Figure out how to merge
+// them. crbug.com/488593
+std::string ToSimpleString(const scoped_refptr<HttpResponseHeaders>& parsed) {
+  std::string result = parsed->GetStatusLine() + "\n";
+
+  size_t iter = 0;
+  std::string name;
+  std::string value;
+  while (parsed->EnumerateHeaderLines(&iter, &name, &value)) {
+    std::string new_line = name + ": " + value + "\n";
+
+    result += new_line;
+  }
+
+  return result;
+}
+
 // Tests the load timing values of a request that goes through a
 // MockNetworkTransaction.
 void TestLoadTimingNetworkRequest(const LoadTimingInfo& load_timing_info) {
@@ -262,7 +290,7 @@ void RunTransactionTestWithResponse(HttpCache* cache,
                                     std::string* response_headers) {
   HttpResponseInfo response;
   RunTransactionTestWithResponseInfo(cache, trans_info, &response);
-  response.headers->GetNormalizedHeaders(response_headers);
+  *response_headers = ToSimpleString(response.headers);
 }
 
 void RunTransactionTestWithResponseAndGetTiming(
@@ -275,7 +303,7 @@ void RunTransactionTestWithResponseAndGetTiming(
   RunTransactionTestBase(cache, trans_info, MockHttpRequest(trans_info),
                          &response, log, load_timing_info, nullptr, nullptr,
                          nullptr);
-  response.headers->GetNormalizedHeaders(response_headers);
+  *response_headers = ToSimpleString(response.headers);
 }
 
 // This class provides a handler for kFastNoStoreGET_Transaction so that the
@@ -6734,13 +6762,10 @@ TEST(HttpCache, UpdatesRequestResponseTimeOn304) {
   EXPECT_EQ(response_time.ToInternalValue(),
             response.response_time.ToInternalValue());
 
-  std::string headers;
-  response.headers->GetNormalizedHeaders(&headers);
-
   EXPECT_EQ("HTTP/1.1 200 OK\n"
             "Date: Wed, 22 Jul 2009 03:15:26 GMT\n"
             "Last-Modified: Wed, 06 Feb 2008 22:38:21 GMT\n",
-            headers);
+            ToSimpleString(response.headers));
 
   RemoveMockTransaction(&mock_network_response);
 }

@@ -95,18 +95,14 @@ void ParseJsonOnBlockingPool(
 // Returns response headers as a string. Returns a warning message if
 // |url_fetcher| does not contain a valid response. Used only for debugging.
 std::string GetResponseHeadersAsString(const URLFetcher* url_fetcher) {
-  // net::HttpResponseHeaders::raw_headers(), as the name implies, stores
-  // all headers in their raw format, i.e each header is null-terminated.
-  // So logging raw_headers() only shows the first header, which is probably
-  // the status line.  GetNormalizedHeaders, on the other hand, will show all
-  // the headers, one per line, which is probably what we want.
   std::string headers;
   // Check that response code indicates response headers are valid (i.e. not
   // malformed) before we retrieve the headers.
   if (url_fetcher->GetResponseCode() == URLFetcher::RESPONSE_CODE_INVALID) {
     headers.assign("Response headers are malformed!!");
   } else {
-    url_fetcher->GetResponseHeaders()->GetNormalizedHeaders(&headers);
+    headers = net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+        url_fetcher->GetResponseHeaders()->raw_headers());
   }
   return headers;
 }

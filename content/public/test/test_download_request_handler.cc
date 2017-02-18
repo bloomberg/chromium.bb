@@ -24,6 +24,7 @@
 #include "net/base/io_buffer.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 
@@ -477,8 +478,9 @@ void TestDownloadRequestHandler::PartialResponseJob::AddCommonEntityHeaders() {
 
 void TestDownloadRequestHandler::PartialResponseJob::
     NotifyHeadersCompleteAndPrepareToRead() {
-  std::string normalized_headers;
-  response_info_.headers->GetNormalizedHeaders(&normalized_headers);
+  std::string normalized_headers =
+      net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+          response_info_.headers->raw_headers());
   DVLOG(1) << "Notify ready with headers:\n" << normalized_headers;
 
   offset_of_next_read_ = requested_range_begin_;

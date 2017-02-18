@@ -25,6 +25,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -953,7 +954,8 @@ void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 #ifndef NDEBUG
   std::string headers;
   if (source->GetResponseHeaders())
-    source->GetResponseHeaders()->GetNormalizedHeaders(&headers);
+    headers = net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+        source->GetResponseHeaders()->raw_headers());
   DVLOG(2) << "Response " << url.spec() << ", code = " << response_code << "\n"
            << headers << "\n";
   DVLOG(2) << "data: " << data << "\n";
