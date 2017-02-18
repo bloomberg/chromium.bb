@@ -441,6 +441,9 @@ class SigninScreenHandler
   // Called when the cros property controlling allowed input methods changes.
   void OnAllowedInputMethodsChanged();
 
+  // Update the keyboard settings for |account_id|.
+  void SetKeyboardSettings(const AccountId& account_id);
+
   // Current UI state of the signin screen.
   UIState ui_state_ = UI_STATE_UNKNOWN;
 

@@ -270,7 +270,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kLanguageSendFunctionKeys, false);
   registry->RegisterBooleanPref(
       prefs::kLanguageXkbAutoRepeatEnabled,
-      true,
+      language_prefs::kXkbAutoRepeatEnabled,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kLanguageXkbAutoRepeatDelay,
@@ -622,6 +622,9 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       input_method::InputMethodManager::Get()
           ->GetImeKeyboard()
           ->SetAutoRepeatEnabled(enabled);
+
+      user_manager::known_user::SetBooleanPref(
+          user_->GetAccountId(), prefs::kLanguageXkbAutoRepeatEnabled, enabled);
     }
   }
   if (reason != REASON_PREF_CHANGED ||
@@ -786,6 +789,13 @@ void Preferences::UpdateAutoRepeatRate() {
   input_method::InputMethodManager::Get()
       ->GetImeKeyboard()
       ->SetAutoRepeatRate(rate);
+
+  user_manager::known_user::SetIntegerPref(user_->GetAccountId(),
+                                           prefs::kLanguageXkbAutoRepeatDelay,
+                                           rate.initial_delay_in_ms);
+  user_manager::known_user::SetIntegerPref(
+      user_->GetAccountId(), prefs::kLanguageXkbAutoRepeatInterval,
+      rate.repeat_interval_in_ms);
 }
 
 void Preferences::OnTouchHudProjectionToggled(bool enabled) {

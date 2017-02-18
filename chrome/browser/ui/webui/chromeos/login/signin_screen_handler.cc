@@ -35,6 +35,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -1438,6 +1439,7 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id) {
         account_id);
   } else {
     SetUserInputMethod(account_id.GetUserEmail(), ime_state_.get());
+    SetKeyboardSettings(account_id);
     WallpaperManager::Get()->SetUserWallpaperDelayed(account_id);
 
     bool use_24hour_clock = false;
@@ -1611,6 +1613,34 @@ void SigninScreenHandler::OnAllowedInputMethodsChanged() {
   } else {
     EnforcePolicyInputMethods(std::string());
   }
+}
+
+void SigninScreenHandler::SetKeyboardSettings(const AccountId& account_id) {
+  bool auto_repeat_enabled = language_prefs::kXkbAutoRepeatEnabled;
+  if (user_manager::known_user::GetBooleanPref(
+          account_id, prefs::kLanguageXkbAutoRepeatEnabled,
+          &auto_repeat_enabled) &&
+      !auto_repeat_enabled) {
+    input_method::InputMethodManager::Get()
+        ->GetImeKeyboard()
+        ->SetAutoRepeatEnabled(false);
+    return;
+  }
+
+  int auto_repeat_delay = language_prefs::kXkbAutoRepeatDelayInMs;
+  int auto_repeat_interval = language_prefs::kXkbAutoRepeatIntervalInMs;
+  user_manager::known_user::GetIntegerPref(
+      account_id, prefs::kLanguageXkbAutoRepeatDelay, &auto_repeat_delay);
+  user_manager::known_user::GetIntegerPref(
+      account_id, prefs::kLanguageXkbAutoRepeatInterval, &auto_repeat_interval);
+  input_method::AutoRepeatRate rate;
+  rate.initial_delay_in_ms = auto_repeat_delay;
+  rate.repeat_interval_in_ms = auto_repeat_interval;
+  input_method::InputMethodManager::Get()
+      ->GetImeKeyboard()
+      ->SetAutoRepeatEnabled(true);
+  input_method::InputMethodManager::Get()->GetImeKeyboard()->SetAutoRepeatRate(
+      rate);
 }
 
 }  // namespace chromeos

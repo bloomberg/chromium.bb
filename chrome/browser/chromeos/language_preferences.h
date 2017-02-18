@@ -25,6 +25,8 @@ extern const char kPreloadEnginesConfigName[];
 // ---------------------------------------------------------------------------
 // For keyboard stuff
 // ---------------------------------------------------------------------------
+// A flag indicating whether the keyboard auto repeat is enabled.
+extern const bool kXkbAutoRepeatEnabled;
 // A delay between the first and the start of the rest.
 extern const int kXkbAutoRepeatDelayInMs;
 // An interval between the repeated keys.

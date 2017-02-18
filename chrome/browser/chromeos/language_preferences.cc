@@ -17,6 +17,7 @@ const char kPreloadEnginesConfigName[] = "preload_engines";
 // ---------------------------------------------------------------------------
 // For keyboard stuff
 // ---------------------------------------------------------------------------
+const bool kXkbAutoRepeatEnabled = true;
 const int kXkbAutoRepeatDelayInMs = 500;
 const int kXkbAutoRepeatIntervalInMs = 50;
 const char kPreferredKeyboardLayout[] = "PreferredKeyboardLayout";
