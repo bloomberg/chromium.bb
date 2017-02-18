@@ -1727,8 +1727,6 @@ crbug.com/579493 virtual/mojo-loading/http/tests/security/xss-DENIED-xsl-documen
 crbug.com/572723 inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
-crbug.com/155836 fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
-
 crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
 crbug.com/577380 [ Linux Debug ] virtual/mojo-loading/http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
 
@@ -2250,9 +2248,6 @@ crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-m
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/events.html [ Pass Failure ]
 crbug.com/664839 virtual/mojo-loading/http/tests/security/link-crossorigin-preload-no-cors.html [ Pass Failure ]
-
-crbug.com/686478 fast/text/ellipsis-with-list-marker-in-ltr-flow.html [ NeedsRebaseline ]
-crbug.com/686478 fast/text/ellipsis-with-list-marker-in-rtl-flow.html [ NeedsRebaseline ]
 
 # Possible duplicate of crbug.com/498539
 # crbug.com/664843 inspector/elements/styles-4/styles-update-from-js.html [ Pass Failure ]
