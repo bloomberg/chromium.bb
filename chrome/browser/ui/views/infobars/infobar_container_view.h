@@ -26,6 +26,7 @@ class InfoBarContainerView : public views::AccessiblePaneView,
   const char* GetClassName() const override;
   void Layout() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // InfobarContainer:
   void PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,

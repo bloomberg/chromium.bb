@@ -122,6 +122,14 @@ void InfoBarContainerView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_INFOBAR_CONTAINER));
 }
 
+void InfoBarContainerView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  // Infobars must be redrawn when the NativeTheme changes because
+  // they have a border with color COLOR_TOOLBAR_BOTTOM_SEPARATOR,
+  // which might have changed.
+  for (int i = 0; i < child_count(); ++i)
+    child_at(i)->SchedulePaint();
+}
+
 void InfoBarContainerView::PlatformSpecificAddInfoBar(
     infobars::InfoBar* infobar,
     size_t position) {
