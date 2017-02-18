@@ -1,2 +1,0 @@
--e ..
--r requirements.txt
