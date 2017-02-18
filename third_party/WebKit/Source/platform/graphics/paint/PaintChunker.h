@@ -38,8 +38,8 @@ class PLATFORM_EXPORT PaintChunker final {
 
   // Returns true if a new chunk is created.
   bool incrementDisplayItemIndex(const DisplayItem&);
-  // Returns true if the last chunk is removed.
-  bool decrementDisplayItemIndex();
+
+  void decrementDisplayItemIndex();
 
   PaintChunk& paintChunkAt(size_t i) { return m_chunks[i]; }
   size_t lastChunkIndex() const {
