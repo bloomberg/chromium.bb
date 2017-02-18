@@ -16,10 +16,11 @@
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shared/immersive_fullscreen_controller_delegate.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
@@ -40,7 +41,7 @@ namespace {
 // windows.
 class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
                                               public wm::WindowStateObserver,
-                                              public WmWindowObserver {
+                                              public aura::WindowObserver {
  public:
   CustomFrameViewAshWindowStateDelegate(wm::WindowState* window_state,
                                         CustomFrameViewAsh* custom_frame_view,
@@ -53,7 +54,7 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
     // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
     window_state_ = window_state;
     window_state_->AddObserver(this);
-    window_state_->window()->AddObserver(this);
+    window_state_->window()->aura_window()->AddObserver(this);
 
     if (!enable_immersive)
       return;
@@ -68,7 +69,7 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
   ~CustomFrameViewAshWindowStateDelegate() override {
     if (window_state_) {
       window_state_->RemoveObserver(this);
-      window_state_->window()->RemoveObserver(this);
+      window_state_->window()->aura_window()->RemoveObserver(this);
     }
   }
 
@@ -86,8 +87,8 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
     }
     return true;
   }
-  // Overridden from WmWindowObserver:
-  void OnWindowDestroying(WmWindow* window) override {
+  // Overridden from aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
     window_state_->RemoveObserver(this);
     window->RemoveObserver(this);
     window_state_ = nullptr;

@@ -6,11 +6,11 @@
 #define ASH_COMMON_DEVTOOLS_ASH_DEVTOOLS_DOM_AGENT_H_
 
 #include "ash/common/wm_shell.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/devtools_base_agent.h"
+#include "ui/aura/window_observer.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
@@ -30,7 +30,7 @@ class ASH_EXPORT AshDevToolsDOMAgentObserver {
 class ASH_EXPORT AshDevToolsDOMAgent
     : public NON_EXPORTED_BASE(ui::devtools::UiDevToolsBaseAgent<
                                ui::devtools::protocol::DOM::Metainfo>),
-      public WmWindowObserver,
+      public aura::WindowObserver,
       public views::WidgetObserver,
       public views::WidgetRemovalsObserver,
       public views::ViewObserver {
@@ -49,12 +49,10 @@ class ASH_EXPORT AshDevToolsDOMAgent
   ui::devtools::protocol::Response hideHighlight() override;
 
   // WindowObserver
-  void OnWindowTreeChanging(WmWindow* window,
-                            const TreeChangeParams& params) override;
-  void OnWindowTreeChanged(WmWindow* window,
-                           const TreeChangeParams& params) override;
-  void OnWindowStackingChanged(WmWindow* window) override;
-  void OnWindowBoundsChanged(WmWindow* window,
+  void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
+  void OnWindowStackingChanged(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 

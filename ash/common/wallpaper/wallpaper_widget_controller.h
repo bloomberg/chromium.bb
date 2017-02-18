@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "ui/aura/window_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace ash {
@@ -22,7 +22,7 @@ class WmWindow;
 // When the animation completes the old WallpaperWidgetController is
 // destroyed. Exported for tests.
 class ASH_EXPORT WallpaperWidgetController : public views::WidgetObserver,
-                                             public WmWindowObserver {
+                                             public aura::WindowObserver {
  public:
   explicit WallpaperWidgetController(views::Widget* widget);
   ~WallpaperWidgetController() override;
@@ -48,8 +48,8 @@ class ASH_EXPORT WallpaperWidgetController : public views::WidgetObserver,
  private:
   void RemoveObservers();
 
-  // WmWindowObserver:
-  void OnWindowBoundsChanged(WmWindow* window,
+  // aura::WindowObserver:
+  void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 

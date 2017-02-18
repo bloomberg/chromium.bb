@@ -9,8 +9,8 @@
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/common/wm/wm_types.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -34,7 +34,7 @@ class WMEvent;
 // with LockWindowState.
 class ASH_EXPORT LockLayoutManager
     : public wm::WmSnapToPixelLayoutManager,
-      public WmWindowObserver,
+      public aura::WindowObserver,
       public ShellObserver,
       public keyboard::KeyboardControllerObserver {
  public:
@@ -50,9 +50,9 @@ class ASH_EXPORT LockLayoutManager
   void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // Overriden from WmWindowObserver:
-  void OnWindowDestroying(WmWindow* window) override;
-  void OnWindowBoundsChanged(WmWindow* window,
+  // Overriden from aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 

@@ -14,15 +14,17 @@
 #include "ash/common/wm/wm_types.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_layout_manager.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ash {
+
 class RootWindowController;
 class WmShell;
+class WmWindow;
 class WorkspaceLayoutManagerBackdropDelegate;
 
 namespace wm {
@@ -32,7 +34,7 @@ class WMEvent;
 // LayoutManager used on the window created for a workspace.
 class ASH_EXPORT WorkspaceLayoutManager
     : public WmLayoutManager,
-      public WmWindowObserver,
+      public aura::WindowObserver,
       public WmActivationObserver,
       public keyboard::KeyboardControllerObserver,
       public display::DisplayObserver,
@@ -58,15 +60,14 @@ class ASH_EXPORT WorkspaceLayoutManager
   void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // Overriden from WmWindowObserver:
-  void OnWindowTreeChanged(
-      WmWindow* window,
-      const WmWindowObserver::TreeChangeParams& params) override;
-  void OnWindowPropertyChanged(WmWindow* window,
-                               WmWindowProperty property) override;
-  void OnWindowStackingChanged(WmWindow* window) override;
-  void OnWindowDestroying(WmWindow* window) override;
-  void OnWindowBoundsChanged(WmWindow* window,
+  // Overriden from aura::WindowObserver:
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+  void OnWindowStackingChanged(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 

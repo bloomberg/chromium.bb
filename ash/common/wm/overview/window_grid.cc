@@ -25,6 +25,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/ptr_util.h"
@@ -290,7 +291,7 @@ WindowGrid::WindowGrid(WmWindow* root_window,
   }
 
   for (auto* window : windows_in_root) {
-    window_observer_.Add(window);
+    window_observer_.Add(window->aura_window());
     window_state_observer_.Add(window->GetWindowState());
     window_list_.push_back(
         base::MakeUnique<WindowSelectorItem>(window, window_selector_));
@@ -568,11 +569,11 @@ void WindowGrid::WindowClosing(WindowSelectorItem* window) {
   selection_widget_->SetOpacity(0.f);
 }
 
-void WindowGrid::OnWindowDestroying(WmWindow* window) {
+void WindowGrid::OnWindowDestroying(aura::Window* window) {
   window_observer_.Remove(window);
-  window_state_observer_.Remove(window->GetWindowState());
+  window_state_observer_.Remove(wm::GetWindowState(window));
   auto iter = std::find_if(window_list_.begin(), window_list_.end(),
-                           WindowSelectorItemComparator(window));
+                           WindowSelectorItemComparator(WmWindow::Get(window)));
 
   DCHECK(iter != window_list_.end());
 
@@ -599,7 +600,7 @@ void WindowGrid::OnWindowDestroying(WmWindow* window) {
   PositionWindows(true);
 }
 
-void WindowGrid::OnWindowBoundsChanged(WmWindow* window,
+void WindowGrid::OnWindowBoundsChanged(aura::Window* window,
                                        const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds) {
   // During preparation, window bounds can change. Ignore bounds
@@ -608,11 +609,12 @@ void WindowGrid::OnWindowBoundsChanged(WmWindow* window,
     return;
 
   auto iter = std::find_if(window_list_.begin(), window_list_.end(),
-                           WindowSelectorItemComparator(window));
+                           WindowSelectorItemComparator(WmWindow::Get(window)));
   DCHECK(iter != window_list_.end());
 
   // Immediately finish any active bounds animation.
-  window->StopAnimatingProperty(ui::LayerAnimationElement::BOUNDS);
+  window->layer()->GetAnimator()->StopAnimatingProperty(
+      ui::LayerAnimationElement::BOUNDS);
   PositionWindows(false);
 }
 

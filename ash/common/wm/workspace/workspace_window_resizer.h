@@ -12,20 +12,20 @@
 
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/workspace/magnetism_matcher.h"
-#include "ash/common/wm_window_tracker.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/aura/window_tracker.h"
 
 namespace ash {
 class DockedWindowLayoutManager;
 class PhantomWindowController;
 class TwoStepEdgeCycler;
 class WindowSize;
+class WmShell;
 
 namespace wm {
 class WindowState;
-class WmShell;
 }
 
 // WindowResizer implementation for workspaces. This enforces that windows are
@@ -209,7 +209,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   WmWindow* magnetism_window_;
 
   // Used to verify |magnetism_window_| is still valid.
-  WmWindowTracker window_tracker_;
+  aura::WindowTracker window_tracker_;
 
   // If |magnetism_window_| is non-NULL this indicates how the two windows
   // should attach.

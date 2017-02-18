@@ -13,8 +13,8 @@
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 
 namespace ash {
@@ -31,7 +31,7 @@ class MaximizeModeEventHandler;
 // behind the window so that no other windows are visible and/or obscured.
 // With the destruction of the manager all windows will be restored to their
 // original state.
-class ASH_EXPORT MaximizeModeWindowManager : public WmWindowObserver,
+class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
                                              public display::DisplayObserver,
                                              public ShellObserver {
  public:
@@ -55,15 +55,15 @@ class ASH_EXPORT MaximizeModeWindowManager : public WmWindowObserver,
   void OnOverviewModeEnded() override;
 
   // Overridden from WindowObserver:
-  void OnWindowDestroying(WmWindow* window) override;
-  void OnWindowTreeChanged(WmWindow* window,
-                           const TreeChangeParams& params) override;
-  void OnWindowPropertyChanged(WmWindow* window,
-                               WmWindowProperty window_property) override;
-  void OnWindowBoundsChanged(WmWindow* window,
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+  void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
-  void OnWindowVisibilityChanged(WmWindow* window, bool visible) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // display::DisplayObserver overrides:
   void OnDisplayAdded(const display::Display& display) override;
@@ -114,7 +114,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public WmWindowObserver,
   void DisplayConfigurationChanged();
 
   // Returns true when the |window| is a container window.
-  bool IsContainerWindow(WmWindow* window);
+  bool IsContainerWindow(aura::Window* window);
 
   // Add a backdrop behind the currently active window on each desktop.
   void EnableBackdropBehindTopWindowOnEachDisplay(bool enable);
@@ -123,10 +123,10 @@ class ASH_EXPORT MaximizeModeWindowManager : public WmWindowObserver,
   WindowToState window_state_map_;
 
   // All container windows which have to be tracked.
-  std::unordered_set<WmWindow*> observed_container_windows_;
+  std::unordered_set<aura::Window*> observed_container_windows_;
 
   // Windows added to the container, but not yet shown.
-  std::unordered_set<WmWindow*> added_windows_;
+  std::unordered_set<aura::Window*> added_windows_;
 
   // True if all backdrops are hidden.
   bool backdrops_hidden_;

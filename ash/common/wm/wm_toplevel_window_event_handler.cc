@@ -10,7 +10,8 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_observer.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 
@@ -66,7 +67,7 @@ int GetWindowComponent(WmWindow* window, const ui::LocatedEvent& event) {
 // the window is destroyed ResizerWindowDestroyed() is invoked back on the
 // WmToplevelWindowEventHandler to clean up.
 class WmToplevelWindowEventHandler::ScopedWindowResizer
-    : public WmWindowObserver,
+    : public aura::WindowObserver,
       public wm::WindowStateObserver {
  public:
   ScopedWindowResizer(WmToplevelWindowEventHandler* handler,
@@ -79,7 +80,7 @@ class WmToplevelWindowEventHandler::ScopedWindowResizer
   WindowResizer* resizer() { return resizer_.get(); }
 
   // WindowObserver overrides:
-  void OnWindowDestroying(WmWindow* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // WindowStateObserver overrides:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
@@ -100,7 +101,7 @@ WmToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
     std::unique_ptr<WindowResizer> resizer)
     : handler_(handler), resizer_(std::move(resizer)), grabbed_capture_(false) {
   WmWindow* target = resizer_->GetTarget();
-  target->AddObserver(this);
+  target->aura_window()->AddObserver(this);
   target->GetWindowState()->AddObserver(this);
 
   if (!target->HasCapture()) {
@@ -111,7 +112,7 @@ WmToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
 
 WmToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
   WmWindow* target = resizer_->GetTarget();
-  target->RemoveObserver(this);
+  target->aura_window()->RemoveObserver(this);
   target->GetWindowState()->RemoveObserver(this);
   if (grabbed_capture_)
     target->ReleaseCapture();
@@ -129,8 +130,8 @@ void WmToplevelWindowEventHandler::ScopedWindowResizer::
 }
 
 void WmToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
-    WmWindow* window) {
-  DCHECK_EQ(resizer_->GetTarget(), window);
+    aura::Window* window) {
+  DCHECK_EQ(resizer_->GetTarget(), WmWindow::Get(window));
   handler_->ResizerWindowDestroyed();
 }
 

@@ -597,22 +597,22 @@ void RootWindowController::CloseChildWindows() {
 
   // Explicitly destroy top level windows. We do this because such windows may
   // query the RootWindow for state.
-  WmWindowTracker non_toplevel_windows;
+  aura::WindowTracker non_toplevel_windows;
   WmWindow* root = GetWindow();
-  non_toplevel_windows.Add(root);
+  non_toplevel_windows.Add(root->aura_window());
   while (!non_toplevel_windows.windows().empty()) {
-    WmWindow* non_toplevel_window = non_toplevel_windows.Pop();
-    WmWindowTracker toplevel_windows;
-    for (WmWindow* child : non_toplevel_window->GetChildren()) {
-      if (!ShouldDestroyWindowInCloseChildWindows(child))
+    aura::Window* non_toplevel_window = non_toplevel_windows.Pop();
+    aura::WindowTracker toplevel_windows;
+    for (aura::Window* child : non_toplevel_window->children()) {
+      if (!ShouldDestroyWindowInCloseChildWindows(WmWindow::Get(child)))
         continue;
-      if (child->HasNonClientArea())
+      if (child->delegate())
         toplevel_windows.Add(child);
       else
         non_toplevel_windows.Add(child);
     }
     while (!toplevel_windows.windows().empty())
-      toplevel_windows.Pop()->Destroy();
+      delete toplevel_windows.Pop();
   }
   // And then remove the containers.
   while (!root->GetChildren().empty()) {

@@ -22,8 +22,10 @@
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "ui/aura/env.h"
@@ -292,24 +294,25 @@ TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
   EXPECT_EQ("295,0 30x40", window->GetBoundsInScreen().ToString());
 }
 
-// WmWindowObserver implementation used by
+// aura::WindowObserver implementation used by
 // DontClobberRestoreBoundsWindowObserver. This code mirrors what
 // BrowserFrameAsh does. In particular when this code sees the window was
 // maximized it changes the bounds of a secondary window. The secondary window
 // mirrors the status window.
-class DontClobberRestoreBoundsWindowObserver : public WmWindowObserver {
+class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
  public:
   DontClobberRestoreBoundsWindowObserver() : window_(nullptr) {}
 
   void set_window(WmWindow* window) { window_ = window; }
 
-  // WmWindowObserver:
-  void OnWindowPropertyChanged(WmWindow* window,
-                               WmWindowProperty property) override {
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
     if (!window_)
       return;
 
-    if (window->GetWindowState()->IsMaximized()) {
+    if (wm::GetWindowState(window)->IsMaximized()) {
       WmWindow* w = window_;
       window_ = nullptr;
 
@@ -337,7 +340,7 @@ TEST_F(WorkspaceLayoutManagerTest, DontClobberRestoreBounds) {
   window->SetBounds(gfx::Rect(10, 20, 30, 40));
   // NOTE: for this test to exercise the failure the observer needs to be added
   // before the parent set. This mimics what BrowserFrameAsh does.
-  window->AddObserver(&window_observer);
+  window->aura_window()->AddObserver(&window_observer);
   ParentWindowInPrimaryRootWindow(window);
   window->Show();
 
@@ -353,7 +356,7 @@ TEST_F(WorkspaceLayoutManagerTest, DontClobberRestoreBounds) {
   window_observer.set_window(window2);
   window_state->Maximize();
   EXPECT_EQ("10,20 30x40", window_state->GetRestoreBoundsInScreen().ToString());
-  window->RemoveObserver(&window_observer);
+  window->aura_window()->RemoveObserver(&window_observer);
 }
 
 // Verifies when a window is maximized all descendant windows have a size.
@@ -618,8 +621,8 @@ TEST_F(WorkspaceLayoutManagerSoloTest, Minimize) {
   EXPECT_EQ(bounds.ToString(), window->GetBounds().ToString());
 }
 
-// A WmWindowObserver which sets the focus when the window becomes visible.
-class FocusDuringUnminimizeWindowObserver : public WmWindowObserver {
+// A aura::WindowObserver which sets the focus when the window becomes visible.
+class FocusDuringUnminimizeWindowObserver : public aura::WindowObserver {
  public:
   FocusDuringUnminimizeWindowObserver()
       : window_(nullptr), show_state_(ui::SHOW_STATE_END) {}
@@ -627,14 +630,14 @@ class FocusDuringUnminimizeWindowObserver : public WmWindowObserver {
 
   void SetWindow(WmWindow* window) {
     if (window_)
-      window_->RemoveObserver(this);
+      window_->aura_window()->RemoveObserver(this);
     window_ = window;
     if (window_)
-      window_->AddObserver(this);
+      window_->aura_window()->AddObserver(this);
   }
 
-  // WmWindowObserver:
-  void OnWindowVisibilityChanged(WmWindow* window, bool visible) override {
+  // aura::WindowObserver:
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
     if (window_) {
       if (visible)
         window_->SetFocused();

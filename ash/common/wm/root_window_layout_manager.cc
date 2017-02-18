@@ -5,7 +5,8 @@
 #include "ash/common/wm/root_window_layout_manager.h"
 
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_tracker.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tracker.h"
 
 namespace ash {
 namespace wm {
@@ -26,16 +27,16 @@ void RootWindowLayoutManager::OnWindowResized() {
 
   // Resize both our immediate children (the containers-of-containers animated
   // by PowerButtonController) and their children (the actual containers).
-  WmWindowTracker children_tracker(owner_->GetChildren());
+  aura::WindowTracker children_tracker(owner_->aura_window()->children());
   while (!children_tracker.windows().empty()) {
-    WmWindow* child = children_tracker.Pop();
+    aura::Window* child = children_tracker.Pop();
     // Skip descendants of top-level windows, i.e. only resize containers and
     // other windows without a delegate, such as ScreenDimmer windows.
     if (child->GetToplevelWindow())
       continue;
 
     child->SetBounds(fullscreen_bounds);
-    WmWindowTracker grandchildren_tracker(child->GetChildren());
+    aura::WindowTracker grandchildren_tracker(child->children());
     while (!grandchildren_tracker.windows().empty()) {
       child = grandchildren_tracker.Pop();
       if (!child->GetToplevelWindow())

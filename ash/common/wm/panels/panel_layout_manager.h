@@ -15,11 +15,12 @@
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
 #include "ash/common/wm_layout_manager.h"
-#include "ash/common/wm_window_observer.h"
-#include "ash/common/wm_window_tracker.h"
+#include "ash/root_window_controller.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/aura/window_observer.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
@@ -54,7 +55,7 @@ class ASH_EXPORT PanelLayoutManager
       public WmActivationObserver,
       public WmDisplayObserver,
       public ShellObserver,
-      public WmWindowObserver,
+      public aura::WindowObserver,
       public keyboard::KeyboardControllerObserver,
       public WmShelfObserver {
  public:
@@ -95,9 +96,10 @@ class ASH_EXPORT PanelLayoutManager
   void OnOverviewModeEnded() override;
   void OnShelfAlignmentChanged(WmWindow* root_window) override;
 
-  // Overridden from WmWindowObserver
-  void OnWindowPropertyChanged(WmWindow* window,
-                               WmWindowProperty property) override;
+  // Overridden from aura::WindowObserver
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   // Overridden from wm::WindowStateObserver
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
@@ -188,7 +190,7 @@ class ASH_EXPORT PanelLayoutManager
   // When not NULL, the shelf is hidden (i.e. full screen) and this tracks the
   // set of panel windows which have been temporarily hidden and need to be
   // restored when the shelf becomes visible again.
-  std::unique_ptr<WmWindowTracker> restore_windows_on_shelf_visible_;
+  std::unique_ptr<aura::WindowTracker> restore_windows_on_shelf_visible_;
 
   // The last active panel. Used to maintain stacking order even if no panels
   // are currently focused.

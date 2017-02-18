@@ -138,41 +138,41 @@ ui::devtools::protocol::Response AshDevToolsDOMAgent::hideHighlight() {
 }
 
 // Handles removing windows.
-void AshDevToolsDOMAgent::OnWindowTreeChanging(WmWindow* window,
-                                               const TreeChangeParams& params) {
-  // Only trigger this when window == params.old_parent.
+void AshDevToolsDOMAgent::OnWindowHierarchyChanging(
+    const HierarchyChangeParams& params) {
+  // Only trigger this when params.receiver == params.old_parent.
   // Only removals are handled here. Removing a node can occur as a result of
-  // reorganizing a window or just destroying it. OnWindowTreeChanged
+  // reorganizing a window or just destroying it. OnWindowHierarchyChanged
   // is only called if there is a new_parent. The only case this method isn't
   // called is when adding a node because old_parent is then null.
   // Finally, We only trigger this  0 or 1 times as an old_parent will
   // either exist and only call this callback once, or not at all.
-  if (window == params.old_parent)
-    RemoveWindowTree(params.target, true);
+  if (params.receiver == params.old_parent)
+    RemoveWindowTree(WmWindow::Get(params.target), true);
 }
 
 // Handles adding windows.
-void AshDevToolsDOMAgent::OnWindowTreeChanged(WmWindow* window,
-                                              const TreeChangeParams& params) {
-  // Only trigger this when window == params.new_parent.
+void AshDevToolsDOMAgent::OnWindowHierarchyChanged(
+    const HierarchyChangeParams& params) {
+  // Only trigger this when params.receiver == params.new_parent.
   // If there is an old_parent + new_parent, then this window's node was
-  // removed in OnWindowTreeChanging and will now be added to the new_parent.
-  // If there is only a new_parent, OnWindowTreeChanging is never called and
-  // the window is only added here.
-  if (window == params.new_parent)
-    AddWindowTree(params.target);
+  // removed in OnWindowHierarchyChanging and will now be added to the
+  // new_parent. If there is only a new_parent, OnWindowHierarchyChanging is
+  // never called and the window is only added here.
+  if (params.receiver == params.new_parent)
+    AddWindowTree(WmWindow::Get(params.target));
 }
 
-void AshDevToolsDOMAgent::OnWindowStackingChanged(WmWindow* window) {
-  RemoveWindowTree(window, false);
-  AddWindowTree(window);
+void AshDevToolsDOMAgent::OnWindowStackingChanged(aura::Window* window) {
+  RemoveWindowTree(WmWindow::Get(window), false);
+  AddWindowTree(WmWindow::Get(window));
 }
 
-void AshDevToolsDOMAgent::OnWindowBoundsChanged(WmWindow* window,
+void AshDevToolsDOMAgent::OnWindowBoundsChanged(aura::Window* window,
                                                 const gfx::Rect& old_bounds,
                                                 const gfx::Rect& new_bounds) {
   for (auto& observer : observers_)
-    observer.OnWindowBoundsChanged(window);
+    observer.OnWindowBoundsChanged(WmWindow::Get(window));
 }
 
 void AshDevToolsDOMAgent::OnWillRemoveView(views::Widget* widget,
@@ -267,8 +267,8 @@ std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForWindow(
 
   std::unique_ptr<ui::devtools::protocol::DOM::Node> node =
       BuildNode("Window", GetAttributes(window), std::move(children));
-  if (!window->HasObserver(this))
-    window->AddObserver(this);
+  if (!window->aura_window()->HasObserver(this))
+    window->aura_window()->AddObserver(this);
   window_to_node_id_map_[window] = node->getNodeId();
   node_id_to_window_map_[node->getNodeId()] = window;
   return node;
@@ -344,7 +344,7 @@ void AshDevToolsDOMAgent::RemoveWindowNode(WmWindow* window,
   DCHECK(node_id_to_window_it != node_id_to_window_map_.end());
 
   if (remove_observer)
-    window->RemoveObserver(this);
+    window->aura_window()->RemoveObserver(this);
 
   node_id_to_window_map_.erase(node_id_to_window_it);
   window_to_node_id_map_.erase(window_to_node_id_it);
@@ -427,7 +427,7 @@ void AshDevToolsDOMAgent::RemoveViewNode(views::View* view,
 
 void AshDevToolsDOMAgent::RemoveObservers() {
   for (auto& pair : window_to_node_id_map_)
-    pair.first->RemoveObserver(this);
+    pair.first->aura_window()->RemoveObserver(this);
   for (auto& pair : widget_to_node_id_map_)
     pair.first->RemoveRemovalsObserver(this);
   for (auto& pair : view_to_node_id_map_)

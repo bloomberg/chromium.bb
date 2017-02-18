@@ -7,7 +7,8 @@
 #include <memory>
 
 #include "ash/common/test/ash_test.h"
-#include "ash/common/wm_window_observer.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 
 namespace ash {
 
@@ -16,17 +17,17 @@ using WmWindowTest = AshTest;
 namespace {
 
 // Tracks calls to OnWindowVisibilityChanged().
-class VisibilityObserver : public WmWindowObserver {
+class VisibilityObserver : public aura::WindowObserver {
  public:
-  // Attaches a WmWindowObserver to |window_to_add_observer_to| and sets
+  // Attaches a aura::WindowObserver to |window_to_add_observer_to| and sets
   // |last_observed_window_| and |last_observed_visible_value_| to the values
   // of the last call to OnWindowVisibilityChanged().
   explicit VisibilityObserver(WmWindow* window_to_add_observer_to)
       : window_to_add_observer_to_(window_to_add_observer_to) {
-    window_to_add_observer_to_->AddObserver(this);
+    window_to_add_observer_to_->aura_window()->AddObserver(this);
   }
   ~VisibilityObserver() override {
-    window_to_add_observer_to_->RemoveObserver(this);
+    window_to_add_observer_to_->aura_window()->RemoveObserver(this);
   }
 
   // The values last supplied to OnWindowVisibilityChanged().
@@ -35,9 +36,9 @@ class VisibilityObserver : public WmWindowObserver {
     return last_observed_visible_value_;
   }
 
-  // WmWindowObserver:
-  void OnWindowVisibilityChanged(WmWindow* window, bool visible) override {
-    last_observed_window_ = window;
+  // aura::WindowObserver:
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
+    last_observed_window_ = WmWindow::Get(window);
     last_observed_visible_value_ = visible;
   }
 
@@ -51,7 +52,8 @@ class VisibilityObserver : public WmWindowObserver {
 
 }  // namespace
 
-// Verifies OnWindowVisibilityChanged() is called on a WmWindowObserver attached
+// Verifies OnWindowVisibilityChanged() is called on a aura::WindowObserver
+// attached
 // to the parent when the child window's visibility changes.
 TEST_F(WmWindowTest, OnWindowVisibilityChangedCalledOnAncestor) {
   std::unique_ptr<WindowOwner> window_owner = CreateTestWindow();
@@ -65,7 +67,8 @@ TEST_F(WmWindowTest, OnWindowVisibilityChangedCalledOnAncestor) {
   EXPECT_FALSE(observer.last_observed_visible_value());
 }
 
-// Verifies OnWindowVisibilityChanged() is called on a WmWindowObserver attached
+// Verifies OnWindowVisibilityChanged() is called on a aura::WindowObserver
+// attached
 // to a child when the parent window's visibility changes.
 TEST_F(WmWindowTest, OnWindowVisibilityChangedCalledOnChild) {
   std::unique_ptr<WindowOwner> parent_window_owner = CreateTestWindow();

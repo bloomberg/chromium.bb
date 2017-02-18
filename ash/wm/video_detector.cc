@@ -82,7 +82,6 @@ VideoDetector::VideoDetector()
     : state_(State::NOT_PLAYING),
       video_is_playing_(false),
       window_observer_manager_(this),
-      wm_window_observer_manager_(this),
       is_shutting_down_(false) {
   aura::Env::GetInstance()->AddObserver(this);
   WmShell::Get()->AddShellObserver(this);
@@ -129,6 +128,14 @@ void VideoDetector::OnDelegatedFrameDamage(
     HandleVideoActivity(window, now);
 }
 
+void VideoDetector::OnWindowDestroying(aura::Window* window) {
+  if (fullscreen_root_windows_.count(window)) {
+    window_observer_manager_.Remove(window);
+    fullscreen_root_windows_.erase(window);
+    UpdateState();
+  }
+}
+
 void VideoDetector::OnWindowDestroyed(aura::Window* window) {
   window_infos_.erase(window);
   window_observer_manager_.Remove(window);
@@ -142,21 +149,15 @@ void VideoDetector::OnAppTerminating() {
 
 void VideoDetector::OnFullscreenStateChanged(bool is_fullscreen,
                                              WmWindow* root_window) {
-  if (is_fullscreen && !fullscreen_root_windows_.count(root_window)) {
-    fullscreen_root_windows_.insert(root_window);
-    wm_window_observer_manager_.Add(root_window);
+  aura::Window* aura_window = root_window->aura_window();
+  if (is_fullscreen && !fullscreen_root_windows_.count(aura_window)) {
+    fullscreen_root_windows_.insert(aura_window);
+    if (!window_observer_manager_.IsObserving(aura_window))
+      window_observer_manager_.Add(aura_window);
     UpdateState();
-  } else if (!is_fullscreen && fullscreen_root_windows_.count(root_window)) {
-    fullscreen_root_windows_.erase(root_window);
-    wm_window_observer_manager_.Remove(root_window);
-    UpdateState();
-  }
-}
-
-void VideoDetector::OnWindowDestroying(WmWindow* window) {
-  if (fullscreen_root_windows_.count(window)) {
-    wm_window_observer_manager_.Remove(window);
-    fullscreen_root_windows_.erase(window);
+  } else if (!is_fullscreen && fullscreen_root_windows_.count(aura_window)) {
+    fullscreen_root_windows_.erase(aura_window);
+    window_observer_manager_.Remove(aura_window);
     UpdateState();
   }
 }

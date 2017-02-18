@@ -10,10 +10,10 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/wm/window_cycle_controller.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 
 namespace display {
@@ -30,7 +30,7 @@ class WindowCycleView;
 
 // Tracks a set of Windows that can be stepped through. This class is used by
 // the WindowCycleController.
-class ASH_EXPORT WindowCycleList : public WmWindowObserver,
+class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
                                    public display::DisplayObserver {
  public:
   using WindowList = std::vector<WmWindow*>;
@@ -57,11 +57,11 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver,
 
   const WindowList& windows() const { return windows_; }
 
-  // WmWindowObserver overrides:
+  // aura::WindowObserver overrides:
   // There is a chance a window is destroyed, for example by JS code. We need to
   // take care of that even if it is not intended for the user to close a window
   // while window cycling.
-  void OnWindowDestroying(WmWindow* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // display::DisplayObserver overrides:
   void OnDisplayAdded(const display::Display& new_display) override;

@@ -10,8 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/wm_activation_observer.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "ui/aura/window_observer.h"
 
 namespace ash {
 
@@ -20,7 +20,7 @@ class WmWindow;
 // Maintains a most recently used list of windows. This is used for window
 // cycling using Alt+Tab and overview mode.
 class ASH_EXPORT MruWindowTracker : public WmActivationObserver,
-                                    public WmWindowObserver {
+                                    public aura::WindowObserver {
  public:
   using WindowList = std::vector<WmWindow*>;
 
@@ -51,8 +51,8 @@ class ASH_EXPORT MruWindowTracker : public WmActivationObserver,
   void OnWindowActivated(WmWindow* gained_active,
                          WmWindow* lost_active) override;
 
-  // Overridden from WmWindowObserver:
-  void OnWindowDestroyed(WmWindow* window) override;
+  // Overridden from aura::WindowObserver:
+  void OnWindowDestroyed(aura::Window* window) override;
 
   // List of windows that have been activated in containers that we cycle
   // through, sorted by most recently used.

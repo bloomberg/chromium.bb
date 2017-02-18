@@ -704,12 +704,12 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
   // If we snapped to a window then check it first. That way we don't bounce
   // around when close to multiple edges.
   if (magnetism_window_) {
-    if (window_tracker_.Contains(magnetism_window_) &&
+    if (window_tracker_.Contains(magnetism_window_->aura_window()) &&
         matcher.ShouldAttach(magnetism_window_->GetBoundsInScreen(),
                              &magnetism_edge_)) {
       return true;
     }
-    window_tracker_.Remove(magnetism_window_);
+    window_tracker_.Remove(magnetism_window_->aura_window());
     magnetism_window_ = NULL;
   }
 
@@ -734,7 +734,7 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
       if (matcher.ShouldAttach(other_state->window()->GetBoundsInScreen(),
                                &magnetism_edge_)) {
         magnetism_window_ = other_state->window();
-        window_tracker_.Add(magnetism_window_);
+        window_tracker_.Add(magnetism_window_->aura_window());
         return true;
       }
     }

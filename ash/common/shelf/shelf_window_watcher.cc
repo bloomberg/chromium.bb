@@ -13,38 +13,57 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
+#include "ash/wm/window_properties.h"
+#include "ash/wm/window_state_aura.h"
+#include "ash/wm/window_util.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 namespace {
 
+// Returns the shelf item type, with special temporary behavior for Mash:
+// Mash provides a default shelf item type (TYPE_APP) for non-ignored windows.
+ShelfItemType GetShelfItemType(aura::Window* window) {
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL ||
+      window->GetProperty(kShelfItemTypeKey) != TYPE_UNDEFINED) {
+    return static_cast<ShelfItemType>(window->GetProperty(kShelfItemTypeKey));
+  }
+  return wm::GetWindowState(window)->ignored_by_shelf() ? TYPE_UNDEFINED
+                                                        : TYPE_APP;
+}
+
 // Update the ShelfItem from relevant window properties.
-void UpdateShelfItemForWindow(ShelfItem* item, WmWindow* window) {
-  item->type = static_cast<ShelfItemType>(
-      window->GetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE));
+void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
+  item->type = GetShelfItemType(window);
 
   item->status = STATUS_RUNNING;
-  if (window->IsActive())
+  if (wm::IsActiveWindow(window))
     item->status = STATUS_ACTIVE;
-  else if (window->GetBoolProperty(WmWindowProperty::DRAW_ATTENTION))
+  else if (window->GetProperty(aura::client::kDrawAttentionKey))
     item->status = STATUS_ATTENTION;
 
-  item->app_id = window->GetStringProperty(WmWindowProperty::APP_ID);
+  const std::string* app_id = window->GetProperty(aura::client::kAppIdKey);
+  item->app_id = app_id ? *app_id : std::string();
 
   // Prefer app icons over window icons, they're typically larger.
-  item->image = window->GetAppIcon();
-  if (item->image.isNull())
-    item->image = window->GetWindowIcon();
+  gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconKey);
+  if (!image || image->isNull())
+    image = window->GetProperty(aura::client::kWindowIconKey);
+  item->image = image ? *image : gfx::ImageSkia();
 
   item->title = window->GetTitle();
 
   // Do not show tooltips for visible attached app panel windows.
-  item->shows_tooltip =
-      item->type != TYPE_APP_PANEL || !window->IsVisible() ||
-      !window->GetBoolProperty(WmWindowProperty::PANEL_ATTACHED);
+  item->shows_tooltip = item->type != TYPE_APP_PANEL || !window->IsVisible() ||
+                        !window->GetProperty(kPanelAttachedKey);
 }
 
 }  // namespace
@@ -55,21 +74,18 @@ ShelfWindowWatcher::ContainerWindowObserver::ContainerWindowObserver(
 
 ShelfWindowWatcher::ContainerWindowObserver::~ContainerWindowObserver() {}
 
-void ShelfWindowWatcher::ContainerWindowObserver::OnWindowTreeChanged(
-    WmWindow* window,
-    const TreeChangeParams& params) {
+void ShelfWindowWatcher::ContainerWindowObserver::OnWindowHierarchyChanged(
+    const HierarchyChangeParams& params) {
   if (!params.old_parent && params.new_parent &&
-      (params.new_parent->GetShellWindowId() ==
-           kShellWindowId_DefaultContainer ||
-       params.new_parent->GetShellWindowId() ==
-           kShellWindowId_PanelContainer)) {
+      (params.new_parent->id() == kShellWindowId_DefaultContainer ||
+       params.new_parent->id() == kShellWindowId_PanelContainer)) {
     // A new window was created in the default container or the panel container.
     window_watcher_->OnUserWindowAdded(params.target);
   }
 }
 
 void ShelfWindowWatcher::ContainerWindowObserver::OnWindowDestroying(
-    WmWindow* window) {
+    aura::Window* window) {
   window_watcher_->OnContainerWindowDestroying(window);
 }
 
@@ -82,25 +98,24 @@ ShelfWindowWatcher::UserWindowObserver::UserWindowObserver(
 ShelfWindowWatcher::UserWindowObserver::~UserWindowObserver() {}
 
 void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
-    WmWindow* window,
-    WmWindowProperty property) {
-  if (property == WmWindowProperty::APP_ICON ||
-      property == WmWindowProperty::APP_ID ||
-      property == WmWindowProperty::DRAW_ATTENTION ||
-      property == WmWindowProperty::PANEL_ATTACHED ||
-      property == WmWindowProperty::SHELF_ITEM_TYPE ||
-      property == WmWindowProperty::WINDOW_ICON) {
+    aura::Window* window,
+    const void* key,
+    intptr_t old) {
+  if (key == aura::client::kAppIconKey || key == aura::client::kAppIdKey ||
+      key == aura::client::kDrawAttentionKey ||
+      key == aura::client::kWindowIconKey || key == kPanelAttachedKey ||
+      key == kShelfItemTypeKey) {
     window_watcher_->OnUserWindowPropertyChanged(window);
   }
 }
 
 void ShelfWindowWatcher::UserWindowObserver::OnWindowDestroying(
-    WmWindow* window) {
+    aura::Window* window) {
   window_watcher_->OnUserWindowDestroying(window);
 }
 
 void ShelfWindowWatcher::UserWindowObserver::OnWindowVisibilityChanged(
-    WmWindow* window,
+    aura::Window* window,
     bool visible) {
   // OnWindowVisibilityChanged() is called for descendants too. We only care
   // about changes to the visibility of windows we know about.
@@ -112,7 +127,7 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowVisibilityChanged(
 }
 
 void ShelfWindowWatcher::UserWindowObserver::OnWindowTitleChanged(
-    WmWindow* window) {
+    aura::Window* window) {
   window_watcher_->OnUserWindowPropertyChanged(window);
 }
 
@@ -124,7 +139,7 @@ ShelfWindowWatcher::ShelfWindowWatcher(ShelfModel* model)
       user_window_observer_(this),
       observed_container_windows_(&container_window_observer_),
       observed_user_windows_(&user_window_observer_) {
-  WmShell::Get()->AddActivationObserver(this);
+  Shell::GetInstance()->activation_client()->AddObserver(this);
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())
     OnDisplayAdded(display);
   display::Screen::GetScreen()->AddObserver(this);
@@ -132,42 +147,41 @@ ShelfWindowWatcher::ShelfWindowWatcher(ShelfModel* model)
 
 ShelfWindowWatcher::~ShelfWindowWatcher() {
   display::Screen::GetScreen()->RemoveObserver(this);
-  WmShell::Get()->RemoveActivationObserver(this);
+  Shell::GetInstance()->activation_client()->RemoveObserver(this);
 }
 
-void ShelfWindowWatcher::AddShelfItem(WmWindow* window) {
+void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
   user_windows_with_items_.insert(window);
   ShelfItem item;
   ShelfID id = model_->next_id();
   UpdateShelfItemForWindow(&item, window);
-  window->SetIntProperty(WmWindowProperty::SHELF_ID, id);
+  window->SetProperty(kShelfIDKey, id);
   std::unique_ptr<ShelfItemDelegate> item_delegate(
-      new ShelfWindowWatcherItemDelegate(id, window));
+      new ShelfWindowWatcherItemDelegate(id, WmWindow::Get(window)));
   model_->SetShelfItemDelegate(id, std::move(item_delegate));
   // Panels are inserted on the left so as not to push all existing panels over.
   model_->AddAt(item.type == TYPE_APP_PANEL ? 0 : model_->item_count(), item);
 }
 
-void ShelfWindowWatcher::RemoveShelfItem(WmWindow* window) {
+void ShelfWindowWatcher::RemoveShelfItem(aura::Window* window) {
   user_windows_with_items_.erase(window);
-  int shelf_id = window->GetIntProperty(WmWindowProperty::SHELF_ID);
+  int shelf_id = window->GetProperty(kShelfIDKey);
   DCHECK_NE(shelf_id, kInvalidShelfID);
   int index = model_->ItemIndexByID(shelf_id);
   DCHECK_GE(index, 0);
   model_->RemoveItemAt(index);
-  window->SetIntProperty(WmWindowProperty::SHELF_ID, kInvalidShelfID);
+  window->SetProperty(kShelfIDKey, kInvalidShelfID);
 }
 
-void ShelfWindowWatcher::OnContainerWindowDestroying(WmWindow* container) {
+void ShelfWindowWatcher::OnContainerWindowDestroying(aura::Window* container) {
   observed_container_windows_.Remove(container);
 }
 
-int ShelfWindowWatcher::GetShelfItemIndexForWindow(WmWindow* window) const {
-  return model_->ItemIndexByID(
-      window->GetIntProperty(WmWindowProperty::SHELF_ID));
+int ShelfWindowWatcher::GetShelfItemIndexForWindow(aura::Window* window) const {
+  return model_->ItemIndexByID(window->GetProperty(kShelfIDKey));
 }
 
-void ShelfWindowWatcher::OnUserWindowAdded(WmWindow* window) {
+void ShelfWindowWatcher::OnUserWindowAdded(aura::Window* window) {
   // The window may already be tracked from a prior display or parent container.
   if (observed_user_windows_.IsObserving(window))
     return;
@@ -178,7 +192,7 @@ void ShelfWindowWatcher::OnUserWindowAdded(WmWindow* window) {
   OnUserWindowPropertyChanged(window);
 }
 
-void ShelfWindowWatcher::OnUserWindowDestroying(WmWindow* window) {
+void ShelfWindowWatcher::OnUserWindowDestroying(aura::Window* window) {
   if (observed_user_windows_.IsObserving(window))
     observed_user_windows_.Remove(window);
 
@@ -187,9 +201,8 @@ void ShelfWindowWatcher::OnUserWindowDestroying(WmWindow* window) {
   DCHECK_EQ(0u, user_windows_with_items_.count(window));
 }
 
-void ShelfWindowWatcher::OnUserWindowPropertyChanged(WmWindow* window) {
-  if (window->GetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE) ==
-      TYPE_UNDEFINED) {
+void ShelfWindowWatcher::OnUserWindowPropertyChanged(aura::Window* window) {
+  if (GetShelfItemType(window) == TYPE_UNDEFINED) {
     // Remove |window|'s ShelfItem if it was added by this ShelfWindowWatcher.
     if (user_windows_with_items_.count(window) > 0)
       RemoveShelfItem(window);
@@ -209,8 +222,9 @@ void ShelfWindowWatcher::OnUserWindowPropertyChanged(WmWindow* window) {
   AddShelfItem(window);
 }
 
-void ShelfWindowWatcher::OnWindowActivated(WmWindow* gained_active,
-                                           WmWindow* lost_active) {
+void ShelfWindowWatcher::OnWindowActivated(ActivationReason reason,
+                                           aura::Window* gained_active,
+                                           aura::Window* lost_active) {
   if (gained_active && user_windows_with_items_.count(gained_active) > 0)
     OnUserWindowPropertyChanged(gained_active);
   if (lost_active && user_windows_with_items_.count(lost_active) > 0)
@@ -219,20 +233,21 @@ void ShelfWindowWatcher::OnWindowActivated(WmWindow* gained_active,
 
 void ShelfWindowWatcher::OnDisplayAdded(const display::Display& new_display) {
   WmWindow* root = WmShell::Get()->GetRootWindowForDisplayId(new_display.id());
+  aura::Window* aura_root = WmWindow::GetAuraWindow(root);
 
   // When the primary root window's display is removed, the existing root window
   // is taken over by the new display, and the observer is already set.
-  WmWindow* default_container =
-      root->GetChildByShellWindowId(kShellWindowId_DefaultContainer);
+  aura::Window* default_container =
+      aura_root->GetChildById(kShellWindowId_DefaultContainer);
   if (!observed_container_windows_.IsObserving(default_container)) {
-    for (WmWindow* window : default_container->GetChildren())
+    for (aura::Window* window : default_container->children())
       OnUserWindowAdded(window);
     observed_container_windows_.Add(default_container);
   }
-  WmWindow* panel_container =
-      root->GetChildByShellWindowId(kShellWindowId_PanelContainer);
+  aura::Window* panel_container =
+      aura_root->GetChildById(kShellWindowId_PanelContainer);
   if (!observed_container_windows_.IsObserving(panel_container)) {
-    for (WmWindow* window : panel_container->GetChildren())
+    for (aura::Window* window : panel_container->children())
       OnUserWindowAdded(window);
     observed_container_windows_.Add(panel_container);
   }

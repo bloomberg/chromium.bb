@@ -9,6 +9,8 @@
 #include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -19,12 +21,12 @@ AlwaysOnTopController::AlwaysOnTopController(WmWindow* viewport)
       base::MakeUnique<WorkspaceLayoutManager>(viewport));
   // Container should be empty.
   DCHECK(always_on_top_container_->GetChildren().empty());
-  always_on_top_container_->AddObserver(this);
+  always_on_top_container_->aura_window()->AddObserver(this);
 }
 
 AlwaysOnTopController::~AlwaysOnTopController() {
   if (always_on_top_container_)
-    always_on_top_container_->RemoveObserver(this);
+    always_on_top_container_->aura_window()->RemoveObserver(this);
 }
 
 WmWindow* AlwaysOnTopController::GetContainer(WmWindow* window) const {
@@ -46,30 +48,30 @@ void AlwaysOnTopController::SetLayoutManagerForTest(
   always_on_top_container_->SetLayoutManager(std::move(layout_manager));
 }
 
-void AlwaysOnTopController::OnWindowTreeChanged(
-    WmWindow* window,
-    const TreeChangeParams& params) {
-  if (params.old_parent == always_on_top_container_)
+void AlwaysOnTopController::OnWindowHierarchyChanged(
+    const HierarchyChangeParams& params) {
+  if (WmWindow::Get(params.old_parent) == always_on_top_container_)
     params.target->RemoveObserver(this);
-  else if (params.new_parent == always_on_top_container_)
+  else if (WmWindow::Get(params.new_parent) == always_on_top_container_)
     params.target->AddObserver(this);
 }
 
-void AlwaysOnTopController::OnWindowPropertyChanged(WmWindow* window,
-                                                    WmWindowProperty property) {
-  if (window != always_on_top_container_ &&
-      property == WmWindowProperty::ALWAYS_ON_TOP) {
-    DCHECK(window->GetType() == ui::wm::WINDOW_TYPE_NORMAL ||
-           window->GetType() == ui::wm::WINDOW_TYPE_POPUP);
-    WmWindow* container = GetContainer(window);
-    if (window->GetParent() != container)
-      container->AddChild(window);
+void AlwaysOnTopController::OnWindowPropertyChanged(aura::Window* window,
+                                                    const void* key,
+                                                    intptr_t old) {
+  if (WmWindow::Get(window) != always_on_top_container_ &&
+      key == aura::client::kAlwaysOnTopKey) {
+    DCHECK(window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+           window->type() == ui::wm::WINDOW_TYPE_POPUP);
+    WmWindow* container = GetContainer(WmWindow::Get(window));
+    if (WmWindow::Get(window->parent()) != container)
+      container->AddChild(WmWindow::Get(window));
   }
 }
 
-void AlwaysOnTopController::OnWindowDestroying(WmWindow* window) {
-  if (window == always_on_top_container_) {
-    always_on_top_container_->RemoveObserver(this);
+void AlwaysOnTopController::OnWindowDestroying(aura::Window* window) {
+  if (WmWindow::Get(window) == always_on_top_container_) {
+    always_on_top_container_->aura_window()->RemoveObserver(this);
     always_on_top_container_ = nullptr;
   }
 }

@@ -20,6 +20,8 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
+#include "ash/wm/window_state_aura.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "grit/ash_resources.h"
@@ -29,6 +31,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/background.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 
@@ -306,27 +309,32 @@ struct DockedWindowLayoutManager::CompareWindowPos {
 
 ////////////////////////////////////////////////////////////////////////////////
 // A class that observes shelf for bounds changes.
-class DockedWindowLayoutManager::ShelfWindowObserver : public WmWindowObserver {
+class DockedWindowLayoutManager::ShelfWindowObserver
+    : public aura::WindowObserver {
  public:
   explicit ShelfWindowObserver(DockedWindowLayoutManager* docked_layout_manager)
       : docked_layout_manager_(docked_layout_manager) {
     DCHECK(docked_layout_manager_->shelf()->GetWindow());
-    docked_layout_manager_->shelf()->GetWindow()->AddObserver(this);
+    docked_layout_manager_->shelf()->GetWindow()->aura_window()->AddObserver(
+        this);
   }
 
   ~ShelfWindowObserver() override {
     if (docked_layout_manager_->shelf() &&
         docked_layout_manager_->shelf()->GetWindow()) {
-      docked_layout_manager_->shelf()->GetWindow()->RemoveObserver(this);
+      docked_layout_manager_->shelf()
+          ->GetWindow()
+          ->aura_window()
+          ->RemoveObserver(this);
     }
   }
 
-  // WmWindowObserver:
-  void OnWindowBoundsChanged(WmWindow* window,
+  // aura::WindowObserver:
+  void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override {
     shelf_bounds_in_screen_ =
-        window->GetParent()->ConvertRectToScreen(new_bounds);
+        ScreenUtil::ConvertRectToScreen(window->parent(), new_bounds);
 
     // When the shelf is auto-hidden, it has an invisible height of 3px used
     // as a hit region which is specific to Chrome OS MD (for non-MD, the 3
@@ -397,7 +405,7 @@ void DockedWindowLayoutManager::Shutdown() {
   shelf_observer_.reset();
   shelf_ = nullptr;
   for (WmWindow* child : dock_container_->GetChildren()) {
-    child->RemoveObserver(this);
+    child->aura_window()->RemoveObserver(this);
     child->GetWindowState()->RemoveObserver(this);
   }
   dock_container_->GetShell()->RemoveActivationObserver(this);
@@ -423,7 +431,7 @@ void DockedWindowLayoutManager::StartDragging(WmWindow* window) {
   // case it is already observed.
   wm::WindowState* dragged_state = dragged_window_->GetWindowState();
   if (dragged_window_->GetParent() != dock_container_) {
-    dragged_window_->AddObserver(this);
+    dragged_window_->aura_window()->AddObserver(this);
     dragged_state->AddObserver(this);
   } else if (!IsAnyWindowDocked() && dragged_state->drag_details() &&
              !(dragged_state->drag_details()->bounds_change &
@@ -476,7 +484,7 @@ void DockedWindowLayoutManager::FinishDragging(DockedAction action,
   // Stop observing a window unless it is docked container's child in which
   // case it needs to keep being observed after the drag completes.
   if (dragged_window_->GetParent() != dock_container_) {
-    dragged_window_->RemoveObserver(this);
+    dragged_window_->aura_window()->RemoveObserver(this);
     dragged_window_->GetWindowState()->RemoveObserver(this);
     if (last_active_window_ == dragged_window_)
       last_active_window_ = nullptr;
@@ -645,7 +653,7 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
                      : GetEdgeNearestWindow(child);
   }
   MaybeMinimizeChildrenExcept(child);
-  child->AddObserver(this);
+  child->aura_window()->AddObserver(this);
   child->GetWindowState()->AddObserver(this);
   Relayout();
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
@@ -671,7 +679,7 @@ void DockedWindowLayoutManager::OnWindowRemovedFromLayout(WmWindow* child) {
   }
   if (last_active_window_ == child)
     last_active_window_ = nullptr;
-  child->RemoveObserver(this);
+  child->aura_window()->RemoveObserver(this);
   child->GetWindowState()->RemoveObserver(this);
   Relayout();
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
@@ -759,36 +767,36 @@ void DockedWindowLayoutManager::OnPreWindowStateTypeChange(
 // DockedWindowLayoutManager, WindowObserver implementation:
 
 void DockedWindowLayoutManager::OnWindowBoundsChanged(
-    WmWindow* window,
+    aura::Window* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
   // Only relayout if the dragged window would get docked.
-  if (window == dragged_window_ && is_dragged_window_docked_)
+  if (WmWindow::Get(window) == dragged_window_ && is_dragged_window_docked_)
     Relayout();
 }
 
-void DockedWindowLayoutManager::OnWindowVisibilityChanging(WmWindow* window,
+void DockedWindowLayoutManager::OnWindowVisibilityChanging(aura::Window* window,
                                                            bool visible) {
-  if (IsPopupOrTransient(window))
+  if (IsPopupOrTransient(WmWindow::Get(window)))
     return;
   int animation_type = ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT;
   if (visible) {
     animation_type = ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DROP;
-    window->SetVisibilityAnimationDuration(
-        base::TimeDelta::FromMilliseconds(kFadeDurationMs));
-  } else if (window->GetWindowState()->IsMinimized()) {
+    ::wm::SetWindowVisibilityAnimationDuration(
+        window, base::TimeDelta::FromMilliseconds(kFadeDurationMs));
+  } else if (wm::GetWindowState(window)->IsMinimized()) {
     animation_type = wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE;
   }
-  window->SetVisibilityAnimationType(animation_type);
+  ::wm::SetWindowVisibilityAnimationType(window, animation_type);
 }
 
-void DockedWindowLayoutManager::OnWindowDestroying(WmWindow* window) {
-  if (dragged_window_ == window) {
+void DockedWindowLayoutManager::OnWindowDestroying(aura::Window* window) {
+  if (dragged_window_ == WmWindow::Get(window)) {
     FinishDragging(DOCKED_ACTION_NONE, DOCKED_ACTION_SOURCE_UNKNOWN);
     DCHECK(!dragged_window_);
     DCHECK(!is_dragged_window_docked_);
   }
-  if (window == last_active_window_)
+  if (WmWindow::Get(window) == last_active_window_)
     last_active_window_ = nullptr;
   RecordUmaAction(DOCKED_ACTION_CLOSE, event_source_);
 }

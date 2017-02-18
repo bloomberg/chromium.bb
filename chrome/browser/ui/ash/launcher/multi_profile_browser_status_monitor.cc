@@ -6,7 +6,6 @@
 
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"

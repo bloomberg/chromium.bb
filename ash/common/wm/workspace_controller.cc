@@ -38,7 +38,7 @@ WorkspaceController::WorkspaceController(WmWindow* viewport)
     : viewport_(viewport),
       event_handler_(WmShell::Get()->CreateWorkspaceEventHandler(viewport)),
       layout_manager_(new WorkspaceLayoutManager(viewport)) {
-  viewport_->AddObserver(this);
+  viewport_->aura_window()->AddObserver(this);
   viewport_->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
   viewport_->SetLayoutManager(base::WrapUnique(layout_manager_));
 }
@@ -47,7 +47,7 @@ WorkspaceController::~WorkspaceController() {
   if (!viewport_)
     return;
 
-  viewport_->RemoveObserver(this);
+  viewport_->aura_window()->RemoveObserver(this);
   viewport_->SetLayoutManager(nullptr);
 }
 
@@ -122,9 +122,9 @@ void WorkspaceController::SetMaximizeBackdropDelegate(
   layout_manager_->SetMaximizeBackdropDelegate(std::move(delegate));
 }
 
-void WorkspaceController::OnWindowDestroying(WmWindow* window) {
-  DCHECK_EQ(window, viewport_);
-  viewport_->RemoveObserver(this);
+void WorkspaceController::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(WmWindow::Get(window), viewport_);
+  viewport_->aura_window()->RemoveObserver(this);
   viewport_ = nullptr;
   // Destroy |event_handler_| too as it depends upon |window|.
   event_handler_.reset();

@@ -14,6 +14,8 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
@@ -87,14 +89,14 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
   DCHECK_NE(GetModalType(child), ui::MODAL_TYPE_CHILD);
   DCHECK_NE(GetModalType(child), ui::MODAL_TYPE_WINDOW);
 
-  child->AddObserver(this);
+  child->aura_window()->AddObserver(this);
   if (GetModalType(child) == ui::MODAL_TYPE_SYSTEM && child->IsVisible())
     AddModalWindow(child);
 }
 
 void SystemModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
     WmWindow* child) {
-  child->RemoveObserver(this);
+  child->aura_window()->RemoveObserver(this);
   windows_to_center_.erase(child);
   if (GetModalType(child) == ui::MODAL_TYPE_SYSTEM)
     RemoveModalWindow(child);
@@ -111,21 +113,23 @@ void SystemModalContainerLayoutManager::SetChildBounds(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SystemModalContainerLayoutManager, WmWindowObserver implementation:
+// SystemModalContainerLayoutManager, aura::WindowObserver implementation:
 
 void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
-    WmWindow* window,
-    WmWindowProperty property) {
-  if (property != WmWindowProperty::MODAL_TYPE || !window->IsVisible())
+    aura::Window* window,
+    const void* key,
+    intptr_t old) {
+  if (key != aura::client::kModalKey || !window->IsVisible())
     return;
 
-  if (GetModalType(window) == ui::MODAL_TYPE_SYSTEM) {
-    if (base::ContainsValue(modal_windows_, window))
+  WmWindow* wm_window = WmWindow::Get(window);
+  if (window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM) {
+    if (base::ContainsValue(modal_windows_, wm_window))
       return;
-    AddModalWindow(window);
+    AddModalWindow(wm_window);
   } else {
-    if (RemoveModalWindow(window))
-      WmShell::Get()->OnModalWindowRemoved(window);
+    if (RemoveModalWindow(wm_window))
+      WmShell::Get()->OnModalWindowRemoved(wm_window);
   }
 }
 

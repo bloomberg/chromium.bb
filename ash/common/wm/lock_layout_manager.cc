@@ -21,7 +21,7 @@ LockLayoutManager::LockLayoutManager(WmWindow* window)
       root_window_(window->GetRootWindow()),
       is_observing_keyboard_(false) {
   WmShell::Get()->AddShellObserver(this);
-  root_window_->AddObserver(this);
+  root_window_->aura_window()->AddObserver(this);
   if (keyboard::KeyboardController::GetInstance()) {
     keyboard::KeyboardController::GetInstance()->AddObserver(this);
     is_observing_keyboard_ = true;
@@ -30,10 +30,10 @@ LockLayoutManager::LockLayoutManager(WmWindow* window)
 
 LockLayoutManager::~LockLayoutManager() {
   if (root_window_)
-    root_window_->RemoveObserver(this);
+    root_window_->aura_window()->RemoveObserver(this);
 
   for (WmWindow* child : window_->GetChildren())
-    child->RemoveObserver(this);
+    child->aura_window()->RemoveObserver(this);
 
   WmShell::Get()->RemoveShellObserver(this);
 
@@ -49,7 +49,7 @@ void LockLayoutManager::OnWindowResized() {
 }
 
 void LockLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
-  child->AddObserver(this);
+  child->aura_window()->AddObserver(this);
 
   // LockWindowState replaces default WindowState of a child.
   wm::WindowState* window_state = LockWindowState::SetLockWindowState(child);
@@ -58,7 +58,7 @@ void LockLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
 }
 
 void LockLayoutManager::OnWillRemoveWindowFromLayout(WmWindow* child) {
-  child->RemoveObserver(this);
+  child->aura_window()->RemoveObserver(this);
 }
 
 void LockLayoutManager::OnWindowRemovedFromLayout(WmWindow* child) {}
@@ -73,16 +73,16 @@ void LockLayoutManager::SetChildBounds(WmWindow* child,
   window_state->OnWMEvent(&event);
 }
 
-void LockLayoutManager::OnWindowDestroying(WmWindow* window) {
+void LockLayoutManager::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
-  if (root_window_ == window)
+  if (root_window_ == WmWindow::Get(window))
     root_window_ = nullptr;
 }
 
-void LockLayoutManager::OnWindowBoundsChanged(WmWindow* window,
+void LockLayoutManager::OnWindowBoundsChanged(aura::Window* window,
                                               const gfx::Rect& old_bounds,
                                               const gfx::Rect& new_bounds) {
-  if (root_window_ == window) {
+  if (root_window_ == WmWindow::Get(window)) {
     const wm::WMEvent wm_event(wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED);
     AdjustWindowsForWorkAreaChange(&wm_event);
   }

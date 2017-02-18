@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/mouse_watcher.h"
 
@@ -21,6 +21,7 @@ class Widget;
 
 namespace ash {
 class MultiWindowResizeControllerTest;
+class WmWindow;
 class WorkspaceWindowResizer;
 
 // Two directions resizes happen in.
@@ -34,7 +35,7 @@ enum Direction {
 // MultiWindowResizeController is driven by WorkspaceEventFilter.
 class ASH_EXPORT MultiWindowResizeController
     : public views::MouseWatcherListener,
-      public WmWindowObserver {
+      public aura::WindowObserver {
  public:
   MultiWindowResizeController();
   ~MultiWindowResizeController() override;
@@ -50,7 +51,7 @@ class ASH_EXPORT MultiWindowResizeController
   void MouseMovedOutOfHost() override;
 
   // WindowObserver overrides:
-  void OnWindowDestroying(WmWindow* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
  private:
   friend class MultiWindowResizeControllerTest;

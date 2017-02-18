@@ -11,7 +11,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -36,8 +35,7 @@ namespace ash {
 // continuous scrolling of a page.
 class ASH_EXPORT VideoDetector : public aura::EnvObserver,
                                  public aura::WindowObserver,
-                                 public ShellObserver,
-                                 public WmWindowObserver {
+                                 public ShellObserver {
  public:
   // State of detected video activity.
   enum class State {
@@ -93,20 +91,16 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   // EnvObserver overrides.
   void OnWindowInitialized(aura::Window* window) override;
 
-  // WindowObserver overrides.
+  // aura::WindowObserver overrides.
   void OnDelegatedFrameDamage(aura::Window* window,
                               const gfx::Rect& region) override;
   void OnWindowDestroyed(aura::Window* window) override;
-  void OnWindowDestroying(aura::Window* window) override {}
+  void OnWindowDestroying(aura::Window* window) override;
 
   // ShellObserver overrides.
   void OnAppTerminating() override;
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 WmWindow* root_window) override;
-
-  // WmWindowObserver overrides.
-  void OnWindowDestroyed(WmWindow* window) override {}
-  void OnWindowDestroying(WmWindow* window) override;
 
  private:
   // Called when video activity is observed in |window|.
@@ -126,7 +120,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   bool video_is_playing_;
 
   // Currently-fullscreen root windows.
-  std::set<WmWindow*> fullscreen_root_windows_;
+  std::set<aura::Window*> fullscreen_root_windows_;
 
   // Maps from a window that we're tracking to information about it.
   class WindowInfo;
@@ -143,7 +137,6 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   base::TimeTicks now_for_test_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_manager_;
-  ScopedObserver<WmWindow, WmWindowObserver> wm_window_observer_manager_;
 
   bool is_shutting_down_;
 

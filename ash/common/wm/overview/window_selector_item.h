@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/wm/overview/scoped_transform_overview_window.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/button.h"
@@ -33,7 +33,7 @@ class WmWindow;
 
 // This class represents an item in overview mode.
 class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
-                                      public WmWindowObserver {
+                                      public aura::WindowObserver {
  public:
   // An image button with a close window icon.
   class OverviewCloseButton : public views::ImageButton {
@@ -117,9 +117,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // WmWindowObserver:
-  void OnWindowDestroying(WmWindow* window) override;
-  void OnWindowTitleChanged(WmWindow* window) override;
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowTitleChanged(aura::Window* window) override;
 
  private:
   class CaptionContainerView;

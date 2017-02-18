@@ -417,11 +417,11 @@ WindowSelectorItem::WindowSelectorItem(WmWindow* window,
       window_selector_(window_selector),
       background_view_(nullptr) {
   CreateWindowLabel(window->GetTitle());
-  GetWindow()->AddObserver(this);
+  GetWindow()->aura_window()->AddObserver(this);
 }
 
 WindowSelectorItem::~WindowSelectorItem() {
-  GetWindow()->RemoveObserver(this);
+  GetWindow()->aura_window()->RemoveObserver(this);
 }
 
 WmWindow* WindowSelectorItem::GetWindow() {
@@ -548,12 +548,12 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
   window_selector_->SelectWindow(this);
 }
 
-void WindowSelectorItem::OnWindowDestroying(WmWindow* window) {
+void WindowSelectorItem::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
   transform_window_.OnWindowDestroyed();
 }
 
-void WindowSelectorItem::OnWindowTitleChanged(WmWindow* window) {
+void WindowSelectorItem::OnWindowTitleChanged(aura::Window* window) {
   // TODO(flackr): Maybe add the new title to a vector of titles so that we can
   // filter any of the titles the window had while in the overview session.
   label_view_->SetText(window->GetTitle());

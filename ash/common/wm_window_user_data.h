@@ -10,17 +10,18 @@
 #include <utility>
 
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 
 namespace ash {
 
 // WmWindowUserData provides a way to associate arbitrary objects with a
 // WmWindow. WmWindowUserData owns the data, deleting it either when
 // WmWindowUserData is deleted, or when the window the data is associated with
-// is destroyed (from WmWindowObserver::OnWindowDestroying()).
+// is destroyed (from aura::WindowObserver::OnWindowDestroying()).
 template <typename UserData>
-class WmWindowUserData : public WmWindowObserver {
+class WmWindowUserData : public aura::WindowObserver {
  public:
   WmWindowUserData() {}
 
@@ -28,7 +29,7 @@ class WmWindowUserData : public WmWindowObserver {
 
   void clear() {
     for (auto& pair : window_to_data_)
-      pair.first->RemoveObserver(this);
+      pair.first->aura_window()->RemoveObserver(this);
     window_to_data_.clear();
   }
 
@@ -37,11 +38,11 @@ class WmWindowUserData : public WmWindowObserver {
   void Set(WmWindow* window, std::unique_ptr<UserData> data) {
     if (!data) {
       if (window_to_data_.erase(window))
-        window->RemoveObserver(this);
+        window->aura_window()->RemoveObserver(this);
       return;
     }
     if (window_to_data_.count(window) == 0u)
-      window->AddObserver(this);
+      window->aura_window()->AddObserver(this);
     window_to_data_[window] = std::move(data);
   }
 
@@ -61,10 +62,10 @@ class WmWindowUserData : public WmWindowObserver {
   }
 
  private:
-  // WmWindowObserver:
-  void OnWindowDestroying(WmWindow* window) override {
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
     window->RemoveObserver(this);
-    window_to_data_.erase(window);
+    window_to_data_.erase(WmWindow::Get(window));
   }
 
   std::map<WmWindow*, std::unique_ptr<UserData>> window_to_data_;

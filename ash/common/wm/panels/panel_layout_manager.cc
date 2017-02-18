@@ -20,6 +20,7 @@
 #include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/wm/window_properties.h"
 #include "base/auto_reset.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -359,7 +360,7 @@ void PanelLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
   panel_info.callout_widget = new PanelCalloutWidget(panel_container_);
   panel_info.slide_in = child != dragged_panel_;
   panel_windows_.push_back(panel_info);
-  child->AddObserver(this);
+  child->aura_window()->AddObserver(this);
   child->GetWindowState()->AddObserver(this);
   Relayout();
 }
@@ -377,8 +378,8 @@ void PanelLayoutManager::OnWindowRemovedFromLayout(WmWindow* child) {
     panel_windows_.erase(found);
   }
   if (restore_windows_on_shelf_visible_)
-    restore_windows_on_shelf_visible_->Remove(child);
-  child->RemoveObserver(this);
+    restore_windows_on_shelf_visible_->Remove(child->aura_window());
+  child->aura_window()->RemoveObserver(this);
   child->GetWindowState()->RemoveObserver(this);
 
   if (dragged_panel_ == child)
@@ -452,11 +453,12 @@ void PanelLayoutManager::OnShelfAlignmentChanged(WmWindow* root_window) {
 /////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, WindowObserver implementation:
 
-void PanelLayoutManager::OnWindowPropertyChanged(WmWindow* window,
-                                                 WmWindowProperty property) {
+void PanelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
+                                                 const void* key,
+                                                 intptr_t old) {
   // Trigger a relayout to position the panels whenever the panel icon is set
   // or changes.
-  if (property == WmWindowProperty::SHELF_ID)
+  if (key == kShelfIDKey)
     Relayout();
 }
 
@@ -471,9 +473,11 @@ void PanelLayoutManager::OnPostWindowStateTypeChange(
   if (restore_windows_on_shelf_visible_) {
     if (window_state->IsMinimized()) {
       MinimizePanel(window_state->window());
-      restore_windows_on_shelf_visible_->Remove(window_state->window());
+      restore_windows_on_shelf_visible_->Remove(
+          window_state->window()->aura_window());
     } else {
-      restore_windows_on_shelf_visible_->Add(window_state->window());
+      restore_windows_on_shelf_visible_->Add(
+          window_state->window()->aura_window());
     }
     return;
   }
@@ -515,17 +519,18 @@ void PanelLayoutManager::WillChangeVisibilityState(
   bool shelf_hidden = new_state == ash::SHELF_HIDDEN;
   if (!shelf_hidden) {
     if (restore_windows_on_shelf_visible_) {
-      std::unique_ptr<WmWindowTracker> restore_windows(
+      std::unique_ptr<aura::WindowTracker> restore_windows(
           std::move(restore_windows_on_shelf_visible_));
-      for (WmWindow* window : restore_windows->windows())
-        RestorePanel(window);
+      for (aura::Window* window : restore_windows->windows())
+        RestorePanel(WmWindow::Get(window));
     }
     return;
   }
 
   if (restore_windows_on_shelf_visible_)
     return;
-  std::unique_ptr<WmWindowTracker> minimized_windows(new WmWindowTracker);
+  std::unique_ptr<aura::WindowTracker> minimized_windows(
+      new aura::WindowTracker);
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end();) {
     WmWindow* window = iter->window;
@@ -533,7 +538,7 @@ void PanelLayoutManager::WillChangeVisibilityState(
     // Advance the iterator before minimizing it: http://crbug.com/393047.
     ++iter;
     if (window != dragged_panel_ && window->IsVisible()) {
-      minimized_windows->Add(window);
+      minimized_windows->Add(window->aura_window());
       window->GetWindowState()->Minimize();
     }
   }
@@ -629,7 +634,7 @@ void PanelLayoutManager::Relayout() {
     // the dragged panel.
     if (panel != dragged_panel_ && restore_windows_on_shelf_visible_) {
       panel->GetWindowState()->Minimize();
-      restore_windows_on_shelf_visible_->Add(panel);
+      restore_windows_on_shelf_visible_->Add(panel->aura_window());
       continue;
     }
 

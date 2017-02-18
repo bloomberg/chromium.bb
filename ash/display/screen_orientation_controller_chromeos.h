@@ -11,12 +11,12 @@
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
+#include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
 
 namespace ash {
@@ -24,7 +24,7 @@ namespace ash {
 // Implements ChromeOS specific functionality for ScreenOrientationProvider.
 class ASH_EXPORT ScreenOrientationController
     : public WmActivationObserver,
-      public WmWindowObserver,
+      public aura::WindowObserver,
       public chromeos::AccelerometerReader::Observer,
       public WmDisplayObserver,
       public ShellObserver {
@@ -80,9 +80,9 @@ class ASH_EXPORT ScreenOrientationController
   void OnWindowActivated(WmWindow* gained_active,
                          WmWindow* lost_active) override;
 
-  // WmWindowObserver:
-  void OnWindowDestroying(WmWindow* window) override;
-  void OnWindowVisibilityChanged(WmWindow* window, bool visible) override;
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // chromeos::AccelerometerReader::Observer:
   void OnAccelerometerUpdated(

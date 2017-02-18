@@ -11,7 +11,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_layout_manager.h"
 #include "ash/common/wm_transient_window_observer.h"
-#include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -37,6 +36,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -856,18 +856,6 @@ std::unique_ptr<views::View> WmWindow::CreateViewWithRecreatedLayers() {
   return base::MakeUnique<wm::WindowMirrorView>(this);
 }
 
-void WmWindow::AddObserver(WmWindowObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void WmWindow::RemoveObserver(WmWindowObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-bool WmWindow::HasObserver(const WmWindowObserver* observer) const {
-  return observers_.HasObserver(observer);
-}
-
 void WmWindow::AddTransientWindowObserver(WmTransientWindowObserver* observer) {
   if (!added_transient_observer_) {
     added_transient_observer_ = true;
@@ -900,35 +888,10 @@ void WmWindow::RemoveLimitedPreTargetHandler(ui::EventHandler* handler) {
 
 WmWindow::WmWindow(aura::Window* window)
     : window_(window),
-      // Mirrors that of aura::Window.
-      observers_(base::ObserverList<WmWindowObserver>::NOTIFY_EXISTING_ONLY),
       use_empty_minimum_size_for_testing_(
           default_use_empty_minimum_size_for_testing_) {
   window_->AddObserver(this);
   window_->SetProperty(kWmWindowKey, this);
-}
-
-void WmWindow::OnWindowHierarchyChanging(const HierarchyChangeParams& params) {
-  WmWindowObserver::TreeChangeParams wm_params;
-  wm_params.target = Get(params.target);
-  wm_params.new_parent = Get(params.new_parent);
-  wm_params.old_parent = Get(params.old_parent);
-  for (auto& observer : observers_)
-    observer.OnWindowTreeChanging(this, wm_params);
-}
-
-void WmWindow::OnWindowHierarchyChanged(const HierarchyChangeParams& params) {
-  WmWindowObserver::TreeChangeParams wm_params;
-  wm_params.target = Get(params.target);
-  wm_params.new_parent = Get(params.new_parent);
-  wm_params.old_parent = Get(params.old_parent);
-  for (auto& observer : observers_)
-    observer.OnWindowTreeChanged(this, wm_params);
-}
-
-void WmWindow::OnWindowStackingChanged(aura::Window* window) {
-  for (auto& observer : observers_)
-    observer.OnWindowStackingChanged(this);
 }
 
 void WmWindow::OnWindowPropertyChanged(aura::Window* window,
@@ -943,65 +906,6 @@ void WmWindow::OnWindowPropertyChanged(aura::Window* window,
     GetWindowState()->set_in_immersive_fullscreen(enable);
     return;
   }
-  WmWindowProperty wm_property;
-  if (key == aura::client::kAlwaysOnTopKey) {
-    wm_property = WmWindowProperty::ALWAYS_ON_TOP;
-  } else if (key == aura::client::kAppIconKey) {
-    wm_property = WmWindowProperty::APP_ICON;
-  } else if (key == aura::client::kDrawAttentionKey) {
-    wm_property = WmWindowProperty::DRAW_ATTENTION;
-  } else if (key == aura::client::kModalKey) {
-    wm_property = WmWindowProperty::MODAL_TYPE;
-  } else if (key == kPanelAttachedKey) {
-    wm_property = WmWindowProperty::PANEL_ATTACHED;
-  } else if (key == kShelfIDKey) {
-    wm_property = WmWindowProperty::SHELF_ID;
-  } else if (key == kShelfItemTypeKey) {
-    wm_property = WmWindowProperty::SHELF_ITEM_TYPE;
-  } else if (key == kSnapChildrenToPixelBoundary) {
-    wm_property = WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY;
-  } else if (key == aura::client::kTopViewInset) {
-    wm_property = WmWindowProperty::TOP_VIEW_INSET;
-  } else if (key == aura::client::kWindowIconKey) {
-    wm_property = WmWindowProperty::WINDOW_ICON;
-  } else {
-    return;
-  }
-  for (auto& observer : observers_)
-    observer.OnWindowPropertyChanged(this, wm_property);
-}
-
-void WmWindow::OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) {
-  for (auto& observer : observers_)
-    observer.OnWindowBoundsChanged(this, old_bounds, new_bounds);
-}
-
-void WmWindow::OnWindowDestroying(aura::Window* window) {
-  for (auto& observer : observers_)
-    observer.OnWindowDestroying(this);
-}
-
-void WmWindow::OnWindowDestroyed(aura::Window* window) {
-  for (auto& observer : observers_)
-    observer.OnWindowDestroyed(this);
-}
-
-void WmWindow::OnWindowVisibilityChanging(aura::Window* window, bool visible) {
-  DCHECK_EQ(window, window_);
-  for (auto& observer : observers_)
-    observer.OnWindowVisibilityChanging(this, visible);
-}
-
-void WmWindow::OnWindowVisibilityChanged(aura::Window* window, bool visible) {
-  for (auto& observer : observers_)
-    observer.OnWindowVisibilityChanged(Get(window), visible);
-}
-
-void WmWindow::OnWindowTitleChanged(aura::Window* window) {
-  for (auto& observer : observers_)
-    observer.OnWindowTitleChanged(this);
 }
 
 void WmWindow::OnTransientChildAdded(aura::Window* window,

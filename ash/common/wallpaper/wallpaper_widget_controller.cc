@@ -67,7 +67,7 @@ WallpaperWidgetController::WallpaperWidgetController(views::Widget* widget)
       widget_parent_(WmLookup::Get()->GetWindowForWidget(widget)->GetParent()) {
   DCHECK(widget_);
   widget_->AddObserver(this);
-  widget_parent_->AddObserver(this);
+  widget_parent_->aura_window()->AddObserver(this);
 }
 
 WallpaperWidgetController::~WallpaperWidgetController() {
@@ -89,11 +89,11 @@ void WallpaperWidgetController::SetBounds(const gfx::Rect& bounds) {
 
 bool WallpaperWidgetController::Reparent(WmWindow* root_window, int container) {
   if (widget_) {
-    widget_parent_->RemoveObserver(this);
+    widget_parent_->aura_window()->RemoveObserver(this);
     WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget_);
     root_window->GetChildByShellWindowId(container)->AddChild(window);
     widget_parent_ = WmLookup::Get()->GetWindowForWidget(widget_)->GetParent();
-    widget_parent_->AddObserver(this);
+    widget_parent_->aura_window()->AddObserver(this);
     return true;
   }
   // Nothing to reparent.
@@ -101,13 +101,13 @@ bool WallpaperWidgetController::Reparent(WmWindow* root_window, int container) {
 }
 
 void WallpaperWidgetController::RemoveObservers() {
-  widget_parent_->RemoveObserver(this);
+  widget_parent_->aura_window()->RemoveObserver(this);
   widget_->RemoveObserver(this);
   widget_ = nullptr;
 }
 
 void WallpaperWidgetController::OnWindowBoundsChanged(
-    WmWindow* window,
+    aura::Window* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
   SetBounds(new_bounds);

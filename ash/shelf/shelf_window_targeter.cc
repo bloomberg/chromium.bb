@@ -8,6 +8,7 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -29,7 +30,7 @@ ShelfWindowTargeter::ShelfWindowTargeter(WmWindow* container, WmShelf* shelf)
                                      gfx::Insets()),
       shelf_(shelf) {
   WillChangeVisibilityState(shelf_->GetVisibilityState());
-  container->AddObserver(this);
+  container->aura_window()->AddObserver(this);
   shelf_->AddObserver(this);
 }
 
@@ -38,7 +39,7 @@ ShelfWindowTargeter::~ShelfWindowTargeter() {
   DCHECK(!shelf_);
 }
 
-void ShelfWindowTargeter::OnWindowDestroying(WmWindow* window) {
+void ShelfWindowTargeter::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
   shelf_->RemoveObserver(this);
   shelf_ = nullptr;

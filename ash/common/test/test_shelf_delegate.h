@@ -10,17 +10,20 @@
 #include <string>
 
 #include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "ui/aura/window_observer.h"
 
 namespace ash {
+
+class WmWindow;
+
 namespace test {
 
 class ShelfInitializer;
 
 // Test implementation of ShelfDelegate.
 // Tests may create icons for windows by calling AddShelfItem().
-class TestShelfDelegate : public ShelfDelegate, public WmWindowObserver {
+class TestShelfDelegate : public ShelfDelegate, public aura::WindowObserver {
  public:
   TestShelfDelegate();
   ~TestShelfDelegate() override;
@@ -45,9 +48,8 @@ class TestShelfDelegate : public ShelfDelegate, public WmWindowObserver {
   static TestShelfDelegate* instance() { return instance_; }
 
   // WindowObserver implementation
-  void OnWindowDestroying(WmWindow* window) override;
-  void OnWindowTreeChanging(WmWindow* window,
-                            const TreeChangeParams& params) override;
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
 
   // ShelfDelegate implementation.
   ShelfID GetShelfIDForAppID(const std::string& app_id) override;

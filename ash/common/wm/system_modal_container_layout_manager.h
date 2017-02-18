@@ -11,8 +11,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
-#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "ui/aura/window_observer.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace gfx {
@@ -27,7 +27,7 @@ class WindowDimmer;
 // when the container size changes.
 class ASH_EXPORT SystemModalContainerLayoutManager
     : public wm::WmSnapToPixelLayoutManager,
-      public WmWindowObserver,
+      public aura::WindowObserver,
       public keyboard::KeyboardControllerObserver {
  public:
   explicit SystemModalContainerLayoutManager(WmWindow* container);
@@ -43,9 +43,10 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // Overridden from WmWindowObserver:
-  void OnWindowPropertyChanged(WmWindow* window,
-                               WmWindowProperty property) override;
+  // Overridden from aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;

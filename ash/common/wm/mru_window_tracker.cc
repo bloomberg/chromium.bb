@@ -13,6 +13,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/bind.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -104,7 +105,7 @@ MruWindowTracker::MruWindowTracker() : ignore_window_activations_(false) {
 MruWindowTracker::~MruWindowTracker() {
   WmShell::Get()->RemoveActivationObserver(this);
   for (WmWindow* window : mru_windows_)
-    window->RemoveObserver(this);
+    window->aura_window()->RemoveObserver(this);
 }
 
 MruWindowTracker::WindowList MruWindowTracker::BuildMruWindowList() const {
@@ -137,7 +138,7 @@ void MruWindowTracker::SetActiveWindow(WmWindow* active_window) {
       std::find(mru_windows_.begin(), mru_windows_.end(), active_window);
   // Observe all newly tracked windows.
   if (iter == mru_windows_.end())
-    active_window->AddObserver(this);
+    active_window->aura_window()->AddObserver(this);
   else
     mru_windows_.erase(iter);
   mru_windows_.push_front(active_window);
@@ -149,11 +150,11 @@ void MruWindowTracker::OnWindowActivated(WmWindow* gained_active,
     SetActiveWindow(gained_active);
 }
 
-void MruWindowTracker::OnWindowDestroyed(WmWindow* window) {
+void MruWindowTracker::OnWindowDestroyed(aura::Window* window) {
   // It's possible for OnWindowActivated() to be called after
   // OnWindowDestroying(). This means we need to override OnWindowDestroyed()
   // else we may end up with a deleted window in |mru_windows_|.
-  mru_windows_.remove(window);
+  mru_windows_.remove(WmWindow::Get(window));
   window->RemoveObserver(this);
 }
 
