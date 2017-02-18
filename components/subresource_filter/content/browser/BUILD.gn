@@ -6,8 +6,6 @@ static_library("browser") {
   sources = [
     "content_ruleset_service_delegate.cc",
     "content_ruleset_service_delegate.h",
-    "content_subresource_filter_driver.cc",
-    "content_subresource_filter_driver.h",
     "content_subresource_filter_driver_factory.cc",
     "content_subresource_filter_driver_factory.h",
     "verified_ruleset_dealer.cc",

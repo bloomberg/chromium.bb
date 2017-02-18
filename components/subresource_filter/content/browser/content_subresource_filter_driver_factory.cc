@@ -7,7 +7,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -77,24 +76,10 @@ ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
     : content::WebContentsObserver(web_contents),
       client_(std::move(client)),
       activation_level_(ActivationLevel::DISABLED),
-      measure_performance_(false) {
-  content::RenderFrameHost* main_frame_host = web_contents->GetMainFrame();
-  if (main_frame_host && main_frame_host->IsRenderFrameLive())
-    CreateDriverForFrameHostIfNeeded(main_frame_host);
-}
+      measure_performance_(false) {}
 
 ContentSubresourceFilterDriverFactory::
     ~ContentSubresourceFilterDriverFactory() {}
-
-void ContentSubresourceFilterDriverFactory::CreateDriverForFrameHostIfNeeded(
-    content::RenderFrameHost* render_frame_host) {
-  auto iterator_and_inserted =
-      frame_drivers_.insert(std::make_pair(render_frame_host, nullptr));
-  if (iterator_and_inserted.second) {
-    iterator_and_inserted.first->second.reset(
-        new ContentSubresourceFilterDriver(render_frame_host));
-  }
-}
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
   if (ShouldSuppressNotifications())
@@ -179,10 +164,10 @@ void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
   // filtering for the subsequent error page load. This is probably harmless,
   // but not sending an activation message is even cleaner.
   if (activation_level_ != ActivationLevel::DISABLED && !failed_navigation) {
-    auto* driver = DriverFromFrameHost(render_frame_host);
-    DCHECK(driver);
-    driver->ActivateForNextCommittedLoad(GetMaximumActivationLevel(),
-                                         measure_performance_);
+    render_frame_host->Send(
+        new SubresourceFilterMsg_ActivateForNextCommittedLoad(
+            render_frame_host->GetRoutingID(), activation_level_,
+            measure_performance_));
   }
 }
 
@@ -191,21 +176,6 @@ void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
   const GURL& whitelist_url = web_contents()->GetLastCommittedURL();
   AddHostOfURLToWhitelistSet(whitelist_url);
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
-}
-
-void ContentSubresourceFilterDriverFactory::SetDriverForFrameHostForTesting(
-    content::RenderFrameHost* render_frame_host,
-    std::unique_ptr<ContentSubresourceFilterDriver> driver) {
-  auto iterator_and_inserted =
-      frame_drivers_.insert(std::make_pair(render_frame_host, nullptr));
-  iterator_and_inserted.first->second = std::move(driver);
-}
-
-ContentSubresourceFilterDriver*
-ContentSubresourceFilterDriverFactory::DriverFromFrameHost(
-    content::RenderFrameHost* render_frame_host) {
-  auto iterator = frame_drivers_.find(render_frame_host);
-  return iterator == frame_drivers_.end() ? nullptr : iterator->second.get();
 }
 
 void ContentSubresourceFilterDriverFactory::ResetActivationState() {
@@ -230,16 +200,6 @@ void ContentSubresourceFilterDriverFactory::DidRedirectNavigation(
   DCHECK(!navigation_handle->IsSamePage());
   if (navigation_handle->IsInMainFrame())
     navigation_chain_.push_back(navigation_handle->GetURL());
-}
-
-void ContentSubresourceFilterDriverFactory::RenderFrameCreated(
-    content::RenderFrameHost* render_frame_host) {
-  CreateDriverForFrameHostIfNeeded(render_frame_host);
-}
-
-void ContentSubresourceFilterDriverFactory::RenderFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-  frame_drivers_.erase(render_frame_host);
 }
 
 void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigation(

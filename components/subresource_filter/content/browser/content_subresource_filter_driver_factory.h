@@ -31,7 +31,6 @@ class SafeBrowsingServiceTest;
 
 namespace subresource_filter {
 
-class ContentSubresourceFilterDriver;
 class SubresourceFilterClient;
 enum class ActivationLevel;
 enum class ActivationList;
@@ -41,7 +40,8 @@ using URLToActivationListsMap =
     std::unordered_map<std::string, std::set<ActivationList>>;
 
 // Controls the activation of subresource filtering for each page load in a
-// WebContents and manufactures the per-frame ContentSubresourceFilterDrivers.
+// WebContents and is responsible for sending the activation signal to all the
+// per-frame SubresourceFilterAgents on the renderer side.
 class ContentSubresourceFilterDriverFactory
     : public base::SupportsUserData::Data,
       public content::WebContentsObserver {
@@ -79,19 +79,6 @@ class ContentSubresourceFilterDriverFactory
   friend class ContentSubresourceFilterDriverFactoryTest;
   friend class safe_browsing::SafeBrowsingServiceTest;
 
-  typedef std::map<content::RenderFrameHost*,
-                   std::unique_ptr<ContentSubresourceFilterDriver>>
-      FrameHostToOwnedDriverMap;
-
-  void SetDriverForFrameHostForTesting(
-      content::RenderFrameHost* render_frame_host,
-      std::unique_ptr<ContentSubresourceFilterDriver> driver);
-
-  void CreateDriverForFrameHostIfNeeded(
-      content::RenderFrameHost* render_frame_host);
-  ContentSubresourceFilterDriver* DriverFromFrameHost(
-      content::RenderFrameHost* render_frame_host);
-
   void ResetActivationState();
 
   void OnFirstSubresourceLoadDisallowed();
@@ -105,8 +92,6 @@ class ContentSubresourceFilterDriverFactory
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -135,7 +120,6 @@ class ContentSubresourceFilterDriverFactory
   void AddActivationListMatch(const GURL& url, ActivationList match_type);
   void RecordRedirectChainMatchPattern() const;
 
-  FrameHostToOwnedDriverMap frame_drivers_;
   std::unique_ptr<SubresourceFilterClient> client_;
 
   HostPathSet whitelisted_hosts_;
