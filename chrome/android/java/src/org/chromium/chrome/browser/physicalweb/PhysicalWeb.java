@@ -25,6 +25,7 @@ public class PhysicalWeb {
     public static final int OPTIN_NOTIFY_MAX_TRIES = 1;
     private static final String PREF_PHYSICAL_WEB_NOTIFY_COUNT = "physical_web_notify_count";
     private static final String FEATURE_NAME = "PhysicalWeb";
+    private static final String PHYSICAL_WEB_SHARING_FEATURE_NAME = "PhysicalWebSharing";
     private static final int MIN_ANDROID_VERSION = 18;
 
     /**
@@ -44,6 +45,15 @@ public class PhysicalWeb {
      */
     public static boolean isPhysicalWebPreferenceEnabled() {
         return PrivacyPreferencesManager.getInstance().isPhysicalWebEnabled();
+    }
+
+    /**
+     * Checks whether the Physical Web Sharing feature is enabled.
+     *
+     * @return boolean {@code true} if the feature is enabled
+     */
+    public static boolean sharingIsEnabled() {
+        return ChromeFeatureList.isEnabled(PHYSICAL_WEB_SHARING_FEATURE_NAME);
     }
 
     /**

@@ -60,6 +60,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &NTPShowGoogleGInOmniboxFeature,
     &kNTPSuggestionsStandaloneUIFeature,
     &kPhysicalWebFeature,
+    &kPhysicalWebSharing,
     &kSpecialLocaleFeature,
     &kSpecialLocaleWrapper,
     &kTabsInCBD,
@@ -148,6 +149,9 @@ const base::Feature kNTPSuggestionsStandaloneUIFeature{
 
 const base::Feature kPhysicalWebFeature{"PhysicalWeb",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kPhysicalWebSharing{"PhysicalWebSharing",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSpecialLocaleFeature{"SpecialLocale",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

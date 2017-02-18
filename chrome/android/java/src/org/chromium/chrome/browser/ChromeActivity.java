@@ -98,6 +98,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.physicalweb.PhysicalWebShareActivity;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -1157,9 +1158,16 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         final Tab currentTab = getActivityTab();
         if (currentTab == null) return;
 
+        List<Class<? extends Activity>> classesToEnable = new ArrayList<>(2);
+
         if (PrintShareActivity.printingIsEnabled(currentTab)) {
-            List<Class<? extends Activity>> classesToEnable = new ArrayList<>(1);
             classesToEnable.add(PrintShareActivity.class);
+        }
+        if (PhysicalWebShareActivity.sharingIsEnabled(currentTab)) {
+            classesToEnable.add(PhysicalWebShareActivity.class);
+        }
+
+        if (!classesToEnable.isEmpty()) {
             OptionalShareTargetsManager.enableOptionalShareActivities(
                     this, classesToEnable, new Runnable() {
                         @Override
