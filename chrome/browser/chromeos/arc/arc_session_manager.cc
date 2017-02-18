@@ -118,8 +118,12 @@ void ArcSessionManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kArcEnabled, false);
   registry->RegisterBooleanPref(prefs::kArcSignedIn, false);
   registry->RegisterBooleanPref(prefs::kArcTermsAccepted, false);
-  registry->RegisterBooleanPref(prefs::kArcBackupRestoreEnabled, true);
-  registry->RegisterBooleanPref(prefs::kArcLocationServiceEnabled, true);
+  // Note that ArcBackupRestoreEnabled and ArcLocationServiceEnabled prefs have
+  // to be off by default, until an explicit gesture from the user to enable
+  // them is received. This is crucial in the cases when these prefs transition
+  // from a previous managed state to the unmanaged.
+  registry->RegisterBooleanPref(prefs::kArcBackupRestoreEnabled, false);
+  registry->RegisterBooleanPref(prefs::kArcLocationServiceEnabled, false);
 }
 
 // static
@@ -706,18 +710,30 @@ void ArcSessionManager::RequestEnableImpl() {
     return;
   }
 
+  PrefService* const prefs = profile_->GetPrefs();
+
   // For ARC Kiosk we skip ToS because it is very likely that near the device
   // there will be no one who is eligible to accept them.
   // TODO(poromov): Move to more Kiosk dedicated set-up phase.
   if (IsArcKioskMode())
-    profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
+    prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+
+  // Skip to show UI asking users to enable/disable their preference for
+  // backup-restore and location-service, if both are managed by the admin
+  // policy. Note that the ToS agreement is anyway not shown in the case of the
+  // managed ARC.
+  if (IsArcManaged() &&
+      prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled) &&
+      prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled)) {
+    prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  }
 
   // If it is marked that sign in has been successfully done, then directly
   // start ARC.
-  // For testing, and for Kisok mode, we also skip ToS negotiation procedure.
+  // For testing, and for Kiosk mode, we also skip ToS negotiation procedure.
   // For backward compatibility, this check needs to be prior to the
   // kArcTermsAccepted check below.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn) ||
+  if (prefs->GetBoolean(prefs::kArcSignedIn) ||
       IsArcOptInVerificationDisabled() || IsArcKioskMode()) {
     StartArc();
 
@@ -751,10 +767,12 @@ void ArcSessionManager::RequestEnableImpl() {
   // 1) User accepted the Terms of service on OOBE flow.
   // 2) User accepted the Terms of service on Opt-in flow, but logged out
   //   before ARC sign in procedure was done. Then, logs in again.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
+  if (prefs->GetBoolean(prefs::kArcTermsAccepted)) {
     // Don't show UI for this progress if it was not shown.
-    if (support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE)
+    if (support_host_ &&
+        support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE) {
       support_host_->ShowArcLoading();
+    }
     StartArcAndroidManagementCheck();
     return;
   }

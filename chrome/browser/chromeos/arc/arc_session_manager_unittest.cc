@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/bind.h"
@@ -11,10 +12,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/run_loop.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
@@ -42,6 +45,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
@@ -566,6 +570,75 @@ TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
 
   arc_session_manager()->Shutdown();
 }
+
+class ArcSessionManagerPolicyTest
+    : public ArcSessionManagerTest,
+      public testing::WithParamInterface<std::tuple<base::Value, base::Value>> {
+ public:
+  const base::Value& backup_restore_pref_value() const {
+    return std::get<0>(GetParam());
+  }
+
+  const base::Value& location_service_pref_value() const {
+    return std::get<1>(GetParam());
+  }
+};
+
+TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
+  sync_preferences::TestingPrefServiceSyncable* const prefs =
+      profile()->GetTestingPrefService();
+
+  // Backup-restore and location-service prefs are off by default.
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcTermsAccepted));
+
+  // Set ARC to be managed.
+  prefs->SetManagedPref(prefs::kArcEnabled, new base::Value(true));
+
+  // Assign test values to the prefs.
+  if (backup_restore_pref_value().is_bool()) {
+    prefs->SetManagedPref(prefs::kArcBackupRestoreEnabled,
+                          backup_restore_pref_value().DeepCopy());
+  }
+  if (location_service_pref_value().is_bool()) {
+    prefs->SetManagedPref(prefs::kArcLocationServiceEnabled,
+                          location_service_pref_value().DeepCopy());
+  }
+
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  EXPECT_TRUE(arc_session_manager()->IsArcPlayStoreEnabled());
+  EXPECT_TRUE(arc_session_manager()->IsArcManaged());
+
+  // Terms of Service should be skipped if both ArcBackupRestoreEnabled and
+  // ArcLocationServiceEnabled are managed.
+  const ArcSessionManager::State expected_state =
+      backup_restore_pref_value().is_bool() &&
+              location_service_pref_value().is_bool()
+          ? ArcSessionManager::State::ACTIVE
+          : ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE;
+  EXPECT_EQ(expected_state, arc_session_manager()->state());
+
+  // Managed values for the prefs are unset.
+  prefs->RemoveManagedPref(prefs::kArcBackupRestoreEnabled);
+  prefs->RemoveManagedPref(prefs::kArcLocationServiceEnabled);
+
+  // The ARC state is preserved. The prefs return to the default false values.
+  EXPECT_EQ(expected_state, arc_session_manager()->state());
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcLocationServiceEnabled));
+
+  // Stop ARC and shutdown the service.
+  prefs->RemoveManagedPref(prefs::kArcEnabled);
+  WaitForDataRemoved(ArcSessionManager::State::STOPPED);
+  arc_session_manager()->Shutdown();
+}
+
+INSTANTIATE_TEST_CASE_P(
+    ArcSessionManagerPolicyTest,
+    ArcSessionManagerPolicyTest,
+    testing::Combine(
+        testing::Values(base::Value(), base::Value(false), base::Value(true)),
+        testing::Values(base::Value(), base::Value(false), base::Value(true))));
 
 class ArcSessionManagerKioskTest : public ArcSessionManagerTestBase {
  public:

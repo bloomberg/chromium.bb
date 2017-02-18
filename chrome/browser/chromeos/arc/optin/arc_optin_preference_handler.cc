@@ -72,14 +72,26 @@ void ArcOptInPreferenceHandler::SendMetricsMode() {
 }
 
 void ArcOptInPreferenceHandler::SendBackupAndRestoreMode() {
+  // Override the pref default to the true value, in order to encourage users to
+  // consent with it during OptIn flow.
+  const bool enabled =
+      pref_service_->HasPrefPath(prefs::kArcBackupRestoreEnabled)
+          ? pref_service_->GetBoolean(prefs::kArcBackupRestoreEnabled)
+          : true;
   observer_->OnBackupAndRestoreModeChanged(
-      pref_service_->GetBoolean(prefs::kArcBackupRestoreEnabled),
+      enabled,
       pref_service_->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
 }
 
 void ArcOptInPreferenceHandler::SendLocationServicesMode() {
+  // Override the pref default to the true value, in order to encourage users to
+  // consent with it during OptIn flow.
+  const bool enabled =
+      pref_service_->HasPrefPath(prefs::kArcLocationServiceEnabled)
+          ? pref_service_->GetBoolean(prefs::kArcLocationServiceEnabled)
+          : true;
   observer_->OnLocationServicesModeChanged(
-      pref_service_->GetBoolean(prefs::kArcLocationServiceEnabled),
+      enabled,
       pref_service_->IsManagedPreference(prefs::kArcLocationServiceEnabled));
 }
 

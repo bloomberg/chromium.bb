@@ -20,6 +20,10 @@ class ArcOptInPreferenceHandlerObserver;
 // observes changes there. Changes in preferences and metrics mode are passed to
 // external consumer via ArcOptInPreferenceHandlerObserver. Once started it
 // immediately sends current state of metrics mode and preferences.
+//
+// Note that the preferences and metrics mode passed by this class should only
+// be used for the OptIn flow, as this class overrides some of the defaults in
+// order to encourage users to consent with the settings.
 class ArcOptInPreferenceHandler {
  public:
   ArcOptInPreferenceHandler(ArcOptInPreferenceHandlerObserver* observer,
