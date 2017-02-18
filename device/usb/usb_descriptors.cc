@@ -82,10 +82,14 @@ void OnDoneReadingConfigDescriptors(
     std::unique_ptr<UsbDeviceDescriptor> desc,
     const base::Callback<void(std::unique_ptr<UsbDeviceDescriptor>)>&
         callback) {
-  if (desc->num_configurations == desc->configurations.size())
+  if (desc->num_configurations == desc->configurations.size()) {
     callback.Run(std::move(desc));
-  else
+  } else {
+    LOG(ERROR) << "Failed to read all configuration descriptors. Expected "
+               << static_cast<int>(desc->num_configurations) << ", got "
+               << desc->configurations.size() << ".";
     callback.Run(nullptr);
+  }
 }
 
 void OnReadConfigDescriptor(UsbDeviceDescriptor* desc,
@@ -93,8 +97,14 @@ void OnReadConfigDescriptor(UsbDeviceDescriptor* desc,
                             UsbTransferStatus status,
                             scoped_refptr<IOBuffer> buffer,
                             size_t length) {
-  if (status == USB_TRANSFER_COMPLETED)
-    desc->Parse(std::vector<uint8_t>(buffer->data(), buffer->data() + length));
+  if (status == USB_TRANSFER_COMPLETED) {
+    if (!desc->Parse(
+            std::vector<uint8_t>(buffer->data(), buffer->data() + length))) {
+      LOG(ERROR) << "Failed to parse configuration descriptor.";
+    }
+  } else {
+    LOG(ERROR) << "Failed to read configuration descriptor.";
+  }
   closure.Run();
 }
 
@@ -116,6 +126,8 @@ void OnReadConfigDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
         kControlTransferTimeout,
         base::Bind(&OnReadConfigDescriptor, desc, closure));
   } else {
+    LOG(ERROR) << "Failed to read length for configuration "
+               << static_cast<int>(index) << ".";
     closure.Run();
   }
 }
@@ -127,6 +139,7 @@ void OnReadDeviceDescriptor(
     scoped_refptr<IOBuffer> buffer,
     size_t length) {
   if (status != USB_TRANSFER_COMPLETED) {
+    LOG(ERROR) << "Failed to read device descriptor.";
     callback.Run(nullptr);
     return;
   }
@@ -134,6 +147,7 @@ void OnReadDeviceDescriptor(
   std::unique_ptr<UsbDeviceDescriptor> desc(new UsbDeviceDescriptor());
   if (!desc->Parse(
           std::vector<uint8_t>(buffer->data(), buffer->data() + length))) {
+    LOG(ERROR) << "Device descriptor parsing error.";
     callback.Run(nullptr);
     return;
   }
@@ -430,6 +444,9 @@ bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
         vendor_id = data[8] | data[9] << 8;
         product_id = data[10] | data[11] << 8;
         device_version = data[12] | data[13] << 8;
+        i_manufacturer = data[14];
+        i_product = data[15];
+        i_serial_number = data[16];
         num_configurations = data[17];
         break;
       case kConfigurationDescriptorType:

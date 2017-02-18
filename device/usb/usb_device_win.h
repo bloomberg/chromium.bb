@@ -17,6 +17,8 @@ class SequencedTaskRunner;
 
 namespace device {
 
+struct UsbDeviceDescriptor;
+
 class UsbDeviceWin : public UsbDevice {
  public:
   // UsbDevice implementation:
@@ -36,6 +38,20 @@ class UsbDeviceWin : public UsbDevice {
 
   const std::string& device_path() const { return device_path_; }
   int port_number() const { return port_number_; }
+
+  // Opens the device's parent hub in order to read the device, configuration
+  // and string descriptors.
+  void ReadDescriptors(const base::Callback<void(bool)>& callback);
+
+ private:
+  void OpenOnBlockingThread(const OpenCallback& callback);
+  void OnReadDescriptors(const base::Callback<void(bool)>& callback,
+                         scoped_refptr<UsbDeviceHandle> device_handle,
+                         std::unique_ptr<UsbDeviceDescriptor> descriptor);
+  void OnReadStringDescriptors(
+      const base::Callback<void(bool)>& callback,
+      scoped_refptr<UsbDeviceHandle> device_handle,
+      std::unique_ptr<std::map<uint8_t, base::string16>> string_map);
 
  private:
   base::ThreadChecker thread_checker_;

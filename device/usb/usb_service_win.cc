@@ -334,12 +334,11 @@ void UsbServiceWin::CreateDeviceObject(const std::string& device_path,
   if (!enumeration_ready())
     ++first_enumeration_countdown_;
 
-  scoped_refptr<UsbDeviceWin> device(new UsbDeviceWin(
-      device_path, hub_path, port_number, blocking_task_runner()));
+  scoped_refptr<UsbDeviceWin> device(
+      new UsbDeviceWin(device_path, hub_path, port_number, task_runner()));
   devices_by_path_[device->device_path()] = device;
-
-  // TODO(reillyg): Read device descriptors.
-  DeviceReady(device, true);
+  device->ReadDescriptors(base::Bind(&UsbServiceWin::DeviceReady,
+                                     weak_factory_.GetWeakPtr(), device));
 }
 
 void UsbServiceWin::DeviceReady(scoped_refptr<UsbDeviceWin> device,

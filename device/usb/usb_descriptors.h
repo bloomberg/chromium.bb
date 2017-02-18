@@ -133,6 +133,9 @@ struct UsbDeviceDescriptor {
   uint16_t vendor_id = 0;
   uint16_t product_id = 0;
   uint16_t device_version = 0;
+  uint8_t i_manufacturer = 0;
+  uint8_t i_product = 0;
+  uint8_t i_serial_number = 0;
   uint8_t num_configurations = 0;
   std::vector<UsbConfigDescriptor> configurations;
 };
