@@ -143,7 +143,7 @@ class NGLayoutInlineItem {
   FontFallbackPriority fallback_priority_;
   bool rotate_sideways_;
   const ComputedStyle* style_;
-  Vector<RefPtr<const ShapeResult>, 64> shape_results_;
+  RefPtr<const ShapeResult> shape_result_;
   LayoutObject* layout_object_;
 
   friend class NGInlineNode;

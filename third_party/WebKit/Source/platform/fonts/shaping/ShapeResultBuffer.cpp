@@ -312,7 +312,22 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasis(
   return advance;
 }
 
+// TODO(eae): This is a bit of a hack to allow reuse of the implementation
+// for both ShapeResultBuffer and single ShapeResult use cases. Ideally the
+// logic should move into ShapeResult itself and then the ShapeResultBuffer
+// implementation may wrap that.
 CharacterRange ShapeResultBuffer::getCharacterRange(
+    RefPtr<const ShapeResult> result,
+    TextDirection direction,
+    float totalWidth,
+    unsigned from,
+    unsigned to) {
+  Vector<RefPtr<const ShapeResult>, 64> results;
+  results.push_back(result);
+  return getCharacterRangeInternal(results, direction, totalWidth, from, to);
+}
+
+CharacterRange ShapeResultBuffer::getCharacterRangeInternal(
     const Vector<RefPtr<const ShapeResult>, 64>& results,
     TextDirection direction,
     float totalWidth,
@@ -404,7 +419,7 @@ CharacterRange ShapeResultBuffer::getCharacterRange(TextDirection direction,
                                                     float totalWidth,
                                                     unsigned from,
                                                     unsigned to) const {
-  return getCharacterRange(m_results, direction, totalWidth, from, to);
+  return getCharacterRangeInternal(m_results, direction, totalWidth, from, to);
 }
 
 void ShapeResultBuffer::addRunInfoRanges(const ShapeResult::RunInfo& runInfo,

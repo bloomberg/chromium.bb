@@ -51,14 +51,20 @@ class PLATFORM_EXPORT ShapeResultBuffer {
   Vector<CharacterRange> individualCharacterRanges(TextDirection,
                                                    float totalWidth) const;
 
-  static CharacterRange getCharacterRange(
+  static CharacterRange getCharacterRange(RefPtr<const ShapeResult>,
+                                          TextDirection,
+                                          float totalWidth,
+                                          unsigned from,
+                                          unsigned to);
+
+ private:
+  static CharacterRange getCharacterRangeInternal(
       const Vector<RefPtr<const ShapeResult>, 64>&,
       TextDirection,
       float totalWidth,
       unsigned from,
       unsigned to);
 
- private:
   float fillFastHorizontalGlyphBuffer(GlyphBuffer*, const TextRun&) const;
 
   template <TextDirection>

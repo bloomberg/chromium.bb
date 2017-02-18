@@ -21,6 +21,7 @@
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
+#include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeResultBuffer.h"
 #include "wtf/text/CharacterNames.h"
 
@@ -199,44 +200,34 @@ LayoutUnit NGLayoutInlineItem::InlineSize(unsigned start, unsigned end) const {
   if (start == end)
     return LayoutUnit();
 
-  if (!style_) {
+  if (!style_ || !shape_result_) {
     // Bidi controls do not have widths.
     // TODO(kojii): Atomic inline not supported yet.
     return LayoutUnit();
   }
 
-  float total_width = 0;
-  for (const auto& result : shape_results_)
-    total_width += result->width();
-
   if (start == start_offset_ && end == end_offset_)
-    return LayoutUnit(total_width);
+    return LayoutUnit(shape_result_->width());
 
   return LayoutUnit(ShapeResultBuffer::getCharacterRange(
-                        shape_results_, Direction(), total_width,
+                        shape_result_, Direction(), shape_result_->width(),
                         start - StartOffset(), end - StartOffset())
                         .width());
 }
 
 void NGInlineNode::ShapeText() {
-  // TODO(layout-dev): Should pass the entire range to the shaper as context
-  // and then shape each item based on the relevant font.
+  // TODO(eae): Add support for shaping latin-1 text?
+  text_content_.ensure16Bit();
+
+  // Shape each item with the full context of the entire node.
+  HarfBuzzShaper shaper(text_content_.characters16(), text_content_.length());
   for (auto& item : items_) {
     // Skip object replacement characters and bidi control characters.
     if (!item.style_)
       continue;
-    StringView item_text(text_content_, item.start_offset_,
-                         item.end_offset_ - item.start_offset_);
-    const Font& item_font = item.style_->font();
-    ShapeCache* shape_cache = item_font.shapeCache();
 
-    TextRun item_run(item_text);
-    item_run.setDirection(item.Direction());
-    CachingWordShapeIterator iterator(shape_cache, item_run, &item_font);
-    RefPtr<const ShapeResult> word_result;
-    while (iterator.next(&word_result)) {
-      item.shape_results_.push_back(std::move(word_result));
-    }
+    item.shape_result_ = shaper.shape(&item.Style()->font(), item.Direction(),
+                                      item.StartOffset(), item.EndOffset());
   }
 }
 
