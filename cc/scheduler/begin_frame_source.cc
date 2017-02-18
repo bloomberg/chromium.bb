@@ -261,7 +261,7 @@ void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
 
   // Send a MISSED begin frame if necessary.
   if (missed_begin_frame_args_.IsValid()) {
-    BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
+    const BeginFrameArgs& last_args = obs->LastUsedBeginFrameArgs();
     if (!last_args.IsValid() ||
         (missed_begin_frame_args_.frame_time > last_args.frame_time)) {
       DCHECK((missed_begin_frame_args_.source_id != last_args.source_id) ||
@@ -302,8 +302,19 @@ void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
   missed_begin_frame_args_ = args;
   missed_begin_frame_args_.type = BeginFrameArgs::MISSED;
   std::unordered_set<BeginFrameObserver*> observers(observers_);
-  for (auto* obs : observers)
-    obs->OnBeginFrame(args);
+  for (auto* obs : observers) {
+    // It is possible that the source in which |args| originate changes, or that
+    // our hookup to this source changes, so we have to check for continuity.
+    // See also https://crbug.com/690127 for what may happen without this check.
+    const BeginFrameArgs& last_args = obs->LastUsedBeginFrameArgs();
+    if (!last_args.IsValid() || (args.frame_time > last_args.frame_time)) {
+      DCHECK((args.source_id != last_args.source_id) ||
+             (args.sequence_number > last_args.sequence_number))
+          << "current " << args.AsValue()->ToString() << ", last "
+          << last_args.AsValue()->ToString();
+      obs->OnBeginFrame(args);
+    }
+  }
 }
 
 }  // namespace cc
