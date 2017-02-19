@@ -62,9 +62,7 @@ function test()
 
     var root = dataGrid.rootNode();
 
-    var dialog = new UI.Dialog();
-    dialog.show();
-    var containerElement = dialog.element;
+    var containerElement = document.body.createChild('div');
     containerElement.style.position = "absolute";
     containerElement.style.width = "300px";
     containerElement.style.height = "300px";
