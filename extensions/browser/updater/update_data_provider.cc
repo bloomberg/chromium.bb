@@ -9,8 +9,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/update_client/update_client.h"
-#include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extension_registry.h"
@@ -59,8 +59,9 @@ void UpdateDataProvider::GetData(
 void UpdateDataProvider::RunInstallCallback(const std::string& extension_id,
                                             const base::FilePath& temp_dir) {
   if (!context_) {
-    content::BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::BACKGROUND),
         base::Bind(base::IgnoreResult(&base::DeleteFile), temp_dir, false));
     return;
   } else {
