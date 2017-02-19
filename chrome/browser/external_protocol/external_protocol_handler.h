@@ -140,6 +140,9 @@ class ExternalProtocolHandler {
                                         ui::PageTransition page_transition,
                                         bool has_user_gesture);
 
+  // Clears the external protocol handling data.
+  static void ClearData(Profile* profile);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExternalProtocolHandler);
 };

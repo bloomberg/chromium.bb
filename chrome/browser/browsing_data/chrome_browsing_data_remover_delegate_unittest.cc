@@ -1056,6 +1056,23 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 }
 #endif
 
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveExternalProtocolData) {
+  TestingProfile* profile = GetProfile();
+  // Add external protocol data on profile.
+  base::DictionaryValue prefs;
+  prefs.SetBoolean("tel", true);
+  profile->GetPrefs()->Set(prefs::kExcludedSchemes, prefs);
+
+  EXPECT_FALSE(
+      profile->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+
+  BlockUntilBrowsingDataRemoved(
+      AnHourAgo(), base::Time::Max(),
+      BrowsingDataRemover::REMOVE_EXTERNAL_PROTOCOL_DATA, false);
+  EXPECT_TRUE(
+      profile->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+}
+
 // Test that clearing history deletes favicons not associated with bookmarks.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFaviconsForever) {
   GURL page_url("http://a");

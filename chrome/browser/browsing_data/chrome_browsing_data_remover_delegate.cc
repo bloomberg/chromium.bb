@@ -17,6 +17,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/io_thread.h"
@@ -924,6 +925,11 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   if (remove_mask & BrowsingDataRemover::REMOVE_WEBAPP_DATA)
     webapp_registry_->UnregisterWebappsForUrls(filter);
 #endif
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Remove external protocol data.
+  if (remove_mask & BrowsingDataRemover::REMOVE_EXTERNAL_PROTOCOL_DATA)
+    ExternalProtocolHandler::ClearData(profile_);
 
   synchronous_clear_operations_.GetCompletionCallback().Run();
 }

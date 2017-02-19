@@ -16,6 +16,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -272,6 +273,20 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
 
   // The cache is empty.
   EXPECT_EQ(0, GetCacheSize());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       ExternalProtocolHandlerPrefs) {
+  Profile* profile = browser()->profile();
+  base::DictionaryValue prefs;
+  prefs.SetBoolean("tel", true);
+  profile->GetPrefs()->Set(prefs::kExcludedSchemes, prefs);
+  ExternalProtocolHandler::BlockState block_state =
+      ExternalProtocolHandler::GetBlockState("tel", profile);
+  ASSERT_EQ(ExternalProtocolHandler::BLOCK, block_state);
+  RemoveAndWait(BrowsingDataRemover::REMOVE_SITE_DATA);
+  block_state = ExternalProtocolHandler::GetBlockState("tel", profile);
+  ASSERT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
 }
 
 // Verify that TransportSecurityState data is cleared for REMOVE_CACHE.

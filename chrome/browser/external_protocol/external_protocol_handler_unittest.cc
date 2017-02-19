@@ -260,3 +260,14 @@ TEST_F(ExternalProtocolHandlerTest,
   ASSERT_FALSE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
+
+TEST_F(ExternalProtocolHandlerTest, TestClearProfileState) {
+  base::DictionaryValue prefs;
+  prefs.SetBoolean("tel", true);
+  profile_->GetPrefs()->Set(prefs::kExcludedSchemes, prefs);
+  ASSERT_FALSE(
+      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+  ExternalProtocolHandler::ClearData(profile_.get());
+  ASSERT_TRUE(
+      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+}

@@ -80,6 +80,7 @@ class BrowsingDataRemover {
     REMOVE_WEBAPP_DATA = 1 << 18,
 #endif
     REMOVE_DURABLE_PERMISSION = 1 << 19,
+    REMOVE_EXTERNAL_PROTOCOL_DATA = 1 << 20,
 
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
@@ -101,7 +102,8 @@ class BrowsingDataRemover {
                        REMOVE_WEBAPP_DATA |
 #endif
                        REMOVE_SITE_USAGE_DATA |
-                       REMOVE_DURABLE_PERMISSION,
+                       REMOVE_DURABLE_PERMISSION |
+                       REMOVE_EXTERNAL_PROTOCOL_DATA,
 
     // Datatypes protected by Important Sites.
     IMPORTANT_SITES_DATATYPES = REMOVE_SITE_DATA | REMOVE_CACHE,
