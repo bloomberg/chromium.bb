@@ -150,21 +150,24 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertEqual(updater.create_line_list(results), [])
 
     def test_create_line_list_new_tests(self):
-        # In this example, there are unexpected non-fail results in w3c tests.
+        # In this example, there are three unexpected results. The new
+        # test expectation lines are sorted by test, and then specifier.
         updater = WPTExpectationsUpdater(self.mock_host())
         results = {
+            'external/fake/test/zzzz.html': {
+                'test-mac-mac10.10': {'expected': 'PASS', 'actual': 'FAIL', 'bug': 'crbug.com/test'},
+            },
             'external/fake/test/path.html': {
                 'test-linux-trusty': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
-                'test-mac-mac10.10': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/test'},
                 'test-mac-mac10.11': {'expected': 'FAIL', 'actual': 'TIMEOUT', 'bug': 'crbug.com/test'},
-            }
+            },
         }
         self.assertEqual(
             updater.create_line_list(results),
             [
                 'crbug.com/test [ Linux ] external/fake/test/path.html [ Pass ]',
-                'crbug.com/test [ Mac10.10 ] external/fake/test/path.html [ Pass ]',
                 'crbug.com/test [ Mac10.11 ] external/fake/test/path.html [ Timeout ]',
+                'crbug.com/test [ Mac10.10 ] external/fake/test/zzzz.html [ Failure ]',
             ])
 
     def test_specifier_part(self):
@@ -183,13 +186,14 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         macros = {
             'mac': ['Mac10.10', 'mac10.11'],
             'win': ['Win7', 'win10'],
-            'linux': ['Trusty'],
+            'Linux': ['TRUSTY'],
         }
         self.assertEqual(WPTExpectationsUpdater.simplify_specifiers(['mac10.10', 'mac10.11'], macros), ['Mac'])
         self.assertEqual(WPTExpectationsUpdater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty'], macros), ['Linux', 'Mac'])
         self.assertEqual(
             WPTExpectationsUpdater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty', 'Win7', 'Win10'], macros), [])
         self.assertEqual(WPTExpectationsUpdater.simplify_specifiers(['a', 'b', 'c'], {}), ['A', 'B', 'C'])
+        self.assertEqual(WPTExpectationsUpdater.simplify_specifiers(['Mac', 'Win', 'Linux'], macros), [])
 
     def test_merge_dicts_with_conflict_raise_exception(self):
         updater = WPTExpectationsUpdater(self.mock_host())

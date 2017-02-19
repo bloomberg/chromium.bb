@@ -250,7 +250,7 @@ class WPTExpectationsUpdater(object):
             ['BUG_URL [PLATFORM(S)] TEST_NAME [EXPECTATION(S)]']
         """
         line_list = []
-        for test_name, port_results in merged_results.iteritems():
+        for test_name, port_results in sorted(merged_results.iteritems()):
             for port_names in sorted(port_results):
                 if test_name.startswith('external'):
                     line_parts = [port_results[port_names]['bug']]
@@ -333,7 +333,7 @@ class WPTExpectationsUpdater(object):
             if version_specifiers.issubset(specifiers):
                 specifiers -= version_specifiers
                 specifiers.add(macro_specifier)
-        if specifiers == set(configuration_specifier_macros):
+        if specifiers == {macro.lower() for macro in configuration_specifier_macros.keys()}:
             return []
         return sorted(specifier.capitalize() for specifier in specifiers)
 
