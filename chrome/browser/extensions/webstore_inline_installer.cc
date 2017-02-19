@@ -138,7 +138,8 @@ std::string WebstoreInlineInstaller::GetJsonPostData() {
 
 bool WebstoreInlineInstaller::CheckRequestorAlive() const {
   // The frame or tab may have gone away - cancel installation in that case.
-  return host_ != nullptr && web_contents() != nullptr;
+  return host_ != nullptr && web_contents() != nullptr &&
+         chrome::FindBrowserWithWebContents(web_contents()) != nullptr;
 }
 
 const GURL& WebstoreInlineInstaller::GetRequestorURL() const {
