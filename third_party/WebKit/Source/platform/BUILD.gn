@@ -1509,6 +1509,7 @@ component("platform") {
   if (use_minikin_hyphenation) {
     sources += [
       "text/hyphenation/HyphenationMinikin.cpp",
+      "text/hyphenation/HyphenationMinikin.h",
       "text/hyphenation/HyphenatorAOSP.cpp",
       "text/hyphenation/HyphenatorAOSP.h",
     ]

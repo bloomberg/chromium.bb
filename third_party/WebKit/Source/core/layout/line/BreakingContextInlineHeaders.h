@@ -890,6 +890,7 @@ ALWAYS_INLINE bool BreakingContext::hyphenate(
   unsigned prefixLength = hyphenation.lastHyphenLocation(
       StringView(text.text(), start, len),
       std::min(maxPrefixLength, len - Hyphenation::minimumSuffixLength) + 1);
+  DCHECK_LE(prefixLength, maxPrefixLength);
   if (!prefixLength || prefixLength < Hyphenation::minimumPrefixLength)
     return false;
 
