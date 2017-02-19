@@ -788,8 +788,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     int request_id =
         version_->StartRequest(ServiceWorkerMetrics::EventType::INSTALL,
                                CreateReceiver(BrowserThread::UI, done, result));
-    version_->DispatchSimpleEvent<ServiceWorkerHostMsg_ActivateEventFinished>(
-        request_id, ServiceWorkerMsg_ActivateEvent(request_id));
+    version_->event_dispatcher()->DispatchActivateEvent(
+        version_->CreateSimpleEventCallback(request_id));
   }
 
   void FetchOnIOThread(const base::Closure& done,

@@ -39,6 +39,9 @@ struct ExtendableMessageEvent {
 // Renderer-side interface bound to ServiceWorkerContextClient for dispatching
 // events.
 interface ServiceWorkerEventDispatcher {
+  DispatchActivateEvent()
+      => (blink.mojom.ServiceWorkerEventStatus status,
+          mojo.common.mojom.Time dispatch_event_time);
   // |fetch_event_id| is used internally when sending the response back to the
   // browser process.
   DispatchFetchEvent(int32 fetch_event_id, ServiceWorkerFetchRequest request,

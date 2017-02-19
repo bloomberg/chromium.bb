@@ -97,10 +97,12 @@ class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
  public:
   RejectActivateTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
-  void OnActivateEvent(int embedded_worker_id, int request_id) override {
-    SimulateSend(new ServiceWorkerHostMsg_ActivateEventFinished(
-        embedded_worker_id, request_id,
-        blink::WebServiceWorkerEventResultRejected, base::Time::Now()));
+  void OnActivateEvent(
+      const mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback&
+          callback) override {
+    dispatched_events()->push_back(Event::Activate);
+    callback.Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
+                 base::Time::Now());
   }
 };
 
@@ -215,14 +217,15 @@ TEST_F(ServiceWorkerContextTest, Register) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
-  EXPECT_EQ(2UL, helper_->ipc_sink()->message_count());
+  EXPECT_EQ(1UL, helper_->ipc_sink()->message_count());
+  ASSERT_EQ(1UL, helper_->dispatched_events()->size());
   ASSERT_EQ(2UL, client->events().size());
   EXPECT_EQ(RecordableEmbeddedWorkerInstanceClient::Message::StartWorker,
             client->events()[0]);
   EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
       ServiceWorkerMsg_InstallEvent::ID));
-  EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
-      ServiceWorkerMsg_ActivateEvent::ID));
+  EXPECT_EQ(EmbeddedWorkerTestHelper::Event::Activate,
+            helper_->dispatched_events()->at(0));
   EXPECT_EQ(RecordableEmbeddedWorkerInstanceClient::Message::StopWorker,
             client->events()[1]);
 
@@ -271,13 +274,12 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
   EXPECT_TRUE(called);
 
   EXPECT_EQ(1UL, helper_->ipc_sink()->message_count());
+  EXPECT_EQ(0UL, helper_->dispatched_events()->size());
   ASSERT_EQ(2UL, client->events().size());
   EXPECT_EQ(RecordableEmbeddedWorkerInstanceClient::Message::StartWorker,
             client->events()[0]);
   EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
       ServiceWorkerMsg_InstallEvent::ID));
-  EXPECT_FALSE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
-      ServiceWorkerMsg_ActivateEvent::ID));
   EXPECT_EQ(RecordableEmbeddedWorkerInstanceClient::Message::StopWorker,
             client->events()[1]);
 
@@ -322,14 +324,15 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
-  EXPECT_EQ(2UL, helper_->ipc_sink()->message_count());
+  EXPECT_EQ(1UL, helper_->ipc_sink()->message_count());
+  ASSERT_EQ(1UL, helper_->dispatched_events()->size());
   ASSERT_EQ(2UL, client->events().size());
   EXPECT_EQ(RecordableEmbeddedWorkerInstanceClient::Message::StartWorker,
             client->events()[0]);
   EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
       ServiceWorkerMsg_InstallEvent::ID));
-  EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
-      ServiceWorkerMsg_ActivateEvent::ID));
+  EXPECT_EQ(EmbeddedWorkerTestHelper::Event::Activate,
+            helper_->dispatched_events()->at(0));
   EXPECT_EQ(RecordableEmbeddedWorkerInstanceClient::Message::StopWorker,
             client->events()[1]);
 

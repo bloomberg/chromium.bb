@@ -126,6 +126,13 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
 
   ~MockServiceWorkerEventDispatcher() override {}
 
+  void DispatchActivateEvent(
+      const DispatchActivateEventCallback& callback) override {
+    if (!helper_)
+      return;
+    helper_->OnActivateEventStub(callback);
+  }
+
   void DispatchFetchEvent(int fetch_event_id,
                           const ServiceWorkerFetchRequest& request,
                           mojom::FetchEventPreloadHandlePtr preload_handle,
@@ -319,7 +326,6 @@ bool EmbeddedWorkerTestHelper::OnMessageToWorker(int thread_id,
   bool handled = true;
   current_embedded_worker_id_ = embedded_worker_id;
   IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerTestHelper, message)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ActivateEvent, OnActivateEventStub)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEventStub)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -328,11 +334,11 @@ bool EmbeddedWorkerTestHelper::OnMessageToWorker(int thread_id,
   return handled;
 }
 
-void EmbeddedWorkerTestHelper::OnActivateEvent(int embedded_worker_id,
-                                               int request_id) {
-  SimulateSend(new ServiceWorkerHostMsg_ActivateEventFinished(
-      embedded_worker_id, request_id,
-      blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
+void EmbeddedWorkerTestHelper::OnActivateEvent(
+    const mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback&
+        callback) {
+  dispatched_events()->push_back(Event::Activate);
+  callback.Run(SERVICE_WORKER_OK, base::Time::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(
@@ -519,11 +525,12 @@ void EmbeddedWorkerTestHelper::OnMessageToWorkerStub(
           AsWeakPtr(), thread_id, embedded_worker_id, message));
 }
 
-void EmbeddedWorkerTestHelper::OnActivateEventStub(int request_id) {
+void EmbeddedWorkerTestHelper::OnActivateEventStub(
+    const mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback&
+        callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnActivateEvent, AsWeakPtr(),
-                 current_embedded_worker_id_, request_id));
+      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnActivateEvent,
+                            AsWeakPtr(), callback));
 }
 
 void EmbeddedWorkerTestHelper::OnExtendableMessageEventStub(

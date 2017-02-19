@@ -212,6 +212,8 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const ServiceWorkerVersionAttributes& attrs);
 
   // mojom::ServiceWorkerEventDispatcher
+  void DispatchActivateEvent(
+      const DispatchActivateEventCallback& callback) override;
   void DispatchExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
       const DispatchExtendableMessageEventCallback& callback) override;
@@ -239,7 +241,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       payments::mojom::PaymentAppRequestPtr app_request,
       const DispatchPaymentRequestEventCallback& callback) override;
 
-  void OnActivateEvent(int request_id);
   void OnInstallEvent(int request_id);
   void OnNotificationClickEvent(
       int request_id,

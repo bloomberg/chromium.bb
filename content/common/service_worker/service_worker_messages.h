@@ -282,10 +282,6 @@ IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_InstallEventFinished,
                     bool /* has_fetch_event_handler */,
                     base::Time /* dispatch_event_time */)
 
-IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_ActivateEventFinished,
-                    int /* request_id */,
-                    blink::WebServiceWorkerEventResult,
-                    base::Time /* dispatch_event_time */)
 IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_FetchEventResponse,
                     int /* fetch_event_id */,
                     content::ServiceWorkerFetchEventResult,
@@ -522,9 +518,6 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_CountFeature,
 // Sent via EmbeddedWorker to dispatch events.
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_InstallEvent,
                      int /* request_id */)
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_ActivateEvent,
-                     int /* request_id */)
-
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
                      int /* request_id */)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidClaimClients,

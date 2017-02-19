@@ -427,9 +427,8 @@ void ServiceWorkerRegistration::DispatchActivateEvent(
       ServiceWorkerMetrics::EventType::ACTIVATE,
       base::Bind(&ServiceWorkerRegistration::OnActivateEventFinished, this,
                  activating_version));
-  activating_version
-      ->DispatchSimpleEvent<ServiceWorkerHostMsg_ActivateEventFinished>(
-          request_id, ServiceWorkerMsg_ActivateEvent(request_id));
+  activating_version->event_dispatcher()->DispatchActivateEvent(
+      activating_version->CreateSimpleEventCallback(request_id));
 }
 
 void ServiceWorkerRegistration::OnActivateEventFinished(
