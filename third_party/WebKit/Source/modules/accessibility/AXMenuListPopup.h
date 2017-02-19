@@ -49,6 +49,7 @@ class AXMenuListPopup final : public AXMockObject {
   void didShow();
   void didHide();
   AXObject* activeDescendant() final;
+  void updateChildrenIfNecessary() override;
 
  private:
   explicit AXMenuListPopup(AXObjectCacheImpl&);
@@ -60,7 +61,6 @@ class AXMenuListPopup final : public AXMockObject {
   bool isVisible() const override;
   bool press() const override;
   void addChildren() override;
-  void updateChildrenIfNecessary() override;
   bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
   AXMenuListOption* menuListOptionAXObject(HTMLElement*) const;

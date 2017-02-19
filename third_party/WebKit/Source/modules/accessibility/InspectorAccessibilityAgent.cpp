@@ -470,14 +470,13 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
     (*nodes)->addItem(buildObjectForIgnoredNode(domNode, inspectedAXObject,
                                                 fetchRelatives.fromMaybe(true),
                                                 *nodes, *cache));
-    return Response::OK();
   } else {
     (*nodes)->addItem(
         buildProtocolAXObject(*inspectedAXObject, inspectedAXObject,
                               fetchRelatives.fromMaybe(true), *nodes, *cache));
   }
 
-  if (!inspectedAXObject)
+  if (!inspectedAXObject || !inspectedAXObject->isAXLayoutObject())
     return Response::OK();
 
   AXObject* parent = inspectedAXObject->parentObjectUnignored();
@@ -698,6 +697,19 @@ void InspectorAccessibilityAgent::populateRelatives(
   nodeObject.setChildIds(std::move(childIds));
 }
 
+void InspectorAccessibilityAgent::addChild(
+    std::unique_ptr<protocol::Array<AXNodeId>>& childIds,
+    AXObject& childAXObject,
+    AXObject* inspectedAXObject,
+    std::unique_ptr<protocol::Array<AXNode>>& nodes,
+    AXObjectCacheImpl& cache) const {
+  childIds->addItem(String::number(childAXObject.axObjectID()));
+  if (&childAXObject == inspectedAXObject)
+    return;
+  nodes->addItem(buildProtocolAXObject(childAXObject, inspectedAXObject, true,
+                                       nodes, cache));
+}
+
 void InspectorAccessibilityAgent::addChildren(
     AXObject& axObject,
     AXObject* inspectedAXObject,
@@ -716,14 +728,14 @@ void InspectorAccessibilityAgent::addChildren(
     childIds->addItem(String::number(childAXObject.axObjectID()));
     if (&childAXObject == inspectedAXObject)
       continue;
-    if (&axObject != inspectedAXObject &&
-        (axObject.getNode() ||
-         axObject.parentObjectUnignored() != inspectedAXObject)) {
-      continue;
+    if (&axObject != inspectedAXObject) {
+      if (!inspectedAXObject)
+        continue;
+      if (&axObject != inspectedAXObject->parentObjectUnignored())
+        continue;
     }
 
-    // Only add children of inspected node (or un-inspectable children of
-    // inspected node) to returned nodes.
+    // Only add children/siblings of inspected node to returned nodes.
     std::unique_ptr<AXNode> childNode = buildProtocolAXObject(
         childAXObject, inspectedAXObject, true, nodes, cache);
     nodes->addItem(std::move(childNode));

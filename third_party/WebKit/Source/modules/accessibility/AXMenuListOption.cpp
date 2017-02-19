@@ -26,6 +26,7 @@
 #include "modules/accessibility/AXMenuListOption.h"
 
 #include "SkMatrix44.h"
+#include "core/html/HTMLSelectElement.h"
 #include "modules/accessibility/AXMenuListPopup.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
@@ -38,7 +39,7 @@ AXMenuListOption::AXMenuListOption(HTMLOptionElement* element,
     : AXMockObject(axObjectCache), m_element(element) {}
 
 AXMenuListOption::~AXMenuListOption() {
-  ASSERT(!m_element);
+  DCHECK(!m_element);
 }
 
 void AXMenuListOption::detach() {
@@ -55,6 +56,26 @@ AccessibilityRole AXMenuListOption::roleValue() const {
   if (role)
     return role;
   return MenuListOptionRole;
+}
+
+AXObject* AXMenuListOption::computeParent() const {
+  Node* node = getNode();
+  if (!node)
+    return nullptr;
+  Node* select = toHTMLOptionElement(node)->ownerSelectElement();
+  if (!select)
+    return nullptr;
+  AXObject* selectAXObject = axObjectCache().getOrCreate(select);
+  if (selectAXObject->hasChildren()) {
+    const auto& childObjects = selectAXObject->children();
+    DCHECK(!childObjects.isEmpty());
+    DCHECK_EQ(childObjects.size(), 1UL);
+    DCHECK(childObjects[0]->isMenuListPopup());
+    toAXMenuListPopup(childObjects[0].get())->updateChildrenIfNecessary();
+  } else {
+    selectAXObject->updateChildrenIfNecessary();
+  }
+  return m_parent.get();
 }
 
 Element* AXMenuListOption::actionElement() const {
@@ -115,12 +136,12 @@ void AXMenuListOption::getRelativeBounds(
   AXObject* parent = parentObject();
   if (!parent)
     return;
-  ASSERT(parent->isMenuListPopup());
+  DCHECK(parent->isMenuListPopup());
 
   AXObject* grandparent = parent->parentObject();
   if (!grandparent)
     return;
-  ASSERT(grandparent->isMenuList());
+  DCHECK(grandparent->isMenuList());
   grandparent->getRelativeBounds(outContainer, outBoundsInContainer,
                                  outContainerTransform);
 }
@@ -134,7 +155,7 @@ String AXMenuListOption::textAlternative(bool recursive,
   // If nameSources is non-null, relatedObjects is used in filling it in, so it
   // must be non-null as well.
   if (nameSources)
-    ASSERT(relatedObjects);
+    DCHECK(relatedObjects);
 
   if (!getNode())
     return String();
