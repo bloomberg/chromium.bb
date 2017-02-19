@@ -1852,6 +1852,11 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   // Set to zero to make sure we do not use the previous encoded frame stats
   mbmi->skip = 0;
 
+#if CONFIG_CB4X4
+  x->skip_chroma_rd =
+      (bsize < BLOCK_8X8) && !is_chroma_reference(mi_row, mi_col);
+#endif
+
 #if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     x->source_variance = av1_high_get_sby_perpixel_variance(

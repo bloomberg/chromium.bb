@@ -9035,8 +9035,10 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                                    [pd[1].subsampling_x][pd[1].subsampling_y];
 
 #if CONFIG_CB4X4
-  rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
-                          &uv_skip, bsize, max_uv_tx_size);
+  max_uv_tx_size = AOMMAX(max_uv_tx_size, TX_4X4);
+  if (!x->skip_chroma_rd)
+    rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
+                            &uv_skip, bsize, max_uv_tx_size);
 #else
   rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
                           &uv_skip, AOMMAX(BLOCK_8X8, bsize), max_uv_tx_size);

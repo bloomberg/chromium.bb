@@ -166,6 +166,10 @@ struct macroblock {
 
   int skip;
 
+#if CONFIG_CB4X4
+  int skip_chroma_rd;
+#endif
+
   // note that token_costs is the cost when eob node is skipped
   av1_coeff_cost token_costs[TX_SIZES];
 
