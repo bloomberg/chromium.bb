@@ -38,9 +38,9 @@ declare_args() {
   override_build_date = "N/A"
 
   # Turn on memory profiling in the task profiler when the heap shim is
-  # available, except for official builds for now.
-  enable_memory_task_profiler =
-      use_experimental_allocator_shim && (!is_official_build || is_syzyasan)
+  # available. Profiling can then be enabled at runtime by passing the command
+  # line flag --enable-heap-profiling=task-profiler.
+  enable_memory_task_profiler = use_experimental_allocator_shim
 
   # Partition alloc is included by default except iOS.
   use_partition_alloc = !is_ios
