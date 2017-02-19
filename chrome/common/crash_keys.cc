@@ -249,6 +249,10 @@ size_t RegisterChromeCrashKeys() {
     { "swdh_set_hosted_version_host_pid", crash_keys::kSmallSize },
     { "swdh_set_hosted_version_is_new_process", crash_keys::kSmallSize },
     { "swdh_set_hosted_version_restart_count", crash_keys::kSmallSize },
+
+    // Temporary for https://crbug.com/688425
+    { "navigation_controller_impl_renderer_did_navigate",
+      crash_keys::kLargeSize },
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering

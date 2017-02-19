@@ -40,6 +40,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -187,10 +188,13 @@ void MaybeDumpCopiedNonSameOriginEntry(
       std::string(params.should_replace_current_entry
                       ? "should replace current entry, "
                       : "should not replace current entry, ") +
+      std::string(params.intended_as_new_entry
+                      ? "intended as new entry, "
+                      : "not intended as new entry, ") +
+      std::string(params.url_is_unreachable ? "URL is unreachable, " : "") +
       entry->GetURL().spec() + " -> " + params.url.spec();
-  char debug_buf[2000];
-  base::strlcpy(debug_buf, debug_info.c_str(), arraysize(debug_buf));
-  base::debug::Alias(&debug_buf);
+  base::debug::ScopedCrashKey crash_key(
+      "navigation_controller_impl_renderer_did_navigate", debug_info);
   base::debug::DumpWithoutCrashing();
 }
 
