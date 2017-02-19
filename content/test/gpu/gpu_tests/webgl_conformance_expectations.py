@@ -138,10 +138,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/canvas/canvas-test.html',
         ['win7', 'nvidia', 'd3d9'], bug=690248)
 
-    # Win / Intel HD 530 failures
-    self.Fail('conformance/canvas/to-data-url-test.html',
-        ['win', 'intel'], bug=680797)
-
     # Win / AMD flakiness seen on new tryservers.
     # It's unfortunate that this suppression needs to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
