@@ -6,7 +6,7 @@
 
 syntax = "proto2";
 
-package tether;
+package chromeos.tether;
 
 option optimize_for = LITE_RUNTIME;
 

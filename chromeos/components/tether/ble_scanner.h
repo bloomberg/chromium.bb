@@ -36,9 +36,9 @@ class BleScanner : public device::BluetoothAdapter::Observer {
   BleScanner(const LocalDeviceDataProvider* local_device_data_provider);
   ~BleScanner() override;
 
-  bool RegisterScanFilterForDevice(
+  virtual bool RegisterScanFilterForDevice(
       const cryptauth::RemoteDevice& remote_device);
-  bool UnregisterScanFilterForDevice(
+  virtual bool UnregisterScanFilterForDevice(
       const cryptauth::RemoteDevice& remote_device);
 
   bool IsDeviceRegistered(const std::string& device_id);
@@ -53,6 +53,9 @@ class BleScanner : public device::BluetoothAdapter::Observer {
                    device::BluetoothDevice* bluetooth_device) override;
   void DeviceChanged(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* bluetooth_device) override;
+
+ protected:
+  base::ObserverList<Observer> observer_list_;
 
  private:
   friend class BleScannerTest;
@@ -110,8 +113,6 @@ class BleScanner : public device::BluetoothAdapter::Observer {
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
 
   std::vector<cryptauth::RemoteDevice> registered_remote_devices_;
-
-  base::ObserverList<Observer> observer_list_;
 
   base::WeakPtrFactory<BleScanner> weak_ptr_factory_;
 

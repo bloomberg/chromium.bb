@@ -55,8 +55,7 @@ class BluetoothLowEnergyWeaveClientConnection
  public:
   class Factory {
    public:
-    static std::unique_ptr<BluetoothLowEnergyWeaveClientConnection>
-    NewInstance(
+    static std::unique_ptr<Connection> NewInstance(
         const RemoteDevice& remote_device,
         const std::string& device_address,
         scoped_refptr<device::BluetoothAdapter> adapter,
@@ -68,8 +67,7 @@ class BluetoothLowEnergyWeaveClientConnection
 
    protected:
     // Exposed for testing.
-    virtual std::unique_ptr<BluetoothLowEnergyWeaveClientConnection>
-    BuildInstance(
+    virtual std::unique_ptr<Connection> BuildInstance(
         const RemoteDevice& remote_device,
         const std::string& device_address,
         scoped_refptr<device::BluetoothAdapter> adapter,

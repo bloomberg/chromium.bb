@@ -10,6 +10,8 @@ static_library("tether") {
     "ble_advertisement_device_queue.h",
     "ble_advertiser.cc",
     "ble_advertiser.h",
+    "ble_connection_manager.cc",
+    "ble_connection_manager.h",
     "ble_constants.cc",
     "ble_constants.h",
     "ble_scanner.cc",
@@ -29,6 +31,7 @@ static_library("tether") {
     "//chromeos",
     "//chromeos/components/tether/proto",
     "//components/cryptauth",
+    "//components/cryptauth/ble",
     "//components/proximity_auth/logging",
     "//device/bluetooth",
   ]
@@ -63,6 +66,7 @@ source_set("unit_tests") {
   sources = [
     "ble_advertisement_device_queue_unittest.cc",
     "ble_advertiser_unittest.cc",
+    "ble_connection_manager_unittest.cc",
     "ble_scanner_unittest.cc",
     "host_scan_scheduler_unittest.cc",
     "local_device_data_provider_unittest.cc",
@@ -76,6 +80,7 @@ source_set("unit_tests") {
     "//chromeos/components/tether/proto",
     "//components/cryptauth",
     "//components/cryptauth:test_support",
+    "//components/cryptauth/ble",
     "//device/bluetooth",
     "//device/bluetooth:mocks",
     "//testing/gmock",

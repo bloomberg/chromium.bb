@@ -12,6 +12,32 @@
 namespace cryptauth {
 
 // static
+SecureChannel::Factory* SecureChannel::Factory::factory_instance_ = nullptr;
+
+// static
+std::unique_ptr<SecureChannel> SecureChannel::Factory::NewInstance(
+    std::unique_ptr<Connection> connection,
+    std::unique_ptr<Delegate> delegate) {
+  if (!factory_instance_) {
+    factory_instance_ = new Factory();
+  }
+  return factory_instance_->BuildInstance(std::move(connection),
+                                          std::move(delegate));
+}
+
+// static
+void SecureChannel::Factory::SetInstanceForTesting(Factory* factory) {
+  factory_instance_ = factory;
+}
+
+std::unique_ptr<SecureChannel> SecureChannel::Factory::BuildInstance(
+    std::unique_ptr<Connection> connection,
+    std::unique_ptr<Delegate> delegate) {
+  return base::WrapUnique(
+      new SecureChannel(std::move(connection), std::move(delegate)));
+}
+
+// static
 std::string SecureChannel::StatusToString(const Status& status) {
   switch (status) {
     case Status::DISCONNECTED:
@@ -39,12 +65,11 @@ SecureChannel::PendingMessage::PendingMessage(
 
 SecureChannel::PendingMessage::~PendingMessage() {}
 
-SecureChannel::SecureChannel(
-    std::unique_ptr<Connection> connection,
-    std::unique_ptr<Delegate> delegate)
-    : connection_(std::move(connection)),
+SecureChannel::SecureChannel(std::unique_ptr<Connection> connection,
+                             std::unique_ptr<Delegate> delegate)
+    : status_(Status::DISCONNECTED),
+      connection_(std::move(connection)),
       delegate_(std::move(delegate)),
-      status_(Status::DISCONNECTED),
       weak_ptr_factory_(this) {
   DCHECK(connection_);
   DCHECK(!connection_->IsConnected());

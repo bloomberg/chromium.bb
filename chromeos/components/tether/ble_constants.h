@@ -23,6 +23,9 @@ extern const uint8_t kMaxConcurrentAdvertisements;
 // The service UUID used for BLE advertisements.
 extern const char kAdvertisingServiceUuid[];
 
+// The GATT server UUID used for uWeave.
+extern const char kGattServerUuid[];
+
 }  // namespace tether
 
 }  // namespace chromeos

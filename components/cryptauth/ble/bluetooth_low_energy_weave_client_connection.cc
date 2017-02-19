@@ -43,7 +43,7 @@ std::shared_ptr<BluetoothLowEnergyWeaveClientConnection::Factory>
         nullptr;
 
 // static
-std::unique_ptr<BluetoothLowEnergyWeaveClientConnection>
+std::unique_ptr<Connection>
 BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
     const RemoteDevice& remote_device,
     const std::string& device_address,
@@ -67,7 +67,7 @@ void BluetoothLowEnergyWeaveClientConnection::Factory::SetInstanceForTesting(
   factory_instance_ = factory;
 }
 
-std::unique_ptr<BluetoothLowEnergyWeaveClientConnection>
+std::unique_ptr<Connection>
 BluetoothLowEnergyWeaveClientConnection::Factory::BuildInstance(
     const RemoteDevice& remote_device,
     const std::string& device_address,

@@ -119,6 +119,13 @@ RemoteDevice CreateTestRemoteDevice() {
   return remote_device;
 }
 
+class TestSecureChannel : public SecureChannel {
+ public:
+  TestSecureChannel(std::unique_ptr<Connection> connection,
+                    std::unique_ptr<Delegate> delegate)
+      : SecureChannel(std::move(connection), std::move(delegate)) {}
+};
+
 }  // namespace
 
 class CryptAuthSecureChannelTest : public testing::Test {
@@ -143,7 +150,7 @@ class CryptAuthSecureChannelTest : public testing::Test {
         new FakeConnection(test_device_, /* should_auto_connect */ false);
 
     EXPECT_FALSE(fake_connection_->observers().size());
-    secure_channel_ = base::MakeUnique<SecureChannel>(
+    secure_channel_ = base::MakeUnique<TestSecureChannel>(
         base::WrapUnique(fake_connection_), base::WrapUnique(test_delegate_));
     EXPECT_EQ(static_cast<size_t>(1), fake_connection_->observers().size());
     EXPECT_EQ(secure_channel_.get(), fake_connection_->observers()[0]);

@@ -67,19 +67,34 @@ class SecureChannel : public ConnectionObserver {
     CreateSecureMessageDelegate() = 0;
   };
 
-  SecureChannel(
-      std::unique_ptr<Connection> connection,
-      std::unique_ptr<Delegate> delegate);
+  class Factory {
+   public:
+    static std::unique_ptr<SecureChannel> NewInstance(
+        std::unique_ptr<Connection> connection,
+        std::unique_ptr<Delegate> delegate);
+
+    static void SetInstanceForTesting(Factory* factory);
+
+   protected:
+    virtual std::unique_ptr<SecureChannel> BuildInstance(
+        std::unique_ptr<Connection> connection,
+        std::unique_ptr<Delegate> delegate);
+
+   private:
+    static Factory* factory_instance_;
+  };
+
   ~SecureChannel() override;
 
-  void Initialize();
+  virtual void Initialize();
 
-  void SendMessage(const std::string& feature, const std::string& payload);
+  virtual void SendMessage(const std::string& feature,
+                           const std::string& payload);
 
-  void Disconnect();
+  virtual void Disconnect();
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
 
   Status status() const {
     return status_;
@@ -94,6 +109,12 @@ class SecureChannel : public ConnectionObserver {
   void OnSendCompleted(const cryptauth::Connection& connection,
                        const cryptauth::WireMessage& wire_message,
                        bool success) override;
+
+ protected:
+  SecureChannel(std::unique_ptr<Connection> connection,
+                std::unique_ptr<Delegate> delegate);
+
+  Status status_;
 
  private:
   // Message waiting to be sent. Note that this is *not* the message that will
@@ -123,7 +144,6 @@ class SecureChannel : public ConnectionObserver {
   std::unique_ptr<Delegate> delegate_;
   std::unique_ptr<Authenticator> authenticator_;
   std::unique_ptr<SecureContext> secure_context_;
-  Status status_;
   std::deque<PendingMessage> queued_messages_;
   std::unique_ptr<PendingMessage> pending_message_;
   base::ObserverList<Observer> observer_list_;

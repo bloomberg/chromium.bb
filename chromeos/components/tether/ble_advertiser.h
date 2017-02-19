@@ -35,8 +35,10 @@ class BleAdvertiser {
       const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher);
   virtual ~BleAdvertiser();
 
-  bool StartAdvertisingToDevice(const cryptauth::RemoteDevice& remote_device);
-  bool StopAdvertisingToDevice(const cryptauth::RemoteDevice& remote_device);
+  virtual bool StartAdvertisingToDevice(
+      const cryptauth::RemoteDevice& remote_device);
+  virtual bool StopAdvertisingToDevice(
+      const cryptauth::RemoteDevice& remote_device);
 
  private:
   friend class BleAdvertiserTest;
