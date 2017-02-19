@@ -56,6 +56,10 @@ OverviewButtonTray::OverviewButtonTray(WmShelf* wm_shelf)
   SetIconBorderForShelfAlignment();
   tray_container()->AddChildView(icon_);
 
+  // Since OverviewButtonTray is located on the rightmost position of a
+  // horizontal shelf, no separator is required.
+  set_separator_visibility(false);
+
   WmShell::Get()->AddShellObserver(this);
   WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
 }

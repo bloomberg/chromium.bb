@@ -48,7 +48,7 @@ LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
   button->AdjustFontSize(2);
   button_ = button;
 
-  // Since |logout_button_tray| has a red background and it is distinguished
+  // Since LogoutButtonTray has a red background and it is distinguished
   // by itself, no separator is needed on its right side.
   set_separator_visibility(false);
   tray_container()->AddChildView(button_);

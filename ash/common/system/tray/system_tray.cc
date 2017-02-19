@@ -221,8 +221,9 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
     SetInkDropMode(InkDropMode::ON);
     SetContentsBackground(false);
 
-    // Since |system_tray| locates on the right most position, no separator is
-    // required on its right side.
+    // Since user avatar is on the right hand side of System tray of a
+    // horizontal shelf and that is sufficient to indicate separation, no
+    // separator is required.
     set_separator_visibility(false);
   } else {
     SetContentsBackground(true);
