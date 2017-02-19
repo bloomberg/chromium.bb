@@ -1117,15 +1117,15 @@ translateWithTracing (const char *tableList, const widechar * inbufx,
   else
     memset (typebuf, 0, srcmax * sizeof (formtype));
 	
-	if(wordBuffer = liblouis_allocMem(alloc_wordBuffer, srcmax, destmax))
+	if((wordBuffer = liblouis_allocMem(alloc_wordBuffer, srcmax, destmax)))
 		memset(wordBuffer, 0, (srcmax + 4) * sizeof(unsigned int));
 	else
 		return 0;
-	if(emphasisBuffer = liblouis_allocMem(alloc_emphasisBuffer, srcmax, destmax))
+	if((emphasisBuffer = liblouis_allocMem(alloc_emphasisBuffer, srcmax, destmax)))
 		memset(emphasisBuffer, 0, (srcmax + 4) * sizeof(unsigned int));
 	else
 		return 0;
-	if(transNoteBuffer = liblouis_allocMem(alloc_transNoteBuffer, srcmax, destmax))
+	if((transNoteBuffer = liblouis_allocMem(alloc_transNoteBuffer, srcmax, destmax)))
 		memset(transNoteBuffer, 0, (srcmax + 4) * sizeof(unsigned int));
 	else
 		return 0;
