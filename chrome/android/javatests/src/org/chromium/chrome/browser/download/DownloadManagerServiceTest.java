@@ -306,6 +306,16 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         public void resumeDownload(DownloadItem item, boolean hasUserGesture) {
             mResumed = true;
         }
+
+        @Override
+        protected void scheduleUpdateIfNeeded() {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    DownloadManagerServiceForTest.super.scheduleUpdateIfNeeded();
+                }
+            });
+        }
     }
 
     @Override

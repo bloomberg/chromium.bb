@@ -111,7 +111,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     void handlePendingNotifications() {
         if (mPendingNotifications.isEmpty()) return;
         for (PendingNotificationInfo info : mPendingNotifications) {
-            updateDownloadNotificationOnUiThread(info);
+            updateDownloadNotification(info);
         }
         mPendingNotifications.clear();
     }
@@ -227,25 +227,12 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     }
 
     /**
-     * Helper method to schedule download notification updates, can be called on any thread.
+     * Helper method to schedule download notification updates.
      * @param info Pending notification information to be handled.
      */
-    private void updateDownloadNotification(final PendingNotificationInfo notificationInfo) {
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                updateDownloadNotificationOnUiThread(notificationInfo);
-            }
-        });
-    }
-
-    /**
-     * Updates the download notification on UI thread if the notification service is started.
-     * Otherwise, wait for the notification service to become ready.
-     * @param info Pending notification information to be handled.
-     */
-    private void updateDownloadNotificationOnUiThread(
-            final PendingNotificationInfo notificationInfo) {
+    @VisibleForTesting
+    void updateDownloadNotification(final PendingNotificationInfo notificationInfo) {
+        assert ThreadUtils.runningOnUiThread();
         startAndBindToServiceIfNeeded();
         final DownloadInfo info = notificationInfo.downloadInfo;
         if (notificationInfo.type == DOWNLOAD_NOTIFICATION_TYPE_PROGRESS) {

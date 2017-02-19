@@ -46,6 +46,16 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
                 final SystemDownloadNotifier.PendingNotificationInfo notificationInfo,
                 final int notificationId) {
         }
+
+        @Override
+        void updateDownloadNotification(final PendingNotificationInfo notificationInfo) {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    MockSystemDownloadNotifier.super.updateDownloadNotification(notificationInfo);
+                }
+            });
+        }
     }
 
     @Override
