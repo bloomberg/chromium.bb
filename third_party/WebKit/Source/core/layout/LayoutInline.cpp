@@ -571,29 +571,28 @@ void LayoutInline::addChildToContinuation(LayoutObject* newChild,
       beforeChildParent = flow;
   }
 
-  // TODO(rhogan): Should we treat out-of-flows and floats as through they're
-  // inline below?
-  if (newChild->isFloatingOrOutOfFlowPositioned())
-    return beforeChildParent->addChildIgnoringContinuation(newChild,
-                                                           beforeChild);
-
-  // A table part will be wrapped by an inline anonymous table when it is added
-  // to the layout tree, so treat it as inline when deciding where to add it.
-  bool childInline = newChild->isInline() || newChild->isTablePart();
-  bool bcpInline = beforeChildParent->isInline();
-  bool flowInline = flow->isInline();
-
+  // If the two candidates are the same, no further checking is necessary.
   if (flow == beforeChildParent)
     return flow->addChildIgnoringContinuation(newChild, beforeChild);
 
+  // A table part will be wrapped by an inline anonymous table when it is added
+  // to the layout tree, so treat it as inline when deciding where to add
+  // it. Floating and out-of-flow-positioned objects can also live under
+  // inlines, and since this about adding a child to an inline parent, we
+  // should not put them into a block continuation.
+  bool addInsideInline = newChild->isInline() || newChild->isTablePart() ||
+                         newChild->isFloatingOrOutOfFlowPositioned();
+
   // The goal here is to match up if we can, so that we can coalesce and create
   // the minimal # of continuations needed for the inline.
-  if (childInline == bcpInline || (beforeChild && beforeChild->isInline()))
+  if (addInsideInline == beforeChildParent->isInline() ||
+      (beforeChild && beforeChild->isInline())) {
     return beforeChildParent->addChildIgnoringContinuation(newChild,
                                                            beforeChild);
-  if (flowInline == childInline) {
+  }
+  if (addInsideInline == flow->isInline()) {
     // Just treat like an append.
-    return flow->addChildIgnoringContinuation(newChild, 0);
+    return flow->addChildIgnoringContinuation(newChild);
   }
   return beforeChildParent->addChildIgnoringContinuation(newChild, beforeChild);
 }
