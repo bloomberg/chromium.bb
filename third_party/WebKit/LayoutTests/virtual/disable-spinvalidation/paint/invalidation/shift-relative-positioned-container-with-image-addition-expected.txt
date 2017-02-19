@@ -27,6 +27,11 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutView #document",
+          "rect": [10, 88, 728, 90],
+          "reason": "layout overflow box change"
+        },
+        {
           "object": "LayoutImage IMG",
           "rect": [58, 230, 489, 537],
           "reason": "bounds change"
@@ -74,7 +79,7 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "location change"
+      "reason": "layout overflow box change"
     },
     {
       "object": "LayoutBlockFlow HTML",

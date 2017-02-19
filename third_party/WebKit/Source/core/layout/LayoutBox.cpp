@@ -85,6 +85,7 @@ static const unsigned backgroundObscurationTestMaxDepth = 4;
 
 struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   LayoutRect frameRect;
+  LayoutSize previousSize;
   LayoutUnit intrinsicContentLogicalHeight;
   LayoutRectOutsets marginBoxOutsets;
   LayoutUnit preferredLogicalWidth[2];

@@ -33,8 +33,7 @@ void ViewPaintInvalidator::invalidateBackgroundIfNeeded() {
     return;
 
   const LayoutBox& backgroundBox = toLayoutBox(*backgroundObject);
-  LayoutSize oldSize = BoxPaintInvalidator::previousBorderBoxSize(
-      backgroundBox, backgroundBox.visualRect().size());
+  LayoutSize oldSize = backgroundBox.previousSize();
   LayoutSize newSize = backgroundBox.size();
   const auto& backgroundLayers = m_view.styleRef().backgroundLayers();
   if ((oldSize.width() != newSize.width() &&

@@ -318,6 +318,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return LayoutSize(m_frameRect.x(), m_frameRect.y());
   }
   LayoutSize size() const { return m_frameRect.size(); }
+  LayoutSize previousSize() const { return m_previousSize; }
   IntSize pixelSnappedSize() const { return m_frameRect.pixelSnappedSize(); }
 
   void setLocation(const LayoutPoint& location) {
@@ -1308,6 +1309,21 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   virtual bool hasControlClip() const { return false; }
 
+  class MutableForPainting : public LayoutObject::MutableForPainting {
+   public:
+    void setPreviousSize(const LayoutSize& size) {
+      static_cast<LayoutBox&>(m_layoutObject).m_previousSize = size;
+    }
+
+   protected:
+    friend class LayoutBox;
+    MutableForPainting(const LayoutBox& box)
+        : LayoutObject::MutableForPainting(box) {}
+  };
+  MutableForPainting getMutableForPainting() const {
+    return MutableForPainting(*this);
+  }
+
  protected:
   virtual LayoutRect controlClipRect(const LayoutPoint&) const {
     return LayoutRect();
@@ -1507,21 +1523,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void updateBackgroundAttachmentFixedStatusAfterStyleChange();
 
-  // The CSS border box rect for this box.
-  //
-  // The rectangle is in this box's physical coordinates but with a
-  // flipped block-flow direction (see the COORDINATE SYSTEMS section
-  // in LayoutBoxModelObject). The location is the distance from this
-  // object's border edge to the container's border edge (which is not
-  // always the parent). Thus it includes any logical top/left along
-  // with this box's margins.
-  LayoutRect m_frameRect;
-
-  // Our intrinsic height, used for min-height: min-content etc. Maintained by
-  // updateLogicalHeight. This is logicalHeight() before it is clamped to
-  // min/max.
-  mutable LayoutUnit m_intrinsicContentLogicalHeight;
-
   void inflateVisualRectForFilter(LayoutRect&) const;
   void inflateVisualRectForFilterUnderContainer(
       LayoutRect&,
@@ -1534,6 +1535,24 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void removeSnapArea(const LayoutBox&);
 
   LayoutRect debugRect() const override;
+
+  // The CSS border box rect for this box.
+  //
+  // The rectangle is in this box's physical coordinates but with a
+  // flipped block-flow direction (see the COORDINATE SYSTEMS section
+  // in LayoutBoxModelObject). The location is the distance from this
+  // object's border edge to the container's border edge (which is not
+  // always the parent). Thus it includes any logical top/left along
+  // with this box's margins.
+  LayoutRect m_frameRect;
+
+  // Previous size of m_frameRect, updated after paint invalidation.
+  LayoutSize m_previousSize;
+
+  // Our intrinsic height, used for min-height: min-content etc. Maintained by
+  // updateLogicalHeight. This is logicalHeight() before it is clamped to
+  // min/max.
+  mutable LayoutUnit m_intrinsicContentLogicalHeight;
 
  protected:
   // The logical width of the element if it were to break its lines at every
