@@ -50,10 +50,6 @@ Bug(none) external/wpt/html/browsers/history/the-location-interface/location-pro
 Bug(none) http/tests/security/location-href-clears-username-password.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/security/location-href-clears-username-password.html [ Failure ]
 
-# New untriaged.
-Bug(none) http/tests/navigation/back-to-dynamic-iframe.html [ Failure ]
-Bug(none) virtual/mojo-loading/http/tests/navigation/back-to-dynamic-iframe.html [ Failure ]
-
 # This test seems to be partially failing without PlzNavigate as well.
 
 # These tests are flaky.

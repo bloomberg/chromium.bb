@@ -982,6 +982,17 @@ void NavigatorImpl::OnBeginNavigation(
   NavigationRequest* ongoing_navigation_request =
       frame_tree_node->navigation_request();
 
+  // Client redirects during the initial history navigation of a child frame
+  // should take precedence over the history navigation (despite being renderer-
+  // initiated).  See https://crbug.com/348447 and https://crbug.com/691168.
+  if (ongoing_navigation_request &&
+      ongoing_navigation_request->request_params()
+          .is_history_navigation_in_new_child) {
+    // Preemptively clear this local pointer before deleting the request.
+    ongoing_navigation_request = nullptr;
+    frame_tree_node->ResetNavigationRequest(false);
+  }
+
   // The renderer-initiated navigation request is ignored iff a) there is an
   // ongoing request b) which is browser or user-initiated and c) the renderer
   // request is not user-initiated.
@@ -1150,8 +1161,12 @@ void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
 
   // This value must be set here because creating a NavigationRequest might
   // change the renderer live/non-live status and change this result.
+  // We don't want to dispatch a beforeunload handler if
+  // is_history_navigation_in_new_child is true. This indicates a newly created
+  // child frame which does not have a beforunload handler.
   bool should_dispatch_beforeunload =
       !is_same_document_history_load &&
+      !is_history_navigation_in_new_child &&
       frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload();
   FrameMsg_Navigate_Type::Value navigation_type = GetNavigationType(
       frame_tree_node->current_url(),  // old_url
