@@ -64,9 +64,11 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         if not issue_number:
             return 1
 
-        # TODO(qyearsley): Replace this with git cl try-results to remove
-        # dependency on Rietveld. See crbug.com/671684.
-        builds = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
+        # TODO(qyearsley): Remove dependency on Rietveld. See crbug.com/671684.
+        if options.issue:
+            builds = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
+        else:
+            builds = self.git_cl().latest_try_jobs(self._try_bots())
 
         if options.trigger_jobs:
             if self.trigger_jobs_for_missing_builds(builds):

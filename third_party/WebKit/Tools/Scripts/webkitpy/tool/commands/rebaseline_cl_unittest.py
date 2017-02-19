@@ -176,6 +176,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_execute_with_issue_number_from_branch(self):
         git_cl = GitCL(self.tool)
         git_cl.get_issue_number = lambda: '11112222'
+        git_cl.latest_try_jobs = lambda _: [Build('MOCK Try Win', 5000)]
         self.command.git_cl = lambda: git_cl
         return_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(return_code, 0)

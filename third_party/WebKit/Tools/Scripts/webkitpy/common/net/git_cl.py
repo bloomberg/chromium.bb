@@ -10,6 +10,9 @@ and Buildbucket to manage changelists and try jobs associated with them.
 
 import json
 import logging
+import re
+
+from webkitpy.common.net.buildbot import Build, filter_latest_builds
 
 _log = logging.getLogger(__name__)
 
@@ -17,6 +20,7 @@ _COMMANDS_THAT_REQUIRE_AUTH = (
     'archive', 'comments', 'commit', 'description', 'diff', 'land', 'lint', 'owners', 'patch',
     'presubmit', 'set-close', 'set-commit', 'status', 'try-results', 'try', 'upload',
 )
+
 
 class GitCL(object):
 
@@ -59,8 +63,15 @@ class GitCL(object):
         self._host.print_('Timed out waiting for try results.')
         return None
 
+    def latest_try_jobs(self, builder_names=None):
+        """Returns a list of Builds for the latest jobs for the given builders."""
+        try_results = self.fetch_try_results()
+        if builder_names:
+            try_results = [r for r in try_results if r['builder_name'] in builder_names]
+        return filter_latest_builds(self._try_result_to_build(r) for r in try_results)
+
     def fetch_try_results(self):
-        """Requests results of try jobs for the current CL."""
+        """Requests results f try jobs for the current CL."""
         with self._host.filesystem.mkdtemp() as temp_directory:
             results_path = self._host.filesystem.join(temp_directory, 'try-results.json')
             self.run(['try-results', '--json', results_path])
@@ -68,6 +79,18 @@ class GitCL(object):
             _log.debug('Fetched try results to file "%s".', results_path)
             self._host.filesystem.remove(results_path)
         return json.loads(contents)
+
+    @staticmethod
+    def _try_result_to_build(try_result):
+        """Converts a parsed try result dict to a Build object."""
+        builder_name = try_result['builder_name']
+        url = try_result['url']
+        if url is None:
+            return Build(builder_name, None)
+        match = re.match(r'.*/builds/(\d+)?$', url)
+        build_number = match.group(1)
+        assert build_number and build_number.isdigit()
+        return Build(builder_name, int(build_number))
 
     @staticmethod
     def all_jobs_finished(try_results):

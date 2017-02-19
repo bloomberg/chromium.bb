@@ -28,7 +28,7 @@
 
 import unittest
 
-from webkitpy.common.net.buildbot import BuildBot
+from webkitpy.common.net.buildbot import BuildBot, Build, filter_latest_builds
 
 
 class BuilderTest(unittest.TestCase):
@@ -57,3 +57,24 @@ class BuilderTest(unittest.TestCase):
         buildbot = BuildBot()
         buildbot._fetch_file = lambda: None  # pylint: disable=protected-access
         self.assertIsNone(buildbot.fetch_layout_test_results(buildbot.results_url('Builder')))
+
+
+class BuildBotHelperFunctionTest(unittest.TestCase):
+
+    def test_filter_latest_jobs_empty(self):
+        self.assertEqual(filter_latest_builds([]), [])
+
+    def test_filter_latest_jobs_higher_build_first(self):
+        self.assertEqual(
+            filter_latest_builds([Build('foo', 5), Build('foo', 3), Build('bar', 5)]),
+            [Build('bar', 5), Build('foo', 5)])
+
+    def test_filter_latest_jobs_higher_build_last(self):
+        self.assertEqual(
+            filter_latest_builds([Build('foo', 3), Build('bar', 5), Build('foo', 5)]),
+            [Build('bar', 5), Build('foo', 5)])
+
+    def test_filter_latest_jobs_no_build_number(self):
+        self.assertEqual(
+            filter_latest_builds([Build('foo', 3), Build('bar'), Build('bar')]),
+            [Build('bar'), Build('foo', 3)])

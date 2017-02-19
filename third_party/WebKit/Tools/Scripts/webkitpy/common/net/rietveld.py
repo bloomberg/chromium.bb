@@ -8,7 +8,7 @@ import json
 import logging
 import urllib2
 
-from webkitpy.common.net.buildbot import Build
+from webkitpy.common.net.buildbot import Build, filter_latest_builds
 
 _log = logging.getLogger(__name__)
 
@@ -55,26 +55,7 @@ class Rietveld(object):
         if builder_names is not None:
             builds = [b for b in builds if b.builder_name in builder_names]
 
-        return self._filter_latest_builds(builds)
-
-    def _filter_latest_builds(self, builds):
-        """Filters out a collection of Build objects to include only the latest for each builder.
-
-        Args:
-            jobs: A list of Build objects.
-
-        Returns:
-            A list of Build objects; only one Build object per builder name. If there are only
-            Builds with no build number, then one is kept; if there are Builds with build numbers,
-            then the one with the highest build number is kept.
-        """
-        builder_to_latest_build = {}
-        for build in builds:
-            if build.builder_name not in builder_to_latest_build:
-                builder_to_latest_build[build.builder_name] = build
-            elif build.build_number > builder_to_latest_build[build.builder_name].build_number:
-                builder_to_latest_build[build.builder_name] = build
-        return sorted(builder_to_latest_build.values())
+        return filter_latest_builds(builds)
 
     def changed_files(self, issue_number):
         """Lists the files included in a CL that are changed but not deleted.

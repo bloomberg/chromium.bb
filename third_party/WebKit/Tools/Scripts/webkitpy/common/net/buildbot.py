@@ -130,3 +130,23 @@ def current_build_link(host):
     if not (master_name and builder_name and build_number):
         return None
     return 'https://build.chromium.org/p/%s/builders/%s/builds/%s' % (master_name, builder_name, build_number)
+
+
+def filter_latest_builds(builds):
+    """Filters Build objects to include only the latest for each builder.
+
+    Args:
+        builds: A collection of Build objects.
+
+    Returns:
+        A list of Build objects; only one Build object per builder name. If
+        there are only Builds with no build number, then one is kept; if there
+        are Builds with build numbers, then the one with the highest build
+        number is kept.
+    """
+    latest_builds = {}
+    for build in builds:
+        builder = build.builder_name
+        if builder not in latest_builds or build.build_number > latest_builds[builder].build_number:
+            latest_builds[builder] = build
+    return sorted(latest_builds.values())
