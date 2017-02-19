@@ -52,6 +52,7 @@ EXTRA_DIST =					\
 	lt_harness.yaml				\
 	mn-MN_harness.yaml			\
 	multipass.yaml			\
+	multipass-backward.yaml			\
 	multipass-forward.yaml			\
 	nl-g0_harness.yaml			\
 	nl-NL-g0_harness.yaml			\
