@@ -459,6 +459,17 @@ void DOMSelection::extend(Node* node,
   // 3. Let oldAnchor and oldFocus be the context object's anchor and focus, and
   // let newFocus be the boundary point (node, offset).
   const Position& oldAnchor = anchorPosition();
+  // TODO(tkent): Diagnostic checks for crbug.com/693578.  They should be
+  // removed before M58 branch.
+  if (oldAnchor.isNull()) {
+    if (Range* range = documentCachedRange()) {
+      LOG(FATAL)
+          << "Selection has a cached Range, but anchorPosition is null. start="
+          << range->startContainer() << " end=" << range->endContainer();
+    } else if (frame() && !frame()->selection().isNone()) {
+      LOG(FATAL) << "FrameSelection is not none, but anchorPosition is null.";
+    }
+  }
   DCHECK(!oldAnchor.isNull());
   const Position newFocus(node, offset);
 
