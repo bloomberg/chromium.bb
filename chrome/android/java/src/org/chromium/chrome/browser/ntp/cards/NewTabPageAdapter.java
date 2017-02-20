@@ -73,7 +73,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mUiConfig = uiConfig;
         mRoot = new InnerNode();
 
-        mSections = new SectionList(mUiDelegate, offlinePageBridge, mUiConfig);
+        mSections = new SectionList(mUiDelegate, offlinePageBridge);
         mSigninPromo = new SignInPromo(mUiDelegate);
         mAllDismissed = new AllDismissedItem();
         mFooter = new Footer();

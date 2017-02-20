@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,12 +35,9 @@ public class SectionList
     private final SuggestionsUiDelegate mUiDelegate;
     private final OfflinePageBridge mOfflinePageBridge;
     private final SuggestionsRanker mSuggestionsRanker;
-    private final UiConfig mUiConfig;
 
-    public SectionList(SuggestionsUiDelegate uiDelegate, OfflinePageBridge offlinePageBridge,
-            UiConfig uiConfig) {
+    public SectionList(SuggestionsUiDelegate uiDelegate, OfflinePageBridge offlinePageBridge) {
         mSuggestionsRanker = new SuggestionsRanker();
-        mUiConfig = uiConfig;
         mUiDelegate = uiDelegate;
         mUiDelegate.getSuggestionsSource().setObserver(this);
         mUiDelegate.getMetricsReporter().setRanker(mSuggestionsRanker);
@@ -246,9 +242,6 @@ public class SectionList
     private void maybeHideArticlesHeader() {
         // If there is more than a section we want to show the headers for disambiguation purposes.
         if (mSections.size() != 1) return;
-
-        // On larger screens there is no need to hide the header and showing it is more consistent.
-        if (!mUiConfig.getCurrentDisplayStyle().isSmall()) return;
 
         SuggestionsSection articlesSection = mSections.get(KnownCategories.ARTICLES);
         if (articlesSection == null) return;
