@@ -486,6 +486,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         public void onThumbnailRetrieved(String filePath, Bitmap thumbnail) {
             if (TextUtils.equals(getFilePath(), filePath) && thumbnail != null
                     && thumbnail.getWidth() > 0 && thumbnail.getHeight() > 0) {
+                assert !thumbnail.isRecycled();
                 onResult(thumbnail);
             }
         }

@@ -72,7 +72,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
         if (TextUtils.isEmpty(filePath)) return null;
 
         Bitmap cachedBitmap = getBitmapCache().get(filePath);
-        if (cachedBitmap != null) return cachedBitmap;
+        if (cachedBitmap != null && !cachedBitmap.isRecycled()) return cachedBitmap;
 
         mRequestQueue.offer(request);
         processQueue();
@@ -101,7 +101,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
         String currentFilePath = mCurrentRequest.getFilePath();
 
         Bitmap cachedBitmap = getBitmapCache().get(currentFilePath);
-        if (cachedBitmap == null) {
+        if (cachedBitmap == null || cachedBitmap.isRecycled()) {
             // Asynchronously process the file to make a thumbnail.
             nativeRetrieveThumbnail(mNativeThumbnailProvider, currentFilePath, mIconSizePx);
         } else {
