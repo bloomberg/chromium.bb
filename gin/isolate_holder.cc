@@ -34,9 +34,7 @@ IsolateHolder::IsolateHolder(
 IsolateHolder::IsolateHolder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     AccessMode access_mode)
-    : IsolateHolder(std::move(task_runner),
-                    AccessMode::kSingleThread,
-                    kAllowAtomicsWait) {}
+    : IsolateHolder(std::move(task_runner), access_mode, kAllowAtomicsWait) {}
 
 IsolateHolder::IsolateHolder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
