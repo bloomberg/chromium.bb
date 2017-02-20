@@ -1,4 +1,5 @@
 CONSOLE WARNING: line 21: The behavior that Selection.addRange() merges existing Range and the specified Range was removed. See https://www.chromestatus.com/features/6680566019653632 for more details.
-CONSOLE ERROR: line 38: Uncaught HierarchyRequestError: Failed to execute 'insertNode' on 'Range': The node to be inserted contains the insertion point; it may not be inserted into itself.
+CONSOLE ERROR: line 56: Uncaught HierarchyRequestError: Failed to execute 'insertNode' on 'Range': The node to be inserted contains the insertion point; it may not be inserted into itself.
+text
 a
 Test passes if it does not CRASH.
