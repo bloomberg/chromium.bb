@@ -150,10 +150,24 @@ message ProcessState {
   // TODO(manzagop): add experiment state.
 }
 
+// Description of a field trial or experiment that the user is currently
+// enrolled in. This message is an analogue of the UMA proto in
+// components/metrics/proto/system_profile.proto. For details about generating
+// the identifiers from the field trial and group names, see
+// variations::MakeActiveGroupId().
+// Next id: 3
+message FieldTrial {
+  // A 32-bit identifier for the name of the field trial.
+  optional fixed32 name_id = 1;
+
+  // A 32-bit identifier for the user's group within the field trial.
+  optional fixed32 group_id = 2;
+}
+
 // A stability report contains information pertaining to the execution of a
 // single logical instance of a "chrome browser". It is comprised of information
 // about the system state and about the chrome browser's processes.
-// Next id: 5
+// Next id: 6
 message StabilityReport {
   optional SystemState system_state = 1;
   // TODO(manzagop): revisit whether a single repeated field should contain all
@@ -166,4 +180,7 @@ message StabilityReport {
   //     relocate these to their process (and perhaps thread).
   repeated string log_messages = 3;
   map<string, TypedValue> global_data = 4;
+
+  // The field trials the user is currently enrolled in.
+  repeated FieldTrial field_trials = 5;
 }

@@ -650,6 +650,38 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
 }
 
 TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
+       FieldTrialCollection) {
+  // Record some data.
+  GlobalActivityTracker::CreateWithFile(debug_file_path(), kMemorySize, 0ULL,
+                                        "", 3);
+  ActivityUserData& global_data = GlobalActivityTracker::Get()->global_data();
+  global_data.SetString("string", "bar");
+  global_data.SetString("FieldTrial.string", "bar");
+  global_data.SetString("FieldTrial.foo", "bar");
+
+  // Collect the stability report.
+  PostmortemReportCollector collector(kProductName, kVersionNumber,
+                                      kChannelName);
+  std::unique_ptr<StabilityReport> report;
+  ASSERT_EQ(PostmortemReportCollector::SUCCESS,
+            collector.Collect(debug_file_path(), &report));
+  ASSERT_NE(nullptr, report);
+
+  // Validate the report's experiment and global data.
+  ASSERT_EQ(2, report->field_trials_size());
+  EXPECT_NE(0U, report->field_trials(0).name_id());
+  EXPECT_NE(0U, report->field_trials(0).group_id());
+  EXPECT_NE(0U, report->field_trials(1).name_id());
+  EXPECT_EQ(report->field_trials(0).group_id(),
+            report->field_trials(1).group_id());
+
+  // Expect 5 key/value pairs (including product details).
+  const auto& collected_data = report->global_data();
+  EXPECT_EQ(5U, collected_data.size());
+  EXPECT_TRUE(base::ContainsKey(collected_data, "string"));
+}
+
+TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
        ModuleCollection) {
   // Record some module information.
   GlobalActivityTracker::CreateWithFile(debug_file_path(), kMemorySize, 0ULL,

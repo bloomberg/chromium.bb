@@ -13,9 +13,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/browser_watcher/postmortem_minidump_writer.h"
 #include "components/browser_watcher/stability_data_names.h"
+#include "components/variations/active_field_trials.h"
 #include "third_party/crashpad/crashpad/client/settings.h"
 #include "third_party/crashpad/crashpad/util/misc/uuid.h"
 
@@ -32,14 +34,18 @@ using crashpad::CrashReportDatabase;
 
 namespace {
 
+const char kFieldTrialKeyPrefix[] = "FieldTrial.";
+
 // Collects stability user data from the recorded format to the collected
 // format.
 void CollectUserData(
     const ActivityUserData::Snapshot& recorded_map,
-    google::protobuf::Map<std::string, TypedValue>* collected_map) {
+    google::protobuf::Map<std::string, TypedValue>* collected_map,
+    StabilityReport* report) {
   DCHECK(collected_map);
 
   for (const auto& name_and_value : recorded_map) {
+    const std::string& key = name_and_value.first;
     const ActivityUserData::TypedValue& recorded_value = name_and_value.second;
     TypedValue collected_value;
 
@@ -47,9 +53,11 @@ void CollectUserData(
       case ActivityUserData::END_OF_VALUES:
         NOTREACHED();
         break;
-      case ActivityUserData::RAW_VALUE:
-        collected_value.set_bytes_value(recorded_value.Get().as_string());
+      case ActivityUserData::RAW_VALUE: {
+        base::StringPiece raw = recorded_value.Get();
+        collected_value.set_bytes_value(raw.data(), raw.size());
         break;
+      }
       case ActivityUserData::RAW_VALUE_REFERENCE: {
         base::StringPiece recorded_ref = recorded_value.GetReference();
         TypedValue::Reference* collected_ref =
@@ -59,10 +67,25 @@ void CollectUserData(
         collected_ref->set_size(recorded_ref.size());
         break;
       }
-      case ActivityUserData::STRING_VALUE:
-        collected_value.set_string_value(
-            recorded_value.GetString().as_string());
+      case ActivityUserData::STRING_VALUE: {
+        base::StringPiece value = recorded_value.GetString();
+
+        if (report && base::StartsWith(key, kFieldTrialKeyPrefix,
+                                       base::CompareCase::SENSITIVE)) {
+          // This entry represents an active Field Trial.
+          std::string trial_name =
+              key.substr(std::strlen(kFieldTrialKeyPrefix));
+          variations::ActiveGroupId group_id =
+              variations::MakeActiveGroupId(trial_name, value.as_string());
+          FieldTrial* field_trial = report->add_field_trials();
+          field_trial->set_name_id(group_id.name);
+          field_trial->set_group_id(group_id.group);
+          continue;
+        }
+
+        collected_value.set_string_value(value.data(), value.size());
         break;
+      }
       case ActivityUserData::STRING_VALUE_REFERENCE: {
         base::StringPiece recorded_ref = recorded_value.GetStringReference();
         TypedValue::Reference* collected_ref =
@@ -72,10 +95,11 @@ void CollectUserData(
         collected_ref->set_size(recorded_ref.size());
         break;
       }
-      case ActivityUserData::CHAR_VALUE:
-        collected_value.set_char_value(
-            std::string(1, recorded_value.GetChar()));
+      case ActivityUserData::CHAR_VALUE: {
+        char char_value = recorded_value.GetChar();
+        collected_value.set_char_value(&char_value, 1);
         break;
+      }
       case ActivityUserData::BOOL_VALUE:
         collected_value.set_bool_value(recorded_value.GetBool());
         break;
@@ -87,7 +111,7 @@ void CollectUserData(
         break;
     }
 
-    (*collected_map)[name_and_value.first].Swap(&collected_value);
+    (*collected_map)[key].Swap(&collected_value);
   }
 }
 
@@ -288,7 +312,7 @@ PostmortemReportCollector::CollectionStatus PostmortemReportCollector::Collect(
   // Collect global user data.
   google::protobuf::Map<std::string, TypedValue>& global_data =
       *(*report)->mutable_global_data();
-  CollectUserData(global_data_snapshot, &global_data);
+  CollectUserData(global_data_snapshot, &global_data, report->get());
 
   // Add the reporting Chrome's details to the report.
   global_data[kStabilityReporterChannel].set_string_value(channel_name());
@@ -371,7 +395,7 @@ void PostmortemReportCollector::CollectThread(
     // Collect user data
     if (i < snapshot.user_data_stack.size()) {
       CollectUserData(snapshot.user_data_stack[i],
-                      collected->mutable_user_data());
+                      collected->mutable_user_data(), nullptr);
     }
   }
 }

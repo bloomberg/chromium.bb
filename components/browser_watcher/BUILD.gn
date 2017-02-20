@@ -69,6 +69,7 @@ if (is_win) {
       ":stability_data",
       ":stability_report_proto",
       "//base",
+      "//components/variations",
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/util",
     ]

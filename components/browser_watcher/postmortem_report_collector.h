@@ -80,6 +80,9 @@ class PostmortemReportCollector {
       GlobalUserDataCollection);
   FRIEND_TEST_ALL_PREFIXES(
       PostmortemReportCollectorCollectionFromGlobalTrackerTest,
+      FieldTrialCollection);
+  FRIEND_TEST_ALL_PREFIXES(
+      PostmortemReportCollectorCollectionFromGlobalTrackerTest,
       ModuleCollection);
 
   // Virtual for unittesting.
