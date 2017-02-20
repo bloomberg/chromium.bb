@@ -6,6 +6,8 @@ cd355b553ce7660283c52675232e9227
 6232c99cc54aeccb43aff7a7f9daa6ab
 # Intel - BDW
 bea8039e6921d930bb1c86185f62b1b0
+# Intel - VA_FILTER_SCALING_DEFAULT
+32a3c4257dac03df92a5c7593ee7e31f
 
 # TODO(llandwerlin): Remove the following hash when the libva-intel-driver
 # is updated.

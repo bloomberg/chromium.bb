@@ -16,6 +16,8 @@ d16d0662406b9d4ebb413ed3da3896e0
 b55cda7d10c37104d8c49d27c2699e40
 # ARM - MediaTek
 ab9205ea7da8e00fefe1094d43542fb2
+# Intel - VA_FILTER_SCALING_DEFAULT
+27ddce017b884f8bbfa159ad180a71d2
 
 # TODO(llandwerlin): Remove the following hashes when the libva-intel-driver
 # is updated.
