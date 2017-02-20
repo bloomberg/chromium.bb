@@ -1169,8 +1169,7 @@ crbug.com/492664 external/csswg-test/css-writing-modes-3/clip-rect-vrl-008.xht [
 crbug.com/492664 external/csswg-test/css-writing-modes-3/line-box-direction-vrl-009.xht [ Failure ]
 
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
-# TODO(robertphillips@) restore after Skia DEPS roll
-#crbug.com/637255 [ Win10 ] media/video-layer-crash.html [ Pass Failure ]
+crbug.com/637255 [ Win10 ] media/video-layer-crash.html [ Pass Failure ]
 
 crbug.com/691045 media/autoplay-muted.html [ Pass Timeout ]
 
