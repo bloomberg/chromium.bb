@@ -29,6 +29,19 @@ assertInterpolation({
 
 assertInterpolation({
   property: 'visibility',
+  from: 'hidden',
+  to: 'visible'
+}, [
+  {at: -1, is: 'hidden'},
+  {at: 0, is: 'hidden'},
+  {at: 0.1, is: 'visible'},
+  {at: 0.9, is: 'visible'},
+  {at: 1, is: 'visible'},
+  {at: 1.5, is: 'visible'},
+]);
+
+assertInterpolation({
+  property: 'visibility',
   from: 'collapse',
   to: 'visible'
 }, [
