@@ -18,6 +18,7 @@ import android.text.style.ClickableSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
@@ -214,25 +215,45 @@ public class AccountChooserDialog
         text.setText(message);
         text.announceForAccessibility(message);
 
-        final int screenWidth = resources.getDisplayMetrics().widthPixels;
-        final int screenHeight = resources.getDisplayMetrics().heightPixels;
-
+        // The tooltip should be shown above and to the left (right for RTL) of the info button.
+        // In order to do so the tooltip's location on the screen is determined. This location is
+        // specified with regard to the top left corner and ignores RTL layouts. For this reason the
+        // location of the tooltip is also specified as offsets to the top left corner of the
+        // screen. Since the tooltip should be shown above the info button, the height of the
+        // tooltip needs to be measured. Furthermore, the height of the statusbar is ignored when
+        // obtaining the icon's screen location, but must be considered when specifying a y offset.
+        // In addition, the measured width is needed in LTR layout, so that the right end of the
+        // tooltip aligns with the right end of the info icon.
         final int[] screenPos = new int[2];
         view.getLocationOnScreen(screenPos);
 
-        final int width = view.getWidth();
-        final int tooltipMargin = resources.getDimensionPixelSize(R.dimen.psl_info_tooltip_margin);
+        text.measure(MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
 
-        // The toast should be shown above and to the left (right for RTL) of the info button.
-        // In order to avoid measuring the size of the toast offsets are specified with regard
-        // to the bottom right / left corner of the screen.
+        final int width = view.getWidth();
+
         final int xOffset = ApiCompatibilityUtils.isLayoutRtl(view)
                 ? screenPos[0]
-                : screenWidth - screenPos[0] - width;
-        final int yOffset = screenHeight - screenPos[1] + tooltipMargin;
+                : screenPos[0] + width - text.getMeasuredWidth();
+
+        final int statusBarHeightResourceId =
+                resources.getIdentifier("status_bar_height", "dimen", "android");
+
+        final int statusBarHeight = statusBarHeightResourceId > 0
+                ? resources.getDimensionPixelSize(statusBarHeightResourceId)
+                : 0;
+
+        final int tooltipMargin = resources.getDimensionPixelSize(R.dimen.psl_info_tooltip_margin);
+
+        final int yOffset =
+                screenPos[1] - tooltipMargin - statusBarHeight - text.getMeasuredHeight();
+
+        // The xOffset is with regard to the left edge of the screen. Gravity.LEFT is deprecated,
+        // which is why the following line is necessary.
+        final int xGravity = ApiCompatibilityUtils.isLayoutRtl(view) ? Gravity.END : Gravity.START;
 
         Toast toast = new Toast(context);
-        toast.setGravity(Gravity.BOTTOM | Gravity.END, xOffset, yOffset);
+        toast.setGravity(Gravity.TOP | xGravity, xOffset, yOffset);
         toast.setDuration(Toast.LENGTH_SHORT);
         toast.setView(text);
         toast.show();
