@@ -7,12 +7,10 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
 
 MidiPermissionContext::MidiPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            content::PermissionType::MIDI_SYSEX,
                             CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {}
 
 MidiPermissionContext::~MidiPermissionContext() {

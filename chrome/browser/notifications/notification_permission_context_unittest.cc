@@ -28,13 +28,13 @@
 namespace {
 
 void DoNothing(ContentSetting content_setting) {}
-void DoNothing2(blink::mojom::PermissionStatus status) {}
+void DoNothing2(blink::mojom::PermissionStatus content_setting) {}
 
 class TestNotificationPermissionContext : public NotificationPermissionContext {
  public:
   explicit TestNotificationPermissionContext(Profile* profile)
       : NotificationPermissionContext(profile,
-                                      content::PermissionType::NOTIFICATIONS),
+                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS),
         permission_set_count_(0),
         last_permission_set_persisted_(false),
         last_permission_set_setting_(CONTENT_SETTING_DEFAULT) {}
@@ -113,7 +113,7 @@ TEST_F(NotificationPermissionContextTest, IgnoresEmbedderOrigin) {
   GURL different_origin("https://foobar.com");
 
   NotificationPermissionContext context(profile(),
-                                        content::PermissionType::NOTIFICATIONS);
+                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   UpdateContentSetting(&context, requesting_origin, embedding_origin,
                        CONTENT_SETTING_ALLOW);
 
@@ -142,8 +142,8 @@ TEST_F(NotificationPermissionContextTest, PushTopLevelOriginOnly) {
   GURL requesting_origin("https://example.com");
   GURL embedding_origin("https://chrome.com");
 
-  NotificationPermissionContext context(
-      profile(), content::PermissionType::PUSH_MESSAGING);
+  NotificationPermissionContext context(profile(),
+                                        CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
   UpdateContentSetting(&context, requesting_origin, embedding_origin,
                        CONTENT_SETTING_ALLOW);
 
@@ -173,7 +173,7 @@ TEST_F(NotificationPermissionContextTest, NoSecureOriginRequirement) {
   GURL origin("http://example.com");
 
   NotificationPermissionContext context(profile(),
-                                        content::PermissionType::NOTIFICATIONS);
+                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   EXPECT_EQ(CONTENT_SETTING_ASK,
             context.GetPermissionStatus(origin, origin).content_setting);
 
@@ -189,7 +189,7 @@ TEST_F(NotificationPermissionContextTest, PushSecureOriginRequirement) {
   GURL secure_origin("https://example.com");
 
   NotificationPermissionContext context(
-      profile(), content::PermissionType::PUSH_MESSAGING);
+      profile(), CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             context.GetPermissionStatus(origin, origin).content_setting);
 
@@ -289,7 +289,7 @@ TEST_F(NotificationPermissionContextTest, TestCancelledIncognitoRequest) {
 
   base::TestMockTimeTaskRunner* task_runner = SwitchToMockTime();
 
-  content::PermissionManager* permission_manager =
+  PermissionManager* permission_manager =
       PermissionManagerFactory::GetForProfile(
           profile()->GetOffTheRecordProfile());
 
@@ -297,7 +297,7 @@ TEST_F(NotificationPermissionContextTest, TestCancelledIncognitoRequest) {
   // https://crbug.com/586944 regresses, then as well as the EXPECT_EQs below
   // failing, PermissionManager::OnPermissionsRequestResponseStatus will crash.
   int request_id = permission_manager->RequestPermission(
-      content::PermissionType::NOTIFICATIONS, web_contents()->GetMainFrame(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, web_contents()->GetMainFrame(),
       url.GetOrigin(), true /* user_gesture */, base::Bind(&DoNothing2));
 
   permission_manager->CancelPermissionRequest(request_id);

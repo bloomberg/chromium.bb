@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "content/public/browser/permission_type.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 
 class Browser;
 class Profile;
@@ -24,10 +24,10 @@ class PermissionRequestManagerTestApi {
   PermissionRequestManager* manager() { return manager_; }
 
   // Add a "simple" permission request. One that uses PermissionRequestImpl,
-  // such as for content::PermissionType including MIDI_SYSEX, PUSH_MESSAGING,
-  // NOTIFICATIONS, GEOLOCATON, or FLASH. This can be called multiple times
+  // such as for ContentSettingsType including MIDI_SYSEX, PUSH_MESSAGING,
+  // NOTIFICATIONS, GEOLOCATON, or PLUGINS. This can be called multiple times
   // before a call to manager()->DisplayPendingRequests().
-  void AddSimpleRequest(Profile* profile, content::PermissionType type);
+  void AddSimpleRequest(Profile* profile, ContentSettingsType type);
 
   // Return the bubble window for the permission prompt or null if there is no
   // prompt currently showing.

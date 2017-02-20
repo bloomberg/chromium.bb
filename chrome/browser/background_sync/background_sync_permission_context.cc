@@ -6,12 +6,10 @@
 
 #include "base/logging.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/browser/permission_type.h"
 
 BackgroundSyncPermissionContext::BackgroundSyncPermissionContext(
     Profile* profile)
     : PermissionContextBase(profile,
-                            content::PermissionType::BACKGROUND_SYNC,
                             CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC) {}
 
 void BackgroundSyncPermissionContext::CancelPermissionRequest(

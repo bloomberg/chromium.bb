@@ -13,7 +13,6 @@ MidiPermissionInfoBarDelegateAndroid::MidiPermissionInfoBarDelegateAndroid(
     Profile* profile,
     const PermissionSetCallback& callback)
     : PermissionInfoBarDelegate(requesting_frame,
-                                content::PermissionType::MIDI_SYSEX,
                                 CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                                 user_gesture,
                                 profile,

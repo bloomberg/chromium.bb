@@ -12,7 +12,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/permission_type.h"
 
 class GURL;
 class PermissionRequestID;
@@ -32,7 +31,6 @@ class PermissionQueueController : public content::NotificationObserver {
   using PermissionDecidedCallback = base::Callback<void(ContentSetting)>;
 
   PermissionQueueController(Profile* profile,
-                            content::PermissionType permission_type,
                             ContentSettingsType content_settings_type);
   ~PermissionQueueController() override;
 
@@ -94,7 +92,6 @@ class PermissionQueueController : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
   Profile* const profile_;
-  content::PermissionType permission_type_;
   ContentSettingsType content_settings_type_;
   PendingInfobarRequests pending_infobar_requests_;
   bool in_shutdown_;

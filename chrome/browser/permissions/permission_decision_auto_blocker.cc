@@ -22,7 +22,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
@@ -74,7 +73,7 @@ base::DictionaryValue* GetOrCreatePermissionDict(
 }
 
 int RecordActionInWebsiteSettings(const GURL& url,
-                                  content::PermissionType permission,
+                                  ContentSettingsType permission,
                                   const char* key,
                                   Profile* profile) {
   HostContentSettingsMap* map =
@@ -96,7 +95,7 @@ int RecordActionInWebsiteSettings(const GURL& url,
 }
 
 int GetActionCount(const GURL& url,
-                   content::PermissionType permission,
+                   ContentSettingsType permission,
                    const char* key,
                    Profile* profile) {
   HostContentSettingsMap* map =
@@ -206,19 +205,19 @@ void PermissionDecisionAutoBlocker::RemoveCountsByUrl(
 
 int PermissionDecisionAutoBlocker::GetDismissCount(
     const GURL& url,
-    content::PermissionType permission) {
+    ContentSettingsType permission) {
   return GetActionCount(url, permission, kPromptDismissCountKey, profile_);
 }
 
 int PermissionDecisionAutoBlocker::GetIgnoreCount(
     const GURL& url,
-    content::PermissionType permission) {
+    ContentSettingsType permission) {
   return GetActionCount(url, permission, kPromptIgnoreCountKey, profile_);
 }
 
 bool PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
     const GURL& url,
-    content::PermissionType permission) {
+    ContentSettingsType permission) {
   int current_dismissal_count = RecordActionInWebsiteSettings(
       url, permission, kPromptDismissCountKey, profile_);
 
@@ -232,7 +231,7 @@ bool PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
 
 int PermissionDecisionAutoBlocker::RecordIgnore(
     const GURL& url,
-    content::PermissionType permission) {
+    ContentSettingsType permission) {
   return RecordActionInWebsiteSettings(url, permission, kPromptIgnoreCountKey,
                                        profile_);
 }
@@ -267,7 +266,7 @@ void PermissionDecisionAutoBlocker::UpdateFromVariations() {
 }
 
 void PermissionDecisionAutoBlocker::UpdateEmbargoedStatus(
-    content::PermissionType permission,
+    ContentSettingsType permission,
     const GURL& request_origin,
     content::WebContents* web_contents,
     base::Callback<void(bool)> callback) {
@@ -291,7 +290,7 @@ void PermissionDecisionAutoBlocker::UpdateEmbargoedStatus(
 }
 
 bool PermissionDecisionAutoBlocker::IsUnderEmbargo(
-    content::PermissionType permission,
+    ContentSettingsType permission,
     const GURL& request_origin) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
@@ -328,7 +327,7 @@ bool PermissionDecisionAutoBlocker::IsUnderEmbargo(
 }
 
 void PermissionDecisionAutoBlocker::CheckSafeBrowsingResult(
-    content::PermissionType permission,
+    ContentSettingsType permission,
     const GURL& request_origin,
     base::Callback<void(bool)> callback,
     bool should_be_embargoed) {
@@ -342,7 +341,7 @@ void PermissionDecisionAutoBlocker::CheckSafeBrowsingResult(
 }
 
 void PermissionDecisionAutoBlocker::PlaceUnderEmbargo(
-    content::PermissionType permission,
+    ContentSettingsType permission,
     const GURL& request_origin,
     const char* key) {
   HostContentSettingsMap* map =

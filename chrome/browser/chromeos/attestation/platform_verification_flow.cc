@@ -27,10 +27,10 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -116,7 +116,7 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
         PermissionManager::Get(
             Profile::FromBrowserContext(web_contents->GetBrowserContext()))
             ->GetPermissionStatus(
-                content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
+                CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
                 requesting_origin, embedding_origin);
 
     return status == blink::mojom::PermissionStatus::GRANTED;

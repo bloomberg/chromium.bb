@@ -32,7 +32,6 @@ bool PluginsEnterpriseSettingEnabled(
 
 FlashPermissionContext::FlashPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            content::PermissionType::FLASH,
                             CONTENT_SETTINGS_TYPE_PLUGINS) {}
 
 FlashPermissionContext::~FlashPermissionContext() {}

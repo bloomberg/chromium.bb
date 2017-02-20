@@ -709,10 +709,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                        RequestAndKillSwitchMicCam) {
   std::map<std::string, std::string> params;
   params[PermissionUtil::GetPermissionString(
-      content::PermissionType::AUDIO_CAPTURE)] =
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)] =
       PermissionContextBase::kPermissionsKillSwitchBlockedValue;
   params[PermissionUtil::GetPermissionString(
-      content::PermissionType::VIDEO_CAPTURE)] =
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)] =
       PermissionContextBase::kPermissionsKillSwitchBlockedValue;
   variations::AssociateVariationParams(
       PermissionContextBase::kPermissionsKillSwitchFieldStudy,

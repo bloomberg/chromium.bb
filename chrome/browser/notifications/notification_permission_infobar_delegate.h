@@ -10,14 +10,10 @@
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
-namespace content {
-enum class PermissionType;
-}
-
 class NotificationPermissionInfoBarDelegate : public PermissionInfoBarDelegate {
  public:
   NotificationPermissionInfoBarDelegate(
-      const content::PermissionType& permission_type,
+      ContentSettingsType type,
       const GURL& requesting_frame,
       bool user_gesture,
       Profile* profile,

@@ -10,9 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/time/default_clock.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -62,21 +62,20 @@ class PermissionDecisionAutoBlocker : public KeyedService {
 
   // Returns the current number of dismisses recorded for |permission| type at
   // |url|.
-  int GetDismissCount(const GURL& url, content::PermissionType permission);
+  int GetDismissCount(const GURL& url, ContentSettingsType permission);
 
   // Returns the current number of ignores recorded for |permission|
   // type at |url|.
-  int GetIgnoreCount(const GURL& url, content::PermissionType permission);
+  int GetIgnoreCount(const GURL& url, ContentSettingsType permission);
 
   // Records that a dismissal of a prompt for |permission| was made. If the
   // total number of dismissals exceeds a threshhold and
   // features::kBlockPromptsIfDismissedOften is enabled it will place |url|
   // under embargo for |permission|.
-  bool RecordDismissAndEmbargo(const GURL& url,
-                               content::PermissionType permission);
+  bool RecordDismissAndEmbargo(const GURL& url, ContentSettingsType permission);
 
   // Records that an ignore of a prompt for |permission| was made.
-  int RecordIgnore(const GURL& url, content::PermissionType permission);
+  int RecordIgnore(const GURL& url, ContentSettingsType permission);
 
   // Updates the threshold to start blocking prompts from the field trial.
   static void UpdateFromVariations();
@@ -85,7 +84,7 @@ class PermissionDecisionAutoBlocker : public KeyedService {
   // this will make a call to IsUnderEmbargo to check the content setting first,
   // but may also make a call to Safe Browsing to check the API blacklist, which
   // is performed asynchronously.
-  void UpdateEmbargoedStatus(content::PermissionType permission,
+  void UpdateEmbargoedStatus(ContentSettingsType permission,
                              const GURL& request_origin,
                              content::WebContents* web_contents,
                              base::Callback<void(bool)> callback);
@@ -93,7 +92,7 @@ class PermissionDecisionAutoBlocker : public KeyedService {
   // Checks the status of the content setting to determine if |request_origin|
   // is under embargo for |permission|. This checks both embargo for Permissions
   // Blacklisting and repeated dismissals.
-  bool IsUnderEmbargo(content::PermissionType permission,
+  bool IsUnderEmbargo(ContentSettingsType permission,
                       const GURL& request_origin);
 
  private:
@@ -105,12 +104,12 @@ class PermissionDecisionAutoBlocker : public KeyedService {
 
   // Get the result of the Safe Browsing check, if |should_be_embargoed| is true
   // then |request_origin| will be placed under embargo for that |permission|.
-  void CheckSafeBrowsingResult(content::PermissionType permission,
+  void CheckSafeBrowsingResult(ContentSettingsType permission,
                                const GURL& request_origin,
                                base::Callback<void(bool)> callback,
                                bool should_be_embargoed);
 
-  void PlaceUnderEmbargo(content::PermissionType permission,
+  void PlaceUnderEmbargo(ContentSettingsType permission,
                          const GURL& request_origin,
                          const char* key);
 

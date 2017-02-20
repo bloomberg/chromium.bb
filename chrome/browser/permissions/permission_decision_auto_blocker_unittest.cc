@@ -19,7 +19,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/safe_browsing_db/test_database_manager.h"
-#include "content/public/browser/permission_type.h"
 
 namespace {
 
@@ -107,8 +106,7 @@ class PermissionDecisionAutoBlockerUnitTest
                                                                      timeout);
   }
 
-  void UpdateEmbargoedStatus(content::PermissionType permission,
-                             const GURL& url) {
+  void UpdateEmbargoedStatus(ContentSettingsType permission, const GURL& url) {
     base::RunLoop run_loop;
     autoblocker_->UpdateEmbargoedStatus(
         permission, url, nullptr,
@@ -120,7 +118,7 @@ class PermissionDecisionAutoBlockerUnitTest
   // Manually placing an (origin, permission) pair under embargo for
   // blacklisting. To embargo on dismissals, RecordDismissAndEmbargo can be
   // used.
-  void PlaceUnderBlacklistEmbargo(content::PermissionType permission,
+  void PlaceUnderBlacklistEmbargo(ContentSettingsType permission,
                                   const GURL& url) {
     autoblocker_->PlaceUnderEmbargo(
         permission, url,
@@ -166,102 +164,102 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, RemoveCountsByUrl) {
 
   // Record some dismissals.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, content::PermissionType::GEOLOCATION));
+      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url1, content::PermissionType::GEOLOCATION));
+                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, content::PermissionType::GEOLOCATION));
+      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(2, autoblocker()->GetDismissCount(
-                   url1, content::PermissionType::GEOLOCATION));
+                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url1, content::PermissionType::GEOLOCATION));
+      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(3, autoblocker()->GetDismissCount(
-                   url1, content::PermissionType::GEOLOCATION));
+                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url2, content::PermissionType::GEOLOCATION));
+      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url2, content::PermissionType::GEOLOCATION));
+                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, content::PermissionType::NOTIFICATIONS));
+      url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url1, content::PermissionType::NOTIFICATIONS));
+                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 
   // Record some ignores.
   EXPECT_EQ(1, autoblocker()->RecordIgnore(
-                   url1, content::PermissionType::MIDI_SYSEX));
+                   url1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
   EXPECT_EQ(1, autoblocker()->RecordIgnore(
-                   url1, content::PermissionType::DURABLE_STORAGE));
+                   url1, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
   EXPECT_EQ(1, autoblocker()->RecordIgnore(
-                   url2, content::PermissionType::GEOLOCATION));
+                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(2, autoblocker()->RecordIgnore(
-                   url2, content::PermissionType::GEOLOCATION));
+                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   autoblocker()->RemoveCountsByUrl(base::Bind(&FilterGoogle));
 
   // Expect that url1's actions are gone, but url2's remain.
   EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url1, content::PermissionType::GEOLOCATION));
+                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url1, content::PermissionType::NOTIFICATIONS));
+                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url1, content::PermissionType::MIDI_SYSEX));
+                   url1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
   EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url1, content::PermissionType::DURABLE_STORAGE));
+                   url1, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
 
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url2, content::PermissionType::GEOLOCATION));
+                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(2, autoblocker()->GetIgnoreCount(
-                   url2, content::PermissionType::GEOLOCATION));
+                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   // Add some more actions.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, content::PermissionType::GEOLOCATION));
+      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url1, content::PermissionType::GEOLOCATION));
+                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, content::PermissionType::NOTIFICATIONS));
+      url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url1, content::PermissionType::NOTIFICATIONS));
+                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url2, content::PermissionType::GEOLOCATION));
+      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(2, autoblocker()->GetDismissCount(
-                   url2, content::PermissionType::GEOLOCATION));
+                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   EXPECT_EQ(1, autoblocker()->RecordIgnore(
-                   url1, content::PermissionType::GEOLOCATION));
+                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(1, autoblocker()->RecordIgnore(
-                   url1, content::PermissionType::NOTIFICATIONS));
+                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   EXPECT_EQ(1, autoblocker()->RecordIgnore(
-                   url1, content::PermissionType::DURABLE_STORAGE));
+                   url1, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
   EXPECT_EQ(1, autoblocker()->RecordIgnore(
-                   url2, content::PermissionType::MIDI_SYSEX));
+                   url2, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
 
   // Remove everything and expect that it's all gone.
   autoblocker()->RemoveCountsByUrl(base::Bind(&FilterAll));
 
   EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url1, content::PermissionType::GEOLOCATION));
+                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url1, content::PermissionType::NOTIFICATIONS));
+                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url2, content::PermissionType::GEOLOCATION));
+                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url1, content::PermissionType::GEOLOCATION));
+                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url1, content::PermissionType::NOTIFICATIONS));
+                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url2, content::PermissionType::GEOLOCATION));
+                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url2, content::PermissionType::DURABLE_STORAGE));
+                   url2, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
   EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url2, content::PermissionType::MIDI_SYSEX));
+                   url2, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
 }
 
 // Test that an origin that has been blacklisted for a permission is embargoed.
@@ -277,7 +275,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestUpdateEmbargoBlacklist) {
   SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
                                                      2000 /* timeout in ms */);
 
-  UpdateEmbargoedStatus(content::PermissionType::GEOLOCATION, url);
+  UpdateEmbargoedStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION, url);
   EXPECT_TRUE(callback_was_run());
   EXPECT_TRUE(last_embargoed_status());
   histograms.ExpectUniqueSample("Permissions.AutoBlocker.SafeBrowsingResponse",
@@ -301,7 +299,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestRequestNotBlacklisted) {
   SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
                                                      0 /* timeout in ms */);
 
-  UpdateEmbargoedStatus(content::PermissionType::NOTIFICATIONS, url);
+  UpdateEmbargoedStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url);
   EXPECT_FALSE(last_embargoed_status());
   histograms.ExpectUniqueSample("Permissions.AutoBlocker.SafeBrowsingResponse",
                                 SafeBrowsingResponse::NOT_BLACKLISTED, 1);
@@ -315,36 +313,36 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStatus) {
   GURL url("https://www.google.com");
   clock()->SetNow(base::Time::Now());
 
-  PlaceUnderBlacklistEmbargo(content::PermissionType::GEOLOCATION, url);
+  PlaceUnderBlacklistEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url);
   EXPECT_TRUE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 
   // Check that the origin is not under embargo for a different permission.
-  EXPECT_FALSE(autoblocker()->IsUnderEmbargo(
-      content::PermissionType::NOTIFICATIONS, url));
+  EXPECT_FALSE(
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url));
 
   // Confirm embargo status during the embargo period.
   clock()->Advance(base::TimeDelta::FromDays(5));
   EXPECT_TRUE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 
   // Check embargo is lifted on expiry day. A small offset after the exact
   // embargo expiration date has been added to account for any precision errors
   // when removing the date stored as a double from the permission dictionary.
   clock()->Advance(base::TimeDelta::FromHours(3 * 24 + 1));
   EXPECT_FALSE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 
   // Check embargo is lifted well after the expiry day.
   clock()->Advance(base::TimeDelta::FromDays(1));
   EXPECT_FALSE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 
   // Place under embargo again and verify the embargo status.
-  PlaceUnderBlacklistEmbargo(content::PermissionType::NOTIFICATIONS, url);
+  PlaceUnderBlacklistEmbargo(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url);
   clock()->Advance(base::TimeDelta::FromDays(1));
-  EXPECT_TRUE(autoblocker()->IsUnderEmbargo(
-      content::PermissionType::NOTIFICATIONS, url));
+  EXPECT_TRUE(
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url));
 }
 
 // Tests the alternating pattern of the block on multiple dismiss behaviour. On
@@ -359,19 +357,19 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDismissEmbargoBackoff) {
 
   // Record some dismisses.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION));
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION));
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   // A request with < 3 prior dismisses should not be automatically blocked.
   EXPECT_FALSE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 
   // After the 3rd dismiss subsequent permission requests should be autoblocked.
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION));
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_TRUE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 
   histograms.ExpectTotalCount("Permissions.AutoBlocker.SafeBrowsingResponse",
                               0);
@@ -381,25 +379,25 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDismissEmbargoBackoff) {
   // request won't be automatically blocked.
   clock()->Advance(base::TimeDelta::FromDays(8));
   EXPECT_FALSE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 
   // Record another dismiss, subsequent requests should be autoblocked again.
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION));
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_TRUE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 
   // Accelerate time again, check embargo is lifted and another permission
   // request is let through.
   clock()->Advance(base::TimeDelta::FromDays(8));
   EXPECT_FALSE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 
   // Record another dismiss, subsequent requests should be autoblocked again.
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION));
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_TRUE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
   histograms.ExpectTotalCount("Permissions.AutoBlocker.SafeBrowsingResponse",
                               0);
   histograms.ExpectTotalCount(
@@ -412,24 +410,24 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestExpiredBlacklistEmbargo) {
   clock()->SetNow(base::Time::Now());
 
   // Place under blacklist embargo and check the status.
-  PlaceUnderBlacklistEmbargo(content::PermissionType::GEOLOCATION, url);
+  PlaceUnderBlacklistEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url);
   clock()->Advance(base::TimeDelta::FromDays(5));
   EXPECT_TRUE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 
   // Record dismisses to place it under dismissal embargo.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION));
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION));
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url, content::PermissionType::GEOLOCATION));
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   // Accelerate time to a point where the blacklist embargo should be expired
   // and check that dismissal embargo is still set.
   clock()->Advance(base::TimeDelta::FromDays(3));
   EXPECT_TRUE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 }
 
 TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingTimeout) {
@@ -445,11 +443,11 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingTimeout) {
   SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
                                                      0 /* timeout in ms */);
 
-  UpdateEmbargoedStatus(content::PermissionType::GEOLOCATION, url);
+  UpdateEmbargoedStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION, url);
   EXPECT_TRUE(callback_was_run());
   EXPECT_FALSE(last_embargoed_status());
   EXPECT_FALSE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
   histograms.ExpectUniqueSample("Permissions.AutoBlocker.SafeBrowsingResponse",
                                 SafeBrowsingResponse::TIMEOUT, 1);
   histograms.ExpectTotalCount(
@@ -459,7 +457,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingTimeout) {
                                                      2000 /* timeout in ms */);
 
   clock()->Advance(base::TimeDelta::FromDays(1));
-  UpdateEmbargoedStatus(content::PermissionType::GEOLOCATION, url);
+  UpdateEmbargoedStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION, url);
   EXPECT_TRUE(callback_was_run());
   EXPECT_TRUE(last_embargoed_status());
   histograms.ExpectTotalCount("Permissions.AutoBlocker.SafeBrowsingResponse",
@@ -470,7 +468,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingTimeout) {
                                SafeBrowsingResponse::BLACKLISTED, 1);
   clock()->Advance(base::TimeDelta::FromDays(1));
   EXPECT_TRUE(
-      autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
+      autoblocker()->IsUnderEmbargo(CONTENT_SETTINGS_TYPE_GEOLOCATION, url));
 }
 
 // TODO(raymes): See crbug.com/681709. Remove after M60.
@@ -486,7 +484,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest,
 
   base::DictionaryValue origin_dict;
   origin_dict.Set(
-      PermissionUtil::GetPermissionString(content::PermissionType::GEOLOCATION),
+      PermissionUtil::GetPermissionString(CONTENT_SETTINGS_TYPE_GEOLOCATION),
       permissions_dict.CreateDeepCopy());
   map->SetWebsiteSettingDefaultScope(
       url, GURL(), CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
@@ -494,9 +492,9 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest,
 
   // Nothing should be migrated yet, so the current values should be 0.
   EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url, content::PermissionType::GEOLOCATION));
+                   url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url, content::PermissionType::GEOLOCATION));
+                   url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   // Trigger pref migration which happens at the creation of the
   // HostContentSettingsMap.
@@ -509,9 +507,9 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest,
 
   // The values should now be migrated.
   EXPECT_EQ(100, autoblocker()->GetDismissCount(
-                     url, content::PermissionType::GEOLOCATION));
+                     url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(50, autoblocker()->GetIgnoreCount(
-                    url, content::PermissionType::GEOLOCATION));
+                    url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   // The old pref should be deleted.
   std::unique_ptr<base::DictionaryValue> old_dict =
@@ -525,7 +523,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest,
   permissions_dict.SetInteger(GetIgnoreKey(), 99);
 
   origin_dict.Set(
-      PermissionUtil::GetPermissionString(content::PermissionType::GEOLOCATION),
+      PermissionUtil::GetPermissionString(CONTENT_SETTINGS_TYPE_GEOLOCATION),
       permissions_dict.CreateDeepCopy());
   map->SetWebsiteSettingDefaultScope(
       url, GURL(), CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
@@ -540,9 +538,9 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest,
   }
 
   EXPECT_EQ(100, autoblocker()->GetDismissCount(
-                     url, content::PermissionType::GEOLOCATION));
+                     url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(50, autoblocker()->GetIgnoreCount(
-                    url, content::PermissionType::GEOLOCATION));
+                    url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 // Test that a blacklisted permission should not be autoblocked if the database
@@ -556,7 +554,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDisabledDatabaseManager) {
   db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
   SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
                                                      2000 /* timeout in ms */);
-  UpdateEmbargoedStatus(content::PermissionType::GEOLOCATION, url);
+  UpdateEmbargoedStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION, url);
   EXPECT_TRUE(callback_was_run());
   EXPECT_FALSE(last_embargoed_status());
 }
@@ -574,7 +572,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingResponse) {
   SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
                                                      0 /* timeout in ms */);
 
-  UpdateEmbargoedStatus(content::PermissionType::NOTIFICATIONS, url);
+  UpdateEmbargoedStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url);
   EXPECT_FALSE(last_embargoed_status());
   histograms.ExpectUniqueSample("Permissions.AutoBlocker.SafeBrowsingResponse",
                                 SafeBrowsingResponse::NOT_BLACKLISTED, 1);

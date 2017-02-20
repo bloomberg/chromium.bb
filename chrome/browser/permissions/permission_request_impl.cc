@@ -21,13 +21,13 @@
 
 PermissionRequestImpl::PermissionRequestImpl(
     const GURL& request_origin,
-    content::PermissionType permission_type,
+    ContentSettingsType content_settings_type,
     Profile* profile,
     bool has_gesture,
     const PermissionDecidedCallback& permission_decided_callback,
     const base::Closure delete_callback)
     : request_origin_(request_origin),
-      permission_type_(permission_type),
+      content_settings_type_(content_settings_type),
       profile_(profile),
       has_gesture_(has_gesture),
       permission_decided_callback_(permission_decided_callback),
@@ -38,8 +38,8 @@ PermissionRequestImpl::PermissionRequestImpl(
 PermissionRequestImpl::~PermissionRequestImpl() {
   DCHECK(is_finished_);
   if (!action_taken_) {
-    PermissionUmaUtil::PermissionIgnored(permission_type_, GetGestureType(),
-                                         request_origin_, profile_);
+    PermissionUmaUtil::PermissionIgnored(
+        content_settings_type_, GetGestureType(), request_origin_, profile_);
     PermissionUmaUtil::RecordPermissionEmbargoStatus(
         PermissionEmbargoStatus::NOT_EMBARGOED);
   }
@@ -47,35 +47,35 @@ PermissionRequestImpl::~PermissionRequestImpl() {
 
 PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
 #if defined(OS_ANDROID)
-  switch (permission_type_) {
-    case content::PermissionType::GEOLOCATION:
+  switch (content_settings_type_) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       return IDR_ANDROID_INFOBAR_GEOLOCATION;
-    case content::PermissionType::NOTIFICATIONS:
-    case content::PermissionType::PUSH_MESSAGING:
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       return IDR_ANDROID_INFOBAR_NOTIFICATIONS;
-    case content::PermissionType::MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return IDR_ANDROID_INFOBAR_MIDI;
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       return IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
     default:
       NOTREACHED();
       return IDR_ANDROID_INFOBAR_WARNING;
   }
 #else
-  switch (permission_type_) {
-    case content::PermissionType::GEOLOCATION:
+  switch (content_settings_type_) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       return ui::kLocationOnIcon;
-    case content::PermissionType::NOTIFICATIONS:
-    case content::PermissionType::PUSH_MESSAGING:
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       return ui::kNotificationsIcon;
 #if defined(OS_CHROMEOS)
     // TODO(xhwang): fix this icon, see crrev.com/863263007
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       return kProductIcon;
 #endif
-    case content::PermissionType::MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return ui::kMidiIcon;
-    case content::PermissionType::FLASH:
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
       return ui::kExtensionIcon;
     default:
       NOTREACHED();
@@ -86,23 +86,23 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
 
 base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
   int message_id;
-  switch (permission_type_) {
-    case content::PermissionType::GEOLOCATION:
+  switch (content_settings_type_) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       message_id = IDS_GEOLOCATION_INFOBAR_PERMISSION_FRAGMENT;
       break;
-    case content::PermissionType::NOTIFICATIONS:
-    case content::PermissionType::PUSH_MESSAGING:
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       message_id = IDS_NOTIFICATION_PERMISSIONS_FRAGMENT;
       break;
-    case content::PermissionType::MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       message_id = IDS_MIDI_SYSEX_PERMISSION_FRAGMENT;
       break;
 #if defined(OS_CHROMEOS)
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT;
       break;
 #endif
-    case content::PermissionType::FLASH:
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
       message_id = IDS_FLASH_PERMISSION_FRAGMENT;
       break;
     default:
@@ -137,37 +137,16 @@ void PermissionRequestImpl::RequestFinished() {
 }
 
 bool PermissionRequestImpl::ShouldShowPersistenceToggle() const {
-  return (permission_type_ == content::PermissionType::GEOLOCATION) &&
+  return (content_settings_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) &&
          PermissionUtil::ShouldShowPersistenceToggle();
 }
 
 PermissionRequestType PermissionRequestImpl::GetPermissionRequestType()
     const {
-  return PermissionUtil::GetRequestType(permission_type_);
+  return PermissionUtil::GetRequestType(content_settings_type_);
 }
 
 PermissionRequestGestureType PermissionRequestImpl::GetGestureType()
     const {
   return PermissionUtil::GetGestureType(has_gesture_);
-}
-
-ContentSettingsType PermissionRequestImpl::GetContentSettingsType() const {
-  switch (permission_type_) {
-    case content::PermissionType::GEOLOCATION:
-      return CONTENT_SETTINGS_TYPE_GEOLOCATION;
-    case content::PermissionType::PUSH_MESSAGING:
-    case content::PermissionType::NOTIFICATIONS:
-      return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
-    case content::PermissionType::MIDI_SYSEX:
-      return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
-#if defined(OS_CHROMEOS)
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      return CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
-#endif
-    case content::PermissionType::FLASH:
-      return CONTENT_SETTINGS_TYPE_PLUGINS;
-    default:
-      NOTREACHED();
-      return CONTENT_SETTINGS_TYPE_DEFAULT;
-  }
 }

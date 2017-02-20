@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_util.h"
-#include "content/public/browser/permission_type.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
@@ -41,7 +41,7 @@ class PermissionDialogDelegate {
 
   // Creates a modal dialog for |type|.
   static void Create(content::WebContents* web_contents,
-                     content::PermissionType type,
+                     ContentSettingsType type,
                      const GURL& requesting_frame,
                      bool user_gesture,
                      Profile* profile,

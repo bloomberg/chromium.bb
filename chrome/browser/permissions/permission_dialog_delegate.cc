@@ -40,7 +40,7 @@ const char kModalParamsUserGestureKey[] = "require_gesture";
 // static
 void PermissionDialogDelegate::Create(
     content::WebContents* web_contents,
-    content::PermissionType type,
+    ContentSettingsType type,
     const GURL& requesting_frame,
     bool user_gesture,
     Profile* profile,

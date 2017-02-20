@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
 
 namespace gfx {

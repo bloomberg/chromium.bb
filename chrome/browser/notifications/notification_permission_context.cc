@@ -17,8 +17,8 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -161,13 +161,11 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(VisibilityTimerTabHelper);
 
 NotificationPermissionContext::NotificationPermissionContext(
     Profile* profile,
-    content::PermissionType permission_type)
-    : PermissionContextBase(profile,
-                            permission_type,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS),
+    ContentSettingsType content_settings_type)
+    : PermissionContextBase(profile, content_settings_type),
       weak_factory_ui_thread_(this) {
-  DCHECK(permission_type == content::PermissionType::NOTIFICATIONS ||
-         permission_type == content::PermissionType::PUSH_MESSAGING);
+  DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
 }
 
 NotificationPermissionContext::~NotificationPermissionContext() {}
@@ -176,8 +174,8 @@ ContentSetting NotificationPermissionContext::GetPermissionStatusInternal(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
   // Push messaging is only allowed to be granted on top-level origins.
-  if (permission_type() == content::PermissionType::PUSH_MESSAGING &&
-      requesting_origin != embedding_origin) {
+  if (content_settings_type() == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING
+          && requesting_origin != embedding_origin) {
     return CONTENT_SETTING_BLOCK;
   }
 
@@ -259,5 +257,5 @@ void NotificationPermissionContext::UpdateContentSetting(
 }
 
 bool NotificationPermissionContext::IsRestrictedToSecureOrigins() const {
-  return permission_type() == content::PermissionType::PUSH_MESSAGING;
+  return content_settings_type() == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING;
 }

@@ -13,10 +13,7 @@
 #include "chrome/browser/safe_browsing/mock_permission_report_sender.h"
 #include "chrome/common/safe_browsing/permission_report.pb.h"
 #include "components/variations/active_field_trials.h"
-#include "content/public/browser/permission_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::PermissionType;
 
 namespace safe_browsing {
 
@@ -31,8 +28,10 @@ const int kMaximumReportsPerOriginPerPermissionPerMinute = 5;
 
 const char kDummyOriginOne[] = "http://example.test/";
 const char kDummyOriginTwo[] = "http://example2.test/";
-const PermissionType kDummyPermissionOne = PermissionType::GEOLOCATION;
-const PermissionType kDummyPermissionTwo = PermissionType::NOTIFICATIONS;
+const ContentSettingsType kDummyPermissionOne =
+    CONTENT_SETTINGS_TYPE_GEOLOCATION;
+const ContentSettingsType kDummyPermissionTwo =
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
 const PermissionAction kDummyAction = GRANTED;
 const PermissionSourceUI kDummySourceUI = PermissionSourceUI::PROMPT;
 const PermissionRequestGestureType kDummyGestureType =
@@ -58,7 +57,7 @@ struct base::Feature kFeatureOffByDefault {
 };
 
 PermissionReportInfo BuildDummyReportInfo(const char* requesting_origin,
-                                          PermissionType permission) {
+                                          ContentSettingsType permission) {
   PermissionReportInfo info(GURL(requesting_origin), permission, kDummyAction,
       kDummySourceUI, kDummyGestureType, kDummyPersistDecision,
       kDummyNumPriorDismissals, kDummyNumPriorIgnores);

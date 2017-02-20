@@ -8,19 +8,18 @@
 #include "chrome/grit/generated_resources.h"
 
 NotificationPermissionInfoBarDelegate::NotificationPermissionInfoBarDelegate(
-    const content::PermissionType& permission_type,
+    ContentSettingsType type,
     const GURL& requesting_frame,
     bool user_gesture,
     Profile* profile,
     const PermissionSetCallback& callback)
     : PermissionInfoBarDelegate(requesting_frame,
-                                permission_type,
-                                CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                type,
                                 user_gesture,
                                 profile,
                                 callback) {
-  DCHECK(permission_type == content::PermissionType::NOTIFICATIONS ||
-         permission_type == content::PermissionType::PUSH_MESSAGING);
+  DCHECK(type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
+         type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
 }
 
 NotificationPermissionInfoBarDelegate::~NotificationPermissionInfoBarDelegate()

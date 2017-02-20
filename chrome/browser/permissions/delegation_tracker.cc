@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -17,7 +16,7 @@
 class DelegationTracker::DelegatedForChild : content::WebContentsObserver {
  public:
   DelegatedForChild(content::RenderFrameHost* child_rfh,
-                    const std::vector<content::PermissionType>& permissions,
+                    const std::vector<ContentSettingsType>& permissions,
                     const base::Callback<void(content::RenderFrameHost*)>&
                         rfh_destroyed_callback)
       : content::WebContentsObserver(
@@ -28,7 +27,7 @@ class DelegationTracker::DelegatedForChild : content::WebContentsObserver {
 
   ~DelegatedForChild() override {}
 
-  bool HasPermission(const content::PermissionType& permission) {
+  bool HasPermission(ContentSettingsType permission) {
     return permissions_.count(permission) == 1;
   }
 
@@ -58,7 +57,7 @@ class DelegationTracker::DelegatedForChild : content::WebContentsObserver {
 
   content::RenderFrameHost* child_rfh_;
 
-  std::unordered_set<content::PermissionType, PermissionTypeHash> permissions_;
+  std::unordered_set<ContentSettingsType, ContentSettingsTypeHash> permissions_;
 
   base::Callback<void(content::RenderFrameHost*)> rfh_destroyed_callback_;
 };
@@ -69,7 +68,7 @@ DelegationTracker::~DelegationTracker() {}
 
 void DelegationTracker::SetDelegatedPermissions(
     content::RenderFrameHost* child_rfh,
-    const std::vector<content::PermissionType>& permissions) {
+    const std::vector<ContentSettingsType>& permissions) {
   DCHECK(child_rfh && child_rfh->GetParent());
   delegated_permissions_[child_rfh] = base::MakeUnique<DelegatedForChild>(
       child_rfh, permissions,
@@ -78,7 +77,7 @@ void DelegationTracker::SetDelegatedPermissions(
 }
 
 bool DelegationTracker::IsGranted(content::RenderFrameHost* requesting_rfh,
-                                  const content::PermissionType& permission) {
+                                  ContentSettingsType permission) {
   content::RenderFrameHost* child_rfh = requesting_rfh;
   while (child_rfh->GetParent()) {
     // Parents with unique origins can't delegate permission.

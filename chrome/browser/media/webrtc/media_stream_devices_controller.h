@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents_delegate.h"
 
 class Profile;
@@ -41,11 +40,6 @@ class MediaStreamDevicesController : public PermissionRequest {
   bool IsAskingForAudio() const;
   bool IsAskingForVideo() const;
   base::string16 GetMessageText() const;
-
-  // Returns the PermissionsType associated with the provided
-  // ContentSettingsType. |content_type| must be a media stream type.
-  content::PermissionType GetPermissionTypeForContentSettingsType(
-      ContentSettingsType content_type) const;
 
   // Forces the permissions to be denied (without being persisted) regardless
   // of what the previous state was.  If the user had previously allowed the

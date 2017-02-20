@@ -29,7 +29,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/variations/variations_associated_data.h"
@@ -58,15 +57,13 @@ PermissionResult::~PermissionResult() {}
 
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
-    const content::PermissionType permission_type,
     const ContentSettingsType content_settings_type)
     : profile_(profile),
-      permission_type_(permission_type),
       content_settings_type_(content_settings_type),
       weak_factory_(this) {
 #if defined(OS_ANDROID)
-  permission_queue_controller_.reset(new PermissionQueueController(
-      profile_, permission_type_, content_settings_type_));
+  permission_queue_controller_.reset(
+      new PermissionQueueController(profile_, content_settings_type_));
 #endif
   PermissionDecisionAutoBlocker::UpdateFromVariations();
 }
@@ -90,7 +87,8 @@ void PermissionContextBase::RequestPermission(
         content::CONSOLE_MESSAGE_LEVEL_INFO,
         base::StringPrintf(
             "%s permission has been blocked.",
-            PermissionUtil::GetPermissionString(permission_type_).c_str()));
+            PermissionUtil::GetPermissionString(content_settings_type_)
+                .c_str()));
     // The kill switch is enabled for this permission; Block all requests.
     callback.Run(CONTENT_SETTING_BLOCK);
     return;
@@ -101,9 +99,7 @@ void PermissionContextBase::RequestPermission(
 
   if (!requesting_origin.is_valid() || !embedding_origin.is_valid()) {
     std::string type_name =
-        content_settings::WebsiteSettingsRegistry::GetInstance()
-            ->Get(content_settings_type_)
-            ->name();
+        PermissionUtil::GetPermissionString(content_settings_type_);
 
     DVLOG(1) << "Attempt to use " << type_name
              << " from an invalid URL: " << requesting_origin << ","
@@ -121,7 +117,7 @@ void PermissionContextBase::RequestPermission(
       GetPermissionStatus(requesting_origin, embedding_origin);
   if (result.content_setting == CONTENT_SETTING_ALLOW) {
     HostContentSettingsMapFactory::GetForProfile(profile_)->UpdateLastUsage(
-        requesting_origin, embedding_origin, content_settings_type_);
+        requesting_origin, embedding_origin, content_settings_storage_type());
   }
 
   if (result.content_setting == CONTENT_SETTING_ALLOW ||
@@ -136,7 +132,7 @@ void PermissionContextBase::RequestPermission(
   // have been dismissed too many times in a row. If the origin is allowed to
   // request, that request will be made to ContinueRequestPermission().
   PermissionDecisionAutoBlocker::GetForProfile(profile_)->UpdateEmbargoedStatus(
-      permission_type_, requesting_origin, web_contents,
+      content_settings_type_, requesting_origin, web_contents,
       base::Bind(&PermissionContextBase::ContinueRequestPermission,
                  weak_factory_.GetWeakPtr(), web_contents, id,
                  requesting_origin, embedding_origin, user_gesture, callback));
@@ -156,7 +152,8 @@ void PermissionContextBase::ContinueRequestPermission(
         content::CONSOLE_MESSAGE_LEVEL_INFO,
         base::StringPrintf(
             "%s permission has been auto-blocked.",
-            PermissionUtil::GetPermissionString(permission_type_).c_str()));
+            PermissionUtil::GetPermissionString(content_settings_type_)
+                .c_str()));
     // Permission has been automatically blocked.
     PermissionUmaUtil::RecordPermissionEmbargoStatus(
         PermissionEmbargoStatus::PERMISSIONS_BLACKLISTING);
@@ -164,8 +161,8 @@ void PermissionContextBase::ContinueRequestPermission(
     return;
   }
 
-  PermissionUmaUtil::PermissionRequested(permission_type_, requesting_origin,
-                                         embedding_origin, profile_);
+  PermissionUmaUtil::PermissionRequested(
+      content_settings_type_, requesting_origin, embedding_origin, profile_);
 
   DecidePermission(web_contents, id, requesting_origin, embedding_origin,
                    user_gesture, callback);
@@ -193,7 +190,7 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
       GetPermissionStatusInternal(requesting_origin, embedding_origin);
   if (content_setting == CONTENT_SETTING_ASK &&
       PermissionDecisionAutoBlocker::GetForProfile(profile_)->IsUnderEmbargo(
-          permission_type_, requesting_origin)) {
+          content_settings_type_, requesting_origin)) {
     return PermissionResult(CONTENT_SETTING_BLOCK,
                             PermissionStatusSource::UNSPECIFIED);
   }
@@ -206,8 +203,8 @@ void PermissionContextBase::ResetPermission(
     const GURL& embedding_origin) {
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->SetContentSettingDefaultScope(requesting_origin, embedding_origin,
-                                      content_settings_type_, std::string(),
-                                      CONTENT_SETTING_DEFAULT);
+                                      content_settings_storage_type(),
+                                      std::string(), CONTENT_SETTING_DEFAULT);
 }
 
 void PermissionContextBase::CancelPermissionRequest(
@@ -234,7 +231,7 @@ void PermissionContextBase::CancelPermissionRequest(
 bool PermissionContextBase::IsPermissionKillSwitchOn() const {
   const std::string param = variations::GetVariationParamValue(
       kPermissionsKillSwitchFieldStudy,
-      PermissionUtil::GetPermissionString(permission_type_));
+      PermissionUtil::GetPermissionString(content_settings_type_));
 
   return param == kPermissionsKillSwitchBlockedValue;
 }
@@ -244,7 +241,7 @@ ContentSetting PermissionContextBase::GetPermissionStatusInternal(
     const GURL& embedding_origin) const {
   return HostContentSettingsMapFactory::GetForProfile(profile_)
       ->GetContentSetting(requesting_origin, embedding_origin,
-                          content_settings_type_, std::string());
+                          content_settings_storage_type(), std::string());
 }
 
 void PermissionContextBase::DecidePermission(
@@ -266,7 +263,7 @@ void PermissionContextBase::DecidePermission(
 
     std::unique_ptr<PermissionRequest> request_ptr =
         base::MakeUnique<PermissionRequestImpl>(
-            requesting_origin, permission_type_, profile_, user_gesture,
+            requesting_origin, content_settings_type_, profile_, user_gesture,
             base::Bind(&PermissionContextBase::PermissionDecided,
                        weak_factory_.GetWeakPtr(), id, requesting_origin,
                        embedding_origin, user_gesture, callback),
@@ -316,17 +313,18 @@ void PermissionContextBase::PermissionDecided(
            content_setting == CONTENT_SETTING_BLOCK ||
            content_setting == CONTENT_SETTING_DEFAULT);
     if (content_setting == CONTENT_SETTING_ALLOW) {
-      PermissionUmaUtil::PermissionGranted(permission_type_, gesture_type,
+      PermissionUmaUtil::PermissionGranted(content_settings_type_, gesture_type,
                                            requesting_origin, profile_);
     } else if (content_setting == CONTENT_SETTING_BLOCK) {
-      PermissionUmaUtil::PermissionDenied(permission_type_, gesture_type,
+      PermissionUmaUtil::PermissionDenied(content_settings_type_, gesture_type,
                                           requesting_origin, profile_);
     } else {
-      PermissionUmaUtil::PermissionDismissed(permission_type_, gesture_type,
-                                             requesting_origin, profile_);
+      PermissionUmaUtil::PermissionDismissed(
+          content_settings_type_, gesture_type, requesting_origin, profile_);
 
       if (PermissionDecisionAutoBlocker::GetForProfile(profile_)
-              ->RecordDismissAndEmbargo(requesting_origin, permission_type_)) {
+              ->RecordDismissAndEmbargo(requesting_origin,
+                                        content_settings_type_)) {
         embargo_status = PermissionEmbargoStatus::REPEATED_DISMISSALS;
       }
     }
@@ -386,6 +384,13 @@ void PermissionContextBase::UpdateContentSetting(
 
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->SetContentSettingDefaultScope(requesting_origin, embedding_origin,
-                                      content_settings_type_, std::string(),
-                                      content_setting);
+                                      content_settings_storage_type(),
+                                      std::string(), content_setting);
+}
+
+ContentSettingsType PermissionContextBase::content_settings_storage_type()
+    const {
+  if (content_settings_type_ == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING)
+    return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+  return content_settings_type_;
 }

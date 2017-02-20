@@ -13,7 +13,6 @@ GeolocationInfoBarDelegateAndroid::GeolocationInfoBarDelegateAndroid(
     Profile* profile,
     const PermissionSetCallback& callback)
     : PermissionInfoBarDelegate(requesting_frame,
-                                content::PermissionType::GEOLOCATION,
                                 CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                 user_gesture,
                                 profile,

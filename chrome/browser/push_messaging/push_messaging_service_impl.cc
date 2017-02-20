@@ -45,7 +45,6 @@
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -474,8 +473,8 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
   }
 
   // Push does not allow permission requests from iframes.
-  profile_->GetPermissionManager()->RequestPermission(
-      content::PermissionType::PUSH_MESSAGING, web_contents->GetMainFrame(),
+  PermissionManager::Get(profile_)->RequestPermission(
+      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, web_contents->GetMainFrame(),
       requesting_origin, true /* user_gesture */,
       base::Bind(&PushMessagingServiceImpl::DoSubscribe,
                  weak_factory_.GetWeakPtr(), app_identifier, options,
@@ -520,8 +519,8 @@ blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
   // Because the Push API is tied to Service Workers, many usages of the API
   // won't have an embedding origin at all. Only consider the requesting
   // |origin| when checking whether permission to use the API has been granted.
-  return ToPushPermission(profile_->GetPermissionManager()->GetPermissionStatus(
-      content::PermissionType::PUSH_MESSAGING, origin, origin));
+  return ToPushPermission(PermissionManager::Get(profile_)->GetPermissionStatus(
+      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, origin, origin));
 }
 
 bool PushMessagingServiceImpl::SupportNonVisibleMessages() {

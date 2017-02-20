@@ -13,11 +13,11 @@
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -67,7 +67,7 @@ void FlashDownloadInterception::InterceptFlashDownloadNavigation(
   if (flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
     PermissionManager* manager = PermissionManager::Get(profile);
     manager->RequestPermission(
-        content::PermissionType::FLASH, web_contents->GetMainFrame(),
+        CONTENT_SETTINGS_TYPE_PLUGINS, web_contents->GetMainFrame(),
         web_contents->GetLastCommittedURL(), true, base::Bind(&DoNothing));
   } else if (flash_setting == CONTENT_SETTING_BLOCK) {
     TabSpecificContentSettings::FromWebContents(web_contents)

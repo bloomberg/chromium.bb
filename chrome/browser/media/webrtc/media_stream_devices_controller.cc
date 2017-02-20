@@ -58,34 +58,34 @@ namespace {
 
 // Returns true if the given ContentSettingsType is being requested in
 // |request|.
-bool ContentTypeIsRequested(content::PermissionType type,
+bool ContentTypeIsRequested(ContentSettingsType type,
                             const content::MediaStreamRequest& request) {
   if (request.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY)
     return true;
 
-  if (type == content::PermissionType::AUDIO_CAPTURE)
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
     return request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE;
 
-  if (type == content::PermissionType::VIDEO_CAPTURE)
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
     return request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE;
 
   return false;
 }
 
 using PermissionActionCallback =
-    base::Callback<void(content::PermissionType,
+    base::Callback<void(ContentSettingsType,
                         PermissionRequestGestureType,
                         const GURL&,
                         Profile*)>;
 
 void RecordSinglePermissionAction(const content::MediaStreamRequest& request,
-                                  content::PermissionType permission_type,
+                                  ContentSettingsType content_type,
                                   Profile* profile,
                                   PermissionActionCallback callback) {
-  if (ContentTypeIsRequested(permission_type, request)) {
+  if (ContentTypeIsRequested(content_type, request)) {
     // TODO(stefanocs): Pass the actual |gesture_type| once this file has been
     // refactored into PermissionContext.
-    callback.Run(permission_type, PermissionRequestGestureType::UNKNOWN,
+    callback.Run(content_type, PermissionRequestGestureType::UNKNOWN,
                  request.security_origin, profile);
   }
 }
@@ -94,10 +94,10 @@ void RecordSinglePermissionAction(const content::MediaStreamRequest& request,
 void RecordPermissionAction(const content::MediaStreamRequest& request,
                             Profile* profile,
                             PermissionActionCallback callback) {
-  RecordSinglePermissionAction(request, content::PermissionType::AUDIO_CAPTURE,
+  RecordSinglePermissionAction(request, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
                                profile, callback);
-  RecordSinglePermissionAction(request, content::PermissionType::VIDEO_CAPTURE,
-                               profile, callback);
+  RecordSinglePermissionAction(
+      request, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, profile, callback);
 }
 
 // This helper class helps to measure the number of media stream requests that
@@ -254,16 +254,6 @@ base::string16 MediaStreamDevicesController::GetMessageText() const {
       message_id,
       url_formatter::FormatUrlForSecurityDisplay(
           GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
-}
-
-content::PermissionType
-MediaStreamDevicesController::GetPermissionTypeForContentSettingsType(
-    ContentSettingsType content_type) const {
-  DCHECK(content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-         content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-  content::PermissionType permission = content::PermissionType::NUM;
-  CHECK(PermissionUtil::GetPermissionType(content_type, &permission));
-  return permission;
 }
 
 void MediaStreamDevicesController::ForcePermissionDeniedTemporarily() {
@@ -567,9 +557,7 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
     return CONTENT_SETTING_BLOCK;
   }
 
-  content::PermissionType permission_type =
-      GetPermissionTypeForContentSettingsType(content_type);
-  if (ContentTypeIsRequested(permission_type, request)) {
+  if (ContentTypeIsRequested(content_type, request)) {
     DCHECK(content::IsOriginSecure(request_.security_origin) ||
            request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY);
     MediaPermission permission(content_type, request.security_origin,

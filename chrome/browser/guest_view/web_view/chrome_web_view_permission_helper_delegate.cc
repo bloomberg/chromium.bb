@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/features.h"
 #include "chrome/common/render_messages.h"
-#include "content/public/browser/permission_type.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -226,7 +226,7 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
   Profile* profile = Profile::FromBrowserContext(
       web_view_guest()->browser_context());
   PermissionManager::Get(profile)->RequestPermission(
-      content::PermissionType::GEOLOCATION, web_contents->GetMainFrame(),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, web_contents->GetMainFrame(),
       web_view_guest()
           ->embedder_web_contents()
           ->GetLastCommittedURL()

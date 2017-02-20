@@ -33,7 +33,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/notification_event_dispatcher.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
@@ -229,7 +228,7 @@ PlatformNotificationServiceImpl::CheckPermissionOnUIThread(
 #endif
 
   return PermissionManager::Get(profile)->GetPermissionStatus(
-      content::PermissionType::NOTIFICATIONS, origin, origin);
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin, origin);
 }
 
 blink::mojom::PermissionStatus

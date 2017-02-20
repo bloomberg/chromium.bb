@@ -35,34 +35,32 @@ enum PermissionAction {
   PERMISSION_ACTION_NUM,
 };
 
-struct PermissionTypeHash {
-  std::size_t operator()(const content::PermissionType& type) const;
-};
-
 // A utility class for permissions.
 class PermissionUtil {
  public:
-  // Returns the permission string for the given PermissionType.
-  static std::string GetPermissionString(content::PermissionType permission);
+  // Returns the permission string for the given permission.
+  static std::string GetPermissionString(ContentSettingsType);
+  // TODO(timloh): Remove this content::PermissionType overload when we add MIDI
+  // to ContentSettingsType.
+  static std::string GetPermissionString(content::PermissionType);
 
-  // Return the stringified version of the PermissionType enum that Safe
-  // Browsing uses for the API Blacklist.
-  static std::string ConvertPermissionTypeToSafeBrowsingName(
-      const content::PermissionType& permission_type);
+  // Return the stringified version of the ContentSettingsType enum that
+  // Safe Browsing uses for the API Blacklist.
+  static std::string ConvertContentSettingsTypeToSafeBrowsingName(
+      ContentSettingsType permission);
 
   // Returns the request type corresponding to a permission type.
-  static PermissionRequestType GetRequestType(content::PermissionType type);
+  static PermissionRequestType GetRequestType(ContentSettingsType permission);
 
   // Returns the gesture type corresponding to whether a permission request is
   // made with or without a user gesture.
   static PermissionRequestGestureType GetGestureType(bool user_gesture);
 
-  // Limited conversion of ContentSettingsType to PermissionType. Intended for
-  // recording Permission UMA metrics from areas of the codebase which have not
-  // yet been converted to PermissionType. Returns true if the conversion was
-  // performed.
-  // TODO(tsergeant): Remove this function once callsites operate on
-  // PermissionType directly.
+  // Limited conversion of ContentSettingsType to PermissionType. Returns true
+  // if the conversion was performed.
+  // TODO(timloh): Try to remove this function. Mainly we need to work out how
+  // to remove the usage in PermissionUmaUtil, which uses PermissionType as a
+  // histogram value to count permission request metrics.
   static bool GetPermissionType(ContentSettingsType type,
                                 content::PermissionType* out);
 

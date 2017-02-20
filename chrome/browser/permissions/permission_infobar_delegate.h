@@ -13,7 +13,6 @@
 #include "chrome/browser/permissions/permission_util.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
-#include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
 
 namespace infobars {
@@ -41,14 +40,14 @@ class PermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // |infobar_service| and manages its own lifetime; callers must only use it
   // for calls to |infobar_service|.
   static infobars::InfoBar* Create(InfoBarService* infobar_service,
-                                   content::PermissionType type,
+                                   ContentSettingsType type,
                                    const GURL& requesting_frame,
                                    bool user_gesture,
                                    Profile* profile,
                                    const PermissionSetCallback& callback);
 
   static std::unique_ptr<PermissionInfoBarDelegate> CreateDelegate(
-      content::PermissionType type,
+      ContentSettingsType type,
       const GURL& requesting_frame,
       bool user_gesture,
       Profile* profile,
@@ -77,7 +76,6 @@ class PermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  protected:
   PermissionInfoBarDelegate(const GURL& requesting_origin,
-                            content::PermissionType permission_type,
                             ContentSettingsType content_settings_type,
                             bool user_gesture,
                             Profile* profile,
@@ -92,7 +90,6 @@ class PermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   void SetPermission(bool update_content_setting, PermissionAction decision);
 
   GURL requesting_origin_;
-  content::PermissionType permission_type_;
   ContentSettingsType content_settings_type_;
   Profile* const profile_;
   const PermissionSetCallback callback_;

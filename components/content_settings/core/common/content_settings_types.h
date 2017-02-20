@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_TYPES_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_TYPES_H_
 
+#include <cstddef>
+
 #include "build/build_config.h"
 
 // A particular type of content to care about.  We give the user various types
@@ -48,8 +50,19 @@ enum ContentSettingsType {
   CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
   CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
 
+  // This is only here temporarily and will be removed when we further unify
+  // it with notifications, see crbug.com/563297. No prefs data is stored for
+  // this content type, we instead share values with NOTIFICATIONS.
+  CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+
   // WARNING: This enum is going to be removed soon. Do not depend on NUM_TYPES.
   CONTENT_SETTINGS_NUM_TYPES_DO_NOT_USE,
+};
+
+struct ContentSettingsTypeHash {
+  std::size_t operator()(ContentSettingsType type) const {
+    return static_cast<std::size_t>(type);
+  }
 };
 
 #endif  // COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_TYPES_H_

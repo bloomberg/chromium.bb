@@ -79,7 +79,7 @@ class PermissionBubbleInteractiveUITest
     EXPECT_TRUE(test_api_->manager());
 
     test_api_->AddSimpleRequest(browser()->profile(),
-                                content::PermissionType::GEOLOCATION);
+                                CONTENT_SETTINGS_TYPE_GEOLOCATION);
 
     EXPECT_TRUE([browser()->window()->GetNativeWindow() isKeyWindow]);
     test_api_->manager()->DisplayPendingRequests();

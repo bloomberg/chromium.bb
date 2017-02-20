@@ -15,7 +15,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -29,13 +28,8 @@ namespace {
 class TestPermissionContext : public MediaStreamDevicePermissionContext {
  public:
   TestPermissionContext(Profile* profile,
-                        const ContentSettingsType permission_type)
-      : MediaStreamDevicePermissionContext(
-            profile,
-            permission_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA
-                ? content::PermissionType::VIDEO_CAPTURE
-                : content::PermissionType::AUDIO_CAPTURE,
-            permission_type) {}
+                        const ContentSettingsType content_settings_type)
+      : MediaStreamDevicePermissionContext(profile, content_settings_type) {}
 
   ~TestPermissionContext() override {}
 };
@@ -49,8 +43,8 @@ class MediaStreamDevicePermissionContextTests
  protected:
   MediaStreamDevicePermissionContextTests() = default;
 
-  void TestInsecureQueryingUrl(ContentSettingsType permission_type) {
-    TestPermissionContext permission_context(profile(), permission_type);
+  void TestInsecureQueryingUrl(ContentSettingsType content_settings_type) {
+    TestPermissionContext permission_context(profile(), content_settings_type);
     GURL insecure_url("http://www.example.com");
     GURL secure_url("https://www.example.com");
 
@@ -59,20 +53,17 @@ class MediaStreamDevicePermissionContextTests
               HostContentSettingsMapFactory::GetForProfile(profile())
                   ->GetContentSetting(insecure_url.GetOrigin(),
                                       insecure_url.GetOrigin(),
-                                      permission_type,
-                                      std::string()));
+                                      content_settings_type, std::string()));
     EXPECT_EQ(CONTENT_SETTING_ASK,
               HostContentSettingsMapFactory::GetForProfile(profile())
                   ->GetContentSetting(secure_url.GetOrigin(),
                                       insecure_url.GetOrigin(),
-                                      permission_type,
-                                      std::string()));
+                                      content_settings_type, std::string()));
     EXPECT_EQ(CONTENT_SETTING_ASK,
               HostContentSettingsMapFactory::GetForProfile(profile())
                   ->GetContentSetting(insecure_url.GetOrigin(),
                                       secure_url.GetOrigin(),
-                                      permission_type,
-                                      std::string()));
+                                      content_settings_type, std::string()));
 
     EXPECT_EQ(CONTENT_SETTING_ASK,
               permission_context.GetPermissionStatus(insecure_url, insecure_url)
@@ -83,8 +74,8 @@ class MediaStreamDevicePermissionContextTests
                   .content_setting);
   }
 
-  void TestSecureQueryingUrl(ContentSettingsType permission_type) {
-    TestPermissionContext permission_context(profile(), permission_type);
+  void TestSecureQueryingUrl(ContentSettingsType content_settings_type) {
+    TestPermissionContext permission_context(profile(), content_settings_type);
     GURL secure_url("https://www.example.com");
 
     // Check that there is no saved content settings.
@@ -92,7 +83,7 @@ class MediaStreamDevicePermissionContextTests
               HostContentSettingsMapFactory::GetForProfile(profile())
                   ->GetContentSetting(secure_url.GetOrigin(),
                                       secure_url.GetOrigin(),
-                                      permission_type,
+                                      content_settings_type,
                                       std::string()));
 
     EXPECT_EQ(CONTENT_SETTING_ASK,

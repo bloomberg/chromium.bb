@@ -18,7 +18,7 @@ namespace {
 // handle all destruction paths.
 class TestPermisisonRequestOwner {
  public:
-  TestPermisisonRequestOwner(Profile* profile, content::PermissionType type) {
+  TestPermisisonRequestOwner(Profile* profile, ContentSettingsType type) {
     bool user_gesture = true;
     auto decided = [](bool, ContentSetting) {};
     request_ = base::MakeUnique<PermissionRequestImpl>(
@@ -50,7 +50,7 @@ PermissionRequestManagerTestApi::PermissionRequestManagerTestApi(
 
 void PermissionRequestManagerTestApi::AddSimpleRequest(
     Profile* profile,
-    content::PermissionType type) {
+    ContentSettingsType type) {
   TestPermisisonRequestOwner* request_owner =
       new TestPermisisonRequestOwner(profile, type);
   manager_->AddRequest(request_owner->request());

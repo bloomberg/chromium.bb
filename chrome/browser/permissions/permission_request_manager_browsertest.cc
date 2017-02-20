@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -55,9 +55,9 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
     return mock_permission_prompt_factory_.get();
   }
 
-  void EnableKillSwitch(content::PermissionType permission_type) {
+  void EnableKillSwitch(ContentSettingsType content_settings_type) {
     std::map<std::string, std::string> params;
-    params[PermissionUtil::GetPermissionString(permission_type)] =
+    params[PermissionUtil::GetPermissionString(content_settings_type)] =
         kPermissionsKillSwitchBlockedValue;
     variations::AssociateVariationParams(
         kPermissionsKillSwitchFieldStudy, kPermissionsKillSwitchTestGroup,
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
       embedded_test_server()->GetURL("/permissions/killswitch_tester.html"));
 
   // Now enable the geolocation killswitch.
-  EnableKillSwitch(content::PermissionType::GEOLOCATION);
+  EnableKillSwitch(CONTENT_SETTINGS_TYPE_GEOLOCATION);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
       embedded_test_server()->GetURL("/permissions/killswitch_tester.html"));
 
   // Now enable the notifications killswitch.
-  EnableKillSwitch(content::PermissionType::NOTIFICATIONS);
+  EnableKillSwitch(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 

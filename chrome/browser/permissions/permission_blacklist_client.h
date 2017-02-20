@@ -9,8 +9,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/safe_browsing_db/database_manager.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class GURL;
@@ -38,7 +38,7 @@ class PermissionBlacklistClient
   // to be alive.
   static void CheckSafeBrowsingBlacklist(
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
-      content::PermissionType permission_type,
+      ContentSettingsType content_settings_type,
       const GURL& request_origin,
       content::WebContents* web_contents,
       int timeout,
@@ -49,7 +49,7 @@ class PermissionBlacklistClient
 
   PermissionBlacklistClient(
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
-      content::PermissionType permission_type,
+      ContentSettingsType content_settings_type,
       const GURL& request_origin,
       content::WebContents* web_contents,
       int timeout,
@@ -72,7 +72,7 @@ class PermissionBlacklistClient
   void WebContentsDestroyed() override;
 
   scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager_;
-  content::PermissionType permission_type_;
+  ContentSettingsType content_settings_type_;
 
   // PermissionContextBase callback to run on the UI thread.
   base::Callback<void(bool)> callback_;

@@ -12,10 +12,7 @@
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/common/safe_browsing/permission_report.pb.h"
 #include "components/variations/active_field_trials.h"
-#include "content/public/browser/permission_type.h"
 #include "net/url_request/report_sender.h"
-
-using content::PermissionType;
 
 namespace safe_browsing {
 
@@ -28,31 +25,29 @@ const char kPermissionActionReportingUploadUrl[] =
 const int kMaximumReportsPerOriginPerPermissionPerMinute = 5;
 
 PermissionReport::PermissionType PermissionTypeForReport(
-    PermissionType permission) {
+    ContentSettingsType permission) {
   switch (permission) {
-    case PermissionType::MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return PermissionReport::MIDI_SYSEX;
-    case PermissionType::PUSH_MESSAGING:
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       return PermissionReport::PUSH_MESSAGING;
-    case PermissionType::NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       return PermissionReport::NOTIFICATIONS;
-    case PermissionType::GEOLOCATION:
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       return PermissionReport::GEOLOCATION;
-    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       return PermissionReport::PROTECTED_MEDIA_IDENTIFIER;
-    case PermissionType::MIDI:
-      return PermissionReport::MIDI;
-    case PermissionType::DURABLE_STORAGE:
+    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
       return PermissionReport::DURABLE_STORAGE;
-    case PermissionType::AUDIO_CAPTURE:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
       return PermissionReport::AUDIO_CAPTURE;
-    case PermissionType::VIDEO_CAPTURE:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
       return PermissionReport::VIDEO_CAPTURE;
-    case PermissionType::BACKGROUND_SYNC:
+    case CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
       return PermissionReport::BACKGROUND_SYNC;
-    case PermissionType::FLASH:
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
       return PermissionReport::FLASH;
-    case PermissionType::NUM:
+    default:
       break;
   }
 
@@ -211,7 +206,7 @@ bool PermissionReporter::BuildReport(const PermissionReportInfo& report_info,
 }
 
 bool PermissionReporter::IsReportThresholdExceeded(
-    content::PermissionType permission,
+    ContentSettingsType permission,
     const GURL& origin) {
   std::queue<base::Time>& log = report_logs_[{permission, origin}];
   base::Time current_time = clock_->Now();

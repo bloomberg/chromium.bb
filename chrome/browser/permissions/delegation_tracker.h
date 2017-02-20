@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 
 namespace content {
 
 class RenderFrameHost;
-enum class PermissionType;
 
 }  // namespace content
 
@@ -33,7 +33,7 @@ class DelegationTracker {
   // Set the |permissions| which are delegated to |child_rfh| by its parent.
   void SetDelegatedPermissions(
       content::RenderFrameHost* child_rfh,
-      const std::vector<content::PermissionType>& permissions);
+      const std::vector<ContentSettingsType>& permissions);
 
   // Query whether |permission| is granted to |requesting_rfh|. This will return
   // true if |requesting_rfh| is a top-level frame or if it has been delegated
@@ -42,7 +42,7 @@ class DelegationTracker {
   // |permission| to it's child OR have the same origin as it's child on that
   // path in order for this to return true.
   bool IsGranted(content::RenderFrameHost* requesting_rfh,
-                 const content::PermissionType& permission);
+                 ContentSettingsType permission);
 
  private:
   class DelegatedForChild;

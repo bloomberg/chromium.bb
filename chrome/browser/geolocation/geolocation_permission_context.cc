@@ -9,7 +9,6 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/geolocation/geolocation_provider.h"
@@ -17,7 +16,6 @@
 
 GeolocationPermissionContext::GeolocationPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            content::PermissionType::GEOLOCATION,
                             CONTENT_SETTINGS_TYPE_GEOLOCATION),
       extensions_context_(profile) {}
 

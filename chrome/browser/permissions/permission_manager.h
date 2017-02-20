@@ -33,6 +33,21 @@ class PermissionManager : public KeyedService,
   explicit PermissionManager(Profile* profile);
   ~PermissionManager() override;
 
+  // Callers from within chrome/ should use the methods which take the
+  // ContentSettingsType enum. The methods which take PermissionType values
+  // are for the content::PermissionManager overrides and shouldn't be used
+  // from chrome/.
+  int RequestPermission(
+      ContentSettingsType permission,
+      content::RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin,
+      bool user_gesture,
+      const base::Callback<void(blink::mojom::PermissionStatus)>& callback);
+  blink::mojom::PermissionStatus GetPermissionStatus(
+      ContentSettingsType permission,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin);
+
   // content::PermissionManager implementation.
   int RequestPermission(
       content::PermissionType permission,
@@ -71,7 +86,7 @@ class PermissionManager : public KeyedService,
   // TODO(raymes): Rather than exposing this, expose a denial reason from
   // GetPermissionStatus so that callers can determine whether a permission is
   // denied due to the kill switch.
-  bool IsPermissionKillSwitchOn(content::PermissionType permission);
+  bool IsPermissionKillSwitchOn(ContentSettingsType);
 
  private:
   friend class GeolocationPermissionContextTests;
@@ -82,7 +97,7 @@ class PermissionManager : public KeyedService,
   struct Subscription;
   using SubscriptionsMap = IDMap<std::unique_ptr<Subscription>>;
 
-  PermissionContextBase* GetPermissionContext(content::PermissionType type);
+  PermissionContextBase* GetPermissionContext(ContentSettingsType type);
 
   // Called when a permission was decided for a given PendingRequest. The
   // PendingRequest is identified by its |request_id| and the permission is
@@ -101,17 +116,13 @@ class PermissionManager : public KeyedService,
                                ContentSettingsType content_type,
                                std::string resource_identifier) override;
 
-  ContentSetting GetPermissionStatusInternal(content::PermissionType permission,
-                                             const GURL& requesting_origin,
-                                             const GURL& embedding_origin);
-
   Profile* profile_;
   PendingRequestsMap pending_requests_;
   SubscriptionsMap subscriptions_;
 
-  std::unordered_map<content::PermissionType,
+  std::unordered_map<ContentSettingsType,
                      std::unique_ptr<PermissionContextBase>,
-                     PermissionTypeHash>
+                     ContentSettingsTypeHash>
       permission_contexts_;
 
   base::WeakPtrFactory<PermissionManager> weak_ptr_factory_;

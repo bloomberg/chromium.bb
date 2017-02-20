@@ -14,8 +14,7 @@ class Profile;
 
 class NotificationPermissionContext : public PermissionContextBase {
  public:
-  NotificationPermissionContext(Profile* profile,
-                                content::PermissionType permission_type);
+  NotificationPermissionContext(Profile* profile, ContentSettingsType);
   ~NotificationPermissionContext() override;
 
   // PermissionContextBase implementation.

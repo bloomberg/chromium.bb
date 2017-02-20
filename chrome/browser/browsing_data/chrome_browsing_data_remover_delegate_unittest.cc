@@ -558,20 +558,20 @@ class RemovePermissionPromptCountsTest {
   explicit RemovePermissionPromptCountsTest(TestingProfile* profile)
       : autoblocker_(PermissionDecisionAutoBlocker::GetForProfile(profile)) {}
 
-  int GetDismissCount(const GURL& url, content::PermissionType permission) {
+  int GetDismissCount(const GURL& url, ContentSettingsType permission) {
     return autoblocker_->GetDismissCount(url, permission);
   }
 
-  int GetIgnoreCount(const GURL& url, content::PermissionType permission) {
+  int GetIgnoreCount(const GURL& url, ContentSettingsType permission) {
     return autoblocker_->GetIgnoreCount(url, permission);
   }
 
-  int RecordIgnore(const GURL& url, content::PermissionType permission) {
+  int RecordIgnore(const GURL& url, ContentSettingsType permission) {
     return autoblocker_->RecordIgnore(url, permission);
   }
 
   bool ShouldChangeDismissalToBlock(const GURL& url,
-                                    content::PermissionType permission) {
+                                    ContentSettingsType permission) {
     return autoblocker_->RecordDismissAndEmbargo(url, permission);
   }
 
@@ -1575,17 +1575,17 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
   {
     // Test REMOVE_HISTORY.
     EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
-                                     content::PermissionType::GEOLOCATION));
+                                     CONTENT_SETTINGS_TYPE_GEOLOCATION));
     EXPECT_EQ(2, tester.RecordIgnore(kOrigin1,
-                                     content::PermissionType::GEOLOCATION));
+                                     CONTENT_SETTINGS_TYPE_GEOLOCATION));
     EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
-                                     content::PermissionType::NOTIFICATIONS));
+                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
     tester.ShouldChangeDismissalToBlock(kOrigin1,
-                                        content::PermissionType::MIDI_SYSEX);
+                                        CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
     EXPECT_EQ(1, tester.RecordIgnore(kOrigin2,
-                                     content::PermissionType::DURABLE_STORAGE));
+                                     CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
     tester.ShouldChangeDismissalToBlock(kOrigin2,
-                                        content::PermissionType::NOTIFICATIONS);
+                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 
     BlockUntilOriginDataRemoved(AnHourAgo(), base::Time::Max(),
                                 BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
@@ -1593,45 +1593,45 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
 
     // kOrigin1 should be gone, but kOrigin2 remains.
     EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
-                                       content::PermissionType::GEOLOCATION));
+                                       CONTENT_SETTINGS_TYPE_GEOLOCATION));
     EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
-                                       content::PermissionType::NOTIFICATIONS));
+                                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
     EXPECT_EQ(0, tester.GetDismissCount(kOrigin1,
-                                        content::PermissionType::MIDI_SYSEX));
+                                        CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
     EXPECT_EQ(1, tester.GetIgnoreCount(
-                     kOrigin2, content::PermissionType::DURABLE_STORAGE));
+                     kOrigin2, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
     EXPECT_EQ(1, tester.GetDismissCount(
-                     kOrigin2, content::PermissionType::NOTIFICATIONS));
+                     kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 
     BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
                                   BrowsingDataRemover::REMOVE_HISTORY, false);
 
     // Everything should be gone.
     EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
-                                       content::PermissionType::GEOLOCATION));
+                                       CONTENT_SETTINGS_TYPE_GEOLOCATION));
     EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
-                                       content::PermissionType::NOTIFICATIONS));
+                                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
     EXPECT_EQ(0, tester.GetDismissCount(kOrigin1,
-                                        content::PermissionType::MIDI_SYSEX));
+                                        CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
     EXPECT_EQ(0, tester.GetIgnoreCount(
-                     kOrigin2, content::PermissionType::DURABLE_STORAGE));
+                     kOrigin2, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
     EXPECT_EQ(0, tester.GetDismissCount(
-                     kOrigin2, content::PermissionType::NOTIFICATIONS));
+                     kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   }
   {
     // Test REMOVE_SITE_DATA.
     EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
-                                     content::PermissionType::GEOLOCATION));
+                                     CONTENT_SETTINGS_TYPE_GEOLOCATION));
     EXPECT_EQ(2, tester.RecordIgnore(kOrigin1,
-                                     content::PermissionType::GEOLOCATION));
+                                     CONTENT_SETTINGS_TYPE_GEOLOCATION));
     EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
-                                     content::PermissionType::NOTIFICATIONS));
+                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
     tester.ShouldChangeDismissalToBlock(kOrigin1,
-                                        content::PermissionType::MIDI_SYSEX);
+                                        CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
     EXPECT_EQ(1, tester.RecordIgnore(kOrigin2,
-                                     content::PermissionType::DURABLE_STORAGE));
+                                     CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
     tester.ShouldChangeDismissalToBlock(kOrigin2,
-                                        content::PermissionType::NOTIFICATIONS);
+                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 
     BlockUntilOriginDataRemoved(AnHourAgo(), base::Time::Max(),
                                 BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
@@ -1639,15 +1639,15 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
 
     // kOrigin2 should be gone, but kOrigin1 remains.
     EXPECT_EQ(2, tester.GetIgnoreCount(kOrigin1,
-                                       content::PermissionType::GEOLOCATION));
+                                       CONTENT_SETTINGS_TYPE_GEOLOCATION));
     EXPECT_EQ(1, tester.GetIgnoreCount(kOrigin1,
-                                       content::PermissionType::NOTIFICATIONS));
+                                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
     EXPECT_EQ(1, tester.GetDismissCount(kOrigin1,
-                                        content::PermissionType::MIDI_SYSEX));
+                                        CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
     EXPECT_EQ(0, tester.GetIgnoreCount(
-                     kOrigin2, content::PermissionType::DURABLE_STORAGE));
+                     kOrigin2, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
     EXPECT_EQ(0, tester.GetDismissCount(
-                     kOrigin2, content::PermissionType::NOTIFICATIONS));
+                     kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 
     BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
                                   BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
@@ -1655,15 +1655,15 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
 
     // Everything should be gone.
     EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
-                                       content::PermissionType::GEOLOCATION));
+                                       CONTENT_SETTINGS_TYPE_GEOLOCATION));
     EXPECT_EQ(0, tester.GetIgnoreCount(kOrigin1,
-                                       content::PermissionType::NOTIFICATIONS));
+                                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
     EXPECT_EQ(0, tester.GetDismissCount(kOrigin1,
-                                        content::PermissionType::MIDI_SYSEX));
+                                        CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
     EXPECT_EQ(0, tester.GetIgnoreCount(
-                     kOrigin2, content::PermissionType::DURABLE_STORAGE));
+                     kOrigin2, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
     EXPECT_EQ(0, tester.GetDismissCount(
-                     kOrigin2, content::PermissionType::NOTIFICATIONS));
+                     kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   }
 }
 

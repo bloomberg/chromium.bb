@@ -23,7 +23,7 @@
 // static
 infobars::InfoBar* PermissionInfoBarDelegate::Create(
     InfoBarService* infobar_service,
-    content::PermissionType type,
+    ContentSettingsType type,
     const GURL& requesting_frame,
     bool user_gesture,
     Profile* profile,
@@ -42,26 +42,26 @@ infobars::InfoBar* PermissionInfoBarDelegate::Create(
 // static
 std::unique_ptr<PermissionInfoBarDelegate>
 PermissionInfoBarDelegate::CreateDelegate(
-    content::PermissionType type,
+    ContentSettingsType type,
     const GURL& requesting_frame,
     bool user_gesture,
     Profile* profile,
     const PermissionSetCallback& callback) {
   switch (type) {
-    case content::PermissionType::GEOLOCATION:
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       return std::unique_ptr<PermissionInfoBarDelegate>(
               new GeolocationInfoBarDelegateAndroid(
                   requesting_frame, user_gesture, profile, callback));
-    case content::PermissionType::NOTIFICATIONS:
-    case content::PermissionType::PUSH_MESSAGING:
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       return std::unique_ptr<PermissionInfoBarDelegate>(
           new NotificationPermissionInfoBarDelegate(
               type, requesting_frame, user_gesture, profile, callback));
-    case content::PermissionType::MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return std::unique_ptr<PermissionInfoBarDelegate>(
               new MidiPermissionInfoBarDelegateAndroid(
                   requesting_frame, user_gesture, profile, callback));
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       return std::unique_ptr<PermissionInfoBarDelegate>(
               new ProtectedMediaIdentifierInfoBarDelegateAndroid(
                   requesting_frame, user_gesture, profile, callback));
@@ -74,7 +74,7 @@ PermissionInfoBarDelegate::CreateDelegate(
 PermissionInfoBarDelegate::~PermissionInfoBarDelegate() {
   if (!action_taken_) {
     PermissionUmaUtil::PermissionIgnored(
-        permission_type_,
+        content_settings_type_,
         user_gesture_ ? PermissionRequestGestureType::GESTURE
                       : PermissionRequestGestureType::NO_GESTURE,
         requesting_origin_, profile_);
@@ -86,9 +86,9 @@ std::vector<int> PermissionInfoBarDelegate::content_settings_types() const {
 }
 
 bool PermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
-  return (permission_type_ == content::PermissionType::GEOLOCATION ||
-          permission_type_ == content::PermissionType::AUDIO_CAPTURE ||
-          permission_type_ == content::PermissionType::VIDEO_CAPTURE) &&
+  return (content_settings_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
+          content_settings_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+          content_settings_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) &&
          PermissionUtil::ShouldShowPersistenceToggle();
 }
 
@@ -97,7 +97,7 @@ bool PermissionInfoBarDelegate::Accept() {
   if (ShouldShowPersistenceToggle()) {
     update_content_setting = persist_;
     PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
-        permission_type_, persist_);
+        content_settings_type_, persist_);
   }
 
   SetPermission(update_content_setting, GRANTED);
@@ -109,7 +109,7 @@ bool PermissionInfoBarDelegate::Cancel() {
   if (ShouldShowPersistenceToggle()) {
     update_content_setting = persist_;
     PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
-        permission_type_, persist_);
+        content_settings_type_, persist_);
   }
 
   SetPermission(update_content_setting, DENIED);
@@ -136,13 +136,11 @@ base::string16 PermissionInfoBarDelegate::GetMessageText() const {
 
 PermissionInfoBarDelegate::PermissionInfoBarDelegate(
     const GURL& requesting_origin,
-    content::PermissionType permission_type,
     ContentSettingsType content_settings_type,
     bool user_gesture,
     Profile* profile,
     const PermissionSetCallback& callback)
     : requesting_origin_(requesting_origin),
-      permission_type_(permission_type),
       content_settings_type_(content_settings_type),
       profile_(profile),
       callback_(callback),

@@ -15,7 +15,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/permission_type.h"
 
 #if defined(OS_ANDROID)
 class PermissionQueueController;
@@ -83,7 +82,6 @@ struct PermissionResult {
 class PermissionContextBase : public KeyedService {
  public:
   PermissionContextBase(Profile* profile,
-                        const content::PermissionType permission_type,
                         const ContentSettingsType content_settings_type);
   ~PermissionContextBase() override;
 
@@ -181,10 +179,14 @@ class PermissionContextBase : public KeyedService {
   // Whether the permission should be restricted to secure origins.
   virtual bool IsRestrictedToSecureOrigins() const = 0;
 
-  content::PermissionType permission_type() const { return permission_type_; }
   ContentSettingsType content_settings_type() const {
     return content_settings_type_;
   }
+
+  // TODO(timloh): The CONTENT_SETTINGS_TYPE_NOTIFICATIONS type is used to
+  // store both push messaging and notifications permissions. Remove this
+  // once we've unified these types (crbug.com/563297).
+  ContentSettingsType content_settings_storage_type() const;
 
  private:
   friend class PermissionContextBaseTests;
@@ -204,7 +206,6 @@ class PermissionContextBase : public KeyedService {
                                  bool permission_blocked);
 
   Profile* profile_;
-  const content::PermissionType permission_type_;
   const ContentSettingsType content_settings_type_;
 #if defined(OS_ANDROID)
   std::unique_ptr<PermissionQueueController> permission_queue_controller_;

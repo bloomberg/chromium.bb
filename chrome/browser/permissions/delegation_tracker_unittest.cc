@@ -5,14 +5,11 @@
 #include "chrome/browser/permissions/delegation_tracker.h"
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-using content::PermissionType;
 
 const char* kOrigin1 = "https://google.com";
 const char* kOrigin2 = "https://maps.google.com";
@@ -46,7 +43,7 @@ TEST_F(DelegationTrackerTest, SingleFrame) {
   DelegationTracker tracker;
   content::RenderFrameHost* parent = GetMainRFH(kOrigin1);
 
-  EXPECT_TRUE(tracker.IsGranted(parent, PermissionType::GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(parent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 TEST_F(DelegationTrackerTest, SingleAncestorSameOrigin) {
@@ -54,8 +51,8 @@ TEST_F(DelegationTrackerTest, SingleAncestorSameOrigin) {
   content::RenderFrameHost* parent = GetMainRFH(kOrigin1);
   content::RenderFrameHost* child = AddChildRFH(parent, kOrigin1);
 
-  EXPECT_TRUE(tracker.IsGranted(parent, PermissionType::GEOLOCATION));
-  EXPECT_TRUE(tracker.IsGranted(child, PermissionType::GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(parent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 TEST_F(DelegationTrackerTest, SingleAncestorNoDelegation) {
@@ -63,8 +60,8 @@ TEST_F(DelegationTrackerTest, SingleAncestorNoDelegation) {
   content::RenderFrameHost* parent = GetMainRFH(kOrigin1);
   content::RenderFrameHost* child = AddChildRFH(parent, kOrigin2);
 
-  EXPECT_TRUE(tracker.IsGranted(parent, PermissionType::GEOLOCATION));
-  EXPECT_FALSE(tracker.IsGranted(child, PermissionType::GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(parent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 TEST_F(DelegationTrackerTest, SingleAncestorPermissionDelegated) {
@@ -72,11 +69,11 @@ TEST_F(DelegationTrackerTest, SingleAncestorPermissionDelegated) {
   content::RenderFrameHost* parent = GetMainRFH(kOrigin1);
   content::RenderFrameHost* child = AddChildRFH(parent, kOrigin2);
 
-  tracker.SetDelegatedPermissions(child, {PermissionType::GEOLOCATION});
+  tracker.SetDelegatedPermissions(child, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
 
-  EXPECT_TRUE(tracker.IsGranted(parent, PermissionType::GEOLOCATION));
-  EXPECT_TRUE(tracker.IsGranted(child, PermissionType::GEOLOCATION));
-  EXPECT_FALSE(tracker.IsGranted(child, PermissionType::NOTIFICATIONS));
+  EXPECT_TRUE(tracker.IsGranted(parent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 }
 
 TEST_F(DelegationTrackerTest, SingleAncestorMultiplePermissionsDelegated) {
@@ -84,11 +81,11 @@ TEST_F(DelegationTrackerTest, SingleAncestorMultiplePermissionsDelegated) {
   content::RenderFrameHost* parent = GetMainRFH(kOrigin1);
   content::RenderFrameHost* child = AddChildRFH(parent, kOrigin2);
 
-  tracker.SetDelegatedPermissions(
-      child, {PermissionType::GEOLOCATION, PermissionType::NOTIFICATIONS});
+  tracker.SetDelegatedPermissions(child, {CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS});
 
-  EXPECT_TRUE(tracker.IsGranted(child, PermissionType::GEOLOCATION));
-  EXPECT_TRUE(tracker.IsGranted(child, PermissionType::NOTIFICATIONS));
+  EXPECT_TRUE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 }
 
 TEST_F(DelegationTrackerTest, SingleAncestorMultipleChildren) {
@@ -97,10 +94,10 @@ TEST_F(DelegationTrackerTest, SingleAncestorMultipleChildren) {
   content::RenderFrameHost* child1 = AddChildRFH(parent, kOrigin2);
   content::RenderFrameHost* child2 = AddChildRFH(parent, kOrigin2);
 
-  tracker.SetDelegatedPermissions(child1, {PermissionType::GEOLOCATION});
+  tracker.SetDelegatedPermissions(child1, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
 
-  EXPECT_TRUE(tracker.IsGranted(child1, PermissionType::GEOLOCATION));
-  EXPECT_FALSE(tracker.IsGranted(child2, PermissionType::GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(child1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(child2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 TEST_F(DelegationTrackerTest, MultipleAncestorsNotDelegated) {
@@ -110,11 +107,11 @@ TEST_F(DelegationTrackerTest, MultipleAncestorsNotDelegated) {
   content::RenderFrameHost* child1 = AddChildRFH(parent, kOrigin3);
   content::RenderFrameHost* child2 = AddChildRFH(parent, kOrigin3);
 
-  tracker.SetDelegatedPermissions(child1, {PermissionType::GEOLOCATION});
+  tracker.SetDelegatedPermissions(child1, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
 
-  EXPECT_FALSE(tracker.IsGranted(parent, PermissionType::GEOLOCATION));
-  EXPECT_FALSE(tracker.IsGranted(child1, PermissionType::GEOLOCATION));
-  EXPECT_FALSE(tracker.IsGranted(child2, PermissionType::GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(parent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(child1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(child2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 TEST_F(DelegationTrackerTest, MultipleAncestorsDelegated) {
@@ -124,12 +121,12 @@ TEST_F(DelegationTrackerTest, MultipleAncestorsDelegated) {
   content::RenderFrameHost* child1 = AddChildRFH(parent, kOrigin3);
   content::RenderFrameHost* child2 = AddChildRFH(parent, kOrigin3);
 
-  tracker.SetDelegatedPermissions(parent, {PermissionType::GEOLOCATION});
-  tracker.SetDelegatedPermissions(child1, {PermissionType::GEOLOCATION});
+  tracker.SetDelegatedPermissions(parent, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
+  tracker.SetDelegatedPermissions(child1, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
 
-  EXPECT_TRUE(tracker.IsGranted(parent, PermissionType::GEOLOCATION));
-  EXPECT_TRUE(tracker.IsGranted(child1, PermissionType::GEOLOCATION));
-  EXPECT_FALSE(tracker.IsGranted(child2, PermissionType::GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(parent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(child1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(child2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 TEST_F(DelegationTrackerTest, MultipleAncestorsSameOrigin) {
@@ -139,12 +136,12 @@ TEST_F(DelegationTrackerTest, MultipleAncestorsSameOrigin) {
   content::RenderFrameHost* child1 = AddChildRFH(parent, kOrigin1);
   content::RenderFrameHost* child2 = AddChildRFH(parent, kOrigin1);
 
-  tracker.SetDelegatedPermissions(parent, {PermissionType::GEOLOCATION});
-  tracker.SetDelegatedPermissions(child1, {PermissionType::GEOLOCATION});
+  tracker.SetDelegatedPermissions(parent, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
+  tracker.SetDelegatedPermissions(child1, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
 
-  EXPECT_TRUE(tracker.IsGranted(parent, PermissionType::GEOLOCATION));
-  EXPECT_TRUE(tracker.IsGranted(child1, PermissionType::GEOLOCATION));
-  EXPECT_TRUE(tracker.IsGranted(child2, PermissionType::GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(parent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(child1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(child2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 TEST_F(DelegationTrackerTest, MultipleAncestorsComplexSinglePermission) {
@@ -156,13 +153,15 @@ TEST_F(DelegationTrackerTest, MultipleAncestorsComplexSinglePermission) {
   content::RenderFrameHost* parent2 = AddChildRFH(grandparent, kOrigin3);
   content::RenderFrameHost* child = AddChildRFH(parent1, kOrigin3);
 
-  tracker.SetDelegatedPermissions(grandparent, {PermissionType::GEOLOCATION});
-  tracker.SetDelegatedPermissions(child, {PermissionType::GEOLOCATION});
+  tracker.SetDelegatedPermissions(grandparent,
+                                  {CONTENT_SETTINGS_TYPE_GEOLOCATION});
+  tracker.SetDelegatedPermissions(child, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
 
-  EXPECT_TRUE(tracker.IsGranted(grandparent, PermissionType::GEOLOCATION));
-  EXPECT_TRUE(tracker.IsGranted(parent1, PermissionType::GEOLOCATION));
-  EXPECT_FALSE(tracker.IsGranted(parent2, PermissionType::GEOLOCATION));
-  EXPECT_TRUE(tracker.IsGranted(child, PermissionType::GEOLOCATION));
+  EXPECT_TRUE(
+      tracker.IsGranted(grandparent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(parent1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(parent2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 TEST_F(DelegationTrackerTest, MultipleAncestorsComplexMultiplePermissions) {
@@ -174,21 +173,24 @@ TEST_F(DelegationTrackerTest, MultipleAncestorsComplexMultiplePermissions) {
   content::RenderFrameHost* parent2 = AddChildRFH(grandparent, kOrigin3);
   content::RenderFrameHost* child = AddChildRFH(parent1, kOrigin3);
 
-  tracker.SetDelegatedPermissions(grandparent, {PermissionType::GEOLOCATION,
-                                                PermissionType::NOTIFICATIONS});
-  tracker.SetDelegatedPermissions(child, {PermissionType::GEOLOCATION});
+  tracker.SetDelegatedPermissions(
+      grandparent,
+      {CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTINGS_TYPE_NOTIFICATIONS});
+  tracker.SetDelegatedPermissions(child, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
 
-  EXPECT_TRUE(tracker.IsGranted(grandparent, PermissionType::GEOLOCATION));
-  EXPECT_TRUE(tracker.IsGranted(grandparent, PermissionType::NOTIFICATIONS));
+  EXPECT_TRUE(
+      tracker.IsGranted(grandparent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(
+      tracker.IsGranted(grandparent, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 
-  EXPECT_TRUE(tracker.IsGranted(parent1, PermissionType::GEOLOCATION));
-  EXPECT_TRUE(tracker.IsGranted(parent1, PermissionType::NOTIFICATIONS));
+  EXPECT_TRUE(tracker.IsGranted(parent1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(parent1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 
-  EXPECT_FALSE(tracker.IsGranted(parent2, PermissionType::GEOLOCATION));
-  EXPECT_FALSE(tracker.IsGranted(parent2, PermissionType::NOTIFICATIONS));
+  EXPECT_FALSE(tracker.IsGranted(parent2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(parent2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 
-  EXPECT_TRUE(tracker.IsGranted(child, PermissionType::GEOLOCATION));
-  EXPECT_FALSE(tracker.IsGranted(child, PermissionType::NOTIFICATIONS));
+  EXPECT_TRUE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 }
 
 TEST_F(DelegationTrackerTest, RenderFrameHostChanged) {
@@ -197,17 +199,17 @@ TEST_F(DelegationTrackerTest, RenderFrameHostChanged) {
   content::RenderFrameHost* parent = AddChildRFH(grandparent, kOrigin2);
   content::RenderFrameHost* child = AddChildRFH(parent, kOrigin3);
 
-  tracker.SetDelegatedPermissions(parent, {PermissionType::GEOLOCATION});
-  tracker.SetDelegatedPermissions(child, {PermissionType::GEOLOCATION});
+  tracker.SetDelegatedPermissions(parent, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
+  tracker.SetDelegatedPermissions(child, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
 
-  EXPECT_TRUE(tracker.IsGranted(parent, PermissionType::GEOLOCATION));
-  EXPECT_TRUE(tracker.IsGranted(child, PermissionType::GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(parent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   content::RenderFrameHostTester::For(parent)->SimulateNavigationCommit(
       GURL(kUniqueOrigin));
 
-  EXPECT_FALSE(tracker.IsGranted(parent, PermissionType::GEOLOCATION));
-  EXPECT_FALSE(tracker.IsGranted(child, PermissionType::GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(parent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 TEST_F(DelegationTrackerTest, UniqueOrigins) {
@@ -216,10 +218,10 @@ TEST_F(DelegationTrackerTest, UniqueOrigins) {
   content::RenderFrameHost* parent = AddChildRFH(grandparent, kOrigin2);
   content::RenderFrameHost* child = AddChildRFH(parent, kOrigin3);
 
-  tracker.SetDelegatedPermissions(parent, {PermissionType::GEOLOCATION});
-  tracker.SetDelegatedPermissions(child, {PermissionType::GEOLOCATION});
+  tracker.SetDelegatedPermissions(parent, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
+  tracker.SetDelegatedPermissions(child, {CONTENT_SETTINGS_TYPE_GEOLOCATION});
 
   // Unique origins should never be able to delegate permission.
-  EXPECT_FALSE(tracker.IsGranted(parent, PermissionType::GEOLOCATION));
-  EXPECT_FALSE(tracker.IsGranted(child, PermissionType::GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(parent, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(tracker.IsGranted(child, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }

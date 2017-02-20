@@ -13,9 +13,8 @@
 
 MediaStreamDevicePermissionContext::MediaStreamDevicePermissionContext(
     Profile* profile,
-    const content::PermissionType permission_type,
     const ContentSettingsType content_settings_type)
-    : PermissionContextBase(profile, permission_type, content_settings_type),
+    : PermissionContextBase(profile, content_settings_type),
       content_settings_type_(content_settings_type) {
   DCHECK(content_settings_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
          content_settings_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);

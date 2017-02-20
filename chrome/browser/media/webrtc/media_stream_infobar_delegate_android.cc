@@ -88,7 +88,6 @@ MediaStreamInfoBarDelegateAndroid::MediaStreamInfoBarDelegateAndroid(
           // refactoring.
           // TODO(lshang): Merge MediaStreamInfoBarDelegateAndroid into
           // GroupedPermissionInfoBarDelegate. See crbug.com/606138.
-          content::PermissionType::AUDIO_CAPTURE,
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
           user_gesture,
           profile,
@@ -152,11 +151,11 @@ bool MediaStreamInfoBarDelegateAndroid::Accept() {
 
     if (controller_->IsAskingForAudio()) {
       PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
-          content::PermissionType::AUDIO_CAPTURE, persist_permission);
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, persist_permission);
     }
     if (controller_->IsAskingForVideo()) {
       PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
-          content::PermissionType::VIDEO_CAPTURE, persist_permission);
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, persist_permission);
     }
   }
 
@@ -178,11 +177,11 @@ bool MediaStreamInfoBarDelegateAndroid::Cancel() {
 
     if (controller_->IsAskingForAudio()) {
       PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
-          content::PermissionType::AUDIO_CAPTURE, persist_permission);
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, persist_permission);
     }
     if (controller_->IsAskingForVideo()) {
       PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
-          content::PermissionType::VIDEO_CAPTURE, persist_permission);
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, persist_permission);
     }
   }
   controller_->set_persist(persist_permission);

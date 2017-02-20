@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/browser/permission_type.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;

@@ -38,7 +38,6 @@
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -104,9 +103,8 @@ class MockSafeBrowsingDatabaseManager
 class TestPermissionContext : public PermissionContextBase {
  public:
   TestPermissionContext(Profile* profile,
-                        const content::PermissionType permission_type,
                         const ContentSettingsType content_settings_type)
-      : PermissionContextBase(profile, permission_type, content_settings_type),
+      : PermissionContextBase(profile, content_settings_type),
         tab_context_updated_(false) {}
 
   ~TestPermissionContext() override {}
@@ -137,7 +135,8 @@ class TestPermissionContext : public PermissionContextBase {
                                           const GURL& url_b) {
     auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
     return map->GetContentSetting(url_a.GetOrigin(), url_b.GetOrigin(),
-                                  content_settings_type(), std::string());
+                                  content_settings_storage_type(),
+                                  std::string());
   }
 
   void RequestPermission(content::WebContents* web_contents,
@@ -204,9 +203,8 @@ class TestKillSwitchPermissionContext : public TestPermissionContext {
  public:
   TestKillSwitchPermissionContext(
       Profile* profile,
-      const content::PermissionType permission_type,
       const ContentSettingsType content_settings_type)
-      : TestPermissionContext(profile, permission_type, content_settings_type),
+      : TestPermissionContext(profile, content_settings_type),
         field_trial_list_(base::MakeUnique<base::FieldTrialList>(
             base::MakeUnique<base::MockEntropyProvider>())) {}
 
@@ -267,12 +265,10 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 #endif
   }
 
-  void TestAskAndDecide_TestContent(content::PermissionType permission,
-                                    ContentSettingsType content_settings_type,
+  void TestAskAndDecide_TestContent(ContentSettingsType content_settings_type,
                                     ContentSetting decision,
                                     bool persist) {
-    TestPermissionContext permission_context(profile(), permission,
-                                             content_settings_type);
+    TestPermissionContext permission_context(profile(), content_settings_type);
     GURL url("https://www.google.com");
     NavigateAndCommit(url);
     base::HistogramTester histograms;
@@ -305,11 +301,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     if (decision_string.size()) {
       histograms.ExpectUniqueSample(
           "Permissions.Prompt." + decision_string + ".PriorDismissCount." +
-              PermissionUtil::GetPermissionString(permission),
+              PermissionUtil::GetPermissionString(content_settings_type),
           0, 1);
       histograms.ExpectUniqueSample(
           "Permissions.Prompt." + decision_string + ".PriorIgnoreCount." +
-              PermissionUtil::GetPermissionString(permission),
+              PermissionUtil::GetPermissionString(content_settings_type),
           0, 1);
     }
 
@@ -327,7 +323,6 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
   void DismissMultipleTimesAndExpectBlock(
       const GURL& url,
-      content::PermissionType permission_type,
       ContentSettingsType content_settings_type,
       uint32_t iterations) {
     base::HistogramTester histograms;
@@ -337,8 +332,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     for (uint32_t i = 0; i < iterations; ++i) {
       ContentSetting expected =
           (i < 2) ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK;
-      TestPermissionContext permission_context(
-          profile(), permission_type, content_settings_type);
+      TestPermissionContext permission_context(profile(),
+                                               content_settings_type);
       const PermissionRequestID id(
           web_contents()->GetRenderProcessHost()->GetID(),
           web_contents()->GetMainFrame()->GetRoutingID(), i);
@@ -354,11 +349,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                     base::Unretained(&permission_context)));
       histograms.ExpectTotalCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount." +
-              PermissionUtil::GetPermissionString(permission_type),
+              PermissionUtil::GetPermissionString(content_settings_type),
           i + 1);
       histograms.ExpectBucketCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount." +
-              PermissionUtil::GetPermissionString(permission_type),
+              PermissionUtil::GetPermissionString(content_settings_type),
           i, 1);
       histograms.ExpectTotalCount("Permissions.AutoBlocker.EmbargoStatus",
                                   i + 1);
@@ -381,8 +376,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
     }
 
-    TestPermissionContext permission_context(profile(), permission_type,
-                                             content_settings_type);
+    TestPermissionContext permission_context(profile(), content_settings_type);
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(), -1);
@@ -410,8 +404,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     // First, ensure that > 3 dismissals behaves correctly.
     for (uint32_t i = 0; i < 4; ++i) {
       TestPermissionContext permission_context(
-          profile(), content::PermissionType::GEOLOCATION,
-          CONTENT_SETTINGS_TYPE_GEOLOCATION);
+          profile(), CONTENT_SETTINGS_TYPE_GEOLOCATION);
 
       const PermissionRequestID id(
           web_contents()->GetRenderProcessHost()->GetID(),
@@ -455,10 +448,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     // Sanity check independence per permission type by checking two of them.
     DismissMultipleTimesAndExpectBlock(url,
-                                       content::PermissionType::GEOLOCATION,
                                        CONTENT_SETTINGS_TYPE_GEOLOCATION, 3);
     DismissMultipleTimesAndExpectBlock(url,
-                                       content::PermissionType::NOTIFICATIONS,
                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS, 3);
   }
 
@@ -498,8 +489,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     for (uint32_t i = 0; i < 5; ++i) {
       TestPermissionContext permission_context(
-          profile(), content::PermissionType::MIDI_SYSEX,
-          CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+          profile(), CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
 
       ContentSetting expected =
           (i < 4) ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK;
@@ -542,9 +532,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     }
 
     // Ensure that we finish in the block state.
-    TestPermissionContext permission_context(
-        profile(), content::PermissionType::MIDI_SYSEX,
-        CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+    TestPermissionContext permission_context(profile(),
+                                             CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
     PermissionResult result = permission_context.GetPermissionStatus(url, url);
     EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
     EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
@@ -553,10 +542,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
   }
 
   void TestRequestPermissionInvalidUrl(
-      content::PermissionType permission_type,
       ContentSettingsType content_settings_type) {
-    TestPermissionContext permission_context(profile(), permission_type,
-                                             content_settings_type);
+    TestPermissionContext permission_context(profile(), content_settings_type);
     GURL url;
     ASSERT_FALSE(url.is_valid());
     NavigateAndCommit(url);
@@ -578,11 +565,9 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
               permission_context.GetContentSettingFromMap(url, url));
   }
 
-  void TestGrantAndRevoke_TestContent(content::PermissionType permission_type,
-                                      ContentSettingsType content_settings_type,
+  void TestGrantAndRevoke_TestContent(ContentSettingsType content_settings_type,
                                       ContentSetting expected_default) {
-    TestPermissionContext permission_context(profile(), permission_type,
-                                             content_settings_type);
+    TestPermissionContext permission_context(profile(), content_settings_type);
     GURL url("https://www.google.com");
     NavigateAndCommit(url);
 
@@ -618,15 +603,14 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
   }
 
   void TestGlobalPermissionsKillSwitch(
-      content::PermissionType permission_type,
       ContentSettingsType content_settings_type) {
-    TestKillSwitchPermissionContext permission_context(
-        profile(), permission_type, content_settings_type);
+    TestKillSwitchPermissionContext permission_context(profile(),
+                                                       content_settings_type);
     permission_context.ResetFieldTrialList();
 
     EXPECT_FALSE(permission_context.IsPermissionKillSwitchOn());
     std::map<std::string, std::string> params;
-    params[PermissionUtil::GetPermissionString(permission_type)] =
+    params[PermissionUtil::GetPermissionString(content_settings_type)] =
         kPermissionsKillSwitchBlockedValue;
     variations::AssociateVariationParams(
         kPermissionsKillSwitchFieldStudy, kPermissionsKillSwitchTestGroup,
@@ -640,8 +624,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
   // HostContentSettingsMap.
   void TestParallelRequests(ContentSetting response) {
     TestPermissionContext permission_context(
-        profile(), content::PermissionType::NOTIFICATIONS,
-        CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+        profile(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
     GURL url("http://www.google.com");
     NavigateAndCommit(url);
 
@@ -682,7 +665,6 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
   }
 
   void TestPermissionsBlacklisting(
-      content::PermissionType permission_type,
       ContentSettingsType content_settings_type,
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
       const GURL& url,
@@ -693,8 +675,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     base::HistogramTester histograms;
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeature(features::kPermissionsBlacklist);
-    TestPermissionContext permission_context(profile(), permission_type,
-                                             content_settings_type);
+    TestPermissionContext permission_context(profile(), content_settings_type);
     PermissionDecisionAutoBlocker::GetForProfile(profile())
         ->SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
                                                              timeout);
@@ -745,39 +726,34 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 // Simulates clicking Accept. The permission should be granted and
 // saved for future use.
 TEST_F(PermissionContextBaseTests, TestAskAndGrantPersist) {
-  TestAskAndDecide_TestContent(content::PermissionType::NOTIFICATIONS,
-                               CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  TestAskAndDecide_TestContent(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                CONTENT_SETTING_ALLOW, true);
 }
 
 // Simulates clicking Accept. The permission should be granted, but not
 // persisted.
 TEST_F(PermissionContextBaseTests, TestAskAndGrantNoPersist) {
-  TestAskAndDecide_TestContent(content::PermissionType::NOTIFICATIONS,
-                               CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  TestAskAndDecide_TestContent(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                CONTENT_SETTING_ALLOW, false);
 }
 
 // Simulates clicking Block. The permission should be denied and
 // saved for future use.
 TEST_F(PermissionContextBaseTests, TestAskAndBlockPersist) {
-  TestAskAndDecide_TestContent(content::PermissionType::GEOLOCATION,
-                               CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  TestAskAndDecide_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                CONTENT_SETTING_BLOCK, true);
 }
 
 // Simulates clicking Block. The permission should be denied, but not persisted.
 TEST_F(PermissionContextBaseTests, TestAskAndBlockNoPersist) {
-  TestAskAndDecide_TestContent(content::PermissionType::GEOLOCATION,
-                               CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  TestAskAndDecide_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                CONTENT_SETTING_BLOCK, false);
 }
 
 // Simulates clicking Dismiss (X) in the infobar/bubble.
 // The permission should be denied but not saved for future use.
 TEST_F(PermissionContextBaseTests, TestAskAndDismiss) {
-  TestAskAndDecide_TestContent(content::PermissionType::MIDI_SYSEX,
-                               CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+  TestAskAndDecide_TestContent(CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                                CONTENT_SETTING_ASK, false);
 }
 
@@ -796,17 +772,12 @@ TEST_F(PermissionContextBaseTests, TestDismissVariations) {
 // Simulates non-valid requesting URL.
 // The permission should be denied but not saved for future use.
 TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
-  TestRequestPermissionInvalidUrl(content::PermissionType::GEOLOCATION,
-                                  CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  TestRequestPermissionInvalidUrl(content::PermissionType::NOTIFICATIONS,
-                                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  TestRequestPermissionInvalidUrl(content::PermissionType::MIDI_SYSEX,
-                                  CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
-  TestRequestPermissionInvalidUrl(content::PermissionType::PUSH_MESSAGING,
-                                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   TestRequestPermissionInvalidUrl(
-      content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
 #endif
 }
@@ -814,14 +785,11 @@ TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
 #if defined(OS_ANDROID)
 // This test is specific to Android because other platforms use bubbles.
 TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithInfobars) {
-  TestGrantAndRevoke_TestContent(content::PermissionType::GEOLOCATION,
-                                 CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                  CONTENT_SETTING_ASK);
-  TestGrantAndRevoke_TestContent(content::PermissionType::MIDI_SYSEX,
-                                 CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                                  CONTENT_SETTING_ASK);
   TestGrantAndRevoke_TestContent(
-      content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, CONTENT_SETTING_ASK);
   // TODO(timvolodine): currently no test for
   // CONTENT_SETTINGS_TYPE_NOTIFICATIONS because notification permissions work
@@ -833,42 +801,28 @@ TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithInfobars) {
 // Simulates granting and revoking of permissions using permission bubbles.
 // This test shouldn't run on mobile because mobile platforms use infobars.
 TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithBubbles) {
-  TestGrantAndRevoke_TestContent(content::PermissionType::GEOLOCATION,
-                                 CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                  CONTENT_SETTING_ASK);
-  TestGrantAndRevoke_TestContent(content::PermissionType::NOTIFICATIONS,
-                                 CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                  CONTENT_SETTING_ASK);
-  TestGrantAndRevoke_TestContent(content::PermissionType::MIDI_SYSEX,
-                                 CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-                                 CONTENT_SETTING_ASK);
-  TestGrantAndRevoke_TestContent(content::PermissionType::PUSH_MESSAGING,
-                                 CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                                  CONTENT_SETTING_ASK);
 }
 #endif
 
 // Tests the global kill switch by enabling/disabling the Field Trials.
 TEST_F(PermissionContextBaseTests, TestGlobalKillSwitch) {
-  TestGlobalPermissionsKillSwitch(content::PermissionType::GEOLOCATION,
-                                  CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  TestGlobalPermissionsKillSwitch(content::PermissionType::NOTIFICATIONS,
-                                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  TestGlobalPermissionsKillSwitch(content::PermissionType::MIDI_SYSEX,
-                                  CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
-  TestGlobalPermissionsKillSwitch(content::PermissionType::PUSH_MESSAGING,
-                                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  TestGlobalPermissionsKillSwitch(content::PermissionType::DURABLE_STORAGE,
-                                  CONTENT_SETTINGS_TYPE_DURABLE_STORAGE);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_DURABLE_STORAGE);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   TestGlobalPermissionsKillSwitch(
-      content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
 #endif
-  TestGlobalPermissionsKillSwitch(content::PermissionType::AUDIO_CAPTURE,
-                                  CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-  TestGlobalPermissionsKillSwitch(content::PermissionType::VIDEO_CAPTURE,
-                                  CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
 }
 
 TEST_F(PermissionContextBaseTests, TestParallelRequestsAllowed) {
@@ -892,7 +846,7 @@ TEST_F(PermissionContextBaseTests, TestPermissionsBlacklistingBlocked) {
   std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
   db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
   TestPermissionsBlacklisting(
-      content::PermissionType::GEOLOCATION, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
       db_manager, url, 2000 /* timeout */, CONTENT_SETTING_BLOCK,
       PermissionEmbargoStatus::PERMISSIONS_BLACKLISTING);
 }
@@ -905,8 +859,7 @@ TEST_F(PermissionContextBaseTests, TestPermissionsBlacklistingAllowed) {
   const GURL url("https://www.example.com");
   std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
   db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
-  TestPermissionsBlacklisting(content::PermissionType::NOTIFICATIONS,
-                              CONTENT_SETTINGS_TYPE_NOTIFICATIONS, db_manager,
+  TestPermissionsBlacklisting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, db_manager,
                               url, 2000 /* timeout */, CONTENT_SETTING_ALLOW,
                               PermissionEmbargoStatus::NOT_EMBARGOED);
 }

@@ -11,6 +11,7 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -27,7 +28,7 @@ namespace safe_browsing {
 struct PermissionAndOrigin {
   bool operator==(const PermissionAndOrigin& other) const;
 
-  content::PermissionType permission;
+  ContentSettingsType permission;
   GURL origin;
 };
 
@@ -71,7 +72,7 @@ class PermissionReporter {
 
   // Returns false if the number of reports sent in the last one minute per
   // origin per permission is under a threshold, otherwise true.
-  bool IsReportThresholdExceeded(content::PermissionType permission,
+  bool IsReportThresholdExceeded(ContentSettingsType permission,
                                  const GURL& origin);
 
   std::unique_ptr<net::ReportSender> permission_report_sender_;
