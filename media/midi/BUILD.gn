@@ -142,6 +142,8 @@ component("midi") {
   if (is_win) {
     deps += [ "//device/usb" ]
     sources += [
+      "dynamically_initialized_midi_manager_win.cc",
+      "dynamically_initialized_midi_manager_win.h",
       "midi_manager_win.cc",
       "midi_manager_win.h",
       "midi_manager_winrt.cc",

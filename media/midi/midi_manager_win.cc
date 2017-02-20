@@ -43,6 +43,7 @@
 #include "base/win/message_window.h"
 #include "base/win/windows_version.h"
 #include "device/usb/usb_ids.h"
+#include "media/midi/dynamically_initialized_midi_manager_win.h"
 #include "media/midi/message_util.h"
 #include "media/midi/midi_manager_winrt.h"
 #include "media/midi/midi_message_queue.h"
@@ -1203,6 +1204,8 @@ MidiManager* MidiManager::Create(MidiService* service) {
   if (base::FeatureList::IsEnabled(features::kMidiManagerWinrt) &&
       base::win::GetVersion() >= base::win::VERSION_WIN10)
     return new MidiManagerWinrt(service);
+  if (base::FeatureList::IsEnabled(features::kMidiManagerDynamicInstantiation))
+    return new DynamicallyInitializedMidiManagerWin(service);
   return new MidiManagerWin(service);
 }
 

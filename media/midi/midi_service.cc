@@ -16,7 +16,7 @@ namespace {
 
 bool IsDynamicInstantiationEnabled() {
 // TODO(toyoshim): Support on all platforms. See https://crbug.com/672793.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
   return base::FeatureList::IsEnabled(
       features::kMidiManagerDynamicInstantiation);
 #else
@@ -99,6 +99,9 @@ scoped_refptr<base::SingleThreadTaskRunner> MidiService::GetTaskRunner(
   if (!threads_[runner_id].get()) {
     threads_[runner_id] = base::MakeUnique<base::Thread>(
         base::StringPrintf("MidiServiceThread(%zu)", runner_id));
+#if defined(OS_WIN)
+    threads_[runner_id]->init_com_with_mta(true);
+#endif
     threads_[runner_id]->Start();
   }
   return threads_[runner_id]->task_runner();

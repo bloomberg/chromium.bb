@@ -185,12 +185,21 @@ void MidiManager::StartInitialization() {
 }
 
 void MidiManager::CompleteInitialization(Result result) {
-  base::AutoLock auto_lock(lock_);
-  if (session_thread_runner_) {
-    session_thread_runner_->PostTask(
-        FROM_HERE, base::Bind(&MidiManager::CompleteInitializationInternal,
-                              base::Unretained(this), result));
+  bool complete_asynchronously = false;
+  {
+    base::AutoLock auto_lock(lock_);
+    if (session_thread_runner_) {
+      if (session_thread_runner_->BelongsToCurrentThread()) {
+        complete_asynchronously = true;
+      } else {
+        session_thread_runner_->PostTask(
+            FROM_HERE, base::Bind(&MidiManager::CompleteInitializationInternal,
+                                  base::Unretained(this), result));
+      }
+    }
   }
+  if (complete_asynchronously)
+    CompleteInitializationInternal(result);
 }
 
 void MidiManager::AddInputPort(const MidiPortInfo& info) {

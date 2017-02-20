@@ -20,8 +20,6 @@
 
 namespace midi {
 
-class MidiManagerAlsa;
-
 // Manages MidiManager backends.  This class expects to be constructed and
 // destructed on the browser main thread, but methods can be called on both
 // the main thread and the I/O thread.
@@ -49,9 +47,6 @@ class MIDI_EXPORT MidiService final {
                             const std::vector<uint8_t>& data,
                             double timestamp);
 
- private:
-  friend class MidiManagerAlsa;
-
   // Returns a SingleThreadTaskRunner reference to serve MidiManager. Each
   // TaskRunner will be constructed on demand.
   // MidiManager that supports the dynamic instantiation feature will use this
@@ -61,6 +56,7 @@ class MIDI_EXPORT MidiService final {
   // another MidiManager is instantiated.
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(size_t runner_id);
 
+ private:
   // Holds MidiManager instance. If the dynamic instantiation feature is
   // enabled, the MidiManager would be constructed and destructed on the I/O
   // thread, and all MidiManager methods would be called on the I/O thread.
