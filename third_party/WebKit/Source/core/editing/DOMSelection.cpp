@@ -258,54 +258,40 @@ void DOMSelection::collapse(Node* node,
   cacheRangeIfSelectionOfDocument(newRange);
 }
 
-// https://www.w3.org/TR/selection-api/#dom-selection-collapsetoend
 void DOMSelection::collapseToEnd(ExceptionState& exceptionState) {
   if (!isAvailable())
     return;
 
-  // The method must throw InvalidStateError exception if the context object is
-  // empty.
-  if (rangeCount() == 0) {
+  const VisibleSelection& selection =
+      frame()->selection().computeVisibleSelectionInDOMTreeDeprecated();
+
+  if (selection.isNone()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "there is no selection.");
     return;
   }
 
-  // Otherwise, it must create a new range, set both its start and end to the
-  // end of the context object's range,
-  Range* newRange = getRangeAt(0, ASSERT_NO_EXCEPTION)->cloneRange();
-  newRange->collapse(false);
-
-  // and then set the context object's range to the newly-created range.
   SelectionInDOMTree::Builder builder;
-  builder.collapse(newRange->endPosition());
+  builder.collapse(selection.end());
   frame()->selection().setSelection(builder.build());
-  cacheRangeIfSelectionOfDocument(newRange);
 }
 
-// https://www.w3.org/TR/selection-api/#dom-selection-collapsetostart
 void DOMSelection::collapseToStart(ExceptionState& exceptionState) {
   if (!isAvailable())
     return;
 
-  // The method must throw InvalidStateError ([DOM4]) exception if the context
-  // object is empty.
-  if (rangeCount() == 0) {
+  const VisibleSelection& selection =
+      frame()->selection().computeVisibleSelectionInDOMTreeDeprecated();
+
+  if (selection.isNone()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "there is no selection.");
     return;
   }
 
-  // Otherwise, it must create a new range, set both its start and end to the
-  // start of the context object's range,
-  Range* newRange = getRangeAt(0, ASSERT_NO_EXCEPTION)->cloneRange();
-  newRange->collapse(true);
-
-  // and then set the context object's range to the newly-created range.
   SelectionInDOMTree::Builder builder;
-  builder.collapse(newRange->startPosition());
+  builder.collapse(selection.start());
   frame()->selection().setSelection(builder.build());
-  cacheRangeIfSelectionOfDocument(newRange);
 }
 
 void DOMSelection::empty() {
