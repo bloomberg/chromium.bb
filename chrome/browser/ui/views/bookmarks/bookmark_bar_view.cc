@@ -250,7 +250,6 @@ class BookmarkButtonBase : public views::LabelButton {
  private:
   std::unique_ptr<gfx::SlideAnimation> show_animation_;
 
-
   DISALLOW_COPY_AND_ASSIGN(BookmarkButtonBase);
 };
 
@@ -289,7 +288,7 @@ class BookmarkButton : public BookmarkButtonBase {
 
   void SetText(const base::string16& text) override {
     BookmarkButtonBase::SetText(text);
-    tooltip_text_.empty();
+    tooltip_text_.clear();
   }
 
   const char* GetClassName() const override { return kViewClassName; }

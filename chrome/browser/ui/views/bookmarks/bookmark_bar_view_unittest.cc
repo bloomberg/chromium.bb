@@ -30,6 +30,8 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/test/native_widget_factory.h"
+#include "ui/views/widget/widget.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -101,6 +103,7 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
   // need to create the BookmarkBarView after the model has populated.
   void CreateBookmarkBarView() {
     bookmark_bar_view_.reset(new BookmarkBarView(browser(), nullptr));
+    bookmark_bar_view_->set_owned_by_client();
     test_helper_.reset(new BookmarkBarViewTestHelper(bookmark_bar_view_.get()));
   }
 
@@ -356,3 +359,34 @@ TEST_F(BookmarkBarViewTest, ManagedShowAppsShortcutInBookmarksBar) {
   EXPECT_TRUE(test_helper_->apps_page_shortcut()->visible());
 }
 #endif
+
+TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
+  CreateBookmarkModelAndBookmarkBarView();
+  // Create a widget who creates and owns a views::ToolipManager.
+  views::Widget widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.native_widget = views::test::CreatePlatformDesktopNativeWidgetImpl(
+      params, &widget, nullptr);
+  widget.Init(params);
+  widget.Show();
+  widget.GetRootView()->AddChildView(bookmark_bar_view_.get());
+
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  bookmarks::test::AddNodesFromModelString(model, model->bookmark_bar_node(),
+                                           "a b");
+  SizeUntilButtonsVisible(1);
+  ASSERT_EQ(1, test_helper_->GetBookmarkButtonCount());
+
+  views::LabelButton* button = test_helper_->GetBookmarkButton(0);
+  ASSERT_TRUE(button);
+  gfx::Point p;
+  base::string16 text;
+  button->GetTooltipText(p, &text);
+  EXPECT_EQ(base::ASCIIToUTF16("a\na.com"), text);
+  button->SetText(base::ASCIIToUTF16("new title"));
+  button->GetTooltipText(p, &text);
+  EXPECT_EQ(base::ASCIIToUTF16("new title\na.com"), text);
+
+  widget.CloseNow();
+}
