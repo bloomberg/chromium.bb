@@ -175,6 +175,8 @@ function testLoadDetachedFromExifInCavnasModeThumbnailDoesNotRotate(callback) {
       load: function(url, callback, opt_option) {
         // Assert that data url is passed.
         assertTrue(/^data:/i.test(url));
+        // Assert that the rotation is propagated to ImageLoader.
+        assertEquals(1, opt_option.orientation.rotate90);
         // ImageLoader returns rotated image.
         callback({status: 'success', data: generateSampleImageDataUrl(32, 64),
             width: 32, height: 64});

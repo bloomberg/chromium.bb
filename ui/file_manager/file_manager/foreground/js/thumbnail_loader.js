@@ -467,9 +467,8 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
       priority: this.priority_,
       timestamp: modificationTime
   };
-  if (this.metadata_ && this.metadata_.media &&
-      this.metadata_.media.imageTransform) {
-    loaderOptions.orientation = this.metadata_.media.imageTransform;
+  if (this.transform_) {
+    loaderOptions.orientation = this.transform_;
   }
   // Comsume the transform parameter to avoid duplicated transformation in
   // getImage().
