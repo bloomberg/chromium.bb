@@ -445,18 +445,22 @@ void LayoutTable::layoutCaption(LayoutTableCaption& caption,
 
 void LayoutTable::layoutSection(LayoutTableSection& section,
                                 SubtreeLayoutScope& layouter,
-                                LayoutUnit logicalLeft) {
+                                LayoutUnit logicalLeft,
+                                TableHeightChangingValue tableHeightChanging) {
   section.setLogicalLocation(LayoutPoint(logicalLeft, logicalHeight()));
   if (m_columnLogicalWidthChanged)
     layouter.setChildNeedsLayout(&section);
   if (!section.needsLayout())
     markChildForPaginationRelayoutIfNeeded(section, layouter);
-  section.layoutIfNeeded();
-  int sectionLogicalHeight = section.calcRowLogicalHeight();
-  section.setLogicalHeight(LayoutUnit(sectionLogicalHeight));
+  bool neededLayout = section.needsLayout();
+  if (neededLayout)
+    section.layout();
+  if (neededLayout || tableHeightChanging == TableHeightChanging)
+    section.setLogicalHeight(LayoutUnit(section.calcRowLogicalHeight()));
+
   if (view()->layoutState()->isPaginated())
     updateFragmentationInfoForChild(section);
-  setLogicalHeight(logicalHeight() + sectionLogicalHeight);
+  setLogicalHeight(logicalHeight() + section.logicalHeight());
 }
 
 LayoutUnit LayoutTable::logicalHeightFromStyle() const {
@@ -501,8 +505,8 @@ void LayoutTable::distributeExtraLogicalHeight(int extraLogicalHeight) {
     extraLogicalHeight -=
         section->distributeExtraLogicalHeightToRows(extraLogicalHeight);
 
-  // FIXME: We really would like to enable this ASSERT to ensure that all the
-  // extra space has been distributed.
+  // crbug.com/690087: We really would like to enable this ASSERT to ensure that
+  // all the extra space has been distributed.
   // However our current distribution algorithm does not round properly and thus
   // we can have some remaining height.
   // ASSERT(!topSection() || !extraLogicalHeight);
@@ -623,10 +627,19 @@ void LayoutTable::layout() {
       sectionLogicalLeft +=
           style()->isLeftToRightDirection() ? paddingStart() : paddingEnd();
     }
+    LayoutUnit currentAvailableLogicalHeight =
+        availableLogicalHeight(IncludeMarginBorderPadding);
+    TableHeightChangingValue tableHeightChanging =
+        m_oldAvailableLogicalHeight &&
+                m_oldAvailableLogicalHeight != currentAvailableLogicalHeight
+            ? TableHeightChanging
+            : TableHeightNotChanging;
+    m_oldAvailableLogicalHeight = currentAvailableLogicalHeight;
 
     // Lay out table header group.
     if (LayoutTableSection* section = header()) {
-      layoutSection(*section, layouter, sectionLogicalLeft);
+      layoutSection(*section, layouter, sectionLogicalLeft,
+                    tableHeightChanging);
       if (state.isPaginated()) {
         // If the repeating header group allows at least one row of content,
         // then store the offset for other sections to offset their rows
@@ -651,7 +664,8 @@ void LayoutTable::layout() {
       if (child->isTableSection()) {
         if (child != header() && child != footer()) {
           LayoutTableSection& section = *toLayoutTableSection(child);
-          layoutSection(section, layouter, sectionLogicalLeft);
+          layoutSection(section, layouter, sectionLogicalLeft,
+                        tableHeightChanging);
         }
       } else if (child->isLayoutTableCol()) {
         child->layoutIfNeeded();
@@ -661,8 +675,10 @@ void LayoutTable::layout() {
     }
 
     // Lay out table footer.
-    if (LayoutTableSection* section = footer())
-      layoutSection(*section, layouter, sectionLogicalLeft);
+    if (LayoutTableSection* section = footer()) {
+      layoutSection(*section, layouter, sectionLogicalLeft,
+                    tableHeightChanging);
+    }
 
     setLogicalHeight(tableBoxLogicalTop + borderAndPaddingBefore);
 
