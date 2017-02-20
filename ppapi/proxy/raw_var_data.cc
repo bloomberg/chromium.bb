@@ -198,6 +198,8 @@ std::unique_ptr<RawVarDataGraph> RawVarDataGraph::Read(
       return nullptr;
     PP_VarType var_type = static_cast<PP_VarType>(type);
     result->data_.push_back(base::WrapUnique(RawVarData::Create(var_type)));
+    if (!result->data_.back())
+      return nullptr;
     if (!result->data_.back()->Read(var_type, m, iter))
       return nullptr;
   }
