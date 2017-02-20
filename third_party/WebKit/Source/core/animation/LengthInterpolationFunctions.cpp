@@ -213,8 +213,8 @@ const CSSValue* LengthInterpolationFunctions::createCSSValue(
 
   for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
     double value = toInterpolableNumber(*interpolableList.get(i)).value();
-    if (value == 0 ||
-        (i == CSSPrimitiveValue::UnitTypePercentage && !hasPercentage)) {
+    if (value == 0 &&
+        (i != CSSPrimitiveValue::UnitTypePercentage || !hasPercentage)) {
       continue;
     }
     CSSPrimitiveValue* currentValue =

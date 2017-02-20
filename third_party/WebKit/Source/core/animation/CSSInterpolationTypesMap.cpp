@@ -344,13 +344,13 @@ CSSInterpolationTypesMap::createCSSInterpolationTypesForSyntax(
         result.push_back(WTF::makeUnique<CSSColorInterpolationType>(property));
         break;
       case CSSSyntaxType::Length:
+      case CSSSyntaxType::LengthPercentage:
+      case CSSSyntaxType::Percentage:
         result.push_back(WTF::makeUnique<CSSLengthInterpolationType>(property));
         break;
       case CSSSyntaxType::Number:
         result.push_back(WTF::makeUnique<CSSNumberInterpolationType>(property));
         break;
-      case CSSSyntaxType::Percentage:
-      case CSSSyntaxType::LengthPercentage:
       case CSSSyntaxType::Image:
       case CSSSyntaxType::Url:
       case CSSSyntaxType::Integer:

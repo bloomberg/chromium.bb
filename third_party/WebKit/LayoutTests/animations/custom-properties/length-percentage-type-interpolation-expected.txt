@@ -1,0 +1,124 @@
+This is a testharness.js-based test.
+PASS This test uses interpolation-test.js. 
+FAIL CSS Transitions: property <--length-percentage> from neutral to [20px] at (-0.3) is [20px] assert_equals: expected "7px " but got "20px "
+FAIL CSS Transitions: property <--length-percentage> from neutral to [20px] at (0) is [20px] assert_equals: expected "10px " but got "20px "
+FAIL CSS Transitions: property <--length-percentage> from neutral to [20px] at (0.5) is [20px] assert_equals: expected "15px " but got "20px "
+PASS CSS Transitions: property <--length-percentage> from neutral to [20px] at (1) is [20px] 
+FAIL CSS Transitions: property <--length-percentage> from neutral to [20px] at (1.5) is [20px] assert_equals: expected "25px " but got "20px "
+FAIL CSS Transitions: property <--length-percentage> from [initial] to [40%] at (-0.3) is [40%] assert_equals: expected "calc ( 52px + 92 % ) " but got "40 % "
+FAIL CSS Transitions: property <--length-percentage> from [initial] to [40%] at (0) is [40%] assert_equals: expected "calc ( 40px + 80 % ) " but got "40 % "
+FAIL CSS Transitions: property <--length-percentage> from [initial] to [40%] at (0.5) is [40%] assert_equals: expected "calc ( 20px + 60 % ) " but got "40 % "
+PASS CSS Transitions: property <--length-percentage> from [initial] to [40%] at (1) is [40%] 
+FAIL CSS Transitions: property <--length-percentage> from [initial] to [40%] at (1.5) is [40%] assert_equals: expected "calc ( - 20px + 20 % ) " but got "40 % "
+FAIL CSS Transitions: property <--length-percentage> from [inherit] to [20px] at (-0.3) is [20px] assert_equals: expected "calc ( - 6px + 52 % ) " but got "20px "
+FAIL CSS Transitions: property <--length-percentage> from [inherit] to [20px] at (0) is [20px] assert_equals: expected "40 % " but got "20px "
+FAIL CSS Transitions: property <--length-percentage> from [inherit] to [20px] at (0.5) is [20px] assert_equals: expected "calc ( 10px + 20 % ) " but got "20px "
+PASS CSS Transitions: property <--length-percentage> from [inherit] to [20px] at (1) is [20px] 
+FAIL CSS Transitions: property <--length-percentage> from [inherit] to [20px] at (1.5) is [20px] assert_equals: expected "calc ( 30px + - 20 % ) " but got "20px "
+FAIL CSS Transitions: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (-0.3) is [calc(20px + 40%)] assert_equals: expected "calc ( 46px + 92 % ) " but got "calc ( 20px + 40 % ) "
+FAIL CSS Transitions: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (0) is [calc(20px + 40%)] assert_equals: expected "calc ( 40px + 80 % ) " but got "calc ( 20px + 40 % ) "
+FAIL CSS Transitions: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (0.5) is [calc(20px + 40%)] assert_equals: expected "calc ( 30px + 60 % ) " but got "calc ( 20px + 40 % ) "
+PASS CSS Transitions: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (1) is [calc(20px + 40%)] 
+FAIL CSS Transitions: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (1.5) is [calc(20px + 40%)] assert_equals: expected "calc ( 10px + 20 % ) " but got "calc ( 20px + 40 % ) "
+FAIL CSS Transitions: property <--length-percentage> from [-10px] to [10px] at (-0.3) is [10px] assert_equals: expected "- 16px " but got "10px "
+FAIL CSS Transitions: property <--length-percentage> from [-10px] to [10px] at (0) is [10px] assert_equals: expected "- 10px " but got "10px "
+FAIL CSS Transitions: property <--length-percentage> from [-10px] to [10px] at (0.5) is [10px] assert_equals: expected "0px " but got "10px "
+PASS CSS Transitions: property <--length-percentage> from [-10px] to [10px] at (1) is [10px] 
+FAIL CSS Transitions: property <--length-percentage> from [-10px] to [10px] at (1.5) is [10px] assert_equals: expected "20px " but got "10px "
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [20em] at (-0.3) is [400px] assert_equals: expected "140px " but got "400px "
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [20em] at (0) is [400px] assert_equals: expected "200px " but got "400px "
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [20em] at (0.5) is [400px] assert_equals: expected "300px " but got "400px "
+PASS CSS Transitions: property <--length-percentage> from [10em] to [20em] at (1) is [400px] 
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [20em] at (1.5) is [400px] assert_equals: expected "500px " but got "400px "
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [100px] at (-0.3) is [100px] assert_equals: expected "230px " but got "100px "
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [100px] at (0) is [100px] assert_equals: expected "200px " but got "100px "
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [100px] at (0.5) is [100px] assert_equals: expected "150px " but got "100px "
+PASS CSS Transitions: property <--length-percentage> from [10em] to [100px] at (1) is [100px] 
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [100px] at (1.5) is [100px] assert_equals: expected "50px " but got "100px "
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [100%] at (-0.3) is [100%] assert_equals: expected "calc ( 260px + - 30 % ) " but got "100 % "
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [100%] at (0) is [100%] assert_equals: expected "200px " but got "100 % "
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [100%] at (0.5) is [100%] assert_equals: expected "calc ( 100px + 50 % ) " but got "100 % "
+PASS CSS Transitions: property <--length-percentage> from [10em] to [100%] at (1) is [100%] 
+FAIL CSS Transitions: property <--length-percentage> from [10em] to [100%] at (1.5) is [100%] assert_equals: expected "calc ( - 100px + 150 % ) " but got "100 % "
+PASS CSS Animations: property <--length-percentage> from neutral to [20px] at (-0.3) is [7px] 
+PASS CSS Animations: property <--length-percentage> from neutral to [20px] at (0) is [10px] 
+PASS CSS Animations: property <--length-percentage> from neutral to [20px] at (0.5) is [15px] 
+PASS CSS Animations: property <--length-percentage> from neutral to [20px] at (1) is [20px] 
+PASS CSS Animations: property <--length-percentage> from neutral to [20px] at (1.5) is [25px] 
+PASS CSS Animations: property <--length-percentage> from [initial] to [40%] at (-0.3) is [calc(52px + 92%)] 
+PASS CSS Animations: property <--length-percentage> from [initial] to [40%] at (0) is [calc(40px + 80%)] 
+PASS CSS Animations: property <--length-percentage> from [initial] to [40%] at (0.5) is [calc(20px + 60%)] 
+PASS CSS Animations: property <--length-percentage> from [initial] to [40%] at (1) is [40%] 
+PASS CSS Animations: property <--length-percentage> from [initial] to [40%] at (1.5) is [calc(-20px + 20%)] 
+PASS CSS Animations: property <--length-percentage> from [inherit] to [20px] at (-0.3) is [calc(-6px + 52%)] 
+PASS CSS Animations: property <--length-percentage> from [inherit] to [20px] at (0) is [40%] 
+PASS CSS Animations: property <--length-percentage> from [inherit] to [20px] at (0.5) is [calc(10px + 20%)] 
+PASS CSS Animations: property <--length-percentage> from [inherit] to [20px] at (1) is [20px] 
+PASS CSS Animations: property <--length-percentage> from [inherit] to [20px] at (1.5) is [calc(30px + -20%)] 
+PASS CSS Animations: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (-0.3) is [calc(46px + 92%)] 
+PASS CSS Animations: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (0) is [calc(40px + 80%)] 
+PASS CSS Animations: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (0.5) is [calc(30px + 60%)] 
+PASS CSS Animations: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (1) is [calc(20px + 40%)] 
+PASS CSS Animations: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (1.5) is [calc(10px + 20%)] 
+PASS CSS Animations: property <--length-percentage> from [-10px] to [10px] at (-0.3) is [-16px] 
+PASS CSS Animations: property <--length-percentage> from [-10px] to [10px] at (0) is [-10px] 
+PASS CSS Animations: property <--length-percentage> from [-10px] to [10px] at (0.5) is [0px] 
+PASS CSS Animations: property <--length-percentage> from [-10px] to [10px] at (1) is [10px] 
+PASS CSS Animations: property <--length-percentage> from [-10px] to [10px] at (1.5) is [20px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [20em] at (-0.3) is [140px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [20em] at (0) is [200px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [20em] at (0.5) is [300px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [20em] at (1) is [400px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [20em] at (1.5) is [500px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [100px] at (-0.3) is [230px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [100px] at (0) is [200px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [100px] at (0.5) is [150px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [100px] at (1) is [100px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [100px] at (1.5) is [50px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [100%] at (-0.3) is [calc(260px + -30%)] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [100%] at (0) is [200px] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [100%] at (0.5) is [calc(100px + 50%)] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [100%] at (1) is [100%] 
+PASS CSS Animations: property <--length-percentage> from [10em] to [100%] at (1.5) is [calc(-100px + 150%)] 
+PASS Web Animations: property <--length-percentage> from neutral to [20px] at (-0.3) is [7px] 
+PASS Web Animations: property <--length-percentage> from neutral to [20px] at (0) is [10px] 
+PASS Web Animations: property <--length-percentage> from neutral to [20px] at (0.5) is [15px] 
+PASS Web Animations: property <--length-percentage> from neutral to [20px] at (1) is [20px] 
+PASS Web Animations: property <--length-percentage> from neutral to [20px] at (1.5) is [25px] 
+PASS Web Animations: property <--length-percentage> from [initial] to [40%] at (-0.3) is [calc(52px + 92%)] 
+PASS Web Animations: property <--length-percentage> from [initial] to [40%] at (0) is [calc(40px + 80%)] 
+PASS Web Animations: property <--length-percentage> from [initial] to [40%] at (0.5) is [calc(20px + 60%)] 
+PASS Web Animations: property <--length-percentage> from [initial] to [40%] at (1) is [40%] 
+PASS Web Animations: property <--length-percentage> from [initial] to [40%] at (1.5) is [calc(-20px + 20%)] 
+PASS Web Animations: property <--length-percentage> from [inherit] to [20px] at (-0.3) is [calc(-6px + 52%)] 
+PASS Web Animations: property <--length-percentage> from [inherit] to [20px] at (0) is [40%] 
+PASS Web Animations: property <--length-percentage> from [inherit] to [20px] at (0.5) is [calc(10px + 20%)] 
+PASS Web Animations: property <--length-percentage> from [inherit] to [20px] at (1) is [20px] 
+PASS Web Animations: property <--length-percentage> from [inherit] to [20px] at (1.5) is [calc(30px + -20%)] 
+PASS Web Animations: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (-0.3) is [calc(46px + 92%)] 
+PASS Web Animations: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (0) is [calc(40px + 80%)] 
+PASS Web Animations: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (0.5) is [calc(30px + 60%)] 
+PASS Web Animations: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (1) is [calc(20px + 40%)] 
+PASS Web Animations: property <--length-percentage> from [unset] to [calc(20px + 40%)] at (1.5) is [calc(10px + 20%)] 
+PASS Web Animations: property <--length-percentage> from [-10px] to [10px] at (-0.3) is [-16px] 
+PASS Web Animations: property <--length-percentage> from [-10px] to [10px] at (0) is [-10px] 
+PASS Web Animations: property <--length-percentage> from [-10px] to [10px] at (0.5) is [0px] 
+PASS Web Animations: property <--length-percentage> from [-10px] to [10px] at (1) is [10px] 
+PASS Web Animations: property <--length-percentage> from [-10px] to [10px] at (1.5) is [20px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [20em] at (-0.3) is [140px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [20em] at (0) is [200px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [20em] at (0.5) is [300px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [20em] at (1) is [400px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [20em] at (1.5) is [500px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [100px] at (-0.3) is [230px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [100px] at (0) is [200px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [100px] at (0.5) is [150px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [100px] at (1) is [100px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [100px] at (1.5) is [50px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [100%] at (-0.3) is [calc(260px + -30%)] 
+PASS Web Animations: property <--length-percentage> from [10em] to [100%] at (0) is [200px] 
+PASS Web Animations: property <--length-percentage> from [10em] to [100%] at (0.5) is [calc(100px + 50%)] 
+PASS Web Animations: property <--length-percentage> from [10em] to [100%] at (1) is [100%] 
+PASS Web Animations: property <--length-percentage> from [10em] to [100%] at (1.5) is [calc(-100px + 150%)] 
+Harness: the test ran to completion.
+
