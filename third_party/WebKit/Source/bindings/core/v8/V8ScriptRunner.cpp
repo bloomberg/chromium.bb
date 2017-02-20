@@ -25,6 +25,7 @@
 
 #include "bindings/core/v8/V8ScriptRunner.h"
 
+#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -32,6 +33,7 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -630,8 +632,9 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
     int argc,
     v8::Local<v8::Value> args[],
     v8::Isolate* isolate) {
-  ScopedFrameBlamer frameBlamer(
-      context->isDocument() ? toDocument(context)->frame() : nullptr);
+  LocalFrame* frame =
+      context->isDocument() ? toDocument(context)->frame() : nullptr;
+  ScopedFrameBlamer frameBlamer(frame);
   TRACE_EVENT0("v8", "v8.callFunction");
 
   int depth = v8::MicrotasksScope::GetCurrentDepth(isolate);
@@ -649,6 +652,11 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
     TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data",
                        InspectorFunctionCallEvent::data(context, function));
 
+  if (frame) {
+    CHECK(BindingSecurity::shouldAllowAccessToFrame(
+        toDOMWindow(function->CreationContext())->toLocalDOMWindow(), frame,
+        BindingSecurity::ErrorReportOption::DoNotReport));
+  }
   CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);
