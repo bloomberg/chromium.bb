@@ -4,6 +4,7 @@
 
 #include "modules/fetch/Response.h"
 
+#include <memory>
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -19,6 +20,7 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/URLSearchParams.h"
 #include "core/fileapi/Blob.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/FormData.h"
 #include "core/streams/ReadableStreamOperations.h"
 #include "modules/fetch/BlobBytesConsumer.h"
@@ -31,7 +33,6 @@
 #include "platform/network/NetworkUtils.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -172,6 +173,8 @@ Response* Response::create(ScriptState* scriptState,
     contentType = "application/x-www-form-urlencoded;charset=UTF-8";
   } else if (ReadableStreamOperations::isReadableStream(scriptState,
                                                         bodyValue)) {
+    UseCounter::count(executionContext,
+                      UseCounter::FetchResponseConstructionWithStream);
     bodyBuffer = new BodyStreamBuffer(scriptState, bodyValue);
   } else {
     String string = toUSVString(isolate, body, exceptionState);

@@ -11,7 +11,6 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/fileapi/Blob.h"
-#include "core/frame/UseCounter.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchDataLoader.h"
 #include "public/platform/WebDataConsumerHandle.h"
@@ -199,8 +198,7 @@ ScriptPromise Body::text(ScriptState* scriptState) {
   return promise;
 }
 
-ScriptValue Body::bodyWithUseCounter(ScriptState* scriptState) {
-  UseCounter::count(getExecutionContext(), UseCounter::FetchBodyStream);
+ScriptValue Body::body(ScriptState* scriptState) {
   if (!bodyBuffer())
     return ScriptValue::createNull(scriptState);
   ScriptValue stream = bodyBuffer()->stream();

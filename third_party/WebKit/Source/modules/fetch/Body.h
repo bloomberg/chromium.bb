@@ -43,7 +43,7 @@ class MODULES_EXPORT Body : public GarbageCollected<Body>,
   ScriptPromise formData(ScriptState*);
   ScriptPromise json(ScriptState*);
   ScriptPromise text(ScriptState*);
-  ScriptValue bodyWithUseCounter(ScriptState*);
+  ScriptValue body(ScriptState*);
   virtual BodyStreamBuffer* bodyBuffer() = 0;
   virtual const BodyStreamBuffer* bodyBuffer() const = 0;
 

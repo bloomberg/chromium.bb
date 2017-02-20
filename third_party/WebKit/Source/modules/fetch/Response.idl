@@ -28,7 +28,7 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredire
 
     [RaisesException, CallWith=ScriptState] Response clone();
 
-    [CallWith=ScriptState, ImplementedAs=bodyWithUseCounter] readonly attribute any body;
+    [CallWith=ScriptState, MeasureAs=FetchBodyStream] readonly attribute any body;
 };
 
 Response implements Body;
