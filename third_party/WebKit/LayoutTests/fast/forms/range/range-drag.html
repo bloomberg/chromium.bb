@@ -51,8 +51,8 @@ function testInput(dragsFromEdge) {
     input.valueAsNumber = 50;
     lastChangeEventCounter = changeEventCounter;
     dragMouse();
-    shouldBe('input.value', '"50"');
-    shouldBe('lastChangeEventCounter', 'changeEventCounter');
+    shouldBe('input.value', '"100"');
+    shouldBeGreaterThanOrEqual('changeEventCounter', 'lastChangeEventCounter + 1');
 
     debug('disabled=true');
     input.readOnly = false;

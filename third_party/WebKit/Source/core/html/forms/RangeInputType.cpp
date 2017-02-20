@@ -151,7 +151,7 @@ bool RangeInputType::isSteppable() const {
 }
 
 void RangeInputType::handleMouseDownEvent(MouseEvent* event) {
-  if (element().isDisabledOrReadOnly())
+  if (element().isDisabledFormControl())
     return;
 
   Node* targetNode = event->target()->toNode();
@@ -170,7 +170,7 @@ void RangeInputType::handleMouseDownEvent(MouseEvent* event) {
 }
 
 void RangeInputType::handleKeydownEvent(KeyboardEvent* event) {
-  if (element().isDisabledOrReadOnly())
+  if (element().isDisabledFormControl())
     return;
 
   const String& key = event->key();
