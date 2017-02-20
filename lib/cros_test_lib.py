@@ -1711,6 +1711,10 @@ class TestProgram(unittest.TestProgram):
                         help='Stop on first failure')
     parser.add_argument('tests', nargs='*',
                         help='specific test classes or methods to run')
+    parser.add_argument('-c', '--catch', default=False, action='store_true',
+                        help='Catch control-C and display results')
+    parser.add_argument('-b', '--buffer', default=False, action='store_true',
+                        help='Buffer stdout and stderr during test runs')
 
     # These are custom options we added.
     parser.add_argument('-l', '--list', default=False, action='store_true',
@@ -1759,6 +1763,12 @@ class TestProgram(unittest.TestProgram):
 
     if opts.failfast:
       self.failfast = True
+
+    if opts.catch:
+      self.catchbreak = True
+
+    if opts.buffer:
+      self.buffer = True
 
     # Then handle the chromite extensions.
     if opts.network:
