@@ -434,15 +434,14 @@ bool TextControlElement::setSelectionRange(
     DCHECK_EQ(endPosition.anchorNode()->ownerShadowHost(), this);
   }
 #endif  // DCHECK_IS_ON()
-  VisibleSelection newSelection;
-  if (direction == SelectionHasBackwardDirection)
-    newSelection.setWithoutValidation(endPosition, startPosition);
-  else
-    newSelection.setWithoutValidation(startPosition, endPosition);
-  newSelection.setIsDirectional(direction != SelectionHasNoDirection);
-
   frame->selection().setSelection(
-      newSelection,
+      SelectionInDOMTree::Builder()
+          .collapse(direction == SelectionHasBackwardDirection ? endPosition
+                                                               : startPosition)
+          .extend(direction == SelectionHasBackwardDirection ? startPosition
+                                                             : endPosition)
+          .setIsDirectional(direction != SelectionHasNoDirection)
+          .build(),
       FrameSelection::DoNotAdjustInFlatTree | FrameSelection::CloseTyping |
           FrameSelection::ClearTypingStyle | FrameSelection::DoNotSetFocus);
   return true;
