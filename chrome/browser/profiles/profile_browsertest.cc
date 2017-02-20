@@ -50,6 +50,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -78,7 +79,10 @@ class TestURLFetcherDelegate : public net::URLFetcherDelegate {
       net::URLRequestStatus expected_request_status)
       : expected_request_status_(expected_request_status),
         is_complete_(false),
-        fetcher_(net::URLFetcher::Create(url, net::URLFetcher::GET, this)) {
+        fetcher_(net::URLFetcher::Create(url,
+                                         net::URLFetcher::GET,
+                                         this,
+                                         TRAFFIC_ANNOTATION_FOR_TESTS)) {
     fetcher_->SetRequestContext(context_getter.get());
     fetcher_->Start();
   }
