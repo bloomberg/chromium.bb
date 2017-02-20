@@ -54,8 +54,7 @@ void DeprecatedStorageInfo::queryUsageAndQuota(
   DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
   if (!storageQuota) {
     // Unknown storage type is requested.
-    TaskRunnerHelper::get(TaskType::MiscPlatformAPI,
-                          scriptState->getExecutionContext())
+    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, scriptState)
         ->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(
                                         errorCallback, NotSupportedError));
     return;
@@ -73,8 +72,7 @@ void DeprecatedStorageInfo::requestQuota(ScriptState* scriptState,
   DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
   if (!storageQuota) {
     // Unknown storage type is requested.
-    TaskRunnerHelper::get(TaskType::MiscPlatformAPI,
-                          scriptState->getExecutionContext())
+    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, scriptState)
         ->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(
                                         errorCallback, NotSupportedError));
     return;

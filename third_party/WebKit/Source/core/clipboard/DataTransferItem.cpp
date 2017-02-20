@@ -86,7 +86,7 @@ void DataTransferItem::getAsString(ScriptState* scriptState,
   ExecutionContext* context = scriptState->getExecutionContext();
   InspectorInstrumentation::asyncTaskScheduled(
       context, "DataTransferItem.getAsString", callback);
-  TaskRunnerHelper::get(TaskType::UserInteraction, context)
+  TaskRunnerHelper::get(TaskType::UserInteraction, scriptState)
       ->postTask(BLINK_FROM_HERE,
                  WTF::bind(&runGetAsStringTask, wrapWeakPersistent(context),
                            wrapPersistent(callback), m_item->getAsString()));

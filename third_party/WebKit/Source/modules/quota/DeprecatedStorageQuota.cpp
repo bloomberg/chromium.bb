@@ -62,7 +62,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
   if (storageType != WebStorageQuotaTypeTemporary &&
       storageType != WebStorageQuotaTypePersistent) {
     // Unknown storage type is requested.
-    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, executionContext)
+    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, scriptState)
         ->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(
                                         errorCallback, NotSupportedError));
     return;
@@ -70,7 +70,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
 
   SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
   if (securityOrigin->isUnique()) {
-    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, executionContext)
+    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, scriptState)
         ->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(
                                         errorCallback, NotSupportedError));
     return;
@@ -95,7 +95,7 @@ void DeprecatedStorageQuota::requestQuota(ScriptState* scriptState,
   if (storageType != WebStorageQuotaTypeTemporary &&
       storageType != WebStorageQuotaTypePersistent) {
     // Unknown storage type is requested.
-    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, executionContext)
+    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, scriptState)
         ->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(
                                         errorCallback, NotSupportedError));
     return;
@@ -103,7 +103,7 @@ void DeprecatedStorageQuota::requestQuota(ScriptState* scriptState,
 
   StorageQuotaClient* client = StorageQuotaClient::from(executionContext);
   if (!client) {
-    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, executionContext)
+    TaskRunnerHelper::get(TaskType::MiscPlatformAPI, scriptState)
         ->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(
                                         errorCallback, NotSupportedError));
     return;
