@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Security-Policy" content="base-uri 'self'">
+  <script src="/resources/testharness.js"></script>
+  <script src="/resources/testharnessreport.js"></script>
+  <script src="/security/contentSecurityPolicy/resources/testharness-helper.js"></script>
+</head>
+<body>
+  <script>
+    async_test(t => {
+      assert_equals(document.baseURI, window.location.href);
+
+      var b = document.createElement("base");
+      b.href = "http://127.0.0.1:8000/";
+      document.head.appendChild(b);
+
+      document.addEventListener("securitypolicyviolation", e => t.unreached_func());
+
+      // Wait until the next frame to give the report time to fire
+      requestAnimationFrame(t.step_func_done(_ => {
+        assert_equals(document.baseURI, "http://127.0.0.1:8000/");
+      }));
+    }, "'self' works at top-level.");
+
+    async_test(t => {
+      var i = document.createElement("iframe");
+      i.sandbox = "allow-scripts";
+      i.srcdoc = `
+        <script>
+          document.addEventListener("securitypolicyviolation", e => top.postMessage("FAIL", "*"));
+        </scr` + `ipt>
+        <base href="http://127.0.0.1:8000/">
+        <script>
+          requestAnimationFrame(_ => { 
+            top.postMessage(document.baseURI, "*");
+          });
+        </scr` + `ipt>`;
+  
+      waitUntilEvent(window, "message")
+        .then(t.step_func_done(e => {
+          assert_equals(e.data, "http://127.0.0.1:8000/");
+        }));
+
+      document.body.appendChild(i);
+    }, "'self' works in a sandbox.");
+  </script>
+</body>
+</html>

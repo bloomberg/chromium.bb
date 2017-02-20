@@ -33,6 +33,7 @@ class SourceListDirectiveTest : public ::testing::Test {
     KURL secureURL(ParsedURLString, "https://example.test/image.png");
     RefPtr<SecurityOrigin> secureOrigin(SecurityOrigin::create(secureURL));
     document = Document::create();
+    document->setURL(secureURL);
     document->setSecurityOrigin(secureOrigin);
     csp->bindToExecutionContext(document.get());
   }
@@ -41,6 +42,7 @@ class SourceListDirectiveTest : public ::testing::Test {
     KURL secureURL(ParsedURLString, origin);
     RefPtr<SecurityOrigin> secureOrigin(SecurityOrigin::create(secureURL));
     Document* document = Document::create();
+    document->setURL(secureURL);
     document->setSecurityOrigin(secureOrigin);
     ContentSecurityPolicy* csp = ContentSecurityPolicy::create();
     csp->bindToExecutionContext(document);
