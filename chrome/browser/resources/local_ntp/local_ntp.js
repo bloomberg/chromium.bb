@@ -338,7 +338,8 @@ function onMostVisitedChange() {
 
 
 /**
- * Fetches new data, creates, and renders tiles.
+ * Fetches new data (RIDs) from the embeddedSearch.newTabPage API and passes
+ * them to the iframe.
  */
 function reloadTiles() {
   var pages = ntpApiHandle.mostVisited;
@@ -649,7 +650,7 @@ function init() {
   var iframe = document.createElement('iframe');
   iframe.id = IDS.TILES_IFRAME;
   iframe.tabIndex = 1;
-  iframe.src = '//most-visited/single.html?' + args.join('&');
+  iframe.src = 'chrome-search://most-visited/single.html?' + args.join('&');
   $(IDS.TILES).appendChild(iframe);
 
   iframe.onload = function() {

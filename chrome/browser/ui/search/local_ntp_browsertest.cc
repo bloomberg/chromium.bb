@@ -19,6 +19,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -133,6 +134,81 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, FakeboxRedirectsToOmnibox) {
   // On the JS side, the fakebox should have been hidden.
   ASSERT_TRUE(GetBoolFromJS(active_tab, "!!fakeboxIsVisible()", &result));
   EXPECT_FALSE(result);
+}
+
+namespace {
+
+// Returns the RenderFrameHost corresponding to the most visited iframe in the
+// given |tab|. |tab| must correspond to an NTP.
+content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
+  CHECK_EQ(2u, tab->GetAllFrames().size());
+  for (content::RenderFrameHost* frame : tab->GetAllFrames()) {
+    if (frame != tab->GetMainFrame()) {
+      return frame;
+    }
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsIframe) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmnibox();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), ntp_url(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+
+  content::DOMMessageQueue msg_queue;
+
+  bool result = false;
+  ASSERT_TRUE(GetBoolFromJS(active_tab, "!!setupAdvancedTest(true)", &result));
+  ASSERT_TRUE(result);
+
+  // Wait for the MV iframe to load.
+  std::string message;
+  // First get rid of the "true" message from the GetBoolFromJS call above.
+  ASSERT_TRUE(msg_queue.PopMessage(&message));
+  ASSERT_EQ("true", message);
+  // Now wait for the "loaded" message.
+  ASSERT_TRUE(msg_queue.WaitForMessage(&message));
+  ASSERT_EQ("\"loaded\"", message);
+
+  // Get the iframe and check that the tiles loaded correctly.
+  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
+
+  // Get the total number of (non-empty) tiles from the iframe.
+  int total_thumbs = 0;
+  ASSERT_TRUE(GetIntFromJS(
+      iframe, "document.querySelectorAll('.mv-thumb').length", &total_thumbs));
+  // Also get how many of the tiles succeeded and failed in loading their
+  // thumbnail images.
+  int succeeded_imgs = 0;
+  ASSERT_TRUE(GetIntFromJS(iframe,
+                           "document.querySelectorAll('.mv-thumb img').length",
+                           &succeeded_imgs));
+  int failed_imgs = 0;
+  ASSERT_TRUE(GetIntFromJS(
+      iframe, "document.querySelectorAll('.mv-thumb.failed-img').length",
+      &failed_imgs));
+
+  // First, sanity check that the numbers line up (none of the css classes was
+  // renamed, etc).
+  EXPECT_EQ(total_thumbs, succeeded_imgs + failed_imgs);
+
+  // Since we're in a non-signed-in, fresh profile with no history, there should
+  // be the default TopSites tiles (see history::PrepopulatedPage).
+  // Check that there is at least one tile, and that all of them loaded their
+  // images successfully.
+  EXPECT_GT(total_thumbs, 0);
+  EXPECT_EQ(total_thumbs, succeeded_imgs);
+  EXPECT_EQ(0, failed_imgs);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest,

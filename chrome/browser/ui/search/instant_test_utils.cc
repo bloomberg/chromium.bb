@@ -104,32 +104,32 @@ void InstantTestBase::PressEnterAndWaitForFrameLoad() {
   nav_observer.Wait();
 }
 
-bool InstantTestBase::GetBoolFromJS(content::WebContents* contents,
+bool InstantTestBase::GetBoolFromJS(const content::ToRenderFrameHost& adapter,
                                     const std::string& script,
                                     bool* result) {
-  return content::ExecuteScriptAndExtractBool(
-      contents, WrapScript(script), result);
+  return content::ExecuteScriptAndExtractBool(adapter, WrapScript(script),
+                                              result);
 }
 
-bool InstantTestBase::GetIntFromJS(content::WebContents* contents,
+bool InstantTestBase::GetIntFromJS(const content::ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    int* result) {
-  return content::ExecuteScriptAndExtractInt(
-      contents, WrapScript(script), result);
+  return content::ExecuteScriptAndExtractInt(adapter, WrapScript(script),
+                                             result);
 }
 
-bool InstantTestBase::GetDoubleFromJS(content::WebContents* contents,
+bool InstantTestBase::GetDoubleFromJS(const content::ToRenderFrameHost& adapter,
                                       const std::string& script,
                                       double* result) {
-  return content::ExecuteScriptAndExtractDouble(contents, WrapScript(script),
+  return content::ExecuteScriptAndExtractDouble(adapter, WrapScript(script),
                                                 result);
 }
 
-bool InstantTestBase::GetStringFromJS(content::WebContents* contents,
+bool InstantTestBase::GetStringFromJS(const content::ToRenderFrameHost& adapter,
                                       const std::string& script,
                                       std::string* result) {
-  return content::ExecuteScriptAndExtractString(
-      contents, WrapScript(script), result);
+  return content::ExecuteScriptAndExtractString(adapter, WrapScript(script),
+                                                result);
 }
 
 std::string InstantTestBase::GetOmniboxText() {

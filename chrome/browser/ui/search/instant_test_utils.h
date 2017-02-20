@@ -13,14 +13,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/search/instant_controller.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 class OmniboxView;
-
-namespace content {
-class WebContents;
-};
 
 // This utility class is meant to be used in a "mix-in" fashion, giving the
 // derived test class additional Instant-related functionality.
@@ -55,16 +52,16 @@ class InstantTestBase {
   void PressEnterAndWaitForNavigation();
   void PressEnterAndWaitForFrameLoad();
 
-  bool GetBoolFromJS(content::WebContents* contents,
+  bool GetBoolFromJS(const content::ToRenderFrameHost& adapter,
                      const std::string& script,
                      bool* result) WARN_UNUSED_RESULT;
-  bool GetIntFromJS(content::WebContents* contents,
+  bool GetIntFromJS(const content::ToRenderFrameHost& adapter,
                     const std::string& script,
                     int* result) WARN_UNUSED_RESULT;
-  bool GetDoubleFromJS(content::WebContents* contents,
+  bool GetDoubleFromJS(const content::ToRenderFrameHost& adapter,
                        const std::string& script,
                        double* result) WARN_UNUSED_RESULT;
-  bool GetStringFromJS(content::WebContents* contents,
+  bool GetStringFromJS(const content::ToRenderFrameHost& adapter,
                        const std::string& script,
                        std::string* result) WARN_UNUSED_RESULT;
 
