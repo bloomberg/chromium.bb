@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -43,7 +44,6 @@
 #include <dwmapi.h>
 #include <shellapi.h>
 #include "base/profiler/scoped_tracker.h"
-#include "base/task_runner_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/win/app_icon.h"
 #include "ui/base/win/shell.h"
@@ -517,15 +517,14 @@ int ChromeViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
   // spins a modal loop which could cause callers to be reentered. To avoid
   // that we retrieve the taskbar state in a worker thread.
   if (monitor && !in_autohide_edges_callback_) {
-    base::PostTaskAndReplyWithResult(
-        content::BrowserThread::GetBlockingPool(),
-        FROM_HERE,
-        base::Bind(&GetAppbarAutohideEdgesOnWorkerThread,
-                   monitor),
+    // TODO(robliao): Annotate this task with .WithCOM() once supported.
+    // https://crbug.com/662122
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::USER_BLOCKING),
+        base::Bind(&GetAppbarAutohideEdgesOnWorkerThread, monitor),
         base::Bind(&ChromeViewsDelegate::OnGotAppbarAutohideEdges,
-                   weak_factory_.GetWeakPtr(),
-                   callback,
-                   monitor,
+                   weak_factory_.GetWeakPtr(), callback, monitor,
                    appbar_autohide_edge_map_[monitor]));
   }
   return appbar_autohide_edge_map_[monitor];
