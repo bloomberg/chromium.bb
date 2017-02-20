@@ -1922,6 +1922,7 @@ crbug.com/626703 external/wpt/streams/writable-streams/close.dedicatedworker.htm
 crbug.com/626703 external/wpt/streams/writable-streams/close.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/close.serviceworker.https.html [ Timeout ]
 crbug.com/626703 external/wpt/service-workers/service-worker/registration-useCache.https.html [ Timeout ]
+crbug.com/626703 external/wpt/service-workers/service-worker/multi-globals/url-parsing.https.html [ Pass Failure ]
 crbug.com/626703 external/wpt/streams/writable-streams/close.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/allow-scripts-flag-changing-2.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-iframe-element/cross_origin_parentage.html [ Timeout ]
