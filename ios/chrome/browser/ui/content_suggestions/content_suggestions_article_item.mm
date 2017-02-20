@@ -22,6 +22,8 @@ const CGFloat kStandardSpacing = 8;
 
 @end
 
+#pragma mark - ContentSuggestionsArticleItem
+
 @implementation ContentSuggestionsArticleItem
 
 @synthesize title = _title;
@@ -53,6 +55,8 @@ const CGFloat kStandardSpacing = 8;
 }
 
 @end
+
+#pragma mark - ContentSuggestionsArticleCell
 
 @implementation ContentSuggestionsArticleCell
 

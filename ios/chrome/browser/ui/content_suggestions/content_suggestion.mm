@@ -12,5 +12,9 @@
 
 @synthesize title = _title;
 @synthesize image = _image;
+@synthesize text = _text;
+@synthesize url = _url;
+@synthesize section = _section;
+@synthesize type = _type;
 
 @end

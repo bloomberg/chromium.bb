@@ -7,11 +7,32 @@
 
 #import <UIKit/UIKit.h>
 
-// Data for a suggestions item, compatible with Objective-C.
+#include "url/gurl.h"
+
+@class ContentSuggestionsSectionInformation;
+
+// Enum defining the type of a ContentSuggestions.
+typedef NS_ENUM(NSInteger, ContentSuggestionType) {
+  ContentSuggestionTypeArticle
+};
+
+// Data for a suggestions item, compatible with Objective-C. Mostly acts as a
+// wrapper for ntp_snippets::ContentSuggestion.
 @interface ContentSuggestion : NSObject
 
-@property(nonatomic, copy) NSString* title;
-@property(nonatomic, strong) UIImage* image;
+// Title of the suggestion.
+@property(nonatomic, copy, nullable) NSString* title;
+// Text for the suggestion.
+@property(nonatomic, copy, nullable) NSString* text;
+// Image for the suggestion.
+@property(nonatomic, strong, nullable) UIImage* image;
+// URL associated with the suggestion.
+@property(nonatomic, assign) GURL url;
+
+// Section information in which this suggestion should be.
+@property(nonatomic, strong, nullable)
+    ContentSuggestionsSectionInformation* section;
+@property(nonatomic, assign) ContentSuggestionType type;
 
 @end
 

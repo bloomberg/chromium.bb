@@ -12,10 +12,15 @@
 // Objective-C wrapper for ntp_snippets::Category.
 @interface ContentSuggestionsCategoryWrapper : NSObject<NSCopying>
 
++ (ContentSuggestionsCategoryWrapper*)wrapperWithCategory:
+    (ntp_snippets::Category)category;
+
 - (instancetype)initWithCategory:(ntp_snippets::Category)category
     NS_DESIGNATED_INITIALIZER;
+
 - (instancetype)init NS_UNAVAILABLE;
 
+// The category wrapped by this object.
 - (ntp_snippets::Category)category;
 
 @end

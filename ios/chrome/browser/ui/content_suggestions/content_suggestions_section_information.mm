@@ -14,20 +14,14 @@
 
 @synthesize emptyCell = _emptyCell;
 @synthesize layout = _layout;
-@synthesize ID = _ID;
+@synthesize sectionID = _sectionID;
 @synthesize title = _title;
 
-- (instancetype)initWithID:(ContentSuggestionsSectionID)ID
-                 emptyCell:(CollectionViewItem*)emptyCell
-                    layout:(ContentSuggestionsSectionLayout)layout
-                     title:(NSString*)title {
+- (instancetype)initWithSectionID:(ContentSuggestionsSectionID)sectionID {
   self = [super init];
   if (self) {
-    DCHECK(ID < ContentSuggestionsSectionCount);
-    _ID = ID;
-    _layout = layout;
-    _emptyCell = emptyCell;
-    _title = [title copy];
+    DCHECK(sectionID < ContentSuggestionsSectionUnknown);
+    _sectionID = sectionID;
   }
   return self;
 }

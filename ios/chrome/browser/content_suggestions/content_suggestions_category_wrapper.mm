@@ -18,6 +18,11 @@
 
 @implementation ContentSuggestionsCategoryWrapper
 
++ (ContentSuggestionsCategoryWrapper*)wrapperWithCategory:
+    (ntp_snippets::Category)category {
+  return [[ContentSuggestionsCategoryWrapper alloc] initWithCategory:category];
+}
+
 @synthesize categoryID = _categoryID;
 
 - (instancetype)initWithCategory:(ntp_snippets::Category)category {
@@ -46,7 +51,7 @@
   ContentSuggestionsCategoryWrapper* other =
       base::mac::ObjCCastStrict<ContentSuggestionsCategoryWrapper>(object);
 
-  return self.category == other.category;
+  return [self category] == [other category];
 }
 
 - (NSUInteger)hash {
@@ -57,7 +62,7 @@
 
 - (id)copyWithZone:(nullable NSZone*)zone {
   ContentSuggestionsCategoryWrapper* copy =
-      [[[self class] allocWithZone:zone] initWithCategory:self.category];
+      [[[self class] allocWithZone:zone] initWithCategory:[self category]];
   return copy;
 }
 

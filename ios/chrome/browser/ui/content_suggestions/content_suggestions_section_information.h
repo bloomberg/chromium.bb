@@ -27,27 +27,25 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
 
   // Do not use this. It will trigger a DCHECK.
   // Do not add value after this one.
-  ContentSuggestionsSectionCount
+  ContentSuggestionsSectionUnknown
 };
 
 // Contains the information needed to display the section.
 @interface ContentSuggestionsSectionInformation : NSObject
 
-- (instancetype)initWithID:(ContentSuggestionsSectionID)ID
-                 emptyCell:(CollectionViewItem*)emptyCell
-                    layout:(ContentSuggestionsSectionLayout)layout
-                     title:(NSString*)title NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithSectionID:(ContentSuggestionsSectionID)sectionID
+    NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 // Item to display when the section is empty. If nil the section should not be
 // displayed when empty.
-@property(nonatomic, strong, readonly) CollectionViewItem* emptyCell;
+@property(nonatomic, strong) CollectionViewItem* emptyCell;
 // Layout to display the content of the section.
-@property(nonatomic, assign, readonly) ContentSuggestionsSectionLayout layout;
+@property(nonatomic, assign) ContentSuggestionsSectionLayout layout;
 // ID of the section. Used for ordering.
-@property(nonatomic, assign, readonly) ContentSuggestionsSectionID ID;
+@property(nonatomic, assign, readonly) ContentSuggestionsSectionID sectionID;
 // Title for the section.
-@property(nonatomic, copy, readonly) NSString* title;
+@property(nonatomic, copy) NSString* title;
 
 @end
 
