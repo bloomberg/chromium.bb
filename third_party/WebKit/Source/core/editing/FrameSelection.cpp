@@ -343,12 +343,6 @@ void FrameSelection::setSelection(
       options, align, granularity);
 }
 
-void FrameSelection::setSelection(
-    const VisibleSelectionInFlatTree& newSelection,
-    SetSelectionOptions options) {
-  setSelection(newSelection.asSelection(), options);
-}
-
 // TODO(yosin): We should move |computePositionForChildrenRemoval()| to
 // "SelectionEditor.cpp" since it used only in
 // |SelectionEditor::nodeChildrenWillBeRemoved()|.

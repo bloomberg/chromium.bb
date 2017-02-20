@@ -150,7 +150,6 @@ class CORE_EXPORT FrameSelection final
                     SetSelectionOptions = CloseTyping | ClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded,
                     TextGranularity = CharacterGranularity);
-  void setSelection(const VisibleSelectionInFlatTree&, SetSelectionOptions);
   bool setSelectedRange(
       const EphemeralRange&,
       TextAffinity,
