@@ -192,7 +192,7 @@ below:
       <message name="IDS_FORM_SUBMIT_LABEL" desc="Default label for Submit buttons in forms on webpages.">
         Submit
       </message>
-      <message name="IDS_FORM_INPUT_ALT" desc="alt text for &lt;input&gt; elements with no alt, title, or value">
+      <message name="IDS_FORM_INPUT_ALT" desc="Alt text for &lt;input&gt; elements with no alt, title, or value">
         Submit
       </message>
       <message name="IDS_FORM_RESET_LABEL" desc="default label for Reset buttons in forms on webpages">
@@ -270,247 +270,247 @@ below:
         <ph name="WEEK">$1<ex>Week 38, 2014</ex></ph>, starting on <ph name="WEEK_START_DATE">$2<ex>September 15, 2014</ex></ph>
       </message>
 
-      <message name="IDS_AX_ROLE_ARTICLE" desc="accessibility role description for article">
+      <message name="IDS_AX_ROLE_ARTICLE" desc="Accessibility role description for article">
         article
       </message>
-      <message name="IDS_AX_ROLE_BANNER" desc="accessibility role description for banner">
+      <message name="IDS_AX_ROLE_BANNER" desc="Accessibility role description for banner">
         banner
       </message>
-      <message name="IDS_AX_ROLE_COMPLEMENTARY" desc="accessibility role description for complementary">
+      <message name="IDS_AX_ROLE_COMPLEMENTARY" desc="Accessibility role description for complementary">
         complementary
       </message>
-      <message name="IDS_AX_ROLE_CHECK_BOX" desc="accessibility role description for a check box">
+      <message name="IDS_AX_ROLE_CHECK_BOX" desc="Accessibility role description for a check box">
         checkbox
       </message>
-      <message name="IDS_AX_ROLE_CONTENT_INFO" desc="accessibility role description for credits and information about the content of the page, like copyrights and privacy statements">
+      <message name="IDS_AX_ROLE_CONTENT_INFO" desc="Accessibility role description for credits and information about the content of the page, like copyrights and privacy statements">
         content info
       </message>
-      <message name="IDS_AX_ROLE_DEFINITION" desc="accessibility role description for a definition">
+      <message name="IDS_AX_ROLE_DEFINITION" desc="Accessibility role description for a definition">
         definition
       </message>
-      <message name="IDS_AX_ROLE_DESCRIPTION_LIST" desc="accessibility role description for a definition list">
+      <message name="IDS_AX_ROLE_DESCRIPTION_LIST" desc="Accessibility role description for a definition list">
         definition list
       </message>
-      <message name="IDS_AX_ROLE_DESCRIPTION_TERM" desc="accessibility role description for description term(as in a description list)">
+      <message name="IDS_AX_ROLE_DESCRIPTION_TERM" desc="Accessibility role description for description term (as in a description list)">
         term
       </message>
       <message name="IDS_AX_ROLE_FEED" desc="Accessibility role description for a scrollable list of articles.">
         feed
       </message>
-      <message name="IDS_AX_ROLE_FIGURE" desc="accessibility role description for figure">
+      <message name="IDS_AX_ROLE_FIGURE" desc="Accessibility role description for figure">
         figure
       </message>
-      <message name="IDS_AX_ROLE_FORM" desc="accessibility role description for form">
+      <message name="IDS_AX_ROLE_FORM" desc="Accessibility role description for form">
         form
       </message>
-      <message name="IDS_AX_ROLE_FOOTER" desc="accessibility role description for footers">
+      <message name="IDS_AX_ROLE_FOOTER" desc="Accessibility role description for footers">
         footer
       </message>
       <if expr="is_macosx">
-        <message name="IDS_AX_ROLE_STEPPER" desc="accessibility role description for a stepper - a control where you can use up/down arrows to increment or decrement it. The name 'stepper' is how this user interface element is described by VoiceOver on Mac OS X; the translation should be consistent with VoiceOver.">
+        <message name="IDS_AX_ROLE_STEPPER" desc="Accessibility role description for a stepper - a control where you can use up/down arrows to increment or decrement it. The name 'stepper' is how this user interface element is described by VoiceOver on Mac OS X; the translation should be consistent with VoiceOver.">
           stepper
         </message>
       </if>
-      <message name="IDS_AX_ROLE_TOGGLE_BUTTON" desc="accessibility role description for a toggle button">
+      <message name="IDS_AX_ROLE_TOGGLE_BUTTON" desc="Accessibility role description for a toggle button">
         toggle button
       </message>
-      <message name="IDS_AX_ROLE_HEADING" desc="accessibility role description for headings">
+      <message name="IDS_AX_ROLE_HEADING" desc="Accessibility role description for headings">
         heading
       </message>
-      <message name="IDS_AX_ROLE_IMAGE_MAP" desc="accessibility role description for image map">
+      <message name="IDS_AX_ROLE_IMAGE_MAP" desc="Accessibility role description for image map">
         image map
       </message>
-      <message name="IDS_AX_ROLE_LINK" desc="accessibility role description for link">
+      <message name="IDS_AX_ROLE_LINK" desc="Accessibility role description for link">
         link
       </message>
-      <message name="IDS_AX_ROLE_LIST_MARKER" desc="accessibility role description for list marker">
+      <message name="IDS_AX_ROLE_LIST_MARKER" desc="Accessibility role description for list marker">
         list marker
       </message>
-      <message name="IDS_AX_ROLE_MAIN_CONTENT" desc="accessibility role description for main content of the document.">
+      <message name="IDS_AX_ROLE_MAIN_CONTENT" desc="Accessibility role description for main content of the document.">
         main
       </message>
-      <message name="IDS_AX_ROLE_MARK" desc="accessibility role description for highlighted content.">
+      <message name="IDS_AX_ROLE_MARK" desc="Accessibility role description for highlighted content.">
         highlighted content
       </message>
-      <message name="IDS_AX_ROLE_MATH" desc="accessibility role description for math">
+      <message name="IDS_AX_ROLE_MATH" desc="Accessibility role description for math">
         math
       </message>
-      <message name="IDS_AX_ROLE_NAVIGATIONAL_LINK" desc="accessibility role description for group of navigational links.">
+      <message name="IDS_AX_ROLE_NAVIGATIONAL_LINK" desc="Accessibility role description for group of navigational links.">
         navigation
       </message>
-      <message name="IDS_AX_ROLE_REGION" desc="accessibility role description for region">
+      <message name="IDS_AX_ROLE_REGION" desc="Accessibility role description for region">
         region
       </message>
-      <message name="IDS_AX_ROLE_SEARCH_BOX" desc="accessibility role description for search text field">
+      <message name="IDS_AX_ROLE_SEARCH_BOX" desc="Accessibility role description for search text field">
         search text field
       </message>
-      <message name="IDS_AX_ROLE_STATUS" desc="accessibility role description for status">
+      <message name="IDS_AX_ROLE_STATUS" desc="Accessibility role description for status">
         status
       </message>
-      <message name="IDS_AX_ROLE_SWITCH" desc="accessibility role description for switch">
+      <message name="IDS_AX_ROLE_SWITCH" desc="Accessibility role description for switch">
         switch
       </message>
-      <message name="IDS_AX_ROLE_WEB_AREA" desc="accessibility role description for web area">
+      <message name="IDS_AX_ROLE_WEB_AREA" desc="Accessibility role description for web area">
         HTML content
       </message>
       <if expr="is_android">
-        <message name="IDS_AX_ROLE_ALERT" desc="accessibility role description for an alert">
+        <message name="IDS_AX_ROLE_ALERT" desc="Accessibility role description for an alert">
           alert
         </message>
-        <message name="IDS_AX_ROLE_ALERT_DIALOG" desc="accessibility role description for an alert dialog">
+        <message name="IDS_AX_ROLE_ALERT_DIALOG" desc="Accessibility role description for an alert dialog">
           alert_dialog
         </message>
-        <message name="IDS_AX_ROLE_APPLICATION" desc="accessibility role description for an application">
+        <message name="IDS_AX_ROLE_APPLICATION" desc="Accessibility role description for an application">
           application
         </message>
-        <message name="IDS_AX_ROLE_BLOCKQUOTE" desc="accessibility role description for a blockquote">
+        <message name="IDS_AX_ROLE_BLOCKQUOTE" desc="Accessibility role description for a blockquote">
           blockquote
         </message>
-        <message name="IDS_AX_ROLE_BUSY_INDICATOR" desc="accessibility role description for a busy indicator">
+        <message name="IDS_AX_ROLE_BUSY_INDICATOR" desc="Accessibility role description for a busy indicator">
           busy indicator
         </message>
-        <message name="IDS_AX_ROLE_BUTTON" desc="accessibility role description for a button">
+        <message name="IDS_AX_ROLE_BUTTON" desc="Accessibility role description for a button">
           button
         </message>
-        <message name="IDS_AX_ROLE_BUTTON_DROP_DOWN" desc="accessibility role description for a button that drops down">
+        <message name="IDS_AX_ROLE_BUTTON_DROP_DOWN" desc="Accessibility role description for a button that drops down">
           drop down button
         </message>
-        <message name="IDS_AX_ROLE_CELL" desc="accessibility role description for a cell, like in a table or grid">
+        <message name="IDS_AX_ROLE_CELL" desc="Accessibility role description for a cell, like in a table or grid">
           cell
         </message>
-        <message name="IDS_AX_ROLE_COLOR_WELL" desc="accessibility role description for a color picker">
+        <message name="IDS_AX_ROLE_COLOR_WELL" desc="Accessibility role description for a color picker">
           color picker
         </message>
-        <message name="IDS_AX_ROLE_COLUMN_HEADER" desc="accessibility role description for a column header">
+        <message name="IDS_AX_ROLE_COLUMN_HEADER" desc="Accessibility role description for a column header">
           column header
         </message>
-        <message name="IDS_AX_ROLE_COMBO_BOX" desc="accessibility role description for a combo box, an editable text control with an associated drop-down list">
+        <message name="IDS_AX_ROLE_COMBO_BOX" desc="Accessibility role description for a combo box, an editable text control with an associated drop-down list">
           combo box
         </message>
-        <message name="IDS_AX_ROLE_DATE" desc="accessibility role description for a date picker">
+        <message name="IDS_AX_ROLE_DATE" desc="Accessibility role description for a date picker">
           date picker
         </message>
-        <message name="IDS_AX_ROLE_DATE_TIME" desc="accessibility role description for a date / time picker">
+        <message name="IDS_AX_ROLE_DATE_TIME" desc="Accessibility role description for a date / time picker">
           date and time picker
         </message>
-        <message name="IDS_AX_ROLE_DIALOG" desc="accessibility role description for a dialog">
+        <message name="IDS_AX_ROLE_DIALOG" desc="Accessibility role description for a dialog">
           dialog
         </message>
-        <message name="IDS_AX_ROLE_DIRECTORY" desc="accessibility role description for a directory, for example a table of contents or list of employees">
+        <message name="IDS_AX_ROLE_DIRECTORY" desc="Accessibility role description for a directory, for example a table of contents or list of employees">
           directory
         </message>
-        <message name="IDS_AX_ROLE_DISCLOSURE_TRIANGLE" desc="accessibility role description for a disclosure triangle, a control shaped like a triangle that expands or collapses to show or hide extra content">
+        <message name="IDS_AX_ROLE_DISCLOSURE_TRIANGLE" desc="Accessibility role description for a disclosure triangle, a control shaped like a triangle that expands or collapses to show or hide extra content">
           disclosure triangle
         </message>
-        <message name="IDS_AX_ROLE_DOCUMENT" desc="accessibility role description for a document">
+        <message name="IDS_AX_ROLE_DOCUMENT" desc="Accessibility role description for a document">
           document
         </message>
-        <message name="IDS_AX_ROLE_EMBEDDED_OBJECT" desc="accessibility role description for an embedded object, like a video inside a web page">
+        <message name="IDS_AX_ROLE_EMBEDDED_OBJECT" desc="Accessibility role description for an embedded object, like a video inside a web page">
           object
         </message>
-        <message name="IDS_AX_ROLE_GRAPHIC" desc="accessibility role description for a graphic or image">
+        <message name="IDS_AX_ROLE_GRAPHIC" desc="Accessibility role description for a graphic or image">
           graphic
         </message>
-        <message name="IDS_AX_ROLE_HEADING_WITH_LEVEL" desc="accessibility role description for a heading with a heading level, for example 'heading 1' is the most important heading and 'heading 3' is less important">
+        <message name="IDS_AX_ROLE_HEADING_WITH_LEVEL" desc="Accessibility role description for a heading with a heading level, for example 'heading 1' is the most important heading and 'heading 3' is less important">
           heading <ph name="HEADING_LEVEL">$1<ex>1</ex></ph>
         </message>
-        <message name="IDS_AX_ROLE_INPUT_TIME" desc="accessibility role description for a time picker control">
+        <message name="IDS_AX_ROLE_INPUT_TIME" desc="Accessibility role description for a time picker control">
           time picker
         </message>
-        <message name="IDS_AX_ROLE_LIST_BOX" desc="accessibility role description for a list box control">
+        <message name="IDS_AX_ROLE_LIST_BOX" desc="Accessibility role description for a list box control">
           list box
         </message>
-        <message name="IDS_AX_ROLE_LOG" desc="accessibility role description for an information log, such as a chat log or error log">
+        <message name="IDS_AX_ROLE_LOG" desc="Accessibility role description for an information log, such as a chat log or error log">
           log
         </message>
-        <message name="IDS_AX_ROLE_MARQUEE" desc="accessibility role description for a marquee, such as a stock ticker or ad banner that frequently changes">
+        <message name="IDS_AX_ROLE_MARQUEE" desc="Accessibility role description for a marquee, such as a stock ticker or ad banner that frequently changes">
           marquee
         </message>
-        <message name="IDS_AX_ROLE_MENU" desc="accessibility role description for a menu">
+        <message name="IDS_AX_ROLE_MENU" desc="Accessibility role description for a menu">
           menu
         </message>
-        <message name="IDS_AX_ROLE_MENU_BAR" desc="accessibility role description for a menu bar">
+        <message name="IDS_AX_ROLE_MENU_BAR" desc="Accessibility role description for a menu bar">
           menu bar
         </message>
-        <message name="IDS_AX_ROLE_MENU_BUTTON" desc="accessibility role description for a menu button, a button that opens a menu">
+        <message name="IDS_AX_ROLE_MENU_BUTTON" desc="Accessibility role description for a menu button, a button that opens a menu">
           menu button
         </message>
-        <message name="IDS_AX_ROLE_MENU_ITEM" desc="accessibility role description for a menu item">
+        <message name="IDS_AX_ROLE_MENU_ITEM" desc="Accessibility role description for a menu item">
           menu item
         </message>
-        <message name="IDS_AX_ROLE_METER" desc="accessibility role description for a meter, for example a temperature indicator or progress bar">
+        <message name="IDS_AX_ROLE_METER" desc="Accessibility role description for a meter, for example a temperature indicator or progress bar">
           meter
         </message>
-        <message name="IDS_AX_ROLE_NOTE" desc="accessibility role description for a note">
+        <message name="IDS_AX_ROLE_NOTE" desc="Accessibility role description for a note">
           note
         </message>
-        <message name="IDS_AX_ROLE_OUTLINE" desc="accessibility role description for an outline, a presentation of information in a tree-like structure">
+        <message name="IDS_AX_ROLE_OUTLINE" desc="Accessibility role description for an outline, a presentation of information in a tree-like structure">
           outline
         </message>
-        <message name="IDS_AX_ROLE_POP_UP_BUTTON" desc="accessibility role description for a pop up button">
+        <message name="IDS_AX_ROLE_POP_UP_BUTTON" desc="Accessibility role description for a pop up button">
           pop up button
         </message>
-        <message name="IDS_AX_ROLE_PROGRESS_INDICATOR" desc="accessibility role description for a progress indicator">
+        <message name="IDS_AX_ROLE_PROGRESS_INDICATOR" desc="Accessibility role description for a progress indicator">
           progress indicator
         </message>
-        <message name="IDS_AX_ROLE_RADIO" desc="accessibility role description for a radio button">
+        <message name="IDS_AX_ROLE_RADIO" desc="Accessibility role description for a radio button">
           radio button
         </message>
-        <message name="IDS_AX_ROLE_RADIO_GROUP" desc="accessibility role description for a group of related radio buttons">
+        <message name="IDS_AX_ROLE_RADIO_GROUP" desc="Accessibility role description for a group of related radio buttons">
           radio group
         </message>
-        <message name="IDS_AX_ROLE_ROW_HEADER" desc="accessibility role description for a row header in a table">
+        <message name="IDS_AX_ROLE_ROW_HEADER" desc="Accessibility role description for a row header in a table">
           row header
         </message>
-        <message name="IDS_AX_ROLE_RULER" desc="accessibility role description for a ruler">
+        <message name="IDS_AX_ROLE_RULER" desc="Accessibility role description for a ruler">
           ruler
         </message>
-        <message name="IDS_AX_ROLE_SCROLL_BAR" desc="accessibility role description for a scroll bar">
+        <message name="IDS_AX_ROLE_SCROLL_BAR" desc="Accessibility role description for a scroll bar">
           scroll bar
         </message>
-        <message name="IDS_AX_ROLE_SEARCH" desc="accessibility role description for the section of a web page containing controls for searching the page or site">
+        <message name="IDS_AX_ROLE_SEARCH" desc="Accessibility role description for the section of a web page containing controls for searching the page or site">
           search
         </message>
-        <message name="IDS_AX_ROLE_SLIDER" desc="accessibility role description for a slider">
+        <message name="IDS_AX_ROLE_SLIDER" desc="Accessibility role description for a slider">
           slider
         </message>
-        <message name="IDS_AX_ROLE_SPIN_BUTTON" desc="accessibility role description for a spin button, a control containing a numerical value that can be incremented or decremented by 1">
+        <message name="IDS_AX_ROLE_SPIN_BUTTON" desc="Accessibility role description for a spin button, a control containing a numerical value that can be incremented or decremented by 1">
           spin button
         </message>
-        <message name="IDS_AX_ROLE_SPLITTER" desc="accessibility role description for a splitter, a control that splits the window in two pieces and can usually be dragged">
+        <message name="IDS_AX_ROLE_SPLITTER" desc="Accessibility role description for a splitter, a control that splits the window in two pieces and can usually be dragged">
           splitter
         </message>
-        <message name="IDS_AX_ROLE_TAB" desc="accessibility role description for a tab">
+        <message name="IDS_AX_ROLE_TAB" desc="Accessibility role description for a tab">
           tab
         </message>
-        <message name="IDS_AX_ROLE_TABLE" desc="accessibility role description for a table">
+        <message name="IDS_AX_ROLE_TABLE" desc="Accessibility role description for a table">
           table
         </message>
-        <message name="IDS_AX_ROLE_TAB_LIST" desc="accessibility role description for a tab list">
+        <message name="IDS_AX_ROLE_TAB_LIST" desc="Accessibility role description for a tab list">
           tab list
         </message>
-        <message name="IDS_AX_ROLE_TAB_PANEL" desc="accessibility role description for a tab panel, the part of the window that changes when selecting a new tab">
+        <message name="IDS_AX_ROLE_TAB_PANEL" desc="Accessibility role description for a tab panel, the part of the window that changes when selecting a new tab">
           tab panel
         </message>
-        <message name="IDS_AX_ROLE_TIME" desc="accessibility role description for a time">
+        <message name="IDS_AX_ROLE_TIME" desc="Accessibility role description for a time">
           time
         </message>
-        <message name="IDS_AX_ROLE_TIMER" desc="accessibility role description for a timer">
+        <message name="IDS_AX_ROLE_TIMER" desc="Accessibility role description for a timer">
           timer
         </message>
-        <message name="IDS_AX_ROLE_TOOLBAR" desc="accessibility role description for a toolbar">
+        <message name="IDS_AX_ROLE_TOOLBAR" desc="Accessibility role description for a toolbar">
           toolbar
         </message>
-        <message name="IDS_AX_ROLE_TOOLTIP" desc="accessibility role description for a tooltip">
+        <message name="IDS_AX_ROLE_TOOLTIP" desc="Accessibility role description for a tooltip">
           tooltip
         </message>
-        <message name="IDS_AX_ROLE_TREE" desc="accessibility role description for a tree">
+        <message name="IDS_AX_ROLE_TREE" desc="Accessibility role description for a tree">
           tree
         </message>
-        <message name="IDS_AX_ROLE_TREE_GRID" desc="accessibility role description for a tree grid">
+        <message name="IDS_AX_ROLE_TREE_GRID" desc="Accessibility role description for a tree grid">
           tree grid
         </message>
-        <message name="IDS_AX_ROLE_TREE_ITEM" desc="accessibility role description for a tree item">
+        <message name="IDS_AX_ROLE_TREE_ITEM" desc="Accessibility role description for a tree item">
           tree item
         </message>
       </if>
@@ -539,63 +539,63 @@ below:
         video
       </message>
 
-      <message name="IDS_AX_MEDIA_MUTE_BUTTON" desc="accessibility role description for mute button">
+      <message name="IDS_AX_MEDIA_MUTE_BUTTON" desc="Accessibility role description for mute button">
         mute
       </message>
 
-      <message name="IDS_AX_MEDIA_UNMUTE_BUTTON" desc="accessibility role description for turn mute off button">
+      <message name="IDS_AX_MEDIA_UNMUTE_BUTTON" desc="Accessibility role description for turn mute off button">
         unmute
       </message>
 
-      <message name="IDS_AX_MEDIA_PLAY_BUTTON" desc="accessibility role description for play button">
+      <message name="IDS_AX_MEDIA_PLAY_BUTTON" desc="Accessibility role description for play button">
         play
       </message>
 
-      <message name="IDS_AX_MEDIA_PAUSE_BUTTON" desc="accessibility role description for pause button">
+      <message name="IDS_AX_MEDIA_PAUSE_BUTTON" desc="Accessibility role description for pause button">
         pause
       </message>
 
-      <message name="IDS_AX_MEDIA_SLIDER" desc="accessibility role description for timeline slider">
+      <message name="IDS_AX_MEDIA_SLIDER" desc="Accessibility role description for timeline slider">
         movie time
       </message>
 
-      <message name="IDS_AX_MEDIA_SLIDER_THUMB" desc="accessibility role description for timeline thumb">
+      <message name="IDS_AX_MEDIA_SLIDER_THUMB" desc="Accessibility role description for timeline thumb">
         movie timeline thumb
       </message>
 
-      <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY" desc="accessibility role description for elapsed time display">
+      <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY" desc="Accessibility role description for elapsed time display">
         elapsed time
       </message>
 
-      <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY" desc="accessibility role description for time remaining display">
+      <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY" desc="Accessibility role description for time remaining display">
         remaining time
       </message>
 
-      <message name="IDS_AX_MEDIA_STATUS_DISPLAY" desc="accessibility role description for movie status">
+      <message name="IDS_AX_MEDIA_STATUS_DISPLAY" desc="Accessibility role description for movie status">
         status
       </message>
 
-      <message name="IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON" desc="accessibility role description for enter fullscreen button">
+      <message name="IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON" desc="Accessibility role description for enter fullscreen button">
         enter full screen
       </message>
 
-      <message name="IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON" desc="accessibility role description for exit fullscreen button">
+      <message name="IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON" desc="Accessibility role description for exit fullscreen button">
         exit full screen
       </message>
 
-      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON" desc="accessibility role description for show closed captions button">
+      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON" desc="Accessibility role description for show closed captions button">
         show closed captions
       </message>
 
-      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON" desc="accessibility role description for hide closed captions button">
+      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON" desc="Accessibility role description for hide closed captions button">
         hide closed captions
       </message>
 
-      <message name="IDS_AX_MEDIA_CAST_OFF_BUTTON" desc="accessibility role description for remote playback button">
+      <message name="IDS_AX_MEDIA_CAST_OFF_BUTTON" desc="Accessibility role description for remote playback button">
         play on remote device
       </message>
 
-      <message name="IDS_AX_MEDIA_CAST_ON_BUTTON" desc="accessibility role description for remote playback control button">
+      <message name="IDS_AX_MEDIA_CAST_ON_BUTTON" desc="Accessibility role description for remote playback control button">
         control remote playback
       </message>
 
@@ -615,71 +615,71 @@ below:
         video
       </message>
 
-      <message name="IDS_AX_MEDIA_MUTE_BUTTON_HELP" desc="accessibility help description for mute button">
+      <message name="IDS_AX_MEDIA_MUTE_BUTTON_HELP" desc="Accessibility help description for mute button">
         mute audio track
       </message>
 
-      <message name="IDS_AX_MEDIA_UNMUTE_BUTTON_HELP" desc="accessibility help description for turn mute off button">
+      <message name="IDS_AX_MEDIA_UNMUTE_BUTTON_HELP" desc="Accessibility help description for turn mute off button">
         unmute audio track
       </message>
 
-      <message name="IDS_AX_MEDIA_PLAY_BUTTON_HELP" desc="accessibility help description for play button">
+      <message name="IDS_AX_MEDIA_PLAY_BUTTON_HELP" desc="Accessibility help description for play button">
         begin playback
       </message>
 
-      <message name="IDS_AX_MEDIA_PAUSE_BUTTON_HELP" desc="accessibility help description for pause button">
+      <message name="IDS_AX_MEDIA_PAUSE_BUTTON_HELP" desc="Accessibility help description for pause button">
         pause playback
       </message>
 
-      <message name="IDS_AX_MEDIA_AUDIO_SLIDER_HELP" desc="accessibility help description for audio timeline slider">
+      <message name="IDS_AX_MEDIA_AUDIO_SLIDER_HELP" desc="Accessibility help description for audio timeline slider">
         audio time scrubber
       </message>
 
-      <message name="IDS_AX_MEDIA_VIDEO_SLIDER_HELP" desc="accessibility help description for video timeline slider">
+      <message name="IDS_AX_MEDIA_VIDEO_SLIDER_HELP" desc="Accessibility help description for video timeline slider">
         movie time scrubber
       </message>
 
-      <message name="IDS_AX_MEDIA_SLIDER_THUMB_HELP" desc="accessibility help description for timeline thumb">
+      <message name="IDS_AX_MEDIA_SLIDER_THUMB_HELP" desc="Accessibility help description for timeline thumb">
         movie time scrubber thumb
       </message>
 
-      <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP" desc="accessibility help description for elapsed time display">
+      <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP" desc="Accessibility help description for elapsed time display">
         current time in seconds
       </message>
 
-      <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP" desc="accessibility help description for time remaining display">
-        number of seconds ofmovie remaining
+      <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP" desc="Accessibility help description for time remaining display">
+        number of seconds of movie remaining
       </message>
 
-      <message name="IDS_AX_MEDIA_STATUS_DISPLAY_HELP" desc="accessibility help description for movie status">
+      <message name="IDS_AX_MEDIA_STATUS_DISPLAY_HELP" desc="Accessibility help description for movie status">
         current movie status
       </message>
 
-      <message name="IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON_HELP" desc="accessibility help description for enter fullscreen button">
+      <message name="IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON_HELP" desc="Accessibility help description for enter fullscreen button">
         play movie in full screen mode
       </message>
 
-      <message name="IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON_HELP" desc="accessibility help description for exit fullscreen button">
+      <message name="IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON_HELP" desc="Accessibility help description for exit fullscreen button">
         exit full screen
       </message>
 
-      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON_HELP" desc="accessibility help description for show closed captions button">
+      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON_HELP" desc="Accessibility help description for show closed captions button">
         start displaying closed captions
       </message>
 
-      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON_HELP" desc="accessibility help description for hide closed captions button">
+      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON_HELP" desc="Accessibility help description for hide closed captions button">
         stop displaying closed captions
       </message>
 
-      <message name="IDS_AX_MEDIA_CAST_OFF_BUTTON_HELP" desc="accessibility help description for remote playback button">
+      <message name="IDS_AX_MEDIA_CAST_OFF_BUTTON_HELP" desc="Accessibility help description for remote playback button">
         play on remote device
       </message>
 
-      <message name="IDS_AX_MEDIA_CAST_ON_BUTTON_HELP" desc="accessibility help description for remote playback control button">
+      <message name="IDS_AX_MEDIA_CAST_ON_BUTTON_HELP" desc="Accessibility help description for remote playback control button">
         control remote playback
       </message>
 
-      <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP" desc="accessibility help description for overflow button.">
+      <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP" desc="Accessibility help description for overflow button.">
         more options
       </message>
 
@@ -707,7 +707,7 @@ below:
         Year
       </message>
 
-      <message name="IDS_FORM_INPUT_WEEK_TEMPLATE" desc="A specfic week (1-53) in a specific year shown in a form control">
+      <message name="IDS_FORM_INPUT_WEEK_TEMPLATE" desc="A specific week (1-53) in a specific year shown in a form control">
         Week <ph name="WEEKNUMBER">$2<ex>51</ex></ph>, <ph name="YEAR">$1<ex>2012</ex></ph>
       </message>
       <message name="IDS_FORM_VALIDATION_VALUE_MISSING_MULTIPLE_FILE" desc="Heading or short sentence shown when a file upload control in a webpage requires one or more files selected, but the user didn't specify any files.">
