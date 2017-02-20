@@ -19,10 +19,9 @@ import java.util.Locale;
  * Exposes general configuration info about the display style for a given reference View.
  */
 public class UiConfig {
-
-    public static final int REGULAR_DISPLAY_STYLE_MIN_WIDTH_DP = 360;
+    public static final int NARROW_DISPLAY_STYLE_MAX_WIDTH_DP = 320;
     public static final int WIDE_DISPLAY_STYLE_MIN_WIDTH_DP = 600;
-    public static final int REGULAR_DISPLAY_STYLE_MIN_HEIGHT_DP = 360;
+    public static final int FLAT_DISPLAY_STYLE_MAX_HEIGHT_DP = 320;
 
     private static final String TAG = "DisplayStyle";
     private static final boolean DEBUG = false;
@@ -94,7 +93,7 @@ public class UiConfig {
 
         @HorizontalDisplayStyle
         int newHorizontalDisplayStyle;
-        if (widthDp < REGULAR_DISPLAY_STYLE_MIN_WIDTH_DP) {
+        if (widthDp <= NARROW_DISPLAY_STYLE_MAX_WIDTH_DP) {
             newHorizontalDisplayStyle = HorizontalDisplayStyle.NARROW;
         } else if (widthDp >= WIDE_DISPLAY_STYLE_MIN_WIDTH_DP) {
             newHorizontalDisplayStyle = HorizontalDisplayStyle.WIDE;
@@ -104,8 +103,8 @@ public class UiConfig {
 
         @VerticalDisplayStyle
         int newVerticalDisplayStyle =
-                heightDp < REGULAR_DISPLAY_STYLE_MIN_HEIGHT_DP ? VerticalDisplayStyle.FLAT
-                                                               : VerticalDisplayStyle.REGULAR;
+                heightDp <= FLAT_DISPLAY_STYLE_MAX_HEIGHT_DP ? VerticalDisplayStyle.FLAT
+                                                             : VerticalDisplayStyle.REGULAR;
 
         final DisplayStyle displayStyle =
                 new DisplayStyle(newHorizontalDisplayStyle, newVerticalDisplayStyle);
