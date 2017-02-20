@@ -12,6 +12,8 @@
 
 namespace blink {
 
+// TODO(alancutter): Delete this class once TransitionKeyframe has completely
+// replaced it.
 class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
  public:
   static PassRefPtr<AnimatableValueKeyframe> create() {

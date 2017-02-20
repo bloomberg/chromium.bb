@@ -205,6 +205,8 @@ blink_core_sources("animation") {
     "TimingInput.h",
     "TransitionInterpolation.cpp",
     "TransitionInterpolation.h",
+    "TransitionKeyframe.cpp",
+    "TransitionKeyframe.h",
     "TypedInterpolationValue.h",
     "UnderlyingValueOwner.cpp",
     "UnderlyingValueOwner.h",

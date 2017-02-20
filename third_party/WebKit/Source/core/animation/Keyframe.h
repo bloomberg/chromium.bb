@@ -59,6 +59,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
 
   virtual bool isAnimatableValueKeyframe() const { return false; }
   virtual bool isStringKeyframe() const { return false; }
+  virtual bool isTransitionKeyframe() const { return false; }
 
   // Represents a property-value pair in a keyframe.
   class PropertySpecificKeyframe : public RefCounted<PropertySpecificKeyframe> {
@@ -93,6 +94,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
     }
     virtual bool isCSSPropertySpecificKeyframe() const { return false; }
     virtual bool isSVGPropertySpecificKeyframe() const { return false; }
+    virtual bool isTransitionPropertySpecificKeyframe() const { return false; }
 
     virtual PassRefPtr<PropertySpecificKeyframe> neutralKeyframe(
         double offset,
