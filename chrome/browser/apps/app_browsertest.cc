@@ -1131,8 +1131,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_WebContentsHasFocus) {
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
+// Disabled due to flakiness. See crbug.com/693305.
+// TODO(rbpotter): Investigate and re-enable this test.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
-                       WindowDotPrintShouldBringUpPrintPreview) {
+                       DISABLED_WindowDotPrintShouldBringUpPrintPreview) {
   ScopedPreviewTestingDelegate preview_delegate;
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
   preview_delegate.WaitUntilPreviewIsReady();
