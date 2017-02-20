@@ -49,8 +49,6 @@ class Field(object):
         'property_name',
         # Name of the type (e.g. EClear, int)
         'type_name',
-        # Path to predefined class for overriding generated types.
-        'field_type_path',
         # Affects how the field is generated (keyword, flag)
         'field_template',
         # Bits needed for storage
@@ -90,6 +88,17 @@ class Field(object):
         assert len(kwargs) == 0, 'Unexpected arguments provided to Field: ' + str(kwargs)
 
 
+def _get_include_paths(properties):
+    """
+    Get a list of paths that need to be included for ComputedStyleBase.
+    """
+    include_paths = set()
+    for property_ in properties:
+        if property_['field_type_path'] is not None:
+            include_paths.add(property_['field_type_path'] + '.h')
+    return list(sorted(include_paths))
+
+
 def _create_enums(properties):
     """
     Returns a dictionary of enums to be generated, enum name -> [list of enum values]
@@ -127,10 +136,8 @@ def _create_property_field(property_):
 
     # Separate the type path from the type name, if specified.
     if property_['field_type_path']:
-        field_type_path = property_['field_type_path']
-        type_name = field_type_path.split('/')[-1]
+        type_name = property_['field_type_path'].split('/')[-1]
     else:
-        field_type_path = None
         type_name = property_['type_name']
 
     # For now, the getter name should match the field name. Later, getter names
@@ -152,7 +159,6 @@ def _create_property_field(property_):
         inherited=property_['inherited'],
         independent=property_['independent'],
         type_name=type_name,
-        field_type_path=field_type_path,
         field_template=property_['field_template'],
         size=int(math.ceil(bits_needed)),
         default_value=default_value,
@@ -180,7 +186,6 @@ def _create_inherited_flag_field(property_):
         name='m_' + field_name_suffix_lower,
         property_name=property_['name'],
         type_name='bool',
-        field_type_path=None,
         field_template='flag',
         size=1,
         default_value='true',
@@ -203,7 +208,6 @@ def _create_nonproperty_field(field_name):
         name=member_name,
         property_name=field_name,
         type_name='bool',
-        field_type_path=None,
         field_template='flag',
         size=1,
         default_value='false',
@@ -318,6 +322,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         return {
             'properties': self._properties,
             'enums': self._generated_enums,
+            'include_paths': _get_include_paths(self._properties.values()),
             'fields': self._fields,
             'expected_total_field_bytes': self._expected_total_field_bytes,
         }

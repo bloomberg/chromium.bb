@@ -6,8 +6,8 @@
 
 #include "core/ComputedStyleBaseConstants.h"
 #include "core/CoreExport.h"
-{% for field in fields if field.field_type_path != None %}
-#include "{{field.field_type_path}}.h"
+{% for path in include_paths %}
+#include "{{path}}"
 {% endfor %}
 
 {# Returns the default value for the field, converted to fit in the storage container. #}
