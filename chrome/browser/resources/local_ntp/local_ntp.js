@@ -199,10 +199,8 @@ function renderTheme() {
 
   // Inform the most visited iframe of the new theme.
   var themeinfo = {cmd: 'updateTheme'};
-  if (!info.usingDefaultTheme) {
-    themeinfo.tileBorderColor = convertToRGBAColor(info.sectionBorderColorRgba);
-    themeinfo.tileHoverBorderColor = convertToRGBAColor(info.headerColorRgba);
-  }
+  themeinfo.tileBorderColor = convertToRGBAColor(info.sectionBorderColorRgba);
+  themeinfo.tileHoverBorderColor = convertToRGBAColor(info.headerColorRgba);
   themeinfo.isThemeDark = isThemeDark;
 
   var titleColor = NTP_DESIGN.titleColor;
