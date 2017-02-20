@@ -157,7 +157,12 @@ const CGFloat kToolbarHeight = 64.0f;
 }
 
 - (void)deleteButtonPressedForCell:(UICollectionViewCell*)cell {
-  // PLACEHOLDER: handle close tab button.
+  auto updateBlock = ^{
+    NSIndexPath* indexPath = [self.grid indexPathForCell:cell];
+    [self.tabCommandHandler closeTabAtIndexPath:indexPath];
+    [self.grid deleteItemsAtIndexPaths:@[ indexPath ]];
+  };
+  [self.grid performBatchUpdates:updateBlock completion:nil];
 }
 
 @end

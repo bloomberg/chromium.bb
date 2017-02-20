@@ -108,6 +108,12 @@
   _activeWebStateIndex = index;
 }
 
+- (void)closeTabAtIndexPath:(NSIndexPath*)indexPath {
+  size_t index = static_cast<size_t>(indexPath.item);
+  DCHECK(index < _webStates.size());
+  _webStates.erase(_webStates.begin() + index);
+}
+
 #pragma mark - TabGridCommands
 
 - (void)showTabGrid {

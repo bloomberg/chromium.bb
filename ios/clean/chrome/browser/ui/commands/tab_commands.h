@@ -15,6 +15,9 @@
 // Display the tab corresponding to |indexPath|. The receiver determines how
 // this correspondence relates to the tab model(s) it knows about.
 - (void)showTabAtIndexPath:(NSIndexPath*)indexPath;
+
+// Remove tab from the tab model(s) the receiver knows about.
+- (void)closeTabAtIndexPath:(NSIndexPath*)indexPath;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_TAB_COMMANDS_H_
