@@ -122,6 +122,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   void onConnected();
   void onDisconnected();
 
+  void stopPresenting();
+
   void OnPresentChange();
 
   // VRDisplayClient

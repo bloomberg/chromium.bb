@@ -365,7 +365,7 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* scriptState) {
 
   resolver->resolve();
 
-  forceExitPresent();
+  stopPresenting();
 
   return promise;
 }
@@ -447,30 +447,12 @@ void VRDisplay::beginPresent() {
   OnPresentChange();
 }
 
+// Need to close service if exists and then free rendering context.
 void VRDisplay::forceExitPresent() {
-  if (m_isPresenting) {
-    if (!m_capabilities->hasExternalDisplay()) {
-      auto canvas = m_layer.source();
-      Fullscreen::fullyExitFullscreen(canvas->document());
-      m_fullscreenCheckTimer.stop();
-      if (!m_fullscreenOrigWidth.isNull()) {
-        canvas->setInlineStyleProperty(CSSPropertyWidth, m_fullscreenOrigWidth);
-        m_fullscreenOrigWidth = String();
-      }
-      if (!m_fullscreenOrigHeight.isNull()) {
-        canvas->setInlineStyleProperty(CSSPropertyWidth,
-                                       m_fullscreenOrigHeight);
-        m_fullscreenOrigHeight = String();
-      }
-    } else {
-      // Can't get into this presentation mode, so nothing to do here.
-    }
-    m_isPresenting = false;
-    OnPresentChange();
+  if (m_display) {
+    m_display->ExitPresent();
   }
-
-  m_renderingContext = nullptr;
-  m_contextGL = nullptr;
+  stopPresenting();
 }
 
 void VRDisplay::updateLayerBounds() {
@@ -612,7 +594,7 @@ void VRDisplay::OnChanged(device::mojom::blink::VRDisplayInfoPtr display) {
 }
 
 void VRDisplay::OnExitPresent() {
-  forceExitPresent();
+  stopPresenting();
 }
 
 void VRDisplay::onConnected() {
@@ -623,6 +605,32 @@ void VRDisplay::onConnected() {
 void VRDisplay::onDisconnected() {
   m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
       EventTypeNames::vrdisplaydisconnect, true, false, this, "disconnect"));
+}
+
+void VRDisplay::stopPresenting() {
+  if (m_isPresenting) {
+    if (!m_capabilities->hasExternalDisplay()) {
+      auto canvas = m_layer.source();
+      Fullscreen::fullyExitFullscreen(canvas->document());
+      m_fullscreenCheckTimer.stop();
+      if (!m_fullscreenOrigWidth.isNull()) {
+        canvas->setInlineStyleProperty(CSSPropertyWidth, m_fullscreenOrigWidth);
+        m_fullscreenOrigWidth = String();
+      }
+      if (!m_fullscreenOrigHeight.isNull()) {
+        canvas->setInlineStyleProperty(CSSPropertyWidth,
+                                       m_fullscreenOrigHeight);
+        m_fullscreenOrigHeight = String();
+      }
+    } else {
+      // Can't get into this presentation mode, so nothing to do here.
+    }
+    m_isPresenting = false;
+    OnPresentChange();
+  }
+
+  m_renderingContext = nullptr;
+  m_contextGL = nullptr;
 }
 
 void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason) {
