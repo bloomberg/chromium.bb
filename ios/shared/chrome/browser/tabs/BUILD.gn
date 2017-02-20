@@ -8,6 +8,8 @@ source_set("tabs") {
     "web_state_list.mm",
     "web_state_list_fast_enumeration_helper.h",
     "web_state_list_fast_enumeration_helper.mm",
+    "web_state_list_metrics_observer.h",
+    "web_state_list_metrics_observer.mm",
     "web_state_list_observer.h",
     "web_state_list_observer_bridge.h",
     "web_state_list_observer_bridge.mm",

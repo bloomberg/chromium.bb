@@ -33,11 +33,14 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/tabs/tab_model_observers.h"
+#import "ios/chrome/browser/tabs/tab_model_observers_bridge.h"
 #import "ios/chrome/browser/tabs/tab_model_order_controller.h"
 #import "ios/chrome/browser/tabs/tab_model_synced_window_delegate.h"
+#import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_fast_enumeration_helper.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_metrics_observer.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_observer.h"
 #import "ios/web/navigation/crw_session_certificate_policy_manager.h"
 #import "ios/web/navigation/crw_session_controller.h"
@@ -140,6 +143,10 @@ void CleanCertificatePolicyCache(
   // WebState owns the associated Tab.
   base::scoped_nsobject<NSMutableSet<Tab*>> _tabRetainer;
 
+  // WebStateListObserver bridges to react to modifications of the model (may
+  // send notification, translate and forward events, update metrics, ...).
+  std::vector<std::unique_ptr<WebStateListObserver>> _observerBridges;
+
   // Maintains policy for where new tabs go and the selection when a tab
   // is removed.
   base::scoped_nsobject<TabModelOrderController> _orderController;
@@ -226,6 +233,12 @@ void CleanCertificatePolicyCache(
   DCHECK(!_browserState);
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+  // Unregister all listeners before closing all the tabs.
+  for (const auto& observerBridge : _observerBridges)
+    _webStateList.RemoveObserver(observerBridge.get());
+  _observerBridges.clear();
+
   // Make sure the tabs do clean after themselves. It is important for
   // removeObserver: to be called first otherwise a lot of unecessary work will
   // happen on -closeAllTabs.
@@ -285,6 +298,14 @@ void CleanCertificatePolicyCache(
     _fastEnumerationHelper.reset([[WebStateListFastEnumerationHelper alloc]
         initWithWebStateList:&_webStateList
                 proxyFactory:[[TabModelWebStateProxyFactory alloc] init]]);
+
+    _observerBridges.push_back(base::MakeUnique<TabParentingObserver>());
+    _observerBridges.push_back(base::MakeUnique<WebStateListObserverBridge>(
+        [[TabModelObserversBridge alloc] initWithTabModel:self
+                                        tabModelObservers:_observers.get()]));
+    _observerBridges.push_back(base::MakeUnique<WebStateListMetricsObserver>());
+    for (const auto& observerBridge : _observerBridges)
+      _webStateList.AddObserver(observerBridge.get());
 
     _browserState = browserState;
     DCHECK(_browserState);
@@ -536,15 +557,10 @@ void CleanCertificatePolicyCache(
   DCHECK(tab);
   DCHECK(![_tabRetainer containsObject:tab]);
   DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
-  [tab fetchFavicon];
 
   [_tabRetainer addObject:tab];
   _webStateList.InsertWebState(static_cast<int>(index), tab.webState);
-  TabParentingGlobalObserver::GetInstance()->OnTabParented(tab.webState);
-  [_observers tabModel:self didInsertTab:tab atIndex:index inForeground:NO];
-  [_observers tabModelDidChangeTabCount:self];
 
-  base::RecordAction(base::UserMetricsAction("MobileNewTabOpened"));
   // Persist the session due to a new tab being inserted. If this is a
   // background tab (will not become active), saving now will capture the
   // state properly. If it does eventually become active, another save will
@@ -555,14 +571,10 @@ void CleanCertificatePolicyCache(
 }
 
 - (void)moveTab:(Tab*)tab toIndex:(NSUInteger)toIndex {
-  if ([self tabAtIndex:toIndex] == tab)
-    return;
-
   DCHECK([_tabRetainer containsObject:tab]);
   DCHECK_LE(toIndex, static_cast<NSUInteger>(INT_MAX));
   int fromIndex = _webStateList.GetIndexOfWebState(tab.webState);
   _webStateList.MoveWebStateAt(fromIndex, static_cast<int>(toIndex));
-  [_observers tabModel:self didMoveTab:tab fromIndex:fromIndex toIndex:toIndex];
 }
 
 - (void)replaceTab:(Tab*)oldTab withTab:(Tab*)newTab {
@@ -574,27 +586,17 @@ void CleanCertificatePolicyCache(
   DCHECK_GE(index, 0);
 
   base::scoped_nsobject<Tab> tabSaver([oldTab retain]);
-  [newTab fetchFavicon];
   [_tabRetainer removeObject:oldTab];
   [_tabRetainer addObject:newTab];
   [newTab setParentTabModel:self];
 
   _webStateList.ReplaceWebStateAt(index, newTab.webState);
-  TabParentingGlobalObserver::GetInstance()->OnTabParented(newTab.webState);
-  [_observers tabModel:self
-         didReplaceTab:oldTab
-               withTab:newTab
-               atIndex:static_cast<NSUInteger>(index)];
 
   if (self.currentTab == oldTab)
     [self changeSelectedTabFrom:nil to:newTab persistState:NO];
 
   [oldTab setParentTabModel:nil];
   [oldTab close];
-
-  // Record a tab clobber, since swapping tabs bypasses the tab code that would
-  // normally log clobbers.
-  base::RecordAction(base::UserMetricsAction("MobileTabClobbered"));
 }
 
 - (void)closeTabAtIndex:(NSUInteger)index {
@@ -753,10 +755,6 @@ void CleanCertificatePolicyCache(
   [_tabRetainer removeObject:closedTab];
 
   _webStateList.DetachWebStateAt(closedTabIndex);
-  [_observers tabModel:self
-          didRemoveTab:closedTab
-               atIndex:static_cast<NSUInteger>(closedTabIndex)];
-  [_observers tabModelDidChangeTabCount:self];
 
   // Current tab has closed, update the selected tab and swap in its
   // contents. There is nothing to do if a non-selected tab is closed as
@@ -768,7 +766,6 @@ void CleanCertificatePolicyCache(
   } else {
     [self saveSessionImmediately:NO];
   }
-  base::RecordAction(base::UserMetricsAction("MobileTabClosed"));
   ++_closedTabCount;
 }
 

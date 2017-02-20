@@ -121,7 +121,11 @@ source_set("tabs_internal_arc") {
     "tab_model_list.mm",
     "tab_model_observers.h",
     "tab_model_observers.mm",
+    "tab_model_observers_bridge.h",
+    "tab_model_observers_bridge.mm",
     "tab_model_order_controller.mm",
+    "tab_parenting_observer.h",
+    "tab_parenting_observer.mm",
   ]
   deps = [
     ":tabs",
