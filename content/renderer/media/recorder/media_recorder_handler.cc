@@ -164,23 +164,23 @@ bool MediaRecorderHandler::start(int timeslice) {
   timeslice_ = TimeDelta::FromMilliseconds(timeslice);
   slice_origin_timestamp_ = TimeTicks::Now();
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks, audio_tracks;
-  media_stream_.videoTracks(video_tracks);
-  media_stream_.audioTracks(audio_tracks);
+  media_stream_.videoTracks(video_tracks_);
+  media_stream_.audioTracks(audio_tracks_);
 
-  if (video_tracks.isEmpty() && audio_tracks.isEmpty()) {
+  if (video_tracks_.isEmpty() && audio_tracks_.isEmpty()) {
     LOG(WARNING) << __func__ << ": no media tracks.";
     return false;
   }
 
   const bool use_video_tracks =
-      !video_tracks.isEmpty() && video_tracks[0].isEnabled() &&
-      video_tracks[0].source().getReadyState() !=
+      !video_tracks_.isEmpty() && video_tracks_[0].isEnabled() &&
+      video_tracks_[0].source().getReadyState() !=
           blink::WebMediaStreamSource::ReadyStateEnded;
   const bool use_audio_tracks =
-      !audio_tracks.isEmpty() && MediaStreamAudioTrack::From(audio_tracks[0]) &&
-      audio_tracks[0].isEnabled() &&
-      audio_tracks[0].source().getReadyState() !=
+      !audio_tracks_.isEmpty() &&
+      MediaStreamAudioTrack::From(audio_tracks_[0]) &&
+      audio_tracks_[0].isEnabled() &&
+      audio_tracks_[0].source().getReadyState() !=
           blink::WebMediaStreamSource::ReadyStateEnded;
 
   if (!use_video_tracks && !use_audio_tracks) {
@@ -196,10 +196,10 @@ bool MediaRecorderHandler::start(int timeslice) {
   if (use_video_tracks) {
     // TODO(mcasas): The muxer API supports only one video track. Extend it to
     // several video tracks, see http://crbug.com/528523.
-    LOG_IF(WARNING, video_tracks.size() > 1u)
+    LOG_IF(WARNING, video_tracks_.size() > 1u)
         << "Recording multiple video tracks is not implemented. "
         << "Only recording first video track.";
-    const blink::WebMediaStreamTrack& video_track = video_tracks[0];
+    const blink::WebMediaStreamTrack& video_track = video_tracks_[0];
     if (video_track.isNull())
       return false;
 
@@ -214,10 +214,10 @@ bool MediaRecorderHandler::start(int timeslice) {
   if (use_audio_tracks) {
     // TODO(ajose): The muxer API supports only one audio track. Extend it to
     // several tracks.
-    LOG_IF(WARNING, audio_tracks.size() > 1u)
+    LOG_IF(WARNING, audio_tracks_.size() > 1u)
         << "Recording multiple audio"
         << " tracks is not implemented.  Only recording first audio track.";
-    const blink::WebMediaStreamTrack& audio_track = audio_tracks[0];
+    const blink::WebMediaStreamTrack& audio_track = audio_tracks_[0];
     if (audio_track.isNull())
       return false;
 
@@ -237,6 +237,7 @@ void MediaRecorderHandler::stop() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   // Don't check |recording_| since we can go directly from pause() to stop().
 
+  weak_factory_.InvalidateWeakPtrs();
   recording_ = false;
   timeslice_ = TimeDelta::FromMilliseconds(0);
   video_recorders_.clear();
@@ -272,6 +273,11 @@ void MediaRecorderHandler::OnEncodedVideo(
     TimeTicks timestamp,
     bool is_key_frame) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
+
+  if (UpdateTracksAndCheckIfChanged()) {
+    client_->onError("Amount of tracks in MediaStream has changed.");
+    return;
+  }
   if (!webm_muxer_)
     return;
   if (!webm_muxer_->OnEncodedVideo(params, std::move(encoded_data), timestamp,
@@ -286,6 +292,11 @@ void MediaRecorderHandler::OnEncodedAudio(
     std::unique_ptr<std::string> encoded_data,
     base::TimeTicks timestamp) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
+
+  if (UpdateTracksAndCheckIfChanged()) {
+    client_->onError("Amount of tracks in MediaStream has changed.");
+    return;
+  }
   if (!webm_muxer_)
     return;
   if (!webm_muxer_->OnEncodedAudio(params, std::move(encoded_data),
@@ -311,6 +322,41 @@ void MediaRecorderHandler::WriteData(base::StringPiece data) {
     slice_origin_timestamp_ = now;
   client_->writeData(data.data(), data.length(), last_in_slice,
                      (now - TimeTicks::UnixEpoch()).InMillisecondsF());
+}
+
+bool MediaRecorderHandler::UpdateTracksAndCheckIfChanged() {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks, audio_tracks;
+  media_stream_.videoTracks(video_tracks);
+  media_stream_.audioTracks(audio_tracks);
+
+  bool video_tracks_changed = video_tracks_.size() != video_tracks.size();
+  bool audio_tracks_changed = audio_tracks_.size() != audio_tracks.size();
+
+  if (!video_tracks_changed) {
+    for (size_t i = 0; i < video_tracks.size(); ++i) {
+      if (video_tracks_[i].id() != video_tracks[i].id()) {
+        video_tracks_changed = true;
+        break;
+      }
+    }
+  }
+  if (!video_tracks_changed && !audio_tracks_changed) {
+    for (size_t i = 0; i < audio_tracks.size(); ++i) {
+      if (audio_tracks_[i].id() != audio_tracks[i].id()) {
+        audio_tracks_changed = true;
+        break;
+      }
+    }
+  }
+
+  if (video_tracks_changed)
+    video_tracks_ = video_tracks;
+  if (audio_tracks_changed)
+    audio_tracks_ = audio_tracks;
+
+  return video_tracks_changed || audio_tracks_changed;
 }
 
 void MediaRecorderHandler::OnVideoFrameForTesting(

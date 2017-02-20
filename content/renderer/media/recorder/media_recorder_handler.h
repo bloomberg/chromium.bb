@@ -74,6 +74,9 @@ class CONTENT_EXPORT MediaRecorderHandler final
                       base::TimeTicks timestamp);
   void WriteData(base::StringPiece data);
 
+  // Updates |video_tracks_|,|audio_tracks_| and returns true if any changed.
+  bool UpdateTracksAndCheckIfChanged();
+
   void OnVideoFrameForTesting(const scoped_refptr<media::VideoFrame>& frame,
                               const base::TimeTicks& timestamp);
   void OnAudioBusForTesting(const media::AudioBus& audio_bus,
@@ -98,6 +101,8 @@ class CONTENT_EXPORT MediaRecorderHandler final
 
   bool recording_;
   blink::WebMediaStream media_stream_;  // The MediaStream being recorded.
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks_;
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks_;
 
   // |client_| is a weak pointer, and is valid for the lifetime of this object.
   blink::WebMediaRecorderHandlerClient* client_;

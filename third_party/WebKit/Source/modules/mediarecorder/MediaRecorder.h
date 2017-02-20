@@ -100,7 +100,6 @@ class MODULES_EXPORT MediaRecorder final
   void dispatchScheduledEvent();
 
   Member<MediaStream> m_stream;
-  size_t m_streamAmountOfTracks;
   String m_mimeType;
   bool m_stopped;
   int m_audioBitsPerSecond;
