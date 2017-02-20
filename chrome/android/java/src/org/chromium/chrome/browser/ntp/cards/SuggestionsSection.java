@@ -37,8 +37,6 @@ import java.util.Set;
 public class SuggestionsSection extends InnerNode {
     private static final String TAG = "NtpCards";
 
-    private static final Set<Integer> SECTION_DISMISSAL_GROUP = new HashSet<>(Arrays.asList(1, 2));
-
     private final Delegate mDelegate;
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final OfflinePageBridge mOfflinePageBridge;
@@ -489,14 +487,11 @@ public class SuggestionsSection extends InnerNode {
     private Set<Integer> getSectionDismissalRange() {
         if (hasSuggestions()) return Collections.emptySet();
 
-        if (!mMoreButton.isVisible()) {
-            assert getStartingOffsetForChild(mStatus) == 1;
-            return Collections.singleton(1);
-        }
+        int statusCardIndex = getStartingOffsetForChild(mStatus);
+        if (!mMoreButton.isVisible()) return Collections.singleton(statusCardIndex);
 
-        assert SECTION_DISMISSAL_GROUP.contains(getStartingOffsetForChild(mStatus));
-        assert SECTION_DISMISSAL_GROUP.contains(getStartingOffsetForChild(mMoreButton));
-        return SECTION_DISMISSAL_GROUP;
+        assert statusCardIndex + 1 == getStartingOffsetForChild(mMoreButton);
+        return new HashSet<>(Arrays.asList(statusCardIndex, statusCardIndex + 1));
     }
 
     public SuggestionsCategoryInfo getCategoryInfo() {

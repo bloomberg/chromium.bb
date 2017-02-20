@@ -118,6 +118,38 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
+    public void testGetDismissalGroupWithoutHeader() {
+        SuggestionsSection section = createSectionWithFetchAction(true);
+        section.setHeaderVisibility(false);
+
+        assertEquals(ItemViewType.STATUS, section.getItemViewType(0));
+        assertEquals(setOf(0, 1), section.getItemDismissalGroup(0));
+
+        assertEquals(ItemViewType.ACTION, section.getItemViewType(1));
+        assertEquals(setOf(0, 1), section.getItemDismissalGroup(1));
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testGetDismissalGroupWithoutAction() {
+        SuggestionsSection section = createSectionWithFetchAction(false);
+
+        assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
+        assertEquals(Collections.singleton(1), section.getItemDismissalGroup(1));
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testGetDismissalGroupActionAndHeader() {
+        SuggestionsSection section = createSectionWithFetchAction(false);
+        section.setHeaderVisibility(false);
+
+        assertEquals(ItemViewType.STATUS, section.getItemViewType(0));
+        assertEquals(Collections.singleton(0), section.getItemDismissalGroup(0));
+    }
+
+    @Test
+    @Feature({"Ntp"})
     public void testAddSuggestionsNotification() {
         final int suggestionCount = 5;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount,
