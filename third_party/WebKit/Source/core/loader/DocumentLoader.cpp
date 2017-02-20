@@ -227,15 +227,6 @@ Resource* DocumentLoader::startPreload(Resource::Type type,
   return resource;
 }
 
-void DocumentLoader::didRedirect(const KURL& oldURL, const KURL& newURL) {
-  timing().addRedirect(oldURL, newURL);
-
-  // If a redirection happens during a back/forward navigation, don't restore
-  // any state from the old HistoryItem. There is a provisional history item for
-  // back/forward navigation only. In the other case, clearing it is a no-op.
-  frameLoader().clearProvisionalHistoryItem();
-}
-
 void DocumentLoader::dispatchLinkHeaderPreloads(
     ViewportDescriptionWrapper* viewport,
     LinkLoader::MediaPreloadPolicy mediaPolicy) {
@@ -382,7 +373,13 @@ bool DocumentLoader::redirectReceived(
 
   DCHECK(timing().fetchStart());
   appendRedirect(requestURL);
-  didRedirect(redirectResponse.url(), requestURL);
+  timing().addRedirect(redirectResponse.url(), requestURL);
+
+  // If a redirection happens during a back/forward navigation, don't restore
+  // any state from the old HistoryItem. There is a provisional history item for
+  // back/forward navigation only. In the other case, clearing it is a no-op.
+  frameLoader().clearProvisionalHistoryItem();
+
   frameLoaderClient().dispatchDidReceiveServerRedirectForProvisionalLoad();
 
   return true;

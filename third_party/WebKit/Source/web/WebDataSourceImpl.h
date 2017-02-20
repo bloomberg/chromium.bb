@@ -71,7 +71,7 @@ class WebDataSourceImpl final : public DocumentLoader, public WebDataSource {
   void updateNavigation(double redirectStartTime,
                         double redirectEndTime,
                         double fetchStartTime,
-                        const WebVector<WebURL>& redirectChain) override;
+                        bool hasRedirect) override;
   void setSubresourceFilter(WebDocumentSubresourceFilter*) override;
 
   static WebNavigationType toWebNavigationType(NavigationType);

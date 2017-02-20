@@ -710,28 +710,23 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
         stream_override_->response.encoded_data_length -
         initial_info.encoded_data_length;
     info = stream_override_->response;
+
+    // Replay the redirects that happened during navigation.
+    DCHECK_EQ(stream_override_->redirect_responses.size(),
+              stream_override_->redirect_infos.size());
+    for (size_t i = 0; i < stream_override_->redirect_responses.size(); ++i) {
+      bool result = OnReceivedRedirect(stream_override_->redirect_infos[i],
+                                       stream_override_->redirect_responses[i]);
+      if (!result) {
+        NOTREACHED();
+        return;
+      }
+    }
   }
 
   WebURLResponse response;
   GURL url(request_.url());
   PopulateURLResponse(url, info, &response, request_.reportRawHeaders());
-
-  if (stream_override_.get()) {
-    CHECK(IsBrowserSideNavigationEnabled());
-    DCHECK(stream_override_->redirect_responses.size() ==
-           stream_override_->redirects.size());
-    for (size_t i = 0; i < stream_override_->redirects.size(); ++i) {
-      WebURLResponse previous_response;
-      // TODO(arthursonzogni) Once Devtool is supported by PlzNavigate, the
-      // |report_raw_header| argument must be checked.
-      WebURLLoaderImpl::PopulateURLResponse(
-          stream_override_->redirects[i],
-          stream_override_->redirect_responses[i],
-          &previous_response,
-          request_.reportRawHeaders());
-      response.appendRedirectResponse(previous_response);
-    }
-  }
 
   bool show_raw_listing = false;
   if (info.mime_type == "text/vnd.chromium.ftp-dir") {
@@ -1191,6 +1186,10 @@ WebURLRequest WebURLLoaderImpl::PopulateURLRequestForRedirect(
   new_request.setHTTPMethod(WebString::fromUTF8(redirect_info.new_method));
   if (redirect_info.new_method == old_method)
     new_request.setHTTPBody(request.httpBody());
+
+  new_request.setCheckForBrowserSideNavigation(
+      request.checkForBrowserSideNavigation());
+
   return new_request;
 }
 

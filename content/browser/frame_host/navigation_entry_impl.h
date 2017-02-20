@@ -186,6 +186,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   StartNavigationParams ConstructStartNavigationParams() const;
   RequestNavigationParams ConstructRequestNavigationParams(
       const FrameNavigationEntry& frame_entry,
+      const GURL& original_url,
+      const std::string& original_method,
       bool is_history_navigation_in_new_child,
       const std::map<std::string, bool>& subframe_unique_names,
       bool has_committed_real_load,

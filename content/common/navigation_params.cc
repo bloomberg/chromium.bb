@@ -148,6 +148,8 @@ RequestNavigationParams::RequestNavigationParams()
 RequestNavigationParams::RequestNavigationParams(
     bool is_overriding_user_agent,
     const std::vector<GURL>& redirects,
+    const GURL& original_url,
+    const std::string& original_method,
     bool can_load_local_resources,
     const PageState& page_state,
     int nav_entry_id,
@@ -163,6 +165,8 @@ RequestNavigationParams::RequestNavigationParams(
     bool has_user_gesture)
     : is_overriding_user_agent(is_overriding_user_agent),
       redirects(redirects),
+      original_url(original_url),
+      original_method(original_method),
       can_load_local_resources(can_load_local_resources),
       page_state(page_state),
       nav_entry_id(nav_entry_id),
@@ -178,8 +182,7 @@ RequestNavigationParams::RequestNavigationParams(
       should_create_service_worker(false),
       service_worker_provider_id(kInvalidServiceWorkerProviderId),
       appcache_host_id(kAppCacheNoHostId),
-      has_user_gesture(has_user_gesture) {
-}
+      has_user_gesture(has_user_gesture) {}
 
 RequestNavigationParams::RequestNavigationParams(
     const RequestNavigationParams& other) = default;

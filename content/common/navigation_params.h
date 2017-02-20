@@ -22,6 +22,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_response.h"
+#include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -228,6 +229,8 @@ struct CONTENT_EXPORT RequestNavigationParams {
   RequestNavigationParams();
   RequestNavigationParams(bool is_overriding_user_agent,
                           const std::vector<GURL>& redirects,
+                          const GURL& original_url,
+                          const std::string& original_method,
                           bool can_load_local_resources,
                           const PageState& page_state,
                           int nav_entry_id,
@@ -253,6 +256,15 @@ struct CONTENT_EXPORT RequestNavigationParams {
 
   // The ResourceResponseInfos received during redirects.
   std::vector<ResourceResponseInfo> redirect_response;
+
+  // PlzNavigate
+  // The RedirectInfos received during redirects.
+  std::vector<net::RedirectInfo> redirect_infos;
+
+  // PlzNavigate
+  // The original URL & method for this navigation.
+  GURL original_url;
+  std::string original_method;
 
   // Whether or not this url should be allowed to access local file://
   // resources.

@@ -561,15 +561,28 @@ bool IsTopLevelNavigation(WebFrame* frame) {
 
 WebURLRequest CreateURLRequestForNavigation(
     const CommonNavigationParams& common_params,
+    const RequestNavigationParams& request_params,
     std::unique_ptr<StreamOverrideParameters> stream_override,
     bool is_view_source_mode_enabled,
-    bool is_same_document_navigation,
-    int nav_entry_id) {
-  WebURLRequest request(common_params.url);
+    bool is_same_document_navigation) {
+  // PlzNavigate: use the original navigation url to construct the
+  // WebURLRequest. The WebURLloaderImpl will replay the redirects afterwards
+  // and will eventually commit the final url.
+  const GURL navigation_url = IsBrowserSideNavigationEnabled() &&
+                                      !request_params.original_url.is_empty()
+                                  ? request_params.original_url
+                                  : common_params.url;
+  const std::string navigation_method =
+      IsBrowserSideNavigationEnabled() &&
+              !request_params.original_method.empty()
+          ? request_params.original_method
+          : common_params.method;
+  WebURLRequest request(navigation_url);
+  request.setHTTPMethod(WebString::fromUTF8(navigation_method));
+
   if (is_view_source_mode_enabled)
     request.setCachePolicy(WebCachePolicy::ReturnCacheDataElseLoad);
 
-  request.setHTTPMethod(WebString::fromUTF8(common_params.method));
   if (common_params.referrer.url.is_valid()) {
     WebString web_referrer = WebSecurityPolicy::generateReferrerHeader(
         common_params.referrer.policy, common_params.url,
@@ -587,7 +600,8 @@ WebURLRequest CreateURLRequestForNavigation(
 
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_stream_override(std::move(stream_override));
-  extra_data->set_navigation_initiated_by_renderer(nav_entry_id == 0);
+  extra_data->set_navigation_initiated_by_renderer(
+      request_params.nav_entry_id == 0);
   request.setExtraData(extra_data);
 
   // Set the ui timestamp for this navigation. Currently the timestamp here is
@@ -3347,7 +3361,7 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
   bool content_initiated = !pending_navigation_params_.get();
 
   // Make sure any previous redirect URLs end up in our new data source.
-  if (pending_navigation_params_.get()) {
+  if (pending_navigation_params_.get() && !IsBrowserSideNavigationEnabled()) {
     for (const auto& i :
          pending_navigation_params_->request_params.redirects) {
       datasource->appendRedirect(i);
@@ -3404,12 +3418,10 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
         navigation_state->request_params().navigation_timing.redirect_end);
     double fetch_start = ConvertToBlinkTime(
         navigation_state->request_params().navigation_timing.fetch_start);
-    std::vector<GURL> redirectChain =
-        navigation_state->request_params().redirects;
-    redirectChain.push_back(navigation_state->common_params().url);
 
-    datasource->updateNavigation(redirect_start, redirect_end, fetch_start,
-                                 redirectChain);
+    datasource->updateNavigation(
+        redirect_start, redirect_end, fetch_start,
+        !navigation_state->request_params().redirects.empty());
     // TODO(clamy) We need to provide additional timing values for the
     // Navigation Timing API to work with browser-side navigations.
     // UnloadEventStart and UnloadEventEnd are still missing.
@@ -5140,6 +5152,7 @@ void RenderFrameImpl::OnCommitNavigation(
   stream_override->response = response;
   stream_override->redirects = request_params.redirects;
   stream_override->redirect_responses = request_params.redirect_response;
+  stream_override->redirect_infos = request_params.redirect_infos;
 
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
@@ -5183,11 +5196,11 @@ void RenderFrameImpl::OnFailedNavigation(
   // Send the provisional load failure.
   blink::WebURLError error =
       CreateWebURLError(common_params.url, has_stale_copy_in_cache, error_code);
-  WebURLRequest failed_request = CreateURLRequestForNavigation(
-      common_params, std::unique_ptr<StreamOverrideParameters>(),
-      frame_->isViewSourceModeEnabled(),
-      false,  // is_same_document_navigation
-      request_params.nav_entry_id);
+  WebURLRequest failed_request =
+      CreateURLRequestForNavigation(common_params, request_params,
+                                    std::unique_ptr<StreamOverrideParameters>(),
+                                    frame_->isViewSourceModeEnabled(),
+                                    false);  // is_same_document_navigation
 
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
     // The browser expects this frame to be loading an error page. Inform it
@@ -5890,9 +5903,8 @@ void RenderFrameImpl::NavigateInternal(
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type);
 
   WebURLRequest request = CreateURLRequestForNavigation(
-      common_params, std::move(stream_params),
-      frame_->isViewSourceModeEnabled(), is_same_document,
-      request_params.nav_entry_id);
+      common_params, request_params, std::move(stream_params),
+      frame_->isViewSourceModeEnabled(), is_same_document);
   request.setFrameType(IsTopLevelNavigation(frame_)
                            ? blink::WebURLRequest::FrameTypeTopLevel
                            : blink::WebURLRequest::FrameTypeNested);

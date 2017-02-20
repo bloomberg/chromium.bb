@@ -455,7 +455,8 @@ bool NavigatorImpl::NavigateToEntry(
               previews_state, navigation_start),
           entry.ConstructStartNavigationParams(),
           entry.ConstructRequestNavigationParams(
-              frame_entry, is_history_navigation_in_new_child,
+              frame_entry, GURL(), std::string(),
+              is_history_navigation_in_new_child,
               entry.GetSubframeUniqueNames(frame_tree_node),
               frame_tree_node->has_committed_real_load(),
               controller_->GetPendingEntryIndex() == -1,

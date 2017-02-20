@@ -206,10 +206,12 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   // the renderer in the first place as part of OpenURL.
   bool browser_initiated = !entry.is_renderer_initiated();
 
+  CommonNavigationParams common_params = entry.ConstructCommonNavigationParams(
+      frame_entry, request_body, dest_url, dest_referrer, navigation_type,
+      previews_state, navigation_start);
+
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node, entry.ConstructCommonNavigationParams(
-                           frame_entry, request_body, dest_url, dest_referrer,
-                           navigation_type, previews_state, navigation_start),
+      frame_tree_node, common_params,
       BeginNavigationParams(entry.extra_headers(), net::LOAD_NORMAL,
                             false,  // has_user_gestures
                             false,  // skip_service_worker
@@ -217,7 +219,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
                             blink::WebMixedContentContextType::Blockable,
                             initiator),
       entry.ConstructRequestNavigationParams(
-          frame_entry, is_history_navigation_in_new_child,
+          frame_entry, common_params.url, common_params.method,
+          is_history_navigation_in_new_child,
           entry.GetSubframeUniqueNames(frame_tree_node),
           frame_tree_node->has_committed_real_load(),
           controller->GetPendingEntryIndex() == -1,
@@ -254,8 +257,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // renderer and sent to the browser instead of being measured here.
   // TODO(clamy): The pending history list offset should be properly set.
   RequestNavigationParams request_params(
-      false,                          // is_overriding_user_agent
-      std::vector<GURL>(),            // redirects
+      false,                // is_overriding_user_agent
+      std::vector<GURL>(),  // redirects
+      common_params.url, common_params.method,
       false,                          // can_load_local_resources
       PageState(),                    // page_state
       0,                              // nav_entry_id
@@ -432,6 +436,7 @@ void NavigationRequest::OnRequestRedirected(
   request_params_.navigation_timing.fetch_start = base::TimeTicks::Now();
 
   request_params_.redirect_response.push_back(response->head);
+  request_params_.redirect_infos.push_back(redirect_info);
 
   request_params_.redirects.push_back(common_params_.url);
   common_params_.url = redirect_info.new_url;

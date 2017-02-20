@@ -702,6 +702,8 @@ StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
 
 RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
     const FrameNavigationEntry& frame_entry,
+    const GURL& original_url,
+    const std::string& original_method,
     bool is_history_navigation_in_new_child,
     const std::map<std::string, bool>& subframe_unique_names,
     bool has_committed_real_load,
@@ -733,8 +735,8 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
   user_gesture = has_user_gesture();
 #endif
   RequestNavigationParams request_params(
-      GetIsOverridingUserAgent(), redirects, GetCanLoadLocalResources(),
-      frame_entry.page_state(), GetUniqueID(),
+      GetIsOverridingUserAgent(), redirects, original_url, original_method,
+      GetCanLoadLocalResources(), frame_entry.page_state(), GetUniqueID(),
       is_history_navigation_in_new_child, subframe_unique_names,
       has_committed_real_load, intended_as_new_entry, pending_offset_to_send,
       current_offset_to_send, current_length_to_send, IsViewSourceMode(),

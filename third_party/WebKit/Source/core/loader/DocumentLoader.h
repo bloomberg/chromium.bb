@@ -190,8 +190,6 @@ class CORE_EXPORT DocumentLoader
                  const SubstituteData&,
                  ClientRedirectPolicy);
 
-  void didRedirect(const KURL& oldURL, const KURL& newURL);
-
   Vector<KURL> m_redirectChain;
 
  private:

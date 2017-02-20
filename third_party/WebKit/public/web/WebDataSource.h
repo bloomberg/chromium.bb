@@ -112,7 +112,7 @@ class WebDataSource {
   virtual void updateNavigation(double redirectStartTime,
                                 double redirectEndTime,
                                 double fetchStartTime,
-                                const WebVector<WebURL>& redirectChain) = 0;
+                                bool hasRedirect) = 0;
 
   // Allows the embedder to inject a filter that will be consulted for each
   // subsequent subresource load, and gets the final say in deciding whether
