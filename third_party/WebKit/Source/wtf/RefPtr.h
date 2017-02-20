@@ -70,7 +70,7 @@ class RefPtr {
   ALWAYS_INLINE ~RefPtr() { derefIfNotNull(m_ptr); }
 
   ALWAYS_INLINE T* get() const { return m_ptr; }
-
+  T* leakRef() WARN_UNUSED_RESULT;
   void clear();
   PassRefPtr<T> release() {
     PassRefPtr<T> tmp = adoptRef(m_ptr);
@@ -109,6 +109,13 @@ template <typename U>
 inline RefPtr<T>::RefPtr(const PassRefPtr<U>& o,
                          EnsurePtrConvertibleArgDefn(U, T))
     : m_ptr(o.leakRef()) {}
+
+template <typename T>
+inline T* RefPtr<T>::leakRef() {
+  T* ptr = m_ptr;
+  m_ptr = nullptr;
+  return ptr;
+}
 
 template <typename T>
 inline void RefPtr<T>::clear() {

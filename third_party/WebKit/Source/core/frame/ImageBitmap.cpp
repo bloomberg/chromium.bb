@@ -765,7 +765,7 @@ static sk_sp<SkImage> scaleSkImage(sk_sp<SkImage> skImage,
                                    [](const void*, void* pixels) {
                                      static_cast<Uint8Array*>(pixels)->deref();
                                    },
-                                   resizedPixels.release().leakRef());
+                                   resizedPixels.leakRef());
   }
 
   RefPtr<Float32Array> resizedPixels =
@@ -778,7 +778,7 @@ static sk_sp<SkImage> scaleSkImage(sk_sp<SkImage> skImage,
                                  [](const void*, void* pixels) {
                                    static_cast<Float32Array*>(pixels)->deref();
                                  },
-                                 resizedPixels.release().leakRef());
+                                 resizedPixels.leakRef());
 }
 
 ImageBitmap::ImageBitmap(ImageData* data,

@@ -126,7 +126,7 @@ template <typename T>
 template <typename U>
 inline PassRefPtr<T>::PassRefPtr(RefPtr<U>&& o,
                                  EnsurePtrConvertibleArgDefn(U, T))
-    : m_ptr(o.release().leakRef()) {}
+    : m_ptr(o.leakRef()) {}
 
 template <typename T>
 inline T* PassRefPtr<T>::leakRef() const {
