@@ -345,7 +345,6 @@ blink_core_sources("css") {
     "parser/MediaQueryParser.cpp",
     "parser/SizesAttributeParser.cpp",
     "parser/SizesCalcParser.cpp",
-    "properties/CSSPropertyAPI.h",
     "properties/CSSPropertyAPIAlignItems.cpp",
     "properties/CSSPropertyAPIAlignOrJustifyContent.cpp",
     "properties/CSSPropertyAPIAlignOrJustifySelf.cpp",

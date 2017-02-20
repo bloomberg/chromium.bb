@@ -32,26 +32,15 @@ class CSSPropertyAPI {
   STATIC_ONLY(CSSPropertyAPI);
 
  public:
-  // Parses a single CSS property and returns the corresponding CSSValue. If the
-  // input is invalid it returns nullptr.
-  static const CSSValue* parseSingleValue(CSSParserTokenRange&,
-                                          const CSSParserContext*) {
-    // No code should reach here, since properties either have their own
-    // implementations of this method or store nullptr in their descriptor.
-    NOTREACHED();
-    return nullptr;
-  }
-
-  static bool parseShorthand(bool,
-                             CSSParserTokenRange&,
-                             const CSSParserContext*) {
-    // No code should reach here, since properties either have their own
-    // implementations of this method or store nullptr in their descriptor.
-    NOTREACHED();
-    return false;
-  }
+  {% for api_method_name in ordered_api_method_names %}
+  {% set api_method = all_api_methods[api_method_name] %}
+  {% if api_method.description %}
+  // {{api_method.description}}
+  {% endif %}
+  static {{api_method.return_type}} {{api_method_name}}{{api_method.parameters}};
+  {% endfor %}
 };
 
-}  // namespace blink
+} // namespace blink
 
-#endif  // CSSPropertyAPI_h
+#endif // CSSPropertyAPI_h

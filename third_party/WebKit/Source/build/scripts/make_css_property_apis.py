@@ -14,7 +14,7 @@ from json5_generator import Json5File
 from make_style_builder import StyleBuilderWriter
 
 
-class ApiMethod(namedtuple('ApiMethod', 'return_type,parameters')):
+class ApiMethod(namedtuple('ApiMethod', 'return_type,parameters,description')):
     pass
 
 
@@ -44,6 +44,7 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
 
         self._outputs = {
             'CSSPropertyDescriptor.cpp': self.generate_property_descriptor_cpp,
+            'CSSPropertyAPI.h': self.generate_property_api,
         }
 
         # Stores a map of API method name -> (return_type, parameters)
@@ -53,9 +54,11 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
         self.ordered_api_method_names = []
         for api_method in self.css_property_api_methods.name_dictionaries:
             self.ordered_api_method_names.append(api_method['name'])
+            # TODO(shend): wrap description to 72 chars
             self.all_api_methods[api_method['name']] = ApiMethod(
                 return_type=api_method['return_type'],
                 parameters=api_method['parameters'],
+                description=api_method['description'],
             )
 
         # Temporary map of API classname to list of propertyIDs that the API class is for.
@@ -88,6 +91,13 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
         return {
             'api_classes': self._api_classes,
             'ordered_api_method_names': self.ordered_api_method_names,
+        }
+
+    @template_expander.use_jinja('CSSPropertyAPI.h.tmpl')
+    def generate_property_api(self):
+        return {
+            'ordered_api_method_names': self.ordered_api_method_names,
+            'all_api_methods': self.all_api_methods,
         }
 
     # Provides a function object given the classname of the property.
