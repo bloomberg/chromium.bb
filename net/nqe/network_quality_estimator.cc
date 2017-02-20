@@ -411,7 +411,7 @@ void NetworkQualityEstimator::NotifyStartTransaction(
     base::TimeTicks now = tick_clock_->NowTicks();
     last_main_frame_request_ = now;
 
-    ComputeEffectiveConnectionType();
+    MaybeComputeEffectiveConnectionType();
     effective_connection_type_at_last_main_frame_ = effective_connection_type_;
     estimated_quality_at_last_main_frame_ = network_quality_;
 
@@ -443,6 +443,7 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
   }
 
   if (request.load_flags() & LOAD_MAIN_FRAME_DEPRECATED) {
+    ComputeEffectiveConnectionType();
     RecordMetricsOnMainFrameRequest();
     MaybeQueryExternalEstimateProvider();
   }
