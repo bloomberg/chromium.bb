@@ -538,9 +538,8 @@ void addKeyframeToCurve(CompositorTransformAnimationCurve& curve,
 }
 
 template <typename PlatformAnimationCurveType>
-void addKeyframesToCurve(
-    PlatformAnimationCurveType& curve,
-    const AnimatableValuePropertySpecificKeyframeVector& keyframes) {
+void addKeyframesToCurve(PlatformAnimationCurveType& curve,
+                         const PropertySpecificKeyframeVector& keyframes) {
   auto* lastKeyframe = keyframes.back().get();
   for (const auto& keyframe : keyframes) {
     const TimingFunction* keyframeTimingFunction = 0;

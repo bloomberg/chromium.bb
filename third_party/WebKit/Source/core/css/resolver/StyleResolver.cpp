@@ -41,6 +41,7 @@
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/LegacyStyleInterpolation.h"
+#include "core/animation/TransitionInterpolation.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/animation/css/CSSAnimations.h"
@@ -1181,9 +1182,10 @@ void StyleResolver::applyAnimatedProperties(
       CSSInterpolationTypesMap map(state.document().propertyRegistry());
       InterpolationEnvironment environment(map, state);
       InvalidatableInterpolation::applyStack(entry.value, environment);
+    } else if (interpolation.isTransitionInterpolation()) {
+      toTransitionInterpolation(interpolation).apply(state);
     } else {
-      // TODO(alancutter): Remove this old code path once animations have
-      // completely migrated to InterpolationTypes.
+      // TODO(alancutter): Move CustomCompositorAnimations off AnimatableValues.
       toLegacyStyleInterpolation(interpolation).apply(state);
     }
   }

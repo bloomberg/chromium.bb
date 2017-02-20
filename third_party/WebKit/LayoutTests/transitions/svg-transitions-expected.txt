@@ -8,11 +8,11 @@ PASS - "stroke" property for "rect2" element at 1s saw something close to: 127,0
 PASS - "stroke-dasharray" property for "rect2" element at 1s saw something close to: 15,15
 PASS - "stroke-width" property for "rect4" element at 1s saw something close to: 8
 PASS - "stroke-width" property for "rect5" element at 1s saw something close to: 5
-PASS - "stroke-dasharray" property for "rect5" element at 1s saw something close to: 10,10
+PASS - "stroke-dasharray" property for "rect5" element at 1s saw something close to: 20
 PASS - "stroke-width" property for "rect6" element at 1s saw something close to: 15
 PASS - "stroke-dasharray" property for "rect6" element at 1s saw something close to: 15,15,20,12.5,17.5,17.5
 FAIL - "fill" property for "rect7" element at 1s expected: 0,0,127 but saw: url("#invalid") rgb(0, 0, 255)
-PASS - "stroke-dasharray" property for "rect7" element at 1s saw something close to: 10,10
+PASS - "stroke-dasharray" property for "rect7" element at 1s saw something close to: none
 PASS - "stop-color" property for "stop1" element at 1s saw something close to: 127,127,0
 PASS - "stop-opacity" property for "stop1" element at 1s saw something close to: 0.75
 PASS - "stroke-miterlimit" property for "polyline1" element at 1s saw something close to: 11

@@ -163,15 +163,15 @@ class CSSAnimationUpdate final {
   }
 
   void startTransition(CSSPropertyID id,
-                       const AnimatableValue* from,
-                       const AnimatableValue* to,
+                       RefPtr<AnimatableValue> from,
+                       RefPtr<AnimatableValue> to,
                        PassRefPtr<AnimatableValue> reversingAdjustedStartValue,
                        double reversingShorteningFactor,
                        const InertEffect& effect) {
     NewTransition newTransition;
     newTransition.id = id;
-    newTransition.from = from;
-    newTransition.to = to;
+    newTransition.from = std::move(from);
+    newTransition.to = std::move(to);
     newTransition.reversingAdjustedStartValue = reversingAdjustedStartValue;
     newTransition.reversingShorteningFactor = reversingShorteningFactor;
     newTransition.effect = &effect;
@@ -209,8 +209,8 @@ class CSSAnimationUpdate final {
     DEFINE_INLINE_TRACE() { visitor->trace(effect); }
 
     CSSPropertyID id;
-    const AnimatableValue* from;
-    const AnimatableValue* to;
+    RefPtr<AnimatableValue> from;
+    RefPtr<AnimatableValue> to;
     RefPtr<AnimatableValue> reversingAdjustedStartValue;
     double reversingShorteningFactor;
     Member<const InertEffect> effect;

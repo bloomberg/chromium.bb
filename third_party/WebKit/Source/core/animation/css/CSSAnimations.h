@@ -139,8 +139,8 @@ class CSSAnimations final {
     DEFINE_INLINE_TRACE() { visitor->trace(animation); }
 
     Member<Animation> animation;
-    const AnimatableValue* from;
-    const AnimatableValue* to;
+    RefPtr<AnimatableValue> from;
+    RefPtr<AnimatableValue> to;
     RefPtr<AnimatableValue> reversingAdjustedStartValue;
     double reversingShorteningFactor;
   };

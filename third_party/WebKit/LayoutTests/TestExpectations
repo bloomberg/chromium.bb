@@ -2092,6 +2092,9 @@ crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-res
 
 crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
 
+crbug.com/681424 compositing/reflections/nested-reflection-anchor-point.html [ NeedsRebaseline ]
+crbug.com/681424 compositing/reflections/nested-reflection-animated.html [ NeedsRebaseline ]
+
 # [css-grid]
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]

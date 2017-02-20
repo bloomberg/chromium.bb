@@ -3,7 +3,6 @@
 <script src="../resources/testharnessreport.js"></script>
 <style>
 #target {
-  transition: 1s;
   border-style: solid;
   outline-style: solid;
   column-rule-style: solid;
@@ -72,6 +71,7 @@ setup(() => {
     target.style[property] = '10px';
     expected[property] = getComputedStyle(target)[property];
   }
+  target.style.transition = '1s';
   internals.setZoomFactor(2);
 });
 
