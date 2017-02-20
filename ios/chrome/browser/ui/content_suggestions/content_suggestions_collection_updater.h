@@ -7,19 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 
+@class CollectionViewItem;
 @protocol ContentSuggestionsDataSource;
 @class ContentSuggestionsViewController;
-
-// Enum defining the ItemType of this ContentSuggestionsCollectionUpdater.
-typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeText = kItemTypeEnumZero,
-  ItemTypeArticle,
-  ItemTypeExpand,
-  ItemTypeStack,
-  ItemTypeFavicon,
-};
 
 // Updater for a CollectionViewController populating it with some items and
 // handling the items addition.
@@ -45,6 +37,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Returns whether the section should use the default, non-card style.
 - (BOOL)shouldUseCustomStyleForSection:(NSInteger)section;
+
+// Returns the ContentSuggestionType associated with this item.
+- (ContentSuggestionType)contentSuggestionTypeForItem:(CollectionViewItem*)item;
 
 @end
 

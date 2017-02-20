@@ -71,14 +71,9 @@ const NSTimeInterval kAnimationDuration = 0.35;
 
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  switch (item.type) {
-    case ItemTypeStack:
-      [self.suggestionCommandHandler openReadingList];
-      break;
-    case ItemTypeArticle:
+  switch ([self.collectionUpdater contentSuggestionTypeForItem:item]) {
+    case ContentSuggestionTypeArticle:
       [self openArticle:item];
-      break;
-    default:
       break;
   }
 }

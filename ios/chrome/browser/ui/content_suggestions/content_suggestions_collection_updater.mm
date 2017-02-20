@@ -8,12 +8,14 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_expandable_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #include "url/gurl.h"
@@ -22,9 +24,71 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Enum defining the ItemType of this ContentSuggestionsCollectionUpdater.
+typedef NS_ENUM(NSInteger, ItemType) {
+  ItemTypeText = kItemTypeEnumZero,
+  ItemTypeArticle,
+  ItemTypeExpand,
+  ItemTypeStack,
+  ItemTypeFavicon,
+};
+
+typedef NS_ENUM(NSInteger, SectionIdentifier) {
+  SectionIdentifierBookmarks = kSectionIdentifierEnumZero,
+  SectionIdentifierArticles,
+  SectionIdentifierDefault,
+};
+
+ItemType ItemTypeForContentSuggestionType(ContentSuggestionType type) {
+  switch (type) {
+    case ContentSuggestionTypeArticle:
+      return ItemTypeArticle;
+  }
+}
+
+ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
+  if (type == ItemTypeArticle)
+    return ContentSuggestionTypeArticle;
+  // Add new type here
+
+  // Default type.
+  return ContentSuggestionTypeArticle;
+}
+
+// Returns the section identifier corresponding to the section |info|.
+SectionIdentifier SectionIdentifierForInfo(
+    ContentSuggestionsSectionInformation* info) {
+  switch (info.sectionID) {
+    case ContentSuggestionsSectionBookmarks:
+      return SectionIdentifierBookmarks;
+
+    case ContentSuggestionsSectionArticles:
+      return SectionIdentifierArticles;
+
+    case ContentSuggestionsSectionUnknown:
+      return SectionIdentifierDefault;
+  }
+}
+
+}  // namespace
+
 @interface ContentSuggestionsCollectionUpdater ()<ContentSuggestionsDataSink>
 
 @property(nonatomic, weak) id<ContentSuggestionsDataSource> dataSource;
+@property(nonatomic, strong)
+    NSMutableDictionary<NSNumber*, ContentSuggestionsSectionInformation*>*
+        sectionInfoBySectionIdentifier;
+
+// Reloads all the data from the data source, deleting all the current items.
+- (void)reloadData;
+// Adds a new section if needed and returns the section identifier.
+- (NSInteger)addSectionIfNeeded:
+    (ContentSuggestionsSectionInformation*)sectionInformation;
+// Resets the models, removing the current CollectionViewItem and the
+// SectionInfo.
+- (void)resetModels;
 
 @end
 
@@ -32,6 +96,7 @@
 
 @synthesize collectionViewController = _collectionViewController;
 @synthesize dataSource = _dataSource;
+@synthesize sectionInfoBySectionIdentifier = _sectionInfoBySectionIdentifier;
 
 - (instancetype)initWithDataSource:
     (id<ContentSuggestionsDataSource>)dataSource {
@@ -48,74 +113,14 @@
 - (void)setCollectionViewController:
     (ContentSuggestionsViewController*)collectionViewController {
   _collectionViewController = collectionViewController;
-  [collectionViewController loadModel];
-  CollectionViewModel* model = collectionViewController.collectionViewModel;
 
-  // TODO(crbug.com/686728): Load the data with the dataSource instead of hard
-  // coded value.
-
-  NSInteger sectionIdentifier = kSectionIdentifierEnumZero;
-
-  // Stack Item.
-  [model addSectionWithIdentifier:sectionIdentifier];
-  [model addItem:[[ContentSuggestionsStackItem alloc]
-                     initWithType:ItemTypeStack
-                            title:@"The title"
-                         subtitle:@"The subtitle"]
-      toSectionWithIdentifier:sectionIdentifier++];
-
-  // Favicon Item.
-  [model addSectionWithIdentifier:sectionIdentifier];
-  ContentSuggestionsFaviconItem* faviconItem =
-      [[ContentSuggestionsFaviconItem alloc] initWithType:ItemTypeFavicon];
-  for (NSInteger i = 0; i < 6; i++) {
-    [faviconItem addFavicon:[UIImage imageNamed:@"bookmark_gray_star_large"]
-                  withTitle:@"Super website! Incredible!"];
-  }
-  faviconItem.delegate = _collectionViewController;
-  [model addItem:faviconItem toSectionWithIdentifier:sectionIdentifier++];
-
-  for (NSInteger i = 0; i < 3; i++) {
-    [model addSectionWithIdentifier:sectionIdentifier];
-
-    // Standard Item.
-    [model addItem:[[ContentSuggestionsItem alloc] initWithType:ItemTypeText
-                                                          title:@"The title"
-                                                       subtitle:@"The subtitle"]
-        toSectionWithIdentifier:sectionIdentifier];
-
-    // Article Item.
-    [model addItem:[[ContentSuggestionsArticleItem alloc]
-                       initWithType:ItemTypeArticle
-                              title:@"Title of an Article"
-                           subtitle:@"This is the subtitle of an article, can "
-                                    @"spawn on multiple lines"
-                              image:[UIImage imageNamed:@"distillation_success"]
-                                url:GURL()]
-        toSectionWithIdentifier:sectionIdentifier];
-
-    // Expandable Item.
-    SuggestionsExpandableItem* expandableItem =
-        [[SuggestionsExpandableItem alloc]
-            initWithType:ItemTypeExpand
-                   title:@"Title of an Expandable Article"
-                subtitle:@"This Article can be expanded to display "
-                         @"additional information or interaction "
-                         @"options"
-                   image:[UIImage imageNamed:@"distillation_fail"]
-              detailText:@"Details shown only when the article is "
-                         @"expanded. It can be displayed on "
-                         @"multiple lines."];
-    expandableItem.delegate = _collectionViewController;
-    [model addItem:expandableItem toSectionWithIdentifier:sectionIdentifier];
-    sectionIdentifier++;
-  }
+  [self reloadData];
 }
 
 #pragma mark - ContentSuggestionsDataSink
 
 - (void)dataAvailable {
-  // TODO(crbug.com/686728): Get the new data from the DataSource.
+  [self reloadData];
 }
 
 #pragma mark - Public methods
@@ -123,40 +128,98 @@
 - (void)addTextItem:(NSString*)title
            subtitle:(NSString*)subtitle
           toSection:(NSInteger)inputSection {
-  DCHECK(_collectionViewController);
+  DCHECK(self.collectionViewController);
   ContentSuggestionsItem* item =
       [[ContentSuggestionsItem alloc] initWithType:ItemTypeText
                                              title:title
                                           subtitle:subtitle];
   NSInteger sectionIdentifier = kSectionIdentifierEnumZero + inputSection;
   NSInteger sectionIndex = inputSection;
-  CollectionViewModel* model = _collectionViewController.collectionViewModel;
+  CollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
   if ([model numberOfSections] <= inputSection) {
     sectionIndex = [model numberOfSections];
     sectionIdentifier = kSectionIdentifierEnumZero + sectionIndex;
-    [_collectionViewController.collectionView performBatchUpdates:^{
-      [_collectionViewController.collectionViewModel
+    [self.collectionViewController.collectionView performBatchUpdates:^{
+      [self.collectionViewController.collectionViewModel
           addSectionWithIdentifier:sectionIdentifier];
-      [_collectionViewController.collectionView
+      [self.collectionViewController.collectionView
           insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]];
     }
-                                                       completion:nil];
+                                                           completion:nil];
   }
   NSInteger numberOfItemsInSection =
       [model numberOfItemsInSection:sectionIndex];
-  [_collectionViewController.collectionViewModel addItem:item
-                                 toSectionWithIdentifier:sectionIdentifier];
-  [_collectionViewController.collectionView performBatchUpdates:^{
-    [_collectionViewController.collectionView
+  [self.collectionViewController.collectionViewModel addItem:item
+                                     toSectionWithIdentifier:sectionIdentifier];
+  [self.collectionViewController.collectionView performBatchUpdates:^{
+    [self.collectionViewController.collectionView
         insertItemsAtIndexPaths:@[ [NSIndexPath
                                     indexPathForRow:numberOfItemsInSection
                                           inSection:sectionIndex] ]];
   }
-                                                     completion:nil];
+                                                         completion:nil];
 }
 
 - (BOOL)shouldUseCustomStyleForSection:(NSInteger)section {
-  return section == 0 || section == 1;
+  NSNumber* identifier = @([self.collectionViewController.collectionViewModel
+      sectionIdentifierForSection:section]);
+  ContentSuggestionsSectionInformation* sectionInformation =
+      self.sectionInfoBySectionIdentifier[identifier];
+  return sectionInformation.layout == ContentSuggestionsSectionLayoutCustom;
+}
+
+- (ContentSuggestionType)contentSuggestionTypeForItem:
+    (CollectionViewItem*)item {
+  return ContentSuggestionTypeForItemType(item.type);
+}
+
+#pragma mark - Private methods
+
+- (void)reloadData {
+  [self resetModels];
+  CollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+
+  NSArray<ContentSuggestion*>* suggestions = [self.dataSource allSuggestions];
+
+  for (ContentSuggestion* suggestion in suggestions) {
+    NSInteger sectionIdentifier = [self addSectionIfNeeded:suggestion.section];
+    ContentSuggestionsArticleItem* articleItem =
+        [[ContentSuggestionsArticleItem alloc]
+            initWithType:ItemTypeForContentSuggestionType(suggestion.type)
+                   title:suggestion.title
+                subtitle:suggestion.text
+                   image:suggestion.image
+                     url:suggestion.url];
+
+    [model addItem:articleItem toSectionWithIdentifier:sectionIdentifier];
+  }
+
+  if ([self.collectionViewController isViewLoaded]) {
+    [self.collectionViewController.collectionView reloadData];
+  }
+}
+
+- (NSInteger)addSectionIfNeeded:
+    (ContentSuggestionsSectionInformation*)sectionInformation {
+  NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInformation);
+
+  CollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+  if (![model hasSectionForSectionIdentifier:sectionIdentifier]) {
+    [model addSectionWithIdentifier:sectionIdentifier];
+    self.sectionInfoBySectionIdentifier[@(sectionIdentifier)] =
+        sectionInformation;
+    [self.sectionInfoBySectionIdentifier setObject:sectionInformation
+                                            forKey:@(sectionIdentifier)];
+  }
+  return sectionIdentifier;
+}
+
+- (void)resetModels {
+  [self.collectionViewController loadModel];
+  self.sectionInfoBySectionIdentifier = [[NSMutableDictionary alloc] init];
 }
 
 @end
