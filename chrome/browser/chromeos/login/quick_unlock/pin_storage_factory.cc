@@ -12,6 +12,7 @@
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
+namespace quick_unlock {
 
 // static
 PinStorage* PinStorageFactory::GetForProfile(Profile* profile) {
@@ -55,4 +56,5 @@ KeyedService* PinStorageFactory::BuildServiceInstanceFor(
   return new PinStorage(Profile::FromBrowserContext(context)->GetPrefs());
 }
 
+}  // namespace quick_unlock
 }  // namespace chromeos

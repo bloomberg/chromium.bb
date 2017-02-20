@@ -113,7 +113,8 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
       // strong authentication to allow them to use PIN to unlock the device.
       user_manager::User* user =
           content::Details<user_manager::User>(details).ptr();
-      PinStorage* pin_storage = PinStorageFactory::GetForUser(user);
+      quick_unlock::PinStorage* pin_storage =
+          quick_unlock::PinStorageFactory::GetForUser(user);
       if (pin_storage)
         pin_storage->MarkStrongAuth();
     } else {
@@ -244,7 +245,8 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
     // 2. If the user signed in with cryptohome keys, then the PIN timeout is
     //    going to be reset as well, so it is safe to reset the unlock attempt
     //    count.
-    PinStorage* pin_storage = PinStorageFactory::GetForUser(user);
+    quick_unlock::PinStorage* pin_storage =
+        quick_unlock::PinStorageFactory::GetForUser(user);
     if (pin_storage)
       pin_storage->ResetUnlockAttemptCount();
 
@@ -267,8 +269,9 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
 
 void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
   // The user has signed in using their password, so reset the PIN timeout.
-  PinStorage* pin_storage =
-      PinStorageFactory::GetForAccountId(user_context.GetAccountId());
+  quick_unlock::PinStorage* pin_storage =
+      quick_unlock::PinStorageFactory::GetForAccountId(
+          user_context.GetAccountId());
   if (pin_storage)
     pin_storage->MarkStrongAuth();
 }
@@ -309,8 +312,8 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
     // incorrectly more than a few times.
     int dummy_value;
     if (is_pin_attempt_ && base::StringToInt(pin, &dummy_value)) {
-      chromeos::PinStorage* pin_storage =
-          chromeos::PinStorageFactory::GetForUser(user);
+      quick_unlock::PinStorage* pin_storage =
+          quick_unlock::PinStorageFactory::GetForUser(user);
       if (pin_storage && pin_storage->TryAuthenticatePin(pin)) {
         OnAuthSuccess(user_context);
         return;

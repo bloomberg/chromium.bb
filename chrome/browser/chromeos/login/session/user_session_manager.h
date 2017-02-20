@@ -485,7 +485,7 @@ class UserSessionManager
 
   // Per-user-session Quick Unlock Feature Notification
   std::map<Profile*,
-           scoped_refptr<QuickUnlockNotificationController>,
+           scoped_refptr<quick_unlock::QuickUnlockNotificationController>,
            ProfileCompare>
       quick_unlock_notification_handler_;
 

@@ -16,6 +16,7 @@ class User;
 }
 
 namespace chromeos {
+namespace quick_unlock {
 
 class PinStorage;
 
@@ -50,6 +51,7 @@ class PinStorageFactory : public BrowserContextKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(PinStorageFactory);
 };
 
+}  // namespace quick_unlock
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_PIN_STORAGE_FACTORY_H_

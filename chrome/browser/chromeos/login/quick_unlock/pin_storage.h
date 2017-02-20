@@ -14,9 +14,11 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace chromeos {
+
 class PinStorageTestApi;
 
-namespace chromeos {
+namespace quick_unlock {
 
 class PinStorage : public KeyedService {
  public:
@@ -65,7 +67,7 @@ class PinStorage : public KeyedService {
   std::string PinSalt() const;
   std::string PinSecret() const;
 
-  friend class ::PinStorageTestApi;
+  friend class chromeos::PinStorageTestApi;
 
   PrefService* pref_service_;
   int unlock_attempt_count_ = 0;
@@ -74,6 +76,7 @@ class PinStorage : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(PinStorage);
 };
 
+}  // namespace quick_unlock
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_PIN_STORAGE_H_

@@ -580,10 +580,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chromeos::file_system_provider::RegisterProfilePrefs(registry);
   chromeos::KeyPermissions::RegisterProfilePrefs(registry);
   chromeos::MultiProfileUserController::RegisterProfilePrefs(registry);
-  chromeos::PinStorage::RegisterProfilePrefs(registry);
+  chromeos::quick_unlock::PinStorage::RegisterProfilePrefs(registry);
   chromeos::Preferences::RegisterProfilePrefs(registry);
   chromeos::PrintersManager::RegisterProfilePrefs(registry);
-  chromeos::RegisterQuickUnlockProfilePrefs(registry);
+  chromeos::quick_unlock::RegisterProfilePrefs(registry);
   chromeos::SAMLOfflineSigninLimiter::RegisterProfilePrefs(registry);
   chromeos::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
   chromeos::system::InputDeviceSettings::RegisterProfilePrefs(registry);

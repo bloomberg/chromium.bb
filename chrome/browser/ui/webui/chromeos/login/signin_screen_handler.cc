@@ -949,8 +949,8 @@ void SigninScreenHandler::Initialize() {
     for (user_manager::User* user :
          user_manager::UserManager::Get()->GetLoggedInUsers()) {
 
-      chromeos::PinStorage* pin_storage =
-          chromeos::PinStorageFactory::GetForUser(user);
+      chromeos::quick_unlock::PinStorage* pin_storage =
+          chromeos::quick_unlock::PinStorageFactory::GetForUser(user);
       if (pin_storage && pin_storage->IsPinAuthenticationAvailable()) {
         CallJS("cr.ui.Oobe.preloadPinKeyboard");
         break;
@@ -996,8 +996,8 @@ void SigninScreenHandler::RefocusCurrentPod() {
 }
 
 void SigninScreenHandler::HidePinKeyboardIfNeeded(const AccountId& account_id) {
-  chromeos::PinStorage* pin_storage =
-      chromeos::PinStorageFactory::GetForAccountId(account_id);
+  chromeos::quick_unlock::PinStorage* pin_storage =
+      chromeos::quick_unlock::PinStorageFactory::GetForAccountId(account_id);
   if (pin_storage && !pin_storage->IsPinAuthenticationAvailable())
     CallJS("login.AccountPickerScreen.disablePinKeyboardForUser", account_id);
 }
@@ -1151,8 +1151,8 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
     return;
   DCHECK_EQ(account_id.GetUserEmail(),
             gaia::SanitizeEmail(account_id.GetUserEmail()));
-  chromeos::PinStorage* pin_storage =
-    chromeos::PinStorageFactory::GetForAccountId(account_id);
+  chromeos::quick_unlock::PinStorage* pin_storage =
+      chromeos::quick_unlock::PinStorageFactory::GetForAccountId(account_id);
   // If pin storage is unavailable, authenticated by PIN must be false.
   DCHECK(!pin_storage || pin_storage->IsPinAuthenticationAvailable() ||
          !authenticated_by_pin);

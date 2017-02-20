@@ -49,8 +49,8 @@ const char* kMostCommonPins[] = {"1212", "1004", "2000", "6969",
 QuickUnlockModeList ComputeActiveModes(Profile* profile) {
   QuickUnlockModeList modes;
 
-  chromeos::PinStorage* pin_storage =
-      chromeos::PinStorageFactory::GetForProfile(profile);
+  chromeos::quick_unlock::PinStorage* pin_storage =
+      chromeos::quick_unlock::PinStorageFactory::GetForProfile(profile);
   if (pin_storage && pin_storage->IsPinSet())
     modes.push_back(quick_unlock_private::QUICK_UNLOCK_MODE_PIN);
 
@@ -400,8 +400,8 @@ void QuickUnlockPrivateSetModesFunction::ApplyModeChange() {
   // Apply changes.
   if (update_pin) {
     Profile* profile = chrome_details_.GetProfile();
-    chromeos::PinStorage* pin_storage =
-        chromeos::PinStorageFactory::GetForProfile(profile);
+    chromeos::quick_unlock::PinStorage* pin_storage =
+        chromeos::quick_unlock::PinStorageFactory::GetForProfile(profile);
 
     if (pin_credential.empty()) {
       pin_storage->RemovePin();

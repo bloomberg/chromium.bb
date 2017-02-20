@@ -39,6 +39,7 @@ void UpdatePreferenceForProfile(Profile* profile) {
 }  // namespace
 
 namespace chromeos {
+namespace quick_unlock {
 
 QuickUnlockNotificationController::QuickUnlockNotificationController(
     Profile* profile)
@@ -154,4 +155,5 @@ Notification* QuickUnlockNotificationController::CreateNotification() {
       GURL(), kNotificationId, message_center::RichNotificationData(), this);
 }
 
+}  // namespace quick_unlock
 }  // namespace chromeos

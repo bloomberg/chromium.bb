@@ -15,6 +15,7 @@ class Profile;
 class Notification;
 
 namespace chromeos {
+namespace quick_unlock {
 
 // Quick Unlock feature notification controller is responsible for managing the
 // new feature notification displayed to the user.
@@ -49,6 +50,7 @@ class QuickUnlockNotificationController : public NotificationDelegate,
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockNotificationController);
 };
 
+}  // namespace quick_unlock
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_QUICK_UNLOCK_NOTIFICATION_CONTROLLER_H_

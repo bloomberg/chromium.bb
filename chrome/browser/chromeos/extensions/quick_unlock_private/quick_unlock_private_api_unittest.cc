@@ -38,15 +38,14 @@ const char* kTestUserEmailHash = "testuser@gmail.com-hash";
 const char* kValidPassword = "valid";
 const char* kInvalidPassword = "invalid";
 
-chromeos::ExtendedAuthenticator* CreateFakeAuthenticator(
-    chromeos::AuthStatusConsumer* auth_status_consumer) {
+ExtendedAuthenticator* CreateFakeAuthenticator(
+    AuthStatusConsumer* auth_status_consumer) {
   AccountId account_id = AccountId::FromUserEmail(kTestUserEmail);
-  chromeos::UserContext expected_context(account_id);
+  UserContext expected_context(account_id);
   expected_context.SetKey(Key(kValidPassword));
 
-  chromeos::ExtendedAuthenticator* authenticator =
-      new chromeos::FakeExtendedAuthenticator(auth_status_consumer,
-                                              expected_context);
+  ExtendedAuthenticator* authenticator =
+      new FakeExtendedAuthenticator(auth_status_consumer, expected_context);
   return authenticator;
 }
 
@@ -77,7 +76,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
   void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
-    EnableQuickUnlockForTesting();
+    quick_unlock::EnableForTesting();
 
     // Setup a primary user.
     auto test_account = AccountId::FromUserEmail(kTestUserEmail);
@@ -355,7 +354,8 @@ TEST_F(QuickUnlockPrivateUnitTest, ModeChangeEventOnlyRaisedWhenModesChange) {
 // Ensures that quick unlock can be enabled and disabled by checking the result
 // of quickUnlockPrivate.GetActiveModes and PinStorage::IsPinSet.
 TEST_F(QuickUnlockPrivateUnitTest, SetModesAndGetActiveModes) {
-  PinStorage* pin_storage = PinStorageFactory::GetForProfile(profile());
+  quick_unlock::PinStorage* pin_storage =
+      quick_unlock::PinStorageFactory::GetForProfile(profile());
 
   // Update mode to PIN raises an event and updates GetActiveModes.
   ExpectModesChanged(
@@ -375,7 +375,8 @@ TEST_F(QuickUnlockPrivateUnitTest, SetModesAndGetActiveModes) {
 
 // Verifies that enabling PIN quick unlock actually talks to the PIN subsystem.
 TEST_F(QuickUnlockPrivateUnitTest, VerifyAuthenticationAgainstPIN) {
-  PinStorage* pin_storage = PinStorageFactory::GetForProfile(profile());
+  quick_unlock::PinStorage* pin_storage =
+      quick_unlock::PinStorageFactory::GetForProfile(profile());
 
   EXPECT_TRUE(SetModes(QuickUnlockModeList{}, CredentialList{}));
   EXPECT_FALSE(pin_storage->IsPinSet());

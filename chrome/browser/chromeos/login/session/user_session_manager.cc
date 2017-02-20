@@ -1775,11 +1775,11 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   if (HatsNotificationController::ShouldShowSurveyToProfile(profile))
     hats_notification_controller_ = new HatsNotificationController(profile);
 
-  if (QuickUnlockNotificationController::ShouldShow(profile) &&
+  if (quick_unlock::QuickUnlockNotificationController::ShouldShow(profile) &&
       quick_unlock_notification_handler_.find(profile) ==
           quick_unlock_notification_handler_.end()) {
     auto* qu_feature_notification_controller =
-        new QuickUnlockNotificationController(profile);
+        new quick_unlock::QuickUnlockNotificationController(profile);
     quick_unlock_notification_handler_.insert(
         std::make_pair(profile, qu_feature_notification_controller));
   }

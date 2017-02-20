@@ -123,7 +123,8 @@ bool CanShowPinForUser(user_manager::User* user) {
   if (!user->is_logged_in())
     return false;
 
-  PinStorage* pin_storage = PinStorageFactory::GetForUser(user);
+  quick_unlock::PinStorage* pin_storage =
+      quick_unlock::PinStorageFactory::GetForUser(user);
   if (!pin_storage)
     return false;
 
