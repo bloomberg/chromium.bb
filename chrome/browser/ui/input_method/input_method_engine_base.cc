@@ -362,6 +362,11 @@ void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,
   // commitText while the extension is handling key event.
   handling_key_event_ = true;
 
+  if (key_event.IsCommandDown()) {
+    callback.Run(false);
+    return;
+  }
+
   KeyboardEvent ext_event;
   GetExtensionKeyboardEventFromKeyEvent(key_event, &ext_event);
 
