@@ -201,6 +201,7 @@ test("message_center_unittests") {
     "//base",
     "//base/test:test_support",
     "//skia",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/base",
     "//ui/base:test_support",

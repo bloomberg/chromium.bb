@@ -7,6 +7,7 @@
 
 #include <list>
 #include <set>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/compositor/paint_context.h"
@@ -79,6 +80,11 @@ class MESSAGE_CENTER_EXPORT MessageListView
   // Animates all notifications above target downwards to align with the top of
   // the last closed notification.
   void AnimateNotificationsAboveTarget();
+  // Computes reposition offsets for |AnimateNotificationsAboveTarget|.
+  std::vector<int> ComputeRepositionOffsets(const std::vector<int>& heights,
+                                            const std::vector<bool>& deleting,
+                                            int target_index,
+                                            int padding);
 
   // Schedules animation for a child to the specified position. Returns false
   // if |child| will disappear after the animation.

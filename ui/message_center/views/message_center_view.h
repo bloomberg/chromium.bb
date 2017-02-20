@@ -62,6 +62,10 @@ class MESSAGE_CENTER_EXPORT MessageCenterView
   void SetIsClosing(bool is_closing);
 
  protected:
+  // Potentially sets the reposition target, and then returns whether or not it
+  // was was set.
+  virtual bool SetRepositionTarget();
+
   // Overridden from views::View:
   void Layout() override;
   gfx::Size GetPreferredSize() const override;

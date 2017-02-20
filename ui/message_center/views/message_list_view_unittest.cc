@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/notification.h"
@@ -17,6 +18,8 @@
 #include "ui/message_center/views/message_list_view.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/views/test/views_test_base.h"
+
+using ::testing::ElementsAre;
 
 namespace message_center {
 
@@ -124,6 +127,18 @@ class MessageListViewTest : public views::ViewsTestBase,
     return message_list_view_.get();
   }
 
+  int& reposition_top() { return message_list_view_->reposition_top_; }
+
+  int& fixed_height() { return message_list_view_->fixed_height_; }
+
+  std::vector<int> ComputeRepositionOffsets(const std::vector<int>& heights,
+                                            const std::vector<bool>& deleting,
+                                            int target_index,
+                                            int padding) {
+    return message_list_view_->ComputeRepositionOffsets(heights, deleting,
+                                                        target_index, padding);
+  }
+
   MockNotificationView* CreateNotificationView(
       const Notification& notification) {
     return new MockNotificationView(this, notification, this);
@@ -187,6 +202,177 @@ TEST_F(MessageListViewTest, AddNotification) {
 
   EXPECT_EQ(1, message_list_view()->child_count());
   EXPECT_TRUE(message_list_view()->Contains(notification_view));
+}
+
+TEST_F(MessageListViewTest, RepositionOffsets) {
+  const auto insets = message_list_view()->GetInsets();
+  const int top = insets.top();
+  std::vector<int> positions;
+
+  // Notification above grows. |reposition_top| should remain at the same
+  // offset from the bottom.
+  fixed_height() = 4 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({2, 1, 1, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 2, top + 3, top + 4));
+  EXPECT_EQ(4 + insets.height() + 1, fixed_height());
+  EXPECT_EQ(1 + top + 1, reposition_top());
+
+  // Notification above shrinks. |reposition_top| should remain at the same
+  // offset from the bottom.
+  fixed_height() = 5 + insets.height();
+  reposition_top() = 2 + top;
+  positions =
+      ComputeRepositionOffsets({1, 1, 1, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 2, top + 3));
+  EXPECT_EQ(4 + insets.height(), fixed_height());
+  EXPECT_EQ(1 + top, reposition_top());
+
+  // Notification above is being deleted. |reposition_top| should remain at the
+  // same offset from the bottom.
+  fixed_height() = 4 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({1, 1, 1, 1}, {true, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top, top + 1, top + 2));
+  EXPECT_EQ(4 + insets.height() - 1, fixed_height());
+  EXPECT_EQ(1 + top - 1, reposition_top());
+
+  // Notification above is inserted. |reposition_top| should remain at the
+  // same offset from the bottom.
+  fixed_height() = 3 + insets.height();
+  reposition_top() = top;
+  positions =
+      ComputeRepositionOffsets({1, 1, 1, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 2, top + 3));
+  EXPECT_EQ(3 + insets.height() + 1, fixed_height());
+  EXPECT_EQ(top + 1, reposition_top());
+
+  // Target notification grows with no free space. |reposition_top| is forced to
+  // change its offset from the bottom.
+  fixed_height() = 4 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({1, 2, 1, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 3, top + 4));
+  EXPECT_EQ(4 + insets.height() + 1, fixed_height());
+  EXPECT_EQ(1 + top, reposition_top());
+
+  // Target notification grows with free space. |reposition_top| should remain
+  // at the same offset from the bottom.
+  fixed_height() = 5 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({1, 2, 1, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 3, top + 4));
+  EXPECT_EQ(5 + insets.height(), fixed_height());
+  EXPECT_EQ(1 + top, reposition_top());
+
+  // Target notification grows with not enough free space. |reposition_top|
+  // should change its offset as little as possible, and consume the free space.
+  fixed_height() = 5 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({1, 3, 1, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 4, top + 5));
+  EXPECT_EQ(5 + insets.height() + 1, fixed_height());
+  EXPECT_EQ(1 + top, reposition_top());
+
+  // Target notification shrinks. |reposition_top| should remain at the
+  // same offset from the bottom.
+  fixed_height() = 5 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({1, 1, 1, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 2, top + 3));
+  EXPECT_EQ(5 + insets.height(), fixed_height());
+  EXPECT_EQ(1 + top, reposition_top());
+
+  // Notification below grows with no free space. |reposition_top| is forced to
+  // change its offset from the bottom.
+  fixed_height() = 4 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({1, 1, 2, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 2, top + 4));
+  EXPECT_EQ(4 + insets.height() + 1, fixed_height());
+  EXPECT_EQ(1 + top, reposition_top());
+
+  // Notification below grows with free space. |reposition_top| should remain
+  // at the same offset from the bottom.
+  fixed_height() = 5 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({1, 1, 2, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 2, top + 4));
+  EXPECT_EQ(5 + insets.height(), fixed_height());
+  EXPECT_EQ(1 + top, reposition_top());
+
+  // Notification below shrinks. |reposition_top| should remain at the same
+  // offset from the bottom.
+  fixed_height() = 5 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({1, 1, 1, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 2, top + 3));
+  EXPECT_EQ(5 + insets.height(), fixed_height());
+  EXPECT_EQ(1 + top, reposition_top());
+
+  // Notification below is being deleted. |reposition_top| should remain at the
+  // same offset from the bottom.
+  fixed_height() = 4 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({1, 1, 1, 1}, {false, false, true, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 2, top + 2));
+  EXPECT_EQ(4 + insets.height(), fixed_height());
+  EXPECT_EQ(1 + top, reposition_top());
+
+  // Notification below is inserted with free space. |reposition_top| should
+  // remain at the same offset from the bottom.
+  fixed_height() = 4 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({1, 1, 1, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 2, top + 3));
+  EXPECT_EQ(4 + insets.height(), fixed_height());
+  EXPECT_EQ(1 + top, reposition_top());
+
+  // Notification below is inserted with no free space. |reposition_top| is
+  // forced to change its offset from the bottom.
+  fixed_height() = 3 + insets.height();
+  reposition_top() = 1 + top;
+  positions =
+      ComputeRepositionOffsets({1, 1, 1, 1}, {false, false, false, false},
+                               1 /* target_index */, 0 /* padding */);
+  EXPECT_THAT(positions, ElementsAre(top, top + 1, top + 2, top + 3));
+  EXPECT_EQ(3 + insets.height() + 1, fixed_height());
+  EXPECT_EQ(1 + top, reposition_top());
+
+  // Test padding.
+  fixed_height() = 20 + insets.height();
+  reposition_top() = 5 + top;
+  positions =
+      ComputeRepositionOffsets({5, 3, 3, 3}, {false, false, false, false},
+                               1 /* target_index */, 2 /* padding */);
+  EXPECT_THAT(positions,
+              ElementsAre(top, top + 7, top + 7 + 5, top + 7 + 5 + 5));
+  EXPECT_EQ(20 + insets.height() + 2, fixed_height());
+  EXPECT_EQ(5 + top + 2, reposition_top());
 }
 
 }  // namespace

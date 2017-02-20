@@ -347,6 +347,54 @@ void MessageListView::AnimateNotificationsBelowTarget() {
   }
 }
 
+std::vector<int> MessageListView::ComputeRepositionOffsets(
+    const std::vector<int>& heights,
+    const std::vector<bool>& deleting,
+    int target_index,
+    int padding) {
+  DCHECK_EQ(heights.size(), deleting.size());
+  // Calculate the vertical length between the top of message list and the top
+  // of target. This is to shrink or expand the height of the message list
+  // when the notifications above the target is changed.
+  int vertical_gap_to_target_from_top = GetInsets().top();
+  for (int i = 0; i < target_index; i++) {
+    if (!deleting[i])
+      vertical_gap_to_target_from_top += heights[i] + padding;
+  }
+
+  // If the calculated length is changed from |repositon_top_|, it means that
+  // some of items above the target are updated and their height are changed.
+  // Adjust the vertical length above the target.
+  fixed_height_ -= reposition_top_ - vertical_gap_to_target_from_top;
+  reposition_top_ = vertical_gap_to_target_from_top;
+
+  std::vector<int> positions;
+  positions.reserve(heights.size());
+  // Layout the items above the target.
+  int y = GetInsets().top();
+  for (int i = 0; i < target_index; i++) {
+    positions.push_back(y);
+    if (!deleting[i])
+      y += heights[i] + padding;
+  }
+  DCHECK_EQ(y, reposition_top_);
+
+  // Match the top with |reposition_top_|.
+  y = reposition_top_;
+  // Layout the target and the items below the target.
+  for (int i = target_index; i < int(heights.size()); i++) {
+    positions.push_back(y);
+    if (!deleting[i])
+      y += heights[i] + padding;
+  }
+  // If the target view, or any views below it expand they might exceed
+  // |fixed_height_|. Rather than letting them push out the bottom and be
+  // clipped, instead increase |fixed_height_|.
+  fixed_height_ = std::max(fixed_height_, y - padding + GetInsets().bottom());
+
+  return positions;
+}
+
 void MessageListView::AnimateNotificationsAboveTarget() {
   int target_index = -1;
   int padding = kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
@@ -372,52 +420,22 @@ void MessageListView::AnimateNotificationsAboveTarget() {
       }
     }
   }
+
   if (target_index != -1) {
-    // Cache for the heights of items, since calculating height is heavy
-    // operation and the heights shouldn't be changed in this block.
-    std::map<views::View*, int> height_cache;
-
-    // Calculate the vertical length between the top of message list and the top
-    // of target. This is to shrink or expand the height of the message list
-    // when the notifications above the target is changed.
-    int vertical_gap_to_target_from_top = GetInsets().height();
-    for (int i = 0; i < target_index; i++) {
+    std::vector<int> heights;
+    std::vector<bool> deleting;
+    heights.reserve(child_count());
+    deleting.reserve(child_count());
+    for (int i = 0; i < child_count(); i++) {
       views::View* child = child_at(i);
-      int height = child->GetHeightForWidth(child_area.width());
-      height_cache[child] = height;
-      if (deleting_views_.find(child) == deleting_views_.end())
-        vertical_gap_to_target_from_top += height + padding;
+      heights.push_back(child->GetHeightForWidth(child_area.width()));
+      deleting.push_back(deleting_views_.find(child) != deleting_views_.end());
     }
-
-    // If the calculated length is changed from |repositon_top_|, it means that
-    // some of items above the target are updated and their height are changed.
-    // Adjust the vertical length above the target.
-    if (reposition_top_ != vertical_gap_to_target_from_top) {
-      fixed_height_ -= reposition_top_ - vertical_gap_to_target_from_top;
-      reposition_top_ = vertical_gap_to_target_from_top;
+    std::vector<int> ys =
+        ComputeRepositionOffsets(heights, deleting, target_index, padding);
+    for (int i = 0; i < child_count(); ++i) {
+      AnimateChild(child_at(i), ys[i], heights[i], true /* animate_on_move */);
     }
-
-    // Match the top with |reposition_top_|.
-    int y = reposition_top_;
-    // Layout the target and the items below the target.
-    for (int i = target_index; i < child_count(); i++) {
-      views::View* child = child_at(i);
-      int height = child->GetHeightForWidth(child_area.width());
-      if (AnimateChild(child, y, height, false /* animate_on_move */))
-        y += height + padding;
-    }
-
-    // Layout the items above the target.
-    y = GetInsets().top();
-    for (int i = 0; i < target_index; i++) {
-      views::View* child = child_at(i);
-      DCHECK(height_cache.find(child) != height_cache.end());
-      int height = height_cache[child];
-      if (AnimateChild(child, y, height, true /* animate_on_move */))
-        y += height + padding;
-    }
-
-    DCHECK_EQ(y, reposition_top_);
   } else {
     // Layout all the items.
     int y = GetInsets().top();

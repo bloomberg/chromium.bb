@@ -366,25 +366,30 @@ void MessageCenterView::OnNotificationRemoved(const std::string& id,
   Update(true /* animate */);
 }
 
-void MessageCenterView::OnNotificationUpdated(const std::string& id) {
-  NotificationViewsMap::const_iterator view_iter = notification_views_.find(id);
-  if (view_iter == notification_views_.end())
-    return;
-
+// This is a separate function so we can override it in tests.
+bool MessageCenterView::SetRepositionTarget() {
   // Set the item on the mouse cursor as the reposition target so that it
   // should stick to the current position over the update.
-  bool set = false;
   if (message_list_view_->IsMouseHovered()) {
     for (const auto& hover_id_view : notification_views_) {
       MessageView* hover_view = hover_id_view.second;
       if (hover_view->IsMouseHovered()) {
         message_list_view_->SetRepositionTarget(hover_view->bounds());
-        set = true;
-        break;
+        return true;
       }
     }
   }
-  if (!set)
+  return false;
+}
+
+void MessageCenterView::OnNotificationUpdated(const std::string& id) {
+  NotificationViewsMap::const_iterator view_iter = notification_views_.find(id);
+  if (view_iter == notification_views_.end())
+    return;
+
+  // If there is no reposition target anymore, make sure to reset the reposition
+  // session.
+  if (!SetRepositionTarget())
     message_list_view_->ResetRepositionSession();
 
   // TODO(dimich): add MessageCenter::GetVisibleNotificationById(id)
