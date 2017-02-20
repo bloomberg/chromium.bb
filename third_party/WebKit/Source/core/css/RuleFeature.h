@@ -281,7 +281,6 @@ class CORE_EXPORT RuleFeatureSet {
       const InvalidationSetFeatures& descendantFeatures);
 
   void updateRuleSetInvalidation(const InvalidationSetFeatures&);
-  void addTagNamesToTypeRuleInvalidationSet(const Vector<AtomicString>&);
 
   FeatureMetadata m_metadata;
   InvalidationSetMap m_classInvalidationSets;

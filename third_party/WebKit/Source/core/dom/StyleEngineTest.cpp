@@ -184,6 +184,23 @@ TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors) {
   EXPECT_EQ(1u, afterCount - beforeCount);
 }
 
+TEST_F(StyleEngineTest, RuleSetInvalidationCustomPseudo) {
+  document().body()->setInnerHTML(
+      "<style>progress { -webkit-appearance:none }</style>"
+      "<progress></progress>"
+      "<div></div><div></div><div></div><div></div><div></div><div></div>");
+
+  document().view()->updateAllLifecyclePhases();
+
+  unsigned beforeCount = styleEngine().styleForElementCount();
+  EXPECT_EQ(scheduleInvalidationsForRules(
+                document(), "::-webkit-progress-bar { background: green }"),
+            RuleSetInvalidationsScheduled);
+  document().view()->updateAllLifecyclePhases();
+  unsigned afterCount = styleEngine().styleForElementCount();
+  EXPECT_EQ(3u, afterCount - beforeCount);
+}
+
 TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
   document().body()->setInnerHTML("<div id=nohost></div><div id=host></div>");
   Element* host = document().getElementById("host");

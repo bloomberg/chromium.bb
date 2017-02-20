@@ -480,12 +480,23 @@ void RuleFeatureSet::updateInvalidationSets(const RuleData& ruleData) {
 
 void RuleFeatureSet::updateRuleSetInvalidation(
     const InvalidationSetFeatures& features) {
-  if (!features.hasFeaturesForRuleSetInvalidation) {
-    if (features.forceSubtree || features.tagNames.isEmpty())
-      m_metadata.needsFullRecalcForRuleSetInvalidation = true;
-    else
-      addTagNamesToTypeRuleInvalidationSet(features.tagNames);
+  if (features.hasFeaturesForRuleSetInvalidation)
+    return;
+  if (features.forceSubtree ||
+      (!features.customPseudoElement && features.tagNames.isEmpty())) {
+    m_metadata.needsFullRecalcForRuleSetInvalidation = true;
+    return;
   }
+
+  ensureTypeRuleInvalidationSet();
+
+  if (features.customPseudoElement) {
+    m_typeRuleInvalidationSet->setCustomPseudoInvalid();
+    m_typeRuleInvalidationSet->setTreeBoundaryCrossing();
+  }
+
+  for (auto tagName : features.tagNames)
+    m_typeRuleInvalidationSet->addTagName(tagName);
 }
 
 void RuleFeatureSet::updateInvalidationSetsForContentAttribute(
@@ -1165,14 +1176,6 @@ void RuleFeatureSet::addFeaturesToUniversalSiblingInvalidationSet(
   else
     addFeaturesToInvalidationSet(universalSet.ensureSiblingDescendants(),
                                  descendantFeatures);
-}
-
-void RuleFeatureSet::addTagNamesToTypeRuleInvalidationSet(
-    const Vector<AtomicString>& tagNames) {
-  DCHECK(!tagNames.isEmpty());
-  ensureTypeRuleInvalidationSet();
-  for (auto tagName : tagNames)
-    m_typeRuleInvalidationSet->addTagName(tagName);
 }
 
 DEFINE_TRACE(RuleFeatureSet) {

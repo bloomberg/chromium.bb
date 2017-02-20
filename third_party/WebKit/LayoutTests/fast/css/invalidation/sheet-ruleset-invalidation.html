@@ -13,6 +13,10 @@
     </div>
     <span></span>
 </div>
+<div id="placeholderWrapper">
+    <textarea placeholder="Placeholder text"></textarea>
+</div>
+<textarea placeholder="Placeholder text"></textarea>
 <script>
     test(() => {
         assert_true(!!window.internals, "Tests require window.internals.");
@@ -43,4 +47,22 @@
             "#found div { background: red }"), 1,
             "Check that only one of the divs is recalculated.");
     }, "A type selector scoped by a known id should only invalidate descendants of the element with that id.");
+
+    test(() => {
+        assert_equals(applyRuleAndReturnAffectedElementCount(
+            "::-webkit-input-placeholder { background: green }"), 2,
+            "Check that only custom pseudo elements are recalculated.");
+    }, "A style rule with a custom pseudo element should only invalidate custom pseudo elements.");
+
+    test(() => {
+        assert_equals(applyRuleAndReturnAffectedElementCount(
+            "#notfound ::-webkit-input-placeholder { background: green }"), 0,
+            "Check that no elements are recalculated.");
+    }, "A custom pseudo element scoped in an unknown id should not invalidate any elements.");
+
+    test(() => {
+        assert_equals(applyRuleAndReturnAffectedElementCount(
+            "#placeholderWrapper ::-webkit-input-placeholder { background: green }"), 1,
+            "Check that only the scoped custom pseudo element is recalculated.");
+    }, "A custom pseudo element scoped in a known id should only invalidate descendants of the element with that id.");
 </script>

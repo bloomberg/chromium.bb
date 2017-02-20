@@ -1000,7 +1000,7 @@ TEST_F(RuleFeatureSetTest, RuleSetInvalidationNot) {
 TEST_F(RuleFeatureSetTest, RuleSetInvalidationCustomPseudo) {
   EXPECT_EQ(RuleFeatureSet::SelectorMayMatch,
             collectFeatures("::-webkit-slider-thumb"));
-  expectFullRecalcForRuleSetInvalidation(true);
+  expectFullRecalcForRuleSetInvalidation(false);
   clearFeatures();
 
   EXPECT_EQ(RuleFeatureSet::SelectorMayMatch,
