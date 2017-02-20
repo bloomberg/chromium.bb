@@ -173,6 +173,7 @@ MemoryCoordinatorImpl::MemoryCoordinatorImpl(
       memory_monitor_(std::move(memory_monitor)),
       state_updater_(base::MakeUnique<MemoryStateUpdater>(this, task_runner)) {
   DCHECK(memory_monitor_.get());
+  base::MemoryCoordinatorProxy::SetMemoryCoordinator(this);
 }
 
 MemoryCoordinatorImpl::~MemoryCoordinatorImpl() {}

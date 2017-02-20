@@ -11,14 +11,8 @@
 namespace content {
 
 void SetUpMemoryCoordinatorProxyForTesting() {
-  base::MemoryCoordinatorProxy::GetInstance()->
-      SetGetCurrentMemoryStateCallback(base::Bind(
-          &MemoryCoordinatorImpl::GetCurrentMemoryState,
-          base::Unretained(MemoryCoordinatorImpl::GetInstance())));
-  base::MemoryCoordinatorProxy::GetInstance()->
-      SetSetCurrentMemoryStateForTestingCallback(base::Bind(
-          &MemoryCoordinatorImpl::SetCurrentMemoryStateForTesting,
-          base::Unretained(MemoryCoordinatorImpl::GetInstance())));
+  // Make sure that MemoryCoordinatorImpl is initialized.
+  MemoryCoordinatorImpl::GetInstance();
 }
 
 }  // namespace content

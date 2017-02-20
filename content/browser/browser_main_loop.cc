@@ -1618,21 +1618,11 @@ void BrowserMainLoop::InitializeMemoryManagementComponent() {
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
     // Disable MemoryPressureListener when memory coordinator is enabled.
     base::MemoryPressureListener::SetNotificationsSuppressed(true);
-    // base::Unretained is safe because the lifetime of MemoryCoordinator is
-    // tied to the lifetime of the browser process.
-    base::MemoryCoordinatorProxy::GetInstance()->
-        SetGetCurrentMemoryStateCallback(base::Bind(
-            &MemoryCoordinatorImpl::GetCurrentMemoryState,
-            base::Unretained(MemoryCoordinatorImpl::GetInstance())));
-    base::MemoryCoordinatorProxy::GetInstance()->
-        SetSetCurrentMemoryStateForTestingCallback(base::Bind(
-            &MemoryCoordinatorImpl::SetCurrentMemoryStateForTesting,
-            base::Unretained(MemoryCoordinatorImpl::GetInstance())));
-
+    auto* coordinator = MemoryCoordinatorImpl::GetInstance();
     if (memory_pressure_monitor_) {
       memory_pressure_monitor_->SetDispatchCallback(
           base::Bind(&MemoryCoordinatorImpl::RecordMemoryPressure,
-                     base::Unretained(MemoryCoordinatorImpl::GetInstance())));
+                     base::Unretained(coordinator)));
     }
   }
 }

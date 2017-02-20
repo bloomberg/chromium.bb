@@ -178,15 +178,6 @@ class MemoryCoordinatorImplTest : public base::MultiProcessTest {
 
     task_runner_ = new base::TestMockTimeTaskRunner();
     coordinator_.reset(new TestMemoryCoordinatorImpl(task_runner_));
-
-    base::MemoryCoordinatorProxy::GetInstance()->
-        SetGetCurrentMemoryStateCallback(base::Bind(
-            &MemoryCoordinatorImpl::GetCurrentMemoryState,
-            base::Unretained(coordinator_.get())));
-    base::MemoryCoordinatorProxy::GetInstance()->
-        SetSetCurrentMemoryStateForTestingCallback(base::Bind(
-            &MemoryCoordinatorImpl::SetCurrentMemoryStateForTesting,
-            base::Unretained(coordinator_.get())));
   }
 
   MockMemoryMonitor* GetMockMemoryMonitor() {
