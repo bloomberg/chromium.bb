@@ -77,6 +77,8 @@ blink_core_sources("animation") {
     "CSSSizeListInterpolationType.h",
     "CSSTextIndentInterpolationType.cpp",
     "CSSTextIndentInterpolationType.h",
+    "CSSTimeInterpolationType.cpp",
+    "CSSTimeInterpolationType.h",
     "CSSTransformInterpolationType.cpp",
     "CSSTransformInterpolationType.h",
     "CSSTransformOriginInterpolationType.h",

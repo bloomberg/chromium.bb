@@ -30,6 +30,7 @@
 #include "core/animation/CSSShadowListInterpolationType.h"
 #include "core/animation/CSSSizeListInterpolationType.h"
 #include "core/animation/CSSTextIndentInterpolationType.h"
+#include "core/animation/CSSTimeInterpolationType.h"
 #include "core/animation/CSSTransformInterpolationType.h"
 #include "core/animation/CSSTransformOriginInterpolationType.h"
 #include "core/animation/CSSTranslateInterpolationType.h"
@@ -355,10 +356,12 @@ CSSInterpolationTypesMap::createCSSInterpolationTypesForSyntax(
       case CSSSyntaxType::Number:
         result.push_back(WTF::makeUnique<CSSNumberInterpolationType>(property));
         break;
+      case CSSSyntaxType::Time:
+        result.push_back(WTF::makeUnique<CSSTimeInterpolationType>(property));
+        break;
       case CSSSyntaxType::Image:
       case CSSSyntaxType::Url:
       case CSSSyntaxType::Integer:
-      case CSSSyntaxType::Time:
       case CSSSyntaxType::Resolution:
       case CSSSyntaxType::TransformFunction:
         // TODO(alancutter): Support smooth interpolation of these types.

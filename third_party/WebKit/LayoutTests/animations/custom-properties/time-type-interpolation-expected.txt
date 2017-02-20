@@ -1,0 +1,109 @@
+This is a testharness.js-based test.
+PASS This test uses interpolation-test.js. 
+FAIL CSS Transitions: property <--time> from neutral to [20s] at (-0.3) is [20s] assert_equals: expected "7s " but got "20s "
+FAIL CSS Transitions: property <--time> from neutral to [20s] at (0) is [20s] assert_equals: expected "10s " but got "20s "
+FAIL CSS Transitions: property <--time> from neutral to [20s] at (0.5) is [20s] assert_equals: expected "15s " but got "20s "
+PASS CSS Transitions: property <--time> from neutral to [20s] at (1) is [20s] 
+FAIL CSS Transitions: property <--time> from neutral to [20s] at (1.5) is [20s] assert_equals: expected "25s " but got "20s "
+FAIL CSS Transitions: property <--time> from [initial] to [20s] at (-0.3) is [20s] assert_equals: expected "46s " but got "20s "
+FAIL CSS Transitions: property <--time> from [initial] to [20s] at (0) is [20s] assert_equals: expected "40s " but got "20s "
+FAIL CSS Transitions: property <--time> from [initial] to [20s] at (0.5) is [20s] assert_equals: expected "30s " but got "20s "
+PASS CSS Transitions: property <--time> from [initial] to [20s] at (1) is [20s] 
+FAIL CSS Transitions: property <--time> from [initial] to [20s] at (1.5) is [20s] assert_equals: expected "10s " but got "20s "
+FAIL CSS Transitions: property <--time> from [inherit] to [20s] at (-0.3) is [20s] assert_equals: expected "33s " but got "20s "
+FAIL CSS Transitions: property <--time> from [inherit] to [20s] at (0) is [20s] assert_equals: expected "30s " but got "20s "
+FAIL CSS Transitions: property <--time> from [inherit] to [20s] at (0.5) is [20s] assert_equals: expected "25s " but got "20s "
+PASS CSS Transitions: property <--time> from [inherit] to [20s] at (1) is [20s] 
+FAIL CSS Transitions: property <--time> from [inherit] to [20s] at (1.5) is [20s] assert_equals: expected "15s " but got "20s "
+FAIL CSS Transitions: property <--time> from [unset] to [20s] at (-0.3) is [20s] assert_equals: expected "46s " but got "20s "
+FAIL CSS Transitions: property <--time> from [unset] to [20s] at (0) is [20s] assert_equals: expected "40s " but got "20s "
+FAIL CSS Transitions: property <--time> from [unset] to [20s] at (0.5) is [20s] assert_equals: expected "30s " but got "20s "
+PASS CSS Transitions: property <--time> from [unset] to [20s] at (1) is [20s] 
+FAIL CSS Transitions: property <--time> from [unset] to [20s] at (1.5) is [20s] assert_equals: expected "10s " but got "20s "
+FAIL CSS Transitions: property <--time> from [-10s] to [10s] at (-0.3) is [10s] assert_equals: expected "- 16s " but got "10s "
+FAIL CSS Transitions: property <--time> from [-10s] to [10s] at (0) is [10s] assert_equals: expected "- 10s " but got "10s "
+FAIL CSS Transitions: property <--time> from [-10s] to [10s] at (0.5) is [10s] assert_equals: expected "0s " but got "10s "
+PASS CSS Transitions: property <--time> from [-10s] to [10s] at (1) is [10s] 
+FAIL CSS Transitions: property <--time> from [-10s] to [10s] at (1.5) is [10s] assert_equals: expected "20s " but got "10s "
+FAIL CSS Transitions: property <--time> from [100ms] to [200ms] at (-0.3) is [200ms] assert_equals: expected "0.07s " but got "200ms "
+FAIL CSS Transitions: property <--time> from [100ms] to [200ms] at (0) is [200ms] assert_equals: expected "0.1s " but got "200ms "
+FAIL CSS Transitions: property <--time> from [100ms] to [200ms] at (0.5) is [200ms] assert_equals: expected "0.15s " but got "200ms "
+FAIL CSS Transitions: property <--time> from [100ms] to [200ms] at (1) is [200ms] assert_equals: expected "0.2s " but got "200ms "
+FAIL CSS Transitions: property <--time> from [100ms] to [200ms] at (1.5) is [200ms] assert_equals: expected "0.25s " but got "200ms "
+FAIL CSS Transitions: property <--time> from [1000ms] to [11s] at (-0.3) is [11s] assert_equals: expected "- 2s " but got "11s "
+FAIL CSS Transitions: property <--time> from [1000ms] to [11s] at (0) is [11s] assert_equals: expected "1s " but got "11s "
+FAIL CSS Transitions: property <--time> from [1000ms] to [11s] at (0.5) is [11s] assert_equals: expected "6s " but got "11s "
+PASS CSS Transitions: property <--time> from [1000ms] to [11s] at (1) is [11s] 
+FAIL CSS Transitions: property <--time> from [1000ms] to [11s] at (1.5) is [11s] assert_equals: expected "16s " but got "11s "
+PASS CSS Animations: property <--time> from neutral to [20s] at (-0.3) is [7s] 
+PASS CSS Animations: property <--time> from neutral to [20s] at (0) is [10s] 
+PASS CSS Animations: property <--time> from neutral to [20s] at (0.5) is [15s] 
+PASS CSS Animations: property <--time> from neutral to [20s] at (1) is [20s] 
+PASS CSS Animations: property <--time> from neutral to [20s] at (1.5) is [25s] 
+PASS CSS Animations: property <--time> from [initial] to [20s] at (-0.3) is [46s] 
+PASS CSS Animations: property <--time> from [initial] to [20s] at (0) is [40s] 
+PASS CSS Animations: property <--time> from [initial] to [20s] at (0.5) is [30s] 
+PASS CSS Animations: property <--time> from [initial] to [20s] at (1) is [20s] 
+PASS CSS Animations: property <--time> from [initial] to [20s] at (1.5) is [10s] 
+PASS CSS Animations: property <--time> from [inherit] to [20s] at (-0.3) is [33s] 
+PASS CSS Animations: property <--time> from [inherit] to [20s] at (0) is [30s] 
+PASS CSS Animations: property <--time> from [inherit] to [20s] at (0.5) is [25s] 
+PASS CSS Animations: property <--time> from [inherit] to [20s] at (1) is [20s] 
+PASS CSS Animations: property <--time> from [inherit] to [20s] at (1.5) is [15s] 
+PASS CSS Animations: property <--time> from [unset] to [20s] at (-0.3) is [46s] 
+PASS CSS Animations: property <--time> from [unset] to [20s] at (0) is [40s] 
+PASS CSS Animations: property <--time> from [unset] to [20s] at (0.5) is [30s] 
+PASS CSS Animations: property <--time> from [unset] to [20s] at (1) is [20s] 
+PASS CSS Animations: property <--time> from [unset] to [20s] at (1.5) is [10s] 
+PASS CSS Animations: property <--time> from [-10s] to [10s] at (-0.3) is [-16s] 
+PASS CSS Animations: property <--time> from [-10s] to [10s] at (0) is [-10s] 
+PASS CSS Animations: property <--time> from [-10s] to [10s] at (0.5) is [0s] 
+PASS CSS Animations: property <--time> from [-10s] to [10s] at (1) is [10s] 
+PASS CSS Animations: property <--time> from [-10s] to [10s] at (1.5) is [20s] 
+PASS CSS Animations: property <--time> from [100ms] to [200ms] at (-0.3) is [0.07s] 
+PASS CSS Animations: property <--time> from [100ms] to [200ms] at (0) is [0.1s] 
+PASS CSS Animations: property <--time> from [100ms] to [200ms] at (0.5) is [0.15s] 
+PASS CSS Animations: property <--time> from [100ms] to [200ms] at (1) is [0.2s] 
+PASS CSS Animations: property <--time> from [100ms] to [200ms] at (1.5) is [0.25s] 
+PASS CSS Animations: property <--time> from [1000ms] to [11s] at (-0.3) is [-2s] 
+PASS CSS Animations: property <--time> from [1000ms] to [11s] at (0) is [1s] 
+PASS CSS Animations: property <--time> from [1000ms] to [11s] at (0.5) is [6s] 
+PASS CSS Animations: property <--time> from [1000ms] to [11s] at (1) is [11s] 
+PASS CSS Animations: property <--time> from [1000ms] to [11s] at (1.5) is [16s] 
+PASS Web Animations: property <--time> from neutral to [20s] at (-0.3) is [7s] 
+PASS Web Animations: property <--time> from neutral to [20s] at (0) is [10s] 
+PASS Web Animations: property <--time> from neutral to [20s] at (0.5) is [15s] 
+PASS Web Animations: property <--time> from neutral to [20s] at (1) is [20s] 
+PASS Web Animations: property <--time> from neutral to [20s] at (1.5) is [25s] 
+PASS Web Animations: property <--time> from [initial] to [20s] at (-0.3) is [46s] 
+PASS Web Animations: property <--time> from [initial] to [20s] at (0) is [40s] 
+PASS Web Animations: property <--time> from [initial] to [20s] at (0.5) is [30s] 
+PASS Web Animations: property <--time> from [initial] to [20s] at (1) is [20s] 
+PASS Web Animations: property <--time> from [initial] to [20s] at (1.5) is [10s] 
+PASS Web Animations: property <--time> from [inherit] to [20s] at (-0.3) is [33s] 
+PASS Web Animations: property <--time> from [inherit] to [20s] at (0) is [30s] 
+PASS Web Animations: property <--time> from [inherit] to [20s] at (0.5) is [25s] 
+PASS Web Animations: property <--time> from [inherit] to [20s] at (1) is [20s] 
+PASS Web Animations: property <--time> from [inherit] to [20s] at (1.5) is [15s] 
+PASS Web Animations: property <--time> from [unset] to [20s] at (-0.3) is [46s] 
+PASS Web Animations: property <--time> from [unset] to [20s] at (0) is [40s] 
+PASS Web Animations: property <--time> from [unset] to [20s] at (0.5) is [30s] 
+PASS Web Animations: property <--time> from [unset] to [20s] at (1) is [20s] 
+PASS Web Animations: property <--time> from [unset] to [20s] at (1.5) is [10s] 
+PASS Web Animations: property <--time> from [-10s] to [10s] at (-0.3) is [-16s] 
+PASS Web Animations: property <--time> from [-10s] to [10s] at (0) is [-10s] 
+PASS Web Animations: property <--time> from [-10s] to [10s] at (0.5) is [0s] 
+PASS Web Animations: property <--time> from [-10s] to [10s] at (1) is [10s] 
+PASS Web Animations: property <--time> from [-10s] to [10s] at (1.5) is [20s] 
+PASS Web Animations: property <--time> from [100ms] to [200ms] at (-0.3) is [0.07s] 
+PASS Web Animations: property <--time> from [100ms] to [200ms] at (0) is [0.1s] 
+PASS Web Animations: property <--time> from [100ms] to [200ms] at (0.5) is [0.15s] 
+PASS Web Animations: property <--time> from [100ms] to [200ms] at (1) is [0.2s] 
+PASS Web Animations: property <--time> from [100ms] to [200ms] at (1.5) is [0.25s] 
+PASS Web Animations: property <--time> from [1000ms] to [11s] at (-0.3) is [-2s] 
+PASS Web Animations: property <--time> from [1000ms] to [11s] at (0) is [1s] 
+PASS Web Animations: property <--time> from [1000ms] to [11s] at (0.5) is [6s] 
+PASS Web Animations: property <--time> from [1000ms] to [11s] at (1) is [11s] 
+PASS Web Animations: property <--time> from [1000ms] to [11s] at (1.5) is [16s] 
+Harness: the test ran to completion.
+
