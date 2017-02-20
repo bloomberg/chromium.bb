@@ -4398,6 +4398,8 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   if (delegate_)
     delegate_->HideValidationMessage(this);
 
+  audio_stream_monitor_.RenderProcessGone(rvh->GetProcess()->GetID());
+
   // Reset the loading progress. TODO(avi): What does it mean to have a
   // "renderer crash" when there is more than one renderer process serving a
   // webpage? Once this function is called at a more granular frame level, we

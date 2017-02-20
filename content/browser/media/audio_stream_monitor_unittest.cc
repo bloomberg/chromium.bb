@@ -78,11 +78,12 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
 
   void ExpectIsPolling(int render_process_id, int stream_id, bool is_polling) {
     const AudioStreamMonitor::StreamID key(render_process_id, stream_id);
-    EXPECT_EQ(
-        is_polling,
-        monitor_->poll_callbacks_.find(key) != monitor_->poll_callbacks_.end());
+    EXPECT_EQ(is_polling, monitor_->poll_callbacks_.find(key) !=
+                              monitor_->poll_callbacks_.end());
     EXPECT_EQ(!monitor_->poll_callbacks_.empty(),
-              monitor_->poll_timer_.IsRunning());
+              power_level_monitoring_available()
+                  ? monitor_->poll_timer_.IsRunning()
+                  : monitor_->IsCurrentlyAudible());
   }
 
   void ExpectTabWasRecentlyAudible(bool was_audible,
@@ -141,12 +142,24 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
       int render_process_id,
       int stream_id,
       const AudioStreamMonitor::ReadPowerAndClipCallback& callback) {
-    monitor_->StartMonitoringStreamOnUIThread(
-        render_process_id, stream_id, callback);
+    if (!power_level_monitoring_available() &&
+        monitor_->poll_callbacks_.empty()) {
+      ExpectCurrentlyAudibleChangeNotification(true);
+    }
+    monitor_->StartMonitoringStreamOnUIThread(render_process_id, stream_id,
+                                              callback);
   }
 
   void StopMonitoring(int render_process_id, int stream_id) {
+    if (!power_level_monitoring_available() &&
+        monitor_->poll_callbacks_.size() == 1u) {
+      ExpectCurrentlyAudibleChangeNotification(false);
+    }
     monitor_->StopMonitoringStreamOnUIThread(render_process_id, stream_id);
+  }
+
+  bool power_level_monitoring_available() {
+    return AudioStreamMonitor::power_level_monitoring_available();
   }
 
  protected:
@@ -175,6 +188,9 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
 // Tests that AudioStreamMonitor is polling while it has a
 // ReadPowerAndClipCallback, and is not polling at other times.
 TEST_F(AudioStreamMonitorTest, PollsWhenProvidedACallback) {
+  if (!power_level_monitoring_available())
+    return;
+
   EXPECT_FALSE(monitor_->WasRecentlyAudible());
   ExpectNotCurrentlyAudible();
   ExpectIsPolling(kRenderProcessId, kStreamId, false);
@@ -195,6 +211,9 @@ TEST_F(AudioStreamMonitorTest, PollsWhenProvidedACallback) {
 // threshold.  See comments in audio_stream_monitor.h for expected behavior.
 TEST_F(AudioStreamMonitorTest,
        ImpulsesKeepIndicatorOnUntilHoldingPeriodHasPassed) {
+  if (!power_level_monitoring_available())
+    return;
+
   StartMonitoring(kRenderProcessId, kStreamId, CreatePollCallback(kStreamId));
 
   // Expect WebContents will get one call form AudioStreamMonitor to toggle the
@@ -247,6 +266,9 @@ TEST_F(AudioStreamMonitorTest,
 // Tests that the AudioStreamMonitor correctly processes the blurts from two
 // different streams in the same tab.
 TEST_F(AudioStreamMonitorTest, HandlesMultipleStreamsBlurting) {
+  if (!power_level_monitoring_available())
+    return;
+
   StartMonitoring(kRenderProcessId, kStreamId, CreatePollCallback(kStreamId));
   StartMonitoring(
       kRenderProcessId, kAnotherStreamId, CreatePollCallback(kAnotherStreamId));
@@ -341,6 +363,40 @@ TEST_F(AudioStreamMonitorTest, MultipleRendererProcesses) {
   StopMonitoring(kAnotherRenderProcessId, kStreamId);
   ExpectIsPolling(kRenderProcessId, kStreamId, true);
   ExpectIsPolling(kAnotherRenderProcessId, kStreamId, false);
+}
+
+TEST_F(AudioStreamMonitorTest, RenderProcessGone) {
+  StartMonitoring(kRenderProcessId, kStreamId, CreatePollCallback(kStreamId));
+  StartMonitoring(kAnotherRenderProcessId, kStreamId,
+                  CreatePollCallback(kStreamId));
+  ExpectIsPolling(kRenderProcessId, kStreamId, true);
+  ExpectIsPolling(kAnotherRenderProcessId, kStreamId, true);
+  monitor_->RenderProcessGone(kRenderProcessId);
+  ExpectIsPolling(kRenderProcessId, kStreamId, false);
+  if (!power_level_monitoring_available())
+    ExpectCurrentlyAudibleChangeNotification(false);
+  monitor_->RenderProcessGone(kAnotherRenderProcessId);
+  ExpectIsPolling(kAnotherRenderProcessId, kStreamId, false);
+}
+
+TEST_F(AudioStreamMonitorTest, NoPowerLevelMonitoring) {
+  if (power_level_monitoring_available())
+    return;
+
+  ExpectNotCurrentlyAudible();
+  StartMonitoring(kRenderProcessId, kStreamId, CreatePollCallback(kStreamId));
+  ExpectIsCurrentlyAudible();
+  ExpectIsPolling(kRenderProcessId, kStreamId, true);
+
+  StartMonitoring(kAnotherRenderProcessId, kStreamId,
+                  CreatePollCallback(kStreamId));
+  ExpectIsCurrentlyAudible();
+  ExpectIsPolling(kAnotherRenderProcessId, kStreamId, true);
+
+  StopMonitoring(kRenderProcessId, kStreamId);
+  ExpectIsCurrentlyAudible();
+  StopMonitoring(kAnotherRenderProcessId, kStreamId);
+  ExpectNotCurrentlyAudible();
 }
 
 }  // namespace content

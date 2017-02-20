@@ -54,6 +54,10 @@ class CONTENT_EXPORT AudioStreamMonitor {
   // false as soon as the WebContents stop producing sound.
   bool IsCurrentlyAudible() const;
 
+  // Called by the WebContentsImpl if |render_process_id| dies; used to clear
+  // any outstanding poll callbacks.
+  void RenderProcessGone(int render_process_id);
+
   // Starts or stops audio level monitoring respectively for the stream owned by
   // the specified renderer.  Safe to call from any thread.
   //
@@ -142,8 +146,8 @@ class CONTENT_EXPORT AudioStreamMonitor {
 
   // The callbacks to read power levels for each stream.  Only playing (i.e.,
   // not paused) streams will have an entry in this map.
-  typedef std::pair<int, int> StreamID;
-  typedef std::map<StreamID, ReadPowerAndClipCallback> StreamPollCallbackMap;
+  using StreamID = std::pair<int, int>;
+  using StreamPollCallbackMap = std::map<StreamID, ReadPowerAndClipCallback>;
   StreamPollCallbackMap poll_callbacks_;
 
   // Records the last time at which sound was audible from any stream.
@@ -162,10 +166,6 @@ class CONTENT_EXPORT AudioStreamMonitor {
   // Started only when an indicator is toggled on, to turn it off again in the
   // future.
   base::OneShotTimer off_timer_;
-
-  // Number of active streams to be used as a proxy for audibility when power
-  // level monitoring is not available.
-  size_t active_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioStreamMonitor);
 };
