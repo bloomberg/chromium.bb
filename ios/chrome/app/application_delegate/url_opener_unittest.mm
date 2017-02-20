@@ -6,7 +6,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/app/application_delegate/app_state_testing.h"
 #include "ios/chrome/app/application_delegate/mock_tab_opener.h"
@@ -23,6 +22,10 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 #pragma mark - Tab Switcher Mock
 
@@ -112,8 +115,8 @@ typedef Tab* (^mock_gurl_nsuinteger_pagetransition)(const GURL&,
 class URLOpenerTest : public PlatformTest {
  protected:
   MainController* GetMainController() {
-    if (!main_controller_.get()) {
-      main_controller_.reset([[MainController alloc] init]);
+    if (!main_controller_) {
+      main_controller_ = [[MainController alloc] init];
       [main_controller_ setUpAsForegrounded];
       id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
       [[mainTabModel stub] resetSessionMetrics];
@@ -122,34 +125,34 @@ class URLOpenerTest : public PlatformTest {
       [[mainTabModel stub] removeObserver:[OCMArg any]];
       [[main_controller_ browserViewInformation] setMainTabModel:mainTabModel];
     }
-    return main_controller_.get();
+    return main_controller_;
   }
 
  private:
-  base::scoped_nsobject<MainController> main_controller_;
+  MainController* main_controller_;
 };
 
 TEST_F(URLOpenerTest, HandleOpenURLWithNoOpenTab) {
   // The tab switcher controller should be dismissed with a new tab containing
   // the external URL.
   NSURL* url = [NSURL URLWithString:@"chromium://www.google.com"];
-  base::scoped_nsobject<ChromeAppStartupParameters> params(
+  ChromeAppStartupParameters* params =
       [ChromeAppStartupParameters newChromeAppStartupParametersWithURL:url
-                                                 fromSourceApplication:nil]);
+                                                 fromSourceApplication:nil];
 
-  base::scoped_nsobject<id> bvcMock([[URLOpenerMockBVC alloc] init]);
+  id bvcMock = [[URLOpenerMockBVC alloc] init];
 
-  base::scoped_nsobject<id> tabSwitcherController;
-  tabSwitcherController.reset([[URLOpenerOCMockComplexTypeHandler alloc]
+  id tabSwitcherController;
+  tabSwitcherController = [[URLOpenerOCMockComplexTypeHandler alloc]
       initWithRepresentedObject:[OCMockObject
-                                    mockForProtocol:@protocol(UrlLoader)]]);
+                                    mockForProtocol:@protocol(UrlLoader)]];
 
-  base::scoped_nsobject<id> block([(id) ^ (const GURL& url, NSUInteger position,
-                                           ui::PageTransition transition) {
+  id block = [(id) ^ (const GURL& url, NSUInteger position,
+                      ui::PageTransition transition) {
     EXPECT_EQ(url, [params externalURL]);
     EXPECT_EQ(NSNotFound, static_cast<NSInteger>(position));
     EXPECT_TRUE(PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK));
-  } copy]);
+  } copy];
   SEL dismissSelector =
       @selector(dismissWithNewTabAnimationToModel:withURL:atIndex:transition:);
   [tabSwitcherController onSelector:dismissSelector callBlockExpectation:block];
@@ -164,11 +167,11 @@ TEST_F(URLOpenerTest, HandleOpenURLWithNoOpenTab) {
       [OCMockObject mockForClass:[MainApplicationDelegate class]];
 
   AppState* appState =
-      [[[AppState alloc] initWithBrowserLauncher:controller
-                              startupInformation:controller
-                             applicationDelegate:mainApplicationDelegate
-                                          window:controller.window
-                                   shouldOpenNTP:YES] autorelease];
+      [[AppState alloc] initWithBrowserLauncher:controller
+                             startupInformation:controller
+                            applicationDelegate:mainApplicationDelegate
+                                         window:controller.window
+                                  shouldOpenNTP:YES];
   controller.appState = appState;
 
   NSDictionary<NSString*, id>* options = nil;
@@ -183,21 +186,19 @@ TEST_F(URLOpenerTest, HandleOpenURLWithNoOpenTab) {
 
 TEST_F(URLOpenerTest, HandleOpenURLWithOpenTabs) {
   NSURL* url = [NSURL URLWithString:@"chromium://www.google.com"];
-  base::scoped_nsobject<URLOpenerMockBVC> bvc_mock(
-      [[URLOpenerMockBVC alloc] init]);
-  base::scoped_nsobject<URLOpenerMockBVC> otr_bvc_mock(
-      [[URLOpenerMockBVC alloc] init]);
+  URLOpenerMockBVC* bvc_mock = [[URLOpenerMockBVC alloc] init];
+  URLOpenerMockBVC* otr_bvc_mock = [[URLOpenerMockBVC alloc] init];
   TestChromeBrowserState::Builder main_browser_state_builder;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state =
       main_browser_state_builder.Build();
-  bvc_mock.get().browserState = chrome_browser_state.get();
+  bvc_mock.browserState = chrome_browser_state.get();
 
   // Setup main controller.
   MainController* controller = GetMainController();
   controller.browserViewInformation.mainBVC =
-      static_cast<BrowserViewController*>(bvc_mock.get());
+      static_cast<BrowserViewController*>(bvc_mock);
   controller.browserViewInformation.otrBVC =
-      static_cast<BrowserViewController*>(otr_bvc_mock.get());
+      static_cast<BrowserViewController*>(otr_bvc_mock);
 
   NSDictionary<NSString*, id>* options = nil;
   [URLOpener openURL:url
@@ -225,7 +226,7 @@ TEST_F(URLOpenerTest, HandleOpenURL) {
   NSArray* applicationStatesToTest = @[ @YES, @NO ];
 
   // Mock of TabOpening, preventing the creation of a new tab.
-  base::scoped_nsobject<MockTabOpener> tabOpener([[MockTabOpener alloc] init]);
+  MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
 
   // The keys for this dictionary is the URL to call openURL:. The value
   // from the key is either YES or NO to indicate if this is a valid URL
@@ -281,8 +282,7 @@ TEST_F(URLOpenerTest, HandleOpenURL) {
                                ? nil
                                : [NSURL URLWithString:urlString];
           BOOL isValid = [[urlsToTest objectForKey:urlString] boolValue];
-          base::scoped_nsobject<NSMutableDictionary> options(
-              [[NSMutableDictionary alloc] init]);
+          NSMutableDictionary* options = [[NSMutableDictionary alloc] init];
           if (source != [NSNull null]) {
             [options setObject:source
                         forKey:UIApplicationOpenURLOptionsSourceApplicationKey];
@@ -291,10 +291,9 @@ TEST_F(URLOpenerTest, HandleOpenURL) {
             [options setObject:annotation
                         forKey:UIApplicationOpenURLOptionsAnnotationKey];
           }
-          base::scoped_nsobject<ChromeAppStartupParameters> params(
-              [ChromeAppStartupParameters
-                  newChromeAppStartupParametersWithURL:testUrl
-                                 fromSourceApplication:nil]);
+          ChromeAppStartupParameters* params = [ChromeAppStartupParameters
+              newChromeAppStartupParametersWithURL:testUrl
+                             fromSourceApplication:nil];
 
           // Action.
           BOOL result = [URLOpener openURL:testUrl

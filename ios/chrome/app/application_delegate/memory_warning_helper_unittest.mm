@@ -5,13 +5,16 @@
 #import "ios/chrome/app/application_delegate/memory_warning_helper.h"
 
 #include "base/mac/bind_objc_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using previous_session_info_constants::
     kDidSeeMemoryWarningShortlyBeforeTerminating;
@@ -34,7 +37,7 @@ class MemoryWarningHelperTest : public PlatformTest {
 
   MemoryWarningHelper* GetMemoryHelper() {
     if (!memory_helper_) {
-      memory_helper_.reset([[MemoryWarningHelper alloc] init]);
+      memory_helper_ = [[MemoryWarningHelper alloc] init];
     }
     return memory_helper_;
   }
@@ -53,7 +56,7 @@ class MemoryWarningHelperTest : public PlatformTest {
   base::RunLoop run_loop_;
   base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level_;
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
-  base::scoped_nsobject<MemoryWarningHelper> memory_helper_;
+  MemoryWarningHelper* memory_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryWarningHelperTest);
 };

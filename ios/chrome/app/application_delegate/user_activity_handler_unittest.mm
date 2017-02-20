@@ -10,7 +10,6 @@
 
 #include "base/ios/ios_util.h"
 #include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_command_line.h"
 #include "components/handoff/handoff_utility.h"
@@ -38,13 +37,17 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 #pragma mark - Tab Mock
 
 // Tab mock for using in UserActivity tests.
 @interface UserActivityHandlerTabMock : NSObject
 
 @property(nonatomic, readonly) GURL url;
-@property(nonatomic, readonly) NSString* tabId;
+@property(nonatomic, copy, readonly) NSString* tabId;
 
 @end
 
@@ -63,7 +66,7 @@
 // TabModel mock for using in UserActivity tests.
 @interface UserActivityHandlerTabModelMock : NSObject<NSFastEnumeration> {
  @private
-  base::scoped_nsobject<NSMutableArray> _tabs;
+  NSMutableArray* _tabs;
 }
 
 - (void)addTab:(Tab*)tab;
@@ -76,13 +79,14 @@
 
 - (instancetype)init {
   if ((self = [super init])) {
-    _tabs.reset([[NSMutableArray alloc] init]);
+    _tabs = [[NSMutableArray alloc] init];
   }
   return self;
 }
 
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
-                                  objects:(id*)stackbuf
+                                  objects:
+                                      (__unsafe_unretained id _Nonnull*)stackbuf
                                     count:(NSUInteger)len {
   return [_tabs countByEnumeratingWithState:state objects:stackbuf count:len];
 }
@@ -117,9 +121,9 @@ class UserActivityHandlerTest : public PlatformTest {
  protected:
   void swizzleHandleStartupParameters() {
     handle_startup_parameters_has_been_called_ = NO;
-    swizzle_block_.reset([^(id self) {
+    swizzle_block_ = [^(id self) {
       handle_startup_parameters_has_been_called_ = YES;
-    } copy]);
+    } copy];
     user_activity_handler_swizzler_.reset(new ScopedBlockSwizzler(
         [UserActivityHandler class],
         @selector(handleStartupParametersWithTabOpener:
@@ -139,10 +143,10 @@ class UserActivityHandlerTest : public PlatformTest {
   conditionBlock getCompletionHandler() {
     if (!completion_block_) {
       block_executed_ = NO;
-      completion_block_.reset([^(BOOL arg) {
+      completion_block_ = [^(BOOL arg) {
         block_executed_ = YES;
         block_argument_ = arg;
-      } copy]);
+      } copy];
     }
     return completion_block_;
   }
@@ -155,8 +159,8 @@ class UserActivityHandlerTest : public PlatformTest {
   __block BOOL block_executed_;
   __block BOOL block_argument_;
   std::unique_ptr<ScopedBlockSwizzler> user_activity_handler_swizzler_;
-  base::mac::ScopedBlock<startupParameterBlock> swizzle_block_;
-  base::mac::ScopedBlock<conditionBlock> completion_block_;
+  startupParameterBlock swizzle_block_;
+  conditionBlock completion_block_;
   __block BOOL handle_startup_parameters_has_been_called_;
 };
 
@@ -203,8 +207,8 @@ TEST(UserActivityHandlerNoFixtureTest, continueUserActivityFromGarbage) {
     @"thisIsGarbage", @"it.does.not.work", handoffWithSuffix, handoffWithPrefix
   ];
   for (NSString* userActivityType in userActivityTypes) {
-    base::scoped_nsobject<NSUserActivity> userActivity(
-        [[NSUserActivity alloc] initWithActivityType:userActivityType]);
+    NSUserActivity* userActivity =
+        [[NSUserActivity alloc] initWithActivityType:userActivityType];
     [userActivity setWebpageURL:[NSURL URLWithString:@"http://www.google.com"]];
 
     // The test will fail is a method of those objects is called.
@@ -228,8 +232,8 @@ TEST(UserActivityHandlerNoFixtureTest, continueUserActivityFromGarbage) {
 // set.
 TEST(UserActivityHandlerNoFixtureTest, continueUserActivityNoWebpage) {
   // Setup.
-  base::scoped_nsobject<NSUserActivity> userActivity([[NSUserActivity alloc]
-      initWithActivityType:handoff::kChromeHandoffActivityType]);
+  NSUserActivity* userActivity = [[NSUserActivity alloc]
+      initWithActivityType:handoff::kChromeHandoffActivityType];
 
   // The test will fail is a method of those objects is called.
   id tabOpenerMock = [OCMockObject mockForProtocol:@protocol(TabOpening)];
@@ -256,8 +260,8 @@ TEST(UserActivityHandlerNoFixtureTest,
     return;
   }
   // Setup.
-  base::scoped_nsobject<NSUserActivity> userActivity(
-      [[NSUserActivity alloc] initWithActivityType:CSSearchableItemActionType]);
+  NSUserActivity* userActivity =
+      [[NSUserActivity alloc] initWithActivityType:CSSearchableItemActionType];
   NSString* invalidAction =
       [NSString stringWithFormat:@"%@.invalidAction",
                                  spotlight::StringFromSpotlightDomain(
@@ -290,8 +294,8 @@ TEST(UserActivityHandlerNoFixtureTest,
 // by saving the url to startupParameters.
 TEST(UserActivityHandlerNoFixtureTest, continueUserActivityBackground) {
   // Setup.
-  base::scoped_nsobject<NSUserActivity> userActivity([[NSUserActivity alloc]
-      initWithActivityType:handoff::kChromeHandoffActivityType]);
+  NSUserActivity* userActivity = [[NSUserActivity alloc]
+      initWithActivityType:handoff::kChromeHandoffActivityType];
   NSURL* nsurl = [NSURL URLWithString:@"http://www.google.com"];
   [userActivity setWebpageURL:nsurl];
 
@@ -325,20 +329,19 @@ TEST(UserActivityHandlerNoFixtureTest, continueUserActivityBackground) {
 // by opening a new tab.
 TEST(UserActivityHandlerNoFixtureTest, continueUserActivityForeground) {
   // Setup.
-  base::scoped_nsobject<NSUserActivity> userActivity([[NSUserActivity alloc]
-      initWithActivityType:handoff::kChromeHandoffActivityType]);
+  NSUserActivity* userActivity = [[NSUserActivity alloc]
+      initWithActivityType:handoff::kChromeHandoffActivityType];
   NSURL* nsurl = [NSURL URLWithString:@"http://www.google.com"];
   [userActivity setWebpageURL:nsurl];
 
-  base::scoped_nsobject<MockTabOpener> tabOpener([[MockTabOpener alloc] init]);
+  MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
 
   id startupInformationMock =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
   [[[startupInformationMock stub] andReturnValue:@NO] isPresentingFirstRunUI];
 
-  base::scoped_nsobject<AppStartupParameters> startupParams(
-      [[AppStartupParameters alloc]
-          initWithExternalURL:(GURL("http://www.google.com"))]);
+  AppStartupParameters* startupParams = [[AppStartupParameters alloc]
+      initWithExternalURL:(GURL("http://www.google.com"))];
   [[[startupInformationMock stub] andReturn:startupParams] startupParameters];
 
   // Action.
@@ -356,18 +359,18 @@ TEST(UserActivityHandlerNoFixtureTest, continueUserActivityForeground) {
 // Tests that a new tab is created when application is started via Universal
 // Link.
 TEST_F(UserActivityHandlerTest, continueUserActivityBrowsingWeb) {
-  base::scoped_nsobject<NSUserActivity> userActivity([[NSUserActivity alloc]
-      initWithActivityType:NSUserActivityTypeBrowsingWeb]);
+  NSUserActivity* userActivity = [[NSUserActivity alloc]
+      initWithActivityType:NSUserActivityTypeBrowsingWeb];
   // This URL is passed to application by iOS but is not used in this part
   // of application logic.
   NSURL* nsurl = [NSURL URLWithString:@"http://goo.gl/foo/bar"];
   [userActivity setWebpageURL:nsurl];
 
-  base::scoped_nsobject<MockTabOpener> tabOpener([[MockTabOpener alloc] init]);
+  MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
 
   // Use an object to capture the startup paramters set by UserActivityHandler.
-  base::scoped_nsobject<FakeStartupInformation> fakeStartupInformation(
-      [[FakeStartupInformation alloc] init]);
+  FakeStartupInformation* fakeStartupInformation =
+      [[FakeStartupInformation alloc] init];
   [fakeStartupInformation setIsPresentingFirstRunUI:NO];
 
   BOOL result =
@@ -395,8 +398,8 @@ TEST_F(UserActivityHandlerTest, continueUserActivityShortcutActions) {
   }
   // Setup.
   GURL gurlNewTab(kChromeUINewTabURL);
-  base::scoped_nsobject<FakeStartupInformation> fakeStartupInformation(
-      [[FakeStartupInformation alloc] init]);
+  FakeStartupInformation* fakeStartupInformation =
+      [[FakeStartupInformation alloc] init];
 
   NSArray* parametersToTest = @[
     @[
@@ -422,8 +425,8 @@ TEST_F(UserActivityHandlerTest, continueUserActivityShortcutActions) {
       switches::kEnableSpotlightActions);
 
   for (id parameters in parametersToTest) {
-    base::scoped_nsobject<NSUserActivity> userActivity([[NSUserActivity alloc]
-        initWithActivityType:CSSearchableItemActionType]);
+    NSUserActivity* userActivity = [[NSUserActivity alloc]
+        initWithActivityType:CSSearchableItemActionType];
     NSString* action = [NSString
         stringWithFormat:@"%@.%@", spotlight::StringFromSpotlightDomain(
                                        spotlight::DOMAIN_ACTIONS),
@@ -458,8 +461,8 @@ TEST(UserActivityHandlerNoFixtureTest, handleStartupParamsNonU2F) {
   // Setup.
   GURL gurl("http://www.google.com");
 
-  base::scoped_nsobject<AppStartupParameters> startupParams(
-      [[AppStartupParameters alloc] initWithExternalURL:gurl]);
+  AppStartupParameters* startupParams =
+      [[AppStartupParameters alloc] initWithExternalURL:gurl];
   [startupParams setLaunchInIncognito:YES];
 
   id startupInformationMock =
@@ -468,7 +471,7 @@ TEST(UserActivityHandlerNoFixtureTest, handleStartupParamsNonU2F) {
   [[[startupInformationMock stub] andReturn:startupParams] startupParameters];
   [[startupInformationMock expect] setStartupParameters:nil];
 
-  base::scoped_nsobject<MockTabOpener> tabOpener([[MockTabOpener alloc] init]);
+  MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
 
   // The test will fail is a method of this object is called.
   id browserViewMock =
@@ -493,18 +496,18 @@ TEST(UserActivityHandlerNoFixtureTest, handleStartupParamsU2F) {
   GURL gurl("chromium://u2f-callback?isU2F=1&tabID=B05B1860");
   NSString* tabID = [U2FController tabIDFromResponseURL:gurl];
 
-  base::scoped_nsobject<AppStartupParameters> startupParams(
-      [[AppStartupParameters alloc] initWithExternalURL:gurl]);
+  AppStartupParameters* startupParams =
+      [[AppStartupParameters alloc] initWithExternalURL:gurl];
   [startupParams setLaunchInIncognito:YES];
 
-  base::scoped_nsobject<UserActivityHandlerTabMock> tabMock(
-      [[UserActivityHandlerTabMock alloc] init]);
+  UserActivityHandlerTabMock* tabMock =
+      [[UserActivityHandlerTabMock alloc] init];
   id tabOCMock = [OCMockObject partialMockForObject:tabMock];
   [[[tabOCMock stub] andReturn:tabID] tabId];
 
-  base::scoped_nsobject<UserActivityHandlerTabModelMock> tabModel(
-      [[UserActivityHandlerTabModelMock alloc] init]);
-  [tabModel addTab:(Tab*)tabMock.get()];
+  UserActivityHandlerTabModelMock* tabModel =
+      [[UserActivityHandlerTabModelMock alloc] init];
+  [tabModel addTab:(Tab*)tabMock];
 
   id startupInformationMock =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
@@ -514,12 +517,12 @@ TEST(UserActivityHandlerNoFixtureTest, handleStartupParamsU2F) {
 
   id browserViewInformationMock =
       [OCMockObject mockForProtocol:@protocol(BrowserViewInformation)];
-  [[[browserViewInformationMock stub] andReturn:(TabModel*)tabModel.get()]
+  [[[browserViewInformationMock stub] andReturn:(TabModel*)tabModel]
       mainTabModel];
-  [[[browserViewInformationMock stub] andReturn:(TabModel*)tabModel.get()]
+  [[[browserViewInformationMock stub] andReturn:(TabModel*)tabModel]
       otrTabModel];
 
-  base::scoped_nsobject<MockTabOpener> tabOpener([[MockTabOpener alloc] init]);
+  MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
 
   // Action.
   [UserActivityHandler
@@ -538,8 +541,8 @@ TEST_F(UserActivityHandlerTest, performActionForShortcutItemWithRealShortcut) {
   // Setup.
   GURL gurlNewTab("chrome://newtab/");
 
-  base::scoped_nsobject<FakeStartupInformation> fakeStartupInformation(
-      [[FakeStartupInformation alloc] init]);
+  FakeStartupInformation* fakeStartupInformation =
+      [[FakeStartupInformation alloc] init];
   [fakeStartupInformation setIsPresentingFirstRunUI:NO];
 
   NSArray* parametersToTest = @[
@@ -551,9 +554,9 @@ TEST_F(UserActivityHandlerTest, performActionForShortcutItemWithRealShortcut) {
   swizzleHandleStartupParameters();
 
   for (id parameters in parametersToTest) {
-    base::scoped_nsobject<UIApplicationShortcutItem> shortcut(
+    UIApplicationShortcutItem* shortcut =
         [[UIApplicationShortcutItem alloc] initWithType:parameters[0]
-                                         localizedTitle:parameters[0]]);
+                                         localizedTitle:parameters[0]];
 
     resetHandleStartupParametersHasBeenCalled();
 
@@ -593,9 +596,9 @@ TEST_F(UserActivityHandlerTest, performActionForShortcutItemWithFirstRunUI) {
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
   [[[startupInformationMock stub] andReturnValue:@YES] isPresentingFirstRunUI];
 
-  base::scoped_nsobject<UIApplicationShortcutItem> shortcut(
+  UIApplicationShortcutItem* shortcut =
       [[UIApplicationShortcutItem alloc] initWithType:@"OpenNewTab"
-                                       localizedTitle:@""]);
+                                       localizedTitle:@""];
 
   swizzleHandleStartupParameters();
 

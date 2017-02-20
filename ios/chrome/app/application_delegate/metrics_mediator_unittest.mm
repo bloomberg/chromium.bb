@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
 #import "breakpad/src/client/ios/BreakpadController.h"
 #include "components/metrics/metrics_service.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
@@ -23,6 +22,10 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 #pragma mark - connectionTypeChanged tests.
 
@@ -93,8 +96,7 @@ int getExpectedValue(int number) {
 // uploading in the breakpad and in the metrics service.
 TEST(MetricsMediatorTest, connectionTypeChanged) {
   [[PreviousSessionInfo sharedInstance] setIsFirstSessionAfterUpgrade:NO];
-  base::scoped_nsobject<MetricsMediatorMock> mock_metrics_helper(
-      [[MetricsMediatorMock alloc] init]);
+  MetricsMediatorMock* mock_metrics_helper = [[MetricsMediatorMock alloc] init];
 
   // Checks all different scenarios.
   for (int i = 0; i < 8; ++i) {
@@ -126,11 +128,11 @@ class MetricsMediatorLogLaunchTest : public PlatformTest {
         [OCMockObject mockForProtocol:@protocol(BrowserViewInformation)];
     [[[browser_view_information_ stub] andReturn:mainTabModel] mainTabModel];
 
-    swizzle_block_.reset([^(id self, int numTab) {
+    swizzle_block_ = [^(id self, int numTab) {
       has_been_called_ = YES;
       // Tests.
       EXPECT_EQ(tabCount, numTab);
-    } copy]);
+    } copy];
     if (coldStart) {
       uma_histogram_swizzler_.reset(new ScopedBlockSwizzler(
           [MetricsMediator class], @selector(recordNumTabAtStartup:),
@@ -149,7 +151,7 @@ class MetricsMediatorLogLaunchTest : public PlatformTest {
  private:
   id browser_view_information_;
   __block BOOL has_been_called_;
-  base::mac::ScopedBlock<logLaunchMetricsBlock> swizzle_block_;
+  logLaunchMetricsBlock swizzle_block_;
   std::unique_ptr<ScopedBlockSwizzler> uma_histogram_swizzler_;
 };
 
@@ -245,17 +247,16 @@ class MetricsMediatorShutdownTypeTest : public testing::TestWithParam<int> {};
 // count waiting to be processed.
 TEST_P(MetricsMediatorShutdownTypeTest, ProcessCrashReportsPresentAtStartup) {
   // Create a MainController.
-  base::scoped_nsobject<MetricsMediator> metric_helper(
-      [[MetricsMediator alloc] init]);
+  MetricsMediator* metric_helper = [[MetricsMediator alloc] init];
 
   // Create a mock for BreakpadController and swizzle
   // +[BreakpadController sharedInstance] to return the mock instead of the
   // normal singleton instance.
-  base::scoped_nsobject<id> mock_breakpad_controller(
-      [[OCMockObject mockForClass:[BreakpadController class]] retain]);
+  id mock_breakpad_controller =
+      [OCMockObject mockForClass:[BreakpadController class]];
 
   id implementation_block = ^BreakpadController*(id self) {
-    return mock_breakpad_controller.get();
+    return mock_breakpad_controller;
   };
   ScopedBlockSwizzler breakpad_controller_shared_instance_swizzler(
       [BreakpadController class], @selector(sharedInstance),
@@ -268,7 +269,7 @@ TEST_P(MetricsMediatorShutdownTypeTest, ProcessCrashReportsPresentAtStartup) {
   // Now call the method under test and verify that the Breakpad controller got
   // called appropriately.
   [metric_helper processCrashReportsPresentAtStartup];
-  EXPECT_OCMOCK_VERIFY(mock_breakpad_controller.get());
+  EXPECT_OCMOCK_VERIFY(mock_breakpad_controller);
 }
 
 INSTANTIATE_TEST_CASE_P(/* No InstantiationName */,
