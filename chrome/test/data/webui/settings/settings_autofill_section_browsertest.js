@@ -170,7 +170,10 @@ SettingsAutofillSectionBrowserTest.prototype = {
   },
 };
 
-TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
+// Disabled because of flakiness http://crbug.com/694289
+TEST_F('SettingsAutofillSectionBrowserTest',
+       'DISABLED_CreditCardTests',
+       function() {
   var self = this;
 
   setup(function() {
