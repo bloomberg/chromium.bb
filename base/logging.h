@@ -500,7 +500,23 @@ class CheckOpResult {
 #if defined(COMPILER_GCC)
 #define IMMEDIATE_CRASH() __builtin_trap()
 #elif defined(COMPILER_MSVC)
+
+// Clang is cleverer about coalescing int3s, so we need to add a unique-ish
+// instruction following the __debugbreak() to have it emit distinct locations
+// for CHECKs rather than collapsing them all together. It would be nice to use
+// a short intrinsic to do this (and perhaps have only one implementation for
+// both clang and MSVC), however clang-cl currently does not support intrinsics
+// here. Adding the nullptr store to the MSVC path adds unnecessary bloat.
+// TODO(scottmg): Reinvestigate a short sequence that will work on both
+// compilers once clang supports more intrinsics. See https://crbug.com/693713.
+#if defined(__clang__)
+#define IMMEDIATE_CRASH() \
+  (__debugbreak(),        \
+   (void)(*reinterpret_cast<volatile unsigned char*>(0) = __COUNTER__))
+#else
 #define IMMEDIATE_CRASH() __debugbreak()
+#endif  // __clang__
+
 #else
 #error Port
 #endif
