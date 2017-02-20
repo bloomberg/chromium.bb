@@ -442,7 +442,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, NoBackgroundPage) {
 // Child extension frames should only appear if it is hosted in an extension
 // process (i.e. if the top-level frame is an extension page, or if OOP frames
 // are enabled for extensions).
-IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, FrameClassification) {
+// Disabled due to flake: https://crbug.com/693287.
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
+                       DISABLED_FrameClassification) {
   const Extension* extension1 = CreateExtension("Extension 1", false);
   const Extension* extension2 = CreateExtension("Extension 2", true);
   embedded_test_server()->ServeFilesFromDirectory(extension1->path());
