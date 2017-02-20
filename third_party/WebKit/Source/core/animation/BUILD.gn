@@ -25,6 +25,8 @@ blink_core_sources("animation") {
     "BasicShapeInterpolationFunctions.cpp",
     "BasicShapeInterpolationFunctions.h",
     "BorderImageLengthBoxPropertyFunctions.h",
+    "CSSAngleInterpolationType.cpp",
+    "CSSAngleInterpolationType.h",
     "CSSBasicShapeInterpolationType.cpp",
     "CSSBasicShapeInterpolationType.h",
     "CSSBorderImageLengthBoxInterpolationType.cpp",

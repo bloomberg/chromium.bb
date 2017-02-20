@@ -1,0 +1,109 @@
+This is a testharness.js-based test.
+PASS This test uses interpolation-test.js. 
+FAIL CSS Transitions: property <--angle> from neutral to [20deg] at (-0.3) is [20deg] assert_equals: expected "7deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from neutral to [20deg] at (0) is [20deg] assert_equals: expected "10deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from neutral to [20deg] at (0.5) is [20deg] assert_equals: expected "15deg " but got "20deg "
+PASS CSS Transitions: property <--angle> from neutral to [20deg] at (1) is [20deg] 
+FAIL CSS Transitions: property <--angle> from neutral to [20deg] at (1.5) is [20deg] assert_equals: expected "25deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from [initial] to [20deg] at (-0.3) is [20deg] assert_equals: expected "46deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from [initial] to [20deg] at (0) is [20deg] assert_equals: expected "40deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from [initial] to [20deg] at (0.5) is [20deg] assert_equals: expected "30deg " but got "20deg "
+PASS CSS Transitions: property <--angle> from [initial] to [20deg] at (1) is [20deg] 
+FAIL CSS Transitions: property <--angle> from [initial] to [20deg] at (1.5) is [20deg] assert_equals: expected "10deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from [inherit] to [20deg] at (-0.3) is [20deg] assert_equals: expected "33deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from [inherit] to [20deg] at (0) is [20deg] assert_equals: expected "30deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from [inherit] to [20deg] at (0.5) is [20deg] assert_equals: expected "25deg " but got "20deg "
+PASS CSS Transitions: property <--angle> from [inherit] to [20deg] at (1) is [20deg] 
+FAIL CSS Transitions: property <--angle> from [inherit] to [20deg] at (1.5) is [20deg] assert_equals: expected "15deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from [unset] to [20deg] at (-0.3) is [20deg] assert_equals: expected "46deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from [unset] to [20deg] at (0) is [20deg] assert_equals: expected "40deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from [unset] to [20deg] at (0.5) is [20deg] assert_equals: expected "30deg " but got "20deg "
+PASS CSS Transitions: property <--angle> from [unset] to [20deg] at (1) is [20deg] 
+FAIL CSS Transitions: property <--angle> from [unset] to [20deg] at (1.5) is [20deg] assert_equals: expected "10deg " but got "20deg "
+FAIL CSS Transitions: property <--angle> from [-10deg] to [10deg] at (-0.3) is [10deg] assert_equals: expected "- 16deg " but got "10deg "
+FAIL CSS Transitions: property <--angle> from [-10deg] to [10deg] at (0) is [10deg] assert_equals: expected "- 10deg " but got "10deg "
+FAIL CSS Transitions: property <--angle> from [-10deg] to [10deg] at (0.5) is [10deg] assert_equals: expected "0deg " but got "10deg "
+PASS CSS Transitions: property <--angle> from [-10deg] to [10deg] at (1) is [10deg] 
+FAIL CSS Transitions: property <--angle> from [-10deg] to [10deg] at (1.5) is [10deg] assert_equals: expected "20deg " but got "10deg "
+FAIL CSS Transitions: property <--angle> from [10rad] to [20rad] at (-0.3) is [20rad] assert_equals: expected "401.07deg " but got "20rad "
+FAIL CSS Transitions: property <--angle> from [10rad] to [20rad] at (0) is [20rad] assert_equals: expected "572.96deg " but got "20rad "
+FAIL CSS Transitions: property <--angle> from [10rad] to [20rad] at (0.5) is [20rad] assert_equals: expected "859.44deg " but got "20rad "
+FAIL CSS Transitions: property <--angle> from [10rad] to [20rad] at (1) is [20rad] assert_equals: expected "1145.92deg " but got "20rad "
+FAIL CSS Transitions: property <--angle> from [10rad] to [20rad] at (1.5) is [20rad] assert_equals: expected "1432.39deg " but got "20rad "
+FAIL CSS Transitions: property <--angle> from [200grad] to [90deg] at (-0.3) is [90deg] assert_equals: expected "207deg " but got "90deg "
+FAIL CSS Transitions: property <--angle> from [200grad] to [90deg] at (0) is [90deg] assert_equals: expected "180deg " but got "90deg "
+FAIL CSS Transitions: property <--angle> from [200grad] to [90deg] at (0.5) is [90deg] assert_equals: expected "135deg " but got "90deg "
+PASS CSS Transitions: property <--angle> from [200grad] to [90deg] at (1) is [90deg] 
+FAIL CSS Transitions: property <--angle> from [200grad] to [90deg] at (1.5) is [90deg] assert_equals: expected "45deg " but got "90deg "
+PASS CSS Animations: property <--angle> from neutral to [20deg] at (-0.3) is [7deg] 
+PASS CSS Animations: property <--angle> from neutral to [20deg] at (0) is [10deg] 
+PASS CSS Animations: property <--angle> from neutral to [20deg] at (0.5) is [15deg] 
+PASS CSS Animations: property <--angle> from neutral to [20deg] at (1) is [20deg] 
+PASS CSS Animations: property <--angle> from neutral to [20deg] at (1.5) is [25deg] 
+PASS CSS Animations: property <--angle> from [initial] to [20deg] at (-0.3) is [46deg] 
+PASS CSS Animations: property <--angle> from [initial] to [20deg] at (0) is [40deg] 
+PASS CSS Animations: property <--angle> from [initial] to [20deg] at (0.5) is [30deg] 
+PASS CSS Animations: property <--angle> from [initial] to [20deg] at (1) is [20deg] 
+PASS CSS Animations: property <--angle> from [initial] to [20deg] at (1.5) is [10deg] 
+PASS CSS Animations: property <--angle> from [inherit] to [20deg] at (-0.3) is [33deg] 
+PASS CSS Animations: property <--angle> from [inherit] to [20deg] at (0) is [30deg] 
+PASS CSS Animations: property <--angle> from [inherit] to [20deg] at (0.5) is [25deg] 
+PASS CSS Animations: property <--angle> from [inherit] to [20deg] at (1) is [20deg] 
+PASS CSS Animations: property <--angle> from [inherit] to [20deg] at (1.5) is [15deg] 
+PASS CSS Animations: property <--angle> from [unset] to [20deg] at (-0.3) is [46deg] 
+PASS CSS Animations: property <--angle> from [unset] to [20deg] at (0) is [40deg] 
+PASS CSS Animations: property <--angle> from [unset] to [20deg] at (0.5) is [30deg] 
+PASS CSS Animations: property <--angle> from [unset] to [20deg] at (1) is [20deg] 
+PASS CSS Animations: property <--angle> from [unset] to [20deg] at (1.5) is [10deg] 
+PASS CSS Animations: property <--angle> from [-10deg] to [10deg] at (-0.3) is [-16deg] 
+PASS CSS Animations: property <--angle> from [-10deg] to [10deg] at (0) is [-10deg] 
+PASS CSS Animations: property <--angle> from [-10deg] to [10deg] at (0.5) is [0deg] 
+PASS CSS Animations: property <--angle> from [-10deg] to [10deg] at (1) is [10deg] 
+PASS CSS Animations: property <--angle> from [-10deg] to [10deg] at (1.5) is [20deg] 
+PASS CSS Animations: property <--angle> from [10rad] to [20rad] at (-0.3) is [401.07deg] 
+PASS CSS Animations: property <--angle> from [10rad] to [20rad] at (0) is [572.958deg] 
+PASS CSS Animations: property <--angle> from [10rad] to [20rad] at (0.5) is [859.437deg] 
+PASS CSS Animations: property <--angle> from [10rad] to [20rad] at (1) is [1145.92deg] 
+PASS CSS Animations: property <--angle> from [10rad] to [20rad] at (1.5) is [1432.39deg] 
+PASS CSS Animations: property <--angle> from [200grad] to [90deg] at (-0.3) is [207deg] 
+PASS CSS Animations: property <--angle> from [200grad] to [90deg] at (0) is [180deg] 
+PASS CSS Animations: property <--angle> from [200grad] to [90deg] at (0.5) is [135deg] 
+PASS CSS Animations: property <--angle> from [200grad] to [90deg] at (1) is [90deg] 
+PASS CSS Animations: property <--angle> from [200grad] to [90deg] at (1.5) is [45deg] 
+PASS Web Animations: property <--angle> from neutral to [20deg] at (-0.3) is [7deg] 
+PASS Web Animations: property <--angle> from neutral to [20deg] at (0) is [10deg] 
+PASS Web Animations: property <--angle> from neutral to [20deg] at (0.5) is [15deg] 
+PASS Web Animations: property <--angle> from neutral to [20deg] at (1) is [20deg] 
+PASS Web Animations: property <--angle> from neutral to [20deg] at (1.5) is [25deg] 
+PASS Web Animations: property <--angle> from [initial] to [20deg] at (-0.3) is [46deg] 
+PASS Web Animations: property <--angle> from [initial] to [20deg] at (0) is [40deg] 
+PASS Web Animations: property <--angle> from [initial] to [20deg] at (0.5) is [30deg] 
+PASS Web Animations: property <--angle> from [initial] to [20deg] at (1) is [20deg] 
+PASS Web Animations: property <--angle> from [initial] to [20deg] at (1.5) is [10deg] 
+PASS Web Animations: property <--angle> from [inherit] to [20deg] at (-0.3) is [33deg] 
+PASS Web Animations: property <--angle> from [inherit] to [20deg] at (0) is [30deg] 
+PASS Web Animations: property <--angle> from [inherit] to [20deg] at (0.5) is [25deg] 
+PASS Web Animations: property <--angle> from [inherit] to [20deg] at (1) is [20deg] 
+PASS Web Animations: property <--angle> from [inherit] to [20deg] at (1.5) is [15deg] 
+PASS Web Animations: property <--angle> from [unset] to [20deg] at (-0.3) is [46deg] 
+PASS Web Animations: property <--angle> from [unset] to [20deg] at (0) is [40deg] 
+PASS Web Animations: property <--angle> from [unset] to [20deg] at (0.5) is [30deg] 
+PASS Web Animations: property <--angle> from [unset] to [20deg] at (1) is [20deg] 
+PASS Web Animations: property <--angle> from [unset] to [20deg] at (1.5) is [10deg] 
+PASS Web Animations: property <--angle> from [-10deg] to [10deg] at (-0.3) is [-16deg] 
+PASS Web Animations: property <--angle> from [-10deg] to [10deg] at (0) is [-10deg] 
+PASS Web Animations: property <--angle> from [-10deg] to [10deg] at (0.5) is [0deg] 
+PASS Web Animations: property <--angle> from [-10deg] to [10deg] at (1) is [10deg] 
+PASS Web Animations: property <--angle> from [-10deg] to [10deg] at (1.5) is [20deg] 
+PASS Web Animations: property <--angle> from [10rad] to [20rad] at (-0.3) is [401.07deg] 
+PASS Web Animations: property <--angle> from [10rad] to [20rad] at (0) is [572.958deg] 
+PASS Web Animations: property <--angle> from [10rad] to [20rad] at (0.5) is [859.437deg] 
+PASS Web Animations: property <--angle> from [10rad] to [20rad] at (1) is [1145.92deg] 
+PASS Web Animations: property <--angle> from [10rad] to [20rad] at (1.5) is [1432.39deg] 
+PASS Web Animations: property <--angle> from [200grad] to [90deg] at (-0.3) is [207deg] 
+PASS Web Animations: property <--angle> from [200grad] to [90deg] at (0) is [180deg] 
+PASS Web Animations: property <--angle> from [200grad] to [90deg] at (0.5) is [135deg] 
+PASS Web Animations: property <--angle> from [200grad] to [90deg] at (1) is [90deg] 
+PASS Web Animations: property <--angle> from [200grad] to [90deg] at (1.5) is [45deg] 
+Harness: the test ran to completion.
+

@@ -5,6 +5,7 @@
 #include "core/animation/CSSInterpolationTypesMap.h"
 
 #include <memory>
+#include "core/animation/CSSAngleInterpolationType.h"
 #include "core/animation/CSSBasicShapeInterpolationType.h"
 #include "core/animation/CSSBorderImageLengthBoxInterpolationType.h"
 #include "core/animation/CSSClipInterpolationType.h"
@@ -340,6 +341,9 @@ CSSInterpolationTypesMap::createCSSInterpolationTypesForSyntax(
     }
 
     switch (component.m_type) {
+      case CSSSyntaxType::Angle:
+        result.push_back(WTF::makeUnique<CSSAngleInterpolationType>(property));
+        break;
       case CSSSyntaxType::Color:
         result.push_back(WTF::makeUnique<CSSColorInterpolationType>(property));
         break;
@@ -354,7 +358,6 @@ CSSInterpolationTypesMap::createCSSInterpolationTypesForSyntax(
       case CSSSyntaxType::Image:
       case CSSSyntaxType::Url:
       case CSSSyntaxType::Integer:
-      case CSSSyntaxType::Angle:
       case CSSSyntaxType::Time:
       case CSSSyntaxType::Resolution:
       case CSSSyntaxType::TransformFunction:
