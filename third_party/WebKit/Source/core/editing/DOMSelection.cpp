@@ -66,6 +66,8 @@ void DOMSelection::clearTreeScope() {
   m_treeScope = nullptr;
 }
 
+// TODO(editing-dev): The behavior after loosing browsing context is not
+// specified. https://github.com/w3c/selection-api/issues/82
 bool DOMSelection::isAvailable() const {
   return frame() && frame()->selection().isAvailable();
 }
@@ -434,6 +436,9 @@ void DOMSelection::extend(Node* node,
                           int offset,
                           ExceptionState& exceptionState) {
   DCHECK(node);
+  if (!isAvailable())
+    return;
+
   // 1. If node's root is not the document associated with the context object,
   // abort these steps.
   if (!isValidForPosition(node))
