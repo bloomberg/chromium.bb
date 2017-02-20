@@ -662,9 +662,23 @@ void DOMSelection::addRange(Range* newRange) {
                                 UseCounter::SelectionAddRangeIntersect);
 }
 
+// https://www.w3.org/TR/selection-api/#dom-selection-deletefromdocument
 void DOMSelection::deleteFromDocument() {
   if (!isAvailable())
     return;
+
+  // The method must invoke deleteContents() ([DOM4]) on the context object's
+  // range if the context object is not empty. Otherwise the method must do
+  // nothing.
+  if (Range* range = documentCachedRange()) {
+    range->deleteContents(ASSERT_NO_EXCEPTION);
+    return;
+  }
+
+  // The following code is necessary for
+  // editing/selection/deleteFromDocument-crash.html, which assumes
+  // deleteFromDocument() for text selection in a TEXTAREA deletes the TEXTAREA
+  // value.
 
   FrameSelection& selection = frame()->selection();
 
