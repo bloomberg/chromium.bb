@@ -29,7 +29,7 @@ class ChromeBrowserState;
 @interface BookmarksSpotlightManager : BaseSpotlightManager
 
 // The delegate notified when a bookmark is updated.
-@property(nonatomic, assign) id<BookmarkUpdatedDelegate> delegate;
+@property(nonatomic, weak) id<BookmarkUpdatedDelegate> delegate;
 
 + (BookmarksSpotlightManager*)bookmarksSpotlightManagerWithBrowserState:
     (ios::ChromeBrowserState*)browserState;

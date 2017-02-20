@@ -8,7 +8,6 @@
 
 #import <CoreSpotlight/CoreSpotlight.h>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/version.h"
@@ -16,6 +15,10 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Limit the size of the initial indexing. This will not limit the size of the
@@ -31,7 +34,7 @@ class SpotlightBookmarkModelBridge;
 
 // Called from the BrowserBookmarkModelBridge from C++ -> ObjC.
 @interface BookmarksSpotlightManager () {
-  base::WeakNSProtocol<id<BookmarkUpdatedDelegate>> _delegate;
+  __weak id<BookmarkUpdatedDelegate> _delegate;
 
   // Bridge to register for bookmark changes.
   std::unique_ptr<SpotlightBookmarkModelBridge> _bookmarkModelBridge;
@@ -141,18 +144,18 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   };
 
  private:
-  __unsafe_unretained BookmarksSpotlightManager* owner_;  // Weak.
+  __weak BookmarksSpotlightManager* owner_;
 };
 
 @implementation BookmarksSpotlightManager
 
 + (BookmarksSpotlightManager*)bookmarksSpotlightManagerWithBrowserState:
     (ios::ChromeBrowserState*)browserState {
-  return [[[BookmarksSpotlightManager alloc]
+  return [[BookmarksSpotlightManager alloc]
       initWithLargeIconService:IOSChromeLargeIconServiceFactory::
                                    GetForBrowserState(browserState)
                  bookmarkModel:ios::BookmarkModelFactory::GetForBrowserState(
-                                   browserState)] autorelease];
+                                   browserState)];
 }
 
 - (instancetype)
@@ -170,7 +173,6 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 
 - (void)dealloc {
   [self detachBookmarkModel];
-  [super dealloc];
 }
 
 - (void)detachBookmarkModel {
@@ -186,7 +188,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 }
 
 - (void)setDelegate:(id<BookmarkUpdatedDelegate>)delegate {
-  _delegate.reset(delegate);
+  _delegate = delegate;
 }
 
 - (void)getParentKeywordsForNode:(const bookmarks::BookmarkNode*)node
@@ -205,7 +207,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
     GURL url(node->url());
     NSString* title = base::SysUTF16ToNSString(node->GetTitle());
     NSString* spotlightID = [self spotlightIDForURL:url title:title];
-    base::WeakNSObject<BookmarksSpotlightManager> weakself(self);
+    __weak BookmarksSpotlightManager* weakself = self;
     BlockWithError completion = ^(NSError* error) {
       dispatch_async(dispatch_get_main_queue(), ^{
         [weakself refreshItemsWithURL:url title:nil];
@@ -284,8 +286,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 - (NSArray*)spotlightItemsWithURL:(const GURL&)URL
                           favicon:(UIImage*)favicon
                      defaultTitle:(NSString*)defaultTitle {
-  base::scoped_nsobject<NSMutableDictionary> spotlightItems(
-      [[NSMutableDictionary alloc] init]);
+  NSMutableDictionary* spotlightItems = [[NSMutableDictionary alloc] init];
   std::vector<const bookmarks::BookmarkNode*> nodes;
   _bookmarkModel->GetNodesByURL(URL, &nodes);
   for (auto node : nodes) {
@@ -297,9 +298,8 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
                                    favicon:favicon
                               defaultTitle:nodeTitle] objectAtIndex:0];
     }
-    base::scoped_nsobject<NSMutableArray> nodeKeywords(
-        [[NSMutableArray alloc] init]);
-    [self getParentKeywordsForNode:node inArray:nodeKeywords.get()];
+    NSMutableArray* nodeKeywords = [[NSMutableArray alloc] init];
+    [self getParentKeywordsForNode:node inArray:nodeKeywords];
     [self addKeywords:nodeKeywords toSearchableItem:item];
     [spotlightItems setObject:item forKey:spotlightID];
   }
@@ -308,20 +308,18 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 
 - (void)clearAndReindexModel {
   [self cancelAllLargeIconPendingTasks];
-  base::WeakNSObject<BookmarksSpotlightManager> weakself(self);
+  __weak BookmarksSpotlightManager* weakself = self;
   BlockWithError completion = ^(NSError* error) {
     if (!error) {
       dispatch_async(dispatch_get_main_queue(), ^{
-        base::scoped_nsobject<BookmarksSpotlightManager> strongSelf(
-            [weakself retain]);
+        BookmarksSpotlightManager* strongSelf = weakself;
         if (!strongSelf)
           return;
 
         NSDate* startOfReindexing = [NSDate date];
-        strongSelf.get()->_nodesIndexed = 0;
-        [strongSelf
-            refreshNodeInIndex:strongSelf.get()->_bookmarkModel->root_node()
-                       initial:YES];
+        strongSelf->_nodesIndexed = 0;
+        [strongSelf refreshNodeInIndex:strongSelf->_bookmarkModel->root_node()
+                               initial:YES];
         NSDate* endOfReindexing = [NSDate date];
         NSTimeInterval indexingDuration =
             [endOfReindexing timeIntervalSinceDate:startOfReindexing];

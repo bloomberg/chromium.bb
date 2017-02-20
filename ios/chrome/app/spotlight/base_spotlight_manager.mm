@@ -7,7 +7,6 @@
 #import <CommonCrypto/CommonCrypto.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -22,6 +21,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Minimum size of the icon to be used in Spotlight.
@@ -48,7 +51,7 @@ const CGFloat kFallbackRoundedCorner = 8;
   base::CancelableTaskTracker _largeIconTaskTracker;
 
   // Dictionary to track the tasks querying the large icons.
-  base::scoped_nsobject<NSMutableDictionary> _pendingTasks;
+  NSMutableDictionary* _pendingTasks;
 }
 
 // Compute a hash consisting of the first 8 bytes of the MD5 hash of a string
@@ -75,7 +78,7 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
   if (self) {
     _spotlightDomain = domain;
     _largeIconService = largeIconService;
-    _pendingTasks.reset([[NSMutableDictionary alloc] init]);
+    _pendingTasks = [[NSMutableDictionary alloc] init];
   }
   return self;
 }
@@ -117,21 +120,20 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
 - (CSSearchableItem*)spotlightItemWithItemID:(NSString*)itemID
                                 attributeSet:(CSSearchableItemAttributeSet*)
                                                  attributeSet {
-  CSCustomAttributeKey* key = [[[CSCustomAttributeKey alloc]
+  CSCustomAttributeKey* key = [[CSCustomAttributeKey alloc]
           initWithKeyName:spotlight::GetSpotlightCustomAttributeItemID()
                searchable:YES
       searchableByDefault:YES
                    unique:YES
-              multiValued:NO] autorelease];
+              multiValued:NO];
   [attributeSet setValue:itemID forCustomKey:key];
   attributeSet.keywords = [self keywordsForSpotlightItems];
 
   NSString* domainID = spotlight::StringFromSpotlightDomain(_spotlightDomain);
 
-  return [[[CSSearchableItem alloc] initWithUniqueIdentifier:itemID
-                                            domainIdentifier:domainID
-                                                attributeSet:attributeSet]
-      autorelease];
+  return [[CSSearchableItem alloc] initWithUniqueIdentifier:itemID
+                                           domainIdentifier:domainID
+                                               attributeSet:attributeSet];
 }
 
 - (NSArray*)spotlightItemsWithURL:(const GURL&)indexedURL
@@ -143,9 +145,9 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
                                 ? indexedURL.GetOrigin().spec()
                                 : indexedURL.spec();
 
-  base::scoped_nsobject<CSSearchableItemAttributeSet> attributeSet(
+  CSSearchableItemAttributeSet* attributeSet =
       [[CSSearchableItemAttributeSet alloc]
-          initWithItemContentType:(NSString*)kUTTypeURL]);
+          initWithItemContentType:(NSString*)kUTTypeURL];
   [attributeSet setTitle:defaultTitle];
   [attributeSet setDisplayName:defaultTitle];
   [attributeSet setURL:nsURL];
@@ -174,11 +176,10 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
   font = [font fontWithSize:(kFallbackIconSize / 2)];
   CGRect textRect = CGRectMake(0, (kFallbackIconSize - [font lineHeight]) / 2,
                                kFallbackIconSize, [font lineHeight]);
-  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
-      [[NSMutableParagraphStyle alloc] init]);
+  NSMutableParagraphStyle* paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
   [paragraphStyle setAlignment:NSTextAlignmentCenter];
-  base::scoped_nsobject<NSMutableDictionary> attributes(
-      [[NSMutableDictionary alloc] init]);
+  NSMutableDictionary* attributes = [[NSMutableDictionary alloc] init];
   [attributes setValue:font forKey:NSFontAttributeName];
   [attributes setValue:textColor forKey:NSForegroundColorAttributeName];
   [attributes setValue:paragraphStyle forKey:NSParagraphStyleAttributeName];
@@ -196,15 +197,15 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
     return;
   }
 
-  base::WeakNSObject<BaseSpotlightManager> weakSelf(self);
+  __weak BaseSpotlightManager* weakSelf = self;
   GURL URL = URLToRefresh;
   void (^faviconBlock)(const favicon_base::LargeIconResult&) = ^(
       const favicon_base::LargeIconResult& result) {
-    base::scoped_nsobject<BaseSpotlightManager> strongSelf([weakSelf retain]);
+    BaseSpotlightManager* strongSelf = weakSelf;
     if (!strongSelf) {
       return;
     }
-    [strongSelf.get()->_pendingTasks removeObjectForKey:NSURL];
+    [strongSelf->_pendingTasks removeObjectForKey:NSURL];
     UIImage* favicon;
     if (result.bitmap.is_valid()) {
       scoped_refptr<base::RefCountedMemory> data =
@@ -237,7 +238,7 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
       _largeIconService->GetLargeIconOrFallbackStyle(
           URL, kMinIconSize * [UIScreen mainScreen].scale,
           kIconSize * [UIScreen mainScreen].scale,
-          base::BindBlock(faviconBlock), &_largeIconTaskTracker);
+          base::BindBlockArc(faviconBlock), &_largeIconTaskTracker);
   [_pendingTasks setObject:[NSNumber numberWithLongLong:taskID] forKey:NSURL];
 }
 

@@ -5,17 +5,20 @@
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/app/spotlight/actions_spotlight_manager.h"
 #include "ios/chrome/app/spotlight/bookmarks_spotlight_manager.h"
 #include "ios/chrome/app/spotlight/topsites_spotlight_manager.h"
 #include "ios/chrome/browser/experimental_flags.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Called from the BrowserBookmarkModelBridge from C++ -> ObjC.
 @interface SpotlightManager ()<BookmarkUpdatedDelegate> {
-  base::scoped_nsobject<BookmarksSpotlightManager> _bookmarkManager;
-  base::scoped_nsobject<TopSitesSpotlightManager> _topSitesManager;
-  base::scoped_nsobject<ActionsSpotlightManager> _actionsManager;
+  BookmarksSpotlightManager* _bookmarkManager;
+  TopSitesSpotlightManager* _topSitesManager;
+  ActionsSpotlightManager* _actionsManager;
 }
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
@@ -29,8 +32,7 @@
 + (SpotlightManager*)spotlightManagerWithBrowserState:
     (ios::ChromeBrowserState*)browserState {
   if (spotlight::IsSpotlightAvailable()) {
-    return [[[SpotlightManager alloc] initWithBrowserState:browserState]
-        autorelease];
+    return [[SpotlightManager alloc] initWithBrowserState:browserState];
   }
   return nil;
 }
@@ -39,13 +41,12 @@
   DCHECK(spotlight::IsSpotlightAvailable());
   self = [super init];
   if (self) {
-    _topSitesManager.reset([[TopSitesSpotlightManager
-        topSitesSpotlightManagerWithBrowserState:browserState] retain]);
-    _bookmarkManager.reset([[BookmarksSpotlightManager
-        bookmarksSpotlightManagerWithBrowserState:browserState] retain]);
+    _topSitesManager = [TopSitesSpotlightManager
+        topSitesSpotlightManagerWithBrowserState:browserState];
+    _bookmarkManager = [BookmarksSpotlightManager
+        bookmarksSpotlightManagerWithBrowserState:browserState];
     [_bookmarkManager setDelegate:self];
-    _actionsManager.reset(
-        [[ActionsSpotlightManager actionsSpotlightManager] retain]);
+    _actionsManager = [ActionsSpotlightManager actionsSpotlightManager];
   }
   return self;
 }
@@ -55,9 +56,6 @@
   return nil;
 }
 
-- (void)dealloc {
-  [super dealloc];
-}
 
 - (void)resyncIndex {
   [_bookmarkManager reindexBookmarksIfNeeded];

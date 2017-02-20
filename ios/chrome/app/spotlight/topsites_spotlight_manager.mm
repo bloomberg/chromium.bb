@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -22,6 +21,10 @@
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/ui/ntp/google_landing_controller.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 class SpotlightTopSitesBridge;
 class SpotlightTopSitesCallbackBridge;
@@ -97,7 +100,7 @@ class SpotlightTopSitesCallbackBridge
   }
 
  private:
-  __unsafe_unretained TopSitesSpotlightManager* owner_;  // weak, owns us
+  __weak TopSitesSpotlightManager* owner_;
 };
 
 class SpotlightTopSitesBridge : public history::TopSitesObserver {
@@ -119,7 +122,7 @@ class SpotlightTopSitesBridge : public history::TopSitesObserver {
   }
 
  private:
-  __unsafe_unretained TopSitesSpotlightManager* owner_;  // weak
+  __weak TopSitesSpotlightManager* owner_;
 };
 
 class SpotlightSuggestionsBridge
@@ -136,7 +139,7 @@ class SpotlightSuggestionsBridge
   }
 
  private:
-  __unsafe_unretained TopSitesSpotlightManager* owner_;  // weak, owns us
+  __weak TopSitesSpotlightManager* owner_;
 };
 
 @implementation TopSitesSpotlightManager
@@ -144,7 +147,7 @@ class SpotlightSuggestionsBridge
 
 + (TopSitesSpotlightManager*)topSitesSpotlightManagerWithBrowserState:
     (ios::ChromeBrowserState*)browserState {
-  return [[[TopSitesSpotlightManager alloc]
+  return [[TopSitesSpotlightManager alloc]
       initWithLargeIconService:IOSChromeLargeIconServiceFactory::
                                    GetForBrowserState(browserState)
                       topSites:ios::TopSitesFactory::GetForBrowserState(
@@ -154,8 +157,7 @@ class SpotlightSuggestionsBridge
             profileSyncService:IOSChromeProfileSyncServiceFactory::
                                    GetForBrowserState(browserState)
             suggestionsService:suggestions::SuggestionsServiceFactory::
-                                   GetForBrowserState(browserState)]
-      autorelease];
+                                   GetForBrowserState(browserState)];
 }
 
 - (instancetype)
@@ -186,7 +188,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 }
 
 - (void)updateAllTopSitesSpotlightItems {
-  base::WeakNSObject<TopSitesSpotlightManager> weakSelf(self);
+  __weak TopSitesSpotlightManager* weakSelf = self;
   [self clearAllSpotlightItems:^(NSError* error) {
     dispatch_async(dispatch_get_main_queue(), ^{
       [weakSelf addAllTopSitesSpotlightItems];
@@ -269,12 +271,16 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
     return;
   }
   _isReindexPending = true;
-  base::WeakNSObject<TopSitesSpotlightManager> weakSelf(self);
+  __weak TopSitesSpotlightManager* weakSelf = self;
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(1 * NSEC_PER_SEC)),
       dispatch_get_main_queue(), ^{
-        [weakSelf updateAllTopSitesSpotlightItems];
-        weakSelf.get()->_isReindexPending = false;
+        TopSitesSpotlightManager* strongSelf = weakSelf;
+        if (!strongSelf) {
+          return;
+        }
+        [strongSelf updateAllTopSitesSpotlightItems];
+        strongSelf->_isReindexPending = false;
       });
 }
 
