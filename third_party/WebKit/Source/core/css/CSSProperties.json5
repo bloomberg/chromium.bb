@@ -55,28 +55,28 @@
       valid_values: ["parseSingleValue", "parseShorthand"],
     },
 
-    // - keyword_only
-    // These properties only store keyword values. This is used when
-    // generating the ComputedStyle storage for the property. The initial
-    // value for this property on a ComputedStyle is specified with the
-    // initial_keyword flag below.
-    // TODO(sashab): Rename this to field_type=keyword once we support
-    // multiple types of generatable fields in ComputedStyle
+    // - field_template
+    // Affects how the interface to this field is generated.
     // TODO(sashab, meade): Remove this once TypedOM types are specified for
     // every property, since this value can be inferred from that.
-    keyword_only: {
-      default: false,
-      valid_type: "bool",
+    field_template: {
+      valid_values: [
+        // Field is stored as an enum and has a initial/getter/setter/resetter.
+        "keyword",
+        // Field is stored a packed boolean flag and has a initial/getter/setter/resetter.
+        // TODO(shend): generalise this to "primitive"
+        "flag",
+      ],
     },
 
-    // - field_storage_type: "path/to/Type"
+    // - field_type_path: "path/to/Type"
     // For properties that have generated field storage in ComputedStyle,
     // this optional argument will override the field's generated type with
     // an external one specified at the given path. The type must be defined
     // in a header file at that path, and have the same name as the file.
     // Currently, only enum types are supported, and the enum's only values
     // must be CamelCase values of the keywords of the property.
-    field_storage_type: {
+    field_type_path: {
     },
 
     // - keywords: ["keyword1", "keyword2"]
@@ -88,8 +88,7 @@
     },
 
     // - initial_keyword: "keyword-value"
-    // This specifies the initial keyword value for the keyword_only
-    // property.
+    // This specifies the initial keyword value for the keyword fields.
     initial_keyword: {
     },
 
@@ -328,10 +327,10 @@
     {
       name: "direction",
       custom_value: true,
-      field_storage_type: "platform/text/TextDirection",
+      field_type_path: "platform/text/TextDirection",
       inherited: true,
       initial_keyword: "ltr",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["ltr", "rtl"],
       priority: "High",
     },
@@ -481,10 +480,10 @@
     {
       name: "writing-mode",
       custom_value: true,
-      field_storage_type: "platform/text/WritingMode",
+      field_type_path: "platform/text/WritingMode",
       inherited: true,
       initial_keyword: "horizontal-tb",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["horizontal-tb", "vertical-rl", "vertical-lr"],
       priority: "High",
       type_name: "WritingMode",
@@ -641,7 +640,7 @@
       independent: true,
       inherited: true,
       initial_keyword: "separate",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["separate", "collapse"],
     },
     {
@@ -768,7 +767,7 @@
       // Storage for this property also covers these legacy properties:
       // page-break-after, -webkit-column-break-after
       initial_keyword: "auto",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: [
         "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page", "recto", "right", "verso"
       ],
@@ -779,7 +778,7 @@
       // Storage for this property also covers these legacy properties:
       // page-break-before, -webkit-column-break-before
       initial_keyword: "auto",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: [
         "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page", "recto", "right", "verso"
       ],
@@ -790,7 +789,7 @@
       // Storage for this property also covers these legacy properties:
       // page-break-inside, -webkit-column-break-inside
       initial_keyword: "auto",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["auto", "avoid", "avoid-column", "avoid-page"],
     },
     {
@@ -802,7 +801,7 @@
       independent: true,
       inherited: true,
       initial_keyword: "top",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["top", "bottom", "left", "right"],
     },
     {
@@ -816,7 +815,7 @@
     {
       name: "clear",
       initial_keyword: "none",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["none", "left", "right", "both"],
     },
     {
@@ -923,7 +922,7 @@
       independent: true,
       inherited: true,
       initial_keyword: "show",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["show", "hide"],
       type_name: "EEmptyCells",
     },
@@ -982,7 +981,7 @@
     {
       name: "float",
       initial_keyword: "none",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["none", "left", "right"],
       name_for_methods: "Floating",
       type_name: "EFloat",
@@ -1176,14 +1175,14 @@
       independent: true,
       inherited: true,
       initial_keyword: "outside",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["outside", "inside"],
     },
     {
       name: "list-style-type",
       inherited: true,
       initial_keyword: "disc",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: [
         "disc", "circle", "square", "decimal", "decimal-leading-zero", "arabic-indic", "bengali", "cambodian", "khmer", "devanagari", "gujarati", "gurmukhi", "kannada", "lao", "malayalam", "mongolian", "myanmar", "oriya", "persian", "urdu", "telugu", "tibetan", "thai", "lower-roman", "upper-roman", "lower-greek", "lower-alpha", "lower-latin", "upper-alpha", "upper-latin", "cjk-earthly-branch", "cjk-heavenly-stem", "ethiopic-halehame", "ethiopic-halehame-am", "ethiopic-halehame-ti-er", "ethiopic-halehame-ti-et", "hangul", "hangul-consonant", "korean-hangul-formal", "korean-hanja-formal", "korean-hanja-informal", "hebrew", "armenian", "lower-armenian", "upper-armenian", "georgian", "cjk-ideographic", "simp-chinese-formal", "simp-chinese-informal", "trad-chinese-formal", "trad-chinese-informal", "hiragana", "katakana", "hiragana-iroha", "katakana-iroha", "none",
       ],
@@ -1400,7 +1399,7 @@
       runtime_flag: "ScrollAnchoring",
       inherited: false,
       initial_keyword: "auto",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: [
         "visible", "none", "auto",
       ],
@@ -1412,7 +1411,7 @@
     {
       name: "overflow-x",
       initial_keyword: "visible",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: [
         "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x", "-webkit-paged-y",
       ],
@@ -1421,7 +1420,7 @@
     {
       name: "overflow-y",
       initial_keyword: "visible",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: [
         "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x", "-webkit-paged-y",
       ],
@@ -1483,7 +1482,7 @@
       independent: true,
       inherited: true,
       initial_keyword: "auto",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: [
         "none", "auto", "stroke", "fill", "painted", "visible", "visibleStroke", "visibleFill", "visiblePainted", "bounding-box", "all",
       ],
@@ -1492,7 +1491,7 @@
       name: "position",
       custom_inherit: true,
       initial_keyword: "static",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: [
         "static", "relative", "absolute", "fixed", "sticky",
       ],
@@ -1708,7 +1707,7 @@
     {
       name: "table-layout",
       initial_keyword: "auto",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: [
         "auto", "fixed"
       ]
@@ -1726,7 +1725,7 @@
       custom_value: true,
       inherited: true,
       initial_keyword: "start",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: [
         "left", "right", "center", "justify", "webkitLeft", "webkitRight", "webkitCenter", "start", "end",
       ],
@@ -1822,7 +1821,7 @@
       independent: true,
       inherited: true,
       initial_keyword: "none",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["capitalize", "uppercase", "lowercase", "none"],
     },
     {
@@ -1895,9 +1894,9 @@
     },
     {
       name: "unicode-bidi",
-      field_storage_type: "platform/text/UnicodeBidi",
+      field_type_path: "platform/text/UnicodeBidi",
       initial_keyword: "normal",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: [
         "normal", "embed", "bidi-override", "isolate", "plaintext", "isolate-override",
       ],
@@ -1921,7 +1920,7 @@
       inherited: true,
       initial_keyword: "visible",
       interpolable: true,
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["visible", "hidden", "collapse"],
     },
     {
@@ -1986,7 +1985,7 @@
       independent: true,
       inherited: true,
       initial_keyword: "normal",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["normal", "reverse"],
     },
     {
@@ -2191,7 +2190,7 @@
       independent: true,
       inherited: true,
       initial_keyword: "economy",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["economy", "exact"],
     },
     {
@@ -2200,7 +2199,7 @@
       inherited: true,
       initial: "initialRtlOrdering",
       initial_keyword: "logical",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["logical", "visual"],
       setter: "setRtlOrdering",
       type_name: "EOrder",
@@ -2301,7 +2300,7 @@
       independent: true,
       inherited: true,
       initial_keyword: "normal",
-      keyword_only: true,
+      field_template: "keyword",
       keywords: ["normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap"],
     },
     {
