@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.test.filters.SmallTest;
@@ -76,11 +75,13 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     private static final String EVENT_WEBAPP_TITLE = "appinstalled event test page";
 
     private static class TestShortcutHelperDelegate extends ShortcutHelper.Delegate {
-        public Intent mBroadcastedIntent;
+        public String mRequestedShortcutTitle;
+        public Intent mRequestedShortcutIntent;
 
         @Override
-        public void sendBroadcast(Context context, Intent intent) {
-            mBroadcastedIntent = intent;
+        public void addShortcutToHomescreen(String title, Bitmap icon, Intent shortcutIntent) {
+            mRequestedShortcutTitle = title;
+            mRequestedShortcutIntent = shortcutIntent;
         }
 
         @Override
@@ -88,8 +89,9 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
             return WEBAPP_ACTION_NAME;
         }
 
-        public void clearBroadcastedIntent() {
-            mBroadcastedIntent = null;
+        public void clearRequestedShortcutData() {
+            mRequestedShortcutTitle = null;
+            mRequestedShortcutIntent = null;
         }
     }
 
@@ -177,23 +179,20 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
         // Add a webapp shortcut and make sure the intent's parameters make sense.
         loadUrl(WEBAPP_HTML, WEBAPP_TITLE);
         addShortcutToTab(mTab, "");
-        Intent firedIntent = mShortcutHelperDelegate.mBroadcastedIntent;
-        assertEquals(WEBAPP_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+        assertEquals(WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
 
-        Intent launchIntent = firedIntent.getParcelableExtra(Intent.EXTRA_SHORTCUT_INTENT);
+        Intent launchIntent = mShortcutHelperDelegate.mRequestedShortcutIntent;
         assertEquals(WEBAPP_HTML, launchIntent.getStringExtra(ShortcutHelper.EXTRA_URL));
         assertEquals(WEBAPP_ACTION_NAME, launchIntent.getAction());
         assertEquals(mActivity.getPackageName(), launchIntent.getPackage());
 
         // Add a second shortcut and make sure it matches the second webapp's parameters.
-        mShortcutHelperDelegate.clearBroadcastedIntent();
+        mShortcutHelperDelegate.clearRequestedShortcutData();
         loadUrl(SECOND_WEBAPP_HTML, SECOND_WEBAPP_TITLE);
         addShortcutToTab(mTab, "");
-        Intent newFiredIntent = mShortcutHelperDelegate.mBroadcastedIntent;
-        assertEquals(SECOND_WEBAPP_TITLE,
-                newFiredIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+        assertEquals(SECOND_WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
 
-        Intent newLaunchIntent = newFiredIntent.getParcelableExtra(Intent.EXTRA_SHORTCUT_INTENT);
+        Intent newLaunchIntent = mShortcutHelperDelegate.mRequestedShortcutIntent;
         assertEquals(SECOND_WEBAPP_HTML, newLaunchIntent.getStringExtra(ShortcutHelper.EXTRA_URL));
         assertEquals(WEBAPP_ACTION_NAME, newLaunchIntent.getAction());
         assertEquals(mActivity.getPackageName(), newLaunchIntent.getPackage());
@@ -206,10 +205,9 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
         addShortcutToTab(mTab, "");
 
         // Make sure the intent's parameters make sense.
-        Intent firedIntent = mShortcutHelperDelegate.mBroadcastedIntent;
-        assertEquals(NORMAL_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+        assertEquals(NORMAL_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
 
-        Intent launchIntent = firedIntent.getParcelableExtra(Intent.EXTRA_SHORTCUT_INTENT);
+        Intent launchIntent = mShortcutHelperDelegate.mRequestedShortcutIntent;
         assertEquals(mActivity.getPackageName(), launchIntent.getPackage());
         assertEquals(Intent.ACTION_VIEW, launchIntent.getAction());
         assertEquals(NORMAL_HTML, launchIntent.getDataString());
@@ -221,8 +219,7 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
         // Add a webapp shortcut using the page's title.
         loadUrl(WEBAPP_HTML, WEBAPP_TITLE);
         addShortcutToTab(mTab, "");
-        Intent firedIntent = mShortcutHelperDelegate.mBroadcastedIntent;
-        assertEquals(WEBAPP_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+        assertEquals(WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
     }
 
     @SmallTest
@@ -231,8 +228,7 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
         // Add a webapp shortcut with a custom title.
         loadUrl(WEBAPP_HTML, WEBAPP_TITLE);
         addShortcutToTab(mTab, EDITED_WEBAPP_TITLE);
-        Intent firedIntent = mShortcutHelperDelegate.mBroadcastedIntent;
-        assertEquals(EDITED_WEBAPP_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+        assertEquals(EDITED_WEBAPP_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
     }
 
     @SmallTest
@@ -240,8 +236,7 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     public void testAddWebappShortcutsWithApplicationName() throws Exception {
         loadUrl(META_APP_NAME_HTML, META_APP_NAME_PAGE_TITLE);
         addShortcutToTab(mTab, "");
-        Intent firedIntent = mShortcutHelperDelegate.mBroadcastedIntent;
-        assertEquals(META_APP_NAME_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+        assertEquals(META_APP_NAME_TITLE, mShortcutHelperDelegate.mRequestedShortcutTitle);
     }
 
     @SmallTest
@@ -314,7 +309,7 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mShortcutHelperDelegate.mBroadcastedIntent != null;
+                return mShortcutHelperDelegate.mRequestedShortcutIntent != null;
             }
         });
 

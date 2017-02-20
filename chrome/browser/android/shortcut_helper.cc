@@ -79,7 +79,7 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
     AddWebappWithSkBitmap(info, webapp_id, icon_bitmap, splash_image_callback);
     return;
   }
-  AddShortcutWithSkBitmap(info, icon_bitmap);
+  AddShortcutWithSkBitmap(info, webapp_id, icon_bitmap);
 }
 
 // static
@@ -134,8 +134,11 @@ void ShortcutHelper::AddWebappWithSkBitmap(
 }
 
 void ShortcutHelper::AddShortcutWithSkBitmap(const ShortcutInfo& info,
+                                             const std::string& id,
                                              const SkBitmap& icon_bitmap) {
   JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> java_id =
+      base::android::ConvertUTF8ToJavaString(env, id);
   ScopedJavaLocalRef<jstring> java_url =
       base::android::ConvertUTF8ToJavaString(env, info.url.spec());
   ScopedJavaLocalRef<jstring> java_user_title =
@@ -144,8 +147,8 @@ void ShortcutHelper::AddShortcutWithSkBitmap(const ShortcutInfo& info,
   if (icon_bitmap.getSize())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
 
-  Java_ShortcutHelper_addShortcut(env, java_url, java_user_title, java_bitmap,
-                                  info.source);
+  Java_ShortcutHelper_addShortcut(env, java_id, java_url, java_user_title,
+                                  java_bitmap, info.source);
 }
 
 void ShortcutHelper::ShowWebApkInstallInProgressToast() {

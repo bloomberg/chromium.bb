@@ -566,6 +566,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
             if (mVrShellDelegate.isDaydreamVrIntent(intent)) {
                 mVrShellDelegate.enterVRFromIntent(intent);
+            } else if (ShortcutHelper.isShowToastIntent(intent)) {
+                ShortcutHelper.showAddedToHomescreenToastFromIntent(intent);
             }
         } finally {
             TraceEvent.end("ChromeTabbedActivity.onNewIntentWithNative");

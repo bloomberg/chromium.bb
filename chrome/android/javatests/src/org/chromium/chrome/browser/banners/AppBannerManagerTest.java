@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.banners;
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.app.Instrumentation.ActivityResult;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
@@ -182,7 +181,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         AppBannerInfoBarDelegateAndroid.setPackageManagerForTesting(mPackageManager);
         ShortcutHelper.setDelegateForTests(new ShortcutHelper.Delegate() {
             @Override
-            public void sendBroadcast(Context context, Intent intent) {
+            public void addShortcutToHomescreen(String title, Bitmap icon, Intent shortcutIntent) {
                 // Ignore to prevent adding homescreen shortcuts.
             }
         });

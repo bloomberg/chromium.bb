@@ -44,8 +44,7 @@ public class AppBannerManager {
      */
     public static boolean isSupported() {
         if (sIsSupported == null) {
-            Context context = ContextUtils.getApplicationContext();
-            sIsSupported = ShortcutHelper.isAddToHomeIntentSupported(context);
+            sIsSupported = ShortcutHelper.isAddToHomeIntentSupported();
         }
         return sIsSupported;
     }

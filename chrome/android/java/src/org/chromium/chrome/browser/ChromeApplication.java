@@ -59,6 +59,7 @@ import org.chromium.chrome.browser.tabmodel.document.ActivityDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.webapps.ChromeShortcutManager;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
@@ -394,6 +395,11 @@ public class ChromeApplication extends ContentApplication {
     /** Returns the singleton instance of GooglePlayWebApkInstallDelegate. */
     public GooglePlayWebApkInstallDelegate getGooglePlayWebApkInstallDelegate() {
         return null;
+    }
+
+    /** Returns the singleton instance of ChromeShortcutManager */
+    public ChromeShortcutManager createChromeShortcutManager() {
+        return new ChromeShortcutManager();
     }
 
     /**

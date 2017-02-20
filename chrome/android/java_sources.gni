@@ -1053,6 +1053,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/FullScreenActivity.java",
   "java/src/org/chromium/chrome/browser/webapps/FullScreenDelegateFactory.java",
   "java/src/org/chromium/chrome/browser/webapps/GooglePlayWebApkInstallDelegate.java",
+  "java/src/org/chromium/chrome/browser/webapps/ChromeShortcutManager.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkActivity.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkActivity0.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkActivity1.java",

@@ -62,9 +62,9 @@ class ShortcutHelper {
       const base::Closure& splash_image_callback);
 
   // Adds a shortcut which opens in a browser tab to the launcher.
-  static void AddShortcutWithSkBitmap(
-      const ShortcutInfo& info,
-      const SkBitmap& icon_bitmap);
+  static void AddShortcutWithSkBitmap(const ShortcutInfo& info,
+                                      const std::string& id,
+                                      const SkBitmap& icon_bitmap);
 
   // Shows toast notifying user that a WebAPK install is already in progress
   // when user tries to queue a new install for the same WebAPK.

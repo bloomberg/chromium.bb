@@ -163,7 +163,7 @@ public class AppMenuPropertiesDelegate {
             //                is not persisted when adding to the homescreen.
             // * If creating shortcuts it not supported by the current home screen.
             MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
-            boolean homescreenItemVisible = ShortcutHelper.isAddToHomeIntentSupported(mActivity)
+            boolean homescreenItemVisible = ShortcutHelper.isAddToHomeIntentSupported()
                     && !isChromeScheme && !isFileScheme && !isContentScheme && !isIncognito;
             if (homescreenItemVisible) {
                 homescreenItem.setTitle(AppBannerManager.getHomescreenLanguageOption());
