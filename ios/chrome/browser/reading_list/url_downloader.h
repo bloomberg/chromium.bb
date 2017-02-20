@@ -48,12 +48,9 @@ class URLDownloader : public net::URLFetcherDelegate,
     DOWNLOAD_SUCCESS,
     // The URL was already available offline. No action was done.
     DOWNLOAD_EXISTS,
-    // The URL could not be downloaded because of a temporary error. Client may
-    // want to try again later.
-    ERROR_RETRY,
-    // The URL could not be dowmloaded and URLDownloader thinks a retry would
-    // end with the same result. There is no need to retry.
-    ERROR_PERMANENT
+    // The URL could not be downloaded because of an error. Client may want to
+    // try again later.
+    ERROR,
   };
 
   // A completion callback that takes a GURL and a bool indicating the
