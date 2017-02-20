@@ -158,7 +158,8 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
   base::Callback<void(const VideoCaptureFormat&)> frame_cb_;
 };
 
-class MockImageCaptureClient : public base::RefCounted<MockImageCaptureClient> {
+class MockImageCaptureClient
+    : public base::RefCountedThreadSafe<MockImageCaptureClient> {
  public:
   // GMock doesn't support move-only arguments, so we use this forward method.
   void DoOnPhotoTaken(mojom::BlobPtr blob) {
@@ -197,7 +198,7 @@ class MockImageCaptureClient : public base::RefCounted<MockImageCaptureClient> {
   const mojom::PhotoCapabilities* capabilities() { return capabilities_.get(); }
 
  private:
-  friend class base::RefCounted<MockImageCaptureClient>;
+  friend class base::RefCountedThreadSafe<MockImageCaptureClient>;
   virtual ~MockImageCaptureClient() {}
 
   mojom::PhotoCapabilitiesPtr capabilities_;
