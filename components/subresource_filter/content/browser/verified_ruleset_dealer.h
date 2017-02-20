@@ -141,6 +141,9 @@ class VerifiedRuleset::Handle {
   void GetRulesetAsync(base::Callback<void(VerifiedRuleset*)> callback);
 
  private:
+  // This is to allow ADSF to post |ruleset_.get()| pointer to |task_runner_|.
+  friend class AsyncDocumentSubresourceFilter;
+
   // Note: Raw pointer, |ruleset_| already holds a reference to |task_runner_|.
   base::SequencedTaskRunner* task_runner_;
   std::unique_ptr<VerifiedRuleset, base::OnTaskRunnerDeleter> ruleset_;

@@ -4,6 +4,8 @@
 
 static_library("browser") {
   sources = [
+    "async_document_subresource_filter.cc",
+    "async_document_subresource_filter.h",
     "content_ruleset_service_delegate.cc",
     "content_ruleset_service_delegate.h",
     "content_subresource_filter_driver_factory.cc",
@@ -31,6 +33,7 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "async_document_subresource_filter_unittest.cc",
     "content_ruleset_service_delegate_unittest.cc",
     "content_subresource_filter_driver_factory_unittest.cc",
     "verified_ruleset_dealer_unittest.cc",

@@ -470,10 +470,10 @@ bool IsMatch(const flat::UrlPatternIndex* index,
 
 }  // namespace
 
+// static
 bool IndexedRulesetMatcher::Verify(const uint8_t* buffer, size_t size) {
-  const auto* indexed_ruleset = flat::GetIndexedRuleset(buffer);
   flatbuffers::Verifier verifier(buffer, size);
-  return indexed_ruleset->Verify(verifier);
+  return flat::VerifyIndexedRulesetBuffer(verifier);
 }
 
 IndexedRulesetMatcher::IndexedRulesetMatcher(const uint8_t* buffer, size_t size)
