@@ -77,12 +77,6 @@ class CORE_EXPORT ComputedStyleBase {
         ;
   }
 
-  void setBitDefaults() {
-    {% for field in fields %}
-    {{field.resetter_method_name}}();
-    {% endfor %}
-  }
-
   enum IsAtShadowBoundary {
     AtShadowBoundary,
     NotAtShadowBoundary,

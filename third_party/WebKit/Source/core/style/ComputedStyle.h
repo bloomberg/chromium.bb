@@ -290,9 +290,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // !END SYNC!
 
-  void setBitDefaults() {
-    // Generated properties are updated in ComputedStyleBase
-    ComputedStyleBase::setBitDefaults();
+  // Only call inside the constructor. Generated properties in the base class
+  // are not initialized in this method.
+  void initializeBitDefaults() {
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_insideLink =

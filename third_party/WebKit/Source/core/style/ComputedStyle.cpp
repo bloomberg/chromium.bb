@@ -124,7 +124,8 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle()
       m_rareInheritedData(initialStyle().m_rareInheritedData),
       m_styleInheritedData(initialStyle().m_styleInheritedData),
       m_svgStyle(initialStyle().m_svgStyle) {
-  setBitDefaults();  // Would it be faster to copy this from the default style?
+  initializeBitDefaults();  // Would it be faster to copy this from the default
+                            // style?
   static_assert((sizeof(InheritedData) <= 8), "InheritedData should not grow");
   static_assert((sizeof(NonInheritedData) <= 12),
                 "NonInheritedData should not grow");
@@ -132,7 +133,7 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle()
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(InitialStyleTag)
     : ComputedStyleBase(), RefCounted<ComputedStyle>() {
-  setBitDefaults();
+  initializeBitDefaults();
 
   m_box.init();
   m_visual.init();
