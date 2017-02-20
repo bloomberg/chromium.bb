@@ -15,10 +15,6 @@
 // Values below IDC_MinimumLabelValue are reserved for dynamic menu items.
 #define IDC_MinimumLabelValue           4000
 
-#define IDC_Messages                    4000
-#define IDC_MessagesAll                 4007
-#define IDC_MessagesNone                4008
-
 // NOTE: Within each of the following sections, the IDs are ordered roughly by
 // how they appear in the GUI/menus (left to right, top to bottom, etc.).
 

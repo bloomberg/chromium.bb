@@ -199,40 +199,6 @@ IDI_THROBBER_22     ICON                        "theme\vista_frame_throbber_22.i
 IDI_THROBBER_23     ICON                        "theme\vista_frame_throbber_23.ico"
 IDI_THROBBER_24     ICON                        "theme\vista_frame_throbber_24.ico"
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_IPC_SETTINGS DIALOGEX 0, 0, 182, 558
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "IPC Logging Settings"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    CONTROL         "",IDC_Messages,"SysListView32",LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,22,170,529
-    PUSHBUTTON      "All",IDC_MessagesAll,7,6,56,13
-    PUSHBUTTON      "None",IDC_MessagesNone,121,7,56,13
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_IPC_SETTINGS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 784
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 421
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
