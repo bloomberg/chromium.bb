@@ -22,6 +22,7 @@
 
 - (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
 
+@property(nonatomic, copy, readonly) NSString* title;
 @property(nonatomic, strong) UIImage* image;
 @property(nonatomic, readonly, assign) GURL articleURL;
 

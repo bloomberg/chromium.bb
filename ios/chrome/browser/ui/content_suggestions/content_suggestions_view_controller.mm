@@ -61,6 +61,13 @@ const NSTimeInterval kAnimationDuration = 0.35;
 
   self.collectionView.delegate = self;
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+
+  UILongPressGestureRecognizer* longPressRecognizer =
+      [[UILongPressGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(handleLongPress:)];
+  longPressRecognizer.numberOfTouchesRequired = 1;
+  [self.collectionView addGestureRecognizer:longPressRecognizer];
 }
 
 #pragma mark - UICollectionViewDelegate
@@ -178,6 +185,37 @@ const NSTimeInterval kAnimationDuration = 0.35;
   ContentSuggestionsArticleItem* article =
       base::mac::ObjCCastStrict<ContentSuggestionsArticleItem>(item);
   [self.suggestionCommandHandler openURL:article.articleURL];
+}
+
+- (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
+  if (self.editor.editing ||
+      gestureRecognizer.state != UIGestureRecognizerStateBegan) {
+    return;
+  }
+
+  CGPoint touchLocation =
+      [gestureRecognizer locationOfTouch:0 inView:self.collectionView];
+  NSIndexPath* touchedItemIndexPath =
+      [self.collectionView indexPathForItemAtPoint:touchLocation];
+  if (!touchedItemIndexPath ||
+      ![self.collectionViewModel hasItemAtIndexPath:touchedItemIndexPath]) {
+    // Make sure there is an item at this position.
+    return;
+  }
+  CollectionViewItem* touchedItem =
+      [self.collectionViewModel itemAtIndexPath:touchedItemIndexPath];
+
+  if ([self.collectionUpdater contentSuggestionTypeForItem:touchedItem] !=
+      ContentSuggestionTypeArticle) {
+    // Only trigger context menu on articles.
+    return;
+  }
+
+  ContentSuggestionsArticleItem* articleItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsArticleItem>(touchedItem);
+
+  [self.suggestionCommandHandler displayContextMenuForArticle:articleItem
+                                                      atPoint:touchLocation];
 }
 
 @end

@@ -11,12 +11,16 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+@protocol UrlLoader;
+
 // Coordinator to manage the Suggestions UI via a
 // ContentSuggestionsViewController.
 @interface ContentSuggestionsCoordinator : ChromeCoordinator
 
 // BrowserState used to create the ContentSuggestionFactory.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+// URLLoader used to open pages.
+@property(nonatomic, weak) id<UrlLoader> URLLoader;
 // Whether the Suggestions UI is displayed. If this is true, start is a no-op.
 @property(nonatomic, readonly) BOOL visible;
 

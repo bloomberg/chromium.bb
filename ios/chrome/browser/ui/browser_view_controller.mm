@@ -4247,6 +4247,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   if (!_contentSuggestionsCoordinator) {
     _contentSuggestionsCoordinator.reset([[ContentSuggestionsCoordinator alloc]
         initWithBaseViewController:self]);
+    [_contentSuggestionsCoordinator setURLLoader:self];
   }
   [_contentSuggestionsCoordinator setBrowserState:_browserState];
   [_contentSuggestionsCoordinator start];

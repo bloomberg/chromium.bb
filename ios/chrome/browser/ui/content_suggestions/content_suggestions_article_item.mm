@@ -17,7 +17,6 @@ const CGFloat kStandardSpacing = 8;
 
 @interface ContentSuggestionsArticleItem ()
 
-@property(nonatomic, copy) NSString* title;
 @property(nonatomic, copy) NSString* subtitle;
 
 @end
