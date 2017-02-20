@@ -15,7 +15,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#import "ios/web/public/image_fetcher/webp_decoder.h"
+#import "components/image_fetcher/ios/webp_decoder.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"

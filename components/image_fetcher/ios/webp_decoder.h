@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_IMAGE_FETCHER_WEBP_DECODER_H_
-#define IOS_WEB_PUBLIC_IMAGE_FETCHER_WEBP_DECODER_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_IOS_WEBP_DECODER_H_
+#define COMPONENTS_IMAGE_FETCHER_IOS_WEBP_DECODER_H_
 
 #import <Foundation/Foundation.h>
 #include <stddef.h>
@@ -96,4 +96,4 @@ class WebpDecoder : public base::RefCountedThreadSafe<WebpDecoder> {
 
 }  // namespace webp_transcode
 
-#endif  // IOS_WEB_PUBLIC_IMAGE_FETCHER_WEBP_DECODER_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_IOS_WEBP_DECODER_H_

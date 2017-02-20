@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
-#import "ios/web/public/image_fetcher/webp_decoder.h"
+#import "components/image_fetcher/ios/webp_decoder.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"

@@ -25,7 +25,6 @@ source_set("suggestions") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/web",
-    "//ios/web/public/image_fetcher",
     "//net",
     "//skia",
     "//ui/gfx",

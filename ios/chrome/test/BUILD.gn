@@ -188,7 +188,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/common:unit_tests",
     "//ios/chrome/test/base:unit_tests",
     "//ios/shared/chrome/browser/tabs:unit_tests",
-    "//ios/web/public/image_fetcher:unit_tests",
   ]
 
   assert_no_deps = ios_assert_no_deps

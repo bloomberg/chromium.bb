@@ -6,12 +6,14 @@ source_set("ios") {
   sources = [
     "ios_image_data_fetcher_wrapper.h",
     "ios_image_data_fetcher_wrapper.mm",
+    "webp_decoder.h",
+    "webp_decoder.mm",
   ]
   deps = [
     "//base",
     "//components/image_fetcher",
-    "//ios/web/public/image_fetcher",
     "//net",
+    "//third_party/libwebp:libwebp_dec",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -20,15 +22,33 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "ios_image_data_fetcher_wrapper_unittest.mm",
+    "webp_decoder_unittest.mm",
   ]
   deps = [
     ":ios",
+    ":webp_transcode_unit_tests_bundle_data",
     "//base",
-    "//ios/web/public/image_fetcher",
     "//net",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+bundle_data("webp_transcode_unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/webp_transcode/test.jpg",
+    "//components/test/data/webp_transcode/test.webp",
+    "//components/test/data/webp_transcode/test_alpha.png",
+    "//components/test/data/webp_transcode/test_alpha.webp",
+    "//components/test/data/webp_transcode/test_small.tiff",
+    "//components/test/data/webp_transcode/test_small.webp",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
+        "{{source_file_part}}",
+  ]
 }

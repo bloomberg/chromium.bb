@@ -1,4 +1,0 @@
-include_rules = [
-  # Only WebP decoding is allowed (no encoding).
-  "+third_party/libwebp/webp/decode.h",
-]

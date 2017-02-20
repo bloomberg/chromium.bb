@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/image_fetcher/webp_decoder.h"
+#import "components/image_fetcher/ios/webp_decoder.h"
 
 #import <Foundation/Foundation.h>
-#include <stdint.h>
 #import <UIKit/UIKit.h>
+
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"

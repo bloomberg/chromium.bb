@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#import "ios/web/public/image_fetcher/webp_decoder.h"
+#import "components/image_fetcher/ios/webp_decoder.h"
 #include "ios/web/public/web_thread.h"
 #include "ui/gfx/image/image.h"
 
