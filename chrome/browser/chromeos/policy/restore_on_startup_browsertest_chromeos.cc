@@ -70,13 +70,16 @@ void RestoreOnStartupTestChromeOS::LogInAndVerifyStartUpURLs() {
 }
 
 // Verify that the policies are honored on a new user's login.
-IN_PROC_BROWSER_TEST_F(RestoreOnStartupTestChromeOS, PRE_LogInAndVerify) {
+// Disabled https://crbug.com/694269
+IN_PROC_BROWSER_TEST_F(RestoreOnStartupTestChromeOS,
+                       DISABLED_PRE_LogInAndVerify) {
   SkipToLoginScreen();
   LogInAndVerifyStartUpURLs();
 }
 
 // Verify that the policies are honored on an existing user's login.
-IN_PROC_BROWSER_TEST_F(RestoreOnStartupTestChromeOS, LogInAndVerify) {
+// Disabled https://crbug.com/694269
+IN_PROC_BROWSER_TEST_F(RestoreOnStartupTestChromeOS, DISABLED_LogInAndVerify) {
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()).Wait();
