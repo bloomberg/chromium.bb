@@ -35,6 +35,12 @@ function getBeaconURL() {
   return getServerURL('empty.html?as-beacon');
 }
 
+function getCSPReportURL() {
+  // dont-ignore-me is included so that framework.js does not filter out the
+  // request of type "other".
+  return getServerURL('csp-violation-dont-ignore-me');
+}
+
 // A slow URL used for the beacon test, to make sure that the test fails
 // deterministically if there is a bug that causes the frameId/tabId to not be
 // set if the frame is removed during the request.
@@ -609,5 +615,95 @@ runTests([
       chrome.test.assertTrue(sentBeacon);
     };
     frame.remove();
+  },
+
+  function typeOther_cspreport() {
+    expect([
+      { label: 'onBeforeRequest',
+        event: 'onBeforeRequest',
+        details: {
+          type: 'csp_report',
+          method: 'POST',
+          url: getCSPReportURL(),
+          frameUrl: 'unknown frame URL',
+          frameId: 1,
+          parentFrameId: 0,
+          tabId: 1,
+        }
+      },
+      { label: 'onBeforeSendHeaders',
+        event: 'onBeforeSendHeaders',
+        details: {
+          type: 'csp_report',
+          method: 'POST',
+          url: getCSPReportURL(),
+          frameId: 1,
+          parentFrameId: 0,
+          tabId: 1,
+        },
+      },
+      { label: 'onSendHeaders',
+        event: 'onSendHeaders',
+        details: {
+          type: 'csp_report',
+          method: 'POST',
+          url: getCSPReportURL(),
+          frameId: 1,
+          parentFrameId: 0,
+          tabId: 1,
+        },
+      },
+      { label: 'onHeadersReceived',
+        event: 'onHeadersReceived',
+        details: {
+          type: 'csp_report',
+          method: 'POST',
+          url: getCSPReportURL(),
+          frameId: 1,
+          parentFrameId: 0,
+          tabId: 1,
+          statusLine: 'HTTP/1.1 404 Not Found',
+          statusCode: 404,
+        },
+      },
+      { label: 'onResponseStarted',
+        event: 'onResponseStarted',
+        details: {
+          type: 'csp_report',
+          method: 'POST',
+          url: getCSPReportURL(),
+          frameId: 1,
+          parentFrameId: 0,
+          tabId: 1,
+          ip: '127.0.0.1',
+          fromCache: false,
+          statusLine: 'HTTP/1.1 404 Not Found',
+          statusCode: 404,
+        },
+      },
+      { label: 'onCompleted',
+        event: 'onCompleted',
+        details: {
+          type: 'csp_report',
+          method: 'POST',
+          url: getCSPReportURL(),
+          frameId: 1,
+          parentFrameId: 0,
+          tabId: 1,
+          ip: '127.0.0.1',
+          fromCache: false,
+          statusLine: 'HTTP/1.1 404 Not Found',
+          statusCode: 404,
+        },
+      }],
+      [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
+        'onHeadersReceived', 'onResponseStarted', 'onCompleted']], {
+        urls: ['<all_urls>'], types: ['csp_report']
+      });
+
+    var frame = document.createElement('iframe');
+    frame.src =
+      getServerURL('extensions/api_test/webrequest/csp/violation.html');
+    document.body.appendChild(frame);
   },
 ]);

@@ -27,6 +27,7 @@ enum class WebRequestResourceType : uint8_t {
   OBJECT,
   XHR,
   PING,
+  CSP_REPORT,
   MEDIA,
   WEB_SOCKET,
 

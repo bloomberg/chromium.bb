@@ -26,6 +26,7 @@ constexpr struct {
     {"object", WebRequestResourceType::OBJECT},
     {"xmlhttprequest", WebRequestResourceType::XHR},
     {"ping", WebRequestResourceType::PING},
+    {"csp_report", WebRequestResourceType::CSP_REPORT},
     {"media", WebRequestResourceType::MEDIA},
     {"websocket", WebRequestResourceType::WEB_SOCKET},
     {"other", WebRequestResourceType::OTHER},
@@ -73,7 +74,7 @@ WebRequestResourceType ToWebRequestResourceType(content::ResourceType type) {
     case content::RESOURCE_TYPE_SERVICE_WORKER:
       return WebRequestResourceType::SCRIPT;
     case content::RESOURCE_TYPE_CSP_REPORT:
-      return WebRequestResourceType::OTHER;
+      return WebRequestResourceType::CSP_REPORT;
     case content::RESOURCE_TYPE_PLUGIN_RESOURCE:
       return WebRequestResourceType::OBJECT;
     case content::RESOURCE_TYPE_LAST_TYPE:
