@@ -4976,7 +4976,8 @@ static int set_and_cost_bmi_mvs(
 #if CONFIG_EXT_INTER
     int_mv compound_seg_newmvs[2],
 #endif  // CONFIG_EXT_INTER
-    int_mv *best_ref_mv[2], const int *mvjcost, int *mvcost[2]) {
+    int_mv *best_ref_mv[2], const int *mvjcost, int *mvcost[2], int mi_row,
+    int mi_col) {
   MODE_INFO *const mic = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mic->mbmi;
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
@@ -4986,6 +4987,8 @@ static int set_and_cost_bmi_mvs(
   const int num_4x4_blocks_high = num_4x4_blocks_high_lookup[mbmi->sb_type];
   const int is_compound = has_second_ref(mbmi);
   int mode_ctx;
+  (void)mi_row;
+  (void)mi_col;
 
   switch (mode) {
     case NEWMV:
@@ -5033,7 +5036,8 @@ static int set_and_cost_bmi_mvs(
         this_mv[ref].as_int =
             gm_get_motion_vector(
                 &cpi->common.global_motion[mbmi->ref_frame[ref]],
-                cpi->common.allow_high_precision_mv)
+                cpi->common.allow_high_precision_mv,
+                mi_col * MI_SIZE + MI_SIZE / 2, mi_row * MI_SIZE + MI_SIZE / 2)
                 .as_int;
         thismvcost += GLOBAL_MOTION_RATE(cpi, mbmi->ref_frame[ref]);
 #else
@@ -5090,11 +5094,15 @@ static int set_and_cost_bmi_mvs(
 #if CONFIG_GLOBAL_MOTION
       this_mv[0].as_int =
           gm_get_motion_vector(&cpi->common.global_motion[mbmi->ref_frame[0]],
-                               cpi->common.allow_high_precision_mv)
+                               cpi->common.allow_high_precision_mv,
+                               mi_col * MI_SIZE + MI_SIZE / 2,
+                               mi_row * MI_SIZE + MI_SIZE / 2)
               .as_int;
       this_mv[1].as_int =
           gm_get_motion_vector(&cpi->common.global_motion[mbmi->ref_frame[1]],
-                               cpi->common.allow_high_precision_mv)
+                               cpi->common.allow_high_precision_mv,
+                               mi_col * MI_SIZE + MI_SIZE / 2,
+                               mi_row * MI_SIZE + MI_SIZE / 2)
               .as_int;
       thismvcost += GLOBAL_MOTION_RATE(cpi, mbmi->ref_frame[0]) +
                     GLOBAL_MOTION_RATE(cpi, mbmi->ref_frame[1]);
@@ -5348,10 +5356,13 @@ static int check_best_zero_mv(
     const int16_t compound_mode_context[TOTAL_REFS_PER_FRAME],
 #endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
     int_mv frame_mv[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME], int this_mode,
-    const MV_REFERENCE_FRAME ref_frames[2], const BLOCK_SIZE bsize, int block) {
+    const MV_REFERENCE_FRAME ref_frames[2], const BLOCK_SIZE bsize, int block,
+    int mi_row, int mi_col) {
   int_mv zeromv[2];
   int comp_pred_mode = ref_frames[1] > INTRA_FRAME;
   int cur_frm;
+  (void)mi_row;
+  (void)mi_col;
   for (cur_frm = 0; cur_frm < 1 + comp_pred_mode; cur_frm++) {
 #if CONFIG_GLOBAL_MOTION
     if (this_mode == ZEROMV
@@ -5361,7 +5372,9 @@ static int check_best_zero_mv(
         )
       zeromv[cur_frm].as_int =
           gm_get_motion_vector(&cpi->common.global_motion[ref_frames[cur_frm]],
-                               cpi->common.allow_high_precision_mv)
+                               cpi->common.allow_high_precision_mv,
+                               mi_col * MI_SIZE + MI_SIZE / 2,
+                               mi_row * MI_SIZE + MI_SIZE / 2)
               .as_int;
     else
 #endif  // CONFIG_GLOBAL_MOTION
@@ -5821,8 +5834,9 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_GLOBAL_MOTION
         frame_mv[ZEROMV][frame].as_int =
-            gm_get_motion_vector(&cm->global_motion[frame],
-                                 cm->allow_high_precision_mv)
+            gm_get_motion_vector(
+                &cm->global_motion[frame], cm->allow_high_precision_mv,
+                mi_col * MI_SIZE + MI_SIZE / 2, mi_row * MI_SIZE + MI_SIZE / 2)
                 .as_int;
 #else   // CONFIG_GLOBAL_MOTION
         frame_mv[ZEROMV][frame].as_int = 0;
@@ -5854,7 +5868,9 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
 #if CONFIG_GLOBAL_MOTION
           frame_mv[ZERO_ZEROMV][frame].as_int =
               gm_get_motion_vector(&cm->global_motion[frame],
-                                   cm->allow_high_precision_mv)
+                                   cm->allow_high_precision_mv,
+                                   mi_col * MI_SIZE + MI_SIZE / 2,
+                                   mi_row * MI_SIZE + MI_SIZE / 2)
                   .as_int;
 #else
           frame_mv[ZERO_ZEROMV][frame].as_int = 0;
@@ -5981,7 +5997,7 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
                                   mbmi_ext->compound_mode_context,
 #endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
                                   frame_mv, this_mode, mbmi->ref_frame, bsize,
-                                  index))
+                                  index, mi_row, mi_col))
             continue;
 
         memcpy(orig_pre, pd->pre, sizeof(orig_pre));
@@ -6240,7 +6256,7 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
 #else
             seg_mvs[index],
 #endif  // CONFIG_EXT_INTER
-            bsi->ref_mv, x->nmvjointcost, x->mvcost);
+            bsi->ref_mv, x->nmvjointcost, x->mvcost, mi_row, mi_col);
 
         for (ref = 0; ref < 1 + has_second_rf; ++ref) {
           bsi->rdstat[index][mode_idx].mvs[ref].as_int =
@@ -6459,14 +6475,14 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
       if (has_second_rf)
         bsi->ref_mv[1]->as_int = bsi->rdstat[index][mode_idx].ref_mv[1].as_int;
 #endif  // CONFIG_EXT_INTER
-      set_and_cost_bmi_mvs(cpi, x, xd, index, mode_selected,
-                           mode_mv[mode_selected], frame_mv,
+      set_and_cost_bmi_mvs(
+          cpi, x, xd, index, mode_selected, mode_mv[mode_selected], frame_mv,
 #if CONFIG_EXT_INTER
-                           seg_mvs[index][mv_idx], compound_seg_newmvs[index],
+          seg_mvs[index][mv_idx], compound_seg_newmvs[index],
 #else
-                           seg_mvs[index],
+          seg_mvs[index],
 #endif  // CONFIG_EXT_INTER
-                           bsi->ref_mv, x->nmvjointcost, x->mvcost);
+          bsi->ref_mv, x->nmvjointcost, x->mvcost, mi_row, mi_col);
 
       br += bsi->rdstat[index][mode_idx].brate;
       bd += bsi->rdstat[index][mode_idx].bdist;
@@ -9576,8 +9592,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     frame_mv[NEWMV][ref_frame].as_int = INVALID_MV;
 #if CONFIG_GLOBAL_MOTION
     frame_mv[ZEROMV][ref_frame].as_int =
-        gm_get_motion_vector(&cm->global_motion[ref_frame],
-                             cm->allow_high_precision_mv)
+        gm_get_motion_vector(
+            &cm->global_motion[ref_frame], cm->allow_high_precision_mv,
+            mi_col * MI_SIZE + MI_SIZE / 2, mi_row * MI_SIZE + MI_SIZE / 2)
             .as_int;
 #else   // CONFIG_GLOBAL_MOTION
     frame_mv[ZEROMV][ref_frame].as_int = 0;
@@ -9587,8 +9604,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     frame_mv[NEW_NEWMV][ref_frame].as_int = INVALID_MV;
 #if CONFIG_GLOBAL_MOTION
     frame_mv[ZERO_ZEROMV][ref_frame].as_int =
-        gm_get_motion_vector(&cm->global_motion[ref_frame],
-                             cm->allow_high_precision_mv)
+        gm_get_motion_vector(
+            &cm->global_motion[ref_frame], cm->allow_high_precision_mv,
+            mi_col * MI_SIZE + MI_SIZE / 2, mi_row * MI_SIZE + MI_SIZE / 2)
             .as_int;
 #else   // CONFIG_GLOBAL_MOTION
     frame_mv[ZERO_ZEROMV][ref_frame].as_int = 0;
@@ -9691,7 +9709,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       mode_skip_mask[ALTREF_FRAME] = ~INTER_NEAREST_NEAR_ZERO;
 #if CONFIG_GLOBAL_MOTION
       zeromv.as_int = gm_get_motion_vector(&cm->global_motion[ALTREF_FRAME],
-                                           cm->allow_high_precision_mv)
+                                           cm->allow_high_precision_mv,
+                                           mi_col * MI_SIZE + MI_SIZE / 2,
+                                           mi_row * MI_SIZE + MI_SIZE / 2)
                           .as_int;
 #else
       zeromv.as_int = 0;
@@ -9942,7 +9962,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_REF_MV && CONFIG_EXT_INTER
                               mbmi_ext->compound_mode_context,
 #endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
-                              frame_mv, this_mode, ref_frames, bsize, -1))
+                              frame_mv, this_mode, ref_frames, bsize, -1,
+                              mi_row, mi_col))
         continue;
     }
 
@@ -10869,13 +10890,18 @@ PALETTE_EXIT:
 #endif  // CONFIG_REF_MV
 #if CONFIG_GLOBAL_MOTION
     zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[refs[0]],
-                                            cm->allow_high_precision_mv)
+                                            cm->allow_high_precision_mv,
+                                            mi_col * MI_SIZE + MI_SIZE / 2,
+                                            mi_row * MI_SIZE + MI_SIZE / 2)
                            .as_int;
-    zeromv[1].as_int = comp_pred_mode
-                           ? gm_get_motion_vector(&cm->global_motion[refs[1]],
-                                                  cm->allow_high_precision_mv)
-                                 .as_int
-                           : 0;
+    zeromv[1].as_int =
+        comp_pred_mode
+            ? gm_get_motion_vector(&cm->global_motion[refs[1]],
+                                   cm->allow_high_precision_mv,
+                                   mi_col * MI_SIZE + MI_SIZE / 2,
+                                   mi_row * MI_SIZE + MI_SIZE / 2)
+                  .as_int
+            : 0;
 #else
     zeromv[0].as_int = 0;
     zeromv[1].as_int = 0;
@@ -10984,13 +11010,18 @@ PALETTE_EXIT:
       int_mv zeromv[2];
 #if CONFIG_GLOBAL_MOTION
       zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[refs[0]],
-                                              cm->allow_high_precision_mv)
+                                              cm->allow_high_precision_mv,
+                                              mi_col * MI_SIZE + MI_SIZE / 2,
+                                              mi_row * MI_SIZE + MI_SIZE / 2)
                              .as_int;
-      zeromv[1].as_int = comp_pred_mode
-                             ? gm_get_motion_vector(&cm->global_motion[refs[1]],
-                                                    cm->allow_high_precision_mv)
-                                   .as_int
-                             : 0;
+      zeromv[1].as_int =
+          comp_pred_mode
+              ? gm_get_motion_vector(&cm->global_motion[refs[1]],
+                                     cm->allow_high_precision_mv,
+                                     mi_col * MI_SIZE + MI_SIZE / 2,
+                                     mi_row * MI_SIZE + MI_SIZE / 2)
+                    .as_int
+              : 0;
 #else
       zeromv[0].as_int = 0;
       zeromv[1].as_int = 0;
@@ -11033,10 +11064,14 @@ PALETTE_EXIT:
       const MV_REFERENCE_FRAME refs[2] = { best_mbmode.ref_frame[0],
                                            best_mbmode.ref_frame[1] };
       zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[refs[0]],
-                                              cm->allow_high_precision_mv)
+                                              cm->allow_high_precision_mv,
+                                              mi_col * MI_SIZE + MI_SIZE / 2,
+                                              mi_row * MI_SIZE + MI_SIZE / 2)
                              .as_int;
       zeromv[1].as_int = gm_get_motion_vector(&cm->global_motion[refs[1]],
-                                              cm->allow_high_precision_mv)
+                                              cm->allow_high_precision_mv,
+                                              mi_col * MI_SIZE + MI_SIZE / 2,
+                                              mi_row * MI_SIZE + MI_SIZE / 2)
                              .as_int;
       lower_mv_precision(&zeromv[0].as_mv, cm->allow_high_precision_mv);
       lower_mv_precision(&zeromv[1].as_mv, cm->allow_high_precision_mv);
@@ -11149,6 +11184,7 @@ PALETTE_EXIT:
 
 void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
                                         TileDataEnc *tile_data, MACROBLOCK *x,
+                                        int mi_row, int mi_col,
                                         RD_COST *rd_cost, BLOCK_SIZE bsize,
                                         PICK_MODE_CONTEXT *ctx,
                                         int64_t best_rd_so_far) {
@@ -11166,6 +11202,8 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   int64_t this_rd = INT64_MAX;
   int rate2 = 0;
   const int64_t distortion2 = 0;
+  (void)mi_row;
+  (void)mi_col;
 
   estimate_ref_frame_costs(cm, xd, segment_id, ref_costs_single, ref_costs_comp,
                            &comp_mode_p);
@@ -11194,8 +11232,9 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   mbmi->ref_frame[1] = NONE_FRAME;
 #if CONFIG_GLOBAL_MOTION
   mbmi->mv[0].as_int =
-      gm_get_motion_vector(&cm->global_motion[mbmi->ref_frame[0]],
-                           cm->allow_high_precision_mv)
+      gm_get_motion_vector(
+          &cm->global_motion[mbmi->ref_frame[0]], cm->allow_high_precision_mv,
+          mi_col * MI_SIZE + MI_SIZE / 2, mi_row * MI_SIZE + MI_SIZE / 2)
           .as_int;
 #else   // CONFIG_GLOBAL_MOTION
   mbmi->mv[0].as_int = 0;

@@ -159,8 +159,8 @@ void av1_rd_pick_inter_mode_sb(const struct AV1_COMP *cpi,
 
 void av1_rd_pick_inter_mode_sb_seg_skip(
     const struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
-    struct macroblock *x, struct RD_COST *rd_cost, BLOCK_SIZE bsize,
-    PICK_MODE_CONTEXT *ctx, int64_t best_rd_so_far);
+    struct macroblock *x, int mi_row, int mi_col, struct RD_COST *rd_cost,
+    BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx, int64_t best_rd_so_far);
 
 int av1_internal_image_edge(const struct AV1_COMP *cpi);
 int av1_active_h_edge(const struct AV1_COMP *cpi, int mi_row, int mi_step);

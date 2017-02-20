@@ -149,18 +149,27 @@ typedef struct {
 // Convert a global motion translation vector (which may have more bits than a
 // regular motion vector) into a motion vector
 static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
-                                          int allow_hp) {
+                                          int allow_hp, int x, int y) {
   int_mv res;
-  res.as_mv.row = allow_hp ? (int16_t)ROUND_POWER_OF_TWO_SIGNED(
-                                 gm->wmmat[1], WARPEDMODEL_PREC_BITS - 3)
-                           : (int16_t)ROUND_POWER_OF_TWO_SIGNED(
-                                 gm->wmmat[1], WARPEDMODEL_PREC_BITS - 2) *
-                                 2;
-  res.as_mv.col = allow_hp ? (int16_t)ROUND_POWER_OF_TWO_SIGNED(
-                                 gm->wmmat[0], WARPEDMODEL_PREC_BITS - 3)
-                           : (int16_t)ROUND_POWER_OF_TWO_SIGNED(
-                                 gm->wmmat[0], WARPEDMODEL_PREC_BITS - 2) *
-                                 2;
+  const int32_t *mat = gm->wmmat;
+  // Project the center point of the frame and use that to derive the
+  // motion vector. Assume the model is an AFFINE or ROTZOOM model
+  int xc, yc;
+  int shift = allow_hp ? WARPEDMODEL_PREC_BITS - 3 : WARPEDMODEL_PREC_BITS - 2;
+  int scale = allow_hp ? 0 : 1;
+
+  if (gm->wmtype == ROTZOOM) {
+    assert(gm->wmmat[5] == gm->wmmat[2]);
+    assert(gm->wmmat[4] == -gm->wmmat[3]);
+  }
+  xc = mat[2] * x + mat[3] * y + mat[0];
+  yc = mat[4] * x + mat[5] * y + mat[1];
+
+  int tx = (ROUND_POWER_OF_TWO_SIGNED(xc, shift) << scale) - (x << 3);
+  int ty = (ROUND_POWER_OF_TWO_SIGNED(yc, shift) << scale) - (y << 3);
+
+  res.as_mv.row = ty;
+  res.as_mv.col = tx;
   return res;
 }
 

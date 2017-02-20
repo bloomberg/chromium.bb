@@ -1900,8 +1900,8 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   } else {
     if (bsize >= BLOCK_8X8 || unify_bsize) {
       if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-        av1_rd_pick_inter_mode_sb_seg_skip(cpi, tile_data, x, rd_cost, bsize,
-                                           ctx, best_rd);
+        av1_rd_pick_inter_mode_sb_seg_skip(cpi, tile_data, x, mi_row, mi_col,
+                                           rd_cost, bsize, ctx, best_rd);
 #if CONFIG_SUPERTX
         *totalrate_nocoef = rd_cost->rate;
 #endif  // CONFIG_SUPERTX
