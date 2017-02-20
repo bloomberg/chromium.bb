@@ -145,6 +145,10 @@ crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition
 crbug.com/681471 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
 crbug.com/681471 virtual/disable-spinvalidation/paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
 
+# Added 2017-02-20
+crbug.com/693510 compositing/reflections/nested-reflection-anchor-point.html [ Failure Pass ]
+crbug.com/693510 compositing/reflections/nested-reflection-animated.html [ Failure Pass ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
