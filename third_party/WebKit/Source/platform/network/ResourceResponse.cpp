@@ -76,7 +76,6 @@ ResourceResponse::SignedCertificateTimestamp::isolatedCopy() const {
 ResourceResponse::ResourceResponse()
     : m_expectedContentLength(0),
       m_httpStatusCode(0),
-      m_lastModifiedDate(0),
       m_wasCached(false),
       m_connectionID(0),
       m_connectionReused(false),
@@ -94,8 +93,6 @@ ResourceResponse::ResourceResponse()
       m_httpVersion(HTTPVersionUnknown),
       m_appCacheID(0),
       m_wasFetchedViaSPDY(false),
-      m_wasNpnNegotiated(false),
-      m_wasAlternateProtocolAvailable(false),
       m_wasFetchedViaProxy(false),
       m_wasFetchedViaServiceWorker(false),
       m_wasFetchedViaForeignFetch(false),
@@ -117,7 +114,6 @@ ResourceResponse::ResourceResponse(const KURL& url,
       m_expectedContentLength(expectedLength),
       m_textEncodingName(textEncodingName),
       m_httpStatusCode(0),
-      m_lastModifiedDate(0),
       m_wasCached(false),
       m_connectionID(0),
       m_connectionReused(false),
@@ -135,8 +131,6 @@ ResourceResponse::ResourceResponse(const KURL& url,
       m_httpVersion(HTTPVersionUnknown),
       m_appCacheID(0),
       m_wasFetchedViaSPDY(false),
-      m_wasNpnNegotiated(false),
-      m_wasAlternateProtocolAvailable(false),
       m_wasFetchedViaProxy(false),
       m_wasFetchedViaServiceWorker(false),
       m_wasFetchedViaForeignFetch(false),
@@ -160,7 +154,6 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   setHTTPStatusText(AtomicString(data->m_httpStatusText));
 
   m_httpHeaderFields.adopt(std::move(data->m_httpHeaders));
-  setLastModifiedDate(data->m_lastModifiedDate);
   setResourceLoadTiming(data->m_resourceLoadTiming.release());
   m_hasMajorCertificateErrors = data->m_hasMajorCertificateErrors;
   m_securityStyle = data->m_securityStyle;
@@ -182,8 +175,6 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   m_appCacheManifestURL = data->m_appCacheManifestURL.copy();
   m_multipartBoundary = data->m_multipartBoundary;
   m_wasFetchedViaSPDY = data->m_wasFetchedViaSPDY;
-  m_wasNpnNegotiated = data->m_wasNpnNegotiated;
-  m_wasAlternateProtocolAvailable = data->m_wasAlternateProtocolAvailable;
   m_wasFetchedViaProxy = data->m_wasFetchedViaProxy;
   m_wasFetchedViaServiceWorker = data->m_wasFetchedViaServiceWorker;
   m_wasFetchedViaForeignFetch = data->m_wasFetchedViaForeignFetch;
@@ -222,7 +213,6 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData()
   data->m_httpStatusCode = httpStatusCode();
   data->m_httpStatusText = httpStatusText().getString().isolatedCopy();
   data->m_httpHeaders = httpHeaderFields().copyData();
-  data->m_lastModifiedDate = lastModifiedDate();
   if (m_resourceLoadTiming)
     data->m_resourceLoadTiming = m_resourceLoadTiming->deepCopy();
   data->m_hasMajorCertificateErrors = m_hasMajorCertificateErrors;
@@ -248,8 +238,6 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData()
   data->m_appCacheManifestURL = m_appCacheManifestURL.copy();
   data->m_multipartBoundary = m_multipartBoundary;
   data->m_wasFetchedViaSPDY = m_wasFetchedViaSPDY;
-  data->m_wasNpnNegotiated = m_wasNpnNegotiated;
-  data->m_wasAlternateProtocolAvailable = m_wasAlternateProtocolAvailable;
   data->m_wasFetchedViaProxy = m_wasFetchedViaProxy;
   data->m_wasFetchedViaServiceWorker = m_wasFetchedViaServiceWorker;
   data->m_wasFetchedViaForeignFetch = m_wasFetchedViaForeignFetch;
@@ -542,14 +530,6 @@ bool ResourceResponse::isAttachment() const {
 AtomicString ResourceResponse::httpContentType() const {
   return extractMIMETypeFromMediaType(
       httpHeaderField(HTTPNames::Content_Type).lower());
-}
-
-void ResourceResponse::setLastModifiedDate(time_t lastModifiedDate) {
-  m_lastModifiedDate = lastModifiedDate;
-}
-
-time_t ResourceResponse::lastModifiedDate() const {
-  return m_lastModifiedDate;
 }
 
 bool ResourceResponse::wasCached() const {

@@ -116,34 +116,18 @@ void WebURLResponse::setURL(const WebURL& url) {
   m_resourceResponse->setURL(url);
 }
 
-unsigned WebURLResponse::connectionID() const {
-  return m_resourceResponse->connectionID();
-}
-
 void WebURLResponse::setConnectionID(unsigned connectionID) {
   m_resourceResponse->setConnectionID(connectionID);
-}
-
-bool WebURLResponse::connectionReused() const {
-  return m_resourceResponse->connectionReused();
 }
 
 void WebURLResponse::setConnectionReused(bool connectionReused) {
   m_resourceResponse->setConnectionReused(connectionReused);
 }
 
-WebURLLoadTiming WebURLResponse::loadTiming() {
-  return WebURLLoadTiming(m_resourceResponse->resourceLoadTiming());
-}
-
 void WebURLResponse::setLoadTiming(const WebURLLoadTiming& timing) {
   RefPtr<ResourceLoadTiming> loadTiming =
       PassRefPtr<ResourceLoadTiming>(timing);
   m_resourceResponse->setResourceLoadTiming(std::move(loadTiming));
-}
-
-WebHTTPLoadInfo WebURLResponse::httpLoadInfo() {
-  return WebHTTPLoadInfo(m_resourceResponse->resourceLoadInfo());
 }
 
 void WebURLResponse::setHTTPLoadInfo(const WebHTTPLoadInfo& value) {
@@ -168,10 +152,6 @@ long long WebURLResponse::expectedContentLength() const {
 
 void WebURLResponse::setExpectedContentLength(long long expectedContentLength) {
   m_resourceResponse->setExpectedContentLength(expectedContentLength);
-}
-
-WebString WebURLResponse::textEncodingName() const {
-  return m_resourceResponse->textEncodingName();
 }
 
 void WebURLResponse::setTextEncodingName(const WebString& textEncodingName) {
@@ -231,15 +211,6 @@ void WebURLResponse::visitHTTPHeaderFields(
     visitor->visitHeader(it->key, it->value);
 }
 
-double WebURLResponse::lastModifiedDate() const {
-  return static_cast<double>(m_resourceResponse->lastModifiedDate());
-}
-
-void WebURLResponse::setLastModifiedDate(double lastModifiedDate) {
-  m_resourceResponse->setLastModifiedDate(
-      static_cast<time_t>(lastModifiedDate));
-}
-
 long long WebURLResponse::appCacheID() const {
   return m_resourceResponse->appCacheID();
 }
@@ -258,10 +229,6 @@ void WebURLResponse::setAppCacheManifestURL(const WebURL& url) {
 
 void WebURLResponse::setHasMajorCertificateErrors(bool value) {
   m_resourceResponse->setHasMajorCertificateErrors(value);
-}
-
-WebSecurityStyle WebURLResponse::getSecurityStyle() const {
-  return static_cast<WebSecurityStyle>(m_resourceResponse->getSecurityStyle());
 }
 
 void WebURLResponse::setSecurityStyle(WebSecurityStyle securityStyle) {
@@ -293,44 +260,16 @@ void WebURLResponse::setSecurityDetails(
       static_cast<time_t>(webSecurityDetails.validTo), certificate, sctList);
 }
 
-ResourceResponse& WebURLResponse::toMutableResourceResponse() {
-  return *m_resourceResponse;
-}
-
 const ResourceResponse& WebURLResponse::toResourceResponse() const {
   return *m_resourceResponse;
-}
-
-bool WebURLResponse::wasCached() const {
-  return m_resourceResponse->wasCached();
 }
 
 void WebURLResponse::setWasCached(bool value) {
   m_resourceResponse->setWasCached(value);
 }
 
-bool WebURLResponse::wasFetchedViaSPDY() const {
-  return m_resourceResponse->wasFetchedViaSPDY();
-}
-
 void WebURLResponse::setWasFetchedViaSPDY(bool value) {
   m_resourceResponse->setWasFetchedViaSPDY(value);
-}
-
-bool WebURLResponse::wasNpnNegotiated() const {
-  return m_resourceResponse->wasNpnNegotiated();
-}
-
-void WebURLResponse::setWasNpnNegotiated(bool value) {
-  m_resourceResponse->setWasNpnNegotiated(value);
-}
-
-bool WebURLResponse::wasAlternateProtocolAvailable() const {
-  return m_resourceResponse->wasAlternateProtocolAvailable();
-}
-
-void WebURLResponse::setWasAlternateProtocolAvailable(bool value) {
-  m_resourceResponse->setWasAlternateProtocolAvailable(value);
 }
 
 bool WebURLResponse::wasFetchedViaServiceWorker() const {
@@ -341,24 +280,12 @@ void WebURLResponse::setWasFetchedViaServiceWorker(bool value) {
   m_resourceResponse->setWasFetchedViaServiceWorker(value);
 }
 
-bool WebURLResponse::wasFetchedViaForeignFetch() const {
-  return m_resourceResponse->wasFetchedViaForeignFetch();
-}
-
 void WebURLResponse::setWasFetchedViaForeignFetch(bool value) {
   m_resourceResponse->setWasFetchedViaForeignFetch(value);
 }
 
-bool WebURLResponse::wasFallbackRequiredByServiceWorker() const {
-  return m_resourceResponse->wasFallbackRequiredByServiceWorker();
-}
-
 void WebURLResponse::setWasFallbackRequiredByServiceWorker(bool value) {
   m_resourceResponse->setWasFallbackRequiredByServiceWorker(value);
-}
-
-WebServiceWorkerResponseType WebURLResponse::serviceWorkerResponseType() const {
-  return m_resourceResponse->serviceWorkerResponseType();
 }
 
 void WebURLResponse::setServiceWorkerResponseType(
@@ -382,10 +309,6 @@ void WebURLResponse::setMultipartBoundary(const char* bytes, size_t size) {
   m_resourceResponse->setMultipartBoundary(bytes, size);
 }
 
-WebString WebURLResponse::cacheStorageCacheName() const {
-  return m_resourceResponse->cacheStorageCacheName();
-}
-
 void WebURLResponse::setCacheStorageCacheName(
     const WebString& cacheStorageCacheName) {
   m_resourceResponse->setCacheStorageCacheName(cacheStorageCacheName);
@@ -396,10 +319,6 @@ void WebURLResponse::setCorsExposedHeaderNames(
   Vector<String> exposedHeaderNames;
   exposedHeaderNames.append(headerNames.data(), headerNames.size());
   m_resourceResponse->setCorsExposedHeaderNames(exposedHeaderNames);
-}
-
-bool WebURLResponse::didServiceWorkerNavigationPreload() const {
-  return m_resourceResponse->didServiceWorkerNavigationPreload();
 }
 
 void WebURLResponse::setDidServiceWorkerNavigationPreload(bool value) {
@@ -430,24 +349,12 @@ void WebURLResponse::setRemotePort(unsigned short remotePort) {
   m_resourceResponse->setRemotePort(remotePort);
 }
 
-long long WebURLResponse::encodedDataLengthForTesting() const {
-  return m_resourceResponse->encodedDataLength();
-}
-
 void WebURLResponse::setEncodedDataLength(long long length) {
   m_resourceResponse->setEncodedDataLength(length);
 }
 
-long long WebURLResponse::encodedBodyLengthForTesting() const {
-  return m_resourceResponse->encodedBodyLength();
-}
-
 void WebURLResponse::addToEncodedBodyLength(long long length) {
   m_resourceResponse->addToEncodedBodyLength(length);
-}
-
-long long WebURLResponse::decodedBodyLengthForTesting() const {
-  return m_resourceResponse->decodedBodyLength();
 }
 
 void WebURLResponse::addToDecodedBodyLength(long long bytes) {

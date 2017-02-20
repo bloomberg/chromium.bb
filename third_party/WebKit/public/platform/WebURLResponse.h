@@ -151,16 +151,12 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT WebURL url() const;
   BLINK_PLATFORM_EXPORT void setURL(const WebURL&);
 
-  BLINK_PLATFORM_EXPORT unsigned connectionID() const;
   BLINK_PLATFORM_EXPORT void setConnectionID(unsigned);
 
-  BLINK_PLATFORM_EXPORT bool connectionReused() const;
   BLINK_PLATFORM_EXPORT void setConnectionReused(bool);
 
-  BLINK_PLATFORM_EXPORT WebURLLoadTiming loadTiming();
   BLINK_PLATFORM_EXPORT void setLoadTiming(const WebURLLoadTiming&);
 
-  BLINK_PLATFORM_EXPORT WebHTTPLoadInfo httpLoadInfo();
   BLINK_PLATFORM_EXPORT void setHTTPLoadInfo(const WebHTTPLoadInfo&);
 
   BLINK_PLATFORM_EXPORT void setResponseTime(long long);
@@ -171,7 +167,6 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT long long expectedContentLength() const;
   BLINK_PLATFORM_EXPORT void setExpectedContentLength(long long);
 
-  BLINK_PLATFORM_EXPORT WebString textEncodingName() const;
   BLINK_PLATFORM_EXPORT void setTextEncodingName(const WebString&);
 
   BLINK_PLATFORM_EXPORT HTTPVersion httpVersion() const;
@@ -191,9 +186,6 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void clearHTTPHeaderField(const WebString& name);
   BLINK_PLATFORM_EXPORT void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
-  BLINK_PLATFORM_EXPORT double lastModifiedDate() const;
-  BLINK_PLATFORM_EXPORT void setLastModifiedDate(double);
-
   BLINK_PLATFORM_EXPORT long long appCacheID() const;
   BLINK_PLATFORM_EXPORT void setAppCacheID(long long);
 
@@ -202,34 +194,20 @@ class WebURLResponse {
 
   BLINK_PLATFORM_EXPORT void setHasMajorCertificateErrors(bool);
 
-  BLINK_PLATFORM_EXPORT WebSecurityStyle getSecurityStyle() const;
   BLINK_PLATFORM_EXPORT void setSecurityStyle(WebSecurityStyle);
 
   BLINK_PLATFORM_EXPORT void setSecurityDetails(const WebSecurityDetails&);
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT ResourceResponse& toMutableResourceResponse();
   BLINK_PLATFORM_EXPORT const ResourceResponse& toResourceResponse() const;
 #endif
 
   // Flag whether this request was served from the disk cache entry.
-  BLINK_PLATFORM_EXPORT bool wasCached() const;
   BLINK_PLATFORM_EXPORT void setWasCached(bool);
 
   // Flag whether this request was loaded via the SPDY protocol or not.
   // SPDY is an experimental web protocol, see http://dev.chromium.org/spdy
-  BLINK_PLATFORM_EXPORT bool wasFetchedViaSPDY() const;
   BLINK_PLATFORM_EXPORT void setWasFetchedViaSPDY(bool);
-
-  // Flag whether this request was loaded after the
-  // TLS/Next-Protocol-Negotiation was used.  This is related to SPDY.
-  BLINK_PLATFORM_EXPORT bool wasNpnNegotiated() const;
-  BLINK_PLATFORM_EXPORT void setWasNpnNegotiated(bool);
-
-  // Flag whether this request was made when "Alternate-Protocol: xxx"
-  // is present in server's response.
-  BLINK_PLATFORM_EXPORT bool wasAlternateProtocolAvailable() const;
-  BLINK_PLATFORM_EXPORT void setWasAlternateProtocolAvailable(bool);
 
   // Flag whether this request was loaded via a ServiceWorker. See
   // ServiceWorkerResponseInfo::was_fetched_via_service_worker() for details.
@@ -237,18 +215,14 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void setWasFetchedViaServiceWorker(bool);
 
   // Flag whether this request was loaded using a foreign fetch service worker.
-  BLINK_PLATFORM_EXPORT bool wasFetchedViaForeignFetch() const;
   BLINK_PLATFORM_EXPORT void setWasFetchedViaForeignFetch(bool);
 
   // Flag whether the fallback request with skip service worker flag was
   // required. See ServiceWorkerResponseInfo::was_fallback_required() for
   // details.
-  BLINK_PLATFORM_EXPORT bool wasFallbackRequiredByServiceWorker() const;
   BLINK_PLATFORM_EXPORT void setWasFallbackRequiredByServiceWorker(bool);
 
   // The type of the response which was served by the ServiceWorker.
-  BLINK_PLATFORM_EXPORT WebServiceWorkerResponseType
-  serviceWorkerResponseType() const;
   BLINK_PLATFORM_EXPORT void setServiceWorkerResponseType(
       WebServiceWorkerResponseType);
 
@@ -269,19 +243,16 @@ class WebURLResponse {
 
   // The cache name of the CacheStorage from where the response is served via
   // the ServiceWorker. Null if the response isn't from the CacheStorage.
-  BLINK_PLATFORM_EXPORT WebString cacheStorageCacheName() const;
   BLINK_PLATFORM_EXPORT void setCacheStorageCacheName(const WebString&);
 
   // The headers that should be exposed according to CORS. Only guaranteed
   // to be set if the response was served by a ServiceWorker.
-  BLINK_PLATFORM_EXPORT WebVector<WebString> corsExposedHeaderNames() const;
   BLINK_PLATFORM_EXPORT void setCorsExposedHeaderNames(
       const WebVector<WebString>&);
 
   // Whether service worker navigation preload occurred.
   // See ServiceWorkerResponseInfo::did_navigation_preload() for
   // details.
-  BLINK_PLATFORM_EXPORT bool didServiceWorkerNavigationPreload() const;
   BLINK_PLATFORM_EXPORT void setDidServiceWorkerNavigationPreload(bool);
 
   // This indicates the location of a downloaded response if the
@@ -299,15 +270,12 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void setRemotePort(unsigned short);
 
   // Original size of the response before decompression.
-  BLINK_PLATFORM_EXPORT long long encodedDataLengthForTesting() const;
   BLINK_PLATFORM_EXPORT void setEncodedDataLength(long long);
 
   // Original size of the response body before decompression.
-  BLINK_PLATFORM_EXPORT long long encodedBodyLengthForTesting() const;
   BLINK_PLATFORM_EXPORT void addToEncodedBodyLength(long long);
 
   // Size of the response body after removing any content encoding.
-  BLINK_PLATFORM_EXPORT long long decodedBodyLengthForTesting() const;
   BLINK_PLATFORM_EXPORT void addToDecodedBodyLength(long long);
 
   // Extra data associated with the underlying resource response. Resource

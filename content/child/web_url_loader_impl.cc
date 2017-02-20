@@ -1154,10 +1154,6 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setHTTPStatusCode(headers->response_code());
   response->setHTTPStatusText(WebString::fromLatin1(headers->GetStatusText()));
 
-  Time time_val;
-  if (headers->GetLastModifiedValue(&time_val))
-    response->setLastModifiedDate(time_val.ToDoubleT());
-
   // Build up the header map.
   size_t iter = 0;
   std::string name;
