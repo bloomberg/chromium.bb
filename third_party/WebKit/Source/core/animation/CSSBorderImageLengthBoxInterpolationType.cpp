@@ -4,12 +4,13 @@
 
 #include "core/animation/CSSBorderImageLengthBoxInterpolationType.h"
 
+#include <memory>
 #include "core/animation/BorderImageLengthBoxPropertyFunctions.h"
 #include "core/animation/LengthInterpolationFunctions.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -23,34 +24,58 @@ enum SideIndex : unsigned {
   SideIndexCount,
 };
 
-struct SideNumbers {
-  explicit SideNumbers(const BorderImageLengthBox& box) {
-    isNumber[SideTop] = box.top().isNumber();
-    isNumber[SideRight] = box.right().isNumber();
-    isNumber[SideBottom] = box.bottom().isNumber();
-    isNumber[SideLeft] = box.left().isNumber();
+enum class SideType {
+  Number,
+  Auto,
+  Length,
+};
+
+SideType getSideType(const BorderImageLength& side) {
+  if (side.isNumber()) {
+    return SideType::Number;
   }
-  explicit SideNumbers(const CSSQuadValue& quad) {
-    isNumber[SideTop] = quad.top()->isPrimitiveValue() &&
-                        toCSSPrimitiveValue(quad.top())->isNumber();
-    isNumber[SideRight] = quad.right()->isPrimitiveValue() &&
-                          toCSSPrimitiveValue(quad.right())->isNumber();
-    isNumber[SideBottom] = quad.bottom()->isPrimitiveValue() &&
-                           toCSSPrimitiveValue(quad.bottom())->isNumber();
-    isNumber[SideLeft] = quad.left()->isPrimitiveValue() &&
-                         toCSSPrimitiveValue(quad.left())->isNumber();
+  if (side.length().isAuto()) {
+    return SideType::Auto;
+  }
+  DCHECK(side.length().isSpecified());
+  return SideType::Length;
+}
+
+SideType getSideType(const CSSValue& side) {
+  if (side.isPrimitiveValue() && toCSSPrimitiveValue(side).isNumber()) {
+    return SideType::Number;
+  }
+  if (side.isIdentifierValue() &&
+      toCSSIdentifierValue(side).getValueID() == CSSValueAuto) {
+    return SideType::Auto;
+  }
+  return SideType::Length;
+}
+
+struct SideTypes {
+  explicit SideTypes(const BorderImageLengthBox& box) {
+    type[SideTop] = getSideType(box.top());
+    type[SideRight] = getSideType(box.right());
+    type[SideBottom] = getSideType(box.bottom());
+    type[SideLeft] = getSideType(box.left());
+  }
+  explicit SideTypes(const CSSQuadValue& quad) {
+    type[SideTop] = getSideType(*quad.top());
+    type[SideRight] = getSideType(*quad.right());
+    type[SideBottom] = getSideType(*quad.bottom());
+    type[SideLeft] = getSideType(*quad.left());
   }
 
-  bool operator==(const SideNumbers& other) const {
+  bool operator==(const SideTypes& other) const {
     for (size_t i = 0; i < SideIndexCount; i++) {
-      if (isNumber[i] != other.isNumber[i])
+      if (type[i] != other.type[i])
         return false;
     }
     return true;
   }
-  bool operator!=(const SideNumbers& other) const { return !(*this == other); }
+  bool operator!=(const SideTypes& other) const { return !(*this == other); }
 
-  bool isNumber[SideIndexCount];
+  SideType type[SideIndexCount];
 };
 
 }  // namespace
@@ -59,13 +84,19 @@ class CSSBorderImageLengthBoxNonInterpolableValue
     : public NonInterpolableValue {
  public:
   static PassRefPtr<CSSBorderImageLengthBoxNonInterpolableValue> create(
-      const SideNumbers& sideNumbers,
+      const SideTypes& sideTypes,
       Vector<RefPtr<NonInterpolableValue>>&& sideNonInterpolableValues) {
     return adoptRef(new CSSBorderImageLengthBoxNonInterpolableValue(
-        sideNumbers, std::move(sideNonInterpolableValues)));
+        sideTypes, std::move(sideNonInterpolableValues)));
   }
 
-  const SideNumbers& sideNumbers() const { return m_sideNumbers; }
+  PassRefPtr<CSSBorderImageLengthBoxNonInterpolableValue> clone() {
+    return adoptRef(new CSSBorderImageLengthBoxNonInterpolableValue(
+        m_sideTypes,
+        Vector<RefPtr<NonInterpolableValue>>(m_sideNonInterpolableValues)));
+  }
+
+  const SideTypes& sideTypes() const { return m_sideTypes; }
   const Vector<RefPtr<NonInterpolableValue>>& sideNonInterpolableValues()
       const {
     return m_sideNonInterpolableValues;
@@ -78,14 +109,14 @@ class CSSBorderImageLengthBoxNonInterpolableValue
 
  private:
   CSSBorderImageLengthBoxNonInterpolableValue(
-      const SideNumbers& sideNumbers,
+      const SideTypes& sideTypes,
       Vector<RefPtr<NonInterpolableValue>>&& sideNonInterpolableValues)
-      : m_sideNumbers(sideNumbers),
+      : m_sideTypes(sideTypes),
         m_sideNonInterpolableValues(sideNonInterpolableValues) {
     DCHECK_EQ(m_sideNonInterpolableValues.size(), SideIndexCount);
   }
 
-  const SideNumbers m_sideNumbers;
+  const SideTypes m_sideTypes;
   Vector<RefPtr<NonInterpolableValue>> m_sideNonInterpolableValues;
 };
 
@@ -95,59 +126,56 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(
 
 namespace {
 
-class UnderlyingSideNumbersChecker
-    : public InterpolationType::ConversionChecker {
+class UnderlyingSideTypesChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<UnderlyingSideNumbersChecker> create(
-      const SideNumbers& underlyingSideNumbers) {
-    return WTF::wrapUnique(
-        new UnderlyingSideNumbersChecker(underlyingSideNumbers));
+  static std::unique_ptr<UnderlyingSideTypesChecker> create(
+      const SideTypes& underlyingSideTypes) {
+    return WTF::wrapUnique(new UnderlyingSideTypesChecker(underlyingSideTypes));
   }
 
-  static SideNumbers getUnderlyingSideNumbers(
+  static SideTypes getUnderlyingSideTypes(
       const InterpolationValue& underlying) {
     return toCSSBorderImageLengthBoxNonInterpolableValue(
                *underlying.nonInterpolableValue)
-        .sideNumbers();
+        .sideTypes();
   }
 
  private:
-  UnderlyingSideNumbersChecker(const SideNumbers& underlyingSideNumbers)
-      : m_underlyingSideNumbers(underlyingSideNumbers) {}
+  UnderlyingSideTypesChecker(const SideTypes& underlyingSideTypes)
+      : m_underlyingSideTypes(underlyingSideTypes) {}
 
   bool isValid(const InterpolationEnvironment&,
                const InterpolationValue& underlying) const final {
-    return m_underlyingSideNumbers == getUnderlyingSideNumbers(underlying);
+    return m_underlyingSideTypes == getUnderlyingSideTypes(underlying);
   }
 
-  const SideNumbers m_underlyingSideNumbers;
+  const SideTypes m_underlyingSideTypes;
 };
 
-class InheritedSideNumbersChecker
-    : public InterpolationType::ConversionChecker {
+class InheritedSideTypesChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<InheritedSideNumbersChecker> create(
+  static std::unique_ptr<InheritedSideTypesChecker> create(
       CSSPropertyID property,
-      const SideNumbers& inheritedSideNumbers) {
+      const SideTypes& inheritedSideTypes) {
     return WTF::wrapUnique(
-        new InheritedSideNumbersChecker(property, inheritedSideNumbers));
+        new InheritedSideTypesChecker(property, inheritedSideTypes));
   }
 
  private:
-  InheritedSideNumbersChecker(CSSPropertyID property,
-                              const SideNumbers& inheritedSideNumbers)
-      : m_property(property), m_inheritedSideNumbers(inheritedSideNumbers) {}
+  InheritedSideTypesChecker(CSSPropertyID property,
+                            const SideTypes& inheritedSideTypes)
+      : m_property(property), m_inheritedSideTypes(inheritedSideTypes) {}
 
   bool isValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
-    return m_inheritedSideNumbers ==
-           SideNumbers(
+    return m_inheritedSideTypes ==
+           SideTypes(
                BorderImageLengthBoxPropertyFunctions::getBorderImageLengthBox(
                    m_property, *environment.state().parentStyle()));
   }
 
   const CSSPropertyID m_property;
-  const SideNumbers m_inheritedSideNumbers;
+  const SideTypes m_inheritedSideTypes;
 };
 
 InterpolationValue convertBorderImageLengthBox(const BorderImageLengthBox& box,
@@ -165,6 +193,8 @@ InterpolationValue convertBorderImageLengthBox(const BorderImageLengthBox& box,
     const BorderImageLength& side = *sides[i];
     if (side.isNumber()) {
       list->set(i, InterpolableNumber::create(side.number()));
+    } else if (side.length().isAuto()) {
+      list->set(i, InterpolableList::create(0));
     } else {
       InterpolationValue convertedSide =
           LengthInterpolationFunctions::maybeConvertLength(side.length(), zoom);
@@ -177,7 +207,7 @@ InterpolationValue convertBorderImageLengthBox(const BorderImageLengthBox& box,
 
   return InterpolationValue(
       std::move(list), CSSBorderImageLengthBoxNonInterpolableValue::create(
-                           SideNumbers(box), std::move(nonInterpolableValues)));
+                           SideTypes(box), std::move(nonInterpolableValues)));
 }
 
 }  // namespace
@@ -186,18 +216,14 @@ InterpolationValue
 CSSBorderImageLengthBoxInterpolationType::maybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversionCheckers) const {
-  SideNumbers underlyingSideNumbers =
-      UnderlyingSideNumbersChecker::getUnderlyingSideNumbers(underlying);
+  SideTypes underlyingSideTypes =
+      UnderlyingSideTypesChecker::getUnderlyingSideTypes(underlying);
   conversionCheckers.push_back(
-      UnderlyingSideNumbersChecker::create(underlyingSideNumbers));
-  const auto& zero = [&underlyingSideNumbers](size_t index) {
-    return underlyingSideNumbers.isNumber[index]
-               ? BorderImageLength(0)
-               : BorderImageLength(Length(0, Fixed));
-  };
-  BorderImageLengthBox zeroBox(zero(SideTop), zero(SideRight), zero(SideBottom),
-                               zero(SideLeft));
-  return convertBorderImageLengthBox(zeroBox, 1);
+      UnderlyingSideTypesChecker::create(underlyingSideTypes));
+  return InterpolationValue(underlying.interpolableValue->cloneAndZero(),
+                            toCSSBorderImageLengthBoxNonInterpolableValue(
+                                *underlying.nonInterpolableValue)
+                                .clone());
 }
 
 InterpolationValue
@@ -217,8 +243,8 @@ CSSBorderImageLengthBoxInterpolationType::maybeConvertInherit(
   const BorderImageLengthBox& inherited =
       BorderImageLengthBoxPropertyFunctions::getBorderImageLengthBox(
           cssProperty(), *state.parentStyle());
-  conversionCheckers.push_back(InheritedSideNumbersChecker::create(
-      cssProperty(), SideNumbers(inherited)));
+  conversionCheckers.push_back(
+      InheritedSideTypesChecker::create(cssProperty(), SideTypes(inherited)));
   return convertBorderImageLengthBox(inherited,
                                      state.parentStyle()->effectiveZoom());
 }
@@ -245,6 +271,9 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertValue(
     if (side.isPrimitiveValue() && toCSSPrimitiveValue(side).isNumber()) {
       list->set(i, InterpolableNumber::create(
                        toCSSPrimitiveValue(side).getDoubleValue()));
+    } else if (side.isIdentifierValue() &&
+               toCSSIdentifierValue(side).getValueID() == CSSValueAuto) {
+      list->set(i, InterpolableList::create(0));
     } else {
       InterpolationValue convertedSide =
           LengthInterpolationFunctions::maybeConvertCSSValue(side);
@@ -256,9 +285,8 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertValue(
   }
 
   return InterpolationValue(
-      std::move(list),
-      CSSBorderImageLengthBoxNonInterpolableValue::create(
-          SideNumbers(quad), std::move(nonInterpolableValues)));
+      std::move(list), CSSBorderImageLengthBoxNonInterpolableValue::create(
+                           SideTypes(quad), std::move(nonInterpolableValues)));
 }
 
 InterpolationValue CSSBorderImageLengthBoxInterpolationType::
@@ -274,14 +302,13 @@ PairwiseInterpolationValue
 CSSBorderImageLengthBoxInterpolationType::maybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  const SideNumbers& startSideNumbers =
+  const SideTypes& startSideTypes =
       toCSSBorderImageLengthBoxNonInterpolableValue(*start.nonInterpolableValue)
-          .sideNumbers();
-  const SideNumbers& endSideNumbers =
+          .sideTypes();
+  const SideTypes& endSideTypes =
       toCSSBorderImageLengthBoxNonInterpolableValue(*end.nonInterpolableValue)
-          .sideNumbers();
-
-  if (startSideNumbers != endSideNumbers)
+          .sideTypes();
+  if (startSideTypes != endSideTypes)
     return nullptr;
 
   return PairwiseInterpolationValue(std::move(start.interpolableValue),
@@ -294,16 +321,16 @@ void CSSBorderImageLengthBoxInterpolationType::composite(
     double underlyingFraction,
     const InterpolationValue& value,
     double interpolationFraction) const {
-  const SideNumbers& underlyingSideNumbers =
+  const SideTypes& underlyingSideTypes =
       toCSSBorderImageLengthBoxNonInterpolableValue(
           *underlyingValueOwner.value().nonInterpolableValue)
-          .sideNumbers();
+          .sideTypes();
   const auto& nonInterpolableValue =
       toCSSBorderImageLengthBoxNonInterpolableValue(
           *value.nonInterpolableValue);
-  const SideNumbers& sideNumbers = nonInterpolableValue.sideNumbers();
+  const SideTypes& sideTypes = nonInterpolableValue.sideTypes();
 
-  if (underlyingSideNumbers != sideNumbers) {
+  if (underlyingSideTypes != sideTypes) {
     underlyingValueOwner.set(*this, value);
     return;
   }
@@ -320,13 +347,23 @@ void CSSBorderImageLengthBoxInterpolationType::composite(
       nonInterpolableValue.sideNonInterpolableValues();
 
   for (size_t i = 0; i < SideIndexCount; i++) {
-    if (sideNumbers.isNumber[i])
-      underlyingList.getMutable(i)->scaleAndAdd(underlyingFraction,
-                                                *list.get(i));
-    else
-      LengthInterpolationFunctions::composite(
-          underlyingList.getMutable(i), underlyingSideNonInterpolableValues[i],
-          underlyingFraction, *list.get(i), sideNonInterpolableValues[i].get());
+    switch (sideTypes.type[i]) {
+      case SideType::Number:
+        underlyingList.getMutable(i)->scaleAndAdd(underlyingFraction,
+                                                  *list.get(i));
+        break;
+      case SideType::Length:
+        LengthInterpolationFunctions::composite(
+            underlyingList.getMutable(i),
+            underlyingSideNonInterpolableValues[i], underlyingFraction,
+            *list.get(i), sideNonInterpolableValues[i].get());
+        break;
+      case SideType::Auto:
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
 }
 
@@ -334,21 +371,29 @@ void CSSBorderImageLengthBoxInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
     StyleResolverState& state) const {
-  const SideNumbers& sideNumbers =
+  const SideTypes& sideTypes =
       toCSSBorderImageLengthBoxNonInterpolableValue(nonInterpolableValue)
-          ->sideNumbers();
+          ->sideTypes();
   const Vector<RefPtr<NonInterpolableValue>>& nonInterpolableValues =
       toCSSBorderImageLengthBoxNonInterpolableValue(nonInterpolableValue)
           ->sideNonInterpolableValues();
   const InterpolableList& list = toInterpolableList(interpolableValue);
-  const auto& convertSide =
-      [&sideNumbers, &list, &state,
-       &nonInterpolableValues](size_t index) -> BorderImageLength {
-    if (sideNumbers.isNumber[index])
-      return clampTo<double>(toInterpolableNumber(list.get(index))->value(), 0);
-    return LengthInterpolationFunctions::createLength(
-        *list.get(index), nonInterpolableValues[index].get(),
-        state.cssToLengthConversionData(), ValueRangeNonNegative);
+  const auto& convertSide = [&sideTypes, &list, &state, &nonInterpolableValues](
+      size_t index) -> BorderImageLength {
+    switch (sideTypes.type[index]) {
+      case SideType::Number:
+        return clampTo<double>(toInterpolableNumber(list.get(index))->value(),
+                               0);
+      case SideType::Auto:
+        return Length(Auto);
+      case SideType::Length:
+        return LengthInterpolationFunctions::createLength(
+            *list.get(index), nonInterpolableValues[index].get(),
+            state.cssToLengthConversionData(), ValueRangeNonNegative);
+      default:
+        NOTREACHED();
+        return Length(Auto);
+    }
   };
   BorderImageLengthBox box(convertSide(SideTop), convertSide(SideRight),
                            convertSide(SideBottom), convertSide(SideLeft));
