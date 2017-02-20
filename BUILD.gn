@@ -965,13 +965,15 @@ if (!is_ios) {
     }
 
     data = [
+      "$root_build_dir/resources/inspector/",
       "//testing/scripts/common.py",
-      "//testing/xvfb.py",
       "//testing/scripts/run_isolated_script_test.py",
+      "//testing/xvfb.py",
       "//third_party/WebKit/LayoutTests/",
       "//third_party/WebKit/PerformanceTests/",
+      "//third_party/WebKit/Source/platform/audio/resources/Composite.flac",
+      "//third_party/WebKit/Source/platform/audio/resources/Composite.wav",
       "//third_party/WebKit/Tools/Scripts/",
-      "$root_build_dir/resources/inspector/",
     ]
 
     if (is_win) {
