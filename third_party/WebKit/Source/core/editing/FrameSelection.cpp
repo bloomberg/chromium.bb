@@ -119,26 +119,6 @@ bool FrameSelection::isHandleVisible() const {
   return selectionInDOMTree().isHandleVisible();
 }
 
-// TODO(yosin): We should replace |visibleSelection<EditingStrategy>()| to
-// |computeVisibleSelectionInDOMTree()|.
-// TODO(yosin): To avoid undefined symbols in clang, we explicitly
-// have specialized version of |FrameSelection::visibleSelection<Strategy>|
-// before |FrameSelection::selection()| which refers this.
-template <>
-const VisibleSelection& FrameSelection::visibleSelection<EditingStrategy>()
-    const {
-  return m_selectionEditor->visibleSelection<EditingStrategy>();
-}
-
-// TODO(yosin): We should replace
-// |visibleSelection<EditingInFlatTreeStrategy>()| with
-// |computeVisibleSelectionInFlatTree()|.
-template <>
-const VisibleSelectionInFlatTree&
-FrameSelection::visibleSelection<EditingInFlatTreeStrategy>() const {
-  return m_selectionEditor->visibleSelection<EditingInFlatTreeStrategy>();
-}
-
 const VisibleSelection& FrameSelection::computeVisibleSelectionInDOMTree()
     const {
   return m_selectionEditor->computeVisibleSelectionInDOMTree();
@@ -177,7 +157,7 @@ const VisibleSelection& FrameSelection::selection() const {
 }
 
 const VisibleSelectionInFlatTree& FrameSelection::selectionInFlatTree() const {
-  return visibleSelection<EditingInFlatTreeStrategy>();
+  return computeVisibleSelectionInFlatTree();
 }
 
 void FrameSelection::moveCaretSelection(const IntPoint& point) {
@@ -729,7 +709,7 @@ bool FrameSelection::contains(const LayoutPoint& point) {
 
   // Treat a collapsed selection like no selection.
   const VisibleSelectionInFlatTree& visibleSelection =
-      this->visibleSelection<EditingInFlatTreeStrategy>();
+      computeVisibleSelectionInFlatTree();
   if (!visibleSelection.isRange())
     return false;
 
@@ -1083,7 +1063,7 @@ void FrameSelection::setFocusedNodeIfNeeded() {
 static String extractSelectedText(const FrameSelection& selection,
                                   TextIteratorBehavior behavior) {
   const VisibleSelectionInFlatTree& visibleSelection =
-      selection.visibleSelection<EditingInFlatTreeStrategy>();
+      selection.computeVisibleSelectionInFlatTree();
   const EphemeralRangeInFlatTree& range =
       visibleSelection.toNormalizedEphemeralRange();
   // We remove '\0' characters because they are not visibly rendered to the
@@ -1093,7 +1073,7 @@ static String extractSelectedText(const FrameSelection& selection,
 
 String FrameSelection::selectedHTMLForClipboard() const {
   const VisibleSelectionInFlatTree& visibleSelection =
-      this->visibleSelection<EditingInFlatTreeStrategy>();
+      computeVisibleSelectionInFlatTree();
   const EphemeralRangeInFlatTree& range =
       visibleSelection.toNormalizedEphemeralRange();
   return createMarkup(range.startPosition(), range.endPosition(),

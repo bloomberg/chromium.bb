@@ -175,7 +175,7 @@ bool SelectionController::handleMousePressEventSingleClick(
                 PositionInFlatTree::firstPositionInOrBeforeNode(innerNode))
           : visibleHitPos;
   const VisibleSelectionInFlatTree& selection =
-      this->selection().visibleSelection<EditingInFlatTreeStrategy>();
+      this->selection().computeVisibleSelectionInFlatTree();
 
   // Don't restart the selection when the mouse is pressed on an
   // existing selection so we can allow for text dragging.
@@ -359,10 +359,7 @@ void SelectionController::updateSelectionForMouseDrag(
   // Special case to limit selection to the containing block for SVG text.
   // FIXME: Isn't there a better non-SVG-specific way to do this?
   if (Node* selectionBaseNode =
-          selection()
-              .visibleSelection<EditingInFlatTreeStrategy>()
-              .base()
-              .anchorNode()) {
+          selection().computeVisibleSelectionInFlatTree().base().anchorNode()) {
     if (LayoutObject* selectionBaseLayoutObject =
             selectionBaseNode->layoutObject()) {
       if (selectionBaseLayoutObject->isSVGText()) {
@@ -387,8 +384,7 @@ void SelectionController::updateSelectionForMouseDrag(
     m_selectionState = SelectionState::ExtendedSelection;
     basePosition = targetPosition.deepEquivalent();
   } else {
-    basePosition =
-        selection().visibleSelection<EditingInFlatTreeStrategy>().base();
+    basePosition = selection().computeVisibleSelectionInFlatTree().base();
   }
   const SelectionInFlatTree& appliedSelection = applySelectAll(
       basePosition, targetPosition.deepEquivalent(), mousePressNode,
@@ -674,7 +670,7 @@ void SelectionController::setNonDirectionalSelectionIfNeeded(
     newSelection.setBase(newBase);
     newSelection.setExtent(newExtent);
   } else if (originalBase.isNotNull()) {
-    if (selection().visibleSelection<EditingInFlatTreeStrategy>().base() ==
+    if (selection().computeVisibleSelectionInFlatTree().base() ==
         newSelection.base())
       newSelection.setBase(originalBase);
     m_originalBaseInFlatTree = VisiblePositionInFlatTree();
@@ -683,8 +679,7 @@ void SelectionController::setNonDirectionalSelectionIfNeeded(
   // Adjusting base and extent will make newSelection always directional
   newSelection.setIsDirectional(isDirectional);
   const bool isHandleVisible = handleVisibility == HandleVisibility::Visible;
-  if (selection().visibleSelection<EditingInFlatTreeStrategy>() ==
-          newSelection &&
+  if (selection().computeVisibleSelectionInFlatTree() == newSelection &&
       selection().isHandleVisible() == isHandleVisible)
     return;
 
@@ -872,7 +867,7 @@ bool SelectionController::handleMouseReleaseEvent(
         builder.collapse(pos.toPositionWithAffinity());
     }
 
-    if (selection().visibleSelection<EditingInFlatTreeStrategy>() !=
+    if (selection().computeVisibleSelectionInFlatTree() !=
         createVisibleSelection(builder.build())) {
       selection().setSelection(builder.build());
     }

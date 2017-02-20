@@ -113,7 +113,7 @@ void PendingSelection::commit(LayoutView& layoutView) {
   m_hasPendingSelection = false;
 
   const VisibleSelectionInFlatTree& originalSelection =
-      m_frameSelection->visibleSelection<EditingInFlatTreeStrategy>();
+      m_frameSelection->computeVisibleSelectionInFlatTree();
 
   // Skip if pending VisibilePositions became invalid before we reach here.
   if (!isSelectionInDocument(originalSelection, layoutView.document()))

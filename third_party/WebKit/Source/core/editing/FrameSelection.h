@@ -118,8 +118,6 @@ class CORE_EXPORT FrameSelection final
   // An implementation of |WebFrame::moveCaretSelection()|
   void moveCaretSelection(const IntPoint&);
 
-  template <typename Strategy>
-  const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
   const VisibleSelection& computeVisibleSelectionInDOMTree() const;
   const VisibleSelectionInFlatTree& computeVisibleSelectionInFlatTree() const;
 
