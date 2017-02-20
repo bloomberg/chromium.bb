@@ -72,7 +72,6 @@ DEFINE_TRACE(Frame) {
 void Frame::detach(FrameDetachType type) {
   ASSERT(m_client);
   m_client->setOpener(0);
-  domWindow()->resetLocation();
   disconnectOwnerElement();
   // After this, we must no longer talk to the client since this clears
   // its owning reference back to our owning LocalFrame.

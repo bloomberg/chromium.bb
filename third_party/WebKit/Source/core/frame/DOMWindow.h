@@ -98,8 +98,6 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   // See https://bugs.webkit.org/show_bug.cgi?id=62054
   bool isCurrentlyDisplayedInFrame() const;
 
-  void resetLocation();
-
   bool isSecureContext() const;
 
   InputDeviceCapabilitiesConstants* getInputDeviceCapabilities();

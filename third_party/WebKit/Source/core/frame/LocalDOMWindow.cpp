@@ -480,7 +480,6 @@ MediaQueryList* LocalDOMWindow::matchMedia(const String& media) {
 }
 
 void LocalDOMWindow::frameDestroyed() {
-  resetLocation();
   removeAllEventListeners();
   disconnectFromFrame();
 }

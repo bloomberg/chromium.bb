@@ -33,28 +33,33 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMStringList.h"
+#include "core/frame/DOMWindow.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
+class Document;
 class LocalDOMWindow;
 class ExceptionState;
-class Frame;
 class KURL;
 
-// This class corresponds to the JS Location API, which is the only DOM API
-// besides Window that is operable in a RemoteFrame. Location needs to be
-// manually updated in DOMWindow::reset() to ensure it doesn't retain a stale
-// Frame pointer.
+// This class corresponds to the Location interface. Location is the only
+// interface besides Window that is accessible cross-origin and must handle
+// remote frames.
+//
+// HTML standard: https://whatwg.org/C/browsers.html#the-location-interface
 class CORE_EXPORT Location final : public GarbageCollected<Location>,
                                    public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Location* create(Frame* frame) { return new Location(frame); }
+  static Location* create(DOMWindow* domWindow) {
+    return new Location(domWindow);
+  }
 
-  Frame* frame() const { return m_frame.get(); }
-  void reset() { m_frame = nullptr; }
+  DOMWindow* domWindow() const { return m_domWindow.get(); }
+  // TODO(dcheng): Deprecated and will be removed. Do not use in new code!
+  Frame* frame() const { return m_domWindow->frame(); }
 
   void setHref(LocalDOMWindow* currentWindow,
                LocalDOMWindow* enteredWindow,
@@ -120,7 +125,16 @@ class CORE_EXPORT Location final : public GarbageCollected<Location>,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit Location(Frame*);
+  explicit Location(DOMWindow*);
+
+  // Note: it is only valid to call this if this is a Location object for a
+  // LocalDOMWindow.
+  Document* document() const;
+
+  // Returns true if:
+  // (1) the associated Window is the active Window in the frame
+  // (2) and the frame is attached.
+  bool isAttached() const;
 
   enum class SetLocationPolicy { Normal, ReplaceThisFrame };
   void setLocation(const String&,
@@ -131,7 +145,7 @@ class CORE_EXPORT Location final : public GarbageCollected<Location>,
 
   const KURL& url() const;
 
-  Member<Frame> m_frame;
+  const Member<DOMWindow> m_domWindow;
 };
 
 }  // namespace blink
