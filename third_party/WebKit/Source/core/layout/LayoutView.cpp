@@ -606,8 +606,6 @@ IntRect LayoutView::selectionBounds() {
 }
 
 void LayoutView::invalidatePaintForSelection() {
-  HashSet<LayoutBlock*> processedBlocks;
-
   LayoutObject* end =
       layoutObjectAfterPosition(m_selectionEnd, m_selectionEndPos);
   for (LayoutObject* o = m_selectionStart; o && o != end;
