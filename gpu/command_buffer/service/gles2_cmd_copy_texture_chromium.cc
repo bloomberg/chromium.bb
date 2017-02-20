@@ -105,10 +105,10 @@ ShaderId GetVertexShaderId(GLenum target) {
 // Returns the correct fragment shader id to evaluate the copy operation for
 // the premultiply alpha pixel store settings and target.
 ShaderId GetFragmentShaderId(bool premultiply_alpha,
-                                     bool unpremultiply_alpha,
-                                     GLenum target,
-                                     GLenum source_format,
-                                     GLenum dest_format) {
+                             bool unpremultiply_alpha,
+                             GLenum target,
+                             GLenum source_format,
+                             GLenum dest_format) {
   unsigned alphaIndex = 0;
   unsigned targetIndex = 0;
   unsigned sourceFormatIndex = 0;
