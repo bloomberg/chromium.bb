@@ -277,6 +277,44 @@ TEST_F(DialogTest, InitialFocus) {
   EXPECT_EQ(dialog()->input(), dialog()->GetFocusManager()->GetFocusedView());
 }
 
+// A dialog for testing initial focus with only an OK button.
+class InitialFocusTestDialog : public DialogDelegateView {
+ public:
+  InitialFocusTestDialog() {}
+  ~InitialFocusTestDialog() override {}
+
+  views::View* OkButton() { return GetDialogClientView()->ok_button(); }
+
+  // DialogDelegateView overrides:
+  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_OK; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InitialFocusTestDialog);
+};
+
+// If the Widget can't be activated while the initial focus View is requesting
+// focus, test it is still able to receive focus once the Widget is activated.
+TEST_F(DialogTest, InitialFocusWithDeactivatedWidget) {
+  InitialFocusTestDialog* dialog = new InitialFocusTestDialog();
+  Widget* dialog_widget =
+      DialogDelegate::CreateDialogWidget(dialog, GetContext(), nullptr);
+  // Set the initial focus while the Widget is unactivated to prevent the
+  // initially focused View from receiving focus. Use a minimised state here to
+  // prevent the Widget from being activated while this happens.
+  dialog_widget->SetInitialFocus(ui::WindowShowState::SHOW_STATE_MINIMIZED);
+
+  // Nothing should be focused, because the Widget is still deactivated.
+  EXPECT_EQ(nullptr, dialog_widget->GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(dialog->OkButton(),
+            dialog_widget->GetFocusManager()->GetStoredFocusView());
+  dialog_widget->Show();
+  // After activation, the initially focused View should have focus as intended.
+  EXPECT_EQ(dialog->OkButton(),
+            dialog_widget->GetFocusManager()->GetFocusedView());
+  EXPECT_TRUE(dialog->OkButton()->HasFocus());
+  dialog_widget->CloseNow();
+}
+
 // If the initially focused View provided is unfocusable, check the next
 // available focusable View is focused.
 TEST_F(DialogTest, UnfocusableInitialFocus) {
@@ -308,7 +346,7 @@ TEST_F(DialogTest, UnfocusableInitialFocus) {
   dialog_widget->Show();
   EXPECT_TRUE(textfield->HasFocus());
   EXPECT_EQ(textfield, dialog->GetFocusManager()->GetFocusedView());
-  dialog_widget->Close();
+  dialog_widget->CloseNow();
 }
 
 }  // namespace views

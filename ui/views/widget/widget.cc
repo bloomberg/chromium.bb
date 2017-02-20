@@ -1309,10 +1309,13 @@ bool Widget::SetInitialFocus(ui::WindowShowState show_state) {
   }
   if (v) {
     v->RequestFocus();
-    // If the request for focus was unsuccessful, fall back to using the first
+    // If the Widget is active (thus allowing its child Views to receive focus),
+    // but the request for focus was unsuccessful, fall back to using the first
     // focusable View instead.
-    if (focus_manager && focus_manager->GetFocusedView() == nullptr)
+    if (focus_manager && focus_manager->GetFocusedView() == nullptr &&
+        IsActive()) {
       focus_manager->AdvanceFocus(false);
+    }
   }
   return !!focus_manager->GetFocusedView();
 }
