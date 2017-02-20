@@ -357,8 +357,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.nameItem.delegate = self;
   [model addItem:self.nameItem toSectionWithIdentifier:SectionIdentifierInfo];
 
-  self.folderItem =
-      [[BookmarkParentFolderItem alloc] initWithType:ItemTypeFolder];
+  self.folderItem = [[[BookmarkParentFolderItem alloc]
+      initWithType:ItemTypeFolder] autorelease];
   self.folderItem.title = bookmark_utils_ios::TitleForBookmarkNode(self.folder);
   [model addItem:self.folderItem toSectionWithIdentifier:SectionIdentifierInfo];
 
