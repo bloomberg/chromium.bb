@@ -123,6 +123,8 @@ bool SelectionEditor::isContentRichlyEditable() const {
 }
 
 void SelectionEditor::markCacheDirty() {
+  if (m_cacheIsDirty)
+    return;
   m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
   m_cachedVisibleSelectionInDOMTree = VisibleSelection();
   m_cacheIsDirty = true;
