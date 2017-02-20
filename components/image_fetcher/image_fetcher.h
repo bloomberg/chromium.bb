@@ -41,6 +41,9 @@ class ImageFetcher {
       const GURL& image_url,
       base::Callback<void(const std::string&, const gfx::Image&)> callback) = 0;
 
+  // TODO(treib,markusheintz): Now that iOS uses the same ImageFetcherImpl (see
+  // crbug.com/689020), add a getter for the ImageDecoder here.
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageFetcher);
 };

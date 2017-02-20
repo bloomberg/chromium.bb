@@ -13,7 +13,9 @@
 
 namespace suggestions {
 
-// image_fetcher::ImageDecoder Implementation.
+// image_fetcher::ImageDecoder implementation.
+// TODO(treib,markusheintz): Move this to a better place - it really has
+// nothing to do with suggestions. crbug.com/624761
 class ImageDecoderImpl : public image_fetcher::ImageDecoder {
  public:
   ImageDecoderImpl();
