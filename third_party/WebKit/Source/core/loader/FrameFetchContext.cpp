@@ -30,6 +30,8 @@
 
 #include "core/loader/FrameFetchContext.h"
 
+#include <algorithm>
+#include <memory>
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/Document.h"
@@ -49,7 +51,6 @@
 #include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameClientHintsPreferencesContext.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
@@ -57,6 +58,7 @@
 #include "core/loader/PingLoader.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
+#include "core/loader/private/FrameClientHintsPreferencesContext.h"
 #include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
 #include "core/paint/FirstMeaningfulPaintDetector.h"
@@ -81,8 +83,6 @@
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebViewScheduler.h"
 #include "wtf/Vector.h"
-#include <algorithm>
-#include <memory>
 
 namespace blink {
 

@@ -31,17 +31,18 @@
 
 #include "core/loader/DocumentThreadableLoader.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/loader/CrossOriginPreflightResultCache.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ThreadableLoaderClient.h"
+#include "core/loader/private/CrossOriginPreflightResultCache.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/SharedBuffer.h"
@@ -59,7 +60,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/WeakPtr.h"
-#include <memory>
 
 namespace blink {
 

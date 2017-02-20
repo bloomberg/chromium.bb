@@ -12,7 +12,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameClientHintsPreferencesContext.h"
+#include "core/loader/private/FrameClientHintsPreferencesContext.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "platform/HTTPNames.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"

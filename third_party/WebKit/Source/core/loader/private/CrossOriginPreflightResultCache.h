@@ -27,12 +27,12 @@
 #ifndef CrossOriginPreflightResultCache_h
 #define CrossOriginPreflightResultCache_h
 
+#include <memory>
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURLHash.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/StringHash.h"
-#include <memory>
 
 namespace blink {
 

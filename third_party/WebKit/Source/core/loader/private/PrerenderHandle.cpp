@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/loader/PrerenderHandle.h"
+#include "core/loader/private/PrerenderHandle.h"
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
