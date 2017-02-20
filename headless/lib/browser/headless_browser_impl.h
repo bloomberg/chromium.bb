@@ -21,6 +21,9 @@
 #include "headless/lib/browser/headless_window_tree_host.h"
 #endif
 
+// Note: unused but needed to make sure this header gets generated.
+#include "headless/public/version.h"
+
 namespace headless {
 
 class HeadlessBrowserContextImpl;
