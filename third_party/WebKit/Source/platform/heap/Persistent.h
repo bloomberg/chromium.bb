@@ -262,18 +262,6 @@ class PersistentBase {
         DCHECK_EQ(&current->heap(), &m_creationThreadState->heap());
       }
     }
-
-#if defined(ADDRESS_SANITIZER)
-    // ThreadHeap::isHeapObjectAlive(m_raw) checks that m_raw is a traceable
-    // object. In other words, it checks that the pointer is either of:
-    //
-    //   (a) a pointer to the head of an on-heap object.
-    //   (b) a pointer to the head of an on-heap mixin object.
-    //
-    // Otherwise, ThreadHeap::isHeapObjectAlive will crash when it calls
-    // header->checkHeader().
-    ThreadHeap::isHeapObjectAlive(m_raw);
-#endif
 #endif
   }
 
