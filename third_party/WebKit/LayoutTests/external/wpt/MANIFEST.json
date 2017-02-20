@@ -21318,11 +21318,6 @@
      {}
     ]
    ],
-   "selection/addRange-08-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "selection/addRange-12-expected.txt": [
     [
      {}
@@ -21358,31 +21353,6 @@
      {}
     ]
    ],
-   "selection/addRange-40-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-44-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-48-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-52-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-56-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "selection/addRange.js": [
     [
      {}
@@ -21409,11 +21379,6 @@
     ]
    ],
    "selection/common.js": [
-    [
-     {}
-    ]
-   ],
-   "selection/deleteFromDocument-expected.txt": [
     [
      {}
     ]
@@ -54647,7 +54612,7 @@
    "support"
   ],
   "./MANIFEST.json": [
-   "7cfcce7a806a8848409b9dbea851fadd3544d834",
+   "1ba6d9d96ac2726755be2db4cfbae75877b16384",
    "support"
   ],
   "./README.md": [
@@ -73655,11 +73620,11 @@
    "support"
   ],
   "media-capabilities/idlharness.html": [
-   "4ee7d3eb90c352a0888468578e49bbd49f91b789",
+   "d9a80463af2e0fc7bda0a4370a3ba0bbbb791897",
    "testharness"
   ],
   "media-capabilities/query.html": [
-   "11afd4ba4eb40a5ff89c06ecf375eb16df65faaa",
+   "a83f2c7a7d9c38c707c4f96c3cd74f77185b7e43",
    "testharness"
   ],
   "media/2048x1360-random.jpg": [
@@ -82831,7 +82796,7 @@
    "testharness"
   ],
   "selection/addRange-00-expected.txt": [
-   "0aae2514f1f873b47e60d4c9ea005774afa280ab",
+   "eedac4c59c749216666bcd60a08711810db36e73",
    "support"
   ],
   "selection/addRange-00.html": [
@@ -82839,23 +82804,19 @@
    "testharness"
   ],
   "selection/addRange-04-expected.txt": [
-   "aed11682eea7bed0ef6fc44a5dc68762c13c7394",
+   "cdd195d7aadd66603ca9c0f5bf2b52cf054b92f2",
    "support"
   ],
   "selection/addRange-04.html": [
    "c241e1c3a82f09c14bbf217350b2ee0b58c17178",
    "testharness"
   ],
-  "selection/addRange-08-expected.txt": [
-   "e04b8a016042cc38a748f272cb9d291ba38808c9",
-   "support"
-  ],
   "selection/addRange-08.html": [
    "6d51d9f4042e5590483fae60d19351602d6b0aa2",
    "testharness"
   ],
   "selection/addRange-12-expected.txt": [
-   "b600b87e861e8d4ab6a978e4069bae3e893ac9c3",
+   "c37408236a59467912d31966c48e105b372be787",
    "support"
   ],
   "selection/addRange-12.html": [
@@ -82863,7 +82824,7 @@
    "testharness"
   ],
   "selection/addRange-16-expected.txt": [
-   "e7e68788a479995e679bf6687a69acde4d831f65",
+   "d8e9f67a786aea3ea8b94f942663ad69a419c52a",
    "support"
   ],
   "selection/addRange-16.html": [
@@ -82871,7 +82832,7 @@
    "testharness"
   ],
   "selection/addRange-20-expected.txt": [
-   "72fd62612f49950a11e9d3f98075d763b14fa5e3",
+   "2bc82fd38cd3bd635d3bda05fe3d92bc99f5e98a",
    "support"
   ],
   "selection/addRange-20.html": [
@@ -82879,7 +82840,7 @@
    "testharness"
   ],
   "selection/addRange-24-expected.txt": [
-   "035a0d5cbaac0dba45eb8d446ba5884b9e4cb211",
+   "fd4aabd6d0ed1531e3adc99411095b501e2be0de",
    "support"
   ],
   "selection/addRange-24.html": [
@@ -82887,7 +82848,7 @@
    "testharness"
   ],
   "selection/addRange-28-expected.txt": [
-   "2fd759a58f01cfcdce1f661fa0099a4cd67cb708",
+   "a0eb6bab0cdc1093ccad3c96eef6e99895d1a537",
    "support"
   ],
   "selection/addRange-28.html": [
@@ -82895,7 +82856,7 @@
    "testharness"
   ],
   "selection/addRange-32-expected.txt": [
-   "094c8213b11fab4ee9176ddea024f45c4b64cda7",
+   "c5bc03594b1095dedab19073232291b45f73a31a",
    "support"
   ],
   "selection/addRange-32.html": [
@@ -82903,55 +82864,35 @@
    "testharness"
   ],
   "selection/addRange-36-expected.txt": [
-   "529279feec4f7f6e1141452c032194a397dd5c23",
+   "fbed318b78eb54ba405d9b055d92f66bf899cf0a",
    "support"
   ],
   "selection/addRange-36.html": [
    "9572f7b20ee6891157025e576cf837e496a61669",
    "testharness"
   ],
-  "selection/addRange-40-expected.txt": [
-   "98d62124fc16e591af0d46c8c180db9b44e635e5",
-   "support"
-  ],
   "selection/addRange-40.html": [
    "a58732345d1fdc0b833bf0b9062e44247e0a9592",
    "testharness"
-  ],
-  "selection/addRange-44-expected.txt": [
-   "adc6b32fb40a6eb502724c5ad9b789e9bc9075cd",
-   "support"
   ],
   "selection/addRange-44.html": [
    "7119f750a423fcfed1ddd1b92a48ae28cdaa0f02",
    "testharness"
   ],
-  "selection/addRange-48-expected.txt": [
-   "13233557c60ff6324d2189b88185c0c9bccfd8da",
-   "support"
-  ],
   "selection/addRange-48.html": [
    "c9fdeebfd75735480d07500faf217aae98ec12f1",
    "testharness"
   ],
-  "selection/addRange-52-expected.txt": [
-   "d206db9236166700549a58bb26bef1b48a9e25a1",
-   "support"
-  ],
   "selection/addRange-52.html": [
    "682150b475f15c8cef9e80a0a48e4a80a3a15a48",
    "testharness"
-  ],
-  "selection/addRange-56-expected.txt": [
-   "181678d34295b8d870156a35d027995360b46405",
-   "support"
   ],
   "selection/addRange-56.html": [
    "adcc65d54d59715ee740b2436486058ec578b63a",
    "testharness"
   ],
   "selection/addRange.js": [
-   "df6dcd50618466c323d4343a8a2a55b2443e4498",
+   "67bd52a4653938061f121ed57ead8d768acdde2b",
    "support"
   ],
   "selection/collapse-00-expected.txt": [
@@ -82983,11 +82924,7 @@
    "testharness"
   ],
   "selection/common.js": [
-   "5c8f81d534759a0fa20a78f9643168a6d84d80b3",
-   "support"
-  ],
-  "selection/deleteFromDocument-expected.txt": [
-   "a9c488204dc4254c8dc131859eaff3ef2e0c5429",
+   "279c4bf2f03cb1caa26b83a5898adfbf8bef2a5f",
    "support"
   ],
   "selection/deleteFromDocument.html": [
@@ -82999,7 +82936,7 @@
    "manual"
   ],
   "selection/extend-00-expected.txt": [
-   "b7d26aa46cad23b202e463701295a881785b569d",
+   "3c68a9961b52dbedf5eea97287db485236d34221",
    "support"
   ],
   "selection/extend-00.html": [
@@ -83007,7 +82944,7 @@
    "testharness"
   ],
   "selection/extend-20-expected.txt": [
-   "4d818e9dd9a326818a6defb25579c7ace9c10821",
+   "9acbe1d83b64ae83252fb896a21668944def8f5f",
    "support"
   ],
   "selection/extend-20.html": [
@@ -83015,7 +82952,7 @@
    "testharness"
   ],
   "selection/extend-40-expected.txt": [
-   "42e7a1c1a268ac5d625993d50fce8ecaf52881fa",
+   "0160a1d69f15c454ec0386418f10e8b07daa4fd9",
    "support"
   ],
   "selection/extend-40.html": [
@@ -83023,7 +82960,7 @@
    "testharness"
   ],
   "selection/extend.js": [
-   "6da1fb629a8323f7d45c952e7ff3ce5554f7d722",
+   "21daf8d7634f3c325bf9e5564d21701264497a38",
    "support"
   ],
   "selection/getRangeAt.html": [

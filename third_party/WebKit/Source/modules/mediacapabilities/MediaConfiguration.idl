@@ -6,7 +6,7 @@
 
 enum MediaConfigurationType {
     "file",
-    "MediaSource",
+    "media-source",
 };
 
 dictionary MediaConfiguration {

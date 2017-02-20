@@ -5,7 +5,7 @@
 // https://wicg.github.io/media-capabilities/#dictdef-videoconfiguration
 
 dictionary VideoConfiguration {
-    required DOMString type;
+    required DOMString contentType;
     required unsigned long width;
     required unsigned long height;
     required unsigned long bitrate;

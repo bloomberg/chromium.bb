@@ -5,7 +5,7 @@
 // https://wicg.github.io/media-capabilities/#dictdef-audioconfiguration
 
 dictionary AudioConfiguration {
-    required DOMString type;
+    required DOMString contentType;
 
     DOMString channels;
     unsigned long bitrate;
