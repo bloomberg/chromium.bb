@@ -4,16 +4,12 @@
 
 package org.chromium.components.signin;
 
-import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.os.Process;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -314,12 +310,6 @@ public class AccountManagerHelper {
                 callback.tokenUnavailable(isTransientError);
             }
         });
-    }
-
-    public boolean hasGetAccountsPermission() {
-        return ApiCompatibilityUtils.checkPermission(mApplicationContext,
-                       Manifest.permission.GET_ACCOUNTS, Process.myPid(), Process.myUid())
-                == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
