@@ -356,13 +356,18 @@ void WASAPIAudioInputStream::Run() {
   // However if the buffer ratio is imperfect, we will need 3 buffers to safely
   // be able to buffer up data in cases where a conversion requires two audio
   // buffers (and we need to be able to write to the third one).
+  size_t capture_buffer_size =
+      std::max(2 * endpoint_buffer_size_frames_ * frame_size_,
+               2 * packet_size_frames_ * frame_size_);
+  int buffers_required = capture_buffer_size / packet_size_bytes_;
+  if (converter_ && imperfect_buffer_size_conversion_)
+    ++buffers_required;
+
   DCHECK(!fifo_);
-  const int buffers_required =
-      converter_ && imperfect_buffer_size_conversion_ ? 3 : 2;
   fifo_.reset(new AudioBlockFifo(format_.nChannels, packet_size_frames_,
                                  buffers_required));
 
-  DVLOG(1) << "AudioBlockFifo needs " << buffers_required << " buffers";
+  DVLOG(1) << "AudioBlockFifo buffer count: " << buffers_required;
 
   LARGE_INTEGER now_count = {};
   bool recording = true;
