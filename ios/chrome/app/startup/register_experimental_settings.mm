@@ -6,8 +6,11 @@
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Key in the UserDefaults for the Experimental Keys.
@@ -54,8 +57,7 @@ BOOL IsDefaultSettingValueValid(id value) {
   NSArray* settingsContent =
       [[NSFileManager defaultManager] contentsOfDirectoryAtPath:settingsFilepath
                                                           error:NULL];
-  base::scoped_nsobject<NSMutableArray> currentExpKeys(
-      [[NSMutableArray alloc] init]);
+  NSMutableArray* currentExpKeys = [[NSMutableArray alloc] init];
 
   for (NSString* filename in settingsContent) {
     // Only plist files are preferences definition.

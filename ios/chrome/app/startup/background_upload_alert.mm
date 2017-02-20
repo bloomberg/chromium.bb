@@ -6,6 +6,10 @@
 
 #include "ios/chrome/browser/experimental_flags.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation BackgroundUploadAlert
 
 + (void)setupBackgroundUploadAlert {

@@ -8,6 +8,10 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 IOSChromeMainDelegate::IOSChromeMainDelegate() {}
 
 IOSChromeMainDelegate::~IOSChromeMainDelegate() {}

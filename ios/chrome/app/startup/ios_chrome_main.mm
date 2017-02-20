@@ -13,6 +13,10 @@
 #include "base/time/time.h"
 #include "ios/web/public/app/web_main_runner.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 base::Time* g_start_time;
 }  // namespace

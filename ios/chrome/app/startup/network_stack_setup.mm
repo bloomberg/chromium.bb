@@ -11,6 +11,10 @@
 #include "ios/web/net/request_tracker_factory_impl.h"
 #include "ios/web/net/web_http_protocol_handler_delegate.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation NetworkStackSetup
 
 + (void)setUpChromeNetworkStack:

@@ -5,6 +5,7 @@
 import("//ios/public/provider/chrome/browser/build_config.gni")
 
 source_set("startup") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "background_upload_alert.h",
     "background_upload_alert.mm",
