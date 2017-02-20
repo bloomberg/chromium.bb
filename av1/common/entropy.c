@@ -4641,6 +4641,18 @@ static const aom_prob av1_default_blockzero_probs[TX_SIZES][PLANE_TYPES]
       { 197, 82, 25, },  // Inter
     },
   },
+#if CONFIG_TX64X64
+  { // TX_64x64 FIXME: currently the same as 32x32
+    { //  Y plane
+      { 17, 7, 1, },  // Intra
+      { 36, 29, 10, },  // Inter
+    },
+    { // UV plane
+      { 181, 61, 10, },  // Intra
+      { 197, 82, 25, },  // Inter
+    },
+  },
+#endif
 };
 
 static const coeff_cdf_model default_coef_head_cdf_4x4[PLANE_TYPES] = {
@@ -5414,14 +5426,22 @@ static void av1_default_coef_cdfs(FRAME_CONTEXT *fc) {
     for (j = 0; j < REF_TYPES; ++j)
       for (k = 0; k < COEF_BANDS; ++k)
         for (l = 0; l < BAND_COEFF_CONTEXTS(k); ++l) {
-          av1_copy(fc->coef_head_cdfs[0][i][j][k][l],
+#if CONFIG_CB4X4
+          av1_copy(fc->coef_head_cdfs[TX_2X2][i][j][k][l],
                    default_coef_head_cdf_4x4[i][j][k][l]);
-          av1_copy(fc->coef_head_cdfs[1][i][j][k][l],
+#endif
+          av1_copy(fc->coef_head_cdfs[TX_4X4][i][j][k][l],
+                   default_coef_head_cdf_4x4[i][j][k][l]);
+          av1_copy(fc->coef_head_cdfs[TX_8X8][i][j][k][l],
                    default_coef_head_cdf_8x8[i][j][k][l]);
-          av1_copy(fc->coef_head_cdfs[2][i][j][k][l],
+          av1_copy(fc->coef_head_cdfs[TX_16X16][i][j][k][l],
                    default_coef_head_cdf_16x16[i][j][k][l]);
-          av1_copy(fc->coef_head_cdfs[3][i][j][k][l],
+          av1_copy(fc->coef_head_cdfs[TX_32X32][i][j][k][l],
                    default_coef_head_cdf_32x32[i][j][k][l]);
+#if CONFIG_TX64X64
+          av1_copy(fc->coef_head_cdfs[TX_64X64][i][j][k][l],
+                   default_coef_head_cdf_64x64[i][j][k][l]);
+#endif
         }
 }
 
