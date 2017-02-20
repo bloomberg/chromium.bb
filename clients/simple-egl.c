@@ -100,7 +100,7 @@ struct window {
 	struct ivi_surface *ivi_surface;
 	EGLSurface egl_surface;
 	struct wl_callback *callback;
-	int fullscreen, opaque, buffer_size, frame_sync;
+	int fullscreen, opaque, buffer_size, frame_sync, delay;
 	bool wait_for_configure;
 };
 
@@ -548,6 +548,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	glDisableVertexAttribArray(window->gl.pos);
 	glDisableVertexAttribArray(window->gl.col);
 
+	usleep(window->delay);
+
 	if (window->opaque || window->fullscreen) {
 		region = wl_compositor_create_region(window->display->compositor);
 		wl_region_add(region, 0, 0,
@@ -846,6 +848,7 @@ static void
 usage(int error_code)
 {
 	fprintf(stderr, "Usage: simple-egl [OPTIONS]\n\n"
+		"  -d <us>\tBuffer swap delay in microseconds\n"
 		"  -f\tRun in fullscreen mode\n"
 		"  -o\tCreate an opaque surface\n"
 		"  -s\tUse a 16 bpp EGL config\n"
@@ -870,9 +873,12 @@ main(int argc, char **argv)
 	window.window_size = window.geometry;
 	window.buffer_size = 32;
 	window.frame_sync = 1;
+	window.delay = 0;
 
 	for (i = 1; i < argc; i++) {
-		if (strcmp("-f", argv[i]) == 0)
+		if (strcmp("-d", argv[i]) == 0 && i+1 < argc)
+			window.delay = atoi(argv[++i]);
+		else if (strcmp("-f", argv[i]) == 0)
 			window.fullscreen = 1;
 		else if (strcmp("-o", argv[i]) == 0)
 			window.opaque = 1;
