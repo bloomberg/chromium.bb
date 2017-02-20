@@ -29,6 +29,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
@@ -209,18 +210,16 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     request_timer_.reset(new base::ElapsedTimer());
     base::FilePath* read_file_path = new base::FilePath;
     base::Time* last_modified_time = new base::Time();
-    bool posted = BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
-        base::Bind(&ReadResourceFilePathAndLastModifiedTime,
-                   resource_,
-                   directory_path_,
-                   base::Unretained(read_file_path),
+
+    // Inherit task priority from the calling context.
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits().MayBlock(),
+        base::Bind(&ReadResourceFilePathAndLastModifiedTime, resource_,
+                   directory_path_, base::Unretained(read_file_path),
                    base::Unretained(last_modified_time)),
         base::Bind(&URLRequestExtensionJob::OnFilePathAndLastModifiedTimeRead,
-                   weak_factory_.GetWeakPtr(),
-                   base::Owned(read_file_path),
+                   weak_factory_.GetWeakPtr(), base::Owned(read_file_path),
                    base::Owned(last_modified_time)));
-    DCHECK(posted);
   }
 
   bool IsRedirectResponse(GURL* location, int* http_status_code) override {
