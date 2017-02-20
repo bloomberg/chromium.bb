@@ -418,10 +418,10 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
       return willBeRemoved("\"zoom: document\"", M59, "4997605029314560");
 
     case UseCounter::SelectionAddRangeIntersect:
-      return willBeRemoved(
-          "The behavior that Selection.addRange() merges existing Range and "
-          "the specified Range",
-          M58, "6680566019653632");
+      return "The behavior that Selection.addRange() merges existing Range and "
+             "the specified Range was removed. See "
+             "https://www.chromestatus.com/features/6680566019653632 for more "
+             "details.";
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

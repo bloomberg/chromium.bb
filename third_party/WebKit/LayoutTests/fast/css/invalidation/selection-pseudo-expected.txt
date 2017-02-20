@@ -1,4 +1,3 @@
-CONSOLE ERROR: line 43: Discontiguous selection is not supported.
 Style invalidation for ::selection
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -611,7 +611,7 @@ void DOMSelection::addRange(Range* newRange) {
   // no longer performs synchronous layout by itself.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (selection.isNone()) {
+  if (rangeCount() == 0) {
     selection.setSelectedRange(EphemeralRange(newRange), VP_DEFAULT_AFFINITY);
     cacheRangeIfSelectionOfDocument(newRange);
     return;
@@ -619,17 +619,8 @@ void DOMSelection::addRange(Range* newRange) {
 
   Range* originalRange = selection.firstRange();
 
-  if (originalRange->startContainer()->document() !=
-      newRange->startContainer()->document()) {
-    addConsoleError(
-        "The given range does not belong to the current selection's document.");
-    return;
-  }
   if (originalRange->startContainer()->treeScope() !=
       newRange->startContainer()->treeScope()) {
-    addConsoleError(
-        "The given range and the current selection belong to two different "
-        "document fragments.");
     return;
   }
 
@@ -637,32 +628,14 @@ void DOMSelection::addRange(Range* newRange) {
                                            ASSERT_NO_EXCEPTION) < 0 ||
       newRange->compareBoundaryPoints(Range::kStartToEnd, originalRange,
                                       ASSERT_NO_EXCEPTION) < 0) {
-    addConsoleError("Discontiguous selection is not supported.");
     return;
   }
 
-  // FIXME: "Merge the ranges if they intersect" is Blink-specific behavior;
-  // other browsers supporting discontiguous selection (obviously) keep each
-  // Range added and return it in getRangeAt(). But it's unclear if we can
-  // really do the same, since we don't support discontiguous selection. Further
-  // discussions at
+  // TODO(tkent): "Merge the ranges if they intersect" was removed. We show a
+  // warning message for a while, and continue to collect the usage data.
   // <https://code.google.com/p/chromium/issues/detail?id=353069>.
   Deprecation::countDeprecation(frame(),
                                 UseCounter::SelectionAddRangeIntersect);
-
-  Range* start = originalRange->compareBoundaryPoints(
-                     Range::kStartToStart, newRange, ASSERT_NO_EXCEPTION) < 0
-                     ? originalRange
-                     : newRange;
-  Range* end = originalRange->compareBoundaryPoints(Range::kEndToEnd, newRange,
-                                                    ASSERT_NO_EXCEPTION) < 0
-                   ? newRange
-                   : originalRange;
-  const EphemeralRange merged =
-      EphemeralRange(start->startPosition(), end->endPosition());
-  TextAffinity affinity = selection.selection().affinity();
-  selection.setSelectedRange(merged, affinity);
-  cacheRangeIfSelectionOfDocument(createRange(merged));
 }
 
 void DOMSelection::deleteFromDocument() {
