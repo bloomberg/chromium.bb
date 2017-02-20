@@ -1095,14 +1095,7 @@ void FreeList::addToFreeList(Address address, size_t size) {
   // that could be caused by lazy sweeping etc.
   size_t allowedCount = 0;
   size_t forbiddenCount = 0;
-  for (size_t i = sizeof(FreeListEntry); i < size; i++) {
-    if (address[i] == reuseAllowedZapValue)
-      allowedCount++;
-    else if (address[i] == reuseForbiddenZapValue)
-      forbiddenCount++;
-    else
-      ASSERT_NOT_REACHED();
-  }
+  getAllowedAndForbiddenCounts(address, size, allowedCount, forbiddenCount);
   size_t entryCount = size - sizeof(FreeListEntry);
   if (forbiddenCount == entryCount) {
     // If all values in the memory region are reuseForbiddenZapValue,
@@ -1141,6 +1134,22 @@ void FreeList::addToFreeList(Address address, size_t size) {
 
 #if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
     defined(MEMORY_SANITIZER)
+NO_SANITIZE_MEMORY
+void NEVER_INLINE
+FreeList::getAllowedAndForbiddenCounts(Address address,
+                                       size_t size,
+                                       size_t& allowedCount,
+                                       size_t& forbiddenCount) {
+  for (size_t i = sizeof(FreeListEntry); i < size; i++) {
+    if (address[i] == reuseAllowedZapValue)
+      allowedCount++;
+    else if (address[i] == reuseForbiddenZapValue)
+      forbiddenCount++;
+    else
+      NOTREACHED();
+  }
+}
+
 NO_SANITIZE_ADDRESS
 NO_SANITIZE_MEMORY
 void NEVER_INLINE FreeList::zapFreedMemory(Address address, size_t size) {

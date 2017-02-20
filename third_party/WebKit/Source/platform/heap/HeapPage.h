@@ -655,6 +655,7 @@ class FreeList {
 
 #if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
     defined(MEMORY_SANITIZER)
+  static void getAllowedAndForbiddenCounts(Address, size_t, size_t&, size_t&);
   static void zapFreedMemory(Address, size_t);
   static void checkFreedMemoryIsZapped(Address, size_t);
 #endif
