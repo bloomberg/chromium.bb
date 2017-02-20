@@ -20,7 +20,7 @@ include_rules = [
     "+base/time/time.h",
     "+base/tuple.h",
     "+build",
-    # Allow redirection to platform/wtf. See crbug.com/691465.
-    "+platform/wtf",
+    # Allow redirection to platform/newwtf. See crbug.com/691465.
+    "+platform/newwtf",
     "-v8",
 ]
