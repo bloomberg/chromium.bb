@@ -1,8 +1,8 @@
-CONSOLE WARNING: line 77: Invalid keyframe value for property top: invalid
-CONSOLE WARNING: line 77: Invalid keyframe value for property left: invalid
-CONSOLE WARNING: line 77: Invalid keyframe value for property left: invalid
+CONSOLE WARNING: line 78: Invalid keyframe value for property top: invalid
+CONSOLE WARNING: line 78: Invalid keyframe value for property left: invalid
+CONSOLE WARNING: line 78: Invalid keyframe value for property left: invalid
 This is a testharness.js-based test.
-Found 59 tests; 17 PASS, 42 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 67 tests; 25 PASS, 42 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object 
 FAIL Element.animate() creates an Animation object in the relevant realm of the target element Cannot read property 'prototype' of undefined
 PASS Element.animate() creates an Animation object with a KeyframeEffect 
@@ -54,6 +54,14 @@ PASS Element.animate() does not accept a keyframe sequence with an invalid easin
 FAIL Element.animate() does not accept keyframes with an invalid composite value assert_throws: function "function () {
       div.animate(subtest.input, 2000);
     }" did not throw
+PASS Element.animate() does not accept invalid easing: '' 
+PASS Element.animate() does not accept invalid easing: 'test' 
+PASS Element.animate() does not accept invalid easing: 'cubic-bezier(1.1, 0, 1, 1)' 
+PASS Element.animate() does not accept invalid easing: 'cubic-bezier(0, 0, 1.1, 1)' 
+PASS Element.animate() does not accept invalid easing: 'cubic-bezier(-0.1, 0, 1, 1)' 
+PASS Element.animate() does not accept invalid easing: 'cubic-bezier(0, 0, -0.1, 1)' 
+PASS Element.animate() does not accept invalid easing: 'steps(-1, start)' 
+PASS Element.animate() does not accept invalid easing: 'steps(0.1, start)' 
 PASS Element.animate() accepts a double as an options argument 
 PASS Element.animate() accepts a KeyframeAnimationOptions argument 
 PASS Element.animate() accepts an absent options argument 

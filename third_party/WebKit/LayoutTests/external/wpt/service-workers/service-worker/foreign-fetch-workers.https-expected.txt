@@ -1,0 +1,9 @@
+CONSOLE ERROR: Fetch API cannot load https://www2.web-platform.test:8444/service-workers/service-worker/resources/simple.txt?basic_dedicated_insecure. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://www2.web-platform.test:8001' is therefore not allowed access. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
+This is a testharness.js-based test.
+FAIL Foreign fetch can intercept fetches made from a service worker assert_unreached: unregister and register should not fail: Failed to register a ServiceWorker: ServiceWorker script evaluation failed Reached unreachable code
+PASS Foreign fetch can intercept fetches made from a dedicated worker 
+PASS Foreign fetch can intercept fetches made from a shared worker 
+PASS Fetches from an insecure dedicated worker aren't intercepted. 
+PASS Fetches from an insecure shared worker aren't intercepted. 
+Harness: the test ran to completion.
+

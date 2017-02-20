@@ -333,6 +333,8 @@ external/wpt/server-side.md [ Skip ]
 # external/wpt/service-workers/cache-storage [ Pass ]
 ## Owners: dom-dev@chromium.org
 # external/wpt/shadow-dom [ Pass ]
+## Owners: jsbell@chromium.org
+# external/wpt/storage [ Pass ]
 ## Owners: domenic@chromium.org,ricea@chromium.org,tyoshino@chromium.org
 external/wpt/streams [ Pass ]
 ## Owners: mkwst@chromium.org,jochen@chromium.org

@@ -5,6 +5,8 @@ FAIL ReadableStream with byte source can be constructed with no errors bytes typ
 FAIL ReadableStream with byte source: Construct and expect start and pull being called bytes type is not yet implemented
 FAIL ReadableStream with byte source: No automatic pull call if start doesn't finish bytes type is not yet implemented
 FAIL ReadableStream with byte source: Construct with highWaterMark of 0 bytes type is not yet implemented
+FAIL ReadableStream with byte source: desiredSize when closed bytes type is not yet implemented
+FAIL ReadableStream with byte source: desiredSize when errored bytes type is not yet implemented
 FAIL ReadableStream with byte source: getReader(), then releaseLock() bytes type is not yet implemented
 FAIL ReadableStream with byte source: getReader() with mode set to byob, then releaseLock() bytes type is not yet implemented
 FAIL ReadableStream with byte source: Test that closing a stream does not release a reader automatically bytes type is not yet implemented
