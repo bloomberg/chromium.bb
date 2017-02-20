@@ -27,6 +27,10 @@ typedef uint8_t aom_prob;
 // TODO(negge): Rename this aom_prob once we remove vpxbool.
 typedef uint16_t aom_cdf_prob;
 
+#if CONFIG_EC_MULTISYMBOL
+#define CDF_SIZE(x) ((x) + 1)
+#endif
+
 #define CDF_PROB_BITS 15
 #define CDF_PROB_TOP (1 << CDF_PROB_BITS)
 
