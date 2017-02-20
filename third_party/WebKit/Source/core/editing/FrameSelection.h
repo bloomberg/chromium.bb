@@ -104,15 +104,20 @@ class CORE_EXPORT FrameSelection final
   Document& document() const;
   LocalFrame* frame() const { return m_frame; }
   Element* rootEditableElement() const {
-    return selection().rootEditableElement();
+    return computeVisibleSelectionInDOMTreeDeprecated().rootEditableElement();
   }
   Element* rootEditableElementOrDocumentElement() const;
   ContainerNode* rootEditableElementOrTreeScopeRootNode() const;
 
-  bool hasEditableStyle() const { return selection().hasEditableStyle(); }
-  bool isContentEditable() const { return selection().isContentEditable(); }
+  bool hasEditableStyle() const {
+    return computeVisibleSelectionInDOMTreeDeprecated().hasEditableStyle();
+  }
+  bool isContentEditable() const {
+    return computeVisibleSelectionInDOMTreeDeprecated().isContentEditable();
+  }
   bool isContentRichlyEditable() const {
-    return selection().isContentRichlyEditable();
+    return computeVisibleSelectionInDOMTreeDeprecated()
+        .isContentRichlyEditable();
   }
 
   // An implementation of |WebFrame::moveCaretSelection()|
@@ -121,7 +126,11 @@ class CORE_EXPORT FrameSelection final
   const VisibleSelection& computeVisibleSelectionInDOMTree() const;
   const VisibleSelectionInFlatTree& computeVisibleSelectionInFlatTree() const;
 
-  const VisibleSelection& selection() const;
+  // TODO(editing-dev): We should replace
+  // |computeVisibleSelectionInDOMTreeDeprecated()| with update layout and
+  // |computeVisibleSelectionInDOMTree()| to increase places hoisting update
+  // layout.
+  const VisibleSelection& computeVisibleSelectionInDOMTreeDeprecated() const;
 
   void setSelection(const SelectionInDOMTree&,
                     SetSelectionOptions = CloseTyping | ClearTypingStyle,
@@ -163,7 +172,7 @@ class CORE_EXPORT FrameSelection final
   bool contains(const LayoutPoint&);
 
   SelectionType getSelectionType() const {
-    return selection().getSelectionType();
+    return computeVisibleSelectionInDOMTreeDeprecated().getSelectionType();
   }
 
   TextAffinity affinity() const { return selectionInDOMTree().affinity(); }
@@ -186,10 +195,18 @@ class CORE_EXPORT FrameSelection final
 
   TextGranularity granularity() const { return m_granularity; }
 
-  Position base() const { return selection().base(); }
-  Position extent() const { return selection().extent(); }
-  Position start() const { return selection().start(); }
-  Position end() const { return selection().end(); }
+  Position base() const {
+    return computeVisibleSelectionInDOMTreeDeprecated().base();
+  }
+  Position extent() const {
+    return computeVisibleSelectionInDOMTreeDeprecated().extent();
+  }
+  Position start() const {
+    return computeVisibleSelectionInDOMTreeDeprecated().start();
+  }
+  Position end() const {
+    return computeVisibleSelectionInDOMTreeDeprecated().end();
+  }
 
   // Returns true if specified layout block should paint caret. This function is
   // called during painting only.
@@ -202,9 +219,15 @@ class CORE_EXPORT FrameSelection final
 
   const SelectionInDOMTree& selectionInDOMTree() const;
   // TODO(yosin): We should rename |isNone()| to |isVisibleNone()|.
-  bool isNone() const { return selection().isNone(); }
-  bool isCaret() const { return selection().isCaret(); }
-  bool isRange() const { return selection().isRange(); }
+  bool isNone() const {
+    return computeVisibleSelectionInDOMTreeDeprecated().isNone();
+  }
+  bool isCaret() const {
+    return computeVisibleSelectionInDOMTreeDeprecated().isCaret();
+  }
+  bool isRange() const {
+    return computeVisibleSelectionInDOMTreeDeprecated().isRange();
+  }
   bool isInPasswordField() const;
   bool isDirectional() const { return selectionInDOMTree().isDirectional(); }
 

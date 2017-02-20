@@ -1713,7 +1713,10 @@ AXObject::AXRange AXLayoutObject::selection() const {
     return AXRange();
 
   VisibleSelection selection =
-      getLayoutObject()->frame()->selection().selection();
+      getLayoutObject()
+          ->frame()
+          ->selection()
+          .computeVisibleSelectionInDOMTreeDeprecated();
   if (selection.isNone())
     return AXRange();
 
@@ -1780,7 +1783,10 @@ AXObject::AXRange AXLayoutObject::selectionUnderObject() const {
     return AXRange();
 
   VisibleSelection selection =
-      getLayoutObject()->frame()->selection().selection();
+      getLayoutObject()
+          ->frame()
+          ->selection()
+          .computeVisibleSelectionInDOMTreeDeprecated();
   Range* selectionRange = firstRangeOf(selection);
   ContainerNode* parentNode = getNode()->parentNode();
   int nodeIndex = getNode()->nodeIndex();
@@ -1824,7 +1830,8 @@ AXObject::AXRange AXLayoutObject::textControlSelection() const {
   if (!axObject || !axObject->isAXLayoutObject())
     return AXRange();
 
-  VisibleSelection selection = layout->frame()->selection().selection();
+  VisibleSelection selection =
+      layout->frame()->selection().computeVisibleSelectionInDOMTreeDeprecated();
   TextControlElement* textControl =
       toLayoutTextControl(layout)->textControlElement();
   ASSERT(textControl);

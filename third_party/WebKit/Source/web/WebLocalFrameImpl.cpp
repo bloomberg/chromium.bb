@@ -1094,7 +1094,10 @@ WebRange WebLocalFrameImpl::selectionRange() const {
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  return frame()->selection().selection().toNormalizedEphemeralRange();
+  return frame()
+      ->selection()
+      .computeVisibleSelectionInDOMTreeDeprecated()
+      .toNormalizedEphemeralRange();
 }
 
 WebString WebLocalFrameImpl::selectionAsText() const {
@@ -1150,7 +1153,7 @@ bool WebLocalFrameImpl::selectWordAroundCaret() {
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   return frame()->selection().selectWordAroundPosition(
-      selection.selection().visibleStart());
+      selection.computeVisibleSelectionInDOMTreeDeprecated().visibleStart());
 }
 
 void WebLocalFrameImpl::selectRange(const WebPoint& baseInViewport,
@@ -1737,7 +1740,8 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection() {
   if (Range* activeMatch = m_textFinder->activeMatch()) {
     // If the user has set the selection since the match was found, we
     // don't focus anything.
-    VisibleSelection selection(frame()->selection().selection());
+    VisibleSelection selection(
+        frame()->selection().computeVisibleSelectionInDOMTreeDeprecated());
     if (!selection.isNone())
       return;
 

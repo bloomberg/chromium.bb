@@ -2267,7 +2267,10 @@ void WebViewImpl::setFocus(bool enable) {
     LocalFrame* focusedFrame = m_page->focusController().focusedFrame();
     if (focusedFrame) {
       Element* element = focusedFrame->document()->focusedElement();
-      if (element && focusedFrame->selection().selection().isNone()) {
+      if (element &&
+          focusedFrame->selection()
+              .computeVisibleSelectionInDOMTreeDeprecated()
+              .isNone()) {
         // If the selection was cleared while the WebView was not
         // focused, then the focus element shows with a focus ring but
         // no caret and does respond to keyboard inputs.
@@ -2368,7 +2371,8 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const {
     anchor = focus = selection.absoluteCaretBounds();
   } else {
     const EphemeralRange selectedRange =
-        selection.selection().toNormalizedEphemeralRange();
+        selection.computeVisibleSelectionInDOMTreeDeprecated()
+            .toNormalizedEphemeralRange();
     if (selectedRange.isNull())
       return false;
     anchor = localFrame->editor().firstRectForRange(
@@ -2380,7 +2384,7 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const {
   anchor = localFrame->view()->contentsToViewport(anchor);
   focus = localFrame->view()->contentsToViewport(focus);
 
-  if (!selection.selection().isBaseFirst())
+  if (!selection.computeVisibleSelectionInDOMTreeDeprecated().isBaseFirst())
     std::swap(anchor, focus);
   return true;
 }
@@ -2413,7 +2417,9 @@ bool WebViewImpl::selectionTextDirection(WebTextDirection& start,
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (selection.selection().toNormalizedEphemeralRange().isNull())
+  if (selection.computeVisibleSelectionInDOMTree()
+          .toNormalizedEphemeralRange()
+          .isNull())
     return false;
   start =
       toWebTextDirection(primaryDirectionOf(*selection.start().anchorNode()));
@@ -2433,7 +2439,7 @@ bool WebViewImpl::isSelectionAnchorFirst() const {
     // plugins/mouse-capture-inside-shadow.html reaches here.
     return false;
   }
-  return selection.selection().isBaseFirst();
+  return selection.computeVisibleSelectionInDOMTreeDeprecated().isBaseFirst();
 }
 
 WebColor WebViewImpl::backgroundColor() const {

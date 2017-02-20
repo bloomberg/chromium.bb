@@ -109,7 +109,8 @@ static bool IsWhiteSpaceOrPunctuation(UChar c) {
 static String selectMisspellingAsync(LocalFrame* selectedFrame,
                                      String& description,
                                      uint32_t& hash) {
-  VisibleSelection selection = selectedFrame->selection().selection();
+  VisibleSelection selection =
+      selectedFrame->selection().computeVisibleSelectionInDOMTreeDeprecated();
   if (selection.isNone())
     return String();
 

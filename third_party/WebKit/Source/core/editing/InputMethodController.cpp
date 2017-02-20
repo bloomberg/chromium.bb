@@ -675,7 +675,8 @@ String InputMethodController::composingText() const {
 }
 
 PlainTextRange InputMethodController::getSelectionOffsets() const {
-  EphemeralRange range = firstEphemeralRangeOf(frame().selection().selection());
+  EphemeralRange range = firstEphemeralRangeOf(
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated());
   if (range.isNull())
     return PlainTextRange();
   ContainerNode* editable =
@@ -907,8 +908,8 @@ WebTextInputInfo InputMethodController::textInputInfo() const {
   if (info.value.isEmpty())
     return info;
 
-  EphemeralRange firstRange =
-      firstEphemeralRangeOf(frame().selection().selection());
+  EphemeralRange firstRange = firstEphemeralRangeOf(
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated());
   if (firstRange.isNotNull()) {
     PlainTextRange plainTextRange(PlainTextRange::create(*element, firstRange));
     if (plainTextRange.isNotNull()) {
@@ -1025,7 +1026,10 @@ WebTextInputType InputMethodController::textInputType() const {
   // It's important to preserve the equivalence of textInputInfo().type and
   // textInputType(), so perform the same rootEditableElement() existence check
   // here for consistency.
-  if (!frame().selection().selection().rootEditableElement())
+  if (!frame()
+           .selection()
+           .computeVisibleSelectionInDOMTreeDeprecated()
+           .rootEditableElement())
     return WebTextInputTypeNone;
 
   if (!isAvailable())

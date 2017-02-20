@@ -76,8 +76,10 @@ void WebSurroundingText::initializeFromCurrentSelection(WebLocalFrame* frame,
   // needs to be audited.  See http://crbug.com/590369 for more details.
   webFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (Range* range = createRange(
-          webFrame->selection().selection().toNormalizedEphemeralRange())) {
+  if (Range* range =
+          createRange(webFrame->selection()
+                          .computeVisibleSelectionInDOMTreeDeprecated()
+                          .toNormalizedEphemeralRange())) {
     // TODO(xiaochengh): The followinng SurroundingText can hold a null Range,
     // in which case we should prevent it from being stored in |m_private|.
     m_private.reset(new SurroundingText(*range, maxLength));

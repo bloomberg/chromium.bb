@@ -48,7 +48,11 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
   input->focus();
   input->setValue("Hello, input field");
   document().updateStyleAndLayout();
-  VisibleSelection oldSelection = document().frame()->selection().selection();
+  VisibleSelection oldSelection =
+      document()
+          .frame()
+          ->selection()
+          .computeVisibleSelectionInDOMTreeDeprecated();
 
   Position newPosition(input->innerEditorElement()->firstChild(), 3);
   document().frame()->selection().setSelection(

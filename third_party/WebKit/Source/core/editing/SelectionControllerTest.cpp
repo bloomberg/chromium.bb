@@ -17,7 +17,7 @@ class SelectionControllerTest : public EditingTestBase {
   SelectionControllerTest() = default;
 
   const VisibleSelection& visibleSelectionInDOMTree() const {
-    return selection().selection();
+    return selection().computeVisibleSelectionInDOMTreeDeprecated();
   }
 
   const VisibleSelectionInFlatTree& visibleSelectionInFlatTree() const {

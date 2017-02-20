@@ -6283,7 +6283,10 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
   const int allTextLength = 11;
   frame->selectRange(WebRange(allTextBeginOffset, allTextLength));
   EphemeralRange selectionRange =
-      frame->frame()->selection().selection().toNormalizedEphemeralRange();
+      frame->frame()
+          ->selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .toNormalizedEphemeralRange();
 
   EXPECT_EQ(1, spellcheck.numberOfTimesChecked());
   EXPECT_EQ(1U, document->markers()
@@ -6322,7 +6325,10 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers) {
   const int allTextLength = 11;
   frame->selectRange(WebRange(allTextBeginOffset, allTextLength));
   EphemeralRange selectionRange =
-      frame->frame()->selection().selection().toNormalizedEphemeralRange();
+      frame->frame()
+          ->selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .toNormalizedEphemeralRange();
 
   EXPECT_EQ(0U, document->markers()
                     .markersInRange(selectionRange, DocumentMarker::Spelling)

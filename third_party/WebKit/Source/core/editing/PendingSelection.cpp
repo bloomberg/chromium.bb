@@ -35,7 +35,7 @@ PendingSelection::PendingSelection(FrameSelection& frameSelection)
     : m_frameSelection(&frameSelection), m_hasPendingSelection(false) {}
 
 const VisibleSelection& PendingSelection::visibleSelection() const {
-  return m_frameSelection->selection();
+  return m_frameSelection->computeVisibleSelectionInDOMTree();
 }
 
 static bool isSelectionInDocument(

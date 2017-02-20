@@ -67,7 +67,8 @@ VisibleSelection CharacterGranularityStrategy::updateExtent(
     LocalFrame* frame) {
   const VisiblePosition& extentPosition =
       visiblePositionForContentsPoint(extentPoint, frame);
-  const VisibleSelection& selection = frame->selection().selection();
+  const VisibleSelection& selection =
+      frame->selection().computeVisibleSelectionInDOMTreeDeprecated();
   if (selection.visibleBase().deepEquivalent() ==
       extentPosition.deepEquivalent())
     return selection;
@@ -99,7 +100,8 @@ void DirectionGranularityStrategy::Clear() {
 VisibleSelection DirectionGranularityStrategy::updateExtent(
     const IntPoint& extentPoint,
     LocalFrame* frame) {
-  const VisibleSelection& selection = frame->selection().selection();
+  const VisibleSelection& selection =
+      frame->selection().computeVisibleSelectionInDOMTreeDeprecated();
 
   if (m_state == StrategyState::Cleared)
     m_state = StrategyState::Expanding;

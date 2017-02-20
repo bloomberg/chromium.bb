@@ -48,7 +48,10 @@
 namespace blink {
 
 static Node* selectionShadowAncestor(LocalFrame* frame) {
-  Node* node = frame->selection().selection().base().anchorNode();
+  Node* node = frame->selection()
+                   .computeVisibleSelectionInDOMTreeDeprecated()
+                   .base()
+                   .anchorNode();
   if (!node)
     return 0;
 
@@ -74,7 +77,7 @@ bool DOMSelection::isAvailable() const {
 
 const VisibleSelection& DOMSelection::visibleSelection() const {
   DCHECK(frame());
-  return frame()->selection().selection();
+  return frame()->selection().computeVisibleSelectionInDOMTreeDeprecated();
 }
 
 bool DOMSelection::isBaseFirstInSelection() const {
@@ -259,7 +262,8 @@ void DOMSelection::collapseToEnd(ExceptionState& exceptionState) {
   if (!isAvailable())
     return;
 
-  const VisibleSelection& selection = frame()->selection().selection();
+  const VisibleSelection& selection =
+      frame()->selection().computeVisibleSelectionInDOMTreeDeprecated();
 
   if (selection.isNone()) {
     exceptionState.throwDOMException(InvalidStateError,
@@ -276,7 +280,8 @@ void DOMSelection::collapseToStart(ExceptionState& exceptionState) {
   if (!isAvailable())
     return;
 
-  const VisibleSelection& selection = frame()->selection().selection();
+  const VisibleSelection& selection =
+      frame()->selection().computeVisibleSelectionInDOMTreeDeprecated();
 
   if (selection.isNone()) {
     exceptionState.throwDOMException(InvalidStateError,
@@ -658,7 +663,8 @@ void DOMSelection::deleteFromDocument() {
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   Range* selectedRange =
-      createRange(selection.selection().toNormalizedEphemeralRange());
+      createRange(selection.computeVisibleSelectionInDOMTreeDeprecated()
+                      .toNormalizedEphemeralRange());
   if (!selectedRange)
     return;
 
@@ -688,7 +694,8 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const {
 
   FrameSelection& selection = frame()->selection();
   const EphemeralRange selectedRange =
-      selection.selection().toNormalizedEphemeralRange();
+      selection.computeVisibleSelectionInDOMTreeDeprecated()
+          .toNormalizedEphemeralRange();
   if (selectedRange.isNull())
     return false;
 
@@ -748,8 +755,10 @@ String DOMSelection::toString() {
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       frame()->document()->lifecycle());
 
-  const EphemeralRange range =
-      frame()->selection().selection().toNormalizedEphemeralRange();
+  const EphemeralRange range = frame()
+                                   ->selection()
+                                   .computeVisibleSelectionInDOMTreeDeprecated()
+                                   .toNormalizedEphemeralRange();
   return plainText(
       range,
       TextIteratorBehavior::Builder().setForSelectionToString(true).build());

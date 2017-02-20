@@ -466,7 +466,10 @@ void WebFrameWidgetImpl::setFocus(bool enable) {
     LocalFrame* focusedFrame = page()->focusController().focusedFrame();
     if (focusedFrame) {
       Element* element = focusedFrame->document()->focusedElement();
-      if (element && focusedFrame->selection().selection().isNone()) {
+      if (element &&
+          focusedFrame->selection()
+              .computeVisibleSelectionInDOMTreeDeprecated()
+              .isNone()) {
         // If the selection was cleared while the WebView was not
         // focused, then the focus element shows with a focus ring but
         // no caret and does respond to keyboard inputs.
@@ -559,7 +562,8 @@ bool WebFrameWidgetImpl::selectionBounds(WebRect& anchor,
     anchor = focus = selection.absoluteCaretBounds();
   } else {
     const EphemeralRange selectedRange =
-        selection.selection().toNormalizedEphemeralRange();
+        selection.computeVisibleSelectionInDOMTree()
+            .toNormalizedEphemeralRange();
     if (selectedRange.isNull())
       return false;
     anchor = localFrame->editor().firstRectForRange(
@@ -576,7 +580,7 @@ bool WebFrameWidgetImpl::selectionBounds(WebRect& anchor,
   anchor = scaledAnchor;
   focus = scaledFocus;
 
-  if (!selection.selection().isBaseFirst())
+  if (!selection.computeVisibleSelectionInDOMTree().isBaseFirst())
     std::swap(anchor, focus);
   return true;
 }
@@ -594,7 +598,9 @@ bool WebFrameWidgetImpl::selectionTextDirection(WebTextDirection& start,
   frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   FrameSelection& selection = frame->selection();
-  if (selection.selection().toNormalizedEphemeralRange().isNull())
+  if (selection.computeVisibleSelectionInDOMTree()
+          .toNormalizedEphemeralRange()
+          .isNull())
     return false;
   start =
       toWebTextDirection(primaryDirectionOf(*selection.start().anchorNode()));
@@ -605,8 +611,11 @@ bool WebFrameWidgetImpl::selectionTextDirection(WebTextDirection& start,
 // TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
 // code needs to be refactored  (http://crbug.com/629721).
 bool WebFrameWidgetImpl::isSelectionAnchorFirst() const {
-  if (const LocalFrame* frame = focusedLocalFrameInWidget())
-    return frame->selection().selection().isBaseFirst();
+  if (const LocalFrame* frame = focusedLocalFrameInWidget()) {
+    return frame->selection()
+        .computeVisibleSelectionInDOMTreeDeprecated()
+        .isBaseFirst();
+  }
   return false;
 }
 

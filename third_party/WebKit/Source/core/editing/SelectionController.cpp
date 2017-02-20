@@ -344,8 +344,9 @@ void SelectionController::updateSelectionForMouseDrag(
   m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   const PositionWithAffinity& rawTargetPosition =
-      positionRespectingEditingBoundary(selection().selection().start(),
-                                        hitTestResult.localPoint(), target);
+      positionRespectingEditingBoundary(
+          selection().computeVisibleSelectionInDOMTreeDeprecated().start(),
+          hitTestResult.localPoint(), target);
   VisiblePositionInFlatTree targetPosition = createVisiblePosition(
       fromPositionInDOMTree<EditingInFlatTreeStrategy>(rawTargetPosition));
   // Don't modify the selection if we're not on a node.

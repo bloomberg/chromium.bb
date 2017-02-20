@@ -98,7 +98,8 @@ void SpellCheckerClientImpl::toggleSpellCheckingEnabled() {
     m_spellCheckThisFieldStatus = SpellCheckForcedOn;
     if (m_webView->focusedCoreFrame()->isLocalFrame()) {
       if (LocalFrame* frame = toLocalFrame(m_webView->focusedCoreFrame())) {
-        VisibleSelection frameSelection = frame->selection().selection();
+        VisibleSelection frameSelection =
+            frame->selection().computeVisibleSelectionInDOMTreeDeprecated();
         // If a selection is in an editable element spell check its content.
         if (Element* rootEditableElement =
                 frameSelection.rootEditableElement()) {

@@ -2652,9 +2652,11 @@ VisiblePosition visiblePositionForContentsPoint(const IntPoint& contentsPoint,
   HitTestResult result(request, contentsPoint);
   frame->document()->layoutViewItem().hitTest(result);
 
-  if (Node* node = result.innerNode())
+  if (Node* node = result.innerNode()) {
     return createVisiblePosition(positionRespectingEditingBoundary(
-        frame->selection().selection().start(), result.localPoint(), node));
+        frame->selection().computeVisibleSelectionInDOMTreeDeprecated().start(),
+        result.localPoint(), node));
+  }
   return VisiblePosition();
 }
 

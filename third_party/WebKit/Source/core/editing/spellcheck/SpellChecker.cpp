@@ -235,7 +235,9 @@ void SpellChecker::didBeginEditing(Element* element) {
 }
 
 void SpellChecker::ignoreSpelling() {
-  removeMarkers(frame().selection().selection(), DocumentMarker::Spelling);
+  removeMarkers(
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated(),
+      DocumentMarker::Spelling);
 }
 
 void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection) {
@@ -248,7 +250,8 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection) {
 
   // Start at the end of the selection, search to edge of document. Starting at
   // the selection end makes repeated "check spelling" commands work.
-  VisibleSelection selection(frame().selection().selection());
+  VisibleSelection selection(
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated());
   Position spellingSearchStart, spellingSearchEnd;
   Range::selectNodeContents(frame().document(), spellingSearchStart,
                             spellingSearchEnd);
@@ -709,7 +712,8 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(
     bool doNotRemoveIfSelectionAtWordBoundary) {
   DCHECK(frame().selection().isAvailable());
   TRACE_EVENT0("blink", "SpellChecker::updateMarkersForWordsAffectedByEditing");
-  if (!isSpellCheckingEnabledFor(frame().selection().selection()))
+  if (!isSpellCheckingEnabledFor(
+          frame().selection().computeVisibleSelectionInDOMTreeDeprecated()))
     return;
 
   Document* document = frame().document();
@@ -730,8 +734,15 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(
   // that fall on the boundaries of selection, and remove words between the
   // selection boundaries.
   VisiblePosition startOfSelection =
-      frame().selection().selection().visibleStart();
-  VisiblePosition endOfSelection = frame().selection().selection().visibleEnd();
+      frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .visibleStart();
+  VisiblePosition endOfSelection =
+      frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .visibleEnd();
   if (startOfSelection.isNull())
     return;
   // First word is the word that ends after or on the start of selection.
@@ -832,8 +843,10 @@ void SpellChecker::removeSpellingAndGrammarMarkers(const HTMLElement& element,
 }
 
 void SpellChecker::replaceMisspelledRange(const String& text) {
-  EphemeralRange caretRange =
-      frame().selection().selection().toNormalizedEphemeralRange();
+  EphemeralRange caretRange = frame()
+                                  .selection()
+                                  .computeVisibleSelectionInDOMTreeDeprecated()
+                                  .toNormalizedEphemeralRange();
   if (caretRange.isNull())
     return;
   DocumentMarkerVector markers = frame().document()->markers().markersInRange(
@@ -929,7 +942,8 @@ void SpellChecker::respondToChangedSelection(
       frame().document()->lifecycle());
 
   VisibleSelection newAdjacentWords;
-  const VisibleSelection newSelection = frame().selection().selection();
+  const VisibleSelection newSelection =
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated();
   if (newSelection.isContentEditable()) {
     newAdjacentWords =
         createVisibleSelection(selectWord(newSelection.visibleStart()));
@@ -961,10 +975,16 @@ void SpellChecker::spellCheckAfterBlur() {
   if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  if (!frame().selection().selection().isContentEditable())
+  if (!frame()
+           .selection()
+           .computeVisibleSelectionInDOMTreeDeprecated()
+           .isContentEditable())
     return;
 
-  if (isPositionInTextField(frame().selection().selection().start())) {
+  if (isPositionInTextField(frame()
+                                .selection()
+                                .computeVisibleSelectionInDOMTreeDeprecated()
+                                .start())) {
     // textFieldDidEndEditing() and textFieldDidBeginEditing() handle this.
     return;
   }
@@ -979,7 +999,9 @@ void SpellChecker::spellCheckAfterBlur() {
       frame().document()->lifecycle());
 
   VisibleSelection empty;
-  spellCheckOldSelection(frame().selection().selection().start(), empty);
+  spellCheckOldSelection(
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated().start(),
+      empty);
 }
 
 void SpellChecker::spellCheckOldSelection(

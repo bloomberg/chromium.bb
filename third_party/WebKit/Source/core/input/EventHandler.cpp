@@ -1834,7 +1834,8 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
   Element* focusedElement =
       overrideTargetElement ? overrideTargetElement : doc->focusedElement();
   FrameSelection& selection = m_frame->selection();
-  Position start = selection.selection().start();
+  Position start =
+      selection.computeVisibleSelectionInDOMTreeDeprecated().start();
   VisualViewport& visualViewport = frameHost()->visualViewport();
 
   if (!overrideTargetElement && start.anchorNode() &&
@@ -1844,7 +1845,8 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
     doc->updateStyleAndLayoutIgnorePendingStylesheets();
 
     IntRect firstRect = m_frame->editor().firstRectForRange(
-        selection.selection().toNormalizedEphemeralRange());
+        selection.computeVisibleSelectionInDOMTree()
+            .toNormalizedEphemeralRange());
 
     int x = rightAligned ? firstRect.maxX() : firstRect.x();
     // In a multiline edit, firstRect.maxY() would end up on the next line, so

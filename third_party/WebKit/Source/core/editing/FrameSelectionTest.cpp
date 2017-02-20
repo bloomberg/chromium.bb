@@ -31,7 +31,7 @@ namespace blink {
 class FrameSelectionTest : public EditingTestBase {
  protected:
   const VisibleSelection& visibleSelectionInDOMTree() const {
-    return selection().selection();
+    return selection().computeVisibleSelectionInDOMTreeDeprecated();
   }
   const VisibleSelectionInFlatTree& visibleSelectionInFlatTree() const {
     return selection().selectionInFlatTree();
@@ -206,7 +206,7 @@ class SelectionControllerTest : public EditingTestBase {
   SelectionControllerTest() = default;
 
   const VisibleSelection& visibleSelectionInDOMTree() const {
-    return selection().selection();
+    return selection().computeVisibleSelectionInDOMTreeDeprecated();
   }
 
   const VisibleSelectionInFlatTree& visibleSelectionInFlatTree() const {

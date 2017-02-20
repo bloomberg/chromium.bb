@@ -135,8 +135,9 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
   document().frame()->eventHandler().handleMouseReleaseEvent(mouseUpEvent);
 
   ASSERT_TRUE(selection().isRange());
-  Range* range =
-      createRange(selection().selection().toNormalizedEphemeralRange());
+  Range* range = createRange(selection()
+                                 .computeVisibleSelectionInDOMTreeDeprecated()
+                                 .toNormalizedEphemeralRange());
   ASSERT_TRUE(range);
   EXPECT_EQ("Line 1\nLine 2", range->text());
 }

@@ -501,7 +501,8 @@ unsigned TextControlElement::computeSelectionStart() const {
                               selection.computeStartPosition());
     }
   }
-  const VisibleSelection& visibleSelection = frame->selection().selection();
+  const VisibleSelection& visibleSelection =
+      frame->selection().computeVisibleSelectionInDOMTreeDeprecated();
   return indexForPosition(innerEditorElement(), visibleSelection.start());
 }
 
@@ -531,7 +532,8 @@ unsigned TextControlElement::computeSelectionEnd() const {
                               selection.computeEndPosition());
     }
   }
-  const VisibleSelection& visibleSelection = frame->selection().selection();
+  const VisibleSelection& visibleSelection =
+      frame->selection().computeVisibleSelectionInDOMTreeDeprecated();
   return indexForPosition(innerEditorElement(), visibleSelection.end());
 }
 

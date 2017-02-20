@@ -81,7 +81,9 @@ using namespace HTMLNames;
 
 CompositeEditCommand::CompositeEditCommand(Document& document)
     : EditCommand(document) {
-  setStartingSelection(document.frame()->selection().selection());
+  setStartingSelection(document.frame()
+                           ->selection()
+                           .computeVisibleSelectionInDOMTreeDeprecated());
   setEndingVisibleSelection(m_startingSelection);
 }
 

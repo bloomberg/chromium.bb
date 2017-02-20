@@ -125,7 +125,10 @@ bool TextFinder::find(int identifier,
   // If the user has selected something since the last Find operation we want
   // to start from there. Otherwise, we start searching from where the last Find
   // operation left off (either a Find or a FindNext operation).
-  VisibleSelection selection(ownerFrame().frame()->selection().selection());
+  VisibleSelection selection(ownerFrame()
+                                 .frame()
+                                 ->selection()
+                                 .computeVisibleSelectionInDOMTreeDeprecated());
   bool activeSelection = !selection.isNone();
   if (activeSelection) {
     m_activeMatch = firstRangeOf(selection);

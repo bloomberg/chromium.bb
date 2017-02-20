@@ -2046,7 +2046,10 @@ const RangeVector* targetRangesForInputEvent(const Node& node) {
   if (!hasRichlyEditableStyle(node))
     return nullptr;
   return new RangeVector(
-      1, firstRangeOf(node.document().frame()->selection().selection()));
+      1, firstRangeOf(node.document()
+                          .frame()
+                          ->selection()
+                          .computeVisibleSelectionInDOMTreeDeprecated()));
 }
 
 DispatchEventResult dispatchBeforeInputInsertText(Node* target,

@@ -428,8 +428,9 @@ WebInputEventResult MouseEventManager::handleMouseFocus(
   if (element && m_frame->selection().isRange()) {
     // TODO(yosin) We should not create |Range| object for calling
     // |isNodeFullyContained()|.
-    if (createRange(
-            m_frame->selection().selection().toNormalizedEphemeralRange())
+    if (createRange(m_frame->selection()
+                        .computeVisibleSelectionInDOMTreeDeprecated()
+                        .toNormalizedEphemeralRange())
             ->isNodeFullyContained(*element) &&
         element->isDescendantOf(m_frame->document()->focusedElement()))
       return WebInputEventResult::NotHandled;

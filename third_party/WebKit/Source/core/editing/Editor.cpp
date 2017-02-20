@@ -157,7 +157,8 @@ Editor::RevealSelectionScope::~RevealSelectionScope() {
 // |SelectionInDOMTree| instead of |VisibleSelection|.
 VisibleSelection Editor::selectionForCommand(Event* event) {
   frame().selection().updateIfNeeded();
-  VisibleSelection selection = frame().selection().selection();
+  VisibleSelection selection =
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated();
   if (!event)
     return selection;
   // If the target is a text control, and the current selection is outside of
@@ -696,7 +697,10 @@ bool Editor::replaceSelectionAfterDraggingWithEvents(
 }
 
 EphemeralRange Editor::selectedRange() {
-  return frame().selection().selection().toNormalizedEphemeralRange();
+  return frame()
+      .selection()
+      .computeVisibleSelectionInDOMTreeDeprecated()
+      .toNormalizedEphemeralRange();
 }
 
 bool Editor::canDeleteRange(const EphemeralRange& range) const {
@@ -745,7 +749,8 @@ Element* Editor::findEventTargetFrom(const VisibleSelection& selection) const {
 }
 
 Element* Editor::findEventTargetFromSelection() const {
-  return findEventTargetFrom(frame().selection().selection());
+  return findEventTargetFrom(
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated());
 }
 
 void Editor::applyStyle(StylePropertySet* style,
@@ -799,7 +804,7 @@ bool Editor::selectionStartHasStyle(CSSPropertyID propertyID,
   EditingStyle* styleToCheck = EditingStyle::create(propertyID, value);
   EditingStyle* styleAtStart =
       EditingStyleUtilities::createStyleAtSelectionStart(
-          frame().selection().selection(),
+          frame().selection().computeVisibleSelectionInDOMTreeDeprecated(),
           propertyID == CSSPropertyBackgroundColor, styleToCheck->style());
   return styleToCheck->triStateOfStyle(styleAtStart);
 }
@@ -807,13 +812,14 @@ bool Editor::selectionStartHasStyle(CSSPropertyID propertyID,
 TriState Editor::selectionHasStyle(CSSPropertyID propertyID,
                                    const String& value) const {
   return EditingStyle::create(propertyID, value)
-      ->triStateOfStyle(frame().selection().selection());
+      ->triStateOfStyle(
+          frame().selection().computeVisibleSelectionInDOMTreeDeprecated());
 }
 
 String Editor::selectionStartCSSPropertyValue(CSSPropertyID propertyID) {
   EditingStyle* selectionStyle =
       EditingStyleUtilities::createStyleAtSelectionStart(
-          frame().selection().selection(),
+          frame().selection().computeVisibleSelectionInDOMTreeDeprecated(),
           propertyID == CSSPropertyBackgroundColor);
   if (!selectionStyle || !selectionStyle->style())
     return String();
@@ -1024,7 +1030,10 @@ bool Editor::insertLineBreak() {
   if (!canEdit())
     return false;
 
-  VisiblePosition caret = frame().selection().selection().visibleStart();
+  VisiblePosition caret = frame()
+                              .selection()
+                              .computeVisibleSelectionInDOMTreeDeprecated()
+                              .visibleStart();
   bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
   DCHECK(frame().document());
   if (!TypingCommand::insertLineBreak(*frame().document()))
@@ -1043,7 +1052,10 @@ bool Editor::insertParagraphSeparator() {
   if (!canEditRichly())
     return insertLineBreak();
 
-  VisiblePosition caret = frame().selection().selection().visibleStart();
+  VisiblePosition caret = frame()
+                              .selection()
+                              .computeVisibleSelectionInDOMTreeDeprecated()
+                              .visibleStart();
   bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
   DCHECK(frame().document());
   EditingState editingState;
@@ -1317,7 +1329,8 @@ void Editor::transpose() {
   if (!canEdit())
     return;
 
-  VisibleSelection selection = frame().selection().selection();
+  VisibleSelection selection =
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated();
   if (!selection.isCaret())
     return;
 
@@ -1344,7 +1357,8 @@ void Editor::transpose() {
   String transposed = text.right(1) + text.left(1);
 
   // Select the two characters.
-  if (newSelection != frame().selection().selection())
+  if (newSelection !=
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated())
     frame().selection().setSelection(newSelection);
 
   // Insert the transposed characters.
@@ -1374,7 +1388,8 @@ void Editor::changeSelectionAfterCommand(
   // See <rdar://problem/5729315> Some shouldChangeSelectedDOMRange contain
   // Ranges for selections that are no longer valid
   bool selectionDidNotChangeDOMPosition =
-      newSelection == frame().selection().selection();
+      newSelection ==
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated();
   frame().selection().setSelection(newSelection, options);
 
   // Some editing operations change the selection visually without affecting its
@@ -1445,7 +1460,11 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style,
     m_typingStyle = EditingStyle::create(style);
 
   m_typingStyle->prepareToApplyAt(
-      frame().selection().selection().visibleStart().deepEquivalent(),
+      frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .visibleStart()
+          .deepEquivalent(),
       EditingStyle::PreserveWritingDirection);
 
   // Handle block styles, substracting these from the typing style.
@@ -1458,7 +1477,8 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style,
 }
 
 bool Editor::findString(const String& target, FindOptions options) {
-  VisibleSelection selection = frame().selection().selection();
+  VisibleSelection selection =
+      frame().selection().computeVisibleSelectionInDOMTreeDeprecated();
 
   // TODO(yosin) We should make |findRangeOfString()| to return
   // |EphemeralRange| rather than|Range| object.

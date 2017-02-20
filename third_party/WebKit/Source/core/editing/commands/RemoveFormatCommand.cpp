@@ -58,7 +58,9 @@ static bool isElementForRemoveFormatCommand(const Element* element) {
 void RemoveFormatCommand::doApply(EditingState* editingState) {
   LocalFrame* frame = document().frame();
 
-  if (!frame->selection().selection().isNonOrphanedCaretOrRange())
+  if (!frame->selection()
+           .computeVisibleSelectionInDOMTreeDeprecated()
+           .isNonOrphanedCaretOrRange())
     return;
 
   // Get the default style for this editable root, it's the style that we'll

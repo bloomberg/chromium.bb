@@ -134,22 +134,25 @@ const SelectionInDOMTree& FrameSelection::selectionInDOMTree() const {
 }
 
 Element* FrameSelection::rootEditableElementOrDocumentElement() const {
-  Element* selectionRoot = selection().rootEditableElement();
+  Element* selectionRoot =
+      computeVisibleSelectionInDOMTreeDeprecated().rootEditableElement();
   return selectionRoot ? selectionRoot : document().documentElement();
 }
 
 ContainerNode* FrameSelection::rootEditableElementOrTreeScopeRootNode() const {
-  Element* selectionRoot = selection().rootEditableElement();
+  Element* selectionRoot =
+      computeVisibleSelectionInDOMTreeDeprecated().rootEditableElement();
   if (selectionRoot)
     return selectionRoot;
 
-  Node* node = selection().base().computeContainerNode();
+  Node* node = computeVisibleSelectionInDOMTreeDeprecated()
+                   .base()
+                   .computeContainerNode();
   return node ? &node->treeScope().rootNode() : 0;
 }
 
-// TODO(yosin): We should rename |FrameSelection::selection()| to
-// |selectionDeprecated()|.
-const VisibleSelection& FrameSelection::selection() const {
+const VisibleSelection&
+FrameSelection::computeVisibleSelectionInDOMTreeDeprecated() const {
   // TODO(yosin): We should hoist updateStyleAndLayoutIgnorePendingStylesheets
   // to caller. See http://crbug.com/590369 for more details.
   document().updateStyleAndLayoutIgnorePendingStylesheets();
@@ -170,7 +173,8 @@ void FrameSelection::moveCaretSelection(const IntPoint& point) {
   const VisiblePosition position =
       visiblePositionForContentsPoint(point, frame());
   SelectionInDOMTree::Builder builder;
-  builder.setIsDirectional(selection().isDirectional());
+  builder.setIsDirectional(
+      computeVisibleSelectionInDOMTreeDeprecated().isDirectional());
   builder.setIsHandleVisible(true);
   if (position.isNotNull())
     builder.collapse(position.toPositionWithAffinity());
@@ -371,12 +375,15 @@ bool FrameSelection::modify(EAlteration alter,
                             SelectionDirection direction,
                             TextGranularity granularity,
                             EUserTriggered userTriggered) {
-  SelectionModifier selectionModifier(*frame(), selection(),
-                                      m_xPosForVerticalArrowNavigation);
+  SelectionModifier selectionModifier(
+      *frame(), computeVisibleSelectionInDOMTreeDeprecated(),
+      m_xPosForVerticalArrowNavigation);
   const bool modified = selectionModifier.modify(alter, direction, granularity);
   if (userTriggered == UserTriggered &&
-      selectionModifier.selection().isRange() && selection().isCaret() &&
-      dispatchSelectStart(selection()) != DispatchEventResult::NotCanceled) {
+      selectionModifier.selection().isRange() &&
+      computeVisibleSelectionInDOMTreeDeprecated().isCaret() &&
+      dispatchSelectStart(computeVisibleSelectionInDOMTreeDeprecated()) !=
+          DispatchEventResult::NotCanceled) {
     return false;
   }
   if (!modified) {
@@ -410,7 +417,8 @@ bool FrameSelection::modify(EAlteration alter,
 bool FrameSelection::modify(EAlteration alter,
                             unsigned verticalDistance,
                             VerticalDirection direction) {
-  SelectionModifier selectionModifier(*frame(), selection());
+  SelectionModifier selectionModifier(
+      *frame(), computeVisibleSelectionInDOMTreeDeprecated());
   if (!selectionModifier.modifyWithPageGranularity(alter, verticalDistance,
                                                    direction)) {
     return false;
@@ -477,7 +485,7 @@ bool FrameSelection::shouldPaintCaret(const LayoutBlock& block) const {
 }
 
 IntRect FrameSelection::absoluteCaretBounds() {
-  DCHECK(selection().isValidFor(*m_frame->document()));
+  DCHECK(computeVisibleSelectionInDOMTree().isValidFor(*m_frame->document()));
   return m_frameCaret->absoluteCaretBounds();
 }
 
@@ -547,9 +555,9 @@ void FrameSelection::selectFrameElementInParentIfFullySelected() {
   // needs to be audited.  See http://crbug.com/590369 for more details.
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (!isStartOfDocument(selection().visibleStart()))
+  if (!isStartOfDocument(computeVisibleSelectionInDOMTree().visibleStart()))
     return;
-  if (!isEndOfDocument(selection().visibleEnd()))
+  if (!isEndOfDocument(computeVisibleSelectionInDOMTree().visibleEnd()))
     return;
 
   // FIXME: This is not yet implemented for cross-process frame relationships.
@@ -622,13 +630,16 @@ void FrameSelection::selectAll() {
   Node* root = nullptr;
   Node* selectStartTarget = nullptr;
   if (isContentEditable()) {
-    root = highestEditableRoot(selection().start());
-    if (Node* shadowRoot = nonBoundaryShadowTreeRootNode(selection().start()))
+    root = highestEditableRoot(
+        computeVisibleSelectionInDOMTreeDeprecated().start());
+    if (Node* shadowRoot = nonBoundaryShadowTreeRootNode(
+            computeVisibleSelectionInDOMTreeDeprecated().start()))
       selectStartTarget = shadowRoot->ownerShadowHost();
     else
       selectStartTarget = root;
   } else {
-    root = nonBoundaryShadowTreeRootNode(selection().start());
+    root = nonBoundaryShadowTreeRootNode(
+        computeVisibleSelectionInDOMTreeDeprecated().start());
     if (root) {
       selectStartTarget = root->ownerShadowHost();
     } else {
@@ -1029,7 +1040,7 @@ void FrameSelection::setShouldShowBlockCursor(bool shouldShowBlockCursor) {
 #ifndef NDEBUG
 
 void FrameSelection::showTreeForThis() const {
-  selection().showTreeForThis();
+  computeVisibleSelectionInDOMTreeDeprecated().showTreeForThis();
 }
 
 #endif

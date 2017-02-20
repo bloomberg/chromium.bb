@@ -196,7 +196,8 @@ RangeVector* RangesFromCurrentSelectionOrExtendCaret(
     SelectionDirection direction,
     TextGranularity granularity) {
   frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
-  SelectionModifier selectionModifier(frame, frame.selection().selection());
+  SelectionModifier selectionModifier(
+      frame, frame.selection().computeVisibleSelectionInDOMTreeDeprecated());
   if (selectionModifier.selection().isCaret())
     selectionModifier.modify(FrameSelection::AlterationExtend, direction,
                              granularity);
@@ -293,7 +294,7 @@ static bool executeToggleStyleInList(LocalFrame& frame,
                                      CSSValue* value) {
   EditingStyle* selectionStyle =
       EditingStyleUtilities::createStyleAtSelectionStart(
-          frame.selection().selection());
+          frame.selection().computeVisibleSelectionInDOMTreeDeprecated());
   if (!selectionStyle || !selectionStyle->style())
     return false;
 
@@ -388,8 +389,12 @@ static bool expandSelectionToGranularity(LocalFrame& frame,
                                          TextGranularity granularity) {
   const VisibleSelection& selection = createVisibleSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(frame.selection().selection().base(),
-                            frame.selection().selection().extent())
+          .setBaseAndExtent(frame.selection()
+                                .computeVisibleSelectionInDOMTreeDeprecated()
+                                .base(),
+                            frame.selection()
+                                .computeVisibleSelectionInDOMTreeDeprecated()
+                                .extent())
           .setGranularity(granularity)
           .build());
   const EphemeralRange newRange = selection.toNormalizedEphemeralRange();
@@ -411,13 +416,16 @@ static bool hasChildTags(Element& element, const QualifiedName& tagName) {
 static TriState selectionListState(const FrameSelection& selection,
                                    const QualifiedName& tagName) {
   if (selection.isCaret()) {
-    if (enclosingElementWithTag(selection.selection().start(), tagName))
+    if (enclosingElementWithTag(
+            selection.computeVisibleSelectionInDOMTreeDeprecated().start(),
+            tagName))
       return TrueTriState;
   } else if (selection.isRange()) {
-    Element* startElement =
-        enclosingElementWithTag(selection.selection().start(), tagName);
-    Element* endElement =
-        enclosingElementWithTag(selection.selection().end(), tagName);
+    Element* startElement = enclosingElementWithTag(
+        selection.computeVisibleSelectionInDOMTreeDeprecated().start(),
+        tagName);
+    Element* endElement = enclosingElementWithTag(
+        selection.computeVisibleSelectionInDOMTreeDeprecated().end(), tagName);
 
     if (startElement && endElement && startElement == endElement) {
       // If the selected list has the different type of list as child, return
@@ -459,8 +467,8 @@ static TriState stateTextWritingDirection(LocalFrame& frame,
   bool hasNestedOrMultipleEmbeddings;
   WritingDirection selectionDirection =
       EditingStyleUtilities::textDirectionForSelection(
-          frame.selection().selection(), frame.editor().typingStyle(),
-          hasNestedOrMultipleEmbeddings);
+          frame.selection().computeVisibleSelectionInDOMTreeDeprecated(),
+          frame.editor().typingStyle(), hasNestedOrMultipleEmbeddings);
   // FXIME: We should be returning MixedTriState when selectionDirection ==
   // direction && hasNestedOrMultipleEmbeddings
   return (selectionDirection == direction && !hasNestedOrMultipleEmbeddings)
@@ -689,7 +697,8 @@ static bool executeDeleteToMark(LocalFrame& frame,
       return false;
   }
   frame.editor().performDelete();
-  frame.editor().setMark(frame.selection().selection());
+  frame.editor().setMark(
+      frame.selection().computeVisibleSelectionInDOMTreeDeprecated());
   return true;
 }
 
@@ -1661,7 +1670,8 @@ static bool executeSetMark(LocalFrame& frame,
                            Event*,
                            EditorCommandSource,
                            const String&) {
-  frame.editor().setMark(frame.selection().selection());
+  frame.editor().setMark(
+      frame.selection().computeVisibleSelectionInDOMTreeDeprecated());
   return true;
 }
 
@@ -1715,7 +1725,8 @@ static bool executeSwapWithMark(LocalFrame& frame,
                                 EditorCommandSource,
                                 const String&) {
   const VisibleSelection& mark = frame.editor().mark();
-  const VisibleSelection& selection = frame.selection().selection();
+  const VisibleSelection& selection =
+      frame.selection().computeVisibleSelectionInDOMTreeDeprecated();
   if (mark.isNone() || selection.isNone())
     return false;
   frame.selection().setSelection(mark);
@@ -2060,7 +2071,8 @@ static String valueForeColor(LocalFrame& frame, Event*) {
 }
 
 static String valueFormatBlock(LocalFrame& frame, Event*) {
-  const VisibleSelection& selection = frame.selection().selection();
+  const VisibleSelection& selection =
+      frame.selection().computeVisibleSelectionInDOMTreeDeprecated();
   if (!selection.isNonOrphanedCaretOrRange() || !selection.isContentEditable())
     return "";
   Element* formatBlockElement =

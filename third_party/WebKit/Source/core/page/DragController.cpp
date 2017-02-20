@@ -475,7 +475,7 @@ static bool setSelectionToDragCaret(LocalFrame* frame,
 
     frame->selection().setSelection(
         SelectionInDOMTree::Builder().collapse(position).build());
-    dragCaret = frame->selection().selection();
+    dragCaret = frame->selection().computeVisibleSelectionInDOMTreeDeprecated();
     range = createRange(dragCaret.toNormalizedEphemeralRange());
   }
   return !frame->selection().isNone() && frame->selection().isContentEditable();
