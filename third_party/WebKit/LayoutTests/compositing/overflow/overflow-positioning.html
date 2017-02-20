@@ -54,18 +54,23 @@
     if (window.testRunner)
       testRunner.waitUntilDone();
 
+    function waitForCompositor() {
+      return document.body.animate({opacity: [1, 1]}, 1).finished;
+    }
+
     function startTest()
     {
-      window.setTimeout(function() {
-        var mover = document.getElementById('mover');
-        mover.className = 'moving';
-        
-        window.setTimeout(function() {
-          if (window.testRunner)
-            testRunner.notifyDone();
-        }, 0);
-        
-      }, 0);
+      var mover = document.getElementById('mover');
+      getComputedStyle(mover).transform; // Force style recalc
+      mover.className = 'moving';
+      if (window.internals)
+        internals.pauseAnimations(0);
+
+      waitForCompositor().then(() => {
+        if (window.testRunner) {
+          testRunner.notifyDone();
+        }
+      });
     }
 
     window.addEventListener('load', startTest, false);

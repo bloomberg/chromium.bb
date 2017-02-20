@@ -2365,4 +2365,3 @@ crbug.com/688515 [ Linux ] http/tests/media/video-play-stall.html [ Pass Failure
 crbug.com/691423 [ Mac ] fast/frames/location-change-no-file-access.html [ Failure Pass ]
 
 # Sheriff failures 2017-02-16
-crbug.com/692733 [ Win7 Debug ] compositing/overflow/overflow-positioning.html [ Failure Pass ]
