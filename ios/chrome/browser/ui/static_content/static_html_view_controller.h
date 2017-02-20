@@ -64,6 +64,7 @@ typedef void (^HtmlCallback)(NSString*);
 // Initialization method. |generator| will produce the html to display. Its
 // generation method will be called each time reload is called. |browserState|
 // is the user browser state to use for loading resources and must not be null.
+// |StaticHtmlViewController| retains |generator|.
 - (instancetype)initWithGenerator:(id<HtmlGenerator>)generator
                      browserState:(web::BrowserState*)browserState;
 

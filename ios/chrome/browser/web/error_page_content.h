@@ -7,18 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
-#import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 
 namespace web {
 class BrowserState;
 }
 
-@interface ErrorPageContent : StaticHtmlNativeContent<HtmlGenerator> {
-  // Stores the HTML generated from the NSError in the initializer.
-  base::scoped_nsobject<NSString> html_;
-}
+@interface ErrorPageContent : StaticHtmlNativeContent
 
 // Initialization. |loader| and |url| are passed up to StaticHtmlNativeContent;
 // |loader| cannot be nil.
