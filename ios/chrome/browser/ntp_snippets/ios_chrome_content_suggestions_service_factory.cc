@@ -16,6 +16,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
+#include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
@@ -40,7 +41,6 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/suggestions/image_fetcher_impl.h"
 #include "ios/chrome/browser/suggestions/ios_image_decoder_impl.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
@@ -49,6 +49,7 @@
 
 using bookmarks::BookmarkModel;
 using history::HistoryService;
+using image_fetcher::ImageFetcherImpl;
 using ios::BookmarkModelFactory;
 using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::ContentSuggestionsService;
@@ -59,7 +60,6 @@ using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsStatusService;
 using ntp_snippets::SchedulingRemoteSuggestionsProvider;
 using suggestions::CreateIOSImageDecoder;
-using suggestions::ImageFetcherImpl;
 
 namespace {
 
@@ -154,17 +154,20 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
             ->GetSequencedTaskRunnerWithShutdownBehavior(
                 base::SequencedWorkerPool::GetSequenceToken(),
                 base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+
     auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
         signin_manager, token_service, request_context, prefs, nullptr,
         base::Bind(&ParseJson), GetChannel() == version_info::Channel::STABLE
                                     ? google_apis::GetAPIKey()
                                     : google_apis::GetNonStableAPIKey(),
         service->user_classifier());
+
     auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
         service.get(), prefs, GetApplicationContext()->GetApplicationLocale(),
         service->category_ranker(), std::move(suggestions_fetcher),
-        base::MakeUnique<ImageFetcherImpl>(request_context.get(),
-                                           web::WebThread::GetBlockingPool()),
+        base::MakeUnique<ImageFetcherImpl>(
+            CreateIOSImageDecoder(web::WebThread::GetBlockingPool()),
+            request_context.get()),
         CreateIOSImageDecoder(task_runner),
         base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
         base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager,

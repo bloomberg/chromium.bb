@@ -5,8 +5,6 @@
 source_set("suggestions") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "image_fetcher_impl.h",
-    "image_fetcher_impl.mm",
     "ios_image_decoder_impl.h",
     "ios_image_decoder_impl.mm",
     "suggestions_service_factory.h",
