@@ -347,6 +347,8 @@ CSSInterpolationTypesMap::createCSSInterpolationTypesForSyntax(
         result.push_back(WTF::makeUnique<CSSLengthInterpolationType>(property));
         break;
       case CSSSyntaxType::Number:
+        result.push_back(WTF::makeUnique<CSSNumberInterpolationType>(property));
+        break;
       case CSSSyntaxType::Percentage:
       case CSSSyntaxType::LengthPercentage:
       case CSSSyntaxType::Image:

@@ -36,6 +36,14 @@ class InheritedNumberChecker : public InterpolationType::ConversionChecker {
   const double m_number;
 };
 
+const CSSValue* CSSNumberInterpolationType::createCSSValue(
+    const InterpolableValue& value,
+    const NonInterpolableValue*,
+    const StyleResolverState&) const {
+  return CSSPrimitiveValue::create(toInterpolableNumber(value).value(),
+                                   CSSPrimitiveValue::UnitType::Number);
+}
+
 InterpolationValue CSSNumberInterpolationType::createNumberValue(
     double number) const {
   return InterpolationValue(InterpolableNumber::create(number));

@@ -20,6 +20,10 @@ class CSSNumberInterpolationType : public CSSInterpolationType {
                                   const NonInterpolableValue*,
                                   StyleResolverState&) const final;
 
+  const CSSValue* createCSSValue(const InterpolableValue&,
+                                 const NonInterpolableValue*,
+                                 const StyleResolverState&) const final;
+
  private:
   InterpolationValue createNumberValue(double number) const;
   InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
