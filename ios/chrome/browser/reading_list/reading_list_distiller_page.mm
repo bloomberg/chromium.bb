@@ -72,6 +72,20 @@ void ReadingListDistillerPage::DistillPageImpl(const GURL& url,
   FetchFavicon(url);
 
   DistillerPageIOS::DistillPageImpl(url, script);
+
+  // WKWebView sets the document.hidden property to true and the
+  // document.visibilityState to prerender if the page is not added to a view
+  // hierarchy. Some pages may not render their content in these conditions.
+  // Add the view and move it out of the screen far in the top left corner of
+  // the coordinate space.
+  CGRect frame = [[[UIApplication sharedApplication] keyWindow] frame];
+  frame.origin.x = -5 * std::max(frame.size.width, frame.size.height);
+  frame.origin.y = frame.origin.x;
+  DCHECK(![CurrentWebState()->GetView() superview]);
+  [CurrentWebState()->GetView() setFrame:frame];
+  [[[UIApplication sharedApplication] keyWindow]
+      insertSubview:CurrentWebState()->GetView()
+            atIndex:0];
 }
 
 void ReadingListDistillerPage::FetchFavicon(const GURL& page_url) {
@@ -88,6 +102,7 @@ void ReadingListDistillerPage::OnDistillationDone(const GURL& page_url,
                                                   const base::Value* value) {
   std::unique_ptr<web::WebState> old_web_state = DetachWebState();
   if (old_web_state) {
+    [old_web_state->GetView() removeFromSuperview];
     web_state_dispatcher_->ReturnWebState(std::move(old_web_state));
   }
   DistillerPageIOS::OnDistillationDone(page_url, value);
