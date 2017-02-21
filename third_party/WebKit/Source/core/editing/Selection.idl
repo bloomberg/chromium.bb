@@ -28,33 +28,31 @@
  */
 
 // https://w3c.github.io/selection-api/#selection-interface
-
-// TODO(yoichio): All long types should be unsigned long. crbug.com/391673
 [
     ImplementedAs=DOMSelection,
 ] interface Selection {
     [MeasureAs=SelectionAnchorNode] readonly attribute Node? anchorNode;
-    [MeasureAs=SelectionAnchorOffset] readonly attribute long anchorOffset;
+    [MeasureAs=SelectionAnchorOffset] readonly attribute unsigned long anchorOffset;
     [MeasureAs=SelectionFocusNode] readonly attribute Node? focusNode;
-    [MeasureAs=SelectionFocusOffset] readonly attribute long focusOffset;
+    [MeasureAs=SelectionFocusOffset] readonly attribute unsigned long focusOffset;
     [MeasureAs=SelectionIsCollapsed] readonly attribute boolean isCollapsed;
-    [MeasureAs=SelectionRangeCount] readonly attribute long rangeCount;
+    [MeasureAs=SelectionRangeCount] readonly attribute unsigned long rangeCount;
     [MeasureAs=SelectionType] readonly attribute DOMString type;
-    [MeasureAs=SelectionGetRangeAt, RaisesException] Range getRangeAt(long index);
+    [MeasureAs=SelectionGetRangeAt, RaisesException] Range getRangeAt(unsigned long index);
     [MeasureAs=SelectionAddRange] void addRange(Range range);
     // TODO(yoichio): Implement removeRange. crbug.com/391673
     //void removeRange(Range range);
     [MeasureAs=SelectionRemoveAllRanges] void removeAllRanges();
     [MeasureAs=SelectionEmpty] void empty();
-    [MeasureAs=SelectionCollapse, RaisesException] void collapse(Node? node, optional long offset = 0);
-    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException] void setPosition(Node? node, optional long offset = 0);
+    [MeasureAs=SelectionCollapse, RaisesException] void collapse(Node? node, optional unsigned long offset = 0);
+    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException] void setPosition(Node? node, optional unsigned long offset = 0);
     [MeasureAs=SelectionCollapseToStart, RaisesException] void collapseToStart();
     [MeasureAs=SelectionCollapseToEnd, RaisesException] void collapseToEnd();
-    [MeasureAs=SelectionExtend, RaisesException] void extend(Node node, optional long offset = 0);
+    [MeasureAs=SelectionExtend, RaisesException] void extend(Node node, optional unsigned long offset = 0);
     // TODO(foolip): The arguments should be anchorNode, anchorOffset,
     // focusNode and focusOffset, and none of them are nullable in the spec.
-    [MeasureAs=SelectionSetBaseAndExtent, RaisesException] void setBaseAndExtent(Node? baseNode, long baseOffset,
-                                                                                 Node? extentNode, long extentOffset);
+    [MeasureAs=SelectionSetBaseAndExtent, RaisesException] void setBaseAndExtent(Node? baseNode, unsigned long baseOffset,
+                                                                                 Node? extentNode, unsigned long extentOffset);
     [MeasureAs=SelectionSelectAllChildren, RaisesException] void selectAllChildren(Node node);
     [MeasureAs=SelectionDeleteDromDocument, CEReactions, CustomElementCallbacks] void deleteFromDocument();
     [MeasureAs=SelectionContainsNode] boolean containsNode(Node node, optional boolean allowPartialContainment = false);
@@ -64,9 +62,9 @@
 
     // https://github.com/w3c/selection-api/issues/34
     [MeasureAs=SelectionBaseNode] readonly attribute Node? baseNode;
-    [MeasureAs=SelectionBaseOffset] readonly attribute long baseOffset;
+    [MeasureAs=SelectionBaseOffset] readonly attribute unsigned long baseOffset;
     [MeasureAs=SelectionExtentNode] readonly attribute Node? extentNode;
-    [MeasureAs=SelectionExtentOffset] readonly attribute long extentOffset;
+    [MeasureAs=SelectionExtentOffset] readonly attribute unsigned long extentOffset;
 
     // https://github.com/w3c/selection-api/issues/37
     [MeasureAs=SelectionModify] void modify([Default=Undefined] optional DOMString alter,

@@ -60,14 +60,14 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
   // Safari Selection Object API
   // These methods return the valid equivalents of internal editing positions.
   Node* baseNode() const;
-  int baseOffset() const;
+  unsigned baseOffset() const;
   Node* extentNode() const;
-  int extentOffset() const;
+  unsigned extentOffset() const;
   String type() const;
   void setBaseAndExtent(Node* baseNode,
-                        int baseOffset,
+                        unsigned baseOffset,
                         Node* extentNode,
-                        int extentOffset,
+                        unsigned extentOffset,
                         ExceptionState& = ASSERT_NO_EXCEPTION);
   void modify(const String& alter,
               const String& direction,
@@ -80,16 +80,16 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
   // reflect expansion.
   // These methods return the valid equivalents of internal editing positions.
   Node* anchorNode() const;
-  int anchorOffset() const;
+  unsigned anchorOffset() const;
   Node* focusNode() const;
-  int focusOffset() const;
+  unsigned focusOffset() const;
   bool isCollapsed() const;
-  int rangeCount() const;
-  void collapse(Node*, int offset, ExceptionState&);
+  unsigned rangeCount() const;
+  void collapse(Node*, unsigned offset, ExceptionState&);
   void collapseToEnd(ExceptionState&);
   void collapseToStart(ExceptionState&);
-  void extend(Node*, int offset, ExceptionState&);
-  Range* getRangeAt(int, ExceptionState&) const;
+  void extend(Node*, unsigned offset, ExceptionState&);
+  Range* getRangeAt(unsigned, ExceptionState&) const;
   void removeAllRanges();
   void addRange(Range*);
   void deleteFromDocument();
@@ -114,7 +114,7 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
   const Position& anchorPosition() const;
 
   Node* shadowAdjustedNode(const Position&) const;
-  int shadowAdjustedOffset(const Position&) const;
+  unsigned shadowAdjustedOffset(const Position&) const;
 
   bool isValidForPosition(Node*) const;
 

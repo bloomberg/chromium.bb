@@ -9,7 +9,7 @@ PASS getSelection().collapseToEnd() threw exception InvalidStateError: Failed to
 PASS getSelection().setBaseAndExtent(document.documentElement, -1, document.documentElement, 0) threw exception IndexSizeError: Failed to execute 'setBaseAndExtent' on 'Selection': There is no child at offset 4294967295..
 PASS getSelection().setBaseAndExtent(document.documentElement, 0, document.documentElement, -1) threw exception IndexSizeError: Failed to execute 'setBaseAndExtent' on 'Selection': There is no child at offset 4294967295..
 PASS getSelection().collapse(document.documentElement, -1) threw exception IndexSizeError: Failed to execute 'collapse' on 'Selection': There is no child at offset 4294967295..
-PASS getSelection().getRangeAt(-1) threw exception IndexSizeError: Failed to execute 'getRangeAt' on 'Selection': -1 is not a valid index..
+PASS getSelection().getRangeAt(-1) threw exception IndexSizeError: Failed to execute 'getRangeAt' on 'Selection': 4294967295 is not a valid index..
 PASS getSelection().extend(0, -1) threw exception TypeError: Failed to execute 'extend' on 'Selection': parameter 1 is not of type 'Node'..
 PASS getSelection().extend(document.documentElement, -1) threw exception IndexSizeError: Failed to execute 'extend' on 'Selection': There is no child at offset 4294967295..
 PASS getSelection().extend(document.documentElement, 1000) threw exception IndexSizeError: Failed to execute 'extend' on 'Selection': There is no child at offset 1000..

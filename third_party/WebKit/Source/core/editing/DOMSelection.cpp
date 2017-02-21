@@ -123,7 +123,7 @@ Node* DOMSelection::anchorNode() const {
   return nullptr;
 }
 
-int DOMSelection::anchorOffset() const {
+unsigned DOMSelection::anchorOffset() const {
   if (Range* range = primaryRangeOrNull()) {
     if (!frame() || isBaseFirstInSelection())
       return range->startOffset();
@@ -141,7 +141,7 @@ Node* DOMSelection::focusNode() const {
   return nullptr;
 }
 
-int DOMSelection::focusOffset() const {
+unsigned DOMSelection::focusOffset() const {
   if (Range* range = primaryRangeOrNull()) {
     if (!frame() || isBaseFirstInSelection())
       return range->endOffset();
@@ -157,7 +157,7 @@ Node* DOMSelection::baseNode() const {
   return shadowAdjustedNode(basePosition(visibleSelection()));
 }
 
-int DOMSelection::baseOffset() const {
+unsigned DOMSelection::baseOffset() const {
   if (!isAvailable())
     return 0;
 
@@ -171,7 +171,7 @@ Node* DOMSelection::extentNode() const {
   return shadowAdjustedNode(extentPosition(visibleSelection()));
 }
 
-int DOMSelection::extentOffset() const {
+unsigned DOMSelection::extentOffset() const {
   if (!isAvailable())
     return 0;
 
@@ -199,7 +199,7 @@ String DOMSelection::type() const {
   return "Range";
 }
 
-int DOMSelection::rangeCount() const {
+unsigned DOMSelection::rangeCount() const {
   if (!isAvailable())
     return 0;
   if (documentCachedRange())
@@ -209,7 +209,7 @@ int DOMSelection::rangeCount() const {
 
 // https://www.w3.org/TR/selection-api/#dom-selection-collapse
 void DOMSelection::collapse(Node* node,
-                            int offset,
+                            unsigned offset,
                             ExceptionState& exceptionState) {
   if (!isAvailable())
     return;
@@ -310,9 +310,9 @@ void DOMSelection::empty() {
 }
 
 void DOMSelection::setBaseAndExtent(Node* baseNode,
-                                    int baseOffset,
+                                    unsigned baseOffset,
                                     Node* extentNode,
-                                    int extentOffset,
+                                    unsigned extentOffset,
                                     ExceptionState& exceptionState) {
   if (!isAvailable())
     return;
@@ -433,7 +433,7 @@ void DOMSelection::modify(const String& alterString,
 
 // https://www.w3.org/TR/selection-api/#dom-selection-extend
 void DOMSelection::extend(Node* node,
-                          int offset,
+                          unsigned offset,
                           ExceptionState& exceptionState) {
   DCHECK(node);
   if (!isAvailable())
@@ -509,19 +509,19 @@ void DOMSelection::extend(Node* node,
   cacheRangeIfSelectionOfDocument(newRange);
 }
 
-Range* DOMSelection::getRangeAt(int index,
+Range* DOMSelection::getRangeAt(unsigned index,
                                 ExceptionState& exceptionState) const {
   if (!isAvailable())
     return nullptr;
 
-  if (index < 0 || index >= rangeCount()) {
+  if (index >= rangeCount()) {
     exceptionState.throwDOMException(
         IndexSizeError, String::number(index) + " is not a valid index.");
     return nullptr;
   }
 
   // If you're hitting this, you've added broken multi-range selection support
-  DCHECK_EQ(rangeCount(), 1);
+  DCHECK_EQ(rangeCount(), 1u);
 
   if (Range* cachedRange = documentCachedRange())
     return cachedRange;
@@ -785,7 +785,7 @@ Node* DOMSelection::shadowAdjustedNode(const Position& position) const {
   return adjustedNode->parentOrShadowHostNode();
 }
 
-int DOMSelection::shadowAdjustedOffset(const Position& position) const {
+unsigned DOMSelection::shadowAdjustedOffset(const Position& position) const {
   if (position.isNull())
     return 0;
 
