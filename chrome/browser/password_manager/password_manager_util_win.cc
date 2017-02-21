@@ -241,12 +241,6 @@ bool AuthenticateUser(gfx::NativeWindow window) {
   bool use_principalname = false;
   DWORD logon_result = 0;
 
-  // Disable password manager reauthentication before Windows 7.
-  // This is because of an interaction between LogonUser() and the sandbox.
-  // http://crbug.com/345916
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return true;
-
   // On a domain, we obtain the User Principal Name
   // for domain authentication.
   if (GetUserNameEx(NameUserPrincipal, username, &username_length)) {
