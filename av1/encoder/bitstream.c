@@ -644,16 +644,18 @@ static void update_ext_tx_probs(AV1_COMMON *cm, aom_writer *w) {
       if (!use_inter_ext_tx_for_txsize[s][i]) continue;
       savings += prob_diff_update_savings(
           av1_ext_tx_inter_tree[s], cm->fc->inter_ext_tx_prob[s][i],
-          cm->counts.inter_ext_tx[s][i], num_ext_tx_set_inter[s], probwt);
+          cm->counts.inter_ext_tx[s][i],
+          num_ext_tx_set[ext_tx_set_type_inter[s]], probwt);
     }
     do_update = savings > savings_thresh;
     aom_write(w, do_update, GROUP_DIFF_UPDATE_PROB);
     if (do_update) {
       for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
         if (!use_inter_ext_tx_for_txsize[s][i]) continue;
-        prob_diff_update(
-            av1_ext_tx_inter_tree[s], cm->fc->inter_ext_tx_prob[s][i],
-            cm->counts.inter_ext_tx[s][i], num_ext_tx_set_inter[s], probwt, w);
+        prob_diff_update(av1_ext_tx_inter_tree[s],
+                         cm->fc->inter_ext_tx_prob[s][i],
+                         cm->counts.inter_ext_tx[s][i],
+                         num_ext_tx_set[ext_tx_set_type_inter[s]], probwt, w);
       }
     }
   }
@@ -666,7 +668,8 @@ static void update_ext_tx_probs(AV1_COMMON *cm, aom_writer *w) {
       for (j = 0; j < INTRA_MODES; ++j)
         savings += prob_diff_update_savings(
             av1_ext_tx_intra_tree[s], cm->fc->intra_ext_tx_prob[s][i][j],
-            cm->counts.intra_ext_tx[s][i][j], num_ext_tx_set_intra[s], probwt);
+            cm->counts.intra_ext_tx[s][i][j],
+            num_ext_tx_set[ext_tx_set_type_intra[s]], probwt);
     }
     do_update = savings > savings_thresh;
     aom_write(w, do_update, GROUP_DIFF_UPDATE_PROB);
@@ -677,7 +680,7 @@ static void update_ext_tx_probs(AV1_COMMON *cm, aom_writer *w) {
           prob_diff_update(av1_ext_tx_intra_tree[s],
                            cm->fc->intra_ext_tx_prob[s][i][j],
                            cm->counts.intra_ext_tx[s][i][j],
-                           num_ext_tx_set_intra[s], probwt, w);
+                           num_ext_tx_set[ext_tx_set_type_intra[s]], probwt, w);
       }
     }
   }

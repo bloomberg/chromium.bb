@@ -596,21 +596,72 @@ static INLINE int supertx_enabled(const MB_MODE_INFO *mbmi) {
 
 #define ALLOW_INTRA_EXT_TX 1
 
-static const int num_ext_tx_set_inter[EXT_TX_SETS_INTER] = { 1, 16, 12, 2 };
-static const int num_ext_tx_set_intra[EXT_TX_SETS_INTRA] = { 1, 7, 5 };
+typedef enum {
+  // DCT only
+  EXT_TX_SET_DCTONLY = 0,
+  // DCT + Identity only
+  EXT_TX_SET_DCT_IDTX = 1,
+  // Discrete Trig transforms w/o flip (4) + Identity (1)
+  EXT_TX_SET_DTT4_IDTX = 2,
+  // Discrete Trig transforms w/o flip (4) + Identity (1) + 1D Hor/vert DCT (2)
+  EXT_TX_SET_DTT4_IDTX_1DDCT = 3,
+  // Discrete Trig transforms w/ flip (9) + Identity (1) + 1D Hor/Ver DCT (2)
+  EXT_TX_SET_DTT9_IDTX_1DDCT = 4,
+  // Discrete Trig transforms w/ flip (9) + Identity (1) + 1D Hor/Ver (6)
+  EXT_TX_SET_ALL16 = 5,
+  EXT_TX_SET_TYPES
+} TxSetType;
 
-static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
-                                 int use_default) {
-  if (use_default) return is_inter ? 3 : 2;
+// Number of transform types in each set type
+static const int num_ext_tx_set[EXT_TX_SET_TYPES] = { 1, 2, 5, 7, 12, 16 };
+
+// Maps intra set index to the set type
+static const int ext_tx_set_type_intra[EXT_TX_SETS_INTRA] = {
+  EXT_TX_SET_DCTONLY, EXT_TX_SET_DTT4_IDTX_1DDCT, EXT_TX_SET_DTT4_IDTX
+};
+
+// Maps inter set index to the set type
+static const int ext_tx_set_type_inter[EXT_TX_SETS_INTER] = {
+  EXT_TX_SET_DCTONLY, EXT_TX_SET_ALL16, EXT_TX_SET_DTT9_IDTX_1DDCT,
+  EXT_TX_SET_DCT_IDTX
+};
+
+// Maps set types above to the indices used for intra
+static const int ext_tx_set_index_intra[EXT_TX_SET_TYPES] = { 0, -1, 2,
+                                                              1, -1, -1 };
+
+// Maps set types above to the indices used for inter
+static const int ext_tx_set_index_inter[EXT_TX_SET_TYPES] = {
+  0, 3, -1, -1, 2, 1
+};
+
+static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
+                                            int is_inter, int use_default) {
+  const TX_SIZE tx_size2 = txsize_sqr_up_map[tx_size];
+  if (use_default) return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
   tx_size = txsize_sqr_map[tx_size];
 #if CONFIG_CB4X4
   (void)bs;
-  if (tx_size > TX_32X32) return 0;
+  if (tx_size > TX_32X32) return EXT_TX_SET_DCTONLY;
 #else
-  if (tx_size > TX_32X32 || bs < BLOCK_8X8) return 0;
+  if (tx_size > TX_32X32 || bs < BLOCK_8X8) return EXT_TX_SET_DCTONLY;
 #endif
-  if (tx_size == TX_32X32) return is_inter ? 3 : 0;
-  return (tx_size == TX_16X16 ? 2 : 1);
+  if (tx_size2 == TX_32X32)
+    return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
+  if (is_inter)
+    return (tx_size == TX_16X16 ? EXT_TX_SET_DTT9_IDTX_1DDCT
+                                : EXT_TX_SET_ALL16);
+  else
+    return (tx_size == TX_16X16 ? EXT_TX_SET_DTT4_IDTX
+                                : EXT_TX_SET_DTT4_IDTX_1DDCT);
+}
+
+static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
+                                 int use_default) {
+  const TxSetType set_type =
+      get_ext_tx_set_type(tx_size, bs, is_inter, use_default);
+  return is_inter ? ext_tx_set_index_inter[set_type]
+                  : ext_tx_set_index_intra[set_type];
 }
 
 static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
@@ -664,8 +715,8 @@ static const int ext_tx_used_inter_1D[EXT_TX_SETS_INTER][TX_TYPES_1D] = {
 
 static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
                                    int use_default) {
-  const int set = get_ext_tx_set(tx_size, bs, is_inter, use_default);
-  return is_inter ? num_ext_tx_set_inter[set] : num_ext_tx_set_intra[set];
+  const int set_type = get_ext_tx_set_type(tx_size, bs, is_inter, use_default);
+  return num_ext_tx_set[set_type];
 }
 
 #if CONFIG_RECT_TX
