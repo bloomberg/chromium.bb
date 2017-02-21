@@ -344,9 +344,11 @@ config("link_executable") {
       # Windows 64-bit. TODO(etienneb): Remove the assert when this is ready.
       assert(false, "win/asan does not work in 64-bit yet")
       libs = [ "clang_rt.asan-x86_64.lib" ]
+      ldflags = [ "-wholearchive:clang_rt.asan-x86_64.lib" ]
     } else {
       assert(target_cpu == "x86", "WinASan unsupported architecture")
       libs = [ "clang_rt.asan-i386.lib" ]
+      ldflags = [ "-wholearchive:clang_rt.asan-i386.lib" ]
     }
   }
 }
