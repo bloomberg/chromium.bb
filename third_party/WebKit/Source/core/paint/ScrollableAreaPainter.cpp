@@ -13,6 +13,7 @@
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/paint/TransformRecorder.h"
+#include "platform/HostWindow.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -68,8 +69,15 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext& context,
 void ScrollableAreaPainter::drawPlatformResizerImage(
     GraphicsContext& context,
     IntRect resizerCornerRect) {
-  float deviceScaleFactor =
+  float oldDeviceScaleFactor =
       blink::deviceScaleFactor(getScrollableArea().box().frame());
+  // |blink::deviceScaleFactor| returns different values between MAC (2 or 1)
+  // and other platforms (always 1). For this reason we cannot hardcode the
+  // value of 1 in the call for |windowToViewportScalar|. Since zoom-for-dsf is
+  // disabled on MAC, |windowToViewportScalar| will be a no-op on it.
+  float deviceScaleFactor =
+      getScrollableArea().getHostWindow()->windowToViewportScalar(
+          oldDeviceScaleFactor);
 
   RefPtr<Image> resizeCornerImage;
   IntSize cornerResizerSize;
@@ -78,7 +86,8 @@ void ScrollableAreaPainter::drawPlatformResizerImage(
                       (Image::loadPlatformResource("textAreaResizeCorner@2x")));
     resizeCornerImage = resizeCornerImageHiRes;
     cornerResizerSize = resizeCornerImage->size();
-    cornerResizerSize.scale(0.5f);
+    if (oldDeviceScaleFactor >= 2)
+      cornerResizerSize.scale(0.5f);
   } else {
     DEFINE_STATIC_REF(Image, resizeCornerImageLoRes,
                       (Image::loadPlatformResource("textAreaResizeCorner")));
