@@ -316,7 +316,8 @@ bool Editor::canCopy() const {
   if (imageElementFromImageDocument(frame().document()))
     return true;
   FrameSelection& selection = frame().selection();
-  return selection.isRange() && !selection.isInPasswordField();
+  return selection.computeVisibleSelectionInDOMTreeDeprecated().isRange() &&
+         !selection.isInPasswordField();
 }
 
 bool Editor::canPaste() const {
@@ -325,7 +326,8 @@ bool Editor::canPaste() const {
 
 bool Editor::canDelete() const {
   FrameSelection& selection = frame().selection();
-  return selection.isRange() && selection.rootEditableElement();
+  return selection.computeVisibleSelectionInDOMTreeDeprecated().isRange() &&
+         selection.rootEditableElement();
 }
 
 bool Editor::smartInsertDeleteEnabled() const {
@@ -353,7 +355,10 @@ bool Editor::deleteWithDirection(DeleteDirection direction,
     return false;
 
   EditingState editingState;
-  if (frame().selection().isRange()) {
+  if (frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .isRange()) {
     if (isTypingAction) {
       DCHECK(frame().document());
       TypingCommand::deleteKeyPressed(

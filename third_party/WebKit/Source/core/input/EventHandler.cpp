@@ -1839,7 +1839,8 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
   VisualViewport& visualViewport = frameHost()->visualViewport();
 
   if (!overrideTargetElement && start.anchorNode() &&
-      (selection.rootEditableElement() || selection.isRange())) {
+      (selection.rootEditableElement() ||
+       selection.computeVisibleSelectionInDOMTreeDeprecated().isRange())) {
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
     doc->updateStyleAndLayoutIgnorePendingStylesheets();

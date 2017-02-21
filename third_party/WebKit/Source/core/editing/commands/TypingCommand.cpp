@@ -153,7 +153,9 @@ void TypingCommand::deleteSelection(Document& document, Options options) {
   LocalFrame* frame = document.frame();
   DCHECK(frame);
 
-  if (!frame->selection().isRange())
+  if (!frame->selection()
+           .computeVisibleSelectionInDOMTreeDeprecated()
+           .isRange())
     return;
 
   if (TypingCommand* lastTypingCommand =

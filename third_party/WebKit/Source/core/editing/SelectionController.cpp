@@ -725,7 +725,7 @@ bool SelectionController::handleMousePressEventDoubleClick(
   if (event.event().button != WebPointerProperties::Button::Left)
     return false;
 
-  if (selection().isRange()) {
+  if (selection().computeVisibleSelectionInDOMTreeDeprecated().isRange()) {
     // A double-click when range is already selected
     // should not change the selection.  So, do not call
     // selectClosestWordFromMouseEvent, but do set
@@ -853,7 +853,7 @@ bool SelectionController::handleMouseReleaseEvent(
   if (m_mouseDownWasSingleClickInSelection &&
       m_selectionState != SelectionState::ExtendedSelection &&
       dragStartPos == flooredIntPoint(event.event().positionInRootFrame()) &&
-      selection().isRange() &&
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isRange() &&
       event.event().button != WebPointerProperties::Button::Right) {
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.

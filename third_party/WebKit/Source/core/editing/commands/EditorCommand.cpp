@@ -420,7 +420,7 @@ static TriState selectionListState(const FrameSelection& selection,
             selection.computeVisibleSelectionInDOMTreeDeprecated().start(),
             tagName))
       return TrueTriState;
-  } else if (selection.isRange()) {
+  } else if (selection.computeVisibleSelectionInDOMTreeDeprecated().isRange()) {
     Element* startElement = enclosingElementWithTag(
         selection.computeVisibleSelectionInDOMTreeDeprecated().start(),
         tagName);
@@ -1939,7 +1939,10 @@ static bool enabledRangeInEditableText(LocalFrame& frame,
   // We should update selection to canonicalize with current layout and style,
   // before accessing |FrameSelection::selection()|.
   frame.selection().updateIfNeeded();
-  return frame.selection().isRange() && frame.selection().isContentEditable();
+  return frame.selection()
+             .computeVisibleSelectionInDOMTreeDeprecated()
+             .isRange() &&
+         frame.selection().isContentEditable();
 }
 
 static bool enabledRangeInRichlyEditableText(LocalFrame& frame,
@@ -1950,7 +1953,9 @@ static bool enabledRangeInRichlyEditableText(LocalFrame& frame,
   // We should update selection to canonicalize with current layout and style,
   // before accessing |FrameSelection::selection()|.
   frame.selection().updateIfNeeded();
-  return frame.selection().isRange() &&
+  return frame.selection()
+             .computeVisibleSelectionInDOMTreeDeprecated()
+             .isRange() &&
          frame.selection()
              .computeVisibleSelectionInDOMTreeDeprecated()
              .isContentRichlyEditable();

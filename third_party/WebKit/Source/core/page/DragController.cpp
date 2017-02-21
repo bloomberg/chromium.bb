@@ -199,7 +199,8 @@ static DocumentFragment* documentFragmentFromDragData(
 
 bool DragController::dragIsMove(FrameSelection& selection, DragData* dragData) {
   return m_documentUnderMouse == m_dragInitiator &&
-         selection.isContentEditable() && selection.isRange() &&
+         selection.isContentEditable() &&
+         selection.computeVisibleSelectionInDOMTreeDeprecated().isRange() &&
          !isCopyKeyDown(dragData);
 }
 

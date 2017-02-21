@@ -211,9 +211,6 @@ class CORE_EXPORT FrameSelection final
   bool isNone() const {
     return computeVisibleSelectionInDOMTreeDeprecated().isNone();
   }
-  bool isRange() const {
-    return computeVisibleSelectionInDOMTreeDeprecated().isRange();
-  }
   bool isInPasswordField() const;
   bool isDirectional() const { return selectionInDOMTree().isDirectional(); }
 

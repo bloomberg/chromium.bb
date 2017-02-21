@@ -1149,7 +1149,8 @@ void WebLocalFrameImpl::selectWordAroundPosition(LocalFrame* frame,
 bool WebLocalFrameImpl::selectWordAroundCaret() {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::selectWordAroundCaret");
   FrameSelection& selection = frame()->selection();
-  if (selection.isNone() || selection.isRange())
+  if (selection.isNone() ||
+      selection.computeVisibleSelectionInDOMTreeDeprecated().isRange())
     return false;
 
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets

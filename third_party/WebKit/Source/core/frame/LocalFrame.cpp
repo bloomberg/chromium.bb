@@ -725,7 +725,7 @@ std::unique_ptr<DragImage> LocalFrame::nodeImage(Node& node) {
 }
 
 std::unique_ptr<DragImage> LocalFrame::dragImageForSelection(float opacity) {
-  if (!selection().isRange())
+  if (!selection().computeVisibleSelectionInDOMTreeDeprecated().isRange())
     return nullptr;
 
   m_view->updateAllLifecyclePhasesExceptPaint();

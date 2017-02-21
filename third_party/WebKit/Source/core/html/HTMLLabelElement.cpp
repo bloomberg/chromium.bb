@@ -168,7 +168,9 @@ void HTMLLabelElement::defaultEventHandler(Event* evt) {
         // Check if there is a selection and click is not on the
         // selection.
         if (layoutObject() && layoutObject()->isSelectable() &&
-            frame->selection().isRange() &&
+            frame->selection()
+                .computeVisibleSelectionInDOMTreeDeprecated()
+                .isRange() &&
             !frame->eventHandler()
                  .selectionController()
                  .mouseDownWasSingleClickInSelection())

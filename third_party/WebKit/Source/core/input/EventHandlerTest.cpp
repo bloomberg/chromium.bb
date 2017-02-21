@@ -134,7 +134,8 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
   mouseUpEvent.setFrameScale(1);
   document().frame()->eventHandler().handleMouseReleaseEvent(mouseUpEvent);
 
-  ASSERT_TRUE(selection().isRange());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
   Range* range = createRange(selection()
                                  .computeVisibleSelectionInDOMTreeDeprecated()
                                  .toNormalizedEphemeralRange());
@@ -161,7 +162,8 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
   // like multi-click events.
   TapEventBuilder doubleTapEvent(IntPoint(0, 0), 2);
   document().frame()->eventHandler().handleGestureEvent(doubleTapEvent);
-  ASSERT_TRUE(selection().isRange());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
   EXPECT_EQ(Position(line, 0), selection().start());
   if (document().frame()->editor().isSelectTrailingWhitespaceEnabled()) {
     EXPECT_EQ(Position(line, 4),
@@ -175,7 +177,8 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
 
   TapEventBuilder tripleTapEvent(IntPoint(0, 0), 3);
   document().frame()->eventHandler().handleGestureEvent(tripleTapEvent);
-  ASSERT_TRUE(selection().isRange());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
   EXPECT_EQ(Position(line, 0), selection().start());
   EXPECT_EQ(Position(line, 13),
             selection().computeVisibleSelectionInDOMTreeDeprecated().end());
@@ -401,7 +404,8 @@ TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
   document().frame()->eventHandler().handleMousePressEvent(
       doubleClickMousePressEvent);
 
-  ASSERT_TRUE(selection().isRange());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
   ASSERT_FALSE(selection().isHandleVisible());
 
   MousePressEventBuilder tripleClickMousePressEvent(
@@ -409,7 +413,8 @@ TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
   document().frame()->eventHandler().handleMousePressEvent(
       tripleClickMousePressEvent);
 
-  ASSERT_TRUE(selection().isRange());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
   ASSERT_FALSE(selection().isHandleVisible());
 }
 

@@ -425,7 +425,10 @@ WebInputEventResult MouseEventManager::handleMouseFocus(
   // be focused if the user does a mouseup over it, however, because the
   // mouseup will set a selection inside it, which will call
   // FrameSelection::setFocusedNodeIfNeeded.
-  if (element && m_frame->selection().isRange()) {
+  if (element &&
+      m_frame->selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .isRange()) {
     // TODO(yosin) We should not create |Range| object for calling
     // |isNodeFullyContained()|.
     if (createRange(m_frame->selection()
