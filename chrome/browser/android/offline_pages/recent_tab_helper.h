@@ -133,10 +133,6 @@ class RecentTabHelper
   // If empty, the tab does not have AndroidId and can not capture pages.
   std::string tab_id_;
 
-  // The URL of the page that is currently being snapshotted. Used to check,
-  // during async operations, that WebContents still contains the same page.
-  GURL snapshot_url_;
-
   // Monitors page loads and starts snapshots when a download request exist. It
   // is also used as an initialization flag for EnsureInitialized() to be run
   // only once.
@@ -147,11 +143,6 @@ class RecentTabHelper
   // Set at each navigation to control if last_n should save snapshots of the
   // current page being loaded.
   bool last_n_listen_to_tab_hidden_ = false;
-
-  // Track the page quality status of the last saved snapshot for the current
-  // page. It is generally reset upon new navigations.
-  SnapshotController::PageQuality last_n_latest_saved_quality_ =
-      SnapshotController::PageQuality::POOR;
 
   base::WeakPtrFactory<RecentTabHelper> weak_ptr_factory_;
 

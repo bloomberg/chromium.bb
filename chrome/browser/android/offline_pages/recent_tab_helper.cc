@@ -184,7 +184,7 @@ bool RecentTabHelper::EnsureInitialized() {
 void RecentTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted()) {
+      !navigation_handle->HasCommitted() || navigation_handle->IsSamePage()) {
     return;
   }
 
@@ -202,17 +202,15 @@ void RecentTabHelper::DidFinishNavigation(
   CancelInFlightSnapshots();
   downloads_snapshot_on_hold_ = false;
 
-  // New navigation, new snapshot session.
-  snapshot_url_ = web_contents()->GetLastCommittedURL();
-
   // Always reset so that posted tasks get canceled.
   snapshot_controller_->Reset();
 
   // Check for conditions that would cause us not to snapshot.
-  bool can_save = !navigation_handle->IsErrorPage() &&
-                  OfflinePageModel::CanSaveURL(snapshot_url_) &&
-                  OfflinePageUtils::GetOfflinePageFromWebContents(
-                      web_contents()) == nullptr;
+  bool can_save =
+      !navigation_handle->IsErrorPage() &&
+      OfflinePageModel::CanSaveURL(web_contents()->GetLastCommittedURL()) &&
+      OfflinePageUtils::GetOfflinePageFromWebContents(web_contents()) ==
+          nullptr;
 
   UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
 
@@ -220,7 +218,6 @@ void RecentTabHelper::DidFinishNavigation(
     snapshot_controller_->Stop();
   last_n_listen_to_tab_hidden_ = can_save && !delegate_->IsLowEndDevice() &&
                                  IsOffliningRecentPagesEnabled();
-  last_n_latest_saved_quality_ = PageQuality::POOR;
 }
 
 void RecentTabHelper::DocumentAvailableInMainFrame() {
@@ -255,14 +252,10 @@ void RecentTabHelper::WasHidden() {
   if (!last_n_listen_to_tab_hidden_ || last_n_ongoing_snapshot_info_)
     return;
 
-  // Do not save if page quality is too low or if we already have a snapshot
-  // with the current quality level.
+  // Do not save if page quality is too low.
   // Note: we assume page quality for a page can only increase.
-  PageQuality current_quality = snapshot_controller_->current_page_quality();
-  if (current_quality == PageQuality::POOR ||
-      current_quality == last_n_latest_saved_quality_) {
+  if (snapshot_controller_->current_page_quality() == PageQuality::POOR)
     return;
-  }
 
   last_n_ongoing_snapshot_info_ =
       base::MakeUnique<SnapshotProgressInfo>(GetRecentPagesClientId());
@@ -349,16 +342,16 @@ void RecentTabHelper::ContinueSnapshotWithIdsToPurge(
 void RecentTabHelper::ContinueSnapshotAfterPurge(
     SnapshotProgressInfo* snapshot_info,
     OfflinePageModel::DeletePageResult result) {
-  DCHECK_EQ(snapshot_url_, web_contents()->GetLastCommittedURL());
   if (result != OfflinePageModel::DeletePageResult::SUCCESS) {
     ReportSnapshotCompleted(snapshot_info, false);
     return;
   }
 
+  DCHECK(OfflinePageModel::CanSaveURL(web_contents()->GetLastCommittedURL()));
   snapshot_info->expected_page_quality =
       snapshot_controller_->current_page_quality();
   OfflinePageModel::SavePageParams save_page_params;
-  save_page_params.url = snapshot_url_;
+  save_page_params.url = web_contents()->GetLastCommittedURL();
   save_page_params.client_id = snapshot_info->client_id;
   save_page_params.proposed_offline_id = snapshot_info->request_id;
   save_page_params.is_background = false;
@@ -383,8 +376,6 @@ void RecentTabHelper::ReportSnapshotCompleted(
     bool success) {
   if (snapshot_info->IsForLastN()) {
     DCHECK_EQ(snapshot_info, last_n_ongoing_snapshot_info_.get());
-    if (success)
-      last_n_latest_saved_quality_ = snapshot_info->expected_page_quality;
     last_n_ongoing_snapshot_info_.reset();
     return;
   }
@@ -419,11 +410,12 @@ void RecentTabHelper::ReportDownloadStatusToRequestCoordinator(
   // It is OK to call these methods more then once, depending on
   // number of snapshots attempted in this tab helper. If the request_id is not
   // in the list of RequestCoordinator, these calls have no effect.
-  if (cancel_background_request)
+  if (cancel_background_request) {
     request_coordinator->MarkRequestCompleted(snapshot_info->request_id);
-  else
+  } else {
     request_coordinator->EnableForOffliner(snapshot_info->request_id,
                                            snapshot_info->client_id);
+  }
 }
 
 ClientId RecentTabHelper::GetRecentPagesClientId() const {

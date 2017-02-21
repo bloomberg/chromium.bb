@@ -744,9 +744,10 @@ TEST_F(RecentTabHelperTest, SimultaneousCapturesFromLastNAndDownloads) {
 }
 
 // Simulates multiple tab hidden events -- triggers for last_n snapshots --
-// happening at the same loading stages. The duplicate events should not cause
-// new snapshots to be saved.
-TEST_F(RecentTabHelperTest, DuplicateTabHiddenEventsShouldNotTriggerSnapshots) {
+// happening at the same loading stages. The duplicate events should create new
+// snapshots (so that dynamic pages are properly persisted; navigation/loading
+// signals are poor signals for those).
+TEST_F(RecentTabHelperTest, DuplicateTabHiddenEventsShouldTriggerNewSnapshots) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
@@ -758,22 +759,22 @@ TEST_F(RecentTabHelperTest, DuplicateTabHiddenEventsShouldNotTriggerSnapshots) {
 
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
-  EXPECT_EQ(1U, page_added_count());
-  EXPECT_EQ(0U, model_removed_count());
+  EXPECT_EQ(2U, page_added_count());
+  EXPECT_EQ(1U, model_removed_count());
   ASSERT_EQ(1U, GetAllPages().size());
 
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
-  EXPECT_EQ(2U, page_added_count());
-  EXPECT_EQ(1U, model_removed_count());
+  EXPECT_EQ(3U, page_added_count());
+  EXPECT_EQ(2U, model_removed_count());
   ASSERT_EQ(1U, GetAllPages().size());
 
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
-  EXPECT_EQ(2U, page_added_count());
-  EXPECT_EQ(1U, model_removed_count());
+  EXPECT_EQ(4U, page_added_count());
+  EXPECT_EQ(3U, model_removed_count());
   ASSERT_EQ(1U, GetAllPages().size());
 }
 
@@ -814,6 +815,44 @@ TEST_F(RecentTabHelperTest, OverlappingDownloadRequestsAreIgnored) {
   ASSERT_TRUE(second_page);
   EXPECT_EQ(client_id_3, second_page->client_id);
   EXPECT_EQ(offline_id_3, second_page->offline_id);
+}
+
+// Simulates a same page navigation and checks we snapshot correctly with last_n
+// and downloads.
+TEST_F(RecentTabHelperTest, SaveSamePageNavigationSnapshots) {
+  // Navigates and load fully then hide the tab so that a snapshot is created.
+  NavigateAndCommit(kTestPageUrl);
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
+  recent_tab_helper()->WasHidden();
+  RunUntilIdle();
+  EXPECT_EQ(1U, page_added_count());
+  EXPECT_EQ(0U, model_removed_count());
+  ASSERT_EQ(1U, GetAllPages().size());
+
+  // Now navigates same page and check the results of hiding the tab again.
+  // Another snapshot should be created to the updated URL.
+  const GURL kTestPageUrlWithSegment(kTestPageUrl.spec() + "#aaa");
+  NavigateAndCommit(kTestPageUrlWithSegment);
+  recent_tab_helper()->WasHidden();
+  RunUntilIdle();
+  EXPECT_EQ(2U, page_added_count());
+  EXPECT_EQ(1U, model_removed_count());
+  ASSERT_EQ(1U, GetAllPages().size());
+  EXPECT_EQ(kTestPageUrlWithSegment, GetAllPages()[0].url);
+
+  // Now create a download request and check the snapshot is properly created.
+  const ClientId client_id = NewDownloadClientId();
+  const int64_t offline_id = 153L;
+  recent_tab_helper()->ObserveAndDownloadCurrentPage(client_id, offline_id);
+  RunUntilIdle();
+  EXPECT_EQ(3U, page_added_count());
+  EXPECT_EQ(1U, model_removed_count());
+  ASSERT_EQ(2U, GetAllPages().size());
+  const OfflinePageItem* downloads_page = FindPageForOfflineId(offline_id);
+  EXPECT_EQ(kTestPageUrlWithSegment, downloads_page->url);
+  EXPECT_EQ(client_id, downloads_page->client_id);
+  EXPECT_EQ(offline_id, downloads_page->offline_id);
 }
 
 }  // namespace offline_pages
