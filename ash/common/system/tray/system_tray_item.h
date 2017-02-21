@@ -11,10 +11,7 @@
 #include "ash/common/login_status.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
-
-namespace base {
-class OneShotTimer;
-}  // namespace base
+#include "base/timer/timer.h"
 
 namespace views {
 class View;
@@ -154,9 +151,6 @@ class ASH_EXPORT SystemTrayItem {
   void set_restore_focus(bool restore_focus) { restore_focus_ = restore_focus; }
 
  private:
-  // Actually transitions to the detailed view.
-  void DoTransitionToDetailedView();
-
   // Accesses uma_type().
   friend class SystemTrayBubble;
 
@@ -167,7 +161,7 @@ class ASH_EXPORT SystemTrayItem {
   bool restore_focus_;
 
   // Used to delay the transition to the detailed view.
-  std::unique_ptr<base::OneShotTimer> transition_delay_timer_;
+  base::OneShotTimer transition_delay_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayItem);
 };

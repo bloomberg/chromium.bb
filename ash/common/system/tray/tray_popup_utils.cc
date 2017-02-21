@@ -173,9 +173,7 @@ TriView* TrayPopupUtils::CreateDefaultRowView() {
 
 TriView* TrayPopupUtils::CreateSubHeaderRowView() {
   TriView* tri_view = CreateMultiTargetRowView();
-  tri_view->SetInsets(
-      gfx::Insets(0, kTrayPopupPaddingHorizontal, 0,
-                  GetTrayConstant(TRAY_POPUP_ITEM_RIGHT_INSET)));
+  tri_view->SetInsets(gfx::Insets(0, kTrayPopupPaddingHorizontal, 0, 0));
   tri_view->SetContainerVisible(TriView::Container::START, false);
   tri_view->SetContainerLayout(
       TriView::Container::END,
@@ -187,8 +185,7 @@ TriView* TrayPopupUtils::CreateMultiTargetRowView() {
   TriView* tri_view = new TriView(0 /* padding_between_items */);
 
   tri_view->SetInsets(
-      gfx::Insets(0, GetTrayConstant(TRAY_POPUP_ITEM_LEFT_INSET), 0,
-                  GetTrayConstant(TRAY_POPUP_ITEM_RIGHT_INSET)));
+      gfx::Insets(0, GetTrayConstant(TRAY_POPUP_ITEM_LEFT_INSET), 0, 0));
 
   ConfigureDefaultSizeAndFlex(tri_view, TriView::Container::START);
   ConfigureDefaultSizeAndFlex(tri_view, TriView::Container::CENTER);

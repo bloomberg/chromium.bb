@@ -126,8 +126,8 @@ class TrayDetailsViewTest : public AshTestBase {
 
   void TransitionFromDetailedToDefaultView(TestDetailsView* detailed) {
     detailed->TransitionToDefaultView();
-    scoped_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(
-        GetTrayConstant(TRAY_POPUP_TRANSITION_TO_DEFAULT_DELAY)));
+    scoped_task_runner_->FastForwardBy(
+        base::TimeDelta::FromMilliseconds(kTrayDetailedViewTransitionDelayMs));
   }
 
   void FocusBackButton(TestDetailsView* detailed) {

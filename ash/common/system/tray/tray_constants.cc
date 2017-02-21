@@ -46,6 +46,9 @@ const int kTrayPopupPaddingHorizontal = 18;
 const int kTrayPopupPaddingBetweenItems = 10;
 const int kTrayPopupButtonEndMargin = 10;
 const int kTrayPopupLabelHorizontalPadding = 4;
+
+const int kTrayDetailedViewTransitionDelayMs = 100;
+
 const int kTrayPopupSliderPaddingMD = 16;
 const int kTrayPopupLabelRightPadding = 8;
 
@@ -107,7 +110,6 @@ const int kTrayPopupSystemInfoRowHeight = 40;
 
 int GetTrayConstant(TrayConstant constant) {
   const int kTrayItemHeightLegacy[] = {38, kTrayItemSize, kTrayItemSize};
-  const int kTraySpacing[] = {4, 0, 0};
   const int kTrayPaddingFromEdgeOfShelf[] = {3, 3, 3};
   const int kTrayPopupItemMinHeight[] = {46, 48, 48};
   const int kTrayPopupItemMaxHeight[] = {138, 144, 144};
@@ -116,11 +118,8 @@ int GetTrayConstant(TrayConstant constant) {
   const int kTrayPopupItemMoreImageSize[] = {25, kMenuIconSize, kMenuIconSize};
   const int kTrayPopupItemMoreRegionHorizontalInset[] = {10, 10, 10};
   const int kTrayPopupItemLeftInset[] = {0, 4, 4};
-  const int kTrayPopupItemRightInset[] = {0, 0, 0};
   const int kTrayPopupItemMinStartWidth[] = {46, 48, 48};
   const int kTrayPopupItemMinEndWidth[] = {40, 40, 40};
-  const int kTrayPopupTransitionToDefaultViewDelayMs[] = {0, 100, 100};
-  const int kTrayPopupTransitionToDetailedViewDelayMs[] = {0, 100, 100};
   const int kVirtualKeyboardButtonSize[] = {39, kTrayItemSize, kTrayItemSize};
   const int kTrayImeMenuIcon[] = {40, kTrayItemSize, kTrayItemSize};
   const int kTrayImageItemPadding[] = {1, 3, 3};
@@ -131,8 +130,6 @@ int GetTrayConstant(TrayConstant constant) {
   switch (constant) {
     case TRAY_ITEM_HEIGHT_LEGACY:
       return kTrayItemHeightLegacy[mode];
-    case TRAY_SPACING:
-      return kTraySpacing[mode];
     case TRAY_PADDING_FROM_EDGE_OF_SHELF:
       return kTrayPaddingFromEdgeOfShelf[mode];
     case TRAY_POPUP_ITEM_MIN_HEIGHT:
@@ -147,16 +144,10 @@ int GetTrayConstant(TrayConstant constant) {
       return kTrayPopupItemMoreRegionHorizontalInset[mode];
     case TRAY_POPUP_ITEM_LEFT_INSET:
       return kTrayPopupItemLeftInset[mode];
-    case TRAY_POPUP_ITEM_RIGHT_INSET:
-      return kTrayPopupItemRightInset[mode];
     case TRAY_POPUP_ITEM_MIN_START_WIDTH:
       return kTrayPopupItemMinStartWidth[mode];
     case TRAY_POPUP_ITEM_MIN_END_WIDTH:
       return kTrayPopupItemMinEndWidth[mode];
-    case TRAY_POPUP_TRANSITION_TO_DEFAULT_DELAY:
-      return kTrayPopupTransitionToDefaultViewDelayMs[mode];
-    case TRAY_POPUP_TRANSITION_TO_DETAILED_DELAY:
-      return kTrayPopupTransitionToDetailedViewDelayMs[mode];
     case VIRTUAL_KEYBOARD_BUTTON_SIZE:
       return kVirtualKeyboardButtonSize[mode];
     case TRAY_IME_MENU_ICON:

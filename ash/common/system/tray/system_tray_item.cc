@@ -42,16 +42,11 @@ void SystemTrayItem::DestroyDetailedView() {}
 void SystemTrayItem::DestroyNotificationView() {}
 
 void SystemTrayItem::TransitionDetailedView() {
-  const int transition_delay =
-      GetTrayConstant(TRAY_POPUP_TRANSITION_TO_DETAILED_DELAY);
-  if (transition_delay <= 0) {
-    DoTransitionToDetailedView();
-    return;
-  }
-  transition_delay_timer_.reset(new base::OneShotTimer());
-  transition_delay_timer_->Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(transition_delay), this,
-      &SystemTrayItem::DoTransitionToDetailedView);
+  transition_delay_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kTrayDetailedViewTransitionDelayMs),
+      base::Bind(&SystemTray::ShowDetailedView, base::Unretained(system_tray()),
+                 this, 0, true, BUBBLE_USE_EXISTING));
 }
 
 void SystemTrayItem::UpdateAfterLoginStatusChange(LoginStatus status) {}
@@ -82,11 +77,6 @@ void SystemTrayItem::HideNotificationView() {
 
 bool SystemTrayItem::ShouldShowShelf() const {
   return true;
-}
-
-void SystemTrayItem::DoTransitionToDetailedView() {
-  transition_delay_timer_.reset();
-  system_tray()->ShowDetailedView(this, 0, true, BUBBLE_USE_EXISTING);
 }
 
 }  // namespace ash

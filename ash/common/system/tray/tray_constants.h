@@ -48,6 +48,10 @@ extern const int kTrayPopupButtonEndMargin;
 // in the system menu.
 extern const int kTrayPopupLabelHorizontalPadding;
 
+// When transitioning between a detailed and a default view, this delay is used
+// before the transition starts.
+ASH_EXPORT extern const int kTrayDetailedViewTransitionDelayMs;
+
 // Padding used to adjust the slider position in volume row and brightness
 // row horizontally.
 extern const int kTrayPopupSliderPaddingMD;
@@ -143,9 +147,6 @@ enum TrayConstant {
   // borders on tray items.
   TRAY_ITEM_HEIGHT_LEGACY,
 
-  // Padding between items in the status tray area.
-  TRAY_SPACING,
-
   // Padding between the edge of shelf and the item in status tray area.
   TRAY_PADDING_FROM_EDGE_OF_SHELF,
 
@@ -168,20 +169,11 @@ enum TrayConstant {
   // The left inset for all tray system menu rows.
   TRAY_POPUP_ITEM_LEFT_INSET,
 
-  // The right inset for all tray system menu rows.
-  TRAY_POPUP_ITEM_RIGHT_INSET,
-
   // The minimum default width for the left container of the system menu rows.
   TRAY_POPUP_ITEM_MIN_START_WIDTH,
 
   // The minimum default width for the right container of the system menu rows.
   TRAY_POPUP_ITEM_MIN_END_WIDTH,
-
-  // Duration to delay transitions to the default view.
-  TRAY_POPUP_TRANSITION_TO_DEFAULT_DELAY,
-
-  // Duration to delay transitions to the detailed view.
-  TRAY_POPUP_TRANSITION_TO_DETAILED_DELAY,
 
   // The width and height of the virtual keyboard button in the status tray
   // area. For non-MD, adjustments are made to the button dimensions based on

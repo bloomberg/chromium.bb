@@ -12,13 +12,9 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "base/macros.h"
-#include "grit/ash_strings.h"
+#include "base/timer/timer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
-
-namespace base {
-class OneShotTimer;
-}  // namespace base
 
 namespace views {
 class BoxLayout;
@@ -139,7 +135,7 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   views::Button* back_button_;
 
   // Used to delay the transition to the default view.
-  std::unique_ptr<base::OneShotTimer> transition_delay_timer_;
+  base::OneShotTimer transition_delay_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDetailsView);
 };

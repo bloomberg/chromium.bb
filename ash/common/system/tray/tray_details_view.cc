@@ -15,7 +15,6 @@
 #include "ash/common/system/tray/tri_view.h"
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
-#include "base/timer/timer.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -458,22 +457,13 @@ void TrayDetailsView::TransitionToDefaultView() {
     return;
   }
 
-  const int transition_delay =
-      GetTrayConstant(TRAY_POPUP_TRANSITION_TO_DEFAULT_DELAY);
-  if (transition_delay <= 0) {
-    DoTransitionToDefaultView();
-    return;
-  }
-
-  transition_delay_timer_.reset(new base::OneShotTimer());
-  transition_delay_timer_->Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(transition_delay), this,
-      &TrayDetailsView::DoTransitionToDefaultView);
+  transition_delay_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kTrayDetailedViewTransitionDelayMs),
+      this, &TrayDetailsView::DoTransitionToDefaultView);
 }
 
 void TrayDetailsView::DoTransitionToDefaultView() {
-  transition_delay_timer_.reset();
-
   // Cache pointer to owner in this function scope. TrayDetailsView will be
   // deleted after called ShowDefaultView.
   SystemTrayItem* owner = owner_;

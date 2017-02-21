@@ -146,14 +146,10 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   views::ColumnSet* columns = layout->AddColumnSet(0);
 
   if (IsHorizontalAlignment(alignment_)) {
-    bool is_first_visible_child = true;
     for (int c = child_count() - 1; c >= 0; --c) {
       views::View* child = child_at(c);
       if (!child->visible())
         continue;
-      if (!is_first_visible_child)
-        columns->AddPaddingColumn(0, GetTrayConstant(TRAY_SPACING));
-      is_first_visible_child = false;
       columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL,
                          0, /* resize percent */
                          views::GridLayout::USE_PREF, 0, 0);
@@ -168,14 +164,10 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                        0, /* resize percent */
                        views::GridLayout::USE_PREF, 0, 0);
-    bool is_first_visible_child = true;
     for (int c = child_count() - 1; c >= 0; --c) {
       views::View* child = child_at(c);
       if (!child->visible())
         continue;
-      if (!is_first_visible_child)
-        layout->AddPaddingRow(0, GetTrayConstant(TRAY_SPACING));
-      is_first_visible_child = false;
       layout->StartRow(0, 0);
       layout->AddView(child);
     }
