@@ -4098,7 +4098,8 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       // NOTE: This will not work with CONFIG_ANS turned on.
       od_adapt_ctx_reset(&cpi->td.mb.daala_enc.state.adapt, 0);
       cpi->td.mb.pvq_q = &this_tile->pvq_q;
-#elif CONFIG_EC_ADAPT
+#endif
+#if CONFIG_EC_ADAPT
       // Initialise tile context from the frame context
       this_tile->tctx = *cm->fc;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
