@@ -32,6 +32,13 @@
    dot-product of the 1st band of chroma with the luma ref doesn't overflow.*/
 #define OD_CFL_FLIP_SHIFT (OD_LIMIT_BSIZE_MAX + 0)
 
+void aom_write_symbol_pvq(aom_writer *w, int symb, aom_cdf_prob *cdf,
+    int nsymbs) {
+  if (cdf[0] == 0)
+    aom_cdf_init_q15_1D(cdf, nsymbs, CDF_SIZE(nsymbs));
+  aom_write_symbol(w, symb, cdf, nsymbs);
+}
+
 static void aom_encode_pvq_codeword(aom_writer *w, od_pvq_codeword_ctx *adapt,
  const od_coeff *in, int n, int k) {
   int i;

@@ -19,6 +19,9 @@
 # include "av1/common/pvq.h"
 # include "av1/encoder/encint.h"
 
+void aom_write_symbol_pvq(aom_writer *w, int symb, aom_cdf_prob *cdf,
+    int nsymbs);
+
 void aom_encode_band_pvq_splits(aom_writer *w, od_pvq_codeword_ctx *adapt,
  const int *y, int n, int k, int level);
 

@@ -40,9 +40,6 @@ void generic_model_init(generic_encoder *model);
 #define OD_CDFS_INIT(cdf, val) aom_cdf_init(&cdf[0][0], \
  sizeof(cdf)/sizeof(cdf[0]), sizeof(cdf[0])/sizeof(cdf[0][0]), val, val)
 
-#define OD_CDFS_INIT_FIRST(cdf, val, first) aom_cdf_init(&cdf[0][0], \
- sizeof(cdf)/sizeof(cdf[0]), sizeof(cdf[0])/sizeof(cdf[0][0]), val, first)
-
 #define OD_SINGLE_CDF_INIT(cdf, val) aom_cdf_init(cdf, \
  1, sizeof(cdf)/sizeof(cdf[0]), val, val)
 

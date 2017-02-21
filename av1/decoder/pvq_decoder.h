@@ -18,6 +18,12 @@
 # include "av1/common/pvq.h"
 # include "av1/decoder/decint.h"
 
+#define aom_read_symbol_pvq(r, cdf, nsymbs, ACCT_STR_NAME) \
+  aom_read_symbol_pvq_(r, cdf, nsymbs ACCT_STR_ARG(ACCT_STR_NAME))
+
+int aom_read_symbol_pvq_(aom_reader *r, aom_cdf_prob *cdf, int nsymbs
+  ACCT_STR_PARAM);
+
 void aom_decode_band_pvq_splits(aom_reader *r, od_pvq_codeword_ctx *adapt,
  od_coeff *y, int n, int k, int level);
 

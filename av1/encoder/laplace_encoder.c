@@ -35,8 +35,7 @@ static void aom_encode_pvq_split(aom_writer *w, od_pvq_codeword_ctx *adapt,
     sum >>= shift;
   }
   fctx = 7*ctx + sum - 1;
-  aom_encode_cdf_adapt(w, count, adapt->pvq_split_cdf[fctx], sum + 1,
-   adapt->pvq_split_increment);
+  aom_write_symbol_pvq(w, count, adapt->pvq_split_cdf[fctx], sum + 1);
   if (shift) aom_write_literal(w, rest, shift);
 }
 

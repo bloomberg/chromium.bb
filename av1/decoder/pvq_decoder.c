@@ -28,6 +28,13 @@
 #include "av1/decoder/pvq_decoder.h"
 #include "aom_ports/system_state.h"
 
+int aom_read_symbol_pvq_(aom_reader *r, aom_cdf_prob *cdf, int nsymbs
+ ACCT_STR_PARAM) {
+  if (cdf[0] == 0)
+    aom_cdf_init_q15_1D(cdf, nsymbs, CDF_SIZE(nsymbs));
+  return aom_read_symbol(r, cdf, nsymbs, ACCT_STR_NAME);
+}
+
 static void aom_decode_pvq_codeword(aom_reader *r, od_pvq_codeword_ctx *ctx,
  od_coeff *y, int n, int k) {
   int i;
