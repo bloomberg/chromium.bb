@@ -348,6 +348,11 @@ FileSystemProviderInternalOperationRequestedErrorFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  if (params->error == api::file_system_provider::PROVIDER_ERROR_OK) {
+    // It's incorrect to pass OK as an error code.
+    return ValidationFailure(this);
+  }
+
   const base::File::Error error = ProviderErrorToFileError(params->error);
   return RejectRequest(RequestValue::CreateForOperationError(std::move(params)),
                        error);

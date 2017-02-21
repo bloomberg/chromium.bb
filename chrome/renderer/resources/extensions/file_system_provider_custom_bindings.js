@@ -120,6 +120,20 @@ function verifyMetadata(options, metadata) {
 }
 
 /**
+ * Verifies if the passed error code is valid when used to indicate
+ * a failure.
+ * @param {!string} error
+ * @return {boolean} True if valid, false if invalid.
+ */
+function verifyErrorForFailure(error) {
+  if (error === 'OK') {
+    console.error('Error code cannot be OK in case of failures.');
+    return false;
+  }
+  return true;
+}
+
+/**
  * Annotates an entry metadata by serializing its modifiedTime value.
  * @param {EntryMetadata} metadata Input metadata.
  * @return {EntryMetadata} metadata Annotated metadata, which can be passed
@@ -156,6 +170,8 @@ function massageArgumentsDefault(args, dispatch) {
         options.fileSystemId, options.requestId, Date.now() - executionStart);
   };
   var onErrorCallback = function(error) {
+    if (!verifyErrorForFailure(error))
+      return;
     fileSystemProviderInternal.operationRequestedError(
         options.fileSystemId, options.requestId, error,
         Date.now() - executionStart);
@@ -188,6 +204,8 @@ eventBindings.registerArgumentMassager(
       };
 
       var onErrorCallback = function(error) {
+        if (!verifyErrorForFailure(error))
+          return;
         fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error,
             Date.now() - executionStart);
@@ -210,6 +228,8 @@ eventBindings.registerArgumentMassager(
       };
 
       var onErrorCallback = function(error) {
+        if (!verifyErrorForFailure(error))
+          return;
         fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error,
             Date.now() - executionStart);
@@ -246,6 +266,8 @@ eventBindings.registerArgumentMassager(
       };
 
       var onErrorCallback = function(error) {
+        if (!verifyErrorForFailure(error))
+          return;
         fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error,
             Date.now() - executionStart);
@@ -272,6 +294,8 @@ eventBindings.registerArgumentMassager(
             Date.now() - executionStart);
       };
       var onErrorCallback = function(error) {
+        if (!verifyErrorForFailure(error))
+          return;
         fileSystemProviderInternal.operationRequestedError(
             options.fileSystemId, options.requestId, error,
             Date.now() - executionStart);
@@ -339,10 +363,16 @@ eventBindings.registerArgumentMassager(
     'fileSystemProvider.onMountRequested',
     function(args, dispatch) {
       var onSuccessCallback = function() {
-        // TODO(mtomasz): To be implemented.
+        // chrome.fileManagerPrivate.addProvidedFileSystem doesn't accept
+        // any callbacks, so ignore the callback calls here.
+        // The callbacks exist for consistency with other on*Requested events.
       };
       var onErrorCallback = function(error) {
-        // TODO(mtomasz): To be implemented.
+        if (!verifyErrorForFailure(error))
+          return;
+        // chrome.fileManagerPrivate.addProvidedFileSystem doesn't accept
+        // any callbacks, so ignore the callback calls here.
+        // The callbacks exist for consistency with other on*Requested events.
       }
       dispatch([onSuccessCallback, onErrorCallback]);
     });

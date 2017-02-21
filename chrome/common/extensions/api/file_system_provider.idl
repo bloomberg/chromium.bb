@@ -518,6 +518,7 @@ namespace fileSystemProvider {
   [nocompile] callback ProviderSuccessCallback = void();
 
   // Callback to be called by the providing extension in case of an error.
+  // Any error code is allowed except <code>OK</code>.
   [nocompile] callback ProviderErrorCallback = void(ProviderError error);
 
   // Success callback for the $(ref:onGetMetadataRequested) event.
