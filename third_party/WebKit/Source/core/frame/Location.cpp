@@ -286,7 +286,7 @@ Document* Location::document() const {
 }
 
 bool Location::isAttached() const {
-  return m_domWindow->frame() && m_domWindow->frame()->host();
+  return m_domWindow->frame();
 }
 
 }  // namespace blink

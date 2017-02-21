@@ -131,9 +131,7 @@ class CORE_EXPORT Location final : public GarbageCollected<Location>,
   // LocalDOMWindow.
   Document* document() const;
 
-  // Returns true if:
-  // (1) the associated Window is the active Window in the frame
-  // (2) and the frame is attached.
+  // Returns true if the associated Window is the active Window in the frame.
   bool isAttached() const;
 
   enum class SetLocationPolicy { Normal, ReplaceThisFrame };
