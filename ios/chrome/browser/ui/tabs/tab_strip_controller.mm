@@ -70,6 +70,7 @@ const CGFloat kTabOverlapForCompactLayout = 30.0;
 
 const CGFloat kNewTabOverlap = 8.0;
 const CGFloat kMaxTabWidth = 265.0;
+const CGFloat kMaxTabWidthForCompactLayout = 225.0;
 
 // Toggle button dimensions.
 const CGFloat kModeToggleButtonWidth = 36.0;
@@ -315,6 +316,9 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 // Returns the tab overlap width depending on the current layout mode.
 - (CGFloat)tabOverlap;
+
+// Returns the maximum tab view width depending on the current layout mode.
+- (CGFloat)maxTabWidth;
 
 // Returns the minimum tab view width depending on the current layout mode.
 - (CGFloat)minTabWidth;
@@ -1199,7 +1203,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   CGFloat visibleSpace = [self tabStripVisibleSpace];
   _currentTabWidth =
       (visibleSpace + ([self tabOverlap] * (tabCount - 1))) / tabCount;
-  _currentTabWidth = MIN(_currentTabWidth, kMaxTabWidth);
+  _currentTabWidth = MIN(_currentTabWidth, [self maxTabWidth]);
   _currentTabWidth = MAX(_currentTabWidth, [self minTabWidth]);
 
   // Set the content size to be large enough to contain all the tabs at the
@@ -1257,6 +1261,10 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 - (CGFloat)tabOverlap {
   return IsCompactTablet() ? kTabOverlapForCompactLayout : kTabOverlap;
+}
+
+- (CGFloat)maxTabWidth {
+  return IsCompactTablet() ? kMaxTabWidthForCompactLayout : kMaxTabWidth;
 }
 
 - (CGFloat)minTabWidth {
