@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.feedback.EmptyFeedbackReporter;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
 import org.chromium.chrome.browser.gsa.GSAHelper;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -433,5 +434,13 @@ public class ChromeApplication extends ContentApplication {
      */
     public AccountManagerDelegate createAccountManagerDelegate() {
         return new SystemAccountManagerDelegate(this);
+    }
+
+    /**
+     * Creates a new {@link AppIndexingReporter}.
+     * @return the created {@link AppIndexingReporter}.
+     */
+    public AppIndexingReporter createAppIndexingReporter() {
+        return new AppIndexingReporter();
     }
 }
