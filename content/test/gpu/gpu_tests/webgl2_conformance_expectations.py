@@ -677,6 +677,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia'], bug=618447)
     self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
         ['linux', 'nvidia'], bug=672380)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-r11f_g11f_b10f-rgb-half_float.html',
+        ['linux', 'nvidia'], bug=694359)
     self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
         'tex-3d-srgb8_alpha8-rgba-unsigned_byte.html',
         ['linux', 'nvidia'], bug=679677)
@@ -690,6 +693,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image_bitmap_from_blob/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
         ['linux', 'nvidia'], bug=684399)
+    self.Flaky('conformance2/textures/image_bitmap_from_image_data/' +
+        'tex-2d-srgb8-rgb-unsigned_byte.html',
+        ['linux', 'nvidia'], bug=694354)
 
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
