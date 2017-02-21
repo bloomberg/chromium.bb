@@ -82,8 +82,10 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, BasicApiTest) {
   ASSERT_TRUE(RunExtensionTest("input_ime_nonchromeos")) << message_;
 
   // Test the input.ime.commitText API.
-  ASSERT_EQ(1, client->insert_text_count());
-  EXPECT_EQ(base::UTF8ToUTF16("test_commit_text"), client->last_insert_text());
+  const std::vector<base::string16>& insert_text_history =
+      client->insert_text_history();
+  ASSERT_EQ(1UL, insert_text_history.size());
+  EXPECT_EQ(base::UTF8ToUTF16("test_commit_text"), insert_text_history[0]);
 
   // Test the input.ime.setComposition API.
   ui::CompositionText composition;
@@ -92,8 +94,12 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, BasicApiTest) {
       ui::CompositionUnderline(0, composition.text.length(), SK_ColorBLACK,
                                false /* thick */, SK_ColorTRANSPARENT));
   composition.selection = gfx::Range(2, 2);
-  ASSERT_EQ(1, client->set_composition_count());
-  ASSERT_EQ(composition, client->last_composition());
+  const std::vector<ui::CompositionText>& composition_history =
+      client->composition_history();
+  ASSERT_EQ(2UL, composition_history.size());
+  EXPECT_EQ(base::UTF8ToUTF16("test_set_composition"),
+            composition_history[0].text);
+  EXPECT_EQ(base::UTF8ToUTF16(""), composition_history[1].text);
 
   // Tests input.ime.onBlur API should get event when focusing to another
   // text input client.

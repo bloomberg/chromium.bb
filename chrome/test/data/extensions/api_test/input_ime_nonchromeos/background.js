@@ -83,6 +83,19 @@ chrome.test.runTests([
       chrome.test.succeed();
     });
   },
+  function testEmptyComposition() {
+    chrome.input.ime.setComposition({
+      contextID: 1,
+      text: '',
+      cursor: 0
+    }, function() {
+      if(chrome.runtime.lastError) {
+        chrome.test.fail();
+        return;
+      }
+      chrome.test.succeed();
+    });
+  },
   // Test input.ime.sendKeyEvents API.
   function testSendKeyEvents() {
     // Sends a normal character key.
