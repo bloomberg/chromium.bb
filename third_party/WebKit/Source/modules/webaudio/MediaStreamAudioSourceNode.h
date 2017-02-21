@@ -43,12 +43,8 @@ class MediaStreamAudioSourceHandler final : public AudioHandler {
  public:
   static PassRefPtr<MediaStreamAudioSourceHandler> create(
       AudioNode&,
-      MediaStream&,
-      MediaStreamTrack*,
       std::unique_ptr<AudioSourceProvider>);
   ~MediaStreamAudioSourceHandler() override;
-
-  MediaStream* getMediaStream() { return m_mediaStream.get(); }
 
   // AudioHandler
   void process(size_t framesToProcess) override;
@@ -57,22 +53,17 @@ class MediaStreamAudioSourceHandler final : public AudioHandler {
   // MediaStreamAudioSourceNode.
   void setFormat(size_t numberOfChannels, float sampleRate);
 
+ private:
+  MediaStreamAudioSourceHandler(AudioNode&,
+                                std::unique_ptr<AudioSourceProvider>);
+
+  // As an audio source, we will never propagate silence.
+  bool propagatesSilence() const override { return false; }
+
   AudioSourceProvider* getAudioSourceProvider() const {
     return m_audioSourceProvider.get();
   }
 
- private:
-  MediaStreamAudioSourceHandler(AudioNode&,
-                                MediaStream&,
-                                MediaStreamTrack*,
-                                std::unique_ptr<AudioSourceProvider>);
-  // As an audio source, we will never propagate silence.
-  bool propagatesSilence() const override { return false; }
-
-  // These Persistents don't make reference cycles including the owner
-  // MediaStreamAudioSourceNode.
-  Persistent<MediaStream> m_mediaStream;
-  Persistent<MediaStreamTrack> m_audioTrack;
   std::unique_ptr<AudioSourceProvider> m_audioSourceProvider;
 
   Mutex m_processLock;
@@ -95,7 +86,6 @@ class MediaStreamAudioSourceNode final : public AudioNode,
       ExceptionState&);
 
   DECLARE_VIRTUAL_TRACE();
-  MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
 
   MediaStream* getMediaStream() const;
 
@@ -107,6 +97,11 @@ class MediaStreamAudioSourceNode final : public AudioNode,
                              MediaStream&,
                              MediaStreamTrack*,
                              std::unique_ptr<AudioSourceProvider>);
+
+  MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
+
+  Member<MediaStreamTrack> m_audioTrack;
+  Member<MediaStream> m_mediaStream;
 };
 
 }  // namespace blink
