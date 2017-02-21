@@ -15,7 +15,6 @@
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker.mojom.h"
-#include "content/common/service_worker/service_worker_types.h"
 
 namespace blink {
 class WebLocalFrame;

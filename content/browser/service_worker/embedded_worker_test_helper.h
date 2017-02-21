@@ -40,6 +40,7 @@ class EmbeddedWorkerTestHelper;
 class MockRenderProcessHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
+class ServiceWorkerDispatcherHost;
 class TestBrowserContext;
 struct EmbeddedWorkerStartParams;
 struct PlatformNotificationData;
@@ -296,6 +297,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   int next_thread_id_;
   int mock_render_process_id_;
   int new_mock_render_process_id_;
+
+  std::map<int /* process_id */, scoped_refptr<ServiceWorkerDispatcherHost>>
+      dispatcher_hosts_;
 
   std::unique_ptr<service_manager::InterfaceRegistry>
       render_process_interface_registry_;

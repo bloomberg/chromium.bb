@@ -119,11 +119,8 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
 }
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
-  if (GetContext()) {
-    GetContext()->RemoveAllProviderHostsForProcess(render_process_id_);
-    GetContext()->embedded_worker_registry()->RemoveChildProcessSender(
-        render_process_id_);
-  }
+  if (GetContext())
+    GetContext()->RemoveDispatcherHost(render_process_id_);
 }
 
 void ServiceWorkerDispatcherHost::Init(
@@ -138,8 +135,7 @@ void ServiceWorkerDispatcherHost::Init(
   context_wrapper_ = context_wrapper;
   if (!GetContext())
     return;
-  GetContext()->embedded_worker_registry()->AddChildProcessSender(
-      render_process_id_, this);
+  GetContext()->AddDispatcherHost(render_process_id_, this);
 }
 
 void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Channel* channel) {
@@ -156,11 +152,8 @@ void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Channel* channel) {
 void ServiceWorkerDispatcherHost::OnFilterRemoved() {
   // Don't wait until the destructor to teardown since a new dispatcher host
   // for this process might be created before then.
-  if (GetContext()) {
-    GetContext()->RemoveAllProviderHostsForProcess(render_process_id_);
-    GetContext()->embedded_worker_registry()->RemoveChildProcessSender(
-        render_process_id_);
-  }
+  if (GetContext())
+    GetContext()->RemoveDispatcherHost(render_process_id_);
   context_wrapper_ = nullptr;
   channel_ready_ = false;
 }
@@ -185,12 +178,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnGetRegistrations)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetRegistrationForReady,
                         OnGetRegistrationForReady)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ProviderCreated,
-                        OnProviderCreated)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ProviderDestroyed,
-                        OnProviderDestroyed)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetVersionId,
-                        OnSetHostedVersionId)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToWorker,
                         OnPostMessageToWorker)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerReadyForInspection,
@@ -1004,10 +991,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
 }
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(
-    int provider_id,
-    int route_id,
-    ServiceWorkerProviderType provider_type,
-    bool is_parent_frame_secure) {
+    ServiceWorkerProviderHostInfo info) {
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -1016,19 +1000,19 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
                "ServiceWorkerDispatcherHost::OnProviderCreated");
   if (!GetContext())
     return;
-  if (GetContext()->GetProviderHost(render_process_id_, provider_id)) {
+  if (GetContext()->GetProviderHost(render_process_id_, info.provider_id)) {
     bad_message::ReceivedBadMessage(this,
                                     bad_message::SWDH_PROVIDER_CREATED_NO_HOST);
     return;
   }
 
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host;
   if (IsBrowserSideNavigationEnabled() &&
-      ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id)) {
+      ServiceWorkerUtils::IsBrowserAssignedProviderId(info.provider_id)) {
+    std::unique_ptr<ServiceWorkerProviderHost> provider_host;
     // PlzNavigate
     // Retrieve the provider host previously created for navigation requests.
     ServiceWorkerNavigationHandleCore* navigation_handle_core =
-        GetContext()->GetNavigationHandleCore(provider_id);
+        GetContext()->GetNavigationHandleCore(info.provider_id);
     if (navigation_handle_core != nullptr)
       provider_host = navigation_handle_core->RetrievePreCreatedHost();
 
@@ -1036,25 +1020,19 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     // Just return as the navigation will be stopped in the renderer as well.
     if (provider_host == nullptr)
       return;
-    DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_WINDOW, provider_type);
-    provider_host->CompleteNavigationInitialized(render_process_id_, route_id,
-                                                 this);
+    DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_WINDOW, info.type);
+    provider_host->CompleteNavigationInitialized(render_process_id_,
+                                                 info.route_id, this);
+    GetContext()->AddProviderHost(std::move(provider_host));
   } else {
-    if (ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id)) {
+    if (ServiceWorkerUtils::IsBrowserAssignedProviderId(info.provider_id)) {
       bad_message::ReceivedBadMessage(
           this, bad_message::SWDH_PROVIDER_CREATED_NO_HOST);
       return;
     }
-    ServiceWorkerProviderHost::FrameSecurityLevel parent_frame_security_level =
-        is_parent_frame_secure
-            ? ServiceWorkerProviderHost::FrameSecurityLevel::SECURE
-            : ServiceWorkerProviderHost::FrameSecurityLevel::INSECURE;
-    provider_host = std::unique_ptr<ServiceWorkerProviderHost>(
-        new ServiceWorkerProviderHost(
-            render_process_id_, route_id, provider_id, provider_type,
-            parent_frame_security_level, GetContext()->AsWeakPtr(), this));
+    GetContext()->AddProviderHost(ServiceWorkerProviderHost::Create(
+        render_process_id_, std::move(info), GetContext()->AsWeakPtr(), this));
   }
-  GetContext()->AddProviderHost(std::move(provider_host));
 }
 
 void ServiceWorkerDispatcherHost::OnProviderDestroyed(int provider_id) {

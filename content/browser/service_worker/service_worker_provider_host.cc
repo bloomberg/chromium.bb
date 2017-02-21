@@ -90,14 +90,23 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
   CHECK(IsBrowserSideNavigationEnabled());
   // Generate a new browser-assigned id for the host.
   int provider_id = g_next_navigation_provider_id--;
-  auto host = base::MakeUnique<ServiceWorkerProviderHost>(
+  auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE, provider_id,
-      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      are_ancestors_secure ? FrameSecurityLevel::SECURE
-                           : FrameSecurityLevel::INSECURE,
-      context, nullptr);
+      SERVICE_WORKER_PROVIDER_FOR_WINDOW, are_ancestors_secure, context,
+      nullptr));
   host->web_contents_getter_ = web_contents_getter;
   return host;
+}
+
+// static
+std::unique_ptr<ServiceWorkerProviderHost> ServiceWorkerProviderHost::Create(
+    int process_id,
+    ServiceWorkerProviderHostInfo info,
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    ServiceWorkerDispatcherHost* dispatcher_host) {
+  return base::WrapUnique(new ServiceWorkerProviderHost(
+      process_id, info.route_id, info.provider_id, info.type,
+      info.is_parent_frame_secure, context, dispatcher_host));
 }
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
@@ -105,7 +114,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     int route_id,
     int provider_id,
     ServiceWorkerProviderType provider_type,
-    FrameSecurityLevel parent_frame_security_level,
+    bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerDispatcherHost* dispatcher_host)
     : client_uuid_(base::GenerateGUID()),
@@ -114,7 +123,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       render_thread_id_(kDocumentMainThreadId),
       provider_id_(provider_id),
       provider_type_(provider_type),
-      parent_frame_security_level_(parent_frame_security_level),
+      is_parent_frame_secure_(is_parent_frame_secure),
       context_(context),
       dispatcher_host_(dispatcher_host),
       allow_association_(true) {
@@ -490,11 +499,17 @@ bool ServiceWorkerProviderHost::GetRegistrationForReady(
   return true;
 }
 
-void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
+std::unique_ptr<ServiceWorkerProviderHost>
+ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(MSG_ROUTING_NONE, route_id_);
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
   DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, provider_type_);
+
+  std::unique_ptr<ServiceWorkerProviderHost> new_provider_host =
+      base::WrapUnique(new ServiceWorkerProviderHost(
+          process_id(), frame_id(), provider_id(), provider_type(),
+          is_parent_frame_secure(), context_, dispatcher_host()));
 
   for (const GURL& pattern : associated_patterns_)
     DecreaseProcessReference(pattern);
@@ -515,6 +530,7 @@ void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   provider_id_ = kInvalidServiceWorkerProviderId;
   provider_type_ = SERVICE_WORKER_PROVIDER_UNKNOWN;
   dispatcher_host_ = nullptr;
+  return new_provider_host;
 }
 
 void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(

@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
@@ -32,7 +33,6 @@ scoped_refptr<EmbeddedWorkerRegistry> EmbeddedWorkerRegistry::Create(
       new EmbeddedWorkerRegistry(
           context,
           old_registry->next_embedded_worker_id_);
-  registry->process_sender_map_.swap(old_registry->process_sender_map_);
   return registry;
 }
 
@@ -179,14 +179,7 @@ void EmbeddedWorkerRegistry::OnReportConsoleMessage(
                                  line_number, source_url);
 }
 
-void EmbeddedWorkerRegistry::AddChildProcessSender(int process_id,
-                                                   IPC::Sender* sender) {
-  process_sender_map_[process_id] = sender;
-  DCHECK(!base::ContainsKey(worker_process_map_, process_id));
-}
-
-void EmbeddedWorkerRegistry::RemoveChildProcessSender(int process_id) {
-  process_sender_map_.erase(process_id);
+void EmbeddedWorkerRegistry::RemoveProcess(int process_id) {
   std::map<int, std::set<int> >::iterator found =
       worker_process_map_.find(process_id);
   if (found != worker_process_map_.end()) {
@@ -196,10 +189,13 @@ void EmbeddedWorkerRegistry::RemoveChildProcessSender(int process_id) {
          ++it) {
       int embedded_worker_id = *it;
       DCHECK(base::ContainsKey(worker_map_, embedded_worker_id));
-      // Somehow the worker thread has lost contact with the browser process.
-      // The renderer may have been killed.  Set the worker's status to STOPPED
-      // so a new thread can be created for this version. Use OnDetached rather
-      // than OnStopped so UMA doesn't record it as a normal stoppage.
+      // RemoveProcess is typically called after the running workers on the
+      // process have been stopped, so if there is a running worker at this
+      // point somehow the worker thread has lost contact with the browser
+      // process.
+      // Set the worker's status to STOPPED so a new thread can be created for
+      // this version. Use OnDetached rather than OnStopped so UMA doesn't
+      // record it as a normal stoppage.
       worker_map_[embedded_worker_id]->OnDetached();
     }
     worker_process_map_.erase(found);
@@ -236,10 +232,6 @@ EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {
 
 void EmbeddedWorkerRegistry::BindWorkerToProcess(int process_id,
                                                  int embedded_worker_id) {
-  // The ServiceWorkerDispatcherHost is supposed to be created when the process
-  // is created, and keep an entry in process_sender_map_ for its whole
-  // lifetime.
-  DCHECK(base::ContainsKey(process_sender_map_, process_id));
   DCHECK(GetWorker(embedded_worker_id));
   DCHECK_EQ(GetWorker(embedded_worker_id)->process_id(), process_id);
   DCHECK(
@@ -254,10 +246,10 @@ ServiceWorkerStatusCode EmbeddedWorkerRegistry::Send(
   std::unique_ptr<IPC::Message> message(message_ptr);
   if (!context_)
     return SERVICE_WORKER_ERROR_ABORT;
-  ProcessToSenderMap::iterator found = process_sender_map_.find(process_id);
-  if (found == process_sender_map_.end())
+  IPC::Sender* sender = context_->GetDispatcherHost(process_id);
+  if (!sender)
     return SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND;
-  if (!found->second->Send(message.release()))
+  if (!sender->Send(message.release()))
     return SERVICE_WORKER_ERROR_IPC_FAILED;
   return SERVICE_WORKER_OK;
 }

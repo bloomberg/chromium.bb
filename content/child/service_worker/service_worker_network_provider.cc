@@ -9,6 +9,7 @@
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_provider_host_info.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "ipc/ipc_sync_channel.h"
@@ -126,18 +127,14 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     return;
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
+  ServiceWorkerProviderHostInfo provider_info(
+      provider_id_, route_id, provider_type, is_parent_frame_secure);
   context_ = new ServiceWorkerProviderContext(
       provider_id_, provider_type,
       ChildThreadImpl::current()->thread_safe_sender());
-  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
-    ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
-        &dispatcher_host_);
-    dispatcher_host_->OnProviderCreated(provider_id_, route_id, provider_type,
-                                        is_parent_frame_secure);
-  } else {
-    ChildThreadImpl::current()->Send(new ServiceWorkerHostMsg_ProviderCreated(
-        provider_id_, route_id, provider_type, is_parent_frame_secure));
-  }
+  ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
+      &dispatcher_host_);
+  dispatcher_host_->OnProviderCreated(std::move(provider_info));
 }
 
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
@@ -157,12 +154,7 @@ ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
     return;
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
-  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
-    dispatcher_host_->OnProviderDestroyed(provider_id());
-  } else {
-    ChildThreadImpl::current()->Send(
-        new ServiceWorkerHostMsg_ProviderDestroyed(provider_id_));
-  }
+  dispatcher_host_->OnProviderDestroyed(provider_id());
 }
 
 void ServiceWorkerNetworkProvider::SetServiceWorkerVersionId(
@@ -171,13 +163,8 @@ void ServiceWorkerNetworkProvider::SetServiceWorkerVersionId(
   DCHECK_NE(kInvalidServiceWorkerProviderId, provider_id_);
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
-  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
-    dispatcher_host_->OnSetHostedVersionId(provider_id(), version_id,
-                                           embedded_worker_id);
-  } else {
-    ChildThreadImpl::current()->Send(new ServiceWorkerHostMsg_SetVersionId(
-        provider_id_, version_id, embedded_worker_id));
-  }
+  dispatcher_host_->OnSetHostedVersionId(provider_id(), version_id,
+                                         embedded_worker_id);
 }
 
 bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {

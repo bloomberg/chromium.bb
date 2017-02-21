@@ -5,8 +5,8 @@
 mojom = "//content/common/service_worker/service_worker_types.mojom"
 public_headers = [ "//content/common/service_worker/service_worker_types.h" ]
 traits_headers =
-    [ "//content/common/service_worker/service_worker_types_traits.h" ]
+    [ "//content/common/service_worker/service_worker_types_struct_traits.h" ]
 sources = [
-  "//content/common/service_worker/service_worker_types_traits.cc",
+  "//content/common/service_worker/service_worker_types_struct_traits.cc",
 ]
 type_mappings = [ "content.mojom.ServiceWorkerProviderType=::content::ServiceWorkerProviderType" ]

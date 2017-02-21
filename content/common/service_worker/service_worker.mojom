@@ -4,18 +4,19 @@
 
 module content.mojom;
 
-import "content/common/service_worker/service_worker_types.mojom";
+import "content/common/service_worker/service_worker_provider.mojom";
 
 // Per-process browser-side interface bound to ServiceWorkerDispatcherHost.
 // Each InterfacePtrs on the same render process will be bound to the same
 // ServiceWorkerDispatcherHost.
 interface ServiceWorkerDispatcherHost {
-  OnProviderCreated(int32 provider_id,
-                    int32 route_id,
-                    ServiceWorkerProviderType provider_type,
-                    bool is_parent_frame_secure);
+  OnProviderCreated(ServiceWorkerProviderHostInfo provider_info);
   OnProviderDestroyed(int32 provider_id);
-  // Make relationship between the network provider and the service worker
+
+  // Informs the browser that a service worker is starting up. |provider_id|
+  // identifies the ServiceWorkerProviderHost hosting the service
+  // worker. |version_id| identifies the ServiceWorkerVersion and
+  // |embedded_worker_id| identifies the EmbeddedWorkerInstance.  
   OnSetHostedVersionId(int32 provider_id,
                        int64 version_id,
                        int32 embedded_worker_id);

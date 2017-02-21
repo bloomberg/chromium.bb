@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_TRAITS_H_
-#define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_TRAITS_H_
+#ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_STRUCT_TRAITS_H_
+#define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_STRUCT_TRAITS_H_
 
 #include "content/common/service_worker/service_worker_types.mojom.h"
 
@@ -21,4 +21,4 @@ struct EnumTraits<content::mojom::ServiceWorkerProviderType,
 
 }  // namespace mojo
 
-#endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_TRAITS_H_
+#endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_STRUCT_TRAITS_H_

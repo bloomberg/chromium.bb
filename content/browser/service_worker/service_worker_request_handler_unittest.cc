@@ -42,15 +42,12 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
     // An empty host.
-    std::unique_ptr<ServiceWorkerProviderHost> host(
-        new ServiceWorkerProviderHost(
-            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
-            kMockProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            context()->AsWeakPtr(), nullptr));
+    std::unique_ptr<ServiceWorkerProviderHost> host =
+        CreateProviderHostForWindow(
+            helper_->mock_render_process_id(), kMockProviderId,
+            true /* is_parent_frame_secure */, context()->AsWeakPtr());
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
-
   }
 
   void TearDown() override {

@@ -88,6 +88,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   friend class base::DeleteHelper<ServiceWorkerDispatcherHost>;
   friend class ServiceWorkerDispatcherHostTest;
   friend class TestingServiceWorkerDispatcherHost;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
+                           ProviderCreatedAndDestroyed);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
+                           CleanupOnRendererCrash);
 
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode status)>;
   enum class ProviderStatus { OK, NO_CONTEXT, DEAD_HOST, NO_HOST, NO_URL };
@@ -97,10 +101,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void AddMojoBinding(mojo::ScopedInterfaceEndpointHandle handle);
 
   // mojom::ServiceWorkerDispatcherHost implementation
-  void OnProviderCreated(int provider_id,
-                         int route_id,
-                         ServiceWorkerProviderType provider_type,
-                         bool is_parent_frame_secure) override;
+  void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
   void OnProviderDestroyed(int provider_id) override;
   void OnSetHostedVersionId(int provider_id,
                             int64_t version_id,

@@ -118,9 +118,11 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
 
   void Initialize(std::unique_ptr<EmbeddedWorkerTestHelper> helper) {
     helper_.reset(helper.release());
+    // Replace the default dispatcher host.
+    int process_id = helper_->mock_render_process_id();
+    context()->RemoveDispatcherHost(process_id);
     dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
-        helper_->mock_render_process_id(), context_wrapper(),
-        &resource_context_, helper_.get());
+        process_id, context_wrapper(), &resource_context_, helper_.get());
   }
 
   void SetUpRegistration(const GURL& scope, const GURL& script_url) {
@@ -154,16 +156,16 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   void SendSetHostedVersionId(int provider_id,
                               int64_t version_id,
                               int embedded_worker_id) {
-    dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_SetVersionId(
-        provider_id, version_id, embedded_worker_id));
+    dispatcher_host_->OnSetHostedVersionId(provider_id, version_id,
+                                           embedded_worker_id);
   }
 
   void SendProviderCreated(ServiceWorkerProviderType type,
                            const GURL& pattern) {
     const int64_t kProviderId = 99;
-    dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
-        kProviderId, MSG_ROUTING_NONE, type,
-        true /* is_parent_frame_secure */));
+    ServiceWorkerProviderHostInfo info(kProviderId, MSG_ROUTING_NONE, type,
+                                       true /* is_parent_frame_secure */);
+    dispatcher_host_->OnProviderCreated(std::move(info));
     helper_->SimulateAddProcessToPattern(pattern,
                                          helper_->mock_render_process_id());
     provider_host_ = context()->GetProviderHost(
@@ -244,12 +246,11 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
         sender_provider_host, callback);
   }
 
-  ServiceWorkerProviderHost* CreateServiceWorkerProviderHost(int provider_id) {
-    return new ServiceWorkerProviderHost(
-        helper_->mock_render_process_id(), kRenderFrameId, provider_id,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-        ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-        context()->AsWeakPtr(), dispatcher_host_.get());
+  std::unique_ptr<ServiceWorkerProviderHost> CreateServiceWorkerProviderHost(
+      int provider_id) {
+    return CreateProviderHostWithDispatcherHost(
+        helper_->mock_render_process_id(), provider_id, context()->AsWeakPtr(),
+        kRenderFrameId, dispatcher_host_.get());
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
@@ -508,34 +509,32 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
   const int kProviderId = 1001;
   int process_id = helper_->mock_render_process_id();
 
-  dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
+  dispatcher_host_->OnProviderCreated(ServiceWorkerProviderHostInfo(
       kProviderId, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       true /* is_parent_frame_secure */));
   EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
 
   // Two with the same ID should be seen as a bad message.
-  dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
+  dispatcher_host_->OnProviderCreated(ServiceWorkerProviderHostInfo(
       kProviderId, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       true /* is_parent_frame_secure */));
   EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
 
-  dispatcher_host_->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderDestroyed(kProviderId));
+  dispatcher_host_->OnProviderDestroyed(kProviderId);
   EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId));
 
   // Destroying an ID that does not exist warrants a bad message.
-  dispatcher_host_->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderDestroyed(kProviderId));
+  dispatcher_host_->OnProviderDestroyed(kProviderId);
   EXPECT_EQ(2, dispatcher_host_->bad_messages_received_count_);
 
   // Deletion of the dispatcher_host should cause providers for that
   // process to get deleted as well.
-  dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
+  dispatcher_host_->OnProviderCreated(ServiceWorkerProviderHostInfo(
       kProviderId, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       true /* is_parent_frame_secure */));
   EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
   EXPECT_TRUE(dispatcher_host_->HasOneRef());
-  dispatcher_host_ = NULL;
+  dispatcher_host_ = nullptr;
   EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId));
 }
 
@@ -667,7 +666,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   // To show the new dispatcher can operate, simulate provider creation. Since
   // the old dispatcher cleaned up the old provider host, the new one won't
   // complain.
-  new_dispatcher_host->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
+  new_dispatcher_host->OnProviderCreated(ServiceWorkerProviderHostInfo(
       provider_id, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       true /* is_parent_frame_secure */));
   EXPECT_EQ(0, new_dispatcher_host->bad_messages_received_count_);

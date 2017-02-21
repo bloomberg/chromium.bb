@@ -256,12 +256,9 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     ASSERT_EQ(SERVICE_WORKER_OK, status);
 
     // Give the active version a controllee.
-    host_.reset(new ServiceWorkerProviderHost(
-        33 /* dummy render process id */,
-        MSG_ROUTING_NONE /* render_frame_id */, 1 /* dummy provider_id */,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-        ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-        context()->AsWeakPtr(), nullptr));
+    host_ = CreateProviderHostForWindow(
+        33 /* dummy render process id */, 1 /* dummy provider_id */,
+        true /* is_parent_frame_secure */, context()->AsWeakPtr());
     version_1->AddControllee(host_.get());
 
     // Give the active version an in-flight request.

@@ -216,34 +216,6 @@ IPC_MESSAGE_CONTROL5(
     url::Origin /* source_origin */,
     std::vector<content::MessagePort> /* sent_message_ports */)
 
-// Informs the browser of a new ServiceWorkerProvider in the child process,
-// |provider_id| is unique within its child process. When this provider is
-// created for a document, |route_id| is the frame ID of it. When this provider
-// is created for a Shared Worker, |route_id| is the Shared Worker route ID.
-// When this provider is created for a Service Worker, |route_id| is
-// MSG_ROUTING_NONE. |provider_type| identifies whether this provider is for
-// Service Worker controllees (documents and Shared Workers) or for controllers
-// (Service Workers).
-//
-// |is_parent_frame_secure| is false if the provider is created for a
-// document whose parent frame is not secure from the point of view of the
-// document; that is, blink::WebFrame::canHaveSecureChild() returns false.
-// This doesn't mean the document is necessarily an insecure context,
-// because the document may have a URL whose scheme is granted an exception
-// that allows bypassing the ancestor secure context check. See the
-// comment in blink::Document::isSecureContextImpl for more details.
-// If the provider is not created for a document, or the document does not have
-// a parent frame, |is_parent_frame_secure| is true.
-IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_ProviderCreated,
-                     int /* provider_id */,
-                     int /* route_id */,
-                     content::ServiceWorkerProviderType /* provider_type */,
-                     bool /* is_parent_frame_secure */)
-
-// Informs the browser of a ServiceWorkerProvider being destroyed.
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,
-                     int /* provider_id */)
-
 // Increments and decrements the ServiceWorker object's reference
 // counting in the browser side. The ServiceWorker object is created
 // with ref-count==1 initially.
@@ -264,15 +236,6 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_DecrementRegistrationRefCount,
 // verify behavior when a service worker isn't running.
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_TerminateWorker,
                      int /* handle_id */)
-
-// Informs the browser that a service worker is starting up in a provider.
-// |provider_id| identifies the ServiceWorkerProviderHost hosting the service
-// worker. |version_id| identifies the ServiceWorkerVersion and
-// |embedded_worker_id| identifies the EmbeddedWorkerInstance.
-IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_SetVersionId,
-                     int /* provider_id */,
-                     int64_t /* version_id */,
-                     int /* embedded_worker_id */)
 
 // Informs the browser that event handling has finished.
 // Routed to the target ServiceWorkerVersion.

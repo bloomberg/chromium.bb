@@ -655,11 +655,9 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   // Adding a controllee resets the idle time.
   version_->idle_time_ -= kOneSecond;
   idle_time = version_->idle_time_;
-  std::unique_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-      33 /* dummy render process id */, MSG_ROUTING_NONE /* render_frame_id */,
-      1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-      helper_->context()->AsWeakPtr(), NULL));
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, 1 /* dummy provider_id */,
+      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
   version_->AddControllee(host.get());
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
   EXPECT_LT(idle_time, version_->idle_time_);
@@ -1130,10 +1128,7 @@ TEST_F(ServiceWorkerFailToStartTest, RendererCrash) {
 
   // Simulate renderer crash: do what
   // ServiceWorkerDispatcherHost::OnFilterRemoved does.
-  int process_id = helper_->mock_render_process_id();
-  helper_->context()->RemoveAllProviderHostsForProcess(process_id);
-  helper_->context()->embedded_worker_registry()->RemoveChildProcessSender(
-      process_id);
+  helper_->context()->RemoveDispatcherHost(helper_->mock_render_process_id());
   base::RunLoop().RunUntilIdle();
 
   // Callback completed.
@@ -1343,10 +1338,7 @@ TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {
 
   // Simulate renderer crash: do what
   // ServiceWorkerDispatcherHost::OnFilterRemoved does.
-  int process_id = helper_->mock_render_process_id();
-  helper_->context()->RemoveAllProviderHostsForProcess(process_id);
-  helper_->context()->embedded_worker_registry()->RemoveChildProcessSender(
-      process_id);
+  helper_->context()->RemoveDispatcherHost(helper_->mock_render_process_id());
   base::RunLoop().RunUntilIdle();
 
   // Callback completed.

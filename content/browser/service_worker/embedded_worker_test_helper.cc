@@ -20,6 +20,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_start_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -35,6 +36,29 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+
+namespace {
+
+class MockServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
+ public:
+  MockServiceWorkerDispatcherHost(int process_id,
+                                  ResourceContext* resource_context,
+                                  IPC::Sender* sender)
+      : ServiceWorkerDispatcherHost(process_id, resource_context),
+        sender_(sender) {}
+
+  bool Send(IPC::Message* message) override { return sender_->Send(message); }
+
+ protected:
+  ~MockServiceWorkerDispatcherHost() override {}
+
+ private:
+  IPC::Sender* sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerDispatcherHost);
+};
+
+}  // namespace
 
 EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
     MockEmbeddedWorkerInstanceClient(
@@ -219,7 +243,14 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
                          base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
-  registry()->AddChildProcessSender(mock_render_process_id_, this);
+
+  scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host(
+      new MockServiceWorkerDispatcherHost(
+          mock_render_process_id_, browser_context_->GetResourceContext(),
+          this));
+  wrapper_->context()->AddDispatcherHost(mock_render_process_id_,
+                                         dispatcher_host.get());
+  dispatcher_hosts_[mock_render_process_id_] = std::move(dispatcher_host);
 
   // Setup process level interface registry.
   render_process_interface_registry_ =
@@ -235,7 +266,13 @@ EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
 
 void EmbeddedWorkerTestHelper::SimulateAddProcessToPattern(const GURL& pattern,
                                                            int process_id) {
-  registry()->AddChildProcessSender(process_id, this);
+  if (!context()->GetDispatcherHost(process_id)) {
+    scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host(
+        new MockServiceWorkerDispatcherHost(
+            process_id, browser_context_->GetResourceContext(), this));
+    wrapper_->context()->AddDispatcherHost(process_id, dispatcher_host.get());
+    dispatcher_hosts_[process_id] = std::move(dispatcher_host);
+  }
   wrapper_->process_manager()->AddProcessReferenceToPattern(pattern,
                                                             process_id);
 }

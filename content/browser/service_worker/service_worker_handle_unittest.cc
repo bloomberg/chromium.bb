@@ -76,6 +76,7 @@ class ServiceWorkerHandleTest : public testing::Test {
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
+    helper_->context()->RemoveDispatcherHost(helper_->mock_render_process_id());
     dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
         helper_->mock_render_process_id(), helper_->context_wrapper(),
         &resource_context_, helper_.get());
@@ -110,12 +111,10 @@ class ServiceWorkerHandleTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(SERVICE_WORKER_OK, status);
 
-    provider_host_.reset(new ServiceWorkerProviderHost(
-        helper_->mock_render_process_id(), kRenderFrameId, 1,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-        ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-        helper_->context()->AsWeakPtr(), dispatcher_host_.get()));
-
+    provider_host_ = CreateProviderHostWithDispatcherHost(
+        helper_->mock_render_process_id(), 1 /* provider_id */,
+        helper_->context()->AsWeakPtr(), kRenderFrameId,
+        dispatcher_host_.get());
     helper_->SimulateAddProcessToPattern(pattern,
                                          helper_->mock_render_process_id());
   }

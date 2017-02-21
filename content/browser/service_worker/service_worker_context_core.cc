@@ -24,6 +24,7 @@
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_database_task_manager.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
@@ -220,8 +221,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     base::ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
-      providers_(new ProcessToProviderMap),
-      provider_by_uuid_(new ProviderByClientUUIDMap),
+      providers_(base::MakeUnique<ProcessToProviderMap>()),
+      provider_by_uuid_(base::MakeUnique<ProviderByClientUUIDMap>()),
       force_update_on_page_load_(false),
       next_handle_id_(0),
       next_registration_handle_id_(0),
@@ -241,6 +242,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     ServiceWorkerContextCore* old_context,
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
+      dispatcher_hosts_(std::move(old_context->dispatcher_hosts_)),
       providers_(old_context->providers_.release()),
       provider_by_uuid_(old_context->provider_by_uuid_.release()),
       next_handle_id_(old_context->next_handle_id_),
@@ -268,12 +270,26 @@ ServiceWorkerContextCore::~ServiceWorkerContextCore() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
-    int process_id, int provider_id) {
-  ProviderMap* map = GetProviderMapForProcess(process_id);
-  if (!map)
-    return NULL;
-  return map->Lookup(provider_id);
+void ServiceWorkerContextCore::AddDispatcherHost(
+    int process_id,
+    content::ServiceWorkerDispatcherHost* dispatcher_host) {
+  DCHECK(dispatcher_hosts_.find(process_id) == dispatcher_hosts_.end());
+  dispatcher_hosts_[process_id] = dispatcher_host;
+}
+
+ServiceWorkerDispatcherHost* ServiceWorkerContextCore::GetDispatcherHost(
+    int process_id) {
+  auto it = dispatcher_hosts_.find(process_id);
+  if (it == dispatcher_hosts_.end())
+    return nullptr;
+  return it->second;
+}
+
+void ServiceWorkerContextCore::RemoveDispatcherHost(int process_id) {
+  DCHECK(dispatcher_hosts_.find(process_id) != dispatcher_hosts_.end());
+  RemoveAllProviderHostsForProcess(process_id);
+  embedded_worker_registry_->RemoveProcess(process_id);
+  dispatcher_hosts_.erase(process_id);
 }
 
 void ServiceWorkerContextCore::AddProviderHost(
@@ -286,6 +302,15 @@ void ServiceWorkerContextCore::AddProviderHost(
     map = GetProviderMapForProcess(process_id);
   }
   map->AddWithID(std::move(host), provider_id);
+}
+
+ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
+    int process_id,
+    int provider_id) {
+  ProviderMap* map = GetProviderMapForProcess(process_id);
+  if (!map)
+    return nullptr;
+  return map->Lookup(provider_id);
 }
 
 void ServiceWorkerContextCore::RemoveProviderHost(
@@ -505,7 +530,7 @@ void ServiceWorkerContextCore::UnregistrationComplete(
 ServiceWorkerRegistration* ServiceWorkerContextCore::GetLiveRegistration(
     int64_t id) {
   RegistrationsMap::iterator it = live_registrations_.find(id);
-  return (it != live_registrations_.end()) ? it->second : NULL;
+  return (it != live_registrations_.end()) ? it->second : nullptr;
 }
 
 void ServiceWorkerContextCore::AddLiveRegistration(
@@ -527,7 +552,7 @@ void ServiceWorkerContextCore::RemoveLiveRegistration(int64_t id) {
 
 ServiceWorkerVersion* ServiceWorkerContextCore::GetLiveVersion(int64_t id) {
   VersionMap::iterator it = live_versions_.find(id);
-  return (it != live_versions_.end()) ? it->second : NULL;
+  return (it != live_versions_.end()) ? it->second : nullptr;
 }
 
 // PlzNavigate
@@ -636,14 +661,7 @@ ServiceWorkerContextCore::TransferProviderHostOut(int process_id,
   ProviderMap* map = GetProviderMapForProcess(process_id);
   ServiceWorkerProviderHost* transferee = map->Lookup(provider_id);
   std::unique_ptr<ServiceWorkerProviderHost> replacement =
-      base::MakeUnique<ServiceWorkerProviderHost>(
-          process_id, transferee->frame_id(), provider_id,
-          transferee->provider_type(),
-          transferee->is_parent_frame_secure()
-              ? ServiceWorkerProviderHost::FrameSecurityLevel::SECURE
-              : ServiceWorkerProviderHost::FrameSecurityLevel::INSECURE,
-          AsWeakPtr(), transferee->dispatcher_host());
-  transferee->PrepareForCrossSiteTransfer();
+      transferee->PrepareForCrossSiteTransfer();
   return map->Replace(provider_id, std::move(replacement));
 }
 

@@ -4,6 +4,9 @@
 
 #include "content/browser/service_worker/service_worker_provider_host.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -36,7 +39,8 @@ class ServiceWorkerTestContentClient : public TestContentClient {
 class ServiceWorkerProviderHostTest : public testing::Test {
  protected:
   ServiceWorkerProviderHostTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        next_provider_id_(1) {
     SetContentClient(&test_content_client_);
   }
   ~ServiceWorkerProviderHostTest() override {}
@@ -55,26 +59,6 @@ class ServiceWorkerProviderHostTest : public testing::Test {
         GURL("https://www.example.com/example"), 2L, context_->AsWeakPtr());
     registration3_ = new ServiceWorkerRegistration(
         GURL("https://other.example.com/"), 3L, context_->AsWeakPtr());
-
-    // Prepare provider hosts (for the same process).
-    std::unique_ptr<ServiceWorkerProviderHost> host1(
-        new ServiceWorkerProviderHost(
-            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
-            1 /* provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            context_->AsWeakPtr(), NULL));
-    host1->SetDocumentUrl(GURL("https://www.example.com/example1.html"));
-    std::unique_ptr<ServiceWorkerProviderHost> host2(
-        new ServiceWorkerProviderHost(
-            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
-            2 /* provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            context_->AsWeakPtr(), NULL));
-    host2->SetDocumentUrl(GURL("https://www.example.com/example2.html"));
-    provider_host1_ = host1->AsWeakPtr();
-    provider_host2_ = host2->AsWeakPtr();
-    context_->AddProviderHost(base::WrapUnique(host1.release()));
-    context_->AddProviderHost(base::WrapUnique(host2.release()));
   }
 
   void TearDown() override {
@@ -90,24 +74,52 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     return context_->process_manager()->PatternHasProcessToRun(pattern);
   }
 
+  ServiceWorkerProviderHost* CreateProviderHost(const GURL& document_url) {
+    std::unique_ptr<ServiceWorkerProviderHost> host =
+        CreateProviderHostForWindow(
+            helper_->mock_render_process_id(), next_provider_id_++,
+            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
+    ServiceWorkerProviderHost* host_raw = host.get();
+    host->SetDocumentUrl(document_url);
+    context_->AddProviderHost(std::move(host));
+    return host_raw;
+  }
+
+  ServiceWorkerProviderHost* CreateProviderHostWithInsecureParentFrame(
+      const GURL& document_url) {
+    std::unique_ptr<ServiceWorkerProviderHost> host =
+        CreateProviderHostForWindow(helper_->mock_render_process_id(),
+                                    next_provider_id_++,
+                                    false /* is_parent_frame_secure */,
+                                    helper_->context()->AsWeakPtr());
+    ServiceWorkerProviderHost* host_raw = host.get();
+    host->SetDocumentUrl(document_url);
+    context_->AddProviderHost(std::move(host));
+    return host_raw;
+  }
+
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   ServiceWorkerContextCore* context_;
   scoped_refptr<ServiceWorkerRegistration> registration1_;
   scoped_refptr<ServiceWorkerRegistration> registration2_;
   scoped_refptr<ServiceWorkerRegistration> registration3_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host1_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host2_;
   GURL script_url_;
   ServiceWorkerTestContentClient test_content_client_;
   TestContentBrowserClient test_content_browser_client_;
   ContentBrowserClient* old_content_browser_client_;
+  int next_provider_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostTest);
 };
 
 TEST_F(ServiceWorkerProviderHostTest, PotentialRegistration_ProcessStatus) {
+  ServiceWorkerProviderHost* provider_host1 =
+      CreateProviderHost(GURL("https://www.example.com/example1.html"));
+  ServiceWorkerProviderHost* provider_host2 =
+      CreateProviderHost(GURL("https://www.example.com/example2.html"));
+
   // Matching registrations have already been set by SetDocumentUrl.
   ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 
@@ -115,93 +127,101 @@ TEST_F(ServiceWorkerProviderHostTest, PotentialRegistration_ProcessStatus) {
   ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));
 
   // Adding the same registration twice has no effect.
-  provider_host1_->AddMatchingRegistration(registration1_.get());
+  provider_host1->AddMatchingRegistration(registration1_.get());
   ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 
   // Removing a matching registration will decrease the process refs for its
   // pattern.
-  provider_host1_->RemoveMatchingRegistration(registration1_.get());
+  provider_host1->RemoveMatchingRegistration(registration1_.get());
   ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
-  provider_host2_->RemoveMatchingRegistration(registration1_.get());
+  provider_host2->RemoveMatchingRegistration(registration1_.get());
   ASSERT_FALSE(PatternHasProcessToRun(registration1_->pattern()));
 
   // Matching registration will be removed when moving out of scope
   ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));   // host1,2
   ASSERT_FALSE(PatternHasProcessToRun(registration3_->pattern()));  // no host
-  provider_host1_->SetDocumentUrl(GURL("https://other.example.com/"));
+  provider_host1->SetDocumentUrl(GURL("https://other.example.com/"));
   ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));  // host2
   ASSERT_TRUE(PatternHasProcessToRun(registration3_->pattern()));  // host1
-  provider_host2_->SetDocumentUrl(GURL("https://other.example.com/"));
+  provider_host2->SetDocumentUrl(GURL("https://other.example.com/"));
   ASSERT_FALSE(PatternHasProcessToRun(registration2_->pattern()));  // no host
   ASSERT_TRUE(PatternHasProcessToRun(registration3_->pattern()));   // host1,2
 }
 
 TEST_F(ServiceWorkerProviderHostTest, AssociatedRegistration_ProcessStatus) {
+  ServiceWorkerProviderHost* provider_host1 =
+      CreateProviderHost(GURL("https://www.example.com/example1.html"));
+
   // Associating the registration will also increase the process refs for
   // the registration's pattern.
-  provider_host1_->AssociateRegistration(registration1_.get(),
-                                         false /* notify_controllerchange */);
+  provider_host1->AssociateRegistration(registration1_.get(),
+                                        false /* notify_controllerchange */);
   ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 
   // Disassociating the registration shouldn't affect the process refs for
   // the registration's pattern.
-  provider_host1_->DisassociateRegistration();
+  provider_host1->DisassociateRegistration();
   ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 }
 
 TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
+  ServiceWorkerProviderHost* provider_host1 =
+      CreateProviderHost(GURL("https://www.example.com/example1.html"));
+
   // Match registration should return the longest matching one.
-  ASSERT_EQ(registration2_, provider_host1_->MatchRegistration());
-  provider_host1_->RemoveMatchingRegistration(registration2_.get());
-  ASSERT_EQ(registration1_, provider_host1_->MatchRegistration());
+  ASSERT_EQ(registration2_, provider_host1->MatchRegistration());
+  provider_host1->RemoveMatchingRegistration(registration2_.get());
+  ASSERT_EQ(registration1_, provider_host1->MatchRegistration());
 
   // Should return nullptr after removing all matching registrations.
-  provider_host1_->RemoveMatchingRegistration(registration1_.get());
-  ASSERT_EQ(nullptr, provider_host1_->MatchRegistration());
+  provider_host1->RemoveMatchingRegistration(registration1_.get());
+  ASSERT_EQ(nullptr, provider_host1->MatchRegistration());
 
   // SetDocumentUrl sets all of matching registrations
-  provider_host1_->SetDocumentUrl(GURL("https://www.example.com/example1"));
-  ASSERT_EQ(registration2_, provider_host1_->MatchRegistration());
-  provider_host1_->RemoveMatchingRegistration(registration2_.get());
-  ASSERT_EQ(registration1_, provider_host1_->MatchRegistration());
+  provider_host1->SetDocumentUrl(GURL("https://www.example.com/example1"));
+  ASSERT_EQ(registration2_, provider_host1->MatchRegistration());
+  provider_host1->RemoveMatchingRegistration(registration2_.get());
+  ASSERT_EQ(registration1_, provider_host1->MatchRegistration());
 
   // SetDocumentUrl with another origin also updates matching registrations
-  provider_host1_->SetDocumentUrl(GURL("https://other.example.com/example"));
-  ASSERT_EQ(registration3_, provider_host1_->MatchRegistration());
-  provider_host1_->RemoveMatchingRegistration(registration3_.get());
-  ASSERT_EQ(nullptr, provider_host1_->MatchRegistration());
+  provider_host1->SetDocumentUrl(GURL("https://other.example.com/example"));
+  ASSERT_EQ(registration3_, provider_host1->MatchRegistration());
+  provider_host1->RemoveMatchingRegistration(registration3_.get());
+  ASSERT_EQ(nullptr, provider_host1->MatchRegistration());
 }
 
 TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
-  using FrameSecurityLevel = ServiceWorkerProviderHost::FrameSecurityLevel;
+  ServiceWorkerProviderHost* provider_host_secure_parent =
+      CreateProviderHost(GURL("https://www.example.com/example1.html"));
+  ServiceWorkerProviderHost* provider_host_insecure_parent =
+      CreateProviderHostWithInsecureParentFrame(
+          GURL("https://www.example.com/example1.html"));
 
   // Insecure document URL.
-  provider_host1_->SetDocumentUrl(GURL("http://host"));
-  provider_host1_->parent_frame_security_level_ = FrameSecurityLevel::SECURE;
-  EXPECT_FALSE(provider_host1_->IsContextSecureForServiceWorker());
+  provider_host_secure_parent->SetDocumentUrl(GURL("http://host"));
+  EXPECT_FALSE(provider_host_secure_parent->IsContextSecureForServiceWorker());
 
   // Insecure parent frame.
-  provider_host1_->SetDocumentUrl(GURL("https://host"));
-  provider_host1_->parent_frame_security_level_ = FrameSecurityLevel::INSECURE;
-  EXPECT_FALSE(provider_host1_->IsContextSecureForServiceWorker());
+  provider_host_insecure_parent->SetDocumentUrl(GURL("https://host"));
+  EXPECT_FALSE(
+      provider_host_insecure_parent->IsContextSecureForServiceWorker());
 
   // Secure URL and parent frame.
-  provider_host1_->SetDocumentUrl(GURL("https://host"));
-  provider_host1_->parent_frame_security_level_ = FrameSecurityLevel::SECURE;
-  EXPECT_TRUE(provider_host1_->IsContextSecureForServiceWorker());
+  provider_host_secure_parent->SetDocumentUrl(GURL("https://host"));
+  EXPECT_TRUE(provider_host_secure_parent->IsContextSecureForServiceWorker());
 
   // Exceptional service worker scheme.
   GURL url(std::string(kServiceWorkerScheme) + "://host");
   EXPECT_TRUE(url.is_valid());
-  provider_host1_->SetDocumentUrl(url);
-  provider_host1_->parent_frame_security_level_ = FrameSecurityLevel::SECURE;
   EXPECT_FALSE(IsOriginSecure(url));
   EXPECT_TRUE(OriginCanAccessServiceWorkers(url));
-  EXPECT_TRUE(provider_host1_->IsContextSecureForServiceWorker());
+  provider_host_secure_parent->SetDocumentUrl(url);
+  EXPECT_TRUE(provider_host_secure_parent->IsContextSecureForServiceWorker());
 
   // Exceptional service worker scheme with insecure parent frame.
-  provider_host1_->parent_frame_security_level_ = FrameSecurityLevel::INSECURE;
-  EXPECT_FALSE(provider_host1_->IsContextSecureForServiceWorker());
+  provider_host_insecure_parent->SetDocumentUrl(url);
+  EXPECT_FALSE(
+      provider_host_insecure_parent->IsContextSecureForServiceWorker());
 }
 
 }  // namespace content

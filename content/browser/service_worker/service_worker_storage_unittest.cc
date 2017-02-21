@@ -1346,11 +1346,9 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(
       registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-  std::unique_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-      33 /* dummy render process id */, MSG_ROUTING_NONE,
-      1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-      context()->AsWeakPtr(), NULL));
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, 1 /* dummy provider_id */,
+      true /* is_parent_frame_secure */, context()->AsWeakPtr());
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;
@@ -1398,11 +1396,9 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   registration_->SetWaitingVersion(NULL);
   storage()->UpdateToActiveState(
       registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-  std::unique_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-      33 /* dummy render process id */, MSG_ROUTING_NONE,
-      1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-      context()->AsWeakPtr(), NULL));
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, 1 /* dummy provider_id */,
+      true /* is_parent_frame_secure */, context()->AsWeakPtr());
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;
@@ -1558,11 +1554,9 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(
       registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-  std::unique_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-      33 /* dummy render process id */, MSG_ROUTING_NONE,
-      1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-      context()->AsWeakPtr(), NULL));
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, 1 /* dummy provider_id */,
+      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;

@@ -199,13 +199,10 @@ ServiceWorkerJobTest::FindRegistrationForPattern(
 
 std::unique_ptr<ServiceWorkerProviderHost>
 ServiceWorkerJobTest::CreateControllee() {
-  return std::unique_ptr<ServiceWorkerProviderHost>(
-      new ServiceWorkerProviderHost(
-          33 /* dummy render_process id */,
-          MSG_ROUTING_NONE /* render_frame_id */, 1 /* dummy provider_id */,
-          SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-          ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-          helper_->context()->AsWeakPtr(), NULL));
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, 1 /* dummy provider_id */,
+      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
+  return host;
 }
 
 TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {

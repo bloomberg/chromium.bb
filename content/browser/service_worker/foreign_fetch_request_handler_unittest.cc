@@ -68,27 +68,19 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
     const int64_t kRegistrationId = 0;
     const int64_t kVersionId = 0;
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+
+    // Create a registration for the worker which has foreign fetch event
+    // handler.
     registration_ = new ServiceWorkerRegistration(kScope, kRegistrationId,
                                                   context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), kResource1,
                                         kVersionId, context()->AsWeakPtr());
-
     version_->set_foreign_fetch_scopes({kScope});
-
-    // An empty host.
-    std::unique_ptr<ServiceWorkerProviderHost> host(
-        new ServiceWorkerProviderHost(
-            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
-            kMockProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            context()->AsWeakPtr(), nullptr));
-    host->SetDocumentUrl(GURL("https://host/scope/"));
-    provider_host_ = host->AsWeakPtr();
-    context()->AddProviderHost(std::move(host));
 
     context()->storage()->LazyInitialize(base::Bind(&EmptyCallback));
     base::RunLoop().RunUntilIdle();
 
+    // Persist the registration data.
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(
         ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));
@@ -162,17 +154,30 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
     return ForeignFetchRequestHandler::GetHandler(request_.get());
   }
 
-  void CreateServiceWorkerTypeProviderHost() {
-    std::unique_ptr<ServiceWorkerProviderHost> host(
-        new ServiceWorkerProviderHost(
-            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
-            kMockProviderId, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
-            ServiceWorkerProviderHost::FrameSecurityLevel::UNINITIALIZED,
-            context()->AsWeakPtr(), nullptr));
+  void CreateWindowTypeProviderHost() {
+    std::unique_ptr<ServiceWorkerProviderHost> host =
+        CreateProviderHostForWindow(
+            helper_->mock_render_process_id(), kMockProviderId,
+            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
+    EXPECT_FALSE(
+        context()->GetProviderHost(host->process_id(), host->provider_id()));
+    host->SetDocumentUrl(GURL("https://host/scope/"));
     provider_host_ = host->AsWeakPtr();
-    context()->RemoveProviderHost(host->process_id(), host->provider_id());
+    context()->AddProviderHost(std::move(host));
+  }
+
+  void CreateServiceWorkerTypeProviderHost() {
+    std::unique_ptr<ServiceWorkerProviderHost> host =
+        CreateProviderHostForServiceWorkerContext(
+            helper_->mock_render_process_id(), kMockProviderId,
+            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
+    EXPECT_FALSE(
+        context()->GetProviderHost(host->process_id(), host->provider_id()));
+    provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
 
+    // Create another worker whose requests will be intercepted by the foreign
+    // fetch event handler.
     scoped_refptr<ServiceWorkerRegistration> registration =
         new ServiceWorkerRegistration(GURL("https://host/scope"), 1L,
                                       context()->AsWeakPtr());
@@ -236,6 +241,7 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
 };
 
 TEST_F(ForeignFetchRequestHandlerTest, CheckOriginTrialToken_NoToken) {
+  CreateWindowTypeProviderHost();
   EXPECT_TRUE(CheckOriginTrialToken(version()));
   std::unique_ptr<net::HttpResponseInfo> http_info(
       CreateTestHttpResponseInfo());
@@ -244,6 +250,7 @@ TEST_F(ForeignFetchRequestHandlerTest, CheckOriginTrialToken_NoToken) {
 }
 
 TEST_F(ForeignFetchRequestHandlerTest, CheckOriginTrialToken_ValidToken) {
+  CreateWindowTypeProviderHost();
   EXPECT_TRUE(CheckOriginTrialToken(version()));
   std::unique_ptr<net::HttpResponseInfo> http_info(
       CreateTestHttpResponseInfo());
@@ -263,6 +270,7 @@ TEST_F(ForeignFetchRequestHandlerTest, CheckOriginTrialToken_ValidToken) {
 }
 
 TEST_F(ForeignFetchRequestHandlerTest, CheckOriginTrialToken_InvalidToken) {
+  CreateWindowTypeProviderHost();
   EXPECT_TRUE(CheckOriginTrialToken(version()));
   std::unique_ptr<net::HttpResponseInfo> http_info(
       CreateTestHttpResponseInfo());
@@ -281,6 +289,7 @@ TEST_F(ForeignFetchRequestHandlerTest, CheckOriginTrialToken_InvalidToken) {
 }
 
 TEST_F(ForeignFetchRequestHandlerTest, CheckOriginTrialToken_ExpiredToken) {
+  CreateWindowTypeProviderHost();
   EXPECT_TRUE(CheckOriginTrialToken(version()));
   std::unique_ptr<net::HttpResponseInfo> http_info(
       CreateTestHttpResponseInfo());
@@ -299,11 +308,13 @@ TEST_F(ForeignFetchRequestHandlerTest, CheckOriginTrialToken_ExpiredToken) {
 }
 
 TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_Success) {
+  CreateWindowTypeProviderHost();
   EXPECT_TRUE(InitializeHandler(kValidUrl, RESOURCE_TYPE_IMAGE,
                                 nullptr /* initiator */));
 }
 
 TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_WrongResourceType) {
+  CreateWindowTypeProviderHost();
   EXPECT_FALSE(InitializeHandler(kValidUrl, RESOURCE_TYPE_MAIN_FRAME,
                                  nullptr /* initiator */));
   EXPECT_FALSE(InitializeHandler(kValidUrl, RESOURCE_TYPE_SUB_FRAME,
@@ -317,23 +328,30 @@ TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_WrongResourceType) {
 }
 
 TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_SameOriginRequest) {
+  CreateWindowTypeProviderHost();
   EXPECT_FALSE(InitializeHandler(kValidUrl, RESOURCE_TYPE_IMAGE,
                                  kValidUrl /* initiator */));
 }
 
 TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_NoRegisteredHandlers) {
+  CreateWindowTypeProviderHost();
   EXPECT_FALSE(InitializeHandler("https://invalid.example.com/foo",
                                  RESOURCE_TYPE_IMAGE, nullptr /* initiator */));
 }
 
-TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_TimeoutBehavior) {
+TEST_F(ForeignFetchRequestHandlerTest,
+       InitializeHandler_TimeoutBehaviorForWindow) {
+  CreateWindowTypeProviderHost();
   ForeignFetchRequestHandler* handler =
       InitializeHandler("https://valid.example.com/foo", RESOURCE_TYPE_IMAGE,
                         nullptr /* initiator */);
   ASSERT_TRUE(handler);
 
   EXPECT_EQ(base::nullopt, timeout_for_request(handler));
+}
 
+TEST_F(ForeignFetchRequestHandlerTest,
+       InitializeHandler_TimeoutBehaviorForServiceWorker) {
   CreateServiceWorkerTypeProviderHost();
   ServiceWorkerVersion* version = provider_host()->running_hosted_version();
   std::unique_ptr<net::HttpResponseInfo> http_info(
@@ -360,10 +378,12 @@ TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_TimeoutBehavior) {
   EXPECT_EQ(base::TimeDelta::FromSeconds(6), remaining_time);
 
   // Make sure new request only gets remaining timeout.
-  handler = InitializeHandler("https://valid.example.com/foo",
-                              RESOURCE_TYPE_IMAGE, nullptr /* initiator */);
+  ForeignFetchRequestHandler* handler =
+      InitializeHandler("https://valid.example.com/foo", RESOURCE_TYPE_IMAGE,
+                        nullptr /* initiator */);
   ASSERT_TRUE(handler);
-  EXPECT_EQ(remaining_time, timeout_for_request(handler));
+  ASSERT_TRUE(timeout_for_request(handler).has_value());
+  EXPECT_EQ(remaining_time, timeout_for_request(handler).value());
 }
 
 }  // namespace content

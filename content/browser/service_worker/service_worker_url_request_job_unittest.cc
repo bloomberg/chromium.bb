@@ -195,12 +195,10 @@ class ServiceWorkerURLRequestJobTest
       version_->SetMainScriptHttpResponseInfo(http_info);
     }
 
-    std::unique_ptr<ServiceWorkerProviderHost> provider_host(
-        new ServiceWorkerProviderHost(
-            helper_->mock_render_process_id(), MSG_ROUTING_NONE, kProviderID,
-            SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            helper_->context()->AsWeakPtr(), nullptr));
+    std::unique_ptr<ServiceWorkerProviderHost> provider_host =
+        CreateProviderHostForWindow(
+            helper_->mock_render_process_id(), kProviderID,
+            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
     provider_host_ = provider_host->AsWeakPtr();
     provider_host->SetDocumentUrl(GURL("https://example.com/"));
     registration_->SetActiveVersion(version_);

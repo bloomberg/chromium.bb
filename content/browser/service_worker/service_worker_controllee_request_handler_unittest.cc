@@ -125,12 +125,10 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
 
     // An empty host.
-    std::unique_ptr<ServiceWorkerProviderHost> host(
-        new ServiceWorkerProviderHost(
-            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
-            kMockProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            context()->AsWeakPtr(), NULL));
+    std::unique_ptr<ServiceWorkerProviderHost> host =
+        CreateProviderHostForWindow(
+            helper_->mock_render_process_id(), kMockProviderId,
+            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr());
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
 

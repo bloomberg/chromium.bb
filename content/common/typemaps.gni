@@ -7,6 +7,7 @@ typemaps = [
   "//content/common/media/media_devices.typemap",
   "//content/common/service_worker/embedded_worker.typemap",
   "//content/common/service_worker/service_worker_event_dispatcher.typemap",
+  "//content/common/service_worker/service_worker_provider.typemap",
   "//content/common/service_worker/service_worker_types.typemap",
   "//content/common/url_loader_status.typemap",
   "//content/common/url_request.typemap",
