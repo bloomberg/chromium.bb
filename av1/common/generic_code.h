@@ -28,9 +28,7 @@
 
 typedef struct {
   /** cdf for multiple expectations of x */
-  uint16_t cdf[GENERIC_TABLES][16];
-  /** Frequency increment for learning the cdfs */
-  int increment;
+  uint16_t cdf[GENERIC_TABLES][CDF_SIZE(16)];
 } generic_encoder;
 
 #define OD_IIR_DIADIC(y, x, shift) ((y) += ((x) - (y)) >> (shift))
@@ -87,7 +85,6 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
 
 int log_ex(int ex_q16);
 
-void generic_model_update(generic_encoder *model, int *ex_q16, int x, int xs,
- int id, int integration);
+void generic_model_update(int *ex_q16, int x, int integration);
 
 #endif

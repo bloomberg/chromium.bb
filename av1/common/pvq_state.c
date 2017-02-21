@@ -18,7 +18,7 @@ void od_adapt_ctx_reset(od_adapt_ctx *adapt, int is_keyframe) {
   OD_CDFS_INIT_Q15(adapt->skip_cdf);
   for (pli = 0; pli < OD_NPLANES_MAX; pli++) {
     int i;
-    generic_model_init(&adapt->model_dc[pli]);
+    OD_CDFS_INIT(adapt->model_dc[pli].cdf, 0);
     for (i = 0; i < OD_TXSIZES; i++) {
       int j;
       adapt->ex_g[pli][i] = 8;

@@ -107,8 +107,8 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
   id = OD_MINI(GENERIC_TABLES - 1, lg_q1);
   cdf = model->cdf[id];
   ms = (max + (1 << shift >> 1)) >> shift;
-  if (max == -1) xs = aom_read_cdf_unscaled(r, cdf, 16, ACCT_STR_NAME);
-  else xs = aom_read_cdf_unscaled(r, cdf, OD_MINI(ms + 1, 16), ACCT_STR_NAME);
+  if (max == -1) xs = aom_read_symbol_pvq(r, cdf, 16, ACCT_STR_NAME);
+  else xs = aom_read_symbol_pvq(r, cdf, OD_MINI(ms + 1, 16), ACCT_STR_NAME);
   if (xs == 15) {
     int e;
     unsigned decay;
@@ -132,7 +132,7 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
     lsb -= !special << (shift - 1);
   }
   x = (xs << shift) + lsb;
-  generic_model_update(model, ex_q16, x, xs, id, integration);
+  generic_model_update(ex_q16, x, integration);
   OD_LOG((OD_LOG_ENTROPY_CODER, OD_LOG_DEBUG,
    "dec: %d %d %d %d %d %x", *ex_q16, x, shift, id, xs, dec->rng));
   return x;
