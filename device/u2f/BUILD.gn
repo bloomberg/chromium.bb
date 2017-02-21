@@ -11,6 +11,8 @@ source_set("u2f") {
     "u2f_apdu_command.h",
     "u2f_apdu_response.cc",
     "u2f_apdu_response.h",
+    "u2f_device.cc",
+    "u2f_device.h",
     "u2f_message.cc",
     "u2f_message.h",
     "u2f_packet.cc",
