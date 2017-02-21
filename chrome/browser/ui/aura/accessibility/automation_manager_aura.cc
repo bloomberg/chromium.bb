@@ -38,9 +38,7 @@ AutomationManagerAura* AutomationManagerAura::GetInstance() {
 
 void AutomationManagerAura::Enable(BrowserContext* context) {
   enabled_ = true;
-  if (!current_tree_.get())
-    current_tree_.reset(new AXTreeSourceAura());
-  ResetSerializer();
+  Reset(false);
 
   SendEvent(context, current_tree_->GetRoot(), ui::AX_EVENT_LOAD_COMPLETE);
   views::AXAuraObjCache::GetInstance()->SetDelegate(this);
@@ -57,9 +55,7 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
 
 void AutomationManagerAura::Disable() {
   enabled_ = false;
-
-  // Reset the serializer to save memory.
-  current_tree_serializer_->Reset();
+  Reset(true);
 }
 
 void AutomationManagerAura::HandleEvent(BrowserContext* context,
@@ -151,9 +147,12 @@ AutomationManagerAura::AutomationManagerAura()
 AutomationManagerAura::~AutomationManagerAura() {
 }
 
-void AutomationManagerAura::ResetSerializer() {
-  current_tree_serializer_.reset(
-      new AuraAXTreeSerializer(current_tree_.get()));
+void AutomationManagerAura::Reset(bool reset_serializer) {
+  if (!current_tree_)
+    current_tree_.reset(new AXTreeSourceAura());
+  reset_serializer ? current_tree_serializer_.reset()
+                   : current_tree_serializer_.reset(
+                         new AuraAXTreeSerializer(current_tree_.get()));
 }
 
 void AutomationManagerAura::SendEvent(BrowserContext* context,

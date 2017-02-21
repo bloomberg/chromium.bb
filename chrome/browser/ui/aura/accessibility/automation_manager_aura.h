@@ -67,8 +67,9 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter,
  private:
   friend struct base::DefaultSingletonTraits<AutomationManagerAura>;
 
-  // Reset all state in this manager.
-  void ResetSerializer();
+  // Reset state in this manager. If |reset_serializer| is true, reset the
+  // serializer to save memory.
+  void Reset(bool reset_serializer);
 
   void SendEvent(content::BrowserContext* context,
                  views::AXAuraObjWrapper* aura_obj,
