@@ -77,6 +77,7 @@ var PromoteUpdaterStatus;
  *   status: !UpdateStatus,
  *   progress: (number|undefined),
  *   message: (string|undefined),
+ *   connectionTypes: (string|undefined),
  * }}
  */
 var UpdateStatusChangedEvent;

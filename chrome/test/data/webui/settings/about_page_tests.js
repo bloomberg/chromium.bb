@@ -60,10 +60,17 @@ cr.define('settings_about_page', function() {
       this.updateStatus_ = updateStatus;
     },
 
-    /** @override */
-    pageReady: function() {
-      this.methodCalled('pageReady');
+    sendStatusNoInternet: function() {
+      cr.webUIListenerCallback('update-status-changed', {
+        progress: 0,
+        status: UpdateStatus.FAILED,
+        message: 'offline',
+        connectionTypes: 'no internet',
+      });
     },
+
+    /** @override */
+    pageReady: function() { this.methodCalled('pageReady'); },
 
     /** @override */
     refreshUpdateStatus: function() {
@@ -75,14 +82,10 @@ cr.define('settings_about_page', function() {
     },
 
     /** @override */
-    openFeedbackDialog: function() {
-      this.methodCalled('openFeedbackDialog');
-    },
+    openFeedbackDialog: function() { this.methodCalled('openFeedbackDialog'); },
 
     /** @override */
-    openHelpPage: function() {
-      this.methodCalled('openHelpPage');
-    },
+    openHelpPage: function() { this.methodCalled('openHelpPage'); },
   };
 
   if (cr.isMac) {
@@ -350,6 +353,15 @@ cr.define('settings_about_page', function() {
       });
 
       if (cr.isChromeOS) {
+        test('NoInternet', function() {
+          assertTrue(page.$.updateStatusMessage.hidden);
+          aboutBrowserProxy.sendStatusNoInternet();
+          Polymer.dom.flush();
+          assertFalse(page.$.updateStatusMessage.hidden);
+          assertNotEquals(
+              page.$.updateStatusMessage.innerHTML.includes('no internet'));
+        });
+
         /**
          * Test that all buttons update according to incoming
          * 'update-status-changed' events for the case where target and current

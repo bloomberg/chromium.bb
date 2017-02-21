@@ -37,6 +37,15 @@
         -webkit-user-select: text;
       }
 
+      .info-section {
+        margin-bottom: 12px;
+      }
+
+      .padded {
+        padding-bottom: 10px;
+        padding-top: 10px;
+      }
+
       .product-title {
         font-size: 153.85%;  /* 20px / 13px */
         margin-bottom: auto;
@@ -58,16 +67,6 @@
 
       iron-icon[icon='settings:error'] {
         fill: var(--paper-red-600);
-      }
-
-      .product-info {
-        display: block;
-        padding-bottom: 10px;
-        padding-top: 10px;
-      }
-
-      .info-section {
-        margin-bottom: 12px;
       }
 
       #regulatoryInfo img {
@@ -99,7 +98,7 @@
                       obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
                   src="[[getIconSrc_(obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
               </iron-icon>
-              <div class="start">
+              <div class="start padded">
                 <div id="updateStatusMessage" hidden="[[!showUpdateStatus_]]"
 <if expr="not chromeos">
                     inner-h-t-m-l="[[getUpdateStatusMessage_(
@@ -183,7 +182,7 @@
               </button>
             </div>
 </if>
-            <div class="settings-box product-info copyable">
+            <div class="settings-box padded block copyable">
               <div class="info-section">
                 <div class="secondary">$i18n{aboutProductTitle}</div>
                 <div class="secondary">$i18n{aboutProductCopyright}</div>
@@ -200,7 +199,7 @@
 </if>
             </div>
 <if expr="chromeos">
-            <div class="settings-box product-info" id="regulatoryInfo"
+            <div class="settings-box padded block" id="regulatoryInfo"
                 hidden$="[[!shouldShowRegulatoryInfo_(regulatoryInfo_)]]">
               <img src="[[regulatoryInfo_.url]]" alt="[[regulatoryInfo_.text]]">
             </div>
