@@ -25,9 +25,19 @@
 
 namespace blink {
 
+namespace {
+
+void rejectNavigatorDetached(ScriptPromiseResolver* resolver) {
+  DOMException* exception = DOMException::create(
+      InvalidStateError, "The object is no longer associated with a document.");
+  resolver->reject(exception);
+}
+
+}  // namespace
+
 NavigatorVR* NavigatorVR::from(Document& document) {
   if (!document.frame() || !document.frame()->domWindow())
-    return 0;
+    return nullptr;
   Navigator& navigator = *document.frame()->domWindow()->navigator();
   return &from(navigator);
 }
@@ -44,6 +54,13 @@ NavigatorVR& NavigatorVR::from(Navigator& navigator) {
 
 ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState,
                                          Navigator& navigator) {
+  if (!navigator.frame()) {
+    ScriptPromiseResolver* resolver =
+        ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    rejectNavigatorDetached(resolver);
+    return promise;
+  }
   return NavigatorVR::from(navigator).getVRDisplays(scriptState);
 }
 
@@ -52,9 +69,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState) {
   ScriptPromise promise = resolver->promise();
 
   if (!document()) {
-    DOMException* exception = DOMException::create(
-        InvalidStateError, "The object is no longer associated to a document.");
-    resolver->reject(exception);
+    rejectNavigatorDetached(resolver);
     return promise;
   }
 
@@ -73,7 +88,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState) {
 
 VRController* NavigatorVR::controller() {
   if (!supplementable()->frame())
-    return 0;
+    return nullptr;
 
   if (!m_controller) {
     m_controller = new VRController(this);
@@ -85,8 +100,10 @@ VRController* NavigatorVR::controller() {
 }
 
 Document* NavigatorVR::document() {
-  return supplementable()->frame() ? supplementable()->frame()->document()
-                                   : nullptr;
+  if (!supplementable()->frame())
+    return nullptr;
+
+  return supplementable()->frame()->document();
 }
 
 DEFINE_TRACE(NavigatorVR) {
@@ -108,14 +125,16 @@ const char* NavigatorVR::supplementName() {
 }
 
 void NavigatorVR::enqueueVREvent(VRDisplayEvent* event) {
-  if (supplementable()->frame()) {
-    supplementable()->frame()->domWindow()->enqueueWindowEvent(event);
-  }
+  if (!supplementable()->frame())
+    return;
+
+  supplementable()->frame()->domWindow()->enqueueWindowEvent(event);
 }
 
 void NavigatorVR::dispatchVRGestureEvent(VRDisplayEvent* event) {
   if (!(supplementable()->frame()))
     return;
+
   UserGestureIndicator gestureIndicator(
       DocumentUserGestureToken::create(document()));
   LocalDOMWindow* window = supplementable()->frame()->domWindow();
@@ -161,10 +180,11 @@ void NavigatorVR::didRemoveEventListener(LocalDOMWindow* window,
 }
 
 void NavigatorVR::didRemoveAllEventListeners(LocalDOMWindow* window) {
-  if (m_controller) {
-    m_controller->setListeningForActivate(false);
-    m_listeningForActivate = false;
-  }
+  if (!m_controller)
+    return;
+
+  m_controller->setListeningForActivate(false);
+  m_listeningForActivate = false;
 }
 
 }  // namespace blink
