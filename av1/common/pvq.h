@@ -131,9 +131,8 @@ struct od_pvq_adapt_ctx {
   generic_encoder     pvq_param_model[3];
   int                 pvq_ext[OD_TXSIZES*PVQ_MAX_PARTITIONS];
   int                 pvq_exg[OD_NPLANES_MAX][OD_TXSIZES][PVQ_MAX_PARTITIONS];
-  int                 pvq_gaintheta_increment;
-  uint16_t        pvq_gaintheta_cdf[2*OD_TXSIZES*PVQ_MAX_PARTITIONS][16];
-  uint16_t        pvq_skip_dir_cdf[2*(OD_TXSIZES-1)][CDF_SIZE(7)];
+  uint16_t pvq_gaintheta_cdf[2*OD_TXSIZES*PVQ_MAX_PARTITIONS][CDF_SIZE(16)];
+  uint16_t pvq_skip_dir_cdf[2*(OD_TXSIZES-1)][CDF_SIZE(7)];
 };
 
 typedef struct od_qm_entry {

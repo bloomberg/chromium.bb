@@ -680,8 +680,8 @@ void pvq_encode_partition(aom_writer *w,
   }
   /* Jointly code gain, theta and noref for small values. Then we handle
      larger gain and theta values. For noref, theta = -1. */
-  aom_encode_cdf_adapt(w, id, &adapt->pvq.pvq_gaintheta_cdf[cdf_ctx][0],
-   8 + 7*code_skip, adapt->pvq.pvq_gaintheta_increment);
+  aom_write_symbol_pvq(w, id, &adapt->pvq.pvq_gaintheta_cdf[cdf_ctx][0],
+   8 + 7*code_skip);
   if (encode_flip) {
     /* We could eventually do some smarter entropy coding here, but it would
        have to be good enough to overcome the overhead of the entropy coder.

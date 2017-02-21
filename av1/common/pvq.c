@@ -206,8 +206,7 @@ void od_adapt_pvq_ctx_reset(od_pvq_adapt_ctx *state, int is_keyframe) {
   for (i = 0; i < OD_TXSIZES*PVQ_MAX_PARTITIONS; i++) {
     state->pvq_ext[i] = is_keyframe ? 24576 : 2 << 16;
   }
-  state->pvq_gaintheta_increment = 128;
-  OD_CDFS_INIT(state->pvq_gaintheta_cdf, state->pvq_gaintheta_increment >> 2);
+  OD_CDFS_INIT(state->pvq_gaintheta_cdf, 0);
   OD_CDFS_INIT_Q15(state->pvq_skip_dir_cdf);
   OD_CDFS_INIT(ctx->pvq_split_cdf, 0);
 }

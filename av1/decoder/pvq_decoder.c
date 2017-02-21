@@ -173,9 +173,8 @@ static void pvq_decode_partition(aom_reader *r,
     /* Jointly decode gain, itheta and noref for small values. Then we handle
        larger gain. We need to wait for itheta because in the !nodesync case
        it depends on max_theta, which depends on the gain. */
-    id = aom_decode_cdf_adapt(r, &adapt->pvq.pvq_gaintheta_cdf[cdf_ctx][0],
-     8 + 7*has_skip, adapt->pvq.pvq_gaintheta_increment,
-     "pvq:gaintheta");
+    id = aom_read_symbol_pvq(r, &adapt->pvq.pvq_gaintheta_cdf[cdf_ctx][0],
+     8 + 7*has_skip, "pvq:gaintheta");
     if (!is_keyframe && id >= 10) id++;
     if (is_keyframe && id >= 8) id++;
     if (id >= 8) {
