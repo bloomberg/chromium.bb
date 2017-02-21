@@ -178,8 +178,7 @@ ThumbnailLoader.prototype.getLoadTarget = function() {
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {ThumbnailLoader.OptimizationMode=} opt_optimizationMode Optimization
  *     for downloading thumbnails. By default optimizations are disabled.
- * @param {function(Image, Object)=} opt_onSuccess Success callback,
- *     accepts the image and the transform.
+ * @param {function(Image)=} opt_onSuccess Success callback, accepts the image.
  * @param {function()=} opt_onError Error callback.
  * @param {function()=} opt_onGeneric Callback for generic image used.
  * @param {number=} opt_autoFillThreshold Auto fill threshold.
@@ -209,7 +208,7 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
     this.attachImage(assert(box), fillMode, opt_autoFillThreshold,
                      opt_boxWidth, opt_boxHeight);
     if (opt_onSuccess)
-      opt_onSuccess(this.image_, this.transform_);
+      opt_onSuccess(this.image_);
   }.bind(this);
   this.image_.onerror = function() {
     if (opt_onError)
@@ -242,7 +241,8 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
         maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
         cache: true,
         priority: this.priority_,
-        timestamp: modificationTime
+        timestamp: modificationTime,
+        orientation: this.transform_
       },
       function() {},
       function() {
@@ -264,8 +264,7 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
  * metadata, this fetches it from it. Otherwise, this tries to load it from
  * thumbnail loader.
  * Compared with ThumbnailLoader.load, this method does not provide a
- * functionality to fit image to a box. This method is responsible for rotating
- * and flipping a thumbnail.
+ * functionality to fit image to a box.
  *
  * @param {ThumbnailLoader.FillMode} fillMode Only FIT and OVER_FILL is
  *     supported. This takes effect only when external thumbnail source is used.
@@ -290,7 +289,8 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
       maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
       cache: true,
       priority: this.priority_,
-      timestamp: modificationTime
+      timestamp: modificationTime,
+      orientation: this.transform_
     };
 
     if (fillMode === ThumbnailLoader.FillMode.OVER_FILL) {
@@ -314,87 +314,8 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
             reject(result);
         },
         options);
-  }.bind(this)).then(function(result) {
-    if (!this.transform_)
-      return result;
-    else
-      return this.applyTransformToDataUrl_(
-          this.transform_, result.data, result.width, result.height);
   }.bind(this));
 };
-
-/**
- * Renders an Image to canvas applying an image transformation.
- * @param {Image} image Original image. Can be an unattached one to an elment.
- * @param {number} width width of the original image
- * @param {number} height height of the original image
- * @param {{scaleX:number, scaleY:number, rotate90: number}} transform
- *     Transform.
- * @param {!Object} canvas
- */
-ThumbnailLoader.prototype.renderImageToCanvasWithTransform_ = function(
-    image, width, height, transform, canvas) {
-  var scaleX = transform.scaleX;
-  var scaleY = transform.scaleY;
-  var rotate90 = transform.rotate90;
-
-  assert(scaleX === 1 || scaleX === -1);
-  assert(scaleY === 1 || scaleY === -1);
-  assert(rotate90 === 0 || rotate90 === 1);
-
-  var context = canvas.getContext('2d');
-
-  canvas.width = rotate90 === 1 ? height : width;
-  canvas.height = rotate90 === 1 ? width : height;
-
-  // Scale transformation should be applied before rotate transformation.
-  // i.e. When matrices for scale and rotate are A and B, transformation matrix
-  // should be BA.
-
-  // Rotate 90 degree at center.
-  if (rotate90 === 1) {
-    context.translate(height, 0);
-    context.rotate(Math.PI / 2);
-  }
-
-  // Flip X and Y.
-  context.translate(scaleX === -1 ? width : 0, scaleY === -1 ? height : 0);
-  context.scale(scaleX, scaleY);
-  context.drawImage(image, 0, 0);
-};
-
-/**
- * Applies transform to data url.
- *
- * @param {{scaleX:number, scaleY:number, rotate90: number}} transform
- *     Transform.
- * @param {string} dataUrl Data url.
- * @param {number} width Width.
- * @param {number} height Height.
- * @return {!Promise<{data:string, width:number, height:number}>} A promise
- *     which is resolved with dataUrl and its width and height.
- * @private
- */
-ThumbnailLoader.prototype.applyTransformToDataUrl_ = function(
-    transform, dataUrl, width, height) {
-  var image = new Image();
-
-  return new Promise(function(resolve, reject) {
-    // Decode image for transformation.
-    image.onload = resolve;
-    image.onerror = reject;
-    image.src = dataUrl;
-  }).then(function() {
-    var canvas = document.createElement('canvas');
-    this.renderImageToCanvasWithTransform_(
-        image, width, height, this.transform_, canvas);
-    return {
-      data: canvas.toDataURL('image/png'),
-      width: canvas.width,
-      height: canvas.height
-    };
-  }.bind(this));
-}
 
 /**
  * Cancels loading the current image.
@@ -416,25 +337,17 @@ ThumbnailLoader.prototype.hasValidImage = function() {
 };
 
 /**
- * @return {boolean} True if the image is rotated 90 degrees left or right.
- * @private
- */
-ThumbnailLoader.prototype.isRotated_ = function() {
-  return this.transform_ && (this.transform_.rotate90 % 2 === 1);
-};
-
-/**
- * @return {number} Image width (corrected for rotation).
+ * @return {number} Image width.
  */
 ThumbnailLoader.prototype.getWidth = function() {
-  return this.isRotated_() ? this.image_.height : this.image_.width;
+  return this.image_.width;
 };
 
 /**
- * @return {number} Image height (corrected for rotation).
+ * @return {number} Image height.
  */
 ThumbnailLoader.prototype.getHeight = function() {
-  return this.isRotated_() ? this.image_.width : this.image_.height;
+  return this.image_.height;
 };
 
 /**
@@ -460,26 +373,17 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
                          this.metadata_.filesystem &&
                          this.metadata_.filesystem.modificationTime &&
                          this.metadata_.filesystem.modificationTime.getTime();
-  var loaderOptions = {
-      maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
-      maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
-      cache: true,
-      priority: this.priority_,
-      timestamp: modificationTime
-  };
-  if (this.transform_) {
-    loaderOptions.orientation = this.transform_;
-  }
-  // Comsume the transform parameter to avoid duplicated transformation in
-  // getImage().
-  // TODO(yamaguchi): remove this line when we move the image transformation
-  // logic out of this class.
-  this.transform_ = undefined;
-
   this.taskId_ = ImageLoaderClient.loadToImage(
       this.thumbnailUrl_,
       this.image_,
-      loaderOptions,
+      {
+        maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
+        maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
+        cache: true,
+        priority: this.priority_,
+        timestamp: modificationTime,
+        orientation: this.transform_
+      },
       function() {},
       function() {
         this.image_.onerror(new Event('load-error'));
@@ -528,14 +432,13 @@ ThumbnailLoader.prototype.attachImage = function(
   }
 
   this.renderMedia_();
-  util.applyTransform(box, this.transform_);
   var attachableMedia = this.loaderType_ === ThumbnailLoader.LoaderType.CANVAS ?
       this.canvas_ : this.image_;
 
   var autoFillThreshold = opt_autoFillThreshold ||
       ThumbnailLoader.AUTO_FILL_THRESHOLD_DEFAULT_VALUE;
   ThumbnailLoader.centerImage_(box, attachableMedia, fillMode,
-      this.isRotated_(), autoFillThreshold, opt_boxWidth, opt_boxHeight);
+      autoFillThreshold, opt_boxWidth, opt_boxHeight);
 
   if (attachableMedia.parentNode !== box) {
     box.textContent = '';
@@ -553,17 +456,8 @@ ThumbnailLoader.prototype.attachImage = function(
  */
 ThumbnailLoader.prototype.getImage = function() {
   this.renderMedia_();
-  if (this.loaderType_ === ThumbnailLoader.LoaderType.IMAGE)
-    // TODO(yamaguchi): Fix image orientation in case of detached image loaded
-    // in IMAGE mode. Either apply transformation here or return
-    // this.transform_ as well.
-    return this.image_;
-  if (this.transform_) {
-    this.renderImageToCanvasWithTransform_(
-        this.image_, this.image_.width, this.image_.height,
-        this.transform_, this.canvas_);
-  }
-  return this.canvas_;
+  return (this.loaderType_ === ThumbnailLoader.LoaderType.IMAGE) ?
+      this.image_ : this.canvas_;
 };
 
 /**
@@ -576,7 +470,6 @@ ThumbnailLoader.prototype.getImage = function() {
  * @param {Element} box Containing element.
  * @param {Image|HTMLCanvasElement} img Element containing an image.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
- * @param {boolean} rotate True if the image should be rotated 90 degrees.
  * @param {number} autoFillThreshold Threshold value which is used for fill mode
  *     auto.
  * @param {number=} opt_boxWidth Container box's width. If not specified, the
@@ -586,7 +479,7 @@ ThumbnailLoader.prototype.getImage = function() {
  * @private
  */
 ThumbnailLoader.centerImage_ = function(
-    box, img, fillMode, rotate, autoFillThreshold, opt_boxWidth,
+    box, img, fillMode, autoFillThreshold, opt_boxWidth,
     opt_boxHeight) {
   var imageWidth = img.width;
   var imageHeight = img.height;
@@ -621,8 +514,8 @@ ThumbnailLoader.centerImage_ = function(
   if (boxWidth && boxHeight) {
     // When we know the box size we can position the image correctly even
     // in a non-square box.
-    var fitScaleX = (rotate ? boxHeight : boxWidth) / imageWidth;
-    var fitScaleY = (rotate ? boxWidth : boxHeight) / imageHeight;
+    var fitScaleX = boxWidth / imageWidth;
+    var fitScaleY = boxHeight / imageHeight;
 
     var scale = fill ?
         Math.max(fitScaleX, fitScaleY) :
