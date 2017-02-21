@@ -62,8 +62,8 @@ To make a release of Weston and/or Wayland, follow these steps.
 
       $ release.sh .
 
-      For Wayland, also publish the publican documentation to
-      wayland.freedesktop.org:
+      For Wayland official and point releases, also publish the publican
+      documentation to wayland.freedesktop.org:
 
       $ ./publish-doc
 
