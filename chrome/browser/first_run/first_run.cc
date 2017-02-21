@@ -326,27 +326,6 @@ void ConvertStringVectorToGURLVector(
   std::transform(src.begin(), src.end(), ret->begin(), &UrlFromString);
 }
 
-bool IsOnWelcomePage(content::WebContents* contents) {
-  // We have to check both the GetURL() similar to the other checks below, but
-  // also the original request url because the welcome page we use is a
-  // redirect.
-  // TODO(crbug.com/651465): Remove this once kUseConsolidatedStartupFlow is on
-  // by default.
-  const GURL deprecated_welcome_page(
-      l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL));
-  if (contents->GetURL() == deprecated_welcome_page ||
-      (contents->GetController().GetVisibleEntry() &&
-       contents->GetController().GetVisibleEntry()->GetOriginalRequestURL() ==
-           deprecated_welcome_page)) {
-    return true;
-  }
-
-  const GURL welcome_page(chrome::kChromeUIWelcomeURL);
-  const GURL welcome_page_win10(chrome::kChromeUIWelcomeWin10URL);
-  const GURL current = contents->GetURL().GetWithEmptyPath();
-  return current == welcome_page || current == welcome_page_win10;
-}
-
 // Show the first run search engine bubble at the first appropriate opportunity.
 // This bubble may be delayed by other UI, like global errors and sync promos.
 class FirstRunBubbleLauncher : public content::NotificationObserver {
@@ -418,7 +397,7 @@ void FirstRunBubbleLauncher::Observe(
                    gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
                    contents->GetURL() ==
                        chrome::GetSettingsUrl(chrome::kSyncSetupSubPage) ||
-                   IsOnWelcomePage(contents))) {
+                   first_run::IsOnWelcomePage(contents))) {
     return;
   }
 
@@ -713,6 +692,27 @@ bool ShouldShowWelcomePage() {
   bool retval = g_should_show_welcome_page;
   g_should_show_welcome_page = false;
   return retval;
+}
+
+bool IsOnWelcomePage(content::WebContents* contents) {
+  // We have to check both the GetURL() similar to the other checks below, but
+  // also the original request url because the welcome page we use is a
+  // redirect.
+  // TODO(crbug.com/651465): Remove this once kUseConsolidatedStartupFlow is on
+  // by default.
+  const GURL deprecated_welcome_page(
+      l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL));
+  if (contents->GetURL() == deprecated_welcome_page ||
+      (contents->GetController().GetVisibleEntry() &&
+       contents->GetController().GetVisibleEntry()->GetOriginalRequestURL() ==
+           deprecated_welcome_page)) {
+    return true;
+  }
+
+  const GURL welcome_page(chrome::kChromeUIWelcomeURL);
+  const GURL welcome_page_win10(chrome::kChromeUIWelcomeWin10URL);
+  const GURL current = contents->GetURL().GetWithEmptyPath();
+  return current == welcome_page || current == welcome_page_win10;
 }
 
 void SetShouldDoPersonalDataManagerFirstRun() {

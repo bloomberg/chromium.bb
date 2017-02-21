@@ -20,6 +20,10 @@ class CommandLine;
 class FilePath;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -135,6 +139,9 @@ void SetShouldShowWelcomePage();
 // This will return true only once: The first time it is called after
 // SetShouldShowWelcomePage() is called.
 bool ShouldShowWelcomePage();
+
+// Returns true if |contents| hosts one of the welcome pages.
+bool IsOnWelcomePage(content::WebContents* contents);
 
 // Iterates over the given tabs, replacing "magic words" designated for
 // use in Master Preferences files with corresponding URLs.
