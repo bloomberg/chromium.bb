@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -251,7 +252,31 @@ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
   for (Observer& observer : observers_)
     observer.OnHunspellDictionaryDownloadBegin(language_);
 
-  fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("spellcheck_hunspell_dictionary", R"(
+        semantics {
+          sender: "Spellcheck Dictionary Downloader"
+          description:
+            "When user selects a new language for spell checking in Google "
+            "Chrome, a new dictionary is downloaded for it."
+          trigger: "User selects a new language for spell checking."
+          data:
+            "The spell checking language identifier. No user identifier is "
+            "sent."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "You can prevent downloading dictionaries by not selecting 'Use "
+            "this language for spell checking.' in Chrome's settings under "
+            "Lanugagues -> 'Language and input settings...'."
+          policy_exception_justification:
+            "Not implemented, considered not useful."
+        })");
+
+  fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this,
+                                     traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(), data_use_measurement::DataUseUserData::SPELL_CHECKER);
   fetcher_->SetRequestContext(request_context_getter_);
