@@ -35,12 +35,9 @@ enum TextEventInputType {
   // Any tab characters in the text are backtabs.
   TextEventInputLineBreak,
   TextEventInputComposition,
-  TextEventInputBackTab,
   TextEventInputPaste,
   TextEventInputDrop,
-  TextEventInputDictation,
   TextEventInputIncrementalInsertion,
-  TextEventInputOther,
 };
 
 }  // namespace blink

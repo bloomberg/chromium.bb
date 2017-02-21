@@ -832,7 +832,7 @@ static bool executeInsertBacktab(LocalFrame& frame,
                                  const String&) {
   return targetFrame(frame, event)
       ->eventHandler()
-      .handleTextInputEvent("\t", event, TextEventInputBackTab);
+      .handleTextInputEvent("\t", event);
 }
 
 static bool executeInsertHorizontalRule(LocalFrame& frame,
