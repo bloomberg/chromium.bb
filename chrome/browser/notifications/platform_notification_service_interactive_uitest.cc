@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
@@ -365,12 +364,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::WaitForLoadStop(web_contents));
-
-  std::string url = web_contents->GetLastCommittedURL().spec();
-  if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings))
-    ASSERT_EQ("chrome://settings/content/notifications", url);
-  else
-    ASSERT_EQ("chrome://settings/contentExceptions#notifications", url);
+  ASSERT_EQ("chrome://settings/contentExceptions#notifications",
+            web_contents->GetLastCommittedURL().spec());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,

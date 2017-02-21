@@ -82,9 +82,6 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
 // Chrome OS defaults to showing Options in a window and including About in
 // Options.
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForOptionsChromeOS) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kMaterialDesignSettings);
-
   std::string chrome_prefix(content::kChromeUIScheme);
   chrome_prefix.append(url::kStandardSchemeSeparator);
   std::vector<AboutURLTestCase> test_cases(
@@ -98,9 +95,6 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForOptionsChromeOS) {
 
 #else
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForOptions) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kMaterialDesignSettings);
-
   std::string chrome_prefix(content::kChromeUIScheme);
   chrome_prefix.append(url::kStandardSchemeSeparator);
   std::vector<AboutURLTestCase> test_cases(

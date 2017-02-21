@@ -4,12 +4,10 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -34,19 +32,11 @@ class ChromeContentBrowserClientBrowserTest : public InProcessBrowserTest {
         GetController().GetLastCommittedEntry();
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    disable_md_settings_.InitAndDisableFeature(
-        features::kMaterialDesignSettings);
-  }
-
 #if defined(OS_CHROMEOS)
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableSettingsWindow);
   }
 #endif
-
- private:
-  base::test::ScopedFeatureList disable_md_settings_;
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,

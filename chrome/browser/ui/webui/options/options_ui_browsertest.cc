@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -106,11 +105,6 @@ bool FrameHasSettingsSourceHost(content::RenderFrameHost* frame) {
 }  // namespace
 
 OptionsUIBrowserTest::OptionsUIBrowserTest() {
-}
-
-void OptionsUIBrowserTest::SetUpInProcessBrowserTestFixture() {
-  InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  disable_md_settings_.InitAndDisableFeature(features::kMaterialDesignSettings);
 }
 
 void OptionsUIBrowserTest::NavigateToSettings() {
