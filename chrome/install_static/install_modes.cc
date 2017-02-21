@@ -12,6 +12,10 @@ std::wstring GetUnregisteredKeyPathForProduct(const wchar_t* product) {
   return std::wstring(L"Software\\").append(product);
 }
 
+std::wstring GetClientsKeyPathForApp(const wchar_t* app_guid) {
+  return std::wstring(L"Software\\Google\\Update\\Clients\\").append(app_guid);
+}
+
 std::wstring GetClientStateKeyPathForApp(const wchar_t* app_guid) {
   return std::wstring(L"Software\\Google\\Update\\ClientState\\")
       .append(app_guid);
@@ -24,10 +28,22 @@ std::wstring GetClientStateMediumKeyPathForApp(const wchar_t* app_guid) {
 
 }  // namespace
 
+std::wstring GetClientsKeyPath(const wchar_t* app_guid) {
+  if (!kUseGoogleUpdateIntegration)
+    return GetUnregisteredKeyPathForProduct(kProductPathName);
+  return GetClientsKeyPathForApp(app_guid);
+}
+
 std::wstring GetClientStateKeyPath(const wchar_t* app_guid) {
   if (!kUseGoogleUpdateIntegration)
     return GetUnregisteredKeyPathForProduct(kProductPathName);
   return GetClientStateKeyPathForApp(app_guid);
+}
+
+std::wstring GetBinariesClientsKeyPath() {
+  if (!kUseGoogleUpdateIntegration)
+    return GetUnregisteredKeyPathForProduct(kBinariesPathName);
+  return GetClientsKeyPathForApp(kBinariesAppGuid);
 }
 
 std::wstring GetBinariesClientStateKeyPath() {

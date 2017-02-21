@@ -5,7 +5,6 @@
 #include "chrome/install_static/install_util.h"
 
 #include <tuple>
-#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/test/test_reg_util_win.h"

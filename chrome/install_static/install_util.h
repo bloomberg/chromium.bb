@@ -178,8 +178,12 @@ std::wstring GetSwitchValueFromCommandLine(const std::wstring& command_line,
 bool RecursiveDirectoryCreate(const std::wstring& full_path);
 
 // Returns the unadorned channel name based on the channel strategy for the
-// install mode.
-std::wstring DetermineChannel(const InstallConstants& mode, bool system_level);
+// install mode. |from_binaries| forces the registry locations corresponding to
+// the now-deprecated multi-install binaries to be read, and is only for use by
+// the installer.
+std::wstring DetermineChannel(const InstallConstants& mode,
+                              bool system_level,
+                              bool from_binaries = false);
 
 // Caches the |ProcessType| of the current process.
 extern ProcessType g_process_type;

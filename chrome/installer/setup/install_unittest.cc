@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
@@ -21,6 +22,8 @@
 #include "base/test/test_shortcut_win.h"
 #include "base/version.h"
 #include "base/win/shortcut.h"
+#include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -35,13 +38,23 @@
 
 namespace {
 
-class CreateVisualElementsManifestTest : public testing::Test {
+// A parameterized test harness for testing
+// installer::CreateVisualElementsManifest. The parameters are:
+// 0: an index into a brand's install_static::kInstallModes array.
+// 1: the expected manifest.
+class CreateVisualElementsManifestTest
+    : public ::testing::TestWithParam<
+          std::tuple<install_static::InstallConstantIndex, const char*>> {
  protected:
+  CreateVisualElementsManifestTest()
+      : scoped_install_details_(false /* !system_level */,
+                                std::get<0>(GetParam())),
+        expected_manifest_(std::get<1>(GetParam())),
+        version_("0.0.0.0") {}
+
   void SetUp() override {
     // Create a temp directory for testing.
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-
-    version_ = base::Version("0.0.0.0");
 
     version_dir_ = test_dir_.GetPath().AppendASCII(version_.GetString());
     ASSERT_TRUE(base::CreateDirectory(version_dir_));
@@ -55,18 +68,68 @@ class CreateVisualElementsManifestTest : public testing::Test {
     ASSERT_TRUE(test_dir_.Delete());
   }
 
-  // The temporary directory used to contain the test operations.
-  base::ScopedTempDir test_dir_;
+  // InstallDetails for this test run.
+  install_static::ScopedInstallDetails scoped_install_details_;
+
+  // The expected contents of the manifest.
+  const char* const expected_manifest_;
 
   // A dummy version number used to create the version directory.
-  base::Version version_;
+  const base::Version version_;
+
+  // The temporary directory used to contain the test operations.
+  base::ScopedTempDir test_dir_;
 
   // The path to |test_dir_|\|version_|.
   base::FilePath version_dir_;
 
   // The path to VisualElementsManifest.xml.
   base::FilePath manifest_path_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CreateVisualElementsManifestTest);
 };
+
+constexpr char kExpectedPrimaryManifest[] =
+    "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
+    "  <VisualElements\r\n"
+    "      ShowNameOnSquare150x150Logo='on'\r\n"
+    "      Square150x150Logo='0.0.0.0\\VisualElements\\Logo.png'\r\n"
+    "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
+    "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
+    "      ForegroundText='light'\r\n"
+    "      BackgroundColor='#212121'/>\r\n"
+    "</Application>\r\n";
+
+#if defined(GOOGLE_CHROME_BUILD)
+constexpr char kExpectedCanaryManifest[] =
+    "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
+    "  <VisualElements\r\n"
+    "      ShowNameOnSquare150x150Logo='on'\r\n"
+    "      Square150x150Logo='0.0.0.0\\VisualElements\\LogoCanary.png'\r\n"
+    "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoCanary.png'\r\n"
+    "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoCanary.png'\r\n"
+    "      ForegroundText='light'\r\n"
+    "      BackgroundColor='#212121'/>\r\n"
+    "</Application>\r\n";
+
+INSTANTIATE_TEST_CASE_P(
+    GoogleChrome,
+    CreateVisualElementsManifestTest,
+    testing::Combine(testing::Values(install_static::STABLE_INDEX),
+                     testing::Values(kExpectedPrimaryManifest)));
+INSTANTIATE_TEST_CASE_P(
+    CanaryChrome,
+    CreateVisualElementsManifestTest,
+    testing::Combine(testing::Values(install_static::CANARY_INDEX),
+                     testing::Values(kExpectedCanaryManifest)));
+#else
+INSTANTIATE_TEST_CASE_P(
+    Chromium,
+    CreateVisualElementsManifestTest,
+    testing::Combine(testing::Values(install_static::CHROMIUM_INDEX),
+                     testing::Values(kExpectedPrimaryManifest)));
+#endif
 
 class InstallShortcutTest : public testing::Test {
  protected:
@@ -202,7 +265,7 @@ class InstallShortcutTest : public testing::Test {
 
 // Test that VisualElementsManifest.xml is not created when VisualElements are
 // not present.
-TEST_F(CreateVisualElementsManifestTest, VisualElementsManifestNotCreated) {
+TEST_P(CreateVisualElementsManifestTest, VisualElementsManifestNotCreated) {
   ASSERT_TRUE(
       installer::CreateVisualElementsManifest(test_dir_.GetPath(), version_));
   ASSERT_FALSE(base::PathExists(manifest_path_));
@@ -210,7 +273,7 @@ TEST_F(CreateVisualElementsManifestTest, VisualElementsManifestNotCreated) {
 
 // Test that VisualElementsManifest.xml is created with the correct content when
 // VisualElements are present.
-TEST_F(CreateVisualElementsManifestTest, VisualElementsManifestCreated) {
+TEST_P(CreateVisualElementsManifestTest, VisualElementsManifestCreated) {
   ASSERT_TRUE(base::CreateDirectory(
       version_dir_.Append(installer::kVisualElements)));
   ASSERT_TRUE(
@@ -220,18 +283,7 @@ TEST_F(CreateVisualElementsManifestTest, VisualElementsManifestCreated) {
   std::string read_manifest;
   ASSERT_TRUE(base::ReadFileToString(manifest_path_, &read_manifest));
 
-  static const char kExpectedManifest[] =
-      "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
-      "  <VisualElements\r\n"
-      "      ShowNameOnSquare150x150Logo='on'\r\n"
-      "      Square150x150Logo='0.0.0.0\\VisualElements\\Logo.png'\r\n"
-      "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
-      "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
-      "      ForegroundText='light'\r\n"
-      "      BackgroundColor='#212121'/>\r\n"
-      "</Application>\r\n";
-
-  ASSERT_STREQ(kExpectedManifest, read_manifest.c_str());
+  ASSERT_STREQ(expected_manifest_, read_manifest.c_str());
 }
 
 TEST_F(InstallShortcutTest, CreateAllShortcuts) {

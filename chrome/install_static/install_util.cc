@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <sstream>
 
@@ -259,7 +260,8 @@ std::vector<StringType> TokenizeStringT(
 }
 
 std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
-                                             bool system_level) {
+                                             bool system_level,
+                                             bool from_binaries) {
   assert(kUseGoogleUpdateIntegration);
   // InitChannelInfo in google_update_settings.cc only reports a failure when
   // Chrome's ClientState key exists but that the "ap" value therein cannot be
@@ -268,8 +270,10 @@ std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
   // any error whatsoever here.
   std::wstring value;
   nt::QueryRegValueSZ(system_level ? nt::HKLM : nt::HKCU, nt::WOW6432,
-                      GetClientStateKeyPath(mode.app_guid).c_str(), kRegValueAp,
-                      &value);
+                      from_binaries
+                          ? GetBinariesClientStateKeyPath().c_str()
+                          : GetClientStateKeyPath(mode.app_guid).c_str(),
+                      kRegValueAp, &value);
 
   static constexpr wchar_t kChromeChannelBetaPattern[] = L"1?1-*";
   static constexpr wchar_t kChromeChannelBetaX64Pattern[] = L"*x64-beta*";
@@ -737,7 +741,9 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path) {
 
 // This function takes these inputs rather than accessing the module's
 // InstallDetails instance since it is used to bootstrap InstallDetails.
-std::wstring DetermineChannel(const InstallConstants& mode, bool system_level) {
+std::wstring DetermineChannel(const InstallConstants& mode,
+                              bool system_level,
+                              bool from_binaries) {
   if (!kUseGoogleUpdateIntegration)
     return std::wstring();
 
@@ -746,7 +752,7 @@ std::wstring DetermineChannel(const InstallConstants& mode, bool system_level) {
       assert(false);
       break;
     case ChannelStrategy::ADDITIONAL_PARAMETERS:
-      return ChannelFromAdditionalParameters(mode, system_level);
+      return ChannelFromAdditionalParameters(mode, system_level, from_binaries);
     case ChannelStrategy::FIXED:
       return mode.default_channel_name;
   }

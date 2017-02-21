@@ -995,9 +995,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // Delete shared registry keys as well (these require admin rights) if
   // remove_all option is specified.
   if (remove_all) {
-    if (!InstallUtil::IsChromeSxSProcess()) {
-      // Delete media player registry key that exists only in HKLM. We don't
-      // delete this key in SxS uninstall as we never set the key for it.
+    if (installer_state.system_install()) {
+      // Delete media player registry key that exists only in HKLM.
       base::string16 reg_path(installer::kMediaPlayerRegPath);
       reg_path.push_back(base::FilePath::kSeparators[0]);
       reg_path.append(installer::kChromeExe);

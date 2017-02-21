@@ -29,8 +29,8 @@ const wchar_t kUserDataDirNameSuffix[] = L"\\Chromium\\User Data";
 
 const wchar_t kUserDataDirRegistryKey[] = L"UserDataDir";
 
-const InstallConstants kFakeInstallConstants = {sizeof(InstallConstants), 0,
-                                                L""};
+const InstallConstants kFakeInstallConstants = {
+    sizeof(InstallConstants), 0, "", L"", L"", L"", L""};
 
 class ScopedNTRegistryTestingOverride {
  public:

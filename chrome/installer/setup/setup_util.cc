@@ -31,6 +31,8 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
+#include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_modes.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/user_hive_visitor.h"
@@ -54,19 +56,6 @@ namespace {
 // Event log providers registry location.
 constexpr wchar_t kEventLogProvidersRegPath[] =
     L"SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\";
-
-// TODO(grt): use install_static::InstallDetails::Get().install_full_name() when
-// InstallDetails is initialized in the installer.
-base::string16 InstallFullName() {
-#if defined(GOOGLE_CHROME_BUILD)
-  base::string16 reg_path(L"Chrome");
-  if (InstallUtil::IsChromeSxSProcess())
-    reg_path.append(L" SxS");
-  return reg_path;
-#else
-  return base::string16(L"Chromium");
-#endif
-}
 
 // Returns true if the "lastrun" value in |root|\|key_path| (a path to Chrome's
 // ClientState key for a user) indicates that Chrome has been used within the
@@ -104,7 +93,7 @@ bool OnUserHive(const base::string16& client_state_path,
 // for this mode of install was dropped from ToT in December 2016. Remove any
 // stray bits in the registry leftover from such installs.
 void RemoveBinariesVersionKey(const InstallerState& installer_state) {
-  base::string16 path(MakeBinariesRegistrationData()->GetVersionKey());
+  base::string16 path(install_static::GetBinariesClientsKeyPath());
   if (base::win::RegKey(installer_state.root_key(), path.c_str(),
                         KEY_QUERY_VALUE | KEY_WOW64_32KEY)
           .Valid()) {
@@ -698,7 +687,7 @@ void RecordUnPackMetrics(UnPackStatus unpack_status,
 void RegisterEventLogProvider(const base::FilePath& install_directory,
                               const base::Version& version) {
   base::string16 reg_path(kEventLogProvidersRegPath);
-  reg_path.append(InstallFullName());
+  reg_path.append(install_static::InstallDetails::Get().install_full_name());
   VLOG(1) << "Registering Chrome's event log provider at " << reg_path;
 
   std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
@@ -738,7 +727,7 @@ void RegisterEventLogProvider(const base::FilePath& install_directory,
 
 void DeRegisterEventLogProvider() {
   base::string16 reg_path(kEventLogProvidersRegPath);
-  reg_path.append(InstallFullName());
+  reg_path.append(install_static::InstallDetails::Get().install_full_name());
 
   // TODO(http://crbug.com/668120): If the Event Viewer is open the provider dll
   // will fail to get deleted. This doesn't fail the uninstallation altogether
@@ -748,17 +737,16 @@ void DeRegisterEventLogProvider() {
 }
 
 std::unique_ptr<AppRegistrationData> MakeBinariesRegistrationData() {
-#if defined(GOOGLE_CHROME_BUILD)
-  return base::MakeUnique<UpdatingAppRegistrationData>(
-      L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}");
-#else
+  if (install_static::kUseGoogleUpdateIntegration) {
+    return base::MakeUnique<UpdatingAppRegistrationData>(
+        install_static::kBinariesAppGuid);
+  }
   return base::MakeUnique<NonUpdatingAppRegistrationData>(
-      L"Software\\Chromium Binaries");
-#endif
+      base::string16(L"Software\\").append(install_static::kBinariesPathName));
 }
 
 bool AreBinariesInstalled(const InstallerState& installer_state) {
-  if (InstallUtil::IsChromeSxSProcess())
+  if (!install_static::InstallDetails::Get().supported_multi_install())
     return false;
 
   base::win::RegKey key;
@@ -766,7 +754,7 @@ bool AreBinariesInstalled(const InstallerState& installer_state) {
 
   // True if the "pv" value exists and isn't empty.
   return key.Open(installer_state.root_key(),
-                  MakeBinariesRegistrationData()->GetVersionKey().c_str(),
+                  install_static::GetBinariesClientsKeyPath().c_str(),
                   KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
          key.ReadValue(google_update::kRegVersionField, &pv) == ERROR_SUCCESS &&
          !pv.empty();
@@ -779,7 +767,7 @@ void DoLegacyCleanups(const InstallerState& installer_state,
     return;
 
   // The cleanups below only apply to normal Chrome, not side-by-side (canary).
-  if (InstallUtil::IsChromeSxSProcess())
+  if (!install_static::InstallDetails::Get().is_primary_mode())
     return;
 
   RemoveBinariesVersionKey(installer_state);

@@ -1,7 +1,12 @@
 include_rules = [
   "+chrome_elf/chrome_elf_constants.h",
-  "+chrome/install_static/install_details.h",
-  "+chrome/install_static/install_util.h",
+  "+chrome/install_static",
   "+components/base32",
   "+courgette",
 ]
+
+specific_include_rules = {
+  ".*_unittest\.cc": [
+    "+chrome_elf/nt_registry/nt_registry.h",
+  ],
+}

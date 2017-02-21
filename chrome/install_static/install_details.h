@@ -65,11 +65,19 @@ class InstallDetails {
   // a brand-specific InstallConstantIndex enumerator.
   int install_mode_index() const { return payload_->mode->index; }
 
+  // Returns true if the current mode is the brand's primary install mode rather
+  // than one of its secondary modes (e.g., canary Chrome).
+  bool is_primary_mode() const { return install_mode_index() == 0; }
+
   // The mode's install suffix (e.g., " SxS" for canary Chrome), or an empty
   // string for a brand's primary install mode.
   const wchar_t* install_suffix() const {
     return payload_->mode->install_suffix;
   }
+
+  // The mode's logo suffix (e.g., "Canary" for canary Chrome), or an empty
+  // string for a brand's primary install mode.
+  const wchar_t* logo_suffix() const { return payload_->mode->logo_suffix; }
 
   // Returns the full name of the installed product (e.g. "Chrome SxS" for
   // canary chrome).
@@ -89,7 +97,9 @@ class InstallDetails {
     return payload_->mode->supports_system_level;
   }
 
-  // True if the mode once supported multi-install.
+  // True if the mode once supported multi-install, a legacy mode of
+  // installation. This exists to provide migration and cleanup for older
+  // installs.
   bool supported_multi_install() const {
     return payload_->mode->supported_multi_install;
   }

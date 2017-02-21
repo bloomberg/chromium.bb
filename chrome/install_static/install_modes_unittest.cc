@@ -23,11 +23,23 @@ TEST(InstallModes, VerifyModes) {
     // The modes must be listed in order.
     ASSERT_THAT(mode.index, Eq(i));
 
+    // The first mode must have no install switch; the rest must have one.
+    if (i == 0)
+      ASSERT_THAT(mode.install_switch, StrEq(""));
+    else
+      ASSERT_THAT(mode.install_switch, StrNe(""));
+
     // The first mode must have no suffix; the rest must have one.
     if (i == 0)
       ASSERT_THAT(mode.install_suffix, StrEq(L""));
     else
       ASSERT_THAT(mode.install_suffix, StrNe(L""));
+
+    // The first mode must have no logo suffix; the rest must have one.
+    if (i == 0)
+      ASSERT_THAT(mode.logo_suffix, StrEq(L""));
+    else
+      ASSERT_THAT(mode.logo_suffix, StrNe(L""));
 
     // The modes must have an appguid if Google Update integration is supported.
     if (kUseGoogleUpdateIntegration)
@@ -55,6 +67,18 @@ TEST(InstallModes, VerifyBrand) {
   }
 }
 
+TEST(InstallModes, GetClientsKeyPath) {
+  constexpr wchar_t kAppGuid[] = L"test";
+
+  if (kUseGoogleUpdateIntegration) {
+    ASSERT_THAT(GetClientsKeyPath(kAppGuid),
+                StrEq(L"Software\\Google\\Update\\Clients\\test"));
+  } else {
+    ASSERT_THAT(GetClientsKeyPath(kAppGuid),
+                StrEq(std::wstring(L"Software\\").append(kProductPathName)));
+  }
+}
+
 TEST(InstallModes, GetClientStateKeyPath) {
   constexpr wchar_t kAppGuid[] = L"test";
 
@@ -64,6 +88,17 @@ TEST(InstallModes, GetClientStateKeyPath) {
   } else {
     ASSERT_THAT(GetClientStateKeyPath(kAppGuid),
                 StrEq(std::wstring(L"Software\\").append(kProductPathName)));
+  }
+}
+
+TEST(InstallModes, GetBinariesClientsKeyPath) {
+  if (kUseGoogleUpdateIntegration) {
+    ASSERT_THAT(GetBinariesClientsKeyPath(),
+                StrEq(std::wstring(L"Software\\Google\\Update\\Clients\\")
+                          .append(kBinariesAppGuid)));
+  } else {
+    ASSERT_THAT(GetBinariesClientsKeyPath(),
+                StrEq(std::wstring(L"Software\\").append(kBinariesPathName)));
   }
 }
 

@@ -16,7 +16,14 @@
 // `kInstallModes` array. Index 0 of this array always describes the primary
 // install mode. All other entries describe secondary modes, which are
 // distinguished by an install suffix (e.g., " SxS") that appears in file and
-// registry paths.
+// registry paths. A given machine may have any combination of a brand's modes
+// installed at the same time (e.g., primary only, one or more secondary, or
+// even primary and all secondary modes). Parallel installs of a brand's modes
+// (e.g., Google Chrome and Google Chrome SxS (canary) installed on the same
+// machine) store user data in distinct directories. Administrative policies, on
+// the other hand, apply to all of a brand's install modes (e.g., the
+// AlwaysOpenPdfExternally group policy setting applies to both Google Chrome
+// and Google Chrome SxS.
 
 #ifndef CHROME_INSTALL_STATIC_INSTALL_MODES_H_
 #define CHROME_INSTALL_STATIC_INSTALL_MODES_H_
@@ -72,9 +79,11 @@ extern const InstallConstants kInstallModes[];
 // Google Update, they return something like
 // "Software\Google\Update\ClientState{Medium}\<guid>" where "<guid>" is either
 // |mode|'s appguid or the brand's kBinariesAppGuid.
+std::wstring GetClientsKeyPath(const wchar_t* app_guid);
 std::wstring GetClientStateKeyPath(const wchar_t* app_guid);
-std::wstring GetBinariesClientStateKeyPath();
 std::wstring GetClientStateMediumKeyPath(const wchar_t* app_guid);
+std::wstring GetBinariesClientsKeyPath();
+std::wstring GetBinariesClientStateKeyPath();
 std::wstring GetBinariesClientStateMediumKeyPath();
 
 }  // namespace install_static

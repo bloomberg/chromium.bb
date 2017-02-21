@@ -27,6 +27,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "chrome/install_static/install_details.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/persistent_histogram_storage.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -335,8 +336,8 @@ bool AddAclToPath(const base::FilePath& path,
 // Chrome when migrating multi-install Chrome to single-install.
 void AddMigrateUsageStatsWorkItems(const InstallerState& installer_state,
                                    WorkItemList* install_list) {
-  // This operation doesn't apply to SxS Chrome.
-  if (InstallUtil::IsChromeSxSProcess())
+  // This operation only applies to modes that once supported multi-install.
+  if (install_static::InstallDetails::Get().supported_multi_install())
     return;
 
   // Bail out if an existing multi-install Chrome is not being migrated to
