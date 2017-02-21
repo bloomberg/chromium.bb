@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
@@ -208,8 +207,6 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
   // Info on the last finished fetch.
   std::string last_status_;
   std::string last_fetch_json_;
-
-  base::WeakPtrFactory<RemoteSuggestionsFetcher> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsFetcher);
 };

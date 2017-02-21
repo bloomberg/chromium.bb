@@ -272,8 +272,7 @@ RemoteSuggestionsFetcher::RemoteSuggestionsFetcher(
       request_throttler_active_suggestions_consumer_(
           pref_service,
           RequestThrottler::RequestType::
-              CONTENT_SUGGESTION_FETCHER_ACTIVE_SUGGESTIONS_CONSUMER),
-      weak_ptr_factory_(this) {}
+              CONTENT_SUGGESTION_FETCHER_ACTIVE_SUGGESTIONS_CONSUMER) {}
 
 RemoteSuggestionsFetcher::~RemoteSuggestionsFetcher() {
   if (waiting_for_refresh_token_) {
