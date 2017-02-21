@@ -54,7 +54,9 @@ TEST_F(DeleteSelectionCommandTest, deleteListFromTable) {
   EXPECT_TRUE(command->apply()) << "the delete command should have succeeded";
   EXPECT_EQ("<div contenteditable=\"true\"><br></div>",
             document().body()->innerHTML());
-  EXPECT_TRUE(frame->selection().isCaret());
+  EXPECT_TRUE(frame->selection()
+                  .computeVisibleSelectionInDOMTreeDeprecated()
+                  .isCaret());
   EXPECT_EQ(Position(div, 0), frame->selection().base().toOffsetInAnchor());
 }
 

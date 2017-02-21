@@ -415,7 +415,7 @@ static bool hasChildTags(Element& element, const QualifiedName& tagName) {
 
 static TriState selectionListState(const FrameSelection& selection,
                                    const QualifiedName& tagName) {
-  if (selection.isCaret()) {
+  if (selection.computeVisibleSelectionInDOMTreeDeprecated().isCaret()) {
     if (enclosingElementWithTag(
             selection.computeVisibleSelectionInDOMTreeDeprecated().start(),
             tagName))

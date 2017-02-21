@@ -2367,7 +2367,7 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const {
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       localFrame->document()->lifecycle());
 
-  if (selection.isCaret()) {
+  if (selection.computeVisibleSelectionInDOMTreeDeprecated().isCaret()) {
     anchor = focus = selection.absoluteCaretBounds();
   } else {
     const EphemeralRange selectedRange =

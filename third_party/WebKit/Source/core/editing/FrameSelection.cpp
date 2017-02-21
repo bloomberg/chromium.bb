@@ -480,7 +480,8 @@ void FrameSelection::invalidatePaintIfNeeded(
 bool FrameSelection::shouldPaintCaret(const LayoutBlock& block) const {
   DCHECK_GE(document().lifecycle().state(), DocumentLifecycle::LayoutClean);
   bool result = m_frameCaret->shouldPaintCaret(block);
-  DCHECK(!result || (isCaret() && hasEditableStyle()));
+  DCHECK(!result || (computeVisibleSelectionInDOMTreeDeprecated().isCaret() &&
+                     hasEditableStyle()));
   return result;
 }
 

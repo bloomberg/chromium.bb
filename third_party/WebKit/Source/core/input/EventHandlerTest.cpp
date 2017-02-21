@@ -153,7 +153,8 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
 
   TapEventBuilder singleTapEvent(IntPoint(0, 0), 1);
   document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   EXPECT_EQ(Position(line, 0), selection().start());
 
   // Multi-tap events on editable elements should trigger selection, just
@@ -191,18 +192,21 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTapDisabledIfNotEditable) {
 
   TapEventBuilder singleTapEvent(IntPoint(0, 0), 1);
   document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   EXPECT_EQ(Position(line, 0), selection().start());
 
   // As the text is readonly, multi-tap events should not trigger selection.
   TapEventBuilder doubleTapEvent(IntPoint(0, 0), 2);
   document().frame()->eventHandler().handleGestureEvent(doubleTapEvent);
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   EXPECT_EQ(Position(line, 0), selection().start());
 
   TapEventBuilder tripleTapEvent(IntPoint(0, 0), 3);
   document().frame()->eventHandler().handleGestureEvent(tripleTapEvent);
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   EXPECT_EQ(Position(line, 0), selection().start());
 }
 
@@ -307,7 +311,8 @@ TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnTap) {
   TapEventBuilder singleTapEvent(IntPoint(200, 200), 1);
   document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
 
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   ASSERT_FALSE(selection().isHandleVisible());
 }
 
@@ -317,7 +322,8 @@ TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnTap) {
   TapEventBuilder singleTapEvent(IntPoint(200, 200), 1);
   document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
 
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   ASSERT_TRUE(selection().isHandleVisible());
 }
 
@@ -327,14 +333,16 @@ TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnLongPress) {
   LongPressEventBuilder longPressEvent(IntPoint(200, 200));
   document().frame()->eventHandler().handleGestureEvent(longPressEvent);
 
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   ASSERT_TRUE(selection().isHandleVisible());
 
   // Single Tap on an empty edit field should clear insertion handle
   TapEventBuilder singleTapEvent(IntPoint(200, 200), 1);
   document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
 
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   ASSERT_FALSE(selection().isHandleVisible());
 }
 
@@ -344,7 +352,8 @@ TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnLongPress) {
   LongPressEventBuilder longPressEvent(IntPoint(200, 200));
   document().frame()->eventHandler().handleGestureEvent(longPressEvent);
 
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   ASSERT_TRUE(selection().isHandleVisible());
 }
 
@@ -355,7 +364,8 @@ TEST_F(EventHandlerTest, ClearHandleAfterTap) {
   LongPressEventBuilder longPressEvent(IntPoint(200, 200));
   document().frame()->eventHandler().handleGestureEvent(longPressEvent);
 
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   ASSERT_TRUE(selection().isHandleVisible());
 
   // Tap away from text area should clear handle
@@ -373,7 +383,8 @@ TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
       IntPoint(200, 200), 1, WebPointerProperties::Button::Left);
   document().frame()->eventHandler().handleMousePressEvent(leftMousePressEvent);
 
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   ASSERT_FALSE(selection().isHandleVisible());
 
   MousePressEventBuilder rightMousePressEvent(
@@ -381,7 +392,8 @@ TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
   document().frame()->eventHandler().handleMousePressEvent(
       rightMousePressEvent);
 
-  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   ASSERT_FALSE(selection().isHandleVisible());
 
   MousePressEventBuilder doubleClickMousePressEvent(

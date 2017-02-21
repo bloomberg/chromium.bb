@@ -213,9 +213,6 @@ class CORE_EXPORT FrameSelection final
   bool isNone() const {
     return computeVisibleSelectionInDOMTreeDeprecated().isNone();
   }
-  bool isCaret() const {
-    return computeVisibleSelectionInDOMTreeDeprecated().isCaret();
-  }
   bool isRange() const {
     return computeVisibleSelectionInDOMTreeDeprecated().isRange();
   }

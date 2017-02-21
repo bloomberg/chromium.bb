@@ -204,7 +204,7 @@ EditorClient& Editor::client() const {
 }
 
 static bool isCaretAtStartOfWrappedLine(const FrameSelection& selection) {
-  if (!selection.isCaret())
+  if (!selection.computeVisibleSelectionInDOMTreeDeprecated().isCaret())
     return false;
   if (selection.affinity() != TextAffinity::Downstream)
     return false;

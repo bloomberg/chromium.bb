@@ -1142,7 +1142,10 @@ bool DragController::startDrag(LocalFrame* src,
   } else if (state.m_dragType == DragSourceActionLink) {
     if (linkURL.isEmpty())
       return false;
-    if (src->selection().isCaret() && src->selection().isContentEditable()) {
+    if (src->selection()
+            .computeVisibleSelectionInDOMTreeDeprecated()
+            .isCaret() &&
+        src->selection().isContentEditable()) {
       // a user can initiate a drag on a link without having any text
       // selected.  In this case, we should expand the selection to
       // the enclosing anchor element

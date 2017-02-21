@@ -78,7 +78,8 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   selection().setSelection(
       SelectionInDOMTree::Builder().collapse(Position(text, 0)).build());
   document().view()->updateAllLifecyclePhases();
-  EXPECT_TRUE(selection().isCaret());
+  EXPECT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
   EXPECT_TRUE(toLayoutBlock(document().body()->layoutObject())
                   ->shouldPaintCursorCaret());
 

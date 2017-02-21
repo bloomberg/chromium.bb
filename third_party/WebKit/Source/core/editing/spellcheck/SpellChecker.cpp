@@ -640,7 +640,10 @@ void SpellChecker::markAndReplaceFor(
   int selectionOffset = 0;
   int ambiguousBoundaryOffset = -1;
 
-  if (frame().selection().isCaret()) {
+  if (frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .isCaret()) {
     // TODO(xiaochengh): The following comment does not match the current
     // behavior and should be rewritten.
     // Attempt to save the caret position so we can restore it later if needed
