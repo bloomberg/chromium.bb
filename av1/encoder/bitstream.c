@@ -1182,11 +1182,6 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
   if (cm->interp_filter == SWITCHABLE) {
 #if CONFIG_DUAL_FILTER
     int dir;
-    if (!av1_is_interp_needed(xd)) {
-      assert(mbmi->interp_filter[0] == EIGHTTAP_REGULAR);
-      return;
-    }
-
     for (dir = 0; dir < 2; ++dir) {
       if (has_subpel_mv_component(xd->mi[0], xd, dir) ||
           (mbmi->ref_frame[1] > INTRA_FRAME &&
@@ -1202,6 +1197,8 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
                         &switchable_interp_encodings[mbmi->interp_filter[dir]]);
 #endif
         ++cpi->interp_filter_selected[0][mbmi->interp_filter[dir]];
+      } else {
+        assert(mbmi->interp_filter[dir] == EIGHTTAP_REGULAR);
       }
     }
 #else
@@ -1980,8 +1977,8 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
         xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 #endif
 #if CONFIG_DUAL_FILTER
-    // av1_is_interp_needed needs the ref frame buffers set up to look
-    // up if they are scaled. av1_is_interp_needed is in turn needed by
+    // has_subpel_mv_component needs the ref frame buffers set up to look
+    // up if they are scaled. has_subpel_mv_component is in turn needed by
     // write_switchable_interp_filter, which is called by pack_inter_mode_mvs.
     set_ref_ptrs(cm, xd, m->mbmi.ref_frame[0], m->mbmi.ref_frame[1]);
 #endif  // CONFIG_DUAL_FILTER
