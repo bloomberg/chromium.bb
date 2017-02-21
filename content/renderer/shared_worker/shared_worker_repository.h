@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebAddressSpace.h"
-#include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
+#include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerRepositoryClient.h"
 

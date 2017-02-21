@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,40 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebEmbeddedWorkerStartData_h
-#define WebEmbeddedWorkerStartData_h
+#ifndef WebContentSecurityPolicy_h
+#define WebContentSecurityPolicy_h
 
-#include "public/platform/WebAddressSpace.h"
-#include "public/platform/WebContentSecurityPolicy.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/web/WebSettings.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
-struct WebEmbeddedWorkerStartData {
-  enum PauseAfterDownloadMode {
-    DontPauseAfterDownload,
-    PauseAfterDownload,
-  };
-  enum WaitForDebuggerMode { DontWaitForDebugger, WaitForDebugger };
+enum WebContentSecurityPolicyType {
+  WebContentSecurityPolicyTypeReport,
+  WebContentSecurityPolicyTypeEnforce,
+  WebContentSecurityPolicyTypeLast = WebContentSecurityPolicyTypeEnforce
+};
 
-  WebURL scriptURL;
-  WebString userAgent;
-  PauseAfterDownloadMode pauseAfterDownloadMode;
-  WaitForDebuggerMode waitForDebuggerMode;
-  WebSettings::V8CacheOptions v8CacheOptions;
-  bool dataSaverEnabled;
-
-  WebAddressSpace addressSpace;
-
-  WebEmbeddedWorkerStartData()
-      : pauseAfterDownloadMode(DontPauseAfterDownload),
-        waitForDebuggerMode(DontWaitForDebugger),
-        v8CacheOptions(WebSettings::V8CacheOptionsDefault),
-        dataSaverEnabled(false) {}
+enum WebContentSecurityPolicySource {
+  WebContentSecurityPolicySourceHTTP,
+  WebContentSecurityPolicySourceMeta,
+  WebContentSecurityPolicySourceLast = WebContentSecurityPolicySourceMeta
 };
 
 }  // namespace blink
 
-#endif  // WebEmbeddedWorkerStartData_h
+#endif

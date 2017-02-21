@@ -14,6 +14,7 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebContentSecurityPolicy.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
@@ -161,6 +162,18 @@ class CORE_EXPORT CSPDirectiveList
   // The algorithm is described here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy
   bool subsumes(const CSPDirectiveListVector&);
+
+  // Export a subset of the Policy. The primary goal of this method is to make
+  // the embedders aware of the directives that affect navigation, as the
+  // embedder is responsible for navigational enforcement.
+  // It currently contains the following ones:
+  // * default-src
+  // * child-src
+  // * frame-src
+  // * form-action
+  // The exported directives only contains sources that affect navigation. For
+  // instance it doesn't contains 'unsafe-inline' or 'unsafe-eval'
+  WebContentSecurityPolicyPolicy exposeForNavigationalChecks() const;
 
   DECLARE_TRACE();
 

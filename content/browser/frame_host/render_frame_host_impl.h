@@ -30,6 +30,7 @@
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
+#include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/download/mhtml_save_status.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
@@ -716,7 +717,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidChangeName(const std::string& name, const std::string& unique_name);
   void OnDidSetFeaturePolicyHeader(
       const ParsedFeaturePolicyHeader& parsed_header);
-  void OnDidAddContentSecurityPolicy(const ContentSecurityPolicyHeader& header);
+  void OnDidAddContentSecurityPolicy(
+      const ContentSecurityPolicyHeader& header,
+      const std::vector<ContentSecurityPolicy>& policy);
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnUpdateToUniqueOrigin(bool is_potentially_trustworthy_unique_origin);
   void OnDidChangeSandboxFlags(int32_t frame_routing_id,

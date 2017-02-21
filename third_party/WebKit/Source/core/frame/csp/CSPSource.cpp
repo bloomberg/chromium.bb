@@ -205,6 +205,20 @@ bool CSPSource::firstSubsumesSecond(
   return true;
 }
 
+WebContentSecurityPolicySourceExpression
+CSPSource::exposeForNavigationalChecks() const {
+  WebContentSecurityPolicySourceExpression sourceExpression;
+  sourceExpression.scheme = m_scheme;
+  sourceExpression.host = m_host;
+  sourceExpression.isHostWildcard =
+      static_cast<WebWildcardDisposition>(m_hostWildcard);
+  sourceExpression.port = m_port;
+  sourceExpression.isPortWildcard =
+      static_cast<WebWildcardDisposition>(m_portWildcard);
+  sourceExpression.path = m_path;
+  return sourceExpression;
+}
+
 DEFINE_TRACE(CSPSource) {
   visitor->trace(m_policy);
 }

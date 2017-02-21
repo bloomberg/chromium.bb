@@ -31,6 +31,8 @@
 #ifndef FrameLoaderClient_h
 #define FrameLoaderClient_h
 
+#include <v8.h>
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/IconURL.h"
@@ -45,14 +47,13 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/Referrer.h"
+#include "public/platform/WebContentSecurityPolicyStruct.h"
 #include "public/platform/WebEffectiveConnectionType.h"
 #include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 
@@ -276,9 +277,11 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
   // Called when a new Content Security Policy is added to the frame's document.
   // This can be triggered by handling of HTTP headers, handling of <meta>
   // element, or by inheriting CSP from the parent (in case of about:blank).
-  virtual void didAddContentSecurityPolicy(const String& headerValue,
-                                           ContentSecurityPolicyHeaderType,
-                                           ContentSecurityPolicyHeaderSource) {}
+  virtual void didAddContentSecurityPolicy(
+      const String& headerValue,
+      ContentSecurityPolicyHeaderType,
+      ContentSecurityPolicyHeaderSource,
+      const std::vector<WebContentSecurityPolicyPolicy>&) {}
 
   virtual void didChangeFrameOwnerProperties(HTMLFrameElementBase*) {}
 

@@ -183,9 +183,11 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
   void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;
   void didSetFeaturePolicyHeader(
       const WebParsedFeaturePolicyHeader& parsedHeader) override;
-  void didAddContentSecurityPolicy(const String& headerValue,
-                                   ContentSecurityPolicyHeaderType,
-                                   ContentSecurityPolicyHeaderSource) override;
+  void didAddContentSecurityPolicy(
+      const String& headerValue,
+      ContentSecurityPolicyHeaderType,
+      ContentSecurityPolicyHeaderSource,
+      const std::vector<WebContentSecurityPolicyPolicy>&) override;
   void didChangeFrameOwnerProperties(HTMLFrameElementBase*) override;
 
   void dispatchWillStartUsingPeerConnectionHandler(

@@ -696,6 +696,18 @@ bool SourceListDirective::subsumes(
   return CSPSource::firstSubsumesSecond(normalizedA, normalizedB);
 }
 
+WebContentSecurityPolicySourceList
+SourceListDirective::exposeForNavigationalChecks() const {
+  WebContentSecurityPolicySourceList sourceList;
+  sourceList.allowSelf = m_allowSelf;
+  sourceList.allowStar = m_allowStar;
+  WebVector<WebContentSecurityPolicySourceExpression> list(m_list.size());
+  for (size_t i = 0; i < m_list.size(); ++i)
+    list[i] = m_list[i]->exposeForNavigationalChecks();
+  sourceList.sources.swap(list);
+  return sourceList;
+}
+
 bool SourceListDirective::subsumesNoncesAndHashes(
     const HashSet<String>& nonces,
     const HashSet<CSPHashValue> hashes) const {

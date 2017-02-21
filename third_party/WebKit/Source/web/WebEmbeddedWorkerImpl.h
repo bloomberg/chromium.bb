@@ -33,13 +33,13 @@
 
 #include "core/workers/WorkerLoaderProxy.h"
 
+#include <memory>
 #include "platform/heap/Handle.h"
-#include "public/web/WebContentSecurityPolicy.h"
+#include "public/platform/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebEmbeddedWorker.h"
 #include "public/web/WebEmbeddedWorkerStartData.h"
 #include "public/web/WebFrameClient.h"
-#include <memory>
 
 namespace blink {
 

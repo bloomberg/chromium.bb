@@ -44,6 +44,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameTypes.h"
 #include "core/frame/Settings.h"
+#include "core/frame/csp/CSPSource.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -79,6 +80,8 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebClipboard.h"
+#include "public/platform/WebContentSecurityPolicy.h"
+#include "public/platform/WebContentSecurityPolicyStruct.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebFileError.h"
 #include "public/platform/WebFileInfo.h"
@@ -112,7 +115,6 @@
 #include "public/web/WebAXObject.h"
 #include "public/web/WebClientRedirectPolicy.h"
 #include "public/web/WebConsoleMessage.h"
-#include "public/web/WebContentSecurityPolicy.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebFrameLoadType.h"
 #include "public/web/WebHistoryCommitType.h"
@@ -721,6 +723,9 @@ STATIC_ASSERT_ENUM(WebContentSecurityPolicySourceHTTP,
                    ContentSecurityPolicyHeaderSourceHTTP);
 STATIC_ASSERT_ENUM(WebContentSecurityPolicySourceMeta,
                    ContentSecurityPolicyHeaderSourceMeta);
+
+STATIC_ASSERT_ENUM(WebWildcardDispositionNoWildcard, CSPSource::NoWildcard);
+STATIC_ASSERT_ENUM(WebWildcardDispositionHasWildcard, CSPSource::HasWildcard);
 
 STATIC_ASSERT_ENUM(WebURLResponse::HTTPVersionUnknown,
                    ResourceResponse::HTTPVersionUnknown);

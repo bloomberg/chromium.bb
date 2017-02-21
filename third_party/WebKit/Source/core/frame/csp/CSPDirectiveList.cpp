@@ -1288,6 +1288,27 @@ bool CSPDirectiveList::subsumes(const CSPDirectiveListVector& other) {
   return m_pluginTypes->subsumes(pluginTypesOther);
 }
 
+WebContentSecurityPolicyPolicy CSPDirectiveList::exposeForNavigationalChecks()
+    const {
+  WebContentSecurityPolicyPolicy policy;
+  policy.disposition = static_cast<WebContentSecurityPolicyType>(m_headerType);
+  policy.source = static_cast<WebContentSecurityPolicySource>(m_headerSource);
+  std::vector<WebContentSecurityPolicyDirective> directives;
+  for (const auto& directive :
+       {m_childSrc, m_defaultSrc, m_formAction, m_frameSrc}) {
+    if (directive) {
+      directives.push_back(WebContentSecurityPolicyDirective{
+          directive->directiveName(),
+          directive->exposeForNavigationalChecks()});
+    }
+  }
+  policy.directives = directives;
+  policy.reportEndpoints = reportEndpoints();
+  policy.header = header();
+
+  return policy;
+}
+
 DEFINE_TRACE(CSPDirectiveList) {
   visitor->trace(m_policy);
   visitor->trace(m_pluginTypes);

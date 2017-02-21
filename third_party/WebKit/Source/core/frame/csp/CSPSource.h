@@ -9,6 +9,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
+#include "public/platform/WebContentSecurityPolicyStruct.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
@@ -19,7 +20,7 @@ class KURL;
 
 class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
  public:
-  enum WildcardDisposition { HasWildcard, NoWildcard };
+  enum WildcardDisposition { NoWildcard, HasWildcard };
 
   CSPSource(ContentSecurityPolicy*,
             const String& scheme,
@@ -45,6 +46,8 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-source-list
   static bool firstSubsumesSecond(const HeapVector<Member<CSPSource>>&,
                                   const HeapVector<Member<CSPSource>>&);
+
+  WebContentSecurityPolicySourceExpression exposeForNavigationalChecks() const;
 
   DECLARE_TRACE();
 

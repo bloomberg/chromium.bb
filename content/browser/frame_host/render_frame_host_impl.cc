@@ -59,6 +59,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/associated_interface_provider_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
+#include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/input_messages.h"
@@ -1841,8 +1842,9 @@ void RenderFrameHostImpl::OnDidSetFeaturePolicyHeader(
 }
 
 void RenderFrameHostImpl::OnDidAddContentSecurityPolicy(
-    const ContentSecurityPolicyHeader& header) {
-  frame_tree_node()->AddContentSecurityPolicy(header);
+    const ContentSecurityPolicyHeader& header,
+    const std::vector<ContentSecurityPolicy>& policies) {
+  frame_tree_node()->AddContentSecurityPolicy(header, policies);
 }
 
 void RenderFrameHostImpl::OnEnforceInsecureRequestPolicy(

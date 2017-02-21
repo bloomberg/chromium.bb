@@ -524,7 +524,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void didAddContentSecurityPolicy(
       const blink::WebString& header_value,
       blink::WebContentSecurityPolicyType type,
-      blink::WebContentSecurityPolicySource source) override;
+      blink::WebContentSecurityPolicySource source,
+      const std::vector<blink::WebContentSecurityPolicyPolicy>&) override;
   void didChangeFrameOwnerProperties(
       blink::WebFrame* child_frame,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;

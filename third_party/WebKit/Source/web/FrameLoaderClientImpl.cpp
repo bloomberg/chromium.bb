@@ -879,11 +879,12 @@ void FrameLoaderClientImpl::didSetFeaturePolicyHeader(
 void FrameLoaderClientImpl::didAddContentSecurityPolicy(
     const String& headerValue,
     ContentSecurityPolicyHeaderType type,
-    ContentSecurityPolicyHeaderSource source) {
+    ContentSecurityPolicyHeaderSource source,
+    const std::vector<WebContentSecurityPolicyPolicy>& policies) {
   if (m_webFrame->client()) {
     m_webFrame->client()->didAddContentSecurityPolicy(
         headerValue, static_cast<WebContentSecurityPolicyType>(type),
-        static_cast<WebContentSecurityPolicySource>(source));
+        static_cast<WebContentSecurityPolicySource>(source), policies);
   }
 }
 

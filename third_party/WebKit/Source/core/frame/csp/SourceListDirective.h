@@ -11,6 +11,7 @@
 #include "platform/Crypto.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ResourceRequest.h"
+#include "public/platform/WebContentSecurityPolicy.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 
@@ -51,6 +52,12 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   // The algorothm is described more extensively here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-source-list
   bool subsumes(const HeapVector<Member<SourceListDirective>>&) const;
+
+  // Export a subset of the source list that affect navigation.
+  // It contains every source-expressions, '*', 'none' and 'self'.
+  // It doesn't contain 'unsafe-inline' or 'unsafe-eval' for instance.
+  WebContentSecurityPolicySourceList exposeForNavigationalChecks() const;
+  String directiveName() const { return m_directiveName; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectCSPSources);

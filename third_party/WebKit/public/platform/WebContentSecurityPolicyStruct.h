@@ -28,21 +28,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebContentSecurityPolicy_h
-#define WebContentSecurityPolicy_h
+#ifndef WebContentSecurityPolicyStruct_h
+#define WebContentSecurityPolicyStruct_h
+
+#include "public/platform/WebContentSecurityPolicy.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
-enum WebContentSecurityPolicyType {
-  WebContentSecurityPolicyTypeReport,
-  WebContentSecurityPolicyTypeEnforce,
-  WebContentSecurityPolicyTypeLast = WebContentSecurityPolicyTypeEnforce
+enum WebWildcardDisposition {
+  WebWildcardDispositionNoWildcard,
+  WebWildcardDispositionHasWildcard
 };
 
-enum WebContentSecurityPolicySource {
-  WebContentSecurityPolicySourceHTTP,
-  WebContentSecurityPolicySourceMeta,
-  WebContentSecurityPolicySourceLast = WebContentSecurityPolicySourceMeta
+struct WebContentSecurityPolicySourceExpression {
+  WebString scheme;
+  WebString host;
+  WebWildcardDisposition isHostWildcard;
+  int port;
+  WebWildcardDisposition isPortWildcard;
+  WebString path;
+};
+
+struct WebContentSecurityPolicySourceList {
+  bool allowSelf;
+  bool allowStar;
+  WebVector<WebContentSecurityPolicySourceExpression> sources;
+};
+
+struct WebContentSecurityPolicyDirective {
+  WebString name;
+  WebContentSecurityPolicySourceList sourceList;
+};
+
+struct WebContentSecurityPolicyPolicy {
+  WebContentSecurityPolicyType disposition;
+  WebContentSecurityPolicySource source;
+  WebVector<WebContentSecurityPolicyDirective> directives;
+  WebVector<WebString> reportEndpoints;
+  WebString header;
 };
 
 }  // namespace blink

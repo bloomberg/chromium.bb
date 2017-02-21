@@ -16,10 +16,10 @@
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebAddressSpace.h"
+#include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
-#include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 

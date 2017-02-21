@@ -33,7 +33,7 @@
 
 #include "../platform/WebAddressSpace.h"
 #include "../platform/WebCommon.h"
-#include "WebContentSecurityPolicy.h"
+#include "../platform/WebContentSecurityPolicy.h"
 
 namespace blink {
 

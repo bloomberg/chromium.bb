@@ -332,8 +332,9 @@ void ContentSecurityPolicy::reportAccumulatedHeaders(
   // addAndReportPolicyFromHeaderValue for more details and context.
   DCHECK(client);
   for (const auto& policy : m_policies) {
-    client->didAddContentSecurityPolicy(policy->header(), policy->headerType(),
-                                        policy->headerSource());
+    client->didAddContentSecurityPolicy(
+        policy->header(), policy->headerType(), policy->headerSource(),
+        {policy->exposeForNavigationalChecks()});
   }
 }
 
@@ -341,17 +342,26 @@ void ContentSecurityPolicy::addAndReportPolicyFromHeaderValue(
     const String& header,
     ContentSecurityPolicyHeaderType type,
     ContentSecurityPolicyHeaderSource source) {
-  // Notify about the new header, so that it can be reported back to the
-  // browser process.  This is needed in order to:
-  // 1) replicate CSP directives (i.e. frame-src) to OOPIFs (only for now /
-  // short-term).
-  // 2) enforce CSP in the browser process (not yet / long-term - see
-  // https://crbug.com/376522).
-  if (document() && document()->frame())
-    document()->frame()->client()->didAddContentSecurityPolicy(header, type,
-                                                               source);
-
+  size_t previousPolicyCount = m_policies.size();
   addPolicyFromHeaderValue(header, type, source);
+  if (document() && document()->frame()) {
+    // Notify about the new header, so that it can be reported back to the
+    // browser process.  This is needed in order to:
+    // 1) replicate CSP directives (i.e. frame-src) to OOPIFs (only for now /
+    // short-term).
+    // 2) enforce CSP in the browser process (long-term - see
+    // https://crbug.com/376522).
+    // TODO(arthursonzogni): policies are actually replicated (1) and some of
+    // them are (or will) be enforced on the browser process (2). Stop doing (1)
+    // when (2) is finished.
+
+    // Zero, one or several policies could be produced by only one header.
+    std::vector<blink::WebContentSecurityPolicyPolicy> policies;
+    for (size_t i = previousPolicyCount; i < m_policies.size(); ++i)
+      policies.push_back(m_policies[i]->exposeForNavigationalChecks());
+    document()->frame()->client()->didAddContentSecurityPolicy(
+        header, type, source, policies);
+  }
 }
 
 void ContentSecurityPolicy::setOverrideAllowInlineStyle(bool value) {

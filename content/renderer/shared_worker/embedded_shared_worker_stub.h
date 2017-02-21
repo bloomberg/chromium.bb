@@ -13,8 +13,8 @@
 #include "content/child/scoped_child_process_reference.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/WebAddressSpace.h"
+#include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
 #include "url/gurl.h"
 

@@ -53,6 +53,7 @@
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_security_policy/csp_context.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/download/mhtml_save_status.h"
 #include "content/common/edit_command.h"
@@ -95,6 +96,7 @@
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/child_frame_compositing_helper.h"
+#include "content/renderer/content_security_policy_util.h"
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/dom_automation_controller.h"
@@ -3215,15 +3217,19 @@ void RenderFrameImpl::didSetFeaturePolicyHeader(
 void RenderFrameImpl::didAddContentSecurityPolicy(
     const blink::WebString& header_value,
     blink::WebContentSecurityPolicyType type,
-    blink::WebContentSecurityPolicySource source) {
-  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
-    return;
-
+    blink::WebContentSecurityPolicySource source,
+    const std::vector<blink::WebContentSecurityPolicyPolicy>& policies) {
   ContentSecurityPolicyHeader header;
   header.header_value = header_value.utf8();
   header.type = type;
   header.source = source;
-  Send(new FrameHostMsg_DidAddContentSecurityPolicy(routing_id_, header));
+
+  std::vector<ContentSecurityPolicy> content_policies;
+  for (const auto& policy : policies)
+    content_policies.push_back(BuildContentSecurityPolicy(policy));
+
+  Send(new FrameHostMsg_DidAddContentSecurityPolicy(routing_id_, header,
+                                                    content_policies));
 }
 
 void RenderFrameImpl::didChangeFrameOwnerProperties(

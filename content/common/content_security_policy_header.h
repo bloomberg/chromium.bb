@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_CONTENT_SECURITY_POLICY_HEADER_
 
 #include <string>
-#include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
+#include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 
 namespace content {
 

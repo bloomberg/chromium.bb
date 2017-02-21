@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
+#include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
@@ -167,8 +168,11 @@ class CONTENT_EXPORT FrameTreeNode {
   // Clear any feature policy header associated with the frame.
   void ResetFeaturePolicyHeader();
 
-  // Add CSP header to replication state and notify proxies about the update.
-  void AddContentSecurityPolicy(const ContentSecurityPolicyHeader& header);
+  // Add CSP header to replication state, notify proxies about the update and
+  // enforce it on the browser.
+  void AddContentSecurityPolicy(
+      const ContentSecurityPolicyHeader& header,
+      const std::vector<ContentSecurityPolicy>& policies);
 
   // Discards previous CSP headers and notifies proxies about the update.
   // Typically invoked after committing navigation to a new document (since the
@@ -399,6 +403,9 @@ class CONTENT_EXPORT FrameTreeNode {
   // browser process activities to this node (when possible).  It is unrelated
   // to the core logic of FrameTreeNode.
   FrameTreeNodeBlameContext blame_context_;
+
+  // A set of Content-Security-Policies to enforce on the browser-side.
+  std::vector<ContentSecurityPolicy> csp_policies_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };

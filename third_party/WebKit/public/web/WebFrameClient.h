@@ -31,6 +31,7 @@
 #ifndef WebFrameClient_h
 #define WebFrameClient_h
 
+#include <v8.h>
 #include "../platform/WebColor.h"
 #include "WebAXObject.h"
 #include "WebDOMMessageEvent.h"
@@ -49,6 +50,7 @@
 #include "WebTextDirection.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebContentSecurityPolicyStruct.h"
 #include "public/platform/WebEffectiveConnectionType.h"
 #include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebFileSystem.h"
@@ -62,8 +64,6 @@
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
-#include "public/web/WebContentSecurityPolicy.h"
-#include <v8.h>
 
 namespace blink {
 
@@ -234,9 +234,11 @@ class BLINK_EXPORT WebFrameClient {
   // document.  This can be triggered by handling of HTTP headers, handling
   // of <meta> element, or by inheriting CSP from the parent (in case of
   // about:blank).
-  virtual void didAddContentSecurityPolicy(const WebString& headerValue,
-                                           WebContentSecurityPolicyType,
-                                           WebContentSecurityPolicySource) {}
+  virtual void didAddContentSecurityPolicy(
+      const WebString& headerValue,
+      WebContentSecurityPolicyType type,
+      WebContentSecurityPolicySource source,
+      const std::vector<WebContentSecurityPolicyPolicy>& policies) {}
 
   // Some frame owner properties have changed for a child frame of this frame.
   // Frame owner properties currently include: scrolling, marginwidth and
