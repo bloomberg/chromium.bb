@@ -267,7 +267,10 @@ bool Editor::canEdit() const {
 }
 
 bool Editor::canEditRichly() const {
-  return frame().selection().isContentRichlyEditable();
+  return frame()
+      .selection()
+      .computeVisibleSelectionInDOMTreeDeprecated()
+      .isContentRichlyEditable();
 }
 
 // WinIE uses onbeforecut and onbeforepaste to enables the cut and paste menu
@@ -1146,7 +1149,9 @@ void Editor::paste(EditorCommandSource source) {
   ResourceFetcher* loader = frame().document()->fetcher();
   ResourceCacheValidationSuppressor validationSuppressor(loader);
 
-  PasteMode pasteMode = frame().selection().isContentRichlyEditable()
+  PasteMode pasteMode = frame().selection()
+                                .computeVisibleSelectionInDOMTreeDeprecated()
+                                .isContentRichlyEditable()
                             ? AllMimeTypes
                             : PlainTextOnly;
 

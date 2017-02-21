@@ -113,10 +113,6 @@ class CORE_EXPORT FrameSelection final
   bool isContentEditable() const {
     return computeVisibleSelectionInDOMTreeDeprecated().isContentEditable();
   }
-  bool isContentRichlyEditable() const {
-    return computeVisibleSelectionInDOMTreeDeprecated()
-        .isContentRichlyEditable();
-  }
 
   // An implementation of |WebFrame::moveCaretSelection()|
   void moveCaretSelection(const IntPoint&);

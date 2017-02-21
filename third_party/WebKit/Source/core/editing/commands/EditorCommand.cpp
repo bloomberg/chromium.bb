@@ -1915,7 +1915,9 @@ static bool enabledInRichlyEditableText(LocalFrame& frame,
   // before accessing |FrameSelection::selection()|.
   frame.selection().updateIfNeeded();
   return !frame.selection().isNone() &&
-         frame.selection().isContentRichlyEditable() &&
+         frame.selection()
+             .computeVisibleSelectionInDOMTreeDeprecated()
+             .isContentRichlyEditable() &&
          frame.selection().rootEditableElement();
 }
 
@@ -1947,7 +1949,9 @@ static bool enabledRangeInRichlyEditableText(LocalFrame& frame,
   // before accessing |FrameSelection::selection()|.
   frame.selection().updateIfNeeded();
   return frame.selection().isRange() &&
-         frame.selection().isContentRichlyEditable();
+         frame.selection()
+             .computeVisibleSelectionInDOMTreeDeprecated()
+             .isContentRichlyEditable();
 }
 
 static bool enabledRedo(LocalFrame& frame, Event*, EditorCommandSource) {
