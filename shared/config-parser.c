@@ -490,6 +490,7 @@ weston_config_get_full_path(struct weston_config *config)
 	return config == NULL ? NULL : config->path;
 }
 
+WL_EXPORT
 int
 weston_config_next_section(struct weston_config *config,
 			   struct weston_config_section **section,
