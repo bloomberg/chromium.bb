@@ -235,11 +235,6 @@ bool IsSafariVCSignInEnabled() {
       boolForKey:kSafariVCSignInDisabled];
 }
 
-bool IsSpotlightActionsEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kDisableSpotlightActions);
-}
-
 bool IsStartupCrashEnabled() {
   return [[NSUserDefaults standardUserDefaults] boolForKey:kEnableStartupCrash];
 }

@@ -40,9 +40,6 @@ const char kDisableOfflineAutoReload[] = "disable-offline-auto-reload";
 // Disable the Payment Request API.
 const char kDisablePaymentRequest[] = "disable-payment-request";
 
-// Disables the Spotlight actions.
-const char kDisableSpotlightActions[] = "disable-spotlight-actions";
-
 // Disables the tab strip auto scroll new tabs.
 const char kDisableTabStripAutoScrollNewTabs[] =
     "disable-tab-strip-autoscroll-new-tabs";

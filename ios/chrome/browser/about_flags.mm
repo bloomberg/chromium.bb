@@ -215,11 +215,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisablePaymentRequest);
   }
 
-  // Populate command line flag for Spotlight Actions.
-  if ([defaults boolForKey:@"DisableSpotlightActions"]) {
-    command_line->AppendSwitch(switches::kDisableSpotlightActions);
-  }
-
   // Populate command line flag for the Rename "Save Image" to "Download Image"
   // experiment.
   NSString* enableDownloadRenaming =

@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/app_startup_parameters.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "net/base/mac/url_conversions.h"
@@ -132,9 +131,6 @@ BOOL SetStartupParametersForSpotlightAction(
 
 - (void)clearAndAddSpotlightActions {
   [self clearAllSpotlightItems:^(NSError* error) {
-    if (!experimental_flags::IsSpotlightActionsEnabled()) {
-      return;
-    }
     __weak ActionsSpotlightManager* weakSelf = self;
     dispatch_after(
         dispatch_time(DISPATCH_TIME_NOW,

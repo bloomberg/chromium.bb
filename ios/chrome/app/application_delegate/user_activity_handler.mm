@@ -21,7 +21,6 @@
 #import "ios/chrome/app/spotlight/spotlight_util.h"
 #include "ios/chrome/browser/app_startup_parameters.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -91,10 +90,6 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     NSString* itemID =
         [userActivity.userInfo objectForKey:CSSearchableItemActivityIdentifier];
     spotlight::Domain domain = spotlight::SpotlightDomainFromString(itemID);
-    if (domain == spotlight::DOMAIN_ACTIONS &&
-        !experimental_flags::IsSpotlightActionsEnabled()) {
-      return NO;
-    }
     UMA_HISTOGRAM_ENUMERATION("IOS.Spotlight.Origin", domain,
                               spotlight::DOMAIN_COUNT);
 

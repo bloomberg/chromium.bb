@@ -656,22 +656,6 @@
 			<key>AutocorrectionType</key>
 			<string>No</string>
 		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-			<key>Title</key>
-			<string>Spotlight</string>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-			<key>Title</key>
-			<string>Disable Spotlight Actions</string>
-			<key>Key</key>
-			<string>DisableSpotlightActions</string>
-			<key>DefaultValue</key>
-			<false/>
-		</dict>
 	</array>
 </dict>
 </plist>

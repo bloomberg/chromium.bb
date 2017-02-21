@@ -18,7 +18,6 @@ extern const char kDisableLRUSnapshotCache[];
 extern const char kDisableNTPFavicons[];
 extern const char kDisableOfflineAutoReload[];
 extern const char kDisablePaymentRequest[];
-extern const char kDisableSpotlightActions[];
 extern const char kDisableTabStripAutoScrollNewTabs[];
 extern const char kDisableIOSPhysicalWeb[];
 extern const char kDisableDownloadImageRenaming[];

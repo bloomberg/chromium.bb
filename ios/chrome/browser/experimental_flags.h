@@ -91,9 +91,6 @@ bool IsReadingListEnabled();
 // Whether the Sign In Flow via SFSafariViewController is enabled.
 bool IsSafariVCSignInEnabled();
 
-// Whether launching actions from Spotlight is enabled.
-bool IsSpotlightActionsEnabled();
-
 // Whether startup crash is enabled.
 bool IsStartupCrashEnabled();
 
