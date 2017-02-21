@@ -679,7 +679,7 @@ bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton() {
   if (url.isNull() || url.isEmpty())
     return false;
 
-  // Local files and blobs should not have a download button.
+  // Local files and blobs (including MSE) should not have a download button.
   if (url.isLocalFile() || url.protocolIs("blob"))
     return false;
 
@@ -693,6 +693,11 @@ bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton() {
 
   // HLS stream shouldn't have a download button.
   if (HTMLMediaElement::isHLSURL(url))
+    return false;
+
+  // Infinite streams don't have a clear end at which to finish the download
+  // (would require adding UI to prompt for the duration to download).
+  if (mediaElement().duration() == std::numeric_limits<double>::infinity())
     return false;
 
   return true;

@@ -4,6 +4,8 @@
 
 #include "core/html/shadow/MediaControls.h"
 
+#include <limits>
+#include <memory>
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
@@ -20,7 +22,6 @@
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -28,6 +29,7 @@ namespace {
 
 class MockVideoWebMediaPlayer : public WebMediaPlayer {
  public:
+  // WebMediaPlayer overrides:
   void load(LoadType, const WebMediaPlayerSource&, CORSMode) override{};
   void play() override{};
   void pause() override{};
@@ -167,6 +169,8 @@ class MediaControlsTest : public ::testing::Test {
   void simulateHideMediaControlsTimerFired() {
     m_mediaControls->hideMediaControlsTimerFired(nullptr);
   }
+
+  void simulateLoadedMetadata() { m_mediaControls->onLoadedMetadata(); }
 
   MediaControls& mediaControls() { return *m_mediaControls; }
   Document& document() { return m_pageHolder->document(); }
@@ -329,6 +333,66 @@ TEST_F(MediaControlsTest, KeepControlsVisibleIfOverflowListVisible) {
   simulateHideMediaControlsTimerFired();
   EXPECT_TRUE(isElementVisible(*overflowList));
   EXPECT_TRUE(isElementVisible(*panel));
+}
+
+TEST_F(MediaControlsTest, DownloadButtonDisplayed) {
+  ensureLayout();
+
+  Element* downloadButton = getElementByShadowPseudoId(
+      mediaControls(), "-internal-media-controls-download-button");
+  ASSERT_NE(nullptr, downloadButton);
+
+  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
+  testing::runPendingTasks();
+  simulateLoadedMetadata();
+
+  // Download button should normally be displayed.
+  EXPECT_TRUE(isElementVisible(*downloadButton));
+}
+
+TEST_F(MediaControlsTest, DownloadButtonNotDisplayedEmptyUrl) {
+  ensureLayout();
+
+  Element* downloadButton = getElementByShadowPseudoId(
+      mediaControls(), "-internal-media-controls-download-button");
+  ASSERT_NE(nullptr, downloadButton);
+
+  // Download button should not be displayed when URL is empty.
+  mediaControls().mediaElement().setSrc("");
+  testing::runPendingTasks();
+  simulateLoadedMetadata();
+  EXPECT_FALSE(isElementVisible(*downloadButton));
+}
+
+TEST_F(MediaControlsTest, DownloadButtonNotDisplayedInfiniteDuration) {
+  ensureLayout();
+
+  Element* downloadButton = getElementByShadowPseudoId(
+      mediaControls(), "-internal-media-controls-download-button");
+  ASSERT_NE(nullptr, downloadButton);
+
+  mediaControls().mediaElement().setSrc("https://example.com/foo.mp4");
+  testing::runPendingTasks();
+
+  // Download button should not be displayed when duration is infinite.
+  mediaControls().mediaElement().durationChanged(
+      std::numeric_limits<double>::infinity(), false /* requestSeek */);
+  simulateLoadedMetadata();
+  EXPECT_FALSE(isElementVisible(*downloadButton));
+}
+
+TEST_F(MediaControlsTest, DownloadButtonNotDisplayedHLS) {
+  ensureLayout();
+
+  Element* downloadButton = getElementByShadowPseudoId(
+      mediaControls(), "-internal-media-controls-download-button");
+  ASSERT_NE(nullptr, downloadButton);
+
+  // Download button should not be displayed for HLS streams.
+  mediaControls().mediaElement().setSrc("https://example.com/foo.m3u8");
+  testing::runPendingTasks();
+  simulateLoadedMetadata();
+  EXPECT_FALSE(isElementVisible(*downloadButton));
 }
 
 }  // namespace blink
