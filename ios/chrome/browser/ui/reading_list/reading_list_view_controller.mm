@@ -6,47 +6,16 @@
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "components/reading_list/ios/reading_list_model.h"
-#include "ios/chrome/browser/reading_list/offline_url_utils.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/url_loader.h"
-#import "ios/chrome/browser/ui/util/pasteboard_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/navigation_manager.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/strings/grit/ui_strings.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-// Action chosen by the user in the context menu, for UMA report.
-// These match tools/metrics/histograms/histograms.xml.
-enum UMAContextMenuAction {
-  // The user opened the entry in a new tab.
-  NEW_TAB = 0,
-  // The user opened the entry in a new incognito tab.
-  NEW_INCOGNITO_TAB = 1,
-  // The user copied the url of the entry.
-  COPY_LINK = 2,
-  // The user chose to view the offline version of the entry.
-  VIEW_OFFLINE = 3,
-  // The user cancelled the context menu.
-  CANCEL = 4,
-  // Add new enum above ENUM_MAX.
-  ENUM_MAX
-};
-
 // Height of the toolbar in normal state.
 const int kToolbarNormalHeight = 48;
 // Height of the expanded toolbar (buttons on multiple lines).
@@ -58,58 +27,37 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 };
 }
 
-@interface ReadingListViewController ()<ReadingListToolbarActions,
-                                        ReadingListToolbarHeightDelegate> {
-  // Toolbar with the actions.
-  ReadingListToolbar* _toolbar;
+@interface ReadingListViewController ()<
+    ReadingListToolbarActions,
+    ReadingListToolbarHeightDelegate,
+    ReadingListCollectionViewControllerAudience> {
   // This constraint control the expanded mode of the toolbar.
   NSLayoutConstraint* _expandedToolbarConstraint;
-  // Coordinator for the alert displayed when the user long presses an entry.
-  AlertCoordinator* _alertCoordinator;
 }
 
-// UrlLoader for navigating to entries.
-@property(nonatomic, weak, readonly) id<UrlLoader> URLLoader;
 @property(nonatomic, strong, readonly)
     ReadingListCollectionViewController* readingListCollectionViewController;
-
-// Closes the ReadingList view.
-- (void)dismiss;
-// Opens |URL| in a new tab |incognito| or not.
-- (void)openNewTabWithURL:(const GURL&)URL incognito:(BOOL)incognito;
-// Opens the offline url |offlineURL| of the entry saved in the reading list
-// model with the |entryURL| url.
-- (void)openOfflineURL:(const GURL&)offlineURL
-                      correspondingEntryURL:(const GURL&)entryURL
-    fromReadingListCollectionViewController:
-        (ReadingListCollectionViewController*)
-            readingListCollectionViewController;
+@property(nonatomic, strong, readonly) ReadingListToolbar* toolbar;
 
 @end
 
 @implementation ReadingListViewController
 
+@synthesize delegate = _delegate;
 @synthesize readingListCollectionViewController =
     _readingListCollectionViewController;
-@synthesize URLLoader = _URLLoader;
+@synthesize toolbar = _toolbar;
 
-- (instancetype)initWithModel:(ReadingListModel*)model
-                        loader:(id<UrlLoader>)loader
-              largeIconService:(favicon::LargeIconService*)largeIconService
-    readingListDownloadService:
-        (ReadingListDownloadService*)readingListDownloadService {
+- (instancetype)initWithCollectionViewController:
+                    (ReadingListCollectionViewController*)
+                        collectionViewController
+                                         toolbar:(ReadingListToolbar*)toolbar {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _URLLoader = loader;
-    _toolbar = [[ReadingListToolbar alloc] initWithFrame:CGRectZero];
-    _toolbar.heightDelegate = self;
-    _readingListCollectionViewController =
-        [[ReadingListCollectionViewController alloc]
-                         initWithModel:model
-                      largeIconService:largeIconService
-            readingListDownloadService:readingListDownloadService
-                               toolbar:_toolbar];
-    _readingListCollectionViewController.delegate = self;
+    _toolbar = toolbar;
+    toolbar.heightDelegate = self;
+    _readingListCollectionViewController = collectionViewController;
+    collectionViewController.audience = self;
 
     // Configure modal presentation.
     [self setModalPresentationStyle:UIModalPresentationFormSheet];
@@ -148,158 +96,9 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 #pragma mark UIAccessibilityAction
 
 - (BOOL)accessibilityPerformEscape {
-  [self dismiss];
+  [self.delegate dismissReadingListCollectionViewController:
+                     self.readingListCollectionViewController];
   return YES;
-}
-
-#pragma mark - ReadingListCollectionViewControllerDelegate
-
-- (void)readingListCollectionViewController:
-            (ReadingListCollectionViewController*)
-                readingListCollectionViewController
-                                   hasItems:(BOOL)hasItems {
-  if (hasItems) {
-    // If there are items, add the toolbar.
-    [self.view addSubview:_toolbar];
-    NSDictionary* views = @{
-      @"toolbar" : _toolbar,
-      @"collection" : readingListCollectionViewController.view
-    };
-    NSArray* constraints = @[ @"V:[collection][toolbar]|", @"H:|[toolbar]|" ];
-    ApplyVisualConstraints(constraints, views);
-    NSLayoutConstraint* height =
-        [_toolbar.heightAnchor constraintEqualToConstant:kToolbarNormalHeight];
-    height.priority = LayoutPriorityHigh;
-    height.active = YES;
-    // When the toolbar is added, the only button is the "edit" button. No need
-    // to go in expanded mode.
-    _expandedToolbarConstraint = [_toolbar.heightAnchor
-        constraintEqualToConstant:kToolbarExpandedHeight];
-  } else {
-    // If there is no item, remove the toolbar. The constraints will make sure
-    // the collection takes the whole view.
-    [_toolbar removeFromSuperview];
-  }
-}
-
-- (void)dismissReadingListCollectionViewController:
-    (ReadingListCollectionViewController*)readingListCollectionViewController {
-  [readingListCollectionViewController willBeDismissed];
-  [self dismiss];
-}
-
-- (void)readingListCollectionViewController:
-            (ReadingListCollectionViewController*)
-                readingListCollectionViewController
-                  displayContextMenuForItem:
-                      (ReadingListCollectionViewItem*)readingListItem
-                                    atPoint:(CGPoint)menuLocation {
-  const ReadingListEntry* entry =
-      readingListCollectionViewController.readingListModel->GetEntryByURL(
-          readingListItem.url);
-
-  if (!entry) {
-    [readingListCollectionViewController reloadData];
-    return;
-  }
-  const GURL entryURL = entry->URL();
-
-  __weak ReadingListViewController* weakSelf = self;
-
-  _alertCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self
-                           title:readingListItem.text
-                         message:readingListItem.detailText
-                            rect:CGRectMake(menuLocation.x, menuLocation.y, 0,
-                                            0)
-                            view:readingListCollectionViewController
-                                     .collectionView];
-
-  NSString* openInNewTabTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-  [_alertCoordinator
-      addItemWithTitle:openInNewTabTitle
-                action:^{
-                  [weakSelf openNewTabWithURL:entryURL incognito:NO];
-                  UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu", NEW_TAB,
-                                            ENUM_MAX);
-
-                }
-                 style:UIAlertActionStyleDefault];
-
-  NSString* openInNewTabIncognitoTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
-  [_alertCoordinator
-      addItemWithTitle:openInNewTabIncognitoTitle
-                action:^{
-                  UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
-                                            NEW_INCOGNITO_TAB, ENUM_MAX);
-                  [weakSelf openNewTabWithURL:entryURL incognito:YES];
-                }
-                 style:UIAlertActionStyleDefault];
-
-  NSString* copyLinkTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY);
-  [_alertCoordinator
-      addItemWithTitle:copyLinkTitle
-                action:^{
-                  UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
-                                            COPY_LINK, ENUM_MAX);
-                  StoreURLInPasteboard(entryURL);
-                }
-                 style:UIAlertActionStyleDefault];
-
-  if (entry->DistilledState() == ReadingListEntry::PROCESSED) {
-    GURL offlineURL = reading_list::OfflineURLForPath(
-        entry->DistilledPath(), entryURL, entry->DistilledURL());
-    NSString* viewOfflineVersionTitle =
-        l10n_util::GetNSString(IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE);
-    [_alertCoordinator
-        addItemWithTitle:viewOfflineVersionTitle
-                  action:^{
-                    UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
-                                              VIEW_OFFLINE, ENUM_MAX);
-                    [weakSelf openOfflineURL:offlineURL
-                                          correspondingEntryURL:entryURL
-                        fromReadingListCollectionViewController:
-                            readingListCollectionViewController];
-                  }
-                   style:UIAlertActionStyleDefault];
-  }
-
-  [_alertCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
-                action:^{
-                  UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu", CANCEL,
-                                            ENUM_MAX);
-                }
-                 style:UIAlertActionStyleCancel];
-
-  [_alertCoordinator start];
-}
-
-- (void)
-readingListCollectionViewController:
-    (ReadingListCollectionViewController*)readingListCollectionViewController
-                           openItem:
-                               (ReadingListCollectionViewItem*)readingListItem {
-  const ReadingListEntry* entry =
-      readingListCollectionViewController.readingListModel->GetEntryByURL(
-          readingListItem.url);
-
-  if (!entry) {
-    [readingListCollectionViewController reloadData];
-    return;
-  }
-
-  base::RecordAction(base::UserMetricsAction("MobileReadingListOpen"));
-
-  [self.URLLoader loadURL:entry->URL()
-                 referrer:web::Referrer()
-               transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-        rendererInitiated:NO];
-
-  [self dismiss];
 }
 
 #pragma mark - ReadingListToolbarActionTarget
@@ -320,6 +119,33 @@ readingListCollectionViewController:
   [self.readingListCollectionViewController exitEditingModePressed];
 }
 
+#pragma mark - ReadingListCollectionViewControllerAudience
+
+- (void)readingListHasItems:(BOOL)hasItems {
+  if (hasItems) {
+    // If there are items, add the toolbar.
+    [self.view addSubview:_toolbar];
+    NSDictionary* views = @{
+      @"toolbar" : _toolbar,
+      @"collection" : self.readingListCollectionViewController.view
+    };
+    NSArray* constraints = @[ @"V:[collection][toolbar]|", @"H:|[toolbar]|" ];
+    ApplyVisualConstraints(constraints, views);
+    NSLayoutConstraint* height =
+        [_toolbar.heightAnchor constraintEqualToConstant:kToolbarNormalHeight];
+    height.priority = LayoutPriorityHigh;
+    height.active = YES;
+    // When the toolbar is added, the only button is the "edit" button. No need
+    // to go in expanded mode.
+    _expandedToolbarConstraint = [_toolbar.heightAnchor
+        constraintEqualToConstant:kToolbarExpandedHeight];
+  } else {
+    // If there is no item, remove the toolbar. The constraints will make sure
+    // the collection takes the whole view.
+    [_toolbar removeFromSuperview];
+  }
+}
+
 #pragma mark - ReadingListToolbarHeightDelegate
 
 - (void)toolbar:(id)toolbar onHeightChanged:(ReadingListToolbarHeight)height {
@@ -336,51 +162,19 @@ readingListCollectionViewController:
   });
 }
 
-#pragma mark - Private
-
-- (void)dismiss {
-  [self.presentingViewController dismissViewControllerAnimated:YES
-                                                    completion:nil];
-}
-
-- (void)openNewTabWithURL:(const GURL&)URL incognito:(BOOL)incognito {
-  base::RecordAction(base::UserMetricsAction("MobileReadingListOpen"));
-
-  [self.URLLoader webPageOrderedOpen:URL
-                            referrer:web::Referrer()
-                          windowName:nil
-                         inIncognito:incognito
-                        inBackground:NO
-                            appendTo:kLastTab];
-
-  [self dismiss];
-}
-
-- (void)openOfflineURL:(const GURL&)offlineURL
-                      correspondingEntryURL:(const GURL&)entryURL
-    fromReadingListCollectionViewController:
-        (ReadingListCollectionViewController*)
-            readingListCollectionViewController {
-  [readingListCollectionViewController willBeDismissed];
-
-  [self openNewTabWithURL:offlineURL incognito:NO];
-
-  UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", true);
-  const GURL updateURL = entryURL;
-  readingListCollectionViewController.readingListModel->SetReadStatus(updateURL,
-                                                                      true);
-}
-
 #pragma mark - UIResponder
 
 - (NSArray*)keyCommands {
   __weak ReadingListViewController* weakSelf = self;
-  return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
-                                   modifierFlags:Cr_UIKeyModifierNone
-                                           title:nil
-                                          action:^{
-                                            [weakSelf dismiss];
-                                          }] ];
+  return @[ [UIKeyCommand
+      cr_keyCommandWithInput:UIKeyInputEscape
+               modifierFlags:Cr_UIKeyModifierNone
+                       title:nil
+                      action:^{
+                        [weakSelf.delegate
+                            dismissReadingListCollectionViewController:
+                                weakSelf.readingListCollectionViewController];
+                      }] ];
 }
 
 @end

@@ -133,8 +133,8 @@
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller_builder.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/stack_view/card_view.h"
@@ -402,6 +402,9 @@ FindInPageController* GetFindInPageController(Tab* tab) {
 
   // Used to display the QR Scanner UI. Nil if not visible.
   base::scoped_nsobject<QRScannerViewController> _qrScannerViewController;
+
+  // Used to display the Reading List.
+  base::scoped_nsobject<ReadingListCoordinator> _readingListCoordinator;
 
   // Used to display the Suggestions.
   base::scoped_nsobject<ContentSuggestionsCoordinator>
@@ -1281,7 +1284,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     self.typingShield = nil;
     if (_voiceSearchController.get())
       _voiceSearchController->SetDelegate(nil);
+    _contentSuggestionsCoordinator.reset();
     _qrScannerViewController.reset();
+    _readingListCoordinator.reset();
     _toolbarController.reset();
     _toolbarModelDelegate.reset();
     _toolbarModelIOS.reset();
@@ -4228,10 +4233,12 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 - (void)showReadingList {
   DCHECK(reading_list::switches::IsReadingListEnabled());
-  UIViewController* vc = [ReadingListViewControllerBuilder
-      readingListViewControllerInBrowserState:self.browserState
-                                       loader:self];
-  [self presentViewController:vc animated:YES completion:nil];
+  _readingListCoordinator.reset([[ReadingListCoordinator alloc]
+      initWithBaseViewController:self
+                    browserState:self.browserState
+                          loader:self]);
+
+  [_readingListCoordinator start];
 }
 
 - (void)showQRScanner {

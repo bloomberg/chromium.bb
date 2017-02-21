@@ -5,34 +5,28 @@
 #ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_VIEW_CONTROLLER_H_
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 
-namespace favicon {
-class LargeIconService;
-}
-
 @class ReadingListCollectionViewController;
-class ReadingListDownloadService;
-class ReadingListModel;
-@protocol UrlLoader;
+@protocol ReadingListCollectionViewControllerDelegate;
 
 // Container for the ReadingList Collection View Controller and the toolbar. It
-// handles the interactions between the two. It also acts as a ReadingList
-// delegate, opening entries and displaying context menu.
-@interface ReadingListViewController
-    : UIViewController<ReadingListCollectionViewControllerDelegate>
+// handles the interactions between the two.
+@interface ReadingListViewController : UIViewController
 
-- (instancetype)initWithModel:(ReadingListModel*)model
-                        loader:(id<UrlLoader>)loader
-              largeIconService:(favicon::LargeIconService*)largeIconService
-    readingListDownloadService:
-        (ReadingListDownloadService*)readingListDownloadService
+- (instancetype)initWithCollectionViewController:
+                    (ReadingListCollectionViewController*)
+                        collectionViewController
+                                         toolbar:(ReadingListToolbar*)toolbar
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
+
+@property(nonatomic, weak) id<ReadingListCollectionViewControllerDelegate>
+    delegate;
 
 @end
 

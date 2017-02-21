@@ -175,12 +175,16 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 @end
 
 @implementation ReadingListCollectionViewController
+
+@synthesize audience = _audience;
+@synthesize delegate = _delegate;
+
 @synthesize readingListModel = _readingListModel;
 @synthesize largeIconService = _largeIconService;
 @synthesize readingListDownloadService = _readingListDownloadService;
 @synthesize attributesProvider = _attributesProvider;
-@synthesize delegate = _delegate;
 @synthesize shouldMonitorModel = _shouldMonitorModel;
+
 #pragma mark lifecycle
 
 - (instancetype)initWithModel:(ReadingListModel*)model
@@ -228,13 +232,11 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   [_toolbar setState:toolbarState];
 }
 
-- (void)setDelegate:(id<ReadingListCollectionViewControllerDelegate>)delegate {
-  _delegate = delegate;
-  if (self.readingListModel->loaded())
-    [delegate
-        readingListCollectionViewController:self
-                                   hasItems:(self.readingListModel->size() >
-                                             0)];
+- (void)setAudience:(id<ReadingListCollectionViewControllerAudience>)audience {
+  _audience = audience;
+  if (self.readingListModel->loaded()) {
+    [audience readingListHasItems:(self.readingListModel->size() > 0)];
+  }
 }
 
 #pragma mark - UIViewController
@@ -412,7 +414,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     self.collectionView.alwaysBounceVertical = YES;
     [self loadItems];
     self.collectionView.backgroundView = nil;
-    [self.delegate readingListCollectionViewController:self hasItems:YES];
+    [self.audience readingListHasItems:YES];
   }
 }
 
@@ -546,7 +548,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   // The collection is empty, add background.
   self.collectionView.alwaysBounceVertical = NO;
   self.collectionView.backgroundView = _emptyCollectionBackground;
-  [self.delegate readingListCollectionViewController:self hasItems:NO];
+  [self.audience readingListHasItems:NO];
 }
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {

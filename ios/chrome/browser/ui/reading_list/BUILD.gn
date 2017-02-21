@@ -39,6 +39,8 @@ source_set("reading_list") {
     "reading_list_collection_view_controller.mm",
     "reading_list_collection_view_item.h",
     "reading_list_collection_view_item.mm",
+    "reading_list_coordinator.h",
+    "reading_list_coordinator.mm",
     "reading_list_empty_collection_background.h",
     "reading_list_empty_collection_background.mm",
     "reading_list_menu_notification_delegate.h",
@@ -50,8 +52,6 @@ source_set("reading_list") {
     "reading_list_toolbar.mm",
     "reading_list_view_controller.h",
     "reading_list_view_controller.mm",
-    "reading_list_view_controller_builder.h",
-    "reading_list_view_controller_builder.mm",
   ]
   deps = [
     ":resources",
@@ -97,7 +97,7 @@ source_set("unit_tests") {
   sources = [
     "offline_page_native_content_unittest.mm",
     "reading_list_collection_view_controller_unittest.mm",
-    "reading_list_view_controller_unittest.mm",
+    "reading_list_coordinator_unittest.mm",
   ]
   deps = [
     ":reading_list",

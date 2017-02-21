@@ -21,16 +21,17 @@ class ReadingListDownloadService;
 class ReadingListModel;
 @class TabModel;
 
-// Delegate for the ReadingListCollectionViewController, managing the visibility
-// of the
-// toolbar, dismissing the Reading List View and opening elements.
-@protocol ReadingListCollectionViewControllerDelegate<NSObject>
+// Audience for the ReadingListCollectionViewController
+@protocol ReadingListCollectionViewControllerAudience
 
 // Whether the collection has items.
-- (void)readingListCollectionViewController:
-            (ReadingListCollectionViewController*)
-                readingListCollectionViewController
-                                   hasItems:(BOOL)hasItems;
+- (void)readingListHasItems:(BOOL)hasItems;
+
+@end
+
+// Delegate for the ReadingListCollectionViewController, managing the visibility
+// of the toolbar, dismissing the Reading List View and opening elements.
+@protocol ReadingListCollectionViewControllerDelegate<NSObject>
 
 // Dismisses the Reading List View.
 - (void)dismissReadingListCollectionViewController:
@@ -69,6 +70,9 @@ readingListCollectionViewController:
 
 @property(nonatomic, weak) id<ReadingListCollectionViewControllerDelegate>
     delegate;
+@property(nonatomic, weak) id<ReadingListCollectionViewControllerAudience>
+    audience;
+
 @property(nonatomic, readonly) ReadingListModel* readingListModel;
 @property(nonatomic, readonly) favicon::LargeIconService* largeIconService;
 @property(nonatomic, readonly)

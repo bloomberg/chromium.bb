@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
@@ -12,6 +12,7 @@
 #include "components/favicon/core/large_icon_service.h"
 #include "components/reading_list/ios/reading_list_entry.h"
 #include "components/reading_list/ios/reading_list_model_impl.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
@@ -110,29 +111,32 @@ class MockFaviconService : public favicon::FaviconService {
 
 @end
 
-#pragma mark - ReadingListViewControllerTest
+#pragma mark - ReadingListCoordinatorTest
 
-class ReadingListViewControllerTest : public web::WebTestWithWebState {
+class ReadingListCoordinatorTest : public web::WebTestWithWebState {
  public:
-  ReadingListViewControllerTest() {
+  ReadingListCoordinatorTest() {
     loader_mock_.reset([[UrlLoaderStub alloc] init]);
     mock_favicon_service_.reset(new MockFaviconService());
+
+    TestChromeBrowserState::Builder builder;
+    browser_state_ = builder.Build();
 
     reading_list_model_.reset(new ReadingListModelImpl(nullptr, nullptr));
     large_icon_service_.reset(new favicon::LargeIconService(
         mock_favicon_service_.get(), base::ThreadTaskRunnerHandle::Get()));
-    container_.reset([[ReadingListViewController alloc]
-                     initWithModel:reading_list_model_.get()
-                            loader:loader_mock_
-                  largeIconService:large_icon_service_.get()
-        readingListDownloadService:nil]);
+    coordinator_.reset([[ReadingListCoordinator alloc]
+        initWithBaseViewController:nil
+                      browserState:browser_state_.get()
+                            loader:loader_mock_]);
   }
-  ~ReadingListViewControllerTest() override {}
+  ~ReadingListCoordinatorTest() override {}
 
-  ReadingListViewController* GetContainer() { return container_; }
+  ReadingListCoordinator* GetCoordinator() { return coordinator_; }
 
   ReadingListModel* GetReadingListModel() { return reading_list_model_.get(); }
   UrlLoaderStub* GetLoaderStub() { return loader_mock_; }
+
   ReadingListCollectionViewController*
   GetAReadingListCollectionViewController() {
     return [[[ReadingListCollectionViewController alloc]
@@ -143,16 +147,17 @@ class ReadingListViewControllerTest : public web::WebTestWithWebState {
   }
 
  private:
-  base::scoped_nsobject<ReadingListViewController> container_;
+  base::scoped_nsobject<ReadingListCoordinator> coordinator_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   base::scoped_nsobject<UrlLoaderStub> loader_mock_;
   std::unique_ptr<favicon::LargeIconService> large_icon_service_;
   std::unique_ptr<MockFaviconService> mock_favicon_service_;
+  std::unique_ptr<TestChromeBrowserState> browser_state_;
 };
 
-// Tests that the implementation of ReadingListCollectionViewController
-// openItemAtIndexPath opens the entry.
-TEST_F(ReadingListViewControllerTest, OpenItem) {
+// Tests that the implementation of ReadingListCoordinator openItemAtIndexPath
+// opens the entry.
+TEST_F(ReadingListCoordinatorTest, OpenItem) {
   // Setup.
   GURL url("https://chromium.org");
   std::string title("Chromium");
@@ -169,9 +174,9 @@ TEST_F(ReadingListViewControllerTest, OpenItem) {
            distillationState:ReadingListEntry::PROCESSED]);
 
   // Action.
-  [GetContainer() readingListCollectionViewController:
-                      GetAReadingListCollectionViewController()
-                                             openItem:item];
+  [GetCoordinator() readingListCollectionViewController:
+                        GetAReadingListCollectionViewController()
+                                               openItem:item];
 
   // Tests.
   UrlLoaderStub* loader = GetLoaderStub();
