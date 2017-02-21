@@ -41,12 +41,10 @@ import textwrap
 
 import pytz
 
-from infra_libs.ts_mon.common import metrics
+from infra_libs.ts_mon.common.metrics import CumulativeMetric
 
-log_metric = metrics.CumulativeMetric(
-    'proc/log_lines',
-    'Number of log lines, per severity level.',
-    [metrics.StringField('level')])
+log_metric = CumulativeMetric(
+  'proc/log_lines', description="Number of log lines, per severity level.")
 
 if sys.platform.startswith('win'):  # pragma: no cover
   DEFAULT_LOG_DIRECTORIES = os.pathsep.join([

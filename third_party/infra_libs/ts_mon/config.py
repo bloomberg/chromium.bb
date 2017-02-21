@@ -243,15 +243,14 @@ def process_argparse_options(args):
       project = url.netloc
       topic = url.path.strip('/')
       interface.state.global_monitor = monitors.PubSubMonitor(
-          monitors.CredentialFactory.from_string(credentials), project, topic,
-          use_instrumented_http=True, ca_certs=args.ts_mon_ca_certs)
+          credentials, project, topic, use_instrumented_http=True,
+          ca_certs=args.ts_mon_ca_certs)
     else:
       logging.error('ts_mon monitoring is disabled because credentials are not '
                     'available')
   elif endpoint.startswith('https://'):
     interface.state.global_monitor = monitors.HttpsMonitor(
-        endpoint, monitors.CredentialFactory.from_string(credentials),
-        ca_certs=args.ts_mon_ca_certs)
+        endpoint, credentials, ca_certs=args.ts_mon_ca_certs)
   elif endpoint.lower() == 'none':
     logging.info('ts_mon monitoring has been explicitly disabled')
   else:

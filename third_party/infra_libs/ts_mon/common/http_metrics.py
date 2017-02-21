@@ -11,57 +11,29 @@ STATUS_ERROR = 901
 STATUS_TIMEOUT = 902
 STATUS_EXCEPTION = 909
 
+
 request_bytes = metrics.CumulativeDistributionMetric('http/request_bytes',
-    'Bytes sent per http request (body only).', [
-        metrics.StringField('name'),
-        metrics.StringField('client'),
-    ])
+    description='Bytes sent per http request (body only).')
 response_bytes = metrics.CumulativeDistributionMetric('http/response_bytes',
-    'Bytes received per http request (content only).', [
-        metrics.StringField('name'),
-        metrics.StringField('client'),
-    ])
+    description='Bytes received per http request (content only).')
 durations = metrics.CumulativeDistributionMetric('http/durations',
-    'Time elapsed between sending a request and getting a'
-    ' response (including parsing) in milliseconds.', [
-        metrics.StringField('name'),
-        metrics.StringField('client'),
-    ])
+    description='Time elapsed between sending a request and getting a'
+                ' response (including parsing) in milliseconds.')
 response_status = metrics.CounterMetric('http/response_status',
-    'Number of responses received by HTTP status code.', [
-        metrics.IntegerField('status'),
-        metrics.StringField('name'),
-        metrics.StringField('client'),
-    ])
+    description='Number of responses received by HTTP status code.')
 
 
 server_request_bytes = metrics.CumulativeDistributionMetric(
     'http/server_request_bytes',
-    'Bytes received per http request (body only).', [
-        metrics.IntegerField('status'),
-        metrics.StringField('name'),
-        metrics.BooleanField('is_robot'),
-    ])
+    description='Bytes received per http request (body only).')
 server_response_bytes = metrics.CumulativeDistributionMetric(
     'http/server_response_bytes',
-    'Bytes sent per http request (content only).', [
-        metrics.IntegerField('status'),
-        metrics.StringField('name'),
-        metrics.BooleanField('is_robot'),
-    ])
+    description='Bytes sent per http request (content only).')
 server_durations = metrics.CumulativeDistributionMetric('http/server_durations',
-    'Time elapsed between receiving a request and sending a'
-    ' response (including parsing) in milliseconds.', [
-        metrics.IntegerField('status'),
-        metrics.StringField('name'),
-        metrics.BooleanField('is_robot'),
-    ])
+    description='Time elapsed between receiving a request and sending a'
+                ' response (including parsing) in milliseconds.')
 server_response_status = metrics.CounterMetric('http/server_response_status',
-    'Number of responses sent by HTTP status code.', [
-        metrics.IntegerField('status'),
-        metrics.StringField('name'),
-        metrics.BooleanField('is_robot'),
-    ])
+    description='Number of responses sent by HTTP status code.')
 
 
 def update_http_server_metrics(endpoint_name, response_status_code, elapsed_ms,
