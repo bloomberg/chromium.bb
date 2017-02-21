@@ -200,15 +200,12 @@ bool HasColorCorrectionMatrix(int fd, drmModeCrtc* crtc) {
 
 gfx::Size GetMaximumCursorSize(int fd) {
   uint64_t width = 0, height = 0;
-  if (drmGetCap(fd, DRM_CAP_CURSOR_WIDTH, &width)) {
-    VPLOG(1) << "Unable to get cursor width capability";
+  // Querying cursor dimensions is optional and is unsupported on older Chrome
+  // OS kernels.
+  if (drmGetCap(fd, DRM_CAP_CURSOR_WIDTH, &width) != 0 ||
+      drmGetCap(fd, DRM_CAP_CURSOR_HEIGHT, &height) != 0) {
     return gfx::Size(kDefaultCursorWidth, kDefaultCursorHeight);
   }
-  if (drmGetCap(fd, DRM_CAP_CURSOR_HEIGHT, &height)) {
-    VPLOG(1) << "Unable to get cursor height capability";
-    return gfx::Size(kDefaultCursorWidth, kDefaultCursorHeight);
-  }
-
   return gfx::Size(width, height);
 }
 
