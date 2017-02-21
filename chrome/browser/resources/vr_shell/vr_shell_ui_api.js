@@ -322,6 +322,9 @@ api.UiElement = class extends api.UiElementUpdate {
   constructor(pixelX, pixelY, pixelWidth, pixelHeight) {
     super();
 
+    // Apply defaults to new elements.
+    this.setVisible(true);
+    this.setHitTestable(true);
     this.setFill(new api.Sprite(pixelX, pixelY, pixelWidth, pixelHeight));
   }
 };

@@ -71,9 +71,8 @@ class UiScene {
 
   ContentRectangle* GetUiElementById(int element_id);
 
-  ContentRectangle* GetContentQuad();
-
   const Colorf& GetBackgroundColor();
+  float GetBackgroundDistance();
 
  private:
   void ApplyRecursiveTransforms(const ContentRectangle& element,
@@ -85,6 +84,7 @@ class UiScene {
   std::vector<std::unique_ptr<ContentRectangle>> ui_elements_;
   ContentRectangle* content_element_ = nullptr;
   Colorf background_color_ = {0.1f, 0.1f, 0.1f, 1.0f};
+  float background_distance_ = 10.0f;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);
 };

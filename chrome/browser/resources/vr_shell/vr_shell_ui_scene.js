@@ -129,9 +129,24 @@ scene.Scene = class {
     delete this.animations[id];
   }
 
+  /**
+   * Set the background color of the scene.
+   * @param {{r: number, b: number, g: number, a: number}} color
+   */
   setBackgroundColor(color) {
     this.commands.push(
         {'type': api.Command.UPDATE_BACKGROUND, 'data': {'color': color}});
+  }
+
+  /**
+   * Set the radius of background-bounding sphere.
+   * @param {number} distance
+   */
+  setBackgroundDistance(distance) {
+    this.commands.push({
+      'type': api.Command.UPDATE_BACKGROUND,
+      'data': {'distance': distance}
+    });
   }
 
   /**

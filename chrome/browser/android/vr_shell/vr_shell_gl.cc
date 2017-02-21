@@ -57,18 +57,9 @@ static constexpr gvr::Vec3f kOrigin = {0.0f, 0.0f, 0.0f};
 // TODO(mthiesse): Handedness options.
 static constexpr gvr::Vec3f kHandPosition = {0.2f, -0.5f, -0.2f};
 
-// If there is no content quad, and the reticle isn't hitting another element,
-// draw the reticle at this distance.
-static constexpr float kDefaultReticleDistance = 2.0f;
-
 // Fraction of the distance to the object the cursor is drawn at to avoid
 // rounding errors drawing the cursor behind the object.
 static constexpr float kReticleOffset = 0.99f;
-
-// Limit the rendering distance of the reticle to the distance to a corner of
-// the content quad, times this value. This lets the rendering distance
-// adjust according to content quad placement.
-static constexpr float kReticleDistanceMultiplier = 1.5f;
 
 // GVR buffer indices for use with viewport->SetSourceBufferIndex
 // or frame.BindBuffer. We use one for world content (with reprojection)
@@ -471,37 +462,23 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
   // in the field of view. This is physically correct, but hard to use. For
   // usability, do the following instead:
   //
-  // - Project the controller laser onto an outer surface, which is the
-  //   closer of the desktop plane, or a distance-limiting sphere.
+  // - Project the controller laser onto a distance-limiting sphere.
   // - Create a vector between the eyes and the outer surface point.
-  // - If any UI elements intersect this vector, choose the closest to the eyes,
-  //   and place the reticle at the intersection point.
+  // - If any UI elements intersect this vector, and is within the bounding
+  //   sphere, choose the closest to the eyes, and place the reticle at the
+  //   intersection point.
 
-  // Find distance to a corner of the content quad, and limit the cursor
-  // distance to a multiple of that distance. This lets us keep the reticle on
-  // the content plane near the content window, and on the surface of a sphere
-  // in other directions. Note that this approach uses distance from controller,
-  // rather than eye, for simplicity. This will make the sphere slightly
-  // off-center.
-  float distance = kDefaultReticleDistance;
-  ContentRectangle* content_plane = scene_->GetContentQuad();
-  if (content_plane) {
-    distance = content_plane->GetRayDistance(origin, forward);
-    gvr::Vec3f corner = {0.5f, 0.5f, 0.0f};
-    corner = MatrixVectorMul(content_plane->transform.to_world, corner);
-    float max_distance = Distance(origin, corner) * kReticleDistanceMultiplier;
-    if (distance > max_distance || distance <= 0.0f) {
-      distance = max_distance;
-    }
-  }
-
+  // Compute the distance from the eyes to the distance limiting sphere. Note
+  // that the sphere is centered at the controller, rather than the eye, for
+  // simplicity.
+  float distance = scene_->GetBackgroundDistance();
   target_point_ = GetRayPoint(origin, forward, distance);
   gvr::Vec3f eye_to_target = target_point_;
   NormalizeVector(eye_to_target);
 
   // Determine which UI element (if any) intersects the line between the eyes
   // and the controller target position.
-  float closest_element_distance = std::numeric_limits<float>::infinity();
+  float closest_element_distance = VectorLength(target_point_);
   int pixel_x = 0;
   int pixel_y = 0;
   target_element_ = nullptr;

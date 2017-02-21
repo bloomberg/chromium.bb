@@ -38,6 +38,7 @@ var vrShellUi = (function() {
       /** @const */ this.MENU_MODE_SCREEN_DISTANCE = 1.2;
       /** @const */ this.MENU_MODE_SCREEN_HEIGHT = 0.5;
       /** @const */ this.MENU_MODE_SCREEN_ELEVATION = 0.1;
+      /** @const */ this.BACKGROUND_DISTANCE_MULTIPLIER = 1.414;
 
       this.menuMode = false;
       this.fullscreen = false;
@@ -49,6 +50,18 @@ var vrShellUi = (function() {
           this.SCREEN_HEIGHT * this.SCREEN_RATIO, this.SCREEN_HEIGHT);
       element.setTranslation(0, 0, -this.BROWSING_SCREEN_DISTANCE);
       this.elementId = ui.addElement(element);
+
+      // Place an invisible but hittable plane behind the content quad, to keep
+      // the reticle roughly planar with the content if near content.
+      let backPlane = new api.UiElement(0, 0, 0, 0);
+      backPlane.setVisible(false);
+      backPlane.setHitTestable(true);
+      backPlane.setSize(1000, 1000);
+      backPlane.setTranslation(0, 0, -0.01);
+      backPlane.setParentId(this.elementId);
+      ui.addElement(backPlane);
+
+      this.updateState();
     }
 
     setEnabled(enabled) {
@@ -81,25 +94,27 @@ var vrShellUi = (function() {
     updateState() {
       // Defaults content quad parameters.
       let y = 0;
-      let z = -this.BROWSING_SCREEN_DISTANCE;
+      let distance = this.BROWSING_SCREEN_DISTANCE;
       let height = this.SCREEN_HEIGHT;
 
       // Mode-specific overrides.
       if (this.menuMode) {
         y = this.MENU_MODE_SCREEN_ELEVATION;
-        z = -this.MENU_MODE_SCREEN_DISTANCE;
+        distance = this.MENU_MODE_SCREEN_DISTANCE;
         height = this.MENU_MODE_SCREEN_HEIGHT;
       } else if (this.fullscreen) {
-        z = -this.FULLSCREEN_DISTANCE;
+        distance = this.FULLSCREEN_DISTANCE;
       }
 
       let anim;
       anim = new api.Animation(this.elementId, ANIM_DURATION);
-      anim.setTranslation(0, y, z);
+      anim.setTranslation(0, y, -distance);
       ui.addAnimation(anim);
       anim = new api.Animation(this.elementId, ANIM_DURATION);
       anim.setSize(height * this.SCREEN_RATIO, height);
       ui.addAnimation(anim);
+
+      ui.setBackgroundDistance(distance * this.BACKGROUND_DISTANCE_MULTIPLIER);
     }
 
     // TODO(crbug/643815): Add a method setting aspect ratio (and possible
@@ -252,8 +267,8 @@ var vrShellUi = (function() {
 
       let update = new api.UiElementUpdate();
       update.setVisible(false);
-      update.setSize(0.5, 0.2);
-      update.setTranslation(0, -2, -1);
+      update.setSize(0.25, 0.1);
+      update.setTranslation(0, -1.5, -1.5);
       update.setRotation(1, 0, 0, -0.8);
       ui.updateElement(this.uiElement.uiElementId, update);
     }
@@ -566,6 +581,8 @@ var vrShellUi = (function() {
       groundGrid.setRotation(1.0, 0.0, 0.0, -Math.PI / 2);
       groundGrid.setDrawPhase(0);
       this.groundGridId = ui.addElement(groundGrid);
+
+      ui.setBackgroundColor(this.HORIZON_COLOR);
     }
 
     setEnabled(enabled) {

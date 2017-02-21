@@ -69,35 +69,6 @@ TEST(UiScene, AddRemoveElements) {
   EXPECT_EQ(scene.GetUiElements().size(), 0u);
 }
 
-TEST(UiScene, AddRemoveContentQuad) {
-  UiScene scene;
-
-  EXPECT_EQ(scene.GetContentQuad(), nullptr);
-
-  base::DictionaryValue dict;
-  dict.SetInteger("id", 0);
-  dict.SetInteger("fillType", Fill::CONTENT);
-  scene.AddUiElementFromDict(dict);
-  EXPECT_NE(scene.GetContentQuad(), nullptr);
-
-  dict.SetInteger("fillType", Fill::SPRITE);
-  std::unique_ptr<base::DictionaryValue> copy_rect(new base::DictionaryValue);
-  copy_rect->SetInteger("x", 100);
-  copy_rect->SetInteger("y", 101);
-  copy_rect->SetInteger("width", 102);
-  copy_rect->SetInteger("height", 103);
-  dict.Set("copyRect", std::move(copy_rect));
-  scene.UpdateUiElementFromDict(dict);
-  EXPECT_EQ(scene.GetContentQuad(), nullptr);
-
-  dict.SetInteger("fillType", Fill::CONTENT);
-  scene.UpdateUiElementFromDict(dict);
-  EXPECT_NE(scene.GetContentQuad(), nullptr);
-
-  scene.RemoveUiElement(0);
-  EXPECT_EQ(scene.GetContentQuad(), nullptr);
-}
-
 TEST(UiScene, AddRemoveAnimations) {
   UiScene scene;
   addElement(&scene, 0);

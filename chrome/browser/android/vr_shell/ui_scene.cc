@@ -16,6 +16,17 @@ namespace vr_shell {
 
 namespace {
 
+bool ParseFloat(const base::DictionaryValue& dict,
+                const std::string& key,
+                float* output) {
+  double value;
+  if (!dict.GetDouble(key, &value)) {
+    return false;
+  }
+  *output = value;
+  return true;
+}
+
 bool ParseRecti(const base::DictionaryValue& dict,
                 const std::string& key,
                 Recti* output) {
@@ -323,6 +334,7 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
 
 void UiScene::UpdateBackgroundFromDict(const base::DictionaryValue& dict) {
   ParseColorf(dict, "color", &background_color_);
+  ParseFloat(dict, "distance", &background_distance_);
 }
 
 void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
@@ -390,12 +402,12 @@ ContentRectangle* UiScene::GetUiElementById(int element_id) {
   return nullptr;
 }
 
-ContentRectangle* UiScene::GetContentQuad() {
-  return content_element_;
-}
-
 const Colorf& UiScene::GetBackgroundColor() {
   return background_color_;
+}
+
+float UiScene::GetBackgroundDistance() {
+  return background_distance_;
 }
 
 const std::vector<std::unique_ptr<ContentRectangle>>&
