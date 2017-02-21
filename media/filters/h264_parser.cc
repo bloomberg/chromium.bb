@@ -739,7 +739,7 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
         DefaultScalingList4x4(i, pps->scaling_list4x4);
 
     } else {
-      if (sps.seq_scaling_matrix_present_flag) {
+      if (!sps.seq_scaling_matrix_present_flag) {
         // Table 7-2 fallback rule A in spec.
         FallbackScalingList4x4(
             i, kDefault4x4Intra, kDefault4x4Inter, pps->scaling_list4x4);
@@ -768,7 +768,7 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
           DefaultScalingList8x8(i, pps->scaling_list8x8);
 
       } else {
-        if (sps.seq_scaling_matrix_present_flag) {
+        if (!sps.seq_scaling_matrix_present_flag) {
           // Table 7-2 fallback rule A in spec.
           FallbackScalingList8x8(
               i, kDefault8x8Intra, kDefault8x8Inter, pps->scaling_list8x8);
