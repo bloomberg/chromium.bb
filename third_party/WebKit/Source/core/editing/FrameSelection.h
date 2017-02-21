@@ -169,8 +169,6 @@ class CORE_EXPORT FrameSelection final
     return computeVisibleSelectionInDOMTreeDeprecated().getSelectionType();
   }
 
-  TextAffinity affinity() const { return selectionInDOMTree().affinity(); }
-
   bool modify(EAlteration,
               SelectionDirection,
               TextGranularity,

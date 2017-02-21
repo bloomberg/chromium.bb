@@ -402,7 +402,7 @@ static bool expandSelectionToGranularity(LocalFrame& frame,
     return false;
   if (newRange.isCollapsed())
     return false;
-  TextAffinity affinity = frame.selection().affinity();
+  TextAffinity affinity = frame.selection().selectionInDOMTree().affinity();
   frame.selection().setSelectedRange(newRange, affinity,
                                      SelectionDirectionalMode::NonDirectional,
                                      FrameSelection::CloseTyping);
