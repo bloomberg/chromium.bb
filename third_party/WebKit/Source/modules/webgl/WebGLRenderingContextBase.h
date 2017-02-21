@@ -646,10 +646,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Query if depth_stencil buffer is supported.
   bool isDepthStencilSupported() { return m_isDepthStencilSupported; }
 
-  // Helper to return the size in bytes of OpenGL data types
-  // like GL_FLOAT, GL_INT, etc.
-  unsigned sizeInBytes(GLenum type) const;
-
   // Check if each enabled vertex attribute is bound to a buffer.
   bool validateRenderingState(const char*);
 
