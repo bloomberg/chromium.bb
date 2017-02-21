@@ -18,7 +18,7 @@ class GURL;
 // -dismissModalsAndOpenSelectedTabInMode:withURL:transition:completion:.
 @property(nonatomic, readonly) GURL url;
 @property(nonatomic, readonly) ApplicationMode applicationMode;
-@property(nonatomic, readonly) void (^completionBlock)(void);
+@property(nonatomic, strong, readonly) void (^completionBlock)(void);
 
 // Clear the URL.
 - (void)resetURL;

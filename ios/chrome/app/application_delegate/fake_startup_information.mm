@@ -4,29 +4,19 @@
 
 #include "ios/chrome/app/application_delegate/fake_startup_information.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
 #include "ios/chrome/browser/app_startup_parameters.h"
 
-@interface FakeStartupInformation () {
-  base::scoped_nsobject<AppStartupParameters> _startupParameters;
-}
-
-@end
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @implementation FakeStartupInformation
 
 @synthesize appLaunchTime = _appLaunchTime;
 @synthesize isPresentingFirstRunUI = _isPresentingFirstRunUI;
 @synthesize isColdStart = _isColdStart;
-
-- (AppStartupParameters*)startupParameters {
-  return _startupParameters;
-}
-
-- (void)setStartupParameters:(AppStartupParameters*)startupParameters {
-  _startupParameters.reset([startupParameters retain]);
-}
+@synthesize startupParameters = _startupParameters;
 
 - (FirstUserActionRecorder*)firstUserActionRecorder {
   // Stub.

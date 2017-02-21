@@ -10,16 +10,15 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-@interface MockTabOpener () {
-  base::mac::ScopedBlock<ProceduralBlock> _completionBlock;
-}
-
-@end
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @implementation MockTabOpener
 
 @synthesize url = _url;
 @synthesize applicationMode = _applicationMode;
+@synthesize completionBlock = _completionBlock;
 
 - (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
                                       withURL:(const GURL&)url
@@ -27,15 +26,11 @@
                                    completion:(ProceduralBlock)handler {
   _url = url;
   _applicationMode = targetMode;
-  _completionBlock.reset([handler copy]);
+  _completionBlock = [handler copy];
 }
 
 - (void)resetURL {
   _url = _url.EmptyGURL();
-}
-
-- (void (^)())completionBlock {
-  return _completionBlock;
 }
 
 - (void)openTabFromLaunchOptions:(NSDictionary*)launchOptions
