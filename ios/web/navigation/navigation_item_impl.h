@@ -22,6 +22,7 @@ namespace web {
 
 class NavigationItemFacadeDelegate;
 class NavigationItemStorageBuilder;
+enum class NavigationInitiationType;
 
 // Implementation of NavigationItem.
 class NavigationItemImpl : public web::NavigationItem {
@@ -94,6 +95,12 @@ class NavigationItemImpl : public web::NavigationItem {
   void SetIsCreatedFromHashChange(bool hash_change);
   bool IsCreatedFromHashChange() const;
 
+  // The initiation type of this pending navigation. Resets to user-initiated
+  // after commit.
+  void SetNavigationInitiationType(
+      web::NavigationInitiationType navigation_initiation_type);
+  web::NavigationInitiationType NavigationInitiationType() const;
+
   // Whether or not to bypass showing the repost form confirmation when loading
   // a POST request. Set to YES for browser-generated POST requests.
   void SetShouldSkipRepostFormConfirmation(bool skip);
@@ -112,13 +119,6 @@ class NavigationItemImpl : public web::NavigationItem {
   // Once a navigation item is committed, we should no longer track
   // non-persisted state, as documented on the members below.
   void ResetForCommit();
-
-  // Whether this (pending) navigation is renderer-initiated.  Resets to false
-  // for all types of navigations after commit.
-  void set_is_renderer_initiated(bool is_renderer_initiated) {
-    is_renderer_initiated_ = is_renderer_initiated;
-  }
-  bool is_renderer_initiated() const { return is_renderer_initiated_; }
 
  private:
   // The NavigationManItemStorageBuilder functions require access to
@@ -146,10 +146,10 @@ class NavigationItemImpl : public web::NavigationItem {
   bool should_skip_repost_form_confirmation_;
   base::scoped_nsobject<NSData> post_data_;
 
-  // Whether the item, while loading, was created for a renderer-initiated
-  // navigation.  This dictates whether the URL should be displayed before the
-  // navigation commits.  It is cleared in |ResetForCommit| and not persisted.
-  bool is_renderer_initiated_;
+  // The navigation initiation type of the item.  This decides whether the URL
+  // should be displayed before the navigation commits.  It is cleared in
+  // |ResetForCommit| and not persisted.
+  web::NavigationInitiationType navigation_initiation_type_;
 
   // Whether the navigation contains unsafe resources.
   bool is_unsafe_;

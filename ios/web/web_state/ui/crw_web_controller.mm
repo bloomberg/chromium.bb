@@ -435,6 +435,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 @property(nonatomic, readwrite) id<CRWNativeContent> nativeController;
 // Returns NavigationManager's session controller.
 @property(nonatomic, readonly) CRWSessionController* sessionController;
+// The associated NavigationManagerImpl.
+@property(nonatomic, readonly) NavigationManagerImpl* navigationManagerImpl;
 // Dictionary where keys are the names of WKWebView properties and values are
 // selector names which should be called when a corresponding property has
 // changed. e.g. @{ @"URL" : @"webViewURLDidChange" } means that
@@ -1376,8 +1378,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)setNavigationItemTitle:(NSString*)title {
   DCHECK(title);
-  auto& navigationManager = _webStateImpl->GetNavigationManagerImpl();
-  web::NavigationItem* item = navigationManager.GetLastCommittedItem();
+  web::NavigationItem* item =
+      self.navigationManagerImpl->GetLastCommittedItem();
   if (!item)
     return;
 
@@ -1389,7 +1391,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // TODO(crbug.com/546218): See if this can be removed; it's not clear that
   // other platforms send this (tab sync triggers need to be compared against
   // upstream).
-  navigationManager.OnNavigationItemChanged();
+  self.navigationManagerImpl->OnNavigationItemChanged();
 
   if ([_delegate respondsToSelector:@selector(webController:titleDidChange:)]) {
     [_delegate webController:self titleDidChange:title];
@@ -1572,16 +1574,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   [_delegate webWillAddPendingURL:requestURL transition:transition];
   // Add or update pending url.
-  if (_webStateImpl->GetNavigationManagerImpl().GetPendingItem()) {
+  if (self.navigationManagerImpl->GetPendingItem()) {
     // Update the existing pending entry.
     // Typically on PAGE_TRANSITION_CLIENT_REDIRECT.
     [[self sessionController] updatePendingItem:requestURL];
   } else {
     // A new session history entry needs to be created.
-    [[self sessionController] addPendingItem:requestURL
-                                    referrer:referrer
-                                  transition:transition
-                           rendererInitiated:YES];
+    self.navigationManagerImpl->AddPendingItem(
+        requestURL, referrer, transition,
+        web::NavigationInitiationType::RENDERER_INITIATED);
   }
   _webStateImpl->SetIsLoading(true);
   _webStateImpl->OnProvisionalNavigationStarted(requestURL);
@@ -1619,7 +1620,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   // TODO(stuartmorgan): Make CRWSessionController manage this internally (or
   // remove it; it's not clear this matches other platforms' behavior).
-  _webStateImpl->GetNavigationManagerImpl().OnNavigationItemCommitted();
+  self.navigationManagerImpl->OnNavigationItemCommitted();
   // Record that a same-document hashchange event will be fired.  This flag will
   // be reset when resonding to the hashchange message.  Note that resetting the
   // flag in the completion block below is too early, as that block is called
@@ -1915,14 +1916,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // forward/back transitions?
     [self recordStateInHistory];
 
-    CRWSessionController* history =
-        _webStateImpl->GetNavigationManagerImpl().GetSessionController();
     if (!self.currentSessionEntry)
       initialNavigation = YES;
-    [history addPendingItem:navUrl
-                   referrer:params.referrer
-                 transition:transition
-          rendererInitiated:params.is_renderer_initiated];
+
+    web::NavigationInitiationType navigationInitiationType =
+        params.is_renderer_initiated
+            ? web::NavigationInitiationType::RENDERER_INITIATED
+            : web::NavigationInitiationType::USER_INITIATED;
+    self.navigationManagerImpl->AddPendingItem(
+        navUrl, params.referrer, transition, navigationInitiationType);
+
     web::NavigationItemImpl* addedItem =
         [self currentSessionEntry].navigationItemImpl;
     DCHECK(addedItem);
@@ -2061,8 +2064,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)shouldReload:(const GURL&)destinationURL
           transition:(ui::PageTransition)transition {
   // Do a reload if the user hits enter in the address bar or re-types a URL.
-  web::NavigationItem* item =
-      _webStateImpl->GetNavigationManagerImpl().GetVisibleItem();
+  web::NavigationItem* item = self.navigationManagerImpl->GetVisibleItem();
   return (transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) && item &&
          (destinationURL == item->GetURL() ||
           destinationURL == item->GetOriginalRequestURL());
@@ -2079,7 +2081,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   base::RecordAction(UserMetricsAction("Reload"));
   if (_webView) {
     web::NavigationItem* transientItem =
-        _webStateImpl->GetNavigationManagerImpl().GetTransientItem();
+        self.navigationManagerImpl->GetTransientItem();
     if (transientItem) {
       // If there's a transient item, a reload is considered a new navigation to
       // the transient item's URL (as on other platforms).
@@ -2273,10 +2275,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  web::NavigationManagerImpl& navigationManager =
-      _webStateImpl->GetNavigationManagerImpl();
-  if (navigationManager.CanGoToOffset(delta)) {
-    [self goToItemAtIndex:navigationManager.GetIndexForOffset(delta)];
+  if (self.navigationManagerImpl->CanGoToOffset(delta)) {
+    NSInteger index = self.navigationManagerImpl->GetIndexForOffset(delta);
+    [self goToItemAtIndex:index];
   }
 }
 
@@ -2286,10 +2287,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Only load the new URL if it has a different document than |fromEntry| to
   // prevent extra page loads from NavigationItems created by hash changes or
   // calls to window.history.pushState().
-  BOOL shouldLoadURL =
-      ![_webStateImpl->GetNavigationManagerImpl().GetSessionController()
-          isSameDocumentNavigationBetweenItem:fromEntry.navigationItem
-                                      andItem:self.currentNavItem];
+  BOOL shouldLoadURL = ![self.sessionController
+      isSameDocumentNavigationBetweenItem:fromEntry.navigationItem
+                                  andItem:self.currentNavItem];
   web::NavigationItemImpl* currentItem =
       self.currentSessionEntry.navigationItemImpl;
   GURL endURL = [self URLForHistoryNavigationFromItem:fromEntry.navigationItem
@@ -2358,8 +2358,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // opened from another application.
   BOOL rendererInitiatedWithoutInteraction =
       self.sessionController.openedByDOM && !_userInteractedWithWebController;
-  BOOL noNavigationItems =
-      !_webStateImpl->GetNavigationManagerImpl().GetItemCount();
+  BOOL noNavigationItems = !(self.navigationManagerImpl->GetItemCount());
   return rendererInitiatedWithoutInteraction || noNavigationItems;
 }
 
@@ -3003,13 +3002,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   replaceURL = URLEscapedForHistory(replaceURL);
   if (!replaceURL.is_valid())
     return YES;
-  const NavigationManagerImpl& navigationManager =
-      _webStateImpl->GetNavigationManagerImpl();
+
   web::NavigationItem* navItem = [self currentNavItem];
   // ReplaceState happened before first navigation entry or called right
   // after window.open when the url is empty/not valid.
-  if (!navItem ||
-      (navigationManager.GetItemCount() <= 1 && navItem->GetURL().is_empty()))
+  if (!navItem || (self.navigationManagerImpl->GetItemCount() <= 1 &&
+                   navItem->GetURL().is_empty()))
     return YES;
   if (!web::history_state_util::IsHistoryStateChangeValid(
           [self currentNavItem]->GetURL(), replaceURL)) {
@@ -3185,8 +3183,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Check if the link navigation leads to a launch of an external app.
   // TODO(crbug.com/607780): Revise the logic of allowing external app launch
   // and move it to externalAppLauncher.
-  BOOL isOpenInNewTabNavigation =
-      !_webStateImpl->GetNavigationManager()->GetItemCount();
+  BOOL isOpenInNewTabNavigation = !(self.navigationManagerImpl->GetItemCount());
   BOOL isPossibleLinkClick = [self isLinkNavigation:action.navigationType];
   if (isPossibleLinkClick || isOpenInNewTabNavigation ||
       PageTransitionCoreTypeIs([self currentTransition],
@@ -3657,9 +3654,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 #pragma mark Session Information
 
 - (CRWSessionController*)sessionController {
-  return _webStateImpl
-      ? _webStateImpl->GetNavigationManagerImpl().GetSessionController()
-      : nil;
+  NavigationManagerImpl* navigationManager = self.navigationManagerImpl;
+  return navigationManager ? navigationManager->GetSessionController() : nil;
+}
+
+- (NavigationManagerImpl*)navigationManagerImpl {
+  return _webStateImpl ? &(_webStateImpl->GetNavigationManagerImpl()) : nil;
 }
 
 - (CRWSessionEntry*)currentSessionEntry {

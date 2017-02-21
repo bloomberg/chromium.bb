@@ -26,6 +26,20 @@ class NavigationManagerDelegate;
 class NavigationManagerFacadeDelegate;
 class SessionStorageBuilder;
 
+// Defines the ways how a pending navigation can be initiated.
+enum class NavigationInitiationType {
+  // Navigation was initiated by actual user action.
+  USER_INITIATED = 1,
+
+  // Navigation was initiated by renderer. Examples of renderer-initiated
+  // navigations include:
+  //  * <a> link click
+  //  * changing window.location.href
+  //  * redirect via the <meta http-equiv="refresh"> tag
+  //  * using window.history.pushState
+  RENDERER_INITIATED,
+};
+
 // Implementation of NavigationManager.
 // Generally mirrors upstream's NavigationController.
 class NavigationManagerImpl : public NavigationManager {
@@ -82,6 +96,16 @@ class NavigationManagerImpl : public NavigationManager {
                const Referrer& referrer,
                ui::PageTransition type);
 
+  // Adds a new item with the given url, referrer, navigation type, and
+  // initiation type, making it the pending item. If pending item is the same as
+  // the current item, this does nothing. |referrer| may be nil if there isn't
+  // one. The item starts out as pending, and will be lost unless
+  // |-commitPendingItem| is called.
+  void AddPendingItem(const GURL& url,
+                      const web::Referrer& referrer,
+                      ui::PageTransition navigation_type,
+                      NavigationInitiationType initiation_type);
+
   // Convenience accessors to get the underlying NavigationItems from the
   // SessionEntries returned from |session_controller_|'s -lastUserEntry and
   // -previousEntry methods.
@@ -119,6 +143,7 @@ class NavigationManagerImpl : public NavigationManager {
   void GoForward() override;
   void GoToIndex(int index) override;
   void Reload(bool check_for_reposts) override;
+  void OverrideDesktopUserAgentForNextPendingItem() override;
 
   // Returns the current list of transient url rewriters, passing ownership to
   // the caller.
@@ -149,6 +174,12 @@ class NavigationManagerImpl : public NavigationManager {
   // Returns true if the PageTransition for the underlying navigation item at
   // |index| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.
   bool IsRedirectItemAtIndex(int index) const;
+
+  // If true, override navigation item's useDesktopUserAgent flag and always
+  // create the pending entry using the desktop user agent.
+  // TODO(crbug.com/692303): Remove this when overriding the user agent doesn't
+  // create a new NavigationItem.
+  bool override_desktop_user_agent_for_next_pending_item_;
 
   // The primary delegate for this manager.
   NavigationManagerDelegate* delegate_;

@@ -218,11 +218,10 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
     NavigationManagerImpl& navigationManager =
         [web_controller() webStateImpl]->GetNavigationManagerImpl();
     navigationManager.InitializeSession(@"name", nil, NO, 0);
-    [navigationManager.GetSessionController()
-           addPendingItem:GURL("http://www.google.com/?q=foo#bar")
-                 referrer:web::Referrer()
-               transition:ui::PAGE_TRANSITION_TYPED
-        rendererInitiated:NO];
+    navigationManager.AddPendingItem(
+        GURL("http://www.google.com/?q=foo#bar"), web::Referrer(),
+        ui::PAGE_TRANSITION_TYPED,
+        web::NavigationInitiationType::USER_INITIATED);
   }
 
   void TearDown() override {
@@ -810,11 +809,9 @@ class CRWWebControllerNativeContentTest : public web::WebTestWithWebController {
     NavigationManagerImpl& navigation_manager =
         [web_controller() webStateImpl]->GetNavigationManagerImpl();
     navigation_manager.InitializeSession(@"name", nil, NO, 0);
-    [navigation_manager.GetSessionController()
-           addPendingItem:URL
-                 referrer:web::Referrer()
-               transition:ui::PAGE_TRANSITION_TYPED
-        rendererInitiated:NO];
+    navigation_manager.AddPendingItem(
+        URL, web::Referrer(), ui::PAGE_TRANSITION_TYPED,
+        web::NavigationInitiationType::USER_INITIATED);
     [web_controller() loadCurrentURL];
   }
 

@@ -228,22 +228,25 @@ class TabTest : public BlockCleanupTest {
 
   void BrowseTo(const GURL& userUrl, const GURL& redirectUrl, NSString* title) {
     DCHECK_EQ(tab_.get().webState, web_state_impl_);
-    web::Referrer empty_referrer;
+
     [tab_ webWillAddPendingURL:userUrl transition:ui::PAGE_TRANSITION_TYPED];
     web_state_impl_->OnProvisionalNavigationStarted(userUrl);
     [tab_ webWillAddPendingURL:redirectUrl
                     transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT];
-    [[tab_ navigationManager]->GetSessionController()
-           addPendingItem:redirectUrl
-                 referrer:empty_referrer
-               transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
-        rendererInitiated:YES];
+
+    web::Referrer empty_referrer;
+    [tab_ navigationManager]->AddPendingItem(
+        redirectUrl, empty_referrer, ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+        web::NavigationInitiationType::RENDERER_INITIATED);
+
     web_state_impl_->OnProvisionalNavigationStarted(redirectUrl);
     [[tab_ navigationManager]->GetSessionController() commitPendingItem];
     [[tab_ webController] webStateImpl]->OnNavigationCommitted(redirectUrl);
     [tab_ webDidStartLoadingURL:redirectUrl shouldUpdateHistory:YES];
+
     base::string16 new_title = base::SysNSStringToUTF16(title);
     [tab_ navigationManager]->GetLastCommittedItem()->SetTitle(new_title);
+
     [tab_ webController:mock_web_controller_ titleDidChange:title];
     [[[(id)mock_web_controller_ expect]
         andReturnValue:OCMOCK_VALUE(kPageLoaded)] loadPhase];

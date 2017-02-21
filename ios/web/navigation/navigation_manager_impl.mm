@@ -68,7 +68,10 @@ NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
 }
 
 NavigationManagerImpl::NavigationManagerImpl()
-    : delegate_(nullptr), browser_state_(nullptr), facade_delegate_(nullptr) {}
+    : override_desktop_user_agent_for_next_pending_item_(false),
+      delegate_(nullptr),
+      browser_state_(nullptr),
+      facade_delegate_(nullptr) {}
 
 NavigationManagerImpl::~NavigationManagerImpl() {
   // The facade layer should be deleted before this object.
@@ -171,6 +174,27 @@ void NavigationManagerImpl::LoadURL(const GURL& url,
   WebState::OpenURLParams params(url, referrer,
                                  WindowOpenDisposition::CURRENT_TAB, type, NO);
   delegate_->GetWebState()->OpenURL(params);
+}
+
+void NavigationManagerImpl::AddPendingItem(
+    const GURL& url,
+    const web::Referrer& referrer,
+    ui::PageTransition navigation_type,
+    NavigationInitiationType initiation_type) {
+  [session_controller_ addPendingItem:url
+                             referrer:referrer
+                           transition:navigation_type
+                       initiationType:initiation_type];
+
+  // Do nothing if pending item is the same as last committed item.
+  if (GetPendingItem()) {
+    bool use_desktop_user_agent =
+        override_desktop_user_agent_for_next_pending_item_ ||
+        (GetLastCommittedItem() &&
+         GetLastCommittedItem()->IsOverridingUserAgent());
+    GetPendingItem()->SetIsOverridingUserAgent(use_desktop_user_agent);
+    override_desktop_user_agent_for_next_pending_item_ = false;
+  }
 }
 
 NavigationItem* NavigationManagerImpl::GetLastUserItem() const {
@@ -394,6 +418,13 @@ int NavigationManagerImpl::GetIndexForOffset(int offset) const {
   }
 
   return result;
+}
+
+void NavigationManagerImpl::OverrideDesktopUserAgentForNextPendingItem() {
+  if (GetPendingItem())
+    GetPendingItem()->SetIsOverridingUserAgent(true);
+  else
+    override_desktop_user_agent_for_next_pending_item_ = true;
 }
 
 bool NavigationManagerImpl::IsRedirectItemAtIndex(int index) const {

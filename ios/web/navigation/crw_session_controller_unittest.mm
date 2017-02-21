@@ -15,6 +15,7 @@
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -73,10 +74,11 @@ TEST_F(CRWSessionControllerTest, InitWithWindowName) {
 
 // Tests session controller state after setting a pending index.
 TEST_F(CRWSessionControllerTest, SetPendingIndex) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(-1, [session_controller_ pendingItemIndex]);
@@ -87,10 +89,11 @@ TEST_F(CRWSessionControllerTest, SetPendingIndex) {
 }
 
 TEST_F(CRWSessionControllerTest, addPendingItem) {
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
 
   EXPECT_EQ(0U, [[session_controller_ entries] count]);
   EXPECT_EQ(
@@ -99,16 +102,18 @@ TEST_F(CRWSessionControllerTest, addPendingItem) {
 }
 
 TEST_F(CRWSessionControllerTest, addPendingItemWithCommittedEntries) {
-  [session_controller_ addPendingItem:GURL("http://www.committed.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.committed.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
 
   EXPECT_EQ(1U, [[session_controller_ entries] count]);
   EXPECT_EQ(
@@ -121,15 +126,17 @@ TEST_F(CRWSessionControllerTest, addPendingItemWithCommittedEntries) {
 
 // Tests that adding a pending entry resets pending entry index.
 TEST_F(CRWSessionControllerTest, addPendingItemWithExisingPendingEntryIndex) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   // Set 0 as pending entry index.
@@ -139,25 +146,27 @@ TEST_F(CRWSessionControllerTest, addPendingItemWithExisingPendingEntryIndex) {
   EXPECT_EQ(0, [session_controller_ pendingItemIndex]);
 
   // Add a pending entry, which should drop pending navigation index.
-  [session_controller_ addPendingItem:GURL("http://www.example.com/1")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/1")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   EXPECT_EQ(GURL("http://www.example.com/1"),
             [[session_controller_ pendingEntry] navigationItem]->GetURL());
   EXPECT_EQ(-1, [session_controller_ pendingItemIndex]);
 }
 
 TEST_F(CRWSessionControllerTest, addPendingItemOverriding) {
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
   [session_controller_
-         addPendingItem:GURL("http://www.another.url.com")
-               referrer:MakeReferrer("http://www.another.referer.com")
-             transition:ui::PAGE_TRANSITION_TYPED
-      rendererInitiated:NO];
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
+  [session_controller_
+      addPendingItem:GURL("http://www.another.url.com")
+            referrer:MakeReferrer("http://www.another.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
 
   EXPECT_EQ(0U, [[session_controller_ entries] count]);
   EXPECT_EQ(
@@ -166,10 +175,11 @@ TEST_F(CRWSessionControllerTest, addPendingItemOverriding) {
 }
 
 TEST_F(CRWSessionControllerTest, addPendingItemAndCommit) {
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(1U, [[session_controller_ entries] count]);
@@ -182,15 +192,16 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndCommit) {
 }
 
 TEST_F(CRWSessionControllerTest, addPendingItemOverridingAndCommit) {
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
   [session_controller_
-         addPendingItem:GURL("http://www.another.url.com")
-               referrer:MakeReferrer("http://www.another.referer.com")
-             transition:ui::PAGE_TRANSITION_TYPED
-      rendererInitiated:NO];
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
+  [session_controller_
+      addPendingItem:GURL("http://www.another.url.com")
+            referrer:MakeReferrer("http://www.another.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(1U, [[session_controller_ entries] count]);
@@ -203,17 +214,18 @@ TEST_F(CRWSessionControllerTest, addPendingItemOverridingAndCommit) {
 }
 
 TEST_F(CRWSessionControllerTest, addPendingItemAndCommitMultiple) {
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   [session_controller_
-         addPendingItem:GURL("http://www.another.url.com")
-               referrer:MakeReferrer("http://www.another.referer.com")
-             transition:ui::PAGE_TRANSITION_TYPED
-      rendererInitiated:NO];
+      addPendingItem:GURL("http://www.another.url.com")
+            referrer:MakeReferrer("http://www.another.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(2U, [[session_controller_ entries] count]);
@@ -229,10 +241,11 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndCommitMultiple) {
 }
 
 TEST_F(CRWSessionControllerTest, addPendingItemAndDiscard) {
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ discardNonCommittedItems];
 
   EXPECT_EQ(0U, [[session_controller_ entries] count]);
@@ -241,10 +254,11 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndDiscard) {
 
 // Tests discarding pending entry added via |setPendingItemIndex:| call.
 TEST_F(CRWSessionControllerTest, setPendingItemIndexAndDiscard) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   [session_controller_ setPendingItemIndex:0];
@@ -257,16 +271,18 @@ TEST_F(CRWSessionControllerTest, setPendingItemIndexAndDiscard) {
 }
 
 TEST_F(CRWSessionControllerTest, addPendingItemAndDiscardAndAddAndCommit) {
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ discardNonCommittedItems];
 
-  [session_controller_ addPendingItem:GURL("http://www.another.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.another.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(1U, [[session_controller_ entries] count]);
@@ -279,16 +295,18 @@ TEST_F(CRWSessionControllerTest, addPendingItemAndDiscardAndAddAndCommit) {
 }
 
 TEST_F(CRWSessionControllerTest, addPendingItemAndCommitAndAddAndDiscard) {
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
-  [session_controller_ addPendingItem:GURL("http://www.another.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.another.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ discardNonCommittedItems];
 
   EXPECT_EQ(1U, [[session_controller_ entries] count]);
@@ -311,10 +329,11 @@ TEST_F(CRWSessionControllerTest,
 TEST_F(CRWSessionControllerTest,
        commitPendingItemWithoutPendingEntryWithCommittedEntry) {
   // Setup committed entry
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   // Commit pending entry when there is no such one
@@ -329,30 +348,34 @@ TEST_F(CRWSessionControllerTest,
 // Tests that forward entries are discarded after navigation entry is committed.
 TEST_F(CRWSessionControllerTest, commitPendingItemWithExistingForwardEntries) {
   // Make 3 entries.
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:MakeReferrer("http://www.example.com/a")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:YES];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:MakeReferrer("http://www.example.com/a")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/1")
-                             referrer:MakeReferrer("http://www.example.com/b")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:YES];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/1")
+            referrer:MakeReferrer("http://www.example.com/b")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/2")
-                             referrer:MakeReferrer("http://www.example.com/c")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:YES];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/2")
+            referrer:MakeReferrer("http://www.example.com/c")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
   [session_controller_ commitPendingItem];
 
   // Go back to the first entry.
   [session_controller_ goToItemAtIndex:0];
 
   // Create and commit a new pending entry.
-  [session_controller_ addPendingItem:GURL("http://www.example.com/2")
-                             referrer:MakeReferrer("http://www.example.com/c")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:YES];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/2")
+            referrer:MakeReferrer("http://www.example.com/c")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
   [session_controller_ commitPendingItem];
 
   // All forward entries should go away.
@@ -364,20 +387,23 @@ TEST_F(CRWSessionControllerTest, commitPendingItemWithExistingForwardEntries) {
 
 // Tests committing pending entry index from the middle.
 TEST_F(CRWSessionControllerTest, commitPendingItemIndex) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/1")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/1")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/2")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/2")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
   ASSERT_EQ(3U, [[session_controller_ entries] count]);
 
@@ -413,10 +439,11 @@ TEST_F(CRWSessionControllerTest,
 TEST_F(CRWSessionControllerTest,
        DiscardPendingEntryWithoutPendingEntryWithCommittedEntry) {
   // Setup committed entry
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   // Discard noncommitted entries when there is no such one
@@ -437,10 +464,11 @@ TEST_F(CRWSessionControllerTest, updatePendingItemWithoutPendingEntry) {
 }
 
 TEST_F(CRWSessionControllerTest, updatePendingItemWithPendingEntry) {
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ updatePendingItem:GURL("http://www.another.url.com")];
 
   EXPECT_EQ(
@@ -450,10 +478,11 @@ TEST_F(CRWSessionControllerTest, updatePendingItemWithPendingEntry) {
 
 TEST_F(CRWSessionControllerTest,
        updatePendingItemWithPendingEntryAlreadyCommited) {
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
   [session_controller_ updatePendingItem:GURL("http://www.another.url.com")];
   [session_controller_ commitPendingItem];
@@ -470,15 +499,17 @@ TEST_F(CRWSessionControllerTest,
 // Tests inserting session controller state.
 TEST_F(CRWSessionControllerTest, InsertState) {
   // Add 1 committed and 1 pending entry to target controller.
-  [session_controller_ addPendingItem:GURL("http://www.url.com/2")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com/2")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.url.com/3")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com/3")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
 
   // Create source session controller with 1 committed entry.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
@@ -488,15 +519,17 @@ TEST_F(CRWSessionControllerTest, InsertState) {
                                  openerNavigationIndex:0
                                           browserState:&browser_state_]);
   [other_session_controller setWindowName:@"test-window"];
-  [other_session_controller addPendingItem:GURL("http://www.url.com/0")
-                                  referrer:web::Referrer()
-                                transition:ui::PAGE_TRANSITION_TYPED
-                         rendererInitiated:NO];
+  [other_session_controller
+      addPendingItem:GURL("http://www.url.com/0")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [other_session_controller commitPendingItem];
-  [other_session_controller addPendingItem:GURL("http://www.url.com/1")
-                                  referrer:web::Referrer()
-                                transition:ui::PAGE_TRANSITION_TYPED
-                         rendererInitiated:NO];
+  [other_session_controller
+      addPendingItem:GURL("http://www.url.com/1")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
 
   // Insert and verify the state of target session controller.
   [session_controller_
@@ -519,15 +552,17 @@ TEST_F(CRWSessionControllerTest, InsertState) {
 // Tests inserting session controller state from empty session controller.
 TEST_F(CRWSessionControllerTest, InsertStateFromEmptySessionController) {
   // Add 2 committed entries to target controller.
-  [session_controller_ addPendingItem:GURL("http://www.url.com/0")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com/0")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.url.com/1")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com/1")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   // Create empty source session controller.
@@ -566,20 +601,23 @@ TEST_F(CRWSessionControllerTest, InsertStateToEmptySessionController) {
                                  openerNavigationIndex:0
                                           browserState:&browser_state_]);
   [other_session_controller setWindowName:@"test-window"];
-  [other_session_controller addPendingItem:GURL("http://www.url.com/0")
-                                  referrer:web::Referrer()
-                                transition:ui::PAGE_TRANSITION_TYPED
-                         rendererInitiated:NO];
+  [other_session_controller
+      addPendingItem:GURL("http://www.url.com/0")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [other_session_controller commitPendingItem];
-  [other_session_controller addPendingItem:GURL("http://www.url.com/1")
-                                  referrer:web::Referrer()
-                                transition:ui::PAGE_TRANSITION_TYPED
-                         rendererInitiated:NO];
+  [other_session_controller
+      addPendingItem:GURL("http://www.url.com/1")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [other_session_controller commitPendingItem];
-  [other_session_controller addPendingItem:GURL("http://www.url.com/2")
-                                  referrer:web::Referrer()
-                                transition:ui::PAGE_TRANSITION_TYPED
-                         rendererInitiated:NO];
+  [other_session_controller
+      addPendingItem:GURL("http://www.url.com/2")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
 
   // Insert and verify the state of target session controller.
   [session_controller_
@@ -602,15 +640,17 @@ TEST_F(CRWSessionControllerTest, InsertStateToEmptySessionController) {
 TEST_F(CRWSessionControllerTest,
        InsertStateWithPendingEntryIndexInTargetController) {
   // Add 2 committed entries and make the first entry pending.
-  [session_controller_ addPendingItem:GURL("http://www.url.com/2")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com/2")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.url.com/3")
-                             referrer:web::Referrer()
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com/3")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
   [session_controller_ setPendingItemIndex:0];
 
@@ -622,10 +662,11 @@ TEST_F(CRWSessionControllerTest,
                                  openerNavigationIndex:0
                                           browserState:&browser_state_]);
   [other_session_controller setWindowName:@"test-window"];
-  [other_session_controller addPendingItem:GURL("http://www.url.com/0")
-                                  referrer:web::Referrer()
-                                transition:ui::PAGE_TRANSITION_TYPED
-                         rendererInitiated:NO];
+  [other_session_controller
+      addPendingItem:GURL("http://www.url.com/0")
+            referrer:web::Referrer()
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [other_session_controller commitPendingItem];
 
   // Insert and verify the state of target session controller.
@@ -711,22 +752,25 @@ TEST_F(CRWSessionControllerTest, CreateWithNavList) {
 // Tests index of previous navigation entry.
 TEST_F(CRWSessionControllerTest, PreviousNavigationEntry) {
   EXPECT_EQ(session_controller_.get().previousNavigationIndex, -1);
-  [session_controller_ addPendingItem:GURL("http://www.url.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
   EXPECT_EQ(session_controller_.get().previousNavigationIndex, -1);
-  [session_controller_ addPendingItem:GURL("http://www.url1.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url1.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
   EXPECT_EQ(session_controller_.get().previousNavigationIndex, 0);
-  [session_controller_ addPendingItem:GURL("http://www.url2.com")
-                             referrer:MakeReferrer("http://www.referer.com")
-                           transition:ui::PAGE_TRANSITION_TYPED
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.url2.com")
+            referrer:MakeReferrer("http://www.referer.com")
+          transition:ui::PAGE_TRANSITION_TYPED
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(session_controller_.get().previousNavigationIndex, 1);
@@ -884,25 +928,29 @@ TEST_F(CRWSessionControllerTest, UpdateCurrentEntry) {
 }
 
 TEST_F(CRWSessionControllerTest, TestBackwardForwardEntries) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:MakeReferrer("http://www.example.com/a")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:MakeReferrer("http://www.example.com/a")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/1")
-                             referrer:MakeReferrer("http://www.example.com/b")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/1")
+            referrer:MakeReferrer("http://www.example.com/b")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/redirect")
-                             referrer:MakeReferrer("http://www.example.com/r")
-                           transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/redirect")
+            referrer:MakeReferrer("http://www.example.com/r")
+          transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/2")
-                             referrer:MakeReferrer("http://www.example.com/c")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/2")
+            referrer:MakeReferrer("http://www.example.com/c")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(3, session_controller_.get().currentNavigationIndex);
@@ -926,30 +974,35 @@ TEST_F(CRWSessionControllerTest, TestBackwardForwardEntries) {
 
 // Tests going to entries with existing and non-existing indices.
 TEST_F(CRWSessionControllerTest, GoToEntryAtIndex) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:MakeReferrer("http://www.example.com/a")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:MakeReferrer("http://www.example.com/a")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/1")
-                             referrer:MakeReferrer("http://www.example.com/b")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/1")
+            referrer:MakeReferrer("http://www.example.com/b")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/redirect")
-                             referrer:MakeReferrer("http://www.example.com/r")
-                           transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/redirect")
+            referrer:MakeReferrer("http://www.example.com/r")
+          transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/2")
-                             referrer:MakeReferrer("http://www.example.com/c")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/2")
+            referrer:MakeReferrer("http://www.example.com/c")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/3")
-                             referrer:MakeReferrer("http://www.example.com/d")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/3")
+            referrer:MakeReferrer("http://www.example.com/d")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ addTransientItemWithURL:GURL("http://www.example.com")];
   EXPECT_EQ(3, session_controller_.get().currentNavigationIndex);
   EXPECT_EQ(2, session_controller_.get().previousNavigationIndex);
@@ -998,10 +1051,11 @@ TEST_F(CRWSessionControllerTest, VisibleEntryWithSingleTransientEntry) {
 // Tests that visible URL is the same as transient URL if there is a committed
 // entry.
 TEST_F(CRWSessionControllerTest, VisibleEntryWithCommittedAndTransientEntries) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:MakeReferrer("http://www.example.com/a")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:MakeReferrer("http://www.example.com/a")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
   [session_controller_ addTransientItemWithURL:GURL("http://www.example.com")];
   web::NavigationItem* visible_item =
@@ -1013,10 +1067,11 @@ TEST_F(CRWSessionControllerTest, VisibleEntryWithCommittedAndTransientEntries) {
 // Tests that visible URL is the same as pending URL if it was user-initiated.
 TEST_F(CRWSessionControllerTest,
        VisibleEntryWithSingleUserInitiatedPendingEntry) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:MakeReferrer("http://www.example.com/a")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:MakeReferrer("http://www.example.com/a")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   web::NavigationItem* visible_item =
       [[session_controller_ visibleEntry] navigationItem];
   ASSERT_TRUE(visible_item);
@@ -1027,15 +1082,17 @@ TEST_F(CRWSessionControllerTest,
 // and there is a committed entry.
 TEST_F(CRWSessionControllerTest,
        VisibleEntryWithCommittedAndUserInitiatedPendingEntry) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com")
-                             referrer:MakeReferrer("http://www.example.com/a")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com")
+            referrer:MakeReferrer("http://www.example.com/a")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:MakeReferrer("http://www.example.com/b")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:MakeReferrer("http://www.example.com/b")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   web::NavigationItem* visible_item =
       [[session_controller_ visibleEntry] navigationItem];
   ASSERT_TRUE(visible_item);
@@ -1046,10 +1103,11 @@ TEST_F(CRWSessionControllerTest,
 // renderer-initiated.
 TEST_F(CRWSessionControllerTest,
        VisibleEntryWithSingleRendererInitiatedPendingEntry) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:MakeReferrer("http://www.example.com/a")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:YES];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:MakeReferrer("http://www.example.com/a")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
   web::NavigationItem* visible_item =
       [[session_controller_ visibleEntry] navigationItem];
   ASSERT_FALSE(visible_item);
@@ -1059,15 +1117,17 @@ TEST_F(CRWSessionControllerTest,
 // renderer-initiated and there is a committed entry.
 TEST_F(CRWSessionControllerTest,
        VisibleEntryWithCommittedAndRendererInitiatedPendingEntry) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com")
-                             referrer:MakeReferrer("http://www.example.com/a")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:YES];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com")
+            referrer:MakeReferrer("http://www.example.com/a")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:MakeReferrer("http://www.example.com/b")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:YES];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:MakeReferrer("http://www.example.com/b")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
   web::NavigationItem* visible_item =
       [[session_controller_ visibleEntry] navigationItem];
   ASSERT_TRUE(visible_item);
@@ -1077,15 +1137,17 @@ TEST_F(CRWSessionControllerTest,
 // Tests that visible URL is not the same as pending URL created via pending
 // navigation index.
 TEST_F(CRWSessionControllerTest, VisibleEntryWithPendingNavigationIndex) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com")
-                             referrer:MakeReferrer("http://www.example.com/a")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com")
+            referrer:MakeReferrer("http://www.example.com/a")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:MakeReferrer("http://www.example.com/b")
-                           transition:ui::PAGE_TRANSITION_LINK
-                    rendererInitiated:NO];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:MakeReferrer("http://www.example.com/b")
+          transition:ui::PAGE_TRANSITION_LINK
+      initiationType:web::NavigationInitiationType::USER_INITIATED];
   [session_controller_ commitPendingItem];
 
   [session_controller_ setPendingItemIndex:0];
@@ -1099,15 +1161,17 @@ TEST_F(CRWSessionControllerTest, VisibleEntryWithPendingNavigationIndex) {
 // Tests that |-backwardEntries| is empty if all preceding entries are
 // redirects.
 TEST_F(CRWSessionControllerTest, BackwardEntriesForAllRedirects) {
-  [session_controller_ addPendingItem:GURL("http://www.example.com")
-                             referrer:MakeReferrer("http://www.example.com/a")
-                           transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
-                    rendererInitiated:YES];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com")
+            referrer:MakeReferrer("http://www.example.com/a")
+          transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
+      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
   [session_controller_ commitPendingItem];
-  [session_controller_ addPendingItem:GURL("http://www.example.com/0")
-                             referrer:MakeReferrer("http://www.example.com/b")
-                           transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
-                    rendererInitiated:YES];
+  [session_controller_
+      addPendingItem:GURL("http://www.example.com/0")
+            referrer:MakeReferrer("http://www.example.com/b")
+          transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
+      initiationType:web::NavigationInitiationType::RENDERER_INITIATED];
   [session_controller_ commitPendingItem];
   EXPECT_EQ(0U, [session_controller_ backwardEntries].count);
 }

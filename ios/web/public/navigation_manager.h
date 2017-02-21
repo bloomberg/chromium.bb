@@ -148,6 +148,12 @@ class NavigationManager {
   // reload the page. In nearly all cases pass in true.  If a transient item is
   // showing, initiates a new navigation to its URL.
   virtual void Reload(bool check_for_repost) = 0;
+
+  // Forces the pending item to be loaded using desktop user agent. Note that
+  // the pending item may or may not already exist.
+  // TODO(crbug.com/692303): Remove this when overriding the user agent doesn't
+  // create a new NavigationItem.
+  virtual void OverrideDesktopUserAgentForNextPendingItem() = 0;
 };
 
 }  // namespace web

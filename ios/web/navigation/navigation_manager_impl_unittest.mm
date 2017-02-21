@@ -8,6 +8,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
+#include "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -62,10 +63,9 @@ TEST_F(NavigationManagerTest, EmptyManager) {
 
 // Tests that GetPendingItemIndex() returns -1 if there is no pending entry.
 TEST_F(NavigationManagerTest, GetPendingItemIndexWithoutPendingEntry) {
-  [session_controller() addPendingItem:GURL("http://www.url.com")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
 }
@@ -73,30 +73,26 @@ TEST_F(NavigationManagerTest, GetPendingItemIndexWithoutPendingEntry) {
 // Tests that GetPendingItemIndex() returns current item index if there is a
 // pending entry.
 TEST_F(NavigationManagerTest, GetPendingItemIndexWithPendingEntry) {
-  [session_controller() addPendingItem:GURL("http://www.url.com")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/0")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   EXPECT_EQ(0, navigation_manager()->GetPendingItemIndex());
 }
 
 // Tests that GetPendingItemIndex() returns same index as was set by
 // -[CRWSessionController setPendingItemIndex:].
 TEST_F(NavigationManagerTest, GetPendingItemIndexWithIndexedPendingEntry) {
-  [session_controller() addPendingItem:GURL("http://www.url.com")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/0")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
 
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
@@ -123,10 +119,9 @@ TEST_F(NavigationManagerTest, CanGoBackWithTransientItem) {
 // Tests that going back or negative offset is possible if there is a transient
 // item and at least one committed item.
 TEST_F(NavigationManagerTest, CanGoBackWithTransientItemAndCommittedItem) {
-  [session_controller() addPendingItem:GURL("http://www.url.com")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
   [session_controller() addTransientItemWithURL:GURL("http://www.url.com/0")];
 
@@ -137,10 +132,9 @@ TEST_F(NavigationManagerTest, CanGoBackWithTransientItemAndCommittedItem) {
 // Tests that going back or negative offset is not possible if there is ony one
 // committed item and no transient item.
 TEST_F(NavigationManagerTest, CanGoBackWithSingleCommitedItem) {
-  [session_controller() addPendingItem:GURL("http://www.url.com")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
 
   EXPECT_FALSE(navigation_manager()->CanGoBack());
@@ -149,20 +143,17 @@ TEST_F(NavigationManagerTest, CanGoBackWithSingleCommitedItem) {
 
 // Tests going back possibility with multiple committed items.
 TEST_F(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
-  [session_controller() addPendingItem:GURL("http://www.url.com")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/0")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/1")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
 
   EXPECT_TRUE(navigation_manager()->CanGoBack());
@@ -184,21 +175,18 @@ TEST_F(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
 // Tests that going forward or positive offset is not possible if there is a
 // pending entry.
 TEST_F(NavigationManagerTest, CanGoForwardWithPendingItem) {
-  [session_controller() addPendingItem:GURL("http://www.url.com")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/0")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
   [session_controller() goToItemAtIndex:0];
-  [session_controller() addPendingItem:GURL("http://www.url.com/1")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
 
   // Pending entry should not allow going forward.
   EXPECT_FALSE(navigation_manager()->CanGoForward());
@@ -215,10 +203,9 @@ TEST_F(NavigationManagerTest, CanGoForwardWithoutCommitedItem) {
 // Tests that going forward or positive offset is not possible if there is ony
 // one committed item and no transient item.
 TEST_F(NavigationManagerTest, CanGoForwardWithSingleCommitedItem) {
-  [session_controller() addPendingItem:GURL("http://www.url.com")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
 
   EXPECT_FALSE(navigation_manager()->CanGoForward());
@@ -227,20 +214,17 @@ TEST_F(NavigationManagerTest, CanGoForwardWithSingleCommitedItem) {
 
 // Tests going forward possibility with multiple committed items.
 TEST_F(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
-  [session_controller() addPendingItem:GURL("http://www.url.com")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/0")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/1")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
 
   EXPECT_FALSE(navigation_manager()->CanGoForward());
@@ -267,30 +251,27 @@ TEST_F(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
 // navigation manager will have redirect entries to make sure they are
 // appropriately skipped.
 TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
-  [session_controller() addPendingItem:GURL("http://www.url.com/0")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_LINK
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/redirect")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/redirect"), Referrer(),
+      ui::PAGE_TRANSITION_IS_REDIRECT_MASK,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/1")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_LINK
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/2")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_LINK
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/redirect")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/redirect"), Referrer(),
+      ui::PAGE_TRANSITION_IS_REDIRECT_MASK,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
   ASSERT_EQ(5, navigation_manager()->GetItemCount());
   ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
@@ -494,20 +475,17 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
 TEST_F(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
   // Create a transient item in the middle of the navigation stack and go back
   // to it (pending index is 1, current index is 2).
-  [session_controller() addPendingItem:GURL("http://www.url.com/0")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_LINK
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/1")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_LINK
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
-  [session_controller() addPendingItem:GURL("http://www.url.com/2")
-                              referrer:Referrer()
-                            transition:ui::PAGE_TRANSITION_LINK
-                     rendererInitiated:NO];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED);
   [session_controller() commitPendingItem];
   [session_controller() addTransientItemWithURL:GURL("http://www.url.com/1")];
   [session_controller() setPendingItemIndex:1];
@@ -527,6 +505,17 @@ TEST_F(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
   ASSERT_EQ(1, navigation_manager()->GetPendingItemIndex());
   EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(1));
   EXPECT_EQ(0, navigation_manager()->GetIndexForOffset(-1));
+}
+
+// Tests that desktop user agent can be enforced to use for next pending item.
+TEST_F(NavigationManagerTest, OverrideDesktopUserAgent) {
+  navigation_manager()->OverrideDesktopUserAgentForNextPendingItem();
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  [session_controller() commitPendingItem];
+  NavigationItem* visible_item = navigation_manager()->GetVisibleItem();
+  EXPECT_TRUE(visible_item->IsOverridingUserAgent());
 }
 
 }  // namespace web

@@ -111,8 +111,8 @@
 - (CRWSessionEntry*)sessionEntryWithURL:(const GURL&)url
                                referrer:(const web::Referrer&)referrer
                              transition:(ui::PageTransition)transition
-                    useDesktopUserAgent:(BOOL)useDesktopUserAgent
-                      rendererInitiated:(BOOL)rendererInitiated;
+                         initiationType:
+                             (web::NavigationInitiationType)initiationType;
 // Returns YES if the PageTransition for the underlying navigationItem at
 // |index| in |entries_| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.
 - (BOOL)isRedirectTransitionForItemAtIndex:(NSInteger)index;
@@ -312,12 +312,16 @@
   // Only return the pending_entry for new (non-history), browser-initiated
   // navigations in order to prevent URL spoof attacks.
   web::NavigationItemImpl* pendingItem = [_pendingEntry navigationItemImpl];
-  bool safeToShowPending = pendingItem &&
-                           !pendingItem->is_renderer_initiated() &&
-                           _pendingItemIndex == -1;
-  if (safeToShowPending) {
-    return _pendingEntry.get();
+
+  if (pendingItem) {
+    bool isUserInitiated = pendingItem->NavigationInitiationType() ==
+                           web::NavigationInitiationType::USER_INITIATED;
+    bool safeToShowPending = isUserInitiated && _pendingItemIndex == -1;
+
+    if (safeToShowPending)
+      return _pendingEntry.get();
   }
+
   return [self lastCommittedEntry];
 }
 
@@ -345,7 +349,7 @@
 - (void)addPendingItem:(const GURL&)url
               referrer:(const web::Referrer&)ref
             transition:(ui::PageTransition)trans
-     rendererInitiated:(BOOL)rendererInitiated {
+        initiationType:(web::NavigationInitiationType)initiationType {
   [self discardTransientItem];
   _pendingItemIndex = -1;
 
@@ -361,10 +365,17 @@
   CRWSessionEntry* currentEntry = self.currentEntry;
   if (currentEntry) {
     web::NavigationItem* item = [currentEntry navigationItem];
-    if (item->GetURL() == url &&
-        (!PageTransitionCoreTypeIs(trans, ui::PAGE_TRANSITION_FORM_SUBMIT) ||
-         PageTransitionCoreTypeIs(item->GetTransitionType(),
-                                  ui::PAGE_TRANSITION_FORM_SUBMIT))) {
+
+    BOOL hasSameURL = item->GetURL() == url;
+    BOOL isPendingTransitionFormSubmit =
+        PageTransitionCoreTypeIs(trans, ui::PAGE_TRANSITION_FORM_SUBMIT);
+    BOOL isCurrentTransitionFormSubmit = PageTransitionCoreTypeIs(
+        item->GetTransitionType(), ui::PAGE_TRANSITION_FORM_SUBMIT);
+    BOOL shouldCreatePendingItem =
+        !hasSameURL ||
+        (isPendingTransitionFormSubmit && !isCurrentTransitionFormSubmit);
+
+    if (!shouldCreatePendingItem) {
       // Send the notification anyway, to preserve old behavior. It's unknown
       // whether anything currently relies on this, but since both this whole
       // hack and the content facade will both be going away, it's not worth
@@ -376,16 +387,10 @@
     }
   }
 
-  BOOL useDesktopUserAgent =
-      _useDesktopUserAgentForNextPendingItem ||
-      (self.currentEntry.navigationItem &&
-       self.currentEntry.navigationItem->IsOverridingUserAgent());
-  _useDesktopUserAgentForNextPendingItem = NO;
   _pendingEntry.reset([self sessionEntryWithURL:url
                                        referrer:ref
                                      transition:trans
-                            useDesktopUserAgent:useDesktopUserAgent
-                              rendererInitiated:rendererInitiated]);
+                                 initiationType:initiationType]);
 
   if (_navigationManager && _navigationManager->GetFacadeDelegate()) {
     _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
@@ -478,8 +483,7 @@
       sessionEntryWithURL:URL
                  referrer:web::Referrer()
                transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
-      useDesktopUserAgent:NO
-        rendererInitiated:NO]);
+           initiationType:web::NavigationInitiationType::USER_INITIATED]);
 
   web::NavigationItem* navigationItem = [_transientEntry navigationItem];
   DCHECK(navigationItem);
@@ -492,19 +496,19 @@
                 transition:(ui::PageTransition)transition {
   DCHECK(![self pendingEntry]);
   DCHECK([self currentEntry]);
-  web::NavigationItem* item = [self currentEntry].navigationItem;
-  CHECK(
-      web::history_state_util::IsHistoryStateChangeValid(item->GetURL(), URL));
-  web::Referrer referrer(item->GetURL(), web::ReferrerPolicyDefault);
-  bool overrideUserAgent =
-      self.currentEntry.navigationItem->IsOverridingUserAgent();
+  web::NavigationItem* currentItem = [self currentEntry].navigationItem;
+  CHECK(web::history_state_util::IsHistoryStateChangeValid(
+      currentItem->GetURL(), URL));
+  web::Referrer referrer(currentItem->GetURL(), web::ReferrerPolicyDefault);
+
   base::scoped_nsobject<CRWSessionEntry> pushedEntry([self
       sessionEntryWithURL:URL
                  referrer:referrer
                transition:transition
-      useDesktopUserAgent:overrideUserAgent
-        rendererInitiated:NO]);
+           initiationType:web::NavigationInitiationType::USER_INITIATED]);
+
   web::NavigationItemImpl* pushedItem = [pushedEntry navigationItemImpl];
+  pushedItem->SetIsOverridingUserAgent(currentItem->IsOverridingUserAgent());
   pushedItem->SetSerializedStateObject(stateObject);
   pushedItem->SetIsCreatedFromPushState(true);
   web::SSLStatus& sslStatus = [self currentEntry].navigationItem->GetSSL();
@@ -673,13 +677,6 @@
   return [_entries objectAtIndex:index];
 }
 
-- (void)useDesktopUserAgentForNextPendingItem {
-  if (_pendingEntry)
-    [_pendingEntry navigationItem]->SetIsOverridingUserAgent(true);
-  else
-    _useDesktopUserAgentForNextPendingItem = YES;
-}
-
 - (NSInteger)indexOfItem:(const web::NavigationItem*)item {
   web::NavigationItemList items = self.items;
   for (NSInteger i = 0; i < static_cast<NSInteger>(items.size()); ++i) {
@@ -695,8 +692,8 @@
 - (CRWSessionEntry*)sessionEntryWithURL:(const GURL&)url
                                referrer:(const web::Referrer&)referrer
                              transition:(ui::PageTransition)transition
-                    useDesktopUserAgent:(BOOL)useDesktopUserAgent
-                      rendererInitiated:(BOOL)rendererInitiated {
+                         initiationType:
+                             (web::NavigationInitiationType)initiationType {
   GURL loaded_url(url);
   BOOL urlWasRewritten = NO;
   if (_navigationManager) {
@@ -711,13 +708,13 @@
     web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
         &loaded_url, _browserState);
   }
+
   std::unique_ptr<web::NavigationItemImpl> item(new web::NavigationItemImpl());
   item->SetOriginalRequestURL(loaded_url);
   item->SetURL(loaded_url);
   item->SetReferrer(referrer);
   item->SetTransitionType(transition);
-  item->SetIsOverridingUserAgent(useDesktopUserAgent);
-  item->set_is_renderer_initiated(rendererInitiated);
+  item->SetNavigationInitiationType(initiationType);
   return [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)];
 }
 

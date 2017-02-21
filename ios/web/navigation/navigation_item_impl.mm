@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "components/url_formatter/url_formatter.h"
+#import "ios/web/navigation/navigation_manager_impl.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/text_elider.h"
 
@@ -44,7 +45,8 @@ NavigationItemImpl::NavigationItemImpl()
       has_state_been_replaced_(false),
       is_created_from_hash_change_(false),
       should_skip_repost_form_confirmation_(false),
-      is_renderer_initiated_(false),
+      navigation_initiation_type_(
+          web::NavigationInitiationType::USER_INITIATED),
       is_unsafe_(false),
       facade_delegate_(nullptr) {}
 
@@ -72,7 +74,7 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       should_skip_repost_form_confirmation_(
           item.should_skip_repost_form_confirmation_),
       post_data_([item.post_data_ copy]),
-      is_renderer_initiated_(item.is_renderer_initiated_),
+      navigation_initiation_type_(item.navigation_initiation_type_),
       is_unsafe_(item.is_unsafe_),
       cached_display_title_(item.cached_display_title_),
       facade_delegate_(nullptr) {}
@@ -250,6 +252,16 @@ bool NavigationItemImpl::IsCreatedFromPushState() const {
   return is_created_from_push_state_;
 }
 
+void NavigationItemImpl::SetNavigationInitiationType(
+    web::NavigationInitiationType navigation_initiation_type) {
+  navigation_initiation_type_ = navigation_initiation_type;
+}
+
+web::NavigationInitiationType NavigationItemImpl::NavigationInitiationType()
+    const {
+  return navigation_initiation_type_;
+}
+
 void NavigationItemImpl::SetHasStateBeenReplaced(bool replace_state) {
   has_state_been_replaced_ = replace_state;
 }
@@ -296,7 +308,7 @@ void NavigationItemImpl::ResetHttpRequestHeaders() {
 void NavigationItemImpl::ResetForCommit() {
   // Any state that only matters when a navigation item is pending should be
   // cleared here.
-  set_is_renderer_initiated(false);
+  SetNavigationInitiationType(web::NavigationInitiationType::USER_INITIATED);
 }
 
 }  // namespace web

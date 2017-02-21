@@ -19,6 +19,7 @@ namespace web {
 class BrowserState;
 class NavigationItemImpl;
 class NavigationManagerImpl;
+enum class NavigationInitiationType;
 struct Referrer;
 }
 
@@ -96,13 +97,13 @@ struct Referrer;
 - (void)setBrowserState:(web::BrowserState*)browserState;
 
 // Add a new item with the given url, referrer, and navigation type, making it
-// the current item. If |url| is the same as the current item's url, this
-// does nothing. |referrer| may be nil if there isn't one. The item starts
-// out as pending, and will be lost unless |-commitPendingItem| is called.
+// the current item. If pending item is the same as current item, this does
+// nothing. |referrer| may be nil if there isn't one. The item starts out as
+// pending, and will be lost unless |-commitPendingItem| is called.
 - (void)addPendingItem:(const GURL&)url
               referrer:(const web::Referrer&)referrer
             transition:(ui::PageTransition)type
-     rendererInitiated:(BOOL)rendererInitiated;
+        initiationType:(web::NavigationInitiationType)initiationType;
 
 // Updates the URL of the yet to be committed pending item. Useful for page
 // redirects. Does nothing if there is no pending item.
@@ -151,10 +152,6 @@ struct Referrer;
 // same-document navigation.  Entries can be passed in any order.
 - (BOOL)isSameDocumentNavigationBetweenItem:(web::NavigationItem*)firstItem
                                     andItem:(web::NavigationItem*)secondItem;
-
-// Set |useDesktopUserAgentForNextPendingItem_| to YES if there is no pending
-// entry, otherwise set |useDesktopUserAgent| in the pending entry.
-- (void)useDesktopUserAgentForNextPendingItem;
 
 // Returns the index of |item| in |items|.
 - (NSInteger)indexOfItem:(const web::NavigationItem*)item;

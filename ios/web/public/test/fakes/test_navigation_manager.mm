@@ -54,24 +54,20 @@ web::NavigationItem* TestNavigationManager::GetTransientItem() const {
 
 void TestNavigationManager::DiscardNonCommittedItems() {
   NOTREACHED();
-  return;
 }
 
 void TestNavigationManager::LoadIfNecessary() {
   NOTREACHED();
-  return;
 }
 
 void TestNavigationManager::LoadURLWithParams(
     const NavigationManager::WebLoadParams& params) {
   NOTREACHED();
-  return;
 }
 
 void TestNavigationManager::AddTransientURLRewriter(
     BrowserURLRewriter::URLRewriter rewriter) {
   NOTREACHED();
-  return;
 }
 
 int TestNavigationManager::GetItemCount() const {
@@ -121,22 +117,22 @@ bool TestNavigationManager::CanGoToOffset(int offset) const {
 
 void TestNavigationManager::GoBack() {
   NOTREACHED();
-  return;
 }
 
 void TestNavigationManager::GoForward() {
   NOTREACHED();
-  return;
 }
 
 void TestNavigationManager::GoToIndex(int index) {
   NOTREACHED();
-  return;
 }
 
 void TestNavigationManager::Reload(bool check_for_repost) {
   NOTREACHED();
-  return;
+}
+
+void TestNavigationManager::OverrideDesktopUserAgentForNextPendingItem() {
+  NOTREACHED();
 }
 
 }  // namespace web

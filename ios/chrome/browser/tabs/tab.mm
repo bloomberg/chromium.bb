@@ -1533,8 +1533,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)enableDesktopUserAgent {
   DCHECK_EQ(self.useDesktopUserAgent, NO);
   DCHECK([self navigationManager]);
-  [[self navigationManager]->GetSessionController()
-          useDesktopUserAgentForNextPendingItem];
+  [self navigationManager]->OverrideDesktopUserAgentForNextPendingItem();
 }
 
 - (void)reloadForDesktopUserAgent {
