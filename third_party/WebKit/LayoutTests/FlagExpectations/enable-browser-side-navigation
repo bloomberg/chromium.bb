@@ -9,8 +9,10 @@ crbug.com/551000 http/tests/inspector/console-resource-errors.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/console-resource-errors.html [ Failure ]
 
 # Flipped order between diStartProvisionalLoad & willSendRequest
-crbug.com/625765 virtual/mojo-loading/http/tests/loading/redirect-methods.html [ Crash Failure ]
+crbug.com/647698 http/tests/loading/307-after-303-after-post.html [ Failure ]
 crbug.com/625765 http/tests/loading/redirect-methods.html [ Crash Failure ]
+crbug.com/647698 virtual/mojo-loading/http/tests/loading/307-after-303-after-post.html [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/loading/redirect-methods.html [ Crash Failure ]
 
 # https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
 # checks up out of the renderer.
@@ -29,11 +31,6 @@ crbug.com/555418 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-m
 crbug.com/638900 http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
 crbug.com/638900 virtual/mojo-loading/http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
 
-# https://crbug.com/647698: Failing due to absence of call to
-# WebFrameClient::didReceiveServerRedirectForProvisionalLoad.
-crbug.com/647698 http/tests/loading/307-after-303-after-post.html [ Failure ]
-crbug.com/647698 virtual/mojo-loading/http/tests/loading/307-after-303-after-post.html [ Failure ]
-
 # Issue with ServiceWorker timing.
 Bug(none) external/wpt/service-workers/service-worker/navigate-window.https.html [ Failure ]
 
@@ -47,9 +44,11 @@ Bug(none) external/wpt/html/browsers/history/the-location-interface/location-pro
 Bug(none) http/tests/security/location-href-clears-username-password.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/security/location-href-clears-username-password.html [ Failure ]
 
-# This test seems to be partially failing without PlzNavigate as well.
+# Timeout
+Bug(none) fast/loader/crash-replacing-location-before-load.html [ Timeout ]
 
 # These tests are flaky.
+Bug(none) external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Crash ]
 Bug(none) http/tests/misc/window-open-then-write.html [ Timeout ]
 Bug(none) external/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-history-back.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/misc/window-open-then-write.html [ Timeout ]
