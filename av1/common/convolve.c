@@ -235,18 +235,23 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
   (void)y_step_q4;
   (void)dst;
   (void)dst_stride;
+#if CONFIG_DUAL_FILTER
   InterpFilterParams filter_params_x =
       av1_get_interp_filter_params(interp_filter[1 + 2 * conv_params->ref]);
   InterpFilterParams filter_params_y =
       av1_get_interp_filter_params(interp_filter[0 + 2 * conv_params->ref]);
 
-#if CONFIG_DUAL_FILTER
   if (filter_params_x.interp_filter == MULTITAP_SHARP &&
       filter_params_y.interp_filter == MULTITAP_SHARP) {
     // Avoid two directions both using 12-tap filter.
     // This will reduce hardware implementation cost.
     filter_params_y = av1_get_interp_filter_params(EIGHTTAP_SHARP);
   }
+#else
+  InterpFilterParams filter_params_x =
+      av1_get_interp_filter_params(*interp_filter);
+  InterpFilterParams filter_params_y =
+      av1_get_interp_filter_params(*interp_filter);
 #endif
 
   if (filter_params_y.taps < filter_params_x.taps) {
