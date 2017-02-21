@@ -708,6 +708,9 @@ void writeSVGGradientStop(TextStream& ts,
 void writeResources(TextStream& ts, const LayoutObject& object, int indent) {
   const ComputedStyle& style = object.styleRef();
   const SVGComputedStyle& svgStyle = style.svgStyle();
+  TreeScope& treeScope = object.document();
+  SVGTreeScopeResources& treeScopeResources =
+      treeScope.ensureSVGTreeScopedResources();
 
   // FIXME: We want to use SVGResourcesCache to determine which resources are
   // present, instead of quering the resource <-> id cache.
@@ -716,7 +719,7 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent) {
   if (!svgStyle.maskerResource().isEmpty()) {
     if (LayoutSVGResourceMasker* masker =
             getLayoutSVGResourceById<LayoutSVGResourceMasker>(
-                object.document(), svgStyle.maskerResource())) {
+                treeScopeResources, svgStyle.maskerResource())) {
       writeIndent(ts, indent);
       ts << " ";
       writeNameAndQuotedValue(ts, "masker", svgStyle.maskerResource());
@@ -730,10 +733,10 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent) {
       const ReferenceClipPathOperation& clipPathReference =
           toReferenceClipPathOperation(*clipPathOperation);
       AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(
-          clipPathReference.url(), object.document());
+          clipPathReference.url(), treeScope);
       if (LayoutSVGResourceClipper* clipper =
               getLayoutSVGResourceById<LayoutSVGResourceClipper>(
-                  object.document(), id)) {
+                  treeScopeResources, id)) {
         writeIndent(ts, indent);
         ts << " ";
         writeNameAndQuotedValue(ts, "clipPath", id);
@@ -752,10 +755,10 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent) {
         const auto& referenceFilterOperation =
             toReferenceFilterOperation(filterOperation);
         AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(
-            referenceFilterOperation.url(), object.document());
+            referenceFilterOperation.url(), treeScope);
         if (LayoutSVGResourceFilter* filter =
                 getLayoutSVGResourceById<LayoutSVGResourceFilter>(
-                    object.document(), id)) {
+                    treeScopeResources, id)) {
           writeIndent(ts, indent);
           ts << " ";
           writeNameAndQuotedValue(ts, "filter", id);

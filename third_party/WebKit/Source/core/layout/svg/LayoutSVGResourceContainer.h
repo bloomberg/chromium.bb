@@ -113,23 +113,11 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   HashSet<LayoutObject*> m_clients;
 };
 
-inline LayoutSVGResourceContainer* getLayoutSVGResourceContainerById(
-    TreeScope& treeScope,
-    const AtomicString& id) {
-  if (id.isEmpty())
-    return nullptr;
-
-  if (LayoutSVGResourceContainer* layoutResource =
-          treeScope.ensureSVGTreeScopedResources().resourceById(id))
-    return layoutResource;
-
-  return nullptr;
-}
-
 template <typename Layout>
-Layout* getLayoutSVGResourceById(TreeScope& treeScope, const AtomicString& id) {
+Layout* getLayoutSVGResourceById(SVGTreeScopeResources& treeScopeResources,
+                                 const AtomicString& id) {
   if (LayoutSVGResourceContainer* container =
-          getLayoutSVGResourceContainerById(treeScope, id)) {
+          treeScopeResources.resourceById(id)) {
     if (container->resourceType() == Layout::s_resourceType)
       return static_cast<Layout*>(container);
   }
