@@ -816,7 +816,11 @@ void InputMethodController::extendSelectionAndDelete(int before, int after) {
     if (before == 0)
       break;
     ++before;
-  } while (frame().selection().start() == frame().selection().end() &&
+  } while (frame().selection().start() ==
+               frame()
+                   .selection()
+                   .computeVisibleSelectionInDOMTreeDeprecated()
+                   .end() &&
            before <= static_cast<int>(selectionOffsets.start()));
   // TODO(chongz): Find a way to distinguish Forward and Backward.
   Node* target = document().focusedElement();

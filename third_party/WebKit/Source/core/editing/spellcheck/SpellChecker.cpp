@@ -644,7 +644,8 @@ void SpellChecker::markAndReplaceFor(
     // TODO(xiaochengh): The following comment does not match the current
     // behavior and should be rewritten.
     // Attempt to save the caret position so we can restore it later if needed
-    const Position& caretPosition = frame().selection().end();
+    const Position& caretPosition =
+        frame().selection().computeVisibleSelectionInDOMTreeDeprecated().end();
     selectionOffset = paragraph.offsetTo(caretPosition);
     if (selectionOffset > 0 &&
         static_cast<unsigned>(selectionOffset) <= paragraph.text().length() &&

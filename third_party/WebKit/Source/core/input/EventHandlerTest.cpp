@@ -163,10 +163,12 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
   ASSERT_TRUE(selection().isRange());
   EXPECT_EQ(Position(line, 0), selection().start());
   if (document().frame()->editor().isSelectTrailingWhitespaceEnabled()) {
-    EXPECT_EQ(Position(line, 4), selection().end());
+    EXPECT_EQ(Position(line, 4),
+              selection().computeVisibleSelectionInDOMTreeDeprecated().end());
     EXPECT_EQ("One ", WebString(selection().selectedText()).utf8());
   } else {
-    EXPECT_EQ(Position(line, 3), selection().end());
+    EXPECT_EQ(Position(line, 3),
+              selection().computeVisibleSelectionInDOMTreeDeprecated().end());
     EXPECT_EQ("One", WebString(selection().selectedText()).utf8());
   }
 
@@ -174,7 +176,8 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
   document().frame()->eventHandler().handleGestureEvent(tripleTapEvent);
   ASSERT_TRUE(selection().isRange());
   EXPECT_EQ(Position(line, 0), selection().start());
-  EXPECT_EQ(Position(line, 13), selection().end());
+  EXPECT_EQ(Position(line, 13),
+            selection().computeVisibleSelectionInDOMTreeDeprecated().end());
   EXPECT_EQ("One Two Three", WebString(selection().selectedText()).utf8());
 }
 
