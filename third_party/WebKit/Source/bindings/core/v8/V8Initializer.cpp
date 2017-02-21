@@ -142,6 +142,9 @@ MessageLevel MessageLevelFromNonFatalErrorLevel(int errorLevel) {
   }
   return level;
 }
+
+const size_t kWasmWireBytesLimit = 1 << 12;
+
 }  // namespace
 
 void V8Initializer::messageHandlerInMainThread(v8::Local<v8::Message> message,
@@ -319,6 +322,48 @@ static bool codeGenerationCheckCallbackInMainThread(
   return false;
 }
 
+static bool allowWasmCompileCallbackInMainThread(v8::Isolate* isolate,
+                                                 v8::Local<v8::Value> source,
+                                                 bool asPromise) {
+  // We allow async compilation irrespective of buffer size.
+  if (asPromise)
+    return true;
+  if (source->IsArrayBuffer() &&
+      v8::Local<v8::ArrayBuffer>::Cast(source)->ByteLength() >
+          kWasmWireBytesLimit) {
+    return false;
+  }
+  if (source->IsArrayBufferView() &&
+      v8::Local<v8::ArrayBufferView>::Cast(source)->ByteLength() >
+          kWasmWireBytesLimit) {
+    return false;
+  }
+  return true;
+}
+
+static bool allowWasmInstantiateCallbackInMainThread(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> source,
+    v8::MaybeLocal<v8::Value> ffi,
+    bool asPromise) {
+  // Async cases are allowed, regardless of the size of the
+  // wire bytes. Note that, for instantiation, we use the wire
+  // bytes size as a proxy for instantiation time. We may
+  // consider using the size of the ffi (nr of properties)
+  // instead, or, even more directly, number of imports.
+  if (asPromise)
+    return true;
+  // If it's not a promise, the source should be a wasm module
+  DCHECK(source->IsWebAssemblyCompiledModule());
+  v8::Local<v8::WasmCompiledModule> module =
+      v8::Local<v8::WasmCompiledModule>::Cast(source);
+  if (static_cast<size_t>(module->GetWasmWireBytes()->Length()) >
+      kWasmWireBytesLimit) {
+    return false;
+  }
+  return true;
+}
+
 static void initializeV8Common(v8::Isolate* isolate) {
   isolate->AddGCPrologueCallback(V8GCController::gcPrologue);
   isolate->AddGCEpilogueCallback(V8GCController::gcEpilogue);
@@ -414,7 +459,9 @@ void V8Initializer::initializeMainThread() {
       failedAccessCheckCallbackInMainThread);
   isolate->SetAllowCodeGenerationFromStringsCallback(
       codeGenerationCheckCallbackInMainThread);
-
+  isolate->SetAllowWasmCompileCallback(allowWasmCompileCallbackInMainThread);
+  isolate->SetAllowWasmInstantiateCallback(
+      allowWasmInstantiateCallbackInMainThread);
   if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
     V8PerIsolateData::enableIdleTasks(
         isolate, WTF::makeUnique<V8IdleTaskRunner>(scheduler));
