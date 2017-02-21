@@ -31,6 +31,9 @@ Polymer({
      */
     activeNetworkState: Object,
 
+    /** String for a11y purposes. */
+    itemName: String,
+
     /**
      * List of all network state data for the network type.
      * @type {!Array<!CrOnc.NetworkStateProperties>}

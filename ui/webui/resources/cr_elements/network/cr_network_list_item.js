@@ -55,6 +55,13 @@ Polymer({
       value: -1,
       reflectToAttribute: true,
     },
+
+    /** Expose the itemName so it can be used as a label for a11y.  */
+    itemName: {
+      type: String,
+      notify: true,
+      computed: 'getItemName_(item, isListItem)',
+    }
   },
 
   behaviors: [CrPolicyNetworkBehavior],

@@ -56,7 +56,8 @@
     <div class="settings-box two-line" actionable on-tap="onDetailsTap_">
       <div id="details"
           no-flex$="[[showSimInfo_(deviceState)]]">
-        <cr-network-list-item item="[[activeNetworkState]]" class="flex">
+        <cr-network-list-item item="[[activeNetworkState]]" class="flex"
+            item-name="{{itemName}}">
         </cr-network-list-item>
         <paper-spinner active="[[scanningIsActive_(deviceState, expanded_)]]"
             hidden$="[[!scanningIsVisible_(deviceState)]]">
@@ -89,6 +90,7 @@
       <template is="dom-if" if="[[enableToggleIsVisible_(deviceState)]]">
         <div class="secondary-action">
           <paper-toggle-button  id="deviceEnabledButton"
+              aria-label$="[[itemName]]"
               checked="[[deviceIsEnabled_(deviceState)]]"
               enabled="[[enableToggleIsEnabled_(deviceState)]]"
               on-tap="onDeviceEnabledTap_">

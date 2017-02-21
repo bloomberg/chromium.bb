@@ -87,7 +87,7 @@
       </template>
       <div id="divText" class="layout horizontal flex">
         <div id="itemName" connected$="[[isConnected_(networkState)]]">
-          [[getItemName_(item, isListItem)]]
+          [[itemName]]
         </div>
         <div id="networkStateText"
             hidden$="[[!isStateTextVisible_(networkState, isListItem)]]"
