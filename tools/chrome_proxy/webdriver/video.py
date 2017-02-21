@@ -42,6 +42,37 @@ class Video(IntegrationTest):
           self.assertHasChromeProxyViaHeader(response)
       self.assertTrue(saw_video_response, 'No video request seen in test!')
 
+  # Check the compressed video has the same frame count, width, height, and
+  # duration as uncompressed.
+  def testVideoMetrics(self):
+    expected = {
+      'duration': 3.124,
+      'webkitDecodedFrameCount': 54.0,
+      'videoWidth': 1280.0,
+      'videoHeight': 720.0
+    }
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.LoadURL('http://check.googlezip.net/cacheable/video/buck_bunny_tiny.html')
+      # Check request was proxied and we got a compressed video back.
+      for response in t.GetHTTPResponses():
+        self.assertHasChromeProxyViaHeader(response)
+        if ('content-type' in response.response_headers
+            and 'video' in response.response_headers['content-type']):
+          self.assertEqual('video/webm',
+            response.response_headers['content-type'])
+      t.ExecuteJavascriptStatement(
+        'document.querySelectorAll("video")[0].play()')
+      # Wait for the video to finish playing, plus some headroom.
+      time.sleep(5)
+      # Check each metric against its expected value.
+      for metric in expected:
+        actual = float(t.ExecuteJavascriptStatement(
+          'document.querySelectorAll("video")[0].%s' % metric))
+        self.assertAlmostEqual(expected[metric], actual, msg="Compressed video "
+          "metric doesn't match expected! Metric=%s Expected=%f Actual=%f"
+          % (metric, expected[metric], actual), places=None, delta=0.001)
+
   # Check the frames of a compressed video.
   def testVideoFrames(self):
     self.instrumentedVideoTest('http://check.googlezip.net/cacheable/video/buck_bunny_640x360_24fps_video.html')
