@@ -126,10 +126,6 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
   // http://www.w3.org/TR/touch-events/#touchevent-interface for how these
   // lists fit together.
 
-  // Suppress all the touch moves in the slop region.
-  if (IsTouchSequenceStart(event))
-    m_suppressingTouchmovesWithinSlop = true;
-
   if (event.type() == WebInputEvent::TouchEnd ||
       event.type() == WebInputEvent::TouchCancel || event.touchesLength > 1) {
     m_suppressingTouchmovesWithinSlop = false;
@@ -290,6 +286,12 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
           eventResult,
           EventHandlingUtil::toWebInputEventResult(domDispatchResult));
     }
+  }
+
+  // Do not suppress any touchmoves if the touchstart is consumed.
+  if (IsTouchSequenceStart(event) &&
+      eventResult == WebInputEventResult::NotHandled) {
+    m_suppressingTouchmovesWithinSlop = true;
   }
 
   return eventResult;

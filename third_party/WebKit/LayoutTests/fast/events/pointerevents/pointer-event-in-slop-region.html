@@ -38,7 +38,7 @@ function validPointerMoveResult(event) {
 function callbackValidMoveCount() {
     testTouchMove.step(function () {
         assert_equals(touchMoveCount, 3);
-        assert_equals(pointerMoveCount, 5);
+        assert_equals(pointerMoveCount, 7);
     });
     testTouchMove.done();
 }
@@ -49,11 +49,13 @@ function testTouchMoveSuppressionInSlopRegion() {
             [{source: "touch",
               actions: [
                 { name: "pointerDown", x: x, y: y },
+                { name: "pointerMove", x: x, y: y + 1 },
                 { name: "pointerMove", x: x, y: y + 10 },
                 { name: "pointerMove", x: x, y: y + 20 },
                 { name: "pointerMove", x: x, y: y + 10 },
                 { name: "pointerUp" },
                 { name: "pointerDown", x: x, y: y },
+                { name: "pointerMove", x: x, y: y + 1 },
                 { name: "pointerMove", x: x, y: y + 10 },
                 { name: "pointerMove", x: x, y: y + 20 }]}];
         chrome.gpuBenchmarking.pointerActionSequence(pointerActions, callbackValidMoveCount);

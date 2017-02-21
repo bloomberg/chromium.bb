@@ -20,6 +20,10 @@ var offset = 50;
 var x = targetRect.left + offset;
 var y = targetRect.top + offset;
 
+function touchstartHandler(event) {
+    event.preventDefault();
+}
+
 function validTouchMoveResult(event) {
     touchMoveCount++;
     testTouchMove.step(function () {
@@ -37,38 +41,29 @@ function validPointerMoveResult(event) {
 
 function callbackValidMoveCount() {
     testTouchMove.step(function () {
-        assert_equals(touchMoveCount, 2);
+        assert_equals(touchMoveCount, 3);
         assert_equals(pointerMoveCount, 3);
     });
     testTouchMove.done();
 }
 
-function testMultiPointerMoveSuppressionInSlopRegion() {
+function testTouchMoveSuppressionInSlopRegion() {
     if (window.chrome && chrome.gpuBenchmarking) {
-        var pointerActions = 
+        var pointerActions =
             [{source: "touch",
               actions: [
                 { name: "pointerDown", x: x, y: y },
                 { name: "pointerMove", x: x, y: y + 1 },
-                { name: "pause" },
-                { name: "pause" },
-                { name: "pause" },
-                { name: "pointerMove", x: x, y: y + 2 },
-                { name: "pointerUp" }]},
-             {source: "touch",
-              actions: [
-                { name: "pause" },
-                { name: "pause" },
-                { name: "pointerDown", x: x, y: y },
-                { name: "pointerMove", x: x, y: y + 1 },
-                { name: "pointerUp"}]}];
+                { name: "pointerMove", x: x, y: y + 10 },
+                { name: "pointerMove", x: x, y: y + 20 }]}];
         chrome.gpuBenchmarking.pointerActionSequence(pointerActions, callbackValidMoveCount);
     }
 }
 
-var testTouchMove = async_test('Tests that TouchMoves are not suppressed if a secondary pointer is present during any movement.');
+var testTouchMove = async_test('Tests that the TouchMoves are not suppressed if the touch start is consumed.');
+box.addEventListener('touchstart', touchstartHandler);
 box.addEventListener('touchmove', validTouchMoveResult);
 box.addEventListener('pointermove', validPointerMoveResult);
-testMultiPointerMoveSuppressionInSlopRegion();
+testTouchMoveSuppressionInSlopRegion();
 
 </script>
