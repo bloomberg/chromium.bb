@@ -123,7 +123,6 @@ def _generate_proto_new():
   data_sets = {}
 
   count = 0
-  error_count = 0
   for (target, metric, start_time, end_time, fields_values
        ) in state.store.get_all():
     for fields, value in fields_values.iteritems():
@@ -141,17 +140,12 @@ def _generate_proto_new():
 
       key = (target, metric.name)
       new_data_set = None
-      try:
-        if key not in data_sets:
-            new_data_set = new_metrics_pb2.MetricsDataSet()
-            metric._populate_data_set(new_data_set, fields)
+      if key not in data_sets:
+        new_data_set = new_metrics_pb2.MetricsDataSet()
+        metric._populate_data_set(new_data_set)
 
-        data = new_metrics_pb2.MetricsData()
-        metric._populate_data(data, start_time, end_time, fields, value)
-      except errors.MonitoringError:
-        logging.exception('Failed to serialize a metric.')
-        error_count += 1
-        continue
+      data = new_metrics_pb2.MetricsData()
+      metric._populate_data(data, start_time, end_time, fields, value)
 
       # All required data protos have been successfully populated. Now we can
       # insert them in serialized proto and bookeeping data structures.
@@ -164,36 +158,24 @@ def _generate_proto_new():
   if count > 0:
     yield proto
 
-  if error_count:
-    raise errors.MonitoringFailedToFlushAllMetricsError(error_count)
-
 
 def _generate_proto():
   """Generate MetricsCollection for global_monitor.send()."""
   proto = metrics_pb2.MetricsCollection()
 
-  error_count = 0
   for target, metric, start_time, _, fields_values in state.store.get_all():
     for fields, value in fields_values.iteritems():
       if len(proto.data) >= METRICS_DATA_LENGTH_LIMIT:
         yield proto
         proto = metrics_pb2.MetricsCollection()
 
-      try:
-        metrics_pb = metrics_pb2.MetricsData()
-        metric.serialize_to(metrics_pb, start_time, fields, value, target)
-      except errors.MonitoringError:
-        error_count += 1
-        logging.exception('Failed to serialize a metric.')
-        continue
+      metrics_pb = metrics_pb2.MetricsData()
+      metric.serialize_to(metrics_pb, start_time, fields, value, target)
 
       proto.data.add().CopyFrom(metrics_pb)
 
   if len(proto.data) > 0:
     yield proto
-
-  if error_count:
-    raise errors.MonitoringFailedToFlushAllMetricsError(error_count)
 
 
 def register(metric):
