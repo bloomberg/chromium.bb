@@ -35,6 +35,7 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/UseCounter.h"
 #include "modules/crypto/CryptoHistograms.h"
 #include "modules/crypto/CryptoKey.h"
 #include "modules/crypto/CryptoResultImpl.h"
@@ -63,6 +64,12 @@ static bool canAccessWebCrypto(ScriptState* scriptState, CryptoResult* result) {
           errorMessage, ExecutionContext::WebCryptoSecureContextCheck)) {
     result->completeWithError(WebCryptoErrorTypeNotSupported, errorMessage);
     return false;
+  }
+
+  if (!scriptState->getExecutionContext()->isSecureContext()) {
+    UseCounter::count(
+        scriptState->getExecutionContext(),
+        UseCounter::SubtleCryptoOnlyStrictSecureContextCheckFailed);
   }
 
   return true;
