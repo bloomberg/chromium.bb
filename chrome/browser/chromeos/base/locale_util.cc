@@ -51,8 +51,6 @@ void SwitchLanguageDoReloadLocale(SwitchLanguageData* data) {
           data->result.requested_locale);
 
   data->result.success = !data->result.loaded_locale.empty();
-
-  ResourceBundle::GetSharedInstance().ReloadFonts();
 }
 
 // Callback after SwitchLanguageDoReloadLocale() back in UI thread.
@@ -93,6 +91,10 @@ void FinishSwitchLanguage(std::unique_ptr<SwitchLanguageData> data) {
       }
     }
   }
+
+  // The font clean up of ResourceBundle should be done on UI thread, since the
+  // cached fonts are thread unsafe.
+  ResourceBundle::GetSharedInstance().ReloadFonts();
   gfx::PlatformFontLinux::ReloadDefaultFont();
   if (!data->callback.is_null())
     data->callback.Run(data->result);
