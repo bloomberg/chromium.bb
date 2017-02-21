@@ -134,7 +134,11 @@ public class LocationBarLayout extends FrameLayout
             UrlConstants.HTTP_SCHEME, UrlConstants.HTTPS_SCHEME,
             UrlConstants.INLINE_SCHEME, UrlConstants.JAVASCRIPT_SCHEME,
             UrlConstants.CHROME_SCHEME);
-    private static final HashSet<String> UNSUPPORTED_SCHEMES_TO_SPLIT =
+
+    /**
+     * The URL schemes that should be displayed complete with path.
+     */
+    protected static final HashSet<String> UNSUPPORTED_SCHEMES_TO_SPLIT =
             CollectionUtil.newHashSet(UrlConstants.FILE_SCHEME,
                     UrlConstants.JAVASCRIPT_SCHEME, UrlConstants.DATA_SCHEME);
 

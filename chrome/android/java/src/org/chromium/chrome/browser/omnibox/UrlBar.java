@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.text.Editable;
@@ -20,6 +21,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ReplacementSpan;
 import android.util.AttributeSet;
+import android.util.Pair;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -853,9 +855,22 @@ public class UrlBar extends VerticallyFixedEditText {
         Editable url = getText();
         if (url == null || url.length() < 1) return false;
         String urlString = url.toString();
-        String prePath = LocationBarLayout.splitPathFromUrlDisplayText(urlString).first;
-        if (prePath == null || prePath.isEmpty()) return false;
-        setSelection(prePath.length());
+        Pair<String, String> urlComponents =
+                LocationBarLayout.splitPathFromUrlDisplayText(urlString);
+
+        if (TextUtils.isEmpty(urlComponents.first)) return false;
+
+        // Do not scroll to the end of the host for URLs such as data:, javascript:, etc...
+        if (urlComponents.second == null) {
+            Uri uri = Uri.parse(urlString);
+            String scheme = uri.getScheme();
+            if (!TextUtils.isEmpty(scheme)
+                    && LocationBarLayout.UNSUPPORTED_SCHEMES_TO_SPLIT.contains(scheme)) {
+                return false;
+            }
+        }
+
+        setSelection(urlComponents.first.length());
         return true;
     }
 
