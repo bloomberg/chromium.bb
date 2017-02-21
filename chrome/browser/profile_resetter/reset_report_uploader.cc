@@ -12,6 +12,7 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -42,10 +43,39 @@ void ResetReportUploader::DispatchReport(
   std::string request_data;
   CHECK(report.SerializeToString(&request_data));
 
+  // Create traffic annotation tag.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("profile_resetter_upload", R"(
+        semantics {
+          sender: "Profile Resetter"
+          description:
+            "When users choose to reset their profile, they are offered the "
+            "choice to report to Google the settings and their values that are "
+            "affected by the reset. The user can inspect the values before "
+            "they are sent to Google and needs to consent to sending them."
+          trigger:
+            "Users reset their profile in Chrome settings and consent to "
+            "sending a report."
+          data:
+            "Startup URLs, homepage URL, default search engine, installed "
+            "extensions, Chrome shortcut on the desktop and the Windows start "
+            "menu, some settings. See "
+            "chrome/browser/profile_resetter/profile_reset_report.proto "
+            "for details."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting: "None, the user needs to actively send the data."
+          policy_exception_justification:
+            "None, considered not useful because the user needs to actively "
+            "send the data."
+        })");
+
   // Note fetcher will be deleted by OnURLFetchComplete.
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(GetClientReportUrl(kResetReportUrl),
-                              net::URLFetcher::POST, this)
+                              net::URLFetcher::POST, this, traffic_annotation)
           .release();
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES |
