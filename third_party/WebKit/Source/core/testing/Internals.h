@@ -422,6 +422,7 @@ class Internals final : public GarbageCollected<Internals>,
   Node* visibleSelectionFocusNode();
   unsigned visibleSelectionFocusOffset();
   ClientRect* selectionBounds(ExceptionState&);
+  String textAffinity();
 
   bool loseSharedGraphicsContext3D();
 

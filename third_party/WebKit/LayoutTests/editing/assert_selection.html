@@ -313,4 +313,25 @@ test(() => {
     const sample4 = assert_selection('abc', '', 'abc', 'description');
     assert_equals(sample4.iframe_.parentNode, null, 'with description');
 }, 'removeSampleIfSucceeded');
+
+test(() => {
+    assert_exists(window, 'internals');
+    assert_exists(window, 'eventSender');
+    assert_selection(
+        'foo|bar',
+        () => { assert_equals(internals.textAffinity, 'Downstream'); },
+        'foo|bar');
+    assert_selection(
+        '<div contenteditable style="width: 25px;">foobar</div>',
+        selection => {
+            eventSender.dragMode = false;
+            var document =  selection.document;
+            var div = document.querySelector('div');
+            eventSender.mouseMoveTo(document.offsetLeft + div.offsetLeft + 20,
+                document.offsetTop + div.offsetTop + 5);
+            eventSender.mouseDown();
+            eventSender.mouseUp();
+            assert_equals(internals.textAffinity, 'Upstream'); },
+        '<div contenteditable style="width: 25px;">foo|bar</div>');
+}, 'Textaffinity');
 </script>

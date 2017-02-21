@@ -277,6 +277,7 @@
     readonly attribute Node? visibleSelectionFocusNode;
     readonly attribute unsigned long visibleSelectionFocusOffset;
     [RaisesException] ClientRect selectionBounds();
+    readonly attribute DOMString textAffinity;
 
     boolean loseSharedGraphicsContext3D();
 

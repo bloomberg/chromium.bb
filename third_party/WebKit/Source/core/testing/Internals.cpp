@@ -913,6 +913,19 @@ ClientRect* Internals::absoluteCaretBounds(ExceptionState& exceptionState) {
   return ClientRect::create(frame()->selection().absoluteCaretBounds());
 }
 
+String Internals::textAffinity() {
+  if (frame()
+          ->page()
+          ->focusController()
+          .focusedFrame()
+          ->selection()
+          .selectionInDOMTree()
+          .affinity() == TextAffinity::Upstream) {
+    return "Upstream";
+  }
+  return "Downstream";
+}
+
 ClientRect* Internals::boundingBox(Element* element) {
   DCHECK(element);
 
