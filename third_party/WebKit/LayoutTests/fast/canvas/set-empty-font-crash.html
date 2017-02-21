@@ -1,8 +1,11 @@
-This test passes if it doesn't crash
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+    
 <canvas id="canvas"></canvas>
 <script>
-canvas.getContext('2d').font = "";
+test(function(t) {
 
-if (window.testRunner)
-    testRunner.dumpAsText();
+    canvas.getContext('2d').font = "";
+
+}, 'Test that setting canvas font to empty string does not crash.');
 </script>

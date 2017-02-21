@@ -1,17 +1,19 @@
-<!DOCTYPE HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+    
 <body>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText()
+test(function(t) {
 
-document.body.appendChild(document.createElement("p")).appendChild(document.createTextNode("This test passes if it does not cause a crash"));
-var canvas = document.body.appendChild(document.createElement("canvas"));
-canvas.width = "400";
-canvas.height = "400";
-var ctx = canvas.getContext('2d');
-ctx.shadowBlur = 10500000000;
-ctx.shadowColor = "green";
-ctx.fillRect(0, 0, 10, 10);
+    var canvas = document.body.appendChild(document.createElement("canvas"));
+    canvas.width = "400";
+    canvas.height = "400";
+    var ctx = canvas.getContext('2d');
+    ctx.shadowBlur = 10500000000;
+    ctx.shadowColor = "green";
+    ctx.fillRect(0, 0, 10, 10);
+
+}, 'Verify that setting a huge value in shadowBlur does not crash.');
 </script>
 </body>
 
