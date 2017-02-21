@@ -224,11 +224,6 @@ void DOMSelection::collapse(Node* node,
 
   // 2. The method must throw an IndexSizeError exception if offset is longer
   // than node's length ([DOM4]) and abort these steps.
-  if (offset < 0) {
-    exceptionState.throwDOMException(
-        IndexSizeError, String::number(offset) + " is not a valid offset.");
-    return;
-  }
   Range::checkNodeWOffset(node, offset, exceptionState);
   if (exceptionState.hadException())
     return;
@@ -321,20 +316,6 @@ void DOMSelection::setBaseAndExtent(Node* baseNode,
                                     ExceptionState& exceptionState) {
   if (!isAvailable())
     return;
-
-  if (baseOffset < 0) {
-    exceptionState.throwDOMException(
-        IndexSizeError,
-        String::number(baseOffset) + " is not a valid base offset.");
-    return;
-  }
-
-  if (extentOffset < 0) {
-    exceptionState.throwDOMException(
-        IndexSizeError,
-        String::number(extentOffset) + " is not a valid extent offset.");
-    return;
-  }
 
   // TODO(editing-dev): Behavior on where base or extent is null is still
   // under discussion: https://github.com/w3c/selection-api/issues/72
@@ -471,11 +452,6 @@ void DOMSelection::extend(Node* node,
     return;
   }
 
-  if (offset < 0) {
-    exceptionState.throwDOMException(
-        IndexSizeError, String::number(offset) + " is not a valid offset.");
-    return;
-  }
   Range::checkNodeWOffset(node, offset, exceptionState);
   if (exceptionState.hadException())
     return;

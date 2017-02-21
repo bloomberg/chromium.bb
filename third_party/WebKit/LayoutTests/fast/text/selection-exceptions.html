@@ -7,22 +7,22 @@
     <script>
         description("This tests that 'Selection' methods throw exceptions with reasonable messages.");
 
-        shouldThrow('getSelection().collapse(document.documentElement, -1)', '"IndexSizeError: Failed to execute \'collapse\' on \'Selection\': -1 is not a valid offset."');
+        shouldThrow('getSelection().collapse(document.documentElement, -1)', '"IndexSizeError: Failed to execute \'collapse\' on \'Selection\': There is no child at offset -1."');
 
         getSelection().empty();
         shouldThrow('getSelection().collapseToStart()', '"InvalidStateError: Failed to execute \'collapseToStart\' on \'Selection\': there is no selection."');
         shouldThrow('getSelection().collapseToEnd()', '"InvalidStateError: Failed to execute \'collapseToEnd\' on \'Selection\': there is no selection."');
 
-        shouldThrow('getSelection().setBaseAndExtent(document.documentElement, -1, document.documentElement, 0)', '"IndexSizeError: Failed to execute \'setBaseAndExtent\' on \'Selection\': -1 is not a valid base offset."');
-        shouldThrow('getSelection().setBaseAndExtent(document.documentElement, 0, document.documentElement, -1)', '"IndexSizeError: Failed to execute \'setBaseAndExtent\' on \'Selection\': -1 is not a valid extent offset."');
+        shouldThrow('getSelection().setBaseAndExtent(document.documentElement, -1, document.documentElement, 0)', '"IndexSizeError: Failed to execute \'setBaseAndExtent\' on \'Selection\': There is no child at offset -1."');
+        shouldThrow('getSelection().setBaseAndExtent(document.documentElement, 0, document.documentElement, -1)', '"IndexSizeError: Failed to execute \'setBaseAndExtent\' on \'Selection\': There is no child at offset -1."');
 
-        shouldThrow('getSelection().collapse(document.documentElement, -1)', '"IndexSizeError: Failed to execute \'collapse\' on \'Selection\': -1 is not a valid offset."');
+        shouldThrow('getSelection().collapse(document.documentElement, -1)', '"IndexSizeError: Failed to execute \'collapse\' on \'Selection\': There is no child at offset -1."');
 
         shouldThrow('getSelection().getRangeAt(-1)', '"IndexSizeError: Failed to execute \'getRangeAt\' on \'Selection\': -1 is not a valid index."');
 
         shouldThrow('getSelection().extend(0, -1)', '"TypeError: Failed to execute \'extend\' on \'Selection\': parameter 1 is not of type \'Node\'."');
         getSelection().addRange(document.createRange());
-        shouldThrow('getSelection().extend(document.documentElement, -1)', '"IndexSizeError: Failed to execute \'extend\' on \'Selection\': -1 is not a valid offset."');
+        shouldThrow('getSelection().extend(document.documentElement, -1)', '"IndexSizeError: Failed to execute \'extend\' on \'Selection\': There is no child at offset -1."');
         shouldThrow('getSelection().extend(document.documentElement, 1000)', '"IndexSizeError: Failed to execute \'extend\' on \'Selection\': There is no child at offset 1000."');
     </script>
 </body>

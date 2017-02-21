@@ -1,7 +1,7 @@
 foobarbaz
 Success: window.getSelection() is ar.
 Success: s.extend(span2.firstChild, 4) raised IndexSizeError: Failed to execute 'extend' on 'Selection': The offset 4 is larger than or equal to the node's length (3)..
-Success: s.extend(span2.firstChild, -1) raised IndexSizeError: Failed to execute 'extend' on 'Selection': -1 is not a valid offset..
+Success: s.extend(span2.firstChild, -1) raised IndexSizeError: Failed to execute 'extend' on 'Selection': The offset -1 is larger than or equal to the node's length (3)..
 Success: window.getSelection() is b.
 Success: window.getSelection() is arbaz.
 Success: s.extend() raised TypeError: Failed to execute 'extend' on 'Selection': 1 argument required, but only 0 present..
