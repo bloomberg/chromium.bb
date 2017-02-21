@@ -55,6 +55,7 @@ source_set("eg_tests") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "safe_mode_coordinator_unittest.mm",

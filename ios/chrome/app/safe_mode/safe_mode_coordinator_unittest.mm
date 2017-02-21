@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "testing/gtest_mac.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SafeModeCoordinatorTest, RootVC) {
   // Expect that starting a safe mode coordinator will populate the root view
