@@ -372,6 +372,14 @@ enum class RendererTerminationTabState {
 
 // Called when the UIApplication's state becomes active.
 - (void)applicationDidBecomeActive;
+
+// Returns YES if popups requested by a page with |URL| should be blocked.
+- (BOOL)shouldBlockPopupForPageWithURL:(const GURL&)URL;
+
+// Blocks popup for page with |popupURL|, requested by the page with
+// |openerURL|.
+- (void)blockPopupForURL:(const GURL&)popupURL openerURL:(const GURL&)openerURL;
+
 @end
 
 namespace {
@@ -1470,6 +1478,40 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   }
 }
 
+- (BOOL)shouldBlockPopupForPageWithURL:(const GURL&)URL {
+  HostContentSettingsMap* settingMap =
+      ios::HostContentSettingsMapFactory::GetForBrowserState(browserState_);
+  ContentSetting setting = settingMap->GetContentSetting(
+      URL, URL, CONTENT_SETTINGS_TYPE_POPUPS, std::string());
+  return setting != CONTENT_SETTING_ALLOW;
+}
+
+- (void)blockPopupForURL:(const GURL&)popupURL
+               openerURL:(const GURL&)openerURL {
+  web::NavigationItem* item = [self navigationManager]->GetLastCommittedItem();
+  web::Referrer referrer(openerURL, item->GetReferrer().policy);
+  GURL localPopupURL(popupURL);
+  base::WeakNSObject<Tab> weakSelf(self);
+  // TODO(crbug.com/692117): Remove |window_name| from constructor.
+  web::BlockedPopupInfo poupInfo(popupURL, referrer, nil /* window_name */, ^{
+    base::scoped_nsobject<Tab> strongSelf([weakSelf retain]);
+    if (!strongSelf) {
+      return;
+    }
+    [strongSelf updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+    [strongSelf.get()->parentTabModel_
+        insertOrUpdateTabWithURL:localPopupURL
+                        referrer:referrer
+                      transition:ui::PAGE_TRANSITION_LINK
+                      windowName:nil
+                          opener:self
+                     openedByDOM:YES
+                         atIndex:TabModelConstants::kTabPositionAutomatically
+                    inBackground:NO];
+  });
+  BlockedPopupTabHelper::FromWebState(self.webState)->HandlePopup(poupInfo);
+}
+
 #pragma mark -
 #pragma mark FindInPageControllerDelegate
 
@@ -1583,40 +1625,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 #pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods.
-
-- (CRWWebController*)webPageOrderedOpen:(const GURL&)URL
-                               referrer:(const web::Referrer&)referrer
-                             windowName:(NSString*)windowName
-                           inBackground:(BOOL)inBackground {
-  DCHECK(parentTabModel_);
-  if (!inBackground)
-    [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-  // Open a new tab or update an existing one. Tabs opened from a web page are
-  Tab* tab = [parentTabModel_
-      insertOrUpdateTabWithURL:URL
-                      referrer:referrer
-                    transition:ui::PAGE_TRANSITION_LINK
-                    windowName:windowName
-                        opener:self
-                   openedByDOM:YES
-                       atIndex:TabModelConstants::kTabPositionAutomatically
-                  inBackground:inBackground];
-  return tab.webController;
-}
-
-// This can be combined with the other versions once Tab loading is separated
-// from creation.
-- (CRWWebController*)webPageOrderedOpen {
-  [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-
-  Tab* tab = [parentTabModel_
-      insertBlankTabWithTransition:ui::PAGE_TRANSITION_LINK
-                            opener:self
-                       openedByDOM:YES
-                           atIndex:TabModelConstants::kTabPositionAutomatically
-                      inBackground:NO];
-  return tab.webController;
-}
 
 // The web page wants to close its own window.
 - (void)webPageOrderedClose {
@@ -1990,21 +1998,26 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [delegate_ discardPrerender];
 }
 
-- (BOOL)webController:(CRWWebController*)webController
-    shouldBlockPopupWithURL:(const GURL&)popupURL
-                  sourceURL:(const GURL&)sourceURL {
-  ContentSetting setting =
-      ios::HostContentSettingsMapFactory::GetForBrowserState(browserState_)
-          ->GetContentSetting(sourceURL, sourceURL,
-                              CONTENT_SETTINGS_TYPE_POPUPS, std::string());
+- (CRWWebController*)webController:(CRWWebController*)webController
+         createWebControllerForURL:(const GURL&)URL
+                         openerURL:(const GURL&)openerURL
+                   initiatedByUser:(BOOL)initiatedByUser {
+  BOOL shouldBlockPopUp =
+      !initiatedByUser && [self shouldBlockPopupForPageWithURL:openerURL];
 
-  return setting != CONTENT_SETTING_ALLOW;
-}
+  if (shouldBlockPopUp) {
+    [self blockPopupForURL:URL openerURL:openerURL];
+    return nil;
+  }
 
-- (void)webController:(CRWWebController*)webController
-        didBlockPopup:(const web::BlockedPopupInfo&)blockedPopupInfo {
-  BlockedPopupTabHelper::FromWebState(self.webState)
-      ->HandlePopup(blockedPopupInfo);
+  [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+  Tab* tab = [parentTabModel_
+      insertBlankTabWithTransition:ui::PAGE_TRANSITION_LINK
+                            opener:self
+                       openedByDOM:YES
+                           atIndex:TabModelConstants::kTabPositionAutomatically
+                      inBackground:NO];
+  return tab.webController;
 }
 
 - (CGFloat)headerHeightForWebController:(CRWWebController*)webController {

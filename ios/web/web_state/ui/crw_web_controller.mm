@@ -78,7 +78,6 @@
 #include "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/webui/web_ui_ios.h"
-#import "ios/web/web_state/blocked_popup_info.h"
 #import "ios/web/web_state/crw_pass_kit_downloader.h"
 #import "ios/web/web_state/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/error_translation_util.h"
@@ -103,6 +102,7 @@
 #import "ios/web/webui/mojo_facade.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
+#include "net/ssl/ssl_info.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -533,8 +533,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Returns the WKWebViewConfigurationProvider associated with the web
 // controller's BrowserState.
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider;
-// Extracts Referer value from WKNavigationAction request header.
-- (NSString*)refererFromNavigationAction:(WKNavigationAction*)action;
+// Extracts "Referer" [sic] value from WKNavigationAction request header.
+- (NSString*)referrerFromNavigationAction:(WKNavigationAction*)action;
 
 // Returns the current URL of the web view, and sets |trustLevel| accordingly
 // based on the confidence in the verification.
@@ -689,8 +689,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     (const web::PageScrollState&)scrollState;
 // Returns the referrer for the current page.
 - (web::Referrer)currentReferrer;
-// Asynchronously returns the referrer policy for the current page.
-- (void)queryPageReferrerPolicy:(void (^)(NSString*))responseHandler;
 // Adds a new CRWSessionEntry with the given URL and state object to the history
 // stack. A state object is a serialized generic JavaScript object that contains
 // details of the UI's state for a given CRWSessionEntry/URL.
@@ -717,9 +715,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 // Inject windowID if not yet injected.
 - (void)injectWindowID;
-// Creates a new opened by DOM window and returns its autoreleased web
-// controller.
-- (CRWWebController*)createChildWebController;
 
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
@@ -747,13 +742,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Called when a JavaScript dialog, HTTP authentication dialog or window.open
 // call has been suppressed.
 - (void)didSuppressDialog;
-// Convenience method to inform CWRWebDelegate about a blocked popup.
-- (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL;
-// Informs CWRWebDelegate that CRWWebController has detected and blocked a
-// popup.
-- (void)didBlockPopupWithURL:(GURL)popupURL
-                   sourceURL:(GURL)sourceURL
-              referrerPolicy:(const std::string&)referrerPolicyString;
 // Returns YES if the navigation action is associated with a main frame request.
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action;
 // Returns whether external URL navigation action should be opened.
@@ -767,10 +755,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)didUpdateSSLStatusForCurrentNavigationItem;
 // Called when a load ends in an SSL error and certificate chain.
 - (void)handleSSLCertError:(NSError*)error;
-
-// Returns YES if the popup should be blocked, NO otherwise.
-- (BOOL)shouldBlockPopupWithURL:(const GURL&)popupURL
-                      sourceURL:(const GURL&)sourceURL;
 
 // Used in webView:didReceiveAuthenticationChallenge:completionHandler: to
 // reply with NSURLSessionAuthChallengeDisposition and credentials.
@@ -1343,15 +1327,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                        web::ReferrerPolicyAlways);
 }
 
-- (void)queryPageReferrerPolicy:(void (^)(NSString*))responseHandler {
-  DCHECK(responseHandler);
-  [self executeJavaScript:@"__gCrWeb.getPageReferrerPolicy()"
-        completionHandler:^(id referrer, NSError* error) {
-          DCHECK_NE(error.code, WKErrorJavaScriptExceptionOccurred);
-          responseHandler(base::mac::ObjCCast<NSString>(referrer));
-        }];
-}
-
 - (void)pushStateWithPageURL:(const GURL&)pageURL
                  stateObject:(NSString*)stateObject
                   transition:(ui::PageTransition)transition {
@@ -1482,12 +1457,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   [_windowIDJSManager inject];
-}
-
-- (CRWWebController*)createChildWebController {
-  CRWWebController* result = [self.delegate webPageOrderedOpen];
-  DCHECK(!result || result.sessionController.openedByDOM);
-  return result;
 }
 
 - (BOOL)canUseViewForGeneratingOverlayPlaceholderView {
@@ -1718,7 +1687,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _pendingNavigationInfo.reset(
         [[CRWWebControllerPendingNavigationInfo alloc] init]);
     [_pendingNavigationInfo
-        setReferrer:[self refererFromNavigationAction:action]];
+        setReferrer:[self referrerFromNavigationAction:action]];
     [_pendingNavigationInfo setNavigationType:action.navigationType];
     [_pendingNavigationInfo setHTTPMethod:action.request.HTTPMethod];
   }
@@ -3410,21 +3379,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 #pragma mark -
-#pragma mark Popup handling
-
-- (BOOL)shouldBlockPopupWithURL:(const GURL&)popupURL
-                      sourceURL:(const GURL&)sourceURL {
-  if (![_delegate respondsToSelector:@selector(webController:
-                                         shouldBlockPopupWithURL:
-                                                       sourceURL:)]) {
-    return NO;
-  }
-  return [_delegate webController:self
-          shouldBlockPopupWithURL:popupURL
-                        sourceURL:sourceURL];
-}
-
-#pragma mark -
 #pragma mark Auth Challenge
 
 - (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
@@ -4012,42 +3966,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [_delegate webControllerDidSuppressDialog:self];
 }
 
-- (void)didBlockPopupWithURL:(GURL)popupURL
-                   sourceURL:(GURL)sourceURL
-              referrerPolicy:(const std::string&)referrerPolicyString {
-  web::ReferrerPolicy referrerPolicy =
-      web::ReferrerPolicyFromString(referrerPolicyString);
-  web::Referrer referrer(sourceURL, referrerPolicy);
-  NSString* const kWindowName = @"";  // obsoleted
-  base::WeakNSObject<CRWWebController> weakSelf(self);
-  void (^showPopupHandler)() = ^{
-    // On Desktop cross-window comunication is not supported for unblocked
-    // popups; so it's ok to create a new independent page.
-    CRWWebController* child =
-        [[weakSelf delegate] webPageOrderedOpen:popupURL
-                                       referrer:referrer
-                                     windowName:kWindowName
-                                   inBackground:NO];
-    DCHECK(!child || child.sessionController.openedByDOM);
-  };
-
-  web::BlockedPopupInfo info(popupURL, referrer, kWindowName, showPopupHandler);
-  [self.delegate webController:self didBlockPopup:info];
-}
-
-- (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL {
-  if ([_delegate respondsToSelector:@selector(webController:didBlockPopup:)]) {
-    base::WeakNSObject<CRWWebController> weakSelf(self);
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [self queryPageReferrerPolicy:^(NSString* policy) {
-        [weakSelf didBlockPopupWithURL:popupURL
-                             sourceURL:sourceURL
-                        referrerPolicy:base::SysNSStringToUTF8(policy)];
-      }];
-    });
-  }
-}
-
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action {
   if (action.targetFrame) {
     return action.targetFrame.mainFrame;
@@ -4442,28 +4360,23 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return nil;
   }
 
+  // Do not create windows for non-empty invalid URLs.
   GURL requestURL = net::GURLWithNSURL(action.request.URL);
-
-  // Don't create windows for non-empty invalid URLs.
   if (!requestURL.is_empty() && !requestURL.is_valid()) {
     DLOG(WARNING) << "Unable to open a window with invalid URL: "
                   << requestURL.spec();
     return nil;
   }
 
-  if (![self userIsInteracting]) {
-    NSString* referer = [self refererFromNavigationAction:action];
-    GURL referrerURL =
-        referer ? GURL(base::SysNSStringToUTF8(referer)) : [self currentURL];
-    if ([self shouldBlockPopupWithURL:requestURL sourceURL:referrerURL]) {
-      [self didBlockPopupWithURL:requestURL sourceURL:referrerURL];
-      // Desktop Chrome does not return a window for the blocked popups;
-      // follow the same approach by returning nil;
-      return nil;
-    }
-  }
+  NSString* referrer = [self referrerFromNavigationAction:action];
+  GURL openerURL =
+      referrer ? GURL(base::SysNSStringToUTF8(referrer)) : _documentURL;
+  CRWWebController* child = [_delegate webController:self
+                           createWebControllerForURL:requestURL
+                                           openerURL:openerURL
+                                     initiatedByUser:[self userIsInteracting]];
+  DCHECK(!child || child.sessionController.openedByDOM);
 
-  CRWWebController* child = [self createChildWebController];
   // WKWebView requires WKUIDelegate to return a child view created with
   // exactly the same |configuration| object (exception is raised if config is
   // different). |configuration| param and config returned by
@@ -5320,8 +5233,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _loadPhase = web::LOAD_REQUESTED;
 }
 
-- (NSString*)refererFromNavigationAction:(WKNavigationAction*)action {
-  return [action.request valueForHTTPHeaderField:@"Referer"];
+- (NSString*)referrerFromNavigationAction:(WKNavigationAction*)action {
+  return [action.request valueForHTTPHeaderField:kReferrerHeaderName];
 }
 
 @end

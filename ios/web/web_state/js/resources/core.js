@@ -363,12 +363,6 @@ goog.require('__crWeb.message');
     return 'default';
   };
 
-  // Provides a way for other injected javascript to access the page's referrer
-  // policy.
-  __gCrWeb['getPageReferrerPolicy'] = function() {
-    return getReferrerPolicy_();
-  };
-
   // Various aspects of global DOM behavior are overridden here.
 
   // A popstate event needs to be fired anytime the active history entry

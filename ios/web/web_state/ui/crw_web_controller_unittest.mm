@@ -31,7 +31,6 @@
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/test/web_test_with_web_controller.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
-#import "ios/web/web_state/blocked_popup_info.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
@@ -56,35 +55,27 @@ using web::NavigationManagerImpl;
 
 // Used to mock CRWWebDelegate methods with C++ params.
 @interface MockInteractionLoader : OCMockComplexTypeHelper
-// popupURL passed to webController:shouldBlockPopupWithURL:sourceURL:
-// Used for testing.
-@property(nonatomic, assign) GURL popupURL;
-// sourceURL passed to webController:shouldBlockPopupWithURL:sourceURL:
-// Used for testing.
-@property(nonatomic, assign) GURL sourceURL;
 // Whether or not the delegate should block popups.
 @property(nonatomic, assign) BOOL blockPopups;
 // A web controller that will be returned by webPageOrdered... methods.
 @property(nonatomic, assign) CRWWebController* childWebController;
-// Blocked popup info received in |webController:didBlockPopup:| call.
-// nullptr if that delegate method was not called.
-@property(nonatomic, readonly) web::BlockedPopupInfo* blockedPopupInfo;
+
+// Values of arguments passed to
+// |webController:createWebControllerForURL:openerURL:initiatedByUser:|.
+@property(nonatomic, readonly) CRWWebController* webController;
+@property(nonatomic, readonly) GURL childURL;
+@property(nonatomic, readonly) GURL openerURL;
+@property(nonatomic, readonly) BOOL initiatedByUser;
 @end
 
-@implementation MockInteractionLoader {
-  // Backs up the property with the same name.
-  std::unique_ptr<web::BlockedPopupInfo> _blockedPopupInfo;
-}
-@synthesize popupURL = _popupURL;
-@synthesize sourceURL = _sourceURL;
+@implementation MockInteractionLoader
+
 @synthesize blockPopups = _blockPopups;
 @synthesize childWebController = _childWebController;
-
-typedef void (^webPageOrderedOpenBlankBlockType)();
-typedef void (^webPageOrderedOpenBlockType)(const GURL&,
-                                            const web::Referrer&,
-                                            NSString*,
-                                            BOOL);
+@synthesize webController = _webController;
+@synthesize childURL = _childURL;
+@synthesize openerURL = _openerURL;
+@synthesize initiatedByUser = _initiatedByUser;
 
 - (instancetype)initWithRepresentedObject:(id)representedObject {
   self = [super initWithRepresentedObject:representedObject];
@@ -94,18 +85,16 @@ typedef void (^webPageOrderedOpenBlockType)(const GURL&,
   return self;
 }
 
-- (CRWWebController*)webPageOrderedOpen {
-  static_cast<webPageOrderedOpenBlankBlockType>([self blockForSelector:_cmd])();
-  return _childWebController;
-}
+- (CRWWebController*)webController:(CRWWebController*)webController
+         createWebControllerForURL:(const GURL&)childURL
+                         openerURL:(const GURL&)openerURL
+                   initiatedByUser:(BOOL)initiatedByUser {
+  _webController = webController;
+  _childURL = childURL;
+  _openerURL = openerURL;
+  _initiatedByUser = initiatedByUser;
 
-- (CRWWebController*)webPageOrderedOpen:(const GURL&)url
-                               referrer:(const web::Referrer&)referrer
-                             windowName:(NSString*)windowName
-                           inBackground:(BOOL)inBackground {
-  static_cast<webPageOrderedOpenBlockType>([self blockForSelector:_cmd])(
-      url, referrer, windowName, inBackground);
-  return _childWebController;
+  return (_blockPopups && !initiatedByUser) ? nil : _childWebController;
 }
 
 typedef BOOL (^openExternalURLBlockType)(const GURL&);
@@ -115,22 +104,6 @@ typedef BOOL (^openExternalURLBlockType)(const GURL&);
       url);
 }
 
-- (BOOL)webController:(CRWWebController*)webController
-    shouldBlockPopupWithURL:(const GURL&)popupURL
-                  sourceURL:(const GURL&)sourceURL {
-  self.popupURL = popupURL;
-  self.sourceURL = sourceURL;
-  return _blockPopups;
-}
-
-- (void)webController:(CRWWebController*)webController
-        didBlockPopup:(const web::BlockedPopupInfo&)blockedPopupInfo {
-  _blockedPopupInfo.reset(new web::BlockedPopupInfo(blockedPopupInfo));
-}
-
-- (web::BlockedPopupInfo*)blockedPopupInfo {
-  return _blockedPopupInfo.get();
-}
 - (BOOL)webController:(CRWWebController*)webController
         shouldOpenURL:(const GURL&)URL
       mainDocumentURL:(const GURL&)mainDocumentURL
@@ -911,7 +884,7 @@ class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
     child_web_state_->GetNavigationManagerImpl().SetSessionController(
         sessionController);
 
-    LoadHtml(@"<html><body></body></html>");
+    LoadHtml(@"<html><body></body></html>", GURL("http://test"));
   }
   void TearDown() override {
     EXPECT_OCMOCK_VERIFY(delegate_);
@@ -941,76 +914,57 @@ TEST_F(CRWWebControllerWindowOpenTest, NoDelegate) {
 
   EXPECT_NSEQ([NSNull null], OpenWindowByDOM());
 
-  EXPECT_FALSE([delegate_ blockedPopupInfo]);
+  EXPECT_FALSE([delegate_ webController]);
+  EXPECT_FALSE([delegate_ childURL].is_valid());
+  EXPECT_FALSE([delegate_ openerURL].is_valid());
+  EXPECT_FALSE([delegate_ initiatedByUser]);
 }
 
 // Tests that window.open triggered by user gesture opens a new non-popup
 // window.
 TEST_F(CRWWebControllerWindowOpenTest, OpenWithUserGesture) {
-  SEL selector = @selector(webPageOrderedOpen);
-  [delegate_ onSelector:selector
-      callBlockExpectation:^(){
-      }];
-
   [web_controller() touched:YES];
   EXPECT_NSEQ(@"[object Window]", OpenWindowByDOM());
-  EXPECT_FALSE([delegate_ blockedPopupInfo]);
+
+  EXPECT_EQ(web_controller(), [delegate_ webController]);
+  EXPECT_EQ("javascript:void(0);", [delegate_ childURL].spec());
+  EXPECT_EQ("http://test/", [delegate_ openerURL].spec());
+  EXPECT_TRUE([delegate_ initiatedByUser]);
 }
 
 // Tests that window.open executed w/o user gesture does not open a new window.
 // Once the blocked popup is allowed a new window is opened.
 TEST_F(CRWWebControllerWindowOpenTest, AllowPopup) {
-  SEL selector =
-      @selector(webPageOrderedOpen:referrer:windowName:inBackground:);
-  [delegate_ onSelector:selector
-      callBlockExpectation:^(const GURL& new_window_url,
-                             const web::Referrer& referrer,
-                             NSString* obsoleted_window_name,
-                             BOOL in_background) {
-        EXPECT_EQ("javascript:void(0);", new_window_url.spec());
-        EXPECT_EQ("", referrer.url.spec());
-        EXPECT_FALSE(in_background);
-      }];
-
   ASSERT_FALSE([web_controller() userIsInteracting]);
   EXPECT_NSEQ([NSNull null], OpenWindowByDOM());
-  base::test::ios::WaitUntilCondition(^bool() {
-    return [delegate_ blockedPopupInfo];
-  });
 
-  if ([delegate_ blockedPopupInfo])
-    [delegate_ blockedPopupInfo]->ShowPopup();
-
-  EXPECT_EQ("", [delegate_ sourceURL].spec());
-  EXPECT_EQ("javascript:void(0);", [delegate_ popupURL].spec());
+  EXPECT_EQ(web_controller(), [delegate_ webController]);
+  EXPECT_EQ("javascript:void(0);", [delegate_ childURL].spec());
+  EXPECT_EQ("http://test/", [delegate_ openerURL].spec());
+  EXPECT_FALSE([delegate_ initiatedByUser]);
 }
 
 // Tests that window.open executed w/o user gesture opens a new window, assuming
 // that delegate allows popups.
 TEST_F(CRWWebControllerWindowOpenTest, DontBlockPopup) {
   [delegate_ setBlockPopups:NO];
-  SEL selector = @selector(webPageOrderedOpen);
-  [delegate_ onSelector:selector
-      callBlockExpectation:^(){
-      }];
-
   EXPECT_NSEQ(@"[object Window]", OpenWindowByDOM());
-  EXPECT_FALSE([delegate_ blockedPopupInfo]);
 
-  EXPECT_EQ("", [delegate_ sourceURL].spec());
-  EXPECT_EQ("javascript:void(0);", [delegate_ popupURL].spec());
+  EXPECT_EQ(web_controller(), [delegate_ webController]);
+  EXPECT_EQ("javascript:void(0);", [delegate_ childURL].spec());
+  EXPECT_EQ("http://test/", [delegate_ openerURL].spec());
+  EXPECT_FALSE([delegate_ initiatedByUser]);
 }
 
 // Tests that window.open executed w/o user gesture does not open a new window.
 TEST_F(CRWWebControllerWindowOpenTest, BlockPopup) {
   ASSERT_FALSE([web_controller() userIsInteracting]);
   EXPECT_NSEQ([NSNull null], OpenWindowByDOM());
-  base::test::ios::WaitUntilCondition(^bool() {
-    return [delegate_ blockedPopupInfo];
-  });
 
-  EXPECT_EQ("", [delegate_ sourceURL].spec());
-  EXPECT_EQ("javascript:void(0);", [delegate_ popupURL].spec());
+  EXPECT_EQ(web_controller(), [delegate_ webController]);
+  EXPECT_EQ("javascript:void(0);", [delegate_ childURL].spec());
+  EXPECT_EQ("http://test/", [delegate_ openerURL].spec());
+  EXPECT_FALSE([delegate_ initiatedByUser]);
 };
 
 // Fixture class to test WKWebView crashes.

@@ -4317,6 +4317,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   CRWWebController* webController = tab.webController;
   NSString* script = @"document.documentElement.outerHTML;";
   base::WeakNSObject<Tab> weakTab(tab);
+  base::WeakNSObject<BrowserViewController> weakSelf(self);
   web::JavaScriptResultBlock completionHandlerBlock = ^(id result, NSError*) {
     base::scoped_nsobject<Tab> strongTab([weakTab retain]);
     if (!strongTab)
@@ -4327,10 +4328,16 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     base::Base64Encode(base::SysNSStringToUTF8(result), &base64HTML);
     GURL URL(std::string("data:text/plain;charset=utf-8;base64,") + base64HTML);
     web::Referrer referrer([strongTab url], web::ReferrerPolicyDefault);
-    [strongTab webPageOrderedOpen:URL
-                         referrer:referrer
-                       windowName:nil
-                     inBackground:NO];
+
+    [[weakSelf tabModel]
+        insertOrUpdateTabWithURL:URL
+                        referrer:referrer
+                      transition:ui::PAGE_TRANSITION_LINK
+                      windowName:nil
+                          opener:strongTab
+                     openedByDOM:YES
+                         atIndex:TabModelConstants::kTabPositionAutomatically
+                    inBackground:NO];
   };
   [webController executeJavaScript:script
                  completionHandler:completionHandlerBlock];
