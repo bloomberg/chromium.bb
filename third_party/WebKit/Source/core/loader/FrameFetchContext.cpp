@@ -796,6 +796,11 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
             frame()->document()->getSecurityOrigin()->protocol())) {
       Deprecation::countDeprecation(
           frame()->document(), UseCounter::LegacyProtocolEmbeddedAsSubresource);
+
+      // TODO(mkwst): Drop the runtime-enabled check in M59:
+      // https://www.chromestatus.com/feature/5709390967472128
+      if (RuntimeEnabledFeatures::blockLegacySubresourcesEnabled())
+        return ResourceRequestBlockedReason::Origin;
     }
     if (!url.user().isEmpty() || !url.pass().isEmpty()) {
       Deprecation::countDeprecation(
