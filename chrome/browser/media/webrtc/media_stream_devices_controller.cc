@@ -584,16 +584,15 @@ bool MediaStreamDevicesController::IsUserAcceptAllowed(
   if (!window_android)
     return false;
 
-  std::string android_permission =
-      PrefServiceBridge::GetAndroidPermissionForContentSetting(content_type);
-  bool android_permission_blocked = false;
-  if (!android_permission.empty()) {
-    android_permission_blocked =
-        !window_android->HasPermission(android_permission) &&
-        !window_android->CanRequestPermission(android_permission);
+  std::vector<std::string> android_permissions;
+  PrefServiceBridge::GetAndroidPermissionsForContentSetting(
+      content_type, &android_permissions);
+  for (const auto& android_permission : android_permissions) {
+    if (!window_android->HasPermission(android_permission) &&
+        !window_android->CanRequestPermission(android_permission)) {
+      return false;
+    }
   }
-  if (android_permission_blocked)
-    return false;
 
   // Don't approve device requests if the tab was hidden.
   // TODO(qinmin): Add a test for this. http://crbug.com/396869.

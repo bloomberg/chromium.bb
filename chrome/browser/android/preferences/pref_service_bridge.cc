@@ -1223,16 +1223,15 @@ void PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(
 }
 
 // static
-std::string PrefServiceBridge::GetAndroidPermissionForContentSetting(
-    ContentSettingsType content_type) {
+void PrefServiceBridge::GetAndroidPermissionsForContentSetting(
+    ContentSettingsType content_type,
+    std::vector<std::string>* out) {
   JNIEnv* env = AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> android_permission =
-      Java_PrefServiceBridge_getAndroidPermissionForContentSetting(
-          env, content_type);
-  if (android_permission.is_null())
-    return std::string();
-
-  return ConvertJavaStringToUTF8(android_permission);
+  base::android::AppendJavaStringArrayToStringVector(
+      env, Java_PrefServiceBridge_getAndroidPermissionsForContentSetting(
+               env, content_type)
+               .obj(),
+      out);
 }
 
 static void SetSupervisedUserId(JNIEnv* env,

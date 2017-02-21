@@ -36,33 +36,39 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
   ui::WindowAndroid* window_android = cvc->GetWindowAndroid();
 
   std::vector<std::string> permissions;
+  int missing_permission_count = 0;
   int message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
 
   for (ContentSettingsType content_settings_type : content_settings_types) {
-    std::string android_permission =
-        PrefServiceBridge::GetAndroidPermissionForContentSetting(
-            content_settings_type);
+    int previous_size = permissions.size();
+    PrefServiceBridge::GetAndroidPermissionsForContentSetting(
+        content_settings_type, &permissions);
 
-    if (!android_permission.empty() &&
-        !window_android->HasPermission(android_permission)) {
-      permissions.push_back(android_permission);
+    if (missing_permission_count > 1)
+      continue;
 
-      if (content_settings_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-          message_id = IDS_INFOBAR_MISSING_LOCATION_PERMISSION_TEXT;
+    for (auto it = permissions.begin() + previous_size; it != permissions.end();
+         ++it) {
+      if (window_android->HasPermission(*it))
+        continue;
+
+      missing_permission_count++;
+      if (missing_permission_count > 1) {
+        message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
+      } else if (content_settings_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+        message_id = IDS_INFOBAR_MISSING_LOCATION_PERMISSION_TEXT;
       } else if (content_settings_type ==
                  CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
-          message_id = IDS_INFOBAR_MISSING_MICROPHONE_PERMISSION_TEXT;
+        message_id = IDS_INFOBAR_MISSING_MICROPHONE_PERMISSION_TEXT;
       } else if (content_settings_type ==
                  CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
-          message_id = IDS_INFOBAR_MISSING_CAMERA_PERMISSION_TEXT;
+        message_id = IDS_INFOBAR_MISSING_CAMERA_PERMISSION_TEXT;
       } else {
-          NOTREACHED();
-          message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
+        NOTREACHED();
+        message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
       }
     }
   }
-  if (permissions.size() > 1)
-    message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
 
   return PermissionUpdateInfoBarDelegate::Create(
       web_contents, permissions, message_id, callback);
@@ -101,13 +107,13 @@ bool PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfobar(
   ui::WindowAndroid* window_android = cvc->GetWindowAndroid();
 
   for (ContentSettingsType content_settings_type : content_settings_types) {
-    std::string android_permission =
-        PrefServiceBridge::GetAndroidPermissionForContentSetting(
-            content_settings_type);
+    std::vector<std::string> android_permissions;
+    PrefServiceBridge::GetAndroidPermissionsForContentSetting(
+        content_settings_type, &android_permissions);
 
-    if (!android_permission.empty() &&
-        !window_android->HasPermission(android_permission)) {
-      return true;
+    for (const auto& android_permission : android_permissions) {
+      if (!window_android->HasPermission(android_permission))
+        return true;
     }
   }
 

@@ -19,6 +19,12 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Methods to handle requesting native permissions from Android when the user grants a website a
  * permission.
@@ -33,27 +39,38 @@ public class AndroidPermissionRequester {
         void onAndroidPermissionCanceled();
     }
 
-    private static SparseArray<String> generatePermissionsMapping(
+    private static SparseArray<String[]> generatePermissionsMapping(
             WindowAndroid windowAndroid, int[] contentSettingsTypes) {
-        SparseArray<String> permissionsToRequest = new SparseArray<String>();
+        SparseArray<String[]> permissionsToRequest = new SparseArray<>();
         for (int i = 0; i < contentSettingsTypes.length; i++) {
-            String permission = PrefServiceBridge.getAndroidPermissionForContentSetting(
+            String[] permissions = PrefServiceBridge.getAndroidPermissionsForContentSetting(
                     contentSettingsTypes[i]);
-            if (permission != null && !windowAndroid.hasPermission(permission)) {
-                permissionsToRequest.append(contentSettingsTypes[i], permission);
+            if (permissions == null) continue;
+            List<String> missingPermissions = new ArrayList<>();
+            for (int j = 0; j < permissions.length; j++) {
+                String permission = permissions[j];
+                if (!windowAndroid.hasPermission(permission)) missingPermissions.add(permission);
+            }
+            if (!missingPermissions.isEmpty()) {
+                permissionsToRequest.append(contentSettingsTypes[i],
+                        missingPermissions.toArray(new String[missingPermissions.size()]));
             }
         }
         return permissionsToRequest;
     }
 
     private static int getDeniedPermissionResourceId(
-            SparseArray<String> contentSettingsTypesToPermissionsMap, String permission) {
+            SparseArray<String[]> contentSettingsTypesToPermissionsMap, String permission) {
         int contentSettingsType = 0;
         // SparseArray#indexOfValue uses == instead of .equals, so we need to manually iterate
         // over the list.
         for (int i = 0; i < contentSettingsTypesToPermissionsMap.size(); i++) {
-            if (permission.equals(contentSettingsTypesToPermissionsMap.valueAt(i))) {
-                contentSettingsType = contentSettingsTypesToPermissionsMap.keyAt(i);
+            String[] contentSettingPermissions = contentSettingsTypesToPermissionsMap.valueAt(i);
+            for (int j = 0; j < contentSettingPermissions.length; j++) {
+                if (permission.equals(contentSettingPermissions[j])) {
+                    contentSettingsType = contentSettingsTypesToPermissionsMap.keyAt(i);
+                    break;
+                }
             }
         }
 
@@ -82,7 +99,7 @@ public class AndroidPermissionRequester {
         final WindowAndroid windowAndroid = tab.getWindowAndroid();
         if (windowAndroid == null) return false;
 
-        final SparseArray<String> contentSettingsTypesToPermissionsMap =
+        final SparseArray<String[]> contentSettingsTypesToPermissionsMap =
                 generatePermissionsMapping(windowAndroid, contentSettingsTypes);
 
         if (contentSettingsTypesToPermissionsMap.size() == 0) return false;
@@ -142,11 +159,13 @@ public class AndroidPermissionRequester {
             }
         };
 
-        String[] permissionsToRequest = new String[contentSettingsTypesToPermissionsMap.size()];
+        Set<String> permissionsToRequest = new HashSet<>();
         for (int i = 0; i < contentSettingsTypesToPermissionsMap.size(); i++) {
-            permissionsToRequest[i] = contentSettingsTypesToPermissionsMap.valueAt(i);
+            Collections.addAll(
+                    permissionsToRequest, contentSettingsTypesToPermissionsMap.valueAt(i));
         }
-        windowAndroid.requestPermissions(permissionsToRequest, callback);
+        windowAndroid.requestPermissions(
+                permissionsToRequest.toArray(new String[permissionsToRequest.size()]), callback);
         return true;
     }
 }

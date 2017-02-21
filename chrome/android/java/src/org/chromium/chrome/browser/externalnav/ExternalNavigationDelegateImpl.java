@@ -426,8 +426,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             return false;
         }
 
-        return !tab.getWindowAndroid().hasPermission(permission.WRITE_EXTERNAL_STORAGE)
-                && tab.getWindowAndroid().canRequestPermission(permission.WRITE_EXTERNAL_STORAGE);
+        return !tab.getWindowAndroid().hasPermission(permission.READ_EXTERNAL_STORAGE)
+                && tab.getWindowAndroid().canRequestPermission(permission.READ_EXTERNAL_STORAGE);
     }
 
     @Override
@@ -450,7 +450,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             }
         };
         tab.getWindowAndroid().requestPermissions(
-                new String[] {permission.WRITE_EXTERNAL_STORAGE}, permissionCallback);
+                new String[] {permission.READ_EXTERNAL_STORAGE}, permissionCallback);
     }
 
     private void loadIntent(Intent intent, String referrerUrl, String fallbackUrl, Tab tab,

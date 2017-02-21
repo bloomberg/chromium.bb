@@ -24,6 +24,7 @@ import android.view.View;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.ui.UiUtils;
@@ -178,22 +179,27 @@ public class ActivityWindowAndroid
 
     private String getHasRequestedPermissionKey(String permission) {
         String permissionQueriedKey = permission;
-        try {
-            // Runtime permissions are controlled at the group level.  So when determining whether
-            // we have requested a particular permission before, we should check whether we
-            // have requested any permission in that group as that mimics the logic in the Android
-            // framework.
-            //
-            // e.g. Requesting first the permission ACCESS_FINE_LOCATION will result in Chrome
-            //      treating ACCESS_COARSE_LOCATION as if it had already been requested as well.
-            PermissionInfo permissionInfo = getApplicationContext().getPackageManager()
-                    .getPermissionInfo(permission, PackageManager.GET_META_DATA);
+        // Prior to O, permissions were granted at the group level.  Post O, each permission is
+        // granted individually.
+        if (!BuildInfo.isAtLeastO()) {
+            try {
+                // Runtime permissions are controlled at the group level.  So when determining
+                // whether we have requested a particular permission before, we should check whether
+                // we have requested any permission in that group as that mimics the logic in the
+                // Android framework.
+                //
+                // e.g. Requesting first the permission ACCESS_FINE_LOCATION will result in Chrome
+                //      treating ACCESS_COARSE_LOCATION as if it had already been requested as well.
+                PermissionInfo permissionInfo =
+                        getApplicationContext().getPackageManager().getPermissionInfo(
+                                permission, PackageManager.GET_META_DATA);
 
-            if (!TextUtils.isEmpty(permissionInfo.group)) {
-                permissionQueriedKey = permissionInfo.group;
+                if (!TextUtils.isEmpty(permissionInfo.group)) {
+                    permissionQueriedKey = permissionInfo.group;
+                }
+            } catch (NameNotFoundException e) {
+                // Unknown permission.  Default back to the permission name instead of the group.
             }
-        } catch (NameNotFoundException e) {
-            // Unknown permission.  Default back to the permission name instead of the group.
         }
 
         return PERMISSION_QUERIED_KEY_PREFIX + permissionQueriedKey;

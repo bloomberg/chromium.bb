@@ -526,9 +526,15 @@ public class WebsiteSettingsPopup implements OnClickListener {
     }
 
     private boolean hasAndroidPermission(int contentSettingType) {
-        String androidPermission = PrefServiceBridge.getAndroidPermissionForContentSetting(
-                contentSettingType);
-        return androidPermission == null || mWindowAndroid.hasPermission(androidPermission);
+        String[] androidPermissions =
+                PrefServiceBridge.getAndroidPermissionsForContentSetting(contentSettingType);
+        if (androidPermissions == null) return true;
+        for (int i = 0; i < androidPermissions.length; i++) {
+            if (!mWindowAndroid.hasPermission(androidPermissions[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -579,7 +585,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
             } else if (!hasAndroidPermission(permission.type)) {
                 warningTextResource = R.string.page_info_android_permission_blocked;
                 permissionRow.setTag(R.id.permission_type,
-                        PrefServiceBridge.getAndroidPermissionForContentSetting(permission.type));
+                        PrefServiceBridge.getAndroidPermissionsForContentSetting(permission.type));
             }
 
             if (warningTextResource != 0) {
@@ -772,17 +778,23 @@ public class WebsiteSettingsPopup implements OnClickListener {
 
             if (intentOverride == null && mWindowAndroid != null) {
                 // Try and immediately request missing Android permissions where possible.
-                final String permissionType = (String) view.getTag(R.id.permission_type);
-                if (mWindowAndroid.canRequestPermission(permissionType)) {
-                    final String[] permissionRequest = new String[] {permissionType};
-                    mWindowAndroid.requestPermissions(permissionRequest, new PermissionCallback() {
+                final String[] permissionType = (String[]) view.getTag(R.id.permission_type);
+                for (int i = 0; i < permissionType.length; i++) {
+                    if (!mWindowAndroid.canRequestPermission(permissionType[i])) continue;
+
+                    // If any permissions can be requested, attempt to request them all.
+                    mWindowAndroid.requestPermissions(permissionType, new PermissionCallback() {
                         @Override
                         public void onRequestPermissionsResult(
                                 String[] permissions, int[] grantResults) {
-                            if (grantResults.length > 0
-                                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                                updatePermissionDisplay();
+                            boolean allGranted = true;
+                            for (int i = 0; i < grantResults.length; i++) {
+                                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                                    allGranted = false;
+                                    break;
+                                }
                             }
+                            if (allGranted) updatePermissionDisplay();
                         }
                     });
                     return;
