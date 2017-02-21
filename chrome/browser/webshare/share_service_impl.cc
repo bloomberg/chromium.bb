@@ -237,11 +237,13 @@ void ShareServiceImpl::OnPickerClosed(
       chosen_target.data(),
       chosen_target.size() - GURL(chosen_target).ExtractFileName().size());
   const GURL target(url_base.as_string() + url_template_filled);
-  if (!target.is_valid()) {
-    callback.Run(base::Optional<std::string>(
-        "Error: url of share target is not a valid url."));
-    return;
-  }
+  // User should not be able to cause an invalid target URL. Possibilities are:
+  // - The base URL: can't be invalid since it's derived from the manifest URL.
+  // - The template: can only be invalid if it contains a NUL character or
+  //   invalid UTF-8 sequence (which it can't have).
+  // - The replaced pieces: these are escaped.
+  // If somehow we slip through this DCHECK, it will just open about:blank.
+  DCHECK(target.is_valid());
   OpenTargetURL(target);
 
   callback.Run(base::nullopt);

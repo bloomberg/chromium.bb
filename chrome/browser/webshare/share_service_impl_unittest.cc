@@ -255,6 +255,39 @@ TEST_F(ShareServiceImplUnittest, ShareCancelWithTargets) {
   EXPECT_TRUE(share_service_helper()->GetLastUsedTargetURL().empty());
 }
 
+// Tests a target with a broken URL template (ReplacePlaceholders failure).
+TEST_F(ShareServiceImplUnittest, ShareBrokenUrl) {
+  // Invalid placeholders. Detailed tests for broken templates are in the
+  // ReplacePlaceholders test; this just tests the share response.
+  constexpr char kBrokenUrlTemplate[] = "share?title={title";
+  share_service_helper()->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
+                                                kBrokenUrlTemplate);
+
+  // Expect an error message in response.
+  base::Callback<void(const base::Optional<std::string>&)> callback =
+      base::Bind(&DidShare,
+                 base::Optional<std::string>(
+                     "Error: unable to replace placeholders in url template"));
+
+  base::RunLoop run_loop;
+  share_service_helper()->set_run_loop(&run_loop);
+
+  const GURL url(kUrlSpec);
+  share_service()->Share(kTitle, kText, url, callback);
+
+  run_loop.Run();
+
+  const std::vector<std::pair<base::string16, GURL>> kExpectedTargets{
+      make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlHigh))};
+  EXPECT_EQ(kExpectedTargets, share_service_helper()->GetTargetsInPicker());
+
+  // Pick example-high.com.
+  share_service_helper()->picker_callback().Run(
+      base::Optional<std::string>(kManifestUrlHigh));
+
+  EXPECT_TRUE(share_service_helper()->GetLastUsedTargetURL().empty());
+}
+
 // Test to check that only targets with enough engagement were in picker.
 TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlMin, kTargetName,
