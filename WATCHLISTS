@@ -108,6 +108,11 @@
     'arc_auth': {
       'filepath': 'chrome/browser/chromeos/arc/arc_auth'
     },
+    'arc_kiosk': {
+      'filepath': 'chrome/browser/chromeos/app_mode/arc/'\
+                  '|components/arc/kiosk/'\
+                  '|arc_kiosk'
+    },
     'arc_net': {
       'filepath': 'components/arc/net/',
     },
@@ -1529,6 +1534,7 @@
             'lhchavez+watch@chromium.org',
             'yusukes+watch@chromium.org'],
     'arc_auth': ['khmel+watch@chromium.org'],
+    'arc_kiosk': ['poromov+watch@chromium.org'],
     'arc_net': ['abhishekbh@chromium.org',
                 'cernekee@chromium.org',
                 'snanda@chromium.org'],
