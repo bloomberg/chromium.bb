@@ -15,8 +15,6 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
-// TODO(crbug.com/629427): Replace the temporary UI constants with correct
-// values for all device types.
 
 // Padding for buttons in the QR scanner UI.
 const CGFloat kButtonPadding = 16.0;
