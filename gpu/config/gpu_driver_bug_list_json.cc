@@ -1679,7 +1679,7 @@ LONG_STRING_CONST(
         "type": "macosx"
       },
       "vendor_id": "0x1002",
-      "device_id": ["0x68b8", "0x6720", "0x6741"],
+      "device_id": ["0x6720", "0x6740", "0x6741", "0x68b8"],
       "features": [
         "disable_multisampling_color_mask_usage"
       ]
