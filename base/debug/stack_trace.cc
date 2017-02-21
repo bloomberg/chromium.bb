@@ -111,14 +111,12 @@ bool IsStackFrameValid(uintptr_t fp, uintptr_t prev_fp, uintptr_t stack_end) {
   // Check alignment.
   if (fp & (sizeof(uintptr_t) - 1)) return false;
 
-  // A PC that is too small means we've gone off the end of the stack.
-  const uintptr_t kMinimumReasonablePC = 32768;
-  if (GetStackFramePC(fp) < kMinimumReasonablePC)
-    return false;
-
   if (stack_end) {
     // Both fp[0] and fp[1] must be within the stack.
     if (fp > stack_end - 2 * sizeof(uintptr_t)) return false;
+
+    // Additional check to filter out false positives.
+    if (GetStackFramePC(fp) < 32768) return false;
   }
 
   return true;
