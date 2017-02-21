@@ -1,9 +1,52 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body>
-<script src="script-tests/canvas-lineDash-invalid.js"></script>
+<script>
+
+var canvas = document.createElement('canvas');
+document.body.appendChild(canvas);
+canvas.setAttribute('width', '700');
+canvas.setAttribute('height', '700');
+var ctx = canvas.getContext('2d');
+var initialLineDash = [1.5, 2.5];
+var initialLineDashOffset = 1.5;
+
+function resetLineDash() {
+    ctx.setLineDash(initialLineDash);
+    ctx.lineDashOffset = initialLineDashOffset;
+}
+
+function trySettingLineDash(value) {
+    resetLineDash();
+    ctx.setLineDash(value);
+    return ctx.getLineDash();
+}
+
+function trySettingLineDashWithNoArgs() {
+    resetLineDash();
+    ctx.setLineDash();
+    return ctx.getLineDash();
+}
+
+function trySettingLineDashOffset(value) {
+    resetLineDash();
+    ctx.lineDashOffset = value;
+    return ctx.lineDashOffset;
+}
+
+test(function(t) {
+    assert_array_equals(trySettingLineDash([1, -1]), initialLineDash);
+    assert_array_equals(trySettingLineDash([1, Infinity]), initialLineDash);
+    assert_array_equals(trySettingLineDash([1, -Infinity]), initialLineDash);
+    assert_array_equals(trySettingLineDash([1, NaN]), initialLineDash);
+    assert_array_equals(trySettingLineDash([1, 'string']), initialLineDash);
+    assert_throws(null, function() {trySettingLineDashWithNoArgs();}, '"TypeError: Failed to execute \'setLineDash\' on \'CanvasRenderingContext2D\': 1 argument required, but only 0 present."');
+    
+    assert_array_equals(trySettingLineDashOffset(Infinity), initialLineDashOffset);
+    assert_array_equals(trySettingLineDashOffset(-Infinity), initialLineDashOffset);
+    assert_array_equals(trySettingLineDashOffset(NaN), initialLineDashOffset);
+    assert_array_equals(trySettingLineDashOffset('string'), initialLineDashOffset);
+    
+}, "Test for invalid input of setLineDash, getLineDash and lineDashOffset");
+</script>
 </body>
-</html>
