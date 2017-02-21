@@ -34,7 +34,8 @@ GvrDeviceProvider::~GvrDeviceProvider() {
 
 void GvrDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
   Initialize();
-  devices->push_back(vr_device_.get());
+  if (initialized_)
+    devices->push_back(vr_device_.get());
 }
 
 void GvrDeviceProvider::Initialize() {
