@@ -209,7 +209,8 @@ IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
 }
 
 // Verifies the cursor is not hidden at startup when user is logged in.
-IN_PROC_BROWSER_TEST_F(LoginUserTest, CursorShown) {
+// Test is flaky https://crbug.com/693106
+IN_PROC_BROWSER_TEST_F(LoginUserTest, DISABLED_CursorShown) {
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 
   TestSystemTrayIsVisible();
