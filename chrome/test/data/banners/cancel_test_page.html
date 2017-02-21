@@ -1,9 +1,13 @@
 <html>
   <head>
     <title>Web app banner test page</title>
-    <link rel="manifest" href="manifest.json" />
     <script src="main.js"></script>
     <script>
+      // If a "manifest=/path/to/manifest.json" query argument is provided to
+      // the URL accessing this page, that path is injected as the manifest tag.
+      // Otherwise, "manifest.json" is used as the manifest tag.
+      addManifestLinkTag();
+
       window.addEventListener('beforeinstallprompt', function(e) {
         console.log('Preventing banner from appearing');
         e.preventDefault();

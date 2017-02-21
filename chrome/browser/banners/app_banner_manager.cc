@@ -92,6 +92,8 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
 
   is_active_ = true;
   is_debug_mode_ = is_debug_mode;
+  was_canceled_by_page_ = false;
+  page_requested_prompt_ = false;
 
   // We only need to call ReportStatus if we aren't in debug mode (this avoids
   // skew from testing).
@@ -332,8 +334,6 @@ void AppBannerManager::Stop() {
   event_.reset();
 
   is_active_ = false;
-  was_canceled_by_page_ = false;
-  page_requested_prompt_ = false;
   need_to_log_status_ = false;
 }
 
