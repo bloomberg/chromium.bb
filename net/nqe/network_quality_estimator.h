@@ -772,6 +772,16 @@ class NET_EXPORT NetworkQualityEstimator
   // Manages the writing of events to the net log.
   nqe::internal::EventCreator event_creator_;
 
+  // Vector that contains observation sources that should not be used when
+  // computing the estimate at HTTP layer.
+  const std::vector<NetworkQualityObservationSource>
+      disallowed_observation_sources_for_http_;
+
+  // Vector that contains observation sources that should not be used when
+  // computing the estimate at transport layer.
+  const std::vector<NetworkQualityObservationSource>
+      disallowed_observation_sources_for_transport_;
+
   base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkQualityEstimator);
