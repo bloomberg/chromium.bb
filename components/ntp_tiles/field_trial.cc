@@ -43,17 +43,20 @@ void SetUpFirstLaunchFieldTrial(bool is_stable_channel) {
   if (base::FieldTrialList::TrialExists(kPopularSitesFieldTrialName))
     return;
 
-  // Stable channels will run with 10% probability.
-  // Non-stable channels will run with 50% probability.
-  const base::FieldTrial::Probability kTotalProbability = 100;
-  const base::FieldTrial::Probability kEnabledAndControlProbability =
-      is_stable_channel ? 10 : 50;
+  // The experiment is only for stable channel, the other channels will simply
+  // get the default behavior.
+  if (!is_stable_channel)
+    return;
 
-  // Experiment enabled until March 15, 2017. By default, disabled.
+  // Stable channels will run with 10% probability.
+  const base::FieldTrial::Probability kTotalProbability = 100;
+  const base::FieldTrial::Probability kEnabledAndControlProbability = 10;
+
+  // Experiment enabled until April 26, 2017.
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           kPopularSitesFieldTrialName, kTotalProbability,
-          kPopularSiteDefaultGroup, 2017, 3, 15,  // Mar 15, 2017
+          kPopularSiteDefaultGroup, 2017, 4, 26,  // Apr 26, 2017
           base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -94,6 +97,13 @@ bool ShouldShowPopularSites() {
           base::android::AttachCurrentThread())) {
     return true;
   }
+#endif
+
+#if defined(OS_IOS)
+  // On iOS, if not enrolled in the experiment, the default is to enable the
+  // feature.
+  if (group_name.empty() || (group_name == kPopularSiteDefaultGroup))
+    return true;
 #endif
 
   return base::StartsWith(group_name, "Enabled",
