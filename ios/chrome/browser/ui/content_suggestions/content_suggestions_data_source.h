@@ -7,6 +7,7 @@
 
 @class ContentSuggestion;
 @protocol ContentSuggestionsDataSink;
+@protocol ContentSuggestionsImageFetcher;
 
 // DataSource for the content suggestions. Provides the suggestions data in a
 // format compatible with Objective-C.
@@ -18,6 +19,9 @@
 // Returns all the data currently available. Returns an empty array if nothing
 // is available.
 - (NSArray<ContentSuggestion*>*)allSuggestions;
+
+// Returns an image updater for the suggestions provided by this data source.
+- (id<ContentSuggestionsImageFetcher>)imageFetcher;
 
 @end
 

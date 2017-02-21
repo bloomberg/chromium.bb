@@ -14,6 +14,16 @@ namespace base {
 class Time;
 }
 
+@class ContentSuggestionsArticleItem;
+
+// Delegate for a ContentSuggestionsArticleItem.
+@protocol ContentSuggestionsArticleItemDelegate
+
+// Loads the image associated with this item.
+- (void)loadImageForArticleItem:(ContentSuggestionsArticleItem*)articleItem;
+
+@end
+
 // Item for an article in the suggestions.
 @interface ContentSuggestionsArticleItem
     : CollectionViewItem<ContentSuggestionIdentification>
@@ -23,7 +33,7 @@ class Time;
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title
                     subtitle:(NSString*)subtitle
-                       image:(UIImage*)image
+                    delegate:(id<ContentSuggestionsArticleItemDelegate>)delegate
                          url:(const GURL&)url NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
@@ -33,6 +43,9 @@ class Time;
 @property(nonatomic, readonly, assign) GURL articleURL;
 @property(nonatomic, copy) NSString* publisher;
 @property(nonatomic, assign) base::Time publishDate;
+
+// Whether the image is being fetched. This property is set by the delegate.
+@property(nonatomic, assign) BOOL imageBeingFetched;
 
 @end
 

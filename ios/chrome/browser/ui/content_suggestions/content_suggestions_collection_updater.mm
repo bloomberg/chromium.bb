@@ -16,10 +16,12 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_expandable_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_text_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -76,7 +78,9 @@ SectionIdentifier SectionIdentifierForInfo(
 
 }  // namespace
 
-@interface ContentSuggestionsCollectionUpdater ()<ContentSuggestionsDataSink>
+@interface ContentSuggestionsCollectionUpdater ()<
+    ContentSuggestionsArticleItemDelegate,
+    ContentSuggestionsDataSink>
 
 @property(nonatomic, weak) id<ContentSuggestionsDataSource> dataSource;
 @property(nonatomic, strong)
@@ -140,6 +144,35 @@ SectionIdentifier SectionIdentifierForInfo(
   return ContentSuggestionTypeForItemType(item.type);
 }
 
+#pragma mark - ContentSuggestionsArticleItemDelegate
+
+- (void)loadImageForArticleItem:(ContentSuggestionsArticleItem*)articleItem {
+  NSInteger sectionIdentifier =
+      SectionIdentifierForInfo(articleItem.suggestionIdentifier.sectionInfo);
+
+  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
+  __weak ContentSuggestionsArticleItem* weakArticle = articleItem;
+  void (^imageFetchedCallback)(const gfx::Image&) = ^(const gfx::Image& image) {
+    ContentSuggestionsCollectionUpdater* strongSelf = weakSelf;
+    ContentSuggestionsArticleItem* strongArticle = weakArticle;
+    if (!strongSelf || !strongArticle) {
+      return;
+    }
+
+    strongArticle.imageBeingFetched = NO;
+    strongArticle.image = image.CopyUIImage();
+    [strongSelf.collectionViewController
+        reconfigureCellsForItems:@[ strongArticle ]
+         inSectionWithIdentifier:sectionIdentifier];
+  };
+
+  articleItem.imageBeingFetched = YES;
+
+  [self.dataSource.imageFetcher
+      fetchImageForSuggestion:articleItem.suggestionIdentifier
+                     callback:imageFetchedCallback];
+}
+
 #pragma mark - Private methods
 
 - (void)reloadData {
@@ -157,7 +190,7 @@ SectionIdentifier SectionIdentifierForInfo(
             initWithType:ItemTypeForContentSuggestionType(suggestion.type)
                    title:suggestion.title
                 subtitle:suggestion.text
-                   image:suggestion.image
+                delegate:self
                      url:suggestion.url];
 
     articleItem.publisher = suggestion.publisher;

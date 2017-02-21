@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_section_information.h"
 #include "ui/gfx/image/image.h"
 
@@ -88,9 +89,18 @@ ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
   return sectionInfo;
 }
 
+// Returns a ntp_snippets::ID based on a Objective-C Category and the ID in the
+// category.
+ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
+    ContentSuggestionsCategoryWrapper* category,
+    const std::string& id_in_category) {
+  return ntp_snippets::ContentSuggestion::ID(category.category, id_in_category);
+}
+
 }  // namespace
 
-@interface ContentSuggestionsMediator ()<ContentSuggestionsServiceObserver> {
+@interface ContentSuggestionsMediator ()<ContentSuggestionsImageFetcher,
+                                         ContentSuggestionsServiceObserver> {
   // Bridge for this class to become an observer of a ContentSuggestionsService.
   std::unique_ptr<ContentSuggestionsServiceBridge> _suggestionBridge;
 }
@@ -110,6 +120,10 @@ ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
 // Adds the section information for |category| in
 // self.sectionInformationByCategory.
 - (void)addSectionInformationForCategory:(ntp_snippets::Category)category;
+
+// Returns a CategoryWrapper acting as a key for this section info.
+- (ContentSuggestionsCategoryWrapper*)categoryWrapperForSectionInfo:
+    (ContentSuggestionsSectionInformation*)sectionInfo;
 
 @end
 
@@ -151,6 +165,10 @@ ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
   return dataHolders;
 }
 
+- (id<ContentSuggestionsImageFetcher>)imageFetcher {
+  return self;
+}
+
 #pragma mark - ContentSuggestionsServiceObserver
 
 - (void)contentSuggestionsService:
@@ -183,6 +201,18 @@ ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
   // Update dataSink.
 }
 
+#pragma mark - ContentSuggestionsImageFetcher
+
+- (void)fetchImageForSuggestion:
+            (ContentSuggestionIdentifier*)suggestionIdentifier
+                       callback:(void (^)(const gfx::Image&))callback {
+  self.contentService->FetchSuggestionImage(
+      SuggestionIDForSectionID(
+          [self categoryWrapperForSectionInfo:suggestionIdentifier.sectionInfo],
+          suggestionIdentifier.IDInSection),
+      base::BindBlockArc(callback));
+}
+
 #pragma mark - Private
 
 - (void)addContentInCategory:(ntp_snippets::Category&)category
@@ -197,8 +227,6 @@ ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
     suggestion.suggestionIdentifier.sectionInfo =
         self.sectionInformationByCategory[categoryWrapper];
 
-    // TODO(crbug.com/686728): fetch the image.
-
     [contentArray addObject:suggestion];
   }
 }
@@ -212,6 +240,12 @@ ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
 
   self.sectionInformationByCategory[[ContentSuggestionsCategoryWrapper
       wrapperWithCategory:category]] = sectionInfo;
+}
+
+- (ContentSuggestionsCategoryWrapper*)categoryWrapperForSectionInfo:
+    (ContentSuggestionsSectionInformation*)sectionInfo {
+  return [[self.sectionInformationByCategory allKeysForObject:sectionInfo]
+      firstObject];
 }
 
 @end

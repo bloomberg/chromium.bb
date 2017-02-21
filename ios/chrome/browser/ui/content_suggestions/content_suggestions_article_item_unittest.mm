@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/gtest_support.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,26 +15,93 @@
 
 namespace {
 
-// Tests that configureCell: set all the fields of the cell.
-TEST(ContentSuggestionsArticleItemTest, CellIsConfigured) {
+// Tests that configureCell: set all the fields of the cell except the image and
+// fetches the image through the delegate.
+TEST(ContentSuggestionsArticleItemTest, CellIsConfiguredWithoutImage) {
+  // Setup.
   NSString* title = @"testTitle";
   NSString* subtitle = @"testSubtitle";
-  UIImage* image = [[UIImage alloc] init];
   GURL url = GURL("http://chromium.org");
+  id delegateMock =
+      OCMProtocolMock(@protocol(ContentSuggestionsArticleItemDelegate));
   ContentSuggestionsArticleItem* item =
       [[ContentSuggestionsArticleItem alloc] initWithType:0
                                                     title:title
                                                  subtitle:subtitle
-                                                    image:image
+                                                 delegate:delegateMock
                                                       url:url];
+  OCMExpect([delegateMock loadImageForArticleItem:item]);
   ContentSuggestionsArticleCell* cell = [[[item cellClass] alloc] init];
-  EXPECT_EQ([ContentSuggestionsArticleCell class], [cell class]);
-  EXPECT_EQ(url, item.articleURL);
+  ASSERT_EQ([ContentSuggestionsArticleCell class], [cell class]);
+  ASSERT_EQ(url, item.articleURL);
+  ASSERT_EQ(nil, item.image);
 
+  // Action.
   [item configureCell:cell];
+
+  // Tests.
+  EXPECT_EQ(nil, cell.imageView.image);
+  EXPECT_EQ(title, cell.titleLabel.text);
+  EXPECT_EQ(subtitle, cell.subtitleLabel.text);
+  EXPECT_OCMOCK_VERIFY(delegateMock);
+}
+
+// Tests that configureCell: set all the fields of the cell with an image and
+// does not call the delegate.
+TEST(ContentSuggestionsArticleItemTest, CellIsConfiguredWithImage) {
+  // Setup.
+  NSString* title = @"testTitle";
+  NSString* subtitle = @"testSubtitle";
+  UIImage* image = [[UIImage alloc] init];
+  GURL url = GURL("http://chromium.org");
+  id delegateMock =
+      OCMStrictProtocolMock(@protocol(ContentSuggestionsArticleItemDelegate));
+  ContentSuggestionsArticleItem* item =
+      [[ContentSuggestionsArticleItem alloc] initWithType:0
+                                                    title:title
+                                                 subtitle:subtitle
+                                                 delegate:delegateMock
+                                                      url:url];
+  item.image = image;
+  ContentSuggestionsArticleCell* cell = [[[item cellClass] alloc] init];
+
+  // Action.
+  [item configureCell:cell];
+
+  // Tests.
+  EXPECT_EQ(image, cell.imageView.image);
   EXPECT_EQ(title, cell.titleLabel.text);
   EXPECT_EQ(subtitle, cell.subtitleLabel.text);
   EXPECT_EQ(image, cell.imageView.image);
+}
+
+// Tests that configureCell: does not call the delegate is |imageBeingFetched|
+// is YES even if there is no image.
+TEST(ContentSuggestionsArticleItemTest, DontFetchImageIsImageIsBeingFetched) {
+  // Setup.
+  NSString* title = @"testTitle";
+  NSString* subtitle = @"testSubtitle";
+  GURL url = GURL("http://chromium.org");
+  id delegateMock =
+      OCMStrictProtocolMock(@protocol(ContentSuggestionsArticleItemDelegate));
+  ContentSuggestionsArticleItem* item =
+      [[ContentSuggestionsArticleItem alloc] initWithType:0
+                                                    title:title
+                                                 subtitle:subtitle
+                                                 delegate:delegateMock
+                                                      url:url];
+  item.imageBeingFetched = YES;
+  ContentSuggestionsArticleCell* cell = [[[item cellClass] alloc] init];
+  ASSERT_EQ(nil, item.image);
+
+  // Action.
+  [item configureCell:cell];
+
+  // Tests.
+  EXPECT_EQ(nil, cell.imageView.image);
+  EXPECT_EQ(title, cell.titleLabel.text);
+  EXPECT_EQ(subtitle, cell.subtitleLabel.text);
+  EXPECT_OCMOCK_VERIFY(delegateMock);
 }
 
 }  // namespace

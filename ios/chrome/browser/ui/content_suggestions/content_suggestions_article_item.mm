@@ -19,6 +19,7 @@ const CGFloat kStandardSpacing = 8;
 @interface ContentSuggestionsArticleItem ()
 
 @property(nonatomic, copy) NSString* subtitle;
+@property(nonatomic, weak) id<ContentSuggestionsArticleItemDelegate> delegate;
 
 @end
 
@@ -33,25 +34,30 @@ const CGFloat kStandardSpacing = 8;
 @synthesize publisher = _publisher;
 @synthesize publishDate = _publishDate;
 @synthesize suggestionIdentifier = _suggestionIdentifier;
+@synthesize delegate = _delegate;
+@synthesize imageBeingFetched = _imageBeingFetched;
 
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title
                     subtitle:(NSString*)subtitle
-                       image:(UIImage*)image
+                    delegate:(id<ContentSuggestionsArticleItemDelegate>)delegate
                          url:(const GURL&)url {
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [ContentSuggestionsArticleCell class];
     _title = [title copy];
     _subtitle = [subtitle copy];
-    _image = image;
     _articleURL = url;
+    _delegate = delegate;
   }
   return self;
 }
 
 - (void)configureCell:(ContentSuggestionsArticleCell*)cell {
   [super configureCell:cell];
+  if (!self.image && !self.imageBeingFetched) {
+    [self.delegate loadImageForArticleItem:self];
+  }
   cell.titleLabel.text = _title;
   cell.subtitleLabel.text = _subtitle;
   cell.imageView.image = _image;
