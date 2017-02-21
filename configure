@@ -487,6 +487,7 @@ post_process_cmdline() {
     ! enabled ans && soft_enable daala_ec
 
     # Fix up experiment dependencies
+    enabled pvq && enable_feature ec_adapt
     enabled ec_adapt && enable_feature ec_multisymbol
     enabled new_tokenset && enable_feature ec_multisymbol
     enabled ec_multisymbol && ! enabled ans && soft_enable daala_ec
