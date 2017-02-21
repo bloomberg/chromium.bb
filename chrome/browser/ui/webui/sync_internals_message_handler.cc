@@ -155,7 +155,7 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(
     const base::ListValue* args) {
   DCHECK_EQ(1U, args->GetSize());
   int request_id = 0;
-  bool success = args->GetInteger(0, &request_id);
+  bool success = ExtractIntegerValue(args, &request_id);
   DCHECK(success);
 
   ProfileSyncService* service = GetProfileSyncService();
