@@ -439,8 +439,7 @@ public class NewTabPageView
                 assert mPendingSnapScroll;
                 mPendingSnapScroll = false;
 
-                mRecyclerView.snapScroll(mSearchBoxView,
-                        mRecyclerView.computeVerticalScrollOffset(), getHeight());
+                mRecyclerView.snapScroll(mSearchBoxView, getHeight());
             }
         };
 
@@ -765,8 +764,7 @@ public class NewTabPageView
         mRecyclerView.updatePeekingCardAndHeader();
         // The positioning of elements may have been changed (since the elements expand to fill
         // the available vertical space), so adjust the scroll.
-        mRecyclerView.snapScroll(mSearchBoxView,
-                mRecyclerView.computeVerticalScrollOffset(), getHeight());
+        mRecyclerView.snapScroll(mSearchBoxView, getHeight());
     }
 
     /**

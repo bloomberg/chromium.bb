@@ -28,6 +28,7 @@ import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.R.string;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchDisableableView;
@@ -439,79 +440,97 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     }
 
     /**
-     * If the RecyclerView is currently scrolled to between regionStart and regionEnd, smooth scroll
-     * out of the region. flipPoint is the threshold used to decide which bound of the region to
-     * scroll to. It returns whether the view was scrolled.
+     * Calculates the position to scroll to in order to move out of a region where the RecyclerView
+     * should not stay at rest.
+     * @param currentScroll the current scroll position.
+     * @param regionStart the beginning of the region to scroll out of.
+     * @param regionEnd the end of the region to scroll out of.
+     * @param flipPoint the threshold used to decide which bound of the region to scroll to.
+     * @return the position to scroll to.
      */
-    private boolean scrollOutOfRegion(int regionStart, int flipPoint, int regionEnd) {
-        final int currentScroll = computeVerticalScrollOffset();
+    private static int calculateSnapPositionForRegion(
+            int currentScroll, int regionStart, int regionEnd, int flipPoint) {
+        assert regionStart <= flipPoint;
+        assert flipPoint <= regionEnd;
 
-        if (currentScroll < regionStart || currentScroll > regionEnd) return false;
+        if (currentScroll < regionStart || currentScroll > regionEnd) return currentScroll;
 
         if (currentScroll < flipPoint) {
-            smoothScrollBy(0, regionStart - currentScroll);
+            return regionStart;
         } else {
-            smoothScrollBy(0, regionEnd - currentScroll);
+            return regionEnd;
         }
-        return true;
     }
 
     /**
      * If the RecyclerView is currently scrolled to between regionStart and regionEnd, smooth scroll
      * out of the region to the nearest edge.
      */
-    private boolean scrollOutOfRegion(int regionStart, int regionEnd) {
-        return scrollOutOfRegion(regionStart, (regionStart + regionEnd) / 2, regionEnd);
+    private static int calculateSnapPositionForRegion(
+            int currentScroll, int regionStart, int regionEnd) {
+        return calculateSnapPositionForRegion(
+                currentScroll, regionStart, regionEnd, (regionStart + regionEnd) / 2);
     }
 
     /**
      * Snaps the scroll point of the RecyclerView to prevent the user from scrolling to midway
      * through a transition and to allow peeking card behaviour.
      */
-    public void snapScroll(View fakeBox, int parentScrollY, int parentHeight) {
+    public void snapScroll(View fakeBox, int parentHeight) {
+        int initialScroll = computeVerticalScrollOffset();
+
+        int scrollTo = calculateSnapPosition(initialScroll, fakeBox, parentHeight);
+
+        // Calculating the snap position should be idempotent.
+        assert scrollTo == calculateSnapPosition(scrollTo, fakeBox, parentHeight);
+
+        smoothScrollBy(0, scrollTo - initialScroll);
+    }
+
+    @VisibleForTesting
+    int calculateSnapPosition(int scrollPosition, View fakeBox, int parentHeight) {
+        // Snap scroll to prevent only part of the toolbar from showing.
+        int scrollTo = calculateSnapPositionForRegion(scrollPosition, 0, mToolbarHeight);
+
         // Snap scroll to prevent resting in the middle of the omnibox transition.
         int fakeBoxUpperBound = fakeBox.getTop() + fakeBox.getPaddingTop();
-        if (scrollOutOfRegion(fakeBoxUpperBound - mSearchBoxTransitionLength, fakeBoxUpperBound)) {
-            // The snap scrolling regions should never overlap.
-            return;
-        }
-
-        // Snap scroll to prevent only part of the toolbar from showing.
-        if (scrollOutOfRegion(0, mToolbarHeight)) return;
+        scrollTo = calculateSnapPositionForRegion(
+                scrollTo, fakeBoxUpperBound - mSearchBoxTransitionLength, fakeBoxUpperBound);
 
         // Snap scroll to prevent resting in the middle of the peeking card transition
         // and to allow the peeking card to peek a bit before snapping back.
         CardViewHolder peekingCardViewHolder = findFirstCard();
-        if (peekingCardViewHolder != null && isFirstItemVisible()) {
-            if (!mHasSpaceForPeekingCard) return;
+        if (peekingCardViewHolder == null) return scrollTo;
 
-            ViewHolder firstHeaderViewHolder = findFirstHeader();
-            // It is possible to have a card but no header, for example the sign in promo.
-            // That one does not peek.
-            if (firstHeaderViewHolder == null) return;
+        if (!isFirstItemVisible() || !shouldPeekFirstCard()) return scrollTo;
 
-            View peekingCardView = peekingCardViewHolder.itemView;
-            View headerView = firstHeaderViewHolder.itemView;
+        ViewHolder firstHeaderViewHolder = findFirstHeader();
 
-            // |A + B - C| gives the offset of the peeking card relative to the RecyclerView,
-            // so scrolling to this point would put the peeking card at the top of the
-            // screen. Remove the |headerView| height which gets dynamically increased with
-            // scrolling.
-            // |A + B - C - D| will scroll us so that the peeking card is just off the bottom
-            // of the screen.
-            // Finally, we get |A + B - C - D + E| because the transition starts from the
-            // peeking card's resting point, which is |E| from the bottom of the screen.
-            int start = peekingCardView.getTop()  // A.
-                    + parentScrollY // B.
-                    - headerView.getHeight()  // C.
-                    - parentHeight  // D.
-                    + mPeekingHeight;  // E.
+        // It is possible to have a card but no header, for example the sign in promo.
+        // That one does not peek.
+        if (firstHeaderViewHolder == null) return scrollTo;
 
-            // The height of the region in which the the peeking card will snap.
-            int snapScrollHeight = mPeekingHeight + headerView.getHeight();
+        View peekingCardView = peekingCardViewHolder.itemView;
+        View headerView = firstHeaderViewHolder.itemView;
 
-            scrollOutOfRegion(start, start + snapScrollHeight, start + snapScrollHeight);
-        }
+        // |A + B - C| gives the offset of the peeking card relative to the RecyclerView,
+        // so scrolling to this point would put the peeking card at the top of the screen.
+        // Remove the |headerView| height which gets dynamically increased with scrolling.
+        // |A + B - C - D| will scroll us so that the peeking card is just off the bottom
+        // of the screen.
+        // Finally, we get |A + B - C - D + E| because the transition starts from the
+        // peeking card's resting point, which is |E| from the bottom of the screen.
+        int start = peekingCardView.getTop() // A.
+                + scrollTo // B.
+                - headerView.getHeight() // C.
+                - parentHeight // D.
+                + mPeekingHeight; // E.
+
+        // The height of the region in which the the peeking card will snap.
+        int snapScrollHeight = mPeekingHeight + headerView.getHeight();
+
+        return calculateSnapPositionForRegion(
+                scrollTo, start, start + snapScrollHeight, start + snapScrollHeight);
     }
 
     @Override
