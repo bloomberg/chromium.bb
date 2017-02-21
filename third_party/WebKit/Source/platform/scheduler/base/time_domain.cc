@@ -36,6 +36,7 @@ void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                                      base::TimeTicks now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(queue->GetTimeDomain(), this);
+  DCHECK(queue->IsQueueEnabled());
   // We only want to store a single wakeup per queue, so we need to remove any
   // previously registered wake up for |queue|.
   if (queue->heap_handle().IsValid()) {
@@ -52,10 +53,8 @@ void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
   queue->set_scheduled_time_domain_wakeup(delayed_run_time);
 
   // If |queue| is the first wakeup then request the wakeup.
-  if (delayed_wakeup_queue_.min().queue == queue) {
-    base::TimeDelta delay = std::max(base::TimeDelta(), delayed_run_time - now);
-    RequestWakeup(now, delay);
-  }
+  if (delayed_wakeup_queue_.min().queue == queue)
+    RequestWakeupAt(now, delayed_run_time);
 
   if (observer_)
     observer_->OnTimeDomainHasDelayedWork(queue);
@@ -75,9 +74,18 @@ void TimeDomain::CancelDelayedWork(internal::TaskQueueImpl* queue) {
     return;
 
   DCHECK_NE(queue->scheduled_time_domain_wakeup(), base::TimeTicks());
+  DCHECK(!delayed_wakeup_queue_.empty());
+  base::TimeTicks prev_first_wakeup = delayed_wakeup_queue_.min().time;
 
   // O(log n)
   delayed_wakeup_queue_.erase(queue->heap_handle());
+
+  if (delayed_wakeup_queue_.empty()) {
+    CancelWakeupAt(prev_first_wakeup);
+  } else if (prev_first_wakeup != delayed_wakeup_queue_.min().time) {
+    CancelWakeupAt(prev_first_wakeup);
+    RequestWakeupAt(Now(), delayed_wakeup_queue_.min().time);
+  }
 }
 
 void TimeDomain::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
