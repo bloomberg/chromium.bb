@@ -406,9 +406,9 @@ CreateWinMemoryPressureMonitor(const base::CommandLine& parsed_command_line) {
 
 enum WorkerPoolType : size_t {
   BACKGROUND = 0,
-  BACKGROUND_FILE_IO,
+  BACKGROUND_BLOCKING,
   FOREGROUND,
-  FOREGROUND_FILE_IO,
+  FOREGROUND_BLOCKING,
   WORKER_POOL_COUNT  // Always last.
 };
 
@@ -424,26 +424,28 @@ GetDefaultSchedulerWorkerPoolParams() {
        base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
        base::TimeDelta::FromSeconds(30));
   params_vector.emplace_back(
-      "BackgroundFileIO", ThreadPriority::BACKGROUND, StandbyThreadPolicy::ONE,
-       base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
-       base::TimeDelta::FromSeconds(30));
+      "BackgroundBlocking", ThreadPriority::BACKGROUND,
+      StandbyThreadPolicy::ONE,
+      base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
+      base::TimeDelta::FromSeconds(30));
   params_vector.emplace_back(
       "Foreground", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
        base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
        base::TimeDelta::FromSeconds(30));
   params_vector.emplace_back(
-      "ForegroundFileIO", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
-       base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
-       base::TimeDelta::FromSeconds(30));
+      "ForegroundBlocking", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
+      base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
+      base::TimeDelta::FromSeconds(30));
 #else
   params_vector.emplace_back(
       "Background", ThreadPriority::BACKGROUND, StandbyThreadPolicy::ONE,
        base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
        base::TimeDelta::FromSeconds(30));
   params_vector.emplace_back(
-      "BackgroundFileIO", ThreadPriority::BACKGROUND, StandbyThreadPolicy::ONE,
-       base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
-       base::TimeDelta::FromSeconds(30));
+      "BackgroundBlocking", ThreadPriority::BACKGROUND,
+      StandbyThreadPolicy::ONE,
+      base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
+      base::TimeDelta::FromSeconds(30));
   params_vector.emplace_back(
       "Foreground", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
        base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
@@ -452,7 +454,7 @@ GetDefaultSchedulerWorkerPoolParams() {
   // to this pool. Since COM STA is initialized in these environments, it must
   // also be initialized in this pool.
   params_vector.emplace_back(
-      "ForegroundFileIO", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
+      "ForegroundBlocking", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
       base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
       base::TimeDelta::FromSeconds(30),
       base::SchedulerBackwardCompatibility::INIT_COM_STA);
@@ -462,13 +464,13 @@ GetDefaultSchedulerWorkerPoolParams() {
 }
 
 // Returns the worker pool index for |traits| defaulting to FOREGROUND or
-// FOREGROUND_FILE_IO on any other priorities based off of worker pools defined
+// FOREGROUND_BLOCKING on any other priorities based off of worker pools defined
 // in GetDefaultSchedulerWorkerPoolParams().
 size_t DefaultBrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
   const bool is_background =
       traits.priority() == base::TaskPriority::BACKGROUND;
   if (traits.may_block() || traits.with_base_sync_primitives())
-    return is_background ? BACKGROUND_FILE_IO : FOREGROUND_FILE_IO;
+    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
 
   return is_background ? BACKGROUND : FOREGROUND;
 }

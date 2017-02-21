@@ -45,9 +45,9 @@ namespace {
 
 enum WorkerPoolType : size_t {
   BACKGROUND = 0,
-  BACKGROUND_FILE_IO,
+  BACKGROUND_BLOCKING,
   FOREGROUND,
-  FOREGROUND_FILE_IO,
+  FOREGROUND_BLOCKING,
   WORKER_POOL_COUNT  // Always last.
 };
 
@@ -88,9 +88,9 @@ GetDefaultSchedulerWorkerPoolParams() {
       base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
   using ThreadPriority = base::ThreadPriority;
   constexpr int kMaxNumThreadsInBackgroundPool = 1;
-  constexpr int kMaxNumThreadsInBackgroundFileIOPool = 1;
+  constexpr int kMaxNumThreadsInBackgroundBlockingPool = 1;
   constexpr int kMaxNumThreadsInForegroundPoolLowerBound = 2;
-  constexpr int kMaxNumThreadsInForegroundFileIOPool = 1;
+  constexpr int kMaxNumThreadsInForegroundBlockingPool = 1;
   constexpr auto kSuggestedReclaimTime = base::TimeDelta::FromSeconds(30);
 
   std::vector<base::SchedulerWorkerPoolParams> params_vector;
@@ -99,30 +99,30 @@ GetDefaultSchedulerWorkerPoolParams() {
                              kMaxNumThreadsInBackgroundPool,
                              kSuggestedReclaimTime);
   params_vector.emplace_back(
-      "RendererBackgroundFileIO", ThreadPriority::BACKGROUND,
-      StandbyThreadPolicy::LAZY, kMaxNumThreadsInBackgroundFileIOPool,
+      "RendererBackgroundBlocking", ThreadPriority::BACKGROUND,
+      StandbyThreadPolicy::LAZY, kMaxNumThreadsInBackgroundBlockingPool,
       kSuggestedReclaimTime);
   params_vector.emplace_back("RendererForeground", ThreadPriority::NORMAL,
                              StandbyThreadPolicy::LAZY,
                              std::max(kMaxNumThreadsInForegroundPoolLowerBound,
                                       base::SysInfo::NumberOfProcessors()),
                              kSuggestedReclaimTime);
-  params_vector.emplace_back("RendererForegroundFileIO", ThreadPriority::NORMAL,
-                             StandbyThreadPolicy::LAZY,
-                             kMaxNumThreadsInForegroundFileIOPool,
+  params_vector.emplace_back("RendererForegroundBlocking",
+                             ThreadPriority::NORMAL, StandbyThreadPolicy::LAZY,
+                             kMaxNumThreadsInForegroundBlockingPool,
                              kSuggestedReclaimTime);
   DCHECK_EQ(WORKER_POOL_COUNT, params_vector.size());
   return params_vector;
 }
 
 // Returns the worker pool index for |traits| defaulting to FOREGROUND or
-// FOREGROUND_FILE_IO on any other priorities based off of worker pools defined
+// FOREGROUND_BLOCKING on any other priorities based off of worker pools defined
 // in GetDefaultSchedulerWorkerPoolParams().
 size_t DefaultRendererWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
   const bool is_background =
       traits.priority() == base::TaskPriority::BACKGROUND;
   if (traits.may_block() || traits.with_base_sync_primitives())
-    return is_background ? BACKGROUND_FILE_IO : FOREGROUND_FILE_IO;
+    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
 
   return is_background ? BACKGROUND : FOREGROUND;
 }

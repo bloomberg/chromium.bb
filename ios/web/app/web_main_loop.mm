@@ -40,9 +40,9 @@ namespace {
 
 enum WorkerPoolType : size_t {
   BACKGROUND = 0,
-  BACKGROUND_FILE_IO,
+  BACKGROUND_BLOCKING,
   FOREGROUND,
-  FOREGROUND_FILE_IO,
+  FOREGROUND_BLOCKING,
   WORKER_POOL_COUNT  // Always last.
 };
 
@@ -57,7 +57,8 @@ GetDefaultSchedulerWorkerPoolParams() {
       base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
       base::TimeDelta::FromSeconds(30));
   params_vector.emplace_back(
-      "BackgroundFileIO", ThreadPriority::BACKGROUND, StandbyThreadPolicy::ONE,
+      "BackgroundBlocking", ThreadPriority::BACKGROUND,
+      StandbyThreadPolicy::ONE,
       base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
       base::TimeDelta::FromSeconds(30));
   params_vector.emplace_back(
@@ -65,21 +66,21 @@ GetDefaultSchedulerWorkerPoolParams() {
       base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
       base::TimeDelta::FromSeconds(30));
   params_vector.emplace_back(
-      "ForegroundFileIO", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
-      base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
+      "ForegroundBlocking", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
+      base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
       base::TimeDelta::FromSeconds(30));
   DCHECK_EQ(WORKER_POOL_COUNT, params_vector.size());
   return params_vector;
 }
 
 // Returns the worker pool index for |traits| defaulting to FOREGROUND or
-// FOREGROUND_FILE_IO on any other priorities based off of worker pools defined
+// FOREGROUND_BLOCKING on any other priorities based off of worker pools defined
 // in GetDefaultSchedulerWorkerPoolParams().
 size_t DefaultBrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
   const bool is_background =
       traits.priority() == base::TaskPriority::BACKGROUND;
   if (traits.may_block() || traits.with_base_sync_primitives())
-    return is_background ? BACKGROUND_FILE_IO : FOREGROUND_FILE_IO;
+    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
 
   return is_background ? BACKGROUND : FOREGROUND;
 }

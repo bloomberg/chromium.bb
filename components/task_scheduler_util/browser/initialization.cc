@@ -25,9 +25,9 @@ constexpr char kFieldTrialName[] = "BrowserScheduler";
 
 enum WorkerPoolType : size_t {
   BACKGROUND = 0,
-  BACKGROUND_FILE_IO,
+  BACKGROUND_BLOCKING,
   FOREGROUND,
-  FOREGROUND_FILE_IO,
+  FOREGROUND_BLOCKING,
   WORKER_POOL_COUNT  // Always last.
 };
 
@@ -45,8 +45,8 @@ GetBrowserWorkerPoolParamsFromVariations() {
   DCHECK_EQ(BACKGROUND, immutable_worker_pool_params.size());
   immutable_worker_pool_params.emplace_back("Background",
                                             ThreadPriority::BACKGROUND);
-  DCHECK_EQ(BACKGROUND_FILE_IO, immutable_worker_pool_params.size());
-  immutable_worker_pool_params.emplace_back("BackgroundFileIO",
+  DCHECK_EQ(BACKGROUND_BLOCKING, immutable_worker_pool_params.size());
+  immutable_worker_pool_params.emplace_back("BackgroundBlocking",
                                             ThreadPriority::BACKGROUND);
   DCHECK_EQ(FOREGROUND, immutable_worker_pool_params.size());
   immutable_worker_pool_params.emplace_back("Foreground",
@@ -54,9 +54,9 @@ GetBrowserWorkerPoolParamsFromVariations() {
   // Tasks posted to SequencedWorkerPool or BrowserThreadImpl may be redirected
   // to this pool. Since COM STA is initialized in these environments, it must
   // also be initialized in this pool.
-  DCHECK_EQ(FOREGROUND_FILE_IO, immutable_worker_pool_params.size());
+  DCHECK_EQ(FOREGROUND_BLOCKING, immutable_worker_pool_params.size());
   immutable_worker_pool_params.emplace_back(
-      "ForegroundFileIO", ThreadPriority::NORMAL,
+      "ForegroundBlocking", ThreadPriority::NORMAL,
       base::SchedulerBackwardCompatibility::INIT_COM_STA);
 
   return GetWorkerPoolParams(immutable_worker_pool_params, variation_params);
@@ -66,7 +66,7 @@ size_t BrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
   const bool is_background =
       traits.priority() == base::TaskPriority::BACKGROUND;
   if (traits.may_block() || traits.with_base_sync_primitives())
-    return is_background ? BACKGROUND_FILE_IO : FOREGROUND_FILE_IO;
+    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
   return is_background ? BACKGROUND : FOREGROUND;
 }
 
