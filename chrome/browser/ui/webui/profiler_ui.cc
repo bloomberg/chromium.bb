@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/debug/debugging_flags.h"
+#include "base/debug/thread_heap_usage_tracker.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
@@ -107,8 +108,9 @@ content::WebUIDataSource* CreateProfilerHTMLSource() {
   source->AddResourcePath("profiler.js", IDR_PROFILER_JS);
   source->SetDefaultResource(IDR_PROFILER_HTML);
   source->UseGzip(std::unordered_set<std::string>());
-  source->AddBoolean("enableMemoryTaskProfiler",
-                     BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER));
+  source->AddBoolean(
+      "enableMemoryTaskProfiler",
+      base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled());
 
   return source;
 }
