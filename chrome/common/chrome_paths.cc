@@ -146,18 +146,11 @@ bool PathProvider(int key, base::FilePath* result) {
 #else
       // Debug builds write next to the binary (in the build tree)
 #if defined(OS_MACOSX)
-      if (!PathService::Get(base::DIR_EXE, result))
-        return false;
+      // Apps may not write into their own bundle.
       if (base::mac::AmIBundled()) {
-        // If we're called from chrome, dump it beside the app (outside the
-        // app bundle), if we're called from a unittest, we'll already
-        // outside the bundle so use the exe dir.
-        // exe_dir gave us .../Chromium.app/Contents/MacOS/Chromium.
-        *result = result->DirName();
-        *result = result->DirName();
-        *result = result->DirName();
+        return PathService::Get(chrome::DIR_USER_DATA, result);
       }
-      return true;
+      return PathService::Get(base::DIR_EXE, result);
 #else
       return PathService::Get(base::DIR_EXE, result);
 #endif  // defined(OS_MACOSX)
