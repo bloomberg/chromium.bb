@@ -1355,10 +1355,10 @@ void HostProcess::InitializeSignaling() {
   std::unique_ptr<DnsBlackholeChecker> dns_blackhole_checker(
       new DnsBlackholeChecker(context_->url_request_context_getter(),
                               talkgadget_prefix_));
-  std::unique_ptr<OAuthTokenGetter::OAuthCredentials> oauth_credentials(
-      new OAuthTokenGetter::OAuthCredentials(xmpp_server_config_.username,
-                                             oauth_refresh_token_,
-                                             use_service_account_));
+  std::unique_ptr<OAuthTokenGetter::OAuthAuthorizationCredentials>
+      oauth_credentials(new OAuthTokenGetter::OAuthAuthorizationCredentials(
+          xmpp_server_config_.username, oauth_refresh_token_,
+          use_service_account_));
   oauth_token_getter_.reset(
       new OAuthTokenGetterImpl(std::move(oauth_credentials),
                                context_->url_request_context_getter(), false));

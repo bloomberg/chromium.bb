@@ -20,15 +20,29 @@ class URLRequestContextGetter;
 
 namespace remoting {
 
-// OAuthTokenGetter caches OAuth access tokens and refreshes them as needed.
+// OAuthTokenGetter accepts an authorization code in the intermediate
+// credentials or a refresh token in the authorization credentials. It will
+// convert authorization code into a refresh token and access token, you may
+// pass in a callback to be notified when a refresh token has been updated.
+// OAuthTokenGetter will exchange refresh tokens for access tokens and will
+// cache access tokens, refreshing them as needed.
+// On first usage it is likely an application will only have an auth code,
+// from this you can get a refresh token which can be reused next app launch.
 class OAuthTokenGetterImpl : public OAuthTokenGetter,
                              public base::NonThreadSafe,
                              public gaia::GaiaOAuthClient::Delegate {
  public:
-  OAuthTokenGetterImpl(std::unique_ptr<OAuthCredentials> oauth_credentials,
-                       const scoped_refptr<net::URLRequestContextGetter>&
-                           url_request_context_getter,
-                       bool auto_refresh);
+  OAuthTokenGetterImpl(
+      std::unique_ptr<OAuthIntermediateCredentials> intermediate_credentials,
+      const OAuthTokenGetter::CredentialsUpdatedCallback& on_credentials_update,
+      const scoped_refptr<net::URLRequestContextGetter>&
+          url_request_context_getter,
+      bool auto_refresh);
+  OAuthTokenGetterImpl(
+      std::unique_ptr<OAuthAuthorizationCredentials> authorization_credentials,
+      const scoped_refptr<net::URLRequestContextGetter>&
+          url_request_context_getter,
+      bool auto_refresh);
   ~OAuthTokenGetterImpl() override;
 
   // OAuthTokenGetter interface.
@@ -47,19 +61,26 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
-  void NotifyCallbacks(Status status,
-                       const std::string& user_email,
-                       const std::string& access_token);
-  void RefreshOAuthToken();
+  void UpdateAccessToken(const std::string& access_token, int expires_seconds);
+  void NotifyTokenCallbacks(Status status,
+                            const std::string& user_email,
+                            const std::string& access_token);
+  void NotifyUpdatedCallbacks(const std::string& user_email,
+                              const std::string& refresh_token);
+  void GetOauthTokensFromAuthCode();
+  void RefreshAccessToken();
 
-  std::unique_ptr<OAuthCredentials> oauth_credentials_;
+  std::unique_ptr<OAuthIntermediateCredentials> intermediate_credentials_;
+  std::unique_ptr<OAuthAuthorizationCredentials> authorization_credentials_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+  OAuthTokenGetter::CredentialsUpdatedCallback credentials_updated_callback_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
-  bool refreshing_oauth_token_ = false;
+  bool response_pending_ = false;
   bool email_verified_ = false;
+  bool email_discovery_ = false;
   std::string oauth_access_token_;
-  base::Time auth_token_expiry_time_;
+  base::Time access_token_expiry_time_;
   std::queue<OAuthTokenGetter::TokenCallback> pending_callbacks_;
   std::unique_ptr<base::OneShotTimer> refresh_timer_;
 };
