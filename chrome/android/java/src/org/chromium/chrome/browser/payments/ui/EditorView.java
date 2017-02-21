@@ -59,8 +59,9 @@ import javax.annotation.Nullable;
  * The PaymentRequest editor dialog. Can be used for editing contact information, shipping address,
  * billing address, and credit cards.
  */
-public class EditorView
-        extends AlwaysDismissedDialog implements OnClickListener, DialogInterface.OnShowListener {
+public class EditorView extends AlwaysDismissedDialog implements OnClickListener,
+                                                                 DialogInterface.OnShowListener,
+                                                                 DialogInterface.OnDismissListener {
     /** The indicator for input fields that are required. */
     public static final String REQUIRED_FIELD_INDICATOR = "*";
 
@@ -198,7 +199,7 @@ public class EditorView
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cancelEdit();
+                dismissDialog();
             }
         });
 
@@ -262,25 +263,19 @@ public class EditorView
         if (view.getId() == R.id.payments_edit_done_button) {
             if (validateForm()) {
                 mEditorModel.done();
+                mEditorModel = null;
                 dismissDialog();
                 return;
             }
 
             if (mObserverForTest != null) mObserverForTest.onPaymentRequestEditorValidationError();
         } else if (view.getId() == R.id.payments_edit_cancel_button) {
-            cancelEdit();
+            dismissDialog();
         }
-    }
-
-    private void cancelEdit() {
-        mEditorModel.cancel();
-        dismissDialog();
     }
 
     private void dismissDialog() {
         if (mDialogInOutAnimator != null || !isShowing()) return;
-
-        removeTextChangedListenersAndInputFilters();
 
         Animator dropDown =
                 ObjectAnimator.ofFloat(mLayout, View.TRANSLATION_Y, 0f, mLayout.getHeight());
@@ -300,6 +295,12 @@ public class EditorView
         });
 
         mDialogInOutAnimator.start();
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        if (mEditorModel != null) mEditorModel.cancel();
+        removeTextChangedListenersAndInputFilters();
     }
 
     private void prepareButtons() {
@@ -446,6 +447,7 @@ public class EditorView
      */
     public void show(final EditorModel editorModel) {
         setOnShowListener(this);
+        setOnDismissListener(this);
         mEditorModel = editorModel;
 
         mLayout = LayoutInflater.from(mContext).inflate(R.layout.payment_request_editor, null);
