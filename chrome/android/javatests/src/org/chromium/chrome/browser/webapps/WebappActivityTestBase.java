@@ -10,18 +10,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.view.ViewGroup;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TestWebContentsObserver;
-import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.ui.base.PageTransition;
-
-import java.util.concurrent.TimeoutException;
 
 /**
  * The base class of the WebappActivity tests. It provides the common methods to access the activity
@@ -66,8 +58,6 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
             + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
             + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
             + "AAAAAAAAAOA3AvAAAdln8YgAAAAASUVORK5CYII=";
-
-    TestWebContentsObserver mTestObserver;
 
     public WebappActivityTestBase() {
         super(WebappActivity0.class);
@@ -114,17 +104,6 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
     protected final void startWebappActivity(Intent intent) throws Exception {
         setActivityIntent(intent);
         waitUntilIdle();
-
-        // TODO(yfriedman): Change callers to be executed on the UI thread. Unfortunately this is
-        // super convenient as the caller is nearly always on the test thread which is fine to
-        // block and it's cumbersome to keep bouncing to the UI thread.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mTestObserver = new TestWebContentsObserver(
-                        getActivity().getActivityTab().getWebContents());
-            }
-        });
     }
 
     /**
@@ -141,42 +120,6 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
             }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         getInstrumentation().waitForIdleSync();
-    }
-
-    /**
-     * Loads the URL in the WebappActivity and waits until it has been fully loaded.
-     * @param url URL to load.
-     */
-    @Override
-    public int loadUrl(final String url) throws IllegalArgumentException, InterruptedException {
-        waitUntilIdle();
-
-        final CallbackHelper startLoadingHelper = mTestObserver.getOnPageStartedHelper();
-        final CallbackHelper finishLoadingHelper = mTestObserver.getOnPageFinishedHelper();
-
-        int startLoadingCount = startLoadingHelper.getCallCount();
-        int finishLoadingCount = finishLoadingHelper.getCallCount();
-
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                int pageTransition = PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR;
-                getActivity().getActivityTab().loadUrl(new LoadUrlParams(url, pageTransition));
-            }
-        });
-
-        try {
-            startLoadingHelper.waitForCallback(startLoadingCount);
-        } catch (TimeoutException e) {
-            fail();
-        }
-
-        try {
-            finishLoadingHelper.waitForCallback(finishLoadingCount);
-        } catch (TimeoutException e) {
-            fail();
-        }
-        return 0;
     }
 
     @Override
