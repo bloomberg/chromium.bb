@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -85,8 +86,8 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, PRE_DataPersists) {
 // http://crbug.com/654704 PRE_ tests aren't supported on Android.
 #if defined(OS_ANDROID)
 #define MAYBE_DataPersists DISABLED_DataPersists
-#elif defined(OS_WIN)
-// Disabled on Windows due to flake (https://crbug.com/692885).
+#elif defined(OS_WIN) || defined(OS_LINUX)
+// Disabled on Windows and Linux due to flake (https://crbug.com/692885).
 #define MAYBE_DataPersists DISABLED_DataPersists
 #else
 #define MAYBE_DataPersists DataPersists
