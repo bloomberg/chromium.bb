@@ -148,7 +148,8 @@ class CORE_EXPORT WorkerGlobalScope
   WorkerOrWorkletScriptController* scriptController() final {
     return m_scriptController.get();
   }
-  WorkerClients* clients() { return m_workerClients.get(); }
+
+  WorkerClients* clients() const { return m_workerClients.get(); }
 
   DECLARE_VIRTUAL_TRACE();
 

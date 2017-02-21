@@ -263,6 +263,8 @@ void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message) {
 void WebEmbeddedWorkerImpl::postTaskToLoader(
     const WebTraceLocation& location,
     std::unique_ptr<ExecutionContextTask> task) {
+  // This cross-thread operation is brittle wrt per-thread heaps,
+  // posting a task to main-thread owned objects.
   m_mainThreadTaskRunners->get(TaskType::Networking)
       ->postTask(
           BLINK_FROM_HERE,

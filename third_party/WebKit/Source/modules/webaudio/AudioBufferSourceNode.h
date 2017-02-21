@@ -124,7 +124,8 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
   // m_buffer holds the sample data which this node outputs.
   // This Persistent doesn't make a reference cycle including
   // AudioBufferSourceNode.
-  Persistent<AudioBuffer> m_buffer;
+  // It is cross-thread, as it will be accessed by the audio and main threads.
+  CrossThreadPersistent<AudioBuffer> m_buffer;
 
   // Pointers for the buffer and destination.
   std::unique_ptr<const float* []> m_sourceChannels;

@@ -36,7 +36,8 @@ class PLATFORM_EXPORT CompositorMutatorClient
  private:
   cc::LayerTreeMutatorClient* m_client;
   CompositorMutationsTarget* m_mutationsTarget;
-  Persistent<CompositorMutator> m_mutator;
+  // Accessed by main and compositor threads.
+  CrossThreadPersistent<CompositorMutator> m_mutator;
   std::unique_ptr<CompositorMutations> m_mutations;
 };
 

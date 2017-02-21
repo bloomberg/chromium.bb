@@ -309,7 +309,10 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // mayForciblyTerminateExecution() for details.
   TaskHandle m_forcibleTerminationTaskHandle;
 
-  Persistent<WorkerThreadLifecycleContext> m_workerThreadLifecycleContext;
+  // Created on the main thread heap, but will be accessed cross-thread
+  // when worker thread posts tasks.
+  CrossThreadPersistent<WorkerThreadLifecycleContext>
+      m_workerThreadLifecycleContext;
 };
 
 }  // namespace blink

@@ -349,7 +349,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   std::unique_ptr<WorkerThreadForTest> m_workerThread;
 
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
+  // Accessed cross-thread when worker thread posts tasks to the parent.
+  CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
   Checkpoint m_checkpoint;
   // |m_loader| must be touched only from the worker thread only.
   CrossThreadPersistent<ThreadableLoader> m_loader;

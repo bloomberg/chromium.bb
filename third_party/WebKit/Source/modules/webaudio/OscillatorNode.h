@@ -96,8 +96,9 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
   AudioFloatArray m_detuneValues;
 
   // This Persistent doesn't make a reference cycle including the owner
-  // OscillatorNode.
-  Persistent<PeriodicWave> m_periodicWave;
+  // OscillatorNode. It is cross-thread, as it will be accessed by the audio
+  // thread.
+  CrossThreadPersistent<PeriodicWave> m_periodicWave;
 };
 
 class OscillatorNode final : public AudioScheduledSourceNode {

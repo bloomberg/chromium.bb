@@ -8,13 +8,13 @@
 #include "core/CoreExport.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleTypes.h"
+#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
 class ExecutionContext;
-class ParentFrameTaskRunners;
 class SourceLocation;
 class WorkerInspectorProxy;
 class WorkerLoaderProxy;
@@ -44,10 +44,12 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   // 'virtual' for testing.
   virtual void workerThreadTerminated();
 
+  // Accessed from both the parent thread and the worker.
   ExecutionContext* getExecutionContext() const {
     return m_executionContext.get();
   }
 
+  // Accessed from both the parent thread and the worker.
   ParentFrameTaskRunners* getParentFrameTaskRunners() {
     return m_parentFrameTaskRunners.get();
   }
@@ -68,7 +70,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   bool askedToTerminate() const { return m_askedToTerminate; }
 
   PassRefPtr<WorkerLoaderProxy> loaderProxy() { return m_loaderProxy; }
-  WorkerInspectorProxy* workerInspectorProxy() {
+  WorkerInspectorProxy* workerInspectorProxy() const {
     return m_workerInspectorProxy.get();
   }
 
@@ -90,9 +92,14 @@ class CORE_EXPORT ThreadedMessagingProxyBase
 
   void parentObjectDestroyedInternal();
 
-  Persistent<ExecutionContext> m_executionContext;
+  // Accessed cross-thread when worker thread posts tasks to the parent;
+  // it is not ideal to have ExecutionContext be cross-thread accessible.
+  //
+  // TODO: try to drop the need for the CrossThreadPersistent<>.
+  CrossThreadPersistent<ExecutionContext> m_executionContext;
   Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
-  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
+  // Accessed cross-thread when worker thread posts tasks to the parent.
+  CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 
   std::unique_ptr<WorkerThread> m_workerThread;
 

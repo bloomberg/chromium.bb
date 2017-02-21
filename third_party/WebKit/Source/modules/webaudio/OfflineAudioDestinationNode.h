@@ -106,8 +106,8 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
 
   // This AudioHandler renders into this AudioBuffer.
   // This Persistent doesn't make a reference cycle including the owner
-  // OfflineAudioDestinationNode.
-  Persistent<AudioBuffer> m_renderTarget;
+  // OfflineAudioDestinationNode. It is accessed by both audio and main thread.
+  CrossThreadPersistent<AudioBuffer> m_renderTarget;
   // Temporary AudioBus for each render quantum.
   RefPtr<AudioBus> m_renderBus;
 

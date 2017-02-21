@@ -157,7 +157,11 @@ class WebSharedWorkerImpl final : public WorkerReportingProxy,
       std::unique_ptr<WTF::CrossThreadClosure>) override;
 
   // 'shadow page' - created to proxy loading requests from the worker.
-  Persistent<ExecutionContext> m_loadingDocument;
+  // Will be accessed by worker thread when posting tasks.
+  //
+  // TODO: it is undesirable to keep a cross-thread reference to this
+  // document; avoid reaching into the document when posting.
+  CrossThreadPersistent<ExecutionContext> m_loadingDocument;
   WebView* m_webView;
   Persistent<WebLocalFrameImpl> m_mainFrame;
   bool m_askedToTerminate;
@@ -167,7 +171,8 @@ class WebSharedWorkerImpl final : public WorkerReportingProxy,
 
   Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
 
-  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
+  // Owned by the main thread, but will be accessed by the worker.
+  CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 
   std::unique_ptr<WorkerThread> m_workerThread;
 

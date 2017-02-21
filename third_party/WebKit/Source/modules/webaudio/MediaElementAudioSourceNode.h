@@ -45,7 +45,7 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
                                                            HTMLMediaElement&);
   ~MediaElementAudioSourceHandler() override;
 
-  HTMLMediaElement* mediaElement() { return m_mediaElement.get(); }
+  HTMLMediaElement* mediaElement() const;
 
   // AudioHandler
   void dispose() override;
@@ -76,7 +76,10 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
   // This Persistent doesn't make a reference cycle. The reference from
   // HTMLMediaElement to AudioSourceProvideClient, which
   // MediaElementAudioSourceNode implements, is weak.
-  Persistent<HTMLMediaElement> m_mediaElement;
+  //
+  // It is accessed by both audio and main thread. TODO: we really should
+  // try to minimize or avoid the audio thread touching this element.
+  CrossThreadPersistent<HTMLMediaElement> m_mediaElement;
   Mutex m_processLock;
 
   unsigned m_sourceNumberOfChannels;

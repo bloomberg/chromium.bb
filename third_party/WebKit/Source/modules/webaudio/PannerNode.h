@@ -158,8 +158,8 @@ class PannerHandler final : public AudioHandler {
   void updateDirtyState();
 
   // This Persistent doesn't make a reference cycle including the owner
-  // PannerNode.
-  Persistent<AudioListener> m_listener;
+  // PannerNode. It is accessed by both audio and main thread.
+  CrossThreadPersistent<AudioListener> m_listener;
   std::unique_ptr<Panner> m_panner;
   unsigned m_panningModel;
   unsigned m_distanceModel;

@@ -109,11 +109,21 @@ class PersistentBase {
   }
 
   void clear() { assign(nullptr); }
-  T& operator*() const { return *m_raw; }
+  T& operator*() const {
+    checkPointer();
+    return *m_raw;
+  }
   explicit operator bool() const { return m_raw; }
-  operator T*() const { return m_raw; }
+  operator T*() const {
+    checkPointer();
+    return m_raw;
+  }
   T* operator->() const { return *this; }
-  T* get() const { return m_raw; }
+
+  T* get() const {
+    checkPointer();
+    return m_raw;
+  }
 
   template <typename U>
   PersistentBase& operator=(U* other) {
@@ -243,7 +253,7 @@ class PersistentBase {
     m_persistentNode = nullptr;
   }
 
-  void checkPointer() {
+  void checkPointer() const {
 #if DCHECK_IS_ON()
     if (!m_raw || isHashTableDeletedValue())
       return;

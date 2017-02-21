@@ -88,7 +88,13 @@ class DummyPageHolder {
                   InterfaceProvider* = nullptr);
 
   Persistent<Page> m_page;
-  Persistent<LocalFrame> m_frame;
+
+  // The LocalFrame is accessed from worker threads by unit tests
+  // (WorkerThreadableLoaderTest), hence we need to allow cross-thread
+  // usage of |m_frame|.
+  //
+  // TODO: rework the tests to not require cross-thread access.
+  CrossThreadPersistent<LocalFrame> m_frame;
 
   Persistent<FrameLoaderClient> m_frameLoaderClient;
 };

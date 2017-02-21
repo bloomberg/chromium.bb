@@ -63,7 +63,8 @@ class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
   std::unique_ptr<Reverb> m_reverb;
   // This Persistent doesn't make a reference cycle including the owner
   // ConvolverNode.
-  Persistent<AudioBuffer> m_buffer;
+  // It is cross-thread, as it will be accessed by the audio and main threads.
+  CrossThreadPersistent<AudioBuffer> m_buffer;
 
   // This synchronizes dynamic changes to the convolution impulse response with
   // process().

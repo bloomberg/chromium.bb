@@ -9,7 +9,6 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/frame/Deprecation.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "wtf/CurrentTime.h"
@@ -75,7 +74,8 @@ void ThreadedMessagingProxyBase::postTaskToLoader(
     const WebTraceLocation& location,
     std::unique_ptr<ExecutionContextTask> task) {
   DCHECK(getExecutionContext()->isDocument());
-  m_parentFrameTaskRunners->get(TaskType::Networking)
+  getParentFrameTaskRunners()
+      ->get(TaskType::Networking)
       ->postTask(BLINK_FROM_HERE,
                  crossThreadBind(
                      &ExecutionContextTask::performTaskIfContextIsValid,
@@ -115,7 +115,8 @@ void ThreadedMessagingProxyBase::workerThreadCreated() {
 void ThreadedMessagingProxyBase::parentObjectDestroyed() {
   DCHECK(isParentContextThread());
 
-  m_parentFrameTaskRunners->get(TaskType::UnspecedTimer)
+  getParentFrameTaskRunners()
+      ->get(TaskType::UnspecedTimer)
       ->postTask(
           BLINK_FROM_HERE,
           WTF::bind(&ThreadedMessagingProxyBase::parentObjectDestroyedInternal,

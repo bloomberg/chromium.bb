@@ -70,6 +70,10 @@ MediaElementAudioSourceHandler::~MediaElementAudioSourceHandler() {
   uninitialize();
 }
 
+HTMLMediaElement* MediaElementAudioSourceHandler::mediaElement() const {
+  return m_mediaElement.get();
+}
+
 void MediaElementAudioSourceHandler::dispose() {
   m_mediaElement->setAudioSourceNode(nullptr);
   AudioHandler::dispose();

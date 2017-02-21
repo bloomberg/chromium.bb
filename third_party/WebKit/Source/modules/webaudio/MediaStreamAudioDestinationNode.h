@@ -58,7 +58,10 @@ class MediaStreamAudioDestinationHandler final
 
   // This Persistent doesn't make a reference cycle.
   Persistent<MediaStream> m_stream;
-  Persistent<MediaStreamSource> m_source;
+  // Accessed by main thread and during audio thread processing.
+  //
+  // TODO: try to avoid such access during audio thread processing.
+  CrossThreadPersistent<MediaStreamSource> m_source;
 
   // This synchronizes dynamic changes to the channel count with
   // process() to manage the mix bus.
