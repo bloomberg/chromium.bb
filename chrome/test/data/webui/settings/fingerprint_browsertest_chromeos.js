@@ -94,6 +94,8 @@ suite('settings-fingerprint-list', function() {
 
   /** @type {?SettingsSetupFingerprintDialogElement} */
   var dialog = null;
+  /** @type {?HTMLButtonElement} */
+  var addAnotherButton= null;
   /** @type {?settings.TestFingerprintBrowserProxy} */
   var browserProxy = null;
 
@@ -105,6 +107,13 @@ suite('settings-fingerprint-list', function() {
     return {model: {index: index, item: opt_label || ''}};
   }
 
+  /**
+   * @param {!Element} element
+   */
+  function isVisible(element) {
+    return element.offsetWidth > 0 && element.offsetHeight > 0;
+  }
+
   setup(function() {
     browserProxy = new TestFingerprintBrowserProxy();
     settings.FingerprintBrowserProxyImpl.instance_ = browserProxy;
@@ -113,6 +122,7 @@ suite('settings-fingerprint-list', function() {
     fingerprintList = document.createElement('settings-fingerprint-list');
     document.body.appendChild(fingerprintList);
     dialog = fingerprintList.$.setupFingerprint;
+    addAnotherButton = dialog.$.addAnotherButton;
     Polymer.dom.flush();
     return browserProxy.whenCalled('getFingerprintsList').then(function() {
       assertEquals(0, fingerprintList.fingerprints_.length);
@@ -147,12 +157,62 @@ suite('settings-fingerprint-list', function() {
 
       // Verify that by tapping the continue button we should exit the dialog
       // and the fingerprint list should have one fingerprint registered.
-      assertFalse(dialog.$$('.action-button').disabled);
-      MockInteractions.tap(dialog.$$('.action-button'));
+      MockInteractions.tap(dialog.$.closeButton);
       return browserProxy.whenCalled('getFingerprintsList').then(
           function() {
             assertEquals(1, fingerprintList.fingerprints_.length);
           });
+    });
+  });
+
+  // Verify enrolling a fingerprint, then enrolling another without closing the
+  // dialog works as intended.
+  test('EnrollingAnotherFingerprint', function() {
+    assertFalse(dialog.$.dialog.open);
+    MockInteractions.tap(fingerprintList.$$('.action-button'));
+    return browserProxy.whenCalled('startEnroll').then(function() {
+      assertTrue(dialog.$.dialog.open);
+      assertEquals(0, dialog.receivedScanCount_);
+      assertFalse(isVisible(addAnotherButton));
+      browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, true);
+      assertEquals(settings.FingerprintSetupStep.READY, dialog.step_);
+
+      // Once the first fingerprint is enrolled, verify that enrolling the
+      // second fingerprint without closing the dialog works as expected.
+      return browserProxy.whenCalled('getFingerprintsList');
+    }).then(function() {
+      assertEquals(1, fingerprintList.fingerprints_.length);
+      assertTrue(dialog.$.dialog.open);
+      assertTrue(isVisible(addAnotherButton));
+      MockInteractions.tap(addAnotherButton);
+      return browserProxy.whenCalled('startEnroll');
+    }).then(function() {
+      assertTrue(dialog.$.dialog.open);
+      assertFalse(isVisible(addAnotherButton));
+      browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, true);
+      return browserProxy.whenCalled('getFingerprintsList');
+    }).then(function() {
+       assertEquals(2, fingerprintList.fingerprints_.length);
+    });
+  });
+
+  test('CancelEnrollingFingerprint', function() {
+    assertFalse(dialog.$.dialog.open);
+    MockInteractions.tap(fingerprintList.$$('.action-button'));
+    return browserProxy.whenCalled('startEnroll').then(function() {
+      assertTrue(dialog.$.dialog.open);
+      assertEquals(0, dialog.receivedScanCount_);
+      assertEquals(settings.FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
+      browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, false);
+      assertEquals(1, dialog.receivedScanCount_);
+      assertEquals(settings.FingerprintSetupStep.MOVE_FINGER, dialog.step_);
+
+      // Verify that by tapping the exit button we should exit the dialog
+      // and the fingerprint list should have zero fingerprints registered.
+      MockInteractions.tap(dialog.$.closeButton);
+      return browserProxy.whenCalled('cancelCurrentEnroll');
+    }).then(function() {
+      assertEquals(0, fingerprintList.fingerprints_.length);
     });
   });
 

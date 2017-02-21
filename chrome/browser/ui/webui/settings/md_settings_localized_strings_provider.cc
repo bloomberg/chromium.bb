@@ -1131,6 +1131,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_CANCEL_BUTTON},
     {"configureFingerprintDoneButton",
      IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_DONE_BUTTON},
+    {"configureFingerprintAddAnotherButton",
+     IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_ADD_ANOTHER_BUTTON},
     {"configurePinChoosePinTitle",
      IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CHOOSE_PIN_TITLE},
     {"configurePinConfirmPinTitle",

@@ -23,6 +23,13 @@ settings.FingerprintSetupStep = {
  */
 var SUCCESSFUL_SCANS_TO_COMPLETE = 5;
 
+/**
+ * The amount of millseconds after a successful but not completed scan before a
+ * message shows up telling the user to scan their finger again.
+ * @const {number}
+ */
+var SHOW_TAP_SENSOR_MESSAGE_DELAY_MS = 2000;
+
 Polymer({
   is: 'settings-setup-fingerprint-dialog',
 
@@ -57,6 +64,14 @@ Polymer({
    */
   receivedScanCount_: 0,
 
+  /**
+   * A message shows after the user has not scanned a finger during setup. This
+   * is the set timeout id.
+   * @type {number}
+   * @private
+   */
+  tapSensorMessageTimeoutId_: 0,
+
   /** @private {?settings.FingerprintBrowserProxy}*/
   browserProxy_: null,
 
@@ -71,6 +86,7 @@ Polymer({
    * Opens the dialog.
    */
   open: function() {
+    this.$.arc.clearCanvas();
     this.$.arc.drawBackgroundCircle();
     this.$.arc.drawShadow(10, 0, 0);
     this.browserProxy_.startEnroll();
@@ -81,12 +97,22 @@ Polymer({
    * Closes the dialog.
    */
   close: function() {
-    if (this.step_ != settings.FingerprintSetupStep.READY)
-      this.browserProxy_.cancelCurrentEnroll();
-    else
+    // Note: Reset resets |step_| back to the default, so handle anything that
+    // checks |step_| before resetting.
+    if(this.step_ == settings.FingerprintSetupStep.READY)
       this.fire('add-fingerprint');
+    else
+      this.browserProxy_.cancelCurrentEnroll();
 
     this.reset_();
+  },
+
+  /** private */
+  clearSensorMessageTimeout_: function() {
+    if (this.tapSensorMessageTimeoutId_ != 0) {
+      clearTimeout(this.tapSensorMessageTimeoutId_);
+      this.tapSensorMessageTimeoutId_ = 0;
+    }
   },
 
   /**
@@ -98,31 +124,14 @@ Polymer({
     this.step_ = settings.FingerprintSetupStep.LOCATE_SCANNER;
     this.receivedScanCount_ = 0;
     this.$.arc.clearCanvas();
-  },
-
-  /**
-   * Checks if the the fingerprint can be submitted and added.
-   * @private
-   * @return {boolean}
-   */
-  enableContinue_: function(step) {
-    return step == settings.FingerprintSetupStep.READY;
+    this.clearSensorMessageTimeout_();
   },
 
   /**
    * Closes the dialog.
    * @private
    */
-  onCancelTap_: function() {
-    if (this.$.dialog.open)
-      this.$.dialog.close();
-  },
-
-  /**
-   * Closes the dialog.
-   * @private
-   */
-  onContinueTap_: function() {
+  onClose_: function() {
     if (this.$.dialog.open)
       this.$.dialog.close();
   },
@@ -176,17 +185,19 @@ Polymer({
           this.problemMessage_ = '';
           this.step_ = settings.FingerprintSetupStep.READY;
           this.$.arc.animate(this.receivedScanCount_ * slice, 2 * Math.PI);
+          this.clearSensorMessageTimeout_();
           // TODO(sammiequon): Keep increasing scan counts after the scan is
           // complete, so we don't send more fake scans complete signals. Remove
           // this with the fake scan.
           this.receivedScanCount_++;
-        } else if (scan.result != settings.FingerprintResultType.SUCCESS) {
-          this.setProblem_(scan.result);
         } else {
-          this.problemMessage_ = '';
-          this.$.arc.animate(this.receivedScanCount_ * slice,
-              (this.receivedScanCount_ + 1) * slice);
-          this.receivedScanCount_++;
+          this.setProblem_(scan.result);
+          if (scan.result == settings.FingerprintResultType.SUCCESS) {
+            this.problemMessage_ = '';
+            this.$.arc.animate(this.receivedScanCount_ * slice,
+                (this.receivedScanCount_ + 1) * slice);
+            this.receivedScanCount_++;
+          }
         }
         break;
       case settings.FingerprintSetupStep.READY:
@@ -223,9 +234,13 @@ Polymer({
    * @private
    */
   setProblem_: function(scanResult) {
+    this.clearSensorMessageTimeout_();
     switch (scanResult) {
       case settings.FingerprintResultType.SUCCESS:
         this.problemMessage_ = '';
+        this.tapSensorMessageTimeoutId_ = setTimeout(function() {
+          this.problemMessage_ = this.i18n('configureFingerprintLiftFinger');
+        }.bind(this), SHOW_TAP_SENSOR_MESSAGE_DELAY_MS);
         break;
       case settings.FingerprintResultType.PARTIAL:
         this.problemMessage_ = this.i18n('configureFingerprintPartialData');
@@ -247,6 +262,52 @@ Polymer({
         assertNotReached();
         break;
     }
+  },
+
+  /**
+   * Displays the text of the close button based on which phase of the
+   * fingerprint setup we are on.
+   * @param {!settings.FingerprintSetupStep} step The current step the
+   *     fingerprint setup is on.
+   * @private
+   */
+  getCloseButtonText_: function(step) {
+    if (step == settings.FingerprintSetupStep.READY)
+      return this.i18n('configureFingerprintDoneButton');
+
+    return this.i18n('configureFingerprintCancelButton');
+  },
+
+  /**
+   * @param {!settings.FingerprintSetupStep} step
+   * @private
+   */
+  getCloseButtonClass_: function(step) {
+    if (step == settings.FingerprintSetupStep.READY)
+      return 'action-button';
+
+    return 'cancel-button';
+  },
+
+  /**
+   * @param {!settings.FingerprintSetupStep} step
+   * @private
+   */
+  hideAddAnother_: function(step) {
+    return step != settings.FingerprintSetupStep.READY;
+  },
+
+  /**
+   * Enrolls the finished fingerprint and sets the dialog back to step one to
+   * prepare to enroll another fingerprint.
+   * @private
+   */
+  onAddAnotherFingerprint_: function() {
+    this.fire('add-fingerprint');
+    this.reset_();
+    this.$.arc.drawBackgroundCircle();
+    this.$.arc.drawShadow(10, 0, 0);
+    this.browserProxy_.startEnroll();
   },
 });
 })();

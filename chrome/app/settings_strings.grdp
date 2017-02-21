@@ -2247,6 +2247,9 @@
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_TITLE" desc="Title of the password prompt dialog popup.">
       Confirm your password
     </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_ADD_ANOTHER_BUTTON" desc="Text on the button in the fingerprint setup dialog which allows users to add another fingerprint once a fingerprint has been setup.">
+      Add another
+    </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD" desc="Text above a password input field that tells the user they need to submit their password to configure these settings.">
       Enter your password to configure screen lock.
     </message>

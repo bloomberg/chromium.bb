@@ -13,24 +13,41 @@
 <dom-module id="settings-setup-fingerprint-dialog">
   <template>
     <style include="settings-shared">
+      #arc {
+        --canvas-height: 200px;
+        --canvas-width: 450px;
+      }
+
       #dialog {
         min-width: 500px;
         width: 500px;
+      }
+
+      #image {
+        height: 80px;
+        left: 185px;
+        min-height: 80px;
+        min-width: 80px;
+        position: relative;
+        top: -140px;
+        width: 80px;
+      }
+
+      #image[step='3'] {
+        --iron-icon-fill-color: var(--google-blue-700);
+      }
+
+      /* Put the image in a seperate div with 0 height, otherwise the div will
+         take the height of the image, leaving us with a row of whitespace when
+         we position the #image to be inside #arc. */
+      #imageDiv {
+        height: 0;
       }
 
       /* Use this instead of hidden so that the dialog does not resize when the
          problem appears or disappears. */
       #problemDiv[invisible] {
         visibility: hidden;
-      }
-
-      #image {
-        min-height: 50px;
-        min-width: 50px;
-      }
-
-      #image[step='3'] {
-        --iron-icon-fill-color: blue;
       }
     </style>
 
@@ -45,9 +62,10 @@
         <settings-fingerprint-progress-arc id="arc" on-click="handleClick_"
             on-dblclick="handleDoubleClick_">
         </settings-fingerprint-progress-arc>
-        <iron-icon id="image" icon="settings:fingerprint"
-            step$="[[step_]]">
-        </iron-icon>
+        <div id="imageDiv">
+          <iron-icon id="image" icon="settings:fingerprint" step$="[[step_]]">
+          </iron-icon>
+        </div>
         <div id="problemDiv" class="settings-box first"
             invisible$="[[!problemMessage_]]">
           <iron-icon icon="settings:warning"></iron-icon>
@@ -55,14 +73,14 @@
         </div>
 
         <div class="button-strip">
-          <paper-button class="cancel-button" on-tap="onCancelTap_"
-              disabled$="[[enableContinue_(step_)]]">
-            $i18n{cancel}
+          <paper-button id="addAnotherButton" on-tap="onAddAnotherFingerprint_"
+              hidden$="[[hideAddAnother_(step_)]]">
+            $i18n{configureFingerprintAddAnotherButton}
           </paper-button>
 
-          <paper-button class="action-button" on-tap="onContinueTap_"
-              disabled$="[[!enableContinue_(step_)]]">
-            $i18n{configurePinContinueButton}
+          <paper-button id="closeButton"
+              class$="[[getCloseButtonClass_(step_)]]" on-tap="onClose_">
+            [[getCloseButtonText_(step_)]]
           </paper-button>
         </div>
       </div>

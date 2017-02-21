@@ -179,10 +179,12 @@ Polymer({
 
   /** @private */
   getDescriptionText_: function() {
-    return this.numFingerprints_ > 0 ?
-        this.i18n('lockScreenNumberFingerprints',
-            this.numFingerprints_.toString()) :
-        this.i18n('lockScreenEditFingerprintsDescription');
+    if (this.numFingerprints_ > 0) {
+      return this.i18n('lockScreenNumberFingerprints',
+          this.numFingerprints_.toString());
+    }
+
+    return this.i18n('lockScreenEditFingerprintsDescription');
   },
 
   /**

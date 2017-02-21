@@ -33,13 +33,13 @@ var CANVAS_CIRCLE_STROKE_WIDTH = 4;
  * The color of the canvas circle background.
  * @const {string}
  */
-var CANVAS_CIRCLE_BACKGROUND_COLOR = 'rgba(0, 0, 0, 1.0)';
+var CANVAS_CIRCLE_BACKGROUND_COLOR = 'rgba(66, 66, 66, 1.0)';
 
 /**
  * The color of the arc/circle which indicates setup progress.
  * @const {string}
  */
-var CANVAS_CIRCLE_PROGRESS_COLOR = 'rgba(0, 0, 255, 1.0)';
+var CANVAS_CIRCLE_PROGRESS_COLOR = 'rgba(53, 103, 214, 1.0)';
 
 /**
  * The color of the canvas circle shadow.
@@ -56,11 +56,11 @@ Polymer({
   canvasCircleRadius_: CANVAS_CIRCLE_RADIUS,
   /** @private {number} */
   canvasCircleStrokeWidth_: CANVAS_CIRCLE_STROKE_WIDTH,
-  /** @private {number} */
+  /** @private {string} */
   canvasCircleBackgroundColor_: CANVAS_CIRCLE_BACKGROUND_COLOR,
-  /** @private {number} */
+  /** @private {string} */
   canvasCircleProgressColor_: CANVAS_CIRCLE_PROGRESS_COLOR,
-  /** @private {number} */
+  /** @private {string} */
   canvasCircleShadowColor_: CANVAS_CIRCLE_SHADOW_COLOR,
 
   /**
@@ -143,9 +143,15 @@ Polymer({
 
       // Clears the canvas and draws the new progress circle.
       this.clearCanvas();
+      // Drawing two arcs to form a circle gives a nicer look than drawing an
+      // arc on top of a circle. If |currentAngle| is 0, draw from |start| +
+      // |currentAngle| to 7 * Math.PI / 2 (start is 3 * Math.PI / 2) otherwise
+      // the regular draw from |start| to |currentAngle| will draw nothing which
+      // will cause a flicker for one frame.
       this.drawArc(start, start + currentAngle,
           this.canvasCircleProgressColor_);
-      this.drawArc(start + currentAngle, start,
+      this.drawArc(start + currentAngle,
+          currentAngle <= 0 ? 7 * Math.PI / 2 : start,
           this.canvasCircleBackgroundColor_);
       currentAngle += step;
     }
