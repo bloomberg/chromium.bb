@@ -453,7 +453,6 @@ blink_core_sources("css") {
     "properties/CSSPropertyAlignmentUtils.h",
     "properties/CSSPropertyColumnUtils.cpp",
     "properties/CSSPropertyColumnUtils.h",
-    "properties/CSSPropertyDescriptor.h",
     "properties/CSSPropertyLengthUtils.cpp",
     "properties/CSSPropertyLengthUtils.h",
     "properties/CSSPropertyMarginUtils.cpp",

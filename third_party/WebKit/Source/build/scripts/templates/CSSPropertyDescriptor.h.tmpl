@@ -12,9 +12,9 @@ class CSSParserContext;
 
 // Stores function pointers matching those declared in CSSPropertyAPI.
 struct CSSPropertyDescriptor {
-  const CSSValue* (*parseSingleValue)(CSSParserTokenRange&,
-                                      const CSSParserContext*);
-  bool (*parseShorthand)(bool, CSSParserTokenRange&, const CSSParserContext*);
+  {% for api_method_name in ordered_api_method_names %}
+  {{all_api_methods[api_method_name].return_type}} (*{{api_method_name}}){{all_api_methods[api_method_name].parameters}};
+  {% endfor %}
 
   // Returns the corresponding CSSPropertyDescriptor for a given CSSPropertyID.
   // Use this function to access the API for a property. Returns a descriptor

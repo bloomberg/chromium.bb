@@ -44,6 +44,7 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
 
         self._outputs = {
             'CSSPropertyDescriptor.cpp': self.generate_property_descriptor_cpp,
+            'CSSPropertyDescriptor.h': self.generate_property_descriptor_h,
             'CSSPropertyAPI.h': self.generate_property_api,
         }
 
@@ -91,6 +92,13 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
         return {
             'api_classes': self._api_classes,
             'ordered_api_method_names': self.ordered_api_method_names,
+        }
+
+    @template_expander.use_jinja('CSSPropertyDescriptor.h.tmpl')
+    def generate_property_descriptor_h(self):
+        return {
+            'ordered_api_method_names': self.ordered_api_method_names,
+            'all_api_methods': self.all_api_methods,
         }
 
     @template_expander.use_jinja('CSSPropertyAPI.h.tmpl')
