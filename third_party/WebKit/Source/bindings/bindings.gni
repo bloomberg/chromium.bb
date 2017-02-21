@@ -38,6 +38,8 @@ bindings_core_v8_files =
                     "core/v8/CallbackPromiseAdapter.h",
                     "core/v8/ConditionalFeatures.cpp",
                     "core/v8/ConditionalFeatures.h",
+                    "core/v8/ConditionalFeaturesForCore.cpp",
+                    "core/v8/ConditionalFeaturesForCore.h",
                     "core/v8/V0CustomElementBinding.cpp",
                     "core/v8/V0CustomElementBinding.h",
                     "core/v8/V0CustomElementConstructorBuilder.cpp",

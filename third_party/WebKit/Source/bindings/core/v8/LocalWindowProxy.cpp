@@ -30,7 +30,8 @@
 
 #include "bindings/core/v8/LocalWindowProxy.h"
 
-#include "bindings/core/v8/ConditionalFeatures.h"
+#include <v8.h>
+#include "bindings/core/v8/ConditionalFeaturesForCore.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ToV8.h"
@@ -57,7 +58,6 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
-#include <v8.h>
 
 namespace blink {
 

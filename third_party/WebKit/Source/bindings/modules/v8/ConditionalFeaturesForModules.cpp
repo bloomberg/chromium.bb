@@ -4,6 +4,8 @@
 
 #include "bindings/modules/v8/ConditionalFeaturesForModules.h"
 
+#include "bindings/core/v8/ConditionalFeatures.h"
+#include "bindings/core/v8/ConditionalFeaturesForCore.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8DedicatedWorkerGlobalScope.h"
 #include "bindings/core/v8/V8Navigator.h"
@@ -248,6 +250,7 @@ void installPendingConditionalFeatureForModules(
 }
 
 void registerInstallConditionalFeaturesForModules() {
+  registerInstallConditionalFeaturesForCore();
   s_originalInstallConditionalFeaturesFunction =
       setInstallConditionalFeaturesFunction(
           &installConditionalFeaturesForModules);

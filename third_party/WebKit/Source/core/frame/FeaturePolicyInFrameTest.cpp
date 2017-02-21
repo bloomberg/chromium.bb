@@ -4,7 +4,7 @@
 
 #include "platform/feature_policy/FeaturePolicy.h"
 
-#include "bindings/core/v8/ConditionalFeatures.h"
+#include "bindings/core/v8/ConditionalFeaturesForCore.h"
 #include "core/frame/LocalFrame.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/RuntimeEnabledFeatures.h"

@@ -5,14 +5,12 @@
 #ifndef ConditionalFeatures_h
 #define ConditionalFeatures_h
 
-#include "core/CoreExport.h"
-#include "platform/feature_policy/FeaturePolicy.h"
-#include "wtf/text/WTFString.h"
 #include <v8.h>
+#include "core/CoreExport.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class LocalFrame;
 class ScriptState;
 struct WrapperTypeInfo;
 
@@ -25,16 +23,16 @@ using InstallPendingConditionalFeatureFunction = void (*)(const String&,
                                                           const ScriptState*);
 
 // Sets the function to be called by |installConditionalFeatures|. The function
-// is initially set to the private |installConditionalFeaturesCore| function,
+// is initially set to the private |installConditionalFeaturesDefault| function,
 // but can be overridden by this function. A pointer to the previously set
 // function is returned, so that functions can be chained.
 CORE_EXPORT InstallConditionalFeaturesFunction
     setInstallConditionalFeaturesFunction(InstallConditionalFeaturesFunction);
 
 // Sets the function to be called by |installPendingConditionalFeature|. This
-// Initially set to the private |installPendingConditionalFeatureCore| function,
-// but can be overridden by this function. A pointer to the previously set
-// function is returned, so that functions can be chained.
+// is initially set to the private |installPendingConditionalFeatureDefault|
+// function, but can be overridden by this function. A pointer to the previously
+// set function is returned, so that functions can be chained.
 CORE_EXPORT InstallPendingConditionalFeatureFunction
     setInstallPendingConditionalFeatureFunction(
         InstallPendingConditionalFeatureFunction);
@@ -48,12 +46,6 @@ CORE_EXPORT void installConditionalFeatures(const WrapperTypeInfo*,
                                             v8::Local<v8::Object>,
                                             v8::Local<v8::Function>);
 
-// Installs all of the conditionally enabled V8 bindings on the Window object.
-// This is called separately from other objects so that attributes and
-// interfaces which need to be visible on the global object are installed even
-// when the V8 context is reused (i.e., after navigation)
-CORE_EXPORT void installConditionalFeaturesOnWindow(const ScriptState*);
-
 // Installs all of the conditionally enabled V8 bindings for a feature, if
 // needed. This is called to install a newly-enabled feature on any existing
 // objects. If the target object hasn't been created, nothing is installed. The
@@ -61,9 +53,6 @@ CORE_EXPORT void installConditionalFeaturesOnWindow(const ScriptState*);
 // (avoids forcing the creation of objects prematurely).
 CORE_EXPORT void installPendingConditionalFeature(const String&,
                                                   const ScriptState*);
-
-CORE_EXPORT bool isFeatureEnabledInFrame(const FeaturePolicy::Feature&,
-                                         const LocalFrame*);
 
 }  // namespace blink
 
