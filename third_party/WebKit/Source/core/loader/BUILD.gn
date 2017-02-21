@@ -41,8 +41,6 @@ blink_core_sources("loader") {
     "PrerendererClient.cpp",
     "PrerendererClient.h",
     "ProgressTracker.cpp",
-    "SinkDocument.cpp",
-    "SinkDocument.h",
     "TextResourceDecoderBuilder.cpp",
     "TextResourceDecoderBuilder.h",
     "TextTrackLoader.cpp",

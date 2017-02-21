@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/loader/SinkDocument.h"
+#include "core/dom/SinkDocument.h"
 
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/frame/UseCounter.h"

@@ -261,6 +261,8 @@ blink_core_sources("dom") {
     "ShadowTreeStyleSheetCollection.cpp",
     "ShadowTreeStyleSheetCollection.h",
     "SimulatedClickOptions.h",
+    "SinkDocument.cpp",
+    "SinkDocument.h",
     "SpaceSplitString.cpp",
     "StaticNodeList.h",
     "StaticRange.cpp",
