@@ -6,10 +6,10 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
@@ -19,8 +19,6 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/file_handlers/non_native_file_system_delegate.h"
 #endif
-
-using content::BrowserThread;
 
 namespace {
 
@@ -75,9 +73,10 @@ void OnGetMimeTypeFromMetadataForNonNativeLocalPathCompleted(
   std::unique_ptr<std::string> mime_type_from_extension(new std::string);
   std::string* const mime_type_from_extension_ptr =
       mime_type_from_extension.get();
-  BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile),
-                            local_path, mime_type_from_extension_ptr),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits().MayBlock(),
+      base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile), local_path,
+                 mime_type_from_extension_ptr),
       base::Bind(&OnGetMimeTypeFromFileForNonNativeLocalPathCompleted,
                  base::Passed(&mime_type_from_extension), callback));
 }
@@ -116,8 +115,9 @@ void OnGetMimeTypeFromFileForNativeLocalPathCompleted(
   std::unique_ptr<std::string> sniffed_mime_type(
       new std::string(kMimeTypeApplicationOctetStream));
   std::string* const sniffed_mime_type_ptr = sniffed_mime_type.get();
-  BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(&SniffMimeType, local_path, sniffed_mime_type_ptr),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits().MayBlock(),
+      base::Bind(&SniffMimeType, local_path, sniffed_mime_type_ptr),
       base::Bind(&OnSniffMimeTypeForNativeLocalPathCompleted,
                  base::Passed(&sniffed_mime_type), callback));
 }
@@ -147,9 +147,10 @@ void GetMimeTypeForLocalPath(
   std::unique_ptr<std::string> mime_type_from_extension(new std::string);
   std::string* const mime_type_from_extension_ptr =
       mime_type_from_extension.get();
-  BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile),
-                            local_path, mime_type_from_extension_ptr),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits().MayBlock(),
+      base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile), local_path,
+                 mime_type_from_extension_ptr),
       base::Bind(&OnGetMimeTypeFromFileForNativeLocalPathCompleted, local_path,
                  base::Passed(&mime_type_from_extension), callback));
 }
