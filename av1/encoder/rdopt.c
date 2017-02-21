@@ -10091,8 +10091,15 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 #endif  // CONFIG_FILTER_INTRA
 
+#if CONFIG_CB4X4
+      rate2 = rate_y + intra_mode_cost[mbmi->mode];
+      if (!x->skip_chroma_rd)
+        rate2 += rate_uv + cpi->intra_uv_mode_cost[mbmi->mode][mbmi->uv_mode];
+#else
       rate2 = rate_y + intra_mode_cost[mbmi->mode] + rate_uv +
               cpi->intra_uv_mode_cost[mbmi->mode][mbmi->uv_mode];
+#endif
+
 #if CONFIG_PALETTE
       if (cpi->common.allow_screen_content_tools && mbmi->mode == DC_PRED)
         rate2 += av1_cost_bit(

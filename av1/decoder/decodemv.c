@@ -910,7 +910,13 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   }
 #endif
 
+#if CONFIG_CB4X4
+  if (bsize >= BLOCK_8X8 || is_chroma_reference(mi_row, mi_col))
+    mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
+#else
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
+#endif
+
 #if CONFIG_EXT_INTRA
   read_intra_angle_info(cm, xd, r);
 #endif  // CONFIG_EXT_INTRA
@@ -1195,9 +1201,9 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
 #endif  // CONFIG_DUAL_FILTER
 }
 
-static void read_intra_block_mode_info(AV1_COMMON *const cm,
-                                       MACROBLOCKD *const xd, MODE_INFO *mi,
-                                       aom_reader *r) {
+static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
+                                       const int mi_col, MACROBLOCKD *const xd,
+                                       MODE_INFO *mi, aom_reader *r) {
   MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
   int i;
@@ -1230,7 +1236,15 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm,
   }
 #endif
 
+#if CONFIG_CB4X4
+  if (bsize >= BLOCK_8X8 || is_chroma_reference(mi_row, mi_col))
+    mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
+#else
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
+  (void)mi_row;
+  (void)mi_col;
+#endif
+
 #if CONFIG_EXT_INTRA
   read_intra_angle_info(cm, xd, r);
 #endif  // CONFIG_EXT_INTRA
@@ -2105,7 +2119,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
                                mi, mi_row, mi_col, r);
 #endif  // CONFIG_MOTION_VAR && CONFIG_SUPERTX
   else
-    read_intra_block_mode_info(cm, xd, mi, r);
+    read_intra_block_mode_info(cm, mi_row, mi_col, xd, mi, r);
 
   read_tx_type(cm, xd, mbmi,
 #if CONFIG_SUPERTX

@@ -5406,7 +5406,8 @@ void av1_encode_frame(AV1_COMP *cpi) {
 
 static void sum_intra_stats(FRAME_COUNTS *counts, const MODE_INFO *mi,
                             const MODE_INFO *above_mi, const MODE_INFO *left_mi,
-                            const int intraonly) {
+                            const int intraonly, const int mi_row,
+                            const int mi_col) {
   const PREDICTION_MODE y_mode = mi->mbmi.mode;
   const PREDICTION_MODE uv_mode = mi->mbmi.uv_mode;
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
@@ -5438,6 +5439,12 @@ static void sum_intra_stats(FRAME_COUNTS *counts, const MODE_INFO *mi,
     }
   }
 
+#if CONFIG_CB4X4
+  if (bsize < BLOCK_8X8 && !is_chroma_reference(mi_row, mi_col)) return;
+#else
+  (void)mi_row;
+  (void)mi_col;
+#endif
   ++counts->uv_mode[y_mode][uv_mode];
 }
 
@@ -5603,7 +5610,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
                                    mi_row, mi_col);
     if (!dry_run)
       sum_intra_stats(td->counts, mi, xd->above_mi, xd->left_mi,
-                      frame_is_intra_only(cm));
+                      frame_is_intra_only(cm), mi_row, mi_col);
 
     // TODO(huisu): move this into sum_intra_stats().
     if (!dry_run && (bsize >= BLOCK_8X8 || unify_bsize)) {
