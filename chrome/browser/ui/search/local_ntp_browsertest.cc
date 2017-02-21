@@ -6,6 +6,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -31,6 +33,8 @@ class LocalNTPTest : public InProcessBrowserTest,
                      public InstantTestBase {
  public:
   LocalNTPTest() {}
+
+  GURL other_url() { return https_test_server().GetURL("/simple.html"); }
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
@@ -60,6 +64,63 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, SimpleJavascriptTests) {
   bool success = false;
   ASSERT_TRUE(GetBoolFromJS(active_tab, "!!runSimpleTests()", &success));
   EXPECT_TRUE(success);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmnibox();
+
+  // Open an NTP.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), ntp_url(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  // Check that the embeddedSearch API is available.
+  bool result = false;
+  ASSERT_TRUE(
+      GetBoolFromJS(active_tab, "!!window.chrome.embeddedSearch", &result));
+  EXPECT_TRUE(result);
+
+  // Navigate somewhere else in the same tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), other_url(), WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ASSERT_FALSE(search::IsInstantNTP(active_tab));
+  // Now the embeddedSearch API should have gone away.
+  ASSERT_TRUE(
+      GetBoolFromJS(active_tab, "!!window.chrome.embeddedSearch", &result));
+  EXPECT_FALSE(result);
+
+  // Navigate back to the NTP.
+  content::TestNavigationObserver back_observer(active_tab);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  back_observer.Wait();
+  // The API should be back.
+  ASSERT_TRUE(
+      GetBoolFromJS(active_tab, "!!window.chrome.embeddedSearch", &result));
+  EXPECT_TRUE(result);
+
+  // Navigate forward to the non-NTP page.
+  content::TestNavigationObserver fwd_observer(active_tab);
+  chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
+  fwd_observer.Wait();
+  // The API should be gone.
+  ASSERT_TRUE(
+      GetBoolFromJS(active_tab, "!!window.chrome.embeddedSearch", &result));
+  EXPECT_FALSE(result);
+
+  // Navigate to a new NTP instance.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), ntp_url(), WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  // Now the API should be available again.
+  ASSERT_TRUE(
+      GetBoolFromJS(active_tab, "!!window.chrome.embeddedSearch", &result));
+  EXPECT_TRUE(result);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, FakeboxRedirectsToOmnibox) {
