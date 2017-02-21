@@ -442,8 +442,8 @@ bool TextControlElement::setSelectionRange(
                                                              : endPosition)
           .setIsDirectional(direction != SelectionHasNoDirection)
           .build(),
-      FrameSelection::DoNotAdjustInFlatTree | FrameSelection::CloseTyping |
-          FrameSelection::ClearTypingStyle | FrameSelection::DoNotSetFocus);
+      FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle |
+          FrameSelection::DoNotSetFocus);
   return true;
 }
 

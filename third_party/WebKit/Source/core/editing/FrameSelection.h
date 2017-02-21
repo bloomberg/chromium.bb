@@ -89,8 +89,6 @@ class CORE_EXPORT FrameSelection final
     DoNotSetFocus = 1 << 3,
     DoNotUpdateAppearance = 1 << 4,
     DoNotClearStrategy = 1 << 5,
-    // TODO(yosin): We should get rid of |DoNotAdjustInFlatTree|.
-    DoNotAdjustInFlatTree = 1 << 6,
   };
   // Union of values in SetSelectionOption and EUserTriggered
   typedef unsigned SetSelectionOptions;
