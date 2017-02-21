@@ -35,7 +35,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   RefPtr<NGPhysicalFragment> Layout(
       NGConstraintSpace* constraint_space) override;
-  NGBlockNode* NextSibling() override;
+  NGLayoutInputNode* NextSibling() override;
   LayoutObject* GetLayoutObject() override;
 
   // Computes the value of min-content and max-content for this box.
@@ -50,7 +50,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   NGLayoutInputNode* FirstChild();
 
-  void SetNextSibling(NGBlockNode*);
+  void SetNextSibling(NGLayoutInputNode*);
   void SetFirstChild(NGLayoutInputNode*);
 
   void SetFragment(NGPhysicalBoxFragment* fragment) { fragment_ = fragment; }
@@ -84,7 +84,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // combination.
   LayoutBox* layout_box_;
   RefPtr<ComputedStyle> style_;
-  Member<NGBlockNode> next_sibling_;
+  Member<NGLayoutInputNode> next_sibling_;
   Member<NGLayoutInputNode> first_child_;
   // TODO(mstensho): An input node may produce multiple fragments, so this
   // should probably be renamed to last_fragment_ or something like that, since

@@ -155,12 +155,16 @@ const ComputedStyle& NGBlockNode::Style() const {
   return layout_box_->styleRef();
 }
 
-NGBlockNode* NGBlockNode::NextSibling() {
+NGLayoutInputNode* NGBlockNode::NextSibling() {
   if (!next_sibling_) {
     LayoutObject* next_sibling =
         layout_box_ ? layout_box_->nextSibling() : nullptr;
-    NGBlockNode* box = next_sibling ? new NGBlockNode(next_sibling) : nullptr;
-    SetNextSibling(box);
+    if (next_sibling) {
+      if (next_sibling->isInline())
+        SetNextSibling(new NGInlineNode(next_sibling, &Style()));
+      else
+        SetNextSibling(new NGBlockNode(next_sibling));
+    }
   }
   return next_sibling_;
 }
@@ -183,7 +187,7 @@ NGLayoutInputNode* NGBlockNode::FirstChild() {
   return first_child_;
 }
 
-void NGBlockNode::SetNextSibling(NGBlockNode* sibling) {
+void NGBlockNode::SetNextSibling(NGLayoutInputNode* sibling) {
   next_sibling_ = sibling;
 }
 
