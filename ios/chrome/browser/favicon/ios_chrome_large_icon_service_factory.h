@@ -46,6 +46,7 @@ class IOSChromeLargeIconServiceFactory
       web::BrowserState* context) const override;
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeLargeIconServiceFactory);
 };

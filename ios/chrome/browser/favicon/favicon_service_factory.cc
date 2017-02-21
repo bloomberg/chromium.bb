@@ -58,4 +58,8 @@ std::unique_ptr<KeyedService> FaviconServiceFactory::BuildServiceInstanceFor(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS));
 }
 
+bool FaviconServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
+}
+
 }  // namespace ios

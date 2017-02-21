@@ -43,6 +43,7 @@ class FaviconServiceFactory : public BrowserStateKeyedServiceFactory {
   // BrowserStateKeyedServiceFactory implementation.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconServiceFactory);
 };
