@@ -4,6 +4,8 @@
 
 #import "ios/chrome/widget_extension/widget_view.h"
 
+#include "base/logging.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -12,16 +14,22 @@ namespace {
 
 const CGFloat kCursorHeight = 40;
 const CGFloat kCursorWidth = 2;
-const CGFloat kCursorHorizontalPadding = 40;
+const CGFloat kCursorHorizontalPadding = 10;
+const CGFloat kCursorVerticalPadding = 10;
+const CGFloat kFakeboxHorizontalPadding = 40;
+const CGFloat kFakeboxVerticalPadding = 40;
 
 }  // namespace
 
-@interface WidgetView ()
+@interface WidgetView () {
+  __weak id<WidgetViewActionTarget> _target;
+}
 
 @property(nonatomic, weak) UIView* cursor;
 
-// Creates a cursor, adds it to the view and sets the class cursor property.
-- (void)addCursor;
+// Creates and adds a fake omnibox with blinking cursor to the view and sets the
+// class cursor property.
+- (void)addFakebox;
 
 @end
 
@@ -29,28 +37,50 @@ const CGFloat kCursorHorizontalPadding = 40;
 
 @synthesize cursor = _cursor;
 
-- (instancetype)init {
+- (instancetype)initWithActionTarget:(id<WidgetViewActionTarget>)target {
   self = [super initWithFrame:CGRectZero];
   if (self) {
-    [self addCursor];
+    DCHECK(target);
+    _target = target;
+    [self addFakebox];
   }
   return self;
 }
 
-- (void)addCursor {
+- (void)addFakebox {
+  UIView* fakebox = [[UIView alloc] initWithFrame:CGRectZero];
+
+  UIGestureRecognizer* tapRecognizer =
+      [[UITapGestureRecognizer alloc] initWithTarget:_target
+                                              action:@selector(openApp:)];
+
+  [fakebox addGestureRecognizer:tapRecognizer];
+  [self addSubview:fakebox];
+
   UIView* cursor = [[UIView alloc] initWithFrame:CGRectZero];
   self.cursor = cursor;
   self.cursor.backgroundColor = [UIColor blueColor];
-  [self addSubview:self.cursor];
+  [fakebox addSubview:self.cursor];
 
+  [fakebox setTranslatesAutoresizingMaskIntoConstraints:NO];
   [self.cursor setTranslatesAutoresizingMaskIntoConstraints:NO];
   [NSLayoutConstraint activateConstraints:@[
+    [[fakebox leadingAnchor] constraintEqualToAnchor:self.leadingAnchor
+                                            constant:kFakeboxHorizontalPadding],
+    [[fakebox trailingAnchor]
+        constraintEqualToAnchor:self.trailingAnchor
+                       constant:-kFakeboxHorizontalPadding],
+    [[fakebox topAnchor] constraintEqualToAnchor:self.topAnchor
+                                        constant:kFakeboxVerticalPadding],
+    [[fakebox heightAnchor]
+        constraintEqualToConstant:kCursorHeight + 2 * kCursorVerticalPadding],
+
     [[self.cursor widthAnchor] constraintEqualToConstant:kCursorWidth],
     [[self.cursor leadingAnchor]
-        constraintEqualToAnchor:self.leadingAnchor
+        constraintEqualToAnchor:fakebox.leadingAnchor
                        constant:kCursorHorizontalPadding],
     [[self.cursor heightAnchor] constraintEqualToConstant:kCursorHeight],
-    [[self.cursor centerYAnchor] constraintEqualToAnchor:self.centerYAnchor]
+    [[self.cursor centerYAnchor] constraintEqualToAnchor:fakebox.centerYAnchor]
   ]];
 
   [UIView animateWithDuration:0.3

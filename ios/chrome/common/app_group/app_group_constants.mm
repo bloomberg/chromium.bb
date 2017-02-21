@@ -31,6 +31,7 @@ const char kChromeAppGroupCommandParameterPreference[] = "Parameter";
 const char kChromeAppGroupOpenURLCommand[] = "openurl";
 const char kChromeAppGroupVoiceSearchCommand[] = "voicesearch";
 const char kChromeAppGroupNewTabCommand[] = "newtab";
+const char kChromeAppGroupFocusOmniboxCommand[] = "focusomnibox";
 
 const char kChromeAppClientID[] = "ClientID";
 const char kUserMetricsEnabledDate[] = "UserMetricsEnabledDate";

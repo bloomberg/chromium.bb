@@ -139,6 +139,9 @@ extern NSString* const kLocationBarResignsFirstResponderNotification;
 // Shows the QR scanner UI.
 - (void)showQRScanner;
 
+// Focuses the omnibox.
+- (void)focusOmnibox;
+
 // Dismisses all presented views then calls |completion|.
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion;
 

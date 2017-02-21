@@ -259,12 +259,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // app.
   base::scoped_nsobject<AppStartupParameters> _startupParameters;
 
-  // Whether Voice Search should be started upon tab switcher dismissal.
-  BOOL _startVoiceSearchAfterTabSwitcherDismissal;
-
-  // Whether the QR Scanner should be started upon tab switcher dismissal.
-  BOOL _startQRScannerAfterTabSwitcherDismissal;
-
   // Navigation View controller for the settings.
   base::scoped_nsobject<SettingsNavigationController>
       _settingsNavigationController;
@@ -372,6 +366,10 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 // switcher dismissal. It can only be YES if the QR Scanner experiment is
 // enabled.
 @property(nonatomic, readwrite) BOOL startQRScannerAfterTabSwitcherDismissal;
+// Whether the QR Scanner should be started upon tab switcher dismissal.
+@property(nonatomic, readwrite) BOOL startVoiceSearchAfterTabSwitcherDismissal;
+// Whether the omnibox should be focused upon tab switcher dismissal.
+@property(nonatomic, readwrite) BOOL startFocusOmniboxAfterTabSwitcherDismissal;
 
 // Activates browsing and enables web views if |enabled| is YES.
 // Disables browsing and purges web views if |enabled| is NO.
@@ -544,6 +542,12 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 @synthesize window = _window;
 @synthesize isPresentingFirstRunUI = _isPresentingFirstRunUI;
 @synthesize isColdStart = _isColdStart;
+@synthesize startVoiceSearchAfterTabSwitcherDismissal =
+    _startVoiceSearchAfterTabSwitcherDismissal;
+@synthesize startQRScannerAfterTabSwitcherDismissal =
+    _startQRScannerAfterTabSwitcherDismissal;
+@synthesize startFocusOmniboxAfterTabSwitcherDismissal =
+    _startFocusOmniboxAfterTabSwitcherDismissal;
 
 #pragma mark - Application lifecycle
 
@@ -930,14 +934,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)setSettingsNavigationController:
     (SettingsNavigationController*)settingsNavigationController {
   _settingsNavigationController.reset([settingsNavigationController retain]);
-}
-
-- (BOOL)startQRScannerAfterTabSwitcherDismissal {
-  return _startQRScannerAfterTabSwitcherDismissal;
-}
-
-- (void)setStartQRScannerAfterTabSwitcherDismissal:(BOOL)startQRScanner {
-  _startQRScannerAfterTabSwitcherDismissal = startQRScanner;
 }
 
 #pragma mark - StartupInformation implementation.
@@ -1909,12 +1905,15 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
   // Start Voice Search or QR Scanner now that they can be presented from the
   // current BVC.
-  if (_startVoiceSearchAfterTabSwitcherDismissal) {
-    _startVoiceSearchAfterTabSwitcherDismissal = NO;
+  if (self.startVoiceSearchAfterTabSwitcherDismissal) {
+    self.startVoiceSearchAfterTabSwitcherDismissal = NO;
     [self.currentBVC startVoiceSearch];
-  } else if ([self startQRScannerAfterTabSwitcherDismissal]) {
-    [self setStartQRScannerAfterTabSwitcherDismissal:NO];
+  } else if (self.startQRScannerAfterTabSwitcherDismissal) {
+    self.startQRScannerAfterTabSwitcherDismissal = NO;
     [self.currentBVC showQRScanner];
+  } else if (self.startFocusOmniboxAfterTabSwitcherDismissal) {
+    self.startFocusOmniboxAfterTabSwitcherDismissal = NO;
+    [self.currentBVC focusOmnibox];
   }
 
   [_tabSwitcherController setDelegate:nil];
@@ -2291,8 +2290,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     if (_tabSwitcherIsActive || _dismissingStackView) {
       // Since VoiceSearch is presented by the BVC, it must be started after the
       // Tab Switcher dismissal completes and the BVC's view is in the
-      // hiararchy.
-      _startVoiceSearchAfterTabSwitcherDismissal = YES;
+      // hierarchy.
+      self.startVoiceSearchAfterTabSwitcherDismissal = YES;
     } else {
       // When starting the application from the Notification center,
       // ApplicationWillResignActive is sent just after startup.
@@ -2306,13 +2305,21 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     if (_tabSwitcherIsActive || _dismissingStackView) {
       // QR Scanner is presented by the BVC, similarly to VoiceSearch. It must
       // also be started after the BVC's view is in the hierarchy.
-      [self setStartQRScannerAfterTabSwitcherDismissal:YES];
+      self.startQRScannerAfterTabSwitcherDismissal = YES;
     } else {
       // Start the QR Scanner asynchronously to prevent the application from
       // dismissing the modal view if QR Scanner is started from the
       // Notification center.
       dispatch_async(dispatch_get_main_queue(), ^{
         [self.currentBVC showQRScanner];
+      });
+    }
+  } else if ([_startupParameters launchFocusOmnibox]) {
+    if (_tabSwitcherIsActive || _dismissingStackView) {
+      self.startFocusOmniboxAfterTabSwitcherDismissal = YES;
+    } else {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [self.currentBVC focusOmnibox];
       });
     }
   }

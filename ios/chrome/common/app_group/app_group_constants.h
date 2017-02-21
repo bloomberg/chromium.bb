@@ -52,6 +52,9 @@ extern const char kChromeAppGroupVoiceSearchCommand[];
 // The command to open a new tab.
 extern const char kChromeAppGroupNewTabCommand[];
 
+// The command to focus the omnibox.
+extern const char kChromeAppGroupFocusOmniboxCommand[];
+
 // The key in kChromeAppGroupCommandPreference containing a NSDate at which
 // |kChromeAppGroupCommandAppPreference| issued the command.
 extern const char kChromeAppGroupCommandTimePreference[];

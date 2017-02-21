@@ -257,6 +257,20 @@ enum MobileSessionStartAction {
             secureSourceApp:secureSourceApp
                 completeURL:url];
   }
+
+  if ([command
+          isEqualToString:base::SysUTF8ToNSString(
+                              app_group::kChromeAppGroupFocusOmniboxCommand)]) {
+    ChromeAppStartupParameters* params = [[ChromeAppStartupParameters alloc]
+        initWithExternalURL:GURL(kChromeUINewTabURL)
+        xCallbackParameters:nil
+          declaredSourceApp:appId
+            secureSourceApp:secureSourceApp
+                completeURL:url];
+    [params setLaunchFocusOmnibox:YES];
+    return params;
+  }
+
   if ([command isEqualToString:base::SysUTF8ToNSString(
                                    app_group::kChromeAppGroupOpenURLCommand)]) {
     if (!parameter || ![parameter isKindOfClass:[NSString class]])
