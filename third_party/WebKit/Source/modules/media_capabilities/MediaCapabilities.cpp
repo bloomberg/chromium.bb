@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediacapabilities/MediaCapabilities.h"
+#include "modules/media_capabilities/MediaCapabilities.h"
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "modules/mediacapabilities/MediaConfiguration.h"
-#include "modules/mediacapabilities/MediaDecodingAbility.h"
+#include "modules/media_capabilities/MediaConfiguration.h"
+#include "modules/media_capabilities/MediaDecodingAbility.h"
 
 namespace blink {
 
