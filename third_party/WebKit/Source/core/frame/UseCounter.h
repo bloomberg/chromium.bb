@@ -1474,6 +1474,8 @@ class CORE_EXPORT UseCounter {
     DOMClobberedVariableAccessed = 1824,
     HTMLDocumentCreateProcessingInstruction = 1825,
     FetchResponseConstructionWithStream = 1826,
+    LocationOrigin = 1827,
+    DocumentOrigin = 1828,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
