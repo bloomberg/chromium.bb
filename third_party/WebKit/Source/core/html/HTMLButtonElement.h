@@ -24,11 +24,12 @@
 #ifndef HTMLButtonElement_h
 #define HTMLButtonElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLFormControlElement.h"
 
 namespace blink {
 
-class HTMLButtonElement final : public HTMLFormControlElement {
+class CORE_EXPORT HTMLButtonElement final : public HTMLFormControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

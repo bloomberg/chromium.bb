@@ -744,7 +744,9 @@ void Editor::clearLastEditCommand() {
 }
 
 Element* Editor::findEventTargetFrom(const VisibleSelection& selection) const {
-  Element* target = associatedElementOf(selection.start());
+  Element* target = selection.hasEditableStyle()
+                        ? associatedElementOf(selection.start())
+                        : frame().document()->activeElement();
   if (!target)
     target = frame().document()->body();
 
