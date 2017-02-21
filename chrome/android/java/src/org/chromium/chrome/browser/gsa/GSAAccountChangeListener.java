@@ -57,6 +57,17 @@ public class GSAAccountChangeListener {
         return sInstance;
     }
 
+    /**
+     * Returns whether the permission {@link ACCOUNT_UPDATE_BROADCAST_PERMISSION} is granted by the
+     * system.
+     */
+    static boolean holdsAccountUpdatePermission() {
+        Context context = ContextUtils.getApplicationContext();
+        int result = ApiCompatibilityUtils.checkPermission(
+                context, ACCOUNT_UPDATE_BROADCAST_PERMISSION, Process.myPid(), Process.myUid());
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
     private GSAAccountChangeListener(Context context) {
         Context applicationContext = context.getApplicationContext();
         BroadcastReceiver accountChangeReceiver = new BroadcastReceiver() {
@@ -123,12 +134,12 @@ public class GSAAccountChangeListener {
                     // is not the same one as GSA's, then the broadcasts will never arrive.
                     // Query the package manager to know whether the permission was granted, and
                     // only switch to the broadcast mechanism if that's the case.
-                    if (ApiCompatibilityUtils.checkPermission(context,
-                                ACCOUNT_UPDATE_BROADCAST_PERMISSION, Process.myPid(),
-                                Process.myUid())
-                            == PackageManager.PERMISSION_GRANTED) {
-                        notifyGsaBroadcastsAccountChanges();
-                    }
+                    //
+                    // Note that this is technically not required, since Chrome tells GSA whether
+                    // it holds the permission when connecting to it in GSAServiceClient, but this
+                    // extra bit of paranoia protects from old versions of GSA that don't check
+                    // what Chrome sends.
+                    if (holdsAccountUpdatePermission()) notifyGsaBroadcastsAccountChanges();
                 }
 
                 // If GSA doesn't support the broadcast, we connect several times to the service per

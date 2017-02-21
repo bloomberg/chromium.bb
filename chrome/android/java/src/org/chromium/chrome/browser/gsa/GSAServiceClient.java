@@ -49,6 +49,8 @@ public class GSAServiceClient {
     public static final String KEY_GSA_STATE = "ssb_service:ssb_state";
     public static final String KEY_GSA_CONTEXT = "ssb_service:ssb_context";
     public static final String KEY_GSA_PACKAGE_NAME = "ssb_service:ssb_package_name";
+    public static final String KEY_GSA_SUPPORTS_BROADCAST =
+            "ssb_service:chrome_holds_account_update_permission";
 
     @VisibleForTesting
     static final int INVALID_PSS = -1;
@@ -241,9 +243,11 @@ public class GSAServiceClient {
                         null, REQUEST_REGISTER_CLIENT);
                 registerClientMessage.replyTo = mMessenger;
                 Bundle b = mGsaHelper.getBundleForRegisteringGSAClient(mContext);
+                if (b == null) b = new Bundle();
+                b.putString(KEY_GSA_PACKAGE_NAME, mContext.getPackageName());
+                b.putBoolean(KEY_GSA_SUPPORTS_BROADCAST,
+                        GSAAccountChangeListener.holdsAccountUpdatePermission());
                 registerClientMessage.setData(b);
-                registerClientMessage.getData().putString(
-                        KEY_GSA_PACKAGE_NAME, mContext.getPackageName());
                 mService.send(registerClientMessage);
                 // Send prepare overlay message if there is a pending GSA context.
             } catch (RemoteException e) {
