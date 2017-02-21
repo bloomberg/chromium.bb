@@ -69,9 +69,9 @@ void ContentLayerDelegate::paintContents(
   // We also disable caching when Painting or Construction are disabled. In both
   // cases we would like to compare assuming the full cost of recording, not the
   // cost of re-using cached content.
-  if (paintingControl != WebContentLayerClient::PaintDefaultBehavior &&
-      paintingControl != WebContentLayerClient::PaintDefaultBehaviorForTest &&
-      paintingControl != WebContentLayerClient::SubsequenceCachingDisabled)
+  if (paintingControl == WebContentLayerClient::DisplayListCachingDisabled ||
+      paintingControl == WebContentLayerClient::DisplayListPaintingDisabled ||
+      paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
     paintController.invalidateAll();
 
   GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
