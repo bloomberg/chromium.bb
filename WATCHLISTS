@@ -151,6 +151,12 @@
                   'components/autofill/browser/webdata/|'\
                   'components/webdata/',
     },
+    'background_fetch': {
+      'filepath': 'background_fetch',
+    },
+    'background_sync': {
+      'filepath': 'background_sync',
+    },
     'banners': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/banners/|'\
                   'chrome/android/javatests/src/org/chromium/chrome/browser/banners/|'\
@@ -160,9 +166,6 @@
                   'chrome/renderer/banners/|'\
                   'third_party/WebKit/public/platform/modules/app_banner/|'\
                   'third_party/WebKit/Source/modules/app_banner/',
-    },
-    'background_sync': {
-      'filepath': 'background_sync',
     },
     'base': {
       'filepath': '^base/',
@@ -1545,6 +1548,9 @@
                  'mathp+autofillwatch@chromium.org',
                  'sebsg+autofillwatch@chromium.org',
                  'rogerm+autofillwatch@chromium.org'],
+    'background_fetch': ['awdf+watch@chromium.org',
+                         'harkness+watch@chromium.org',
+                         'peter@chromium.org'],
     'background_sync': ['chasej+watch@chromium.org',
                         'iclelland+watch@chromium.org',
                         'jkarlin+watch@chromium.org',
