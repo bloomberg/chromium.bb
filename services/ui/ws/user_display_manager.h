@@ -5,7 +5,6 @@
 #ifndef SERVICES_UI_WS_USER_DISPLAY_MANAGER_H_
 #define SERVICES_UI_WS_USER_DISPLAY_MANAGER_H_
 
-#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -14,18 +13,19 @@
 #include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/ws/user_id.h"
 
+namespace display {
+class Display;
+}
+
 namespace ui {
 namespace ws {
 
-class Display;
-class DisplayManager;
 class UserDisplayManagerDelegate;
 
 // Provides per user display state.
 class UserDisplayManager : public mojom::DisplayManager {
  public:
-  UserDisplayManager(ws::DisplayManager* display_manager,
-                     UserDisplayManagerDelegate* delegate,
+  UserDisplayManager(UserDisplayManagerDelegate* delegate,
                      const UserId& user_id);
   ~UserDisplayManager() override;
 
@@ -36,10 +36,10 @@ class UserDisplayManager : public mojom::DisplayManager {
       mojo::InterfaceRequest<mojom::DisplayManager> request);
 
   // Called when something about the display (e.g. pixel-ratio, size) changes.
-  void OnDisplayUpdate(Display* display);
+  void OnDisplayUpdate(const display::Display& display);
 
-  // Called by Display prior to |display| being removed and destroyed.
-  void OnWillDestroyDisplay(Display* display);
+  // Called when |display_id| is being removed.
+  void OnWillDestroyDisplay(int64_t display_id);
 
   // Called when the primary display changes.
   void OnPrimaryDisplayChanged(int64_t primary_display_id);
@@ -53,14 +53,12 @@ class UserDisplayManager : public mojom::DisplayManager {
   void OnObserverAdded(mojom::DisplayManagerObserver* observer);
 
   // Fills in a WsDisplayPtr for |display|.
-  mojom::WsDisplayPtr GetWsDisplayPtr(const Display& display);
+  mojom::WsDisplayPtr ToWsDisplayPtr(const display::Display& display);
 
   std::vector<mojom::WsDisplayPtr> GetAllDisplays();
 
   // Calls OnDisplays() on |observer|.
   void CallOnDisplays(mojom::DisplayManagerObserver* observer);
-
-  ws::DisplayManager* display_manager_;
 
   UserDisplayManagerDelegate* delegate_;
 

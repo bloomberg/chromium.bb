@@ -73,8 +73,4 @@ void ScreenManagerStubInternal::RequestCloseDisplay(int64_t display_id) {
   }
 }
 
-int64_t ScreenManagerStubInternal::GetPrimaryDisplayId() const {
-  return display_id_;
-}
-
 }  // namespace display

@@ -60,11 +60,19 @@ std::unique_ptr<ScreenManager> ScreenManager::Create() {
   return base::MakeUnique<ScreenManagerOzoneInternal>();
 }
 
-ScreenManagerOzoneInternal::ScreenManagerOzoneInternal() {}
+ScreenManagerOzoneInternal::ScreenManagerOzoneInternal()
+    : screen_owned_(base::MakeUnique<ScreenBase>()),
+      screen_(screen_owned_.get()) {
+  Screen::SetScreenInstance(screen_owned_.get());
+}
 
 ScreenManagerOzoneInternal::~ScreenManagerOzoneInternal() {
   // We are shutting down and don't want to make anymore display changes.
   fake_display_controller_ = nullptr;
+
+  // At this point |display_manager_| likely owns the Screen instance. It never
+  // cleans up the instance pointer though, which could cause problems in tests.
+  Screen::SetScreenInstance(nullptr);
 
   touch_transform_controller_.reset();
 
@@ -159,14 +167,9 @@ void ScreenManagerOzoneInternal::Init(ScreenManagerDelegate* delegate) {
         native_display_delegate_->GetFakeDisplayController();
   }
 
-  // Create a new Screen instance.
-  std::unique_ptr<ScreenBase> screen = base::MakeUnique<ScreenBase>();
-  Screen::SetScreenInstance(screen.get());
-  screen_ = screen.get();
-
   // Configure display manager. ScreenManager acts as an observer to find out
   // display changes and as a delegate to find out when changes start/stop.
-  display_manager_ = base::MakeUnique<DisplayManager>(std::move(screen));
+  display_manager_ = base::MakeUnique<DisplayManager>(std::move(screen_owned_));
   display_manager_->set_configure_displays(true);
   display_manager_->AddObserver(this);
   display_manager_->set_delegate(this);
@@ -198,10 +201,6 @@ void ScreenManagerOzoneInternal::RequestCloseDisplay(int64_t display_id) {
   // Tell the NDD to remove the display. ScreenManager will get an update
   // that the display configuration has changed and the display will be gone.
   fake_display_controller_->RemoveDisplay(display_id);
-}
-
-int64_t ScreenManagerOzoneInternal::GetPrimaryDisplayId() const {
-  return primary_display_id_;
 }
 
 void ScreenManagerOzoneInternal::ToggleAddRemoveDisplay() {

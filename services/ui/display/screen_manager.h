@@ -40,8 +40,6 @@ class ScreenManager {
   // Handle requests from the platform to close a display.
   virtual void RequestCloseDisplay(int64_t display_id) = 0;
 
-  virtual int64_t GetPrimaryDisplayId() const = 0;
-
  private:
   static ScreenManager* instance_;  // Instance is not owned.
 

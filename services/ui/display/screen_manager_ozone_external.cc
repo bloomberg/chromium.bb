@@ -27,8 +27,4 @@ void ScreenManagerOzoneExternal::Init(ScreenManagerDelegate* delegate) {}
 
 void ScreenManagerOzoneExternal::RequestCloseDisplay(int64_t display_id) {}
 
-int64_t ScreenManagerOzoneExternal::GetPrimaryDisplayId() const {
-  return kInvalidDisplayId;
-}
-
 }  // namespace display

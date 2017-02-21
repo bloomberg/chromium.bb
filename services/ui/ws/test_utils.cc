@@ -87,13 +87,27 @@ ClientWindowId NextUnusedClientWindowId(WindowTree* tree) {
   }
 }
 
+// Creates a Display with |id| and same attributes as |metrics|.
+display::Display CreateDisplay(int64_t id,
+                               const display::ViewportMetrics& metrics) {
+  display::Display display(id);
+  display.set_bounds(metrics.bounds);
+  display.set_work_area(metrics.work_area);
+  display.set_device_scale_factor(metrics.device_scale_factor);
+  display.set_rotation(metrics.rotation);
+  display.set_touch_support(metrics.touch_support);
+  return display;
+}
+
 }  // namespace
 
 // TestScreenManager  -------------------------------------------------
 
 TestScreenManager::TestScreenManager() {}
 
-TestScreenManager::~TestScreenManager() {}
+TestScreenManager::~TestScreenManager() {
+  display::Screen::SetScreenInstance(nullptr);
+}
 
 int64_t TestScreenManager::AddDisplay() {
   return AddDisplay(MakeViewportMetrics(0, 0, 100, 100, 1.0f));
@@ -104,38 +118,42 @@ int64_t TestScreenManager::AddDisplay(const display::ViewportMetrics& metrics) {
   int64_t display_id = display_ids_.empty() ? 1 : *display_ids_.rbegin() + 1;
   display_ids_.insert(display_id);
 
+  // First display added will be the primary display.
+  display::DisplayList::Type type = display::DisplayList::Type::NOT_PRIMARY;
+  if (display_ids_.size() == 1)
+    type = display::DisplayList::Type::PRIMARY;
+
+  screen_->display_list().AddDisplay(CreateDisplay(display_id, metrics), type);
   delegate_->OnDisplayAdded(display_id, metrics);
 
-  // First display added will be the primary display.
-  if (primary_display_id_ == display::kInvalidDisplayId) {
-    primary_display_id_ = display_id;
+  if (type == display::DisplayList::Type::PRIMARY)
     delegate_->OnPrimaryDisplayChanged(display_id);
-  }
 
   return display_id;
 }
 
-void TestScreenManager::ModifyDisplay(int64_t id,
+void TestScreenManager::ModifyDisplay(int64_t display_id,
                                       const display::ViewportMetrics& metrics) {
-  DCHECK(display_ids_.count(id) == 1);
-  delegate_->OnDisplayModified(id, metrics);
+  DCHECK(display_ids_.count(display_id) == 1);
+  screen_->display_list().UpdateDisplay(CreateDisplay(display_id, metrics));
+  delegate_->OnDisplayModified(display_id, metrics);
 }
 
-void TestScreenManager::RemoveDisplay(int64_t id) {
-  DCHECK(display_ids_.count(id) == 1);
-  delegate_->OnDisplayRemoved(id);
-  display_ids_.erase(id);
+void TestScreenManager::RemoveDisplay(int64_t display_id) {
+  DCHECK(display_ids_.count(display_id) == 1);
+  screen_->display_list().RemoveDisplay(display_id);
+  delegate_->OnDisplayRemoved(display_id);
+  display_ids_.erase(display_id);
 }
 
 void TestScreenManager::Init(display::ScreenManagerDelegate* delegate) {
-  // Reset
   delegate_ = delegate;
-  display_ids_.clear();
-  primary_display_id_ = display::kInvalidDisplayId;
-}
 
-int64_t TestScreenManager::GetPrimaryDisplayId() const {
-  return primary_display_id_;
+  // Reset everything.
+  display_ids_.clear();
+  display::Screen::SetScreenInstance(nullptr);
+  screen_ = base::MakeUnique<display::ScreenBase>();
+  display::Screen::SetScreenInstance(screen_.get());
 }
 
 // TestPlatformDisplayFactory  -------------------------------------------------

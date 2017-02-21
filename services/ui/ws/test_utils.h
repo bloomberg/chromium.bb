@@ -33,6 +33,7 @@
 #include "services/ui/ws/window_tree.h"
 #include "services/ui/ws/window_tree_binding.h"
 #include "ui/display/display.h"
+#include "ui/display/screen_base.h"
 #include "ui/display/types/display_constants.h"
 
 namespace ui {
@@ -68,11 +69,10 @@ class TestScreenManager : public display::ScreenManager {
   void AddInterfaces(service_manager::InterfaceRegistry* registry) override {}
   void Init(display::ScreenManagerDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override {}
-  int64_t GetPrimaryDisplayId() const override;
 
  private:
-  display::ScreenManagerDelegate* delegate_;
-  int64_t primary_display_id_ = display::kInvalidDisplayId;
+  display::ScreenManagerDelegate* delegate_ = nullptr;
+  std::unique_ptr<display::ScreenBase> screen_;
   std::set<int64_t> display_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScreenManager);

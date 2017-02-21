@@ -45,7 +45,7 @@ UserDisplayManager* DisplayManager::GetUserDisplayManager(
     const UserId& user_id) {
   if (!user_display_managers_.count(user_id)) {
     user_display_managers_[user_id] =
-        base::MakeUnique<UserDisplayManager>(this, window_server_, user_id);
+        base::MakeUnique<UserDisplayManager>(window_server_, user_id);
   }
   return user_display_managers_[user_id].get();
 }
@@ -69,7 +69,7 @@ void DisplayManager::DestroyDisplay(Display* display) {
     pending_displays_.erase(display);
   } else {
     for (const auto& pair : user_display_managers_)
-      pair.second->OnWillDestroyDisplay(display);
+      pair.second->OnWillDestroyDisplay(display->GetId());
 
     DCHECK(displays_.count(display));
     displays_.erase(display);
@@ -100,7 +100,7 @@ std::set<const Display*> DisplayManager::displays() const {
 
 void DisplayManager::OnDisplayUpdate(Display* display) {
   for (const auto& pair : user_display_managers_)
-    pair.second->OnDisplayUpdate(display);
+    pair.second->OnDisplayUpdate(display->ToDisplay());
 }
 
 Display* DisplayManager::GetDisplayContaining(const ServerWindow* window) {

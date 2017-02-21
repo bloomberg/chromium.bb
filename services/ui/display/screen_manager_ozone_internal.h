@@ -53,7 +53,6 @@ class ScreenManagerOzoneInternal
   void AddInterfaces(service_manager::InterfaceRegistry* registry) override;
   void Init(ScreenManagerDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override;
-  int64_t GetPrimaryDisplayId() const override;
 
   // mojom::TestDisplayController:
   void ToggleAddRemoveDisplay() override;
@@ -109,7 +108,14 @@ class ScreenManagerOzoneInternal
   std::unique_ptr<DisplayChangeObserver> display_change_observer_;
   std::unique_ptr<TouchTransformController> touch_transform_controller_;
 
-  ScreenBase* screen_ = nullptr;
+  // A Screen instance is created in the constructor because it might be
+  // accessed early. The ownership of this object will be transfered to
+  // |display_manager_| when that gets initialized.
+  std::unique_ptr<ScreenBase> screen_owned_;
+
+  // Used to add/remove/modify displays.
+  ScreenBase* screen_;
+
   ScreenManagerDelegate* delegate_ = nullptr;
 
   std::unique_ptr<NativeDisplayDelegate> native_display_delegate_;
