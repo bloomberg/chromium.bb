@@ -370,9 +370,9 @@ void od_pvq_decode(daala_dec_ctx *dec,
       if (i == 0 && !skip_rest[0] && bs > 0) {
         int skip_dir;
         int j;
-        skip_dir = aom_decode_cdf_adapt(dec->r,
+        skip_dir = aom_read_symbol(dec->r,
          &dec->state.adapt.pvq.pvq_skip_dir_cdf[(pli != 0) + 2*(bs - 1)][0], 7,
-         dec->state.adapt.pvq.pvq_skip_dir_increment, "pvq:skiprest");
+         "pvq:skiprest");
         for (j = 0; j < 3; j++) skip_rest[j] = !!(skip_dir & (1 << j));
       }
     }

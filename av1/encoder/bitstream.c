@@ -1076,11 +1076,11 @@ static void pack_pvq_tokens(aom_writer *w, MACROBLOCK *const x,
                 encode_flip, flip);
           }
           if (i == 0 && !pvq->skip_rest && pvq->bs > 0) {
-            aom_encode_cdf_adapt(
+            aom_write_symbol(
                 w, pvq->skip_dir,
                 &adapt->pvq
                      .pvq_skip_dir_cdf[(plane != 0) + 2 * (pvq->bs - 1)][0],
-                7, adapt->pvq.pvq_skip_dir_increment);
+                7);
           }
         }
       }

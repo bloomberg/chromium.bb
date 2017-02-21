@@ -932,9 +932,8 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
        skip_rest, encode_flip, flip);
     }
     if (i == 0 && !skip_rest && bs > 0) {
-      aom_encode_cdf_adapt(&enc->w, skip_dir,
-       &enc->state.adapt.pvq.pvq_skip_dir_cdf[(pli != 0) + 2*(bs - 1)][0], 7,
-       enc->state.adapt.pvq.pvq_skip_dir_increment);
+      aom_write_symbol(&enc->w, skip_dir,
+       &enc->state.adapt.pvq.pvq_skip_dir_cdf[(pli != 0) + 2*(bs - 1)][0], 7);
     }
     if (encode_flip) cfl_encoded = 1;
   }
