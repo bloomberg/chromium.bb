@@ -614,11 +614,13 @@ TEST_F(WorkspaceLayoutManagerSoloTest, Minimize) {
   std::unique_ptr<WindowOwner> window_owner(CreateTestWindow(bounds));
   WmWindow* window = window_owner->window();
   window->SetShowState(ui::SHOW_STATE_MINIMIZED);
-  // Note: Currently minimize doesn't do anything except set the state.
-  // See crbug.com/104571.
-  EXPECT_EQ(bounds.ToString(), window->GetBounds().ToString());
+  EXPECT_FALSE(window->IsVisible());
+  EXPECT_TRUE(window->GetWindowState()->IsMinimized());
+  EXPECT_EQ(bounds, window->GetBounds());
   window->SetShowState(ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(bounds.ToString(), window->GetBounds().ToString());
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_FALSE(window->GetWindowState()->IsMinimized());
+  EXPECT_EQ(bounds, window->GetBounds());
 }
 
 // A aura::WindowObserver which sets the focus when the window becomes visible.
