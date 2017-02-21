@@ -41,6 +41,7 @@ class NodeWithIndex {
 
   Node& node() const { return *m_node; }
 
+  // TODO(tkent): Should be unsigned.
   int index() const {
     if (!hasIndex())
       m_index = node().nodeIndex();

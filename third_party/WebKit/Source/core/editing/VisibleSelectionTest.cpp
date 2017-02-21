@@ -209,8 +209,8 @@ TEST_F(VisibleSelectionTest, Initialisation) {
   EXPECT_TRUE(selectionInFlatTree.isCaret());
 
   Range* range = firstRangeOf(selection);
-  EXPECT_EQ(0, range->startOffset());
-  EXPECT_EQ(0, range->endOffset());
+  EXPECT_EQ(0u, range->startOffset());
+  EXPECT_EQ(0u, range->endOffset());
   EXPECT_EQ("", range->text());
   testFlatTreePositionsToEqualToDOMTreePositions(selection,
                                                  selectionInFlatTree);
@@ -351,8 +351,8 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
-    EXPECT_EQ(0, range->startOffset());
-    EXPECT_EQ(5, range->endOffset());
+    EXPECT_EQ(0u, range->startOffset());
+    EXPECT_EQ(5u, range->endOffset());
     EXPECT_EQ("Lorem", range->text());
     testFlatTreePositionsToEqualToDOMTreePositions(selection,
                                                    selectionInFlatTree);
@@ -367,8 +367,8 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
-    EXPECT_EQ(6, range->startOffset());
-    EXPECT_EQ(11, range->endOffset());
+    EXPECT_EQ(6u, range->startOffset());
+    EXPECT_EQ(11u, range->endOffset());
     EXPECT_EQ("ipsum", range->text());
     testFlatTreePositionsToEqualToDOMTreePositions(selection,
                                                    selectionInFlatTree);
@@ -385,8 +385,8 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
-    EXPECT_EQ(5, range->startOffset());
-    EXPECT_EQ(6, range->endOffset());
+    EXPECT_EQ(5u, range->startOffset());
+    EXPECT_EQ(6u, range->endOffset());
     EXPECT_EQ(" ", range->text());
     testFlatTreePositionsToEqualToDOMTreePositions(selection,
                                                    selectionInFlatTree);
@@ -403,8 +403,8 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
-    EXPECT_EQ(26, range->startOffset());
-    EXPECT_EQ(27, range->endOffset());
+    EXPECT_EQ(26u, range->startOffset());
+    EXPECT_EQ(27u, range->endOffset());
     EXPECT_EQ(",", range->text());
     testFlatTreePositionsToEqualToDOMTreePositions(selection,
                                                    selectionInFlatTree);
@@ -419,8 +419,8 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
-    EXPECT_EQ(27, range->startOffset());
-    EXPECT_EQ(28, range->endOffset());
+    EXPECT_EQ(27u, range->startOffset());
+    EXPECT_EQ(28u, range->endOffset());
     EXPECT_EQ(" ", range->text());
     testFlatTreePositionsToEqualToDOMTreePositions(selection,
                                                    selectionInFlatTree);
@@ -435,8 +435,8 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
-    EXPECT_EQ(0, range->startOffset());
-    EXPECT_EQ(5, range->endOffset());
+    EXPECT_EQ(0u, range->startOffset());
+    EXPECT_EQ(5u, range->endOffset());
     EXPECT_EQ("Lorem", range->text());
     testFlatTreePositionsToEqualToDOMTreePositions(selection,
                                                    selectionInFlatTree);
@@ -451,8 +451,8 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
         expandUsingGranularity(selectionInFlatTree, WordGranularity);
 
     Range* range = firstRangeOf(selection);
-    EXPECT_EQ(0, range->startOffset());
-    EXPECT_EQ(11, range->endOffset());
+    EXPECT_EQ(0u, range->startOffset());
+    EXPECT_EQ(11u, range->endOffset());
     EXPECT_EQ("Lorem ipsum", range->text());
     testFlatTreePositionsToEqualToDOMTreePositions(selection,
                                                    selectionInFlatTree);

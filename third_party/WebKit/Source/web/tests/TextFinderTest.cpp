@@ -85,9 +85,9 @@ TEST_F(TextFinderTest, FindTextSimple) {
   Range* activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(4, activeMatch->startOffset());
+  EXPECT_EQ(4u, activeMatch->startOffset());
   EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(10, activeMatch->endOffset());
+  EXPECT_EQ(10u, activeMatch->endOffset());
 
   findOptions.findNext = true;
   ASSERT_TRUE(
@@ -95,9 +95,9 @@ TEST_F(TextFinderTest, FindTextSimple) {
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(14, activeMatch->startOffset());
+  EXPECT_EQ(14u, activeMatch->startOffset());
   EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(20, activeMatch->endOffset());
+  EXPECT_EQ(20u, activeMatch->endOffset());
 
   // Should wrap to the first match.
   ASSERT_TRUE(
@@ -105,9 +105,9 @@ TEST_F(TextFinderTest, FindTextSimple) {
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(4, activeMatch->startOffset());
+  EXPECT_EQ(4u, activeMatch->startOffset());
   EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(10, activeMatch->endOffset());
+  EXPECT_EQ(10u, activeMatch->endOffset());
 
   // Search in the reverse order.
   identifier = 1;
@@ -119,9 +119,9 @@ TEST_F(TextFinderTest, FindTextSimple) {
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(14, activeMatch->startOffset());
+  EXPECT_EQ(14u, activeMatch->startOffset());
   EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(20, activeMatch->endOffset());
+  EXPECT_EQ(20u, activeMatch->endOffset());
 
   findOptions.findNext = true;
   ASSERT_TRUE(
@@ -129,9 +129,9 @@ TEST_F(TextFinderTest, FindTextSimple) {
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(4, activeMatch->startOffset());
+  EXPECT_EQ(4u, activeMatch->startOffset());
   EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(10, activeMatch->endOffset());
+  EXPECT_EQ(10u, activeMatch->endOffset());
 
   // Wrap to the first match (last occurence in the document).
   ASSERT_TRUE(
@@ -139,9 +139,9 @@ TEST_F(TextFinderTest, FindTextSimple) {
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(14, activeMatch->startOffset());
+  EXPECT_EQ(14u, activeMatch->startOffset());
   EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(20, activeMatch->endOffset());
+  EXPECT_EQ(20u, activeMatch->endOffset());
 }
 
 TEST_F(TextFinderTest, FindTextAutosizing) {
@@ -220,9 +220,9 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
   Range* activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textInIElement, activeMatch->startContainer());
-  EXPECT_EQ(0, activeMatch->startOffset());
+  EXPECT_EQ(0u, activeMatch->startOffset());
   EXPECT_EQ(textInIElement, activeMatch->endContainer());
-  EXPECT_EQ(3, activeMatch->endOffset());
+  EXPECT_EQ(3u, activeMatch->endOffset());
 
   findOptions.findNext = true;
   ASSERT_TRUE(
@@ -230,18 +230,18 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textInUElement, activeMatch->startContainer());
-  EXPECT_EQ(0, activeMatch->startOffset());
+  EXPECT_EQ(0u, activeMatch->startOffset());
   EXPECT_EQ(textInUElement, activeMatch->endContainer());
-  EXPECT_EQ(3, activeMatch->endOffset());
+  EXPECT_EQ(3u, activeMatch->endOffset());
 
   ASSERT_TRUE(
       textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textInBElement, activeMatch->startContainer());
-  EXPECT_EQ(0, activeMatch->startOffset());
+  EXPECT_EQ(0u, activeMatch->startOffset());
   EXPECT_EQ(textInBElement, activeMatch->endContainer());
-  EXPECT_EQ(3, activeMatch->endOffset());
+  EXPECT_EQ(3u, activeMatch->endOffset());
 
   // Should wrap to the first match.
   ASSERT_TRUE(
@@ -249,9 +249,9 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textInIElement, activeMatch->startContainer());
-  EXPECT_EQ(0, activeMatch->startOffset());
+  EXPECT_EQ(0u, activeMatch->startOffset());
   EXPECT_EQ(textInIElement, activeMatch->endContainer());
-  EXPECT_EQ(3, activeMatch->endOffset());
+  EXPECT_EQ(3u, activeMatch->endOffset());
 
   // Fresh search in the reverse order.
   identifier = 1;
@@ -263,9 +263,9 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textInBElement, activeMatch->startContainer());
-  EXPECT_EQ(0, activeMatch->startOffset());
+  EXPECT_EQ(0u, activeMatch->startOffset());
   EXPECT_EQ(textInBElement, activeMatch->endContainer());
-  EXPECT_EQ(3, activeMatch->endOffset());
+  EXPECT_EQ(3u, activeMatch->endOffset());
 
   findOptions.findNext = true;
   ASSERT_TRUE(
@@ -273,18 +273,18 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textInUElement, activeMatch->startContainer());
-  EXPECT_EQ(0, activeMatch->startOffset());
+  EXPECT_EQ(0u, activeMatch->startOffset());
   EXPECT_EQ(textInUElement, activeMatch->endContainer());
-  EXPECT_EQ(3, activeMatch->endOffset());
+  EXPECT_EQ(3u, activeMatch->endOffset());
 
   ASSERT_TRUE(
       textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textInIElement, activeMatch->startContainer());
-  EXPECT_EQ(0, activeMatch->startOffset());
+  EXPECT_EQ(0u, activeMatch->startOffset());
   EXPECT_EQ(textInIElement, activeMatch->endContainer());
-  EXPECT_EQ(3, activeMatch->endOffset());
+  EXPECT_EQ(3u, activeMatch->endOffset());
 
   // And wrap.
   ASSERT_TRUE(
@@ -292,9 +292,9 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
   activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_EQ(textInBElement, activeMatch->startContainer());
-  EXPECT_EQ(0, activeMatch->startOffset());
+  EXPECT_EQ(0u, activeMatch->startOffset());
   EXPECT_EQ(textInBElement, activeMatch->endContainer());
-  EXPECT_EQ(3, activeMatch->endOffset());
+  EXPECT_EQ(3u, activeMatch->endOffset());
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
@@ -485,8 +485,8 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   Range* activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_FALSE(activeNow);
-  EXPECT_EQ(2, activeMatch->startOffset());
-  EXPECT_EQ(8, activeMatch->endOffset());
+  EXPECT_EQ(2u, activeMatch->startOffset());
+  EXPECT_EQ(8u, activeMatch->endOffset());
 
   // Restart full search and check that added text is found.
   findOptions.findNext = false;
@@ -539,8 +539,8 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
   Range* activeMatch = textFinder().activeMatch();
   ASSERT_TRUE(activeMatch);
   EXPECT_FALSE(activeNow);
-  EXPECT_EQ(2, activeMatch->startOffset());
-  EXPECT_EQ(8, activeMatch->endOffset());
+  EXPECT_EQ(2u, activeMatch->startOffset());
+  EXPECT_EQ(8u, activeMatch->endOffset());
 
   // Restart full search and check that added text is found.
   findOptions.findNext = false;

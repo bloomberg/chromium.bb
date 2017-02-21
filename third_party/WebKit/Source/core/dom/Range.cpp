@@ -70,9 +70,9 @@ Range* Range::create(Document& ownerDocument) {
 
 inline Range::Range(Document& ownerDocument,
                     Node* startContainer,
-                    int startOffset,
+                    unsigned startOffset,
                     Node* endContainer,
-                    int endOffset)
+                    unsigned endOffset)
     : m_ownerDocument(&ownerDocument),
       m_start(m_ownerDocument),
       m_end(m_ownerDocument) {
@@ -86,9 +86,9 @@ inline Range::Range(Document& ownerDocument,
 
 Range* Range::create(Document& ownerDocument,
                      Node* startContainer,
-                     int startOffset,
+                     unsigned startOffset,
                      Node* endContainer,
-                     int endOffset) {
+                     unsigned endOffset) {
   return new Range(ownerDocument, startContainer, startOffset, endContainer,
                    endOffset);
 }
@@ -163,7 +163,7 @@ static inline bool checkForDifferentRootContainer(
 }
 
 void Range::setStart(Node* refNode,
-                     int offset,
+                     unsigned offset,
                      ExceptionState& exceptionState) {
   if (!refNode) {
     // FIXME: Generated bindings code never calls with null, and neither should
@@ -193,7 +193,9 @@ void Range::setStart(Node* refNode,
   updateSelectionIfAddedToSelection();
 }
 
-void Range::setEnd(Node* refNode, int offset, ExceptionState& exceptionState) {
+void Range::setEnd(Node* refNode,
+                   unsigned offset,
+                   ExceptionState& exceptionState) {
   if (!refNode) {
     // FIXME: Generated bindings code never calls with null, and neither should
     // other callers!
@@ -244,7 +246,7 @@ void Range::collapse(bool toStart) {
 
 bool Range::isNodeFullyContained(Node& node) const {
   ContainerNode* parentNode = node.parentNode();
-  int nodeIndex = node.nodeIndex();
+  unsigned nodeIndex = node.nodeIndex();
   return isPointInRange(
              parentNode, nodeIndex,
              IGNORE_EXCEPTION_FOR_TESTING)  // starts in the middle of this
@@ -268,7 +270,7 @@ bool Range::hasSameRoot(const Node& node) const {
 }
 
 bool Range::isPointInRange(Node* refNode,
-                           int offset,
+                           unsigned offset,
                            ExceptionState& exceptionState) const {
   if (!refNode) {
     // FIXME: Generated bindings code never calls with null, and neither should
@@ -292,7 +294,7 @@ bool Range::isPointInRange(Node* refNode,
 }
 
 short Range::comparePoint(Node* refNode,
-                          int offset,
+                          unsigned offset,
                           ExceptionState& exceptionState) const {
   // http://developer.mozilla.org/en/docs/DOM:range.comparePoint
   // This method returns -1, 0 or 1 depending on if the point described by the
@@ -379,9 +381,9 @@ short Range::compareBoundaryPoints(unsigned how,
 }
 
 short Range::compareBoundaryPoints(Node* containerA,
-                                   int offsetA,
+                                   unsigned offsetA,
                                    Node* containerB,
-                                   int offsetB,
+                                   unsigned offsetB,
                                    ExceptionState& exceptionState) {
   bool disconnected = false;
   short result = comparePositionsInDOMTree(containerA, offsetA, containerB,
@@ -957,13 +959,12 @@ String Range::toString() const {
     Node::NodeType type = n->getNodeType();
     if (type == Node::kTextNode || type == Node::kCdataSectionNode) {
       String data = toCharacterData(n)->data();
-      int length = data.length();
-      int start = (n == m_start.container())
-                      ? std::min(std::max(0, m_start.offset()), length)
-                      : 0;
-      int end = (n == m_end.container())
-                    ? std::min(std::max(start, m_end.offset()), length)
-                    : length;
+      unsigned length = data.length();
+      unsigned start =
+          (n == m_start.container()) ? std::min(m_start.offset(), length) : 0;
+      unsigned end = (n == m_end.container())
+                         ? std::min(std::max(start, m_end.offset()), length)
+                         : length;
       builder.append(data, start, end - start);
     }
   }
@@ -1025,7 +1026,7 @@ void Range::detach() {
 }
 
 Node* Range::checkNodeWOffset(Node* n,
-                              int offset,
+                              unsigned offset,
                               ExceptionState& exceptionState) {
   switch (n->getNodeType()) {
     case Node::kDocumentTypeNode:
@@ -1036,22 +1037,23 @@ Node* Range::checkNodeWOffset(Node* n,
     case Node::kCdataSectionNode:
     case Node::kCommentNode:
     case Node::kTextNode:
-      if (static_cast<unsigned>(offset) > toCharacterData(n)->length())
+      if (offset > toCharacterData(n)->length()) {
         exceptionState.throwDOMException(
-            IndexSizeError,
-            "The offset " + String::number(offset) +
-                " is larger than or equal to the node's length (" +
-                String::number(toCharacterData(n)->length()) + ").");
+            IndexSizeError, "The offset " + String::number(offset) +
+                                " is larger than the node's length (" +
+                                String::number(toCharacterData(n)->length()) +
+                                ").");
+      }
       return nullptr;
     case Node::kProcessingInstructionNode:
-      if (static_cast<unsigned>(offset) >
-          toProcessingInstruction(n)->data().length())
+      if (offset > toProcessingInstruction(n)->data().length()) {
         exceptionState.throwDOMException(
             IndexSizeError,
             "The offset " + String::number(offset) +
-                " is larger than or equal to than the node's length (" +
+                " is larger than the node's length (" +
                 String::number(toProcessingInstruction(n)->data().length()) +
                 ").");
+      }
       return nullptr;
     case Node::kAttributeNode:
     case Node::kDocumentFragmentNode:
@@ -1060,10 +1062,11 @@ Node* Range::checkNodeWOffset(Node* n,
       if (!offset)
         return nullptr;
       Node* childBefore = NodeTraversal::childAt(*n, offset - 1);
-      if (!childBefore)
+      if (!childBefore) {
         exceptionState.throwDOMException(
             IndexSizeError,
             "There is no child at offset " + String::number(offset) + ".");
+      }
       return childBefore;
     }
   }
@@ -1424,9 +1427,10 @@ void Range::textRects(Vector<IntRect>& rects, bool useSelectionHeight) const {
     if (!r || !r->isText())
       continue;
     LayoutText* layoutText = toLayoutText(r);
-    int startOffset = node == startContainer ? m_start.offset() : 0;
-    int endOffset =
-        node == endContainer ? m_end.offset() : std::numeric_limits<int>::max();
+    unsigned startOffset = node == startContainer ? m_start.offset() : 0;
+    unsigned endOffset = node == endContainer
+                             ? m_end.offset()
+                             : std::numeric_limits<unsigned>::max();
     layoutText->absoluteRectsForRange(rects, startOffset, endOffset,
                                       useSelectionHeight);
   }
@@ -1445,9 +1449,10 @@ void Range::textQuads(Vector<FloatQuad>& quads, bool useSelectionHeight) const {
     if (!r || !r->isText())
       continue;
     LayoutText* layoutText = toLayoutText(r);
-    int startOffset = node == startContainer ? m_start.offset() : 0;
-    int endOffset =
-        node == endContainer ? m_end.offset() : std::numeric_limits<int>::max();
+    unsigned startOffset = node == startContainer ? m_start.offset() : 0;
+    unsigned endOffset = node == endContainer
+                             ? m_end.offset()
+                             : std::numeric_limits<unsigned>::max();
     layoutText->absoluteQuadsForRange(quads, startOffset, endOffset,
                                       useSelectionHeight);
   }
@@ -1564,7 +1569,7 @@ static inline void boundaryTextNodesMerged(RangeBoundaryPoint& boundary,
     boundary.set(oldNode.node().previousSibling(), boundary.offset() + offset,
                  0);
   else if (boundary.container() == oldNode.node().parentNode() &&
-           boundary.offset() == oldNode.index())
+           boundary.offset() == static_cast<unsigned>(oldNode.index()))
     boundary.set(oldNode.node().previousSibling(), offset, 0);
 }
 
@@ -1682,8 +1687,10 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const {
       }
     } else if (node->isTextNode()) {
       if (LayoutText* layoutText = toText(node)->layoutObject()) {
-        int startOffset = (node == startContainer) ? m_start.offset() : 0;
-        int endOffset = (node == endContainer) ? m_end.offset() : INT_MAX;
+        unsigned startOffset = (node == startContainer) ? m_start.offset() : 0;
+        unsigned endOffset = (node == endContainer)
+                                 ? m_end.offset()
+                                 : std::numeric_limits<unsigned>::max();
 
         Vector<FloatQuad> textQuads;
         layoutText->absoluteQuadsForRange(textQuads, startOffset, endOffset);

@@ -61,8 +61,8 @@ TEST_F(CharacterIteratorTest, CollapsedSubrange) {
 
   Node* textNode = document().getElementById("div")->lastChild();
   Range* entireRange = Range::create(document(), textNode, 1, textNode, 4);
-  EXPECT_EQ(1, entireRange->startOffset());
-  EXPECT_EQ(4, entireRange->endOffset());
+  EXPECT_EQ(1u, entireRange->startOffset());
+  EXPECT_EQ(4u, entireRange->endOffset());
 
   const EphemeralRange& result =
       calculateCharacterSubrange(EphemeralRange(entireRange), 2, 0);

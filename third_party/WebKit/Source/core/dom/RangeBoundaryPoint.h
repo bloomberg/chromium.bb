@@ -44,13 +44,13 @@ class RangeBoundaryPoint {
   const Position toPosition() const;
 
   Node* container() const;
-  int offset() const;
+  unsigned offset() const;
   Node* childBefore() const;
 
   void clear();
 
-  void set(Node* container, int offset, Node* childBefore);
-  void setOffset(int);
+  void set(Node* container, unsigned offset, Node* childBefore);
+  void setOffset(unsigned);
 
   void setToBeforeChild(Node&);
   void setToStartOfNode(Node&);
@@ -70,12 +70,12 @@ class RangeBoundaryPoint {
   void ensureOffsetIsValid() const;
   bool isOffsetValid() const;
 
-  static const int invalidOffset = -1;
+  static const unsigned invalidOffset = static_cast<unsigned>(-1);
 
   Member<Node> m_containerNode;
   Member<Node> m_childBeforeBoundary;
   mutable uint64_t m_domTreeVersion;
-  mutable int m_offsetInContainer;
+  mutable unsigned m_offsetInContainer;
 };
 
 inline RangeBoundaryPoint::RangeBoundaryPoint(Node* container)
@@ -135,7 +135,7 @@ inline const Position RangeBoundaryPoint::toPosition() const {
                                      m_offsetInContainer);
 }
 
-inline int RangeBoundaryPoint::offset() const {
+inline unsigned RangeBoundaryPoint::offset() const {
   ensureOffsetIsValid();
   return m_offsetInContainer;
 }
@@ -148,10 +148,10 @@ inline void RangeBoundaryPoint::clear() {
 }
 
 inline void RangeBoundaryPoint::set(Node* container,
-                                    int offset,
+                                    unsigned offset,
                                     Node* childBefore) {
   DCHECK(container);
-  DCHECK_GE(offset, 0);
+  DCHECK_GE(offset, 0u);
   DCHECK_EQ(childBefore,
             offset ? NodeTraversal::childAt(*container, offset - 1) : 0);
   m_containerNode = container;
@@ -160,10 +160,10 @@ inline void RangeBoundaryPoint::set(Node* container,
   markValid();
 }
 
-inline void RangeBoundaryPoint::setOffset(int offset) {
+inline void RangeBoundaryPoint::setOffset(unsigned offset) {
   DCHECK(m_containerNode);
   DCHECK(m_containerNode->isCharacterDataNode());
-  DCHECK_GE(m_offsetInContainer, 0);
+  DCHECK_GE(m_offsetInContainer, 0u);
   DCHECK(!m_childBeforeBoundary);
   m_offsetInContainer = offset;
   markValid();
@@ -200,7 +200,7 @@ inline void RangeBoundaryPoint::childBeforeWillBeRemoved() {
   m_childBeforeBoundary = m_childBeforeBoundary->previousSibling();
   if (!isOffsetValid())
     return;
-  DCHECK_GT(m_offsetInContainer, 0);
+  DCHECK_GT(m_offsetInContainer, 0u);
   if (!m_childBeforeBoundary)
     m_offsetInContainer = 0;
   else if (m_offsetInContainer > 0)

@@ -76,29 +76,29 @@ TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
 
   EXPECT_TRUE(range04->boundaryPointsValid());
   EXPECT_EQ(oldText, range04->startContainer());
-  EXPECT_EQ(0, range04->startOffset());
+  EXPECT_EQ(0u, range04->startOffset());
   EXPECT_EQ(newText, range04->endContainer());
-  EXPECT_EQ(2, range04->endOffset());
+  EXPECT_EQ(2u, range04->endOffset());
 
   EXPECT_TRUE(range02->boundaryPointsValid());
   EXPECT_EQ(oldText, range02->startContainer());
-  EXPECT_EQ(0, range02->startOffset());
+  EXPECT_EQ(0u, range02->startOffset());
   EXPECT_EQ(oldText, range02->endContainer());
-  EXPECT_EQ(2, range02->endOffset());
+  EXPECT_EQ(2u, range02->endOffset());
 
   // Our implementation always moves the boundary point at the separation point
   // to the end of the original text node.
   EXPECT_TRUE(range22->boundaryPointsValid());
   EXPECT_EQ(oldText, range22->startContainer());
-  EXPECT_EQ(2, range22->startOffset());
+  EXPECT_EQ(2u, range22->startOffset());
   EXPECT_EQ(oldText, range22->endContainer());
-  EXPECT_EQ(2, range22->endOffset());
+  EXPECT_EQ(2u, range22->endOffset());
 
   EXPECT_TRUE(range24->boundaryPointsValid());
   EXPECT_EQ(oldText, range24->startContainer());
-  EXPECT_EQ(2, range24->startOffset());
+  EXPECT_EQ(2u, range24->startOffset());
   EXPECT_EQ(newText, range24->endContainer());
-  EXPECT_EQ(2, range24->endOffset());
+  EXPECT_EQ(2u, range24->endOffset());
 }
 
 TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
@@ -128,41 +128,41 @@ TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
 
   EXPECT_TRUE(rangeOuterOutside->boundaryPointsValid());
   EXPECT_EQ(outer, rangeOuterOutside->startContainer());
-  EXPECT_EQ(0, rangeOuterOutside->startOffset());
+  EXPECT_EQ(0u, rangeOuterOutside->startOffset());
   EXPECT_EQ(outer, rangeOuterOutside->endContainer());
-  EXPECT_EQ(6,
+  EXPECT_EQ(6u,
             rangeOuterOutside
                 ->endOffset());  // Increased by 1 since a new node is inserted.
 
   EXPECT_TRUE(rangeOuterInside->boundaryPointsValid());
   EXPECT_EQ(outer, rangeOuterInside->startContainer());
-  EXPECT_EQ(1, rangeOuterInside->startOffset());
+  EXPECT_EQ(1u, rangeOuterInside->startOffset());
   EXPECT_EQ(outer, rangeOuterInside->endContainer());
-  EXPECT_EQ(5, rangeOuterInside->endOffset());
+  EXPECT_EQ(5u, rangeOuterInside->endOffset());
 
   EXPECT_TRUE(rangeOuterSurroundingText->boundaryPointsValid());
   EXPECT_EQ(outer, rangeOuterSurroundingText->startContainer());
-  EXPECT_EQ(2, rangeOuterSurroundingText->startOffset());
+  EXPECT_EQ(2u, rangeOuterSurroundingText->startOffset());
   EXPECT_EQ(outer, rangeOuterSurroundingText->endContainer());
-  EXPECT_EQ(4, rangeOuterSurroundingText->endOffset());
+  EXPECT_EQ(4u, rangeOuterSurroundingText->endOffset());
 
   EXPECT_TRUE(rangeInnerLeft->boundaryPointsValid());
   EXPECT_EQ(innerLeft, rangeInnerLeft->startContainer());
-  EXPECT_EQ(0, rangeInnerLeft->startOffset());
+  EXPECT_EQ(0u, rangeInnerLeft->startOffset());
   EXPECT_EQ(innerLeft, rangeInnerLeft->endContainer());
-  EXPECT_EQ(1, rangeInnerLeft->endOffset());
+  EXPECT_EQ(1u, rangeInnerLeft->endOffset());
 
   EXPECT_TRUE(rangeInnerRight->boundaryPointsValid());
   EXPECT_EQ(innerRight, rangeInnerRight->startContainer());
-  EXPECT_EQ(0, rangeInnerRight->startOffset());
+  EXPECT_EQ(0u, rangeInnerRight->startOffset());
   EXPECT_EQ(innerRight, rangeInnerRight->endContainer());
-  EXPECT_EQ(1, rangeInnerRight->endOffset());
+  EXPECT_EQ(1u, rangeInnerRight->endOffset());
 
   EXPECT_TRUE(rangeFromTextToMiddleOfElement->boundaryPointsValid());
   EXPECT_EQ(newText, rangeFromTextToMiddleOfElement->startContainer());
-  EXPECT_EQ(3, rangeFromTextToMiddleOfElement->startOffset());
+  EXPECT_EQ(3u, rangeFromTextToMiddleOfElement->startOffset());
   EXPECT_EQ(outer, rangeFromTextToMiddleOfElement->endContainer());
-  EXPECT_EQ(4, rangeFromTextToMiddleOfElement->endOffset());
+  EXPECT_EQ(4u, rangeFromTextToMiddleOfElement->endOffset());
 }
 
 TEST_F(RangeTest, updateOwnerDocumentIfNeeded) {
@@ -176,9 +176,9 @@ TEST_F(RangeTest, updateOwnerDocumentIfNeeded) {
   anotherDocument->appendChild(foo);
 
   EXPECT_EQ(bar, range->startContainer());
-  EXPECT_EQ(0, range->startOffset());
+  EXPECT_EQ(0u, range->startOffset());
   EXPECT_EQ(foo, range->endContainer());
-  EXPECT_EQ(1, range->endOffset());
+  EXPECT_EQ(1u, range->endOffset());
 }
 
 // Regression test for crbug.com/639184
@@ -198,9 +198,9 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextInsert) {
 
   EXPECT_TRUE(range->boundaryPointsValid());
   EXPECT_EQ(span2, range->startContainer());
-  EXPECT_EQ(0, range->startOffset());
+  EXPECT_EQ(0u, range->startOffset());
   EXPECT_EQ(div, range->endContainer());
-  EXPECT_EQ(2, range->endOffset());
+  EXPECT_EQ(2u, range->endOffset());
 }
 
 // Regression test for crbug.com/639184
@@ -220,9 +220,9 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextRemove) {
 
   EXPECT_TRUE(range->boundaryPointsValid());
   EXPECT_EQ(span2, range->startContainer());
-  EXPECT_EQ(0, range->startOffset());
+  EXPECT_EQ(0u, range->startOffset());
   EXPECT_EQ(div, range->endContainer());
-  EXPECT_EQ(2, range->endOffset());
+  EXPECT_EQ(2u, range->endOffset());
 }
 
 }  // namespace blink

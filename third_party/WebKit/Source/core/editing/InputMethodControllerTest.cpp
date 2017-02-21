@@ -175,8 +175,8 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
   controller().setCompositionFromExistingText(underlines, 0, 5);
 
   Range* range = controller().compositionRange();
-  EXPECT_EQ(0, range->startOffset());
-  EXPECT_EQ(5, range->endOffset());
+  EXPECT_EQ(0u, range->startOffset());
+  EXPECT_EQ(5u, range->endOffset());
 
   PlainTextRange plainTextRange(PlainTextRange::create(*div, *range));
   EXPECT_EQ(0u, plainTextRange.start());
@@ -384,8 +384,8 @@ TEST_F(InputMethodControllerTest,
   controller().setCompositionFromExistingText(underlines, 0, 5);
 
   Range* range = controller().compositionRange();
-  EXPECT_EQ(1, range->startOffset());
-  EXPECT_EQ(6, range->endOffset());
+  EXPECT_EQ(1u, range->startOffset());
+  EXPECT_EQ(6u, range->endOffset());
 
   PlainTextRange plainTextRange(PlainTextRange::create(*div, *range));
   EXPECT_EQ(0u, plainTextRange.start());

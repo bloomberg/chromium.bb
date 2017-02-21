@@ -19,21 +19,19 @@
  */
 
 // https://dom.spec.whatwg.org/#interface-range
-
-// FIXME: All long types in this interface should be unsigned long.
 [
     Constructor,
     ConstructorCallWith=Document,
 ] interface Range {
     readonly attribute Node startContainer;
-    readonly attribute long startOffset;
+    readonly attribute unsigned long startOffset;
     readonly attribute Node endContainer;
-    readonly attribute long endOffset;
+    readonly attribute unsigned long endOffset;
     readonly attribute boolean collapsed;
     readonly attribute Node commonAncestorContainer;
 
-    [RaisesException] void setStart(Node node, long offset);
-    [RaisesException] void setEnd(Node node, long offset);
+    [RaisesException] void setStart(Node node, unsigned long offset);
+    [RaisesException] void setEnd(Node node, unsigned long offset);
     [RaisesException] void setStartBefore(Node node);
     [RaisesException] void setStartAfter(Node node);
     [RaisesException] void setEndBefore(Node node);
@@ -57,8 +55,8 @@
     [NewObject] Range cloneRange();
     [MeasureAs=RangeDetach] void detach();
 
-    [RaisesException] boolean isPointInRange(Node node, long offset);
-    [RaisesException] short comparePoint(Node node, long offset);
+    [RaisesException] boolean isPointInRange(Node node, unsigned long offset);
+    [RaisesException] short comparePoint(Node node, unsigned long offset);
 
     [RaisesException] boolean intersectsNode(Node node);
 
