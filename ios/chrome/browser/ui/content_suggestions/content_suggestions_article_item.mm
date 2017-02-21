@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
 
+#include "base/time/time.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -29,6 +30,8 @@ const CGFloat kStandardSpacing = 8;
 @synthesize subtitle = _subtitle;
 @synthesize image = _image;
 @synthesize articleURL = _articleURL;
+@synthesize publisher = _publisher;
+@synthesize publishDate = _publishDate;
 
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title
@@ -51,17 +54,25 @@ const CGFloat kStandardSpacing = 8;
   cell.titleLabel.text = _title;
   cell.subtitleLabel.text = _subtitle;
   cell.imageView.image = _image;
+  [cell setPublisherName:self.publisher date:self.publishDate];
 }
 
 @end
 
 #pragma mark - ContentSuggestionsArticleCell
 
+@interface ContentSuggestionsArticleCell ()
+
+@property(nonatomic, strong) UILabel* publisherLabel;
+
+@end
+
 @implementation ContentSuggestionsArticleCell
 
 @synthesize titleLabel = _titleLabel;
 @synthesize subtitleLabel = _subtitleLabel;
 @synthesize imageView = _imageView;
+@synthesize publisherLabel = _publisherLabel;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -69,43 +80,65 @@ const CGFloat kStandardSpacing = 8;
     _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _subtitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+    _publisherLabel = [[UILabel alloc] initWithFrame:CGRectZero];
 
     _subtitleLabel.numberOfLines = 0;
+    [_subtitleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                      forAxis:UILayoutConstraintAxisVertical];
+    [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                   forAxis:UILayoutConstraintAxisVertical];
     _imageView.contentMode = UIViewContentModeScaleAspectFit;
 
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _publisherLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
     [self.contentView addSubview:_imageView];
     [self.contentView addSubview:_titleLabel];
     [self.contentView addSubview:_subtitleLabel];
+    [self.contentView addSubview:_publisherLabel];
 
     [NSLayoutConstraint activateConstraints:@[
-      [self.contentView.bottomAnchor
+      [_imageView.widthAnchor constraintLessThanOrEqualToConstant:kImageSize],
+      [_imageView.heightAnchor constraintLessThanOrEqualToConstant:kImageSize],
+      [_publisherLabel.topAnchor
           constraintGreaterThanOrEqualToAnchor:_imageView.bottomAnchor
                                       constant:kStandardSpacing],
-      [self.contentView.bottomAnchor
+      [_publisherLabel.topAnchor
           constraintGreaterThanOrEqualToAnchor:_subtitleLabel.bottomAnchor
                                       constant:kStandardSpacing],
-      [_imageView.widthAnchor constraintLessThanOrEqualToConstant:kImageSize],
-      [_imageView.heightAnchor constraintLessThanOrEqualToConstant:kImageSize]
     ]];
 
     ApplyVisualConstraints(
         @[
           @"H:|-[title]-[image]-|",
           @"H:|-[text]-[image]",
-          @"V:|-[title]-[text]-|",
+          @"V:|-[title]-[text]",
           @"V:|-[image]",
+          @"H:|-[publish]-|",
+          @"V:[publish]-|",
         ],
         @{
           @"image" : _imageView,
           @"title" : _titleLabel,
-          @"text" : _subtitleLabel
+          @"text" : _subtitleLabel,
+          @"publish" : _publisherLabel,
         });
   }
   return self;
+}
+
+- (void)setPublisherName:(NSString*)publisherName date:(base::Time)publishDate {
+  NSDate* date = [NSDate dateWithTimeIntervalSince1970:publishDate.ToDoubleT()];
+  NSString* dateString =
+      [NSDateFormatter localizedStringFromDate:date
+                                     dateStyle:NSDateFormatterMediumStyle
+                                     timeStyle:NSDateFormatterNoStyle];
+
+  // TODO(crbug.com/694423): Make it RTL friendly.
+  self.publisherLabel.text =
+      [NSString stringWithFormat:@"%@ - %@.", publisherName, dateString];
 }
 
 #pragma mark - UIView
@@ -118,7 +151,8 @@ const CGFloat kStandardSpacing = 8;
   // Adjust the text label preferredMaxLayoutWidth when the parent's width
   // changes, for instance on screen rotation.
   CGFloat parentWidth = CGRectGetWidth(self.contentView.bounds);
-  self.subtitleLabel.preferredMaxLayoutWidth = parentWidth - kImageSize - 3 * 8;
+  self.subtitleLabel.preferredMaxLayoutWidth =
+      parentWidth - self.imageView.bounds.size.width - 3 * 8;
 
   // Re-layout with the new preferred width to allow the label to adjust its
   // height.

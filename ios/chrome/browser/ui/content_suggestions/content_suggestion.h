@@ -9,6 +9,10 @@
 
 #include "url/gurl.h"
 
+namespace base {
+class Time;
+}
+
 @class ContentSuggestionsSectionInformation;
 
 // Enum defining the type of a ContentSuggestions.
@@ -28,6 +32,10 @@ typedef NS_ENUM(NSInteger, ContentSuggestionType) {
 @property(nonatomic, strong, nullable) UIImage* image;
 // URL associated with the suggestion.
 @property(nonatomic, assign) GURL url;
+// The name of the publisher.
+@property(nonatomic, copy, nullable) NSString* publisher;
+// The date of publication.
+@property(nonatomic, assign) base::Time publishDate;
 
 // Section information in which this suggestion should be.
 @property(nonatomic, strong, nullable)

@@ -56,6 +56,9 @@ ContentSuggestion* ConvertContentSuggestion(
   suggestion.title = base::SysUTF16ToNSString(contentSuggestion.title());
   suggestion.text = base::SysUTF16ToNSString(contentSuggestion.snippet_text());
   suggestion.url = contentSuggestion.url();
+  suggestion.publisher =
+      base::SysUTF16ToNSString(contentSuggestion.publisher_name());
+  suggestion.publishDate = contentSuggestion.publish_date();
 
   return suggestion;
 }

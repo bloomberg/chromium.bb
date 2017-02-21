@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/time/time.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
@@ -192,6 +193,8 @@ SectionIdentifier SectionIdentifierForInfo(
                 subtitle:suggestion.text
                    image:suggestion.image
                      url:suggestion.url];
+    articleItem.publisher = suggestion.publisher;
+    articleItem.publishDate = suggestion.publishDate;
 
     [model addItem:articleItem toSectionWithIdentifier:sectionIdentifier];
   }

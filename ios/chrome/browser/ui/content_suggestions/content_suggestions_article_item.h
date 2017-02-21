@@ -9,6 +9,10 @@
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "url/gurl.h"
 
+namespace base {
+class Time;
+}
+
 // Item for an article in the suggestions.
 @interface ContentSuggestionsArticleItem : CollectionViewItem
 
@@ -25,6 +29,8 @@
 @property(nonatomic, copy, readonly) NSString* title;
 @property(nonatomic, strong) UIImage* image;
 @property(nonatomic, readonly, assign) GURL articleURL;
+@property(nonatomic, copy) NSString* publisher;
+@property(nonatomic, assign) base::Time publishDate;
 
 @end
 
@@ -34,6 +40,8 @@
 @property(nonatomic, readonly, strong) UILabel* titleLabel;
 @property(nonatomic, readonly, strong) UILabel* subtitleLabel;
 @property(nonatomic, readonly, strong) UIImageView* imageView;
+
+- (void)setPublisherName:(NSString*)publisherName date:(base::Time)publishDate;
 
 @end
 
