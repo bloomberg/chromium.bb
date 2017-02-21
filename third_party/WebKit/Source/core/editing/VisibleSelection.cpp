@@ -85,13 +85,9 @@ static SelectionType computeSelectionType(
     DCHECK(end.isNull());
     return NoSelection;
   }
+  DCHECK(!needsLayoutTreeUpdate(start)) << start << ' ' << end;
   if (start == end)
     return CaretSelection;
-  // TODO(yosin) We should call |Document::updateStyleAndLayout()| here for
-  // |mostBackwardCaretPosition()|. However, we are here during
-  // |Node::removeChild()|.
-  start.anchorNode()->updateDistribution();
-  end.anchorNode()->updateDistribution();
   if (mostBackwardCaretPosition(start) == mostBackwardCaretPosition(end))
     return CaretSelection;
   return RangeSelection;
