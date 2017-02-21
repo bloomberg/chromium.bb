@@ -324,6 +324,7 @@ static_library("test_support") {
     "//ui/gl/init",
   ]
   deps = [
+    "//base/test:test_support",
     "//testing/gtest",
     "//ui/base",
   ]

@@ -14,7 +14,7 @@
 
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_scheduler/task_scheduler.h"
+#include "base/test/scoped_async_task_scheduler.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -163,10 +163,6 @@ class GLImageTest : public testing::Test {
  protected:
   // Overridden from testing::Test:
   void SetUp() override {
-    constexpr int kMaxTaskSchedulerThreads = 3;
-    base::TaskScheduler::CreateAndSetSimpleTaskScheduler(
-        kMaxTaskSchedulerThreads);
-
     GLImageTestSupport::InitializeGL();
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
     context_ =
@@ -181,6 +177,7 @@ class GLImageTest : public testing::Test {
   }
 
  protected:
+  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler_;
   scoped_refptr<GLSurface> surface_;
   scoped_refptr<GLContext> context_;
   GLImageTestDelegate delegate_;
