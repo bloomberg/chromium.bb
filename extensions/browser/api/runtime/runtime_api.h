@@ -86,7 +86,8 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
       const std::string& extension_id,
       int seconds_from_now);
 
-  bool OpenOptionsPage(const Extension* extension);
+  bool OpenOptionsPage(const Extension* extension,
+                       content::BrowserContext* browser_context);
 
  private:
   friend class BrowserContextKeyedAPIFactory<RuntimeAPI>;

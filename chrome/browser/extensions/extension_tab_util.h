@@ -169,6 +169,13 @@ class ExtensionTabUtil {
 
   // Open the extension's options page. Returns true if an options page was
   // successfully opened (though it may not necessarily *load*, e.g. if the
+  // URL does not exist). This call to open the options page is iniatiated by
+  // the extension via chrome.runtime.openOptionsPage.
+  static bool OpenOptionsPageFromAPI(const Extension* extension,
+                                     content::BrowserContext* browser_context);
+
+  // Open the extension's options page. Returns true if an options page was
+  // successfully opened (though it may not necessarily *load*, e.g. if the
   // URL does not exist).
   static bool OpenOptionsPage(const Extension* extension, Browser* browser);
 

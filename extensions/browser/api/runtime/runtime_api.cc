@@ -417,8 +417,9 @@ RuntimeAPI::RestartAfterDelayStatus RuntimeAPI::RestartDeviceAfterDelay(
   return ScheduleDelayedRestart(now, seconds_from_now);
 }
 
-bool RuntimeAPI::OpenOptionsPage(const Extension* extension) {
-  return delegate_->OpenOptionsPage(extension);
+bool RuntimeAPI::OpenOptionsPage(const Extension* extension,
+                                 content::BrowserContext* browser_context) {
+  return delegate_->OpenOptionsPage(extension, browser_context);
 }
 
 void RuntimeAPI::MaybeCancelRunningDelayedRestartTimer() {
@@ -660,7 +661,7 @@ void RuntimeGetBackgroundPageFunction::OnPageLoaded(ExtensionHost* host) {
 
 ExtensionFunction::ResponseAction RuntimeOpenOptionsPageFunction::Run() {
   RuntimeAPI* api = RuntimeAPI::GetFactoryInstance()->Get(browser_context());
-  return RespondNow(api->OpenOptionsPage(extension())
+  return RespondNow(api->OpenOptionsPage(extension(), browser_context())
                         ? NoArguments()
                         : Error(kFailedToCreateOptionsPage));
 }

@@ -10,6 +10,10 @@
 
 class GURL;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 namespace api {
@@ -74,7 +78,8 @@ class RuntimeAPIDelegate {
   // Open |extension|'s options page, if it has one. Returns true if an
   // options page was opened, false otherwise. See the docs of the
   // chrome.runtime.openOptionsPage function for the gritty details.
-  virtual bool OpenOptionsPage(const Extension* extension);
+  virtual bool OpenOptionsPage(const Extension* extension,
+                               content::BrowserContext* browser_context);
 };
 
 }  // namespace extensions

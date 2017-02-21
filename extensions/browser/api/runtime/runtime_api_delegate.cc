@@ -13,7 +13,9 @@ RuntimeAPIDelegate::UpdateCheckResult::UpdateCheckResult(
     : success(success), response(response), version(version) {
 }
 
-bool RuntimeAPIDelegate::OpenOptionsPage(const Extension* extension) {
+bool RuntimeAPIDelegate::OpenOptionsPage(
+    const Extension* extension,
+    content::BrowserContext* browser_context) {
   return false;
 }
 
