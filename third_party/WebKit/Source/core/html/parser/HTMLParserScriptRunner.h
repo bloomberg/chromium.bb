@@ -121,8 +121,11 @@ class HTMLParserScriptRunner final
   RefPtr<HTMLParserReentryPermit> m_reentryPermit;
   Member<Document> m_document;
   Member<HTMLParserScriptRunnerHost> m_host;
+
+  // https://html.spec.whatwg.org/#pending-parsing-blocking-script
   Member<PendingScript> m_parserBlockingScript;
-  // http://www.whatwg.org/specs/web-apps/current-work/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
+
+  // https://html.spec.whatwg.org/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
   HeapDeque<Member<PendingScript>> m_scriptsToExecuteAfterParsing;
 };
 
