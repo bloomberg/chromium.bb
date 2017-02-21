@@ -481,11 +481,6 @@ TEST_F(VisibleSelectionTest, updateIfNeededWithShadowHost) {
   // Simulates to restore selection from undo stack.
   selection.updateIfNeeded();
   EXPECT_EQ(Position(sample->firstChild(), 0), selection.start());
-
-  VisibleSelectionInFlatTree selectionInFlatTree;
-  SelectionAdjuster::adjustSelectionInFlatTree(&selectionInFlatTree, selection);
-  EXPECT_EQ(PositionInFlatTree(sample->firstChild(), 0),
-            selectionInFlatTree.start());
 }
 
 }  // namespace blink
