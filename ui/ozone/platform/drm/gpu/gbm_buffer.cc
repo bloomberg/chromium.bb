@@ -183,14 +183,14 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
   DCHECK_LE(fds.size(), planes.size());
   DCHECK_EQ(planes[0].offset, 0);
 
-  // Use scanout if supported.
-  bool use_scanout =
+  // Try to use scanout if supported.
+  bool try_scanout =
       gbm_device_is_format_supported(
           gbm->device(), format, GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING) &&
       (planes.size() == 1);
 
   gbm_bo* bo = nullptr;
-  if (use_scanout) {
+  if (try_scanout) {
     struct gbm_import_fd_data fd_data;
     fd_data.fd = fds[0].get();
     fd_data.width = size.width();
@@ -209,14 +209,10 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
   }
 
   uint32_t flags = GBM_BO_USE_RENDERING;
-  if (use_scanout)
+  if (try_scanout)
     flags |= GBM_BO_USE_SCANOUT;
   scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
       gbm, bo, format, flags, 0, 0, std::move(fds), size, std::move(planes)));
-  // If scanout support for buffer is expected then make sure we managed to
-  // create a framebuffer for it as otherwise using it for scanout will fail.
-  if (use_scanout && !buffer->GetFramebufferId())
-    return nullptr;
 
   return buffer;
 }

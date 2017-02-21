@@ -40,13 +40,9 @@ GbmBufferBase::GbmBufferBase(const scoped_refptr<GbmDevice>& drm,
     // DRM_MODE_FB_MODIFIERS set. We only set that when we've created
     // a bo with modifiers, otherwise, we rely on the "no modifiers"
     // behavior doing the right thing.
-    if (!drm_->AddFramebuffer2(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
-                               framebuffer_pixel_format_, handles, strides,
-                               offsets, modifiers, &framebuffer_,
-                               addfb_flags)) {
-      PLOG(ERROR) << "Failed to register buffer";
-      return;
-    }
+    drm_->AddFramebuffer2(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
+                          framebuffer_pixel_format_, handles, strides, offsets,
+                          modifiers, &framebuffer_, addfb_flags);
   }
 }
 
