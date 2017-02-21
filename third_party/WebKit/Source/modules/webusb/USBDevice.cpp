@@ -910,7 +910,7 @@ bool USBDevice::markRequestComplete(ScriptPromiseResolver* resolver) {
   auto requestEntry = m_deviceRequests.find(resolver);
   if (requestEntry == m_deviceRequests.end())
     return false;
-  m_deviceRequests.remove(requestEntry);
+  m_deviceRequests.erase(requestEntry);
   return true;
 }
 

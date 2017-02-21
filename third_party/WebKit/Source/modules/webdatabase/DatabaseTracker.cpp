@@ -132,7 +132,7 @@ void DatabaseTracker::removeOpenDatabase(Database* database) {
     if (found == databaseSet->end())
       return;
 
-    databaseSet->remove(found);
+    databaseSet->erase(found);
     if (databaseSet->isEmpty()) {
       nameMap->erase(name);
       delete databaseSet;

@@ -144,7 +144,7 @@ class FileReader::ThrottlingController final
   FinishReaderType removeReader(FileReader* reader) {
     FileReaderHashSet::const_iterator hashIter = m_runningReaders.find(reader);
     if (hashIter != m_runningReaders.end()) {
-      m_runningReaders.remove(hashIter);
+      m_runningReaders.erase(hashIter);
       return RunPendingReaders;
     }
     FileReaderDeque::const_iterator dequeEnd = m_pendingReaders.end();

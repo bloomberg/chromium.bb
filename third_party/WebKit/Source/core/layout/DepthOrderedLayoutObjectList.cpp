@@ -47,7 +47,7 @@ void DepthOrderedLayoutObjectList::remove(LayoutObject& object) {
   if (it == m_data->m_objects.end())
     return;
   ASSERT(!object.frameView()->isInPerformLayout());
-  m_data->m_objects.remove(it);
+  m_data->m_objects.erase(it);
   m_data->m_orderedObjects.clear();
 }
 

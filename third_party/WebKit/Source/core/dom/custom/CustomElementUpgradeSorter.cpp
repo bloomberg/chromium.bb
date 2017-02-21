@@ -68,7 +68,7 @@ void CustomElementUpgradeSorter::visit(HeapVector<Member<Element>>* result,
   if (it->get()->isElementNode() && m_elements->contains(toElement(*it)))
     result->push_back(toElement(*it));
   sorted(result, *it);
-  children.remove(it);
+  children.erase(it);
 }
 
 void CustomElementUpgradeSorter::sorted(HeapVector<Member<Element>>* result,

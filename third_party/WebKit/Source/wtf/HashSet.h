@@ -108,9 +108,6 @@ class HashSet {
   // and a bool that is true if an new entry was added.
   template <typename IncomingValueType>
   AddResult insert(IncomingValueType&&);
-  // TODO(pilgrim) remove this
-  // template <typename IncomingValueType>
-  // AddResult add(IncomingValueType&&);
 
   // An alternate version of add() that finds the object by hashing and
   // comparing with some other type, to avoid the cost of type conversion if
@@ -123,7 +120,7 @@ class HashSet {
   AddResult addWithTranslator(T&&);
 
   void erase(ValuePeekInType);
-  void remove(iterator);
+  void erase(iterator);
   void clear();
   template <typename Collection>
   void removeAll(const Collection& toBeRemoved) {
@@ -275,13 +272,13 @@ HashSet<Value, HashFunctions, Traits, Allocator>::addWithTranslator(T&& value) {
 }
 
 template <typename T, typename U, typename V, typename W>
-inline void HashSet<T, U, V, W>::remove(iterator it) {
+inline void HashSet<T, U, V, W>::erase(iterator it) {
   m_impl.remove(it.m_impl);
 }
 
 template <typename T, typename U, typename V, typename W>
 inline void HashSet<T, U, V, W>::erase(ValuePeekInType value) {
-  remove(find(value));
+  erase(find(value));
 }
 
 template <typename T, typename U, typename V, typename W>
@@ -295,7 +292,7 @@ inline auto HashSet<T, U, V, W>::take(iterator it) -> ValueType {
     return ValueTraits::emptyValue();
 
   ValueType result = std::move(const_cast<ValueType&>(*it));
-  remove(it);
+  erase(it);
 
   return result;
 }

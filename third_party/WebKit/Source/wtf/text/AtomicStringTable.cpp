@@ -215,7 +215,7 @@ void AtomicStringTable::remove(StringImpl* string) {
   DCHECK(string->isAtomic());
   auto iterator = m_table.find(string);
   RELEASE_ASSERT(iterator != m_table.end());
-  m_table.remove(iterator);
+  m_table.erase(iterator);
 }
 
 }  // namespace WTF

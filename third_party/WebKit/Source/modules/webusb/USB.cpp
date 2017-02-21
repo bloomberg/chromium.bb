@@ -172,7 +172,7 @@ void USB::onGetDevices(ScriptPromiseResolver* resolver,
   auto requestEntry = m_deviceManagerRequests.find(resolver);
   if (requestEntry == m_deviceManagerRequests.end())
     return;
-  m_deviceManagerRequests.remove(requestEntry);
+  m_deviceManagerRequests.erase(requestEntry);
 
   HeapVector<Member<USBDevice>> devices;
   for (auto& deviceInfo : deviceInfos)
@@ -186,7 +186,7 @@ void USB::onGetPermission(ScriptPromiseResolver* resolver,
   auto requestEntry = m_chooserServiceRequests.find(resolver);
   if (requestEntry == m_chooserServiceRequests.end())
     return;
-  m_chooserServiceRequests.remove(requestEntry);
+  m_chooserServiceRequests.erase(requestEntry);
 
   if (!m_deviceManager) {
     resolver->reject(DOMException::create(NotFoundError, kNoServiceError));

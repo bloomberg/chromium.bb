@@ -85,7 +85,7 @@ bool WorkerEventQueue::removeEvent(Event* event) {
   auto found = m_pendingEvents.find(event);
   if (found == m_pendingEvents.end())
     return false;
-  m_pendingEvents.remove(found);
+  m_pendingEvents.erase(found);
   return true;
 }
 

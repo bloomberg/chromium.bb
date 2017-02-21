@@ -142,7 +142,7 @@ void WorkerGlobalScope::deregisterEventListener(
     V8AbstractEventListener* eventListener) {
   auto it = m_eventListeners.find(eventListener);
   CHECK(it != m_eventListeners.end() || m_closing);
-  m_eventListeners.remove(it);
+  m_eventListeners.erase(it);
 }
 
 WorkerLocation* WorkerGlobalScope::location() const {

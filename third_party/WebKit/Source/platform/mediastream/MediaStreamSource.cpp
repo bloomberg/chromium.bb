@@ -86,7 +86,7 @@ bool MediaStreamSource::removeAudioConsumer(
       m_audioConsumers.find(consumer);
   if (it == m_audioConsumers.end())
     return false;
-  m_audioConsumers.remove(it);
+  m_audioConsumers.erase(it);
   return true;
 }
 

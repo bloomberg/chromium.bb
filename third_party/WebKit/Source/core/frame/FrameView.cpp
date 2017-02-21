@@ -3684,7 +3684,7 @@ void FrameView::removeResizerArea(LayoutBox& resizerBox) {
 
   ResizerAreaSet::iterator it = m_resizerAreas->find(&resizerBox);
   if (it != m_resizerAreas->end())
-    m_resizerAreas->remove(it);
+    m_resizerAreas->erase(it);
 }
 
 void FrameView::addScrollableArea(ScrollableArea* scrollableArea) {

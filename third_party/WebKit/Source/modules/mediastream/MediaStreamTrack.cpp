@@ -334,7 +334,7 @@ void MediaStreamTrack::unregisterMediaStream(MediaStream* mediaStream) {
   HeapHashSet<Member<MediaStream>>::iterator iter =
       m_registeredMediaStreams.find(mediaStream);
   CHECK(iter != m_registeredMediaStreams.end());
-  m_registeredMediaStreams.remove(iter);
+  m_registeredMediaStreams.erase(iter);
 }
 
 const AtomicString& MediaStreamTrack::interfaceName() const {
