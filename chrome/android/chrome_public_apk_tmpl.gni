@@ -26,6 +26,9 @@ declare_args() {
 
   # Enables ProGuard obfuscation of Chromium packages.
   enable_proguard_obfuscation = false
+
+  # Enable multidex in release builds.
+  multidex_in_release = false
 }
 
 default_chrome_public_jinja_variables = [
@@ -45,9 +48,10 @@ template("chrome_public_apk_tmpl") {
       aapt_locale_whitelist = locales - android_chrome_omitted_locales
     }
 
-    if (is_java_debug) {
+    if (is_java_debug || multidex_in_release) {
       enable_multidex = true
-    } else {
+    }
+    if (!is_java_debug) {
       proguard_enabled = true
       if (!defined(proguard_configs)) {
         proguard_configs = []
