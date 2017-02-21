@@ -80,6 +80,21 @@ window.Audit = (function () {
     return targetString;
   }
 
+  // Return a string suitable for printing one failed element in
+  // |beCloseToArray|.
+  function _formatFailureEntry(index, actual, expected, abserr, threshold) {
+    return '\t[' + index + ']\t'
+      + actual.toExponential(16) + '\t'
+      + expected.toExponential(16) + '\t'
+      + abserr.toExponential(16) + '\t'
+      + (abserr / Math.abs(expected)).toExponential(16) + '\t'
+      + threshold.toExponential(16);
+  }
+
+  // Compute the error threshold criterion for |beCloseToArray|
+  function _closeToThreshold(abserr, relerr, expected) {
+    return Math.max(abserr, relerr * Math.abs(expected));
+  }
 
   /**
    * @class Should
@@ -865,18 +880,21 @@ window.Audit = (function () {
         let counter = 0;
         failDetail += '\tIndex\tActual\t\t\tExpected\t\tAbsError'
             + '\t\tRelError\t\tTest threshold';
+        let printedIndices = [];
         for (let index in errors) {
-          failDetail += '\n\t[' + index + ']\t'
-              + this._actual[index].toExponential(16) + '\t'
-              + this._expected[index].toExponential(16) + '\t'
-              + errors[index].toExponential(16) + '\t'
-              + (errors[index] / Math.abs(this._expected[index]))
-                  .toExponential(16) + '\t'
-              + Math.max(absErrorThreshold,
-                    relErrorThreshold * Math.abs(this._expected[index]))
-                      .toExponential(16);
-          if (++counter > this._options.numberOfErrors)
+          failDetail += '\n' + _formatFailureEntry(
+                                   index, this._actual[index],
+                                   this._expected[index], errors[index],
+                                   _closeToThreshold(
+                                       absErrorThreshold, relErrorThreshold,
+                                       this._expected[index]));
+
+          printedIndices.push(index);
+          if (++counter > this._options.numberOfErrors) {
+            failDetail +=
+                '\n\t...and ' + (numberOfErrors - counter) + ' more errors.';
             break;
+          }
         }
 
         // Finalize the error log: print out the location of both the maxAbs
@@ -884,9 +902,35 @@ window.Audit = (function () {
         // in the test.
         failDetail += '\n'
             + '\tMax AbsError of ' + maxAbsError.toExponential(16)
-            + ' at index of ' + maxAbsErrorIndex + '.\n'
-            + '\tMax RelError of ' + maxRelError.toExponential(16)
-            + ' at index of ' + maxRelErrorIndex + '.';
+            + ' at index of ' + maxAbsErrorIndex + '.\n';
+        if (printedIndices.find(element => {
+              return element == maxAbsErrorIndex;
+            }) === undefined) {
+          // Print an entry for this index if we haven't already.
+          failDetail +=
+              _formatFailureEntry(
+                  maxAbsErrorIndex, this._actual[maxAbsErrorIndex],
+                  this._expected[maxAbsErrorIndex], errors[maxAbsErrorIndex],
+                  _closeToThreshold(
+                      absErrorThreshold, relErrorThreshold,
+                      this._expected[maxAbsErrorIndex])) +
+              '\n';
+        }
+        failDetail += '\tMax RelError of ' + maxRelError.toExponential(16) +
+            ' at index of ' + maxRelErrorIndex + '.\n';
+        if (printedIndices.find(element => {
+              return element == maxRelErrorIndex;
+            }) === undefined) {
+          // Print an entry for this index if we haven't already.
+          failDetail +=
+              _formatFailureEntry(
+                  maxRelErrorIndex, this._actual[maxRelErrorIndex],
+                  this._expected[maxRelErrorIndex], errors[maxRelErrorIndex],
+                  _closeToThreshold(
+                      absErrorThreshold, relErrorThreshold,
+                      this._expected[maxRelErrorIndex])) +
+              '\n';
+        }
       }
 
       return this._assert(passed, passDetail, failDetail);
