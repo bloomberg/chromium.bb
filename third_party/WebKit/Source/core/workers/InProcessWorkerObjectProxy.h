@@ -72,7 +72,7 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
                                       MessagePortChannelArray channels,
                                       WorkerThread*);
 
-  // ThreadedMessagingProxyBase overrides.
+  // ThreadedObjectProxyBase overrides.
   void reportException(const String& errorMessage,
                        std::unique_ptr<SourceLocation>,
                        int exceptionId) override;
