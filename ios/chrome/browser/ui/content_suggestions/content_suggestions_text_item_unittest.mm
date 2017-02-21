@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_text_item.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,15 +13,15 @@
 namespace {
 
 // Tests that configureCell: set all the fields of the cell.
-TEST(ContentSuggestionsItemTest, CellIsConfigured) {
+TEST(ContentSuggestionsTextItemTest, CellIsConfigured) {
   NSString* title = @"testTitle";
   NSString* subtitle = @"testSubtitle";
-  ContentSuggestionsItem* item =
-      [[ContentSuggestionsItem alloc] initWithType:0
-                                             title:title
-                                          subtitle:subtitle];
-  ContentSuggestionsCell* cell = [[[item cellClass] alloc] init];
-  EXPECT_EQ([ContentSuggestionsCell class], [cell class]);
+  ContentSuggestionsTextItem* item =
+      [[ContentSuggestionsTextItem alloc] initWithType:0
+                                                 title:title
+                                              subtitle:subtitle];
+  ContentSuggestionsTextCell* cell = [[[item cellClass] alloc] init];
+  EXPECT_EQ([ContentSuggestionsTextCell class], [cell class]);
 
   [item configureCell:cell];
   EXPECT_EQ(title, [cell.titleButton titleForState:UIControlStateNormal]);

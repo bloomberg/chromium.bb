@@ -93,9 +93,6 @@
 - (void)openFirstPageOfReadingList {
 }
 
-- (void)addEmptyItem {
-}
-
 - (void)openFaviconAtIndex:(NSInteger)index {
 }
 

@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_service_bridge_observer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_section_information.h"
 #include "ui/gfx/image/image.h"
 

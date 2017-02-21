@@ -11,8 +11,6 @@ class GURL;
 // Commands protocol for the ContentSuggestionsViewController.
 @protocol ContentSuggestionsCommands
 
-// Adds a new empty SuggestionItem.
-- (void)addEmptyItem;
 // Opens the Reading List.
 - (void)openReadingList;
 // Opens the first page of the Reading List.

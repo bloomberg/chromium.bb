@@ -12,9 +12,9 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item_actions.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item_actions.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_text_item_actions.h"
 #import "ios/chrome/browser/ui/content_suggestions/expandable_item.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -25,8 +25,7 @@ namespace {
 const NSTimeInterval kAnimationDuration = 0.35;
 }  // namespace
 
-@interface ContentSuggestionsViewController ()<SuggestionsItemActions,
-                                               SuggestionsStackItemActions>
+@interface ContentSuggestionsViewController ()<SuggestionsStackItemActions>
 
 @property(nonatomic, strong)
     ContentSuggestionsCollectionUpdater* collectionUpdater;
@@ -99,22 +98,6 @@ const NSTimeInterval kAnimationDuration = 0.35;
 
 - (void)openFaviconAtIndexPath:(NSIndexPath*)innerIndexPath {
   [self.suggestionCommandHandler openFaviconAtIndex:innerIndexPath.item];
-}
-
-#pragma mark - SuggestionsItemActions
-
-- (void)addNewItem:(id)sender {
-  [self.suggestionCommandHandler addEmptyItem];
-}
-
-#pragma mark - ContentSuggestionsCollectionUpdater forwarding
-
-- (void)addTextItem:(NSString*)title
-           subtitle:(NSString*)subtitle
-          toSection:(NSInteger)inputSection {
-  [self.collectionUpdater addTextItem:title
-                             subtitle:subtitle
-                            toSection:inputSection];
 }
 
 #pragma mark - SuggestionsStackItemActions

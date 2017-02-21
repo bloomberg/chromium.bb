@@ -15,9 +15,9 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_expandable_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_stack_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_text_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #include "url/gurl.h"
 
@@ -125,42 +125,6 @@ SectionIdentifier SectionIdentifierForInfo(
 }
 
 #pragma mark - Public methods
-
-- (void)addTextItem:(NSString*)title
-           subtitle:(NSString*)subtitle
-          toSection:(NSInteger)inputSection {
-  DCHECK(self.collectionViewController);
-  ContentSuggestionsItem* item =
-      [[ContentSuggestionsItem alloc] initWithType:ItemTypeText
-                                             title:title
-                                          subtitle:subtitle];
-  NSInteger sectionIdentifier = kSectionIdentifierEnumZero + inputSection;
-  NSInteger sectionIndex = inputSection;
-  CollectionViewModel* model =
-      self.collectionViewController.collectionViewModel;
-  if ([model numberOfSections] <= inputSection) {
-    sectionIndex = [model numberOfSections];
-    sectionIdentifier = kSectionIdentifierEnumZero + sectionIndex;
-    [self.collectionViewController.collectionView performBatchUpdates:^{
-      [self.collectionViewController.collectionViewModel
-          addSectionWithIdentifier:sectionIdentifier];
-      [self.collectionViewController.collectionView
-          insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]];
-    }
-                                                           completion:nil];
-  }
-  NSInteger numberOfItemsInSection =
-      [model numberOfItemsInSection:sectionIndex];
-  [self.collectionViewController.collectionViewModel addItem:item
-                                     toSectionWithIdentifier:sectionIdentifier];
-  [self.collectionViewController.collectionView performBatchUpdates:^{
-    [self.collectionViewController.collectionView
-        insertItemsAtIndexPaths:@[ [NSIndexPath
-                                    indexPathForRow:numberOfItemsInSection
-                                          inSection:sectionIndex] ]];
-  }
-                                                         completion:nil];
-}
 
 - (BOOL)shouldUseCustomStyleForSection:(NSInteger)section {
   NSNumber* identifier = @([self.collectionViewController.collectionViewModel
