@@ -274,47 +274,47 @@ if (aom_config("CONFIG_NEW_QUANT") eq "yes") {
 # FILTER_INTRA predictor functions
 if (aom_config("CONFIG_FILTER_INTRA") eq "yes") {
   add_proto qw/void av1_dc_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, int bs, const uint8_t *above, const uint8_t *left";
-  specialize qw/av1_dc_filter_predictor sse4_1/;
+  specialize qw/av1_dc_filter_predictor/;
   add_proto qw/void av1_v_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, int bs, const uint8_t *above, const uint8_t *left";
-  specialize qw/av1_v_filter_predictor sse4_1/;
+  specialize qw/av1_v_filter_predictor/;
   add_proto qw/void av1_h_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, int bs, const uint8_t *above, const uint8_t *left";
-  specialize qw/av1_h_filter_predictor sse4_1/;
+  specialize qw/av1_h_filter_predictor/;
   add_proto qw/void av1_d45_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, int bs, const uint8_t *above, const uint8_t *left";
-  specialize qw/av1_d45_filter_predictor sse4_1/;
+  specialize qw/av1_d45_filter_predictor/;
   add_proto qw/void av1_d135_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, int bs, const uint8_t *above, const uint8_t *left";
-  specialize qw/av1_d135_filter_predictor sse4_1/;
+  specialize qw/av1_d135_filter_predictor/;
   add_proto qw/void av1_d117_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, int bs, const uint8_t *above, const uint8_t *left";
-  specialize qw/av1_d117_filter_predictor sse4_1/;
+  specialize qw/av1_d117_filter_predictor/;
   add_proto qw/void av1_d153_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, int bs, const uint8_t *above, const uint8_t *left";
-  specialize qw/av1_d153_filter_predictor sse4_1/;
+  specialize qw/av1_d153_filter_predictor/;
   add_proto qw/void av1_d207_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, int bs, const uint8_t *above, const uint8_t *left";
-  specialize qw/av1_d207_filter_predictor sse4_1/;
+  specialize qw/av1_d207_filter_predictor/;
   add_proto qw/void av1_d63_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, int bs, const uint8_t *above, const uint8_t *left";
-  specialize qw/av1_d63_filter_predictor sse4_1/;
+  specialize qw/av1_d63_filter_predictor/;
   add_proto qw/void av1_tm_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, int bs, const uint8_t *above, const uint8_t *left";
-  specialize qw/av1_tm_filter_predictor sse4_1/;
+  specialize qw/av1_tm_filter_predictor/;
   # High bitdepth functions
   if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void av1_highbd_dc_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, int bs, const uint16_t *above, const uint16_t *left, int bd";
-    specialize qw/av1_highbd_dc_filter_predictor sse4_1/;
+    specialize qw/av1_highbd_dc_filter_predictor/;
     add_proto qw/void av1_highbd_v_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, int bs, const uint16_t *above, const uint16_t *left, int bd";
-    specialize qw/av1_highbd_v_filter_predictor sse4_1/;
+    specialize qw/av1_highbd_v_filter_predictor/;
     add_proto qw/void av1_highbd_h_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, int bs, const uint16_t *above, const uint16_t *left, int bd";
-    specialize qw/av1_highbd_h_filter_predictor sse4_1/;
+    specialize qw/av1_highbd_h_filter_predictor/;
     add_proto qw/void av1_highbd_d45_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, int bs, const uint16_t *above, const uint16_t *left, int bd";
-    specialize qw/av1_highbd_d45_filter_predictor sse4_1/;
+    specialize qw/av1_highbd_d45_filter_predictor/;
     add_proto qw/void av1_highbd_d135_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, int bs, const uint16_t *above, const uint16_t *left, int bd";
-    specialize qw/av1_highbd_d135_filter_predictor sse4_1/;
+    specialize qw/av1_highbd_d135_filter_predictor/;
     add_proto qw/void av1_highbd_d117_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, int bs, const uint16_t *above, const uint16_t *left, int bd";
-    specialize qw/av1_highbd_d117_filter_predictor sse4_1/;
+    specialize qw/av1_highbd_d117_filter_predictor/;
     add_proto qw/void av1_highbd_d153_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, int bs, const uint16_t *above, const uint16_t *left, int bd";
-    specialize qw/av1_highbd_d153_filter_predictor sse4_1/;
+    specialize qw/av1_highbd_d153_filter_predictor/;
     add_proto qw/void av1_highbd_d207_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, int bs, const uint16_t *above, const uint16_t *left, int bd";
-    specialize qw/av1_highbd_d207_filter_predictor sse4_1/;
+    specialize qw/av1_highbd_d207_filter_predictor/;
     add_proto qw/void av1_highbd_d63_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, int bs, const uint16_t *above, const uint16_t *left, int bd";
-    specialize qw/av1_highbd_d63_filter_predictor sse4_1/;
+    specialize qw/av1_highbd_d63_filter_predictor/;
     add_proto qw/void av1_highbd_tm_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, int bs, const uint16_t *above, const uint16_t *left, int bd";
-    specialize qw/av1_highbd_tm_filter_predictor sse4_1/;
+    specialize qw/av1_highbd_tm_filter_predictor/;
   }
 }
 

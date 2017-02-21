@@ -172,9 +172,11 @@ LIBAOM_TEST_SRCS-$(HAVE_SSSE3) += masked_sad_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_wedge_utils_test.cc
 endif
 
-ifeq ($(CONFIG_FILTER_INTRA),yes)
-LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += filterintra_predictors_test.cc
-endif
+## Skip the unit test written for 4-tap filter intra predictor, because we
+## revert to 3-tap filter.
+## ifeq ($(CONFIG_FILTER_INTRA),yes)
+## LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += filterintra_predictors_test.cc
+## endif
 
 ifeq ($(CONFIG_MOTION_VAR),yes)
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += obmc_sad_test.cc

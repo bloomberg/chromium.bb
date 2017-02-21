@@ -256,6 +256,7 @@ typedef struct {
 #endif  // CONFIG_PALETTE
 
 #if CONFIG_FILTER_INTRA
+#define USE_3TAP_INTRA_FILTER 1  // 0: 4-tap; 1: 3-tap
 typedef struct {
   // 1: an ext intra mode is used; 0: otherwise.
   uint8_t use_filter_intra_mode[PLANE_TYPES];
