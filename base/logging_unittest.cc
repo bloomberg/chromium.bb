@@ -257,7 +257,7 @@ TEST_F(LoggingTest, CheckCausesDistinctBreakpoints) {
   EXPECT_NE(addr2, addr3);
 }
 
-#elif defined(OS_POSIX) && !defined(OS_NACL) && \
+#elif defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_IOS) && \
     (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY))
 
 int g_child_crash_pipe;
