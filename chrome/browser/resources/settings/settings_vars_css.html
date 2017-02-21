@@ -15,6 +15,8 @@
 
     --settings-background-color: rgb(241, 241, 241);
     --settings-box-row-padding: 20px;
+    --settings-box-row-indent: calc(
+        var(--settings-box-row-padding) + var(--settings-indent-width));
     --settings-indent-width: 36px;
     --settings-card-max-width: 680px;
     --settings-disabled-opacity: .65;
@@ -22,8 +24,7 @@
 
     --settings-list-frame-padding: {
       -webkit-padding-end: var(--settings-box-row-padding);
-      -webkit-padding-start: calc(
-          var(--settings-box-row-padding) + var(--settings-indent-width));
+      -webkit-padding-start: var(--settings-box-row-indent);
       padding-bottom: 0;
       padding-top: 0;
     }

@@ -14,6 +14,10 @@
 <dom-module id="settings-date-time-page">
   <template>
     <style include="settings-shared">
+      .embedded {
+        -webkit-padding-start: var(--settings-box-row-indent);
+      }
+
       settings-dropdown-menu {
         --md-select-width: 400px;
       }
@@ -24,12 +28,6 @@
       }
     </style>
     <div class="settings-box first">
-      <settings-dropdown-menu pref="{{prefs.cros.system.timezone}}"
-          menu-options="[[timeZoneList_]]"
-          disabled="[[timeZoneAutoDetect_]]">
-      </settings-dropdown-menu>
-    </div>
-    <div class="settings-box continuation">
       <div class="start">$i18n{timeZoneGeolocation}</div>
       <template is="dom-if" if="[[hasTimeZoneAutoDetectPolicy_]]" restamp>
         <cr-policy-pref-indicator pref="[[fakeTimeZonePolicyPref_]]">
@@ -42,7 +40,13 @@
           on-change="onTimeZoneAutoDetectChange_">
       </paper-toggle-button>
     </div>
-    <div class="settings-box continuation">
+    <div class="settings-box continuation embedded">
+      <settings-dropdown-menu pref="{{prefs.cros.system.timezone}}"
+          menu-options="[[timeZoneList_]]"
+          disabled="[[timeZoneAutoDetect_]]">
+      </settings-dropdown-menu>
+    </div>
+    <div class="settings-box">
       <settings-toggle-button class="start"
           pref="{{prefs.settings.clock.use_24hour_clock}}"
           label="$i18n{use24HourClock}">
