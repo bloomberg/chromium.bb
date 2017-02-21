@@ -1,45 +1,34 @@
-<script src = "../../resources/js-test.js"></script>
-<script type = "text/javascript"> 
-if (window.testRunner)
-{
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 
-description("Test that toBlob(mimeType) ignores the case of 'mimeType'.");
-
+<script> 
 canvas = document.createElement('canvas');
-var counter;
 
-function tryMimeType(mimeType, expectedMimeType)
+function tryMimeType(t, mimeType, expectedMimeType)
 {
     canvas.toBlob(function(blob) {
-        if (blob.type === expectedMimeType) {
-            testPassed("");
-        }
-        else {
-            testFailed(blob.type + " does not match " + expectedMimeType);
-        }
-        counter = counter - 1;
-        if (window.testRunner) {
-            if (counter == 0) {
-                testRunner.notifyDone();
-            }
-        }
+        t.step_func(function() {
+            assert_true(blob.type === expectedMimeType);
+        });
+        t.done();
     }, mimeType);
 }
 
-counter = 4;
+async_test(t => {
+    tryMimeType(t, "image/PNG", "image/png");
+}, "Test that toBlob(mimeType) ignores the case of 'mimeType' (PNG).");
 
-//Note that due to the async nature of toBlob, these callbacks may complete
-// at random order but they will all print PASS when they pass.
-tryMimeType("image/PNG", "image/png");
+async_test(t => {
+    tryMimeType(t, "imaGE/jpEg", "image/jpeg");
+}, "Test that toBlob(mimeType) ignores the case of 'mimeType' (JPEG).");
 
-tryMimeType("imaGE/jpEg", "image/jpeg");
+async_test(t => {
+    tryMimeType(t, "ImAgE/WeBp", "image/webp");
+}, "Test that toBlob(mimeType) ignores the case of 'mimeType' (WEBP).");
 
-tryMimeType("ImAgE/WeBp", "image/webp");
+async_test(t => {
+    // Unsupported mime type falls back to png
+    tryMimeType(t, "image/bmp", "image/png");
+}, "Test that unsupported mime type falls back to png.");
 
-//Unsupported mime type falls back to png
-tryMimeType("image/bmp", "image/png");
-
-</Script>
+</script>

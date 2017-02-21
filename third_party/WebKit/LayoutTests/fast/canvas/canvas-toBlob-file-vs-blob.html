@@ -1,20 +1,17 @@
-<script src = "../../resources/js-test.js"></script>
-<script type = "text/javascript"> 
-if (window.testRunner)
-{
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 
-description("Test if toBlob creates a Blob-type object.");
+<script> 
+async_test(t => {
 
-var resultImageObject = null;
-canvas = document.createElement('canvas');
-canvas.toBlob(function(b) {
-    resultImageObject = b;
-    shouldBeFalse('resultImageObject instanceof File');
-    shouldBeTrue('resultImageObject instanceof Blob');
-    if (window.testRunner)
-        testRunner.notifyDone();
-});
-</Script>
+    var resultImageObject = null;
+    canvas = document.createElement('canvas');
+    canvas.toBlob(function(b) {
+        resultImageObject = b;
+        assert_false(resultImageObject instanceof File);
+        assert_true(resultImageObject instanceof Blob);
+        t.done();
+    });
+
+}, "Test if toBlob creates a Blob-type object.");
+</script>

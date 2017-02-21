@@ -1,9 +1,3 @@
-jsTestIsAsync = true;
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
-
 var numToBlobCalls = 9;
 var numToDataURLCalls = 3;
 var testImages = [];
@@ -34,25 +28,20 @@ function testIfAllImagesAreCorrect()
         if (!imageMatched) 
             break;
     }
-    if (imageMatched)
-        testPassed("All images encoded by both async and main threads match one another");
-    else 
-        testFailed("Not all images encoded by async and main threads match one another");
-     finishJSTest();
+    assert_true(imageMatched);
 }
 
 var counter = numToBlobCalls + numToDataURLCalls;
-function onCanvasDrawCompleted(ctx_test) 
+function onCanvasDrawCompleted(asyncTest)
 {
     counter = counter - 1;
     if (counter == 0) {
         testIfAllImagesAreCorrect();
-        if (window.testRunner)
-            testRunner.notifyDone();
+        asyncTest.done();
     } 
 }
 
-function createTestCase(i)
+function createTestCase(i, asyncTest)
 {
     var canvas_test = document.createElement("canvas");
     var ctx_test = canvas_test.getContext("2d");
@@ -61,12 +50,12 @@ function createTestCase(i)
     var newImg = new Image();
     newImg.onload = function() {
         ctx_test.drawImage(newImg, 0, 0, 250, 150);
-        onCanvasDrawCompleted(ctx_test);
+        onCanvasDrawCompleted(asyncTest);
     }    
     testImages[i] = newImg;
 }
 
-for (var i = 0; i < (numToBlobCalls + numToDataURLCalls); i++) 
-{
-    createTestCase(i);
+function createAllTestCases(asyncTest) {
+    for (var i = 0; i < (numToBlobCalls + numToDataURLCalls); i++)
+        createTestCase(i, asyncTest);
 }
