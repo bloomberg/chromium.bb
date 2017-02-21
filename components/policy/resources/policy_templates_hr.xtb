@@ -26,6 +26,9 @@
       Ako se postavi na "istinito" ili se ne postavi, izvješćivat će se o statističkim podacima.</translation>
 <translation id="1046484220783400299">Omogući zastarjele značajke web-platforme na ograničeno vrijeme</translation>
 <translation id="1047128214168693844">Ne dopuštaj web-lokacijama praćenje fizičke lokacije korisnika</translation>
+<translation id="1049138910114524876">Konfigurira oznaku zemlje/jezika koja se nameće na zaslonu za prijavu na usluzi <ph name="PRODUCT_OS_NAME" />.
+
+      Ako se to pravilo postavi, zaslon za prijavu uvijek će se prikazivati na jeziku određenom prvom vrijednošću pravila (pravilo je definirano kao popis za kompatibilnost s budućim verzijama). Ako se to pravilo ne postavi ili se postavi na prazan popis, zaslon za prijavu prikazivat će se na jeziku zadnje korisničke sesije. Ako se to pravilo postavi na vrijednost koja nije važeća oznaka zemlje/jezika, zaslon za prijavu prikazivat će se na osnovnom jeziku (trenutačno en-US).</translation>
 <translation id="1062011392452772310">Omogući daljinsku ovjeru za uređaj</translation>
 <translation id="1090892140761957285">URL za potvrđivanje autentifikacijske oznake klijenta daljinskog pristupa.
 
@@ -92,9 +95,6 @@
       Ako se to pravilo ne postavi ili se postavi na "False", RC4 paketi šifri u TLS-u neće biti omogućeni. U protivnom se može postaviti na "True" radi održanja kompatibilnosti sa zastarjelim poslužiteljem. To je privremena mjera i poslužitelj se treba ponovo konfigurirati.</translation>
 <translation id="1297182715641689552">Upotrijebi .pac proxy skriptu</translation>
 <translation id="1304973015437969093">ID-jevi proširenja/aplikacija i URL-ovi ažuriranja koja će se instalirati u pozadini</translation>
-<translation id="1310333396104446007">Ako se ta postavka konfigurira na False, korisnici neće moći postavljati PIN-ove koji se smatraju slabima. Takvi PIN-ovi uključuju PIN-ove koji se sastoje od jedne te iste znamenke, PIN-ove u kojima se znamenke povećavaju za 1, PIN-ove u kojima se znamenke smanjuju za 1 i PIN-ove koji su previše česti.
-
-          Ako se ta postavka konfigurira na True ili se ne konfigurira, korisnici mogu unijeti te PIN-ove i prikazat će im se samo upozorenje.</translation>
 <translation id="1313457536529613143">Određuje postotak odgode skaliranja zatamnjivanja zaslona kada se uoči aktivnosti korisnika dok se zaslon zatamnjuje ili ubrzo nakon što se zaslon isključi.
 
           Ako se to pravilo postavi, ono određuje postotak odgode skaliranja zatamnjivanja zaslona kada se uoči aktivnosti korisnika dok se zaslon zatamnjuje ili ubrzo nakon što se zaslon isključi. Kada se odgoda zatamnjivanja skalira, odgode isključivanja zaslona, zaključavanja zaslona i mirovanja podešavaju se kako bi se zadržali isti vremenski odmaci za odgodu zatamnjivanja zaslona koji su izvorno konfigurirani.
@@ -539,13 +539,6 @@
 <translation id="2587719089023392205">Postavi <ph name="PRODUCT_NAME" /> kao zadani preglednik</translation>
 <translation id="2592091433672667839">Trajanje neaktivnosti prije nego što se čuvar zaslona prikaže na zaslonu prijave u prodajnom načinu</translation>
 <translation id="2623014935069176671">Pričekaj početnu aktivnost korisnika</translation>
-<translation id="2625512435194873786">Ta postavka kontrolira maksimalnu duljinu PIN-a.
-
-          Ako se ta postavka konfigurira na 0 ili manje, nema maksimalne duljine i korisnik može odabrati PIN bilo koje duljine.
-
-          Ako je ta postavka manja od PinUnlockMinimumLength, ali veća od 0, maksimalna dužina jednaka je minimalnoj.
-
-          Ako se ta postavka ne konfigurira, nema maksimalne dužine i korisnik može odabrati PIN bilo koje dužine.</translation>
 <translation id="262740370354162807">Omogući slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Omogućavanje govornih povratnih informacija</translation>
 <translation id="2646290749315461919">Omogućuje da postavite smiju li web-lokacije pratiti fizičku lokaciju korisnika. Praćenje fizičke lokacije korisnika može biti dopušteno prema zadanim postavkama, odbijeno prema zadanim postavkama ili se korisniku može postaviti upit svaki puta kada web-lokacija zahtijeva fizičku lokaciju. Ako ovo pravilo nije postavljeno, upotrebljavat će se pravilo "AskGeolocation", a korisnik će to moći promijeniti.</translation>
@@ -1006,6 +999,9 @@
 
           Ako nije postavljeno ili je postavljeno na netočno, korisnici će moći prenositi datoteke na Google disk.</translation>
 <translation id="3915395663995367577">URL prema proxy .pac datoteci</translation>
+<translation id="3926940573869375969">Konfigurira koji su rasporedi tipkovnice dopušteni na zaslonu za prijavu za <ph name="PRODUCT_OS_NAME" />.
+
+      Ako se to pravilo postavi na popis identifikatora načina unosa, pruženi načini unosa bit će dostupni na zaslonu za prijavu. Prvi pruženi način unosa bit će odabran unaprijed. Iako je korisnički modul usmjeren na zaslon za prijavu, način unosa koji je korisnik upotrebljavao najdalje u prošlosti bit će dostupan uz načine unosa pružene ovim pravilom. Ako se to pravilo ne postavi, načini unosa na zaslonu za prijavu izvest će se iz jezika na kojem se prikazuje zaslon za prijavu. Zanemarit će se vrijednosti koje nisu važeći identifikatori načina unosa.</translation>
 <translation id="3939893074578116847">Slanje mrežnih paketa poslužitelju za upravljanje radi praćenja online statusa kako bi
       poslužitelj mogao otkriti je li uređaj offline.
 
@@ -1128,6 +1124,7 @@
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
 <translation id="4239720644496144453">Za Android aplikacije ne upotrebljava se predmemorija. Ako više korisnika instalira istu Android aplikaciju, ta će se aplikacija preuzeti iznova za svakog korisnika.</translation>
 <translation id="4250680216510889253">Ne</translation>
+<translation id="4261820385751181068">Oznaka zemlje/jezika za zaslon za prijavu na uređaju</translation>
 <translation id="4272136423200695428">Omogućuje nametanje prijave za <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Određuje parametre koji se upotrebljavaju prilikom pretraživanja slika pomoću POST metode. Sastoji se od zarezom odvojenih parova naziv/vrijednost. Ako je vrijednost parametar predloška, primjerice {imageThumbnail} u gornjem primjeru, zamijenit će se podacima stvarne minijature slike.
 
@@ -1616,6 +1613,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako se to pravilo postavi na "točno" ili se ne postavi, hardversko ubrzanje omogućit će se, osim ako se određena značajka GPU-a nalazi na popisu nedopuštenih.
 
       Ako se pravilo postavi na "netočno", hardversko ubrzanje neće biti omogućeno.</translation>
+<translation id="6070667616071269965">Rasporedi tipkovnice za zaslon za prijavu na uređaju</translation>
 <translation id="6074963268421707432">Nemoj dopustiti nijednoj web-lokaciji da prikazuje obavijesti radne površine</translation>
 <translation id="6076099373507468537">Definira popis USB uređaja za koje je dopušteno odvajanje od upravljačkog programa jezgre radi upotrebe putem API-ja chrome.usb izravno unutar web-aplikacije. Unosi su parovi identifikatora dobavljača i identifikatora proizvoda USB uređaja, a služe za prepoznavanje određenog hardvera.
 
@@ -2091,18 +2089,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako se to pravilo ne postavi, automatsko čišćenje upotrebljava zadanu ugrađenu strategiju. Ta je strategija trenutačno "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Zadrži kolačiće za vrijeme trajanja sesije</translation>
 <translation id="7340034977315324840">Izvješće o vremenima aktivnosti uređaja</translation>
-<translation id="7340934985429121460">Ta postavka kontrolira minimalnu dužinu PIN-a.
-
-          Ako se ta postavka konfigurira na manje od 1, PIN ne može biti kraći od 1 znamenke.
-
-          Ako se ta postavka ne konfigurira, PIN ne može biti kraći od 4 znamenke.</translation>
 <translation id="7384999953864505698">Omogući QUIC protokol</translation>
-<translation id="7406716912696538245">Određuje načine brzog otključavanja koji se mogu postaviti i upotrebljavati.
-          Ta postavka navodi popis dopuštenih načina brzog otključavanja koji se mogu postaviti i upotrebljavati za otključavanje zaključanog zaslona. Vrijednost je popis nizova od kojih svaki treba biti jedno od sljedećeg: "sve" ili "PIN". Ako se odabere "sve", svi će podržani načini brzog otključavanja biti dostupni, dok će u suprotnom biti dostupni samo oni navedeni na popisu.
-
-          Ako se ta postavka konfigurira, načini brzog otključavanja čija vrsta nije navedena na popisu ne mogu se postaviti niti upotrebljavati.
-
-          Ako se ta postavka ne konfigurira, bit će omogućen način "PIN", a svi će ostali načini biti onemogućeni.</translation>
 <translation id="7417972229667085380">Postotak za skaliranje odgode u stanju mirovanja u načinu prezentacije (obustavljeno)</translation>
 <translation id="7421483919690710988">Postavite veličinu predmemorije medijskog diska u bajtovima</translation>
 <translation id="7424751532654212117">Popis iznimki popisa onemogućenih dodataka</translation>
@@ -2268,19 +2255,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7842869978353666042">Konfiguracija opcije Google diska</translation>
 <translation id="7843525027689416831">Određuje oznake koje se trebaju primijeniti na <ph name="PRODUCT_NAME" /> prilikom pokretanja. Navedene oznake primjenjuju se samo na zaslonu za prijavu. Oznake postavljene ovim pravilom ne primjenjuju se na korisničke sesije.</translation>
 <translation id="7848840259379156480">Omogućuje konfiguriranje zadanog alata za prikazivanje HTML-a kad je <ph name="PRODUCT_FRAME_NAME" /> instaliran. Zadana postavka je dopuštanje pregledniku hosta da obavi prikazivanje, no ovu postavku možete zaobići i kao zadano postaviti <ph name="PRODUCT_FRAME_NAME" /> da prikazuje HTML stranice.</translation>
-<translation id="7853178359124471330">Kada je to pravilo postavljeno, automatsko otkrivanje vremenske zone odvijat će se na jedan od sljedećih način ovisno o vrijednosti postavke:
-
-      Ako se pravilo postavi na TimezoneAutomaticDetectionUsersDecide, korisnici će moći upravljati automatskim otkrivanjem vremenske zone uobičajenim kontrolama na stranici chrome://settings.
-
-      Ako se pravilo postavi na TimezoneAutomaticDetectionDisabled, kontrole automatskog otkrivanja vremenske zone na stranici chrome://settings bit će onemogućene. Automatsko otkrivanje vremenske zone bit će uvijek isključeno.
-
-      Ako se pravilo postavi na TimezoneAutomaticDetectionIPOnly, kontrole za vremenske zone na stranici chrome://settings bit će onemogućene. Automatsko otkrivanje vremenske zone bit će uvijek uključeno. Otkrivanje vremenske zone utvrđivat će lokaciju samo na temelju IP adrese.
-
-      Ako se pravilo postavi na TimezoneAutomaticDetectionSendWiFiAccessPoints, kontrole za vremenske zone na stranici chrome://settings bit će onemogućene. Automatsko otkrivanje vremenske zone bit će uvijek uključeno. Popis vidljivih Wi-Fi pristupnih točaka uvijek će se slati poslužitelju API-ja Geolocation radi preciznog otkrivanja vremenske zone.
-
-      Ako se to pravilo ne postavi, ponašat će se kao da je postavljeno pravio TimezoneAutomaticDetectionUsersDecide.
-
-      Postavljanje pravila SystemTimezone nadjačava ovo pravilo. U tom je slučaju automatsko otkrivanje vremenske zone potpuno onemogućeno.</translation>
 <translation id="787125417158068494">Ako se postavi na SyncDisabled ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> certifikati nisu dostupni za ARC aplikacije.
 
       Ako se postavi na CopyCaCerts, svi CA certifikati instalirani u ONC uz <ph name="WEB_TRUSTED_BIT" /> dostupni su za ARC aplikacije.</translation>
@@ -2584,7 +2558,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako je ovo pravilo postavljeno na neistinito, nijedan korisnik, aplikacija ili proširenje ne mogu pristupiti načinu rada preko cijelog zaslona.
 
       Na svim platformama osim <ph name="PRODUCT_OS_NAME" /> način kioska nije dostupan kad je onemogućen način rada preko cijelog zaslona.</translation>
-<translation id="8795495354632096254">Uvijek šalji Wi-Fi pristupne točke poslužitelju prilikom utvrđivanja vremenske zone.</translation>
 <translation id="8818173863808665831">Prijavljuje geografsku lokaciju uređaja.
 
       Ako se to pravilo ne postavi ili ako se postavi na lažno, lokacija se neće prijavljivati.</translation>

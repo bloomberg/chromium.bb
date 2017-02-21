@@ -37,7 +37,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1369915414381695676">Strona <ph name="SITE_NAME" /> została dodana</translation>
 <translation id="1373696734384179344">Za mało pamięci, by pobrać te treści.</translation>
 <translation id="1376578503827013741">Obliczam…</translation>
-<translation id="138361230106469022">Witamy, <ph name="FULL_NAME" /></translation>
+<translation id="138361230106469022">Witaj, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1384959399684842514">Pobieranie wstrzymane</translation>
 <translation id="1389974829397082527">Tu nie ma zakładek</translation>
@@ -153,6 +153,7 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="2646820313617290661">Tymi ustawieniami zarządzają Twoi rodzice.</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
+<translation id="2704606927547763573">Skopiowane</translation>
 <translation id="2707726405694321444">Odśwież stronę</translation>
 <translation id="2709516037105925701">Autouzupełnianie</translation>
 <translation id="271033894570825754">Nowy</translation>
@@ -215,7 +216,7 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="3414952576877147120">Rozmiar:</translation>
 <translation id="3435896845095436175">Włącz</translation>
 <translation id="3443221991560634068">Ponownie załaduj bieżącą stronę</translation>
-<translation id="3452612588551937789">Zaloguj się na konto Google, by korzystać z zakładek, haseł, historii i innych ustawień na wszystkich urządzeniach.</translation>
+<translation id="3452612588551937789">Zaloguj się na konto Google, by korzystać z zakładek, haseł, historii i innych ustawień na wszystkich urządzeniach.</translation>
 <translation id="3492207499832628349">Nowa karta incognito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Dowiedz się więcej<ph name="END_LINK" /> o proponowanej treści</translation>
 <translation id="3518985090088779359">Akceptuj i kontynuuj</translation>
@@ -276,7 +277,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB pobranych plików</translation>
 <translation id="4089831646916293264">Ta funkcja może zakłócać dostęp do udostępnianych przez operatora płatnych usług transmisji danych.</translation>
 <translation id="4095146165863963773">Usunąć dane aplikacji?</translation>
-<translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
+<translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="410351446219883937">Autoodtwarzanie</translation>
 <translation id="4113030288477039509">Zarządzany przez administratora</translation>
 <translation id="4165986682804962316">Ustawienia witryny</translation>
@@ -602,7 +603,7 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="7612619742409846846">Jesteś zalogowany w Google jako</translation>
 <translation id="7619072057915878432">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu problemów z siecią.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Skorzystaj z pomocy<ph name="END_LINK1" /> lub <ph name="BEGIN_LINK2" />skanuj ponownie<ph name="END_LINK2" /></translation>
-<translation id="7626032353295482388">Chrome - witamy!</translation>
+<translation id="7626032353295482388">Witamy w Chrome</translation>
 <translation id="7638584964844754484">Nieprawidłowe hasło</translation>
 <translation id="7641339528570811325">Wyczyść dane przeglądania…</translation>
 <translation id="7648422057306047504">Zaszyfruj hasła za pomocą danych logowania Google</translation>
@@ -723,7 +724,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8959122750345127698">Adres nieosiągalny: <ph name="URL" /></translation>
 <translation id="8979340629087822094">z ostatniego dnia</translation>
 <translation id="8981454092730389528">Zarządzanie aktywnością Google</translation>
-<translation id="8986494364107987395">Automatycznie przesyłaj statystyki użytkowania i raporty o awariach do Google</translation>
+<translation id="8986494364107987395">Automatycznie przesyłaj do Google statystyki użytkowania i raporty o awariach</translation>
 <translation id="8993760627012879038">Otwórz nową kartę w trybie incognito</translation>
 <translation id="8998729206196772491">Logujesz się na konto, którym zarządza <ph name="MANAGED_DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chrome. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>
 <translation id="9019902583201351841">Zarządzany przez Twoich rodziców</translation>

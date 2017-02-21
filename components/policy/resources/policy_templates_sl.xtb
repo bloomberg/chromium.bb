@@ -26,6 +26,9 @@
       Če je pravilnik omogočen ali ni nastavljen, se statistični podatki poročajo.</translation>
 <translation id="1046484220783400299">Začasno omogočanje zastarelih funkcij spletnega okolja</translation>
 <translation id="1047128214168693844">Nobenemu mestu ne dovoli spremljanja fizične lokacije uporabnika</translation>
+<translation id="1049138910114524876">Konfigurira jezik, uveljavljen na zaslonu za prijavo brskalnika <ph name="PRODUCT_OS_NAME" />.
+
+      Če je ta pravilnik nastavljen, bo zaslon za prijavo vedno prikazan v jeziku, ki ga posreduje prva vrednost tega pravilnika (pravilnik je opredeljen kot seznam za združljivost vnaprej). Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, je zaslon za prijavo prikazan v jeziku zadnje uporabniške seje. Če je ta pravilnik nastavljen na vrednost, ki ni veljaven jezik, bo zaslon za prijavo prikazan v rezervnem jeziku (trenutno je to ameriška angleščina, en-US).</translation>
 <translation id="1062011392452772310">Omogoči oddaljeno potrditev naprave</translation>
 <translation id="1090892140761957285">URL za preverjanje žetona za preverjanje pristnosti odjemalca za oddaljeni dostop.
 
@@ -92,9 +95,6 @@
       Če pravilnik ni nastavljen ali je onemogočen, šifrirane zbirke v protokolu TLS ne bodo omogočene, sicer pa je lahko omogočen zaradi ohranjanja združljivosti z zastarelim strežnikom. To je začasen ukrep in strežnik je treba na novo konfigurirati.</translation>
 <translation id="1297182715641689552">Uporabi skript .pac za proxy</translation>
 <translation id="1304973015437969093">ID-ji razširitev/aplikacij in URL-ji posodobitev se namestijo brez obveščanja</translation>
-<translation id="1310333396104446007">Če je ta nastavitev onemogočena, uporabniki ne bodo mogli nastaviti kod PIN, ki naj bi bile šibke. Takšne kode PIN so na primer takšne, ki imajo iste števke, kode, pri katerih se števke povečujejo za številko 1, kode, pri katerih se števke zmanjšujejo za številko 1, in kode, ki so preveč očitne.
-
-          Če je ta nastavitev omogočena ali ni konfigurirana, uporabniki lahko vnesejo takšne kode PIN in bodo glede tega samo opozorjeni.</translation>
 <translation id="1313457536529613143">Določa odstotek spremembe zakasnitve zatemnitve zaslona, kadar se zazna dejavnost uporabnika, medtem ko je zaslon v zatemnjenem načinu ali kmalu potem ko je bil izklopljen.
 
 Če je nastavljen ta pravilnik, določa odstotek spremembe zakasnitve zatemnitve zaslona, kadar se zazna dejavnost uporabnika, medtem ko je zaslon v zatemnjenem načinu ali kmalu potem ko je bil izklopljen. S prilagoditvijo zatemnitve zaslona se prilagodijo tudi zakasnitve za izklop zaslona, zaklepanje zaslona in čas nedejavnosti, tako da se ohranijo enake razdalje od prvotno nastavljene zakasnitve za zatemnitev zaslona.
@@ -567,13 +567,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2587719089023392205">Nastavi <ph name="PRODUCT_NAME" /> za privzeti brskalnik</translation>
 <translation id="2592091433672667839">Trajanje nedejavnosti, preden se v maloprodajnem načinu na zaslonu za prijavo pokaže ohranjevalnik zaslona</translation>
 <translation id="2623014935069176671">Čakanje na začetno dejavnost uporabnika</translation>
-<translation id="2625512435194873786">Ta nastavitev nadzira največjo dovoljeno dolžino kode PIN.
-
-          Če je ta nastavitev konfigurirana, da je 0 ali manj, ni največje dovoljene dolžine in uporabnik lahko nastavi kodo PIN poljubne dolžine.
-
-          Če je ta nastavitev manj kot PinUnlockMinimumLength, vendar je večja od 0, je največja dovoljena dolžina ista kot najmanjša dovoljena dolžina.
-
-          Če ta nastavitev ni konfigurirana, ni največje dovoljene dolžine in uporabnik lahko nastavi kodo PIN poljubne dolžine.</translation>
 <translation id="262740370354162807">Omogoča pošiljanje dokumentov v storitev <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Vklop izgovorjave</translation>
 <translation id="2646290749315461919">Omogoča nastavitev, ali lahko spletna mesta sledijo uporabnikovi fizični lokaciji. Sledenje uporabnikovi fizični lokaciji je lahko privzeto dovoljeno, privzeto zavrnjeno ali pa je lahko uporabnik vprašan vsakič, ko spletno mesto zahteva fizično lokacijo.
@@ -1062,6 +1055,9 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
 Če ta možnost ni nastavljena ali je nastavljena na »False«, bodo uporabniki lahko prenesli datoteke v Google Drive.</translation>
 <translation id="3915395663995367577">URL za datoteko .pac v proxyju</translation>
+<translation id="3926940573869375969">Konfigurira, katere postavitve tipkovnice so dovoljene na zaslonu za prijavo brskalnika <ph name="PRODUCT_OS_NAME" />.
+
+      Če je ta pravilnik nastavljen na seznam identifikatorjev načinov vnosa, so dani načini vnosa na voljo na zaslonu za prijavo. Prvi dani način vnosa je vnaprej izbran. Medtem ko je sklop za uporabnika osredotočen na zaslon za prijavo, je poleg načinov vnosa, ki jih zagotavlja ta pravilnik, na voljo tudi način vnosa, ki ga je uporabnik uporabljal pred največ časa. Če ta pravilnik ni nastavljen, se načini vnosa na zaslonu za prijavo izpeljejo iz jezika, v katerem je prikazan zaslon za prijavo. Vrednosti, ki niso veljavni identifikatorji načinov vnosa, bodo prezrte.</translation>
 <translation id="3939893074578116847">Pošiljanje omrežnih paketov v strežnik za upravljanje zaradi spremljanja stanja povezave, tako da lahko
       strežnik zazna, ali ima naprava povezavo.
 
@@ -1192,6 +1188,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultKeygenSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultKeygenSetting« ni nastavljen.</translation>
 <translation id="4239720644496144453">Predpomnilnik se ne uporablja za aplikacije za Android. Če več uporabnikov namesti enako aplikacijo za Android, bo za vsakega uporabnika znova prenesena.</translation>
 <translation id="4250680216510889253">Ne</translation>
+<translation id="4261820385751181068">Jezik na zaslonu za prijavo v napravi</translation>
 <translation id="4272136423200695428">Omogočanje vsiljene prijave za brskalnik <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Določa parametre, uporabljene pri slikovnem iskanju z metodo POST. Sestavljena je iz parov ime/vrednost, ločenih z vejico. Če je vrednost parameter predloge, kot je v zgornjih primerih {imageThumbnail}, bo zamenjana s pravimi podatki sličice slike.
 
@@ -1722,6 +1719,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je ta pravilnik omogočen ali ni nastavljen, bo strojno pospeševanje omogočeno, razen če je določena funkcija GPE-ja na seznamu blokiranih.
 
       Če je ta pravilnik onemogočen, bo strojno pospeševanje onemogočeno.</translation>
+<translation id="6070667616071269965">Postavitve tipkovnice na zaslonu za prijavo v napravi</translation>
 <translation id="6074963268421707432">Nobenemu spletnemu mestu ne dovoli, da pokaže namizna obvestila</translation>
 <translation id="6076099373507468537">Določa seznam naprav USB, za katere je dovoljena prekinitev povezave z gonilnikom jedra zaradi uporabe prek API-ja chrome.usb neposredno v spletni aplikaciji. Vnosi so pari, ki so sestavljeni iz identifikatorja proizvajalca za USB in identifikatorja izdelka ter ki omogočajo prepoznavo posamezne strojne opreme.
 
@@ -2237,18 +2235,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če ta pravilnik ni nastavljen, samodejno čiščenje uporablja privzeto vgrajeno strategijo. Trenutno je to strategija »RemoveLRUIfDormant«.</translation>
 <translation id="7336878834592315572">Ohrani piškotke za obdobje trajanja seje</translation>
 <translation id="7340034977315324840">Pošiljanje podatkov o času dejavnosti v napravi</translation>
-<translation id="7340934985429121460">Ta nastavitev nadzira najmanjšo dovoljeno dolžino kode PIN.
-
-          Če je ta nastavitev konfigurirana, da je manjša od 1, je najmanjša dovoljena dolžina kode PIN 1.
-
-          Če ta nastavitev ni konfigurirana, je najmanjša dovoljena dolžina kode PIN 4.</translation>
 <translation id="7384999953864505698">Dovoli protokol QUIC</translation>
-<translation id="7406716912696538245">Nadzira, katere načine hitrega odklepanja je dovoljeno nastaviti in uporabljati.
-          Če je ta nastavitev vklopljena, bodo na seznam dovoljenih vključeni načini hitrega odklepanja, ki jih je mogoče nastaviti in uporabljati za odklepanje zaklenjenega zaslona. Vrednost je seznam nizov, od katerih mora biti vsak nekaj od tega: »all«, »PIN«. Če je izbrano »all«, so na voljo vsi podprti načini hitrega odklepanja, v nasprotnem primeru pa so na voljo načini na seznamu.
-
-          Če je ta nastavitev konfigurirana, načinov hitrega odklepanja z vrsto, ki je ni na tem seznamu, ni mogoče nastaviti ali uporabljati.
-
-          Če ta nastavitev ni konfigurirana, bo način »PIN« omogočen, vsi drugi načini pa onemogočeni.</translation>
 <translation id="7417972229667085380">Odstotek prilagoditve časovnega zamika nedejavnosti v načinu predstavitve (zastarelo)</translation>
 <translation id="7421483919690710988">Nastavi velikost predpomnilnika medija v bajtih</translation>
 <translation id="7424751532654212117">Seznam izjem za seznam onemogočenih vtičnikov</translation>
@@ -2423,19 +2410,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7842869978353666042">Konfigurira možnosti storitve Google Drive</translation>
 <translation id="7843525027689416831">Določa zastavice, ki naj se uporabijo za <ph name="PRODUCT_NAME" />, ko se zažene. Izbrane zastavice se uporabijo samo na zaslonu za prijavo. Zastavice, nastavljene prek tega pravilnika, se ne prenesejo v uporabniške seje.</translation>
 <translation id="7848840259379156480">Omogoča nastavitev privzetega upodabljalnika HTML-ja, ko je nameščen <ph name="PRODUCT_FRAME_NAME" />. Privzeta nastavitev je, da upodabljanje izvaja gostiteljski brskalnik, vendar lahko to preglasite in določite, da <ph name="PRODUCT_FRAME_NAME" /> privzeto upodablja strani HTML.</translation>
-<translation id="7853178359124471330">Če je ta pravilnik nastavljen, je samodejno zaznavanje časovnega pasu odvisno od vrednosti nastavitve:
-
-      Če je nastavljen na TimezoneAutomaticDetectionUsersDecide, lahko uporabniki z običajnimi kontrolniki v chrome://settings nadzirajo samodejno zaznavanje časovnega pasu.
-
-      Če je nastavljen na TimezoneAutomaticDetectionDisabled, so kontrolniki za samodejno zaznavanje časovnega pasu v chrome://settings onemogočeni. Samodejno zaznavanje časovnega pasu je vedno izklopljeno.
-
-      Če je nastavljen na TimezoneAutomaticDetectionIPOnly, so kontrolniki za časovni pas v chrome://settings onemogočeni. Samodejno zazavanje časovnega pasu je vedno vklopljeno. Pri zaznavanju časovnega pasu se za določanje lokacije uporablja samo IP.
-
-      Če je nastavljen na TimezoneAutomaticDetectionSendWiFiAccessPoints, so kontrolniki za časovni pas v chrome://settings onemogočeni. Samodejno zaznavanje časovnega pasu bo vedno vklopljeno. Seznam vidnih dostopnih točk Wi-Fi bo vedno poslan v strežnik API-ja za geolokacijo zaradi natančnega zaznavanja časovnega pasu.
-
-      Če ta pravilnik ni nastavljen, deluje, kot da je nastavljena možnost TimezoneAutomaticDetectionUsersDecide.
-
-      Če je nastavljen pravilnik SystemTimezone, preglasi ta pravilnik. V tem primeru je samodejno zaznavanje časovnega pasu v celoti onemogočeno.</translation>
 <translation id="787125417158068494">Če je pravilnik nastavljen na »SyncDisabled« ali ni konfiguriran, potrdila sistema <ph name="PRODUCT_OS_NAME" /> niso na voljo za aplikacije ARC.
 
       Če je pravilnik nastavljen na »CopyCaCerts«, so vsa potrdila overitelja potrdil, nameščena s pravilnikom ONC in za katera velja <ph name="WEB_TRUSTED_BIT" />, na voljo za aplikacije ARC.</translation>
@@ -2767,7 +2741,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik nastavljen na »false«, uporabnik ter aplikacije in razširitve ne morejo preklopiti v celozaslonski način.
 
       V vseh okoljih, razen v sistemu <ph name="PRODUCT_OS_NAME" />, način kioska ni na voljo, ko je celozaslonski način onemogočen.</translation>
-<translation id="8795495354632096254">Vedno pošlji dostopne točke Wi-Fi v strežnik pri določanju časovnega pasu.</translation>
 <translation id="8818173863808665831">Prijava zemljepisne lokacije naprave.
 
       Če pravilnik ni nastavljen ali je nastavljen na »False«, lokacija ne bo prijavljena.</translation>

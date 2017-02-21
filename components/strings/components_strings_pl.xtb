@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Identyfikator awarii: <ph name="CRASH_LOCAL_ID" /> (identyfikator serwera: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Obecnie nie możemy się skontaktować z Twoim rodzicem. Spróbuj ponownie.</translation>
 <translation id="3528171143076753409">Certyfikat serwera nie jest zaufany.</translation>
+<translation id="3538531656504267329">Rok utraty ważności jest nieprawidłowy</translation>
 <translation id="3539171420378717834">Zachowaj kopię tej karty na urządzeniu</translation>
 <translation id="3542684924769048008">Używaj hasła dla:</translation>
 <translation id="3549644494707163724">Szyfruj wszystkie synchronizowane dane za pomocą hasła synchronizacji</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome wykrył nietypowy kod na tej stronie i zablokował ją, by chronić Twoje dane osobowe (np. hasła, numery telefonu czy dane kart kredytowych).</translation>
 <translation id="6477460825583319731">Nieprawidłowy adres e-mail</translation>
 <translation id="6489534406876378309">Rozpocznij przesyłanie informacji o awariach</translation>
+<translation id="6525462735697194615">Miesiąc utraty ważności jest nieprawidłowy</translation>
 <translation id="6529602333819889595">&amp;Ponów usunięcie</translation>
 <translation id="6534179046333460208">Sugestie dotyczące internetu rzeczy</translation>
 <translation id="6550675742724504774">Opcje</translation>
@@ -673,7 +675,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="7637571805876720304">Usunąć tę kartę kredytową z Chromium?</translation>
 <translation id="765676359832457558">Ukryj ustawienia zaawansowane...</translation>
 <translation id="7658239707568436148">Anuluj</translation>
-<translation id="7667346355482952095">Zwrócony token zasad jest pusty lub nie pasuje do bieżącego tokenu</translation>
+<translation id="7667346355482952095">Zwrócony token zasad jest pusty lub nie pasuje do bieżącego tokena</translation>
 <translation id="7668654391829183341">Nieznane urządzenie</translation>
 <translation id="7669271284792375604">Osoby atakujące tę stronę mogą podstępem próbować nakłonić Cię do zainstalowania programów utrudniających przeglądanie internetu (np. zmieniających stronę główną lub wyświetlających dodatkowe reklamy na stronach, na które wchodzisz).</translation>
 <translation id="7674629440242451245">Interesują Cię nowe, przydatne funkcje Chrome? Wypróbuj wersję deweloperską ze strony chrome.com/dev.</translation>

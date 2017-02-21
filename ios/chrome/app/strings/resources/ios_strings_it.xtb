@@ -254,6 +254,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="6042308850641462728">Più</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Tocca per annullare.</translation>
 <translation id="60851516108411750">Il tuo Elenco di lettura è disponibile offline. Per aggiungere una pagina all'Elenco di lettura, tocca <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
@@ -411,6 +412,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9100610230175265781">Passphrase obbligatoria</translation>
 <translation id="9148126808321036104">Esegui di nuovo l'accesso</translation>
+<translation id="9154194610265714752">Aggiornato</translation>
 <translation id="9157836665414082580">Elimina finestre di dialogo</translation>
 <translation id="9188680907066685419">Esci dall'account gestito</translation>
 <translation id="9203116392574189331">Handoff</translation>

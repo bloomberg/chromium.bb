@@ -270,6 +270,7 @@
 <translation id="348000606199325318">비정상 종료 ID <ph name="CRASH_LOCAL_ID" />(서버 ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
+<translation id="3538531656504267329">만료 연도가 잘못되었습니다.</translation>
 <translation id="3539171420378717834">카드 사본을 이 기기에 저장</translation>
 <translation id="3542684924769048008">비밀번호 사용 항목:</translation>
 <translation id="3549644494707163724">나만의 동기화 암호로 모든 동기화 데이터 암호화</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome이 이 페이지에서 비정상적인 코드를 감지했으며 개인정보(예: 비밀번호, 전화번호, 신용카드) 보호를 위해 차단했습니다.</translation>
 <translation id="6477460825583319731">잘못된 이메일 주소</translation>
 <translation id="6489534406876378309">비정상 종료 업로드 시작하기</translation>
+<translation id="6525462735697194615">만료 월이 잘못되었습니다.</translation>
 <translation id="6529602333819889595">삭제 다시 실행(&amp;R)</translation>
 <translation id="6534179046333460208">피지컬 웹 제안</translation>
 <translation id="6550675742724504774">옵션</translation>

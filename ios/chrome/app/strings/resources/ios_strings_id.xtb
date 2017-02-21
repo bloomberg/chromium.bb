@@ -254,6 +254,7 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6042308850641462728">Lainnya</translation>
 <translation id="605721222689873409">TT</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Ketuk untuk membatalkan.</translation>
 <translation id="60851516108411750">Daftar bacaan Anda tersedia secara offline. Untuk menambahkan halaman ke daftar bacaan, tap<ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
@@ -411,6 +412,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Frasa sandi diwajibkan</translation>
 <translation id="9148126808321036104">Masuk sekali lagi</translation>
+<translation id="9154194610265714752">Diperbarui</translation>
 <translation id="9157836665414082580">Sembunyikan Dialog</translation>
 <translation id="9188680907066685419">Keluar dari akun yang dikelola</translation>
 <translation id="9203116392574189331">Handoff</translation>

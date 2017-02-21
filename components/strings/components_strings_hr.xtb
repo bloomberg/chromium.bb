@@ -270,6 +270,7 @@
 <translation id="348000606199325318">ID rušenja <ph name="CRASH_LOCAL_ID" /> (ID poslužitelja: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Nismo uspjeli stupiti u kontakt s tvojim roditeljem. Pokušaj ponovo.</translation>
 <translation id="3528171143076753409">Certifikat poslužitelja nije pouzdan.</translation>
+<translation id="3538531656504267329">Godina isteka nije važeća</translation>
 <translation id="3539171420378717834">Zadrži kopiju te kartice na uređaju</translation>
 <translation id="3542684924769048008">Upotrijebite zaporku za:</translation>
 <translation id="3549644494707163724">Šifriranje svih sinkroniziranih podataka vlastitom zaporkom za sinkronizaciju</translation>
@@ -556,6 +557,7 @@
 <translation id="6477321094435799029">Chrome je otkrio neuobičajeni kôd na toj stranici i blokirao ju je radi zaštite vaših osobnih podataka (primjerice zaporki, telefonskih brojeva i kreditnih kartica).</translation>
 <translation id="6477460825583319731">Nevažeća e-adresa</translation>
 <translation id="6489534406876378309">Pokreni prijenos rušenja</translation>
+<translation id="6525462735697194615">Mjesec isteka nije važeći</translation>
 <translation id="6529602333819889595">&amp;Ponovi brisanje</translation>
 <translation id="6534179046333460208">Prijedlozi Fizičkog weba</translation>
 <translation id="6550675742724504774">Opcije</translation>

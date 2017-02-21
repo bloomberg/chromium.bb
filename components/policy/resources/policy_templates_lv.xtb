@@ -26,6 +26,9 @@
       Ja politikai ir iestatīta vērtība Patiesa vai nav iestatījuma, statistika tiks ziņota.</translation>
 <translation id="1046484220783400299">Iespējot novecojušu tīmekļa platformu funkcijas uz ierobežotu laiku</translation>
 <translation id="1047128214168693844">Neatļaut nevienai vietnei izsekot lietotāju fizisko atrašanās vietu</translation>
+<translation id="1049138910114524876">Tiek konfigurēta lokalizācija, kas piespiedu kārtā tiek izmantota <ph name="PRODUCT_OS_NAME" /> pierakstīšanās ekrānā.
+
+      Ja šī politika ir iestatīta, pierakstīšanās ekrāns vienmēr tiks rādīts tajā lokalizācijā, kura atbilst šīs politikas pirmajai vērtībai (politika ir definēta kā pārsūtīšanas saderības saraksts). Ja šī politika nav iestatīta vai tai ir iestatīts tukšs saraksts, pierakstīšanās ekrāns tiks rādīts pēdējā lietotāja sesijas lokalizācijā. Ja šai politikai ir iestatīta vērtība, kas nav derīga lokalizācija, pierakstīšanās ekrāns tiks rādīts atkāpšanās lokalizācijā (pašlaik: en-US).</translation>
 <translation id="1062011392452772310">Iespējot ierīces attālu apstiprināšanu</translation>
 <translation id="1090892140761957285">Vietrādis URL attālās piekļuves klienta autentifikācijas pilnvaras apstiprināšanai.
 
@@ -94,9 +97,6 @@
       Ja politika nav iestatīta vai ir iestatīta vērtība Nepatiesa, RC4 šifra komplekti standartā TLS netiks iespējoti. Politikai var iestatīt vērtību Patiesa, lai saglabātu saderību ar novecojušu serveri. Tas ir pagaidu risinājums, un serveris ir jākonfigurē atkārtoti.</translation>
 <translation id="1297182715641689552">Izmantot .pac starpniekservera skriptu</translation>
 <translation id="1304973015437969093">Paplašinājumu/lietotņu ID un atjauninājumu vietrāži URL instalēšanai klusajā režīmā</translation>
-<translation id="1310333396104446007">Ja šim iestatījumam ir konfigurēta vērtība “false”, tiks novērsta nedrošu PIN iestatīšana. Nedrošs PIN ir tāds PIN, kurā četras reizes tiek atkārtots viens cipars, kurā ir četri cipari pēc kārtas augošā secībā, četri cipari pēc kārtas dilstošā secībā vai kurā ir pārāk izplatīta ciparu kombinācija.
-
-          Ja šim iestatījumam ir konfigurēta vērtība “true” vai tā nav konfigurēta, lietotāji var ievadīt nedrošus PIN, un tiek parādīts tikai brīdinājums.</translation>
 <translation id="1313457536529613143">Norāda aizkavi (procentos) līdz ekrāna aptumšošanai, kad tiek novērota lietotāja darbība, kamēr ekrāns ir aptumšots vai drīz pēc ekrāna izslēgšanas.
 
           Ja šī politika ir iestatīta, tā norāda aizkavi (procentos) līdz ekrāna aptumšošanai, kad tiek novērota lietotāja darbība, kamēr ekrāns ir aptumšots vai drīz pēc ekrāna izslēgšanas. Ja aptumšošanas aizkave ir mainīta, ekrāna izslēgšanas, ekrāna bloķēšanas un gaidstāves aizkaves tiek pielāgotas, lai nodrošinātu tādu pašu starplaiku no ekrāna aptumšošanas aizkaves, kāds bija sākotnēji konfigurēts.
@@ -570,13 +570,6 @@
 <translation id="2587719089023392205">Iestatīt <ph name="PRODUCT_NAME" /> kā noklusējuma pārlūku</translation>
 <translation id="2592091433672667839">Neaktivitātes ilgums, pirms ekrānsaudzētājs tiek parādīts mazumtirdzniecības režīma pierakstīšanās ekrānā</translation>
 <translation id="2623014935069176671">Gaidīt sākotnējo lietotāja darbību</translation>
-<translation id="2625512435194873786">Ar šo iestatījumu tiek kontrolēts PIN maksimālais garums.
-
-          Ja šim iestatījumam ir konfigurēta vērtība 0 vai mazāka, nav maksimālā garuma un lietotājs var iestatīt jebkāda garuma PIN.
-
-          Ja šī iestatījuma vērtība ir mazāka nekā vērtība PinUnlockMinimumLength, taču lielāka nekā 0, maksimālais garums ir tāds pats kā minimālais garums.
-
-          Ja šis iestatījums nav konfigurēts, nav maksimālā garuma un lietotājs var iestatīt jebkāda garuma PIN.</translation>
 <translation id="262740370354162807">Iespējo dokumentu iesniegšanu pakalpojumā <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Iespējot izrunu</translation>
 <translation id="2646290749315461919">Ļauj iestatīt, vai vietnēm ir atļauts izsekot lietotāju fizisko atrašanās vietu. Lietotāju fiziskās atrašanās vietas izsekošana var tikt atļauta pēc noklusējuma, noraidīta pēc noklusējuma vai lietotājam var tikt vaicāts katru reizi, kad vietne pieprasa datus par fizisko atrašanās vietu.
@@ -1055,6 +1048,9 @@ Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, drošā mek
 
           Ja šis iestatījums nav iestatīts vai ir iestatīta vērtība Nepatiesa, lietotāji varēs pārsūtīt failus uz Google disku.</translation>
 <translation id="3915395663995367577">URL uz starpniekservera .pac failu</translation>
+<translation id="3926940573869375969">Tiek konfigurēts, kuri tastatūras izkārtojumi ir atļauti <ph name="PRODUCT_OS_NAME" /> pierakstīšanās ekrānā.
+
+      Ja šai politikai ir iestatīts saraksts ar ievades metožu identifikatoriem, norādītās ievades metodes būs pieejamas pierakstīšanās ekrānā. Pirmā norādītā ievades metode tiks priekšatlasīta. Kamēr lietotāja ierīce ir fokusēta uz pierakstīšanās ekrānu, papildus šajā politikā norādītajām metodēm būs pieejama lietotāja pēdējā izmantotā ievades metode. Ja šī politika nav iestatīta, pierakstīšanās ekrānā ievades metodes tiks izgūtas no lokalizācijas, kurā tiek rādīts pierakstīšanās ekrāns. Vērtības, kas nav derīgi ievades metožu identifikatori, tiks ignorētas.</translation>
 <translation id="3939893074578116847">Pārvaldības serverim tiek nosūtītas tīkla paketes tiešsaistes statusa pārraudzībai, lai
       serverī varētu noteikt, vai ierīce ir bezsaistē.
 
@@ -1176,6 +1172,7 @@ Ja šī politika nav iestatīta, lietotājs var izmantot jebkuru sistēmā insta
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="4239720644496144453">Android lietotnēs netiek izmantota kešatmiņa. Ja vairāki lietotāji instalē vienu Android lietotni, tā tiks no jauna lejupielādēta katram lietotājam.</translation>
 <translation id="4250680216510889253">Nē</translation>
+<translation id="4261820385751181068">Ierīces pierakstīšanās ekrāna lokalizācija</translation>
 <translation id="4272136423200695428">Iespējo piespiedu pierakstīšanos pārlūkprogrammā <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Norāda parametrus, kas tiek izmantoti, veicot attēlu meklēšanu ar metodi POST. Izmantojot šo metodi, tiek meklēti ar komatu atdalītu vārdu/vērtību pāri. Ja vērtība ir veidnes parametrs, piemēram, {imageThumbnail} (iepriekšējā piemērā), tas tiks aizstāts ar īstiem attēla sīktēla datiem.
 
@@ -1708,6 +1705,7 @@ Ja šī politika nav iestatīta, jebkurš spraudnis, kas atbilst politikā Disab
       Ja šai politikai ir iestatīta vērtība Patiesa vai nav iestatīta nekāda vērtība un ja noteiktas GPU funkcijas nav ievietotas melnajā sarakstā, paātrināta aparatūras darbība tiek iespējota.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, paātrināta aparatūras darbība tiek atspējota.</translation>
+<translation id="6070667616071269965">Ierīces pierakstīšanās ekrāna tastatūras izkārtojumi</translation>
 <translation id="6074963268421707432">Neatļauj nevienai vietnei rādīt paziņojumus darbvirsmā</translation>
 <translation id="6076099373507468537">Definē USB ierīces, kuras ir atļauts atvienot no kodola draiveriem, lai tās izmantotu ar chrome.usb API tieši tīmekļa lietojumprogrammā. Katru ierakstu veido USB pakalpojumu sniedzēja identifikators un produkta identifikators, kas identificē aparatūru.
 
@@ -2190,18 +2188,7 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
       Ja šī politika nav iestatīta, automātiskajai tīrīšanai tiks izmantota noklusējuma tīrīšanas stratēģija. Pašlaik tā ir stratēģija “RemoveLRUIfDormant”.</translation>
 <translation id="7336878834592315572">Sīkfailu saglabāšana sesijas laikā</translation>
 <translation id="7340034977315324840">Ziņot par ierīces darbības laikiem</translation>
-<translation id="7340934985429121460">Ar šo iestatījumu tiek kontrolēts PIN minimālais garums.
-
-          Ja šim iestatījumam ir konfigurēta vērtība 1 vai mazāka, PIN minimālais garums ir 1.
-
-          Ja šis iestatījums nav konfigurēts, PIN minimālais garums ir 4.</translation>
 <translation id="7384999953864505698">Atļauja lietot QUIC protokolu</translation>
-<translation id="7406716912696538245">Ar šo iestatījumu tiek kontrolēts, kurus ātrās atbloķēšanas režīmus var iestatīt un izmantot.
-      Šis iestatījums iekļauj baltajā sarakstā atļautos ātrās atbloķēšanas režīmus, kurus var iestatīt un izmantot bloķēšanas ekrāna atbloķēšanai. Vērtība ir virkņu saraksts, un pieļaujamās virkņu vērtības ir “visi” vai “PIN”. Ja ir atlasīta vērtība “visi”, ir pieejami visi atbalstītie ātrās atbloķēšanas režīmi; pretējā gadījumā ir pieejami sarakstā norādītie režīmi.
-
-      Ja šis iestatījums ir konfigurēts, ātrās atbloķēšanas režīmus, kuru veids nav norādīts sarakstā, nevar iestatīt vai izmantot.
-
-      Ja šis iestatījums netiek konfigurēts, tiek iespējots režīms “PIN” un visi pārējie režīmi tiek atspējoti.</translation>
 <translation id="7417972229667085380">Aizkaves līdz dīkstāvei norādīšana procentos (prezentācijas režīmā; pārtraukta)</translation>
 <translation id="7421483919690710988">Iestatīt datu nesēja kešatmiņas lielumu baitos</translation>
 <translation id="7424751532654212117">Atspējoto spraudņu saraksta izņēmumu saraksts</translation>
@@ -2379,19 +2366,6 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
 <translation id="7848840259379156480">Ļauj konfigurēt noklusējuma HTML renderētāju, ja ir instalēts produkts <ph name="PRODUCT_FRAME_NAME" />.
       Atbilstoši noklusējuma iestatījumam renderēšanu izpilda saimniekdatora pārlūks, taču
       pēc izvēles šo iestatījumu var ignorēt un likt, lai HTML lappuses pēc noklusējuma tiktu renderētas produktā <ph name="PRODUCT_FRAME_NAME" />.</translation>
-<translation id="7853178359124471330">Ja ir iestatīta šī politika, atkarībā no iestatījuma būs pieejama viena no tālāk norādītajām automātiskās laika joslas noteikšanas plūsmām.
-
-      Ja tiks atlasīts iestatījums TimezoneAutomaticDetectionUsersDecide, lietotāji varēs kontrolēt automātisko laika joslas noteikšanu, izmantojot parastās vadīklas lapā chrome:settings.
-
-      Ja tiks atlasīts iestatījums TimezoneAutomaticDetectionDisabled, automātiskās laika joslas noteikšanas vadīklas lapā chrome://settings tiks atspējotas. Automātiskā laika joslas noteikšana vienmēr būs izslēgta.
-
-      Ja tiks atlasīts iestatījums TimezoneAutomaticDetectionIPOnly, laika joslas vadīklas lapā chrome://settings tiks atspējotas. Automātiskā laika joslas noteikšana vienmēr būs ieslēgta. Laika josla vienmēr tiks noteikta tikai pēc IP metodes atrašanās vietas noteikšanai.
-
-      Ja tiks atlasīts iestatījums TimezoneAutomaticDetectionSendWiFiAccessPoints, laika joslas vadīklas lapā chrome://settings tiks atspējotas. Automātiskā laika joslas noteikšana vienmēr būs ieslēgta. Redzamo Wi-Fi piekļuves punktu saraksts vienmēr tiks nosūtīts uz ģeolokācijas API serveri precīzai laika joslas noteikšanai.
-
-      Ja šī politika netiks iestatīta, tā darbosies atbilstoši iestatījumam TimezoneAutomaticDetectionUsersDecide.
-
-      Ja ir iestatīta politika SystemTimezone, ar to tiks ignorēta šī politika. Tādā gadījumā automātiskā laika joslas noteikšana ir pilnībā atspējota.</translation>
 <translation id="787125417158068494">Ja politikai ir iestatīta vērtība SyncDisabled vai tā nav konfigurēta, <ph name="PRODUCT_OS_NAME" /> sertifikāti nav pieejami ARC lietotnēm.
 
       Ja ir iestatīta vērtība CopyCaCerts, visi ONC instalētie CA sertifikāti ar <ph name="WEB_TRUSTED_BIT" /> ir pieejami ARC lietotnēm.</translation>
@@ -2723,7 +2697,6 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
       Ja šai politikai ir iestatīta vērtība Nepatiesa, ne lietotājs, ne lietotnes, ne arī paplašinājumi nevarēs darboties pilnekrāna režīmā.
 
       Ja pilnekrāna režīms ir atspējots, nevienā platformā, izņemot <ph name="PRODUCT_OS_NAME" />, nav pieejams kioska režīms.</translation>
-<translation id="8795495354632096254">Vienmēr sūtīt Wi-Fi piekļuves punktus serverim laika joslas noteikšanas laikā.</translation>
 <translation id="8818173863808665831">Ziņot par ierīces ģeogrāfisko atrašanās vietu.
 
       Ja šī politika nav iestatīta vai tā ir iestatīta kā Aplama, par atrašanās vietu netiks ziņots.</translation>

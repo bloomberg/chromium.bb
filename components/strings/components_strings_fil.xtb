@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Crash ID <ph name="CRASH_LOCAL_ID" /> (Server ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Hindi namin makaugnayan ang iyong magulang sa sandaling ito. Pakisubukang muli.</translation>
 <translation id="3528171143076753409">Hindi pinagkakatiwalaan ang certificate ng server.</translation>
+<translation id="3538531656504267329">Di-wastong taon ng pag-expire</translation>
 <translation id="3539171420378717834">Magtago ng kopya ng card na ito sa device na ito</translation>
 <translation id="3542684924769048008">Gamitin ang password para sa:</translation>
 <translation id="3549644494707163724">I-encrypt ang lahat ng naka-sync na data gamit ang sarili mong passphrase sa pag-sync</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">May natukoy na kakaibang code ang Chrome sa page na ito at na-block ito upang protektahan ang iyong personal na impormasyon (halimbawa, mga password, numero ng telepono at credit card).</translation>
 <translation id="6477460825583319731">Hindi wasto ang email address</translation>
 <translation id="6489534406876378309">Simulang mag-upload ng mga pag-crash</translation>
+<translation id="6525462735697194615">Di-wastong buwan ng pag-expire</translation>
 <translation id="6529602333819889595">&amp;Gawing Muli ang Pagtanggal</translation>
 <translation id="6534179046333460208">Mga suhestyon sa Pisikal na Web</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>

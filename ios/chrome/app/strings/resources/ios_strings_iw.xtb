@@ -254,7 +254,9 @@
 <translation id="6040143037577758943">סגור</translation>
 <translation id="6042308850641462728">עוד</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">הקש כדי לבטל.</translation>
+<translation id="60851516108411750">אתה יכול לגשת לרשימת הקריאה שלך במצב לא מקוון. כדי להוסיף דף אל רשימת הקריאה, הקש על <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">מקוון</translation>
 <translation id="6127379762771434464">הפריט הוסר</translation>
 <translation id="6136914049981179737">שניות</translation>
@@ -410,6 +412,7 @@
 <translation id="9083392325882095631">פריט אחד</translation>
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9148126808321036104">היכנס שוב</translation>
+<translation id="9154194610265714752">עודכן</translation>
 <translation id="9157836665414082580">הסתר תיבות דו-שיח</translation>
 <translation id="9188680907066685419">צא מהחשבון המנוהל</translation>
 <translation id="9203116392574189331">Handoff</translation>

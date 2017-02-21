@@ -254,7 +254,9 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="605721222689873409">ÅÅ</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Trykk for å avbryte.</translation>
+<translation id="60851516108411750">Leselisten din er tilgjengelig uten nett. Du kan legge til sider i leselisten ved å trykke på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Pålogget</translation>
 <translation id="6127379762771434464">Elementet ble fjernet</translation>
 <translation id="6136914049981179737">For noen sekunder siden</translation>
@@ -410,6 +412,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="9083392325882095631">1 element</translation>
 <translation id="9100610230175265781">Det kreves en passordfrase</translation>
 <translation id="9148126808321036104">Logg på igjen</translation>
+<translation id="9154194610265714752">Oppdatert</translation>
 <translation id="9157836665414082580">Ignorer dialogbokser</translation>
 <translation id="9188680907066685419">Logg av administrert konto</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -254,7 +254,9 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="6042308850641462728">Daha fazla</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="FORMATTED_CURRENCY_CODE" /></translation>
 <translation id="6066301408025741299">İptal etmek için hafifçe vurun.</translation>
+<translation id="60851516108411750">Okuma listeniz çevrimdışı olarak kullanılabilir. Okuma listenize sayfa eklemek için <ph name="SHARE_OPENING_ICON" /> simgesine dokunun.</translation>
 <translation id="6122191549521593678">Çevrimiçi</translation>
 <translation id="6127379762771434464">Öğe kaldırıldı</translation>
 <translation id="6136914049981179737">Sn. önce</translation>
@@ -410,6 +412,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="9083392325882095631">1 öğe</translation>
 <translation id="9100610230175265781">Parola gerekli</translation>
 <translation id="9148126808321036104">Tekrar oturum açın</translation>
+<translation id="9154194610265714752">Güncellendi</translation>
 <translation id="9157836665414082580">İletişim Kutularını Gizle</translation>
 <translation id="9188680907066685419">Yönetilen hesabın oturumunu kapat</translation>
 <translation id="9203116392574189331">Handoff</translation>

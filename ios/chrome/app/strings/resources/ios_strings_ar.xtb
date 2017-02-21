@@ -254,6 +254,7 @@
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="605721222689873409">العام</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">انقر للإلغاء.</translation>
 <translation id="60851516108411750">قائمة القراءة متاحة بلا اتصال بالإنترنت. لإضافة صفحة إلى قائمة القراءة، انقر على <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">متصل</translation>
@@ -411,6 +412,7 @@
 <translation id="9083392325882095631">عنصر واحد</translation>
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>
 <translation id="9148126808321036104">تسجيل الدخول مرة أخرى</translation>
+<translation id="9154194610265714752">تم التحديث</translation>
 <translation id="9157836665414082580">إيقاف مربعات الحوار</translation>
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
 <translation id="9203116392574189331">Handoff</translation>

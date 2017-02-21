@@ -254,7 +254,9 @@ Videregivelse skal være aktiveret i afsnittet Generelt i Indstillinger, og dine
 <translation id="6040143037577758943">Luk</translation>
 <translation id="6042308850641462728">Mere</translation>
 <translation id="605721222689873409">ÅÅ</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="FORMATTED_CURRENCY_CODE" /></translation>
 <translation id="6066301408025741299">Tryk for at annullere.</translation>
+<translation id="60851516108411750">Din læseliste er tilgængelig offline. Du kan føje en side til din læseliste ved at trykke på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elementet blev fjernet</translation>
 <translation id="6136914049981179737">Sek. siden</translation>
@@ -410,6 +412,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="9083392325882095631">1 element</translation>
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9148126808321036104">Log ind igen</translation>
+<translation id="9154194610265714752">Opdateret</translation>
 <translation id="9157836665414082580">Skjul dialogbokse</translation>
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
 <translation id="9203116392574189331">Videregivelse</translation>

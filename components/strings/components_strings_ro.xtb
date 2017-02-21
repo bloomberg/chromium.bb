@@ -270,6 +270,7 @@
 <translation id="348000606199325318">ID blocare <ph name="CRASH_LOCAL_ID" /> (ID server: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Momentan, nu ți-am putut contacta părintele. Încearcă din nou.</translation>
 <translation id="3528171143076753409">Certificatul serverului nu este de încredere.</translation>
+<translation id="3538531656504267329">Anul de expirare nu este valid</translation>
 <translation id="3539171420378717834">Păstrează o copie a cardului pe dispozitiv</translation>
 <translation id="3542684924769048008">Folosește parola pentru:</translation>
 <translation id="3549644494707163724">Criptați toate datele sincronizate cu parola dvs. de acces pentru sincronizare</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome a detectat un cod neobișnuit pe această pagină și l-a blocat pentru a-ți proteja informațiile cu caracter personal (de exemplu, parole, numere de telefon sau carduri de credit).</translation>
 <translation id="6477460825583319731">Adresă de e-mail nevalidă</translation>
 <translation id="6489534406876378309">Începeți încărcarea rapoartelor de blocare</translation>
+<translation id="6525462735697194615">Luna de expirare nu este validă</translation>
 <translation id="6529602333819889595">&amp;Repetați ștergerea</translation>
 <translation id="6534179046333460208">Sugestii pentru Webul material</translation>
 <translation id="6550675742724504774">Opțiuni</translation>

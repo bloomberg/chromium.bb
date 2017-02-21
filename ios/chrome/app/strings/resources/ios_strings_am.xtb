@@ -254,6 +254,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="6042308850641462728">ተጨማሪ</translation>
 <translation id="605721222689873409">ዓዓ</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">ይቅር ለማለት መታ ያድርጉ።</translation>
 <translation id="60851516108411750">የንባብ ዝርዝርዎ ከመስመር ውጭ ይገኛል። ወደ የእርስዎ የንባብ ዝርዝር ገጽ ለማከል <ph name="SHARE_OPENING_ICON" />መታ ያድርጉ።</translation>
 <translation id="6122191549521593678">መስመር ላይ</translation>
@@ -411,6 +412,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="9083392325882095631">1 ንጥል</translation>
 <translation id="9100610230175265781">የይለፍ ሐረግ ያስፈልጋል</translation>
 <translation id="9148126808321036104">እንደገና ይግቡ</translation>
+<translation id="9154194610265714752">የተዘመነ</translation>
 <translation id="9157836665414082580">መገናኛዎችን አፍን</translation>
 <translation id="9188680907066685419">ከሚተዳደር መለያ ዘግግተህ ውጣ</translation>
 <translation id="9203116392574189331">Handoff</translation>

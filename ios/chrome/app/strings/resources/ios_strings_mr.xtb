@@ -255,6 +255,7 @@
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">रद्द करण्यासाठी टॅप करा.</translation>
 <translation id="60851516108411750">आपली वाचन सूची ऑफलाइन उपलब्ध आहे. आपल्या वाचन सूचीमध्‍ये एक पृष्‍ठ जोडण्‍यासाठी, <ph name="SHARE_OPENING_ICON" /> टॅप करा.</translation>
 <translation id="6122191549521593678">ऑनलाइन</translation>
@@ -412,6 +413,7 @@
 <translation id="9083392325882095631">1 आयटम</translation>
 <translation id="9100610230175265781">सांकेतिक वाक्यांश आवश्यक</translation>
 <translation id="9148126808321036104">पुन्हा साइन इन करा </translation>
+<translation id="9154194610265714752">अद्यतनित केलेले</translation>
 <translation id="9157836665414082580">संवाद दर्शवू नका</translation>
 <translation id="9188680907066685419">व्यवस्थापित केलेल्या खात्यामधून साइन आउट करा</translation>
 <translation id="9203116392574189331">Handoff</translation>

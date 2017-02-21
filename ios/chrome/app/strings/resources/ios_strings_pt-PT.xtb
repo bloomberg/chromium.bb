@@ -254,6 +254,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Toque para cancelar.</translation>
 <translation id="60851516108411750">A sua lista de leitura está disponível offline. Para adicionar uma página à mesma, toque em <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
@@ -411,6 +412,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Frase de acesso obrigatória</translation>
 <translation id="9148126808321036104">Iniciar sessão novamente</translation>
+<translation id="9154194610265714752">Atualizado</translation>
 <translation id="9157836665414082580">Supr. caixas diálogo</translation>
 <translation id="9188680907066685419">Terminar sessão na conta gerida</translation>
 <translation id="9203116392574189331">Entrega</translation>

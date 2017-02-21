@@ -254,7 +254,9 @@
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6042308850641462728">Още</translation>
 <translation id="605721222689873409">ГГ</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="FORMATTED_CURRENCY_CODE" /></translation>
 <translation id="6066301408025741299">Докоснете, за да анулирате.</translation>
+<translation id="60851516108411750">Списъкът ви за четене е налице офлайн. За да добавите страница към него, докоснете „<ph name="SHARE_OPENING_ICON" />“.</translation>
 <translation id="6122191549521593678">Онлайн</translation>
 <translation id="6127379762771434464">Елементът бе премахнат</translation>
 <translation id="6136914049981179737">Току-що</translation>
@@ -410,6 +412,7 @@
 <translation id="9083392325882095631">1 елемент</translation>
 <translation id="9100610230175265781">Изисква се пропуск</translation>
 <translation id="9148126808321036104">Влезте отново</translation>
+<translation id="9154194610265714752">Актуализирано</translation>
 <translation id="9157836665414082580">Диалогови прозорци: Блокиране</translation>
 <translation id="9188680907066685419">Излизане от управляван профил</translation>
 <translation id="9203116392574189331">Handoff</translation>

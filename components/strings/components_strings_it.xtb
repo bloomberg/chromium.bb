@@ -77,7 +77,7 @@
 <translation id="168841957122794586">Il certificato del server contiene una chiave crittografica debole.</translation>
 <translation id="1710259589646384581">Sistema operativo</translation>
 <translation id="1721312023322545264">Ti occorre l'autorizzazione di <ph name="NAME" /> per poter visitare il sito</translation>
-<translation id="1728677426644403582">È visualizzata la sorgente di una pagina web</translation>
+<translation id="1728677426644403582">È visualizzata l'origine di una pagina web</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Prova a contattare l'amministratore di sistema.</translation>
 <translation id="1745358365027406341">Scarica la pagina più tardi</translation>
@@ -267,6 +267,7 @@
 <translation id="348000606199325318">ID arresto anomalo <ph name="CRASH_LOCAL_ID" /> (ID server: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">In questo momento, non è possibile raggiungere il tuo genitore. Riprova.</translation>
 <translation id="3528171143076753409">Il certificato del server non è affidabile.</translation>
+<translation id="3538531656504267329">Anno di scadenza non valido</translation>
 <translation id="3539171420378717834">Conserva una copia di questa carta sul dispositivo</translation>
 <translation id="3542684924769048008">Utilizza password per:</translation>
 <translation id="3549644494707163724">Crittografa tutti i dati sincronizzati con la tua passphrase di sincronizzazione</translation>
@@ -553,6 +554,7 @@
 <translation id="6477321094435799029">Chrome ha rilevato un codice insolito su questa pagina e l'ha bloccata per proteggere le tue informazioni personali (ad esempio password, numeri di telefono e carte di credito).</translation>
 <translation id="6477460825583319731">Indirizzo email non valido</translation>
 <translation id="6489534406876378309">Avvia caricamento arresti anomali</translation>
+<translation id="6525462735697194615">Mese di scadenza non valido</translation>
 <translation id="6529602333819889595">&amp;Ripeti eliminazione</translation>
 <translation id="6534179046333460208">Suggerimenti relativi al Physical Web</translation>
 <translation id="6550675742724504774">Opzioni</translation>

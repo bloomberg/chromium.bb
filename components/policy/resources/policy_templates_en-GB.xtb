@@ -26,6 +26,9 @@
       If set to true or left unset, statistics will be reported.</translation>
 <translation id="1046484220783400299">Enable deprecated web platform features for a limited time</translation>
 <translation id="1047128214168693844">Do not allow any site to track the users' physical location</translation>
+<translation id="1049138910114524876">Configures the locale which is enforced on the <ph name="PRODUCT_OS_NAME" /> sign-in screen.
+
+      If this policy is set, the sign-in screen will always be displayed in the locale which is given by the first value of this policy (the policy is defined as a list for forward compatibility).  If this policy is not set or is set to an empty list, the sign-in screen will be displayed in the locale of the last user session.  If this policy is set to a value which is not a valid locale, the sign-in screen will be displayed in a fallback locale (currently, en-US).</translation>
 <translation id="1062011392452772310">Enable remote attestation for the device</translation>
 <translation id="1090892140761957285">URL for validating remote access client authentication token.
 
@@ -92,9 +95,6 @@
       If the policy is not set, or is set to false, then RC4 cipher suites in TLS will not be enabled. Otherwise it may be set to true to retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.</translation>
 <translation id="1297182715641689552">Use a .pac proxy script</translation>
 <translation id="1304973015437969093">Extension/App IDs and update URLs to be silently installed</translation>
-<translation id="1310333396104446007">If this setting is configured to be false, users will be prevented from setting PINs that are considered weak. Such PINs include PINs which contain the same digit throughout, PINs whose digits are increasing by 1, PINs whose digits are decreasing by 1 and PINs which are too common.
-
-          If this setting is configured to be true, or not configured, users can enter these PINs and will only get a warning display.</translation>
 <translation id="1313457536529613143">Specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off.
 
           If this policy is set, it specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off. When the dim delay is scaled, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
@@ -567,13 +567,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2587719089023392205">Set <ph name="PRODUCT_NAME" /> as Default Browser</translation>
 <translation id="2592091433672667839">Duration of inactivity before the screen saver is shown on the sign-in screen in retail mode</translation>
 <translation id="2623014935069176671">Wait for initial user activity</translation>
-<translation id="2625512435194873786">This setting controls the maximum length a PIN can be.
-
-          If this setting is configured to be 0 or less, there is no maximum length and a user can set a PIN as long as they want.
-
-          If this setting is less than PinUnlockMinimumLength but greater than 0, the maximum length is the same as the minimum length.
-
-          If this setting is not configured, there is no maximum length and a user can set a PIN as long as they want.</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Enable spoken feedback</translation>
 <translation id="2646290749315461919">Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
@@ -1061,6 +1054,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If not set or set to False, then users will be able to transfer files to Google Drive.</translation>
 <translation id="3915395663995367577">URL to a proxy .pac file</translation>
+<translation id="3926940573869375969">Configures which keyboard layouts are allowed on the <ph name="PRODUCT_OS_NAME" /> sign-in screen.
+
+      If this policy is set to a list of input method identifiers, the given input methods will be available on the sign-in screen. The first given input method will be pre-selected. While a user pod is focused on the sign-in screen, the user's least recently used input method will be available in addition to the input methods given by this policy.  If this policy is not set, the input methods on the sign-in screen will be derived from the locale in which the sign-in screen is displayed.  Values which are not valid input method identifiers will be ignored.</translation>
 <translation id="3939893074578116847">Send network packets to the management server to monitor online status, to allow
       the server to detect if the device is offline.
 
@@ -1191,6 +1187,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
 <translation id="4239720644496144453">The cache is not used for Android apps. If multiple users install the same Android app, it will be downloaded anew for each user.</translation>
 <translation id="4250680216510889253">No</translation>
+<translation id="4261820385751181068">Device sign-in screen locale</translation>
 <translation id="4272136423200695428">Enables force sign in for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Specifies the parameters used when doing image search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {imageThumbnail} in above example, it will be replaced with real image thumbnail data.
 
@@ -1724,6 +1721,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set to true or left unset, hardware acceleration will be enabled unless a certain GPU feature is blacklisted.
 
       If this policy is set to false, hardware acceleration will be disabled.</translation>
+<translation id="6070667616071269965">Device sign-in screen keyboard layouts</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>
 <translation id="6076099373507468537">Defines the list of USB devices that are allowed to be detached from their kernel driver in order to be used through the chrome.usb API directly inside a web application. Entries are pairs of USB Vendor Identifier and Product Identifier to identify a specific hardware.
 
@@ -2232,18 +2230,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
-<translation id="7340934985429121460">This setting controls the minimum length a PIN can be.
-
-          If this setting is configured to be less than 1, the minimum length a PIN can be is 1.
-
-          If this setting is not configured, the minimum length a PIN can be is 4.</translation>
 <translation id="7384999953864505698">Allows QUIC protocol</translation>
-<translation id="7406716912696538245">Controls which quick unlock modes are allowed to be set up and used.
-          This setting whitelists the allowed quick unlock modes that can be set up and used to unlock the lock screen. The value is a list of strings, each of which should be one of the following: "all", "PIN". If "all" is selected, then all supported quick modes will be available, otherwise the modes in the list will be the ones available.
-
-          If this setting is configured, quick unlock modes which have a type that is not on this list cannot be set up or used.
-
-          If this setting is left not configured, "PIN" mode will be enabled, and all other modes will be disabled.</translation>
 <translation id="7417972229667085380">Percentage by which to scale the idle delay in presentation mode (deprecated)</translation>
 <translation id="7421483919690710988">Set media disk cache size in bytes</translation>
 <translation id="7424751532654212117">List of exceptions to the list of disabled plugins</translation>
@@ -2421,19 +2408,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7848840259379156480">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME" /> is installed.
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME" /> render HTML pages by default.</translation>
-<translation id="7853178359124471330">When this policy is set, automatic timezone detection flow will be in one of the following ways depending on the value of the setting:
-
-      If set to TimezoneAutomaticDetectionUsersDecide, users would be able to control automatic timezone detection using normal controls in chrome://settings.
-
-      If set to TimezoneAutomaticDetectionDisabled, automatic timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always off.
-
-      If set to TimezoneAutomaticDetectionIPOnly, timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always on. Timezone detection will use IP-only method to resolve location.
-
-      If set to TimezoneAutomaticDetectionSendWiFiAccessPoints, timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always on. The list of visible Wi-Fi access-points will be always sent to Geolocation API server for fine-grained timezone detection.
-
-      If this policy is not set, it will behave as if TimezoneAutomaticDetectionUsersDecide is set.
-
-      If SystemTimezone policy is set, it overrides this policy. In this case automatic timezone detection is completely disabled.</translation>
 <translation id="787125417158068494">If set to SyncDisabled or not configured, <ph name="PRODUCT_OS_NAME" /> certificates are not available for ARC-apps.
 
       If set to CopyCaCerts, all ONC-installed CA certificates with <ph name="WEB_TRUSTED_BIT" /> are available for ARC-apps.</translation>
@@ -2759,7 +2733,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set to false, neither the user nor any apps or extensions can enter full screen mode.
 
       On all platforms except <ph name="PRODUCT_OS_NAME" />, kiosk mode is unavailable when full screen mode is disabled.</translation>
-<translation id="8795495354632096254">Always send Wi-Fi acess-points to server while resolving timezone.</translation>
 <translation id="8818173863808665831">Report the geographic location of the device.
 
       If the policy is not set or set to false, the location will not be reported.</translation>

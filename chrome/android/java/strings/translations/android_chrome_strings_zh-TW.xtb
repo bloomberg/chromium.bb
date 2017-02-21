@@ -153,6 +153,7 @@
 <translation id="2646820313617290661">您的家長會協助管理這些設定。</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2677748264148917807">離開</translation>
+<translation id="2704606927547763573">已複製</translation>
 <translation id="2707726405694321444">重新整理頁面</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="271033894570825754">新</translation>
@@ -274,7 +275,7 @@
 <translation id="4060598801229743805">選項位於畫面頂端</translation>
 <translation id="4062305924942672200">法律資訊</translation>
 <translation id="4084836577264234537">下載內容佔 <ph name="MEGABYTES" /> MB</translation>
-<translation id="4089831646916293264">這項功能可能會讓您無法存取行動通訊業者提供的付費數據服務。</translation>
+<translation id="4089831646916293264">這項功能可能會讓您無法存取電信業者提供的付費數據服務。</translation>
 <translation id="4095146165863963773">要刪除應用程式資料嗎？</translation>
 <translation id="4099578267706723511">將使用統計資料及當機報告傳送給 Google，助我們一臂之力，讓 Chrome 更臻完美。</translation>
 <translation id="410351446219883937">自動播放</translation>

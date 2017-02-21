@@ -271,6 +271,7 @@
 <translation id="348000606199325318">ID de fallo <ph name="CRASH_LOCAL_ID" /> (ID de servidor: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">No pudimos comunicarnos con ninguno de tus padres. Vuelve a intentarlo.</translation>
 <translation id="3528171143076753409">El certificado del servidor no es de confianza.</translation>
+<translation id="3538531656504267329">El año de vencimiento no es válido</translation>
 <translation id="3539171420378717834">Conservar una copia de la tarjeta en el dispositivo.</translation>
 <translation id="3542684924769048008">Utilizar la contraseña para:</translation>
 <translation id="3549644494707163724">Encriptar todos los datos sincronizados con tu propia frase de contraseña para sincronización</translation>
@@ -558,6 +559,7 @@
 <translation id="6477321094435799029">Chrome detectó código inusual en esta página y la bloqueó para proteger tu información personal (p. ej.: contraseñas, números de teléfono y tarjetas de crédito).</translation>
 <translation id="6477460825583319731">Dirección de correo electrónico no válida</translation>
 <translation id="6489534406876378309">Comenzar a cargar fallos</translation>
+<translation id="6525462735697194615">El mes de vencimiento no es válido</translation>
 <translation id="6529602333819889595">&amp;Rehacer Eliminar</translation>
 <translation id="6534179046333460208">Sugerencias de la Web física</translation>
 <translation id="6550675742724504774">Opciones</translation>

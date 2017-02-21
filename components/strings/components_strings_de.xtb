@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Absturz-ID <ph name="CRASH_LOCAL_ID" /> (Server-ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Wir können deinen Vater bzw. deine Mutter momentan nicht erreichen. Bitte versuche es später erneut.</translation>
 <translation id="3528171143076753409">Serverzertifikat ist nicht vertrauenswürdig.</translation>
+<translation id="3538531656504267329">Ungültiges Ablaufjahr</translation>
 <translation id="3539171420378717834">Kopie dieser Karte auf diesem Gerät speichern</translation>
 <translation id="3542684924769048008">Passwort verwenden für:</translation>
 <translation id="3549644494707163724">Alle synchronisierten Daten mit Ihrer eigenen Synchronisierungspassphrase verschlüsseln</translation>
@@ -556,6 +557,7 @@
 <translation id="6477321094435799029">Chrome hat auf dieser Seite ungewöhnlichen Code erfasst und diese Seite daher blockiert, um Ihre personenbezogenen Daten wie Passwörter, Telefonnummern oder Kreditkarteninformationen zu schützen.</translation>
 <translation id="6477460825583319731">Ungültige E-Mail-Adresse</translation>
 <translation id="6489534406876378309">Hochladen von Abstürzen starten</translation>
+<translation id="6525462735697194615">Ungültiger Ablaufmonat</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
 <translation id="6534179046333460208">Physical Web-Vorschläge</translation>
 <translation id="6550675742724504774">Optionen</translation>

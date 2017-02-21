@@ -26,6 +26,9 @@
       如果此政策设为 true 或未设置，系统将报告硬件统计数据。</translation>
 <translation id="1046484220783400299">让已弃用的网络平台功能在限定的时间内发挥功效</translation>
 <translation id="1047128214168693844">不允许任何网站跟踪用户的地理位置</translation>
+<translation id="1049138910114524876">配置强制在 <ph name="PRODUCT_OS_NAME" />登录屏幕上使用的语言区域。
+
+      如果此政策已设置，登录屏幕将会始终以此政策的第一个值指定的语言区域显示（为便于向前兼容，此政策会以列表的形式进行指定）。如果此政策未设置或被设为空列表，登录屏幕则会以最后一次用户会话所采用的语言区域显示。如果此政策被设为无效的语言区域值，登录屏幕便会以相应的后备语言区域显示（当前的后备语言区域是“en-US”）。</translation>
 <translation id="1062011392452772310">为设备启用远程认证</translation>
 <translation id="1090892140761957285">验证远程访问客户端身份验证令牌时使用的网址。
 
@@ -81,9 +84,6 @@
       如果此政策未设置或设为 false，系统将不会在 TLS 中启用 RC4 加密套件。您也可以将此政策设为 true，以便与过时的服务器保持兼容。但这只是一种权宜之计，对服务器进行重新配置才是正确之道。</translation>
 <translation id="1297182715641689552">使用 .pac 代理脚本</translation>
 <translation id="1304973015437969093">要静默安装的扩展程序/应用的 ID 和更新网址</translation>
-<translation id="1310333396104446007">如果将此设置配置为 False，用户将无法设置系统判定为安全性低的 PIN 码，其中包括具有以下特征的 PIN 码：完全由相同数字组成的 PIN 码、所含数字以 1 为单位递增的 PIN 码、所含数字以 1 为单位递减的 PIN 码，以及过于常见的 PIN 码。
-
-          如果将此设置配置为 True 或不予配置，则用户可以输入这些 PIN 码，而系统仅会显示警告消息。</translation>
 <translation id="1313457536529613143">指定系统在屏幕变暗或屏幕关闭不久后察觉到用户活动时，对屏幕变暗延迟时间的调整幅度（百分比）。
 
           如果设置此政策，则会指定系统在屏幕变暗或屏幕关闭后不久察觉到用户活动时，对屏幕变暗延迟时间的调整幅度（百分比）。屏幕变暗延迟时间调整后，系统会调整屏幕关闭、锁定和待机的延迟时间，使其与屏幕变暗延迟时间之间的差值与原有配置下的差值相同。
@@ -503,13 +503,6 @@
 <translation id="2587719089023392205">将 <ph name="PRODUCT_NAME" /> 设为默认浏览器</translation>
 <translation id="2592091433672667839">在零售模式登录屏幕上显示屏幕保护程序之前的闲置时间</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
-<translation id="2625512435194873786">此设置可用于控制 PIN 码的长度上限。
-
-          如果此设置配置为 0 或更小的值，则表示没有长度上限，用户可以随意设置任何长度的 PIN 码。
-
-          如果此设置小于 PinUnlockMinimumLength 但大于 0，则表示长度上限与下限相同。
-
-          如果此设置未配置，则表示没有长度上限，用户可以随意设置任何长度的 PIN 码。</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">启用语音反馈</translation>
 <translation id="2646290749315461919">可让您设置是否允许网站跟踪用户的地理位置。默认情况下，可以允许或拒绝跟踪用户的地理位置，也可以在每次网站请求地理位置时询问用户。如果未设置此政策，系统将使用“AskGeolocation”并允许用户更改此设置。</translation>
@@ -962,6 +955,9 @@
 
           如果此政策未设置或设为 False，用户可以将文件传输到 Google 云端硬盘。</translation>
 <translation id="3915395663995367577">代理 .pac 文件的网址</translation>
+<translation id="3926940573869375969">配置允许在 <ph name="PRODUCT_OS_NAME" />登录屏幕上使用哪些键盘布局。
+
+      如果此政策被设为一个输入法标识符列表，登录屏幕上将会提供所有已指定的输入法以供选用。系统将会预先选择所指定的第一种输入法。当某位用户的视窗处于登录屏幕上时，屏幕上除了会提供通过此政策指定的各种输入法外，还会提供该用户最近一次用过的输入法。如果此政策未设置，系统则会根据显示登录屏幕时使用的语言区域提供登录屏幕上的输入法。系统将会忽略无效的输入法标识符。</translation>
 <translation id="3939893074578116847">将网络数据包发送到管理服务器以监控联网状态，从而使得服务器能够判断设备有没有联网。
 
       如果此政策设为 true，系统将发送监控网络数据包（所谓的“<ph name="HEARTBEATS_TERM" />”）。
@@ -1074,6 +1070,7 @@
           如果此政策未设置，系统将根据“DefaultKeygenSetting”政策（如果此政策已设置）或用户的个人配置为所有网站使用全局默认值。</translation>
 <translation id="4239720644496144453">缓存不适用于 Android 应用。如果多个用户都想安装同一款 Android 应用，系统便会分别为每个用户重新下载相应的 Android 应用。</translation>
 <translation id="4250680216510889253">否</translation>
+<translation id="4261820385751181068">设备登录屏幕语言区域</translation>
 <translation id="4272136423200695428">为 <ph name="PRODUCT_NAME" /> 启用强制登录功能。</translation>
 <translation id="427632463972968153">指定通过 POST 执行图片搜索时使用的参数。该参数由以英文逗号分隔的名称/值对组成。如果值为模板参数（例如上例中的 {imageThumbnail}），那么系统会将其替换成真正的缩略图数据。
 
@@ -1548,6 +1545,7 @@
       如果此政策设为 true 或未设置，系统将启用硬件加速模式，除非特定 GPU 功能被列入黑名单。
 
       如果此政策设为 false，系统将停用硬件加速模式。</translation>
+<translation id="6070667616071269965">设备登录屏幕键盘布局</translation>
 <translation id="6074963268421707432">不允许任何网站显示桌面通知</translation>
 <translation id="6076099373507468537">定义可从其内核驱动程序分离以便直接通过网络应用内的 chrome.usb API 使用的 USB 设备列表。列表中的条目是成对的用于标识特定硬件的 USB 供应商标识符和产品标识符。
 
@@ -1993,18 +1991,7 @@
       如果此政策未设置，自动清理将使用默认的内置策略（目前为“RemoveLRUIfDormant”策略）。</translation>
 <translation id="7336878834592315572">在会话期间保留 Cookie</translation>
 <translation id="7340034977315324840">报告设备活动时间</translation>
-<translation id="7340934985429121460">此设置可用于控制 PIN 码的长度下限。
-
-          如果此设置配置为不超过 1 的值，则 PIN 码的长度下限值便是 1。
-
-          如果此设置未配置，则 PIN 码的长度下限值便是 4。</translation>
 <translation id="7384999953864505698">允许使用 QUIC 协议</translation>
-<translation id="7406716912696538245">用于控制可以设置和使用哪些“快速解锁”模式。
-          此设置会将那些可被设置并用于解锁屏幕的“快速解锁”模式列入白名单。该值是一系列字符串，其中每个字符串均应是以下某个值：“all”、“PIN”。如果选择了“all”，系统便会显示所有受支持的快速模式，否则就会仅显示此列表中的模式。
-
-          如果此设置已配置，则无法设置或使用那些所属类型不在此列表范围内的“快速解锁”模式。
-
-          如果此设置未配置，则会启用“PIN”模式，但会停用所有其他模式。</translation>
 <translation id="7417972229667085380">演示模式下待机延迟时间的调整幅度（百分比）（已弃用）</translation>
 <translation id="7421483919690710988">设置媒体磁盘缓存大小（字节）</translation>
 <translation id="7424751532654212117">已停用插件列表的例外情况</translation>
@@ -2170,19 +2157,6 @@
 <translation id="7842869978353666042">配置 Google 云端硬盘选项</translation>
 <translation id="7843525027689416831">指定应在 <ph name="PRODUCT_NAME" /> 启动时应用于它的选项。指定的选项仅会应用于登录屏幕。通过此政策设置的选项不会反映在用户会话中。</translation>
 <translation id="7848840259379156480">可让您配置安装“<ph name="PRODUCT_FRAME_NAME" />”时默认使用的 HTML 呈现器。默认设置是允许托管浏览器进行呈现，但您可以选择替换此设置，并默认让“<ph name="PRODUCT_FRAME_NAME" />”呈现 HTML 页面。</translation>
-<translation id="7853178359124471330">设置此政策后，系统会根据设置值采用下列其中一种方式执行自动检测时区流程：
-
-      如果设为 TimezoneAutomaticDetectionUsersDecide，用户将能够使用 chrome://settings 中的常规控件控制自动检测时区操作。
-
-      如果设为 TimezoneAutomaticDetectionDisabled，则系统会停用 chrome://settings 中的自动时区控件。自动检测时区功能将始终处于关闭状态。
-
-      如果设为 TimezoneAutomaticDetectionIPOnly，则系统会停用 chrome://settings 中的时区控件。自动检测时区功能将始终处于开启状态。时区检测功能将使用仅限 IP 的方法来解析位置信息。
-
-      如果设为 TimezoneAutomaticDetectionSendWiFiAccessPoints，则系统会停用 chrome://settings 中的时区控件。自动检测时区功能将始终处于开启状态。可见 Wi-Fi 接入点列表将一律发送到 Geolocation API 服务器，以便提供更精确的时区检测结果。
-
-      如果此政策未设置，则系统行为会与设置 TimezoneAutomaticDetectionUsersDecide 时相同。
-
-      如果设置了 SystemTimezone 政策，则系统会覆盖此政策。在这种情况下，系统会全面停用自动检测时区功能。</translation>
 <translation id="787125417158068494">如果设置为 SyncDisabled 或未配置，ARC 应用便无法使用 <ph name="PRODUCT_OS_NAME" /> 证书。
 
       如果设置为 CopyCaCerts，ARC 应用便可使用所有已安装 ONC 且带有 <ph name="WEB_TRUSTED_BIT" /> 的 CA 证书。</translation>
@@ -2459,7 +2433,6 @@
       如果此政策设为false，那么用户以及任何应用和扩展程序均无法进入全屏模式。
 
       停用全屏模式后，在所有平台（<ph name="PRODUCT_OS_NAME" />除外）上都无法使用自助服务终端模式。</translation>
-<translation id="8795495354632096254">解析时区时一律将 Wi-Fi 接入点发送到服务器。</translation>
 <translation id="8818173863808665831">报告设备的地理位置。
 
       如果未设置此政策或将其设为 false，系统将不会报告相关位置。</translation>

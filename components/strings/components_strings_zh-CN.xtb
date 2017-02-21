@@ -268,6 +268,7 @@
 <translation id="348000606199325318">崩溃 ID：<ph name="CRASH_LOCAL_ID" />（服务器 ID：<ph name="CRASH_ID" />）</translation>
 <translation id="3498215018399854026">我们暂时无法与您父母取得联系，请重试。</translation>
 <translation id="3528171143076753409">服务器的证书不受信任。</translation>
+<translation id="3538531656504267329">到期年份无效</translation>
 <translation id="3539171420378717834">在此设备上保存此信用卡的副本</translation>
 <translation id="3542684924769048008">使用以下项的密码：</translation>
 <translation id="3549644494707163724">使用您自己的同步密码加密所有已同步数据</translation>
@@ -553,6 +554,7 @@
 <translation id="6477321094435799029">Chrome 在此网页上检测到了异常代码。为保护您的个人信息（例如密码、电话号码和信用卡信息），Chrome 已将该网页拦截。</translation>
 <translation id="6477460825583319731">电子邮件地址无效</translation>
 <translation id="6489534406876378309">开始上传崩溃数据</translation>
+<translation id="6525462735697194615">到期月份无效</translation>
 <translation id="6529602333819889595">恢复删除(&amp;R)</translation>
 <translation id="6534179046333460208">实物网建议</translation>
 <translation id="6550675742724504774">选项</translation>

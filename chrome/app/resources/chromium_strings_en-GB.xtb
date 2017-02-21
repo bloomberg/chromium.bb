@@ -63,7 +63,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2910007522516064972">About &amp;Chromium</translation>
 <translation id="3032787606318309379">Adding to Chromium ...</translation>
 <translation id="3046695367536568084">You need to be signed in to Chromium to use apps. This allows Chromium to sync your apps, bookmarks, history, passwords and other settings across devices.</translation>
-<translation id="3064346599913645280">You're viewing a secure Chromium page</translation>
 <translation id="3068515742935458733">Help make Chromium better by sending crash reports and <ph name="UMA_LINK" /> to Google</translation>
 <translation id="3103660991484857065">The installer failed to uncompress archive. Please download Chromium again.</translation>
 <translation id="3130323860337406239">Chromium is using your microphone.</translation>

@@ -270,6 +270,7 @@
 <translation id="348000606199325318">クラッシュ ID <ph name="CRASH_LOCAL_ID" />（サーバー ID: <ph name="CRASH_ID" />）</translation>
 <translation id="3498215018399854026">現在、保護者にたずねることができません。もう一度お試しください。</translation>
 <translation id="3528171143076753409">サーバーの証明書を信頼できません。</translation>
+<translation id="3538531656504267329">有効期限（年）が無効です</translation>
 <translation id="3539171420378717834">このデバイスにこのカード情報のコピーを保存する</translation>
 <translation id="3542684924769048008">次のパスワードを使用:</translation>
 <translation id="3549644494707163724">同期パスフレーズで同期データをすべて暗号化する</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">このページで通常と異なるコードを検出したため、個人情報（例: パスワード、電話番号、クレジット カード番号）を保護するために、ページをブロックしました。</translation>
 <translation id="6477460825583319731">無効なメールアドレスです</translation>
 <translation id="6489534406876378309">クラッシュのアップロードを開始</translation>
+<translation id="6525462735697194615">有効期限（月）が無効です</translation>
 <translation id="6529602333819889595">削除のやり直し（&amp;R）</translation>
 <translation id="6534179046333460208">フィジカル ウェブからの URL</translation>
 <translation id="6550675742724504774">オプション</translation>

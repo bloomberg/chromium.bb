@@ -254,7 +254,9 @@
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6042308850641462728">詳細資訊</translation>
 <translation id="605721222689873409">年</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">輕觸即可取消。</translation>
+<translation id="60851516108411750">閱讀清單可供離線存取。如要將特定網頁加入閱讀清單，請輕觸 <ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="6122191549521593678">線上</translation>
 <translation id="6127379762771434464">已移除項目</translation>
 <translation id="6136914049981179737">幾秒前</translation>
@@ -410,6 +412,7 @@
 <translation id="9083392325882095631">1 個項目</translation>
 <translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9148126808321036104">重新登入</translation>
+<translation id="9154194610265714752">已更新</translation>
 <translation id="9157836665414082580">禁止顯示對話方塊</translation>
 <translation id="9188680907066685419">登出受管理的帳戶</translation>
 <translation id="9203116392574189331">Handoff</translation>

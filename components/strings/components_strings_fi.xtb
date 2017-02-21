@@ -271,6 +271,7 @@
 <translation id="348000606199325318">Kaatumistunnus: <ph name="CRASH_LOCAL_ID" /> (palvelintunnus: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Emme tavoittaneet vanhempaasi. Yritä uudelleen.</translation>
 <translation id="3528171143076753409">Palvelimen varmenne ei ole luotettava.</translation>
+<translation id="3538531656504267329">Virheellinen vanhentumisvuosi</translation>
 <translation id="3539171420378717834">Säilytä tämän kortin kopio laitteella.</translation>
 <translation id="3542684924769048008">Käytä salasanaa kohteeseen:</translation>
 <translation id="3549644494707163724">Salaa kaikki synkronoidut tiedot oman synkronoinnin tunnuslauseesi avulla</translation>
@@ -558,6 +559,7 @@
 <translation id="6477321094435799029">Chrome havaitsi tällä sivulla epätavallista koodia ja esti sen suojellakseen henkilötietojasi (esimerkiksi salasanoja, puhelinnumeroita tai luottokorttitietoja).</translation>
 <translation id="6477460825583319731">Virheellinen sähköpostiosoite</translation>
 <translation id="6489534406876378309">Aloita kaatumistietojen lähettäminen</translation>
+<translation id="6525462735697194615">Virheellinen vanhentumiskuukausi</translation>
 <translation id="6529602333819889595">&amp;Toista poisto</translation>
 <translation id="6534179046333460208">Fyysisen webin ehdotukset</translation>
 <translation id="6550675742724504774">Asetukset</translation>

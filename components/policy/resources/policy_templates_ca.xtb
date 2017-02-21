@@ -26,6 +26,9 @@
       Si s'estableix en "true" o no s'estableix, s'informa de les estadístiques.</translation>
 <translation id="1046484220783400299">Activa les funcions obsoletes de la plataforma web durant un temps limitat</translation>
 <translation id="1047128214168693844">No permetis que cap lloc web faci el seguiment de la ubicació física dels usuaris</translation>
+<translation id="1049138910114524876">Defineix la configuració regional, que s'aplica a la pàgina d'inici de sessió de <ph name="PRODUCT_OS_NAME" />.
+
+      Si es defineix aquesta política, la pantalla d'inici de sessió sempre es mostrarà en la configuració regional que indiqui el primer valor d'aquesta política (que es defineix com una llista que permet la compatibilitat amb versions posteriors). Si aquesta política no es defineix o es defineix en una llista buida, la pantalla d'inici de sessió es mostrarà en la configuració regional de la darrera sessió de l'usuari. Si aquesta política es defineix en un valor que no és una configuració regional vàlida, la pantalla d'inici de sessió es mostrarà en una configuració regional alternativa (actualment, en-US).</translation>
 <translation id="1062011392452772310">Activa el testimoni remot per al dispositiu.</translation>
 <translation id="1090892140761957285">URL per validar el testimoni d'autenticació del client d'accés remot.
 
@@ -82,9 +85,6 @@
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge RC4 de TLS no s'activaran. En cas contrari, es pot establir en "true" per conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.</translation>
 <translation id="1297182715641689552">Fes servir un script de servidor intermediari .pac</translation>
 <translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran en silenci</translation>
-<translation id="1310333396104446007">Si aquesta opció de configuració s'estableix en "false", s'impedirà que els usuaris defineixin codis PIN que no es consideren segurs, com ara els mateixos PIN per a tots els accessos, PIN consecutius que augmentin o disminueixin d'un en un i PIN massa habituals.
-
-          Si aquesta opció de configuració s'estableix en "true" o no s'estableix, els usuaris podran introduir aquests codis PIN i només veuran un advertiment.</translation>
 <translation id="1313457536529613143">Especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la.
 
          Si s'estableix aquesta política, s'especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la. Quan s'ajusta el temps d'espera d'inactivitat de la pantalla, s'ajusten els retards de desconnexió, bloqueig i desactivació de la pantalla per mantenir les mateixes distàncies del temps d'espera d'inactivitat de la pantalla que la configuració original.
@@ -501,9 +501,9 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2529880111512635313">Configura la llista d'aplicacions i d'extensions instal·lades per força</translation>
 <translation id="253135976343875019">Retard d'advertiment d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2552966063069741410">Zona horària</translation>
-<translation id="2558917182010914102">Si aquesta política es defineix com a true o no es defineix, Google Cast s'activarà i els usuaris podran iniciar-lo des del menú d'aplicacions, menús contextuals d'una pàgina, controls multimèdia de llocs web compatibles amb Cast i (si es mostra) des de la icona de la barra d'eines de Cast.
+<translation id="2558917182010914102">Si aquesta política es defineix com a "true" o no es defineix, Google Cast s'activarà i els usuaris podran iniciar-lo des del menú d'aplicacions, des dels menús contextuals d'una pàgina, des dels controls multimèdia de llocs web compatibles amb Cast i (si es mostra) des de la icona de la barra d'eines de Cast.
 
-          Si aquesta política es defineix com a false, Google Cast es desactivarà.</translation>
+          Si aquesta política es defineix com a "false", Google Cast es desactivarà.</translation>
 <translation id="2562339630163277285">Especifica l'URL del motor de cerca utilitzat per proporcionar resultats immediats. L'URL ha de contenir la cadena <ph name="SEARCH_TERM_MARKER" />, que se substituirà, en el moment de fer la consulta, pel text que l'usuari hagi introduït fins al moment.
 
           Aquesta política és opcional i, si no s'estableix, no es proporcionaran resultats de cerca immediats.
@@ -526,13 +526,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2587719089023392205">Estableix <ph name="PRODUCT_NAME" /> com a navegador predeterminat</translation>
 <translation id="2592091433672667839">La durada de la inactivitat abans no es mostri l'estalvi de pantalla es mostra a la pantalla d'inici de sessió en mode de venta</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
-<translation id="2625512435194873786">Aquesta opció de configuració controla la longitud màxima que pot tenir un PIN.
-
-          Si es configura que sigui 0 o inferior, no hi ha cap longitud màxima i l'usuari pot definir un PIN tan llarg com vulgui.
-
-          Si es configura en un valor inferior a PinUnlockMinimumLength però superior a 0, la longitud màxima és igual que la mínima.
-
-          Si no es configura, no hi ha cap longitud màxima i l'usuari pot definir un PIN tan llarg com vulgui.</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activa els comentaris per veu</translation>
 <translation id="2646290749315461919">Us permet definir si els llocs web poden rastrejar la ubicació física dels usuaris. El seguiment de la ubicació física dels usuaris es pot autoritzar o denegar de manera predeterminada o bé es pot preguntar a l'usuari cada vegada que un lloc web demani la ubicació física. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AskGeolocation" i l'usuari podrà canviar-lo.</translation>
@@ -898,11 +891,11 @@ Si es configura aquesta opció, no s'instal·laran les extensions o les aplicaci
 
 Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipus d'extensions i d'aplicacions acceptables.</translation>
 <translation id="3780152581321609624">Inclou un port no estàndard a l'SPN de Kerberos</translation>
-<translation id="3780319008680229708">Si aquesta política es defineix com a true, la icona de la barra d'eines de Cast es mostrarà sempre a la barra d'eines o al menú addicional, i els usuaris no la podran suprimir.
+<translation id="3780319008680229708">Si aquesta política es defineix com a "true", la icona de la barra d'eines de Cast es mostrarà sempre a la barra d'eines o al menú addicional, i els usuaris no la podran suprimir.
 
-          Si aquesta política es defineix com a false o no es defineix, els usuaris podran fixar o suprimir la icona des del menú contextual.
+          Si aquesta política es defineix com a "false" o no es defineix, els usuaris podran fixar o suprimir la icona des del menú contextual.
 
-          Si la política EnableMediaRouter es defineix com a false, el valor de la política no tindrà cap efecte i la icona no es mostrarà a la barra d'eines.</translation>
+          Si la política EnableMediaRouter es defineix com a "false", el valor de la política no tindrà cap efecte i la icona no es mostrarà a la barra d'eines.</translation>
 <translation id="3788662722837364290">Configuració de la gestió de l'energia quan l'usuari està inactiu</translation>
 <translation id="3793095274466276777">Configura les comprovacions del navegador predeterminat a <ph name="PRODUCT_NAME" /> i evita que els usuaris les modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> comprovarà sempre en iniciar-se que sigui el navegador predeterminat i es registrarà automàticament si és possible. Si el desactiveu, <ph name="PRODUCT_NAME" /> no comprovarà que sigui el navegador predeterminat i es desactivaran els controls de l'usuari per configurar aquesta opció. Si no definiu aquest paràmetre, <ph name="PRODUCT_NAME" /> permetrà que l'usuari decideixi si és el navegador predeterminat i si s'han de mostrar les notificacions de l'usuari quan no ho sigui.</translation>
 <translation id="379659290574555063">Utilitza els dispositius d'emmagatzematge externs com a només de lectura.</translation>
@@ -993,6 +986,9 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           Si no s'estableix o s'estableix en False, els usuaris poden transferir els fitxers a Google Drive.</translation>
 <translation id="3915395663995367577">URL d'un fitxer .pac d'un servidor intermediari</translation>
+<translation id="3926940573869375969">Configura els dissenys de teclat que s'admeten a la pantalla d'inici de sessió de <ph name="PRODUCT_OS_NAME" />.
+
+      Si aquesta política es defineix en una llista d'identificadors de mètodes d'introducció, els mètodes d'introducció indicats estaran disponibles a la pantalla d'inici de sessió. Es preseleccionarà el primer mètode d'introducció de la llista. L'agrupació d’un usuari es mostrarà al centre de la pantalla d'inici de sessió, però també es mostrarà el mètode d'introducció que l'usuari ha fet servir fa més temps, a més dels mètodes d'introducció indicats per aquesta política. Si aquesta política no es defineix, els mètodes d'introducció de la pantalla d'inici de sessió es derivaran de la configuració regional en què es mostri la pantalla d'inici de sessió. S'ignoraran els valors que no siguin identificadors vàlids del mètode d'introducció.</translation>
 <translation id="3939893074578116847">Envia paquets de xarxa al servidor de gestió per supervisar l'estat en línia, de manera que el servidor pugui detectar si el dispositiu no té connexió.
 
       Si aquesta política s'estableix en "true", s'envien paquets de xarxa de supervisió (anomenats <ph name="HEARTBEATS_TERM" />).
@@ -1115,6 +1111,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
 <translation id="4239720644496144453">La memòria cau no s'utilitza a les aplicacions per a Android. Si diversos usuaris instal·len la mateixa aplicació per a Android, es baixarà de nou en cada cas.</translation>
 <translation id="4250680216510889253">No</translation>
+<translation id="4261820385751181068">Configuració regional de la pantalla d'inici de sessió del dispositiu</translation>
 <translation id="4272136423200695428">Activa l'inici de sessió forçat a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Especifica els paràmetres utilitzats en cercar imatges amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {imageThumbnail} a l'exemple anterior, se substituirà per dades de la miniatura de la imatge real.
 
@@ -1591,6 +1588,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política s'estableix en true o es deixa sense establir, l'acceleració per maquinari s'activarà, tret que una funció determinada de GPU estigui inclosa en una llista negra.
 
       Si aquesta política s'estableix en false, l'acceleració per maquinari es desactivarà.</translation>
+<translation id="6070667616071269965">Dissenys de teclat de la pantalla d'inici de sessió del dispositiu</translation>
 <translation id="6074963268421707432">No permetis que cap lloc mostri notificacions d'escriptori</translation>
 <translation id="6076099373507468537">Defineix la llista de dispositius USB que està permès separar del controlador de kernel per tal d'utilitzar-los mitjançant l'API de chrome.usb directament dins d'una aplicació web. Les entrades són parells formats per l'identificador del producte i l'identificador del proveïdor dels USB, que permeten identificar un maquinari concret.
 
@@ -2066,21 +2064,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política no es defineix, la neteja automàtica utilitza l'estratègia integrada predeterminada. Actualment, és l'estratègia RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Conserva les galetes mentre duri la sessió</translation>
 <translation id="7340034977315324840">Informa del temps d'activitat dels dispositius</translation>
-<translation id="7340934985429121460">Aquesta opció de configuració controla la longitud mínima que pot tenir un PIN.
-
-          Si es configura que sigui inferior a 1, la longitud mínima del PIN és 1.
-
-          Si no es configura, la longitud mínima del PIN és 4.</translation>
 <translation id="7384999953864505698">Permet el protocol QUIC</translation>
-<translation id="7406716912696538245">Controla quins modes de desbloqueig ràpid es poden configurar i utilitzar.
-
-          Aquesta opció de configuració afegeix a una llista blanca els modes de desbloqueig ràpid que es poden configurar i utilitzar per desbloquejar la pantalla de bloqueig. El valor és una llista de cadenes cadascuna de les quals ha de tenir el valor "all" o "PIN". Si se selecciona "all", estaran disponibles tots els modes ràpids admesos. En cas contrari, estaran disponibles els modes de la llista.
-
-
-          Si aquesta opció es configura, no es podran configurar ni utilitzar els modes de desbloqueig ràpid que siguin d'un tipus no inclòs a la llista.
-
-
-          Si aquesta opció es deixa sense configurar, s'activarà el mode "PIN" i es desactivarà la resta.</translation>
 <translation id="7417972229667085380">Percentatge que permet ajustar el retard d'inactivitat en mode de presentació (desactivat)</translation>
 <translation id="7421483919690710988">Defineix la mida de la memòria cau del disc multimèdia en bytes</translation>
 <translation id="7424751532654212117">Llista d'excepcions de la llista de connectors desactivats</translation>
@@ -2246,19 +2230,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7842869978353666042">Opcions de configuració de Google Drive</translation>
 <translation id="7843525027689416831">Especifica les opcions que s'han d'aplicar a <ph name="PRODUCT_NAME" /> quan s'inicia. Les opcions especificades només s'apliquen a la pantalla d'inici de sessió. Les opcions definides mitjançant aquesta política no es propaguen a les sessions de l'usuari.</translation>
 <translation id="7848840259379156480">Us permet configurar el renderitzador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME" /> estigui instal·lat. De manera predeterminada, la configuració permet que el navegador amfitrió dugui a terme la renderització, però podeu substituir aquesta configuració de manera opcional i fer que <ph name="PRODUCT_FRAME_NAME" /> renderitzi les pàgines HTML de manera predeterminada.</translation>
-<translation id="7853178359124471330">Quan s'estableix aquesta política, el flux de detecció automàtica de la zona horària segueix una de les condicions següents en funció del valor de l'opció de configuració:
-
-      Si s'estableix en TimezoneAutomaticDetectionUsersDecide, els usuaris poden controlar la detecció automàtica de la zona horària mitjançant els controls habituals de chrome://settings.
-
-      Si s'estableix en TimezoneAutomaticDetectionDisabled, els controls automàtics de zona horària de chrome://settings estan desactivats. La detecció automàtica de la zona horària està sempre desactivada.
-
-      Si s'estableix en TimezoneAutomaticDetectionIPOnly, els controls de zona horària de chrome://settings estan desactivats. La detecció automàtica de la zona horària està sempre activada i utilitza el mètode de només IP per determinar la ubicació.
-
-      Si s'estableix en TimezoneAutomaticDetectionSendWiFiAccessPoints, els controls de zona horària de chrome://settings estan desactivats. La detecció automàtica de la zona horària està sempre activada. La llista de punts d'accés Wi-Fi visibles s'envia sempre al servidor de l'API de geolocalització per detectar exactament la zona horària.
-
-      Si aquesta política no s'estableix, es comporta com si la política TimezoneAutomaticDetectionUsersDecide estigués establerta.
-
-      Si s'estableix la política SystemTimezone, substitueix SystemTimezoneAutomaticDetection i la detecció automàtica de la zona horària està totalment desactivada.</translation>
 <translation id="787125417158068494">Si s'estableix en SyncDisabled o no es configura, els certificats de <ph name="PRODUCT_OS_NAME" /> no estan disponibles per a les aplicacions ARC.
 
       Si s'estableix en CopyCaCerts, tots els certificats de CA instal·lats amb fitxers ONC amb <ph name="WEB_TRUSTED_BIT" /> estan disponibles per a les aplicacions ARC.</translation>
@@ -2495,13 +2466,13 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       tot i que encara es permet administrar la política mitjançant el registre per a instàncies de Windows vinculades a un domini d'Active Directory.</translation>
 <translation id="8566842294717252664">Amaga Web Store a la pàgina Pestanya nova i al Menú d'aplicacions</translation>
 <translation id="8587229956764455752">Permet la creació de comptes d'usuari</translation>
-<translation id="8613640727149655305">Si aquesta política es defineix com a true, s'activarà el servei d'ubicació de Google a Android. Això permetrà a les aplicacions d'Android fer servir les seves dades per trobar la ubicació del dispositiu i també permetrà enviar dades d'ubicació a Google de manera anònima.
+<translation id="8613640727149655305">Si aquesta política es defineix com a "true", s'activarà el servei d'ubicació de Google a Android. Això permetrà a les aplicacions d'Android fer servir les seves dades per trobar la ubicació del dispositiu i també permetrà enviar dades d'ubicació a Google de manera anònima.
 
-      Si aquesta política es defineix com a false, el servei d'ubicació de Google a Android es desactivarà.
+      Si aquesta política es defineix com a "false", el servei d'ubicació de Google a Android es desactivarà.
 
       Si aquesta opció de configuració es defineix, els usuaris no la podran modificar.
 
-      Si aquesta opció de configuració no es defineix, els usuaris podran activar i desactivar el servei d'ubicació de Google des de l'aplicació de configuració d'Android.
+      Si aquesta opció de configuració no es defineix, els usuaris podran activar i desactivar el servei d'ubicació de Google des de l'aplicació Configuració d'Android.
 
       Tingues en compte que el valor d'aquesta política es pot substituir per la política <ph name="DEFAULTGEOLOCATIONSETTING_POLICY_NAME" />, quan aquesta última estigui definida com a <ph name="BLOCK_GEOLOCATION_SETTING" />.
 
@@ -2565,7 +2536,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       Si la política es configura com a "false", l'usuari, les aplicacions i les extensions no podran utilitzar el mode de pantalla completa.
 
       El mode quiosc no està disponible en cap plataforma, tret de <ph name="PRODUCT_OS_NAME" />, si el mode de pantalla completa es desactiva.</translation>
-<translation id="8795495354632096254">Envia sempre punts d'accés Wi-Fi al servidor mentre es determina la zona horària.</translation>
 <translation id="8818173863808665831">Informeu de la ubicació geogràfica d'un dispositiu.
 
       Si no definiu la política, o bé si la definiu com a falsa, no s'informarà de la ubicació.</translation>

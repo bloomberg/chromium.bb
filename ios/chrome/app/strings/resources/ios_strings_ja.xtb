@@ -254,7 +254,9 @@
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6042308850641462728">詳細表示</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">タップしてキャンセルします。</translation>
+<translation id="60851516108411750">リーディング リストをオフラインで利用できます。リーディング リストにページを追加するには、<ph name="SHARE_OPENING_ICON" /> をタップします。</translation>
 <translation id="6122191549521593678">オンライン</translation>
 <translation id="6127379762771434464">アイテムを削除しました</translation>
 <translation id="6136914049981179737">数秒前</translation>
@@ -410,6 +412,7 @@
 <translation id="9083392325882095631">1個のアイテム</translation>
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
 <translation id="9148126808321036104">もう一度ログインする</translation>
+<translation id="9154194610265714752">更新完了</translation>
 <translation id="9157836665414082580">ダイアログを表示しない</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
 <translation id="9203116392574189331">Handoff</translation>

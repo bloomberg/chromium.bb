@@ -270,6 +270,7 @@
 <translation id="348000606199325318">ID zrušitve <ph name="CRASH_LOCAL_ID" /> (ID strežnika: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Trenutno ni mogoče vzpostaviti stika s staršem. Poskusi znova pozneje.</translation>
 <translation id="3528171143076753409">Potrdilo strežnika ni zaupanja vredno.</translation>
+<translation id="3538531656504267329">Neveljavno leto poteka</translation>
 <translation id="3539171420378717834">Ohrani kopijo te kartice v tej napravi</translation>
 <translation id="3542684924769048008">Uporaba gesla za:</translation>
 <translation id="3549644494707163724">Šifrirajte vse sinhronizirane podatke s svojim geslom</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome je zaznal nenavadno kodo na tej strani in jo zaradi zaščite vaših osebnih podatkov (na primer gesel, telefonskih številk in kreditnih kartic) blokiral.</translation>
 <translation id="6477460825583319731">Neveljaven e-poštni naslov</translation>
 <translation id="6489534406876378309">Začetek prenašanja zrušitev v storitev</translation>
+<translation id="6525462735697194615">Neveljaven mesec poteka</translation>
 <translation id="6529602333819889595">&amp;Uveljavi izbris</translation>
 <translation id="6534179046333460208">Predlogi za Fizični splet</translation>
 <translation id="6550675742724504774">Možnosti</translation>

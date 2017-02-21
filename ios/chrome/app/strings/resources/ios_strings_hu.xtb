@@ -254,7 +254,9 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="6042308850641462728">Hosszabban</translation>
 <translation id="605721222689873409">ÉÉ</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="FORMATTED_CURRENCY_CODE" /></translation>
 <translation id="6066301408025741299">Érintse meg a visszavonáshoz</translation>
+<translation id="60851516108411750">Olvasási listája offline elérhető. Ha szeretne hozzáadni oldalakat a listához, koppintson a következőkre: <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elem eltávolítva</translation>
 <translation id="6136914049981179737">Néhány másodperce</translation>
@@ -411,6 +413,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="9083392325882095631">1 elem</translation>
 <translation id="9100610230175265781">Összetett jelszó szükséges</translation>
 <translation id="9148126808321036104">Jelentkezzen be újra</translation>
+<translation id="9154194610265714752">Frissítve</translation>
 <translation id="9157836665414082580">Párbeszédablakok elrejtése</translation>
 <translation id="9188680907066685419">Kijelentkezés felügyelt fiókból</translation>
 <translation id="9203116392574189331">Átadás</translation>

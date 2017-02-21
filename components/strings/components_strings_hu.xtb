@@ -268,6 +268,7 @@
 <translation id="348000606199325318">Hibaazonosító: <ph name="CRASH_LOCAL_ID" /> (szerverazonosító: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Jelenleg nem tudjuk elérni szüleidet. Próbálkozz újra.</translation>
 <translation id="3528171143076753409">A szervezet tanúsítványa nem megbízható.</translation>
+<translation id="3538531656504267329">A kártya lejáratának éve érvénytelen</translation>
 <translation id="3539171420378717834">A kártya másolatának megőrzése az eszközön</translation>
 <translation id="3542684924769048008">Jelszó használata a következőre:</translation>
 <translation id="3549644494707163724">Az összes szinkronizált adat titkosítása saját összetett szinkronizálási jelszóval</translation>
@@ -555,6 +556,7 @@
 <translation id="6477321094435799029">A Chrome szokatlan kódot észlelt az oldalon, ezért letiltotta az Ön személyes adatainak (például jelszavak, telefonszámok és hitelkártyaszámok) védelme érdekében.</translation>
 <translation id="6477460825583319731">Érvénytelen e-mail-cím</translation>
 <translation id="6489534406876378309">Feltöltési összeomlások indítása</translation>
+<translation id="6525462735697194615">A kártya lejáratának hónapja érvénytelen</translation>
 <translation id="6529602333819889595">&amp;Törlés újra</translation>
 <translation id="6534179046333460208">Fizikai web – javaslatok</translation>
 <translation id="6550675742724504774">Beállítások</translation>

@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Krasch-id <ph name="CRASH_LOCAL_ID" /> (server-id: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Vi kunde inte nå din förälder just nu. Försök igen.</translation>
 <translation id="3528171143076753409">Servercertifikatet är inte tillförlitligt.</translation>
+<translation id="3538531656504267329">Ogiltigt sista giltighetsår</translation>
 <translation id="3539171420378717834">Spara en kopia av kortet på enheten</translation>
 <translation id="3542684924769048008">Använd lösenord för:</translation>
 <translation id="3549644494707163724">Kryptera alla synkroniserade data med en egen lösenfras</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome har identifierat ovanlig kod på sidan och blockerat den för att skydda dina personliga uppgifter (som lösenord, telefonnummer och kreditkortsuppgifter).</translation>
 <translation id="6477460825583319731">Ogiltig e-postadress</translation>
 <translation id="6489534406876378309">Börja överföra information om krascher</translation>
+<translation id="6525462735697194615">Ogiltig sista giltighetsmånad</translation>
 <translation id="6529602333819889595">&amp;Gör om Ta bort</translation>
 <translation id="6534179046333460208">Förslag från Physical Web</translation>
 <translation id="6550675742724504774">Alternativ</translation>

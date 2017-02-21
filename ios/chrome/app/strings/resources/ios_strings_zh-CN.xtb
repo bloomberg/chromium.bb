@@ -254,7 +254,9 @@
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">点按可取消。</translation>
+<translation id="60851516108411750">您的阅读清单现已可供离线访问。要向该清单中添加网页，请依次点按<ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="6122191549521593678">在线</translation>
 <translation id="6127379762771434464">该项已移除</translation>
 <translation id="6136914049981179737">几秒前</translation>
@@ -410,6 +412,7 @@
 <translation id="9083392325882095631">有1个书签</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9148126808321036104">重新登录</translation>
+<translation id="9154194610265714752">已更新</translation>
 <translation id="9157836665414082580">禁止显示对话框</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
 <translation id="9203116392574189331">Handoff</translation>

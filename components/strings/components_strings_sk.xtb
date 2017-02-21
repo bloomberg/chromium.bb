@@ -267,6 +267,7 @@
 <translation id="348000606199325318">ID zlyhania <ph name="CRASH_LOCAL_ID" /> (ID servera: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">V tejto chvíli sa nám nepodarilo spojiť s vaším rodičom. Skúste to znova neskôr.</translation>
 <translation id="3528171143076753409">Certifikát servera nie je dôveryhodný.</translation>
+<translation id="3538531656504267329">Neplatný rok ukončenia platnosti</translation>
 <translation id="3539171420378717834">Ponechať kópiu tejto karty na tomto zariadení</translation>
 <translation id="3542684924769048008">Použiť heslo pre:</translation>
 <translation id="3549644494707163724">Šifrovať všetky synchronizované údaje pomocou vlastnej prístupovej frázy pre synchronizáciu</translation>
@@ -552,6 +553,7 @@
 <translation id="6477321094435799029">Chrome na tejto stránke zaznamenal nezvyčajný kód a v záujme ochrany vašich osobných informácií (napr. hesiel, telefónnych čísel a kreditných kariet) ho zablokoval.</translation>
 <translation id="6477460825583319731">Neplatná e-mailová adresa</translation>
 <translation id="6489534406876378309">Spustiť nahrávanie správ o zlyhaní</translation>
+<translation id="6525462735697194615">Neplatný mesiac ukončenia platnosti</translation>
 <translation id="6529602333819889595">&amp;Znova odstrániť</translation>
 <translation id="6534179046333460208">Návrhy Fyzického webu</translation>
 <translation id="6550675742724504774">Možnosti</translation>

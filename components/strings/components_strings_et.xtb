@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Krahhi ID <ph name="CRASH_LOCAL_ID" /> (serveri ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Teie vanemaga ei õnnestunud praegu ühendust võtta. Proovige hiljem uuesti.</translation>
 <translation id="3528171143076753409">Serveri sertifikaat ei ole usaldusväärne.</translation>
+<translation id="3538531656504267329">Sobimatu aegumisaasta</translation>
 <translation id="3539171420378717834">Säilita kaardi koopia seadmes</translation>
 <translation id="3542684924769048008">Kasuta parooli:</translation>
 <translation id="3549644494707163724">Krüpteerige kõik sünkroonitud andmed oma sünkroonimise parooliga</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome tuvastas sellel lehel ebatavalise koodi ja blokeeris selle, et teie isiklikke andmeid (nt paroolid, telefoninumbrid ja krediitkaardiandmed) kaitsta.</translation>
 <translation id="6477460825583319731">Sobimatu e-posti aadress</translation>
 <translation id="6489534406876378309">Krahhide üleslaadimise alustamine</translation>
+<translation id="6525462735697194615">Sobimatu aegumiskuu</translation>
 <translation id="6529602333819889595">&amp;Kustuta uuesti</translation>
 <translation id="6534179046333460208">Füüsilise veebi soovitused</translation>
 <translation id="6550675742724504774">Valikud</translation>

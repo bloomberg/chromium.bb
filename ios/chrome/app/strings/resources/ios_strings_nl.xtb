@@ -254,6 +254,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="6042308850641462728">Meer</translation>
 <translation id="605721222689873409">JJ</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Tik om te annuleren.</translation>
 <translation id="60851516108411750">Je leeslijst is offline beschikbaar. Als je een pagina aan je leeslijst wilt toevoegen, tik je op <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
@@ -411,6 +412,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Wachtwoordzin vereist</translation>
 <translation id="9148126808321036104">Opnieuw inloggen</translation>
+<translation id="9154194610265714752">Bijgewerkt</translation>
 <translation id="9157836665414082580">Dialoogvensters onderdrukken</translation>
 <translation id="9188680907066685419">Uitloggen van beheerd account</translation>
 <translation id="9203116392574189331">Handoff</translation>

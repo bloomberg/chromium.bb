@@ -270,6 +270,7 @@
 <translation id="348000606199325318">ID Kerusakan <ph name="CRASH_LOCAL_ID" /> (ID Server: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Orang tua Anda saat ini tidak dapat dihubungi. Coba lagi.</translation>
 <translation id="3528171143076753409">Sertifikat server tidak dipercaya.</translation>
+<translation id="3538531656504267329">Tahun kedaluwarsa tidak valid</translation>
 <translation id="3539171420378717834">Menyimpan salinan kartu ini di perangkat ini</translation>
 <translation id="3542684924769048008">Gunakan sandi untuk:</translation>
 <translation id="3549644494707163724">Enkripsikan data yang disinkronkan dengan frasa sandi sinkronisasi Anda</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome mendeteksi kode yang tidak biasa pada halaman ini dan memblokirnya untuk melindungi informasi pribadi Anda (misalnya, sandi, nomor telepon, dan kartu kredit).</translation>
 <translation id="6477460825583319731">Alamat email tidak valid</translation>
 <translation id="6489534406876378309">Mulai mengupload kerusakan</translation>
+<translation id="6525462735697194615">Bulan kadaluwarsa tidak valid</translation>
 <translation id="6529602333819889595">&amp;Ulangi Penghapusan</translation>
 <translation id="6534179046333460208">Saran Web Fisik</translation>
 <translation id="6550675742724504774">Opsi</translation>

@@ -31,7 +31,7 @@
 <translation id="1938124657309484470">Valoarea pentru dată/oră trebuie să fie <ph name="MAXIMUM_DATE_OR_TIME" /> sau una anterioară.</translation>
 <translation id="2060505056492490888">Semnul „<ph name="DOT" />” apare poziționat greșit în „<ph name="INVALIDDOMAIN" />”.</translation>
 <translation id="2148716181193084225">Astăzi</translation>
-<translation id="2226276347425096477">Micșorează acest text la cel mult <ph name="MAX_CHARACTERS" /> (de) caractere (în prezent utilizezi <ph name="CURRENT_LENGTH" /> (de) caractere).</translation>
+<translation id="2226276347425096477">Micșorează acest text la cel mult <ph name="MAX_CHARACTERS" /> caractere (în prezent utilizezi <ph name="CURRENT_LENGTH" /> caractere).</translation>
 <translation id="2247351761944213033">Săptămâna <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">Melodia <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">casetă de selectare</translation>
@@ -64,12 +64,11 @@
 <translation id="3450233048674729344">Valoarea trebuie să fie mai mică sau egală cu <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definiție</translation>
 <translation id="3557673793733683882">titlu <ph name="HEADING_LEVEL" /></translation>
-<translation id="3632707345189162177">numărul secundelor rămase din film</translation>
 <translation id="3706100364254443312">comutator</translation>
 <translation id="3732799496749320381">ll</translation>
 <translation id="3785482301506746191">glisor redare film</translation>
 <translation id="3808586225841795776">termen</translation>
-<translation id="3822383571486410024">Mărește acest text la cel puțin <ph name="MIN_CHARACTERS" /> (de) caractere (în prezent folosești <ph name="CURRENT_LENGTH" /> (de) caractere).</translation>
+<translation id="3822383571486410024">Mărește acest text la cel puțin <ph name="MIN_CHARACTERS" /> caractere (în prezent folosești <ph name="CURRENT_LENGTH" /> caractere).</translation>
 <translation id="383465348367842624">Valoarea urmată de semnul „<ph name="ATSIGN" />” nu trebuie să conțină simbolul „<ph name="INVALIDCHARACTER" />”.</translation>
 <translation id="3846214748874656680">Ieși din ecranul complet</translation>
 <translation id="3924558731517983934">aplicație</translation>
@@ -170,7 +169,7 @@
 <translation id="8284326494547611709">Subtitrări</translation>
 <translation id="835897206747267392">Valoare nevalidă.</translation>
 <translation id="8433900881053900389">bară de instrumente</translation>
-<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> (de) fișiere</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> fișiere</translation>
 <translation id="8451268428117625855">Selectează un fișier.</translation>
 <translation id="8461852803063341183">buton radio</translation>
 <translation id="8511325616783751178">buton drop-down</translation>

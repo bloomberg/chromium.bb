@@ -270,6 +270,7 @@
 <translation id="348000606199325318">ID de bloqueo <ph name="CRASH_LOCAL_ID" /> (ID de servidor: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">No hemos podido contactar con tu padre/madre/tutor. Vuelve a intentarlo.</translation>
 <translation id="3528171143076753409">El certificado de servidor no es de confianza.</translation>
+<translation id="3538531656504267329">Año de caducidad no válido</translation>
 <translation id="3539171420378717834">Guardar una copia de la tarjeta en este dispositivo</translation>
 <translation id="3542684924769048008">Utilizar contraseña para:</translation>
 <translation id="3549644494707163724">Cifrar todos los datos sincronizados con tu propia frase de contraseña de sincronización</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome ha detectado un código inusual en esta página y lo ha bloqueado para proteger tu información personal (por ejemplo, contraseñas, números de teléfono y tarjetas de crédito).</translation>
 <translation id="6477460825583319731">Dirección de correo electrónico no válida</translation>
 <translation id="6489534406876378309">Empezar a subir errores</translation>
+<translation id="6525462735697194615">Mes de caducidad no válido</translation>
 <translation id="6529602333819889595">&amp;Rehacer eliminación</translation>
 <translation id="6534179046333460208">Sugerencias de la Web física</translation>
 <translation id="6550675742724504774">Configuración</translation>

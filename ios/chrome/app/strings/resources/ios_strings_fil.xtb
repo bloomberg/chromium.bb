@@ -254,7 +254,9 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="6040143037577758943">Isara</translation>
 <translation id="6042308850641462728">Higit pa</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Pindutin upang kanselahin.</translation>
+<translation id="60851516108411750">Available offline ang iyong listahan ng babasahin. Upang magdagdag ng page sa iyong listahan ng babasahin, i-tap ang<ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Inalis ang item</translation>
 <translation id="6136914049981179737">Segundo</translation>
@@ -410,6 +412,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Kinakailangan ang passphrase</translation>
 <translation id="9148126808321036104">Muling mag-sign in</translation>
+<translation id="9154194610265714752">Na-update</translation>
 <translation id="9157836665414082580">Pigilan ang Mga Dialog</translation>
 <translation id="9188680907066685419">Mag-sign out sa pinamamahalaang account</translation>
 <translation id="9203116392574189331">Handoff</translation>

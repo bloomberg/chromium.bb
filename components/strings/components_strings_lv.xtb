@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Avārijas ID <ph name="CRASH_LOCAL_ID" /> (servera ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Mēs nevarējām sasniegt jūsu māti/tēvu. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="3528171143076753409">Servera sertifikāts nav uzticams.</translation>
+<translation id="3538531656504267329">Derīguma termiņa beigu gads nav derīgs</translation>
 <translation id="3539171420378717834">Saglabāt šīs kartes kopiju šajā ierīcē</translation>
 <translation id="3542684924769048008">Izmantot paroli:</translation>
 <translation id="3549644494707163724">Šifrēt visus sinhronizētos datus, izmantojot sinhronizācijas ieejas frāzi</translation>
@@ -556,6 +557,7 @@
 <translation id="6477321094435799029">Pārlūkā Chrome tika noteikts, ka šajā lapā ir neparasts kods. Lapa tika bloķēta, lai aizsargātu jūsu personas informāciju (piemēram, paroles, tālruņa numurus un kredītkaršu informāciju).</translation>
 <translation id="6477460825583319731">Nederīga e-pasta adrese</translation>
 <translation id="6489534406876378309">Sākt avāriju datu augšupielādi</translation>
+<translation id="6525462735697194615">Derīguma termiņa beigu mēnesis nav derīgs</translation>
 <translation id="6529602333819889595">&amp;Dzēšanas atsaukuma atcelšana</translation>
 <translation id="6534179046333460208">Fiziskā tīmekļa ieteikumi</translation>
 <translation id="6550675742724504774">Opcijas</translation>

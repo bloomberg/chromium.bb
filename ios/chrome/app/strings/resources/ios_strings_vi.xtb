@@ -254,6 +254,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6042308850641462728">Thêm</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Nhấn để hủy.</translation>
 <translation id="60851516108411750">Danh sách đọc của bạn khả dụng khi ngoại tuyến. Để thêm một trang vào danh sách đọc, nhấn<ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Trực tuyến</translation>
@@ -411,6 +412,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="9083392325882095631">1 mục</translation>
 <translation id="9100610230175265781">Yêu cầu cụm mật khẩu</translation>
 <translation id="9148126808321036104">Đăng nhập lại</translation>
+<translation id="9154194610265714752">Đã cập nhật</translation>
 <translation id="9157836665414082580">Hộp thoại loại bỏ</translation>
 <translation id="9188680907066685419">Đăng xuất khỏi tài khoản được quản lý</translation>
 <translation id="9203116392574189331">Tiếp nối</translation>

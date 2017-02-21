@@ -267,6 +267,7 @@
 <translation id="348000606199325318">ID selhání <ph name="CRASH_LOCAL_ID" /> (ID serveru: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">V tuto chvíli se nám s vaším rodičem nepodařilo spojit. Zkuste to prosím znovu.</translation>
 <translation id="3528171143076753409">Certifikát serveru není důvěryhodný.</translation>
+<translation id="3538531656504267329">Neplatný rok vypršení platnosti</translation>
 <translation id="3539171420378717834">Uchovat kopii této karty v tomto zařízení</translation>
 <translation id="3542684924769048008">Použít heslo pro:</translation>
 <translation id="3549644494707163724">Šifrovat synchronizovaná data pomocí vlastní heslové fráze pro synchronizaci.</translation>
@@ -552,6 +553,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6477321094435799029">Chrome na této stránce zjistil neobvyklý kód a z důvodu ochrany vašich osobních údajů (například hesel, telefonních čísel a platebních karet) ji zablokoval.</translation>
 <translation id="6477460825583319731">Neplatná e-mailová adresa</translation>
 <translation id="6489534406876378309">Začít nahrávat zprávy o selhání</translation>
+<translation id="6525462735697194615">Neplatný měsíc vypršení platnosti</translation>
 <translation id="6529602333819889595">&amp;Opakovat smazání</translation>
 <translation id="6534179046333460208">Návrhy fyzického webu</translation>
 <translation id="6550675742724504774">Možnosti</translation>

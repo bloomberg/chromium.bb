@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Identifiant de plantage <ph name="CRASH_LOCAL_ID" /> (identifiant de serveur : <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Impossible de joindre votre parent pour le moment. Veuillez réessayer.</translation>
 <translation id="3528171143076753409">Le certificat du serveur n'est pas approuvé.</translation>
+<translation id="3538531656504267329">Année d'expiration non valide</translation>
 <translation id="3539171420378717834">Conserver une copie de cette carte sur cet appareil</translation>
 <translation id="3542684924769048008">Utiliser un mot de passe pour :</translation>
 <translation id="3549644494707163724">Chiffrer toutes les données synchronisées avec votre propre phrase secrète de synchronisation</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome a détecté un code inhabituel sur cette page et a bloqué cette dernière pour protéger vos informations personnelles (mots de passe, numéros de téléphone et de cartes de paiement).</translation>
 <translation id="6477460825583319731">Adresse e-mail non valide</translation>
 <translation id="6489534406876378309">Lancer l'importation des plantages</translation>
+<translation id="6525462735697194615">Mois d'expiration non valide</translation>
 <translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
 <translation id="6534179046333460208">Suggestions pour le Web physique</translation>
 <translation id="6550675742724504774">Options</translation>

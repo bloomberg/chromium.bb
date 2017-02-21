@@ -5,6 +5,7 @@
 <translation id="1013923882670373915">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã PIN này trên thiết bị đó: <ph name="PINCODE" /></translation>
 <translation id="112308213915226829">Tự động ẩn giá</translation>
 <translation id="1127238861555034875">Chế độ kính lúp</translation>
+<translation id="1153356358378277386">Thiết bị được ghép nối</translation>
 <translation id="1195412055398077112">quét quá mức</translation>
 <translation id="1252999807265626933">Đang sạc từ <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Đã tắt bàn phím ảo</translation>
@@ -12,7 +13,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">Thiết bị USB-C (cổng bên trái)</translation>
 <translation id="1330145147221172764">Bật bàn phím ảo</translation>
-<translation id="1343000272198685031">Giắc cắm micrô</translation>
 <translation id="1346748346194534595">Phải</translation>
 <translation id="137180024469554212">Tắt khóa xoay</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
@@ -21,14 +21,12 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Trình chạy</translation>
 <translation id="1525508553941733066">LOẠI BỎ</translation>
-<translation id="153454903766751181">Đang chạy modem di động...</translation>
 <translation id="15373452373711364">Con trỏ chuột lớn</translation>
 <translation id="1550523713251050646">Nhấp để xem các tùy chọn khác</translation>
 <translation id="1602076796624386989">Bật dữ liệu di động</translation>
 <translation id="1621499497873603021">Thời gian còn lại cho đến khi pin hết, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Thiết bị Chrome</translation>
 <translation id="1677472565718498478">Còn <ph name="TIME" /></translation>
-<translation id="1723752762323179280">Thoát phiên</translation>
 <translation id="1747827819627189109">Đã bật bàn phím ảo</translation>
 <translation id="1812696562331527143">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />bên thứ ba<ph name="END_LINK" />).
 Nhấn Shift + Alt để chuyển đổi.</translation>
@@ -41,20 +39,18 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2122028596993374965">Dừng truyền <ph name="TAB_NAME" /> sang <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
-<translation id="2204305834655267233">Thông tin mạng</translation>
 <translation id="2208323208084708176">Chế độ màn hình đồng nhất</translation>
 <translation id="225680501294068881">Đang quét tìm thiết bị...</translation>
 <translation id="2268130516524549846">Đã tắt bluetooth</translation>
 <translation id="2268813581635650749">Đăng xuất tất cả</translation>
 <translation id="2303600792989757991">Tổng quan về chuyển đổi cửa sổ</translation>
+<translation id="2352467521400612932">Cài đặt bút cảm ứng</translation>
 <translation id="2354174487190027830">Kích hoạt <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Trước khi chấp nhận, vui lòng xác nhận rằng mã xác nhận này đã hiển thị trên thiết bị đó: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Đã xảy ra lôi</translation>
 <translation id="2509468283778169019">Đang bật CAPS LOCK</translation>
 <translation id="2532589005999780174">Chế độ tương phản cao</translation>
-<translation id="2562916301614567480">Mạng riêng</translation>
-<translation id="2692809339924654275"><ph name="BLUETOOTH" />: Đang kết nối...</translation>
 <translation id="2700058918926273959">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" />. Bạn sẽ bị đăng xuất.</translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
 <translation id="2761704814324807722">Khay trạng thái, thời gian <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -67,13 +63,10 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="2942516765047364088">Vị trí giá</translation>
 <translation id="2946119680249604491">Thêm kết nối</translation>
-<translation id="2946640296642327832">Bật bluetooth</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2964193600955408481">Tắt Wi-Fi</translation>
-<translation id="2983818520079887040">Cài đặt...</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> là phiên công khai được quản lý bởi <ph name="DOMAIN" /></translation>
 <translation id="3009178788565917040">Thiết bị ra</translation>
-<translation id="30155388420722288">Nút tràn</translation>
 <translation id="3019353588588144572">Thời gian còn lại cho đến khi pin được sạc đầy, <ph name="TIME_REMAINING" /></translation>
 <translation id="3050422059534974565">CAPS LOCK đang bật.
 Nhấn Search hoặc Shift để hủy.</translation>
@@ -82,6 +75,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Khởi động lại để cập nhật</translation>
 <translation id="3147142846278915599">Trình khởi chạy (đang đồng bộ hóa ứng dụng...)</translation>
+<translation id="315116470104423982">Dữ liệu di động</translation>
 <translation id="3157169093162779309">Bật khóa xoay</translation>
 <translation id="3164154768979021380">Đang thoát chế độ được gắn đế</translation>
 <translation id="3294437725009624529">Khách</translation>
@@ -91,11 +85,11 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="3371140690572404006">Thiết bị USB-C (cổng phía trước, bên phải)</translation>
 <translation id="3445925074670675829">Thiết bị USB-C</translation>
 <translation id="3473479545200714844">Phóng to màn hình</translation>
+<translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="3573179567135747900">Thay đổi lại thành "<ph name="FROM_LOCALE" />" (yêu cầu khởi động lại)</translation>
 <translation id="3595596368722241419">Pin đầy</translation>
 <translation id="3606978283550408104">Đã kết nối màn hình Braille.</translation>
 <translation id="3621202678540785336">Thiết bị vào</translation>
-<translation id="3621712662352432595">Cài đặt âm thanh</translation>
 <translation id="3625258641415618104">Đã tắt chụp ảnh màn hình</translation>
 <translation id="3626281679859535460">Độ sáng</translation>
 <translation id="3683428399328702079">Độ phân giải <ph name="DISPLAY_NAME" /> đã được chuyển thành <ph name="RESOLUTION" /></translation>
@@ -107,12 +101,10 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="3784455785234192852">Khóa</translation>
 <translation id="3799026279081545374">Bộ sạc của bạn có thể bị hỏng. Nếu bạn sống ở Hoa Kỳ, hãy gọi đến số 866-628-1371 để nhận trợ giúp và được thay thế. Nếu bạn sống ở Vương quốc Anh, hãy gọi đến số 0800-026-0613. Nếu bạn sống ở Ireland, hãy gọi đến số 1-800-832-664. Nếu bạn sống ở Canada, hãy gọi đến số 866-628-1372. Nếu bạn sống ở Úc, hãy gọi đến số 1-800-067-460.</translation>
 <translation id="3846575436967432996">Không có thông tin mạng</translation>
-<translation id="3866182280516392520">Địa chỉ IPv6</translation>
 <translation id="3891340733213178823">Nhấn Ctrl+Shift+Q hai lần để đăng xuất.</translation>
 <translation id="3893630138897523026">ChromeVox (phản hồi bằng giọng nói)</translation>
 <translation id="3899995891769452915">Nhập bằng giọng nói</translation>
 <translation id="3901991538546252627">Đang kết nối với <ph name="NAME" /></translation>
-<translation id="3963445509666917109">Loa (Bên trong)</translation>
 <translation id="3967919079500697218">Quản trị viên của bạn đã tắt tính năng chụp ảnh màn hình.</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="3995138139523574647">Thiết bị USB-C (cổng phía sau, bên phải)</translation>
@@ -126,6 +118,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="4448844063988177157">Đang tìm kiếm mạng Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
+<translation id="4481530544597605423">Thiết bị được hủy ghép nối</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Đang kết nối...</translation>
 <translation id="4527045527269911712">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"muốn được phép ghép nối.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> cho đến khi đầy</translation>
@@ -135,22 +128,19 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="4872237917498892622">Alt+Search hoặc Shift</translation>
 <translation id="4895488851634969361">Pin đầy.</translation>
 <translation id="4918086044614829423">Chấp nhận</translation>
-<translation id="4957722034734105353">Tìm hiểu thêm...</translation>
 <translation id="4961318399572185831">Truyền màn hình</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="510924152490034944">Kết nối có thể bị theo dõi</translation>
 <translation id="5168181903108465623">Có thiết bị truyền</translation>
 <translation id="5170568018924773124">Hiển thị trong thư mục</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
+<translation id="523505283826916779">Cài đặt trợ năng</translation>
 <translation id="532063867737390965">Cài đặt mạng này bị quản trị viên tắt.</translation>
 <translation id="5331975486040154427">Thiết bị USB-C (cổng phía sau, bên trái)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Tất cả người dùng hiện có mặt đã được thêm vào phiên này.</translation>
-<translation id="5504841533973703486">Micrô mặt trước</translation>
 <translation id="5507786745520522457">Thiết lập dữ liệu di động</translation>
-<translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">Tiện ích "<ph name="EXTENSION_NAME" />" có thể giúp kết nối với mạng này.</translation>
-<translation id="5565793151875479467">Proxy...</translation>
 <translation id="5571066253365925590">Đã bật bluetooth</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5759815399269068793">Bạn có thể tiếp tục sử dụng <ph name="DEVICE_TYPE" /> sau khi kết nối thiết bị này với màn hình bên ngoài, ngay cả khi nắp đóng.</translation>
@@ -158,8 +148,6 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="57838592816432529">Tắt tiếng</translation>
 <translation id="5825747213122829519">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID" />.
 Nhấn Shift + Alt để chuyển đổi.</translation>
-<translation id="5830936593837877897">Micrô mặt sau</translation>
-<translation id="5871632337994001636">Quản lý thiết bị...</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Đang truyền tới bộ thu không xác định</translation>
@@ -184,7 +172,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Đang kích hoạt...</translation>
 <translation id="6297287540776456956">Sử dụng bút cảm ứng để chọn một vùng</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> đã được xoay vòng sang <ph name="ROTATION" /></translation>
-<translation id="6359806961507272919">SMS từ <ph name="PHONE_NUMBER" /></translation>
+<translation id="632744581670418035">Lớp phủ bàn phím</translation>
 <translation id="639644700271529076">CAPS LOCK tắt</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6426039856985689743">Tắt dữ liệu di động</translation>
@@ -194,9 +182,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6501401484702599040">Đang truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Nhập bằng chữ viết tay</translation>
 <translation id="6537270692134705506">Chụp màn hình</translation>
-<translation id="6549021752953852991">Không có mạng di động nào</translation>
 <translation id="6585808820553845416">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" />.</translation>
-<translation id="6596816719288285829">Địa chỉ IP</translation>
 <translation id="6650933572246256093">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã xác nhận này trên thiết bị đó: <ph name="PASSKEY" /></translation>
 <translation id="6700713906295497288">Nút menu IME</translation>
 <translation id="6713285437468012787">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"đã được ghép nối và hiện khả dụng với tất cả người dùng. Bạn có thể xóa ghép nối này bằng Cài đặt.</translation>
@@ -221,9 +207,9 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="7348093485538360975">Bàn phím ảo</translation>
 <translation id="735745346212279324">Đã ngắt kết nối VPN</translation>
-<translation id="737451040872859086">Micrô (Bên trong)</translation>
 <translation id="742594950370306541">Máy ảnh đang được sử dụng.</translation>
 <translation id="743058460480092004">Máy ảnh và micrô đang được sử dụng.</translation>
+<translation id="7502658306369382406">Địa chỉ IPv6</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> không hỗ trợ <ph name="SPECIFIED_RESOLUTION" />. Độ phân giải đã được thay đổi thành <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Bảng màu biểu tượng cảm xúc</translation>
@@ -235,8 +221,6 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> và <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Ngôn ngữ đã chuyển từ "<ph name="FROM_LOCALE" />" thành "<ph name="TO_LOCALE" />" sau khi đồng bộ hóa cài đặt của bạn.</translation>
 <translation id="785750925697875037">Xem tài khoản di động</translation>
-<translation id="7864539943188674973">Tắt bluetooth</translation>
-<translation id="7874779702599364982">Đang tìm kiếm mạng di động...</translation>
 <translation id="7893838033650689677">Bật Wi-Fi</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" /> của bạn có thể không sạc khi được bật. Cân nhắc việc sử dụng bộ sạc chính thức.</translation>
@@ -245,15 +229,16 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8054466585765276473">Đang tính toán thời lượng pin.</translation>
 <translation id="8077816382010018681">Tiêu đề thông báo tính năng QU tại đây</translation>
 <translation id="8098591350844501178">Dừng truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
-<translation id="8103386449138765447">Tin nhắn SMS: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Đã kết nối với <ph name="NAME" /></translation>
+<translation id="8142699993796781067">Mạng riêng</translation>
 <translation id="8180896103888046100">Dừng truyền tới người nhận không xác định</translation>
 <translation id="8185286464235484130">Hãy cho chúng tôi biết tình hình hoạt động của chúng tôi bằng cách trả lời một vài câu hỏi.</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
-<translation id="8206859287963243715">Di động</translation>
 <translation id="8308637677604853869">Menu trước</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
+<translation id="8433186206711564395">Cài đặt mạng</translation>
 <translation id="8454013096329229812">Wi-Fi đang bật.</translation>
+<translation id="8483248364096924578">Địa chỉ IP</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Đang kết nối lại...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> của bạn có thể không sạc khi được bật.</translation>
 <translation id="8528322925433439945">Di động ...</translation>
@@ -276,8 +261,6 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Đang thoát chế độ màn hình hợp nhất</translation>
 <translation id="923686485342484400">Nhấn Control Shift Q hai lần để đăng xuất.</translation>
-<translation id="938582441709398163">Lớp phủ bàn phím</translation>
 <translation id="939252827960237676">Không lưu được ảnh chụp màn hình</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>
-<translation id="952992212772159698">Chưa được kích hoạt</translation>
 </translationbundle>

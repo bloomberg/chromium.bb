@@ -267,6 +267,7 @@
 <translation id="348000606199325318">Crash-ID <ph name="CRASH_LOCAL_ID" /> (Server-ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">We kunnen je ouder momenteel niet bereiken. Probeer het opnieuw.</translation>
 <translation id="3528171143076753409">Het servercertificaat is niet betrouwbaar.</translation>
+<translation id="3538531656504267329">Ongeldig vervaljaar</translation>
 <translation id="3539171420378717834">Een exemplaar van deze kaart op dit apparaat bewaren</translation>
 <translation id="3542684924769048008">Wachtwoord gebruiken voor:</translation>
 <translation id="3549644494707163724">Alle gesynchroniseerde gegevens versleutelen met je eigen wachtwoordzin voor synchronisatie</translation>
@@ -552,6 +553,7 @@
 <translation id="6477321094435799029">Chrome heeft ongebruikelijke code op deze pagina gedetecteerd en heeft de code geblokkeerd om je persoonlijke gegevens (zoals wachtwoorden, telefoonnummers en creditcards) te beschermen.</translation>
 <translation id="6477460825583319731">Ongeldig e-mailadres</translation>
 <translation id="6489534406876378309">Uploaden van crashes starten</translation>
+<translation id="6525462735697194615">Ongeldige vervalmaand</translation>
 <translation id="6529602333819889595">&amp;Opnieuw verwijderen</translation>
 <translation id="6534179046333460208">Fysieke web-suggesties</translation>
 <translation id="6550675742724504774">Opties</translation>

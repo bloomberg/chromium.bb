@@ -270,6 +270,7 @@
 <translation id="348000606199325318">מזהה קריסה <ph name="CRASH_LOCAL_ID" /> (מזהה שרת: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">לא הצלחנו ליצור קשר עם ההורה שלך. נסה שוב מאוחר יותר.</translation>
 <translation id="3528171143076753409">אישור השרת אינו מהימן.</translation>
+<translation id="3538531656504267329">שנת תפוגה לא חוקית</translation>
 <translation id="3539171420378717834">שמור עותק של הכרטיס הזה במכשיר הזה</translation>
 <translation id="3542684924769048008">השתמש בסיסמה עבור:</translation>
 <translation id="3549644494707163724">הצפן את כל הנתונים המסונכרנים באמצעות משפט הסיסמה שלך לסנכרון</translation>
@@ -562,6 +563,7 @@ Del</translation>
 <translation id="6477321094435799029">‏Chrome זיהה קוד חריג בדף הזה וחסם אותו כדי להגן על המידע הפרטי שלך (כגון סיסמאות, מספרי טלפון ומספרי כרטיסי אשראי).</translation>
 <translation id="6477460825583319731">כתובת אימייל לא חוקית</translation>
 <translation id="6489534406876378309">התחל להעלות קריסות</translation>
+<translation id="6525462735697194615">חודש תפוגה לא חוקי</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="6534179046333460208">הצעות לאינטרנט הווירטופיזי</translation>
 <translation id="6550675742724504774">אפשרויות</translation>

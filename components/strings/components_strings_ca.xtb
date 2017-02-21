@@ -77,7 +77,7 @@
 <translation id="168841957122794586">El certificat de servidor conté una clau criptogràfica dèbil.</translation>
 <translation id="1710259589646384581">SO</translation>
 <translation id="1721312023322545264">Cal que <ph name="NAME" /> et doni permís per visitar aquest lloc</translation>
-<translation id="1728677426644403582">Estàs visualitzant el codi font d'una pàgina web</translation>
+<translation id="1728677426644403582">Estàs consultant el codi font d'una pàgina web</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Proveu de contactar amb l'administrador del sistema.</translation>
 <translation id="1745358365027406341">Baixa la pàgina més tard</translation>
@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Identificador d'error <ph name="CRASH_LOCAL_ID" /> (identificador de servidor: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">En aquests moments no ens hem pogut posar en contacte amb els pares. Torneu-ho a provar.</translation>
 <translation id="3528171143076753409">El certificat del servidor no és de confiança.</translation>
+<translation id="3538531656504267329">L'any de caducitat no és vàlid</translation>
 <translation id="3539171420378717834">Desa una còpia d'aquesta targeta al dispositiu</translation>
 <translation id="3542684924769048008">Utilitzar la contrasenya per a:</translation>
 <translation id="3549644494707163724">Encripta totes les dades sincronitzades amb la teva frase de contrasenya de sincronització</translation>
@@ -557,12 +558,13 @@
 <translation id="6477321094435799029">Chrome ha detectat codi poc comú en aquesta pàgina i, per tant, l'ha bloquejat per protegir la teva informació personal (per exemple, contrasenyes, números de telèfon i targetes de crèdit).</translation>
 <translation id="6477460825583319731">L'adreça electrònica no és vàlida</translation>
 <translation id="6489534406876378309">Comença a penjar els errors</translation>
+<translation id="6525462735697194615">El mes de caducitat no és vàlid</translation>
 <translation id="6529602333819889595">&amp;Refés la supressió</translation>
 <translation id="6534179046333460208">Suggeriments del Web físic</translation>
 <translation id="6550675742724504774">Opcions</translation>
 <translation id="6556239504065605927">Connexió segura</translation>
 <translation id="6563469144985748109">El teu gestor encara no ho ha aprovat</translation>
-<translation id="6569060085658103619">Estàs visualitzant una pàgina d'extensions</translation>
+<translation id="6569060085658103619">Estàs consultant la pàgina d'una extensió</translation>
 <translation id="6593753688552673085">menys de: <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opcions d'encriptació</translation>
 <translation id="662080504995468778">No surtis</translation>

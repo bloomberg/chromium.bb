@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Kilitlenme Kimliği: <ph name="CRASH_LOCAL_ID" /> (Sunucu Kimliği: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Şu anda ebeveyninize erişemedik. Lütfen tekrar deneyin.</translation>
 <translation id="3528171143076753409">Sunucunun sertifikasına güvenilmiyor.</translation>
+<translation id="3538531656504267329">Geçersiz son kullanım yılı</translation>
 <translation id="3539171420378717834">Bu kartın bir kopyasını bu cihazda tut</translation>
 <translation id="3542684924769048008">Şunun için şifre kullan:</translation>
 <translation id="3549644494707163724">Senkronize edilen tüm verileri kendi senkronizasyon parolanızla şifreleyin</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome, bu sayfada olağan dışı kod tespit etti ve kişisel bilgilerinizi (örneğin, şifreler, telefon numaraları ve kredi kartları) korumak için sayfayı engelledi.</translation>
 <translation id="6477460825583319731">Geçersiz e-posta adresi</translation>
 <translation id="6489534406876378309">Kilitlenmeleri yüklemeye başla</translation>
+<translation id="6525462735697194615">Geçersiz son kullanım ayı</translation>
 <translation id="6529602333819889595">Silmeyi &amp;Yeniden Yap</translation>
 <translation id="6534179046333460208">Fiziksel Web önerileri</translation>
 <translation id="6550675742724504774">Seçenekler</translation>

@@ -254,8 +254,9 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6040143037577758943">Uždaryti</translation>
 <translation id="6042308850641462728">Daugiau</translation>
 <translation id="605721222689873409">MM</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Palieskite, jei norite atšaukti.</translation>
-<translation id="60851516108411750">kaitymo sąrašas yra pasiekiamas neprisijungus. Jei norite pridėti puslapį prie skaitymo sąrašo, palieskite <ph name="SHARE_OPENING_ICON" />.</translation>
+<translation id="60851516108411750">Skaitymo sąrašas yra pasiekiamas neprisijungus. Jei norite pridėti puslapį prie skaitymo sąrašo, palieskite <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Prisijungęs</translation>
 <translation id="6127379762771434464">Elementas pašalintas</translation>
 <translation id="6136914049981179737">Prieš sek.</translation>
@@ -411,6 +412,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="9083392325882095631">Elementų: 1</translation>
 <translation id="9100610230175265781">Būtina slaptafrazė</translation>
 <translation id="9148126808321036104">Prisijungti dar kartą</translation>
+<translation id="9154194610265714752">Atnaujinta</translation>
 <translation id="9157836665414082580">Nerod. dialogo langų</translation>
 <translation id="9188680907066685419">Atsijungimas nuo valdomos paskyros</translation>
 <translation id="9203116392574189331">Handoff</translation>

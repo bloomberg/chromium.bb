@@ -26,6 +26,9 @@
       Se estiver definida como verdadeira ou não for definida, as estatísticas são comunicadas.</translation>
 <translation id="1046484220783400299">Ativar funcionalidades das plataformas Web desatualizadas por um tempo limitado</translation>
 <translation id="1047128214168693844">Não permitir que os site registem a localização física dos utilizadores</translation>
+<translation id="1049138910114524876">Configura o local que é aplicado no ecrã de início de sessão do <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política estiver definida, o ecrã de início de sessão é sempre apresentado no local que é fornecido pelo primeiro valor desta política (a política está definida como uma lista para a compatibilidade com as versões futuras). Se esta política não estiver definida ou estiver definida como uma lista vazia, o ecrã de início de sessão é apresentado no local da última sessão do utilizador. Se esta política estiver definida como um valor que não é um local válido, o ecrã de início de sessão é apresentado num local alternativo (atualmente, en-US).</translation>
 <translation id="1062011392452772310">Ativar a comprovação remota para o dispositivo</translation>
 <translation id="1090892140761957285">URL para validar o símbolo de autenticação de cliente de acesso remoto.
 
@@ -95,9 +98,6 @@
       Se a política não for definida ou for definida como falsa, os conjuntos de cifras RC4 no TLS não estão ativados. Caso contrário, pode ser definida como verdadeira para manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária e é necessário voltar a configurar o servidor.</translation>
 <translation id="1297182715641689552">Utilizar um script de proxy .pac</translation>
 <translation id="1304973015437969093">Instalar IDs de extensões/aplicações e URLs de atualização silenciosamente</translation>
-<translation id="1310333396104446007">Se esta definição estiver configurada como falsa, os utilizadores são impedidos de definir PINs considerados fracos. Tais incluem PINs que contêm várias vezes o mesmo dígito, PINs cujos dígitos aumentam ou diminuem 1 valor e PINs muito comuns.
-
-          Se esta definição estiver configurada como verdadeira ou não estiver configurada, os utilizadores podem introduzir esses PINs e recebem apenas um aviso.</translation>
 <translation id="1313457536529613143">Especifica a percentagem que determina a escala do atraso do esbatimento do ecrã quando há atividade da parte do utilizador, enquanto o ecrã é esbatido ou pouco depois de o ecrã ter sido desligado.
 
           Se esta política estiver definida, especifica a percentagem que determina a escala do atraso do esbatimento do ecrã quando há atividade da parte do utilizador, enquanto o ecrã é esbatido ou pouco depois de o ecrã ter sido desligado. Quando se determina a escala do atraso do esbatimento, o bloqueio e a ação de desligar o ecrã e atrasos inativos são ajustados para manter as mesmas distâncias do atraso de esbatimento do ecrã, conforme foi configurado originalmente.
@@ -543,13 +543,6 @@
 <translation id="2587719089023392205">Definir o <ph name="PRODUCT_NAME" /> como o Navegador predefinido</translation>
 <translation id="2592091433672667839">Período de inatividade antes de a proteção de ecrã ser apresentada no ecrã de início de sessão no modo de retalho</translation>
 <translation id="2623014935069176671">Aguardar atividade inicial do utilizador</translation>
-<translation id="2625512435194873786">Esta definição controla o comprimento máximo que um PIN pode ter.
-
-          Se esta definição estiver configurada como 0 ou inferior, não existe um comprimento máximo e o utilizador pode definir um PIN com o tamanho que pretender.
-
-          Se esta definição for inferior à política PinUnlockMinimumLength, mas superior a 0, o comprimento máximo é igual ao comprimento mínimo.
-
-          Se esta definição não estiver configurada, não existe um comprimento máximo e o utilizador pode definir um PIN com o tamanho que pretender.</translation>
 <translation id="262740370354162807">Permitir o envio de documentos para o <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Ativar comentários falados</translation>
 <translation id="2646290749315461919">Permite definir se os Web sites têm permissão para monitorizar a localização física dos utilizadores. A monitorização da localização física dos utilizadores pode ser permitida por predefinição, negada por predefinição ou o utilizador pode ser questionado sempre que um Web site solicitar a localização física. Se esta política não for definida, será utilizada a definição "AskGeolocation" e o utilizador poderá alterá-la.</translation>
@@ -913,7 +906,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3780152581321609624">Incluir porta não padrão no SPN do Kerberos</translation>
 <translation id="3780319008680229708">Se esta política estiver definida como verdadeira, o ícone da barra de ferramentas do Google Cast é sempre apresentado na barra de ferramentas ou no menu adicional e os utilizadores não podem removê-lo.
 
-          Se esta política estiver definida como falsa ou não estiver definida, os utilizadores podem fixar ou remover o ícone através do respetivo menu contextual.
+          Se esta política estiver definida como falsa ou não estiver definida, os utilizadores podem fixar ou remover o ícone através do respetivo menu de contexto.
 
           Se a política "EnableMediaRouter" estiver definida como falsa, o respetivo valor não tem nenhum efeito e o ícone da barra de ferramentas não é apresentado.</translation>
 <translation id="3788662722837364290">Definições de gestão de energia quando o utilizador fica inativo</translation>
@@ -1008,6 +1001,9 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
           Se não estiver definida ou estiver definida como falsa, os utilizadores poderão transferir ficheiros para o Google Drive.</translation>
 <translation id="3915395663995367577">URL para um ficheiro .pac de proxy</translation>
+<translation id="3926940573869375969">Configura os esquemas de teclado que são permitidos no ecrã de início de sessão do <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política estiver definida como uma lista de identificadores de métodos de introdução, os métodos de introdução fornecidos são disponibilizados no ecrã de início de sessão. O primeiro método de introdução fornecido é pré-selecionado. Enquanto um agrupamento de utilizadores está centrado no ecrã de início de sessão, o método de introdução utilizado menos recentemente é disponibilizado, para além dos métodos de introdução fornecidos por esta política. Se esta política não estiver definida, os métodos de introdução no ecrã de início de sessão são derivados do local no qual o ecrã de início de sessão é apresentado. Os valores que não são identificadores de métodos de introdução válidos são ignorados.</translation>
 <translation id="3939893074578116847">Envie pacotes de rede para o servidor de gestão para monitorizar o estado online, de modo a permitir
       que o servidor detete se o dispositivo está offline.
 
@@ -1130,6 +1126,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultKeygenSetting", se estiver definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="4239720644496144453">A cache não é utilizada para aplicações Android. Se vários utilizadores instalarem a mesma aplicação Android, é transferida uma nova para cada utilizador.</translation>
 <translation id="4250680216510889253">Não</translation>
+<translation id="4261820385751181068">Local do ecrã de início de sessão do dispositivo</translation>
 <translation id="4272136423200695428">Ativa o início de sessão forçado no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Especifica os parâmetros utilizados ao efetuar uma pesquisa de imagens com POST. Consiste em pares de nome/valor separados por vírgulas. Se um valor for o parâmetro de um modelo, como {imageThumbnail} no exemplo acima, será substituído por dados de miniatura de imagem reais.
 
@@ -1615,6 +1612,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se esta política estiver definida como verdadeira ou não estiver definida, a aceleração de hardware é ativada, a menos que alguma funcionalidade da GPU seja colocada na lista negra.
 
       Se esta política estiver definida como falsa, a aceleração de hardware é desativada.</translation>
+<translation id="6070667616071269965">Esquemas de teclado do ecrã de início de sessão do dispositivo</translation>
 <translation id="6074963268421707432">Não permitir que os sites mostrem notificações do ambiente de trabalho</translation>
 <translation id="6076099373507468537">Define a lista de dispositivos USB que estão autorizados a ser desligados do respetivo controlador de kernel para serem utilizados diretamente através da API chrome.usb numa aplicação Web. As entradas são pares de identificador de fornecedor de USB e identificador de produto para identificar um hardware específico.
 
@@ -2099,18 +2097,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se esta política não estiver definida, a limpeza automática utiliza a estratégia integrada predefinida. Atualmente, é a estratégia "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Manter cookies durante toda a sessão</translation>
 <translation id="7340034977315324840">Comunicar períodos de atividade do aparelho</translation>
-<translation id="7340934985429121460">Esta definição controla o comprimento mínimo que um PIN pode ter.
-
-          Se esta definição estiver configurada para ser inferior a 1, o comprimento mínimo que um PIN pode ter é 1.
-
-          Se esta definição não estiver configurada, o comprimento mínimo que um PIN pode ter é 4.</translation>
 <translation id="7384999953864505698">Permite o protocolo QUIC</translation>
-<translation id="7406716912696538245">Controla os modos de desbloqueio rápido que estão autorizados a ser configurados e utilizados.
-          Esta definição coloca numa lista de autorizações os modos de desbloqueio rápido autorizados que podem ser configurados e utilizados para desbloquear o ecrã de bloqueio. O valor é uma lista de strings, sendo que cada uma deve corresponder a uma das opções seguintes: "todos" e "PIN". Se "todos" estiver selecionado, todos os modos rápidos compatíveis ficam disponíveis. Caso contrário, os modos na lista serão os que estão disponíveis.
-
-          Se esta definição estiver configurada, não é possível configurar ou utilizar os modos de desbloqueio rápido que possuem um tipo que não esteja nesta lista.
-
-          Se esta definição não for configurada, o modo "PIN" é ativado e todos os outros modos são desativados.</translation>
 <translation id="7417972229667085380">Percentagem que determina a escala do atraso de inatividade no modo de apresentação (descontinuado)</translation>
 <translation id="7421483919690710988">Definir o tamanho da cache do disco multimédia em bytes</translation>
 <translation id="7424751532654212117">Lista de exceções à lista de plug-ins desativados</translation>
@@ -2276,19 +2263,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="7842869978353666042">Configurar as opções do Google Drive</translation>
 <translation id="7843525027689416831">Especifica os sinalizadores que devem ser aplicados ao <ph name="PRODUCT_NAME" /> quando este inicia. Os sinalizadores especificados são aplicados apenas no ecrã de início de sessão. Os sinalizadores definidos através desta política não se propagam para as sessões de utilizador.</translation>
 <translation id="7848840259379156480">Permite-lhe configurar o processador de HTML predefinido quando é instalado o <ph name="PRODUCT_FRAME_NAME" />. A predefinição é permitir que o navegador anfitrião efetue o pro, mas, se pretender, pode substituir esta predefinição e fazer com que o <ph name="PRODUCT_FRAME_NAME" /> processe as páginas HTML por predefinição.</translation>
-<translation id="7853178359124471330">Quando esta política está definida, o fluxo da deteção automática do fuso horário é um dos seguintes, consoante o valor da definição:
-
-      Se estiver definida como TimezoneAutomaticDetectionUsersDecide, os utilizadores podem controlar a deteção automática do fuso horário ao utilizar controlos normais em chrome://settings.
-
-      Se estiver definida como TimezoneAutomaticDetectionDisabled, os controlos automáticos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre desativada.
-
-      Se estiver definida como TimezoneAutomaticDetectionIPOnly, os controlos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre ativada. A deteção do fuso horário utiliza o método apenas de IP para resolver a localização.
-
-      Se estiver definida como TimezoneAutomaticDetectionSendWiFiAccessPoints, os controlos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre ativada. A lista de pontos de acesso Wi-Fi visíveis é sempre enviada para o servidor da API de geolocalização, de modo a permitir a deteção precisa do fuso horário.
-
-      Se esta política não estiver definida, o comportamento é o mesmo como se TimezoneAutomaticDetectionUsersDecide estivesse definido.
-
-      Se a política SystemTimezone estiver definida, substitui esta política. Nesse caso, a deteção automática do fuso horário está totalmente desativada.</translation>
 <translation id="787125417158068494">Se estiverem definidos para SyncDisabled ou não estiverem configurados, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficam disponíveis para aplicações ARC.
 
       Se estiverem definidos para CopyCaCerts, todos os certificados da AC (Autoridade de certificação) instalados pelo ONC com <ph name="WEB_TRUSTED_BIT" /> ficam disponíveis para aplicações ARC.</translation>
@@ -2595,7 +2569,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se esta política for definida como falsa, nem o utilizador nem quaisquer aplicações ou extensões podem entrar no modo de ecrã inteiro.
 
       Em todas as plataformas, exceto em <ph name="PRODUCT_OS_NAME" />, o modo quiosque está indisponível quando o modo de ecrã inteiro está desativado.</translation>
-<translation id="8795495354632096254">Enviar sempre pontos de acesso Wi-Fi para o servidor durante a resolução do fuso horário.</translation>
 <translation id="8818173863808665831">Comunique a localização geográfica do dispositivo.
 
       Se a política não estiver definida, ou estiver definida como falsa, a localização não será comunicada.</translation>

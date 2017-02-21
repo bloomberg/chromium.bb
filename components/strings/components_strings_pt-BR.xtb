@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Código de falha <ph name="CRASH_LOCAL_ID" /> (código do servidor: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Não foi possível contatar seu pai/mãe no momento. Tente novamente.</translation>
 <translation id="3528171143076753409">O certificado do servidor não é confiável.</translation>
+<translation id="3538531656504267329">Ano de validade inválido</translation>
 <translation id="3539171420378717834">Manter uma cópia deste cartão neste dispositivo</translation>
 <translation id="3542684924769048008">Usar senha para:</translation>
 <translation id="3549644494707163724">Criptografar todos os dados sincronizados com sua senha de sincronização</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">O Chrome detectou um código incomum nesta página e a bloqueou para proteger suas informações pessoais (por exemplo, senhas, números de telefone e cartões de crédito).</translation>
 <translation id="6477460825583319731">Endereço de e-mail inválido</translation>
 <translation id="6489534406876378309">Iniciar upload de falhas</translation>
+<translation id="6525462735697194615">Mês de validade inválido</translation>
 <translation id="6529602333819889595">&amp;Refazer excluir</translation>
 <translation id="6534179046333460208">Sugestões da Web física</translation>
 <translation id="6550675742724504774">Opções</translation>

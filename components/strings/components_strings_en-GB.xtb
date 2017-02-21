@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Crash ID <ph name="CRASH_LOCAL_ID" /> (Server ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">We could not reach your parent at the moment. Please try again.</translation>
 <translation id="3528171143076753409">Server's certificate is not trusted</translation>
+<translation id="3538531656504267329">Invalid expiry year</translation>
 <translation id="3539171420378717834">Keep a copy of this card on this device</translation>
 <translation id="3542684924769048008">Use password for:</translation>
 <translation id="3549644494707163724">Encrypt all synced data with your own sync passphrase</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome detected unusual code on this page and blocked it to protect your personal information (for example, passwords, phone numbers and credit cards).</translation>
 <translation id="6477460825583319731">Invalid email address</translation>
 <translation id="6489534406876378309">Start uploading crashes</translation>
+<translation id="6525462735697194615">Invalid expiration month</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
 <translation id="6534179046333460208">Physical Web suggestions</translation>
 <translation id="6550675742724504774">Options</translation>

@@ -254,7 +254,9 @@
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6042308850641462728">Περισσότερα</translation>
 <translation id="605721222689873409">ΕΕ</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Πατήστε για ακύρωση.</translation>
+<translation id="60851516108411750">Η λίστα ανάγνωσης είναι διαθέσιμη εκτός σύνδεσης. Για να προσθέσετε μια σελίδα στη λίστα ανάγνωσης, πατήστε το εικονίδιο <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Συνδεδεμένο</translation>
 <translation id="6127379762771434464">Το στοιχείο καταργήθηκε</translation>
 <translation id="6136914049981179737">Δευτ.πριν</translation>
@@ -410,6 +412,7 @@
 <translation id="9083392325882095631">1 στοιχείο</translation>
 <translation id="9100610230175265781">Απαιτείται φράση πρόσβασης</translation>
 <translation id="9148126808321036104">Συνδεθείτε ξανά</translation>
+<translation id="9154194610265714752">Ενημερώθηκε</translation>
 <translation id="9157836665414082580">Απόκρυψη παραθύρων διαλόγου</translation>
 <translation id="9188680907066685419">Αποσύνδεση από διαχειριζόμενο λογαριασμό</translation>
 <translation id="9203116392574189331">Handoff</translation>

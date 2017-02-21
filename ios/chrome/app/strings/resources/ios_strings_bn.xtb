@@ -75,7 +75,7 @@
 <translation id="2267753748892043616">অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="2273327106802955778">‘আরো’ মেনু</translation>
 <translation id="2320166752086256636">কীবোর্ড লুকান</translation>
-<translation id="2351097562818989364">আপনার অনুবাদ সেটিংস পুনরায় সেট করা হয়েছে৷</translation>
+<translation id="2351097562818989364">আপনার অনুবাদ সেটিংস আবার সেট করা হয়েছে৷</translation>
 <translation id="2354750644801399986">'ট্র্যাক করবেন না'</translation>
 <translation id="2359808026110333948">অবিরত</translation>
 <translation id="2381405137052800939">প্রাথমিক বিষয়াদি</translation>
@@ -100,7 +100,7 @@
 <translation id="2800683595868705743">ট্যাব পরিবর্তনকারী থেকে বেরিয়ে যান</translation>
 <translation id="283291358677939992">পৃষ্ঠাতে খুঁজুন...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
-<translation id="2843803966603263712">অনুবাদ সেটিংস পুনরায় সেট করুন</translation>
+<translation id="2843803966603263712">অনুবাদ সেটিংস আবার সেট করুন</translation>
 <translation id="285960592395650245">আবার ডাউনলোডের চেষ্টা করুন</translation>
 <translation id="2871695793448672541">লুকানো, পাসওয়ার্ড</translation>
 <translation id="2898963176829412617">নতুন ফোল্ডার...</translation>
@@ -114,7 +114,7 @@
 <translation id="3037605927509011580">ইস!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> উপলব্ধ নয়। আপনার ব্রাউজিং ইতিহাস অ্যাক্সেস করতে, সরঞ্জামগুলি মেনু থেকে "<ph name="SHOW_HISTORY" />" নির্বাচন করুন।</translation>
 <translation id="3112556859945124369">চিহ্নিত করুন…</translation>
-<translation id="3151924044251363314">শুধুমাত্র আপনার পাসফ্রেজ সহ কোনো ব্যক্তি আপনার এনক্রিপ্ট করা ডেটা পড়তে পারবেন৷ পাসফ্রেজটি Google এ পাঠানো হয় না বা এর দ্বারা সংরক্ষণ করা হয় না৷ যদি আপনি আপনার পাসফ্রেজ ভুলে যান, তাহলে আপনাকে সিঙ্ক পুনরায় সেট করতে হবে৷ <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
+<translation id="3151924044251363314">শুধুমাত্র আপনার পাসফ্রেজ সহ কোনো ব্যক্তি আপনার এনক্রিপ্ট করা ডেটা পড়তে পারবেন৷ পাসফ্রেজটি Google এ পাঠানো হয় না বা এর দ্বারা সংরক্ষণ করা হয় না৷ যদি আপনি আপনার পাসফ্রেজ ভুলে যান, তাহলে আপনাকে সিঙ্ক আবার সেট করতে হবে৷ <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">সবগুলি চিহ্নিত করুন…</translation>
 <translation id="3172213052701798825">পাসওয়ার্ডের জন্য Google Smart Lock</translation>
 <translation id="3175081911749765310">ওয়েব পরিষেবা</translation>
@@ -126,7 +126,7 @@
 <translation id="3268451620468152448">ওপেন ট্যাব</translation>
 <translation id="3324193307694657476">ঠিকানা ২</translation>
 <translation id="3329904751041170572">সার্ভারের সাথে সংযোগ করা যাযনি৷</translation>
-<translation id="3335947283844343239">বন্ধ হওয়া ট্যাব পুনরায় খুলুন</translation>
+<translation id="3335947283844343239">বন্ধ হওয়া ট্যাব আবার খুলুন</translation>
 <translation id="3387752218061326363">আপনার প্রবেশ করা ডিভাইসগুলি থেকে ইতিহাস দেখাচ্ছে৷ <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" />।</translation>
 <translation id="3393920035788932672">মঞ্জুরিপ্রাপ্ত পপ-আপ</translation>
 <translation id="3414292259312108062">Chrome এটিকে আপনার <ph name="BEGIN_LINK" />Google এর সংরক্ষিত পাসওয়ার্ডগুলি<ph name="END_LINK" /> এ সংরক্ষণ করতে এবং আপনার জন্য এটিকে স্বতঃপূর্ণ করবে যাতে করে আপনাকে এটি আর মনে রাখতে না হয়৷</translation>
@@ -226,7 +226,7 @@
 
 
 সেটিংস-এর সাধারণ বিভাগে Handoff সক্ষমিত থাকা আবশ্যক, এবং আপনার ডিভাইস একই iCloud অ্যাকাউন্ট ব্যবহার করা আবশ্যক৷</translation>
-<translation id="5556459405103347317">পুনরায় লোড করুন</translation>
+<translation id="5556459405103347317">আবার লোড করুন</translation>
 <translation id="5626245204502895507">ফাইলটি এই সময়ে ডাউনলোড করা যাবে না৷</translation>
 <translation id="5659593005791499971">ইমেল</translation>
 <translation id="5669528293118408608">www</translation>
@@ -255,7 +255,9 @@
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6042308850641462728">আরো</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">বাতিল করতে আলতো চাপুন৷</translation>
+<translation id="60851516108411750">আপনার পড়ার তালিকা অফলাইনে উপলব্ধ। আপনার পড়ার তালিকায় কোনো পৃষ্ঠা যোগ করতে <ph name="SHARE_OPENING_ICON" /> আলতো চাপুন।</translation>
 <translation id="6122191549521593678">অনলাইন</translation>
 <translation id="6127379762771434464">আইটেম সরানো হয়েছে</translation>
 <translation id="6136914049981179737">সেকেন্ড আগে</translation>
@@ -317,7 +319,7 @@
 <translation id="7136892417564438900">ক্যামেরা অনুপলব্ধ</translation>
 <translation id="7167621057293532233">ডেটা প্রকার</translation>
 <translation id="7189598951263744875">শেয়ার করুন...</translation>
-<translation id="7203585745079012652">পুনরায় উত্তরগুলি বলে</translation>
+<translation id="7203585745079012652">আবার উত্তরগুলি বলে</translation>
 <translation id="722055596168483966">Google পরিষেবাগুলিকে ব্যক্তিগত করুন</translation>
 <translation id="7222245588540287464">প্রাসঙ্গিক অনুসন্ধান সক্ষম থাকবে কিনা৷</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> শতাংশ ডাউনলোড হয়েছে</translation>
@@ -411,6 +413,7 @@
 <translation id="9083392325882095631">১টি আইটেম</translation>
 <translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
 <translation id="9148126808321036104">আবার প্রবেশ করুন</translation>
+<translation id="9154194610265714752">আপডেট রয়েছে</translation>
 <translation id="9157836665414082580">ডায়ালগ রুদ্ধ করুন</translation>
 <translation id="9188680907066685419">পরিচালিত অ্যাকাউন্ট থেকে প্রস্থান করুন করুন</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -26,6 +26,9 @@
       Om den är inställd på sant eller inte har angetts rapporteras statistik.</translation>
 <translation id="1046484220783400299">Aktivera föråldrade webbplattformsfunktioner under en begränsad tid</translation>
 <translation id="1047128214168693844">Tillåt inte att någon webbplats spårar användarnas fysiska plats</translation>
+<translation id="1049138910114524876">Konfigurerar vilken språkkod som ska gälla för inloggningsskärmen i <ph name="PRODUCT_OS_NAME" />.
+
+      När principen har ställts in visas inloggningsskärmen alltid på det språk som har angetts först i principen (definitionen ges i form av en lista så att principen ska vara kompatibel med framtida versioner). Om principen inte har ställts in eller om en tom lista har angetts visas inloggningsskärmen på det språk som användes vid den senaste användarsessionen. Om principen har ställts in på ett ogiltigt värde används reservspråkkoden (för närvarande en-US) för inloggningsskärmen.</translation>
 <translation id="1062011392452772310">Aktivera fjärrattestering för enheten</translation>
 <translation id="1090892140761957285">Webbadress för att validera autentiseringstoken för fjärråtkomstklient.
 
@@ -92,9 +95,6 @@
       Om principen inte har ställts in eller är inställd på falskt kommer RC4-krypteringssviter inte att aktiveras. Principen kan ställas in som sant om kompatibilitet med en föråldrad server önskas bibehållas. Detta är en nödlösning, och servern bör omkonfigureras.</translation>
 <translation id="1297182715641689552">Använd en PAC-proxyskript</translation>
 <translation id="1304973015437969093">Tilläggs-/app-id:n och uppdateringsadresser som ska installeras obemärkt</translation>
-<translation id="1310333396104446007">Om den här inställningen konfigureras som falsk kan användare inte ange pinkoder som anses vara osäkra. Sådana pinkoder är till exempel pinkoder som genomgående innehåller samma siffra, pinkoder med sifferföljder i stigande eller fallande ordning och pinkoder som är för vanliga.
-
-          Om den här inställningen konfigureras som sann, eller inte konfigureras alls, kan användare ange dessa pinkoder och får bara ett varningsmeddelande.</translation>
 <translation id="1313457536529613143">Anger den procentsats med vilken fördröjningen av skärmdämpningen skalanpassas när användaren gör något då skärmen är dämpad eller strax efter det att skärmen har stängts av.
 
           Om den här principen är inställd anges den procentsats med vilken fördröjningen av skärmdämpningen skalanpassas när användaren gör något eller strax efter det att skärmen har stängts av. När dämpningsfördröjningen skalanpassas anpassas fördröjningen av avstängningen av skärmen, skärmlåset och dödtiden så att samma avstånd från den ursprungligen angivna fördröjningen av skärmdämpningen bibehålls.
@@ -525,7 +525,7 @@
 
       Om principen har värdet Falskt visas ett felmeddelande i stället för uppmaningen att konfigurera ett nätverk.</translation>
 <translation id="2498238926436517902">Dölj alltid hyllan automatiskt</translation>
-<translation id="2503514368596117142">Genom att konfigurera principer för Google Cast kan användare skicka innehåll på flikar, platser och skrivbordet från webbläsaren till fjärrskärmar och ljudsystem.</translation>
+<translation id="2503514368596117142">Genom att konfigurera principer för Google Cast kan användare skicka innehåll på flikar, webbplatser och skrivbordet från webbläsaren till fjärrskärmar och ljudsystem.</translation>
 <translation id="2514328368635166290">Policyn anger önskad ikonadress för standardsökleverantören.
 
           Policyn är valfri. Om den inte anges används ingen ikon för sökleverantören.
@@ -572,13 +572,6 @@
 <translation id="2587719089023392205">Gör <ph name="PRODUCT_NAME" /> till min standardwebbläsare</translation>
 <translation id="2592091433672667839">Inaktivitetstid innan skärmsläckaren visas på inloggningsskärmen i återförsäljarläge</translation>
 <translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
-<translation id="2625512435194873786">Denna inställning styr hur lång en pinkod får vara.
-
-          Om noll eller lägre konfigureras för den här inställningen finns det ingen maxlängd och användare kan ange hur långa pinkoder som helst.
-
-          Om lägre än PinUnlockMinimumLength men högre än noll anges för inställningen är maxlängden samma som minimilängden.
-
-          Om inställningen inte konfigureras finns det ingen maxlängd och användaren kan ange hur långa pinkoder som helst.</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivera talad feedback.</translation>
 <translation id="2646290749315461919">Policyn gör att du kan ställa in om webbplatser får spåra användarnas fysiska plats. Att spåra användarnas fysiska plats kan vara tillåtet som standard, inte tillåtet som standard eller användaren kan bli tillfrågad varje gång en webbplats efterfrågar den fysiska platsen.
@@ -963,7 +956,7 @@
 <translation id="3780152581321609624">Inkludera port som inte är standard i Kerberos SPN</translation>
 <translation id="3780319008680229708">Om sant har angetts för principen visas alltid Cast-ikonen i verktygsfältet eller i fler menyalternativ och användarna kan inte ta bort den.
 
-          Om falskt har angetts för principen eller om en inställning för principen saknas kan användarna fästa eller ta bort ikonen via dess sammanhangskänsliga meny.
+          Om falskt har angetts för principen eller om en inställning för principen saknas, kan användarna fästa eller ta bort ikonen via dess sammanhangskänsliga meny.
 
           Om falskt har angetts för principen EnableMediaRouter gäller inte värdet för denna princip och ikonen i verktygsfältet visas inte.</translation>
 <translation id="3788662722837364290">Energisparinställningar när användaren är inaktiv</translation>
@@ -1066,6 +1059,9 @@
 
           Om ingen inställning görs eller om Falskt anges kan användaren föra över filer till Google Drive.</translation>
 <translation id="3915395663995367577">Webbadress till en PAC-proxyfil</translation>
+<translation id="3926940573869375969">Konfigurerar vilka tangentbordslayouter som är tillåtna på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" />.
+
+      Om en lista med identifierare för inmatningsmetoder har angetts för principen blir de angivna inmatningsmetoderna tillgängliga på inloggningsskärmen. Den inmatningsmetod som anges först blir standardvärde. När fokus ligger på ett användarfält på inloggningsskärmen blir användarens äldsta inmatningsmetod tillgänglig förutom de inmatningsmetoder som angetts i principen. Om principen inte har ställts in styrs valet av inmatningsmetoder av vilken språkkod som används för inloggningsskärmen. Ogiltiga värden som inte identifierar någon inmatningsmetod ignoreras.</translation>
 <translation id="3939893074578116847">Skicka nätverkspaket för övervakning av onlinestatusen till hanteringsservern, så att
       den kan identifiera om enheten är offline.
 
@@ -1196,6 +1192,7 @@
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="4239720644496144453">Cacheminnet används inte för Android-appar. Om flera användare installerar samma Android-app laddas den ned på nytt varje gång.</translation>
 <translation id="4250680216510889253">Nej</translation>
+<translation id="4261820385751181068">Språkkod för enhetens inloggningsskärm</translation>
 <translation id="4272136423200695428">Aktivera tvingad inloggning för <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Anger parametrarna som används vid bildsökning med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {imageThumbnail} i ovanstående exempel, ersätts det av en riktig miniatyrbild.
 
@@ -1728,6 +1725,7 @@
       Om den här policyn är inställd på sant eller inte har angetts kommer maskinvaruacceleration att aktiveras om inte en viss funktion i grafikprocessorn är svartlistad.
 
       Om policyn är inställd på falskt kommer maskinvaruacceleration att inaktiveras.</translation>
+<translation id="6070667616071269965">Tangentbordslayouter för enhetens inloggningsskärm</translation>
 <translation id="6074963268421707432">Tillåt inte att någon webbplats visar aviseringar på skrivbordet</translation>
 <translation id="6076099373507468537">Definierar vilka USB-enheter som får kopplas bort från sina kärndrivrutiner så att de kan användas direkt i en webbapp med API:et chrome.usb. Posterna i listan består av id-par för USB, leverantörs-id och produkt-id, som tillsammans identifierar maskinvaran.
 
@@ -2239,18 +2237,7 @@
       Om policyn inte har angetts används den inbyggda strategin av den automatiska rensningen. För närvarande är det strategin RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Behåll cookies under hela sessionen</translation>
 <translation id="7340034977315324840">Rapportera aktivitetstider för enhet</translation>
-<translation id="7340934985429121460">Denna inställning styr minimilängden för pinkoder.
-
-          Om lägre än ett anges för den här inställningen måste pinkoder vara minst en siffra.
-
-          Om inställningen inte konfigureras måste pinkoder vara minst fyra siffror.</translation>
 <translation id="7384999953864505698">Tillåter QUIC-protokoll</translation>
-<translation id="7406716912696538245">Styr vilka snabbupplåsningslägen som får konfigureras och användas.
-          Med den här inställningen anges vilka snabbupplåsningslägen som får konfigureras och användas för att låsa upp låsskärmen. Värdet är en lista över strängar som ska vara antingen Alla eller Pinkod. Om Alla väljs blir alla snabbupplåsningslägen som stöds tillgängliga, annars blir lägena i listan tillgängliga.
-
-          Om inställningen konfigureras kan inte snabbupplåsningslägen med typer som inte finns i listan konfigureras eller användas.
-
-          Om inställningen inte konfigureras aktiveras läget Pinkod och övriga lägen inaktiveras.</translation>
 <translation id="7417972229667085380">Procentsatsen med vilken fördröjningen vid dödtid skalanpassas i presentationsläge (föråldrad)</translation>
 <translation id="7421483919690710988">Ange medieenhetens cachestorlek i byte</translation>
 <translation id="7424751532654212117">Lista med undantag till listan med inaktiverade plugin-program</translation>
@@ -2428,19 +2415,6 @@
 <translation id="7848840259379156480">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME" /> är installerat.
       Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
       kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME" /> rendera HTML-sidor som standard.</translation>
-<translation id="7853178359124471330">När principen har angetts visas flödet för automatisk tidszon på ett av följande sätt, beroende på värdet på inställningen:
-
-      Om TimezoneAutomaticDetectionUsersDecide har angetts kan användare själva styra om tidszoner ska upptäckas automatiskt med hjälp av de vanliga inställningarna på chrome://settings.
-
-      Om TimezoneAutomaticDetectionDisabled har angetts inaktiveras inställningarna för automatiska tidszoner i chrome://settings. Tidszoner upptäcks aldrig automatiskt.
-
-      Om TimezoneAutomaticDetectionIPOnly har angetts inaktiveras inställningarna för tidszoner i chrome://settings. Tidszoner upptäcks alltid automatiskt. Tidszoner fastställs bara med hjälp av IP-adresser för att fastställa platsen.
-
-      Om TimezoneAutomaticDetectionSendWiFiAccessPoints har angetts inaktiveras inställningarna för tidszoner i chrome://settings. Tidszoner upptäcks alltid automatiskt. Listan över synliga Wi-Fi-åtkomstpunkter skickas alltid till API-servern Geolocation för detaljerad tidszonsangivelse.
-
-      Om principen inte har angetts beter den sig som om TimezoneAutomaticDetectionUsersDecide har angetts.
-
-      Om principen SystemTimezone har angetts åsidosätts den här principen. I sådana fall inaktiveras automatisk tidszonsangivelse helt och hållet.</translation>
 <translation id="787125417158068494">Om principen är inställd på SyncDisabled eller inte har konfigurerats blir inga certifikat i <ph name="PRODUCT_OS_NAME" /> tillgängliga för ARC-appar.
 
       Om principen är inställd på CopyCaCerts blir alla CA-certifikat som installerats via ONC med <ph name="WEB_TRUSTED_BIT" /> tillgängliga för ARC-appar.</translation>
@@ -2774,7 +2748,6 @@
       Om policyn är inställd på falskt kan varken användare, appar eller tillägg välja helskärmsläget.
 
       På alla plattformar förutom <ph name="PRODUCT_OS_NAME" /> är kioskläget inte tillgängligt när helskärmsläget är inaktiverat.</translation>
-<translation id="8795495354632096254">Skicka alltid Wi-Fi-åtkomstpunkter till servern medan tidszon fastställs.</translation>
 <translation id="8818173863808665831">Rapportera enhetens geografiska plats.
 
       Om policyn inte är inställd eller inte är aktiverad rapporteras inte platsen.</translation>

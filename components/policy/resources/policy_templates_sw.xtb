@@ -26,6 +26,9 @@
      Ikiwekwa kuwa sivyo au iachwe bila kuwekwa, takwimu zitaripotiwa.</translation>
 <translation id="1046484220783400299">Washa vipengele vilivyoacha kuendesha huduma vya mbinu ya wavuti kwa muda mfupi</translation>
 <translation id="1047128214168693844">Hairuhusu tovuti yoyote kufuatilia eneo halisi la mtumiaji</translation>
+<translation id="1049138910114524876">Huweka mipangilio ya lugha ambayo inatekelezwa kwenye skrini ya kuingia katika kifaa ya <ph name="PRODUCT_OS_NAME" />.
+
+      Sera hii ikiwekwa, skrini ya kuingia katika kifaa itaonyeshwa kila mara kwa lugha iliyowekwa katika thamani ya kwanza (sera imebainishwa kuwa orodha ya uoanifu wa kusambaza).  Sera hii isipowekwa au ikiwekwa kwenye orodha tupu, skrini ya kuingia katika kifaa itaonyeshwa kwa lugha ya kipindi cha mtumiaji wa mwisho.  Sura hii ikiwekwa kuwa thamani ambayo si lugha sahihi, skrini ya kuingia katika kifaa itaonyeshwa kwa lugha chaguo-msingi (ambayo kwa sasa ni en-US).</translation>
 <translation id="1062011392452772310">Washa usahihishaji wa mbali wa kifaa</translation>
 <translation id="1090892140761957285">URL ya kuidhinisha tokeni ya uthibitishaji wa seva teja ya uwezo wa kufikia kwa mbali.
 
@@ -90,9 +93,6 @@
      Sera hii isipowekwa, au ikiwekwa kuwa sivyo basi mipangilio ya kriptografia ya RC4 katika TLS haitawashwa. Vinginevyo inaweza kuwekwa kuwa ndivyo ili kudumisha muoano na seva iliyokwisha muda. Huu ni mkakati tu wa muda na seva inapaswa kuwekwa mipangilio.</translation>
 <translation id="1297182715641689552">Tumia hati ya  proksi ya .pac</translation>
 <translation id="1304973015437969093">Vitambulisho vya Viendelezi/Programu na URL za sasisho vitasakinishwa kimyakimya</translation>
-<translation id="1310333396104446007">Ikiwa mipangilio hii imewekwa kuwa sivyo, watumiaji watazuiwa kuweka PIN ambazo si thabiti. Mfano wa PIN ambazo si thabiti ni zile ambazo zina tarakimu moja inayojirudia, PIN ambazo zinaongezeka kwa tarakimu 1, PIN ambazo zinapungua kwa tarakimu 1 na PIN ambazo zimetumika sana.
-
-          Mipangilio hii ikiwekwa kuwa ndivyo, au isipowekwa, watumiaji wanaweza kuweka PIN hizi na wataonyeshwa onyo pekee.</translation>
 <translation id="1313457536529613143">Hubainisha asilimia ambayo kuchelewa kwa mwangaza wa skrini kutaongezwa wakati shughuli ya mtumiaji inazingatiwa wakati skrini inapunguza mwangaza au mara baada ya skrini kuzimwa. 
 
 Kama sera hii imewekwa, inabainisha asilimia ambayo kuchelewa kwa mwangaza wa skrini huongezwa wakati shughuli ya mtumiaji inazingatiwa wakati skrini inapunguza mwangaza au mara baada ya skrini kuzimwa. Kuchelewa kwa mwangaza kunapoongezwa, kuzimwa kwa skrini, kufungwa kwa skrini na kucheleweshwa kwa kutofanya kitu hurekebishwa ili kudumisha umbali sawa kutoka kwa kucheleweshwa kwa mwangaza wa skrini kama ilivyosanidiwa kiasili. 
@@ -508,7 +508,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 
      Sera hii ikiwekwa kuwa Sivyo, ujumbe wa hitilafu utaonyeshwa badala ya ombi la kusanidi mtandao.</translation>
 <translation id="2498238926436517902">Ficha rafu otomatiki kila wakati</translation>
-<translation id="2503514368596117142">Weka sera za Google Cast, kipengele kinachoruhusu watumiaji kutuma maudhui ya vichupo, tovuti au eneo-kazi kutoka kwenye kivinjari hadi skrini za mbali na mifumo ya sauti.</translation>
+<translation id="2503514368596117142">Weka sera za Google Cast, kipengele kinachoruhusu watumiaji kutuma maudhui ya vichupo, tovuti au eneo-kazi kutoka kwenye kivinjari hadi skrini za mbali na spika.</translation>
 <translation id="2514328368635166290">Inabainisha ikoni ya URL pendwa ya mtoaji chaguo-msingi wa utafutaji.
 
           Sera hii ni ya hiari. Ikiwa haitawekwa, hakuna ikoni itakayokuwepo kwa mtojai wa utafutaji.
@@ -530,7 +530,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2529880111512635313">Sanidi orodha ya programu na viendelezi vilivyosakinishwa kwa nguvu</translation>
 <translation id="253135976343875019">Onyo ya kuchelewa wakati wa kutokuwa na shughuli wakati wa kuendesha kwa nishati ya AC</translation>
 <translation id="2552966063069741410">Saa za eneo:</translation>
-<translation id="2558917182010914102">Sera hii ikiwekwa kuwa ndivyo au isipowekwa, Google Cast itawashwa, na watumiaji wataweza kuizindua kutoka kwenye menyu ya programu, menyu za kurasa, vidhibiti vya maudhui kwenye tovuti zinazoweza kutumia Google Cast, na (ikiwa imeonyeshwa) aikoni ya upau wa vidhibiti vya Google Cast. 
+<translation id="2558917182010914102">Sera hii ikiwekwa kuwa ndivyo au isipowekwa, Google Cast itawashwa, na watumiaji wataweza kuizindua kutoka kwenye menyu ya programu, menyu za kurasa, vidhibiti vya maudhui kwenye tovuti vinazoweza kutumia Google Cast, na (ikiwa imeonyeshwa) aikoni ya upau wa vidhibiti vya Google Cast. 
 
               Sera hii ikiwekwa kuwa sivyo, Google Cast itazimwa.</translation>
 <translation id="2562339630163277285">Hubainisha URL ya mtambo wa kutafuta inayotumiwa kutoa matokeo ya papo hapo. URL inapaswa kuwa na mfuatano wa <ph name="SEARCH_TERM_MARKER" />, ambao nafasi yake itachukuliwa wakati wa kuandika hoja ya maandishi ambayo mtumiaji atakuwa ameweka.
@@ -555,13 +555,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2587719089023392205">Weka <ph name="PRODUCT_NAME" /> kama Kivinjari Chaguo-msingi</translation>
 <translation id="2592091433672667839">Muda wa shughuli kabla ya seva ya skrini kuonyeshwa kwenye skrini ya kuingia katika modi ya rejareja</translation>
 <translation id="2623014935069176671">Subiri shughuli ya kwanza ya mtumiaji</translation>
-<translation id="2625512435194873786">Mipangilio hii inadhibiti urefu ambao PIN haiwezi kupita.
-
-          Mipangilio hii ikiwekwa kuwa 0 au chini yake, hakuna urefu usiofaa kupitishwa, mtumiaji anaweza kuweka PIN apendavyo.
-
-          Ikiwa mipangilio hii ni chini ya PinUnlockMinimumLength lakini kubwa kuliko 0, urefu usiofaa kupitishwa ni sawa na urefu wa chini.
-
-          Mipangilio hii isipowekwa, hakuna urefu usiofaa kupitishwa, mtumiaji anaweza kuweka PIN apendavyo.</translation>
 <translation id="262740370354162807">Wezesha uwasilishaji wa nyaraka kwenye <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Wezesha maoni yaliyozungumzwa</translation>
 <translation id="2646290749315461919">Inaruhusu iwapo tovuti zinaruhusiwa kufuatilia eneo halisi la mtumiaji. Kufuatilia eneo halisi la mtumiaji kunaweza kuruhusiwa kwa chaguo-msingi, kukataliwa kwa chaguo-msingi au mtumiaji anaweza kuulizwa kila wakati tovuti ambayo inaomba eneo halisi.
@@ -1049,6 +1042,9 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
           Isipowekwa au ikiwekwa kuwa Sivyo, basi watumiaji wataweza kuhamisha faili kwenye Hifadhi ya Google.</translation>
 <translation id="3915395663995367577">URL hadi proksi ya faili ya .pac</translation>
+<translation id="3926940573869375969">Huweka mipangilio miundo ya kibodi inayoruhusiwa kwenye skrini ya kuingia katika kifaa ya <ph name="PRODUCT_OS_NAME" />.
+
+      Sera hii ikiweka kuwa orodha ya vitambulishi vya mbinu ya kuingiza data, mbinu husika za kuingiza data zitapatikana kwenye skrini ya kuingia katika kifaa. Mbinu ya kwanza ya kuingiza data itachaguliwa. Wakati podi ya mtumiaji inapolenga skrini ya kuingia katika kifaa, mbinu ya kuingiza data ya mtumiaji iliyotumiwa mara chache zaidi hivi majuzi itapatikana kando na mbinu za kuingiza data zilizotolewa na sera hiii.  Sera hii isipowekwa, mbinu za kuingiza data zilizo kwenye skrini ya kuingia katika kifaa zitatolewa kwenye lugha ambayo imetumiwa kuonyesha skrini ya kuingia katika kifaa.  Thamani ambazo si vitambulisho sahihi vya mbinu za kuingiza data zitapuuzwa.</translation>
 <translation id="3939893074578116847">Tuma vifurushi vya mtandao kwenye seva ya udhibiti ili kufuatilia hali ya mtandaoni, ili kuruhusu
       seva igundue kama kifaa kiko nje ya mtandao.
 
@@ -1174,6 +1170,7 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
           Sera hii ikiachwa bila kuwekwa, thamani chaguo-msingi ya kote duniani itatumiwa kwa tovuti zote iwe ni kutoka sera ya 'DefaultKeygenSetting' ikiwa imewekwa, la sivyo mipangilio ya kibinafsi ya mtumiaji itatumika.</translation>
 <translation id="4239720644496144453">Akiba hii haitumiwi na programu za Android. Ikiwa watumiaji wengi watasakinisha programu sawa ya Android, itapakuliwa upya kwa kila mtumiaji.</translation>
 <translation id="4250680216510889253">La</translation>
+<translation id="4261820385751181068">Lugha ya skrini ya kuingia katika kifaa</translation>
 <translation id="4272136423200695428">Huwasha kipengele cha kuingia kwa lazima kwa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Hubainisha vigezo vinavyotumika wakati wa kufanya utafutaji kwa picha kutumia POST. Ina vikundi vya jina/thamani vinavyotenganishwa na koma. Kama thamani ni kigezo cha kiolezo, kama {Kijipicha} katika mfano hapo juu, itabadilishwa na data ya kijipicha cha picha halisi.
 
@@ -1694,6 +1691,7 @@ Kama sera hii haijawekwa, kishale kikubwa huzimwa wakati skrini ya kuingia katik
       Sera hii ikiwekwa kuwa ndivyo au iachwe bila kuwekwa, kipengee cha kuongeza kasi kwa kutumia maunzi kitawashwa isipokuwa kipengee fulani cha GPU kiondolewe idhini.
 
    Sera hii ikiwekwa kuwa sivyo, kipengee cha kuongeza kasi kwa kutumia maunzi kitazimwa.</translation>
+<translation id="6070667616071269965">Miundo ya kibodi ya skrini ya kuingia katika kifaa</translation>
 <translation id="6074963268421707432">Usiruhusu tovuti yoyote ionyeshe arifa kwenye eneo-kazi</translation>
 <translation id="6076099373507468537">Hufafanua orodha ya vifaa vya USB vinavyoruhusiwa kutenganishwa kwenye kiendeshaji chake ili vitumiwe kwenye API ya chrome.usb moja kwa moja ndani ya programu ya wavuti. Maingizo ni jozi za Kitambulisho cha Muuzaji cha USB na Kitambulisho cha Bidhaa za kutambua maunzi mahususi.
 
@@ -2044,7 +2042,7 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
       Sera hizi zinakuwezesha kusanidi jinsi <ph name="PRODUCT_OS_NAME" /> hufanya kazi mtumiaji anapokuwa hana shughuli kwa muda fulani.</translation>
 <translation id="703078280527762319">Onyo: Sera ya kiwango cha juu cha toleo la TLS itaondolewa kabisa kwenye <ph name="PRODUCT_NAME" /> takriban matoleo 66 (katika mwezi wa Februari 2018 hivi).
 
-      Ikiwa sera hii haijasanidiwa, basi <ph name="PRODUCT_NAME" /> itatumia toleo la kiwango cha juu chaguo-msingi ambayo ni TLSv1.3.
+      Ikiwa sera hii haijawekwa, basi <ph name="PRODUCT_NAME" /> itatumia toleo la kiwango cha juu chaguo-msingi ambacho ni TLSv1.3.
 
       La sivyo, huenda ikawekwa kwenye mojawapo ya thamani zifuatazo: "tls1.2" au "tls1.3". Ikiwekwa, <ph name="PRODUCT_NAME" /> haitatumia matoleo ya SSL/TLS ambayo ni makubwa zaidi ya toleo lililobainishwa. Thamani isiyotambuliwa itapuuzwa.</translation>
 <translation id="7040229947030068419">Thamani ya mfano:</translation>
@@ -2192,18 +2190,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Ikiwa sera hii haitawekwa, kufuta kiotomatiki hutumia mkakati wa chaguo-msingi uliojengwa ndani. Kwa sasa, ni mkakati wa 'RemoveLRUIfDormant'.</translation>
 <translation id="7336878834592315572">Weka vidakuzi katika muda wa kipindi</translation>
 <translation id="7340034977315324840">Ripoti muda wa shughuli za kifaa</translation>
-<translation id="7340934985429121460">Mipangilio hii inadhibiti urefu ambao PIN haiwezi kupungua.
-
-          Mipangilio hii ikiwekwa kuwa chini ya 1, PIN inaweza kupungua herufi 1.
-
-          Sera hii isipowekwa, urefu wa chini wa PIN unaweza kuwa 4.</translation>
 <translation id="7384999953864505698">Huruhusu itifaki ya QUIC</translation>
-<translation id="7406716912696538245">Hudhibiti hali za kufungua haraka zinaruhusiwa kuweka mipangilio na kutumiwa.
-      Mipangilio hii hutoa idhini kwa hali za kufungua haraka zinazoruhusiwa ambazo zinaweza kuwekwa mipangilio na kutumiwa kufungua skrini iliyofungwa. Thamani yake ni orodha ya mifuatano, ambayo kila mfuatano unapaswa kuwa mmoja kati ya ifuatayo: "zote", "PIN". Ikiwa ni "zote" imechaguliwa, basi hali zote za haraka zinazotumiwa zitapatikana, la sivyo, hali zilizo katika orodha ndizo zitakazopatikana.
-
-      Mipangilio hii ikiwekwa, hali za kufungua haraka ambazo ni za aina isiyo kwenye orodha hii haziwezi kuwekwa mipangilio wala kutumiwa.
-
-      Mipangilio hii ikiachwa au isipowekwa, hali ya "PIN" itawashwa, na hali nyingine zote zitazimwa.</translation>
 <translation id="7417972229667085380">Asilimia ya kupima kuchelewesha kwa mwanga wa skrini katika modi ya wasilisho (kimewacha kuendesha huduma)</translation>
 <translation id="7421483919690710988">Weka ukubwa wa akiba ya diski ya media katika vipimo vya baiti</translation>
 <translation id="7424751532654212117">Orodha ya vighairi katika orodha ya programu jalizi zilizolemazwa</translation>
@@ -2311,11 +2298,11 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Sera hii inadhamiria kuwapa wafanyabiashara nafasi ya kuhamisha seva za sasa kutoka HTTP/0.9, na itaondolewa siku zijazo.
 
       Sera hii isipowekwa, HTTP/0.9 itazimwa kwenye milango ambayo si chaguo-msingi.</translation>
-<translation id="7749402620209366169">Inawezesha uthibitishaji wa vipengee viwili kwa wapangishaji wa ufikivu wa mbali badala ya PIN iliyobainishwa na mtumiaji.
+<translation id="7749402620209366169">Huwezesha matumizi ya uthibitishaji wa hatua mbili badala ya PIN iliyobainishwa na mtumiaji, kwa wapangishaji wa ufikiaji wa mbali.
 
-          Ikiwa mpangilio huu utawezeshwa, basi lazima mtumiaji atoe sababu mbili za msimbo halai anapofikia mpangishaji.
+          Ikiwa mipangilio hii itawashwa, basi lazima mtumiaji atumie uthibitishaji wa hatua mbili anapojaribu kufikia mpangishaji.
 
-          Ikiwa mpangilio huu utalemazwa au hautawekwa, basi sababu mbili hazitawezeshwa na tabia ya chaguo-msingo kuwa na PIN iliyofafanuliwa na mtumiaji itatumiwa.</translation>
+          Ikiwa mipangilio hii itazimwa au haitawekwa, basi uthibitishaji wa hatua mbili hautawashwa na chaguo msingi la kuweka PIN iliyobainishwa na mtumiaji litatumiwa.</translation>
 <translation id="7750991880413385988">Fungua Ukurasa Mpya wa Kichupo</translation>
 <translation id="7761446981238915769">Weka orodha ya programu zilizosakinishwa kwenye skrini ya kuingia katika akaunti</translation>
 <translation id="7761526206824804472">Huweka lugha moja au zaidi zilizopendekezwa kwa vipindi vya umma, hivyo kuwaruhusu watumiaji kuchagua kwa urahisi mojawapo ya lugha hizi.
@@ -2380,19 +2367,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7843525027689416831">Hubainisha alama zinazotakiwa kutumika kwenye <ph name="PRODUCT_NAME" /> inapoanza. Alama zinazobainishwa hutumika kwenye skrini ya kuingia katika akaunti pekee. Alama zilizowekwa kupitia sera hii hazienei ndani ya vipindi vya mtumiaji.</translation>
 <translation id="7848840259379156480">Inakuruhusu kusanidi kionyeshi cha HTML chaguo-msingi wakati <ph name="PRODUCT_FRAME_NAME" /> imesakinishwa.
       Mpangilio chaguo-msingi ni wa kuruhusu kivinjari kipangishi kufanya uonyeshaji, lakini unaweza kufuta kwa hiari hii na kuruhusu <ph name="PRODUCT_FRAME_NAME" /> kuonyesha kurasa za HTML kwa chaguo-msingi.</translation>
-<translation id="7853178359124471330">Sera hii ikiwekwa, mtiririko wa ugunduzi wa saa za eneo kiotomatiki utakuwa katika mojawapo ya njia zinazofuata, kulingana na thamani ya mipangilio:
-
-      Ikiwekwa kuwa TimezoneAutomaticDetectionUsersDecide, watumiaji wataweza kudhibiti ugunduzi wa saa za eneo kiotomatiki kwa kutumia vidhibiti vya kawaida katika chrome://settings.
-
-      Ikiwekwa kuwa TimezoneAutomaticDetectionDisabled, vidhibiti vya saa za eneo za kiotomatiki katika chrome://settings vitazimwa. Kipengee cha ugunduzi wa saa za eneo kiotomatiki kitakuwa kimezimwa wakati wote.
-
-      Ikiwekwa kuwa TimezoneAutomaticDetectionIPOnly, kidhibiti cha saa za eneo katika chrome://settings vitazimwa. Kipengee cha ugunduzi wa saa za eneo kiotomatiki kitatumia njia ya IP pekee kutatua eneo.
-
-      Ikiwekwa kuwa TimezoneAutomaticDetectionSendWiFiAccessPoints, vidhibiti vya saa za eneo katika chrome://settings vitazimwa. Kipengee cha ugunduzi wa saa za eneo kiotomatiki kitakuwa kimewashwa wakati wote. Orodha ya maeneo ya kufikia WiFi yatatumwa kwenye seva ya API ya Kutambulisha Mahali kila wakati kwa ugunduzi sahihi wa saa za eneo.
-
-      Sera hii isipowekwa, itaonekana kama kwamba TimezoneAutomaticDetectionUsersDecide imewekwa.
-
-      Sera ya SystemTimezone ikiwekwa, itabatilisha sera hii. Katika hali hii kipengee cha ugunduzi wa saa za eneo kiotomatiki kitazimwa kabisa.</translation>
 <translation id="787125417158068494">Ikiwekwa kuwa SyncDisabled au isiposanidiwa, vyeti vya <ph name="PRODUCT_OS_NAME" /> havitakuwepo kwa ajili ya programu za ARC.
 
       Ikiwekwa kuwa CopyCaCerts, vyeti vyote vya CA vilivyosakinishwa kwenye ONC vyenye <ph name="WEB_TRUSTED_BIT" /> vitapatikana kwa ajili ya programu za ARC.</translation>
@@ -2711,7 +2685,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
     Sera hii ikiwekwa kuwa sivyo, mtumiaji ama programu haziwezi kuingia katika hali ya skrini nzima. 
 
      Kwenye mifumo yote, isipokuwa <ph name="PRODUCT_OS_NAME" />, skrini nzima haipatikani wakati hali ya skrini nzima imezimwa.</translation>
-<translation id="8795495354632096254">Tuma maeneo ya kufikia WiFi kwenye seva kila wakati unapotatua saa za eneo.</translation>
 <translation id="8818173863808665831">Ripoti eneo la jografia ya kifaa.
 
       Ikiwa sera haitawekwa, au imewekwa kwenye Sivyo, eneo halitaripotiwa.</translation>

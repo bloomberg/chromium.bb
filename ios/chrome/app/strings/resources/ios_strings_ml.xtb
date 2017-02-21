@@ -254,6 +254,7 @@
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
 <translation id="6042308850641462728">കൂടുതൽ</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">റദ്ദാക്കുന്നതിന് ടാപ്പുചെയ്യുക.</translation>
 <translation id="60851516108411750">നിങ്ങളുടെ വായന ലിസ്‌റ്റ് ഓഫ്‌ലൈനിൽ ലഭ്യമാണ്. വായന ലിസ്‌റ്റിൽ ഒരു പേജ് ചേർക്കാൻ,<ph name="SHARE_OPENING_ICON" /> ടാപ്പുചെയ്യുക.</translation>
 <translation id="6122191549521593678">ഓൺലൈൻ</translation>
@@ -411,6 +412,7 @@
 <translation id="9083392325882095631">ഒരു ഇനം</translation>
 <translation id="9100610230175265781">പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്</translation>
 <translation id="9148126808321036104">വീണ്ടും പ്രവേശിക്കുക</translation>
+<translation id="9154194610265714752">അപ്‌ഡേറ്റുചെയ്‌തു</translation>
 <translation id="9157836665414082580">ഡയലോഗുകൾ നിയന്ത്രിക്കുക</translation>
 <translation id="9188680907066685419">മാനേജുചെയ്‌ത അക്കൗണ്ടിൽ നിന്ന് സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="9203116392574189331">ഹാൻഡ്ഓഫ്</translation>

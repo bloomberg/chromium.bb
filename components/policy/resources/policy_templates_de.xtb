@@ -26,6 +26,9 @@
       Ist die Richtlinie auf "true" eingestellt oder nicht konfiguriert, werden Statistiken ausgegeben.</translation>
 <translation id="1046484220783400299">Veraltete Webplattformfunktionen für einen begrenzten Zeitraum aktivieren</translation>
 <translation id="1047128214168693844">Verfolgung des physischen Standorts der Nutzer für keine Website zulassen</translation>
+<translation id="1049138910114524876">Konfiguriert die Sprache, die auf der <ph name="PRODUCT_OS_NAME" />-Anmeldeseite erzwungen wird.
+
+      Ist diese Richtlinie festgelegt, wird die Anmeldeseite immer in der Sprache angezeigt, die durch den ersten Wert der Richtlinie bestimmt wird. Sie ist als eine Liste für Aufwärtskompatibilität definiert. Ist sie nicht festgelegt oder verweist auf eine leere Liste, wird die Anmeldeseite in der Sprache der letzten Nutzersitzung dargestellt. Ist für diese Richtlinie eine ungültige Sprache festgelegt, wird die Anmeldeseite in einer Ersatzsprache angezeigt, derzeit en-US.</translation>
 <translation id="1062011392452772310">Remote-Bescheinigung (Remote Attestation) für das Gerät aktivieren</translation>
 <translation id="1090892140761957285">URL zur Validierung der Authentifizierungstoken von Clients für den Remote-Zugriff
 
@@ -86,9 +89,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wenn die Richtlinie nicht konfiguriert oder auf "false" festgelegt ist, werden RC4-Verschlüsselungssammlungen in TLS nicht aktiviert. Sie kann auf "true" gestellt werden, um die Kompatibilität mit veralteten Servern zu gewährleisten. Hierbei handelt es sich jedoch um eine provisorische Maßnahme. Der Server sollte neu konfiguriert werden.</translation>
 <translation id="1297182715641689552">PAC-Proxy-Skript verwenden</translation>
 <translation id="1304973015437969093">Ohne Nutzereingriff zu installierende Erweiterungs-/App-IDs und Aktualisierungs-URLs</translation>
-<translation id="1310333396104446007">Wenn diese Einstellung als "false" konfiguriert ist, werden Nutzer davon abgehalten, schwache PINs einzurichten. Dazu gehören PINs, die nur mehrmals dieselbe Ziffer enthalten, die eine Zahlenfolge enthalten, bei der die Zahlen stets um 1 erhöht werden, die eine Zahlenfolge enthalten, bei der die Zahlen stets um 1 verringert werden sowie häufig auftretende PINs.
-
-          Ist diese Einstellung als "true" konfiguriert oder gar nicht konfiguriert, können Nutzer diese PINs eingeben und erhalten nur eine Warnmeldung.</translation>
 <translation id="1313457536529613143">Hiermit wird der Prozentsatz angegeben, um den die Spanne für die Bildschirmabdunkelung skaliert wird, wenn während der Bildschirmabdunkelung oder kurz nach der Bildschirmabschaltung Nutzeraktivität festgestellt wird.
 
           Wenn diese Richtlinie konfiguriert ist, wird damit der Prozentsatz für die Skalierung der Spanne für die Bildschirmabdunkelung angegeben, wenn während der Bildschirmabdunkelung oder kurz nach der Bildschirmabschaltung Nutzeraktivität festgestellt wird. Sollte die Abdunkelungsspanne skaliert werden, wird die Spanne für die Abschaltung und Sperre des Bildschirms sowie die Inaktivität so angepasst, dass die Abstände der ursprünglichen Konfiguration proportional beibehalten werden.
@@ -524,13 +524,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2587719089023392205"><ph name="PRODUCT_NAME" /> als Standardbrowser festlegen</translation>
 <translation id="2592091433672667839">Dauer der Inaktivität, bevor im Händlermodus der Bildschirmschoner auf der Anmeldeseite erscheint</translation>
 <translation id="2623014935069176671">Auf erste Nutzeraktivität warten</translation>
-<translation id="2625512435194873786">Mit dieser Einstellung wird die maximale Länge einer PIN festgelegt.
-
-          Wenn für diese Einstellung "0" oder weniger festgelegt wurde, gibt es keine maximale Länge und Nutzer können die Länge der PIN beliebig wählen.
-
-          Wenn für diese Einstellung ein Wert weniger als "PinUnlockMinimumLength", jedoch größer als "0" festgelegt ist, stimmt die maximale Länge mit der minimalen Länge überein.
-
-          Ist diese Einstellung nicht konfiguriert, gibt es keine maximale Länge, und Nutzer können die Länge der PIN beliebig wählen.</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME" /> aktivieren</translation>
 <translation id="2633084400146331575">Gesprochenes Feedback aktivieren</translation>
 <translation id="2646290749315461919">Ermöglicht Ihnen festzulegen, ob Websites den Standort des Nutzers mitverfolgen dürfen. Die Mitverfolgung des Standorts kann standardmäßig gestattet oder nicht gestattet sein oder auf Anfrage beim Nutzer erfolgen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AskGeolocation" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
@@ -892,7 +885,7 @@ Ab Version 51 lässt sich der Ordnername für die Lesezeichen anpassen, indem ei
 <translation id="3780152581321609624">Nicht-Standard-Port in Kerberos-SPN einschließen</translation>
 <translation id="3780319008680229708">Wenn diese Richtlinie auf "true" gesetzt wird, erscheint das Cast-Symbol immer auf der Symbolleiste oder im Überlaufmenü und Nutzer können es nicht entfernen.
 
-          Wenn diese Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können Nutzer das Symbol über sein Kontextmenü anheften oder entfernen.
+          Wenn diese Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können Nutzer das Symbol über das Kontextmenü anheften oder entfernen.
 
           Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt wird, hat der Wert dieser Richtlinie keine Auswirkungen und das Symbol wird nicht auf der Symbolleiste angezeigt.</translation>
 <translation id="3788662722837364290">Einstellungen für die Energieverwaltung bei Inaktivität des Nutzers</translation>
@@ -984,6 +977,9 @@ Wenn Sie diese Einstellung deaktivieren oder keinen Wert festlegen, werden SafeS
 
           Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können die Nutzer Dateien an Google Drive übertragen.</translation>
 <translation id="3915395663995367577">URL einer PAC-Proxy-Datei</translation>
+<translation id="3926940573869375969">Konfiguriert, welche Tastaturlayouts auf der <ph name="PRODUCT_OS_NAME" />-Anmeldeseite erlaubt sind.
+
+      Ist für diese Richtlinie eine Liste mit Eingabemethoden-IDs festgelegt, werden die entsprechenden Eingabemethoden auf der Anmeldeseite bereitgestellt. Das oberste Listenelement ist vorab ausgewählt. Wenn ein Nutzer-Pod auf die Anmeldeseite fokussiert ist, wird zusätzlich zu den von dieser Richtlinie bereitgestellten Eingabemethoden auch die vom Nutzer am längsten nicht verwendete angeboten. Ist diese Richtlinie nicht festgelegt, werden die Eingabemethoden auf der Anmeldeseite von der Sprache der Anmeldeseite abgeleitet. Werte, die keine gültigen Eingabemethoden-IDs sind, werden ignoriert.</translation>
 <translation id="3939893074578116847">Es werden Netzwerkpakete zur Überwachung des Onlinestatus an den 
       Verwaltungsserver gesendet, damit er erkennt, wenn das Gerät offline ist.
 
@@ -1069,7 +1065,7 @@ Wenn die Richtlinien nicht konfiguriert sind, können Nutzer beliebige auf dem S
 
       Ist diese Richtlinie auf "False" festgelegt, dann können Nutzer den Bildschirm nicht sperren, sondern sich lediglich von der Nutzersitzung abmelden. Ist diese Einstellung hingegen auf "True" oder gar nicht festgelegt, dann können Nutzer, die sich mit einem Passwort authentifiziert haben, den Bildschirm sperren.</translation>
 <translation id="4121350739760194865">App-Werbung nicht auf der "Neuer Tab"-Seite anzeigen</translation>
-<translation id="4133301551755536858">Konfiguriert den standardmäßigen Link zur "Neuer Tab"-Seite in <ph name="PRODUCT_NAME" /> und hindert Nutzer daran, ihn zu ändern.
+<translation id="4133301551755536858">Konfiguriert die standardmäßige URL zur "Neuer Tab"-Seite in <ph name="PRODUCT_NAME" /> und hindert Nutzer daran, sie zu ändern.
 
           Die "Neuer Tab"-Seite wird geöffnet, sobald neue Tabs erstellt werden und betrifft auch die Seite, die in neuen Fenstern geöffnet wird.
 
@@ -1109,6 +1105,7 @@ Wenn die Richtlinien nicht konfiguriert sind, können Nutzer beliebige auf dem S
           Wenn diese Richtlinie nicht konfiguriert ist, wird für alle Websites entweder der globale Standardwert der Richtlinie "DefaultKeygenSetting", sofern festgelegt, oder die persönliche Konfiguration des Nutzers verwendet.</translation>
 <translation id="4239720644496144453">Der Cache wird nicht für Android-Apps verwendet. Wenn mehrere Nutzer die gleiche Android-App installieren, wird sie für jeden Nutzer neu heruntergeladen.</translation>
 <translation id="4250680216510889253">Nein</translation>
+<translation id="4261820385751181068">Sprache der Anmeldeseite</translation>
 <translation id="4272136423200695428">Dadurch wird die erzwungene Anmeldung in <ph name="PRODUCT_NAME" /> aktiviert.</translation>
 <translation id="427632463972968153">Gibt die Parameter für die Bildsuche mit POST an. Sie besteht aus durch Komma getrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie z. B. {imageThumbnail} im obigen Beispiel ist, wird er durch echte Miniaturansichtsdaten ersetzt.
 
@@ -1594,6 +1591,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
       Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, wird die Hardwarebeschleunigung aktiviert, sofern eine bestimmte GPU-Funktionen nicht auf die schwarze Liste gesetzt wurde.
 
       Wenn diese Richtlinie auf "false" gesetzt ist, wird die Hardwarebeschleunigung deaktiviert.</translation>
+<translation id="6070667616071269965">Tastaturlayouts der Anmeldeseite</translation>
 <translation id="6074963268421707432">Anzeige von Desktop-Benachrichtigungen für keine Website zulassen</translation>
 <translation id="6076099373507468537">Hiermit wird die Liste der USB-Geräte definiert, die vom jeweiligen Kerneltreiber getrennt werden können, um über die chrome.usb API direkt in einer Webanwendung eingesetzt zu werden. Die Einträge bestehen aus der USB-Hersteller-ID und der Produkt-ID, über die die Hardware identifiziert werden kann.
 
@@ -2053,18 +2051,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Ist die Richtlinie nicht konfiguriert, erfolgt die automatische Bereinigung auf Grundlage der integrierten Standardstrategie. Zurzeit handelt es sich dabei um die "RemoveLRUIfDormant"-Strategie.</translation>
 <translation id="7336878834592315572">Cookies für die Dauer der Sitzung beibehalten</translation>
 <translation id="7340034977315324840">Aktivitätszeit von Geräten melden</translation>
-<translation id="7340934985429121460">Mit dieser Einstellung wird die minimale Länge einer PIN festgelegt.
-
-          Wenn für diese Einstellung weniger als "1" festgelegt wurde, ist "1" die minimale Länge einer PIN.
-
-          Ist diese Einstellung nicht konfiguriert, beträgt die minimale Länge einer PIN "4".</translation>
 <translation id="7384999953864505698">Lässt das QUIC-Protokoll zu</translation>
-<translation id="7406716912696538245">Legt fest, welche Modi für das schnelle Entsperren eingerichtet und verwendet werden können.
-      Diese Einstellung erstellt eine weiße Liste der zulässigen Modi für das schnelle Entsperren, die zum Entsperren des Sperrbildschirms eingerichtet und verwendet werden können. Bei dem Wert handelt es sich um eine Liste mit Strings, bei denen jeweils eine der folgenden Optionen festgelegt sein sollte: "alle", "PIN". Wenn "alle" ausgewählt ist, sind alle unterstützten Schnellmodi verfügbar. Ansonsten sind alle verfügbaren Modi in der Liste aufgeführt.
-
-      Ist diese Einstellung konfiguriert, können keine Typen von Modi für das schnelle Entsperren eingerichtet oder verwendet werden, die nicht in dieser Liste aufgeführt sind.
-
-      Ist diese Einstellung nicht konfiguriert, wird der Modus "PIN" aktiviert, und alle anderen Modi werden deaktiviert.</translation>
 <translation id="7417972229667085380">Prozentsatz für die Skalierung der Inaktivitätsspanne im Präsentationsmodus (veraltet)</translation>
 <translation id="7421483919690710988">Cache-Größe für Mediendatenträger in Byte festlegen</translation>
 <translation id="7424751532654212117">Liste der Ausnahmen von der Liste der deaktivierten Plug-ins</translation>
@@ -2230,19 +2217,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7842869978353666042">Optionen von Google Drive konfigurieren</translation>
 <translation id="7843525027689416831">Hiermit werden die Parameter angegeben, die beim Starten von <ph name="PRODUCT_NAME" /> angewendet werden sollen. Diese werden nur auf der Anmeldeseite verwendet. Über diese Richtlinie festgelegte Parameter haben keine Auswirkungen auf Nutzersitzungen.</translation>
 <translation id="7848840259379156480">Mit dieser Richtlinie können Sie die Standardanwendung für die HTML-Darstellung konfigurieren, wenn <ph name="PRODUCT_FRAME_NAME" /> installiert ist. Bei der Standardeinstellung übernimmt der Host-Browser die Darstellung. Sie können dies jedoch wahlweise außer Kraft setzen und festlegen, dass HTML-Seiten standardmäßig mithilfe von <ph name="PRODUCT_FRAME_NAME" /> angezeigt werden sollen.</translation>
-<translation id="7853178359124471330">Wenn diese Richtlinie aktiviert wird, hängt die automatische Erkennung der Zeitzone wie folgt vom Wert der Einstellung ab:
-
-      Ist "TimezoneAutomaticDetectionUsersDecide" aktiviert, können Nutzer die automatische Erkennung der Zeitzone über die normalen Steuerelemente unter chrome://settings verwalten.
-
-      Ist "TimezoneAutomaticDetectionDisabled" aktiviert, sind die Steuerelemente für die automatische Erkennung der Zeitzone unter chrome://settings deaktiviert. Die automatische Erkennung der Zeitzone ist dann immer deaktiviert.
-
-      Ist "TimezoneAutomaticDetectionIPOnly" aktiviert, sind die Steuerelemente für die automatische Erkennung der Zeitzone unter chrome://settings deaktiviert. Die automatische Erkennung der Zeitzone ist dann immer aktiviert. Für die Erkennung der Zeitzone wird die Methode "Nur IP" zum Auflösen des Standorts verwendet.
-
-      Ist "TimezoneAutomaticDetectionSendWiFiAccessPoints" aktiviert, sind die Steuerelemente für die automatische Erkennung der Zeitzone unter chrome://settings deaktiviert. Die automatische Erkennung der Zeitzone ist dann immer aktiviert. Die Liste der sichtbaren WLAN-Zugangspunkte wird zur genauen Erkennung der Zeitzone stets an den Geolocation API-Server gesendet.
-
-      Wenn diese Richtlinie konfiguriert ist, verhält sie sich so, als wäre "TimezoneAutomaticDetectionUsersDecide" aktiviert.
-
-      Ist die Richtlinie "SystemTimezone" aktiviert, wird diese Richtlinie überschrieben. In diesem Fall ist die automatische Erkennung der Zeitzone komplett deaktiviert.</translation>
 <translation id="787125417158068494"><ph name="PRODUCT_OS_NAME" />-Zertifikate sind nicht für ARC-Apps verfügbar, wenn "SyncDisabled" festgelegt wurde oder die Zertifikate nicht konfiguriert wurden.
 
       Wenn "CopyCaCerts" festgelegt wurde, sind alle über ONC installierten CA-Zertifikate mit <ph name="WEB_TRUSTED_BIT" /> für ARC-Apps verfügbar.</translation>
@@ -2538,7 +2512,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
       Ist die Richtlinie auf "false" gesetzt, können weder der Nutzer, noch Apps oder Erweiterungen in den Vollbildmodus wechseln.
 
       Auf allen Plattformen außer <ph name="PRODUCT_OS_NAME" /> ist bei deaktiviertem Vollbildmodus auch der Kioskmodus nicht verfügbar.</translation>
-<translation id="8795495354632096254">Beim Erkennen der Zeitzone immer WLAN-Zugangspunkte an den Server senden.</translation>
 <translation id="8818173863808665831">Meldet den Standort des Geräts.
 
       Wenn die Richtlinie nicht oder auf "False" festgelegt wird, wird der Standort nicht gemeldet.</translation>

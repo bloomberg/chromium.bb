@@ -26,6 +26,9 @@
       Se for definida como "true" ou não for configurada, as estatísticas serão informadas.</translation>
 <translation id="1046484220783400299">Ativar por um tempo limitado recursos da plataforma Web cujo uso esteja suspenso</translation>
 <translation id="1047128214168693844">Não permitir que nenhum site rastreie a localização física dos usuários</translation>
+<translation id="1049138910114524876">Configura a localidade que é aplicada na tela de login do <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política for configurada, a tela de login sempre será exibida na localidade estabelecida pelo primeiro valor da política (definida como uma lista de compatibilidade de encaminhamento). Se esta política não for definida ou for definida como uma lista vazia, a tela de login será exibida na localidade da última sessão do usuário. Se esta política for definida para um valor que não seja uma localidade válida, a tela de login será exibida em uma localidade substituta (atualmente en-US).</translation>
 <translation id="1062011392452772310">Ativar declaração remota para o dispositivo</translation>
 <translation id="1090892140761957285">URL para validação do token de autenticação de cliente de acesso remoto.
 
@@ -88,9 +91,6 @@
       Se a política ainda não estiver configurada ou estiver configurada como "false", os pacotes de criptografia RC4 em TLS não serão ativados. Caso contrário, ela poderá ser configurada como "true" para manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária, e o servidor deve ser reconfigurado.</translation>
 <translation id="1297182715641689552">Usar um script de proxy .pac</translation>
 <translation id="1304973015437969093">IDs de extensões//aplicativos e URLs de atualização deverão ser instalados silenciosamente</translation>
-<translation id="1310333396104446007">Se esta configuração for definida como false, os usuários não poderão definir PINs considerados fracos. Por exemplo, PINs que contenham um único dígito repetido várias vezes, PINs alterados em um dígito em ordem crescente ou decrescente e PINs muito comuns.
-
-          Se esta configuração for definida como true ou não for definida, os usuários poderão digitar esse tipo de PIN e receberão apenas uma mensagem de aviso.</translation>
 <translation id="1313457536529613143">Especifica o percentual pelo qual calcular o intervalo de escurecimento da tela quando é observada atividade do usuário enquanto a tela está esmaecida ou logo após a tela ser desligada.
 
           Se esta política for definida, especificará o percentual pelo qual calcular o intervalo de escurecimento da tela quando é observada atividade do usuário enquanto a tela está esmaecida ou logo após a tela ser desligada. Quando o intervalo de escurecimento é calculado, o desligamento, o bloqueio da tela e os intervalos de inatividade são ajustados para manter as mesmas distâncias do intervalo de escurecimento da configuração original.
@@ -531,13 +531,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2587719089023392205">Definir o <ph name="PRODUCT_NAME" /> como meu navegador padrão</translation>
 <translation id="2592091433672667839">Duração da inatividade antes do protetor de tela ser mostrado na tela de login no modo de varejo</translation>
 <translation id="2623014935069176671">Aguardar atividade inicial do usuário</translation>
-<translation id="2625512435194873786">Esta configuração controla o comprimento máximo de um PIN.
-
-          Se esta configuração for definida como 0 ou menos, não haverá comprimento máximo, e o usuário poderá definir um PIN do comprimento que desejar.
-
-          Se esta configuração for menor que PinUnlockMinimumLength e maior que 0, os comprimentos máximo e mínimo serão iguais.
-
-          Se esta configuração não for definida, não haverá comprimento máximo, e o usuário poderá definir um PIN do comprimento que quiser.</translation>
 <translation id="262740370354162807">Ativar o envio de documentos para <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Ativar feedback falado</translation>
 <translation id="2646290749315461919">Permite que você defina se os websites são autorizados a rastrear a localização física dos usuários. O rastreamento da localização física dos usuários pode ser permitido ou bloqueado por padrão ou o usuário será solicitado cada vez a dar sua localização física. Se esta política for deixada sem definição, a política "AskGeolocation" será utilizada e o usuário será capaz de modificá-la.</translation>
@@ -906,7 +899,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Se esta política for definida como false ou não for configurada, os usuários poderão fixar ou remover o ícone usando o menu contextual dele.
 
-          Se a política "EnableMediaRouter" for definida como false, o valor desta política não teria nenhum efeito, e o ícone da barra de ferramentas não seria exibido.</translation>
+          Se a política "EnableMediaRouter" for definida como false, o valor desta política não terá nenhum efeito, e o ícone da barra de ferramentas não será exibido.</translation>
 <translation id="3788662722837364290">Configurações de gerenciamento de energia quando o usuário se torna inativo</translation>
 <translation id="3793095274466276777">Configura as verificações do navegador padrão no <ph name="PRODUCT_NAME" /> e impede que os usuários as modifiquem. Se você ativar essa configuração, o <ph name="PRODUCT_NAME" /> sempre verificará, na inicialização, se ele é o navegador padrão e automaticamente se registrará, se possível. Se essa configuração for desativada, o <ph name="PRODUCT_NAME" /> nunca verificará se ele é o navegador padrão e desativará controles do usuário para configurar essa opção. Se essa configuração não for definida, o <ph name="PRODUCT_NAME" /> permitirá ao usuário controlar se ele é o navegador padrão e se as notificações do usuário devem ser exibidas quando não forem exibidas.</translation>
 <translation id="379659290574555063">Tratar dispositivos de armazenamento externo como somente leitura.</translation>
@@ -999,6 +992,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
          Se não está definida como "false", os usuários podem transferir arquivos para o Google Drive.</translation>
 <translation id="3915395663995367577">URL de um arquivo proxy .pac</translation>
+<translation id="3926940573869375969">Configura quais layouts de teclado são permitidos na tela de login do <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política for configurada como uma lista de identificadores de método de entrada, os métodos de entrada definidos ficarão disponíveis na tela de login. O primeiro método de entrada definido será pré-selecionado. Enquanto um grupo de usuários estiver focado na tela de login, o método de entrada menos usado recentemente do usuário ficará disponível juntamente com os métodos de entrada determinados por esta política.  Se esta política não for definida, os métodos de entrada na tela de login serão derivados da localidade na qual a tela de login é exibida.  Os valores que não são identificadores de métodos de entrada válidos serão ignorados.</translation>
 <translation id="3939893074578116847">Enviar pacotes de rede ao servidor de gerenciamento para monitorar o status on-line, a fim de permitir
       que o servidor detecte se o dispositivo está off-line.
 
@@ -1120,6 +1116,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se esta política não for definida, o valor padrão global será utilizado para todos os sites a partir da política "DefaultKeygenSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="4239720644496144453">O cache não é usado para apps Android. Se vários usuários instalarem o mesmo app Android, o download dele será feito novamente para cada usuário.</translation>
 <translation id="4250680216510889253">Não</translation>
+<translation id="4261820385751181068">Localidade da tela de login do dispositivo</translation>
 <translation id="4272136423200695428">Ativa o login forçado no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Especifica os parâmetros usados ao pesquisar imagens com POST. Consiste em pares de nomes/valores separados por vírgula. Se um valor for um parâmetro de modelo, como {imageThumbnail} no exemplo acima, ele será substituído por dados de miniaturas de pesquisa reais.
 
@@ -1594,6 +1591,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política é definida como "true" ou não é definida, a aceleração de hardware é ativada, a menos que um determinado elemento de GPU seja incluído na lista negra.
 
       Se esta política é definida como "false", a aceleração de hardware é desativada.</translation>
+<translation id="6070667616071269965">Layouts de teclado da tela de login do dispositivo</translation>
 <translation id="6074963268421707432">Não permitir que nenhum site exiba notificações da área de trabalho</translation>
 <translation id="6076099373507468537">Define a lista de dispositivos USB que estão autorizados a serem removidos do driver de kernel deles para uso pela API chrome.usb diretamente dentro de um app da Web. As entradas são pares de um identificador de fornecedor e um identificador do produto USB para identificar um hardware específico.
 
@@ -2073,18 +2071,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política não for configurada, a limpeza automática usa a estratégia integrada padrão, que atualmente é a estratégia "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Manter cookies enquanto durar a sessão</translation>
 <translation id="7340034977315324840">Informar horário das atividades do dispositivo</translation>
-<translation id="7340934985429121460">Esta configuração controla o comprimento mínimo de um PIN.
-
-          Se esta configuração for definida como menor que 1, o comprimento mínimo de um PIN será 1.
-
-          Se esta configuração não for definida, o comprimento mínimo de um PIN será 4.</translation>
 <translation id="7384999953864505698">Permite o protocolo QUIC</translation>
-<translation id="7406716912696538245">Controla quais modos de desbloqueio rápido têm permissão para serem configurados e utilizados.
-          Esta configuração autoriza os modos de desbloqueio rápido que podem ser configurados e usados para desbloquear a tela do dispositivo. O valor é uma lista de strings, e cada uma delas precisa ser um dos seguintes tipos: "todos" ou "PIN". Se a opção "todos" for selecionada, todos os modos rápidos compatíveis estarão disponíveis. Caso contrário, os modos exibidos na lista serão os disponibilizados.
-
-          Se esta configuração for definida, não será possível configurar ou usar os modos de desbloqueio rápido com um tipo que não esteja nessa lista.
-
-          Se esta configuração não for definida, o modo "PIN" ficará ativado, e todos os outros modos serão desativados.</translation>
 <translation id="7417972229667085380">Percentual pelo qual calcular o intervalo de inatividade no modo de apresentação (uso suspenso)</translation>
 <translation id="7421483919690710988">Define o tamanho do cache de disco de mídia em bytes</translation>
 <translation id="7424751532654212117">Lista de exceções à lista de plug-ins desativados</translation>
@@ -2250,19 +2237,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7842869978353666042">Configurar opções do Google Drive</translation>
 <translation id="7843525027689416831">Especifica as sinalizações que devem ser aplicadas a <ph name="PRODUCT_NAME" /> quando ele é iniciado. As sinalizações especificadas são aplicadas apenas na tela de login. As sinalizações definidas por esta política não se propagam para as sessões do usuário.</translation>
 <translation id="7848840259379156480">Permite configurar o renderizador padrão de HTML, quando o <ph name="PRODUCT_FRAME_NAME" /> estiver instalado. A configuração padrão é permitir que o navegador do host faça a renderização, mas você pode, opcionalmente, substituí-la e fazer com que o <ph name="PRODUCT_FRAME_NAME" /> renderize páginas HTML por padrão.</translation>
-<translation id="7853178359124471330">Quando esta política está definida, o fluxo de detecção automática de fuso horário acontece em uma das seguintes formas, dependendo do valor da configuração:
-
-      Se definida para TimezoneAutomaticDetectionUsersDecide, os usuários podem controlar a detecção automática de fuso horário usando controles normais em chrome://settings.
-
-      Se definida para TimezoneAutomaticDetectionDisabled, os controles de fuso horário automático em chrome://settings são desativados. A detecção automática de fuso horário fica sempre desativada.
-
-      Se definida para TimezoneAutomaticDetectionIPOnly, os controles de fuso horário em chrome://settings são desativados. A detecção automática de fuso horário fica sempre ativada. A detecção de fuso horário usa o método "somente IP" para determinar o local.
-
-      Se esta política é definida para TimezoneAutomaticDetectionSendWiFiAccessPoints, os controles de fuso horário em chrome://settings são desativados. A detecção automática de fuso horário fica sempre ativada. A lista de pontos de acesso Wi-Fi visíveis é sempre enviada ao servidor da API de geolocalização para ter uma detecção de fuso horário refinada.
-
-      Se esta política não for definida, ela se comportará como se TimezoneAutomaticDetectionUsersDecide estivesse definida.
-
-      Se a política SystemTimezone for definida, ela substituirá esta política. Nesse caso, a detecção automática de fuso horário será completamente desativada.</translation>
 <translation id="787125417158068494">Se ela for definida para SyncDisabled ou não for configurada, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficarão disponíveis para apps ARC.
 
       Se ela for definida para CopyCaCerts, todos os certificados CA instalados por ONC com <ph name="WEB_TRUSTED_BIT" /> ficarão disponíveis para apps ARC.</translation>
@@ -2562,7 +2536,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se essa política for definida como "false", nem o usuário nem quaisquer aplicativos ou extensões poderão entrar no modo de tela cheia.
 
       Em todas as plataformas, exceto no <ph name="PRODUCT_OS_NAME" />, o modo quiosque fica indisponível quando o modo de tela cheia está desativado.</translation>
-<translation id="8795495354632096254">Sempre enviar pontos de acesso Wi-Fi para o servidor ao determinar o fuso horário.</translation>
 <translation id="8818173863808665831">Informar a localização geográfica do dispositivo. 
 
       Se a política não for configurada, ou for configurada como falsa, o local não será informado.</translation>

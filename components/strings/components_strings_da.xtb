@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Nedbruds-id <ph name="CRASH_LOCAL_ID" /> (server-id: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Vi kan ikke få fat i din forælder på nuværende tidspunkt. Prøv igen.</translation>
 <translation id="3528171143076753409">Serverens certifikat er ikke troværdigt.</translation>
+<translation id="3538531656504267329">Ugyldigt udløbsår</translation>
 <translation id="3539171420378717834">Gem en kopi af dette kort på denne enhed</translation>
 <translation id="3542684924769048008">Brug adgangskode til:</translation>
 <translation id="3549644494707163724">Krypter alle synkroniserede data med din egen adgangssætning til synkronisering</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome registrerede usædvanlig kode på denne side og blokerede den for at beskytte dine personlige oplysninger (f.eks. adgangskoder, telefonnumre eller kreditkort).</translation>
 <translation id="6477460825583319731">Ugyldig e-mailadresse</translation>
 <translation id="6489534406876378309">Start upload af nedbrud</translation>
+<translation id="6525462735697194615">Ugyldig udløbsmåned</translation>
 <translation id="6529602333819889595">&amp;Annuller fortryd slet</translation>
 <translation id="6534179046333460208">Forslag til Fysisk web</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>

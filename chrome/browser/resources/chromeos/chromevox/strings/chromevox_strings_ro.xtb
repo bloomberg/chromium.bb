@@ -16,7 +16,7 @@
 <translation id="1106741348836243114">Activați/dezactivați feedbackul sonor (semnalele audio).</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1124771028211010580">Stilul de afișare actual este alăturat.</translation>
-<translation id="113582498867142724">Colecția <ph name="TAG" /> cu <ph name="NUM" /> (de) elemente</translation>
+<translation id="113582498867142724">Colecția <ph name="TAG" /> cu <ph name="NUM" /> elemente</translation>
 <translation id="1155043339247954670">Nu există un element de listă următor.</translation>
 <translation id="1157782847298808853">Ajutor tastatură</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, casetă combo</translation>
@@ -627,7 +627,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="6716505898850596801">Taste de modificare</translation>
 <translation id="671916444866103745">Nu există un reper ARIA următor.</translation>
 <translation id="6734854816611871228"><ph name="VALUE" />, casetă combo</translation>
-<translation id="6735257939857578167">cu <ph name="NUM" /> (de) elemente</translation>
+<translation id="6735257939857578167">cu <ph name="NUM" /> elemente</translation>
 <translation id="6736510033526053669">filă creată</translation>
 <translation id="675895815784134693">bară de progres</translation>
 <translation id="6786800275320335305">Articol</translation>
@@ -792,7 +792,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="860150890330522909">Casetă de validare <ph name="NAME" /> bifată</translation>
 <translation id="8603071050456974042">Panoul ChromeVox</translation>
 <translation id="8606621670302093223">Comandă pentru dată</translation>
-<translation id="8631359288236106450"><ph name="COUNT" /> (de) elemente selectate</translation>
+<translation id="8631359288236106450"><ph name="COUNT" /> elemente selectate</translation>
 <translation id="8638532244051952400">Anunță coordonatele celulei curente</translation>
 <translation id="8650576015643545550">Nu există o listă anterioară.</translation>
 <translation id="8651481478098336970">dezactivează sunetul</translation>

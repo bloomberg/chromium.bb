@@ -270,6 +270,7 @@
 <translation id="348000606199325318">當機 ID：<ph name="CRASH_LOCAL_ID" /> (伺服器 ID：<ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">我們暫時無法與您的家長聯絡，請再試一次。</translation>
 <translation id="3528171143076753409">伺服器憑證授權不可靠。</translation>
+<translation id="3538531656504267329">到期年份無效</translation>
 <translation id="3539171420378717834">在這個裝置上保留這張信用卡的複本</translation>
 <translation id="3542684924769048008">選擇密碼：</translation>
 <translation id="3549644494707163724">使用您的通關密語對所有已同步處理的資料進行加密</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome 在這個網頁上偵測到異常代碼。為了保護你的個人資訊 (包括密碼、電話號碼或信用卡資料)，Chrome 已封鎖這個網頁。</translation>
 <translation id="6477460825583319731">電子郵件地址無效</translation>
 <translation id="6489534406876378309">開始上傳當機報告</translation>
+<translation id="6525462735697194615">到期月份無效</translation>
 <translation id="6529602333819889595">重做刪除(&amp;R)</translation>
 <translation id="6534179046333460208">實體化網路建議</translation>
 <translation id="6550675742724504774">選項</translation>

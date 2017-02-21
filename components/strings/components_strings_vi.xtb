@@ -270,6 +270,7 @@
 <translation id="348000606199325318">ID sự cố <ph name="CRASH_LOCAL_ID" /> (ID máy chủ: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Chúng tôi không thể liên lạc với cha mẹ của bạn vào thời điểm này. Vui lòng thử lại.</translation>
 <translation id="3528171143076753409">Chứng chỉ của máy chủ không đáng tin cậy.</translation>
+<translation id="3538531656504267329">Năm hết hạn không hợp lệ</translation>
 <translation id="3539171420378717834">Giữ bản sao thẻ này trên thiết bị này</translation>
 <translation id="3542684924769048008">Sử dụng mật khẩu cho:</translation>
 <translation id="3549644494707163724">Mã hóa tất cả dữ liệu đã đồng bộ hóa bằng cụm mật khẩu đồng bộ hóa của riêng bạn</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome đã phát hiện mã bất thường trên trang này và đã chặn mã này để bảo vệ thông tin cá nhân của bạn (ví dụ như mật khẩu, số điện thoại và thẻ tín dụng).</translation>
 <translation id="6477460825583319731">Địa chỉ email không hợp lệ</translation>
 <translation id="6489534406876378309">Bắt đầu tải lên sự cố</translation>
+<translation id="6525462735697194615">Tháng hết hạn không hợp lệ</translation>
 <translation id="6529602333819889595">&amp;Làm lại xóa</translation>
 <translation id="6534179046333460208">Đề xuất Web trong cuộc sống</translation>
 <translation id="6550675742724504774">Tùy chọn</translation>

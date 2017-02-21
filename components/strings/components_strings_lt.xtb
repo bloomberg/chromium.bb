@@ -271,6 +271,7 @@
 <translation id="348000606199325318">Strigties ID <ph name="CRASH_LOCAL_ID" /> (serverio ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Šiuo metu nepavyko susisiekti su jūsų tėvu. Bandykite dar kartą.</translation>
 <translation id="3528171143076753409">Serverio sertifikatas nepatikimas.</translation>
+<translation id="3538531656504267329">Netinkami galiojimo pabaigos metai</translation>
 <translation id="3539171420378717834">Išsaugoti kortelės kopiją įrenginyje</translation>
 <translation id="3542684924769048008">Slaptažodį naudoti:</translation>
 <translation id="3549644494707163724">Šifruoti visus sinchronizuotus duomenis naudojant sinchronizavimo slaptafrazę</translation>
@@ -558,6 +559,7 @@
 <translation id="6477321094435799029">„Chrome“ šiame puslapyje aptiko neįprastą kodą ir jį užblokavo, kad apsaugotų asmens informaciją (pvz., slaptažodžius, telefonų numerius ir kredito korteles).</translation>
 <translation id="6477460825583319731">Netinkamas el. pašto adresas</translation>
 <translation id="6489534406876378309">Pradėti įkelti strigtis</translation>
+<translation id="6525462735697194615">Netinkamas galiojimo pabaigos mėnuo</translation>
 <translation id="6529602333819889595">&amp;Ištrinti dar kartą</translation>
 <translation id="6534179046333460208">Fizinio žiniatinklio pasiūlymai</translation>
 <translation id="6550675742724504774">Parinktys</translation>

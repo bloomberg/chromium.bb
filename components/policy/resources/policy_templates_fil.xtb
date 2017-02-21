@@ -26,6 +26,9 @@
       Kung itatakda sa true o hindi naitakda, iuulat ang mga istatistika.</translation>
 <translation id="1046484220783400299">I-enable ang mga hindi na ginagamit na feature ng web platform sa loob ng limitadong panahon</translation>
 <translation id="1047128214168693844">Huwag payagan ang anumang site na subaybayan ang aktwal na lokasyon ng mga user</translation>
+<translation id="1049138910114524876">Kino-configure ang lokal na ipinapatupad sa screen sa pag-sign in ng <ph name="PRODUCT_OS_NAME" />.
+
+      Kung nakatakda ang patakarang ito, palaging ipapakita ang screen sa pag-sign in sa lokal na ibinigay ng unang value ng patakarang ito (tinukoy ang patakaran bilang listahan para sa forward compatibility).  Kung hindi nakatakda ang patakarang ito o nakatakda sa isang walang lamang listahan, ipapakita ang screen sa pag-sign in sa lokal ng huling session ng user.  Kung nakatakda ang patakarang ito sa value na isang hindi wastong lokal, ipapakita ang screen sa pag-sign in sa isang fallback na lokal (kasalukuyang en-US).</translation>
 <translation id="1062011392452772310">I-enable ang malayuang pagpapatotoo para sa device</translation>
 <translation id="1090892140761957285">URL para sa pagpapatunay ng token ng pagpapatotoo ng client ng malayuang access.
 
@@ -91,9 +94,6 @@
       Kung hindi itatakda ang patakaran, o kung itatakda ito sa false, hindi mae-enable ang mga RC4 na cipher suite sa TLS. Maaari itong itakda sa true upang manatili itong compatible sa isang lumang server. Isa lang itong pansamantalang solusyon at dapat pa ring i-configure ang server.</translation>
 <translation id="1297182715641689552">Gumamit ng .pac proxy script</translation>
 <translation id="1304973015437969093">Ang mga extension/app ID at URL sa pag-update na tahimik na ii-install</translation>
-<translation id="1310333396104446007">Kung naka-configure ang setting na ito bilang false, pipigilan ang mga user sa pagtatakda ng mga PIN na itinuturing na mahirap hulaan. Kasama sa mga ganitong uri ng PIN ang mga PIN na iisa lang ang ginagamit na numero, mga PIN na sunud-sunod na bilang pataas, mga PIN na sunud-sunod na bilang pababa at mga PIN na masyadong pangkaraniwan.
-
-          Kung naka-configure ang setting na ito bilang true, o hindi ito naka-configure, maaaring ilagay ng mga user ang mga PIN na ito at makakakita lang sila ng babala.</translation>
 <translation id="1313457536529613143">Tinutukoy ang porsyento ng pag-scale sa pag-aantala ng pagdilim ng screen kapag napansin ang pagkilos ng user habang madilim ang screen o kaagad pagkatapos i-off ang screen.
 
           Kung nakatakda ang patakarang ito, tinutukoy nito ang porsyento ng pag-scale sa pag-aantala ng pagdilim ng screen kapag napansin ang pagkilos ng user habang madilim ang screen o kaagad pagkatapos i-off ang screen. Kapag naka-scale ang pagkaantala ng pagdilim, masasaayos ang mga pagkaantala ng screen off, screen lock at idle upang panatilihin ang parehong agwat mula sa pag-aantala ng pagdilim ng screen gaya ng orihinal na pagkaka-configure.
@@ -562,13 +562,6 @@
 <translation id="2587719089023392205">Itakda ang <ph name="PRODUCT_NAME" /> bilang Default na Browser</translation>
 <translation id="2592091433672667839">Tagal ng kawalan ng aktibidad bago ipakita ang screen saver sa screen sa pag-sign-in sa mode ng retail</translation>
 <translation id="2623014935069176671">Maghintay sa paunang aktibidad ng user</translation>
-<translation id="2625512435194873786">Kinokontrol ng setting na ito ang maximum na maaaring haba ng isang PIN.
-
-          Kung naka-configure ang setting na ito bilang 0 o mas mababa, walang maximum na haba at maaaring magtakda ang user ng kahit gaano kahabang PIN.
-
-          Kung mas mababa sa PinUnlockMinimumLength ngunit mas mataas sa 0 ang setting na ito, magkapareho ang maximum at minimum na haba.
-
-          Kung hindi naka-configure ang setting na ito, walang maximum na haba at maaaring magtakda ang user ng kahit gaano kahabang PIN.</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Paganahin ang pasalitang feedback</translation>
 <translation id="2646290749315461919">Binibigyang-daan kang itakda kung pinapayagan o hindi ang mga website na subaybayan ang pisikal na lokasyon ng mga user. Maaaring payagan bilang default, tanggihan bilang ang pagsubaybay sa pisikal na lokasyon ng mga user, o maaaring tanungin ang user sa bawat pagkakataong humiling ng pisikal na lokasyon ang isang website.
@@ -1049,6 +1042,9 @@
 
           Kung hindi nakatakda o nakatakda sa False, makakapaglipat ang mga user ng mga file sa Google Drive.</translation>
 <translation id="3915395663995367577">URL sa proxy na .pac file</translation>
+<translation id="3926940573869375969">Kino-configure kung aling mga layout ng keyboard ang pinapayagan sa screen sa pag-sign in ng <ph name="PRODUCT_OS_NAME" />.
+
+      Kung nakatakda ang patakarang ito sa isang listahan ng mga identifier ng pamamaraan ng pag-input, magiging available ang mga ibinigay na pamamaraan ng pag-input sa screen sa pag-sign in. Ang unang pamamaraan ng pag-input ay paunang mapipili. Habang nakatuon ang isang user pod sa screen sa pag-sign in, ang pinakamadalang na ginagamit na pamamaraan ng pag-input ng user ay magiging available bilang karagdagan sa mga pamamaraan ng pag-input na ibinigay ng patakarang ito.  Kung hindi nakatakda ang patakarang ito, kukunin ang mga pamamaraan ng pag-input sa screen sa pag-sign in mula sa lokal kung saan ipinapakita ang screen sa pag-sign in.  Babalewalain ang mga value na hindi wastong mga identifier ng pamamaraan ng pag-input.</translation>
 <translation id="3939893074578116847">Magpadala ng mga network packet sa server sa pamamahala upang masubaybayan ang online status, upang mabigyang-daan ang
       server na tukuyin kung offline ang device.
 
@@ -1179,6 +1175,7 @@
           Kung hinayaang hindi nakatakda ang patakaran na ito, gagamitin ang default na pandaigdigang value para sa lahat ng site mula sa patakaran na 'DefaultKeygenSetting' kung nakatakda ito, o kung hindi naman ay sa personal na configuration ng user.</translation>
 <translation id="4239720644496144453">Hindi ginagamit ang cache para sa mga Android app. Kung ii-install ng maraming user ang parehong Android app, ida-download itong muli para sa bawat user.</translation>
 <translation id="4250680216510889253">Hindi</translation>
+<translation id="4261820385751181068">Lokal ng screen sa pag-sign in ng device</translation>
 <translation id="4272136423200695428">Ine-enable ang pwersahang pag-sign in sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Tinutukoy ang mga parameter na ginamit kapag nagsasagawa ng paghahanap ng larawan gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {imageThumbnail} sa halimbawa sa itaas, papalitan ito ng data ng tunay na thumbnail ng larawan.
 
@@ -1708,6 +1705,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung nakatakda sa true ang patakarang ito o hindi itinakda, ie-enable ang hardware acceleration maliban kung naka-blacklist ang ilang partikular na feature ng GPU.
 
       Kung nakatakda sa false ang patakarang ito, idi-disable ang hardware acceleration.</translation>
+<translation id="6070667616071269965">Mga layout ng keyboard sa screen ng pag-sign in ng device</translation>
 <translation id="6074963268421707432">Huwag payagan ang anumang site na magpakita ng mga notification sa desktop</translation>
 <translation id="6076099373507468537">Inilalarawan ang listahan ng mga USB device na pinahihintulutang i-detach mula sa kernel driver ng mga ito upang magamit sa chrome.usb API sa mismong web application. Ang mga entry ay mga pares ng Identifier ng USB Vendor at Identifier ng Produkto na magagamit sa pagtukoy ng isang partikular na hardware.
 
@@ -2220,18 +2218,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi itinakda ang patakarang ito, gagamiting ng awtomatikong pag-clean-up ang default na built-in na diskarte. Sa kasalukuyan, ito ay ang 'RemoveLRUIfDormant' na diskarte.</translation>
 <translation id="7336878834592315572">Panatilihin ang cookies para sa kabuuan ng session</translation>
 <translation id="7340034977315324840">Iulat ang mga panahon ng aktibidad ng device</translation>
-<translation id="7340934985429121460">Kinokontrol ng setting na ito ang minimum na maaaring haba ng isang PIN.
-
-          Kung naka-configure ang setting na ito bilang mas mababa sa 1, ang minimum na maaaring haba ng isang PIN ay 1.
-
-          Kung hindi naka-configure ang setting na ito, ang minimum na maaaring haba ng isang PIN ay 4.</translation>
 <translation id="7384999953864505698">Pinapayagan ang QUIC protocol</translation>
-<translation id="7406716912696538245">Kinokontrol kung aling mga mode ng mabilisang pag-unlock ang pinapahintulutang i-set up at gamitin.
-          Inilalagay ng setting na ito sa whitelist ang mga pinahihintulutang mode ng mabilisang pag-unlock na maaaring i-set up at gamitin upang i-unlock ang lock screen. Ang value ay isang listahan ng mga string, at dapat na isa sa mga sumusunod ang bawat isa sa mga ito: "all," "PIN." Kung pipiliin ang "all," magiging available ang lahat ng sinusuportahang quick mode, kung hindi, ang mga mode sa listahan ang magiging available.
-
-          Kung naka-configure ang setting na ito, hindi maaaring i-set up at gamitin ang mga mode ng mabilisang pag-unlock na may uring wala sa listahan.
-
-          Kung iniwang hindi naka-configure ang setting na ito, mae-enable ang "PIN" mode, at madi-disable ang lahat ng iba pang mode.</translation>
 <translation id="7417972229667085380">Porsyento ng pag-scale ng idle delay kapag nasa presentation mode (hindi na ginagamit)</translation>
 <translation id="7421483919690710988">Itakda ang laki ng cache ng disk ng media sa bytes</translation>
 <translation id="7424751532654212117">Listahan ng mga pagbubukod sa listahan ng hindi pinaganang mga plugin</translation>
@@ -2408,19 +2395,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7842869978353666042">I-configure ang mga pagpipilian sa Google Drive</translation>
 <translation id="7843525027689416831">Tinutukoy ang mga flag na dapat ilapat sa <ph name="PRODUCT_NAME" /> kapag nagsimula ito. Inilalapat ang mga flag sa screen ng pag-log in lang. Ang mga flag na sine-set sa pamamagitan ng patakarang ito ay hindi nalilipat sa mga session ng user.</translation>
 <translation id="7848840259379156480">Pinapayagan kang i-configure ang default na taga-render ng HTML kapag na-install ang <ph name="PRODUCT_FRAME_NAME" />. Ang default na setting ay upang payagan ang browser ng host na gawin ang pag-render, ngunit maaari mong i-override ito at i-render ng <ph name="PRODUCT_FRAME_NAME" /> ang mga pahina ng HTML bilang default.</translation>
-<translation id="7853178359124471330">Kapag nakatakda ang patakarang ito, ang awtomatikong proseso ng pag-detect ng timezone ay magiging isa sa mga sumusunod na paraan depende sa value ng setting:
-
-      Kung maitatakda sa TimezoneAutomaticDetectionUsersDecide, makokontrol ng mga user ang awtomatikong pag-detect ng timezone gamit ang mga normal na kontrol sa chrome://settings.
-
-      Kung maitatakda sa TimezoneAutomaticDetectionDisabled, madi-disable ang mga awtomatikong kontrol sa timezone sa chrome://settings. Magiging palaging naka-off ang awtomatikong pag-detect ng timezone.
-
-      Kung maitatakda sa TimezoneAutomaticDetectionIPOnly, madi-disable ang mga kontrol sa timezone sa chrome://settings. Magiging palaging naka-on ang awtomatikong pag-detect ng timezone. Gagamit ang pag-detect ng timezone ng IP-only na paraan upang malaman ang lokasyon.
-
-      Kung maitatakda sa TimezoneAutomaticDetectionSendWiFiAccessPoints, madi-disable ang mga kontrol sa timezone sa chrome://settings. Magiging palaging naka-on ang awtomatikong pag-detect ng timezone. Ipapadala ang listahan ng mga makikitang access-point ng WiFi sa server ng Geolocation API para sa napakadetalyadong pag-detect ng timezone.
-
-      Kung hindi maitatakda ang patakarang ito, gagana ito na mukhang nakatakda ang TimezoneAutomaticDetectionUsersDecide.
-
-      Kung maitatakda ang patakaran na SystemTimezone, io-override nito ang patakarang ito. Sa sitwasyong ito, ganap na naka-disable ang awtomatikong pag-detect ng timezone.</translation>
 <translation id="787125417158068494">Kung nakatakda sa SyncDisabled o hindi naka-configure, hindi available ang mga certificate ng <ph name="PRODUCT_OS_NAME" /> para sa mga ARC app.
 
       Kung nakatakda sa CopyCaCerts, available para sa mga ARC app ang lahat ng CA certificate na may <ph name="WEB_TRUSTED_BIT" /> na na-install ng ONC.</translation>
@@ -2751,7 +2725,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung itinakda sa false ang patakarang ito, hindi makakapasok ang user o ang anumang mga app o extension sa fullscreen mode.
 
       Sa lahat ng platform maliban sa <ph name="PRODUCT_OS_NAME" />, hindi available ang kiosk mode kapag naka-disable ang fullscreen mode.</translation>
-<translation id="8795495354632096254">Ipadala palagi ang mga access-point ng WiFi sa habang inaayos ang timezone.</translation>
 <translation id="8818173863808665831">I-ulat ang heyograpikong lokasyon ng device.
 
       Kung hindi naitakda ang patakaran, o naitakda sa false, hindi ma-uulat ang lokasyon.</translation>

@@ -254,6 +254,7 @@
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="6042308850641462728">Більше</translation>
 <translation id="605721222689873409">РР</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="FORMATTED_CURRENCY_CODE" /></translation>
 <translation id="6066301408025741299">Торкніться, щоб скасувати.</translation>
 <translation id="60851516108411750">Ваш список читання доступний у режимі офлайн. Щоб додати до нього сторінку, торкніться опції <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Онлайн</translation>
@@ -411,6 +412,7 @@
 <translation id="9083392325882095631">1 закладка</translation>
 <translation id="9100610230175265781">Потрібно вказати парольну фразу</translation>
 <translation id="9148126808321036104">Увійти знову</translation>
+<translation id="9154194610265714752">Оновлено</translation>
 <translation id="9157836665414082580">Заблокувати діалогові вікна</translation>
 <translation id="9188680907066685419">Вийти з керованого облікового запису</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -254,7 +254,9 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="6040143037577758943">Închide</translation>
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="6064110478173646258"><ph name="FORMATTED_CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="6066301408025741299">Atinge pentru a anula.</translation>
+<translation id="60851516108411750">Lista de lectură este disponibilă offline. Pentru a adăuga o pagină în lista de lectură, atinge <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elementul a fost eliminat</translation>
 <translation id="6136914049981179737">Secunde</translation>
@@ -410,6 +412,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="9083392325882095631">Un element</translation>
 <translation id="9100610230175265781">Este necesară o expresie de acces</translation>
 <translation id="9148126808321036104">Conectează-te din nou</translation>
+<translation id="9154194610265714752">Actualizat</translation>
 <translation id="9157836665414082580">Închide casetele de dialog</translation>
 <translation id="9188680907066685419">Deconectează-te de la contul gestionat</translation>
 <translation id="9203116392574189331">Handoff</translation>

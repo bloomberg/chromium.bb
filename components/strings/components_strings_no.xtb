@@ -270,6 +270,7 @@
 <translation id="348000606199325318">Kræsj-ID <ph name="CRASH_LOCAL_ID" /> (Tjener-ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Vi kunne ikke nå foreldrene dine akkurat nå. Prøv igjen.</translation>
 <translation id="3528171143076753409">Tjenerens sertifikat er ikke pålitelig.</translation>
+<translation id="3538531656504267329">Ugyldig utløpsår</translation>
 <translation id="3539171420378717834">Lagre en kopi av dette kortet på denne enheten</translation>
 <translation id="3542684924769048008">Bruk passord for:</translation>
 <translation id="3549644494707163724">Kryptér alle synkroniserte data med din egen passordfrase for synkronisering</translation>
@@ -557,6 +558,7 @@
 <translation id="6477321094435799029">Chrome har oppdaget uvanlig kode på denne siden og blokkert den for å beskytte personopplysningene dine (for eksempel passord, telefonnumre og kredittkortinformasjon).</translation>
 <translation id="6477460825583319731">Ugyldig e-postadresse</translation>
 <translation id="6489534406876378309">Start opplastingen av krasj</translation>
+<translation id="6525462735697194615">Ugyldig utløpsmåned</translation>
 <translation id="6529602333819889595">&amp;Slett likevel</translation>
 <translation id="6534179046333460208">Fysisk nett-forslag</translation>
 <translation id="6550675742724504774">Alternativer</translation>
