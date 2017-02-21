@@ -7,6 +7,8 @@ source_set("content_suggestions") {
   sources = [
     "content_suggestion.h",
     "content_suggestion.mm",
+    "content_suggestion_identifier.h",
+    "content_suggestion_identifier.mm",
     "content_suggestions_article_item.h",
     "content_suggestions_article_item.mm",
     "content_suggestions_collection_updater.h",
@@ -49,6 +51,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "content_suggestion_identifier_unittest.mm",
     "content_suggestions_article_item_unittest.mm",
     "content_suggestions_expandable_item_unittest.mm",
     "content_suggestions_favicon_item_unittest.mm",

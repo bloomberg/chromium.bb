@@ -7,13 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestion_identifier.h"
 #include "url/gurl.h"
 
 namespace base {
 class Time;
 }
-
-@class ContentSuggestionsSectionInformation;
 
 // Enum defining the type of a ContentSuggestions.
 typedef NS_ENUM(NSInteger, ContentSuggestionType) {
@@ -22,7 +21,7 @@ typedef NS_ENUM(NSInteger, ContentSuggestionType) {
 
 // Data for a suggestions item, compatible with Objective-C. Mostly acts as a
 // wrapper for ntp_snippets::ContentSuggestion.
-@interface ContentSuggestion : NSObject
+@interface ContentSuggestion : NSObject<ContentSuggestionIdentification>
 
 // Title of the suggestion.
 @property(nonatomic, copy, nullable) NSString* title;
@@ -37,9 +36,6 @@ typedef NS_ENUM(NSInteger, ContentSuggestionType) {
 // The date of publication.
 @property(nonatomic, assign) base::Time publishDate;
 
-// Section information in which this suggestion should be.
-@property(nonatomic, strong, nullable)
-    ContentSuggestionsSectionInformation* section;
 @property(nonatomic, assign) ContentSuggestionType type;
 
 @end

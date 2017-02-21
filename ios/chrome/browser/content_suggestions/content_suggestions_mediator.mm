@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_service_bridge_observer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_section_information.h"
 #include "ui/gfx/image/image.h"
@@ -52,12 +53,18 @@ ContentSuggestionsSectionLayout SectionLayoutForLayout(
 ContentSuggestion* ConvertContentSuggestion(
     const ntp_snippets::ContentSuggestion& contentSuggestion) {
   ContentSuggestion* suggestion = [[ContentSuggestion alloc] init];
+
   suggestion.title = base::SysUTF16ToNSString(contentSuggestion.title());
   suggestion.text = base::SysUTF16ToNSString(contentSuggestion.snippet_text());
   suggestion.url = contentSuggestion.url();
+
   suggestion.publisher =
       base::SysUTF16ToNSString(contentSuggestion.publisher_name());
   suggestion.publishDate = contentSuggestion.publish_date();
+
+  suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];
+  suggestion.suggestionIdentifier.IDInSection =
+      contentSuggestion.id().id_within_category();
 
   return suggestion;
 }
@@ -187,7 +194,8 @@ ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
   for (auto& contentSuggestion : suggestions) {
     ContentSuggestion* suggestion = ConvertContentSuggestion(contentSuggestion);
     suggestion.type = TypeForCategory(category);
-    suggestion.section = self.sectionInformationByCategory[categoryWrapper];
+    suggestion.suggestionIdentifier.sectionInfo =
+        self.sectionInformationByCategory[categoryWrapper];
 
     // TODO(crbug.com/686728): fetch the image.
 

@@ -18,7 +18,7 @@
 @synthesize url = _url;
 @synthesize publisher = _publisher;
 @synthesize publishDate = _publishDate;
-@synthesize section = _section;
+@synthesize suggestionIdentifier = _suggestionIdentifier;
 @synthesize type = _type;
 
 @end

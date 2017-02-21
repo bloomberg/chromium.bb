@@ -32,6 +32,7 @@ const CGFloat kStandardSpacing = 8;
 @synthesize articleURL = _articleURL;
 @synthesize publisher = _publisher;
 @synthesize publishDate = _publishDate;
+@synthesize suggestionIdentifier = _suggestionIdentifier;
 
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title

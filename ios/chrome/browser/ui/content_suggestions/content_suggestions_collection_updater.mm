@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
@@ -149,7 +150,8 @@ SectionIdentifier SectionIdentifierForInfo(
   NSArray<ContentSuggestion*>* suggestions = [self.dataSource allSuggestions];
 
   for (ContentSuggestion* suggestion in suggestions) {
-    NSInteger sectionIdentifier = [self addSectionIfNeeded:suggestion.section];
+    NSInteger sectionIdentifier =
+        [self addSectionIfNeeded:suggestion.suggestionIdentifier.sectionInfo];
     ContentSuggestionsArticleItem* articleItem =
         [[ContentSuggestionsArticleItem alloc]
             initWithType:ItemTypeForContentSuggestionType(suggestion.type)
@@ -157,8 +159,11 @@ SectionIdentifier SectionIdentifierForInfo(
                 subtitle:suggestion.text
                    image:suggestion.image
                      url:suggestion.url];
+
     articleItem.publisher = suggestion.publisher;
     articleItem.publishDate = suggestion.publishDate;
+
+    articleItem.suggestionIdentifier = suggestion.suggestionIdentifier;
 
     [model addItem:articleItem toSectionWithIdentifier:sectionIdentifier];
   }
