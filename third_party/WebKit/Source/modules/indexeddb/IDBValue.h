@@ -5,13 +5,13 @@
 #ifndef IDBValue_h
 #define IDBValue_h
 
+#include <memory>
 #include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebVector.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 
@@ -23,7 +23,7 @@ struct WebIDBValue;
 class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
  public:
   static PassRefPtr<IDBValue> create();
-  static PassRefPtr<IDBValue> create(const WebIDBValue&);
+  static PassRefPtr<IDBValue> create(const WebIDBValue&, v8::Isolate*);
   static PassRefPtr<IDBValue> create(const IDBValue*,
                                      IDBKey*,
                                      const IDBKeyPath&);
@@ -38,7 +38,7 @@ class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
 
  private:
   IDBValue();
-  IDBValue(const WebIDBValue&);
+  IDBValue(const WebIDBValue&, v8::Isolate*);
   IDBValue(PassRefPtr<SharedBuffer>,
            const WebVector<WebBlobInfo>&,
            IDBKey*,
@@ -53,6 +53,10 @@ class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
   const Persistent<IDBKey> m_primaryKey;
   const IDBKeyPath m_keyPath;
   int64_t m_externalAllocatedSize = 0;
+  // Used to register memory externally allocated by the WebIDBValue, and to
+  // unregister that memory in the destructor. Unused in other construction
+  // paths.
+  v8::Isolate* m_isolate = nullptr;
 };
 
 }  // namespace blink

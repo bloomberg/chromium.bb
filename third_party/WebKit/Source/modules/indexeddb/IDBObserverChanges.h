@@ -25,12 +25,14 @@ class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>,
   static IDBObserverChanges* create(
       IDBDatabase*,
       const WebVector<WebIDBObservation>&,
-      const WebVector<int32_t>& observationIndices);
+      const WebVector<int32_t>& observationIndices,
+      v8::Isolate*);
   static IDBObserverChanges* create(
       IDBDatabase*,
       IDBTransaction*,
       const WebVector<WebIDBObservation>&,
-      const WebVector<int32_t>& observationIndices);
+      const WebVector<int32_t>& observationIndices,
+      v8::Isolate*);
 
   DECLARE_TRACE();
 
@@ -43,10 +45,12 @@ class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>,
   IDBObserverChanges(IDBDatabase*,
                      IDBTransaction*,
                      const WebVector<WebIDBObservation>&,
-                     const WebVector<int32_t>& observationIndices);
+                     const WebVector<int32_t>& observationIndices,
+                     v8::Isolate*);
 
   void extractChanges(const WebVector<WebIDBObservation>&,
-                      const WebVector<int32_t>& observationIndices);
+                      const WebVector<int32_t>& observationIndices,
+                      v8::Isolate*);
 
   Member<IDBDatabase> m_database;
   Member<IDBTransaction> m_transaction;

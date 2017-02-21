@@ -24,7 +24,7 @@ class IDBObservation final : public GarbageCollectedFinalized<IDBObservation>,
 
  public:
   static WebIDBOperationType stringToOperationType(const String&);
-  static IDBObservation* create(const WebIDBObservation&);
+  static IDBObservation* create(const WebIDBObservation&, v8::Isolate*);
   ~IDBObservation();
 
   DECLARE_TRACE();
@@ -35,7 +35,7 @@ class IDBObservation final : public GarbageCollectedFinalized<IDBObservation>,
   const String& type() const;
 
  private:
-  IDBObservation(const WebIDBObservation&);
+  IDBObservation(const WebIDBObservation&, v8::Isolate*);
   Member<IDBKeyRange> m_keyRange;
   RefPtr<IDBValue> m_value;
   const WebIDBOperationType m_operationType;

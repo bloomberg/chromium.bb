@@ -66,7 +66,8 @@ class MODULES_EXPORT IDBDatabase final
  public:
   static IDBDatabase* create(ExecutionContext*,
                              std::unique_ptr<WebIDBDatabase>,
-                             IDBDatabaseCallbacks*);
+                             IDBDatabaseCallbacks*,
+                             v8::Isolate*);
   ~IDBDatabase() override;
   DECLARE_VIRTUAL_TRACE();
 
@@ -179,7 +180,8 @@ class MODULES_EXPORT IDBDatabase final
  private:
   IDBDatabase(ExecutionContext*,
               std::unique_ptr<WebIDBDatabase>,
-              IDBDatabaseCallbacks*);
+              IDBDatabaseCallbacks*,
+              v8::Isolate*);
 
   IDBObjectStore* createObjectStore(const String& name,
                                     const IDBKeyPath&,
@@ -200,6 +202,9 @@ class MODULES_EXPORT IDBDatabase final
   HeapVector<Member<Event>> m_enqueuedEvents;
 
   Member<IDBDatabaseCallbacks> m_databaseCallbacks;
+  // Maintain the isolate so that all externally allocated memory can be
+  // registered against it.
+  v8::Isolate* m_isolate;
 };
 
 }  // namespace blink

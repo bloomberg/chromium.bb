@@ -67,6 +67,7 @@ IDBRequest::IDBRequest(ScriptState* scriptState,
                        IDBTransaction* transaction)
     : SuspendableObject(scriptState->getExecutionContext()),
       m_transaction(transaction),
+      m_isolate(scriptState->isolate()),
       m_source(source) {}
 
 IDBRequest::~IDBRequest() {

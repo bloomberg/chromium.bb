@@ -69,13 +69,15 @@ const String& IDBObservation::type() const {
   }
 }
 
-IDBObservation* IDBObservation::create(const WebIDBObservation& observation) {
-  return new IDBObservation(observation);
+IDBObservation* IDBObservation::create(const WebIDBObservation& observation,
+                                       v8::Isolate* isolate) {
+  return new IDBObservation(observation, isolate);
 }
 
-IDBObservation::IDBObservation(const WebIDBObservation& observation)
+IDBObservation::IDBObservation(const WebIDBObservation& observation,
+                               v8::Isolate* isolate)
     : m_keyRange(observation.keyRange),
-      m_value(IDBValue::create(observation.value)),
+      m_value(IDBValue::create(observation.value, isolate)),
       m_operationType(observation.type) {}
 
 DEFINE_TRACE(IDBObservation) {

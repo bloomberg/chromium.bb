@@ -105,7 +105,7 @@ void WebIDBCallbacksImpl::onSuccess(WebIDBCursor* cursor,
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
   m_request->onSuccess(WTF::wrapUnique(cursor), key, primaryKey,
-                       IDBValue::create(value));
+                       IDBValue::create(value, m_request->isolate()));
 }
 
 void WebIDBCallbacksImpl::onSuccess(WebIDBDatabase* backend,
@@ -135,7 +135,7 @@ void WebIDBCallbacksImpl::onSuccess(const WebIDBValue& value) {
 
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
-  m_request->onSuccess(IDBValue::create(value));
+  m_request->onSuccess(IDBValue::create(value, m_request->isolate()));
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebVector<WebIDBValue>& values) {
@@ -146,7 +146,7 @@ void WebIDBCallbacksImpl::onSuccess(const WebVector<WebIDBValue>& values) {
       m_request->getExecutionContext(), this);
   Vector<RefPtr<IDBValue>> idbValues(values.size());
   for (size_t i = 0; i < values.size(); ++i)
-    idbValues[i] = IDBValue::create(values[i]);
+    idbValues[i] = IDBValue::create(values[i], m_request->isolate());
   m_request->onSuccess(idbValues);
 }
 
@@ -176,7 +176,8 @@ void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key,
 
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
-  m_request->onSuccess(key, primaryKey, IDBValue::create(value));
+  m_request->onSuccess(key, primaryKey,
+                       IDBValue::create(value, m_request->isolate()));
 }
 
 void WebIDBCallbacksImpl::onBlocked(long long oldVersion) {

@@ -67,6 +67,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   ~IDBRequest() override;
   DECLARE_VIRTUAL_TRACE();
 
+  v8::Isolate* isolate() const { return m_isolate; }
   ScriptValue result(ScriptState*, ExceptionState&);
   DOMException* error(ExceptionState&) const;
   ScriptValue source(ScriptState*) const;
@@ -155,6 +156,9 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   ReadyState m_readyState = PENDING;
   bool m_requestAborted = false;  // May be aborted by transaction then receive
                                   // async onsuccess; ignore vs. assert.
+  // Maintain the isolate so that all externally allocated memory can be
+  // registered against it.
+  v8::Isolate* m_isolate;
 
  private:
   void setResultCursor(IDBCursor*,

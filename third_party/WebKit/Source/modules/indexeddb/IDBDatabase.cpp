@@ -93,16 +93,19 @@ const char IDBDatabase::databaseClosedErrorMessage[] =
 
 IDBDatabase* IDBDatabase::create(ExecutionContext* context,
                                  std::unique_ptr<WebIDBDatabase> database,
-                                 IDBDatabaseCallbacks* callbacks) {
-  return new IDBDatabase(context, std::move(database), callbacks);
+                                 IDBDatabaseCallbacks* callbacks,
+                                 v8::Isolate* isolate) {
+  return new IDBDatabase(context, std::move(database), callbacks, isolate);
 }
 
 IDBDatabase::IDBDatabase(ExecutionContext* context,
                          std::unique_ptr<WebIDBDatabase> backend,
-                         IDBDatabaseCallbacks* callbacks)
+                         IDBDatabaseCallbacks* callbacks,
+                         v8::Isolate* isolate)
     : ContextLifecycleObserver(context),
       m_backend(std::move(backend)),
-      m_databaseCallbacks(callbacks) {
+      m_databaseCallbacks(callbacks),
+      m_isolate(isolate) {
   m_databaseCallbacks->connect(this);
 }
 
@@ -202,7 +205,7 @@ void IDBDatabase::onChanges(
 
       observer->callback()->call(
           observer, IDBObserverChanges::create(this, transaction, observations,
-                                               map_entry.second));
+                                               map_entry.second, m_isolate));
       if (transaction)
         transaction->setActive(false);
     }

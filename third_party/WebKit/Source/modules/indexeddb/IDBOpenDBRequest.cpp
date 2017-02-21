@@ -100,8 +100,9 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion,
 
   DCHECK(m_databaseCallbacks);
 
-  IDBDatabase* idbDatabase = IDBDatabase::create(
-      getExecutionContext(), std::move(backend), m_databaseCallbacks.release());
+  IDBDatabase* idbDatabase =
+      IDBDatabase::create(getExecutionContext(), std::move(backend),
+                          m_databaseCallbacks.release(), m_isolate);
   idbDatabase->setMetadata(metadata);
 
   if (oldVersion == IDBDatabaseMetadata::NoVersion) {
@@ -140,7 +141,7 @@ void IDBOpenDBRequest::onSuccess(std::unique_ptr<WebIDBDatabase> backend,
     DCHECK(backend.get());
     DCHECK(m_databaseCallbacks);
     idbDatabase = IDBDatabase::create(getExecutionContext(), std::move(backend),
-                                      m_databaseCallbacks.release());
+                                      m_databaseCallbacks.release(), m_isolate);
     setResult(IDBAny::create(idbDatabase));
   }
   idbDatabase->setMetadata(metadata);
