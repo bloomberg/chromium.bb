@@ -5,7 +5,6 @@
 #ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_VIEWS_H_
 #define UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_VIEWS_H_
 
-#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -37,7 +36,6 @@ struct GroupRange;
 class TableGrouper;
 class TableHeader;
 class TableViewObserver;
-class TableViewRowBackgroundPainter;
 class TableViewTestHelper;
 
 // The cells in the first column of a table can contain:
@@ -105,9 +103,6 @@ class VIEWS_EXPORT TableView
 
   // Returns a new ScrollView that contains the receiver.
   View* CreateParentIfNecessary();
-
-  void SetRowBackgroundPainter(
-      std::unique_ptr<TableViewRowBackgroundPainter> painter);
 
   // Sets the TableGrouper. TableView does not own |grouper| (common use case is
   // to have TableModel implement TableGrouper).
@@ -346,8 +341,6 @@ class VIEWS_EXPORT TableView
   // Mappings used when sorted.
   std::vector<int> view_to_model_;
   std::vector<int> model_to_view_;
-
-  std::unique_ptr<TableViewRowBackgroundPainter> row_background_painter_;
 
   TableGrouper* grouper_;
 

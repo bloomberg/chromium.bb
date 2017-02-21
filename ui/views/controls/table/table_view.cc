@@ -28,7 +28,6 @@
 #include "ui/views/controls/table/table_header.h"
 #include "ui/views/controls/table/table_utils.h"
 #include "ui/views/controls/table/table_view_observer.h"
-#include "ui/views/controls/table/table_view_row_background_painter.h"
 
 // Padding around the text (on each side).
 static const int kTextVerticalPadding = 3;
@@ -178,11 +177,6 @@ View* TableView::CreateParentIfNecessary() {
   if (header_)
     scroll_view->SetHeader(header_);
   return scroll_view;
-}
-
-void TableView::SetRowBackgroundPainter(
-    std::unique_ptr<TableViewRowBackgroundPainter> painter) {
-  row_background_painter_ = std::move(painter);
 }
 
 void TableView::SetGrouper(TableGrouper* grouper) {
@@ -550,13 +544,8 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
   for (int i = region.min_row; i < region.max_row; ++i) {
     const int model_index = ViewToModel(i);
     const bool is_selected = selection_model_.IsSelected(model_index);
-    if (is_selected) {
+    if (is_selected)
       canvas->FillRect(GetRowBounds(i), selected_bg_color);
-    } else if (row_background_painter_) {
-      row_background_painter_->PaintRowBackground(model_index,
-                                                  GetRowBounds(i),
-                                                  canvas);
-    }
     if (selection_model_.active() == model_index && HasFocus())
       canvas->DrawFocusRect(GetRowBounds(i));
     for (int j = region.min_column; j < region.max_column; ++j) {

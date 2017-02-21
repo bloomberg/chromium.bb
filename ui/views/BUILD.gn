@@ -265,7 +265,6 @@ component("views") {
     "controls/table/table_view.cc",
     "controls/table/table_view.h",
     "controls/table/table_view_observer.h",
-    "controls/table/table_view_row_background_painter.h",
     "controls/textfield/textfield.cc",
     "controls/textfield/textfield.h",
     "controls/textfield/textfield_controller.cc",
