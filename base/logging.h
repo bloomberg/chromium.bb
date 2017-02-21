@@ -510,9 +510,9 @@ class CheckOpResult {
 // TODO(scottmg): Reinvestigate a short sequence that will work on both
 // compilers once clang supports more intrinsics. See https://crbug.com/693713.
 #if defined(__clang__)
-#define IMMEDIATE_CRASH() \
-  (__debugbreak(),        \
-   (void)(*reinterpret_cast<volatile unsigned char*>(0) = __COUNTER__))
+#define IMMEDIATE_CRASH()                                                 \
+  (__debugbreak(), (void)(*reinterpret_cast<volatile unsigned char*>(0) = \
+                              static_cast<unsigned char>(__COUNTER__)))
 #else
 #define IMMEDIATE_CRASH() __debugbreak()
 #endif  // __clang__
