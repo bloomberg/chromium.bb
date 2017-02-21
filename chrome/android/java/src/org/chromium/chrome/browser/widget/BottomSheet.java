@@ -262,7 +262,7 @@ public class BottomSheet
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
-        if (isToolbarAndroidViewHidden()) return false;
+        if (!canMoveSheet()) return false;
 
         // The incoming motion event may have been adjusted by the view sending it down. Create a
         // motion event with the raw (x, y) coordinates of the original so the gesture detector
@@ -755,4 +755,11 @@ public class BottomSheet
 
     @Override
     public void onFadingViewVisibilityChanged(boolean visible) {}
+
+    private boolean canMoveSheet() {
+        boolean isInOverviewMode = mTabModelSelector != null
+                && (mTabModelSelector.getCurrentTab() == null
+                           || mTabModelSelector.getCurrentTab().getActivity().isInOverviewMode());
+        return !isToolbarAndroidViewHidden() && !isInOverviewMode;
+    }
 }
