@@ -36,22 +36,11 @@ import time
 from idl_lexer import IDLLexer
 from idl_node import IDLAttribute, IDLNode
 
-#
-# Try to load the ply module, if not, then assume it is in the third_party
-# directory.
-#
-try:
-  # Disable lint check which fails to find the ply module.
-  # pylint: disable=F0401
-  from ply import lex
-  from ply import yacc
-except ImportError:
-  module_path, module_name = os.path.split(__file__)
-  third_party = os.path.join(module_path, os.par, os.par, 'third_party')
-  sys.path.append(third_party)
-  # pylint: disable=F0401
-  from ply import lex
-  from ply import yacc
+SRC_DIR = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+sys.path.insert(0, os.path.join(SRC_DIR, 'third_party'))
+from ply import lex
+from ply import yacc
+
 
 #
 # ERROR_REMAP
