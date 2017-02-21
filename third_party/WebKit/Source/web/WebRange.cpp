@@ -61,7 +61,9 @@ WebRange::WebRange(const PlainTextRange& range) {
 }
 
 EphemeralRange WebRange::createEphemeralRange(LocalFrame* frame) const {
-  Element* selectionRoot = frame->selection().rootEditableElement();
+  Element* selectionRoot = frame->selection()
+                               .computeVisibleSelectionInDOMTreeDeprecated()
+                               .rootEditableElement();
   ContainerNode* scope =
       selectionRoot ? selectionRoot : frame->document()->documentElement();
 

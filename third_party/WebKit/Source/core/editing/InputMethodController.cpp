@@ -279,7 +279,11 @@ bool InputMethodController::finishComposingText(
     return true;
   }
 
-  Element* rootEditableElement = frame().selection().rootEditableElement();
+  Element* rootEditableElement =
+      frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .rootEditableElement();
   if (!rootEditableElement)
     return false;
   PlainTextRange compositionRange =
@@ -374,7 +378,11 @@ bool InputMethodController::replaceCompositionAndMoveCaret(
     const String& text,
     int relativeCaretPosition,
     const Vector<CompositionUnderline>& underlines) {
-  Element* rootEditableElement = frame().selection().rootEditableElement();
+  Element* rootEditableElement =
+      frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .rootEditableElement();
   if (!rootEditableElement)
     return false;
   DCHECK(hasComposition());
@@ -419,7 +427,11 @@ bool InputMethodController::insertTextAndMoveCaret(
     if (!insertText(text))
       return false;
 
-    Element* rootEditableElement = frame().selection().rootEditableElement();
+    Element* rootEditableElement =
+        frame()
+            .selection()
+            .computeVisibleSelectionInDOMTreeDeprecated()
+            .rootEditableElement();
     if (rootEditableElement) {
       addCompositionUnderlines(underlines, rootEditableElement, textStart);
     }
@@ -626,7 +638,10 @@ void InputMethodController::setCompositionFromExistingText(
     const Vector<CompositionUnderline>& underlines,
     unsigned compositionStart,
     unsigned compositionEnd) {
-  Element* editable = frame().selection().rootEditableElement();
+  Element* editable = frame()
+                          .selection()
+                          .computeVisibleSelectionInDOMTreeDeprecated()
+                          .rootEditableElement();
   if (!editable)
     return;
 
@@ -689,7 +704,11 @@ EphemeralRange InputMethodController::ephemeralRangeForOffsets(
     const PlainTextRange& offsets) const {
   if (offsets.isNull())
     return EphemeralRange();
-  Element* rootEditableElement = frame().selection().rootEditableElement();
+  Element* rootEditableElement =
+      frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .rootEditableElement();
   if (!rootEditableElement)
     return EphemeralRange();
 
@@ -726,7 +745,11 @@ PlainTextRange InputMethodController::createRangeForSelection(
   start = std::max(start, 0);
   end = std::max(end, start);
 
-  Element* rootEditableElement = frame().selection().rootEditableElement();
+  Element* rootEditableElement =
+      frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .rootEditableElement();
   if (!rootEditableElement)
     return PlainTextRange();
   const EphemeralRange& range =
@@ -813,7 +836,10 @@ void InputMethodController::deleteSurroundingText(int before, int after) {
   if (selectionOffsets.isNull())
     return;
   Element* const rootEditableElement =
-      frame().selection().rootEditableElement();
+      frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .rootEditableElement();
   if (!rootEditableElement)
     return;
   int selectionStart = static_cast<int>(selectionOffsets.start());
@@ -877,7 +903,10 @@ WebTextInputInfo InputMethodController::textInputInfo() const {
     // plugins/mouse-capture-inside-shadow.html reaches here.
     return info;
   }
-  Element* element = frame().selection().rootEditableElement();
+  Element* element = frame()
+                         .selection()
+                         .computeVisibleSelectionInDOMTreeDeprecated()
+                         .rootEditableElement();
   if (!element)
     return info;
 

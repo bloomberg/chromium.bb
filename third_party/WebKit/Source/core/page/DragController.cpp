@@ -572,7 +572,10 @@ bool DragController::concludeEditDrag(DragData* dragData) {
     return false;
   }
   Range* range = createRange(dragCaret.toNormalizedEphemeralRange());
-  Element* rootEditableElement = innerFrame->selection().rootEditableElement();
+  Element* rootEditableElement =
+      innerFrame->selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .rootEditableElement();
 
   // For range to be null a WebKit client must have done something bad while
   // manually controlling drag behaviour

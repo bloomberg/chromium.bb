@@ -263,7 +263,10 @@ bool Editor::handleTextEvent(TextEvent* event) {
 }
 
 bool Editor::canEdit() const {
-  return frame().selection().rootEditableElement();
+  return frame()
+      .selection()
+      .computeVisibleSelectionInDOMTreeDeprecated()
+      .rootEditableElement();
 }
 
 bool Editor::canEditRichly() const {

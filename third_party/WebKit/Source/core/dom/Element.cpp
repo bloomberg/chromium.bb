@@ -2693,7 +2693,10 @@ void Element::updateFocusAppearance(
 
     // When focusing an editable element in an iframe, don't reset the selection
     // if it already contains a selection.
-    if (this == frame->selection().rootEditableElement())
+    if (this ==
+        frame->selection()
+            .computeVisibleSelectionInDOMTreeDeprecated()
+            .rootEditableElement())
       return;
 
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets

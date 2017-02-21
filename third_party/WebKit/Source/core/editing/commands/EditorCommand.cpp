@@ -1918,7 +1918,9 @@ static bool enabledInRichlyEditableText(LocalFrame& frame,
          frame.selection()
              .computeVisibleSelectionInDOMTreeDeprecated()
              .isContentRichlyEditable() &&
-         frame.selection().rootEditableElement();
+         frame.selection()
+             .computeVisibleSelectionInDOMTreeDeprecated()
+             .rootEditableElement();
 }
 
 static bool enabledPaste(LocalFrame& frame,

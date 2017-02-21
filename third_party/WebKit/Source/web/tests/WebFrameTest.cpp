@@ -5452,9 +5452,18 @@ TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtentScollsInputField) {
   EXPECT_EQ("Length", selectionAsString(frame));
   webViewHelper.webView()->selectionBounds(startWebRect, endWebRect);
 
-  EXPECT_EQ(0, frame->frame()->selection().rootEditableElement()->scrollLeft());
+  EXPECT_EQ(0, frame->frame()
+                   ->selection()
+                   .computeVisibleSelectionInDOMTreeDeprecated()
+                   .rootEditableElement()
+                   ->scrollLeft());
   frame->moveRangeSelectionExtent(WebPoint(endWebRect.x + 500, endWebRect.y));
-  EXPECT_GE(frame->frame()->selection().rootEditableElement()->scrollLeft(), 1);
+  EXPECT_GE(frame->frame()
+                ->selection()
+                .computeVisibleSelectionInDOMTreeDeprecated()
+                .rootEditableElement()
+                ->scrollLeft(),
+            1);
   EXPECT_EQ("Lengthy text goes here.", selectionAsString(frame));
 }
 
@@ -5473,8 +5482,11 @@ TEST_P(ParameterizedWebFrameTest, DISABLED_PositionForPointTest) {
   initializeTextSelectionWebView(m_baseURL + "select_range_span_editable.html",
                                  &webViewHelper);
   WebLocalFrameImpl* mainFrame = webViewHelper.webView()->mainFrameImpl();
-  LayoutObject* layoutObject =
-      mainFrame->frame()->selection().rootEditableElement()->layoutObject();
+  LayoutObject* layoutObject = mainFrame->frame()
+                                   ->selection()
+                                   .computeVisibleSelectionInDOMTreeDeprecated()
+                                   .rootEditableElement()
+                                   ->layoutObject();
   EXPECT_EQ(0, computeOffset(layoutObject, -1, -1));
   EXPECT_EQ(64, computeOffset(layoutObject, 1000, 1000));
 
@@ -5482,8 +5494,11 @@ TEST_P(ParameterizedWebFrameTest, DISABLED_PositionForPointTest) {
   initializeTextSelectionWebView(m_baseURL + "select_range_div_editable.html",
                                  &webViewHelper);
   mainFrame = webViewHelper.webView()->mainFrameImpl();
-  layoutObject =
-      mainFrame->frame()->selection().rootEditableElement()->layoutObject();
+  layoutObject = mainFrame->frame()
+                     ->selection()
+                     .computeVisibleSelectionInDOMTreeDeprecated()
+                     .rootEditableElement()
+                     ->layoutObject();
   EXPECT_EQ(0, computeOffset(layoutObject, -1, -1));
   EXPECT_EQ(64, computeOffset(layoutObject, 1000, 1000));
 }
