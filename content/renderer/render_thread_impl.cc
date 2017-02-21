@@ -1202,7 +1202,7 @@ void RenderThreadImpl::InitializeWebKit(
       kImageCacheSingleAllocationByteLimit);
 
   // Hook up blink's codecs so skia can call them
-  SkGraphics::SetImageGeneratorFromEncodedFactory(
+  SkGraphics::SetImageGeneratorFromEncodedDataFactory(
       blink::WebImageGenerator::create);
 
   if (command_line.HasSwitch(switches::kMemoryMetrics)) {

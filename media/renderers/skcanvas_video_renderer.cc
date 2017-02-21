@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -938,8 +939,8 @@ bool SkCanvasVideoRenderer::UpdateLastImage(
             NewSkImageFromVideoFrameNative(video_frame.get(), context_3d);
       }
     } else {
-      auto* video_generator = new VideoImageGenerator(video_frame);
-      last_image_ = SkImage::MakeFromGenerator(video_generator);
+      last_image_ = SkImage::MakeFromGenerator(
+          base::MakeUnique<VideoImageGenerator>(video_frame));
     }
     CorrectLastImageDimensions(gfx::RectToSkIRect(video_frame->visible_rect()));
     if (!last_image_)  // Couldn't create the SkImage.

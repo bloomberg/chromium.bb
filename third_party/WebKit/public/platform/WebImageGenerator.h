@@ -31,6 +31,7 @@
 #ifndef WebImageGenerator_h
 #define WebImageGenerator_h
 
+#include "SkRefCnt.h"
 #include "WebCommon.h"
 
 class SkData;
@@ -40,7 +41,7 @@ namespace blink {
 
 class BLINK_PLATFORM_EXPORT WebImageGenerator {
  public:
-  static SkImageGenerator* create(SkData*);
+  static std::unique_ptr<SkImageGenerator> create(sk_sp<SkData>);
 };
 
 }  // namespace blink

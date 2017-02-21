@@ -328,11 +328,11 @@ sk_sp<SkImage> DeferredImageDecoder::createFrameImageAtIndex(
       knownToBeOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType,
       m_colorSpaceForSkImages);
 
-  DecodingImageGenerator* generator = new DecodingImageGenerator(
+  auto generator = WTF::makeUnique<DecodingImageGenerator>(
       m_frameGenerator, info, std::move(segmentReader), m_allDataReceived,
       index, m_frameData[index].m_uniqueID);
-  sk_sp<SkImage> image = SkImage::MakeFromGenerator(
-      generator);  // SkImage takes ownership of the generator.
+  generator->setCanYUVDecode(m_canYUVDecode);
+  sk_sp<SkImage> image = SkImage::MakeFromGenerator(std::move(generator));
   if (!image)
     return nullptr;
 
@@ -345,8 +345,6 @@ sk_sp<SkImage> DeferredImageDecoder::createFrameImageAtIndex(
            m_frameData[index].m_uniqueID == image->uniqueID());
     m_frameData[index].m_uniqueID = image->uniqueID();
   }
-
-  generator->setCanYUVDecode(m_canYUVDecode);
 
   return image;
 }

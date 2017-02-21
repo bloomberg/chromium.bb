@@ -2352,7 +2352,8 @@ TEST_F(CheckerImagingTileManagerTest,
   recording_source->SetGenerateDiscardableImagesMetadata(true);
 
   sk_sp<SkImage> image = SkImage::MakeFromGenerator(
-      new testing::StrictMock<MockImageGenerator>(gfx::Size(512, 512)));
+      base::MakeUnique<testing::StrictMock<MockImageGenerator>>(
+          gfx::Size(512, 512)));
   recording_source->add_draw_image(image, gfx::Point(0, 0));
 
   recording_source->Rerecord();
