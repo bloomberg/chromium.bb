@@ -6,19 +6,16 @@
 
 #include <stdint.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // An object encapsulating the deferred execution of a block of initialization
 // code.
-@interface DeferredInitializationBlock : NSObject {
-  // A string to reference the initialization block.
-  base::scoped_nsobject<NSString> _name;
-  // A block of code to execute.
-  base::mac::ScopedBlock<ProceduralBlock> _runBlock;
-}
+@interface DeferredInitializationBlock : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -34,7 +31,12 @@
 
 @end
 
-@implementation DeferredInitializationBlock
+@implementation DeferredInitializationBlock {
+  // A string to reference the initialization block.
+  NSString* _name;
+  // A block of code to execute.
+  ProceduralBlock _runBlock;
+}
 
 // Overrides default designated initializer.
 - (instancetype)init {
@@ -46,15 +48,15 @@
   DCHECK(block);
   self = [super init];
   if (self) {
-    _name.reset([name copy]);
-    _runBlock.reset(block, base::scoped_policy::RETAIN);
+    _name = [name copy];
+    _runBlock = block;
   }
   return self;
 }
 
 - (void)run {
   DCHECK([NSThread isMainThread]);
-  ProceduralBlock deferredBlock = _runBlock.get();
+  ProceduralBlock deferredBlock = _runBlock;
   if (!deferredBlock)
     return;
   deferredBlock();
@@ -62,14 +64,14 @@
 }
 
 - (void)cancel {
-  _runBlock.reset();
+  _runBlock = nil;
 }
 
 @end
 
 @interface DeferredInitializationRunner () {
-  base::scoped_nsobject<NSMutableArray> _blocksNameQueue;
-  base::scoped_nsobject<NSMutableDictionary> _runBlocks;
+  NSMutableArray* _blocksNameQueue;
+  NSMutableDictionary* _runBlocks;
   BOOL _isBlockScheduled;
 }
 
@@ -102,8 +104,8 @@
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _blocksNameQueue.reset([[NSMutableArray array] retain]);
-    _runBlocks.reset([[NSMutableDictionary dictionary] retain]);
+    _blocksNameQueue = [NSMutableArray array];
+    _runBlocks = [NSMutableDictionary dictionary];
     _isBlockScheduled = NO;
     _delayBetweenBlocks = 0.2;
     _delayBeforeFirstBlock = 3.0;
@@ -117,8 +119,8 @@
   [self cancelBlockNamed:name];
   [_blocksNameQueue addObject:name];
 
-  base::scoped_nsobject<DeferredInitializationBlock> deferredBlock(
-      [[DeferredInitializationBlock alloc] initWithName:name block:block]);
+  DeferredInitializationBlock* deferredBlock =
+      [[DeferredInitializationBlock alloc] initWithName:name block:block];
   [_runBlocks setObject:deferredBlock forKey:name];
 
   if (!_isBlockScheduled) {
@@ -137,7 +139,7 @@
       [_runBlocks objectForKey:nextBlockName];
   DCHECK(nextBlock);
 
-  base::WeakNSObject<DeferredInitializationRunner> weakSelf(self);
+  __weak DeferredInitializationRunner* weakSelf = self;
 
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)),
