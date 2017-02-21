@@ -464,11 +464,6 @@ void HostContentSettingsMap::SetContentSettingCustomScope(
     ContentSetting setting) {
   DCHECK(content_settings::ContentSettingsRegistry::GetInstance()->Get(
       content_type));
-  if (setting == CONTENT_SETTING_ALLOW &&
-      (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-       content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)) {
-    UpdateLastUsageByPattern(primary_pattern, secondary_pattern, content_type);
-  }
 
   std::unique_ptr<base::Value> value;
   // A value of CONTENT_SETTING_DEFAULT implies deleting the content setting.
@@ -640,63 +635,6 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
   }
 }
 
-ContentSetting HostContentSettingsMap::GetContentSettingAndMaybeUpdateLastUsage(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  ContentSetting setting = GetContentSetting(
-      primary_url, secondary_url, content_type, resource_identifier);
-  if (setting == CONTENT_SETTING_ALLOW) {
-    UpdateLastUsageByPattern(
-        ContentSettingsPattern::FromURLNoWildcard(primary_url),
-        ContentSettingsPattern::FromURLNoWildcard(secondary_url),
-        content_type);
-  }
-  return setting;
-}
-
-void HostContentSettingsMap::UpdateLastUsage(const GURL& primary_url,
-                                             const GURL& secondary_url,
-                                             ContentSettingsType content_type) {
-  UpdateLastUsageByPattern(
-      ContentSettingsPattern::FromURLNoWildcard(primary_url),
-      ContentSettingsPattern::FromURLNoWildcard(secondary_url),
-      content_type);
-}
-
-void HostContentSettingsMap::UpdateLastUsageByPattern(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type) {
-  UsedContentSettingsProviders();
-
-  pref_provider_->UpdateLastUsage(
-      primary_pattern, secondary_pattern, content_type);
-}
-
-base::Time HostContentSettingsMap::GetLastUsage(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type) {
-  return GetLastUsageByPattern(
-      ContentSettingsPattern::FromURLNoWildcard(primary_url),
-      ContentSettingsPattern::FromURLNoWildcard(secondary_url),
-      content_type);
-}
-
-base::Time HostContentSettingsMap::GetLastUsageByPattern(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type) {
-  UsedContentSettingsProviders();
-
-  return pref_provider_->GetLastUsage(
-      primary_pattern, secondary_pattern, content_type);
-}
-
 void HostContentSettingsMap::AddObserver(content_settings::Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -708,13 +646,6 @@ void HostContentSettingsMap::RemoveObserver(
 
 void HostContentSettingsMap::FlushLossyWebsiteSettings() {
   prefs_->SchedulePendingLossyWrites();
-}
-
-void HostContentSettingsMap::SetPrefClockForTesting(
-    std::unique_ptr<base::Clock> clock) {
-  UsedContentSettingsProviders();
-
-  pref_provider_->SetClockForTesting(std::move(clock));
 }
 
 void HostContentSettingsMap::ClearSettingsForOneType(

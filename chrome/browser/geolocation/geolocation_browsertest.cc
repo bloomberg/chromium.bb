@@ -744,34 +744,3 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TabDestroyed) {
   ASSERT_TRUE(content::ExecuteScript(
       current_browser()->tab_strip_model()->GetActiveWebContents(), script));
 }
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, LastUsageUpdated) {
-  ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
-  base::SimpleTestClock* clock_ = new base::SimpleTestClock();
-  GetHostContentSettingsMap()->SetPrefClockForTesting(
-      std::unique_ptr<base::Clock>(clock_));
-  clock_->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10));
-
-  // Setting the permission should trigger the last usage.
-  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(), CONTENT_SETTING_ALLOW);
-
-  // Permission has been used at the starting time.
-  EXPECT_EQ(GetHostContentSettingsMap()->GetLastUsage(
-      current_url().GetOrigin(),
-      current_url().GetOrigin(),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(), 10);
-
-  clock_->Advance(base::TimeDelta::FromSeconds(3));
-
-  // Calling watchPosition should trigger the last usage update.
-  WatchPositionAndObservePermissionRequest(false);
-  ExpectPosition(fake_latitude(), fake_longitude());
-
-  // Last usage has been updated.
-  EXPECT_EQ(GetHostContentSettingsMap()->GetLastUsage(
-      current_url().GetOrigin(),
-      current_url().GetOrigin(),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(), 13);
-}

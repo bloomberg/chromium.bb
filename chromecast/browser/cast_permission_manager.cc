@@ -58,12 +58,6 @@ blink::mojom::PermissionStatus CastPermissionManager::GetPermissionStatus(
   return blink::mojom::PermissionStatus::GRANTED;
 }
 
-void CastPermissionManager::RegisterPermissionUsage(
-    content::PermissionType permission,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-}
-
 int CastPermissionManager::SubscribePermissionStatusChange(
     content::PermissionType permission,
     const GURL& requesting_origin,

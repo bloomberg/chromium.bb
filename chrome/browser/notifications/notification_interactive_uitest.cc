@@ -759,40 +759,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
             (*notifications.rbegin())->message());
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationsTest, TestLastUsage) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  settings_map->SetPrefClockForTesting(std::unique_ptr<base::Clock>(clock));
-  clock->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10));
-
-  // Creates a simple notification.
-  AllowAllOrigins();
-  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
-
-  std::string result = CreateSimpleNotification(browser(), true);
-  EXPECT_NE("-1", result);
-
-  EXPECT_EQ(settings_map->GetLastUsage(GetTestPageURL().GetOrigin(),
-                                       GetTestPageURL().GetOrigin(),
-                                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
-                .ToDoubleT(),
-            10);
-
-  clock->Advance(base::TimeDelta::FromSeconds(3));
-
-  result = CreateSimpleNotification(browser(), true);
-  EXPECT_NE("-1", result);
-
-  EXPECT_EQ(settings_map->GetLastUsage(GetTestPageURL().GetOrigin(),
-                                       GetTestPageURL().GetOrigin(),
-                                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
-                .ToDoubleT(),
-            13);
-}
-
 IN_PROC_BROWSER_TEST_F(NotificationsTest,
                        TestNotificationReplacementReappearance) {
   ASSERT_TRUE(embedded_test_server()->Start());

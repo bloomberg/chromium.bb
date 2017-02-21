@@ -414,21 +414,6 @@ content::MediaStreamDevices MediaStreamDevicesController::GetDevices(
     }
   }  // switch
 
-  if (audio_allowed) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->UpdateLastUsageByPattern(
-            ContentSettingsPattern::FromURLNoWildcard(request_.security_origin),
-            ContentSettingsPattern::Wildcard(),
-            CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-  }
-  if (video_allowed) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->UpdateLastUsageByPattern(
-            ContentSettingsPattern::FromURLNoWildcard(request_.security_origin),
-            ContentSettingsPattern::Wildcard(),
-            CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-  }
-
   return devices;
 }
 

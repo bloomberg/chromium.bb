@@ -30,7 +30,6 @@ class GURL;
 class PrefService;
 
 namespace base {
-class Clock;
 class Value;
 }
 
@@ -248,51 +247,12 @@ class HostContentSettingsMap : public content_settings::Observer,
     return is_incognito_;
   }
 
-  // Returns a single |ContentSetting| which applies to the given URLs, just as
-  // |GetContentSetting| does. If the setting is allowed, it also records the
-  // last usage to preferences.
-  //
-  // This should only be called on the UI thread, unlike |GetContentSetting|.
-  ContentSetting GetContentSettingAndMaybeUpdateLastUsage(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const std::string& resource_identifier);
-
-  // Sets the last time that a given content type has been used for the pattern
-  // which matches the URLs to the current time.
-  void UpdateLastUsage(const GURL& primary_url,
-                       const GURL& secondary_url,
-                       ContentSettingsType content_type);
-
-  // Sets the last time that a given content type has been used for a pattern
-  // pair to the current time.
-  void UpdateLastUsageByPattern(const ContentSettingsPattern& primary_pattern,
-                                const ContentSettingsPattern& secondary_pattern,
-                                ContentSettingsType content_type);
-
-  // Returns the last time the pattern that matches the URL has requested
-  // permission for the |content_type| setting.
-  base::Time GetLastUsage(const GURL& primary_url,
-                          const GURL& secondary_url,
-                          ContentSettingsType content_type);
-
-  // Returns the last time the pattern has requested permission for the
-  // |content_type| setting.
-  base::Time GetLastUsageByPattern(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type);
-
   // Adds/removes an observer for content settings changes.
   void AddObserver(content_settings::Observer* observer);
   void RemoveObserver(content_settings::Observer* observer);
 
   // Schedules any pending lossy website settings to be written to disk.
   void FlushLossyWebsiteSettings();
-
-  // Passes ownership of |clock|.
-  void SetPrefClockForTesting(std::unique_ptr<base::Clock> clock);
 
   // Migrate old domain scoped ALLOW settings to be origin scoped for
   // ContentSettingsTypes which are domain scoped. Only narrow down ALLOW

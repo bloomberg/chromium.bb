@@ -135,13 +135,6 @@ blink::mojom::PermissionStatus LayoutTestPermissionManager::GetPermissionStatus(
   return it->second;
 }
 
-void LayoutTestPermissionManager::RegisterPermissionUsage(
-    PermissionType permission,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
 int LayoutTestPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     const GURL& requesting_origin,

@@ -25,8 +25,7 @@ class GeolocationServiceImpl : public mojom::GeolocationService {
   // is being used.
   GeolocationServiceImpl(
       mojo::InterfaceRequest<mojom::GeolocationService> request,
-      GeolocationServiceContext* context,
-      const base::Closure& update_callback);
+      GeolocationServiceContext* context);
   ~GeolocationServiceImpl() override;
 
   // Starts listening for updates.
@@ -56,10 +55,6 @@ class GeolocationServiceImpl : public mojom::GeolocationService {
   // Owns this object.
   GeolocationServiceContext* context_;
   std::unique_ptr<GeolocationProvider::Subscription> geolocation_subscription_;
-
-  // Callback that allows the instantiator of this class to be notified on
-  // position updates.
-  base::Closure update_callback_;
 
   // The callback passed to QueryNextPosition.
   QueryNextPositionCallback position_callback_;

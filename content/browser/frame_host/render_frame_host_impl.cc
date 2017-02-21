@@ -2319,9 +2319,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     // pointer.
     GetInterfaceRegistry()->AddInterface(
         base::Bind(&device::GeolocationServiceContext::CreateService,
-                   base::Unretained(geolocation_service_context),
-                   base::Bind(&RenderFrameHostImpl::DidUseGeolocationPermission,
-                              weak_ptr_factory_.GetWeakPtr())));
+                   base::Unretained(geolocation_service_context)));
   }
 
   device::WakeLockServiceContext* wake_lock_service_context =
@@ -3169,19 +3167,6 @@ void RenderFrameHostImpl::SendNavigateMessage(
       frame_tree_node_->current_frame_host(), this);
   Send(new FrameMsg_Navigate(
       routing_id_, common_params, start_params, request_params));
-}
-
-void RenderFrameHostImpl::DidUseGeolocationPermission() {
-  PermissionManager* permission_manager =
-      GetSiteInstance()->GetBrowserContext()->GetPermissionManager();
-  if (!permission_manager)
-    return;
-
-  permission_manager->RegisterPermissionUsage(
-      PermissionType::GEOLOCATION,
-      last_committed_url().GetOrigin(),
-      frame_tree_node()->frame_tree()->GetMainFrame()
-          ->last_committed_url().GetOrigin());
 }
 
 bool RenderFrameHostImpl::CanAccessFilesOfPageState(const PageState& state) {

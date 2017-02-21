@@ -86,12 +86,6 @@ blink::mojom::PermissionStatus ShellPermissionManager::GetPermissionStatus(
   return blink::mojom::PermissionStatus::DENIED;
 }
 
-void ShellPermissionManager::RegisterPermissionUsage(
-    PermissionType permission,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-}
-
 int ShellPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     const GURL& requesting_origin,

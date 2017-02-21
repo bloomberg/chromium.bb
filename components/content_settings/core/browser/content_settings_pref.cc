@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
-#include "base/time/clock.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
@@ -26,7 +25,6 @@ namespace {
 
 const char kSettingPath[] = "setting";
 const char kPerResourceIdentifierPrefName[] = "per_resource";
-const char kLastUsed[] = "last_used";
 
 // If the given content type supports resource identifiers in user preferences,
 // returns true and sets |pref_key| to the key in the content settings
@@ -176,66 +174,6 @@ void ContentSettingsPref::ClearAllContentSettingsRules() {
                        ContentSettingsPattern(),
                        content_type_,
                        ResourceIdentifier());
-}
-
-void ContentSettingsPref::UpdateLastUsage(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    base::Clock* clock) {
-  // Don't write if in incognito.
-  if (is_incognito_) {
-    return;
-  }
-
-  // Ensure that |lock_| is not held by this thread, since this function will
-  // send out notifications (by |~DictionaryPrefUpdate|).
-  AssertLockNotHeld();
-
-  base::AutoReset<bool> auto_reset(&updating_preferences_, true);
-  {
-    DictionaryPrefUpdate update(prefs_, pref_name_);
-    base::DictionaryValue* pattern_pairs_settings = update.Get();
-
-    std::string pattern_str(
-        CreatePatternString(primary_pattern, secondary_pattern));
-    base::DictionaryValue* settings_dictionary = NULL;
-    bool found = pattern_pairs_settings->GetDictionaryWithoutPathExpansion(
-        pattern_str, &settings_dictionary);
-
-    if (!found) {
-      settings_dictionary = new base::DictionaryValue;
-      pattern_pairs_settings->SetWithoutPathExpansion(pattern_str,
-                                                      settings_dictionary);
-    }
-
-    settings_dictionary->SetWithoutPathExpansion(
-        kLastUsed, new base::FundamentalValue(clock->Now().ToDoubleT()));
-  }
-}
-
-base::Time ContentSettingsPref::GetLastUsage(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern) {
-  const base::DictionaryValue* pattern_pairs_settings =
-      prefs_->GetDictionary(pref_name_);
-  std::string pattern_str(
-      CreatePatternString(primary_pattern, secondary_pattern));
-
-  const base::DictionaryValue* settings_dictionary = NULL;
-  bool found = pattern_pairs_settings->GetDictionaryWithoutPathExpansion(
-      pattern_str, &settings_dictionary);
-
-  if (!found)
-    return base::Time();
-
-  double last_used_time;
-  found = settings_dictionary->GetDoubleWithoutPathExpansion(
-      kLastUsed, &last_used_time);
-
-  if (!found)
-    return base::Time();
-
-  return base::Time::FromDoubleT(last_used_time);
 }
 
 size_t ContentSettingsPref::GetNumExceptions() {
@@ -436,7 +374,6 @@ void ContentSettingsPref::UpdatePref(
         // Update settings dictionary.
         if (value == NULL) {
           settings_dictionary->RemoveWithoutPathExpansion(kSettingPath, NULL);
-          settings_dictionary->RemoveWithoutPathExpansion(kLastUsed, NULL);
         } else {
           settings_dictionary->SetWithoutPathExpansion(
               kSettingPath, value->DeepCopy());

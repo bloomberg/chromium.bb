@@ -15,8 +15,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/clock.h"
-#include "base/time/default_clock.h"
 #include "components/content_settings/core/browser/content_settings_pref.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -44,6 +42,7 @@ const char kObsoleteMouseLockExceptionsPref[] =
     "profile.content_settings.exceptions.mouselock";
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
+const char kObsoleteLastUsed[] = "last_used";
 
 }  // namespace
 
@@ -83,7 +82,6 @@ void PrefProvider::RegisterProfilePrefs(
 
 PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
     : prefs_(prefs),
-      clock_(new base::DefaultClock()),
       is_incognito_(incognito) {
   DCHECK(prefs_);
   // Verify preferences version.
@@ -181,30 +179,10 @@ void PrefProvider::ClearPrefs() {
     pref.second->ClearPref();
 }
 
-void PrefProvider::UpdateLastUsage(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type) {
-  GetPref(content_type)
-      ->UpdateLastUsage(primary_pattern, secondary_pattern, clock_.get());
-}
-
-base::Time PrefProvider::GetLastUsage(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type) {
-  return GetPref(content_type)
-      ->GetLastUsage(primary_pattern, secondary_pattern);
-}
-
 ContentSettingsPref* PrefProvider::GetPref(ContentSettingsType type) const {
   auto it = content_settings_prefs_.find(type);
   DCHECK(it != content_settings_prefs_.end());
   return it->second.get();
-}
-
-void PrefProvider::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
 }
 
 void PrefProvider::Notify(
@@ -250,6 +228,34 @@ void PrefProvider::DiscardObsoletePreferences() {
     prefs_->Set(permission_autoblocker_data_pref, *old_dict);
   prefs_->ClearPref(prompt_no_decision_count_pref);
 #endif  // !defined(OS_IOS)
+
+  // TODO(timloh): See crbug.com/691893. This removal code was added in M58,
+  // so is probably fine to remove in M60 or later.
+  for (const WebsiteSettingsInfo* info :
+       *WebsiteSettingsRegistry::GetInstance()) {
+    if (!prefs_->GetDictionary(info->pref_name()))
+      continue;
+
+    DictionaryPrefUpdate update(prefs_, info->pref_name());
+    base::DictionaryValue* all_settings = update.Get();
+    std::vector<std::string> values_to_clean;
+    for (base::DictionaryValue::Iterator i(*all_settings); !i.IsAtEnd();
+         i.Advance()) {
+      const base::DictionaryValue* pattern_settings = nullptr;
+      bool is_dictionary = i.value().GetAsDictionary(&pattern_settings);
+      DCHECK(is_dictionary);
+      if (pattern_settings->GetWithoutPathExpansion(kObsoleteLastUsed, nullptr))
+        values_to_clean.push_back(i.key());
+    }
+
+    for (const std::string& key : values_to_clean) {
+      base::DictionaryValue* pattern_settings = nullptr;
+      all_settings->GetDictionaryWithoutPathExpansion(key, &pattern_settings);
+      pattern_settings->RemoveWithoutPathExpansion(kObsoleteLastUsed, nullptr);
+      if (pattern_settings->empty())
+        all_settings->RemoveWithoutPathExpansion(key, nullptr);
+    }
+  }
 }
 
 }  // namespace content_settings

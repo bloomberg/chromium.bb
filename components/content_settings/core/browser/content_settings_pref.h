@@ -23,7 +23,6 @@ class PrefService;
 class PrefChangeRegistrar;
 
 namespace base {
-class Clock;
 class DictionaryValue;
 }
 
@@ -60,13 +59,6 @@ class ContentSettingsPref {
   void ClearPref();
 
   void ClearAllContentSettingsRules();
-
-  void UpdateLastUsage(const ContentSettingsPattern& primary_pattern,
-                       const ContentSettingsPattern& secondary_pattern,
-                       base::Clock* clock);
-
-  base::Time GetLastUsage(const ContentSettingsPattern& primary_pattern,
-                          const ContentSettingsPattern& secondary_pattern);
 
   size_t GetNumExceptions();
 

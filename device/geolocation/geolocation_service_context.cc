@@ -16,10 +16,9 @@ GeolocationServiceContext::GeolocationServiceContext() {}
 GeolocationServiceContext::~GeolocationServiceContext() {}
 
 void GeolocationServiceContext::CreateService(
-    const base::Closure& update_callback,
     mojo::InterfaceRequest<mojom::GeolocationService> request) {
   GeolocationServiceImpl* service =
-      new GeolocationServiceImpl(std::move(request), this, update_callback);
+      new GeolocationServiceImpl(std::move(request), this);
   services_.push_back(base::WrapUnique<GeolocationServiceImpl>(service));
   if (geoposition_override_)
     service->SetOverride(*geoposition_override_.get());

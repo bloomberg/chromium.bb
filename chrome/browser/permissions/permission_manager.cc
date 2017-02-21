@@ -425,21 +425,6 @@ PermissionStatus PermissionManager::GetPermissionStatus(
                              requesting_origin, embedding_origin);
 }
 
-void PermissionManager::RegisterPermissionUsage(PermissionType permission,
-                                                const GURL& requesting_origin,
-                                                const GURL& embedding_origin) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // This is required because constant permissions don't have a
-  // ContentSettingsType.
-  if (IsConstantPermission(permission))
-    return;
-
-  HostContentSettingsMapFactory::GetForProfile(profile_)->UpdateLastUsage(
-      requesting_origin,
-      embedding_origin,
-      PermissionTypeToContentSetting(permission));
-}
-
 int PermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     const GURL& requesting_origin,

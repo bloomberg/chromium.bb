@@ -794,9 +794,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // part of the same site instance.
   bool IsSameSiteInstance(RenderFrameHostImpl* other_render_frame_host);
 
-  // Informs the content client that geolocation permissions were used.
-  void DidUseGeolocationPermission();
-
   // Returns whether the current RenderProcessHost has read access to all the
   // files reported in |state|.
   bool CanAccessFilesOfPageState(const PageState& state);

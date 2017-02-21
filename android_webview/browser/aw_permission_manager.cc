@@ -504,12 +504,6 @@ PermissionStatus AwPermissionManager::GetPermissionStatus(
   return PermissionStatus::DENIED;
 }
 
-void AwPermissionManager::RegisterPermissionUsage(
-    PermissionType permission,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-}
-
 int AwPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     const GURL& requesting_origin,

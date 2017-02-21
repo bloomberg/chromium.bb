@@ -115,10 +115,6 @@ void PermissionContextBase::RequestPermission(
   // decision.
   PermissionResult result =
       GetPermissionStatus(requesting_origin, embedding_origin);
-  if (result.content_setting == CONTENT_SETTING_ALLOW) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)->UpdateLastUsage(
-        requesting_origin, embedding_origin, content_settings_storage_type());
-  }
 
   if (result.content_setting == CONTENT_SETTING_ALLOW ||
       result.content_setting == CONTENT_SETTING_BLOCK) {

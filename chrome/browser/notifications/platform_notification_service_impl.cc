@@ -319,9 +319,6 @@ void PlatformNotificationServiceImpl::DisplayNotification(
         base::Bind(&CancelNotification, notification.delegate_id(), profile_id,
                    profile->IsOffTheRecord());
   }
-
-  HostContentSettingsMapFactory::GetForProfile(profile)->UpdateLastUsage(
-      origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void PlatformNotificationServiceImpl::DisplayPersistentNotification(
@@ -356,9 +353,6 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
       NotificationCommon::PERSISTENT, notification_id, notification);
   content::RecordAction(
       base::UserMetricsAction("Notifications.Persistent.Shown"));
-
-  HostContentSettingsMapFactory::GetForProfile(profile)->UpdateLastUsage(
-      origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void PlatformNotificationServiceImpl::ClosePersistentNotification(

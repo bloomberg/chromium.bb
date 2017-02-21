@@ -46,9 +46,6 @@ class MockPermissionManager : public PermissionManager {
   void ResetPermission(PermissionType permission,
                        const GURL& requesting_origin,
                        const GURL& embedding_origin) override {}
-  void RegisterPermissionUsage(PermissionType permission,
-                               const GURL& requesting_origin,
-                               const GURL& embedding_origin) override {}
   int SubscribePermissionStatusChange(
       PermissionType permission,
       const GURL& requesting_origin,

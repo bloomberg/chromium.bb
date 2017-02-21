@@ -291,32 +291,6 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentNotificationMatches) {
   EXPECT_EQ(message_center::ButtonType::TEXT, buttons[1].type);
 }
 
-TEST_F(PlatformNotificationServiceTest, NotificationPermissionLastUsage) {
-  // Both page and persistent notifications should update the last usage
-  // time of the notification permission for the origin.
-  GURL origin("https://chrome.com/");
-  base::Time begin_time;
-
-  CreateSimplePageNotification();
-
-  base::Time after_page_notification =
-      HostContentSettingsMapFactory::GetForProfile(profile())->GetLastUsage(
-          origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  EXPECT_GT(after_page_notification, begin_time);
-
-  // Ensure that there is at least some time between the two calls.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
-
-  service()->DisplayPersistentNotification(
-      profile(), kNotificationId, GURL() /* service_worker_scope */, origin,
-      PlatformNotificationData(), NotificationResources());
-
-  base::Time after_persistent_notification =
-      HostContentSettingsMapFactory::GetForProfile(profile())->GetLastUsage(
-          origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  EXPECT_GT(after_persistent_notification, after_page_notification);
-}
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 
 TEST_F(PlatformNotificationServiceTest, DisplayNameForContextMessage) {
