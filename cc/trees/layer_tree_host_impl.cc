@@ -222,6 +222,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       wheel_scrolling_(false),
       scroll_affects_scroll_handler_(false),
       scroll_layer_id_mouse_currently_over_(Layer::INVALID_ID),
+      scroll_layer_id_mouse_currently_captured_(Layer::INVALID_ID),
       tile_priorities_dirty_(false),
       settings_(settings),
       visible_(false),
@@ -246,7 +247,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       max_memory_needed_bytes_(0),
       resourceless_software_draw_(false),
       mutator_host_(std::move(mutator_host)),
-      captured_scrollbar_animation_controller_(nullptr),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       task_graph_runner_(task_graph_runner),
@@ -3266,14 +3266,21 @@ void LayerTreeHostImpl::MouseDown() {
       ScrollbarAnimationControllerForId(scroll_layer_id_mouse_currently_over_);
   if (animation_controller) {
     animation_controller->DidMouseDown();
-    captured_scrollbar_animation_controller_ = animation_controller;
+    scroll_layer_id_mouse_currently_captured_ =
+        scroll_layer_id_mouse_currently_over_;
   }
 }
 
 void LayerTreeHostImpl::MouseUp() {
-  if (captured_scrollbar_animation_controller_) {
-    captured_scrollbar_animation_controller_->DidMouseUp();
-    captured_scrollbar_animation_controller_ = nullptr;
+  if (scroll_layer_id_mouse_currently_captured_ != Layer::INVALID_ID) {
+    ScrollbarAnimationController* animation_controller =
+        ScrollbarAnimationControllerForId(
+            scroll_layer_id_mouse_currently_captured_);
+
+    scroll_layer_id_mouse_currently_captured_ = Layer::INVALID_ID;
+
+    if (animation_controller)
+      animation_controller->DidMouseUp();
   }
 }
 

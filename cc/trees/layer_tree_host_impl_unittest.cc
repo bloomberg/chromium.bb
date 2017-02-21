@@ -11753,6 +11753,13 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   host_impl_->MouseUp();
 
   EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+
+  // Near scrollbar_1, then mouse down and unregister
+  // scrollbar_2_animation_controller, then mouse up should not cause crash.
+  host_impl_->MouseMoveAt(gfx::Point(40, 150));
+  host_impl_->MouseDown();
+  host_impl_->UnregisterScrollbarAnimationController(root_scroll->id());
+  host_impl_->MouseUp();
 }
 
 TEST_F(LayerTreeHostImplTest,

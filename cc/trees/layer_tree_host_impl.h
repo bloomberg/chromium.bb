@@ -742,6 +742,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool wheel_scrolling_;
   bool scroll_affects_scroll_handler_;
   int scroll_layer_id_mouse_currently_over_;
+  int scroll_layer_id_mouse_currently_captured_;
 
   std::vector<std::unique_ptr<SwapPromise>>
       swap_promises_for_main_thread_scroll_update_;
@@ -805,8 +806,6 @@ class CC_EXPORT LayerTreeHostImpl
   // There is one animation controller per pair of overlay scrollbars.
   std::unordered_map<int, std::unique_ptr<ScrollbarAnimationController>>
       scrollbar_animation_controllers_;
-
-  ScrollbarAnimationController* captured_scrollbar_animation_controller_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
   MicroBenchmarkControllerImpl micro_benchmark_controller_;
