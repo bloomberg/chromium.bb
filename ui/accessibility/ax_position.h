@@ -146,19 +146,18 @@ class AXPosition {
       }
     }
 
-    if (!IsTextPosition() || text_offset() > MaxTextOffset())
+    if (!IsTextPosition() || text_offset_ > MaxTextOffset())
       return str;
 
     std::string text = base::UTF16ToUTF8(GetInnerText());
     DCHECK_GE(text_offset_, 0);
     DCHECK_LE(text_offset_, static_cast<int>(text.length()));
     std::string annotated_text;
-    if (text_offset() == MaxTextOffset()) {
+    if (text_offset_ == MaxTextOffset()) {
       annotated_text = text + "<>";
     } else {
-      annotated_text = text.substr(0, text_offset()) + "<" +
-                       text[text_offset()] + ">" +
-                       text.substr(text_offset() + 1);
+      annotated_text = text.substr(0, text_offset_) + "<" + text[text_offset_] +
+                       ">" + text.substr(text_offset_ + 1);
     }
 
     return str + " annotated_text=" + annotated_text;

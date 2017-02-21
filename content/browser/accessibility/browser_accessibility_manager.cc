@@ -688,18 +688,15 @@ void BrowserAccessibilityManager::SetValue(
   delegate_->AccessibilityPerformAction(action_data);
 }
 
-void BrowserAccessibilityManager::SetTextSelection(
-    const BrowserAccessibility& node,
-    int start_offset,
-    int end_offset) {
-  if (!delegate_)
+void BrowserAccessibilityManager::SetSelection(AXPlatformRange range) {
+  if (!delegate_ || range.IsNull())
     return;
 
   ui::AXActionData action_data;
-  action_data.anchor_node_id = node.GetId();
-  action_data.anchor_offset = start_offset;
-  action_data.focus_node_id = node.GetId();
-  action_data.focus_offset = end_offset;
+  action_data.anchor_node_id = range.anchor()->anchor_id();
+  action_data.anchor_offset = range.anchor()->text_offset();
+  action_data.focus_node_id = range.focus()->anchor_id();
+  action_data.focus_offset = range.focus()->text_offset();
   action_data.action = ui::AX_ACTION_SET_SELECTION;
   delegate_->AccessibilityPerformAction(action_data);
 }

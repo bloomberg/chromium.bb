@@ -433,7 +433,7 @@ HRESULT BrowserAccessibilityWin::accDoDefaultAction(VARIANT var_id) {
   if (!target->HasIntAttribute(ui::AX_ATTR_ACTION))
     return DISP_E_MEMBERNOTFOUND;
 
-  manager()->DoDefaultAction(*target);
+  manager_->DoDefaultAction(*target);
   return S_OK;
 }
 
@@ -454,7 +454,7 @@ STDMETHODIMP BrowserAccessibilityWin::accHitTest(LONG x_left,
     return S_FALSE;
   }
 
-  BrowserAccessibility* result = manager()->CachingAsyncHitTest(point);
+  BrowserAccessibility* result = manager_->CachingAsyncHitTest(point);
   if (result == this) {
     // Point is within this object.
     child->vt = VT_I4;
@@ -620,8 +620,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_accFocus(VARIANT* focus_child) {
   if (!focus_child)
     return E_INVALIDARG;
 
-  BrowserAccessibilityWin* focus = static_cast<BrowserAccessibilityWin*>(
-      manager()->GetFocus());
+  BrowserAccessibilityWin* focus =
+      static_cast<BrowserAccessibilityWin*>(manager_->GetFocus());
   if (focus == this) {
     focus_child->vt = VT_I4;
     focus_child->lVal = CHILDID_SELF;
@@ -711,7 +711,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accParent(IDispatch** disp_parent) {
     // This happens if we're the root of the tree;
     // return the IAccessible for the window.
     parent_obj =
-        manager()->ToBrowserAccessibilityManagerWin()->GetParentIAccessible();
+        manager_->ToBrowserAccessibilityManagerWin()->GetParentIAccessible();
     // |parent| can only be NULL if the manager was created before the parent
     // IAccessible was known and it wasn't subsequently set before a client
     // requested it. This has been fixed. |parent| may also be NULL during
@@ -766,7 +766,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accState(VARIANT var_id,
 
   state->vt = VT_I4;
   state->lVal = target->ia_state();
-  if (manager()->GetFocus() == this)
+  if (manager_->GetFocus() == this)
     state->lVal |= STATE_SYSTEM_FOCUSED;
 
   return S_OK;
@@ -878,7 +878,7 @@ STDMETHODIMP BrowserAccessibilityWin::accSelect(
     return E_FAIL;
 
   if (flags_sel & SELFLAG_TAKEFOCUS) {
-    manager()->SetFocus(*this);
+    manager_->SetFocus(*this);
     return S_OK;
   }
 
@@ -967,7 +967,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_windowHandle(HWND* window_handle) {
     return E_INVALIDARG;
 
   *window_handle =
-      manager()->ToBrowserAccessibilityManagerWin()->GetParentHWND();
+      manager_->ToBrowserAccessibilityManagerWin()->GetParentHWND();
   if (!*window_handle)
     return E_FAIL;
 
@@ -1053,31 +1053,31 @@ STDMETHODIMP BrowserAccessibilityWin::scrollTo(IA2ScrollType scroll_type) {
   gfx::Rect r = GetFrameBoundsRect();
   switch(scroll_type) {
     case IA2_SCROLL_TYPE_TOP_LEFT:
-      manager()->ScrollToMakeVisible(*this, gfx::Rect(r.x(), r.y(), 0, 0));
+      manager_->ScrollToMakeVisible(*this, gfx::Rect(r.x(), r.y(), 0, 0));
       break;
     case IA2_SCROLL_TYPE_BOTTOM_RIGHT:
-      manager()->ScrollToMakeVisible(
-          *this, gfx::Rect(r.right(), r.bottom(), 0, 0));
+      manager_->ScrollToMakeVisible(*this,
+                                    gfx::Rect(r.right(), r.bottom(), 0, 0));
       break;
     case IA2_SCROLL_TYPE_TOP_EDGE:
-      manager()->ScrollToMakeVisible(
-          *this, gfx::Rect(r.x(), r.y(), r.width(), 0));
+      manager_->ScrollToMakeVisible(*this,
+                                    gfx::Rect(r.x(), r.y(), r.width(), 0));
       break;
     case IA2_SCROLL_TYPE_BOTTOM_EDGE:
-      manager()->ScrollToMakeVisible(
-          *this, gfx::Rect(r.x(), r.bottom(), r.width(), 0));
-    break;
+      manager_->ScrollToMakeVisible(*this,
+                                    gfx::Rect(r.x(), r.bottom(), r.width(), 0));
+      break;
     case IA2_SCROLL_TYPE_LEFT_EDGE:
-      manager()->ScrollToMakeVisible(
-          *this, gfx::Rect(r.x(), r.y(), 0, r.height()));
+      manager_->ScrollToMakeVisible(*this,
+                                    gfx::Rect(r.x(), r.y(), 0, r.height()));
       break;
     case IA2_SCROLL_TYPE_RIGHT_EDGE:
-      manager()->ScrollToMakeVisible(
-          *this, gfx::Rect(r.right(), r.y(), 0, r.height()));
+      manager_->ScrollToMakeVisible(*this,
+                                    gfx::Rect(r.right(), r.y(), 0, r.height()));
       break;
     case IA2_SCROLL_TYPE_ANYWHERE:
     default:
-      manager()->ScrollToMakeVisible(*this, r);
+      manager_->ScrollToMakeVisible(*this, r);
       break;
   }
 
@@ -1095,7 +1095,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
   gfx::Point scroll_to(x, y);
 
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
-    scroll_to -= manager()->GetViewBounds().OffsetFromOrigin();
+    scroll_to -= manager_->GetViewBounds().OffsetFromOrigin();
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
     if (GetParent())
       scroll_to += GetParent()->GetFrameBoundsRect().OffsetFromOrigin();
@@ -1103,7 +1103,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
     return E_INVALIDARG;
   }
 
-  manager()->ScrollToPoint(*this, scroll_to);
+  manager_->ScrollToPoint(*this, scroll_to);
 
   return S_OK;
 }
@@ -2074,7 +2074,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
   int index = 0;
   for (int i = 0; i < rows; ++i) {
     int cell_id = cell_ids[i * columns + column];
-    BrowserAccessibility* cell = manager()->GetFromID(cell_id);
+    BrowserAccessibility* cell = manager_->GetFromID(cell_id);
     if (cell && cell->GetRole() == ui::AX_ROLE_COLUMN_HEADER) {
       (*cell_accessibles)[index] = static_cast<IAccessible*>(
           ToBrowserAccessibilityWin(cell)->NewReference());
@@ -2167,7 +2167,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
 
   for (int i = 0; i < columns; ++i) {
     int cell_id = cell_ids[row * columns + i];
-    BrowserAccessibility* cell = manager()->GetFromID(cell_id);
+    BrowserAccessibility* cell = manager_->GetFromID(cell_id);
     if (cell && cell->GetRole() == ui::AX_ROLE_ROW_HEADER)
       (*n_row_header_cells)++;
   }
@@ -2177,7 +2177,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
   int index = 0;
   for (int i = 0; i < columns; ++i) {
     int cell_id = cell_ids[row * columns + i];
-    BrowserAccessibility* cell = manager()->GetFromID(cell_id);
+    BrowserAccessibility* cell = manager_->GetFromID(cell_id);
     if (cell && cell->GetRole() == ui::AX_ROLE_ROW_HEADER) {
       (*cell_accessibles)[index] = static_cast<IAccessible*>(
           ToBrowserAccessibilityWin(cell)->NewReference());
@@ -2345,8 +2345,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_characterExtents(
     return E_INVALIDARG;
 
   const base::string16& text_str = GetText();
-  HandleSpecialTextOffset(text_str, &offset);
-
+  HandleSpecialTextOffset(&offset);
   if (offset < 0 || offset > static_cast<LONG>(text_str.size()))
     return E_INVALIDARG;
 
@@ -2400,15 +2399,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
   if (!start_offset || !end_offset || selection_index != 0)
     return E_INVALIDARG;
 
-  LONG n_selections = 0;
-  if (FAILED(get_nSelections(&n_selections)) || n_selections < 1)
-    return E_INVALIDARG;
-
   *start_offset = 0;
   *end_offset = 0;
   int selection_start, selection_end;
   GetSelectionOffsets(&selection_start, &selection_end);
-  if (selection_start >= 0 && selection_end >= 0) {
+  if (selection_start >= 0 && selection_end >= 0 &&
+      selection_start != selection_end) {
     // We should ignore the direction of the selection when exposing start and
     // end offsets. According to the IA2 Spec the end offset is always increased
     // by one past the end of the selection. This wouldn't make sense if
@@ -2418,9 +2414,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
 
     *start_offset = selection_start;
     *end_offset = selection_end;
+    return S_OK;
   }
 
-  return S_OK;
+  return E_INVALIDARG;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_text(LONG start_offset,
@@ -2435,8 +2432,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_text(LONG start_offset,
     return E_INVALIDARG;
 
   const base::string16& text_str = GetText();
-  HandleSpecialTextOffset(text_str, &start_offset);
-  HandleSpecialTextOffset(text_str, &end_offset);
+  HandleSpecialTextOffset(&start_offset);
+  HandleSpecialTextOffset(&end_offset);
 
   // The spec allows the arguments to be reversed.
   if (start_offset > end_offset) {
@@ -2480,7 +2477,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAtOffset(
     return E_INVALIDARG;
 
   const base::string16& text_str = GetText();
-  HandleSpecialTextOffset(text_str, &offset);
+  HandleSpecialTextOffset(&offset);
   if (offset < 0)
     return E_INVALIDARG;
 
@@ -2691,11 +2688,8 @@ STDMETHODIMP BrowserAccessibilityWin::addSelection(LONG start_offset,
   if (!instance_active())
     return E_FAIL;
 
-  const base::string16& text_str = GetText();
-  HandleSpecialTextOffset(text_str, &start_offset);
-  HandleSpecialTextOffset(text_str, &end_offset);
-
-  manager()->SetTextSelection(*this, start_offset, end_offset);
+  // We only support one selection.
+  SetIA2HypertextSelection(start_offset, end_offset);
   return S_OK;
 }
 
@@ -2708,7 +2702,14 @@ STDMETHODIMP BrowserAccessibilityWin::removeSelection(LONG selection_index) {
   if (selection_index != 0)
     return E_INVALIDARG;
 
-  manager()->SetTextSelection(*this, 0, 0);
+  // Simply collapse the selection to the position of the caret if a caret is
+  // visible, otherwise set the selection to 0.
+  LONG caret_offset = 0;
+  int selection_start, selection_end;
+  GetSelectionOffsets(&selection_start, &selection_end);
+  if (HasCaret() && selection_end >= 0)
+    caret_offset = selection_end;
+  SetIA2HypertextSelection(caret_offset, caret_offset);
   return S_OK;
 }
 
@@ -2717,10 +2718,7 @@ STDMETHODIMP BrowserAccessibilityWin::setCaretOffset(LONG offset) {
   AddAccessibilityModeFlags(ACCESSIBILITY_MODE_FLAG_SCREEN_READER);
   if (!instance_active())
     return E_FAIL;
-
-  const base::string16& text_str = GetText();
-  HandleSpecialTextOffset(text_str, &offset);
-  manager()->SetTextSelection(*this, offset, offset);
+  SetIA2HypertextSelection(offset, offset);
   return S_OK;
 }
 
@@ -2731,15 +2729,9 @@ STDMETHODIMP BrowserAccessibilityWin::setSelection(LONG selection_index,
   AddAccessibilityModeFlags(ACCESSIBILITY_MODE_FLAG_SCREEN_READER);
   if (!instance_active())
     return E_FAIL;
-
   if (selection_index != 0)
     return E_INVALIDARG;
-
-  const base::string16& text_str = GetText();
-  HandleSpecialTextOffset(text_str, &start_offset);
-  HandleSpecialTextOffset(text_str, &end_offset);
-
-  manager()->SetTextSelection(*this, start_offset, end_offset);
+  SetIA2HypertextSelection(start_offset, end_offset);
   return S_OK;
 }
 
@@ -2757,8 +2749,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_attributes(LONG offset,
   if (!instance_active())
     return E_FAIL;
 
-  const base::string16& text = GetText();
-  HandleSpecialTextOffset(text, &offset);
+  const base::string16 text = GetText();
+  HandleSpecialTextOffset(&offset);
   if (offset < 0 || offset > static_cast<LONG>(text.size()))
     return E_INVALIDARG;
 
@@ -2976,7 +2968,7 @@ STDMETHODIMP BrowserAccessibilityWin::doAction(long action_index) {
   if (!HasIntAttribute(ui::AX_ATTR_ACTION) || action_index != 0)
     return E_INVALIDARG;
 
-  manager()->DoDefaultAction(*this);
+  manager_->DoDefaultAction(*this);
   return S_OK;
 }
 
@@ -3138,10 +3130,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_URL(BSTR* url) {
   if (!url)
     return E_INVALIDARG;
 
-  if (this != manager()->GetRoot())
+  if (this != manager_->GetRoot())
     return E_FAIL;
 
-  std::string str = manager()->GetTreeData().url;
+  std::string str = manager_->GetTreeData().url;
   if (str.empty())
     return S_FALSE;
 
@@ -3159,7 +3151,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_title(BSTR* title) {
   if (!title)
     return E_INVALIDARG;
 
-  std::string str = manager()->GetTreeData().title;
+  std::string str = manager_->GetTreeData().title;
   if (str.empty())
     return S_FALSE;
 
@@ -3177,7 +3169,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_mimeType(BSTR* mime_type) {
   if (!mime_type)
     return E_INVALIDARG;
 
-  std::string str = manager()->GetTreeData().mimetype;
+  std::string str = manager_->GetTreeData().mimetype;
   if (str.empty())
     return S_FALSE;
 
@@ -3195,7 +3187,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_docType(BSTR* doc_type) {
   if (!doc_type)
     return E_INVALIDARG;
 
-  std::string str = manager()->GetTreeData().doctype;
+  std::string str = manager_->GetTreeData().doctype;
   if (str.empty())
     return S_FALSE;
 
@@ -3610,8 +3602,8 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToSubstring(
     return E_INVALIDARG;
   }
 
-  manager()->ScrollToMakeVisible(*this, GetPageBoundsForRange(
-      start_index, end_index - start_index));
+  manager_->ScrollToMakeVisible(
+      *this, GetPageBoundsForRange(start_index, end_index - start_index));
 
   return S_OK;
 }
@@ -3875,6 +3867,42 @@ void BrowserAccessibilityWin::ComputeStylesIfNeeded() {
   win_attributes_->offset_to_text_attributes.swap(attributes_map);
 }
 
+// |offset| could either be a text character or a child index in case of
+// non-text objects.
+BrowserAccessibilityWin::AXPlatformPositionInstance
+BrowserAccessibilityWin::CreatePositionAt(int offset) const {
+  if (!IsNativeTextControl() && !IsTextOnlyObject()) {
+    DCHECK(manager_);
+    const BrowserAccessibilityWin* child = this;
+    // TODO(nektar): Make parents of text-only objects not include the text of
+    // children in their hypertext.
+    for (size_t i = 0; i < InternalChildCount(); ++i) {
+      int new_offset = offset;
+      child = ToBrowserAccessibilityWin(InternalGetChild(i));
+      DCHECK(child);
+      if (child->IsTextOnlyObject()) {
+        new_offset -= child->GetText().length();
+      } else {
+        new_offset -= 1;
+      }
+      if (new_offset <= 0)
+        break;
+      offset = new_offset;
+    }
+    AXPlatformPositionInstance position =
+        AXPlatformPosition::CreateTextPosition(manager_->ax_tree_id(),
+                                               child->GetId(), offset,
+                                               ui::AX_TEXT_AFFINITY_DOWNSTREAM)
+            ->AsLeafTextPosition();
+    if (position->GetAnchor() &&
+        position->GetAnchor()->GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX) {
+      return position->CreateParentPosition();
+    }
+    return position;
+  }
+  return BrowserAccessibility::CreatePositionAt(offset);
+}
+
 base::string16 BrowserAccessibilityWin::GetText() const {
   if (PlatformIsChildOfLeaf())
     return BrowserAccessibility::GetText();
@@ -4035,7 +4063,7 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   // On Windows, the value of a document should be its url.
   if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
       GetRole() == ui::AX_ROLE_WEB_AREA) {
-    value = base::UTF8ToUTF16(manager()->GetTreeData().url);
+    value = base::UTF8ToUTF16(manager_->GetTreeData().url);
   }
   // If this doesn't have a value and is linked then set its value to the url
   // attribute. This allows screen readers to read an empty link's destination.
@@ -4501,6 +4529,18 @@ void BrowserAccessibilityWin::SanitizeStringAttributeForIA2(
   base::ReplaceChars(*output, L";", L"\\;", output);
 }
 
+void BrowserAccessibilityWin::SetIA2HypertextSelection(LONG start_offset,
+                                                       LONG end_offset) {
+  HandleSpecialTextOffset(&start_offset);
+  HandleSpecialTextOffset(&end_offset);
+  AXPlatformPositionInstance start_position =
+      CreatePositionAt(static_cast<int>(start_offset));
+  AXPlatformPositionInstance end_position =
+      CreatePositionAt(static_cast<int>(end_offset));
+  manager_->SetSelection(AXPlatformRange(start_position->AsTextPosition(),
+                                         end_position->AsTextPosition()));
+}
+
 void BrowserAccessibilityWin::StringAttributeToIA2(
     ui::AXStringAttribute attribute,
     const char* ia2_attr) {
@@ -4707,22 +4747,22 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
 }
 
 int BrowserAccessibilityWin::GetSelectionAnchor() const {
-  int32_t anchor_id = manager()->GetTreeData().sel_anchor_object_id;
+  int32_t anchor_id = manager_->GetTreeData().sel_anchor_object_id;
   const BrowserAccessibilityWin* anchor_object = GetFromID(anchor_id);
   if (!anchor_object)
     return -1;
 
-  int anchor_offset = manager()->GetTreeData().sel_anchor_offset;
+  int anchor_offset = manager_->GetTreeData().sel_anchor_offset;
   return GetHypertextOffsetFromEndpoint(*anchor_object, anchor_offset);
 }
 
 int BrowserAccessibilityWin::GetSelectionFocus() const {
-  int32_t focus_id = manager()->GetTreeData().sel_focus_object_id;
+  int32_t focus_id = manager_->GetTreeData().sel_focus_object_id;
   const BrowserAccessibilityWin* focus_object = GetFromID(focus_id);
   if (!focus_object)
     return -1;
 
-  int focus_offset = manager()->GetTreeData().sel_focus_offset;
+  int focus_offset = manager_->GetTreeData().sel_focus_offset;
   return GetHypertextOffsetFromEndpoint(*focus_object, focus_offset);
 }
 
@@ -4859,13 +4899,15 @@ void BrowserAccessibilityWin::ComputeHypertextRemovedAndInserted(
   *new_len = new_text.size() - common_prefix - common_suffix;
 }
 
-void BrowserAccessibilityWin::HandleSpecialTextOffset(
-    const base::string16& text,
-    LONG* offset) {
-  if (*offset == IA2_TEXT_OFFSET_LENGTH)
-    *offset = static_cast<LONG>(text.size());
-  else if (*offset == IA2_TEXT_OFFSET_CARET)
-    get_caretOffset(offset);
+void BrowserAccessibilityWin::HandleSpecialTextOffset(LONG* offset) {
+  if (*offset == IA2_TEXT_OFFSET_LENGTH) {
+    *offset = static_cast<LONG>(GetText().length());
+  } else if (*offset == IA2_TEXT_OFFSET_CARET) {
+    // We shouldn't call |get_caretOffset| here as it affects UMA counts.
+    int selection_start, selection_end;
+    GetSelectionOffsets(&selection_start, &selection_end);
+    *offset = selection_end;
+  }
 }
 
 ui::TextBoundaryType BrowserAccessibilityWin::IA2TextBoundaryToTextBoundary(
@@ -4895,12 +4937,11 @@ LONG BrowserAccessibilityWin::FindBoundary(
     ui::TextBoundaryDirection direction) {
   // If the boundary is relative to the caret, use the selection
   // affinity, otherwise default to downstream affinity.
-  ui::AXTextAffinity affinity =
-      start_offset == IA2_TEXT_OFFSET_CARET ?
-      manager()->GetTreeData().sel_focus_affinity :
-      ui::AX_TEXT_AFFINITY_DOWNSTREAM;
+  ui::AXTextAffinity affinity = start_offset == IA2_TEXT_OFFSET_CARET
+                                    ? manager_->GetTreeData().sel_focus_affinity
+                                    : ui::AX_TEXT_AFFINITY_DOWNSTREAM;
 
-  HandleSpecialTextOffset(text, &start_offset);
+  HandleSpecialTextOffset(&start_offset);
   if (ia2_boundary == IA2_TEXT_BOUNDARY_WORD)
     return GetWordStartBoundary(static_cast<int>(start_offset), direction);
   if (ia2_boundary == IA2_TEXT_BOUNDARY_LINE) {
@@ -4945,7 +4986,7 @@ LONG BrowserAccessibilityWin::FindStartOfStyle(
 BrowserAccessibilityWin* BrowserAccessibilityWin::GetFromID(int32_t id) const {
   if (!instance_active())
     return nullptr;
-  return ToBrowserAccessibilityWin(manager()->GetFromID(id));
+  return ToBrowserAccessibilityWin(manager_->GetFromID(id));
 }
 
 bool BrowserAccessibilityWin::IsListBoxOptionOrMenuListOption() {

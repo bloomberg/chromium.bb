@@ -14,6 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "content/browser/accessibility/ax_platform_position.h"
 #include "content/browser/accessibility/ax_tree_id_registry.h"
 #include "content/browser/accessibility/browser_accessibility_event.h"
 #include "content/common/content_export.h"
@@ -21,6 +22,7 @@
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/native_widget_types.h"
@@ -198,8 +200,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   void SetScrollOffset(const BrowserAccessibility& node, gfx::Point offset);
   void SetValue(
       const BrowserAccessibility& node, const base::string16& value);
-  void SetTextSelection(
-      const BrowserAccessibility& node, int start_offset, int end_offset);
+  void SetSelection(
+      ui::AXRange<AXPlatformPosition::AXPositionInstance::element_type> range);
   void SetAccessibilityFocus(const BrowserAccessibility& node);
   void ShowContextMenu(const BrowserAccessibility& node);
 
@@ -372,6 +374,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   void CacheHitTestResult(BrowserAccessibility* hit_test_result);
 
  protected:
+  using AXPlatformPositionInstance = AXPlatformPosition::AXPositionInstance;
+  using AXPlatformRange = ui::AXRange<AXPlatformPositionInstance::element_type>;
+
   BrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);

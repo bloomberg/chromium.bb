@@ -654,8 +654,10 @@ void BrowserAccessibilityManagerAndroid::SetSelection(
     jint start,
     jint end) {
   BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
-  if (node)
-    node->manager()->SetTextSelection(*node, start, end);
+  if (node) {
+    node->manager()->SetSelection(AXPlatformRange(node->CreatePositionAt(start),
+                                                  node->CreatePositionAt(end)));
+  }
 }
 
 jboolean BrowserAccessibilityManagerAndroid::AdjustSlider(

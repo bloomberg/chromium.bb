@@ -719,6 +719,11 @@ BrowserAccessibilityWin
   // embedded child objects.
   CONTENT_EXPORT void ComputeStylesIfNeeded();
 
+  // |offset| could either be a text character or a child index in case of
+  // non-text objects.
+  CONTENT_EXPORT AXPlatformPosition::AXPositionInstance CreatePositionAt(
+      int offset) const override;
+
   CONTENT_EXPORT base::string16 GetText() const override;
 
   // Accessors.
@@ -783,6 +788,9 @@ BrowserAccessibilityWin
       base::string16* output);
   FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityTest,
                            TestSanitizeStringAttributeForIA2);
+
+  // Sets the selection given a start and end offset in IA2 Hypertext.
+  void SetIA2HypertextSelection(LONG start_offset, LONG end_offset);
 
   // If the string attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
@@ -859,7 +867,7 @@ BrowserAccessibilityWin
 
   // If offset is a member of IA2TextSpecialOffsets this function updates the
   // value of offset and returns, otherwise offset remains unchanged.
-  void HandleSpecialTextOffset(const base::string16& text, LONG* offset);
+  void HandleSpecialTextOffset(LONG* offset);
 
   // Convert from a IA2TextBoundaryType to a ui::TextBoundaryType.
   ui::TextBoundaryType IA2TextBoundaryToTextBoundary(IA2TextBoundaryType type);
@@ -936,7 +944,7 @@ BrowserAccessibilityWin
     // Maps each style span to its start offset in hypertext.
     std::map<int, std::vector<base::string16>> offset_to_text_attributes;
 
-    // Maps the |hypertext_| embedded character offset to an index in
+    // Maps an embedded character offset in |hypertext_| to an index in
     // |hyperlinks_|.
     std::map<int32_t, int32_t> hyperlink_offset_to_index;
 

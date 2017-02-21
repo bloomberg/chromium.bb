@@ -1276,9 +1276,6 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   hr = combo_box_accessible->get_selection(
       0L /* selection_index */, &selection_start, &selection_end);
   EXPECT_EQ(E_INVALIDARG, hr); // No selections available.
-  // Invalid in_args should not modify out_args.
-  EXPECT_EQ(-2, selection_start);
-  EXPECT_EQ(-2, selection_end);
   hr = text_field_accessible->get_selection(
       0L /* selection_index */, &selection_start, &selection_end);
   EXPECT_EQ(S_OK, hr);

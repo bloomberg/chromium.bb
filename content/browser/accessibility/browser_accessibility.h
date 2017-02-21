@@ -15,10 +15,12 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "content/browser/accessibility/ax_platform_position.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_text_utils.h"
 
 // Set PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL if this platform has
@@ -353,10 +355,19 @@ class CONTENT_EXPORT BrowserAccessibility {
   // to compute a name from its descendants.
   std::string ComputeAccessibleNameFromDescendants();
 
+  // Creates a position rooted at this object.
+  // This is a text position on all platforms except IA2 and ATK, where tree
+  // positions are created for non-text objects representing hypertext offsets.
+  virtual AXPlatformPosition::AXPositionInstance CreatePositionAt(
+      int offset) const;
+
   // Gets the text offsets where new lines start.
   std::vector<int> GetLineStartOffsets() const;
 
  protected:
+  using AXPlatformPositionInstance = AXPlatformPosition::AXPositionInstance;
+  using AXPlatformRange = ui::AXRange<AXPlatformPositionInstance::element_type>;
+
   BrowserAccessibility();
 
   // The manager of this tree of accessibility objects.

@@ -1141,6 +1141,13 @@ std::vector<int> BrowserAccessibility::GetLineStartOffsets() const {
   return node()->GetOrComputeLineStartOffsets();
 }
 
+BrowserAccessibility::AXPlatformPositionInstance
+BrowserAccessibility::CreatePositionAt(int offset) const {
+  DCHECK(manager_);
+  return AXPlatformPosition::CreateTextPosition(
+      manager_->ax_tree_id(), GetId(), offset, ui::AX_TEXT_AFFINITY_DOWNSTREAM);
+}
+
 base::string16 BrowserAccessibility::GetInnerText() const {
   if (IsTextOnlyObject())
     return GetString16Attribute(ui::AX_ATTR_NAME);

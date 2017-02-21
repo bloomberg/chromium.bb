@@ -959,8 +959,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (!root)
     return nil;
 
-  AXPlatformPositionInstance position =
-      CreateTextPosition(*root, 0, ui::AX_TEXT_AFFINITY_DOWNSTREAM);
+  AXPlatformPositionInstance position = root->CreatePositionAt(0);
   return CreateTextMarker(position->CreatePositionAtEndOfAnchor());
 }
 
@@ -1726,8 +1725,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (!root)
     return nil;
 
-  AXPlatformPositionInstance position =
-      CreateTextPosition(*root, 0, ui::AX_TEXT_AFFINITY_DOWNSTREAM);
+  AXPlatformPositionInstance position = root->CreatePositionAt(0);
   return CreateTextMarker(position->CreatePositionAtStartOfAnchor());
 }
 
@@ -2135,8 +2133,8 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXTextMarkerRangeForUIElement"]) {
-    AXPlatformPositionInstance startPosition = CreateTextPosition(
-        *browserAccessibility_, 0, ui::AX_TEXT_AFFINITY_DOWNSTREAM);
+    AXPlatformPositionInstance startPosition =
+        browserAccessibility_->CreatePositionAt(0);
     AXPlatformPositionInstance endPosition =
         startPosition->CreatePositionAtEndOfAnchor();
     AXPlatformRange range =
@@ -2834,8 +2832,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
     NSRange range = [(NSValue*)value rangeValue];
     BrowserAccessibilityManager* manager = browserAccessibility_->manager();
-    manager->SetTextSelection(
-        *browserAccessibility_, range.location, range.location + range.length);
+    manager->SetSelection(AXPlatformRange(
+        browserAccessibility_->CreatePositionAt(range.location),
+        browserAccessibility_->CreatePositionAt(NSMaxRange(range))));
   }
 }
 

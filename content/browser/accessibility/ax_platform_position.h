@@ -11,10 +11,11 @@
 
 #include "base/strings/string16.h"
 #include "content/browser/accessibility/ax_tree_id_registry.h"
-#include "content/browser/accessibility/browser_accessibility.h"
 #include "ui/accessibility/ax_position.h"
 
 namespace content {
+
+class BrowserAccessibility;
 
 using AXTreeID = content::AXTreeIDRegistry::AXTreeID;
 
