@@ -1085,6 +1085,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_MANUAL_PASSWORD_GENERATION_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnableManualPasswordGeneration)},
+    {"enable-show-autofill-signatures", IDS_FLAGS_SHOW_AUTOFILL_SIGNATURES,
+     IDS_FLAGS_SHOW_AUTOFILL_SIGNATURES_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(autofill::switches::kShowAutofillTypePredictions)},
     {"affiliation-based-matching", IDS_FLAGS_AFFILIATION_BASED_MATCHING_NAME,
      IDS_FLAGS_AFFILIATION_BASED_MATCHING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kAffiliationBasedMatching)},

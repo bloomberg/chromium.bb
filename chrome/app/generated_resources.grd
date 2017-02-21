@@ -5906,6 +5906,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_MANUAL_PASSWORD_GENERATION_DESCRIPTION" desc="Description of the flag for manual password generation.">
         Allow the user to manually enforce to generate password on a password field.
       </message>
+      <message name="IDS_FLAGS_SHOW_AUTOFILL_SIGNATURES" desc="Name of the flag to show autofill signatures.">
+        Show autofill signatures.
+      </message>
+      <message name="IDS_FLAGS_SHOW_AUTOFILL_SIGNATURES_DESCRIPTION" desc="Description of the flag to show autofill signatures.">
+        Annotates web forms with Autofill signatures as HTML attributes.
+      </message>
       <message name="IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE_MANY_ACCOUNTS" desc="The title of the account chooser dialog/infobar for more than one account.">
         Choose your account saved with <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to sign in
       </message>

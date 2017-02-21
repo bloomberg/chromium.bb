@@ -102,13 +102,6 @@ bool HasTagName(const WebNode& node, const blink::WebString& tag) {
   return node.isElementNode() && node.toConst<WebElement>().hasHTMLTagName(tag);
 }
 
-bool IsAutofillableElement(const WebFormControlElement& element) {
-  const WebInputElement* input_element = toWebInputElement(&element);
-  return IsAutofillableInputElement(input_element) ||
-         IsSelectElement(element) ||
-         IsTextAreaElement(element);
-}
-
 bool IsElementInControlElementSet(
     const WebElement& element,
     const std::vector<WebFormControlElement>& control_elements) {
@@ -1317,6 +1310,12 @@ bool IsAutofillableInputElement(const WebInputElement* element) {
   return IsTextInput(element) ||
          IsMonthInput(element) ||
          IsCheckableElement(element);
+}
+
+bool IsAutofillableElement(const WebFormControlElement& element) {
+  const WebInputElement* input_element = toWebInputElement(&element);
+  return IsAutofillableInputElement(input_element) ||
+         IsSelectElement(element) || IsTextAreaElement(element);
 }
 
 const base::string16 GetFormIdentifier(const WebFormElement& form) {

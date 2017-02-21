@@ -127,6 +127,10 @@ bool IsCheckableElement(const blink::WebInputElement* element);
 // autofilled. {Text, Radiobutton, Checkbox}.
 bool IsAutofillableInputElement(const blink::WebInputElement* element);
 
+// Returns true if |element| is one of the element types that can be autofilled.
+// {Text, Radiobutton, Checkbox, Select, TextArea}.
+bool IsAutofillableElement(const blink::WebFormControlElement& element);
+
 // True if this node takes up space in the layout, ie. this node or a descendant
 // has a non-empty bounding bounding client rect.
 //
