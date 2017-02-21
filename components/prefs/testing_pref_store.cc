@@ -24,10 +24,6 @@ bool TestingPrefStore::GetValue(const std::string& key,
   return prefs_.GetValue(key, value);
 }
 
-std::unique_ptr<base::DictionaryValue> TestingPrefStore::GetValues() const {
-  return prefs_.AsDictionaryValue();
-}
-
 bool TestingPrefStore::GetMutableValue(const std::string& key,
                                        base::Value** value) {
   return prefs_.GetValue(key, value);

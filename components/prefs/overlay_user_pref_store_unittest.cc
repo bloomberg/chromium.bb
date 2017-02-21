@@ -19,11 +19,9 @@ namespace {
 
 const char kBrowserWindowPlacement[] = "browser.window_placement";
 const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";
-const char kSharedKey[] = "sync_promo.show_on_first_run_allowed";
 
 const char* const overlay_key = kBrowserWindowPlacement;
 const char* const regular_key = kShowBookmarkBar;
-const char* const shared_key = kSharedKey;
 // With the removal of the kWebKitGlobalXXX prefs, we'll no longer have real
 // prefs using the overlay pref store, so make up keys here.
 const char mapped_overlay_key[] = "test.per_tab.javascript_enabled";
@@ -37,7 +35,6 @@ class OverlayUserPrefStoreTest : public testing::Test {
       : underlay_(new TestingPrefStore()),
         overlay_(new OverlayUserPrefStore(underlay_.get())) {
     overlay_->RegisterOverlayPref(overlay_key);
-    overlay_->RegisterOverlayPref(shared_key);
     overlay_->RegisterOverlayPref(mapped_overlay_key, mapped_underlay_key);
   }
 
@@ -310,44 +307,6 @@ TEST_F(OverlayUserPrefStoreTest, ClearMutableValues) {
   // Check that an underlay preference is returned.
   EXPECT_TRUE(overlay_->GetValue(overlay_key, &value));
   EXPECT_TRUE(base::FundamentalValue(42).Equals(value));
-}
-
-TEST_F(OverlayUserPrefStoreTest, GetValues) {
-  // To check merge behavior, create underlay and overlay so each has a key the
-  // other doesn't have and they have one key in common.
-  underlay_->SetValue(regular_key, base::WrapUnique(new FundamentalValue(42)),
-                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  overlay_->SetValue(overlay_key, base::WrapUnique(new FundamentalValue(43)),
-                     WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  underlay_->SetValue(shared_key, base::WrapUnique(new FundamentalValue(42)),
-                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  overlay_->SetValue(shared_key, base::WrapUnique(new FundamentalValue(43)),
-                     WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  underlay_->SetValue(mapped_underlay_key,
-                      base::WrapUnique(new FundamentalValue(42)),
-                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  overlay_->SetValue(mapped_overlay_key,
-                     base::WrapUnique(new FundamentalValue(43)),
-                     WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-
-  auto values = overlay_->GetValues();
-  const Value* value = nullptr;
-  // Check that an overlay preference is returned.
-  ASSERT_TRUE(values->Get(overlay_key, &value));
-  EXPECT_TRUE(base::FundamentalValue(43).Equals(value));
-
-  // Check that an underlay preference is returned.
-  ASSERT_TRUE(values->Get(regular_key, &value));
-  EXPECT_TRUE(base::FundamentalValue(42).Equals(value));
-
-  // Check that the overlay is preferred.
-  ASSERT_TRUE(values->Get(shared_key, &value));
-  EXPECT_TRUE(base::FundamentalValue(43).Equals(value));
-
-  // Check that mapping works.
-  ASSERT_TRUE(values->Get(mapped_overlay_key, &value));
-  EXPECT_TRUE(base::FundamentalValue(43).Equals(value));
-  EXPECT_FALSE(values->Get(mapped_underlay_key, &value));
 }
 
 }  // namespace base

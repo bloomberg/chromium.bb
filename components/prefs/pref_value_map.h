@@ -14,7 +14,6 @@
 #include "components/prefs/base_prefs_export.h"
 
 namespace base {
-class DictionaryValue;
 class Value;
 }
 
@@ -83,9 +82,6 @@ class COMPONENTS_PREFS_EXPORT PrefValueMap {
   // only in one of the maps.
   void GetDifferingKeys(const PrefValueMap* other,
                         std::vector<std::string>* differing_keys) const;
-
-  // Copies the map into a dictionary value.
-  std::unique_ptr<base::DictionaryValue> AsDictionaryValue() const;
 
  private:
   Map prefs_;

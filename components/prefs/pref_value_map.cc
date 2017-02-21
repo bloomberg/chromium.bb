@@ -157,11 +157,3 @@ void PrefValueMap::GetDifferingKeys(
   for ( ; other_pref != other_prefs.end(); ++other_pref)
       differing_keys->push_back(other_pref->first);
 }
-
-std::unique_ptr<base::DictionaryValue> PrefValueMap::AsDictionaryValue() const {
-  auto dictionary = base::MakeUnique<base::DictionaryValue>();
-  for (const auto& value : prefs_) {
-    dictionary->Set(value.first, value.second->CreateDeepCopy());
-  }
-  return dictionary;
-}

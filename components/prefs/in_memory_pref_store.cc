@@ -18,10 +18,6 @@ bool InMemoryPrefStore::GetValue(const std::string& key,
   return prefs_.GetValue(key, value);
 }
 
-std::unique_ptr<base::DictionaryValue> InMemoryPrefStore::GetValues() const {
-  return prefs_.AsDictionaryValue();
-}
-
 bool InMemoryPrefStore::GetMutableValue(const std::string& key,
                                         base::Value** value) {
   return prefs_.GetValue(key, value);

@@ -24,7 +24,6 @@ namespace {
 
 const char kSelectedPref[] = "selected_pref";
 const char kUnselectedPref[] = "unselected_pref";
-const char kSharedPref[] = "shared_pref";
 
 const char kValue1[] = "value1";
 const char kValue2[] = "value2";
@@ -71,7 +70,6 @@ class SegregatedPrefStoreTest : public testing::Test {
 
     std::set<std::string> selected_pref_names;
     selected_pref_names.insert(kSelectedPref);
-    selected_pref_names.insert(kSharedPref);
 
     segregated_store_ = new SegregatedPrefStore(default_store_, selected_store_,
                                                 selected_pref_names);
@@ -275,32 +273,4 @@ TEST_F(SegregatedPrefStoreTest, IsInitializationCompleteAsync) {
   EXPECT_FALSE(segregated_store_->IsInitializationComplete());
   default_store_->SetBlockAsyncRead(false);
   EXPECT_TRUE(segregated_store_->IsInitializationComplete());
-}
-
-TEST_F(SegregatedPrefStoreTest, GetValues) {
-  // To check merge behavior, create selected and default stores so each has a
-  // key the other doesn't have and they have one key in common.
-  selected_store_->SetValue(kSelectedPref,
-                            base::MakeUnique<base::StringValue>(kValue1),
-                            WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  default_store_->SetValue(kUnselectedPref,
-                           base::MakeUnique<base::StringValue>(kValue2),
-                           WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  selected_store_->SetValue(kSharedPref,
-                            base::MakeUnique<base::StringValue>(kValue1),
-                            WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-
-  auto values = segregated_store_->GetValues();
-  const base::Value* value = nullptr;
-  // Check that a selected preference is returned.
-  ASSERT_TRUE(values->Get(kSelectedPref, &value));
-  EXPECT_TRUE(base::FundamentalValue(kValue1).Equals(value));
-
-  // Check that a a default preference is returned.
-  ASSERT_TRUE(values->Get(kUnselectedPref, &value));
-  EXPECT_TRUE(base::FundamentalValue(kValue2).Equals(value));
-
-  // Check that the selected preference is preferred.
-  ASSERT_TRUE(values->Get(kSharedPref, &value));
-  EXPECT_TRUE(base::FundamentalValue(kValue1).Equals(value));
 }
