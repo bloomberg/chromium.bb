@@ -28,6 +28,7 @@
 #include "core/html/HTMLOListElement.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/paint/ListItemPainter.h"
+#include "wtf/SaturatedArithmetic.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -227,7 +228,7 @@ inline int LayoutListItem::calcValue() const {
   // FIXME: This recurses to a possible depth of the length of the list.
   // That's not good -- we need to change this to an iterative algorithm.
   if (LayoutListItem* previousItem = previousListItem(list, this))
-    return previousItem->value() + valueStep;
+    return SaturatedAddition(previousItem->value(), valueStep);
 
   if (oListElement)
     return oListElement->start();
