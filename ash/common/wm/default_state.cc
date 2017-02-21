@@ -280,6 +280,11 @@ void DefaultState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
     return;
   }
 
+  if (event->type() == WM_EVENT_SNAP_LEFT ||
+      event->type() == WM_EVENT_SNAP_RIGHT) {
+    window_state->set_bounds_changed_by_user(true);
+  }
+
   EnterToNextState(window_state, next_state_type);
 }
 
