@@ -425,10 +425,10 @@ static PVQ_SKIP_TYPE read_pvq_skip(AV1_COMMON *cm, MACROBLOCKD *const xd,
   // NOTE : we don't use 5 symbols for luma here in aom codebase,
   // since block partition is taken care of by aom.
   // So, only AC/DC skip info is coded
-  const int ac_dc_coded = aom_decode_cdf_adapt(
+  const int ac_dc_coded = aom_read_symbol(
       xd->daala_dec.r,
       xd->daala_dec.state.adapt.skip_cdf[2 * tx_size + (plane != 0)], 4,
-      xd->daala_dec.state.adapt.skip_increment, "skip");
+      "skip");
   if (ac_dc_coded < 0 || ac_dc_coded > 3) {
     aom_internal_error(&cm->error, AOM_CODEC_INVALID_PARAM,
                        "Invalid PVQ Skip Type");

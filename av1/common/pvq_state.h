@@ -34,8 +34,7 @@ struct od_adapt_ctx {
   int ex_g[OD_NPLANES_MAX][OD_TXSIZES];
 
   /* Joint skip flag for DC and AC */
-  uint16_t skip_cdf[OD_TXSIZES*2][4];
-  int skip_increment;
+  uint16_t skip_cdf[OD_TXSIZES*2][CDF_SIZE(4)];
 };
 
 struct od_state {

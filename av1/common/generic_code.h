@@ -49,7 +49,20 @@ void generic_model_init(generic_encoder *model);
 #define OD_SINGLE_CDF_INIT_FIRST(cdf, val, first) aom_cdf_init(cdf, \
  1, sizeof(cdf)/sizeof(cdf[0]), val, first)
 
+// WARNING: DO NOT USE this init function,
+// if the size of cdf is different from what is declared by code.
+#define OD_CDFS_INIT_Q15(cdfs) \
+  { int n_cdfs = sizeof(cdfs)/sizeof(cdfs[0]); \
+    int cdf_size = sizeof(cdfs[0])/sizeof(cdfs[0][0]); \
+    int nsyms = cdf_size - CONFIG_EC_ADAPT; \
+    int i_; \
+    for (i_ = 0; i_ < n_cdfs; i_++) \
+      aom_cdf_init_q15_1D(cdfs[i_], nsyms, cdf_size); \
+  }
+
 void aom_cdf_init(uint16_t *cdf, int ncdfs, int nsyms, int val, int first);
+
+void aom_cdf_init_q15_1D(uint16_t *cdf, int nsyms, int cdf_size);
 
 void aom_cdf_adapt_q15(int val, uint16_t *cdf, int n, int *count, int rate);
 

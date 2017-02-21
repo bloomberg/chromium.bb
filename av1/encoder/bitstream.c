@@ -1057,9 +1057,8 @@ static void pack_pvq_tokens(aom_writer *w, MACROBLOCK *const x,
       pvq = get_pvq_block(x->pvq_q);
 
       // encode block skip info
-      aom_encode_cdf_adapt(w, pvq->ac_dc_coded,
-                           adapt->skip_cdf[2 * tx_size + (plane != 0)], 4,
-                           adapt->skip_increment);
+      aom_write_symbol(w, pvq->ac_dc_coded,
+                       adapt->skip_cdf[2 * tx_size + (plane != 0)], 4);
 
       // AC coeffs coded?
       if (pvq->ac_dc_coded & AC_CODED) {
@@ -1070,7 +1069,7 @@ static void pack_pvq_tokens(aom_writer *w, MACROBLOCK *const x,
             pvq_encode_partition(
                 w, pvq->qg[i], pvq->theta[i], pvq->max_theta[i],
                 pvq->y + pvq->off[i], pvq->size[i], pvq->k[i], model, adapt,
-                exg + i, ext + i, nodesync,
+                exg + i, ext + i, nodesync || is_keyframe,
                 (plane != 0) * OD_TXSIZES * PVQ_MAX_PARTITIONS +
                     pvq->bs * PVQ_MAX_PARTITIONS + i,
                 is_keyframe, i == 0 && (i < pvq->nb_bands - 1), pvq->skip_rest,
