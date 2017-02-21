@@ -8,6 +8,8 @@ source_set("util") {
     "CRUILabel+AttributeUtils.mm",
     "core_text_util.h",
     "core_text_util.mm",
+    "i18n_string.h",
+    "i18n_string.mm",
     "label_link_controller.h",
     "label_link_controller.mm",
     "label_observer.h",
