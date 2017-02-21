@@ -48,7 +48,7 @@ class PendingSelection final : public GarbageCollected<PendingSelection> {
 
   const VisibleSelection& visibleSelection() const;
 
-  VisibleSelectionInFlatTree calcVisibleSelection(
+  SelectionInFlatTree calcVisibleSelection(
       const VisibleSelectionInFlatTree&) const;
 
   Member<FrameSelection> m_frameSelection;

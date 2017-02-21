@@ -55,7 +55,7 @@ static bool isSelectionInDocument(
   return true;
 }
 
-VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(
+SelectionInFlatTree PendingSelection::calcVisibleSelection(
     const VisibleSelectionInFlatTree& originalSelection) const {
   const PositionInFlatTree& start = originalSelection.start();
   const PositionInFlatTree& end = originalSelection.end();
@@ -66,7 +66,6 @@ VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(
       m_frameSelection->shouldShowBlockCursor() &&
       selectionType == SelectionType::CaretSelection &&
       !isLogicalEndOfLine(createVisiblePosition(end, affinity));
-  VisibleSelectionInFlatTree selection;
   if (enclosingTextControl(start.computeContainerNode())) {
     // TODO(yosin) We should use |PositionMoveType::CodePoint| to avoid
     // ending paint at middle of character.
@@ -74,8 +73,9 @@ VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(
         paintBlockCursor ? nextPositionOf(originalSelection.extent(),
                                           PositionMoveType::CodeUnit)
                          : end;
-    selection.setWithoutValidation(start, endPosition);
-    return selection;
+    return SelectionInFlatTree::Builder()
+        .setBaseAndExtent(start, endPosition)
+        .build();
   }
 
   const VisiblePositionInFlatTree& visibleStart = createVisiblePosition(
@@ -83,27 +83,27 @@ VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(
                  ? TextAffinity::Downstream
                  : affinity);
   if (visibleStart.isNull())
-    return VisibleSelectionInFlatTree();
+    return SelectionInFlatTree();
   if (paintBlockCursor) {
     const VisiblePositionInFlatTree visibleExtent = nextPositionOf(
         createVisiblePosition(end, affinity), CanSkipOverEditingBoundary);
     if (visibleExtent.isNull())
-      return VisibleSelectionInFlatTree();
+      return SelectionInFlatTree();
     SelectionInFlatTree::Builder builder;
     builder.collapse(visibleStart.toPositionWithAffinity());
     builder.extend(visibleExtent.deepEquivalent());
-    return createVisibleSelection(builder.build());
+    return builder.build();
   }
   const VisiblePositionInFlatTree visibleEnd =
       createVisiblePosition(end, selectionType == SelectionType::RangeSelection
                                      ? TextAffinity::Upstream
                                      : affinity);
   if (visibleEnd.isNull())
-    return VisibleSelectionInFlatTree();
+    return SelectionInFlatTree();
   SelectionInFlatTree::Builder builder;
   builder.collapse(visibleStart.toPositionWithAffinity());
   builder.extend(visibleEnd.deepEquivalent());
-  return createVisibleSelection(builder.build());
+  return builder.build();
 }
 
 void PendingSelection::commit(LayoutView& layoutView) {
@@ -124,7 +124,7 @@ void PendingSelection::commit(LayoutView& layoutView) {
   // <https://bugs.webkit.org/show_bug.cgi?id=69563> and
   // <rdar://problem/10232866>.
   const VisibleSelectionInFlatTree& selection =
-      calcVisibleSelection(originalSelection);
+      createVisibleSelection(calcVisibleSelection(originalSelection));
 
   if (!selection.isRange()) {
     layoutView.clearSelection();
