@@ -39,6 +39,10 @@ class MultiUserWindowManagerChromeOSTest;
 }  // namespace test
 }  // namespace ash
 
+namespace policy {
+class DeviceStatusCollectorTest;
+}  // namespace policy
+
 namespace test {
 class BrowserFinderChromeOSTest;
 }  // namespace test
@@ -153,6 +157,7 @@ class ProfileHelper
   // to access private test methods.
   friend class CryptohomeAuthenticatorTest;
   friend class DeviceSettingsTestBase;
+  friend class policy::DeviceStatusCollectorTest;
   friend class ExistingUserControllerTest;
   friend class extensions::ExtensionGarbageCollectorChromeOSUnitTest;
   friend class FakeChromeUserManager;

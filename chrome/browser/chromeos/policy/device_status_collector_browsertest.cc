@@ -20,7 +20,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -32,11 +31,14 @@
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -142,6 +144,12 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     // Just return the app_id as the version - this makes it easy for tests
     // to confirm that the correct app's version was requested.
     return app_id;
+  }
+
+  std::string GetDMTokenForProfile(Profile* profile) override {
+    // Return the profile user name (passed to CreateTestingProfile) to make it
+    // easy to confirm that the correct profile's DMToken was requested.
+    return profile->GetProfileUserName();
   }
 
   void RefreshSampleResourceUsage() {
@@ -281,6 +289,12 @@ class DeviceStatusCollectorTest : public testing::Test {
                                    std::string() /* kiosk_app_update_url */),
         user_data_dir_override_(chrome::DIR_USER_DATA),
         update_engine_client_(new chromeos::FakeUpdateEngineClient) {
+    // Although this is really a unit test which runs in the browser_tests
+    // binary, it doesn't get the unit setup which normally happens in the unit
+    // test binary.
+    ChromeUnitTestSuite::InitializeProviders();
+    ChromeUnitTestSuite::InitializeResourceBundle();
+
     // Run this test with a well-known timezone so that Time::LocalMidnight()
     // returns the same values on all machines.
     std::unique_ptr<base::Environment> env(base::Environment::Create());
@@ -310,11 +324,12 @@ class DeviceStatusCollectorTest : public testing::Test {
 
     // DiskMountManager takes ownership of the MockDiskMountManager.
     DiskMountManager::InitializeForTesting(mock_disk_mount_manager.release());
-    TestingDeviceStatusCollector::RegisterPrefs(prefs_.registry());
+    TestingDeviceStatusCollector::RegisterPrefs(local_state_.registry());
 
     settings_helper_.ReplaceProvider(chromeos::kReportDeviceActivityTimes);
     owner_settings_service_ =
         settings_helper_.CreateOwnerSettingsService(nullptr);
+    owner_settings_service_->set_ignore_profile_creation_notification(true);
 
     RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
                            base::Bind(&GetEmptyCPUStatistics),
@@ -369,7 +384,7 @@ class DeviceStatusCollectorTest : public testing::Test {
           android_status_fetcher) {
     std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_.reset(new TestingDeviceStatusCollector(
-        &prefs_, &fake_statistics_provider_, volume_info, cpu_stats,
+        &local_state_, &fake_statistics_provider_, volume_info, cpu_stats,
         cpu_temp_fetcher, android_status_fetcher));
   }
 
@@ -396,14 +411,38 @@ class DeviceStatusCollectorTest : public testing::Test {
     run_loop_->Quit();
   }
 
+  void MockRegularUserWithAffiliation(const AccountId& account_id,
+                                      bool is_affiliated) {
+    user_manager_->AddUserWithAffiliation(account_id, is_affiliated);
+    // The user just added will be the active user because there's only one
+    // user.
+    user_manager::User* user = user_manager_->GetActiveUser();
+
+    // Build a profile with profile name=account e-mail because our testing
+    // version of GetDMTokenForProfile returns the profile name.
+    TestingProfile::Builder profile_builder;
+    profile_builder.SetProfileName(account_id.GetUserEmail());
+    testing_profile_ = profile_builder.Build();
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+        user, testing_profile_.get());
+
+    EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
+        .WillRepeatedly(Return(false));
+  }
+
   void MockRunningKioskApp(const DeviceLocalAccount& account) {
     std::vector<DeviceLocalAccount> accounts;
     accounts.push_back(account);
-    SetDeviceLocalAccounts(owner_settings_service_.get(), accounts);
-    user_manager_->CreateKioskAppUser(
+    user_manager::User* user = user_manager_->CreateKioskAppUser(
         AccountId::FromUserEmail(account.user_id));
     EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp()).WillRepeatedly(
         Return(true));
+
+    testing_profile_ = base::MakeUnique<TestingProfile>();
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+        user, testing_profile_.get());
+
+    SetDeviceLocalAccounts(owner_settings_service_.get(), accounts);
   }
 
   void MockPlatformVersion(const std::string& platform_version) {
@@ -453,13 +492,15 @@ class DeviceStatusCollectorTest : public testing::Test {
   content::TestBrowserThread io_thread_;
 
   chromeos::ScopedStubInstallAttributes install_attributes_;
-  TestingPrefServiceSimple prefs_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   DiskMountManager::MountPointMap mount_point_map_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
+  // Only set after MockRunningKioskApp or MockTODO was called.
   std::unique_ptr<chromeos::FakeOwnerSettingsService> owner_settings_service_;
+  // Only set after MockRunningKioskApp was called.
+  std::unique_ptr<TestingProfile> testing_profile_;
   chromeos::MockUserManager* const user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   em::DeviceStatusReportRequest device_status_;
@@ -998,26 +1039,33 @@ TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
   EXPECT_EQ(0, device_status_.cpu_temp_info_size());
 }
 
-TEST_F(DeviceStatusCollectorTest, TestAndroidReporting) {
+TEST_F(DeviceStatusCollectorTest, KioskAndroidReporting) {
   RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
                          base::Bind(&GetEmptyCPUStatistics),
                          base::Bind(&GetEmptyCPUTempInfo),
                          base::Bind(&GetFakeAndroidStatus, kArcStatus,
                              kDroidGuardInfo));
+  status_collector_->set_kiosk_account(
+      base::MakeUnique<DeviceLocalAccount>(fake_device_local_account_));
+  MockRunningKioskApp(fake_device_local_account_);
+  testing_profile_->GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled,
+                                           true);
+
   GetStatus();
   EXPECT_EQ(kArcStatus, session_status_.android_status().status_payload());
   EXPECT_EQ(kDroidGuardInfo,
       session_status_.android_status().droid_guard_info());
+  // Expect no User DM Token for kiosk sessions.
+  EXPECT_FALSE(session_status_.has_user_dm_token());
 }
 
-TEST_F(DeviceStatusCollectorTest, NoAndroidReportingWhenDisabled) {
+TEST_F(DeviceStatusCollectorTest, NoKioskAndroidReportingWhenDisabled) {
   RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
                          base::Bind(&GetEmptyCPUStatistics),
                          base::Bind(&GetEmptyCPUTempInfo),
                          base::Bind(&GetFakeAndroidStatus, kArcStatus,
                              kDroidGuardInfo));
 
-  prefs_.SetBoolean(prefs::kReportArcStatusEnabled, false);
   // Mock Kiosk app, so some session status is reported
   status_collector_->set_kiosk_account(
       base::MakeUnique<DeviceLocalAccount>(fake_device_local_account_));
@@ -1025,13 +1073,69 @@ TEST_F(DeviceStatusCollectorTest, NoAndroidReportingWhenDisabled) {
 
   GetStatus();
   EXPECT_TRUE(got_session_status_);
+  // Note that this relies on the fact that kReportArcStatusEnabled is false by
+  // default.
   EXPECT_FALSE(session_status_.has_android_status());
 }
 
-TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNotKioskAndNoArcReporting) {
-  // Should not report session status if we don't have an active kiosk app.
+TEST_F(DeviceStatusCollectorTest, RegularUserAndroidReporting) {
+  RestartStatusCollector(
+      base::Bind(&GetEmptyVolumeInfo), base::Bind(&GetEmptyCPUStatistics),
+      base::Bind(&GetEmptyCPUTempInfo),
+      base::Bind(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+
+  const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
+  MockRegularUserWithAffiliation(account_id, true);
+  testing_profile_->GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled,
+                                           true);
+
+  GetStatus();
+  EXPECT_EQ(kArcStatus, session_status_.android_status().status_payload());
+  EXPECT_EQ(kDroidGuardInfo,
+            session_status_.android_status().droid_guard_info());
+  // In tests, GetUserDMToken returns the e-mail for easy verification.
+  EXPECT_EQ(account_id.GetUserEmail(), session_status_.user_dm_token());
+}
+
+TEST_F(DeviceStatusCollectorTest, NoRegularUserAndroidReportingWhenDisabled) {
+  RestartStatusCollector(
+      base::Bind(&GetEmptyVolumeInfo), base::Bind(&GetEmptyCPUStatistics),
+      base::Bind(&GetEmptyCPUTempInfo),
+      base::Bind(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+
+  const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
+  MockRegularUserWithAffiliation(account_id, true);
+
+  GetStatus();
+  // Currently, only AndroidStatus reporting is done for regular users. If that
+  // is disabled, no UserSessionStatusRequest is filled at all. Note that this
+  // test case relies on the fact that kReportArcStatusEnabled is false by
+  // default.
+  EXPECT_FALSE(got_session_status_);
+}
+
+TEST_F(DeviceStatusCollectorTest,
+       NoRegularUserAndroidReportingWhenNotAffiliated) {
+  RestartStatusCollector(
+      base::Bind(&GetEmptyVolumeInfo), base::Bind(&GetEmptyCPUStatistics),
+      base::Bind(&GetEmptyCPUTempInfo),
+      base::Bind(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+
+  const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
+  MockRegularUserWithAffiliation(account_id, false);
+  testing_profile_->GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled,
+                                           true);
+
+  GetStatus();
+  // Currently, only AndroidStatus reporting is done for regular users. If that
+  // is disabled, no UserSessionStatusRequest is filled at all.
+  EXPECT_FALSE(got_session_status_);
+}
+
+TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNoSession) {
+  // Should not report session status if we don't have an active kiosk app or an
+  // active user session.
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, true);
-  prefs_.SetBoolean(prefs::kReportArcStatusEnabled, false);
   GetStatus();
   EXPECT_FALSE(got_session_status_);
 }
@@ -1041,17 +1145,18 @@ TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, false);
   // ReportDeviceSessionStatus only controls Kiosk reporting, ARC reporting
   // has to be disabled serarately.
-  prefs_.SetBoolean(prefs::kReportArcStatusEnabled, false);
   status_collector_->set_kiosk_account(
       base::MakeUnique<policy::DeviceLocalAccount>(fake_device_local_account_));
   // Set up a device-local account for single-app kiosk mode.
   MockRunningKioskApp(fake_device_local_account_);
+  testing_profile_->GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled,
+                                           false);
 
   GetStatus();
   EXPECT_FALSE(got_session_status_);
 }
 
-TEST_F(DeviceStatusCollectorTest, ReportSessionStatus) {
+TEST_F(DeviceStatusCollectorTest, ReportKioskSessionStatus) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, true);
   status_collector_->set_kiosk_account(
       base::MakeUnique<policy::DeviceLocalAccount>(fake_device_local_account_));
@@ -1069,6 +1174,8 @@ TEST_F(DeviceStatusCollectorTest, ReportSessionStatus) {
   EXPECT_EQ(kKioskAppId, app.extension_version());
   EXPECT_FALSE(app.has_status());
   EXPECT_FALSE(app.has_error());
+  // Expect no User DM Token for kiosk sessions.
+  EXPECT_FALSE(session_status_.has_user_dm_token());
 }
 
 TEST_F(DeviceStatusCollectorTest, NoOsUpdateStatusByDefault) {

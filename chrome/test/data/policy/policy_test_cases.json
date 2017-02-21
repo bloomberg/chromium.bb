@@ -2738,8 +2738,7 @@
     "can_be_recommended": false,
     "test_policy": { "ReportArcStatusEnabled": false },
     "pref_mappings": [
-      { "pref": "arc.status_reporting_enabled",
-        "local_state": true }
+      { "pref": "arc.status_reporting_enabled" }
     ]
   },
 

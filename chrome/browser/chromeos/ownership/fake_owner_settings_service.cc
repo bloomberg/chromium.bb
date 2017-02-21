@@ -14,7 +14,6 @@ FakeOwnerSettingsService::FakeOwnerSettingsService(Profile* profile)
     : OwnerSettingsServiceChromeOS(nullptr,
                                    profile,
                                    new ownership::MockOwnerKeyUtil()),
-      set_management_settings_result_(true),
       settings_provider_(nullptr) {
 }
 
@@ -35,6 +34,15 @@ bool FakeOwnerSettingsService::Set(const std::string& setting,
   CHECK(settings_provider_);
   settings_provider_->Set(setting, value);
   return true;
+}
+
+void FakeOwnerSettingsService::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!ignore_profile_creation_notifications_)
+    OwnerSettingsServiceChromeOS::Observe(type, source, details);
 }
 
 }  // namespace chromeos

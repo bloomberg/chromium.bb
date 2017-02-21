@@ -826,6 +826,9 @@ message SessionStatusReportRequest {
 
   // Information about ARC status.
   optional AndroidStatus android_status = 7;
+
+  // If this is a regular user session, this is the user's DMToken.
+  optional string user_dm_token = 8;
 }
 
 // Response from DMServer to update devices' status.

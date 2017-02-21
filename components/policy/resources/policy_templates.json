@@ -5109,17 +5109,17 @@
       'supported_on': ['chrome_os:55-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': False,
+        'per_profile': True,
       },
-      'example_value': False,
+      'example_value': True,
       'id': 349,
       'caption': '''Report information about status of Android''',
       'tags': ['admin-sharing'],
       'desc': '''Information about the status of Android is sent back to the
       server.
 
-      If the policy is set to false, no status information is reported.
-      If set to true or left unset, status information is reported.
+      If the policy is set to false or left unset, no status information is reported.
+      If set to true, status information is reported.
 
       This policy only applies if Android apps are enabled.''',
     },

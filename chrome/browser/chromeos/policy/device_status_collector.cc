@@ -35,8 +35,13 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -481,9 +486,6 @@ DeviceStatusCollector::DeviceStatusCollector(
   running_kiosk_app_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportRunningKioskApp, callback);
 
-  report_arc_status_pref_.Init(prefs::kReportArcStatusEnabled, local_state_,
-      callback);
-
   // Fetch the current values of the policies.
   UpdateReportingSettings();
 
@@ -510,7 +512,11 @@ DeviceStatusCollector::~DeviceStatusCollector() {
 void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kDeviceActivityTimes,
                                    new base::DictionaryValue);
-  registry->RegisterBooleanPref(prefs::kReportArcStatusEnabled, true);
+}
+
+// static
+void DeviceStatusCollector::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kReportArcStatusEnabled, false);
 }
 
 void DeviceStatusCollector::CheckIdleState() {
@@ -563,9 +569,6 @@ void DeviceStatusCollector::UpdateReportingSettings() {
                                   &report_kiosk_session_status_)) {
     report_kiosk_session_status_ = true;
   }
-
-  report_android_status_ =
-      local_state_->GetBoolean(prefs::kReportArcStatusEnabled);
 
   if (!report_hardware_status_) {
     ClearCachedResourceUsage();
@@ -1133,15 +1136,58 @@ void DeviceStatusCollector::GetDeviceStatus(
     state->ResetDeviceStatus();
 }
 
+std::string DeviceStatusCollector::GetDMTokenForProfile(Profile* profile) {
+  CloudPolicyManager* user_cloud_policy_manager =
+      UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
+          profile);
+  if (!user_cloud_policy_manager) {
+    NOTREACHED();
+    return std::string();
+  }
+
+  auto* cloud_policy_client = user_cloud_policy_manager->core()->client();
+  std::string dm_token = cloud_policy_client->dm_token();
+
+  return dm_token;
+}
+
+bool DeviceStatusCollector::GetSessionStatusForUser(
+    scoped_refptr<GetStatusState> state,
+    em::SessionStatusReportRequest* status,
+    const user_manager::User* user) {
+  Profile* const profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  if (!profile)
+    return false;
+
+  bool anything_reported_user = false;
+  bool report_android_status =
+      profile->GetPrefs()->GetBoolean(prefs::kReportArcStatusEnabled);
+
+  if (report_android_status)
+    anything_reported_user |= GetAndroidStatus(status, state);
+  if (anything_reported_user && !user->IsDeviceLocalAccount())
+    status->set_user_dm_token(GetDMTokenForProfile(profile));
+  return anything_reported_user;
+}
+
 void DeviceStatusCollector::GetSessionStatus(
     scoped_refptr<GetStatusState> state) {
   em::SessionStatusReportRequest* status = state->session_status();
   bool anything_reported = false;
 
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  const user_manager::User* const primary_user = user_manager->GetPrimaryUser();
+
   if (report_kiosk_session_status_)
     anything_reported |= GetKioskSessionStatus(status);
-  if (report_android_status_)
-    anything_reported |= GetAndroidStatus(status, state);
+
+  // Only report user data for affiliated users. Note that device-local
+  // accounts are also affiliated.
+  // Currently we only report for the primary user.
+  if (primary_user && primary_user->IsAffiliated()) {
+    anything_reported |= GetSessionStatusForUser(state, status, primary_user);
+  }
 
   // Wipe pointer if we didn't actually add any data.
   if (!anything_reported)
