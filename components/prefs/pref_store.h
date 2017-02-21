@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PREFS_PREF_STORE_H_
 #define COMPONENTS_PREFS_PREF_STORE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -12,6 +13,7 @@
 #include "components/prefs/base_prefs_export.h"
 
 namespace base {
+class DictionaryValue;
 class Value;
 }
 
@@ -51,6 +53,9 @@ class COMPONENTS_PREFS_EXPORT PrefStore : public base::RefCounted<PrefStore> {
   // is not NULL. Ownership of the |*result| value remains with the PrefStore.
   virtual bool GetValue(const std::string& key,
                         const base::Value** result) const = 0;
+
+  // Get all the values. Never returns a null pointer.
+  virtual std::unique_ptr<base::DictionaryValue> GetValues() const = 0;
 
  protected:
   friend class base::RefCounted<PrefStore>;

@@ -25,6 +25,7 @@ class TestingPrefStore : public PersistentPrefStore {
   // Overriden from PrefStore.
   bool GetValue(const std::string& key,
                 const base::Value** result) const override;
+  std::unique_ptr<base::DictionaryValue> GetValues() const override;
   void AddObserver(PrefStore::Observer* observer) override;
   void RemoveObserver(PrefStore::Observer* observer) override;
   bool HasObservers() const override;

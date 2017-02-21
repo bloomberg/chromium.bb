@@ -87,6 +87,11 @@ bool SupervisedUserPrefStore::GetValue(const std::string& key,
   return prefs_->GetValue(key, value);
 }
 
+std::unique_ptr<base::DictionaryValue> SupervisedUserPrefStore::GetValues()
+    const {
+  return prefs_->AsDictionaryValue();
+}
+
 void SupervisedUserPrefStore::AddObserver(PrefStore::Observer* observer) {
   observers_.AddObserver(observer);
 }

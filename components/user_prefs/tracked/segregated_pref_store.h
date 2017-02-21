@@ -52,6 +52,7 @@ class SegregatedPrefStore : public PersistentPrefStore {
   bool IsInitializationComplete() const override;
   bool GetValue(const std::string& key,
                 const base::Value** result) const override;
+  std::unique_ptr<base::DictionaryValue> GetValues() const override;
 
   // WriteablePrefStore implementation
   void SetValue(const std::string& key,
