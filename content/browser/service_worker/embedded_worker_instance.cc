@@ -866,10 +866,8 @@ base::TimeDelta EmbeddedWorkerInstance::UpdateStepTime() {
 void EmbeddedWorkerInstance::AddMessageToConsole(
     blink::WebConsoleMessage::Level level,
     const std::string& message) {
-  if (status_ != EmbeddedWorkerStatus::RUNNING &&
-      status_ != EmbeddedWorkerStatus::STARTING) {
+  if (process_id() == ChildProcessHost::kInvalidUniqueID)
     return;
-  }
   DCHECK(client_.is_bound());
   client_->AddMessageToConsole(level, message);
 }

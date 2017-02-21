@@ -746,4 +746,75 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[2].status);
 }
 
+class StoreMessageInstanceClient
+    : public EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient {
+ public:
+  explicit StoreMessageInstanceClient(
+      base::WeakPtr<EmbeddedWorkerTestHelper> helper)
+      : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
+
+  const std::vector<std::pair<blink::WebConsoleMessage::Level, std::string>>&
+  message() {
+    return messages_;
+  }
+
+ private:
+  void AddMessageToConsole(blink::WebConsoleMessage::Level level,
+                           const std::string& message) override {
+    messages_.push_back(std::make_pair(level, message));
+  }
+
+  std::vector<std::pair<blink::WebConsoleMessage::Level, std::string>>
+      messages_;
+};
+
+TEST_F(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
+  const int64_t version_id = 55L;
+  const GURL pattern("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+  std::unique_ptr<StoreMessageInstanceClient> instance_client =
+      base::MakeUnique<StoreMessageInstanceClient>(helper_->AsWeakPtr());
+  StoreMessageInstanceClient* instance_client_rawptr = instance_client.get();
+  helper_->RegisterMockInstanceClient(std::move(instance_client));
+  ASSERT_EQ(mock_instance_clients()->size(), 1UL);
+
+  std::unique_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker();
+  helper_->SimulateAddProcessToPattern(pattern,
+                                       helper_->mock_render_process_id());
+  worker->AddListener(this);
+
+  // Attempt to start the worker and immediate AddMessageToConsole should not
+  // cause a crash.
+  std::pair<blink::WebConsoleMessage::Level, std::string> test_message =
+      std::make_pair(blink::WebConsoleMessage::LevelVerbose, "");
+  std::unique_ptr<EmbeddedWorkerStartParams> params =
+      CreateStartParams(version_id, pattern, url);
+  worker->Start(std::move(params), CreateEventDispatcher(),
+                base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  worker->AddMessageToConsole(test_message.first, test_message.second);
+  base::RunLoop().RunUntilIdle();
+
+  // Messages sent before sending StartWorker message won't be dispatched.
+  ASSERT_EQ(0UL, instance_client_rawptr->message().size());
+  ASSERT_EQ(3UL, events_.size());
+  EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
+  EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
+  EXPECT_EQ(STARTED, events_[2].type);
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
+
+  worker->AddMessageToConsole(test_message.first, test_message.second);
+  base::RunLoop().RunUntilIdle();
+
+  // Messages sent after sending StartWorker message should be reached to
+  // the renderer.
+  ASSERT_EQ(1UL, instance_client_rawptr->message().size());
+  EXPECT_EQ(test_message, instance_client_rawptr->message()[0]);
+
+  // Ensure the worker is stopped.
+  worker->Stop();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
+}
+
 }  // namespace content
