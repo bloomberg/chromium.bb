@@ -236,6 +236,28 @@ interface DOMPointReadOnly
     method constructor
     method matrixTransform
     method toJSON
+interface DOMRect : DOMRectReadOnly
+    getter height
+    getter width
+    getter x
+    getter y
+    method constructor
+    setter height
+    setter width
+    setter x
+    setter y
+interface DOMRectReadOnly
+    static method fromRect
+    getter bottom
+    getter height
+    getter left
+    getter right
+    getter top
+    getter width
+    getter x
+    getter y
+    method constructor
+    method toJSON
 interface DOMStringList
     getter length
     method constructor

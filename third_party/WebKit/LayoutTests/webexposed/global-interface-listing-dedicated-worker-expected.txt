@@ -249,6 +249,30 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method matrixTransform
 [Worker]     method toJSON
+[Worker] interface DOMRect : DOMRectReadOnly
+[Worker]     attribute @@toStringTag
+[Worker]     getter height
+[Worker]     getter width
+[Worker]     getter x
+[Worker]     getter y
+[Worker]     method constructor
+[Worker]     setter height
+[Worker]     setter width
+[Worker]     setter x
+[Worker]     setter y
+[Worker] interface DOMRectReadOnly
+[Worker]     static method fromRect
+[Worker]     attribute @@toStringTag
+[Worker]     getter bottom
+[Worker]     getter height
+[Worker]     getter left
+[Worker]     getter right
+[Worker]     getter top
+[Worker]     getter width
+[Worker]     getter x
+[Worker]     getter y
+[Worker]     method constructor
+[Worker]     method toJSON
 [Worker] interface DOMStringList
 [Worker]     attribute @@toStringTag
 [Worker]     getter length
