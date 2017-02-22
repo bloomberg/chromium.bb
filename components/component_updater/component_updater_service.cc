@@ -247,9 +247,11 @@ void CrxUpdateService::OnDemandUpdate(const std::string& id,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!GetComponent(id)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, update_client::Error::INVALID_ARGUMENT));
+    if (!callback.is_null()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, update_client::Error::INVALID_ARGUMENT));
+    }
     return;
   }
 
