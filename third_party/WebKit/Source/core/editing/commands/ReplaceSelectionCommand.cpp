@@ -954,7 +954,11 @@ void ReplaceSelectionCommand::mergeEndIfNeeded(EditingState* editingState) {
                      editingState);
     if (editingState->isAborted())
       return;
+
+    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets()
+    // needs to be audited.  See http://crbug.com/590369 for more details.
     document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     destination = VisiblePosition::beforeNode(placeholder);
     startOfParagraphToMove =
         createVisiblePosition(startOfParagraphToMove.toPositionWithAffinity());
@@ -1995,6 +1999,8 @@ bool ReplaceSelectionCommand::performTrivialReplace(
   Position end = replaceSelectedTextInNode(textNode->data());
   if (end.isNull())
     return false;
+
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   if (nodeAfterInsertionPos && nodeAfterInsertionPos->parentNode() &&
       isHTMLBRElement(*nodeAfterInsertionPos) &&

@@ -63,7 +63,6 @@ void InsertIntoTextNodeCommand::doApply(EditingState*) {
   }
 
   m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION_FOR_TESTING);
-  document().updateStyleAndLayout();
 }
 
 void InsertIntoTextNodeCommand::doUnapply() {
@@ -71,7 +70,6 @@ void InsertIntoTextNodeCommand::doUnapply() {
     return;
 
   m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION_FOR_TESTING);
-  document().updateStyleAndLayout();
 }
 
 DEFINE_TRACE(InsertIntoTextNodeCommand) {

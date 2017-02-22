@@ -690,6 +690,10 @@ void CompositeEditCommand::setNodeAttribute(Element* element,
 }
 
 bool CompositeEditCommand::canRebalance(const Position& position) const {
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets()
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   Node* node = position.computeContainerNode();
   if (!position.isOffsetInAnchor() || !node || !node->isTextNode() ||
       !hasRichlyEditableStyle(*node))

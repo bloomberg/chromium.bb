@@ -177,8 +177,6 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
       Position positionBeforeTextNode(Position::inParentBeforeNode(*textNode));
       // Clear out all whitespace and insert one non-breaking space
       deleteInsignificantTextDownstream(endingPosition);
-      DCHECK(!textNode->layoutObject() ||
-             textNode->layoutObject()->style()->collapseWhiteSpace());
       // Deleting insignificant whitespace will remove textNode if it contains
       // nothing but insignificant whitespace.
       if (textNode->isConnected()) {

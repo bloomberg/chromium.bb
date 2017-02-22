@@ -56,7 +56,6 @@ void DeleteFromTextNodeCommand::doApply(EditingState*) {
     return;
 
   m_node->deleteData(m_offset, m_count, exceptionState);
-  m_node->document().updateStyleAndLayout();
 }
 
 void DeleteFromTextNodeCommand::doUnapply() {
@@ -66,7 +65,6 @@ void DeleteFromTextNodeCommand::doUnapply() {
     return;
 
   m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION_FOR_TESTING);
-  m_node->document().updateStyleAndLayout();
 }
 
 DEFINE_TRACE(DeleteFromTextNodeCommand) {

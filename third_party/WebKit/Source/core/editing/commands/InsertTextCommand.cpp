@@ -209,6 +209,11 @@ void InsertTextCommand::doApply(EditingState* editingState) {
       Position::inParentBeforeNode(*startPosition.computeContainerNode()));
   deleteInsignificantText(startPosition,
                           mostForwardCaretPosition(startPosition));
+
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets()
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   if (!startPosition.isConnected())
     startPosition = positionBeforeStartNode;
   if (!isVisuallyEquivalentCandidate(startPosition))
