@@ -31,10 +31,18 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   ~DOMWindow() override;
 
   Frame* frame() const {
-    // If the DOMWindow still has a frame reference, that frame must point
-    // back to this DOMWindow: otherwise, it's easy to get into a situation
-    // where script execution leaks between different DOMWindows.
-    SECURITY_DCHECK(!m_frame || m_frame->domWindow() == this);
+    // A Frame is typically reused for navigations. If |m_frame| is not null,
+    // two conditions must always be true:
+    // - |m_frame->domWindow()| must point back to this DOMWindow. If it does
+    //   not, it is easy to introduce a bug where script execution uses the
+    //   wrong DOMWindow (which may be cross-origin).
+    // - |m_frame| must be attached, i.e. |m_frame->host()| must not be null.
+    //   If |m_frame->host()| is null, this indicates a bug where the frame was
+    //   detached but |m_frame| was not set to null. This bug can lead to
+    //   issues where executing script incorrectly schedules work on a detached
+    //   frame.
+    SECURITY_DCHECK(!m_frame ||
+                    (m_frame->domWindow() == this && m_frame->host()));
     return m_frame;
   }
 
