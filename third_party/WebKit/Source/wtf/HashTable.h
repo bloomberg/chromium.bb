@@ -1827,12 +1827,13 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
       m_stats(HashTableStatsPtr<Allocator>::copy(other.m_stats))
 #endif
 {
+  if (other.size())
+    reserveCapacityForSize(other.size());
   // Copy the hash table the dumb way, by adding each element to the new
   // table.  It might be more efficient to copy the table slots, but it's not
   // clear that efficiency is needed.
-  const_iterator end = other.end();
-  for (const_iterator it = other.begin(); it != end; ++it)
-    add(*it);
+  for (const auto& element : other)
+    add(element);
 }
 
 template <typename Key,
