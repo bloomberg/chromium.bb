@@ -1,336 +1,698 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!doctype html>
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script> 
 <script src="resources/audit-util.js"></script>
-<script src="resources/audio-testing.js"></script>
+<script src="resources/audit.js"></script>
 <script src="resources/biquad-testing.js"></script>
 </head>
 
 <body>
-
-<div id="description"></div>
-<div id="console"></div>
 <script>
-description("Tests DOM exception messages");
+let audit = Audit.createTaskRunner({requireResultFile: true});
 
-var context;
-var otherContext;
-var node;
-var node2;
-var mode;
-var panner;
-var script;
+let otherContext;
+let node;
+let node2;
+let mode;
+let panner;
+let script;
 
-function shouldThrowAndBeUnchanged(attr, value) {
-    shouldThrow(attr + " = " + value);
-    shouldNotBe(attr, value);
+function shouldThrowAndBeUnchanged(should, node, attr, value) {
+  should(
+      () => node[attr] = value,
+      node.constructor.name + '.' + attr + ' = ' + value)
+      .throw();
+  should(node[attr], node.constructor.name + '.' + attr).notBeEqualTo(value);
 }
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-    }
+audit.define('initialize', (task, should) => {
+  task.describe('Initialize contexts for testing');
 
+  should(() => {
     context = new AudioContext();
-    otherContext = new AudioContext();
+  }, 'context = new AudioContext()').notThrow();
 
-    // Test creation of various objects
+  should(() => {
+    otherContext = new AudioContext(); },
+      'otherContext = new AudioContext()')
+      .notThrow();
 
-    // Invalid number of channels: NotSupportedError
-    shouldThrow("context.createBuffer(99, 1, context.sampleRate)");
-    shouldThrow("context.createBuffer(0, 1, context.sampleRate)");
-    // Invalid sample rate: NotSupportedError
-    shouldThrow("context.createBuffer(1, 1, 1)");
-    shouldThrow("context.createBuffer(1, 1, 2999)");
-    shouldThrow("context.createBuffer(1, 1, 384001)");
-    shouldThrow("context.createBuffer(1, 1, 1e6)");
-    // Check valid values from crbug.com/344375
-    shouldNotThrow("context.createBuffer(1, 1, 3000)");
-    shouldNotThrow("context.createBuffer(1, 1, 192000)");
-    shouldNotThrow("context.createBuffer(1, 1, 384000)");
-    // Invalid number of frames: NotSupportedError
-    shouldThrow("context.createBuffer(1, 0, context.sampleRate)");
-    // 2-arg createBuffer not allowed.
-    shouldThrow("context.createBuffer(new ArrayBuffer(100), true)");
-    // Invalid sources (unspecified error)
-    shouldThrow("context.createMediaElementSource(null)");
-    shouldThrow("context.createMediaStreamSource(null)");
-    // Invalid buffer size: IndexSizeError
-    shouldThrow("context.createScriptProcessor(1, 1, 1)");
-    // Invalid number of inputs and outputs: IndexSizeError
-    shouldThrow("context.createScriptProcessor(4096, 100, 1)");
-    shouldThrow("context.createScriptProcessor(4096, 1, 100)");
-    shouldNotThrow("context.createScriptProcessor()");
-    shouldNotThrow("context.createScriptProcessor(0)");
+  task.done();
+});
 
-    // Invalid number of channels: IndexSizeError
-    shouldThrow("context.createChannelSplitter(0)");
-    shouldThrow("context.createChannelSplitter(99)");
-    shouldThrow("context.createChannelMerger(0)");
-    shouldThrow("context.createChannelMerger(99)");
-    // Invalid real/imag arrays: IndexSizeError
-    shouldThrow("context.createPeriodicWave(null, null)");
-    shouldThrow("context.createPeriodicWave(new Float32Array(10), null)");
-    // Verify that we can use large arrays with no limit. Roughly.
-    shouldNotThrow("context.createPeriodicWave(new Float32Array(4100), new Float32Array(4100))");
-    shouldNotThrow("context.createPeriodicWave(new Float32Array(8192), new Float32Array(8192))");
-    shouldNotThrow("context.createPeriodicWave(new Float32Array(10000), new Float32Array(10000))");
-    // Real and imaginary arrays must have the same size: IndexSizeError
-    shouldThrow("context.createPeriodicWave(new Float32Array(10), new Float32Array(7))");
+audit.define('createBuffer', (task, should) => {
+  task.describe('createBuffer');
+
+  // Invalid number of channels: NotSupportedError
+  should(
+      () => context.createBuffer(99, 1, context.sampleRate),
+      'context.createBuffer(99, 1, context.sampleRate)')
+      .throw('NotSupportedError');
+  should(
+      () => context.createBuffer(0, 1, context.sampleRate),
+      'context.createBuffer(0, 1, context.sampleRate)')
+      .throw('NotSupportedError');
+  // Invalid sample rate: NotSupportedError
+  should(() => context.createBuffer(1, 1, 1), 'context.createBuffer(1, 1, 1)')
+      .throw('NotSupportedError');
+  should(
+      () => context.createBuffer(1, 1, 2999),
+      'context.createBuffer(1, 1, 2999)')
+      .throw('NotSupportedError');
+  should(
+      () => context.createBuffer(1, 1, 384001),
+      'context.createBuffer(1, 1, 384001)')
+      .throw('NotSupportedError');
+  should(
+      () => context.createBuffer(1, 1, 1e6), 'context.createBuffer(1, 1, 1e6)')
+      .throw('NotSupportedError');
+  // Check valid values from crbug.com/344375
+  should(
+      () => context.createBuffer(1, 1, 3000),
+      'context.createBuffer(1, 1, 3000)')
+      .notThrow();
+  should(
+      () => context.createBuffer(1, 1, 192000),
+      'context.createBuffer(1, 1, 192000)')
+      .notThrow();
+  should(
+      () => context.createBuffer(1, 1, 384000),
+      'context.createBuffer(1, 1, 384000)')
+      .notThrow();
+  // Invalid number of frames: NotSupportedError
+  should(
+      () => context.createBuffer(1, 0, context.sampleRate),
+      'context.createBuffer(1, 0, context.sampleRate)')
+      .throw('NotSupportedError');
+  // 2-arg createBuffer not allowed.
+  should(
+      () => context.createBuffer(new ArrayBuffer(100), true),
+      'context.createBuffer(new ArrayBuffer(100), true)')
+      .throw('TypeError');
+
+  task.done();
+});
+
+audit.define('createMediaElementSource', (task, should) => {
+  task.describe('createMediaElementSource');
+
+  // Invalid sources (unspecified error)
+  should(
+      () => context.createMediaElementSource(null),
+      'context.createMediaElementSource(null)')
+      .throw();
+  task.done();
+});
+
+audit.define('createMediaStreamSource', (task, should) => {
+  task.describe('createMediaStreamSource');
+
+  // Invalid sources (unspecified error)
+  should(
+      () => context.createMediaStreamSource(null),
+      'context.createMediaStreamSource(null)')
+      .throw();
+
+  task.done();
+});
+
+audit.define('createScriptProcessor', (task, should) => {
+  task.describe('createScriptProcessor');
+
+  // Invalid buffer size: IndexSizeError
+  should(
+      () => context.createScriptProcessor(1, 1, 1),
+      'context.createScriptProcessor(1, 1, 1)')
+      .throw('IndexSizeError');
+  // Invalid number of inputs and outputs: IndexSizeError
+  should(
+      () => context.createScriptProcessor(4096, 100, 1),
+      'context.createScriptProcessor(4096, 100, 1)')
+      .throw('IndexSizeError');
+  should(
+      () => context.createScriptProcessor(4096, 1, 100),
+      'context.createScriptProcessor(4096, 1, 100)')
+      .throw('IndexSizeError');
+  should(
+      () => context.createScriptProcessor(), 'context.createScriptProcessor()')
+      .notThrow();
+  should(
+      () => context.createScriptProcessor(0),
+      'context.createScriptProcessor(0)')
+      .notThrow();
+
+  task.done();
+});
+
+audit.define('createChannelSplitter', (task, should) => {
+  task.describe('createChannelSplitter');
+
+  // Invalid number of channels: IndexSizeError
+  should(
+      () => context.createChannelSplitter(0),
+      'context.createChannelSplitter(0)')
+      .throw('IndexSizeError');
+  should(
+      () => context.createChannelSplitter(99),
+      'context.createChannelSplitter(99)')
+      .throw('IndexSizeError');
+  should(() => context.createChannelMerger(0), 'context.createChannelMerger(0)')
+      .throw('IndexSizeError');
+
+  task.done();
+});
+
+audit.define('createChannelMerger', (task, should) => {
+  task.describe('createChannelMerger');
+
+  // Invalid number of channels: IndexSizeError
+  should(
+      () => context.createChannelMerger(99), 'context.createChannelMerger(99)')
+      .throw('IndexSizeError');
+
+  task.done();
+});
+
+audit.define('createPeriodicWave', (task, should) => {
+  task.describe('createPeriodicWave');
+
+  // Invalid real/imag arrays: IndexSizeError
+  should(
+      () => context.createPeriodicWave(null, null),
+      'context.createPeriodicWave(null, null)')
+      .throw('TypeError');
+  should(
+      () => context.createPeriodicWave(new Float32Array(10), null),
+      'context.createPeriodicWave(new Float32Array(10), null)')
+      .throw('TypeError');
+  // Verify that we can use large arrays with no limit. Roughly.
+  should(
+      () => context.createPeriodicWave(
+          new Float32Array(4100), new Float32Array(4100)),
+      'context.createPeriodicWave(new Float32Array(4100), new Float32Array(4100))')
+      .notThrow();
+  should(
+      () => context.createPeriodicWave(
+          new Float32Array(8192), new Float32Array(8192)),
+      'context.createPeriodicWave(new Float32Array(8192), new Float32Array(8192))')
+      .notThrow();
+  should(
+      () => context.createPeriodicWave(
+          new Float32Array(10000), new Float32Array(10000)),
+      'context.createPeriodicWave(new Float32Array(10000), new Float32Array(10000))')
+      .notThrow();
+  // Real and imaginary arrays must have the same size: IndexSizeError
+  should(
+      () =>
+          context.createPeriodicWave(new Float32Array(10), new Float32Array(7)),
+      'context.createPeriodicWave(new Float32Array(10), new Float32Array(7))')
+      .throw('IndexSizeError');
+
+  task.done();
+});
+
+audit.define('createAnalyser', (task, should) => {
+  task.describe('createAnalyser');
+
+  // Analysers
+  node = context.createAnalyser();
+  // Invalid fftSize: IndexSizeError
+  shouldThrowAndBeUnchanged(should, node, 'fftSize', '42');
+  shouldThrowAndBeUnchanged(should, node, 'fftSize', '16');
+  should(() => node.fftSize = 32768, 'AnalyserNode.fftSize = 32768').notThrow();
+  shouldThrowAndBeUnchanged(should, node, 'fftSize', '65536');
+
+  shouldThrowAndBeUnchanged(should, node, 'minDecibels', '-10');
+  shouldThrowAndBeUnchanged(should, node, 'maxDecibels', '-150');
+  shouldThrowAndBeUnchanged(should, node, 'minDecibels', '-30');
+  shouldThrowAndBeUnchanged(should, node, 'maxDecibels', '-100');
+
+  shouldThrowAndBeUnchanged(should, node, 'smoothingTimeConstant', '-0.1');
+  shouldThrowAndBeUnchanged(should, node, 'smoothingTimeConstant', '1.5');
+
+  should(
+      () => node.getFloatFrequencyData(null),
+      'AnalyserNode.getFloatFrequencyData(null)')
+      .throw();
+  should(
+      () => node.getByteFrequencyData(null), node.constructor.name + '.getByteFrequencyData(null)')
+      .throw();
+  should(
+      () => node.getFloatTimeDomainData(null),
+      node.constructor.name + '.getFloatTimeDomainData(null)')
+      .throw();
+  should(
+      () => node.getByteTimeDomainData(null),
+      node.constructor.name + '.getByteTimeDomainData(null)')
+      .throw();
+
+  // AudioBuffers
+  node = context.createBuffer(1, 1, context.sampleRate);
+  // Invalid channel index: IndexSizeError
+  should(() => node.getChannelData(2), node.constructor.name + '.getChannelData(2)').throw();
+
+  task.done();
+});
+
+audit.define('Init test nodes', (task, should) => {
+  task.describe('Create test nodes');
+  should(() => { node = context.createGain(); },
+    'node = context.createGain()')
+    .notThrow();
+  should(() => { node2 = context.createGain(); },
+    'node2 = context.createGain()')
+    .notThrow();
+
+  task.done();
+});
+
+audit.define('connections', (task, should) => {
+  task.describe('AudioNode connections');
+
+  // AudioNode connections
+  // Invalid destination node (unspecified error)
+  should(() => node.connect(null, 0, 0), 'node.connect(null, 0, 0)').throw();
+  // Invalid input or output index: IndexSizeError
+  should(
+      () => node.connect(context.destination, 100, 0),
+      'node.connect(context.destination, 100, 0)')
+      .throw('IndexSizeError');
+  should(
+      () => node.connect(context.destination, 0, 100),
+      'node.connect(context.destination, 0, 100)')
+      .throw('IndexSizeError');
+  should(() => node.connect(node2.gain, 100), 'node.connect(node2.gain, 100)')
+      .throw('IndexSizeError');
+  should(() => node.disconnect(99), 'node.disconnect(99)')
+      .throw('IndexSizeError');
+  // Can't connect to a different context (unspecified error)
+  should(
+      () => node.connect(otherContext.destination),
+      'node.connect(otherContext.destination)')
+      .throw();
+
+  task.done();
+});
+
+audit.define('channel-stuff', (task, should) => {
+  task.describe('channelCount, channelCountMode, channelInterpretation');
+
+  // Invalid channel count: NotSupportedError
+  shouldThrowAndBeUnchanged(should, node, 'channelCount', '99');
+  // Invalid mode or interpretation (unspecified error)
+  currentMode = node.channelCountMode;
+  currentInterpretation = node.channelInterpretation;
+  should(
+      () => node.channelCountMode = 'fancy', 'node.channelCountMode = "fancy"')
+      .notThrow();
+  should(node.channelCountMode, 'node.channelCountMode').beEqualTo(currentMode);
+  should(
+      () => node.channelInterpretation = mode,
+      'node.channelInterpretation = mode')
+      .notThrow();
+  should(node.channelInterpretation, 'node.channelInterpretation')
+      .beEqualTo(currentInterpretation);
+  // Destination node channel count: should throw IndexSizeError on invalid
+  // channel count. shouldNotThrow() method cannot be used because the error
+  // message includes the number of channels, which can change depending on
+  // the actual attached hardware.
+  should(
+      () => context.destination.channelCount = 99,
+      'context.destination.channelCount = 99')
+      .throw('IndexSizeError');
+
+  task.done();
+});
+
+audit.define('audioparam', (task, should) => {
+  task.describe('Simple AudioParam');
+
+  // AudioParams
+  param = context.createGain().gain;
+  should(
+      () => param.setValueCurveAtTime(null, 0, 0),
+      'param.setValueCurveAtTime(null, 0, 0)')
+      .throw();
+
+  // exponentialRampToValue should throw only for "zero" target values.
+  should(
+      () => node.gain.exponentialRampToValueAtTime(-1, 0.1),
+      'node.gain.exponentialRampToValueAtTime(-1, 0.1)')
+      .notThrow();
+  should(
+      () => node.gain.exponentialRampToValueAtTime(0, 0.1),
+      'node.gain.exponentialRampToValueAtTime(0, 0.1)')
+      .throw();
+  // 1e-100 is 0 when converted to a single precision float.
+  should(
+      () => node.gain.exponentialRampToValueAtTime(1e-100, 0.1),
+      'node.gain.exponentialRampToValueAtTime(1e-100, 0.1)')
+      .throw();
+  // See crbug.com/459391.
+  // Math.pow(2, -149) = 1.401298464324817e-45 is the double-float value of the
+  // least positive single float number. We do it this way to make sure no
+  // round-off or conversion
+  // errors happen when reading 1.401298464324817e-45.
+  should(
+      () => node.gain.exponentialRampToValueAtTime(Math.pow(2, -149), 0.1),
+      'node.gain.exponentialRampToValueAtTime(Math.pow(2, -149), 0.1)')
+      .notThrow();
+  // Math.pow(2, -150) = 7.006492321624085d-46 is the largest double float value
+  // such that
+  // conversion to a float produces 0.  Any larger value would produce a
+  // non-zero value when
+  // converted to a single float.
+  should(
+      () => node.gain.exponentialRampToValueAtTime(Math.pow(2, -150), 0.1),
+      'node.gain.exponentialRampToValueAtTime(Math.pow(2, -150), 0.1)')
+      .throw();
+
+  task.done();
+});
+
+audit.define('biquad', (task, should) => {
+  task.describe('BiquadFilter');
+
+  // BiquadFilterNode
+  node = context.createBiquadFilter();
+  should(
+      () => node.getFrequencyResponse(
+          new Float32Array(1), new Float32Array(1), new Float32Array(1)),
+      'node.getFrequencyResponse(new Float32Array(1), new Float32Array(1), new Float32Array(1))')
+      .notThrow();
+  should(
+      () => node.getFrequencyResponse(
+          null, new Float32Array(1), new Float32Array(1)),
+      'node.getFrequencyResponse(null, new Float32Array(1), new Float32Array(1))')
+      .throw();
+  should(
+      () => node.getFrequencyResponse(
+          new Float32Array(1), null, new Float32Array(1)),
+      'node.getFrequencyResponse(new Float32Array(1), null, new Float32Array(1))')
+      .throw();
+  should(
+      () => node.getFrequencyResponse(
+          new Float32Array(1), new Float32Array(1), null),
+      'node.getFrequencyResponse(new Float32Array(1), new Float32Array(1), null)')
+      .throw();
+
+  task.done();
+});
+
+audit.define('offline-audio-context', (task, should) => {
+  task.describe('OfflineAudioContext');
+
+  // OfflineAudioContext
+  // Max supported channels
+  should(
+      () => new OfflineAudioContext(32, 100, context.sampleRate),
+      'new OfflineAudioContext(32, 100, context.sampleRate)')
+      .notThrow();
+  // Invalid number of channels (unspecified error)
+  should(
+      () => new OfflineAudioContext(99, 100, context.sampleRate),
+      'new OfflineAudioContext(99, 100, context.sampleRate)')
+      .throw();
+  // Invalid sample rate. (unspecified error)
+  should(
+      () => new OfflineAudioContext(1, 100, 1),
+      'new OfflineAudioContext(1, 100, 1)')
+      .throw();
+  should(
+      () => new OfflineAudioContext(1, 100, 1e6),
+      'new OfflineAudioContext(1, 100, 1e6)')
+      .throw();
+  // Invalid frame length (crbug.com/351277)
+  should(
+      () => new OfflineAudioContext(1, -88200000000000, 44100),
+      'new OfflineAudioContext(1, -88200000000000, 44100)')
+      .throw();
+
+  task.done();
+});
+
+audit.define('waveshaper', (task, should) => {
+  task.describe('WaveShaper');
+
+  // WaveShaper types
+  node = context.createWaveShaper();
+  currentOversample = node.oversample;
+  should(() => node.oversample = '9x', 'node.oversample = "9x"').notThrow();
+  should(node.oversample, 'node.oversample').beEqualTo(currentOversample);
+  should(() => node.curve = {}, 'node.curve = {}').throw();
+  should(
+      () => node.curve = new Float32Array(1),
+      'node.curve = new Float32Array(1)')
+      .throw();
+  should(node.curve, 'node.curve').beEqualTo(null);
+  should(
+      () => node.curve = new Float32Array(2),
+      'node.curve = new Float32Array(2)')
+      .notThrow();
+  should(() => node.curve = null, 'node.curve = null').notThrow();
+
+  task.done();
+});
+
+audit.define('audio-buffer-source', (task, should) => {
+  task.describe('AudioBufferSource start/stop');
+
+  // Start/stop for AudioBufferSourceNodes
+  buffer = context.createBuffer(1, 1, context.sampleRate);
+  should(
+      () => source = context.createBufferSource(),
+      'source = context.createBufferSource()')
+      .notThrow();
+  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
+  should(
+      () => source.buffer = context.createBuffer(1, 10, context.sampleRate),
+      'source.buffer = context.createBuffer(1, 10, context.sampleRate)')
+      .throw();
+  should(() => source.start(-1), 'source.start(-1)').throw();
+  should(() => source.start(Infinity), 'source.start(Infinity)').throw();
+  should(() => source.start(-Infinity), 'source.start(-Infinity)').throw();
+  should(() => source.start(NaN), 'source.start(NaN)').throw();
+  should(() => source.start(1, Infinity), 'source.start(1, Infinity)').throw();
+  should(() => source.start(1, -Infinity), 'source.start(1, -Infinity)')
+      .throw();
+  should(() => source.start(1, NaN), 'source.start(1, NaN)').throw();
+  should(() => source.start(1, -1), 'source.start(1, -1)').throw();
+  should(
+      () => source.start(1, -Number.MIN_VALUE),
+      'source.start(1, -Number.MIN_VALUE)')
+      .throw();
+  should(() => source.start(1, 1, Infinity), 'source.start(1, 1, Infinity)')
+      .throw();
+  should(() => source.start(1, 1, -Infinity), 'source.start(1, 1, -Infinity)')
+      .throw();
+  should(() => source.start(1, 1, NaN), 'source.start(1, 1, NaN)').throw();
+  should(() => source.start(1, 1, -1), 'source.start(1, 1, -1)').throw();
+  should(
+      () => source.start(1, 1, -Number.MIN_VALUE),
+      'source.start(1, 1, -Number.MIN_VALUE)')
+      .throw();
+  should(() => source.start(), 'source.start()').notThrow();
+  should(() => source.stop(-Number.MIN_VALUE), 'source.stop(-Number.MIN_VALUE)')
+      .throw();
+  should(() => source.stop(Infinity), 'source.stop(Infinity)').throw();
+  should(() => source.stop(-Infinity), 'source.stop(-Infinity)').throw();
+  should(() => source.stop(NaN), 'source.stop(NaN)').throw();
+  should(() => source.stop(), 'source.stop()').notThrow();
+
+  // Verify that start(0, 0) doesn't signal.
+  should(
+      () => source = context.createBufferSource(),
+      'source = context.createBufferSource()')
+      .notThrow();
+  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
+  should(() => source.start(0, 0), 'source.start(0, 0)').notThrow();
+
+  // Verify that start(0, -0.0) doesn't signal.
+  should(
+      () => source = context.createBufferSource(),
+      'source = context.createBufferSource()')
+      .notThrow();
+  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
+  should(() => source.start(0, -1 / Infinity), 'source.start(0, -1/Infinity)')
+      .notThrow();
+
+  // It's not clear from the spec, but I think it's valid to call start(). The
+  // spec is silent on
+  // what happens if we call stop() afterwards, so don't call it.
+  should(
+      () => source = context.createBufferSource(),
+      'source = context.createBufferSource()')
+      .notThrow();
+  should(() => source.start(), 'source.start()').notThrow();
+
+  buffer = context.createBuffer(1, 1, context.sampleRate);
+  should(
+      () => source = context.createBufferSource(),
+      'source = context.createBufferSource()')
+      .notThrow();
+  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
+  should(() => source.stop(), 'source.stop()').throw();
+
+  buffer = context.createBuffer(1, 1, context.sampleRate);
+  should(
+      () => source = context.createBufferSource(),
+      'source = context.createBufferSource()')
+      .notThrow();
+  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
+  should(() => source.start(), 'source.start()').notThrow();
+  should(() => source.start(), 'source.start()').throw();
+
+  buffer = context.createBuffer(1, 1, context.sampleRate);
+  should(
+      () => source = context.createBufferSource(),
+      'source = context.createBufferSource()')
+      .notThrow();
+  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
+  should(() => source.start(), 'source.start()').notThrow();
+  should(() => source.stop(), 'source.stop()').notThrow();
+
+  task.done();
+});
+
+audit.define('oscillator', (task, should) => {
+  task.describe('Oscillator start/stop');
+
+  // Start/stop for OscillatorNodes
+  should(
+      () => source = context.createOscillator(),
+      'source = context.createOscillator()')
+      .notThrow();
+  should(
+      () => source.start(-Number.MIN_VALUE), 'source.start(-Number.MIN_VALUE)')
+      .throw();
+  should(() => source.start(Infinity), 'source.start(Infinity)').throw();
+  should(() => source.start(-Infinity), 'source.start(-Infinity)').throw();
+  should(() => source.start(NaN), 'source.start(NaN)').throw();
+  should(() => source.start(), 'source.start()').notThrow();
+  should(() => source.stop(-Number.MIN_VALUE), 'source.stop(-Number.MIN_VALUE)')
+      .throw();
+  should(() => source.stop(Infinity), 'source.stop(Infinity)').throw();
+  should(() => source.stop(-Infinity), 'source.stop(-Infinity)').throw();
+  should(() => source.stop(NaN), 'source.stop(NaN)').throw();
+  should(() => source.stop(), 'source.stop()').notThrow();
+
+  should(
+      () => osc = context.createOscillator(),
+      'osc = context.createOscillator()')
+      .notThrow();
+  should(() => osc.stop(), 'osc.stop()').throw();
+  should(
+      () => osc1 = context.createOscillator(),
+      'osc1 = context.createOscillator()')
+      .notThrow();
+  should(() => osc1.start(), 'osc1.start()').notThrow();
+  should(() => osc1.stop(), 'osc1.stop()').notThrow();
+
+  should(() => osc.setPeriodicWave(null), 'osc.setPeriodicWave(null)').throw();
 
 
-    // Analysers
-    node = context.createAnalyser();
-    // Invalid fftSize: IndexSizeError
-    shouldThrowAndBeUnchanged("node.fftSize", "42");
-    shouldThrowAndBeUnchanged("node.fftSize", "16");
-    shouldNotThrow("node.fftSize = 32768");
-    shouldThrowAndBeUnchanged("node.fftSize", "65536");
+  task.done();
+});
 
-    shouldThrowAndBeUnchanged("node.minDecibels", "-10");
-    shouldThrowAndBeUnchanged("node.maxDecibels", "-150");
-    shouldThrowAndBeUnchanged("node.minDecibels", "-30");
-    shouldThrowAndBeUnchanged("node.maxDecibels", "-100");
+audit.define('convolver', (task, should) => {
+  task.describe('Convolver');
 
-    shouldThrowAndBeUnchanged("node.smoothingTimeConstant", "-0.1");
-    shouldThrowAndBeUnchanged("node.smoothingTimeConstant", "1.5");
+  // Convolver buffer rate must match context rate. Create on offline context so
+  // we
+  // specify the context rate exactly, in case the test is run on platforms with
+  // different
+  // HW sample rates.
+  should(
+      () => oc = new OfflineAudioContext(1, 44100, 44100),
+      'oc = new OfflineAudioContext(1, 44100, 44100)')
+      .notThrow();
+  should(() => conv = oc.createConvolver(), 'conv = oc.createConvolver()')
+      .notThrow();
+  should(() => conv.buffer = {}, 'conv.buffer = {}').throw();
+  should(
+      () => conv.buffer = oc.createBuffer(1, 100, 22050),
+      'conv.buffer = oc.createBuffer(1, 100, 22050)')
+      .throw();
+  // conv.buffer should be unchanged (null) because the above failed.
+  should(conv.buffer, 'conv.buffer').beEqualTo(null);
 
-    shouldThrow("node.getFloatFrequencyData(null)");
-    shouldThrow("node.getByteFrequencyData(null)");
-    shouldThrow("node.getFloatTimeDomainData(null)");
-    shouldThrow("node.getByteTimeDomainData(null)");
+  task.done();
+});
 
-    // AudioBuffers
-    node = context.createBuffer(1,1, context.sampleRate);
-    // Invalid channel index: IndexSizeError
-    shouldThrow("node.getChannelData(2)");
+audit.define('panner', (task, should) => {
+  task.describe('Panner');
 
-    // AudioNode connections
-    node = context.createGain();
-    node2 = context.createGain();
-    // Invalid destination node (unspecified error)
-    shouldThrow("node.connect(null, 0, 0)");
-    // Invalid input or output index: IndexSizeError
-    shouldThrow("node.connect(context.destination, 100, 0)");
-    shouldThrow("node.connect(context.destination, 0, 100)");
-    shouldThrow("node.connect(node2.gain, 100)");
-    shouldThrow("node.disconnect(99)");
-    // Can't connect to a different context (unspecified error)
-    shouldThrow("node.connect(otherContext.destination)");
+  // PannerNode channel count and mode
+  panner = context.createPanner();
+  // Channel count can only be set to 1 or 2.
+  should(() => panner.channelCount = 1, 'panner.channelCount = 1').notThrow();
+  should(() => panner.channelCount = 2, 'panner.channelCount = 2').notThrow();
+  shouldThrowAndBeUnchanged(should, panner, 'channelCount', 0);
+  shouldThrowAndBeUnchanged(should, panner, 'channelCount', 3);
+  // It is illegal to set the mode to 'max'
+  shouldThrowAndBeUnchanged(should, panner, 'channelCountMode', 'max');
+  should(
+      () => panner.channelCountMode = 'explicit',
+      'panner.channelCountMode = "explicit"')
+      .notThrow();
+  should(
+      () => panner.channelCountMode = 'clamped-max',
+      'panner.channelCountMode = "clamped-max"')
+      .notThrow();
+  should(
+      () => panner.channelCountMode = 'junk',
+      'panner.channelCountMode = "junk"')
+      .notThrow();
 
-    // Invalid channel count: NotSupportedError
-    shouldThrowAndBeUnchanged("node.channelCount", "99");
-    // Invalid mode or interpretation (unspecified error)
-    currentMode = node.channelCountMode;
-    currentInterpretation = node.channelInterpretation;
-    shouldNotThrow("node.channelCountMode = 'fancy'");
-    if (node.channelCountMode == currentMode)
-      testPassed("Invalid channelCountMode value did not change mode");
-    else
-      testFailed("node.channelCountMode incorrectly changed to invalid value " + node.channelCountMode);
-    shouldNotThrow("node.channelInterpretation = mode");
-    if (node.channelInterpretation == currentInterpretation)
-      testPassed("Invalid channelInterpration value did not change mode");
-    else
-      testFailed("node.channelInterpretation incorrectly changed to invalid value " + node.channelInterpreation);
+  task.done();
+});
 
-    // Destination node channel count: should throw IndexSizeError on invalid
-    // channel count. shouldNotThrow() method cannot be used because the error
-    // message includes the number of channels, which can change depending on
-    // the actual attached hardware.
-    try {
-        eval("context.destination.channelCount = 99");
-    } catch (e) {
-        if (e.message === "Failed to set the 'channelCount' property on 'AudioNode': The channel count provided (99) is outside the range [1, " + context.destination.maxChannelCount + "]." && e.name === "IndexSizeError")
-            testPassed("context.destination.channelCount = 99 threw IndexSizeError exception on invalid channel count.");
-        else
-            testFailed("context.destination.channelCount = 99 should throw IndexSizeError exception on invalid channel count.");
-    }
+audit.define('script-processor', (task, should) => {
+  task.describe('ScriptProcessor');
 
-    // AudioParams
-    param = context.createGain().gain;
-    shouldThrow("param.setValueCurveAtTime(null, 0, 0)");
+  // Test channel count and mode for a ScriptProcessor.
+  should(
+      () => script = context.createScriptProcessor(256, 3),
+      'script = context.createScriptProcessor(256, 3)')
+      .notThrow();
+  // Make sure the channelCount and mode are set correctly.
+  should(script.channelCount, 'script.channelCount').beEqualTo(3);
+  should(script.channelCountMode, 'script.channelCountMode')
+      .beEqualTo('explicit');
+  // Cannot change the channelCount or mode to anything else
+  should(() => script.channelCount = 3, 'script.channelCount = 3').notThrow();
+  shouldThrowAndBeUnchanged(should, script, 'channelCount', 1);
 
-    // BiquadFilterNode
-    node = context.createBiquadFilter();
-    shouldNotThrow("node.getFrequencyResponse(new Float32Array(1), new Float32Array(1), new Float32Array(1))");
-    shouldThrow("node.getFrequencyResponse(null, new Float32Array(1), new Float32Array(1))");
-    shouldThrow("node.getFrequencyResponse(new Float32Array(1), null, new Float32Array(1))");
-    shouldThrow("node.getFrequencyResponse(new Float32Array(1), new Float32Array(1), null)");
+  shouldThrowAndBeUnchanged(should, script, 'channelCount', 7);
+  should(
+      () => script.channelCountMode = 'explicit',
+      'script.channelCountMode = "explicit"')
+      .notThrow();
+  shouldThrowAndBeUnchanged(should, script, 'channelCountMode', 'max');
+  shouldThrowAndBeUnchanged(should, script, 'channelCountMode', 'clamped-max');
+  should(
+      () => script.channelCountMode = 'junk',
+      'script.channelCountMode = "junk"')
+      .notThrow();
 
-    // Delay nodes are tested elsewhere, so don't duplicate that work here.
+  task.done();
+});
 
-    // OfflineAudioContext
-    // Max supported channels
-    shouldNotThrow("new OfflineAudioContext(32, 100, context.sampleRate)");
-    // Invalid number of channels (unspecified error)
-    shouldThrow("new OfflineAudioContext(99, 100, context.sampleRate)");
-    // Invalid sample rate. (unspecified error)
-    shouldThrow("new OfflineAudioContext(1, 100, 1)");
-    shouldThrow("new OfflineAudioContext(1, 100, 1e6)");
-    // Invalid frame length (crbug.com/351277)
-    shouldThrow("new OfflineAudioContext(1, -88200000000000, 44100)");
+audit.define('misc', (task, should) => {
+  task.describe('Miscellaneous');
 
-    // WaveShaper types
-    node = context.createWaveShaper();
-    currentOversample = node.oversample;
-    shouldNotThrow("node.oversample = '9x'");
-    if (node.oversample == currentOversample)
-      testPassed("Invalid oversample value did not change node.oversample");
-    else
-      testFailed("node.oversample incorrectly changed to invalid value " + node.oversample);
-    shouldThrow("node.curve = {}");
-    shouldThrow("node.curve = new Float32Array(1)");
-    shouldBeNull("node.curve");
-    shouldNotThrow("node.curve = new Float32Array(2)");
-    shouldNotThrow("node.curve = null");
+  // noteOn and noteOff don't exist anymore
+  should(osc.noteOn, 'osc.noteOn').beEqualTo(undefined);
+  should(osc.noteOff, 'osc.noteOff').beEqualTo(undefined);
+  should(source.noteOn, 'source.noteOn').beEqualTo(undefined);
+  should(source.noteOff, 'source.noteOff').beEqualTo(undefined);
 
-    // Start/stop for AudioBufferSourceNodes
-    buffer = context.createBuffer(1,1, context.sampleRate);
-    shouldNotThrow("source = context.createBufferSource()");
-    shouldNotThrow("source.buffer = buffer");
-    shouldThrow("source.buffer = context.createBuffer(1, 10, context.sampleRate)");
-    shouldThrow("source.start(-1)");
-    shouldThrow("source.start(Infinity)");
-    shouldThrow("source.start(-Infinity)");
-    shouldThrow("source.start(NaN)");
-    shouldThrow("source.start(1, Infinity)");
-    shouldThrow("source.start(1, -Infinity)");
-    shouldThrow("source.start(1, NaN)");
-    shouldThrow("source.start(1, -1)");
-    shouldThrow("source.start(1, -Number.MIN_VALUE)");
-    shouldThrow("source.start(1, 1, Infinity)");
-    shouldThrow("source.start(1, 1, -Infinity)");
-    shouldThrow("source.start(1, 1, NaN)");
-    shouldThrow("source.start(1, 1, -1)");
-    shouldThrow("source.start(1, 1, -Number.MIN_VALUE)");
-    shouldNotThrow("source.start()");
-    shouldThrow("source.stop(-Number.MIN_VALUE)");
-    shouldThrow("source.stop(Infinity)");
-    shouldThrow("source.stop(-Infinity)");
-    shouldThrow("source.stop(NaN)");
-    shouldNotThrow("source.stop()");
+  task.done();
+});
 
-    // Verify that start(0, 0) doesn't signal.
-    shouldNotThrow("source = context.createBufferSource()");
-    shouldNotThrow("source.buffer = buffer");
-    shouldNotThrow("source.start(0, 0)");
-
-    // Verify that start(0, -0.0) doesn't signal.
-    shouldNotThrow("source = context.createBufferSource()");
-    shouldNotThrow("source.buffer = buffer");
-    shouldNotThrow("source.start(0, -1/Infinity)");
-
-    // It's not clear from the spec, but I think it's valid to call start(). The spec is silent on
-    // what happens if we call stop() afterwards, so don't call it.
-    shouldNotThrow("source = context.createBufferSource()");
-    shouldNotThrow("source.start()");
-
-    buffer = context.createBuffer(1,1, context.sampleRate);
-    shouldNotThrow("source = context.createBufferSource()");
-    shouldNotThrow("source.buffer = buffer");
-    shouldThrow("source.stop()");
-
-    buffer = context.createBuffer(1,1, context.sampleRate);
-    shouldNotThrow("source = context.createBufferSource()");
-    shouldNotThrow("source.buffer = buffer");
-    shouldNotThrow("source.start()");
-    shouldThrow("source.start()");
-
-    buffer = context.createBuffer(1,1, context.sampleRate);
-    shouldNotThrow("source = context.createBufferSource()");
-    shouldNotThrow("source.buffer = buffer");
-    shouldNotThrow("source.start()");
-    shouldNotThrow("source.stop()");
-
-
-    // Start/stop for OscillatorNodes
-    shouldNotThrow("source = context.createOscillator()");
-    shouldThrow("source.start(-Number.MIN_VALUE)");
-    shouldThrow("source.start(Infinity)");
-    shouldThrow("source.start(-Infinity)");
-    shouldThrow("source.start(NaN)");
-    shouldNotThrow("source.start()");
-    shouldThrow("source.stop(-Number.MIN_VALUE)");
-    shouldThrow("source.stop(Infinity)");
-    shouldThrow("source.stop(-Infinity)");
-    shouldThrow("source.stop(NaN)");
-    shouldNotThrow("source.stop()");
-
-    shouldNotThrow("osc = context.createOscillator()");
-    shouldThrow("osc.stop()");
-    shouldNotThrow("osc1 = context.createOscillator()");
-    shouldNotThrow("osc1.start()");
-    shouldNotThrow("osc1.stop()");
-
-    shouldThrow("osc.setPeriodicWave(null)");
-
-    // exponentialRampToValue should throw only for "zero" target values.
-    node = context.createGain();
-    node.connect(context.destination);
-    shouldNotThrow("node.gain.exponentialRampToValueAtTime(-1, 0.1)");
-    shouldThrow("node.gain.exponentialRampToValueAtTime(0, 0.1)");
-    // 1e-100 is 0 when converted to a single precision float.
-    shouldThrow("node.gain.exponentialRampToValueAtTime(1e-100, 0.1)");
-    // See crbug.com/459391.
-    // Math.pow(2, -149) = 1.401298464324817e-45 is the double-float value of the
-    // least positive single float number. We do it this way to make sure no round-off or conversion
-    // errors happen when reading 1.401298464324817e-45.
-    shouldNotThrow("node.gain.exponentialRampToValueAtTime(Math.pow(2, -149), 0.1)");
-    // Math.pow(2, -150) = 7.006492321624085d-46 is the largest double float value such that
-    // conversion to a float produces 0.  Any larger value would produce a non-zero value when
-    // converted to a single float.
-    shouldThrow("node.gain.exponentialRampToValueAtTime(Math.pow(2, -150), 0.1)");
-
-    // Convolver buffer rate must match context rate. Create on offline context so we
-    // specify the context rate exactly, in case the test is run on platforms with different
-    // HW sample rates.
-    shouldNotThrow("oc = new OfflineAudioContext(1, 44100, 44100)");
-    shouldNotThrow("conv = oc.createConvolver()");
-    shouldThrow("conv.buffer = {}");
-    shouldThrow("conv.buffer = oc.createBuffer(1, 100, 22050)");
-    // conv.buffer should be unchanged (null) because the above failed.
-    shouldBeNull("conv.buffer");
-
-    // PannerNode channel count and mode
-    panner = context.createPanner();
-    // Channel count can only be set to 1 or 2.
-    shouldNotThrow("panner.channelCount = 1");
-    shouldNotThrow("panner.channelCount = 2");
-    shouldThrowAndBeUnchanged("panner.channelCount", "0");
-    shouldThrowAndBeUnchanged("panner.channelCount", "3");
-    // It is illegal to set the mode to 'max'
-    shouldThrowAndBeUnchanged("panner.channelCountMode", "'max'");
-    shouldNotThrow("panner.channelCountMode = 'explicit'");
-    shouldNotThrow("panner.channelCountMode = 'clamped-max'");
-    shouldNotThrow("panner.channelCountMode = 'junk'");
-
-    // Test channel count and mode for a ScriptProcessor.
-    shouldNotThrow("script = context.createScriptProcessor(256, 3)");
-    // Make sure the channelCount and mode are set correctly.
-    shouldBeEqualToNumber("script.channelCount", 3);
-    shouldBeEqualToString("script.channelCountMode", "explicit");
-    // Cannot change the channelCount or mode to anything else
-    shouldNotThrow("script.channelCount = 3");
-    shouldThrowAndBeUnchanged("script.channelCount", "1");
-
-    shouldThrowAndBeUnchanged("script.channelCount", "7");
-    shouldNotThrow("script.channelCountMode = 'explicit'");
-    shouldThrowAndBeUnchanged("script.channelCountMode", "'max'");
-    shouldThrowAndBeUnchanged("script.channelCountMode", "'clamped-max'");
-    shouldNotThrow("script.channelCountMode = 'junk'");
-
-    // noteOn and noteOff don't exist anymore
-    shouldBeUndefined("osc.noteOn");
-    shouldBeUndefined("osc.noteOff");
-    shouldBeUndefined("source.noteOn");
-    shouldBeUndefined("source.noteOff");
-}
-
-runTest();
-successfullyParsed = true;
-
+audit.run();
 </script>
 </body>
 </html>
