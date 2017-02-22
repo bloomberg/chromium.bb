@@ -37,8 +37,8 @@ class HardwareAcceleratedFeatureIntegrationTest(
     return 'hardware_accelerated_feature'
 
   @classmethod
-  def setUpClass(cls):
-    super(cls, HardwareAcceleratedFeatureIntegrationTest).setUpClass()
+  def SetUpProcess(cls):
+    super(cls, HardwareAcceleratedFeatureIntegrationTest).SetUpProcess()
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()
     cls.SetStaticServerDirs([])

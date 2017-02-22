@@ -88,8 +88,8 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return depth_capture_expectations.DepthCaptureExpectations()
 
   @classmethod
-  def setUpClass(cls):
-    super(cls, DepthCaptureIntegrationTest).setUpClass()
+  def SetUpProcess(cls):
+    super(cls, DepthCaptureIntegrationTest).SetUpProcess()
     cls.CustomizeOptions()
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()

@@ -120,8 +120,8 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return trace_test_expectations.TraceTestExpectations()
 
   @classmethod
-  def setUpClass(cls):
-    super(cls, TraceIntegrationTest).setUpClass()
+  def SetUpProcess(cls):
+    super(cls, TraceIntegrationTest).SetUpProcess()
     path_util.SetupTelemetryPaths()
     cls.CustomizeOptions()
     cls.SetBrowserOptions(cls._finder_options)

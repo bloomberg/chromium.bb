@@ -63,8 +63,8 @@ class PixelIntegrationTest(
     return 'pixel'
 
   @classmethod
-  def setUpClass(cls):
-    super(cls, PixelIntegrationTest).setUpClass()
+  def SetUpProcess(cls):
+    super(cls, PixelIntegrationTest).SetUpProcess()
     cls._original_finder_options = cls._finder_options.Copy()
     cls.CustomizeBrowserArgs([])
     cls.StartBrowser()

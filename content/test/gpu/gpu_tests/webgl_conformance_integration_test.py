@@ -313,8 +313,8 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         is_asan=cls._is_asan)
 
   @classmethod
-  def setUpClass(cls):
-    super(WebGLConformanceIntegrationTest, cls).setUpClass()
+  def SetUpProcess(cls):
+    super(WebGLConformanceIntegrationTest, cls).SetUpProcess()
     cls.CustomizeOptions()
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()
@@ -398,6 +398,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           test_paths.append(test)
 
     return test_paths
+
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

@@ -97,8 +97,8 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return context_lost_expectations.ContextLostExpectations()
 
   @classmethod
-  def setUpClass(cls):
-    super(cls, ContextLostIntegrationTest).setUpClass()
+  def SetUpProcess(cls):
+    super(cls, ContextLostIntegrationTest).SetUpProcess()
     cls.CustomizeOptions()
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()

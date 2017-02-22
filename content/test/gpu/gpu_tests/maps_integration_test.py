@@ -60,16 +60,16 @@ class MapsIntegrationTest(
     return maps_expectations.MapsExpectations()
 
   @classmethod
-  def setUpClass(cls):
-    super(cls, MapsIntegrationTest).setUpClass()
+  def SetUpProcess(cls):
+    super(cls, MapsIntegrationTest).SetUpProcess()
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartWPRServer(os.path.join(data_path, 'maps_004.wpr.updated'),
                        cloud_storage.PUBLIC_BUCKET)
     cls.StartBrowser()
 
   @classmethod
-  def tearDownClass(cls):
-    super(cls, MapsIntegrationTest).tearDownClass()
+  def TearDownProcess(cls):
+    super(cls, MapsIntegrationTest).TearDownProcess()
     cls.StopWPRServer()
 
   @classmethod

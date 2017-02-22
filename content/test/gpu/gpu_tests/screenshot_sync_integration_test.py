@@ -39,8 +39,8 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return 'screenshot_sync'
 
   @classmethod
-  def setUpClass(cls):
-    super(cls, ScreenshotSyncIntegrationTest).setUpClass()
+  def SetUpProcess(cls):
+    super(cls, ScreenshotSyncIntegrationTest).SetUpProcess()
     cls._original_finder_options = cls._finder_options.Copy()
     cls.CustomizeBrowserArgs([])
     cls.StartBrowser()

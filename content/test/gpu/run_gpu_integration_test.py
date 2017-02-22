@@ -26,10 +26,9 @@ def PostprocessJSON(file_name, run_test_args):
     json.dump(test_result, f)
 
 def main():
-  options = browser_test_runner.TestRunOptions()
   rest_args = sys.argv[1:]
   retval = browser_test_runner.Run(
-      gpu_project_config.CONFIG, options, rest_args)
+      gpu_project_config.CONFIG, rest_args)
   # Postprocess the outputted JSON to trim all of the prefixes from
   # the test names, to keep them as similar to the old form as
   # possible -- and keep them from getting crazily long.

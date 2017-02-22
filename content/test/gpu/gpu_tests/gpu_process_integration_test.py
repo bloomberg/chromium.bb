@@ -50,8 +50,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return 'gpu_process'
 
   @classmethod
-  def setUpClass(cls):
-    super(cls, GpuProcessIntegrationTest).setUpClass()
+  def SetUpProcess(cls):
+    super(cls, GpuProcessIntegrationTest).SetUpProcess()
     cls._original_finder_options = cls._finder_options.Copy()
     cls.CustomizeBrowserArgs([])
     cls.StartBrowser()
