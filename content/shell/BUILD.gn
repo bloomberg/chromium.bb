@@ -223,7 +223,6 @@ static_library("content_shell_lib") {
     "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
     "//components/keyed_service/content",
     "//components/plugins/renderer",
-    "//components/test_runner:test_runner",
     "//components/url_formatter",
     "//components/web_cache/renderer",
     "//content:resources",
@@ -231,6 +230,7 @@ static_library("content_shell_lib") {
     "//content/app/strings",
     "//content/gpu",
     "//content/public/common:service_names",
+    "//content/shell/test_runner:test_runner",
     "//content/test:content_test_mojo_bindings",
     "//content/test:layouttest_support",
     "//content/test:test_support",
@@ -408,10 +408,10 @@ group("resources") {
     ":copy_shell_resources",
   ]
   deps = [
-    "//components/test_runner:resources",
+    "//content/shell/test_runner:resources",
   ]
   data_deps = [
-    "//components/test_runner:resources",
+    "//content/shell/test_runner:resources",
   ]
 }
 
@@ -486,7 +486,7 @@ if (is_android) {
       # TODO(rsesek): Remove this after GYP is gone, since it only needs to
       # be here per the comment in blink_test_platform_support_mac.mm about
       # the bundle structure.
-      "//components/test_runner:resources",
+      "//content/shell/test_runner:resources",
     ]
     ldflags = [
       # The main app is at Content Shell.app/Contents/MacOS/Content Shell

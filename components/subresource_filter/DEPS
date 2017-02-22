@@ -1,6 +1,5 @@
 include_rules = [
   "+components/prefs",
-  "+components/test_runner",
   "+components/variations",
   # subresource_filter is a layered component; subdirectories must explicitly
   # introduce the ability to use non-core layers as appropriate.
