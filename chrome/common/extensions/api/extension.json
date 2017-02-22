@@ -13,6 +13,7 @@
       "lastError": {
         "type": "object",
         "optional": true,
+        "deprecated": "Please use $(ref:runtime.lastError).",
         "description": "Set for the lifetime of a callback if an ansychronous extension api has resulted in an error. If no error has occured lastError will be <var>undefined</var>.",
         "properties": {
           "message": { "type": "string", "description": "Description of the error that has taken place." }
@@ -59,6 +60,7 @@
       },
       {
         "name": "getURL",
+        "deprecated": "Please use $(ref:runtime.getURL).",
         "nocompile": true,
         "type": "function",
         "description": "Converts a relative path within an extension install directory to a fully-qualified URL.",
