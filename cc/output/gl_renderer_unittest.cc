@@ -134,7 +134,7 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
 
   void TestShader(const ProgramKey& program_key) {
     renderer()->SetCurrentFrameForTesting(GLRenderer::DrawingFrame());
-    const size_t kNumSrcColorSpaces = 3;
+    const size_t kNumSrcColorSpaces = 4;
     gfx::ColorSpace src_color_spaces[kNumSrcColorSpaces] = {
         gfx::ColorSpace(), gfx::ColorSpace::CreateSRGB(),
         gfx::ColorSpace::CreateREC709(),
@@ -157,6 +157,38 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
     TestShader(ProgramKey::DebugBorder());
     TestShader(ProgramKey::SolidColor(NO_AA));
     TestShader(ProgramKey::SolidColor(USE_AA));
+  }
+
+  void TestColorShaders() {
+    const size_t kNumTransferFns = 7;
+    SkColorSpaceTransferFn transfer_fns[kNumTransferFns] = {
+        // The identity.
+        {1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 0.f},
+        // The identity, with an if statement.
+        {1.f, 1.f, 0.f, 1.f, 0.5f, 0.f, 0.f},
+        // Just the power function.
+        {1.1f, 1.f, 0.f, 1.f, 0.f, 0.f, 0.f},
+        // Everything but the power function, nonlinear only.
+        {1.f, 0.9f, 0.1f, 0.9f, 0.f, 0.1f, 0.1f},
+        // Everything, nonlinear only.
+        {1.1f, 0.9f, 0.1f, 0.9f, 0.f, 0.1f, 0.1f},
+        // Everything but the power function.
+        {1.f, 0.9f, 0.1f, 0.9f, 0.5f, 0.1f, 0.1f},
+        // Everything.
+        {1.1f, 0.9f, 0.1f, 0.9f, 0.5f, 0.1f, 0.1f},
+    };
+
+    for (size_t i = 0; i < kNumTransferFns; ++i) {
+      SkMatrix44 primaries;
+      gfx::ColorSpace::CreateSRGB().GetPrimaryMatrix(&primaries);
+      gfx::ColorSpace src =
+          gfx::ColorSpace::CreateCustom(primaries, transfer_fns[i]);
+
+      renderer()->SetCurrentFrameForTesting(GLRenderer::DrawingFrame());
+      renderer()->SetUseProgram(ProgramKey::SolidColor(NO_AA), src,
+                                gfx::ColorSpace::CreateXYZD50());
+      EXPECT_TRUE(renderer()->current_program_->initialized());
+    }
   }
 
   void TestShadersWithPrecision(TexCoordPrecision precision) {
@@ -266,6 +298,10 @@ static const SamplerType kSamplerList[] = {
 
 TEST_F(GLRendererShaderPixelTest, BasicShadersCompile) {
   TestBasicShaders();
+}
+
+TEST_F(GLRendererShaderPixelTest, TestColorShadersCompile) {
+  TestColorShaders();
 }
 
 class PrecisionShaderPixelTest

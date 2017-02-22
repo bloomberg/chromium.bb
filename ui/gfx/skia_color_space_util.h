@@ -10,10 +10,17 @@
 
 namespace gfx {
 
-float GFX_EXPORT EvalSkTransferFn(const SkColorSpaceTransferFn& fn, float x);
+float GFX_EXPORT SkTransferFnEval(const SkColorSpaceTransferFn& fn, float x);
 
 SkColorSpaceTransferFn GFX_EXPORT
 SkTransferFnInverse(const SkColorSpaceTransferFn& fn);
+
+bool GFX_EXPORT
+SkTransferFnsApproximatelyCancel(const SkColorSpaceTransferFn& a,
+                                 const SkColorSpaceTransferFn& b);
+
+bool GFX_EXPORT
+SkTransferFnIsApproximatelyIdentity(const SkColorSpaceTransferFn& fn);
 
 bool GFX_EXPORT SkMatrixIsApproximatelyIdentity(const SkMatrix44& m);
 

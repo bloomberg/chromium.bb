@@ -10,11 +10,9 @@
 namespace gfx {
 
 namespace {
-
-const float kEpsilon = 1.f / 256.f;
 }
 
-float EvalSkTransferFn(const SkColorSpaceTransferFn& fn, float x) {
+float SkTransferFnEval(const SkColorSpaceTransferFn& fn, float x) {
   if (x < 0.f)
     return 0.f;
   if (x < fn.fD)
@@ -39,7 +37,32 @@ SkColorSpaceTransferFn SkTransferFnInverse(const SkColorSpaceTransferFn& fn) {
   return fn_inv;
 }
 
+bool SkTransferFnsApproximatelyCancel(const SkColorSpaceTransferFn& a,
+                                      const SkColorSpaceTransferFn& b) {
+  const float kStep = 1.f / 8.f;
+  const float kEpsilon = 2.5f / 256.f;
+  for (float x = 0; x <= 1.f; x += kStep) {
+    float a_of_x = SkTransferFnEval(a, x);
+    float b_of_a_of_x = SkTransferFnEval(b, a_of_x);
+    if (std::abs(b_of_a_of_x - x) > kEpsilon)
+      return false;
+  }
+  return true;
+}
+
+bool SkTransferFnIsApproximatelyIdentity(const SkColorSpaceTransferFn& a) {
+  const float kStep = 1.f / 8.f;
+  const float kEpsilon = 2.5f / 256.f;
+  for (float x = 0; x <= 1.f; x += kStep) {
+    float a_of_x = SkTransferFnEval(a, x);
+    if (std::abs(a_of_x - x) > kEpsilon)
+      return false;
+  }
+  return true;
+}
+
 bool SkMatrixIsApproximatelyIdentity(const SkMatrix44& m) {
+  const float kEpsilon = 1.f / 256.f;
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
       float identity_value = i == j ? 1 : 0;
