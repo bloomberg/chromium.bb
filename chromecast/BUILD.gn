@@ -309,6 +309,10 @@ test("cast_shell_browsertests") {
     "//chromecast/app:test_support",
     "//chromecast/browser:browsertests",
   ]
+
+  data_deps = [
+    ":chromecast_locales_pak",
+  ]
 }
 
 group("cast_shell_lib") {
