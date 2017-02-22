@@ -431,7 +431,7 @@ def _CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
 
 
 def _CheckDCHECK_IS_ONHasBraces(input_api, output_api):
-  """Checks to make sure DCHECK_IS_ON() does not skip the braces."""
+  """Checks to make sure DCHECK_IS_ON() does not skip the parentheses."""
   errors = []
   pattern = input_api.re.compile(r'DCHECK_IS_ON(?!\(\))',
                                  input_api.re.MULTILINE)
@@ -442,7 +442,7 @@ def _CheckDCHECK_IS_ONHasBraces(input_api, output_api):
       if input_api.re.search(pattern, line):
         errors.append(output_api.PresubmitError(
           ('%s:%d: Use of DCHECK_IS_ON() must be written as "#if ' +
-           'DCHECK_IS_ON()", not forgetting the braces.')
+           'DCHECK_IS_ON()", not forgetting the parentheses.')
           % (f.LocalPath(), lnum)))
   return errors
 
