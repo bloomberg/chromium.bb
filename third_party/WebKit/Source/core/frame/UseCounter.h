@@ -1169,7 +1169,6 @@ class CORE_EXPORT UseCounter {
     SVGSMILCurrentTime = 1507,
     HTMLBodyElementOnSelectionChangeAttribute = 1508,
     ForeignFetchInterception = 1509,
-    InputSelectionGettersThrow = 1517,
     UsbGetDevices = 1519,
     UsbRequestDevice = 1520,
     UsbDeviceOpen = 1521,

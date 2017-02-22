@@ -35,6 +35,8 @@
                 testButtonSelectionAccess(elt, ".selectionStart = 0");
                 testButtonSelectionAccess(elt, ".selectionEnd");
                 testButtonSelectionAccess(elt, ".selectionEnd = 0");
+                testButtonSelectionAccess(elt, ".selectionDirection");
+                testButtonSelectionAccess(elt, ".selectionDirection = 'none'");
                 // Make sure that setSelectionRange is defined on the button element,
                 // but throws an exception if called.
                 if (elt.setSelectionRange != undefined) {

@@ -79,9 +79,9 @@ interface HTMLInputElement : HTMLElement {
     readonly attribute NodeList labels;
 
     void select();
-    [RaisesException, ImplementedAs=selectionStartForBinding] attribute unsigned long selectionStart;
-    [RaisesException, ImplementedAs=selectionEndForBinding] attribute unsigned long selectionEnd;
-    [RaisesException, ImplementedAs=selectionDirectionForBinding] attribute DOMString selectionDirection;
+    [RaisesException, ImplementedAs=selectionStartForBinding] attribute unsigned long? selectionStart;
+    [RaisesException, ImplementedAs=selectionEndForBinding] attribute unsigned long? selectionEnd;
+    [RaisesException, ImplementedAs=selectionDirectionForBinding] attribute DOMString? selectionDirection;
     [RaisesException] void setRangeText(DOMString replacement);
     [RaisesException] void setRangeText(DOMString replacement,
                                         unsigned long start,

@@ -549,26 +549,20 @@ bool HTMLInputElement::canStartSelection() const {
 }
 
 unsigned HTMLInputElement::selectionStartForBinding(
+    bool& isNull,
     ExceptionState& exceptionState) const {
   if (!m_inputType->supportsSelectionAPI()) {
-    UseCounter::count(document(), UseCounter::InputSelectionGettersThrow);
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "The input element's type ('" +
-                                         m_inputType->formControlType() +
-                                         "') does not support selection.");
+    isNull = true;
     return 0;
   }
   return TextControlElement::selectionStart();
 }
 
 unsigned HTMLInputElement::selectionEndForBinding(
+    bool& isNull,
     ExceptionState& exceptionState) const {
   if (!m_inputType->supportsSelectionAPI()) {
-    UseCounter::count(document(), UseCounter::InputSelectionGettersThrow);
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "The input element's type ('" +
-                                         m_inputType->formControlType() +
-                                         "') does not support selection.");
+    isNull = true;
     return 0;
   }
   return TextControlElement::selectionEnd();
@@ -577,11 +571,6 @@ unsigned HTMLInputElement::selectionEndForBinding(
 String HTMLInputElement::selectionDirectionForBinding(
     ExceptionState& exceptionState) const {
   if (!m_inputType->supportsSelectionAPI()) {
-    UseCounter::count(document(), UseCounter::InputSelectionGettersThrow);
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "The input element's type ('" +
-                                         m_inputType->formControlType() +
-                                         "') does not support selection.");
     return String();
   }
   return TextControlElement::selectionDirection();

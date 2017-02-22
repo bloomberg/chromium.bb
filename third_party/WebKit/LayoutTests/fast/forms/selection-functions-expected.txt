@@ -52,9 +52,11 @@ selectionStart and selectionEnd in focus handler don't return wrong values 0,0:
 7, 7
 
 ===button===
-button.selectionStart threw exception
+button.selectionStart did not throw exception
 button.selectionStart = 0 threw exception
-button.selectionEnd threw exception
+button.selectionEnd did not throw exception
 button.selectionEnd = 0 threw exception
+button.selectionDirection did not throw exception
+button.selectionDirection = 'none' threw exception
 button.setSelectionRange defined
 button.setSelectionRange(0,0) threw exception

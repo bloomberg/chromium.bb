@@ -18,11 +18,11 @@ for (var i = 0; i < tests.children.length; i++) {
     var test = tests.children[i];
     test.focus();
 
-    shouldThrow('test.selectionStart');
+    shouldBe('test.selectionStart', 'null');
     shouldThrow('test.selectionStart = 0');
-    shouldThrow('test.selectionEnd');
+    shouldBe('test.selectionEnd', 'null');
     shouldThrow('test.selectionEnd = 0');
-    shouldThrow('test.selectionDirection');
+    shouldBe('test.selectionDirection', 'null');
     shouldThrow('test.selectionDirection = 0');
     shouldThrow('test.selectionRange()');
 }
