@@ -2568,7 +2568,7 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
 
   // Walk up the hierarchy and look for a scrollable layer.
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
-  LayerImpl* potentially_scrolling_layer_impl = nullptr;
+  ScrollNode* impl_scroll_node = nullptr;
   if (layer_impl) {
     ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
     for (; scroll_tree.parent(scroll_node);
@@ -2584,9 +2584,8 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
       }
 
       if (status.thread == InputHandler::SCROLL_ON_IMPL_THREAD &&
-          !potentially_scrolling_layer_impl) {
-        potentially_scrolling_layer_impl =
-            active_tree_->LayerById(scroll_node->owning_layer_id);
+          !impl_scroll_node) {
+        impl_scroll_node = scroll_node;
       }
     }
   }
@@ -2594,25 +2593,34 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
   // Falling back to the viewport layer ensures generation of root overscroll
   // notifications. We use the viewport's main scroll layer to represent the
   // viewport in scrolling code.
-  if (!potentially_scrolling_layer_impl ||
-      potentially_scrolling_layer_impl == OuterViewportScrollLayer() ||
-      potentially_scrolling_layer_impl == InnerViewportScrollLayer()) {
-    potentially_scrolling_layer_impl = viewport()->MainScrollLayer();
+  bool scrolls_inner_viewport =
+      impl_scroll_node && InnerViewportScrollLayer() &&
+      InnerViewportScrollLayer()->scroll_tree_index() == impl_scroll_node->id;
+  bool scrolls_outer_viewport =
+      impl_scroll_node && OuterViewportScrollLayer() &&
+      OuterViewportScrollLayer()->scroll_tree_index() == impl_scroll_node->id;
+  if (!impl_scroll_node || scrolls_inner_viewport || scrolls_outer_viewport) {
+    if (auto* mainScrollLayer = viewport()->MainScrollLayer())
+      impl_scroll_node = scroll_tree.Node(mainScrollLayer->scroll_tree_index());
+    else
+      impl_scroll_node = nullptr;
   }
 
-  if (potentially_scrolling_layer_impl) {
+  if (impl_scroll_node) {
     // Ensure that final layer scrolls on impl thread (crbug.com/625100)
-    ScrollNode* scroll_node =
-        scroll_tree.Node(potentially_scrolling_layer_impl->scroll_tree_index());
     ScrollStatus status =
-        TryScroll(device_viewport_point, type, scroll_tree, scroll_node);
-    if (IsMainThreadScrolling(status, scroll_node)) {
+        TryScroll(device_viewport_point, type, scroll_tree, impl_scroll_node);
+    if (IsMainThreadScrolling(status, impl_scroll_node)) {
       *scroll_on_main_thread = true;
       *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
     }
   }
 
-  return potentially_scrolling_layer_impl;
+  // TODO(pdr): Refactor this function to directly return |impl_scroll_node|
+  // instead of using ScrollNode's owning_layer_id to return a LayerImpl.
+  if (!impl_scroll_node)
+    return nullptr;
+  return active_tree_->LayerById(impl_scroll_node->owning_layer_id);
 }
 
 static bool IsClosestScrollAncestor(LayerImpl* child,
@@ -2864,33 +2872,32 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   // that ScrollBy uses for non-animated wheel scrolls.
   scroll_status = ScrollBegin(&scroll_state, WHEEL);
   scroll_node = scroll_tree.CurrentlyScrollingNode();
-  if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
+  if (scroll_status.thread == SCROLL_ON_IMPL_THREAD && scroll_node) {
     gfx::Vector2dF pending_delta = scroll_delta;
-    if (scroll_node) {
-      for (; scroll_tree.parent(scroll_node);
-           scroll_node = scroll_tree.parent(scroll_node)) {
-        if (!scroll_node->scrollable)
-          continue;
+    for (; scroll_tree.parent(scroll_node);
+         scroll_node = scroll_tree.parent(scroll_node)) {
+      if (!scroll_node->scrollable)
+        continue;
 
-        if (viewport()->MainScrollLayer() &&
-            scroll_node->owning_layer_id ==
-                viewport()->MainScrollLayer()->id()) {
-          gfx::Vector2dF scrolled =
-              viewport()->ScrollAnimated(pending_delta, delayed_by);
-          // Viewport::ScrollAnimated returns pending_delta as long as it
-          // starts an animation.
-          if (scrolled == pending_delta)
-            return scroll_status;
-          break;
-        }
-
-        gfx::Vector2dF scroll_delta =
-            ComputeScrollDelta(scroll_node, pending_delta);
-        if (ScrollAnimationCreate(scroll_node, scroll_delta, delayed_by))
+      bool scrolls_main_viewport_scroll_layer =
+          viewport()->MainScrollLayer() &&
+          viewport()->MainScrollLayer()->scroll_tree_index() == scroll_node->id;
+      if (scrolls_main_viewport_scroll_layer) {
+        gfx::Vector2dF scrolled =
+            viewport()->ScrollAnimated(pending_delta, delayed_by);
+        // Viewport::ScrollAnimated returns pending_delta as long as it starts
+        // an animation.
+        if (scrolled == pending_delta)
           return scroll_status;
-
-        pending_delta -= scroll_delta;
+        break;
       }
+
+      gfx::Vector2dF scroll_delta =
+          ComputeScrollDelta(scroll_node, pending_delta);
+      if (ScrollAnimationCreate(scroll_node, scroll_delta, delayed_by))
+        return scroll_status;
+
+      pending_delta -= scroll_delta;
     }
   }
   scroll_state.set_is_ending(true);
@@ -3020,23 +3027,23 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   // details.
   const float kEpsilon = 0.1f;
 
-  bool is_viewport_scroll_layer =
+  bool scrolls_main_viewport_scroll_layer =
       viewport()->MainScrollLayer() &&
-      scroll_node->owning_layer_id == viewport()->MainScrollLayer()->id();
+      viewport()->MainScrollLayer()->scroll_tree_index() == scroll_node->id;
 
   // This is needed if the scroll chains up to the viewport without going
-  // through the outer viewport scroll layer. This can happen if we scroll an
+  // through the outer viewport scroll node. This can happen if we scroll an
   // element that's not a descendant of the document.rootScroller. In that case
   // we want to scroll the inner viewport -- to allow panning while zoomed --
   // but also move browser controls if needed.
-  bool is_inner_viewport_scroll_layer =
+  bool scrolls_inner_viewport_layer =
       InnerViewportScrollLayer() &&
-      scroll_node->owning_layer_id == InnerViewportScrollLayer()->id();
+      InnerViewportScrollLayer()->scroll_tree_index() == scroll_node->id;
 
-  if (is_viewport_scroll_layer || is_inner_viewport_scroll_layer) {
+  if (scrolls_main_viewport_scroll_layer || scrolls_inner_viewport_layer) {
     Viewport::ScrollResult result = viewport()->ScrollBy(
         delta, viewport_point, scroll_state->is_direct_manipulation(),
-        !wheel_scrolling_, is_viewport_scroll_layer);
+        !wheel_scrolling_, scrolls_main_viewport_scroll_layer);
 
     applied_delta = result.consumed_delta;
     delta_applied_to_content = result.content_scrolled_delta;
@@ -3054,12 +3061,12 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
     // TODO(bokan): This preserves existing behavior by not allowing tiny
     // scrolls to produce overscroll but is inconsistent in how delta gets
     // chained up. We need to clean this up.
-    if (is_viewport_scroll_layer)
+    if (scrolls_main_viewport_scroll_layer)
       scroll_state->ConsumeDelta(applied_delta.x(), applied_delta.y());
     return;
   }
 
-  if (!is_viewport_scroll_layer && !is_inner_viewport_scroll_layer) {
+  if (!scrolls_main_viewport_scroll_layer && !scrolls_inner_viewport_layer) {
     // If the applied delta is within 45 degrees of the input
     // delta, bail out to make it easier to scroll just one layer
     // in one direction without affecting any of its parents.
