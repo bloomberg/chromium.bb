@@ -178,17 +178,8 @@ WebArea
 }
 
 WebArea
-  Div
-  tree
-  img
-  button "Buttons are leaf nodes"
-  text "List item also presentational"
   *Div
     text "Div in list isn't presentational"
-  checkbox "Content within label refers to label container"
-  Div
-  combobox
-  Div
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -366,17 +357,11 @@ WebArea
 }
 
 WebArea
-  Div
-  tree
-  img
-  button "Buttons are leaf nodes"
-  text "List item also presentational"
-  Div
-  checkbox "Content within label refers to label container"
-  Div
   *combobox
     MenuListPopup
-  Div
+      menuitem "Options should be"
+      menuitem "sent down even though"
+      menuitem "they are grandchildren"
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -427,38 +412,5 @@ WebArea
     }
   ],
   "domNode": "select"
-}
-
-*menuitem "Options should be"
-{
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "menuitem"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "Options should be",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "contents",
-        "value": {
-          "type": "computedString",
-          "value": "Options should be"
-        }
-      }
-    ]
-  },
-  "properties": [],
-  "domNode": "option"
 }
 

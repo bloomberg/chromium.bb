@@ -54,7 +54,6 @@ class AXMenuListOption final : public AXMockObject {
   bool isDetached() const override { return !m_element; }
   AccessibilityRole roleValue() const override;
   bool canHaveChildren() const override { return false; }
-  AXObject* computeParent() const override;
 
   Element* actionElement() const override;
   bool isEnabled() const override;
