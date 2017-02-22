@@ -1142,8 +1142,6 @@ bool ScrollTree::operator==(const ScrollTree& other) const {
 #if DCHECK_IS_ON()
 void ScrollTree::CopyCompleteTreeState(const ScrollTree& other) {
   currently_scrolling_node_id_ = other.currently_scrolling_node_id_;
-  layer_id_to_scrollbars_enabled_map_ =
-      other.layer_id_to_scrollbars_enabled_map_;
   layer_id_to_scroll_offset_map_ = other.layer_id_to_scroll_offset_map_;
   layer_id_to_synced_scroll_offset_map_ =
       other.layer_id_to_synced_scroll_offset_map_;

@@ -361,8 +361,6 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
 
   void clear();
 
-  typedef std::unordered_map<int, bool> ScrollbarsEnabledMap;
-
   gfx::ScrollOffset MaxScrollOffset(int scroll_node_id) const;
   void OnScrollOffsetAnimated(int layer_id,
                               int scroll_tree_index,
@@ -435,7 +433,6 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
       std::unordered_map<int, scoped_refptr<SyncedScrollOffset>>;
 
   int currently_scrolling_node_id_;
-  ScrollbarsEnabledMap layer_id_to_scrollbars_enabled_map_;
 
   // On the main thread we store the scroll offsets directly since the main
   // thread only needs to keep track of the current main thread state. The impl
