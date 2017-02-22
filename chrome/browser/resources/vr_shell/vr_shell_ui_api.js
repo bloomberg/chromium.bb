@@ -129,6 +129,10 @@ api.FillType = {
   'CONTENT': 4
 };
 
+/**
+ * Abstract fill base class.
+ * @abstract
+ */
 api.Fill = class {
   constructor(type) {
     this.properties = {};
@@ -348,12 +352,62 @@ api.Property = {
  * @enum {number}
  * @const
  */
-api.Easing = {
+api.EasingType = {
   'LINEAR': 0,
   'CUBICBEZIER': 1,
   'EASEIN': 2,
   'EASEOUT': 3
 };
+
+/** @const */ var DEFAULT_EASING_POW = 2;
+/** @const */ var DEFAULT_CUBIC_BEZIER_P1X = 0.25;
+/** @const */ var DEFAULT_CUBIC_BEZIER_P1Y = 0;
+/** @const */ var DEFAULT_CUBIC_BEZIER_P2X = 0.75;
+/** @const */ var DEFAULT_CUBIC_BEZIER_P2Y = 1;
+
+/**
+ * Abstract easing base class.
+ * @abstract
+ */
+api.Easing = class {
+  constructor(type) {
+    this.type = type;
+  }
+}
+
+api.LinearEasing = class extends api.Easing {
+  constructor() {
+    super(api.EasingType.LINEAR);
+  }
+}
+
+api.CubicBezierEasing = class extends api.Easing {
+  constructor(
+      p1x = DEFAULT_CUBIC_BEZIER_P1X,
+      p1y = DEFAULT_CUBIC_BEZIER_P1Y,
+      p2x = DEFAULT_CUBIC_BEZIER_P2X,
+      p2y = DEFAULT_CUBIC_BEZIER_P2Y) {
+    super(api.EasingType.CUBICBEZIER);
+    this.p1x = p1x;
+    this.p1y = p1y;
+    this.p2x = p2x;
+    this.p2y = p2y;
+  }
+}
+
+api.InEasing = class extends api.Easing {
+  constructor(pow = DEFAULT_EASING_POW) {
+    super(api.EasingType.EASEIN);
+    this.pow = pow;
+  }
+}
+
+api.OutEasing = class extends api.Easing {
+  constructor(pow = DEFAULT_EASING_POW) {
+    super(api.EasingType.EASEOUT);
+    this.pow = pow;
+  }
+}
 
 /**
  * Base animation class. An animation can vary only one object property.
@@ -370,7 +424,7 @@ api.Animation = class {
     /** @private {Object} */
     this.to = {};
     /** @private {Object} */
-    this.easing = {};
+    this.easing = new api.LinearEasing();
 
     // How many milliseconds in the future to start the animation.
     /** @private {number} */
@@ -379,8 +433,6 @@ api.Animation = class {
     // Duration of the animation (milliseconds).
     /** @private {number} */
     this.durationMillis = durationMs;
-
-    this.easing.type = api.Easing.LINEAR;
   }
 
   /**
@@ -451,11 +503,20 @@ api.Animation = class {
     this.property = api.Property.OPACITY;
     this.to.x = opacity;
   }
+
+  /**
+   * Set the animation's easing.
+   * @param {api.Easing} easing
+   */
+  setEasing(easing) {
+    this.easing = easing;
+  }
 };
 
 /**
  * Abstract class handling webui command calls from native.  The UI must
  * subclass this and override the handlers.
+ * @abstract
  */
 api.NativeCommandHandler = class {
   /**
