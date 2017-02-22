@@ -4,55 +4,28 @@
 
 #include "ash/common/system/overview/overview_button_tray.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/public/cpp/shelf_types.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 
-namespace {
-
-// Predefined padding for the icon used in this tray. These are to be set to the
-// border of the icon, depending on the current shelf_alignment()
-const int kHorizontalShelfHorizontalPadding = 8;
-const int kHorizontalShelfVerticalPadding = 4;
-const int kVerticalShelfHorizontalPadding = 2;
-const int kVerticalShelfVerticalPadding = 5;
-
-}  // namespace
-
 namespace ash {
 
 OverviewButtonTray::OverviewButtonTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf), icon_(nullptr) {
-  icon_ = new views::ImageView();
-  if (MaterialDesignController::IsShelfMaterial()) {
-    SetInkDropMode(InkDropMode::ON);
-    SetContentsBackground(false);
-    gfx::ImageSkia image_md =
-        CreateVectorIcon(kShelfOverviewIcon, kShelfIconColor);
-    icon_->SetImage(image_md);
-  } else {
-    SetContentsBackground(true);
-    gfx::ImageSkia* image_non_md =
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_AURA_UBER_TRAY_OVERVIEW_MODE);
-    icon_->SetImage(image_non_md);
-  }
+    : TrayBackgroundView(wm_shelf), icon_(new views::ImageView()) {
+  SetInkDropMode(InkDropMode::ON);
+  SetContentsBackground(false);
+
+  icon_->SetImage(CreateVectorIcon(kShelfOverviewIcon, kShelfIconColor));
   SetIconBorderForShelfAlignment();
   tray_container()->AddChildView(icon_);
 
@@ -123,25 +96,16 @@ void OverviewButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
 }
 
 void OverviewButtonTray::SetIconBorderForShelfAlignment() {
-  gfx::Insets insets;
-  if (ash::MaterialDesignController::IsShelfMaterial()) {
-    // Pad button size to align with other controls in the system tray.
-    const gfx::ImageSkia image = icon_->GetImage();
-    const int vertical_padding = (kTrayItemSize - image.height()) / 2;
-    const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
-    insets = gfx::Insets(vertical_padding, horizontal_padding);
-  } else {
-    insets = IsHorizontalAlignment(shelf_alignment())
-                 ? gfx::Insets(kHorizontalShelfVerticalPadding,
-                               kHorizontalShelfHorizontalPadding)
-                 : gfx::Insets(kVerticalShelfVerticalPadding,
-                               kVerticalShelfHorizontalPadding);
-  }
-  icon_->SetBorder(views::CreateEmptyBorder(insets));
+  // Pad button size to align with other controls in the system tray.
+  const gfx::ImageSkia& image = icon_->GetImage();
+  const int vertical_padding = (kTrayItemSize - image.height()) / 2;
+  const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
+  icon_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(vertical_padding, horizontal_padding)));
 }
 
 void OverviewButtonTray::UpdateIconVisibility() {
-  // The visibility of the OverviewButtonTray has diverge from
+  // The visibility of the OverviewButtonTray has diverged from
   // WindowSelectorController::CanSelect. The visibility of the button should
   // not change during transient times in which CanSelect is false. Such as when
   // a modal dialog is present.
