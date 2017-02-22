@@ -16,6 +16,8 @@
 #include "chrome/browser/android/ntp/content_suggestions_notifier_service.h"
 #endif
 
+using params::ntp_snippets::kNotificationsFeature;
+
 ContentSuggestionsNotifierServiceFactory*
 ContentSuggestionsNotifierServiceFactory::GetInstance() {
   return base::Singleton<ContentSuggestionsNotifierServiceFactory>::get();
@@ -57,7 +59,7 @@ ContentSuggestionsNotifierServiceFactory::
 KeyedService* ContentSuggestionsNotifierServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(kContentSuggestionsNotificationsFeature)) {
+  if (base::FeatureList::IsEnabled(kNotificationsFeature)) {
     Profile* profile = Profile::FromBrowserContext(context);
     ntp_snippets::ContentSuggestionsService* suggestions =
         ContentSuggestionsServiceFactory::GetForProfile(profile);

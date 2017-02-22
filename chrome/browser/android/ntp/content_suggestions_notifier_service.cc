@@ -29,6 +29,12 @@ using ntp_snippets::ContentSuggestion;
 using ntp_snippets::ContentSuggestionsNotificationHelper;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::KnownCategories;
+using params::ntp_snippets::kNotificationsAlwaysNotifyParam;
+using params::ntp_snippets::kNotificationsDailyLimit;
+using params::ntp_snippets::kNotificationsDefaultDailyLimit;
+using params::ntp_snippets::kNotificationsFeature;
+using params::ntp_snippets::kNotificationsKeepWhenFrontmostParam;
+using params::ntp_snippets::kNotificationsUseSnippetAsTextParam;
 
 namespace {
 
@@ -70,9 +76,8 @@ int DayAsYYYYMMDD() {
 bool HaveQuotaForToday(PrefService* prefs) {
   int today = DayAsYYYYMMDD();
   int limit = variations::GetVariationParamByFeatureAsInt(
-      kContentSuggestionsNotificationsFeature,
-      kContentSuggestionsNotificationsDailyLimit,
-      kContentSuggestionsNotificationsDefaultDailyLimit);
+      kNotificationsFeature, kNotificationsDailyLimit,
+      kNotificationsDefaultDailyLimit);
   int sent =
       prefs->GetInteger(prefs::kContentSuggestionsNotificationsSentDay) == today
           ? prefs->GetInteger(prefs::kContentSuggestionsNotificationsSentCount)
@@ -125,8 +130,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
                                 ? suggestion->notification_extra()->deadline
                                 : base::Time::Max();
     bool use_snippet = variations::GetVariationParamByFeatureAsBool(
-        kContentSuggestionsNotificationsFeature,
-        kContentSuggestionsNotificationsUseSnippetAsTextParam, false);
+        kNotificationsFeature, kNotificationsUseSnippetAsTextParam, false);
     service_->FetchSuggestionImage(
         suggestion->id(),
         base::Bind(&NotifyingObserver::ImageFetched,
@@ -179,8 +183,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     const auto& suggestions = service_->GetSuggestionsForCategory(category);
     // TODO(sfiera): replace with AlwaysNotifyAboutContentSuggestions().
     if (variations::GetVariationParamByFeatureAsBool(
-             kContentSuggestionsNotificationsFeature,
-             kContentSuggestionsNotificationsAlwaysNotifyParam, false)) {
+            kNotificationsFeature, kNotificationsAlwaysNotifyParam, false)) {
       if (category.IsKnownCategory(KnownCategories::ARTICLES) &&
           !suggestions.empty()) {
         return &suggestions[0];
@@ -198,8 +201,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
 
   void AppStatusChanged(base::android::ApplicationState state) {
     if (variations::GetVariationParamByFeatureAsBool(
-            kContentSuggestionsNotificationsFeature,
-            kContentSuggestionsNotificationsKeepNotificationWhenFrontmostParam,
+            kNotificationsFeature, kNotificationsKeepWhenFrontmostParam,
             false)) {
       return;
     }

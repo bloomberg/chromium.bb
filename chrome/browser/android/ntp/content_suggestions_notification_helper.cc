@@ -22,6 +22,9 @@
 #include "ui/gfx/image/image_skia.h"
 
 using base::android::JavaParamRef;
+using params::ntp_snippets::kNotificationsFeature;
+using params::ntp_snippets::kNotificationsIgnoredLimitParam;
+using params::ntp_snippets::kNotificationsIgnoredDefaultLimit;
 
 namespace ntp_snippets {
 
@@ -32,9 +35,8 @@ bool IsDisabledForProfile(Profile* profile) {
   int current =
       prefs->GetInteger(prefs::kContentSuggestionsConsecutiveIgnoredPrefName);
   int limit = variations::GetVariationParamByFeatureAsInt(
-      kContentSuggestionsNotificationsFeature,
-      kContentSuggestionsNotificationsIgnoredLimitParam,
-      kContentSuggestionsNotificationsIgnoredDefaultLimit);
+      kNotificationsFeature, kNotificationsIgnoredLimitParam,
+      kNotificationsIgnoredDefaultLimit);
   return current >= limit;
 }
 

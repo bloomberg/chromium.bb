@@ -4,16 +4,18 @@
 
 #include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
 
-const base::Feature kContentSuggestionsNotificationsFeature = {
-    "ContentSuggestionsNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
+namespace params {
+namespace ntp_snippets {
 
-const char kContentSuggestionsNotificationsAlwaysNotifyParam[] =
-    "always_notify";
-const char kContentSuggestionsNotificationsUseSnippetAsTextParam[] =
-    "use_snippet_as_text";
-const char
-    kContentSuggestionsNotificationsKeepNotificationWhenFrontmostParam[] =
-        "keep_notification_when_frontmost";
-const char kContentSuggestionsNotificationsDailyLimit[] = "daily_limit";
-const char kContentSuggestionsNotificationsIgnoredLimitParam[] =
-    "ignored_limit";
+const base::Feature kNotificationsFeature = {"ContentSuggestionsNotifications",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const char kNotificationsAlwaysNotifyParam[] = "always_notify";
+const char kNotificationsUseSnippetAsTextParam[] = "use_snippet_as_text";
+const char kNotificationsKeepWhenFrontmostParam[] =
+    "keep_notification_when_frontmost";
+const char kNotificationsDailyLimit[] = "daily_limit";
+const char kNotificationsIgnoredLimitParam[] = "ignored_limit";
+
+}  // namespace ntp_snippets
+}  // namespace params

@@ -7,29 +7,34 @@
 
 #include "base/feature_list.h"
 
+namespace params {
+namespace ntp_snippets {
+
 // Enables and configures notifications for content suggestions.
-extern const base::Feature kContentSuggestionsNotificationsFeature;
+extern const base::Feature kNotificationsFeature;
 
 // "false": use server signals to decide whether to send a notification
 // "true": always send a notification when we receive ARTICLES suggestions
-extern const char kContentSuggestionsNotificationsAlwaysNotifyParam[];
+extern const char kNotificationsAlwaysNotifyParam[];
 
 // "true": use article's snippet as notification's text
 // "false": use article's publisher as notification's text
-extern const char kContentSuggestionsNotificationsUseSnippetAsTextParam[];
+extern const char kNotificationsUseSnippetAsTextParam[];
 
 // "true": when Chrome becomes frontmost, leave notifications open.
 // "false": automatically dismiss notification when Chrome becomes frontmost.
-extern const char
-    kContentSuggestionsNotificationsKeepNotificationWhenFrontmostParam[];
+extern const char kNotificationsKeepWhenFrontmostParam[];
 
 // An integer. The maximum number of notifications that will be shown in 1 day.
-extern const char kContentSuggestionsNotificationsDailyLimit[];
-constexpr int kContentSuggestionsNotificationsDefaultDailyLimit = 1;
+extern const char kNotificationsDailyLimit[];
+constexpr int kNotificationsDefaultDailyLimit = 1;
 
 // An integer. The number of notifications that can be ignored. If the user
 // ignores this many notifications or more, we stop sending them.
-extern const char kContentSuggestionsNotificationsIgnoredLimitParam[];
-constexpr int kContentSuggestionsNotificationsIgnoredDefaultLimit = 3;
+extern const char kNotificationsIgnoredLimitParam[];
+constexpr int kNotificationsIgnoredDefaultLimit = 3;
+
+}  // namespace ntp_snippets
+}  // namespace params
 
 #endif  // CHROME_BROWSER_NTP_SNIPPETS_NTP_SNIPPETS_FEATURES_H_

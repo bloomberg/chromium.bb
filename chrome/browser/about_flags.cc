@@ -535,7 +535,7 @@ const FeatureEntry::FeatureVariation
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kContentSuggestionsNotificationsFeatureVariationAlways[] = {
-        {kContentSuggestionsNotificationsAlwaysNotifyParam, "true"}};
+        {params::ntp_snippets::kNotificationsAlwaysNotifyParam, "true"}};
 
 const FeatureEntry::FeatureVariation
     kContentSuggestionsNotificationsFeatureVariations[] = {
@@ -1152,8 +1152,9 @@ const FeatureEntry kFeatureEntries[] = {
                                app_list::switches::kDisableSyncAppList)},
 #endif  // ENABLE_APP_LIST
     {"lcd-text-aa", IDS_FLAGS_LCD_TEXT_NAME, IDS_FLAGS_LCD_TEXT_DESCRIPTION,
-     kOsDesktop, ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLCDText,
-                                           switches::kDisableLCDText)},
+     kOsDesktop,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLCDText,
+                               switches::kDisableLCDText)},
     {"enable-offer-store-unmasked-wallet-cards",
      IDS_FLAGS_OFFER_STORE_UNMASKED_WALLET_CARDS,
      IDS_FLAGS_OFFER_STORE_UNMASKED_WALLET_CARDS_DESCRIPTION, kOsAll,
@@ -1187,8 +1188,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"cross-origin-media-playback-requires-user-gesture",
      IDS_FLAGS_CROSS_ORIGIN_MEDIA_PLAYBACK_REQUIRES_USER_GESTURE_NAME,
      IDS_FLAGS_CROSS_ORIGIN_MEDIA_PLAYBACK_REQUIRES_USER_GESTURE_DESCRIPTION,
-     kOsDesktop, FEATURE_VALUE_TYPE(
-                     features::kCrossOriginMediaPlaybackRequiresUserGesture)},
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         features::kCrossOriginMediaPlaybackRequiresUserGesture)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -1545,8 +1547,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-data-reduction-proxy-savings-promo",
      IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_NAME,
      IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_DESCRIPTION,
-     kOsAndroid, SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
-                                       kEnableDataReductionProxySavingsPromo)},
+     kOsAndroid,
+     SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
+                           kEnableDataReductionProxySavingsPromo)},
 #endif  // OS_ANDROID
     {"allow-insecure-localhost", IDS_ALLOW_INSECURE_LOCALHOST,
      IDS_ALLOW_INSECURE_LOCALHOST_DESCRIPTION, kOsAll,
@@ -1916,7 +1919,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_NTP_SUGGESTIONS_NOTIFICATIONS_NAME,
      IDS_FLAGS_ENABLE_NTP_SUGGESTIONS_NOTIFICATIONS_DESCRIPTION, kOsAndroid,
      FEATURE_WITH_VARIATIONS_VALUE_TYPE(
-         kContentSuggestionsNotificationsFeature,
+         params::ntp_snippets::kNotificationsFeature,
          kContentSuggestionsNotificationsFeatureVariations,
          ntp_snippets::kStudyName)},
     {"ntp-condensed-layout", IDS_FLAGS_NTP_CONDENSED_LAYOUT_NAME,
@@ -2190,10 +2193,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-expanded-autofill-credit-card-popup",
      IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT,
      IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT_DESCRIPTION,
-     kOsAndroid, FEATURE_WITH_VARIATIONS_VALUE_TYPE(
-                     autofill::kAutofillCreditCardPopupLayout,
-                     kAutofillCreditCardPopupLayoutFeatureVariations,
-                     "AutofillCreditCardPopupLayout")},
+     kOsAndroid,
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+         autofill::kAutofillCreditCardPopupLayout,
+         kAutofillCreditCardPopupLayoutFeatureVariations,
+         "AutofillCreditCardPopupLayout")},
     {"native-android-history-manager", IDS_NATIVE_ANDROID_HISTORY_MANAGER,
      IDS_NATIVE_ANDROID_HISTORY_MANAGER_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kNativeAndroidHistoryManager)},
@@ -2201,10 +2205,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-autofill-credit-card-last-used-date-display",
      IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_LAST_USED_DATE_DISPLAY,
      IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_LAST_USED_DATE_DISPLAY_DESCRIPTION,
-     kOsAll, FEATURE_WITH_VARIATIONS_VALUE_TYPE(
-                 autofill::kAutofillCreditCardLastUsedDateDisplay,
-                 kAutofillCreditCardLastUsedDateFeatureVariations,
-                 "AutofillCreditCardLastUsedDate")},
+     kOsAll,
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+         autofill::kAutofillCreditCardLastUsedDateDisplay,
+         kAutofillCreditCardLastUsedDateFeatureVariations,
+         "AutofillCreditCardLastUsedDate")},
 #if defined(OS_WIN)
     {"windows10-custom-titlebar", IDS_FLAGS_WINDOWS10_CUSTOM_TITLEBAR_NAME,
      IDS_FLAGS_WINDOWS10_CUSTOM_TITLEBAR_DESCRIPTION, kOsWin,
