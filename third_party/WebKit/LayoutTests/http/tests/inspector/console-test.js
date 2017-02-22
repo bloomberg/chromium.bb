@@ -287,7 +287,7 @@ InspectorTest.expandGettersInConsoleMessages = function(callback)
     var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
     var properties = [];
     var propertiesCount  = 0;
-    InspectorTest.addSniffer(Components.ObjectPropertyTreeElement.prototype, "_updateExpandable", propertyExpandableUpdated);
+    InspectorTest.addSniffer(ObjectUI.ObjectPropertyTreeElement.prototype, "_updateExpandable", propertyExpandableUpdated);
     for (var i = 0; i < messageViews.length; ++i) {
         var element = messageViews[i].element();
         for (var node = element; node; node = node.traverseNextNode(element)) {
@@ -307,7 +307,7 @@ InspectorTest.expandGettersInConsoleMessages = function(callback)
                 properties[i].click();
             InspectorTest.deprecatedRunAfterPendingDispatches(callback);
         } else {
-            InspectorTest.addSniffer(Components.ObjectPropertyTreeElement.prototype, "_updateExpandable", propertyExpandableUpdated);
+            InspectorTest.addSniffer(ObjectUI.ObjectPropertyTreeElement.prototype, "_updateExpandable", propertyExpandableUpdated);
         }
     }
 }

@@ -12,6 +12,7 @@ Loaded modules:
     host
     main
     network_conditions
+    object_ui
     persistence
     platform
     protocol
@@ -35,6 +36,7 @@ Loaded modules:
     inline_editor
     main
     network_conditions
+    object_ui
     persistence
     platform
     protocol
@@ -64,6 +66,7 @@ Loaded modules:
     main
     network
     network_conditions
+    object_ui
     perf_ui
     persistence
     platform
@@ -96,6 +99,7 @@ Loaded modules:
     main
     network
     network_conditions
+    object_ui
     perf_ui
     persistence
     platform
@@ -131,6 +135,7 @@ Loaded modules:
     main
     network
     network_conditions
+    object_ui
     perf_ui
     persistence
     platform

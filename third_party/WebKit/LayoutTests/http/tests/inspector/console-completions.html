@@ -35,7 +35,7 @@ var objectC = new C();
 
 function test()
 {
-    Components.JavaScriptAutocomplete.completionsForExpression("objectC.", "e").then(checkCompletions.bind(this));
+    ObjectUI.JavaScriptAutocomplete.completionsForExpression("objectC.", "e").then(checkCompletions.bind(this));
     function checkCompletions(completions)
     {
         InspectorTest.addResult("Completions:")

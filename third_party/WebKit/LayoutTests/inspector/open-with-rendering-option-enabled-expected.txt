@@ -10,6 +10,7 @@ Loaded modules:
     host
     main
     network_conditions
+    object_ui
     persistence
     platform
     protocol

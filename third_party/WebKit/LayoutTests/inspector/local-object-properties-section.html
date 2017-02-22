@@ -11,7 +11,7 @@ function test()
     var object = {a: "b", c: d};
     var localObject = SDK.RemoteObject.fromLocalObject(object);
 
-    var propertiesSection = new Components.ObjectPropertiesSection(localObject, "local object");
+    var propertiesSection = new ObjectUI.ObjectPropertiesSection(localObject, "local object");
     propertiesSection.expand();
     propertiesSection.objectTreeElement().childAt(1).expand();
 

@@ -25,67 +25,67 @@ function test()
 
         function step2(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("", "var").then(checkAgainstGolden.bind(this, ["var1", "var2"], [], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("", "var").then(checkAgainstGolden.bind(this, ["var1", "var2"], [], next));
         },
 
         function step3(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("", "di").then(checkAgainstGolden.bind(this, ["dir", "dirxml"], [], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("", "di").then(checkAgainstGolden.bind(this, ["dir", "dirxml"], [], next));
         },
 
         function step4(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("", "win").then(checkAgainstGolden.bind(this, ["window"], [], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("", "win").then(checkAgainstGolden.bind(this, ["window"], [], next));
         },
 
         function step5(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("", "t").then(checkAgainstGolden.bind(this, ["this"], [], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("", "t").then(checkAgainstGolden.bind(this, ["this"], [], next));
         },
 
         function step6(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("var1.", "toExp").then(checkAgainstGolden.bind(this, ["toExponential"], [], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("var1.", "toExp").then(checkAgainstGolden.bind(this, ["toExponential"], [], next));
         },
 
         function step7(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("123.", "toExp").then(checkAgainstGolden.bind(this, [], ["toExponential"], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("123.", "toExp").then(checkAgainstGolden.bind(this, [], ["toExponential"], next));
         },
 
         function step8(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("",  "").then(checkAgainstGolden.bind(this, [], ["$"], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("",  "").then(checkAgainstGolden.bind(this, [], ["$"], next));
         },
 
         function step9(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("", "", true).then(checkAgainstGolden.bind(this, ["$", "window"], [], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("", "", true).then(checkAgainstGolden.bind(this, ["$", "window"], [], next));
         },
 
         function step10(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("console.", "log('bar');").then(checkAgainstGolden.bind(this, [], ["$"], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("console.", "log('bar');").then(checkAgainstGolden.bind(this, [], ["$"], next));
         },
 
         function step11(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("arr1.", "").then(checkAgainstGolden.bind(this, ["length"], ["1", "2", "3"], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("arr1.", "").then(checkAgainstGolden.bind(this, ["length"], ["1", "2", "3"], next));
         },
 
         function step12(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("arr1[", "").then(checkAgainstGolden.bind(this, ["\"length\"]"], ["3]"], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("arr1[", "").then(checkAgainstGolden.bind(this, ["\"length\"]"], ["3]"], next));
         },
 
         function step13_ShouldNotCrash(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("arr2.",  "").then(checkAgainstGolden.bind(this, ["length"], ["1", "2", "3"], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("arr2.",  "").then(checkAgainstGolden.bind(this, ["length"], ["1", "2", "3"], next));
         },
 
         function step14(next)
         {
-            Components.JavaScriptAutocomplete.completionsForExpression("document\n","E").then(checkAgainstGolden.bind(this, ["Element"], ["ELEMENT_NODE"], next));
+            ObjectUI.JavaScriptAutocomplete.completionsForExpression("document\n","E").then(checkAgainstGolden.bind(this, ["Element"], ["ELEMENT_NODE"], next));
         }
     ]);
 

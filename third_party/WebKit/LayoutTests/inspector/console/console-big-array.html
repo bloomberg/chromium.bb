@@ -59,7 +59,7 @@ function onload()
 
 function test()
 {
-    Components.ArrayGroupingTreeElement._bucketThreshold = 20;
+    ObjectUI.ArrayGroupingTreeElement._bucketThreshold = 20;
 
     var messages = Console.ConsoleView.instance()._visibleViewMessages;
     var sections = [];
@@ -76,7 +76,7 @@ function test()
         }
     }
 
-    InspectorTest.addSniffer(Components.ArrayGroupingTreeElement.prototype, "onpopulate", populateCalled, true);
+    InspectorTest.addSniffer(ObjectUI.ArrayGroupingTreeElement.prototype, "onpopulate", populateCalled, true);
     var populated = false;
     function populateCalled()
     {
