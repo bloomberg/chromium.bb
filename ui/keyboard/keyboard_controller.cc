@@ -175,7 +175,6 @@ KeyboardController::KeyboardController(KeyboardUI* ui,
       show_on_resize_(false),
       keyboard_locked_(false),
       keyboard_mode_(FULL_WIDTH),
-      type_(ui::TEXT_INPUT_TYPE_NONE),
       weak_factory_(this) {
   CHECK(ui);
   input_method_ = ui_->GetInputMethod();
@@ -365,9 +364,10 @@ void KeyboardController::OnTextInputStateChanged(
   if (!container_.get())
     return;
 
-  type_ = client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
+  ui::TextInputType type =
+      client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
 
-  if (type_ == ui::TEXT_INPUT_TYPE_NONE && !keyboard_locked_) {
+  if (type == ui::TEXT_INPUT_TYPE_NONE && !keyboard_locked_) {
     if (keyboard_visible_) {
       // Set the visibility state here so that any queries for visibility
       // before the timer fires returns the correct future value.
@@ -384,7 +384,7 @@ void KeyboardController::OnTextInputStateChanged(
       weak_factory_.InvalidateWeakPtrs();
       keyboard_visible_ = true;
     }
-    ui_->SetUpdateInputType(type_);
+    ui_->SetUpdateInputType(type);
     // Do not explicitly show the Virtual keyboard unless it is in the process
     // of hiding. Instead, the virtual keyboard is shown in response to a user
     // gesture (mouse or touch) that is received while an element has input

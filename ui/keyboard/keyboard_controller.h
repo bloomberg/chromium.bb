@@ -177,7 +177,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // If true, the keyboard is always visible even if no window has input focus.
   bool keyboard_locked_;
   KeyboardMode keyboard_mode_;
-  ui::TextInputType type_;
   KeyboardEventFilter event_filter_;
 
   base::ObserverList<KeyboardControllerObserver> observer_list_;
