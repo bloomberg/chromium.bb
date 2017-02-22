@@ -52,6 +52,9 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
     const Rect& localRect,
     const PaintInvalidatorContext& context,
     GeometryMapper& geometryMapper) {
+  if (localRect.isEmpty())
+    return LayoutRect();
+
   bool isSVGChild = object.isSVGChild();
 
   // TODO(wkorman): The flip below is required because visual rects are
@@ -97,23 +100,29 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
   } else {
     // For non-root SVG, the input rect is in local SVG coordinates in which
     // paint offset doesn't apply.
-    if (!isSVGChild) {
+    if (!isSVGChild)
       rect.moveBy(Point(object.paintOffset()));
-      // Use enclosingIntRect to ensure the final visual rect will cover the
-      // rect in source coordinates no matter if the painting will use pixel
-      // snapping.
-      rect = Rect(enclosingIntRect(rect));
-    }
 
     const auto* containerContentsProperties =
         context.paintInvalidationContainer->paintProperties()
             ->contentsProperties();
+
     if (context.treeBuilderContext.current.transform ==
             containerContentsProperties->transform() &&
         context.treeBuilderContext.current.clip ==
             containerContentsProperties->clip()) {
       result = LayoutRect(rect);
     } else {
+      // Use enclosingIntRect to ensure the final visual rect will cover the
+      // rect in source coordinates no matter if the painting will use pixel
+      // snapping, when transforms are applied. If there is no transform,
+      // enclosingIntRect is applied in the last step of paint invalidation
+      // (see CompositedLayerMapping::setContentsNeedDisplayInRect()).
+      if (!isSVGChild &&
+          context.treeBuilderContext.current.transform !=
+              containerContentsProperties->transform())
+        rect = Rect(enclosingIntRect(rect));
+
       PropertyTreeState currentTreeState(
           context.treeBuilderContext.current.transform,
           context.treeBuilderContext.current.clip, nullptr);
@@ -159,11 +168,6 @@ LayoutRect PaintInvalidator::computeVisualRectInBacking(
 LayoutPoint PaintInvalidator::computeLocationInBacking(
     const LayoutObject& object,
     const PaintInvalidatorContext& context) {
-  // Use visual rect location for LayoutTexts because it suffices to check
-  // visual rect change for layout caused invalidation.
-  if (object.isText())
-    return context.newVisualRect.location();
-
   LayoutPoint point;
   if (object != context.paintInvalidationContainer) {
     point.moveBy(object.paintOffset());
@@ -346,13 +350,26 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
   ObjectPaintInvalidator objectPaintInvalidator(object);
   context.oldVisualRect = object.previousVisualRect();
   context.oldLocation = objectPaintInvalidator.previousLocationInBacking();
-  context.newVisualRect = computeVisualRectInBacking(object, context);
-  context.newLocation = computeLocationInBacking(object, context);
 
   IntSize adjustment = object.scrollAdjustmentForPaintInvalidation(
       *context.paintInvalidationContainer);
-  context.newLocation.move(adjustment);
+  context.newVisualRect = computeVisualRectInBacking(object, context);
   context.newVisualRect.move(adjustment);
+
+  if (object.isText()) {
+    // Use visual rect location for LayoutTexts because it suffices to check
+    // whether a visual rect changes for layout caused invalidation.
+    context.newLocation = context.newVisualRect.location();
+  } else {
+    context.newLocation = computeLocationInBacking(object, context);
+    context.newLocation.move(adjustment);
+
+    // Location of empty visual rect doesn't affect paint invalidation. Set it
+    // to newLocation to avoid saving the previous location separately in
+    // ObjectPaintInvalidator.
+    if (context.newVisualRect.isEmpty())
+      context.newVisualRect.setLocation(context.newLocation);
+  }
 
   object.getMutableForPainting().setPreviousVisualRect(context.newVisualRect);
   objectPaintInvalidator.setPreviousLocationInBacking(context.newLocation);

@@ -63,8 +63,8 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [8, 128, 140, 100],
-          "reason": "border box change"
+          "rect": [138, 128, 10, 100],
+          "reason": "incremental"
         }
       ]
     }
@@ -112,7 +112,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='left'",
-      "reason": "border box change"
+      "reason": "incremental"
     },
     {
       "object": "LayoutBlockFlow DIV id='content'",
