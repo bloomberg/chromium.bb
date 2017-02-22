@@ -72,6 +72,7 @@ class PageHandler : public DevToolsDomainHandler,
       Maybe<std::string> format,
       Maybe<int> quality,
       std::unique_ptr<CaptureScreenshotCallback> callback) override;
+  void PrintToPDF(std::unique_ptr<PrintToPDFCallback> callback) override;
   Response StartScreencast(Maybe<std::string> format,
                            Maybe<int> quality,
                            Maybe<int> max_width,

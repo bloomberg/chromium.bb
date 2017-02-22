@@ -13,16 +13,15 @@
 
 namespace content {
 
-DevToolsSession::DevToolsSession(
-    DevToolsAgentHostImpl* agent_host,
-    DevToolsAgentHostClient* client,
-    int session_id)
+DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
+                                 DevToolsAgentHostClient* client,
+                                 int session_id)
     : agent_host_(agent_host),
       client_(client),
       session_id_(session_id),
       host_(nullptr),
-      dispatcher_(new protocol::UberDispatcher(this)) {
-}
+      dispatcher_(new protocol::UberDispatcher(this)),
+      weak_factory_(this) {}
 
 DevToolsSession::~DevToolsSession() {
   dispatcher_.reset();
@@ -48,6 +47,13 @@ void DevToolsSession::SetFallThroughForNotFound(bool value) {
   dispatcher_->setFallThroughForNotFound(value);
 }
 
+void DevToolsSession::sendResponse(
+    std::unique_ptr<base::DictionaryValue> response) {
+  std::string json;
+  base::JSONWriter::Write(*response.get(), &json);
+  agent_host_->SendMessageToClient(session_id_, json);
+}
+
 protocol::Response::Status DevToolsSession::Dispatch(
     const std::string& message,
     int* call_id,
@@ -57,14 +63,18 @@ protocol::Response::Status DevToolsSession::Dispatch(
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (value && value->IsType(base::Value::Type::DICTIONARY) && delegate) {
-    std::unique_ptr<base::DictionaryValue> response(delegate->HandleCommand(
-        agent_host_,
-        static_cast<base::DictionaryValue*>(value.get())));
+    base::DictionaryValue* dict_value =
+        static_cast<base::DictionaryValue*>(value.get());
+    std::unique_ptr<base::DictionaryValue> response(
+        delegate->HandleCommand(agent_host_, dict_value));
     if (response) {
-      std::string json;
-      base::JSONWriter::Write(*response.get(), &json);
-      agent_host_->SendMessageToClient(session_id_, json);
+      sendResponse(std::move(response));
       return protocol::Response::kSuccess;
+    }
+    if (delegate->HandleAsyncCommand(agent_host_, dict_value,
+                                     base::Bind(&DevToolsSession::sendResponse,
+                                                weak_factory_.GetWeakPtr()))) {
+      return protocol::Response::kAsync;
     }
   }
 

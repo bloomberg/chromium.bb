@@ -39,6 +39,12 @@ base::DictionaryValue* DevToolsManagerDelegate::HandleCommand(
   return nullptr;
 }
 
+bool DevToolsManagerDelegate::HandleAsyncCommand(DevToolsAgentHost* agent_host,
+                                                 base::DictionaryValue* command,
+                                                 CommandCallback callback) {
+  return false;
+}
+
 std::string DevToolsManagerDelegate::GetDiscoveryPageHTML() {
   return std::string();
 }

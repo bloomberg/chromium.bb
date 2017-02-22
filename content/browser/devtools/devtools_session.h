@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
 
@@ -33,6 +35,7 @@ class DevToolsSession : public protocol::FrontendChannel {
   DevToolsAgentHostClient* client() const { return client_; }
 
  private:
+  void sendResponse(std::unique_ptr<base::DictionaryValue> response);
   // protocol::FrontendChannel implementation.
   void sendProtocolResponse(
       int call_id,
@@ -48,6 +51,8 @@ class DevToolsSession : public protocol::FrontendChannel {
       std::unique_ptr<protocol::DevToolsDomainHandler>> handlers_;
   RenderFrameHostImpl* host_;
   std::unique_ptr<protocol::UberDispatcher> dispatcher_;
+
+  base::WeakPtrFactory<DevToolsSession> weak_factory_;
 };
 
 }  // namespace content

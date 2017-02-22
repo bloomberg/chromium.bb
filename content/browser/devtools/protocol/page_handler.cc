@@ -296,6 +296,11 @@ void PageHandler::CaptureScreenshot(
                  screenshot_quality));
 }
 
+void PageHandler::PrintToPDF(std::unique_ptr<PrintToPDFCallback> callback) {
+  callback->sendFailure(Response::Error("PrintToPDF is not implemented"));
+  return;
+}
+
 Response PageHandler::StartScreencast(Maybe<std::string> format,
                                       Maybe<int> quality,
                                       Maybe<int> max_width,
