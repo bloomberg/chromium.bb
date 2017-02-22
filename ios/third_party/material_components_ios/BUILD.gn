@@ -71,8 +71,6 @@ source_set("material_components_ios") {
     "src/components/Buttons/src/MDCRaisedButton.m",
     "src/components/Buttons/src/MaterialButtons.h",
     "src/components/Buttons/src/private/MDCButton+Subclassing.h",
-    "src/components/CollectionCells/src/MDCCollectionViewCell+Ink.h",
-    "src/components/CollectionCells/src/MDCCollectionViewCell+Ink.m",
     "src/components/CollectionCells/src/MDCCollectionViewCell.h",
     "src/components/CollectionCells/src/MDCCollectionViewCell.m",
     "src/components/CollectionCells/src/MDCCollectionViewTextCell.h",
