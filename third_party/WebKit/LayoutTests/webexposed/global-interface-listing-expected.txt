@@ -6763,6 +6763,15 @@ interface URLSearchParams
     method set
     method toString
     method values
+interface USB : EventTarget
+    attribute @@toStringTag
+    getter onconnect
+    getter ondisconnect
+    method constructor
+    method getDevices
+    method requestDevice
+    setter onconnect
+    setter ondisconnect
 interface USBAlternateInterface
     attribute @@toStringTag
     getter alternateSetting
