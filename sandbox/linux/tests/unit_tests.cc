@@ -288,14 +288,14 @@ void UnitTests::DeathMessage(int status,
   bool subprocess_exited_without_matching_message =
       msg.find(expected_msg) == std::string::npos;
 
-// In official builds CHECK messages are dropped, so look for SIGABRT or SIGILL.
+// In official builds CHECK messages are dropped, look for SIGABRT or SIGTRAP.
 // See https://crbug.com/437312 and https://crbug.com/612507.
 #if defined(OFFICIAL_BUILD) && defined(NDEBUG) && !defined(OS_ANDROID)
   if (subprocess_exited_without_matching_message) {
-    static const char kSigIllegalMessage[] = "Received signal 4";
+    static const char kSigTrapMessage[] = "Received signal 5";
     static const char kSigAbortMessage[] = "Received signal 6";
     subprocess_exited_without_matching_message =
-        msg.find(kSigIllegalMessage) == std::string::npos &&
+        msg.find(kSigTrapMessage) == std::string::npos &&
         msg.find(kSigAbortMessage) == std::string::npos;
   }
 #endif
