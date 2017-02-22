@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -48,8 +49,9 @@ bool OfflineEnabledHandler::Parse(Extension* extension, base::string16* error) {
 
     const bool has_webview_permission =
         PermissionsParser::HasAPIPermission(extension, APIPermission::kWebView);
-    extension->SetManifestData(keys::kOfflineEnabled,
-                               new OfflineEnabledInfo(!has_webview_permission));
+    extension->SetManifestData(
+        keys::kOfflineEnabled,
+        base::MakeUnique<OfflineEnabledInfo>(!has_webview_permission));
     return true;
   }
 
@@ -61,8 +63,9 @@ bool OfflineEnabledHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  extension->SetManifestData(keys::kOfflineEnabled,
-                             new OfflineEnabledInfo(offline_enabled));
+  extension->SetManifestData(
+      keys::kOfflineEnabled,
+      base::MakeUnique<OfflineEnabledInfo>(offline_enabled));
   return true;
 }
 

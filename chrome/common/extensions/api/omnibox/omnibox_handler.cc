@@ -45,7 +45,7 @@ bool OmniboxHandler::Parse(Extension* extension, base::string16* error) {
     *error = base::ASCIIToUTF16(manifest_errors::kInvalidOmniboxKeyword);
     return false;
   }
-  extension->SetManifestData(manifest_keys::kOmnibox, info.release());
+  extension->SetManifestData(manifest_keys::kOmnibox, std::move(info));
   return true;
 }
 

@@ -120,7 +120,7 @@ bool SandboxedPageHandler::Parse(Extension* extension, base::string16* error) {
   CHECK(csp_validator::ContentSecurityPolicyIsSandboxed(
       sandboxed_info->content_security_policy, extension->GetType()));
 
-  extension->SetManifestData(keys::kSandboxedPages, sandboxed_info.release());
+  extension->SetManifestData(keys::kSandboxedPages, std::move(sandboxed_info));
   return true;
 }
 

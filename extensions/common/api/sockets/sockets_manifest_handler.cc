@@ -24,7 +24,7 @@ bool SocketsManifestHandler::Parse(Extension* extension,
   if (!data)
     return false;
 
-  extension->SetManifestData(manifest_keys::kSockets, data.release());
+  extension->SetManifestData(manifest_keys::kSockets, std::move(data));
   return true;
 }
 

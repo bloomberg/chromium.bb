@@ -92,7 +92,7 @@ bool WebAccessibleResourcesHandler::Parse(Extension* extension,
     pattern.SetPath(pattern.path() + relative_path);
     info->web_accessible_resources_.AddPattern(pattern);
   }
-  extension->SetManifestData(keys::kWebAccessibleResources, info.release());
+  extension->SetManifestData(keys::kWebAccessibleResources, std::move(info));
   return true;
 }
 

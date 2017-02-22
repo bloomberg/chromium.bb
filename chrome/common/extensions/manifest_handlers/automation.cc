@@ -174,7 +174,7 @@ bool AutomationHandler::Parse(Extension* extension, base::string16* error) {
   if (!info)
     return true;
 
-  extension->SetManifestData(keys::kAutomation, info.release());
+  extension->SetManifestData(keys::kAutomation, std::move(info));
   return true;
 }
 

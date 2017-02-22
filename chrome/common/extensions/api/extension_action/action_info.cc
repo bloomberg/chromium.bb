@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "extensions/common/constants.h"
@@ -198,19 +199,20 @@ const ActionInfo* ActionInfo::GetSystemIndicatorInfo(
 // static
 void ActionInfo::SetBrowserActionInfo(Extension* extension, ActionInfo* info) {
   extension->SetManifestData(keys::kBrowserAction,
-                             new ActionInfoData(info));
+                             base::MakeUnique<ActionInfoData>(info));
 }
 
 // static
 void ActionInfo::SetPageActionInfo(Extension* extension, ActionInfo* info) {
   extension->SetManifestData(keys::kPageAction,
-                             new ActionInfoData(info));
+                             base::MakeUnique<ActionInfoData>(info));
 }
 
 // static
 void ActionInfo::SetSystemIndicatorInfo(Extension* extension,
                                         ActionInfo* info) {
-  extension->SetManifestData(keys::kSystemIndicator, new ActionInfoData(info));
+  extension->SetManifestData(keys::kSystemIndicator,
+                             base::MakeUnique<ActionInfoData>(info));
 }
 
 // static

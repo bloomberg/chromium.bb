@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/extension.h"
@@ -48,7 +49,8 @@ bool IncognitoHandler::Parse(Extension* extension, base::string16* error) {
           ? IncognitoInfo::Mode::SPLIT
           : IncognitoInfo::Mode::SPANNING;
   if (!extension->manifest()->HasKey(keys::kIncognito)) {
-    extension->SetManifestData(keys::kIncognito, new IncognitoInfo(mode));
+    extension->SetManifestData(keys::kIncognito,
+                               base::MakeUnique<IncognitoInfo>(mode));
     return true;
   }
 
@@ -69,7 +71,8 @@ bool IncognitoHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  extension->SetManifestData(keys::kIncognito, new IncognitoInfo(mode));
+  extension->SetManifestData(keys::kIncognito,
+                             base::MakeUnique<IncognitoInfo>(mode));
   return true;
 }
 

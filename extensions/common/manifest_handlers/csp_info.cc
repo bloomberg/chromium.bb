@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -116,8 +117,9 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
                SanitizeContentSecurityPolicy(content_security_policy,
                                              GetValidatorOptions(extension),
                                              NULL));
-      extension->SetManifestData(keys::kContentSecurityPolicy,
-                                 new CSPInfo(content_security_policy));
+      extension->SetManifestData(
+          keys::kContentSecurityPolicy,
+          base::MakeUnique<CSPInfo>(content_security_policy));
     }
     return true;
   }
@@ -141,8 +143,9 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
     extension->AddInstallWarnings(warnings);
   }
 
-  extension->SetManifestData(keys::kContentSecurityPolicy,
-                             new CSPInfo(content_security_policy));
+  extension->SetManifestData(
+      keys::kContentSecurityPolicy,
+      base::MakeUnique<CSPInfo>(content_security_policy));
   return true;
 }
 

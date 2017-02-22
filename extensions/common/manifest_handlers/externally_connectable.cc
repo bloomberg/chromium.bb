@@ -82,7 +82,7 @@ bool ExternallyConnectableHandler::Parse(Extension* extension,
                                         APIPermission::kWebConnectable);
   }
   extension->AddInstallWarnings(install_warnings);
-  extension->SetManifestData(keys::kExternallyConnectable, info.release());
+  extension->SetManifestData(keys::kExternallyConnectable, std::move(info));
   return true;
 }
 

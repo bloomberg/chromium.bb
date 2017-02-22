@@ -120,7 +120,7 @@ bool MimeTypesHandlerParser::Parse(extensions::Extension* extension,
     info->handler_.set_handler_url(mime_types_handler);
   }
 
-  extension->SetManifestData(keys::kMimeTypesHandler, info.release());
+  extension->SetManifestData(keys::kMimeTypesHandler, std::move(info));
   return true;
 }
 

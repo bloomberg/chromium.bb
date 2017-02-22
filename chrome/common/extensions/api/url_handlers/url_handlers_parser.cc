@@ -159,7 +159,7 @@ bool UrlHandlersParser::Parse(Extension* extension, base::string16* error) {
     }
   }
 
-  extension->SetManifestData(mkeys::kUrlHandlers, info.release());
+  extension->SetManifestData(mkeys::kUrlHandlers, std::move(info));
 
   return true;
 }

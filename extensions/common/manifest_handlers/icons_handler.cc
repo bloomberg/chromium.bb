@@ -69,7 +69,7 @@ bool IconsHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  extension->SetManifestData(keys::kIcons, icons_info.release());
+  extension->SetManifestData(keys::kIcons, std::move(icons_info));
   return true;
 }
 

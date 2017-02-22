@@ -113,7 +113,7 @@ bool PluginsHandler::Parse(Extension* extension, base::string16* error) {
   }
 
   if (!plugins_data->plugins.empty()) {
-    extension->SetManifestData(keys::kPlugins, plugins_data.release());
+    extension->SetManifestData(keys::kPlugins, std::move(plugins_data));
     PermissionsParser::AddAPIPermission(extension, APIPermission::kPlugin);
   }
 

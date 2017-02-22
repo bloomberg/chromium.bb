@@ -75,7 +75,7 @@ bool AppIconColorHandler::Parse(Extension* extension, base::string16* error) {
   }
 
   extension->SetManifestData(keys::kAppIconColor,
-                             app_icon_color_info.release());
+                             std::move(app_icon_color_info));
   return true;
 }
 

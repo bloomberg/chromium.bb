@@ -81,7 +81,7 @@ bool NaClModulesHandler::Parse(Extension* extension, base::string16* error) {
     nacl_module_data->nacl_modules_.back().mime_type = mime_type;
   }
 
-  extension->SetManifestData(keys::kNaClModules, nacl_module_data.release());
+  extension->SetManifestData(keys::kNaClModules, std::move(nacl_module_data));
   return true;
 }
 

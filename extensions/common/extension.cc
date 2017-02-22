@@ -379,9 +379,9 @@ Extension::ManifestData* Extension::GetManifestData(const std::string& key)
 }
 
 void Extension::SetManifestData(const std::string& key,
-                                Extension::ManifestData* data) {
+                                std::unique_ptr<Extension::ManifestData> data) {
   DCHECK(!finished_parsing_manifest_ && thread_checker_.CalledOnValidThread());
-  manifest_data_[key] = std::unique_ptr<ManifestData>(data);
+  manifest_data_[key] = std::move(data);
 }
 
 Manifest::Location Extension::location() const {

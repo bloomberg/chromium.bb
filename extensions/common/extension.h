@@ -258,10 +258,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Can only be called after InitValue is finished.
   ManifestData* GetManifestData(const std::string& key) const;
 
-  // Sets |data| to be associated with the key. Takes ownership of |data|.
+  // Sets |data| to be associated with the key.
   // Can only be called before InitValue is finished. Not thread-safe;
   // all SetManifestData calls should be on only one thread.
-  void SetManifestData(const std::string& key, ManifestData* data);
+  void SetManifestData(const std::string& key,
+                       std::unique_ptr<ManifestData> data);
 
   // Accessors:
 

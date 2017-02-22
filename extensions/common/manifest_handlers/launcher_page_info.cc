@@ -50,7 +50,7 @@ bool LauncherPageHandler::Parse(Extension* extension, base::string16* error) {
   launcher_page_info->page = launcher_page_page;
 
   extension->SetManifestData(manifest_keys::kLauncherPage,
-                             launcher_page_info.release());
+                             std::move(launcher_page_info));
   return true;
 }
 

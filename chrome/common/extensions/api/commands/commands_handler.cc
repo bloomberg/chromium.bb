@@ -64,8 +64,7 @@ bool CommandsHandler::Parse(Extension* extension, base::string16* error) {
   if (!extension->manifest()->HasKey(keys::kCommands)) {
     std::unique_ptr<CommandsInfo> commands_info(new CommandsInfo);
     MaybeSetBrowserActionDefault(extension, commands_info.get());
-    extension->SetManifestData(keys::kCommands,
-                               commands_info.release());
+    extension->SetManifestData(keys::kCommands, std::move(commands_info));
     return true;
   }
 
@@ -126,8 +125,7 @@ bool CommandsHandler::Parse(Extension* extension, base::string16* error) {
 
   MaybeSetBrowserActionDefault(extension, commands_info.get());
 
-  extension->SetManifestData(keys::kCommands,
-                             commands_info.release());
+  extension->SetManifestData(keys::kCommands, std::move(commands_info));
   return true;
 }
 

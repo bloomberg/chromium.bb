@@ -299,7 +299,7 @@ bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
     return false;  // Failed to parse file browser actions definition.
   }
 
-  extension->SetManifestData(keys::kFileBrowserHandlers, info.release());
+  extension->SetManifestData(keys::kFileBrowserHandlers, std::move(info));
   return true;
 }
 

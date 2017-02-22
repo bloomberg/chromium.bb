@@ -45,7 +45,7 @@ bool DefaultLocaleHandler::Parse(Extension* extension, base::string16* error) {
     *error = base::ASCIIToUTF16(manifest_errors::kInvalidDefaultLocale);
     return false;
   }
-  extension->SetManifestData(keys::kDefaultLocale, info.release());
+  extension->SetManifestData(keys::kDefaultLocale, std::move(info));
   return true;
 }
 

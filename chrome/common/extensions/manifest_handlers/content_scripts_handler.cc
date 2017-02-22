@@ -418,7 +418,7 @@ bool ContentScriptsHandler::Parse(Extension* extension, base::string16* error) {
     content_scripts_info->content_scripts.push_back(std::move(user_script));
   }
   extension->SetManifestData(keys::kContentScripts,
-                             content_scripts_info.release());
+                             std::move(content_scripts_info));
   PermissionsParser::SetScriptableHosts(
       extension, ContentScriptsInfo::GetScriptableHosts(extension));
   return true;

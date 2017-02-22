@@ -59,7 +59,7 @@ bool ActionHandlersHandler::Parse(Extension* extension, base::string16* error) {
     info->action_handlers.insert(action_type);
   }
 
-  extension->SetManifestData(keys::kActionHandlers, info.release());
+  extension->SetManifestData(keys::kActionHandlers, std::move(info));
   return true;
 }
 

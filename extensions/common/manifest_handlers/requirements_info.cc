@@ -66,7 +66,7 @@ bool RequirementsHandler::Parse(Extension* extension, base::string16* error) {
       new RequirementsInfo(extension->manifest()));
 
   if (!extension->manifest()->HasKey(keys::kRequirements)) {
-    extension->SetManifestData(keys::kRequirements, requirements.release());
+    extension->SetManifestData(keys::kRequirements, std::move(requirements));
     return true;
   }
 
@@ -153,7 +153,7 @@ bool RequirementsHandler::Parse(Extension* extension, base::string16* error) {
     }
   }
 
-  extension->SetManifestData(keys::kRequirements, requirements.release());
+  extension->SetManifestData(keys::kRequirements, std::move(requirements));
   return true;
 }
 

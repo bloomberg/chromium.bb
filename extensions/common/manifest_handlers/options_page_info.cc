@@ -198,7 +198,7 @@ bool OptionsPageManifestHandler::Parse(Extension* extension,
     return false;
 
   extension->AddInstallWarnings(install_warnings);
-  extension->SetManifestData(keys::kOptionsUI, info.release());
+  extension->SetManifestData(keys::kOptionsUI, std::move(info));
   return true;
 }
 

@@ -143,7 +143,7 @@ bool UIOverridesHandler::Parse(Extension* extension, base::string16* error) {
   }
   info->manifest_permission.reset(new ManifestPermissionImpl(
       info->bookmarks_ui.get() != NULL));
-  extension->SetManifestData(manifest_keys::kUIOverride, info.release());
+  extension->SetManifestData(manifest_keys::kUIOverride, std::move(info));
   return true;
 }
 

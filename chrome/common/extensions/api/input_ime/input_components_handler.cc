@@ -232,7 +232,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
     info->input_components.back().options_page_url = options_page_url;
     info->input_components.back().input_view_url = input_view_url;
   }
-  extension->SetManifestData(keys::kInputComponents, info.release());
+  extension->SetManifestData(keys::kInputComponents, std::move(info));
   return true;
 }
 

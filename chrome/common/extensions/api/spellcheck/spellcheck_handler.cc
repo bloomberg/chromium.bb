@@ -59,7 +59,7 @@ bool SpellcheckHandler::Parse(Extension* extension, base::string16* error) {
     *error = base::ASCIIToUTF16(errors::kInvalidSpellcheckDictionaryPath);
     return false;
   }
-  extension->SetManifestData(keys::kSpellcheck, spellcheck_info.release());
+  extension->SetManifestData(keys::kSpellcheck, std::move(spellcheck_info));
   return true;
 }
 

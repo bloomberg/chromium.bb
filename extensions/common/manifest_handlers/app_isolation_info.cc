@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -44,7 +45,8 @@ AppIsolationHandler::~AppIsolationHandler() {
 bool AppIsolationHandler::Parse(Extension* extension, base::string16* error) {
   // Platform apps always get isolated storage.
   if (extension->is_platform_app()) {
-    extension->SetManifestData(keys::kIsolation, new AppIsolationInfo(true));
+    extension->SetManifestData(keys::kIsolation,
+                               base::MakeUnique<AppIsolationInfo>(true));
     return true;
   }
 
@@ -84,7 +86,8 @@ bool AppIsolationHandler::Parse(Extension* extension, base::string16* error) {
   }
 
   if (has_isolated_storage)
-    extension->SetManifestData(keys::kIsolation, new AppIsolationInfo(true));
+    extension->SetManifestData(keys::kIsolation,
+                               base::MakeUnique<AppIsolationInfo>(true));
 
   return true;
 }

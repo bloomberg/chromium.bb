@@ -24,7 +24,7 @@ bool BluetoothManifestHandler::Parse(Extension* extension,
   if (!data)
     return false;
 
-  extension->SetManifestData(manifest_keys::kBluetooth, data.release());
+  extension->SetManifestData(manifest_keys::kBluetooth, std::move(data));
   return true;
 }
 

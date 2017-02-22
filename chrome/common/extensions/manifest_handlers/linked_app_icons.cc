@@ -101,7 +101,8 @@ bool LinkedAppIconsHandler::Parse(Extension* extension, base::string16* error) {
     }
   }
 
-  extension->SetManifestData(keys::kLinkedAppIcons, linked_app_icons.release());
+  extension->SetManifestData(keys::kLinkedAppIcons,
+                             std::move(linked_app_icons));
   return true;
 }
 

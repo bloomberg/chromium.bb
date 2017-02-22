@@ -210,7 +210,7 @@ bool SharedModuleHandler::Parse(Extension* extension, base::string16* error) {
   std::unique_ptr<SharedModuleInfo> info(new SharedModuleInfo);
   if (!info->Parse(extension, error))
     return false;
-  extension->SetManifestData(kSharedModule, info.release());
+  extension->SetManifestData(kSharedModule, std::move(info));
   return true;
 }
 

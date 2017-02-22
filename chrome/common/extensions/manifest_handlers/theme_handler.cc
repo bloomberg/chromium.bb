@@ -185,7 +185,7 @@ bool ThemeHandler::Parse(Extension* extension, base::string16* error) {
   if (!LoadDisplayProperties(theme_value, error, theme_info.get()))
     return false;
 
-  extension->SetManifestData(keys::kTheme, theme_info.release());
+  extension->SetManifestData(keys::kTheme, std::move(theme_info));
   return true;
 }
 

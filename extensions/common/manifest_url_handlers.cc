@@ -103,7 +103,7 @@ bool HomepageURLHandler::Parse(Extension* extension, base::string16* error) {
         errors::kInvalidHomepageURL, homepage_url_str);
     return false;
   }
-  extension->SetManifestData(keys::kHomepageURL, manifest_url.release());
+  extension->SetManifestData(keys::kHomepageURL, std::move(manifest_url));
   return true;
 }
 
@@ -135,7 +135,7 @@ bool UpdateURLHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  extension->SetManifestData(keys::kUpdateURL, manifest_url.release());
+  extension->SetManifestData(keys::kUpdateURL, std::move(manifest_url));
   return true;
 }
 
@@ -167,7 +167,7 @@ bool AboutPageHandler::Parse(Extension* extension, base::string16* error) {
     *error = base::ASCIIToUTF16(errors::kInvalidAboutPage);
     return false;
   }
-  extension->SetManifestData(keys::kAboutPage, manifest_url.release());
+  extension->SetManifestData(keys::kAboutPage, std::move(manifest_url));
   return true;
 }
 

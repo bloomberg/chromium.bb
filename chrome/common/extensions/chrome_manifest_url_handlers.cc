@@ -77,7 +77,7 @@ bool DevToolsPageHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
   manifest_url->url_ = extension->GetResourceURL(devtools_str);
-  extension->SetManifestData(keys::kDevToolsPage, manifest_url.release());
+  extension->SetManifestData(keys::kDevToolsPage, std::move(manifest_url));
   PermissionsParser::AddAPIPermission(extension, APIPermission::kDevtools);
   return true;
 }
@@ -143,7 +143,7 @@ bool URLOverridesHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
   extension->SetManifestData(keys::kChromeURLOverrides,
-                             url_overrides.release());
+                             std::move(url_overrides));
   return true;
 }
 

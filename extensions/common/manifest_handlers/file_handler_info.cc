@@ -205,7 +205,7 @@ bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  extension->SetManifestData(keys::kFileHandlers, info.release());
+  extension->SetManifestData(keys::kFileHandlers, std::move(info));
   extension->AddInstallWarnings(install_warnings);
   return true;
 }

@@ -25,7 +25,7 @@ bool DeclarativeManifestHandler::Parse(Extension* extension,
   if (!data)
     return false;
 
-  extension->SetManifestData(manifest_keys::kEventRules, data.release());
+  extension->SetManifestData(manifest_keys::kEventRules, std::move(data));
   return true;
 }
 

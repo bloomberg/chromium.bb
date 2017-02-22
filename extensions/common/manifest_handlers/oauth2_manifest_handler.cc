@@ -90,7 +90,7 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
     info->scopes.push_back(scope);
   }
 
-  extension->SetManifestData(keys::kOAuth2, info.release());
+  extension->SetManifestData(keys::kOAuth2, std::move(info));
   return true;
 }
 
