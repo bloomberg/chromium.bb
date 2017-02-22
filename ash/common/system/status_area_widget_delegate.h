@@ -33,20 +33,8 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
 
   void set_alignment(ShelfAlignment alignment) { alignment_ = alignment; }
 
-  void set_custom_focus_traversable(
-      views::FocusTraversable* custom_focus_traversable) {
-    custom_focus_traversable_ = custom_focus_traversable;
-  }
-
-  void set_default_last_focusable_child(bool default_last_focusable_child) {
-    default_last_focusable_child_ = default_last_focusable_child;
-  }
-
   // Overridden from views::AccessiblePaneView.
   View* GetDefaultFocusableChild() override;
-  views::FocusSearch* GetFocusSearch() override;
-  views::FocusTraversable* GetFocusTraversableParent() override;
-  views::View* GetFocusTraversableParentView() override;
 
   // Overridden from views::View:
   views::Widget* GetWidget() override;
@@ -71,12 +59,6 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   // wide border is added to extend the view's hit region to the edge of the
   // screen.
   void SetBorderOnChild(views::View* child, bool extend_border_to_edge);
-
-  views::FocusTraversable* custom_focus_traversable_ = nullptr;
-
-  // When true, the default focus of the status area widget is the last
-  // focusable child.
-  bool default_last_focusable_child_ = false;
 
   const FocusCycler* focus_cycler_for_testing_;
 

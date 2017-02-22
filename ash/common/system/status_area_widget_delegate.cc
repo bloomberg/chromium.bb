@@ -69,25 +69,7 @@ void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
 }
 
 views::View* StatusAreaWidgetDelegate::GetDefaultFocusableChild() {
-  return default_last_focusable_child_ ? GetLastFocusableChild()
-                                       : GetFirstFocusableChild();
-}
-
-views::FocusSearch* StatusAreaWidgetDelegate::GetFocusSearch() {
-  return custom_focus_traversable_ ? custom_focus_traversable_->GetFocusSearch()
-                                   : AccessiblePaneView::GetFocusSearch();
-}
-
-views::FocusTraversable* StatusAreaWidgetDelegate::GetFocusTraversableParent() {
-  return custom_focus_traversable_
-             ? custom_focus_traversable_->GetFocusTraversableParent()
-             : AccessiblePaneView::GetFocusTraversableParent();
-}
-
-views::View* StatusAreaWidgetDelegate::GetFocusTraversableParentView() {
-  return custom_focus_traversable_
-             ? custom_focus_traversable_->GetFocusTraversableParentView()
-             : AccessiblePaneView::GetFocusTraversableParentView();
+  return child_at(0);
 }
 
 views::Widget* StatusAreaWidgetDelegate::GetWidget() {
