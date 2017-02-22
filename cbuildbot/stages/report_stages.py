@@ -10,7 +10,6 @@ from __future__ import print_function
 import datetime
 import os
 import sys
-import StringIO
 
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import cbuildbot_run
@@ -19,7 +18,6 @@ from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
-from chromite.lib import build_time_stats
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -923,39 +921,6 @@ class ReportStage(generic_stages.BuilderStage,
     except cros_build_lib.RunCommandError as e:
       logging.warn('Unable to run alerts dispatcher: %s', e)
 
-  def CollectComparativeBuildTimings(self, output, build_id, db):
-    """Create a report comparing this build to recent history.
-
-    Compare the timings for this build to the recent history of the
-    same build config.
-
-    Args:
-      output: File like object to write too, usually sys.stdout.
-      build_id: CIDB id for the current build.
-      db: CIDBConnection instance.
-
-    Returns:
-      The generated report as a multiline string.
-    """
-    current_status = build_time_stats.BuildIdToBuildStatus(db, build_id)
-    current_build = build_time_stats.GetBuildTimings(current_status)
-
-    # We compare against seven days of history.
-    end_date = datetime.datetime.now().date()
-    start_date = end_date - datetime.timedelta(days=self._STATS_HISTORY_DAYS)
-
-    build_config = current_status['build_config']
-    historical_statuses = build_time_stats.BuildConfigToStatuses(
-        db, build_config, start_date, end_date)
-
-    historical_timing = [build_time_stats.GetBuildTimings(status)
-                         for status in historical_statuses]
-
-    description = 'This build versus last week of %s' % build_config
-
-    build_time_stats.Report(output, description, current_build,
-                            historical_timing)
-
   def PerformStage(self):
     """Perform the actual work for this stage.
 
@@ -1060,12 +1025,6 @@ class ReportStage(generic_stages.BuilderStage,
 
       if self.IsSheriffOMaticImportantBuild():
         self.RunAlertsDispatcher(db.db_credentials_dir)
-
-      # Dump performance stats for this build versus recent builds.
-      output = StringIO.StringIO()
-      self.CollectComparativeBuildTimings(output, build_id, db)
-      # Bunch up our output, so it doesn't interleave with CIDB logs.
-      sys.stdout.write(output.getvalue())
 
   def _GetBuildDuration(self):
     """Fetches the duration of this build in seconds, from cidb.
