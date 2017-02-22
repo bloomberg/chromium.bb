@@ -106,9 +106,6 @@ compile_plist("entitlements") {
   if (ios_chrome_entitlements_additions != []) {
     plist_templates += ios_chrome_entitlements_additions
   }
-  if (!ios_automatically_manage_certs) {
-    plist_templates += [ "resources/AssociatedDomains.entitlements" ]
-  }
   substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
   output_name = "$target_gen_dir/$chromium_short_name.entitlements"
 }
