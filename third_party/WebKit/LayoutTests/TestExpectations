@@ -2546,3 +2546,6 @@ crbug.com/691423 [ Mac ] fast/frames/location-change-no-file-access.html [ Failu
 crbug.com/73609 http/tests/media/video-play-stall.html [ Pass Timeout ]
 crbug.com/73609 virtual/mojo-loading/http/tests/media/video-play-stall.html [ Pass Timeout ]
 crbug.com/694467 fast/text/line-break-8bit-after-16bit.html [ Pass Failure ]
+
+Bug(jochen) http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
+Bug(jochen) virtual/mojo-loading/http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]

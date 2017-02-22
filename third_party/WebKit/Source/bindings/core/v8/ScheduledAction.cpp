@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/ScheduledAction.h"
 
+#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/SourceLocation.h"
@@ -46,14 +47,26 @@
 namespace blink {
 
 ScheduledAction* ScheduledAction::create(ScriptState* scriptState,
+                                         ExecutionContext* target,
                                          const ScriptValue& handler,
                                          const Vector<ScriptValue>& arguments) {
   ASSERT(handler.isFunction());
+  if (!scriptState->world().isWorkerWorld()) {
+    CHECK(BindingSecurity::shouldAllowAccessToFrame(
+        enteredDOMWindow(scriptState->isolate()), toDocument(target)->frame(),
+        BindingSecurity::ErrorReportOption::DoNotReport));
+  }
   return new ScheduledAction(scriptState, handler, arguments);
 }
 
 ScheduledAction* ScheduledAction::create(ScriptState* scriptState,
+                                         ExecutionContext* target,
                                          const String& handler) {
+  if (!scriptState->world().isWorkerWorld()) {
+    CHECK(BindingSecurity::shouldAllowAccessToFrame(
+        enteredDOMWindow(scriptState->isolate()), toDocument(target)->frame(),
+        BindingSecurity::ErrorReportOption::DoNotReport));
+  }
   return new ScheduledAction(scriptState, handler);
 }
 

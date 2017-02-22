@@ -85,8 +85,8 @@ int setTimeout(ScriptState* scriptState,
     // be done using the scheduler instead.
     V8GCForContextDispose::instance().notifyIdle();
   }
-  ScheduledAction* action =
-      ScheduledAction::create(scriptState, handler, arguments);
+  ScheduledAction* action = ScheduledAction::create(
+      scriptState, executionContext, handler, arguments);
   return DOMTimer::install(executionContext, action, timeout, true);
 }
 
@@ -107,7 +107,8 @@ int setTimeout(ScriptState* scriptState,
     // be done using the scheduler instead.
     V8GCForContextDispose::instance().notifyIdle();
   }
-  ScheduledAction* action = ScheduledAction::create(scriptState, handler);
+  ScheduledAction* action =
+      ScheduledAction::create(scriptState, executionContext, handler);
   return DOMTimer::install(executionContext, action, timeout, true);
 }
 
@@ -119,8 +120,8 @@ int setInterval(ScriptState* scriptState,
   ExecutionContext* executionContext = eventTarget.getExecutionContext();
   if (!isAllowed(scriptState, executionContext, false))
     return 0;
-  ScheduledAction* action =
-      ScheduledAction::create(scriptState, handler, arguments);
+  ScheduledAction* action = ScheduledAction::create(
+      scriptState, executionContext, handler, arguments);
   return DOMTimer::install(executionContext, action, timeout, false);
 }
 
@@ -136,7 +137,8 @@ int setInterval(ScriptState* scriptState,
   // perfomance issue.
   if (handler.isEmpty())
     return 0;
-  ScheduledAction* action = ScheduledAction::create(scriptState, handler);
+  ScheduledAction* action =
+      ScheduledAction::create(scriptState, executionContext, handler);
   return DOMTimer::install(executionContext, action, timeout, false);
 }
 

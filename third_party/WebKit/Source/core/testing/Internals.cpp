@@ -897,8 +897,15 @@ void Internals::setFormControlStateOfHistoryItem(
 DOMWindow* Internals::pagePopupWindow() const {
   if (!m_document)
     return nullptr;
-  if (Page* page = m_document->page())
-    return page->chromeClient().pagePopupWindowForTesting();
+  if (Page* page = m_document->page()) {
+    LocalDOMWindow* popup =
+        toLocalDOMWindow(page->chromeClient().pagePopupWindowForTesting());
+    if (popup) {
+      // We need to make the popup same origin so layout tests can access it.
+      popup->document()->updateSecurityOrigin(m_document->getSecurityOrigin());
+    }
+    return popup;
+  }
   return nullptr;
 }
 
