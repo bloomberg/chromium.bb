@@ -20,10 +20,10 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
  public:
   ~OffscreenCanvasPlaceholder();
 
-  void setPlaceholderFrame(RefPtr<StaticBitmapImage>,
-                           WeakPtr<OffscreenCanvasFrameDispatcher>,
-                           RefPtr<WebTaskRunner>,
-                           unsigned resourceId);
+  virtual void setPlaceholderFrame(RefPtr<StaticBitmapImage>,
+                                   WeakPtr<OffscreenCanvasFrameDispatcher>,
+                                   RefPtr<WebTaskRunner>,
+                                   unsigned resourceId);
   void releasePlaceholderFrame();
 
   static OffscreenCanvasPlaceholder* getPlaceholderById(unsigned placeholderId);

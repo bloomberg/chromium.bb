@@ -63,6 +63,9 @@ class WebRtcCaptureFromElementBrowserTest
     // Allow <video>/<audio>.play() when not initiated by user gesture.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
+    // Allow experimental canvas features.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalCanvasFeatures);
   }
 
  private:
@@ -83,6 +86,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
                        VerifyCanvasCaptureWebGLFrames) {
   MakeTypicalCall("testCanvasCapture(drawWebGL);", kCanvasCaptureTestHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
+                       VerifyCanvasCaptureOffscreenCanvasCommitFrames) {
+  MakeTypicalCall("testCanvasCapture(drawOffscreenCanvasCommit);",
+                  kCanvasCaptureTestHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,

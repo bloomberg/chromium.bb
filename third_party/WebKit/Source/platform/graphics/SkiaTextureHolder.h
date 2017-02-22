@@ -14,6 +14,9 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
  public:
   ~SkiaTextureHolder() override;
 
+  // Methods overriding TextureHolder
+  void updateSyncToken(gpu::SyncToken) override {}
+
   bool isSkiaTextureHolder() final { return true; }
   bool isMailboxTextureHolder() final { return false; }
   unsigned sharedContextId() final;

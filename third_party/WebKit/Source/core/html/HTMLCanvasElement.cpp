@@ -1343,6 +1343,17 @@ ScriptPromise HTMLCanvasElement::createImageBitmap(
       isPaintable() ? ImageBitmap::create(this, cropRect, options) : nullptr);
 }
 
+void HTMLCanvasElement::setPlaceholderFrame(
+    RefPtr<StaticBitmapImage> image,
+    WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
+    RefPtr<WebTaskRunner> taskRunner,
+    unsigned resourceId) {
+  OffscreenCanvasPlaceholder::setPlaceholderFrame(
+      std::move(image), std::move(dispatcher), std::move(taskRunner),
+      resourceId);
+  notifyListenersCanvasChanged();
+}
+
 bool HTMLCanvasElement::isOpaque() const {
   return m_context && !m_context->creationAttributes().alpha();
 }

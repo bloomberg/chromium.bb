@@ -91,6 +91,9 @@ void AcceleratedStaticBitmapImage::copyToTexture(
 
 sk_sp<SkImage> AcceleratedStaticBitmapImage::imageForCurrentFrame(
     const ColorBehavior& colorBehavior) {
+  // TODO(xlai): Refactor so that sync tokens are only used when
+  // |m_textureHolder| is MailboxTextureHolder.
+  // https://crbug.com/693229
   // TODO(ccameron): This function should not ignore |colorBehavior|.
   // https://crbug.com/672306
   checkThread();

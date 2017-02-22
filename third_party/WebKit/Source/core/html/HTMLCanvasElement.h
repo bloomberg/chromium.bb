@@ -211,6 +211,11 @@ class CORE_EXPORT HTMLCanvasElement final
                                   const ImageBitmapOptions&,
                                   ExceptionState&) override;
 
+  // OffscreenCanvasPlaceholder implementation.
+  void setPlaceholderFrame(RefPtr<StaticBitmapImage>,
+                           WeakPtr<OffscreenCanvasFrameDispatcher>,
+                           RefPtr<WebTaskRunner>,
+                           unsigned resourceId) override;
   DECLARE_VIRTUAL_TRACE();
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
