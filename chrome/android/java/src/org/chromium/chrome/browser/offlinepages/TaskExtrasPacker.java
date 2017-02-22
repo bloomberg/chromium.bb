@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 
 import org.chromium.chrome.browser.ChromeBackgroundService;
 
@@ -20,14 +23,30 @@ public class TaskExtrasPacker {
     private static final String BATTERY_PERCENTAGE_TAG = "BatteryPercentage";
     private static final String UNMETERED_NETWORK_TAG = "UnmeteredNetwork";
 
+    /** Puts requirement to hold a wakelock in the bundle. */
+    public static void packHoldWakelock(Bundle bundle) {
+        bundle.putBoolean(ChromeBackgroundService.HOLD_WAKELOCK, true);
+    }
+
     /** Puts current time into the input bundle. */
     public static void packTimeInBundle(Bundle bundle) {
         bundle.putLong(SCHEDULED_TIME_TAG, System.currentTimeMillis());
-        bundle.putBoolean(ChromeBackgroundService.HOLD_WAKELOCK, true);
+    }
+
+    /** Puts current time into the input bundle. */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
+    public static void packTimeInBundle(PersistableBundle bundle) {
+        bundle.putLong(SCHEDULED_TIME_TAG, System.currentTimeMillis());
     }
 
     /** Extracts the time we put into the bundle. */
     public static long unpackTimeFromBundle(Bundle bundle) {
+        return bundle.getLong(SCHEDULED_TIME_TAG);
+    }
+
+    /** Extracts the time we put into the bundle. */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
+    public static long unpackTimeFromBundle(PersistableBundle bundle) {
         return bundle.getLong(SCHEDULED_TIME_TAG);
     }
 
@@ -38,8 +57,27 @@ public class TaskExtrasPacker {
         bundle.putBoolean(UNMETERED_NETWORK_TAG, conditions.requireUnmeteredNetwork());
     }
 
+    /** Puts trigger conditions into the input bundle. */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
+    public static void packTriggerConditionsInBundle(
+            PersistableBundle bundle, TriggerConditions conditions) {
+        bundle.putBoolean(POWER_CONNECTED_TAG, conditions.requirePowerConnected());
+        bundle.putInt(BATTERY_PERCENTAGE_TAG, conditions.getMinimumBatteryPercentage());
+        bundle.putBoolean(UNMETERED_NETWORK_TAG, conditions.requireUnmeteredNetwork());
+    }
+
     /** Extracts the trigger conditions we put into the bundle. */
     public static TriggerConditions unpackTriggerConditionsFromBundle(Bundle bundle) {
+        boolean requirePowerConnected = bundle.getBoolean(POWER_CONNECTED_TAG, true);
+        int minimumBatteryPercentage = bundle.getInt(BATTERY_PERCENTAGE_TAG, 100);
+        boolean requireUnmeteredNetwork = bundle.getBoolean(UNMETERED_NETWORK_TAG, true);
+        return new TriggerConditions(
+                requirePowerConnected, minimumBatteryPercentage, requireUnmeteredNetwork);
+    }
+
+    /** Extracts the trigger conditions we put into the bundle. */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
+    public static TriggerConditions unpackTriggerConditionsFromBundle(PersistableBundle bundle) {
         boolean requirePowerConnected = bundle.getBoolean(POWER_CONNECTED_TAG, true);
         int minimumBatteryPercentage = bundle.getInt(BATTERY_PERCENTAGE_TAG, 100);
         boolean requireUnmeteredNetwork = bundle.getBoolean(UNMETERED_NETWORK_TAG, true);

@@ -11,7 +11,6 @@ import com.google.android.gms.gcm.Task;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-
 /**
  * Custom shadow for the OS's GcmNetworkManager.  We use this to hook the call to GcmNetworkManager
  * to make sure it was invoked as we expect.

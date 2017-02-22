@@ -22,17 +22,19 @@ public class DeviceConditions {
         mNetConnectionType = netConnectionType;
     }
 
+    /** @return Whether power is connected. */
     public boolean isPowerConnected() {
         return mPowerConnected;
     }
 
+    /** @return Battery percentage. */
     public int getBatteryPercentage() {
         return mBatteryPercentage;
     }
 
     /**
-     * Returns the Chromium enum value for the network connection type. Connection type values are
-     * defined in org.chromium.net.ConnectionType.
+     * @return Network connection type, where possible values are defined by
+     *     org.chromium.net.ConnectionType.
      */
     public int getNetConnectionType() {
         return mNetConnectionType;

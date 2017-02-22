@@ -33,18 +33,19 @@ public class BackgroundSchedulerBridge {
 
     @CalledByNative
     private static void schedule(TriggerConditions triggerConditions) {
-        BackgroundScheduler.schedule(ContextUtils.getApplicationContext(), triggerConditions);
+        BackgroundScheduler.getInstance(ContextUtils.getApplicationContext())
+                .schedule(triggerConditions);
     }
 
     @CalledByNative
     private static void backupSchedule(TriggerConditions triggerConditions, long delayInSeconds) {
-        BackgroundScheduler.backupSchedule(ContextUtils.getApplicationContext(), triggerConditions,
-                                           delayInSeconds);
+        BackgroundScheduler.getInstance(ContextUtils.getApplicationContext())
+                .scheduleBackup(triggerConditions, delayInSeconds);
     }
 
     @CalledByNative
     private static void unschedule() {
-        BackgroundScheduler.unschedule(ContextUtils.getApplicationContext());
+        BackgroundScheduler.getInstance(ContextUtils.getApplicationContext()).cancel();
     }
 
     @CalledByNative

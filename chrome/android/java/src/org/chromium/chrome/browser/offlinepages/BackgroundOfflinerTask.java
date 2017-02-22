@@ -60,7 +60,8 @@ public class BackgroundOfflinerTask {
         // has a chance to reschedule base on remaining work.
         TriggerConditions previousTriggerConditions =
                 TaskExtrasPacker.unpackTriggerConditionsFromBundle(bundle);
-        BackgroundScheduler.backupSchedule(context, previousTriggerConditions, DEFER_START_SECONDS);
+        BackgroundScheduler.getInstance(context).scheduleBackup(
+                previousTriggerConditions, DEFER_START_SECONDS);
 
         DeviceConditions currentConditions = OfflinePageUtils.getDeviceConditions(context);
         if (!currentConditions.isPowerConnected()
