@@ -21,7 +21,9 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/views/linux_ui/linux_ui.h"
 
 namespace libgtkui {
 
@@ -81,9 +83,11 @@ bool X11InputMethodContextImplGtk2::DispatchKeyEvent(
   gint x = 0;
   gint y = 0;
   gdk_window_get_origin(event->key.window, &x, &y);
-  GdkRectangle rect = {last_caret_bounds_.x() - x, last_caret_bounds_.y() - y,
-                       last_caret_bounds_.width(), last_caret_bounds_.height()};
-  gtk_im_context_set_cursor_location(gtk_context_, &rect);
+
+  GdkRectangle gdk_rect = {
+      last_caret_bounds_.x() - x, last_caret_bounds_.y() - y,
+      last_caret_bounds_.width(), last_caret_bounds_.height()};
+  gtk_im_context_set_cursor_location(gtk_context_, &gdk_rect);
 
   const bool handled =
       gtk_im_context_filter_keypress(gtk_context_, &event->key);
@@ -109,7 +113,12 @@ void X11InputMethodContextImplGtk2::SetCursorLocation(const gfx::Rect& rect) {
   // client window, which is unknown at this point.  So we'll call
   // gtk_im_context_set_cursor_location() later in ProcessKeyEvent() where
   // (and only where) we know the client window.
-  last_caret_bounds_ = rect;
+  if (views::LinuxUI::instance()) {
+    last_caret_bounds_ = gfx::ConvertRectToPixel(
+        views::LinuxUI::instance()->GetDeviceScaleFactor(), rect);
+  } else {
+    last_caret_bounds_ = rect;
+  }
 }
 
 // private:

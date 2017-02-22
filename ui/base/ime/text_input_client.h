@@ -82,23 +82,15 @@ class UI_BASE_IME_EXPORT TextInputClient {
   virtual bool CanComposeInline() const = 0;
 
   // Returns current caret (insertion point) bounds in the universal screen
-  // coordinates. If there is selection, then the selection bounds will be
-  // returned.
-  // Note: On Windows, the returned value is supposed to be DIP (Density
-  // Independent Pixel).
-  // TODO(ime): Have a clear spec whether the returned value is DIP or not.
-  // http://crbug.com/360334
+  // coordinates in DIP (Density Independent Pixel).
+  // If there is selection, then the selection bounds will be returned.
   virtual gfx::Rect GetCaretBounds() const = 0;
 
   // Retrieves the composition character boundary rectangle in the universal
-  // screen coordinates. The |index| is zero-based index of character position
-  // in composition text.
+  // screen coordinates in DIP (Density Independent Pixel).
+  // The |index| is zero-based index of character position in composition text.
   // Returns false if there is no composition text or |index| is out of range.
   // The |rect| is not touched in the case of failure.
-  // Note: On Windows, the returned value is supposed to be DIP
-  // (Density Independent Pixel).
-  // TODO(ime): Have a clear spec whether the returned value is DIP or not.
-  // http://crbug.com/360334
   virtual bool GetCompositionCharacterBounds(uint32_t index,
                                              gfx::Rect* rect) const = 0;
 
@@ -162,12 +154,9 @@ class UI_BASE_IME_EXPORT TextInputClient {
   // between browser and renderer.
   virtual void ExtendSelectionAndDelete(size_t before, size_t after) = 0;
 
-  // Ensure the caret is not in |rect|.  |rect| is in screen coordinates and
-  // may extend beyond the bounds of this TextInputClient.
-  // Note: On Windows, the returned value is supposed to be DIP (Density
-  // Independent Pixel).
-  // TODO(ime): Have a clear spec whether the returned value is DIP or not.
-  // http://crbug.com/360334
+  // Ensure the caret is not in |rect|.  |rect| is in screen coordinates in
+  // DIP (Density Independent Pixel) and may extend beyond the bounds of this
+  // TextInputClient.
   virtual void EnsureCaretNotInRect(const gfx::Rect& rect) = 0;
 
   // Returns true if |command| is currently allowed to be executed.
