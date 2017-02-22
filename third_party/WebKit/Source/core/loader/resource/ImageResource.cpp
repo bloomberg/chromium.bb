@@ -99,9 +99,6 @@ class ImageResource::ImageResourceInfoImpl final
     return m_resource->resourceError();
   }
 
-  void decodeError(bool allDataReceived) override {
-    m_resource->decodeError(allDataReceived);
-  }
   void setIsPlaceholder(bool isPlaceholder) override {
     m_resource->m_isPlaceholder = isPlaceholder;
   }
@@ -334,9 +331,16 @@ void ImageResource::decodeError(bool allDataReceived) {
   if (!errorOccurred())
     setStatus(ResourceStatus::DecodeError);
 
+  // Finishes loading if needed, and notifies observers.
   if (!allDataReceived && loader()) {
+    // Observers are notified via ImageResource::finish().
     // TODO(hiroshige): Do not call didFinishLoading() directly.
     loader()->didFinishLoading(monotonicallyIncreasingTime(), size, size);
+  } else {
+    auto result = getContent()->updateImage(
+        nullptr, ImageResourceContent::ClearImageAndNotifyObservers,
+        allDataReceived);
+    DCHECK_EQ(result, ImageResourceContent::UpdateImageResult::NoDecodeError);
   }
 
   memoryCache()->remove(this);
@@ -519,8 +523,25 @@ void ImageResource::updateImage(
     PassRefPtr<SharedBuffer> sharedBuffer,
     ImageResourceContent::UpdateImageOption updateImageOption,
     bool allDataReceived) {
-  getContent()->updateImage(std::move(sharedBuffer), updateImageOption,
-                            allDataReceived);
+  auto result = getContent()->updateImage(std::move(sharedBuffer),
+                                          updateImageOption, allDataReceived);
+  if (result == ImageResourceContent::UpdateImageResult::ShouldDecodeError) {
+    // In case of decode error, we call imageNotifyFinished() iff we don't
+    // initiate reloading:
+    // [(a): when this is in the middle of loading, or (b): otherwise]
+    // 1. The updateImage() call above doesn't call notifyObservers().
+    // 2. notifyObservers(ShouldNotifyFinish) is called
+    //    (a) via updateImage() called in ImageResource::finish()
+    //        called via didFinishLoading() called in decodeError(), or
+    //    (b) via updateImage() called in decodeError().
+    //    imageNotifyFinished() is called here iff we will not initiate
+    //    reloading in Step 3 due to notifyObservers()'s
+    //    schedulingReloadOrShouldReloadBrokenPlaceholder() check.
+    // 3. reloadIfLoFiOrPlaceholderImage() is called via ResourceFetcher
+    //    (a) via didFinishLoading() called in decodeError(), or
+    //    (b) after returning ImageResource::updateImage().
+    decodeError(allDataReceived);
+  }
 }
 
 }  // namespace blink

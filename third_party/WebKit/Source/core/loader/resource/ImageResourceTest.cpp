@@ -875,7 +875,7 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
   EXPECT_TRUE(observer->imageNotifyFinishedCalled());
   EXPECT_EQ(ResourceStatus::DecodeError,
             observer->statusOnImageNotifyFinished());
-  EXPECT_EQ(2, observer->imageChangedCount());
+  EXPECT_EQ(1, observer->imageChangedCount());
   EXPECT_FALSE(imageResource->isLoading());
 }
 
@@ -1116,7 +1116,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   // The dimensions could not be extracted, so the full original image should be
   // loading.
   EXPECT_FALSE(observer->imageNotifyFinishedCalled());
-  EXPECT_EQ(3, observer->imageChangedCount());
+  EXPECT_EQ(2, observer->imageChangedCount());
 
   testThatReloadIsStartedThenServeReload(
       testURL, imageResource, imageResource->getContent(), observer.get(),

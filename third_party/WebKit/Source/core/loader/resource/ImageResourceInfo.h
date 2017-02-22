@@ -46,10 +46,6 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
   virtual bool hasCacheControlNoStoreHeader() const = 0;
   virtual const ResourceError& resourceError() const = 0;
 
-  // Like Resource::error(), decodeError() makes corresponding ImageResource
-  // (if any) DecodeError and finishes loading.
-  virtual void decodeError(bool allDataReceived) = 0;
-
   // TODO(hiroshige): Remove this.
   virtual void setIsPlaceholder(bool) = 0;
 

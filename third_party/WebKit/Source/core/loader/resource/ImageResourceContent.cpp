@@ -52,7 +52,6 @@ class NullImageResourceInfo final
   bool hasCacheControlNoStoreHeader() const override { return false; }
   const ResourceError& resourceError() const override { return m_error; }
 
-  void decodeError(bool allDataReceived) override {}
   void setDecodedSize(size_t) override {}
   void setIsPlaceholder(bool) override {}
   void willAddClientOrObserver() override {}
@@ -329,10 +328,16 @@ static bool shouldShowFullImageInsteadOfPlaceholder(
   return response.httpStatusCode() < 400 || response.httpStatusCode() >= 600;
 }
 
-void ImageResourceContent::updateImage(PassRefPtr<SharedBuffer> data,
-                                       UpdateImageOption updateImageOption,
-                                       bool allDataReceived) {
+ImageResourceContent::UpdateImageResult ImageResourceContent::updateImage(
+    PassRefPtr<SharedBuffer> data,
+    UpdateImageOption updateImageOption,
+    bool allDataReceived) {
   TRACE_EVENT0("blink", "ImageResourceContent::updateImage");
+
+#if DCHECK_IS_ON()
+  DCHECK(!m_isUpdateImageBeingCalled);
+  AutoReset<bool> scope(&m_isUpdateImageBeingCalled, true);
+#endif
 
   // Clears the existing image, if instructed by |updateImageOption|.
   switch (updateImageOption) {
@@ -366,7 +371,7 @@ void ImageResourceContent::updateImage(PassRefPtr<SharedBuffer> data,
       // received all the data or the size is known. Each chunk from the network
       // causes observers to repaint, which will force that chunk to decode.
       if (m_sizeAvailable == Image::SizeUnavailable && !allDataReceived)
-        return;
+        return UpdateImageResult::NoDecodeError;
 
       if (m_info->isPlaceholder() && allDataReceived) {
         if (shouldShowFullImageInsteadOfPlaceholder(response(),
@@ -381,7 +386,7 @@ void ImageResourceContent::updateImage(PassRefPtr<SharedBuffer> data,
 
       if (!m_image || m_image->isNull()) {
         clearImage();
-        m_info->decodeError(allDataReceived);
+        return UpdateImageResult::ShouldDecodeError;
       }
       break;
   }
@@ -390,6 +395,7 @@ void ImageResourceContent::updateImage(PassRefPtr<SharedBuffer> data,
   // It would be nice to only redraw the decoded band of the image, but with the
   // current design (decoding delayed until painting) that seems hard.
   notifyObservers(allDataReceived ? ShouldNotifyFinish : DoNotNotifyFinish);
+  return UpdateImageResult::NoDecodeError;
 }
 
 void ImageResourceContent::decodedSizeChangedTo(const blink::Image* image,
