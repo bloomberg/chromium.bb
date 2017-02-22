@@ -170,10 +170,7 @@ SettingsAutofillSectionBrowserTest.prototype = {
   },
 };
 
-// Disabled because of flakiness http://crbug.com/694289
-TEST_F('SettingsAutofillSectionBrowserTest',
-       'DISABLED_CreditCardTests',
-       function() {
+TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
   var self = this;
 
   setup(function() {
@@ -264,6 +261,12 @@ TEST_F('SettingsAutofillSectionBrowserTest',
       assertNotEquals(oldCreditCardDialog.title_, newCreditCardDialog.title_);
       assertNotEquals('', newCreditCardDialog.title_);
       assertNotEquals('', oldCreditCardDialog.title_);
+
+      // Wait for dialogs to open before finishing test.
+      return Promise.all([
+        test_util.whenAttributeIs(newCreditCardDialog.$.dialog, 'open', true),
+        test_util.whenAttributeIs(oldCreditCardDialog.$.dialog, 'open', true),
+      ]);
     });
 
     test('verifyExpiredCreditCardYear', function() {
