@@ -177,6 +177,7 @@ Polymer({
     // appropriately.
     this.async(function() {
       this.$.networkSelect.refreshNetworks();
+      this.$.networkSelect.focus();
     }.bind(this));
   },
 

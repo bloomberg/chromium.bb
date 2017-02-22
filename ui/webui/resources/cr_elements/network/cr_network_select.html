@@ -10,7 +10,8 @@
         display: inline-flex;
       }
     </style>
-    <cr-network-list class ="flex" on-selected="onNetworkListItemSelected_"
+    <cr-network-list id="neworkList" class ="flex"
+        on-selected="onNetworkListItemSelected_"
         on-network-connected="onNetworkConnected_"
         networks="[[networkStateList_]]" custom-items="[[customItems]]"
         show-buttons="[[showButtons]]"

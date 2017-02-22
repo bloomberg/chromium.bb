@@ -67,12 +67,35 @@ Polymer({
 
   observers: ['updateListItems_(networks, customItems)'],
 
+  /** @private {boolean} */
+  focusRequested_: false,
+
+  focus: function() {
+    this.focusRequested_ = true;
+    this.focusFirstItem_();
+  },
+
   /** @private */
   updateListItems_: function() {
     this.saveScroll(this.$.networkList);
     this.listItems_ = this.networks.concat(this.customItems);
     this.restoreScroll(this.$.networkList);
     this.updateScrollableContents();
+    if (this.focusRequested_) {
+      this.async(function() {
+        this.focusFirstItem_();
+      });
+    }
+  },
+
+  /** @private */
+  focusFirstItem_: function() {
+    // Select the first cr-network-list-item if there is one.
+    var item = this.$$('cr-network-list-item');
+    if (!item)
+      return;
+    item.focus();
+    this.focusRequested_ = false;
   },
 
   /**

@@ -56,6 +56,10 @@ Polymer({
     },
   },
 
+  focus: function() {
+    this.$.neworkList.focus();
+  },
+
   /**
    * Listener function for chrome.networkingPrivate.onNetworkListChanged event.
    * @type {function(!Array<string>)}
