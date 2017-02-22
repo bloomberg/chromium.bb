@@ -597,23 +597,23 @@ const NSInteger kFullscreenLeftOffset = 40;
 }
 
 - (void)ok:(id)sender {
-  DCHECK(delegate_);
-  delegate_->Accept();
+  if (delegate_)
+    delegate_->Accept();
 }
 
 - (void)onAllow:(id)sender {
-  DCHECK(delegate_);
-  delegate_->Accept();
+  if (delegate_)
+    delegate_->Accept();
 }
 
 - (void)onBlock:(id)sender {
-  DCHECK(delegate_);
-  delegate_->Deny();
+  if (delegate_)
+    delegate_->Deny();
 }
 
 - (void)onClose:(id)sender {
-  DCHECK(delegate_);
-  delegate_->Closing();
+  if (delegate_)
+    delegate_->Closing();
 }
 
 + (NSInteger)getFullscreenLeftOffset {
@@ -647,8 +647,8 @@ const NSInteger kFullscreenLeftOffset = 40;
 
 - (IBAction)cancel:(id)sender {
   // This is triggered by ESC when the bubble has focus.
-  DCHECK(delegate_);
-  delegate_->Closing();
+  if (delegate_)
+    delegate_->Closing();
   [super cancel:sender];
 }
 
