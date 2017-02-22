@@ -452,7 +452,9 @@ Response InspectorPageAgent::reload(
   return Response::OK();
 }
 
-Response InspectorPageAgent::navigate(const String& url, String* outFrameId) {
+Response InspectorPageAgent::navigate(const String& url,
+                                      Maybe<String> referrer,
+                                      String* outFrameId) {
   *outFrameId = frameId(m_inspectedFrames->root());
   return Response::OK();
 }

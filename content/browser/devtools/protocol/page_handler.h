@@ -59,7 +59,9 @@ class PageHandler : public DevToolsDomainHandler,
 
   Response Reload(Maybe<bool> bypassCache,
                   Maybe<std::string> script_to_evaluate_on_load) override;
-  Response Navigate(const std::string& url, Page::FrameId* frame_id) override;
+  Response Navigate(const std::string& url,
+                    Maybe<std::string> referrer,
+                    Page::FrameId* frame_id) override;
   Response StopLoading() override;
 
   using NavigationEntries = protocol::Array<Page::NavigationEntry>;

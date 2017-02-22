@@ -228,6 +228,7 @@ Response PageHandler::Reload(Maybe<bool> bypassCache,
 }
 
 Response PageHandler::Navigate(const std::string& url,
+                               Maybe<std::string> referrer,
                                Page::FrameId* frame_id) {
   GURL gurl(url);
   if (!gurl.is_valid())
@@ -237,8 +238,10 @@ Response PageHandler::Navigate(const std::string& url,
   if (!web_contents)
     return Response::InternalError();
 
-  web_contents->GetController()
-      .LoadURL(gurl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  web_contents->GetController().LoadURL(
+      gurl,
+      Referrer(GURL(referrer.fromMaybe("")), blink::WebReferrerPolicyDefault),
+      ui::PAGE_TRANSITION_TYPED, std::string());
   return Response::FallThrough();
 }
 

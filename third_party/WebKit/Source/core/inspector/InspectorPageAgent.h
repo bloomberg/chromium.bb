@@ -111,7 +111,9 @@ class CORE_EXPORT InspectorPageAgent final
   Response setAutoAttachToCreatedPages(bool) override;
   Response reload(Maybe<bool> bypassCache,
                   Maybe<String> scriptToEvaluateOnLoad) override;
-  Response navigate(const String& url, String* frameId) override;
+  Response navigate(const String& url,
+                    Maybe<String> referrer,
+                    String* frameId) override;
   Response stopLoading() override;
   Response getResourceTree(
       std::unique_ptr<protocol::Page::FrameResourceTree>* frameTree) override;

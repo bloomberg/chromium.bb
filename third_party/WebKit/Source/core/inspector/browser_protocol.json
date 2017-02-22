@@ -251,7 +251,8 @@
             {
                 "name": "navigate",
                 "parameters": [
-                    { "name": "url", "type": "string", "description": "URL to navigate the page to." }
+                    { "name": "url", "type": "string", "description": "URL to navigate the page to." },
+                    { "name": "referrer", "type": "string", "optional": true, "experimental": true, "description": "Referrer URL." }
                 ],
                 "returns": [
                     { "name": "frameId", "$ref": "FrameId", "experimental": true, "description": "Frame id that will be navigated." }
