@@ -136,9 +136,12 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
 }
 
 CastSocketImpl::~CastSocketImpl() {
-  // Ensure that resources are freed but do not run pending callbacks to avoid
-  // any re-entrancy.
+  // Ensure that resources are freed but do not run pending callbacks that
+  // would result in re-entrancy.
   CloseInternal();
+
+  if (!connect_callback_.is_null())
+    base::ResetAndReturn(&connect_callback_).Run(CHANNEL_ERROR_UNKNOWN);
 }
 
 ReadyState CastSocketImpl::ready_state() const {
