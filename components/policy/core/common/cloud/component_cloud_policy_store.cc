@@ -289,6 +289,10 @@ bool ComponentCloudPolicyStore::ValidatePolicy(
     LOG(ERROR) << "Bad policy type";
     return false;
   }
+  if (ns.component_id.empty()) {
+    LOG(ERROR) << "Empty component id";
+    return false;
+  }
 
   if (username_.empty() || dm_token_.empty() || device_id_.empty() ||
       public_key_.empty() || public_key_version_ == -1) {

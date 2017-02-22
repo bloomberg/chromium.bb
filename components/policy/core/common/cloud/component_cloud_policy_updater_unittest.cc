@@ -289,6 +289,32 @@ TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseDifferentPublicKey) {
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
 }
 
+TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseEmptyComponentId) {
+  // Submit a policy fetch response having an empty component ID.
+  builder_.policy_data().set_settings_entity_id(std::string());
+  updater_->UpdateExternalPolicy(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, std::string()),
+      CreateResponse());
+
+  task_runner_->RunUntilIdle();
+
+  // Verify that the policy fetch response has been ignored.
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+
+  // Submit a policy fetch response having an empty component ID with empty data
+  // fields, requesting the deletion of policy.
+  builder_.payload().clear_download_url();
+  builder_.payload().clear_secure_hash();
+  updater_->UpdateExternalPolicy(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, std::string()),
+      CreateResponse());
+
+  task_runner_->RunUntilIdle();
+
+  // Verify that the policy fetch response has been ignored.
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+}
+
 TEST_F(ComponentCloudPolicyUpdaterTest, AlreadyCached) {
   // Cache policy for an extension.
   builder_.Build();

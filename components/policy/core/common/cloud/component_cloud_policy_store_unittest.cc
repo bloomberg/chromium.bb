@@ -241,6 +241,13 @@ TEST_F(ComponentCloudPolicyStoreTest, ValidatePolicyBadSignature) {
                                       nullptr /* payload */));
 }
 
+TEST_F(ComponentCloudPolicyStoreTest, ValidatePolicyEmptyComponentId) {
+  builder_.policy_data().set_settings_entity_id(std::string());
+  EXPECT_FALSE(store_->ValidatePolicy(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, std::string()),
+      CreateResponse(), nullptr /* policy_data */, nullptr /* payload */));
+}
+
 TEST_F(ComponentCloudPolicyStoreTest, ValidatePolicyWrongPublicKey) {
   // Test against a policy signed with a wrong key.
   builder_.SetSigningKey(*ComponentPolicyBuilder::CreateTestOtherSigningKey());
