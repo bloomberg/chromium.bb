@@ -292,7 +292,7 @@ void CollectRegistryData(
 
 void CollectDomainEnrollmentData(
     ClientIncidentReport_EnvironmentData_OS* os_data) {
-  os_data->set_is_enrolled_to_domain(base::win::IsEnrolledToDomain());
+  os_data->set_is_enrolled_to_domain(base::win::IsEnterpriseManaged());
 }
 
 void CollectPlatformProcessData(

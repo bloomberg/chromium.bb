@@ -90,10 +90,16 @@ enum DomainCheckErrors {
   DOMAIN_CHECK_ERROR_SIZE,  // Not a DomainCheckError.  Must be last.
 };
 
+// Encapculates logic to determine if enterprise policies should be honored.
+// This is used in various places below.
+bool ShouldHonorPolicies() {
+  return base::win::IsEnterpriseManaged();
+}
+
 // Verifies that untrusted policies contain only safe values. Modifies the
 // |policy| in place.
 void FilterUntrustedPolicy(PolicyMap* policy) {
-  if (base::win::IsEnrolledToDomain())
+  if (ShouldHonorPolicies())
     return;
 
   int invalid_policies = 0;
@@ -291,8 +297,12 @@ void CollectEnterpriseUMAs() {
                             base::win::OSInfo::GetInstance()->version_type(),
                             base::win::SUITE_LAST);
 
-  bool in_domain = base::win::IsEnrolledToDomain();
-  UMA_HISTOGRAM_BOOLEAN("EnterpriseCheck.InDomain", in_domain);
+  UMA_HISTOGRAM_BOOLEAN("EnterpriseCheck.InDomain",
+                        base::win::IsEnrolledToDomain());
+  UMA_HISTOGRAM_BOOLEAN("EnterpriseCheck.IsManaged",
+                        base::win::IsDeviceRegisteredWithManagement());
+  UMA_HISTOGRAM_BOOLEAN("EnterpriseCheck.IsEnterpriseUser",
+                        base::win::IsEnterpriseManaged());
 }
 
 }  // namespace
@@ -366,9 +376,9 @@ std::unique_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     { POLICY_SCOPE_USER,    HKEY_CURRENT_USER  },
   };
 
-  bool is_enterprise = base::win::IsEnrolledToDomain();
+  bool honor_policies = ShouldHonorPolicies();
   VLOG(1) << "Reading policy from the registry is "
-          << (is_enterprise ? "enabled." : "disabled.");
+          << (honor_policies ? "enabled." : "disabled.");
 
   // Load policy data for the different scopes/levels and merge them.
   std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
@@ -396,7 +406,7 @@ std::unique_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     // timeout on it more aggressively. For now, there's no justification for
     // the additional effort this would introduce.
 
-    bool is_registry_forced = is_enterprise || gpo_provider_ == nullptr;
+    bool is_registry_forced = honor_policies || gpo_provider_ == nullptr;
     if (is_registry_forced || !ReadPolicyFromGPO(scope, &gpo_dict, &status)) {
       VLOG_IF(1, !is_registry_forced) << "Failed to read GPO files for "
                                       << scope << " falling back to registry.";
