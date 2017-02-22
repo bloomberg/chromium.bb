@@ -3584,9 +3584,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       <message name="IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_TITLE" desc="Titlebar of the extension or app permissions prompt. Shows the user the permissions a particular extension or app has.">
         Current Permissions for "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"
       </message>
-      <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_TITLE" desc="Titlebar of the app launch prompt. Asks the user if they want to launch a particular app.">
-        Try "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
-      </message>
       <message name="IDS_EXTENSION_REMOTE_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt. Asks the user if they want to enable a particular extension or app that was installed remotely.">
         Enable "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
@@ -3670,9 +3667,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO" desc="Second line in the content area of the extension or app re-enable prompt. Note that the exact wording is important. This should mean that the extension _can now_ access the listed privileges, but not necessarily that it will or needs to. This message appeared because the user must approve new permissions of the extension or app.">
         It can now:
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_THESE_WILL_HAVE_ACCESS_TO" desc="Header for the permissions area of the bundled extension or app installation prompt. Note that the exact wording is important. This means that the extensions or apps _can_ access the listed privileges, but not necessarily that it will or needs to.">
-        They can:
       </message>
       <message name="IDS_EXTENSION_PROMPT_WANTS_ACCESS_TO" desc="Second line in the content area of the extension or app permissions prompt. Note that the exact wording is important. This should mean that the extension _wants to_ access the listed privileges, but not necessarily that it will or needs to. This message appeared because the user must approve new permissions of the extension or app.">
         It could:
@@ -4668,9 +4662,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_THEME" desc="Text for the install button on the extension install prompt, for a theme.">
         Add theme
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_LAUNCH_BUTTON" desc="Text for the launch button on the extension install prompt">
-        Launch app
       </message>
       <message name="IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON" desc="Text for the uninstall button on the extension uninstall prompt">
         Remove

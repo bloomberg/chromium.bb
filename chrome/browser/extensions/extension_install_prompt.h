@@ -54,18 +54,18 @@ class ExtensionInstallPrompt {
   enum PromptType {
     UNSET_PROMPT_TYPE = -1,
     INSTALL_PROMPT = 0,
-    INLINE_INSTALL_PROMPT,
-    BUNDLE_INSTALL_PROMPT_DEPRECATED,
-    RE_ENABLE_PROMPT,
-    PERMISSIONS_PROMPT,
-    EXTERNAL_INSTALL_PROMPT,
-    POST_INSTALL_PERMISSIONS_PROMPT,
-    LAUNCH_PROMPT_DEPRECATED,
-    REMOTE_INSTALL_PROMPT,
-    REPAIR_PROMPT,
-    DELEGATED_PERMISSIONS_PROMPT,
-    DELEGATED_BUNDLE_PERMISSIONS_PROMPT_DEPRECATED,
-    NUM_PROMPT_TYPES
+    INLINE_INSTALL_PROMPT = 1,
+    // BUNDLE_INSTALL_PROMPT_DEPRECATED = 2,
+    RE_ENABLE_PROMPT = 3,
+    PERMISSIONS_PROMPT = 4,
+    EXTERNAL_INSTALL_PROMPT = 5,
+    POST_INSTALL_PERMISSIONS_PROMPT = 6,
+    // LAUNCH_PROMPT_DEPRECATED = 7,
+    REMOTE_INSTALL_PROMPT = 8,
+    REPAIR_PROMPT = 9,
+    DELEGATED_PERMISSIONS_PROMPT = 10,
+    // DELEGATED_BUNDLE_PERMISSIONS_PROMPT_DEPRECATED = 11,
+    NUM_PROMPT_TYPES = 12,
   };
 
   // The last prompt type to display; only used for testing.
@@ -109,7 +109,6 @@ class ExtensionInstallPrompt {
                          int rating_count);
 
     PromptType type() const { return type_; }
-    void set_type(PromptType type) { type_ = type; }
 
     // Getters for UI element labels.
     base::string16 GetDialogTitle() const;
@@ -199,7 +198,7 @@ class ExtensionInstallPrompt {
 
     bool ShouldDisplayRevokeFilesButton() const;
 
-    PromptType type_;
+    const PromptType type_;
 
     // Permissions that are being requested (may not be all of an extension's
     // permissions if only additional ones are being requested)
