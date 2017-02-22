@@ -1460,8 +1460,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         }
     }
 
-    public void onFocusChanged(boolean gainFocus) {
-        mImeAdapter.onViewFocusChanged(gainFocus);
+    public void onFocusChanged(boolean gainFocus, boolean hideKeyboardOnBlur) {
+        mImeAdapter.onViewFocusChanged(gainFocus, hideKeyboardOnBlur);
 
         // Used in test that bypasses initialize().
         if (mJoystickScrollProvider != null) {

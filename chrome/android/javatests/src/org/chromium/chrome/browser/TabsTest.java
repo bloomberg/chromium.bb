@@ -331,6 +331,29 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     }
 
     /**
+     * Verify that opening a new window hides keyboard.
+     */
+    @MediumTest
+    @Feature({"Android-TabSwitcher"})
+    @RetryOnFailure
+    public void testHideKeyboardWhenOpeningWindow() throws Exception {
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        // Open a new tab and click an editable node.
+        ChromeTabUtils.fullyLoadUrlInNewTab(
+                getInstrumentation(), getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
+        assertEquals("Failed to click textarea.", true,
+                DOMUtils.clickNode(
+                        this, getActivity().getActivityTab().getContentViewCore(), "textarea"));
+        assertWaitForKeyboardStatus(true);
+
+        // Click the button to open a new window.
+        assertEquals("Failed to click button.", true,
+                DOMUtils.clickNode(
+                        this, getActivity().getActivityTab().getContentViewCore(), "button"));
+        assertWaitForKeyboardStatus(false);
+    }
+
+    /**
      * Verify that opening a new tab and navigating immediately sets a size on the newly created
      * renderer. https://crbug.com/434477.
      * @throws InterruptedException

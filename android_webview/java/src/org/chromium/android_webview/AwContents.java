@@ -3232,7 +3232,7 @@ public class AwContents implements SmartClipProvider {
         public void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
             if (isDestroyedOrNoOperation(NO_WARN)) return;
             mContainerViewFocused = focused;
-            mContentViewCore.onFocusChanged(focused);
+            mContentViewCore.onFocusChanged(focused, false /* hideKeyboardOnBlur */);
         }
 
         @Override

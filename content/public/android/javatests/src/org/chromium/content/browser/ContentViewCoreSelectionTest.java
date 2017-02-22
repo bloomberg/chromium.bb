@@ -706,7 +706,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                contentViewCore.onFocusChanged(gainFocus);
+                contentViewCore.onFocusChanged(gainFocus, true);
             }
         });
     }

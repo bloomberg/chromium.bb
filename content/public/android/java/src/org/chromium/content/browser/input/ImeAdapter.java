@@ -416,7 +416,7 @@ public class ImeAdapter {
     }
 
     /**
-     * Call this when view is detached from window
+     * Call this when view is attached to window.
      */
     public void onViewAttachedToWindow() {
         if (mInputConnectionFactory != null) {
@@ -425,7 +425,7 @@ public class ImeAdapter {
     }
 
     /**
-     * Call this when view is detached from window
+     * Call this when view is detached from window.
      */
     public void onViewDetachedFromWindow() {
         resetAndHideKeyboard();
@@ -437,9 +437,11 @@ public class ImeAdapter {
     /**
      * Call this when view's focus has changed.
      * @param gainFocus True if we're gaining focus.
+     * @param hideKeyboardOnBlur True if we should hide soft keyboard when losing focus.
      */
-    public void onViewFocusChanged(boolean gainFocus) {
+    public void onViewFocusChanged(boolean gainFocus, boolean hideKeyboardOnBlur) {
         if (DEBUG_LOGS) Log.w(TAG, "onViewFocusChanged: gainFocus [%b]", gainFocus);
+        if (!gainFocus && hideKeyboardOnBlur) resetAndHideKeyboard();
         if (mInputConnectionFactory != null) {
             mInputConnectionFactory.onViewFocusChanged(gainFocus);
         }
