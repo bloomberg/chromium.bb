@@ -23,16 +23,12 @@ set(AOM_C_FAILED_TESTS)
 set(AOM_CXX_PASSED_TESTS)
 set(AOM_CXX_FAILED_TESTS)
 
-# TODO(tomfinegan): Rename the functions in here to_be_of_this_format to match
-# other custom CMake commands (from CMake built in plugins and other cmake code
-# in AOM).
-
 # Confirms $test_source compiles and stores $test_name in one of
 # $AOM_C_PASSED_TESTS or $AOM_C_FAILED_TESTS depending on out come. When the
 # test passes $result_var is set to 1. When it fails $result_var is unset.
 # The test is not run if the test name is found in either of the passed or
 # failed test variables.
-macro(AomCheckCCompiles test_name test_source result_var)
+function(aom_check_c_compiles test_name test_source result_var)
   unset(C_TEST_PASSED CACHE)
   unset(C_TEST_FAILED CACHE)
   string(FIND "${AOM_C_PASSED_TESTS}" "${test_name}" C_TEST_PASSED)
@@ -41,7 +37,7 @@ macro(AomCheckCCompiles test_name test_source result_var)
     unset(C_TEST_COMPILED CACHE)
     message("Running C compiler test: ${test_name}")
     check_c_source_compiles("${test_source} ${AOM_C_MAIN}" C_TEST_COMPILED)
-    set(${result_var} ${C_TEST_COMPILED})
+    set(${result_var} ${C_TEST_COMPILED} PARENT_SCOPE)
 
     if (C_TEST_COMPILED)
       set(AOM_C_PASSED_TESTS "${AOM_C_PASSED_TESTS} ${test_name}" CACHE STRING
@@ -52,18 +48,18 @@ macro(AomCheckCCompiles test_name test_source result_var)
       message("C Compiler test ${test_name} failed.")
     endif ()
   elseif (NOT ${C_TEST_PASSED} EQUAL -1)
-    set(${result_var} 1)
+    set(${result_var} 1 PARENT_SCOPE)
   else ()  # ${C_TEST_FAILED} NOT EQUAL -1
-    unset(${result_var})
+    unset(${result_var} PARENT_SCOPE)
   endif ()
-endmacro ()
+endfunction ()
 
 # Confirms $test_source compiles and stores $test_name in one of
 # $AOM_CXX_PASSED_TESTS or $AOM_CXX_FAILED_TESTS depending on out come. When the
 # test passes $result_var is set to 1. When it fails $result_var is unset.
 # The test is not run if the test name is found in either of the passed or
 # failed test variables.
-macro(AomCheckCxxCompiles test_name test_source result_var)
+function(aom_check_cxx_compiles test_name test_source result_var)
   unset(CXX_TEST_PASSED CACHE)
   unset(CXX_TEST_FAILED CACHE)
   string(FIND "${AOM_CXX_PASSED_TESTS}" "${test_name}" CXX_TEST_PASSED)
@@ -73,7 +69,7 @@ macro(AomCheckCxxCompiles test_name test_source result_var)
     message("Running CXX compiler test: ${test_name}")
     check_cxx_source_compiles("${test_source} ${AOM_CXX_MAIN}"
                               CXX_TEST_COMPILED)
-    set(${result_var} ${CXX_TEST_COMPILED})
+    set(${result_var} ${CXX_TEST_COMPILED} PARENT_SCOPE)
 
     if (CXX_TEST_COMPILED)
       set(AOM_CXX_PASSED_TESTS "${AOM_CXX_PASSED_TESTS} ${test_name}" CACHE
@@ -84,26 +80,26 @@ macro(AomCheckCxxCompiles test_name test_source result_var)
       message("CXX Compiler test ${test_name} failed.")
     endif ()
   elseif (NOT ${CXX_TEST_PASSED} EQUAL -1)
-    set(${result_var} 1)
+    set(${result_var} 1 PARENT_SCOPE)
   else ()  # ${CXX_TEST_FAILED} NOT EQUAL -1
-    unset(${result_var})
+    unset(${result_var} PARENT_SCOPE)
   endif ()
-endmacro ()
+endfunction ()
 
-# Convenience macro that confirms $test_source compiles as C and C++.
+# Convenience function that confirms $test_source compiles as C and C++.
 # $result_var is set to 1 when both tests are successful, and 0 when one or both
 # tests fail.
-# Note: This macro is intended to be used to write to result variables that are
+# Note: This function is intended to be used to write to result variables that are
 # expanded via configure_file(). $result_var is set to 1 or 0 to allow direct
 # usage of the value in generated source files.
-macro(AomCheckSourceCompiles test_name test_source result_var)
+function(aom_check_source_compiles test_name test_source result_var)
   unset(C_PASSED)
   unset(CXX_PASSED)
-  AomCheckCCompiles(${test_name} ${test_source} C_PASSED)
-  AomCheckCxxCompiles(${test_name} ${test_source} CXX_PASSED)
+  aom_check_c_compiles(${test_name} ${test_source} C_PASSED)
+  aom_check_cxx_compiles(${test_name} ${test_source} CXX_PASSED)
   if (C_PASSED AND CXX_PASSED)
-    set(${result_var} 1)
+    set(${result_var} 1 PARENT_SCOPE)
   else ()
-    set(${result_var} 0)
+    set(${result_var} 0 PARENT_SCOPE)
   endif ()
-endmacro ()
+endfunction ()

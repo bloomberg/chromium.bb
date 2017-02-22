@@ -91,19 +91,19 @@ else ()
 endif ()
 
 # Test compiler support.
-AomCheckSourceCompiles("inline_check" "static inline void function(void) {}"
-                       HAVE_INLINE)
+aom_check_source_compiles("inline_check" "static inline void function(void) {}"
+                          HAVE_INLINE)
 if (HAVE_INLINE EQUAL 1)
   set(INLINE "inline")
 endif ()
 # TODO(tomfinegan): aom_ports_check is legacy; HAVE_AOM_PORTS is not used
 # anywhere in the aom sources. To be removed after parity with the legacy
 # build system stops being important.
-AomCheckSourceCompiles("aom_ports_check"
-                       "#include \"${AOM_ROOT}/aom/aom_integer.h\""
-                       HAVE_AOM_PORTS)
-AomCheckSourceCompiles("pthread_check" "#include <pthread.h>" HAVE_PTHREAD_H)
-AomCheckSourceCompiles("unistd_check" "#include <unistd.h>" HAVE_UNISTD_H)
+aom_check_source_compiles("aom_ports_check"
+                          "#include \"${AOM_ROOT}/aom/aom_integer.h\""
+                          HAVE_AOM_PORTS)
+aom_check_source_compiles("pthread_check" "#include <pthread.h>" HAVE_PTHREAD_H)
+aom_check_source_compiles("unistd_check" "#include <unistd.h>" HAVE_UNISTD_H)
 
 # TODO(tomfinegan): consume trailing whitespace after configure_file() when
 # target platform check produces empty INLINE and RESTRICT values (aka empty
