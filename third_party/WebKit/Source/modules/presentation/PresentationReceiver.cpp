@@ -49,14 +49,15 @@ WebPresentationConnection* PresentationReceiver::onReceiverConnectionAvailable(
 
   // receiver.connectionList property not accessed
   if (!m_connectionListProperty)
-    return nullptr;
+    return connection;
 
   if (m_connectionListProperty->getState() ==
-      ScriptPromisePropertyBase::Pending)
+      ScriptPromisePropertyBase::Pending) {
     m_connectionListProperty->resolve(m_connectionList);
-  else if (m_connectionListProperty->getState() ==
-           ScriptPromisePropertyBase::Resolved)
+  } else if (m_connectionListProperty->getState() ==
+             ScriptPromisePropertyBase::Resolved) {
     m_connectionList->dispatchConnectionAvailableEvent(connection);
+  }
 
   return connection;
 }

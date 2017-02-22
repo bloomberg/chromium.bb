@@ -202,9 +202,12 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
   WebPresentationSessionInfo sessionInfo(KURL(KURL(), "http://example.com"),
                                          "id");
   // Receive first connection.
-  receiver->onReceiverConnectionAvailable(sessionInfo);
+  auto* connection1 = receiver->onReceiverConnectionAvailable(sessionInfo);
+  EXPECT_TRUE(connection1);
+
   // Receive second connection.
-  receiver->onReceiverConnectionAvailable(sessionInfo);
+  auto* connection2 = receiver->onReceiverConnectionAvailable(sessionInfo);
+  EXPECT_TRUE(connection2);
 
   receiver->connectionList(scope.getScriptState());
   verifyConnectionListPropertyState(ScriptPromisePropertyBase::Resolved,

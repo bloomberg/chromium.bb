@@ -8,9 +8,13 @@ let presentationServiceMock = loadMojoModules(
     'presentationServiceMock',
     [
       'third_party/WebKit/public/platform/modules/presentation/presentation.mojom',
+      'url/mojo/url.mojom',
       'mojo/public/js/bindings',
     ]).then(mojo => {
-      let [ presentationService, bindings ] = mojo.modules;
+      let [ presentationService, url, bindings ] = mojo.modules;
+
+      class MockPresentationConnection {
+      };
 
       class PresentationServiceMock {
         constructor(interfaceProvider) {
@@ -21,6 +25,10 @@ let presentationServiceMock = loadMojoModules(
           this.pendingResponse_ = null;
           this.bindingSet_ = new bindings.BindingSet(
               presentationService.PresentationService);
+        }
+
+        setClient(client) {
+          this.client_ = client;
         }
 
         startSession(urls) {
@@ -36,6 +44,22 @@ let presentationServiceMock = loadMojoModules(
               error: null,
           });
         }
+
+        onReceiverConnectionAvailable(strUrl, id) {
+          const mojoUrl = new url.Url();
+          mojoUrl.url = strUrl;
+          const controllerConnectionPtr = new presentationService.PresentationConnectionPtr();
+          const connectionBinding = new bindings.Binding(
+              presentationService.PresentationConnection,
+              new MockPresentationConnection(),
+              bindings.makeRequest(controllerConnectionPtr));
+          const receiverConnectionPtr = new presentationService.PresentationConnectionPtr();
+
+          this.client_.onReceiverConnectionAvailable(
+              { url: mojoUrl, id: id },
+              controllerConnectionPtr,
+              bindings.makeRequest(receiverConnectionPtr));
+        }
       }
 
       return new PresentationServiceMock(mojo.frameInterfaces);
@@ -47,9 +71,9 @@ function waitForClick(callback, button) {
   if (!('eventSender' in window))
     return;
 
-  var boundingRect = button.getBoundingClientRect();
-  var x = boundingRect.left + boundingRect.width / 2;
-  var y = boundingRect.top + boundingRect.height / 2;
+  const boundingRect = button.getBoundingClientRect();
+  const x = boundingRect.left + boundingRect.width / 2;
+  const y = boundingRect.top + boundingRect.height / 2;
 
   eventSender.mouseMoveTo(x, y);
   eventSender.mouseDown();
