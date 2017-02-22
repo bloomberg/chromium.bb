@@ -33,13 +33,11 @@ void PagePool::add(int index, PageMemory* memory) {
   // while in the pool.  This also allows the physical memory, backing the
   // page, to be given back to the OS.
   memory->decommit();
-  MutexLocker locker(m_mutex[index]);
   PoolEntry* entry = new PoolEntry(memory, m_pool[index]);
   m_pool[index] = entry;
 }
 
 PageMemory* PagePool::take(int index) {
-  MutexLocker locker(m_mutex[index]);
   while (PoolEntry* entry = m_pool[index]) {
     m_pool[index] = entry->next;
     PageMemory* memory = entry->data;

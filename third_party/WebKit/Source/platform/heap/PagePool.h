@@ -7,7 +7,6 @@
 
 #include "platform/heap/ThreadState.h"
 #include "wtf/Allocator.h"
-#include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
 
@@ -42,7 +41,6 @@ class PagePool {
   };
 
   PoolEntry* m_pool[BlinkGC::NumberOfArenas];
-  Mutex m_mutex[BlinkGC::NumberOfArenas];
 };
 
 }  // namespace blink
