@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,22 +25,15 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/strings/grit/ui_strings.h"
 
-namespace {
-
-const char kDelegateId[] = "quickunlock_delegate";
-const char kNotificationId[] = "quickunlock_notification";
-const char kChromeAuthenticationSettingsURL[] =
-    "chrome://md-settings/quickUnlock/authenticate";
-
-void UpdatePreferenceForProfile(Profile* profile) {
-  PrefService* pref_service = profile->GetPrefs();
-  pref_service->SetBoolean(prefs::kQuickUnlockFeatureNotificationShown, true);
-}
-
-}  // namespace
-
 namespace chromeos {
 namespace quick_unlock {
+namespace {
+
+constexpr char kPinDelegateId[] = "pinunlock_delegate";
+constexpr char kPinNotificationId[] = "pinunlock_notification";
+constexpr char kPinSetupUrl[] = "chrome://md-settings/lockScreen";
+
+}  // namespace
 
 QuickUnlockNotificationController::QuickUnlockNotificationController(
     Profile* profile)
@@ -53,9 +47,34 @@ QuickUnlockNotificationController::~QuickUnlockNotificationController() {
 }
 
 // static
-// TODO(http://crbug.com/291747): Add check for a policy that might disable
-// quick unlock.
-bool QuickUnlockNotificationController::ShouldShow(Profile* profile) {
+QuickUnlockNotificationController*
+QuickUnlockNotificationController::CreateForPin(Profile* profile) {
+  QuickUnlockNotificationController* controller =
+      new QuickUnlockNotificationController(profile);
+
+  // Set the PIN notification parameters.
+  controller->params_.delegate_id = kPinDelegateId;
+  controller->params_.title_message_id =
+      IDS_ASH_QUICK_UNLOCK_NOTIFICATION_TITLE;
+  controller->params_.body_message_id = IDS_ASH_QUICK_UNLOCK_NOTIFICATION_BODY;
+  controller->params_.icon_id = IDR_SCREENSHOT_NOTIFICATION_ICON;
+  controller->params_.notifier = ash::system_notifier::kNotifierQuickUnlock;
+  controller->params_.feature_name_id =
+      IDS_MESSAGE_CENTER_NOTIFIER_QUICK_UNLOCK_FEATURE_NAME;
+  controller->params_.notification_id = kPinNotificationId;
+  controller->params_.url = GURL(kPinSetupUrl);
+  controller->params_.was_shown_pref_id =
+      prefs::kQuickUnlockFeatureNotificationShown;
+
+  controller->should_show_notification_callback_ =
+      base::Bind(&QuickUnlockNotificationController::ShouldShowPinNotification);
+
+  return controller;
+}
+
+// static
+bool QuickUnlockNotificationController::ShouldShowPinNotification(
+    Profile* profile) {
   // Do not show notification if this is a guest session.
   if (profile->IsGuestSession())
     return false;
@@ -65,6 +84,11 @@ bool QuickUnlockNotificationController::ShouldShow(Profile* profile) {
           prefs::kQuickUnlockFeatureNotificationShown)) {
     return false;
   }
+
+  // Do not show notification if policy does not allow PIN, or if user is
+  // supervised.
+  if (!IsPinEnabled(profile->GetPrefs()))
+    return false;
 
   // Do not show the notification if the pin is already set.
   PinStorage* pin_storage = PinStorageFactory::GetForProfile(profile);
@@ -77,7 +101,7 @@ bool QuickUnlockNotificationController::ShouldShow(Profile* profile) {
 
 // NotificationDelegate override:
 std::string QuickUnlockNotificationController::id() const {
-  return kDelegateId;
+  return params_.delegate_id;
 }
 
 void QuickUnlockNotificationController::Observe(
@@ -98,36 +122,40 @@ void QuickUnlockNotificationController::Observe(
 
   // The user may have enabled the quick unlock feature during the current
   // session and after the notificaiton controller has already been initialized.
-  if (!ShouldShow(profile_)) {
-    UpdatePreferenceForProfile(profile_);
+  DCHECK(!should_show_notification_callback_.is_null());
+  if (should_show_notification_callback_.Run(profile_)) {
+    SetNotificationPreferenceWasShown();
     return;
   }
 
-  // Create and add notification to notification manager.
-  std::unique_ptr<Notification> notification(CreateNotification());
+  std::unique_ptr<Notification> notification = CreateNotification();
   g_browser_process->notification_ui_manager()->Add(*notification, profile_);
 }
 
 // message_center::NotificationDelegate override:
 void QuickUnlockNotificationController::Close(bool by_user) {
   if (by_user)
-    UpdatePreferenceForProfile(profile_);
+    SetNotificationPreferenceWasShown();
 }
 
 // message_center::NotificationDelegate override:
 void QuickUnlockNotificationController::Click() {
-  chrome::NavigateParams params(profile_,
-                                GURL(kChromeAuthenticationSettingsURL),
+  chrome::NavigateParams params(profile_, params_.url,
                                 ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);
 
-  UpdatePreferenceForProfile(profile_);
+  SetNotificationPreferenceWasShown();
 
   // Remove the notification from tray.
   g_browser_process->notification_ui_manager()->CancelById(
       id(), NotificationUIManager::GetProfileID(profile_));
+}
+
+void QuickUnlockNotificationController::SetNotificationPreferenceWasShown() {
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(params_.was_shown_pref_id, true);
 }
 
 void QuickUnlockNotificationController::UnregisterObserver() {
@@ -139,21 +167,24 @@ void QuickUnlockNotificationController::UnregisterObserver() {
   }
 }
 
-Notification* QuickUnlockNotificationController::CreateNotification() {
-  return new Notification(
+std::unique_ptr<Notification>
+QuickUnlockNotificationController::CreateNotification() {
+  return base::MakeUnique<Notification>(
       message_center::NOTIFICATION_TYPE_SIMPLE,
-      l10n_util::GetStringUTF16(IDS_ASH_QUICK_UNLOCK_NOTIFICATION_TITLE),
-      l10n_util::GetStringUTF16(IDS_ASH_QUICK_UNLOCK_NOTIFICATION_BODY),
+      l10n_util::GetStringUTF16(params_.title_message_id),
+      l10n_util::GetStringUTF16(params_.body_message_id),
       // TODO(http://crbug.com/291747): Change this to actual icon for
       // quick unlock feature notification.
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_SCREENSHOT_NOTIFICATION_ICON),
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(params_.icon_id),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 ash::system_notifier::kNotifierQuickUnlock),
-      l10n_util::GetStringUTF16(
-          IDS_MESSAGE_CENTER_NOTIFIER_QUICK_UNLOCK_FEATURE_NAME),
-      GURL(), kNotificationId, message_center::RichNotificationData(), this);
+                                 params_.notifier),
+      l10n_util::GetStringUTF16(params_.feature_name_id), GURL(),
+      params_.notification_id, message_center::RichNotificationData(), this);
 }
 
-}  // namespace quick_unlock
+QuickUnlockNotificationController::NotificationParams::NotificationParams() {}
+
+QuickUnlockNotificationController::NotificationParams::~NotificationParams() {}
+
+}  // quick_unlock
 }  // namespace chromeos

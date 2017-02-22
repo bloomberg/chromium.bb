@@ -10,9 +10,10 @@
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "url/gurl.h"
 
-class Profile;
 class Notification;
+class Profile;
 
 namespace chromeos {
 namespace quick_unlock {
@@ -22,30 +23,54 @@ namespace quick_unlock {
 class QuickUnlockNotificationController : public NotificationDelegate,
                                           public content::NotificationObserver {
  public:
-  explicit QuickUnlockNotificationController(Profile* profile);
+  static QuickUnlockNotificationController* CreateForPin(Profile* profile);
 
   // Returns true if the notification needs to be displayed for the given
   // |profile|.
-  static bool ShouldShow(Profile* profile);
+  static bool ShouldShowPinNotification(Profile* profile);
 
-  // content::NotificationObserver implementation.
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
  private:
+  // Parameters that differ between two quick unlock notifications.
+  struct NotificationParams {
+    NotificationParams();
+    ~NotificationParams();
+
+    std::string delegate_id;
+    int title_message_id;
+    int body_message_id;
+    int icon_id;
+    std::string notifier;
+    int feature_name_id;
+    std::string notification_id;
+    GURL url;
+    std::string was_shown_pref_id;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(NotificationParams);
+  };
+
+  explicit QuickUnlockNotificationController(Profile* profile);
   ~QuickUnlockNotificationController() override;
 
-  // NotificationDelegate overrides:
+  // NotificationDelegate:
   void Close(bool by_user) override;
   void Click() override;
   std::string id() const override;
 
-  Notification* CreateNotification();
+  std::unique_ptr<Notification> CreateNotification();
+  void SetNotificationPreferenceWasShown();
   void UnregisterObserver();
 
   Profile* profile_;
   content::NotificationRegistrar registrar_;
+  NotificationParams params_;
+  // Function that determines whether this notification should be shown or not.
+  base::Callback<bool(Profile*)> should_show_notification_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockNotificationController);
 };
