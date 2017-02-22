@@ -20,9 +20,9 @@ body { margin: 0; padding: 0; }
   </svg>
 </svg>
 <script>
-function assert_matrix_equals(actual, expected) {
+function assert_matrix_approx_equals(actual, expected) {
   for (let prop of [ 'a', 'b', 'c', 'd', 'e', 'f'])
-    assert_equals(actual[prop], expected[prop], prop);
+    assert_approx_equals(actual[prop], expected[prop], 5e-6, prop);
 }
 
 async_test(t => {
@@ -30,14 +30,14 @@ async_test(t => {
     eventSender.zoomPageIn();
     eventSender.zoomPageIn();
 
-    assert_matrix_equals(document.getElementById('svg1').getScreenCTM(),
-                         { a: 1, b: 0, c: 0, d: 1, e: 0, f: 100 });
-    assert_matrix_equals(document.getElementById('svg2').getScreenCTM(),
-                         { a: 1, b: 0, c: 0, d: 1, e: 100, f: 200 });
-    assert_matrix_equals(document.getElementById('svg3').getScreenCTM(),
-                         { a: 1, b: 0, c: 0, d: 1, e: 200, f: 300 });
-    assert_matrix_equals(document.getElementById('svg4').getScreenCTM(),
-                         { a: 1, b: 0, c: 0, d: 1, e: 300, f: 400 });
+    assert_matrix_approx_equals(document.getElementById('svg1').getScreenCTM(),
+                                { a: 1, b: 0, c: 0, d: 1, e: 0, f: 100 });
+    assert_matrix_approx_equals(document.getElementById('svg2').getScreenCTM(),
+                                { a: 1, b: 0, c: 0, d: 1, e: 100, f: 200 });
+    assert_matrix_approx_equals(document.getElementById('svg3').getScreenCTM(),
+                                { a: 1, b: 0, c: 0, d: 1, e: 200, f: 300 });
+    assert_matrix_approx_equals(document.getElementById('svg4').getScreenCTM(),
+                                { a: 1, b: 0, c: 0, d: 1, e: 300, f: 400 });
   }));
 });
 </script>

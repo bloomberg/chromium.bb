@@ -23,7 +23,9 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/svg/SVGElementRareData.h"
 #include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGRectTearOff.h"
@@ -71,7 +73,7 @@ AffineTransform SVGGraphicsElement::computeCTM(
       break;
 
     ctm = toSVGElement(currentElement)
-              ->localCoordinateSpaceTransform(mode)
+              ->localCoordinateSpaceTransform()
               .multiply(ctm);
 
     switch (mode) {
@@ -84,7 +86,7 @@ AffineTransform SVGGraphicsElement::computeCTM(
         done = currentElement == ancestor;
         break;
       default:
-        ASSERT(mode == ScreenScope);
+        NOTREACHED();
         break;
     }
   }
@@ -99,7 +101,38 @@ AffineTransform SVGGraphicsElement::getCTM(
 
 AffineTransform SVGGraphicsElement::getScreenCTM(
     StyleUpdateStrategy styleUpdateStrategy) {
-  return computeCTM(ScreenScope, styleUpdateStrategy);
+  if (styleUpdateStrategy == AllowStyleUpdate)
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+  TransformationMatrix transform;
+  if (LayoutObject* layoutObject = this->layoutObject()) {
+    // Adjust for the zoom level factored into CSS coordinates (WK bug #96361).
+    transform.scale(1.0 / layoutObject->styleRef().effectiveZoom());
+
+    // Origin in the document. (This, together with the inverse-scale above,
+    // performs the same operation as
+    // Document::adjustFloatRectForScrollAndAbsoluteZoom, but in transformation
+    // matrix form.)
+    if (FrameView* view = document().view()) {
+      LayoutRect visibleContentRect(view->visibleContentRect());
+      transform.translate(-visibleContentRect.x(), -visibleContentRect.y());
+    }
+
+    // Apply transforms from our ancestor coordinate space, including any
+    // non-SVG ancestor transforms.
+    transform.multiply(layoutObject->localToAbsoluteTransform());
+
+    // At the SVG/HTML boundary (aka LayoutSVGRoot), we need to apply the
+    // localToBorderBoxTransform to map an element from SVG viewport
+    // coordinates to CSS box coordinates.
+    if (layoutObject->isSVGRoot()) {
+      transform.multiply(
+          toLayoutSVGRoot(layoutObject)->localToBorderBoxTransform());
+    }
+  }
+  // Drop any potential non-affine parts, because we're not able to convey that
+  // information further anyway until getScreenCTM returns a DOMMatrix (4x4
+  // matrix.)
+  return transform.toAffineTransform();
 }
 
 SVGMatrixTearOff* SVGGraphicsElement::getCTMFromJavascript() {

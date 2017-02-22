@@ -216,8 +216,7 @@ void SVGPatternElement::collectPatternAttributes(
   }
 }
 
-AffineTransform SVGPatternElement::localCoordinateSpaceTransform(
-    SVGElement::CTMScope) const {
+AffineTransform SVGPatternElement::localCoordinateSpaceTransform() const {
   return calculateTransform(SVGElement::ExcludeMotionTransform);
 }
 
