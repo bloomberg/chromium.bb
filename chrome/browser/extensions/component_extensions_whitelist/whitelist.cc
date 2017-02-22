@@ -40,6 +40,7 @@ bool IsComponentExtensionWhitelisted(const std::string& extension_id) {
     extension_misc::kChromeVoxExtensionId,
     extension_misc::kSelectToSpeakExtensionId,
     extension_misc::kSpeechSynthesisExtensionId,
+    extension_misc::kSwitchAccessExtensionId,
     extension_misc::kZIPUnpackerExtensionId,
 #endif
   };

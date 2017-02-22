@@ -63,6 +63,8 @@ const char kChromeVoxExtensionId[] = "mndnfokpggljbaajbnioimlmbfngpief";
 const char kChromeVoxExtensionPath[] = "chromeos/chromevox";
 const char kSelectToSpeakExtensionId[] = "klbcgckkldhdhonijdbnhhaiedfkllef";
 const char kSelectToSpeakExtensionPath[] = "chromeos/select_to_speak";
+const char kSwitchAccessExtensionId[] = "pmehocpgjmkenlokgjfkaichfjdhpeol";
+const char kSwitchAccessExtensionPath[] = "chromeos/switch_access";
 const char kGuestManifestFilename[] = "manifest_guest.json";
 const char kBrailleImeExtensionId[] =
     "jddehjeebkoimngcbdkaahpobgicbffp";

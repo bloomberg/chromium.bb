@@ -1361,6 +1361,7 @@ group("extra_resources") {
   if (is_chromeos) {
     public_deps += [ "//chrome/browser/resources/chromeos/chromevox" ]
     public_deps += [ "//chrome/browser/resources/chromeos/select_to_speak" ]
+    public_deps += [ "//chrome/browser/resources/chromeos/switch_access" ]
   }
 
   if (enable_extensions) {

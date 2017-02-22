@@ -418,6 +418,8 @@ class AccessibilityManager
   std::unique_ptr<chromeos::SelectToSpeakEventHandler>
       select_to_speak_event_handler_;
 
+  std::unique_ptr<AccessibilityExtensionLoader> switch_access_loader_;
+
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);

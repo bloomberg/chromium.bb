@@ -1,0 +1,23 @@
+{
+{% if key is defined %}
+  "key": "{{key}}",
+{% endif %}
+  "manifest_version": 2,
+  "name": "TODO: Translated Switch access name",
+  "version": "{{set_version}}",
+  "description": "TODO: Translated Switch access description",
+{% if is_guest_manifest == '1' %}
+  "incognito": "split",
+{% endif %}
+  "background": {
+    "scripts": [
+      "switch_access.js"
+    ]
+  },
+  "permissions": [
+    "accessibilityPrivate"
+  ],
+  "automation": {
+    "desktop": true
+  }
+}

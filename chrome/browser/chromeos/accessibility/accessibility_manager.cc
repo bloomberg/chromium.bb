@@ -314,6 +314,10 @@ AccessibilityManager::AccessibilityManager()
       extension_misc::kSelectToSpeakExtensionId,
       resources_path.Append(extension_misc::kSelectToSpeakExtensionPath),
       base::Closure()));
+  switch_access_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
+      extension_misc::kSwitchAccessExtensionId,
+      resources_path.Append(extension_misc::kSwitchAccessExtensionPath),
+      base::Closure()));
 }
 
 AccessibilityManager::~AccessibilityManager() {
@@ -925,7 +929,11 @@ void AccessibilityManager::UpdateSwitchAccessFromPref() {
     return;
   switch_access_enabled_ = enabled;
 
-  // TODO(dmazzoni): implement feature here.
+  if (enabled) {
+    switch_access_loader_->Load(profile_, base::Closure() /* done_cb */);
+  } else {
+    switch_access_loader_->Unload();
+  }
 }
 
 void AccessibilityManager::UpdateAccessibilityHighlightingFromPrefs() {
