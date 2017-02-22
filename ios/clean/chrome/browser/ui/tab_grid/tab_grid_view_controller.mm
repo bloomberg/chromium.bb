@@ -96,6 +96,10 @@ const CGFloat kToolbarHeight = 64.0f;
   [self.view addSubview:self.floatingNewTabButton];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+  return UIStatusBarStyleLightContent;
+}
+
 #pragma mark - UICollectionViewDataSource methods
 
 - (NSInteger)numberOfSectionsInCollectionView:

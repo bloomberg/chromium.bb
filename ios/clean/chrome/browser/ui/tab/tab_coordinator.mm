@@ -13,6 +13,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
+#import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
@@ -68,6 +69,20 @@ const BOOL kUseBottomToolbar = NO;
 
   self.viewController.toolbarViewController = toolbarCoordinator.viewController;
   self.viewController.contentViewController = webCoordinator.viewController;
+
+  // PLACEHOLDER: Replace this placeholder with an actual tab strip view
+  // controller.
+  UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
+  [button addTarget:nil
+                action:@selector(showTabGrid:)
+      forControlEvents:UIControlEventTouchUpInside];
+  [button setTitle:@"Tab grid" forState:UIControlStateNormal];
+  button.frame = CGRectMake(10, 10, 100, 100);
+
+  UIViewController* tabStripViewController = [[UIViewController alloc] init];
+  tabStripViewController.view.backgroundColor = [UIColor blackColor];
+  [tabStripViewController.view addSubview:button];
+  self.viewController.tabStripViewController = tabStripViewController;
 
   [self.context.baseViewController presentViewController:self.viewController
                                                 animated:self.context.animated

@@ -14,9 +14,8 @@
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
 #import "ios/clean/chrome/browser/ui/presenters/menu_presentation_delegate.h"
 
-// Base class for a view controller that contains a content view (generally
-// some kind of web view, but nothing in this class assumes that) and a toolbar
-// view, each managed by their own view controllers.
+// Abstract base class for a view controller that contains several views,
+// each managed by their own view controllers.
 // Subclasses manage the specific layout of these view controllers.
 @interface TabContainerViewController
     : UIViewController<MenuPresentationDelegate, ZoomTransitionDelegate>
@@ -30,6 +29,11 @@
 // height (determined internally by the tab container), but will span the
 // width of the tab.
 @property(nonatomic, strong) UIViewController* toolbarViewController;
+
+// View controller showing the tab strip. It will be of a fixed
+// height (determined internally by the tab container), but will span the
+// width of the tab.
+@property(nonatomic, strong) UIViewController* tabStripViewController;
 
 @end
 

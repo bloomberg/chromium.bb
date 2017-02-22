@@ -16,6 +16,7 @@ source_set("tab") {
     "//base",
     "//ios/clean/chrome/browser",
     "//ios/clean/chrome/browser/ui",
+    "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/presenters",
     "//ios/clean/chrome/browser/ui/toolbar",
