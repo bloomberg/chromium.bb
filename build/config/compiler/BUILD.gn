@@ -1602,7 +1602,12 @@ config("afdo") {
 # Full symbols.
 config("symbols") {
   if (is_win) {
-    cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
+    if (use_goma) {
+      # Note that this requires is_win_fastlink, enforced elsewhere.
+      cflags = [ "/Z7" ]  # Debug information in the .obj files.
+    } else {
+      cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
+    }
 
     if (is_win_fastlink) {
       # Tell VS 2015+ to create a PDB that references debug
