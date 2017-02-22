@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/media_galleries/chromeos/mtp_device_task_helper_map_service.h"
 #include "chrome/browser/media_galleries/chromeos/snapshot_file_details.h"
 #include "net/base/io_buffer.h"
@@ -349,9 +350,11 @@ void CloseFileDescriptor(const int file_descriptor) {
 
 // Deletes a temporary file |file_path|.
 void DeleteTemporaryFile(const base::FilePath& file_path) {
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(base::IgnoreResult(base::DeleteFile), file_path,
-                            false /* not recursive*/));
+  base::PostTaskWithTraits(FROM_HERE,
+                           base::TaskTraits().MayBlock().WithPriority(
+                               base::TaskPriority::BACKGROUND),
+                           base::Bind(base::IgnoreResult(base::DeleteFile),
+                                      file_path, false /* not recursive*/));
 }
 
 // A fake callback to be passed as CopyFileProgressCallback.
