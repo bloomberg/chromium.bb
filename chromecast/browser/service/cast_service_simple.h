@@ -8,21 +8,16 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chromecast/browser/cast_content_window.h"
+#include "chromecast/browser/cast_web_view.h"
 #include "chromecast/service/cast_service.h"
 #include "url/gurl.h"
-
-namespace content {
-class WebContents;
-}
 
 namespace chromecast {
 class CastWindowManager;
 
 namespace shell {
 
-class CastServiceSimple : public CastService,
-                          public CastContentWindow::Delegate {
+class CastServiceSimple : public CastService, public CastWebView::Delegate {
  public:
   CastServiceSimple(content::BrowserContext* browser_context,
                     PrefService* pref_service,
@@ -36,14 +31,17 @@ class CastServiceSimple : public CastService,
   void StartInternal() override;
   void StopInternal() override;
 
+  // CastWebView::Delegate implementation:
+  void OnPageStopped(int error_code) override;
+  void OnLoadingStateChanged(bool loading) override;
+
   // CastContentWindow::Delegate implementation:
   void OnWindowDestroyed() override;
   void OnKeyEvent(const ui::KeyEvent& key_event) override;
 
  private:
   CastWindowManager* const window_manager_;
-  std::unique_ptr<CastContentWindow> window_;
-  std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<CastWebView> cast_web_view_;
   GURL startup_url_;
 
   DISALLOW_COPY_AND_ASSIGN(CastServiceSimple);

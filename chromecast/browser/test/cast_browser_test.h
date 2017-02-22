@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chromecast/browser/cast_content_window.h"
+#include "chromecast/browser/cast_web_view.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 
@@ -24,8 +24,7 @@ namespace shell {
 // case, then shuts down the entire shell.
 // Note that this process takes 7-10 seconds per test case on Chromecast, so
 // fewer test cases with more assertions are preferable.
-class CastBrowserTest : public content::BrowserTestBase,
-                        CastContentWindow::Delegate {
+class CastBrowserTest : public content::BrowserTestBase, CastWebView::Delegate {
  protected:
   CastBrowserTest();
   ~CastBrowserTest() override;
@@ -39,12 +38,13 @@ class CastBrowserTest : public content::BrowserTestBase,
   content::WebContents* NavigateToURL(const GURL& url);
 
  private:
-  // CastContentWindow::Delegate implementation:
+  // CastWebView::Delegate implementation:
+  void OnPageStopped(int error_code) override;
+  void OnLoadingStateChanged(bool loading) override;
   void OnWindowDestroyed() override;
   void OnKeyEvent(const ui::KeyEvent& key_event) override;
 
-  std::unique_ptr<CastContentWindow> window_;
-  std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<CastWebView> cast_web_view_;
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserTest);
 };

@@ -9,19 +9,16 @@
 
 #include "base/macros.h"
 #include "chromecast/browser/cast_content_window.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace content {
-class BrowserContext;
 class WebContents;
 }
 
 namespace chromecast {
 namespace shell {
 
-class CastContentWindowLinux : public CastContentWindow,
-                               public content::WebContentsObserver {
+class CastContentWindowLinux : public CastContentWindow {
  public:
   // Removes the window from the screen.
   ~CastContentWindowLinux() override;
@@ -30,19 +27,6 @@ class CastContentWindowLinux : public CastContentWindow,
   void SetTransparent() override;
   void ShowWebContents(content::WebContents* web_contents,
                        CastWindowManager* window_manager) override;
-  std::unique_ptr<content::WebContents> CreateWebContents(
-      content::BrowserContext* browser_context,
-      scoped_refptr<content::SiteInstance> site_instance) override;
-
-  // content::WebContentsObserver implementation:
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void DidFirstVisuallyNonEmptyPaint() override;
-  void MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId& id) override;
-  void MediaStoppedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId& id) override;
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
  private:
   friend class CastContentWindow;

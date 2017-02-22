@@ -9,11 +9,9 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/filename_util.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace chromecast {
 namespace shell {
@@ -60,25 +58,23 @@ void CastServiceSimple::StartInternal() {
     return;
   }
 
-  window_ = CastContentWindow::Create(this);
-  web_contents_ = window_->CreateWebContents(browser_context());
-  window_->ShowWebContents(web_contents_.get(), window_manager_);
-
-  web_contents_->GetController().LoadURL(startup_url_, content::Referrer(),
-                                         ui::PAGE_TRANSITION_TYPED,
-                                         std::string());
-  web_contents_->Focus();
+  cast_web_view_ = base::MakeUnique<CastWebView>(this, browser_context(),
+                                                 /*site_instance*/ nullptr,
+                                                 /*transparent*/ false);
+  cast_web_view_->Show(window_manager_);
+  cast_web_view_->LoadUrl(startup_url_);
 }
 
 void CastServiceSimple::StopInternal() {
-  if (web_contents_) {
-    web_contents_->ClosePage();
-    web_contents_.reset();
+  if (cast_web_view_) {
+    cast_web_view_->ClosePage();
   }
-  if (window_) {
-    window_.reset();
-  }
+  cast_web_view_.reset();
 }
+
+void CastServiceSimple::OnPageStopped(int error_code) {}
+
+void CastServiceSimple::OnLoadingStateChanged(bool loading) {}
 
 void CastServiceSimple::OnWindowDestroyed() {}
 

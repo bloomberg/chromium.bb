@@ -7,13 +7,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ptr_util.h"
-#include "chromecast/base/metrics/cast_metrics_helper.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
-#include "ipc/ipc_message.h"
 #include "jni/CastContentWindowAndroid_jni.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -44,7 +39,6 @@ std::unique_ptr<CastContentWindow> CastContentWindow::Create(
 CastContentWindowAndroid::CastContentWindowAndroid(
     CastContentWindow::Delegate* delegate)
     : delegate_(delegate),
-      transparent_(false),
       java_window_(CreateJavaWindow(reinterpret_cast<jlong>(this))) {
   DCHECK(delegate_);
 }
@@ -54,9 +48,7 @@ CastContentWindowAndroid::~CastContentWindowAndroid() {
   Java_CastContentWindowAndroid_onNativeDestroyed(env, java_window_.obj());
 }
 
-void CastContentWindowAndroid::SetTransparent() {
-  transparent_ = true;
-}
+void CastContentWindowAndroid::SetTransparent() {}
 
 void CastContentWindowAndroid::ShowWebContents(
     content::WebContents* web_contents,
@@ -68,55 +60,6 @@ void CastContentWindowAndroid::ShowWebContents(
 
   Java_CastContentWindowAndroid_showWebContents(env, java_window_.obj(),
                                                 java_web_contents.obj());
-}
-
-std::unique_ptr<content::WebContents>
-CastContentWindowAndroid::CreateWebContents(
-    content::BrowserContext* browser_context,
-    scoped_refptr<content::SiteInstance> site_instance) {
-  CHECK(display::Screen::GetScreen());
-  gfx::Size display_size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().size();
-
-  content::WebContents::CreateParams create_params(browser_context, nullptr);
-  create_params.routing_id = MSG_ROUTING_NONE;
-  create_params.initial_size = display_size;
-  create_params.site_instance = site_instance;
-  std::unique_ptr<content::WebContents> web_contents(
-      content::WebContents::Create(create_params));
-
-  content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
-  prefs->use_video_overlay_for_embedded_encrypted_video = true;
-  web_contents->GetRenderViewHost()->SyncRendererPrefs();
-
-  content::WebContentsObserver::Observe(web_contents.get());
-  return web_contents;
-}
-
-void CastContentWindowAndroid::DidFirstVisuallyNonEmptyPaint() {
-  metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstPaint();
-}
-
-void CastContentWindowAndroid::MediaStartedPlaying(
-    const MediaPlayerInfo& media_info,
-    const MediaPlayerId& id) {
-  metrics::CastMetricsHelper::GetInstance()->LogMediaPlay();
-}
-
-void CastContentWindowAndroid::MediaStoppedPlaying(
-    const MediaPlayerInfo& media_info,
-    const MediaPlayerId& id) {
-  metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
-}
-
-void CastContentWindowAndroid::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  content::RenderWidgetHostView* view =
-      render_view_host->GetWidget()->GetView();
-  if (view) {
-    view->SetBackgroundColor(transparent_ ? SK_ColorTRANSPARENT
-                                          : SK_ColorBLACK);
-  }
 }
 
 void CastContentWindowAndroid::OnActivityStopped(

@@ -12,10 +12,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chromecast/browser/cast_content_window.h"
-#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
-class BrowserContext;
 class WebContents;
 }
 
@@ -24,8 +22,7 @@ namespace shell {
 
 // Android implementation of CastContentWindow, which displays WebContents in
 // CastWebContentsActivity.
-class CastContentWindowAndroid : public CastContentWindow,
-                                 public content::WebContentsObserver {
+class CastContentWindowAndroid : public CastContentWindow {
  public:
   static bool RegisterJni(JNIEnv* env);
 
@@ -35,17 +32,6 @@ class CastContentWindowAndroid : public CastContentWindow,
   void SetTransparent() override;
   void ShowWebContents(content::WebContents* web_contents,
                        CastWindowManager* window_manager) override;
-  std::unique_ptr<content::WebContents> CreateWebContents(
-      content::BrowserContext* browser_context,
-      scoped_refptr<content::SiteInstance> site_instance) override;
-
-  // content::WebContentsObserver implementation:
-  void DidFirstVisuallyNonEmptyPaint() override;
-  void MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId& id) override;
-  void MediaStoppedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId& id) override;
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   // Called through JNI.
   void OnActivityStopped(JNIEnv* env,
@@ -61,7 +47,6 @@ class CastContentWindowAndroid : public CastContentWindow,
   explicit CastContentWindowAndroid(CastContentWindow::Delegate* delegate);
 
   CastContentWindow::Delegate* const delegate_;
-  bool transparent_;
   base::android::ScopedJavaGlobalRef<jobject> java_window_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentWindowAndroid);

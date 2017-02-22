@@ -34,8 +34,7 @@ void CastBrowserTest::SetUp() {
 }
 
 void CastBrowserTest::TearDownOnMainThread() {
-  web_contents_.reset();
-  window_.reset();
+  cast_web_view_.reset();
 
   BrowserTestBase::TearDownOnMainThread();
 }
@@ -60,21 +59,24 @@ void CastBrowserTest::RunTestOnMainThreadLoop() {
 }
 
 content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
-  window_ = CastContentWindow::Create(this);
+  cast_web_view_ = base::WrapUnique(new CastWebView(
+      this, CastBrowserProcess::GetInstance()->browser_context(), nullptr,
+      false /*transparent*/));
 
-  web_contents_ = window_->CreateWebContents(
-      CastBrowserProcess::GetInstance()->browser_context());
-  content::WaitForLoadStop(web_contents_.get());
+  content::WebContents* web_contents = cast_web_view_->web_contents();
+  content::WaitForLoadStop(web_contents);
+  content::TestNavigationObserver same_tab_observer(web_contents, 1);
 
-  content::TestNavigationObserver same_tab_observer(web_contents_.get(), 1);
-  content::NavigationController::LoadURLParams params(url);
-  params.transition_type = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  web_contents_->GetController().LoadURLWithParams(params);
+  cast_web_view_->LoadUrl(url);
+
   same_tab_observer.Wait();
 
-  return web_contents_.get();
+  return web_contents;
 }
+
+void CastBrowserTest::OnPageStopped(int reason) {}
+
+void CastBrowserTest::OnLoadingStateChanged(bool loading) {}
 
 void CastBrowserTest::OnWindowDestroyed() {}
 
