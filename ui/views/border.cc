@@ -10,8 +10,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/paint/paint_flags.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 
@@ -42,18 +44,26 @@ SolidSidedBorder::SolidSidedBorder(const gfx::Insets& insets, SkColor color)
 }
 
 void SolidSidedBorder::Paint(const View& view, gfx::Canvas* canvas) {
-  // Top border.
-  canvas->FillRect(gfx::Rect(0, 0, view.width(), insets_.top()), color_);
-  // Left border.
-  canvas->FillRect(gfx::Rect(0, insets_.top(), insets_.left(),
-                             view.height() - insets_.height()), color_);
-  // Bottom border.
-  canvas->FillRect(gfx::Rect(0, view.height() - insets_.bottom(), view.width(),
-                             insets_.bottom()), color_);
-  // Right border.
-  canvas->FillRect(gfx::Rect(view.width() - insets_.right(), insets_.top(),
-                             insets_.right(), view.height() - insets_.height()),
-                   color_);
+  // Undo DSF so that we can be sure to draw an integral number of pixels for
+  // the border. Integral scale factors should be unaffected by this, but for
+  // fractional scale factors this ensures sharp lines.
+  gfx::ScopedCanvas scoped(canvas);
+  float dsf = canvas->UndoDeviceScaleFactor();
+
+  gfx::RectF scaled_bounds;
+  if (view.layer()) {
+    scaled_bounds =
+        gfx::RectF(ui::ConvertRectToPixel(view.layer(), view.GetLocalBounds()));
+  } else {
+    scaled_bounds = gfx::RectF(view.GetLocalBounds());
+    scaled_bounds.Scale(dsf);
+  }
+
+  // This scaling operation floors the inset values.
+  scaled_bounds.Inset(insets_.Scale(dsf));
+  canvas->sk_canvas()->clipRect(gfx::RectFToSkRect(scaled_bounds),
+                                SkClipOp::kDifference, true);
+  canvas->DrawColor(color_);
 }
 
 gfx::Insets SolidSidedBorder::GetInsets() const {
