@@ -2138,6 +2138,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   inline LayoutObject* paintInvalidationParent() const;
   LayoutObject* slowPaintInvalidationParentForTesting() const;
 
+  void invalidatePaintForSelection();
+
   RefPtr<ComputedStyle> m_style;
 
   // Oilpan: This untraced pointer to the owning Node is considered safe.

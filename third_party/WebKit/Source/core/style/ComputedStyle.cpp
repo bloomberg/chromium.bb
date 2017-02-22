@@ -573,6 +573,8 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
     diff.setNeedsPaintInvalidationSubtree();
   else if (diffNeedsPaintInvalidationObject(other))
     diff.setNeedsPaintInvalidationObject();
+  else if (diffNeedsPaintInvalidationSelection(other))
+    diff.setNeedsPaintInvalidationSelection();
 
   updatePropertySpecificDifferences(other, diff);
 
@@ -1019,6 +1021,12 @@ bool ComputedStyle::diffNeedsPaintInvalidationObjectForPaintImage(
   }
 
   return false;
+}
+
+bool ComputedStyle::diffNeedsPaintInvalidationSelection(
+    const ComputedStyle& other) const {
+  return hasPseudoStyle(PseudoIdSelection) ||
+         other.hasPseudoStyle(PseudoIdSelection);
 }
 
 void ComputedStyle::updatePropertySpecificDifferences(

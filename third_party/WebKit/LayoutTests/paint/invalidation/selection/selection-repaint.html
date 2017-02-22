@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<style>
+    ::selection {
+        background-color: transparent;
+        color: red
+    }
+    .green::selection {
+        color: green
+    }
+</style>
+<span id="t1">This text should be green.</span>
+<script>
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+
+    function setSelection(textNode) {
+        window.getSelection().removeAllRanges();
+        var range = document.createRange();
+        range.setStart(textNode, 0);
+        range.setEnd(textNode, textNode.data.length);
+        window.getSelection().addRange(range);
+    }
+
+    setSelection(t1.firstChild);
+    requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+            t1.className = "green";
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }));
+</script>

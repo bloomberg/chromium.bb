@@ -1712,6 +1712,8 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style) {
   else if (diff.needsPaintInvalidationObject() ||
            updatedDiff.needsPaintInvalidationObject())
     setShouldDoFullPaintInvalidation();
+  else if (diff.needsPaintInvalidationSelection())
+    invalidatePaintForSelection();
 
   // Text nodes share style with their parents but the paint properties don't
   // apply to them, hence the !isText() check.
@@ -3465,6 +3467,31 @@ LayoutRect LayoutObject::debugRect() const {
     block->adjustChildDebugRect(rect);
 
   return rect;
+}
+
+void LayoutObject::invalidatePaintForSelection() {
+  // setSelectionState() propagates the state up the containing block chain to
+  // tell if a block contains selected nodes or not. If this layout object is
+  // not a block, we need to get the selection state from the containing block
+  // to tell if we have any selected node children.
+  LayoutBlock* block =
+      isLayoutBlock() ? toLayoutBlock(this) : containingBlock();
+  if (!block)
+    return;
+  if (!block->hasSelectedChildren())
+    return;
+
+  // ::selection style only applies to direct selection leaf children of the
+  // element on which the ::selection style is set. Thus, we only walk the
+  // direct children here.
+  for (LayoutObject* child = slowFirstChild(); child;
+       child = child->nextSibling()) {
+    if (!child->canBeSelectionLeaf())
+      continue;
+    if (child->getSelectionState() == SelectionNone)
+      continue;
+    child->setShouldInvalidateSelection();
+  }
 }
 
 }  // namespace blink
