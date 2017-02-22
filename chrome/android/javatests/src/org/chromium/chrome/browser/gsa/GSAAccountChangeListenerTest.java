@@ -1,0 +1,78 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.gsa;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.test.filters.SmallTest;
+import android.test.InstrumentationTestCase;
+
+import junit.framework.AssertionFailedError;
+
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+
+/** Tests for GSAAccountChangeListener. */
+public class GSAAccountChangeListenerTest extends InstrumentationTestCase {
+    private static final String ACCOUNT_NAME = "me@gmail.com";
+    private static final String ACCOUNT_NAME2 = "you@gmail.com";
+    private static final String PERMISSION = "permission.you.dont.have";
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        RecordHistogram.setDisabledForTests(true);
+    }
+
+    @SmallTest
+    public void testReceivesBroadcastIntents() throws Exception {
+        final Context context = getInstrumentation().getTargetContext();
+        BroadcastReceiver receiver = new GSAAccountChangeListener.AccountChangeBroadcastReceiver();
+        context.registerReceiver(receiver,
+                new IntentFilter(GSAAccountChangeListener.ACCOUNT_UPDATE_BROADCAST_INTENT));
+
+        // Send a broadcast without the permission, should be received.
+        Intent intent = new Intent();
+        intent.setPackage(context.getPackageName());
+        intent.setAction(GSAAccountChangeListener.ACCOUNT_UPDATE_BROADCAST_INTENT);
+        intent.putExtra(GSAAccountChangeListener.BROADCAST_INTENT_ACCOUNT_NAME_EXTRA, ACCOUNT_NAME);
+        context.sendBroadcast(intent);
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                String currentAccount =
+                        GSAState.getInstance(context.getApplicationContext()).getGsaAccount();
+                return ACCOUNT_NAME.equals(currentAccount);
+            }
+        });
+
+        // A broadcast with a permission that Chrome doesn't hold should not be received.
+        context.registerReceiver(receiver,
+                new IntentFilter(GSAAccountChangeListener.ACCOUNT_UPDATE_BROADCAST_INTENT),
+                PERMISSION, null);
+        intent.putExtra(
+                GSAAccountChangeListener.BROADCAST_INTENT_ACCOUNT_NAME_EXTRA, ACCOUNT_NAME2);
+        context.sendBroadcast(intent, "permission.you.dont.have");
+
+        // This is ugly, but so is checking that some asynchronous call was never received.
+        try {
+            CriteriaHelper.pollUiThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    String currentAccount =
+                            GSAState.getInstance(context.getApplicationContext()).getGsaAccount();
+                    return ACCOUNT_NAME2.equals(currentAccount);
+                }
+            }, 1000, 100);
+        } catch (AssertionFailedError e) {
+            return;
+        }
+        fail("The broadcast was received.");
+    }
+}

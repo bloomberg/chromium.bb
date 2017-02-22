@@ -16,6 +16,7 @@ import android.os.Process;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
 /**
@@ -32,11 +33,13 @@ import org.chromium.base.metrics.RecordHistogram;
 public class GSAAccountChangeListener {
     // These are GSA constants.
     private static final String GSA_PACKAGE_NAME = "com.google.android.googlequicksearchbox";
-    private static final String ACCOUNT_UPDATE_BROADCAST_INTENT =
+    @VisibleForTesting
+    static final String ACCOUNT_UPDATE_BROADCAST_INTENT =
             "com.google.android.apps.now.account_update_broadcast";
     private static final String KEY_SSB_BROADCASTS_ACCOUNT_CHANGE_TO_CHROME =
             "ssb_service:ssb_broadcasts_account_change_to_chrome";
-    private static final String BROADCAST_INTENT_ACCOUNT_NAME_EXTRA = "account_name";
+    @VisibleForTesting
+    static final String BROADCAST_INTENT_ACCOUNT_NAME_EXTRA = "account_name";
     public static final String ACCOUNT_UPDATE_BROADCAST_PERMISSION =
             "com.google.android.apps.now.CURRENT_ACCOUNT_ACCESS";
 
@@ -47,6 +50,19 @@ public class GSAAccountChangeListener {
     private GSAServiceClient mClient;
 
     private boolean mAlreadyReportedHistogram;
+
+    @VisibleForTesting
+    static class AccountChangeBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (!ACCOUNT_UPDATE_BROADCAST_INTENT.equals(intent.getAction())) return;
+            String accountName = intent.getStringExtra(BROADCAST_INTENT_ACCOUNT_NAME_EXTRA);
+            RecordHistogram.recordEnumeratedHistogram(GSAServiceClient.ACCOUNT_CHANGE_HISTOGRAM,
+                    GSAServiceClient.ACCOUNT_CHANGE_SOURCE_BROADCAST,
+                    GSAServiceClient.ACCOUNT_CHANGE_SOURCE_COUNT);
+            GSAState.getInstance(context.getApplicationContext()).setGsaAccount(accountName);
+        }
+    }
 
     /** @return the instance of GSAAccountChangeListener. */
     public static GSAAccountChangeListener getInstance() {
@@ -70,18 +86,7 @@ public class GSAAccountChangeListener {
 
     private GSAAccountChangeListener(Context context) {
         Context applicationContext = context.getApplicationContext();
-        BroadcastReceiver accountChangeReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (!ACCOUNT_UPDATE_BROADCAST_INTENT.equals(intent.getAction())) return;
-                String accountName = intent.getStringExtra(BROADCAST_INTENT_ACCOUNT_NAME_EXTRA);
-                RecordHistogram.recordEnumeratedHistogram(GSAServiceClient.ACCOUNT_CHANGE_HISTOGRAM,
-                        GSAServiceClient.ACCOUNT_CHANGE_SOURCE_BROADCAST,
-                        GSAServiceClient.ACCOUNT_CHANGE_SOURCE_COUNT);
-                GSAState.getInstance(context.getApplicationContext()).setGsaAccount(accountName);
-            }
-        };
-        applicationContext.registerReceiver(accountChangeReceiver,
+        applicationContext.registerReceiver(new AccountChangeBroadcastReceiver(),
                 new IntentFilter(ACCOUNT_UPDATE_BROADCAST_INTENT),
                 ACCOUNT_UPDATE_BROADCAST_PERMISSION, null);
 
