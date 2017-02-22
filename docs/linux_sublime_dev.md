@@ -249,6 +249,19 @@ and hence is not useful on third_party projects that use another style.
 2. Select some text and press `Ctrl + Shift + C` to format, or select no text to
    format the entire file
 
+## CodeSearch Integration with Chromium X-Refs
+
+With [Chromium X-Refs](https://github.com/karlinjf/ChromiumXRefs/) you can
+perform [https://cs.chromium.org](https://cs.chromium.org] cross-reference
+searches in your editor. This gives you the call graph, overrides, references,
+declaration, and definition of most of the code. The results are as fresh as
+the search engine's index so uncomitted changes won't be reflected.
+
+More information on Chromium X-Ref's functionality (including keyboard and
+mouse shortcuts) can be found on the [Chromium X-Refs
+page](https://github.com/karlinjf/ChromiumXRefs/).
+
+
 ## Code Completion with SublimeClang (Linux Only)
 
 SublimeClang is a powerful autocompletion plugin for Sublime that uses the Clang
