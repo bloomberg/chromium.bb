@@ -4832,6 +4832,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_GLOBAL_MOTION
   }
 #if CONFIG_EC_MULTISYMBOL
+#if !CONFIG_EC_ADAPT
 #if CONFIG_NEW_TOKENSET
   av1_coef_head_cdfs(fc);
 #endif
@@ -4844,6 +4845,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if CONFIG_EC_MULTISYMBOL
   av1_set_mode_cdfs(cm);
 #endif
+#endif  // !CONFIG_EC_ADAPT
 #endif
 #if CONFIG_ANS
   aom_buf_ans_flush(header_bc);

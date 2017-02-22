@@ -173,8 +173,12 @@ typedef unsigned int av1_coeff_stats[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
 #define MODULUS_PARAM 13 /* Modulus parameter */
 
 struct AV1Common;
+struct frame_contexts;
 void av1_default_coef_probs(struct AV1Common *cm);
 void av1_adapt_coef_probs(struct AV1Common *cm);
+#if CONFIG_EC_ADAPT
+void av1_adapt_coef_cdfs(struct AV1Common *cm, struct frame_contexts *pre_fc);
+#endif
 #if CONFIG_SUBFRAME_PROB_UPDATE
 void av1_partial_adapt_probs(struct AV1Common *cm, int mi_row, int mi_col);
 #endif  // CONFIG_SUBFRAME_PROB_UPDATE
@@ -377,6 +381,21 @@ static INLINE aom_prob av1_mode_mv_merge_probs(aom_prob pre_prob,
   return mode_mv_merge_probs(pre_prob, ct);
 }
 
+#if CONFIG_EC_ADAPT
+void av1_average_tile_coef_cdfs(struct frame_contexts *fc,
+                                struct frame_contexts *ec_ctxs[],
+                                const int num_tiles);
+void av1_average_tile_mv_cdfs(struct frame_contexts *fc,
+                              struct frame_contexts *ec_ctxs[],
+                              const int num_tiles);
+void av1_average_tile_intra_cdfs(struct frame_contexts *fc,
+                                 struct frame_contexts *ec_ctxs[],
+                                 const int num_tiles);
+void av1_average_tile_inter_cdfs(struct AV1Common *cm,
+                                 struct frame_contexts *fc,
+                                 struct frame_contexts *ec_ctxs[],
+                                 const int num_tiles);
+#endif
 #ifdef __cplusplus
 }  // extern "C"
 #endif

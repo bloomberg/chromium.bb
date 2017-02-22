@@ -222,15 +222,15 @@ void av1_inc_mv(const MV *mv, nmv_context_counts *counts, const int usehp) {
 }
 
 void av1_adapt_mv_probs(AV1_COMMON *cm, int allow_hp) {
-  int i, j;
+  int i;
 #if CONFIG_REF_MV
   int idx;
+  int j;
   for (idx = 0; idx < NMV_CONTEXTS; ++idx) {
     nmv_context *fc = &cm->fc->nmvc[idx];
     const nmv_context *pre_fc =
         &cm->frame_contexts[cm->frame_context_idx].nmvc[idx];
     const nmv_context_counts *counts = &cm->counts.mv[idx];
-
     aom_tree_merge_probs(av1_mv_joint_tree, pre_fc->joints, counts->joints,
                          fc->joints);
     for (i = 0; i < 2; ++i) {
@@ -278,7 +278,6 @@ void av1_adapt_mv_probs(AV1_COMMON *cm, int allow_hp) {
                          comp->classes);
     aom_tree_merge_probs(av1_mv_class0_tree, pre_comp->class0, c->class0,
                          comp->class0);
-
     for (j = 0; j < MV_OFFSET_BITS; ++j)
       comp->bits[j] = av1_mode_mv_merge_probs(pre_comp->bits[j], c->bits[j]);
 
@@ -297,7 +296,7 @@ void av1_adapt_mv_probs(AV1_COMMON *cm, int allow_hp) {
 #endif
 }
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_EC_MULTISYMBOL && !CONFIG_EC_ADAPT
 void av1_set_mv_cdfs(nmv_context *ctx) {
   int i;
   int j;

@@ -4680,6 +4680,17 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
 }
 #endif  // DUMP_RECON_FRAMES
 
+#if CONFIG_EC_ADAPT
+
+static void make_update_tile_list_enc(AV1_COMP *cpi, const int tile_rows,
+                                      const int tile_cols,
+                                      FRAME_CONTEXT *ec_ctxs[]) {
+  int i;
+  for (i = 0; i < tile_rows * tile_cols; ++i)
+    ec_ctxs[i] = &cpi->tile_data[i].tctx;
+}
+
+#endif
 static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
                                       uint8_t *dest,
                                       unsigned int *frame_flags) {
@@ -4687,6 +4698,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   struct segmentation *const seg = &cm->seg;
   TX_SIZE t;
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *tile_ctxs[MAX_TILE_ROWS * MAX_TILE_COLS];
+#endif
 #if CONFIG_XIPHRC
   int frame_type;
   int drop_this_frame = 0;
@@ -4966,6 +4980,13 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #endif  // CONFIG_SUBFRAME_PROB_UPDATE
     av1_adapt_coef_probs(cm);
     av1_adapt_intra_frame_probs(cm);
+#if CONFIG_EC_ADAPT
+    make_update_tile_list_enc(cpi, cm->tile_rows, cm->tile_cols, tile_ctxs);
+    av1_average_tile_coef_cdfs(cpi->common.fc, tile_ctxs,
+                               cm->tile_rows * cm->tile_cols);
+    av1_average_tile_intra_cdfs(cpi->common.fc, tile_ctxs,
+                                cm->tile_rows * cm->tile_cols);
+#endif
 #if CONFIG_ADAPT_SCAN
     av1_adapt_scan_order(cm);
 #endif  // CONFIG_ADAPT_SCAN
@@ -4975,6 +4996,12 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
       av1_adapt_inter_frame_probs(cm);
       av1_adapt_mv_probs(cm, cm->allow_high_precision_mv);
+#if CONFIG_EC_ADAPT
+      av1_average_tile_inter_cdfs(&cpi->common, cpi->common.fc, tile_ctxs,
+                                  cm->tile_rows * cm->tile_cols);
+      av1_average_tile_mv_cdfs(cpi->common.fc, tile_ctxs,
+                               cm->tile_rows * cm->tile_cols);
+#endif
     }
   }
 
