@@ -171,4 +171,12 @@ public interface LocationBar extends UrlBarDelegate {
      */
     void setDefaultTextEditActionModeCallback(ToolbarActionModeCallback callback);
 
+    /**
+     * Returns whether the {@link UrlBar} must be queried for its location on screen when
+     * suggestions are being laid out by {@link SuggestionView}.
+     * TODO(dfalcantara): Revisit this after M58.
+     *
+     * @return Whether or not the {@link UrlBar} has to be explicitly checked for its location.
+     */
+    boolean mustQueryUrlBarLocationForSuggestions();
 }

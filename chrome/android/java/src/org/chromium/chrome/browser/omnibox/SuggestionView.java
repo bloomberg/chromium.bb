@@ -861,7 +861,7 @@ class SuggestionView extends ViewGroup {
         }
 
         private int getUrlBarLeftOffset() {
-            if (DeviceFormFactor.isTablet(getContext())) {
+            if (mLocationBar.mustQueryUrlBarLocationForSuggestions()) {
                 mUrlBar.getLocationInWindow(mViewPositionHolder);
                 return mViewPositionHolder[0];
             } else {

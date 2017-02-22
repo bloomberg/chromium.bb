@@ -2463,4 +2463,9 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public void setShowTitle(boolean showTitle) { }
+
+    @Override
+    public boolean mustQueryUrlBarLocationForSuggestions() {
+        return DeviceFormFactor.isTablet(getContext());
+    }
 }

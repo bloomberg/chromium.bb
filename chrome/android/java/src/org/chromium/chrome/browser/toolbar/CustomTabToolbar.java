@@ -759,4 +759,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         // This class has no menu button wrapper, so return the menu button instead.
         return mMenuButton;
     }
+
+    @Override
+    public boolean mustQueryUrlBarLocationForSuggestions() {
+        return false;
+    }
 }
