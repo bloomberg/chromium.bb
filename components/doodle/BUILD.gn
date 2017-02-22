@@ -6,6 +6,7 @@ static_library("doodle") {
   sources = [
     "doodle_fetcher.cc",
     "doodle_fetcher.h",
+    "doodle_types.h",
   ]
 
   deps = [
