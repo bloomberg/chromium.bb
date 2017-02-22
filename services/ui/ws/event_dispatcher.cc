@@ -50,6 +50,7 @@ EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
       mouse_cursor_in_non_client_area_(false) {}
 
 EventDispatcher::~EventDispatcher() {
+  SetMouseCursorSourceWindow(nullptr);
   if (capture_window_) {
     UnobserveWindow(capture_window_);
     capture_window_ = nullptr;
@@ -231,13 +232,12 @@ void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
   if (!mouse_button_down_) {
     DeepestWindow deepest_window =
         FindDeepestVisibleWindowForEvents(mouse_pointer_last_location_);
-    mouse_cursor_source_window_ = deepest_window.window;
+    SetMouseCursorSourceWindow(deepest_window.window);
     if (mouse_cursor_source_window_) {
       mouse_cursor_in_non_client_area_ = deepest_window.in_non_client_area;
     } else {
       gfx::Point location = mouse_pointer_last_location_;
-      mouse_cursor_source_window_ =
-          delegate_->GetRootWindowContaining(&location);
+      SetMouseCursorSourceWindow(delegate_->GetRootWindowContaining(&location));
       mouse_cursor_in_non_client_area_ = true;
     }
   }
@@ -308,6 +308,17 @@ void EventDispatcher::ProcessEvent(const ui::Event& event,
   return;
 }
 
+void EventDispatcher::SetMouseCursorSourceWindow(ServerWindow* window) {
+  if (mouse_cursor_source_window_ == window)
+    return;
+
+  if (mouse_cursor_source_window_)
+    UnobserveWindow(mouse_cursor_source_window_);
+  mouse_cursor_source_window_ = window;
+  if (mouse_cursor_source_window_)
+    ObserveWindow(mouse_cursor_source_window_);
+}
+
 void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event,
                                       AcceleratorMatchPhase match_phase) {
   Accelerator* post_target =
@@ -365,7 +376,7 @@ void EventDispatcher::ProcessPointerEvent(const ui::PointerEvent& event) {
   }
 
   if (capture_window_) {
-    mouse_cursor_source_window_ = capture_window_;
+    SetMouseCursorSourceWindow(capture_window_);
     DispatchToClient(capture_window_, capture_window_client_id_, event);
     return;
   }
@@ -376,12 +387,12 @@ void EventDispatcher::ProcessPointerEvent(const ui::PointerEvent& event) {
     const bool any_pointers_down = AreAnyPointersDown();
     UpdateTargetForPointer(pointer_id, event);
     if (is_mouse_event)
-      mouse_cursor_source_window_ = pointer_targets_[pointer_id].window;
+      SetMouseCursorSourceWindow(pointer_targets_[pointer_id].window);
 
     PointerTarget& pointer_target = pointer_targets_[pointer_id];
     if (pointer_target.is_pointer_down) {
       if (is_mouse_event)
-        mouse_cursor_source_window_ = pointer_target.window;
+        SetMouseCursorSourceWindow(pointer_target.window);
       if (!any_pointers_down) {
         if (pointer_target.window)
           delegate_->SetFocusedWindowFromEventDispatcher(pointer_target.window);
@@ -640,7 +651,7 @@ void EventDispatcher::OnWindowDestroyed(ServerWindow* window) {
   CancelPointerEventsToTarget(window);
 
   if (mouse_cursor_source_window_ == window)
-    mouse_cursor_source_window_ = nullptr;
+    SetMouseCursorSourceWindow(nullptr);
 }
 
 void EventDispatcher::OnDragCursorUpdated() {

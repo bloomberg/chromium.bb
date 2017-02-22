@@ -1801,6 +1801,20 @@ TEST_F(EventDispatcherTest, DontSendExitToSameClientWhenCaptureChanges) {
   EXPECT_FALSE(test_event_dispatcher_delegate()->has_queued_events());
 }
 
+TEST_F(EventDispatcherTest, MousePointerClearedOnDestroy) {
+  root_window()->set_event_targeting_policy(
+      mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+  std::unique_ptr<ServerWindow> c1 = CreateChildWindow(WindowId(1, 3));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  c1->SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  event_dispatcher()->SetMousePointerScreenLocation(gfx::Point(15, 15));
+  EXPECT_EQ(c1.get(), event_dispatcher()->mouse_cursor_source_window());
+  c1.reset();
+  EXPECT_EQ(nullptr, event_dispatcher()->mouse_cursor_source_window());
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace ui

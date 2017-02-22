@@ -168,6 +168,8 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
     bool is_pointer_down;
   };
 
+  void SetMouseCursorSourceWindow(ServerWindow* window);
+
   void ProcessKeyEvent(const ui::KeyEvent& event,
                        AcceleratorMatchPhase match_phase);
 
