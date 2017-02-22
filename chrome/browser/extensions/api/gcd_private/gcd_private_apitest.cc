@@ -90,6 +90,7 @@ class GcdPrivateAPITest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
         "ddchlicdkolnonkihahngkmmmjnjlkkf");
+    command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
   }
 
   std::unique_ptr<net::FakeURLFetcher> CreateFakeURLFetcher(
@@ -142,8 +143,7 @@ class GcdPrivateWithMdnsAPITest : public GcdPrivateAPITest {
       test_service_discovery_client_;
 };
 
-// Flaky on Linux(dbg). https://crbug.com/689305
-IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, DISABLED_DeviceInfo) {
+IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, DeviceInfo) {
   test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
                                                   sizeof(kAnnouncePacket));
   url_fetcher_factory_.SetFakeResponse(GURL("http://1.2.3.4:8888/privet/info"),

@@ -447,6 +447,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                     chrome::kTestUserProfileDir);
 #endif
+    command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
     WebUIBrowserTest::SetUpCommandLine(command_line);
   }
 
@@ -516,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, AddRowTest) {
 }
 
 // Flaky: http://crbug.com/660669.
-IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, DISABLED_RegisterTest) {
+IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
   TestMessageLoopCondition condition_token_claimed;
 
   ui_test_utils::NavigateToURL(browser(), GURL(
