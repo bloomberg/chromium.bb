@@ -7,11 +7,11 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension_builder.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -36,9 +36,10 @@ class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
                      const GetDebugLogsCallback& callback) override {
     // dup() is needed as the file descriptor will be closed on the client side.
     base::File* file_param = new base::File(dup(file_descriptor));
-    content::BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE, base::Bind(&GenerateTestLogDumpFile, test_file_,
-                              base::Owned(file_param)),
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits().MayBlock(),
+        base::Bind(&GenerateTestLogDumpFile, test_file_,
+                   base::Owned(file_param)),
         base::Bind(callback, true));
   }
 
