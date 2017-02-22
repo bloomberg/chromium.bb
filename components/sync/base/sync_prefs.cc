@@ -564,8 +564,11 @@ base::FilePath SyncPrefs::GetLocalSyncBackendDir() const {
     // this code and move the logic in its right place. See crbug/657810.
     CHECK(
         base::PathService::Get(base::DIR_APP_DATA, &local_sync_backend_folder));
-    local_sync_backend_folder =
-        local_sync_backend_folder.Append(FILE_PATH_LITERAL("Chrome/User Data"));
+
+    // TODO(pastarmovj): Quick and dirty solution for stage 1 of crbug/694464
+    // for merging back into Chrome 57.
+    local_sync_backend_folder = local_sync_backend_folder.Append(
+        FILE_PATH_LITERAL("Google/Chrome/User Data"));
   }
 #endif  // defined(OS_WIN)
   return local_sync_backend_folder;
