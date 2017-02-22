@@ -17,6 +17,7 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/mdc_floating_button+cr_tab_grid.h"
+#import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_collection_view_layout.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/ui_stack_view+cr_tab_grid.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,8 +25,6 @@
 #endif
 
 namespace {
-const CGFloat kSpace = 20.0f;
-const CGFloat kTabSize = 150.0f;
 // Height of toolbar in tab grid.
 const CGFloat kToolbarHeight = 64.0f;
 }
@@ -60,13 +59,8 @@ const CGFloat kToolbarHeight = 64.0f;
     [toolbar.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor]
   ]];
 
-  TabSwitcherPanelCollectionViewLayout* layout =
-      [[TabSwitcherPanelCollectionViewLayout alloc] init];
-  layout.minimumLineSpacing = kSpace;
-  layout.minimumInteritemSpacing = kSpace;
-  layout.sectionInset = UIEdgeInsetsMake(kSpace, kSpace, kSpace, kSpace);
-  layout.itemSize = CGSizeMake(kTabSize, kTabSize);
-
+  TabGridCollectionViewLayout* layout =
+      [[TabGridCollectionViewLayout alloc] init];
   UICollectionView* grid = [[UICollectionView alloc] initWithFrame:CGRectZero
                                               collectionViewLayout:layout];
   grid.translatesAutoresizingMaskIntoConstraints = NO;

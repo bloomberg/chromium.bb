@@ -29,6 +29,8 @@ source_set("tab_grid_ui") {
   sources = [
     "mdc_floating_button+cr_tab_grid.h",
     "mdc_floating_button+cr_tab_grid.mm",
+    "tab_grid_collection_view_layout.h",
+    "tab_grid_collection_view_layout.mm",
     "tab_grid_tab_cell.h",
     "tab_grid_tab_cell.mm",
     "tab_grid_view_controller.h",
