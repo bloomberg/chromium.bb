@@ -231,7 +231,7 @@ class AnalyzerResultMap:
           gpu_link = ''
           if 'GPU' in te_info:
             gpu_link = 'group=%40ToT%20GPU%20Mesa%20-%20chromium.org&'
-          dashboard_link = ('http://test-results.appspot.com/dashboards/'
+          dashboard_link = ('https://test-results.appspot.com/dashboards/'
                             'flakiness_dashboard.html#%stests=%s') % (
                                 gpu_link, test_name)
           return_str += '<li><a href="%s">%s</a> (%s) </li>' % (
@@ -430,7 +430,7 @@ def GetRevisionString(prev_time, current_time, diff_map):
           gpu_link = ''
           if 'GPU' in line:
             gpu_link = 'group=%40ToT%20GPU%20Mesa%20-%20chromium.org&'
-          dashboard_link = ('http://test-results.appspot.com/dashboards/'
+          dashboard_link = ('https://test-results.appspot.com/dashboards/'
                             'flakiness_dashboard.html#%stests=%s') % (
                                 gpu_link, test_name)
           line = line.replace(test_name, '<a href="%s">%s</a>' % (

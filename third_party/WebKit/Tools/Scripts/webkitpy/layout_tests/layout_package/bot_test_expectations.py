@@ -111,7 +111,7 @@ class ResultsJSON(object):
 
 class BotTestExpectationsFactory(object):
     RESULTS_URL_PREFIX = (
-        'http://test-results.appspot.com/testfile?master=chromium.webkit&'
+        'https://test-results.appspot.com/testfile?master=chromium.webkit&'
         'testtype=webkit_tests&name=results-small.json&builder=')
 
     def __init__(self, builders):

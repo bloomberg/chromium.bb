@@ -379,7 +379,7 @@ def UpdateDashboard(dashboard_file_location, test_group_name, data_map,
           '<tr><td><a href="%s">%s</a></td><td><a href="%s">dashboard</a>'
           '</td><td>%s</td></tr>') % (
               layouttest_root_path + testname, testname,
-              ('http://test-results.appspot.com/dashboards/'
+              ('https://test-results.appspot.com/dashboards/'
                'flakiness_dashboard.html#tests=%s') % testname,
               data_map[tg][0][testname]))
     file_object.write('</table>')

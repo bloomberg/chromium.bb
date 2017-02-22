@@ -143,7 +143,7 @@ class TestLayoutTestAnalyzerHelpers(unittest.TestCase):
                         '<li>jamesr@google.com</li>\n'
                         '<li>2011-09-01 18:00:23</li>\n'
                         '<ul><li>-<a href="http://webkit.org/b/63878">'
-                        'BUGWK63878</a> : <a href="http://test-results.'
+                        'BUGWK63878</a> : <a href="https://test-results.'
                         'appspot.com/dashboards/flakiness_dashboard.html#'
                         'tests=fast/dom/dom-constructors.html">fast/dom/'
                         'dom-constructors.html</a> = TEXT</li>\n</ul></ul>')
