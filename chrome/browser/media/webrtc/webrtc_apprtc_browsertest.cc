@@ -52,8 +52,11 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
 
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kUseFakeDeviceForMediaStream);
+    // This test fails on some Mac bots if no default devices are specified on
+    // the command line.
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kUseFakeDeviceForMediaStream,
+        "audio-input-default-id=default,video-input-default-id=default");
   }
 
   void TearDown() override {
