@@ -830,6 +830,12 @@ void FrameView::recalcOverflowAfterStyleChange() {
   if (needsLayout())
     return;
 
+  // If the visualViewport supplies scrollbars, we won't get a paint
+  // invalidation from computeScrollbarExistence so we need to force one
+  // TODO(bokan): We should avoid computeScrollbarExistence otherwise.
+  if (visualViewportSuppliesScrollbars())
+    layoutViewItem.setMayNeedPaintInvalidation();
+
   // TODO(pdr): This should be refactored to just block scrollbar updates as
   // we are not in a scrollbar update here and m_inUpdateScrollbars has other
   // side effects. This scope is only for preventing a synchronous layout from
