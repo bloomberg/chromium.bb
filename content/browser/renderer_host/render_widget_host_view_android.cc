@@ -440,13 +440,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   // layer is managed by the DelegatedFrameHost.
   view_.SetLayer(cc::Layer::Create());
   if (using_browser_compositor_) {
-    // This FrameSinkId must be unique with ContextProviderFactory's FrameSinkId
-    // allocation.
-    // TODO(crbug.com/685777): Centralize allocation in one place for easier
-    // maintenance.
-    cc::FrameSinkId frame_sink_id = cc::FrameSinkId(
-        base::checked_cast<uint32_t>(host_->GetProcess()->GetID()),
-        base::checked_cast<uint32_t>(host_->GetRoutingID()));
+    cc::FrameSinkId frame_sink_id =
+        host_->AllocateFrameSinkId(false /* is_guest_view_hack */);
     delegated_frame_host_.reset(new ui::DelegatedFrameHostAndroid(
         &view_, cached_background_color_, this, frame_sink_id));
   }

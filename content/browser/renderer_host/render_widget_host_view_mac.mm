@@ -470,20 +470,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
 
-  // GuestViews have two RenderWidgetHostViews and so we need to make sure
-  // we don't have FrameSinkId collisions.
-  // The FrameSinkId generated here must be unique with FrameSinkId allocated
-  // in ContextFactoryPrivate.
-  // TODO(crbug.com/685777): Centralize allocation in one place for easier
-  // maintenance.
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   cc::FrameSinkId frame_sink_id =
-      is_guest_view_hack_
-          ? factory->GetContextFactoryPrivate()->AllocateFrameSinkId()
-          : cc::FrameSinkId(base::checked_cast<uint32_t>(
-                                render_widget_host_->GetProcess()->GetID()),
-                            base::checked_cast<uint32_t>(
-                                render_widget_host_->GetRoutingID()));
+      render_widget_host_->AllocateFrameSinkId(is_guest_view_hack_);
   browser_compositor_.reset(
       new BrowserCompositorMac(this, this, render_widget_host_->is_hidden(),
                                [cocoa_view_ window], frame_sink_id));

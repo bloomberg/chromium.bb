@@ -8,6 +8,7 @@ cc_source_set("surface_id") {
   sources = [
     "frame_sink_id.cc",
     "frame_sink_id.h",
+    "frame_sink_id_allocator.h",
     "local_surface_id.cc",
     "local_surface_id.h",
     "surface_id.cc",

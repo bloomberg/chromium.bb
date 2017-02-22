@@ -25,6 +25,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
@@ -134,6 +135,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   }
 
   RenderWidgetHostOwnerDelegate* owner_delegate() { return owner_delegate_; }
+
+  cc::FrameSinkId AllocateFrameSinkId(bool is_guest_view_hack);
 
   // RenderWidgetHost implementation.
   void UpdateTextDirection(blink::WebTextDirection direction) override;

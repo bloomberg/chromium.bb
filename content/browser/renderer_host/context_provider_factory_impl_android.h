@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "cc/surfaces/frame_sink_id_allocator.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -104,7 +105,7 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
   base::OneShotTimer establish_gpu_channel_timeout_;
 
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
-  uint32_t next_sink_id_;
+  cc::FrameSinkIdAllocator frame_sink_id_allocator_;
 
   base::WeakPtrFactory<ContextProviderFactoryImpl> weak_factory_;
 

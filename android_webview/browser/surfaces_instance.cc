@@ -28,6 +28,9 @@
 namespace android_webview {
 
 namespace {
+// The client_id used here should not conflict with the client_id generated
+// from RenderWidgetHostImpl.
+constexpr uint32_t kDefaultClientId = 0u;
 SurfacesInstance* g_surfaces_instance = nullptr;
 }  // namespace
 
@@ -39,7 +42,8 @@ scoped_refptr<SurfacesInstance> SurfacesInstance::GetOrCreateInstance() {
 }
 
 SurfacesInstance::SurfacesInstance()
-    : next_client_id_(1u), frame_sink_id_(AllocateFrameSinkId()) {
+    : frame_sink_id_allocator_(kDefaultClientId),
+      frame_sink_id_(AllocateFrameSinkId()) {
   cc::RendererSettings settings;
 
   // Should be kept in sync with compositor_impl_android.cc.
@@ -93,7 +97,7 @@ void SurfacesInstance::DisplayOutputSurfaceLost() {
 }
 
 cc::FrameSinkId SurfacesInstance::AllocateFrameSinkId() {
-  return cc::FrameSinkId(next_client_id_++, 0 /* sink_id */);
+  return frame_sink_id_allocator_.NextFrameSinkId();
 }
 
 cc::SurfaceManager* SurfacesInstance::GetSurfaceManager() {

@@ -26,6 +26,10 @@ namespace content {
 
 namespace {
 
+// The client_id used here should not conflict with the client_id generated
+// from RenderWidgetHostImpl.
+constexpr uint32_t kDefaultClientId = 0u;
+
 ui::command_buffer_metrics::ContextType ToCommandBufferContextType(
     ui::ContextProviderFactory::ContextType context_type) {
   switch (context_type) {
@@ -66,7 +70,7 @@ ContextProviderFactoryImpl::ContextProviderFactoryImpl(
     : gpu_channel_factory_(gpu_channel_factory),
       in_handle_pending_requests_(false),
       in_shutdown_(false),
-      next_sink_id_(1u),
+      frame_sink_id_allocator_(kDefaultClientId),
       weak_factory_(this) {
   DCHECK(gpu_channel_factory_);
 }
@@ -136,12 +140,7 @@ cc::SurfaceManager* ContextProviderFactoryImpl::GetSurfaceManager() {
 }
 
 cc::FrameSinkId ContextProviderFactoryImpl::AllocateFrameSinkId() {
-  // The FrameSinkId generated here must be unique with
-  // RenderWidgetHostViewAndroid's
-  // FrameSinkId allocation.
-  // TODO(crbug.com/685777): Centralize allocation in one place for easier
-  // maintenance.
-  return cc::FrameSinkId(0 /* client_id */, next_sink_id_++);
+  return frame_sink_id_allocator_.NextFrameSinkId();
 }
 
 gpu::GpuMemoryBufferManager*

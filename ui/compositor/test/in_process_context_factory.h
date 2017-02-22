@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/frame_sink_id_allocator.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_image_factory.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -84,7 +85,7 @@ class InProcessContextFactory : public ContextFactory,
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   cc::TestImageFactory image_factory_;
   cc::TestTaskGraphRunner task_graph_runner_;
-  uint32_t next_surface_sink_id_;
+  cc::FrameSinkIdAllocator frame_sink_id_allocator_;
   bool use_test_surface_;
   bool context_factory_for_test_;
   cc::SurfaceManager* surface_manager_;

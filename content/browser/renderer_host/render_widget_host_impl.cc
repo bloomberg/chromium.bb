@@ -95,6 +95,10 @@
 
 #if defined(OS_ANDROID)
 #include "ui/android/view_android.h"
+#else
+#include "content/browser/compositor/image_transport_factory.h"
+// nogncheck as dependency of "ui/compositor" is on non-Android platforms only.
+#include "ui/compositor/compositor.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)
@@ -423,6 +427,23 @@ int RenderWidgetHostImpl::GetRoutingID() const {
 
 RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() const {
   return view_.get();
+}
+
+cc::FrameSinkId RenderWidgetHostImpl::AllocateFrameSinkId(
+    bool is_guest_view_hack) {
+// GuestViews have two RenderWidgetHostViews and so we need to make sure
+// we don't have FrameSinkId collisions.
+// The FrameSinkId generated here must not conflict with FrameSinkId allocated
+// in cc::FrameSinkIdAllocator.
+#if !defined(OS_ANDROID)
+  if (is_guest_view_hack) {
+    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+    return factory->GetContextFactoryPrivate()->AllocateFrameSinkId();
+  }
+#endif
+  return cc::FrameSinkId(
+      base::checked_cast<uint32_t>(this->GetProcess()->GetID()),
+      base::checked_cast<uint32_t>(this->GetRoutingID()));
 }
 
 void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {

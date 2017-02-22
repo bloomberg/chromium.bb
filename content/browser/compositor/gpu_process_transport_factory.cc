@@ -103,6 +103,9 @@ using gpu::gles2::GLES2Interface;
 namespace {
 
 const int kNumRetriesBeforeSoftwareFallback = 4;
+// The client_id used here should not conflict with the client_id generated
+// from RenderWidgetHostImpl.
+constexpr uint32_t kDefaultClientId = 0u;
 
 bool IsUsingMus() {
   return service_manager::ServiceManagerIsRemote();
@@ -175,7 +178,8 @@ struct GpuProcessTransportFactory::PerCompositorData {
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
-    : task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
+    : frame_sink_id_allocator_(kDefaultClientId),
+      task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       callback_factory_(this) {
   cc::SetClientNameForMetrics("Browser");
 
@@ -689,12 +693,7 @@ GpuProcessTransportFactory::GetContextFactoryPrivate() {
 }
 
 cc::FrameSinkId GpuProcessTransportFactory::AllocateFrameSinkId() {
-  // The FrameSinkId generated here must be unique with
-  // RenderWidgetHostViewAura's
-  // and RenderWidgetHostViewMac's FrameSinkId allocation.
-  // TODO(crbug.com/685777): Centralize allocation in one place for easier
-  // maintenance.
-  return cc::FrameSinkId(0, next_sink_id_++);
+  return frame_sink_id_allocator_.NextFrameSinkId();
 }
 
 void GpuProcessTransportFactory::SetDisplayVisible(ui::Compositor* compositor,

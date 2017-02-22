@@ -38,6 +38,9 @@
 
 namespace ui {
 namespace {
+// The client_id used here should not conflict with the client_id generated
+// from RenderWidgetHostImpl.
+constexpr uint32_t kDefaultClientId = 0u;
 
 class FakeReflector : public Reflector {
  public:
@@ -129,7 +132,7 @@ struct InProcessContextFactory::PerCompositorData {
 InProcessContextFactory::InProcessContextFactory(
     bool context_factory_for_test,
     cc::SurfaceManager* surface_manager)
-    : next_surface_sink_id_(1u),
+    : frame_sink_id_allocator_(kDefaultClientId),
       use_test_surface_(true),
       context_factory_for_test_(context_factory_for_test),
       surface_manager_(surface_manager) {
@@ -285,12 +288,7 @@ cc::TaskGraphRunner* InProcessContextFactory::GetTaskGraphRunner() {
 }
 
 cc::FrameSinkId InProcessContextFactory::AllocateFrameSinkId() {
-  // The FrameSinkId generated here must be unique with
-  // RenderWidgetHostViewAura's
-  // and RenderWidgetHostViewMac's FrameSinkId allocation.
-  // TODO(crbug.com/685777): Centralize allocation in one place for easier
-  // maintenance.
-  return cc::FrameSinkId(0, next_surface_sink_id_++);
+  return frame_sink_id_allocator_.NextFrameSinkId();
 }
 
 cc::SurfaceManager* InProcessContextFactory::GetSurfaceManager() {
