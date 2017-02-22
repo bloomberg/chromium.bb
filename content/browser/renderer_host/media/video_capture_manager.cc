@@ -34,6 +34,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
+#include "media/base/video_facing.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device.h"
@@ -339,6 +340,18 @@ VideoCaptureManager::~VideoCaptureManager() {
   DCHECK(device_start_queue_.empty());
 }
 
+void VideoCaptureManager::AddVideoCaptureObserver(
+    media::VideoCaptureObserver* observer) {
+  DCHECK(observer);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  capture_observers_.AddObserver(observer);
+}
+
+void VideoCaptureManager::RemoveAllVideoCaptureObservers() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  capture_observers_.Clear();
+}
+
 void VideoCaptureManager::RegisterListener(
     MediaStreamProviderListener* listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -468,6 +481,12 @@ void VideoCaptureManager::DoStopDevice(DeviceEntry* entry) {
     }
   }
 
+  const DeviceInfo* device_info = GetDeviceInfoById(entry->id);
+  if (device_info != nullptr) {
+    for (auto& observer : capture_observers_)
+      observer.OnVideoCaptureStopped(device_info->descriptor.facing);
+  }
+
   DVLOG(3) << "DoStopDevice. Send stop request for device = " << entry->id
            << " serial_id = " << entry->serial_id << ".";
   entry->video_capture_controller.OnLog(
@@ -523,6 +542,9 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
                                found->descriptor.device_id.c_str(),
                                found->descriptor.GetNameAndModel().c_str(),
                                found->descriptor.GetCaptureApiTypeString()));
+
+        for (auto& observer : capture_observers_)
+          observer.OnVideoCaptureStarted(found->descriptor.facing);
 
         start_capture_function =
             base::Bind(&VideoCaptureManager::DoStartDeviceCaptureOnDeviceThread,

@@ -45,6 +45,7 @@ component("chromeos") {
     "//crypto",
     "//crypto:platform",
     "//google_apis",
+    "//media/base:video_facing",
     "//net",
     "//skia",  # For components/user_manager
     "//third_party/icu",

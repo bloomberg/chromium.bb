@@ -450,6 +450,21 @@ MediaDevicesManager* MediaStreamManager::media_devices_manager() {
   return media_devices_manager_.get();
 }
 
+void MediaStreamManager::AddVideoCaptureObserver(
+    media::VideoCaptureObserver* capture_observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (video_capture_manager_) {
+    video_capture_manager_->AddVideoCaptureObserver(capture_observer);
+  }
+}
+
+void MediaStreamManager::RemoveAllVideoCaptureObservers() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (video_capture_manager_) {
+    video_capture_manager_->RemoveAllVideoCaptureObservers();
+  }
+}
+
 std::string MediaStreamManager::MakeMediaAccessRequest(
     int render_process_id,
     int render_frame_id,

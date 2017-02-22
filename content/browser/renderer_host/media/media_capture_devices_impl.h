@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/media_capture_devices.h"
+#include "media/base/video_facing.h"
 
 namespace content {
 
@@ -18,6 +19,8 @@ class MediaCaptureDevicesImpl : public MediaCaptureDevices {
   // Overriden from MediaCaptureDevices
   const MediaStreamDevices& GetAudioCaptureDevices() override;
   const MediaStreamDevices& GetVideoCaptureDevices() override;
+  void AddVideoCaptureObserver(media::VideoCaptureObserver* observer) override;
+  void RemoveAllVideoCaptureObservers() override;
 
   // Called by MediaStreamManager to notify the change of media capture
   // devices, these 2 methods are called in IO thread.

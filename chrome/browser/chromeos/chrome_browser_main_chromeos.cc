@@ -141,6 +141,7 @@
 #include "components/version_info/version_info.h"
 #include "components/wallpaper/wallpaper_manager_base.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -428,6 +429,9 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   CrasAudioHandler::Initialize(
       new AudioDevicesPrefHandlerImpl(g_browser_process->local_state()));
+
+  content::MediaCaptureDevices::GetInstance()->AddVideoCaptureObserver(
+      CrasAudioHandler::Get());
 
   quirks::QuirksManager::Initialize(
       std::unique_ptr<quirks::QuirksManager::Delegate>(
@@ -929,6 +933,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // Stops all in-flight OAuth2 token fetchers before the IO thread stops.
   DeviceOAuth2TokenServiceFactory::Shutdown();
+
+  content::MediaCaptureDevices::GetInstance()->RemoveAllVideoCaptureObservers();
 
   // Shutdown after PostMainMessageLoopRun() which should destroy all observers.
   CrasAudioHandler::Shutdown();

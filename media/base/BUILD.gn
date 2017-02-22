@@ -264,6 +264,7 @@ target(link_target_type, "base") {
   allow_circular_includes_from = []
   defines = []
   public_deps = [
+    "//media/base:video_facing",
     "//ppapi/features",
     "//ui/gfx:color_space",
   ]
@@ -335,6 +336,19 @@ target(link_target_type, "base") {
       "keyboard_event_counter.h",
     ]
   }
+}
+
+source_set("video_facing") {
+  visibility = [
+    "//chromeos",
+    "//content/browser",
+    "//content/public/common:common_sources",
+    "//media/base",
+    "//media/capture",
+  ]
+  sources = [
+    "video_facing.h",
+  ]
 }
 
 static_library("test_support") {

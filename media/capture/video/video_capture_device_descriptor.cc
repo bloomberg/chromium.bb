@@ -45,7 +45,7 @@ VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
 
 bool VideoCaptureDeviceDescriptor::operator<(
     const VideoCaptureDeviceDescriptor& other) const {
-  static constexpr int kFacingMapping[NUM_MEDIA_VIDEO_FACING_MODE] = {0, 2, 1};
+  static constexpr int kFacingMapping[NUM_MEDIA_VIDEO_FACING_MODES] = {0, 2, 1};
   static_assert(kFacingMapping[MEDIA_VIDEO_FACING_NONE] == 0,
                 "FACING_NONE has a wrong value");
   static_assert(kFacingMapping[MEDIA_VIDEO_FACING_ENVIRONMENT] == 1,

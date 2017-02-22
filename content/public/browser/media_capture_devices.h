@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_MEDIA_CAPTURE_DEVICES_H_
 
 #include "content/public/common/media_stream_request.h"
+#include "media/base/video_facing.h"
 
 namespace content {
 
@@ -19,6 +20,10 @@ class CONTENT_EXPORT  MediaCaptureDevices {
   // Return all Audio/Video devices.
   virtual const MediaStreamDevices& GetAudioCaptureDevices() = 0;
   virtual const MediaStreamDevices& GetVideoCaptureDevices() = 0;
+
+  virtual void AddVideoCaptureObserver(
+      media::VideoCaptureObserver* observer) = 0;
+  virtual void RemoveAllVideoCaptureObservers() = 0;
 
  private:
   // This interface should only be implemented inside content.

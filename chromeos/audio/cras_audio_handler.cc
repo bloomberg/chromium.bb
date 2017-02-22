@@ -126,6 +126,14 @@ CrasAudioHandler* CrasAudioHandler::Get() {
   return g_cras_audio_handler;
 }
 
+void CrasAudioHandler::OnVideoCaptureStarted(media::VideoFacingMode facing) {
+  // TODO(jennyz): Switch active audio device according to video facing.
+}
+
+void CrasAudioHandler::OnVideoCaptureStopped(media::VideoFacingMode facing) {
+  // TODO(jennyz): Switch active audio device according to video facing.
+}
+
 void CrasAudioHandler::AddAudioObserver(AudioObserver* observer) {
   observers_.AddObserver(observer);
 }

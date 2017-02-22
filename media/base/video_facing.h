@@ -13,7 +13,16 @@ enum VideoFacingMode {
   MEDIA_VIDEO_FACING_USER,
   MEDIA_VIDEO_FACING_ENVIRONMENT,
 
-  NUM_MEDIA_VIDEO_FACING_MODE
+  NUM_MEDIA_VIDEO_FACING_MODES
+};
+
+// Clients interested in video capture events can implement this interface
+// and register the observers to MediaStreamManager or VideoCaptureManager.
+class VideoCaptureObserver {
+ public:
+  virtual ~VideoCaptureObserver() {}
+  virtual void OnVideoCaptureStarted(VideoFacingMode facing) = 0;
+  virtual void OnVideoCaptureStopped(VideoFacingMode facing) = 0;
 };
 
 }  // namespace media

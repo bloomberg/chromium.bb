@@ -10,6 +10,7 @@ include_rules = [
   "+components/signin/core/account_id/account_id.h",
   "+components/user_manager/known_user.h",
   "+crypto",
+  "+media/base/video_facing.h",
   "+net",
   "+third_party/cros_system_api",
   "+third_party/libxml",

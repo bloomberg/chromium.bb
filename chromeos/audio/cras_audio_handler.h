@@ -21,6 +21,7 @@
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/volume_state.h"
+#include "media/base/video_facing.h"
 
 namespace chromeos {
 
@@ -28,11 +29,12 @@ class AudioDevicesPrefHandler;
 
 class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
                                          public AudioPrefObserver,
-                                         public SessionManagerClient::Observer {
+                                         public SessionManagerClient::Observer,
+                                         public media::VideoCaptureObserver {
  public:
-  typedef std::priority_queue<AudioDevice,
-                              std::vector<AudioDevice>,
-                              AudioDeviceCompare> AudioDevicePriorityQueue;
+  typedef std::
+      priority_queue<AudioDevice, std::vector<AudioDevice>, AudioDeviceCompare>
+          AudioDevicePriorityQueue;
   typedef std::vector<uint64_t> NodeIdList;
 
   // Volume change reasons that are not user-initiated.
@@ -102,6 +104,10 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   // Gets the global instance. Initialize must be called first.
   static CrasAudioHandler* Get();
+
+  // Overrides media::VideoCaptureObserver.
+  void OnVideoCaptureStarted(media::VideoFacingMode facing) override;
+  void OnVideoCaptureStopped(media::VideoFacingMode facing) override;
 
   // Adds an audio observer.
   void AddAudioObserver(AudioObserver* observer);

@@ -94,6 +94,9 @@ class WrappedDeviceFactory : public media::FakeVideoCaptureDeviceFactory {
     DISALLOW_COPY_AND_ASSIGN(WrappedDevice);
   };
 
+  static const media::VideoFacingMode DEFAULT_FACING =
+      media::VideoFacingMode::MEDIA_VIDEO_FACING_USER;
+
   WrappedDeviceFactory() : FakeVideoCaptureDeviceFactory() {}
   ~WrappedDeviceFactory() final {}
 
@@ -101,6 +104,16 @@ class WrappedDeviceFactory : public media::FakeVideoCaptureDeviceFactory {
       const media::VideoCaptureDeviceDescriptor& device_descriptor) final {
     return base::MakeUnique<WrappedDevice>(
         FakeVideoCaptureDeviceFactory::CreateDevice(device_descriptor), this);
+  }
+
+  void GetDeviceDescriptors(
+      media::VideoCaptureDeviceDescriptors* device_descriptors) override {
+    media::FakeVideoCaptureDeviceFactory::GetDeviceDescriptors(
+        device_descriptors);
+    for (auto& descriptor : *device_descriptors) {
+      if (descriptor.facing == media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE)
+        descriptor.facing = DEFAULT_FACING;
+    }
   }
 
   MOCK_METHOD0(WillSuspendDevice, void());
@@ -148,6 +161,13 @@ class MockFrameObserver : public VideoCaptureControllerEventHandler {
   void OnEnded(VideoCaptureControllerID id) override {}
 
   void OnGotControllerCallback(VideoCaptureControllerID) {}
+};
+
+// Input argument for testing AddVideoCaptureObserver().
+class MockVideoCaptureObserver : public media::VideoCaptureObserver {
+ public:
+  MOCK_METHOD1(OnVideoCaptureStarted, void(media::VideoFacingMode));
+  MOCK_METHOD1(OnVideoCaptureStopped, void(media::VideoFacingMode));
 };
 
 }  // namespace
@@ -325,6 +345,27 @@ TEST_F(VideoCaptureManagerTest, CreateAndAbort) {
 
   vcm_->StopCaptureForClient(controllers_[client_id], client_id,
                              frame_observer_.get(), true);
+
+  // Wait to check callbacks before removing the listener.
+  base::RunLoop().RunUntilIdle();
+  vcm_->UnregisterListener();
+}
+
+TEST_F(VideoCaptureManagerTest, AddObserver) {
+  InSequence s;
+  MockVideoCaptureObserver observer;
+  vcm_->AddVideoCaptureObserver(&observer);
+
+  EXPECT_CALL(observer,
+              OnVideoCaptureStarted(WrappedDeviceFactory::DEFAULT_FACING));
+  EXPECT_CALL(observer,
+              OnVideoCaptureStopped(WrappedDeviceFactory::DEFAULT_FACING));
+
+  int video_session_id = vcm_->Open(devices_.front());
+  VideoCaptureControllerID client_id = StartClient(video_session_id, true);
+
+  StopClient(client_id);
+  vcm_->Close(video_session_id);
 
   // Wait to check callbacks before removing the listener.
   base::RunLoop().RunUntilIdle();

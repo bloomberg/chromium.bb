@@ -51,6 +51,33 @@ MediaCaptureDevicesImpl::GetVideoCaptureDevices() {
   return video_devices_;
 }
 
+void MediaCaptureDevicesImpl::AddVideoCaptureObserver(
+    media::VideoCaptureObserver* observer) {
+  MediaStreamManager* media_stream_manager =
+      BrowserMainLoop::GetInstance()->media_stream_manager();
+  if (media_stream_manager != nullptr) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&MediaStreamManager::AddVideoCaptureObserver,
+                   base::Unretained(media_stream_manager), observer));
+  } else {
+    DVLOG(3) << "media_stream_manager is null.";
+  }
+}
+
+void MediaCaptureDevicesImpl::RemoveAllVideoCaptureObservers() {
+  MediaStreamManager* media_stream_manager =
+      BrowserMainLoop::GetInstance()->media_stream_manager();
+  if (media_stream_manager != nullptr) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&MediaStreamManager::RemoveAllVideoCaptureObservers,
+                   base::Unretained(media_stream_manager)));
+  } else {
+    DVLOG(3) << "media_stream_manager is null.";
+  }
+}
+
 void MediaCaptureDevicesImpl::OnAudioCaptureDevicesChanged(
     const MediaStreamDevices& devices) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
