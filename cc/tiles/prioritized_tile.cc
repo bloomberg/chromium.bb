@@ -13,7 +13,7 @@ PrioritizedTile::PrioritizedTile() = default;
 
 PrioritizedTile::PrioritizedTile(Tile* tile,
                                  const PictureLayerTiling* source_tiling,
-                                 const TilePriority priority,
+                                 const TilePriority& priority,
                                  bool is_occluded,
                                  bool is_process_for_images_only)
     : tile_(tile),

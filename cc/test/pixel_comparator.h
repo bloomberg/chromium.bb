@@ -40,12 +40,12 @@ class ExactPixelComparator : public PixelComparator {
 // computes average and maximum absolute errors per color channel.
 class FuzzyPixelComparator : public PixelComparator {
  public:
-  FuzzyPixelComparator(const bool discard_alpha,
-                       const float error_pixels_percentage_limit,
-                       const float small_error_pixels_percentage_limit,
-                       const float avg_abs_error_limit,
-                       const int max_abs_error_limit,
-                       const int small_error_threshold);
+  FuzzyPixelComparator(bool discard_alpha,
+                       float error_pixels_percentage_limit,
+                       float small_error_pixels_percentage_limit,
+                       float avg_abs_error_limit,
+                       int max_abs_error_limit,
+                       int small_error_threshold);
   ~FuzzyPixelComparator() override {}
 
   // Computes error metrics and returns true if the errors don't exceed the

@@ -1865,7 +1865,7 @@ class LayerTreeHostScrollTestElasticOverscroll
     PostSetNeedsCommitToMainThread();
   }
 
-  void BindInputHandler(const base::WeakPtr<InputHandler> input_handler) {
+  void BindInputHandler(base::WeakPtr<InputHandler> input_handler) {
     DCHECK(task_runner_provider()->IsImplThread());
     input_handler->BindToClient(&input_handler_client_);
     scroll_elasticity_helper_ = input_handler->CreateScrollElasticityHelper();

@@ -97,7 +97,7 @@ class ImageDecodeTaskImpl : public TileTask {
   ImageDecodeTaskImpl(SoftwareImageDecodeCache* cache,
                       const SoftwareImageDecodeCache::ImageKey& image_key,
                       const DrawImage& image,
-                      const SoftwareImageDecodeCache::DecodeTaskType task_type,
+                      SoftwareImageDecodeCache::DecodeTaskType task_type,
                       const ImageDecodeCache::TracingInfo& tracing_info)
       : TileTask(true),
         cache_(cache),

@@ -1030,7 +1030,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
 
 class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
  public:
-  void TestResourceUpload(const float test_scale) {
+  void TestResourceUpload(float test_scale) {
     gfx::Point scrollbar_location(0, 185);
     scoped_refptr<Layer> layer_tree_root = Layer::Create();
     scoped_refptr<Layer> content_layer = Layer::Create();
@@ -1099,7 +1099,7 @@ TEST_F(ScaledScrollbarLayerTestResourceCreation, ScaledResourceUpload) {
 
 class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
  public:
-  void TestScale(const gfx::Rect scrollbar_rect, const float test_scale) {
+  void TestScale(const gfx::Rect& scrollbar_rect, float test_scale) {
     bool paint_during_update = true;
     bool has_thumb = false;
     scoped_refptr<Layer> layer_tree_root = Layer::Create();

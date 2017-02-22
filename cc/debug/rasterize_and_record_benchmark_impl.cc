@@ -70,7 +70,7 @@ class FixedInvalidationPictureLayerTilingClient
  public:
   FixedInvalidationPictureLayerTilingClient(
       PictureLayerTilingClient* base_client,
-      const Region invalidation)
+      const Region& invalidation)
       : base_client_(base_client), invalidation_(invalidation) {}
 
   std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info) override {
