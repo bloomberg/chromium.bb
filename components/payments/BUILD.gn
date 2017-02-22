@@ -79,6 +79,7 @@ static_library("payment_validation") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "address_normalizer_unittest.cc",
     "currency_formatter_unittest.cc",
     "payments_validators_test.cc",
   ]
@@ -86,7 +87,10 @@ source_set("unit_tests") {
   deps = [
     ":payment_validation",
     "//base",
+    "//base/test:test_support",
+    "//components/autofill/core/browser",
     "//testing/gtest",
     "//third_party/icu:icu",
+    "//third_party/libaddressinput:test_support",
   ]
 }

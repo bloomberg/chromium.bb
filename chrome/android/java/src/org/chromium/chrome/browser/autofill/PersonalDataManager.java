@@ -520,7 +520,7 @@ public class PersonalDataManager {
         return sManager;
     }
 
-    private static int sNormalizationTimeoutMs = 5000;
+    private static int sNormalizationTimeoutSeconds = 5;
 
     private final long mPersonalDataManagerAndroid;
     private final List<PersonalDataManagerObserver> mDataObservers =
@@ -814,7 +814,8 @@ public class PersonalDataManager {
      * Normalizes the address of the profile associated with the {@code guid} if the rules
      * associated with the {@code regionCode} are done loading. Otherwise sets up the callback to
      * start normalizing the address when the rules are loaded. The normalized profile will be sent
-     * to the {@code delegate}.
+     * to the {@code delegate}. If the profile is not normalized in the specified
+     * {@code sNormalizationTimeoutSeconds}, the {@code delegate} will be notified.
      *
      * @param guid The GUID of the profile to normalize.
      * @param regionCode The region code indicating which rules to use for normalization.
@@ -823,7 +824,8 @@ public class PersonalDataManager {
     public void normalizeAddress(
             String guid, String regionCode, NormalizedAddressRequestDelegate delegate) {
         ThreadUtils.assertOnUiThread();
-        nativeStartAddressNormalization(mPersonalDataManagerAndroid, guid, regionCode, delegate);
+        nativeStartAddressNormalization(mPersonalDataManagerAndroid, guid, regionCode,
+                sNormalizationTimeoutSeconds, delegate);
     }
 
     /**
@@ -881,16 +883,9 @@ public class PersonalDataManager {
         nativeSetPaymentsIntegrationEnabled(enable);
     }
 
-    /**
-     * @return The timeout value for normalization.
-     */
-    public static int getNormalizationTimeoutMS() {
-        return sNormalizationTimeoutMs;
-    }
-
     @VisibleForTesting
     public static void setNormalizationTimeoutForTesting(int timeout) {
-        sNormalizationTimeoutMs = timeout;
+        sNormalizationTimeoutSeconds = timeout;
     }
 
     private native long nativeInit();
@@ -955,7 +950,8 @@ public class PersonalDataManager {
     private native void nativeLoadRulesForRegion(
             long nativePersonalDataManagerAndroid, String regionCode);
     private native void nativeStartAddressNormalization(long nativePersonalDataManagerAndroid,
-            String guid, String regionCode, NormalizedAddressRequestDelegate delegate);
+            String guid, String regionCode, int timeoutSeconds,
+            NormalizedAddressRequestDelegate delegate);
     private static native boolean nativeHasProfiles(long nativePersonalDataManagerAndroid);
     private static native boolean nativeHasCreditCards(long nativePersonalDataManagerAndroid);
     private static native boolean nativeIsAutofillEnabled();

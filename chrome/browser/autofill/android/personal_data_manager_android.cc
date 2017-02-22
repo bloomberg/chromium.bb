@@ -710,6 +710,7 @@ void PersonalDataManagerAndroid::StartAddressNormalization(
     const JavaParamRef<jobject>& unused_obj,
     const JavaParamRef<jstring>& jguid,
     const JavaParamRef<jstring>& jregion_code,
+    jint jtimeout_seconds,
     const JavaParamRef<jobject>& jdelegate) {
   const std::string region_code = ConvertJavaStringToUTF8(env, jregion_code);
   const std::string guid = ConvertJavaStringToUTF8(env, jguid);
@@ -723,7 +724,7 @@ void PersonalDataManagerAndroid::StartAddressNormalization(
 
   // Start the normalization.
   address_normalizer_.StartAddressNormalization(*profile, region_code,
-                                                requester);
+                                                jtimeout_seconds, requester);
 }
 
 jboolean PersonalDataManagerAndroid::HasProfiles(

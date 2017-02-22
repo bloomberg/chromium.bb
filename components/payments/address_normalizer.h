@@ -6,7 +6,6 @@
 #define COMPONENTS_PAYMENTS_ADDRESS_NORMALIZER_H_
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 
@@ -15,8 +14,7 @@ using autofill::AutofillProfile;
 namespace payments {
 
 // A class used to normalize addresses.
-class AddressNormalizer : public autofill::LoadRulesListener,
-                          public base::SupportsWeakPtr<AddressNormalizer> {
+class AddressNormalizer : public autofill::LoadRulesListener {
  public:
   // The interface for the normalization delegates.
   class Delegate {
@@ -43,7 +41,7 @@ class AddressNormalizer : public autofill::LoadRulesListener,
   ~AddressNormalizer() override;
 
   // Start loading the validation rules for the specified |region_code|.
-  void LoadRulesForRegion(const std::string& region_code);
+  virtual void LoadRulesForRegion(const std::string& region_code);
 
   // Returns whether the rules for the specified |region_code| have finished
   // loading.
@@ -51,9 +49,15 @@ class AddressNormalizer : public autofill::LoadRulesListener,
 
   // Starts the normalization of the |profile| based on the |region_code|. The
   // normalized profile will be returned to the |requester| possibly
-  // asynchronously.
+  // asynchronously. If the normalization is not completed in |timeout_seconds|
+  // the requester will be informed and the request cancelled. This value should
+  // be greater or equal to 0, for which it means that the normalization should
+  // happen synchronously, or not at all if the rules are not already loaded.
+  // Will start loading the rules for the |region_code| if they had not started
+  // loading.
   void StartAddressNormalization(const autofill::AutofillProfile& profile,
                                  const std::string& region_code,
+                                 int timeout_seconds,
                                  Delegate* requester);
 
  private:

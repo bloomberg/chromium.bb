@@ -7,7 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/cancelable_callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/browser/address_i18n.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
@@ -28,21 +31,39 @@ class AddressNormalizationRequest : public AddressNormalizer::Request {
   // The |delegate| and |address_validator| need to outlive this Request.
   AddressNormalizationRequest(const AutofillProfile& profile,
                               const std::string& region_code,
+                              int timeout_seconds,
                               AddressNormalizer::Delegate* delegate,
                               autofill::AddressValidator* address_validator)
       : profile_(profile),
         region_code_(region_code),
         delegate_(delegate),
-        address_validator_(address_validator) {}
+        address_validator_(address_validator),
+        has_responded_(false),
+        on_timeout_(
+            base::Bind(&::payments::AddressNormalizationRequest::OnRulesLoaded,
+                       base::Unretained(this),
+                       false)) {
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, on_timeout_.callback(),
+        base::TimeDelta::FromSeconds(timeout_seconds));
+  }
 
   ~AddressNormalizationRequest() override {}
 
   void OnRulesLoaded(bool success) override {
+    on_timeout_.Cancel();
+
+    // Check if the timeout happened before the rules were loaded.
+    if (has_responded_)
+      return;
+    has_responded_ = true;
+
     if (!success) {
       delegate_->OnCouldNotNormalize(profile_);
       return;
     }
 
+    // The rules should be loaded.
     DCHECK(address_validator_->AreRulesLoadedForRegion(region_code_));
 
     // Create the AddressData from the profile.
@@ -70,6 +91,9 @@ class AddressNormalizationRequest : public AddressNormalizer::Request {
   AddressNormalizer::Delegate* delegate_;
   autofill::AddressValidator* address_validator_;
 
+  bool has_responded_;
+  base::CancelableCallback<void()> on_timeout_;
+
   DISALLOW_COPY_AND_ASSIGN(AddressNormalizationRequest);
 };
 
@@ -93,10 +117,14 @@ bool AddressNormalizer::AreRulesLoadedForRegion(
 void AddressNormalizer::StartAddressNormalization(
     const AutofillProfile& profile,
     const std::string& region_code,
+    int timeout_seconds,
     AddressNormalizer::Delegate* requester) {
+  DCHECK(timeout_seconds >= 0);
+
   std::unique_ptr<AddressNormalizationRequest> request(
-      new AddressNormalizationRequest(profile, region_code, requester,
-                                      &address_validator_));
+      base::MakeUnique<AddressNormalizationRequest>(profile, region_code,
+                                                    timeout_seconds, requester,
+                                                    &address_validator_));
 
   // Check if the rules are already loaded.
   if (AreRulesLoadedForRegion(region_code)) {
@@ -114,6 +142,10 @@ void AddressNormalizer::StartAddressNormalization(
     }
 
     it->second.push_back(std::move(request));
+
+    // Start loading the rules for that region. If the rules were already in the
+    // process of being loaded, this call will do nothing.
+    LoadRulesForRegion(region_code);
   }
 }
 

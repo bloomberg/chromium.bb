@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.payments;
 
 import android.content.Context;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.util.JsonWriter;
 
@@ -126,20 +125,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         mCallback.onInstrumentDetailsLoadingWithoutUI();
 
         // Wait for the billing address normalization before sending the instrument details.
-        if (mIsWaitingForBillingNormalization) {
-            // If the normalization is not completed yet, Start a timer to cancel it if it takes too
-            // long.
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    onAddressNormalized(null);
-                }
-            }, PersonalDataManager.getInstance().getNormalizationTimeoutMS());
-
-            return;
-        } else {
-            sendIntrumentDetails();
-        }
+        if (!mIsWaitingForBillingNormalization) sendInstrumentDetails();
     }
 
     @Override
@@ -151,7 +137,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         if (profile != null) mBillingAddress = profile;
 
         // Wait for the full card details before sending the instrument details.
-        if (!mIsWaitingForFullCardDetails) sendIntrumentDetails();
+        if (!mIsWaitingForFullCardDetails) sendInstrumentDetails();
     }
 
     @Override
@@ -163,7 +149,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
      * Stringify the card details and send the resulting string and the method name to the
      * registered callback.
      */
-    private void sendIntrumentDetails() {
+    private void sendInstrumentDetails() {
         StringWriter stringWriter = new StringWriter();
         JsonWriter json = new JsonWriter(stringWriter);
         try {

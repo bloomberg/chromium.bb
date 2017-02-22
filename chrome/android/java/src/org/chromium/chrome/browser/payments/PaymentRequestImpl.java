@@ -1103,7 +1103,6 @@ public class PaymentRequestImpl
         assert mPaymentMethodsSection.getSelectedItem() instanceof AutofillPaymentInstrument;
 
         mUI.showProcessingMessage();
-        mPaymentResponseHelper.onInstrumentsDetailsLoading();
     }
 
     @Override
