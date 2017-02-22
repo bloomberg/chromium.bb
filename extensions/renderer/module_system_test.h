@@ -6,7 +6,6 @@
 #define EXTENSIONS_RENDERER_MODULE_SYSTEM_TEST_H_
 
 #include "base/macros.h"
-#include "base/test/scoped_async_task_scheduler.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/public/context_holder.h"
@@ -99,10 +98,6 @@ class ModuleSystemTest : public testing::Test {
   void RunResolvedPromises();
 
  private:
-  // Required by gin::V8Platform::CallOnBackgroundThread(). Can't be a
-  // ScopedTaskScheduler because v8 synchronously waits for tasks to run.
-  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler_;
-
   v8::Isolate* isolate_;
   std::unique_ptr<ModuleSystemTestEnvironment> env_;
   bool should_assertions_be_made_;

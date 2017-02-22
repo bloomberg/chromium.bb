@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
-#include "base/test/scoped_async_task_scheduler.h"
 #include "base/test/test_io_thread.h"
 #include "build/build_config.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -191,14 +190,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   // blink::WebLeakDetectorClient implementation.
   void onLeakDetectionComplete(const Result& result) override;
 
- private:
   base::MessageLoop msg_loop_;
-
-  // Required by gin::V8Platform::CallOnBackgroundThread(). Can't be a
-  // ScopedTaskScheduler because v8 synchronously waits for tasks to run.
-  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler_;
-
- protected:
   std::unique_ptr<FakeCompositorDependencies> compositor_deps_;
   std::unique_ptr<MockRenderProcess> mock_process_;
   // We use a naked pointer because we don't want to expose RenderViewImpl in

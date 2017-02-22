@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/test/scoped_async_task_scheduler.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "build/build_config.h"
@@ -37,9 +36,17 @@ namespace {
 
 class TestEnvironment {
  public:
+#if defined(OS_ANDROID)
+  // Android UI message loop goes through Java, so don't use it in tests.
+  typedef base::MessageLoop MessageLoopType;
+#else
+  typedef base::MessageLoopForUI MessageLoopType;
+#endif
+
   TestEnvironment() {
-    // TestBlinkWebUnitTestSupport must be instantiated after the main
-    // MessageLoop.
+    main_message_loop_.reset(new MessageLoopType);
+
+    // TestBlinkWebUnitTestSupport must be instantiated after MessageLoopType.
     blink_test_support_.reset(new TestBlinkWebUnitTestSupport);
     content_initializer_.reset(new content::TestContentClientInitializer());
 
@@ -55,17 +62,7 @@ class TestEnvironment {
   }
 
  private:
-#if defined(OS_ANDROID)
-  // Android UI message loop goes through Java, so don't use it in tests.
-  base::MessageLoop main_message_loop_;
-#else
-  base::MessageLoopForUI main_message_loop_;
-#endif
-
-  // Required by gin::V8Platform::CallOnBackgroundThread(). Can't be a
-  // ScopedTaskScheduler because v8 synchronously waits for tasks to run.
-  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler;
-
+  std::unique_ptr<MessageLoopType> main_message_loop_;
   std::unique_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
   std::unique_ptr<TestContentClientInitializer> content_initializer_;
   base::TestDiscardableMemoryAllocator discardable_memory_allocator_;

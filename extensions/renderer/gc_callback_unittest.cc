@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/renderer/gc_callback.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_async_task_scheduler.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/renderer/gc_callback.h"
 #include "extensions/renderer/scoped_web_frame.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
@@ -35,6 +34,8 @@ class GCCallbackTest : public testing::Test {
   GCCallbackTest() : script_context_set_(&active_extensions_) {}
 
  protected:
+  base::MessageLoop& message_loop() { return message_loop_; }
+
   ScriptContextSet& script_context_set() { return script_context_set_; }
 
   v8::Local<v8::Context> v8_context() {
@@ -71,11 +72,6 @@ class GCCallbackTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-
-  // Required by gin::V8Platform::CallOnBackgroundThread(). Can't be a
-  // ScopedTaskScheduler because v8 synchronously waits for tasks to run.
-  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler_;
-
   ScopedWebFrame web_frame_;  // (this will construct the v8::Isolate)
   // ExtensionsRendererClient is a dependency of ScriptContextSet.
   TestExtensionsRendererClient extensions_renderer_client_;

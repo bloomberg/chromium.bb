@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/test/scoped_async_task_scheduler.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/mock_resource.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -80,11 +79,6 @@ class HostVarTrackerTest : public PpapiUnittest {
   }
 
   HostVarTracker& tracker() { return *HostGlobals::Get()->host_var_tracker(); }
-
- private:
-  // Required by gin::V8Platform::CallOnBackgroundThread(). Can't be a
-  // ScopedTaskScheduler because v8 synchronously waits for tasks to run.
-  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler_;
 };
 
 TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {

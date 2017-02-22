@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_async_task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
@@ -61,7 +60,6 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate,
   ASSERT_TRUE(ReadFileToString(path, &source));
 
   base::MessageLoop message_loop;
-  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler;
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::V8Initializer::LoadV8Snapshot();

@@ -10,7 +10,6 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
-#include "base/test/scoped_async_task_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -74,10 +73,6 @@ class V8UnitTest : public testing::Test {
 
   // Initializes paths and libraries.
   void InitPathsAndLibraries();
-
-  // Required by gin::V8Platform::CallOnBackgroundThread(). Can't be a
-  // ScopedTaskScheduler because v8 synchronously waits for tasks to run.
-  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler_;
 
   // Handle scope that is used throughout the life of this class.
   v8::HandleScope handle_scope_;
