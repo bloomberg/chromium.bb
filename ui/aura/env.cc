@@ -8,9 +8,11 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/input_state_lookup.h"
+#include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
@@ -105,9 +107,12 @@ std::unique_ptr<WindowPort> Env::CreateWindowPort(Window* window) {
     return base::MakeUnique<WindowPortLocal>(window);
 
   DCHECK(window_tree_client_);
+  WindowMusType window_mus_type =
+      window->GetProperty(aura::client::kTopLevelWindowInWM)
+          ? WindowMusType::TOP_LEVEL_IN_WM
+          : WindowMusType::LOCAL;
   // Use LOCAL as all other cases are created by WindowTreeClient explicitly.
-  return base::MakeUnique<WindowPortMus>(window_tree_client_,
-                                         WindowMusType::LOCAL);
+  return base::MakeUnique<WindowPortMus>(window_tree_client_, window_mus_type);
 }
 
 void Env::AddObserver(EnvObserver* observer) {

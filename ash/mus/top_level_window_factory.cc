@@ -20,6 +20,7 @@
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -171,6 +172,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
 
   aura::Window* window = new aura::Window(nullptr);
   aura::SetWindowType(window, window_type);
+  window->SetProperty(aura::client::kTopLevelWindowInWM, true);
   ApplyProperties(window, property_converter, *properties);
   window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(bounds);

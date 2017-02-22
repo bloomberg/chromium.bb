@@ -116,6 +116,9 @@ AURA_EXPORT extern const aura::WindowProperty<SkColor>* const kTopViewColor;
 // A property key to store the window icon, typically 16x16 for title bars.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kWindowIconKey;
 
+// Set to true if this window is a top level window in the window manager.
+AURA_EXPORT extern const aura::WindowProperty<bool>* const kTopLevelWindowInWM;
+
 AURA_EXPORT extern const aura::WindowProperty<ui::mojom::WindowType>* const
     kWindowTypeKey;
 
