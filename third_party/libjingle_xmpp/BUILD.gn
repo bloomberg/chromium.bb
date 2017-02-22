@@ -32,6 +32,7 @@ rtc_static_library("rtc_xmllite") {
 
   deps = [
     "//third_party/webrtc/base:rtc_base",
+    "//third_party/webrtc/base:rtc_task_runner",
   ]
   public_deps = [
     "//third_party/expat",
@@ -82,6 +83,7 @@ rtc_static_library("rtc_xmpp") {
   deps = [
     ":rtc_xmllite",
     "//third_party/webrtc/base:rtc_base",
+    "//third_party/webrtc/base:rtc_task_runner",
   ]
   public_deps = [
     "//third_party/expat",

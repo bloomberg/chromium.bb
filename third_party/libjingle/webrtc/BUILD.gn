@@ -62,5 +62,6 @@ static_library("libstunprober") {
   deps = [
     ":libjingle_webrtc_common",
     "//third_party/webrtc/base:rtc_base",
+    "//third_party/webrtc/base:rtc_task_runner",
   ]
 }

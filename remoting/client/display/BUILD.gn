@@ -31,6 +31,7 @@ source_set("display") {
     "//remoting/proto",
     "//third_party/libyuv",
     "//third_party/webrtc/base:rtc_base",
+    "//third_party/webrtc/base:rtc_task_runner",
   ]
 
   public_configs = [ "//third_party/khronos:khronos_headers" ]
@@ -86,6 +87,7 @@ if (is_win) {
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/webrtc/base:rtc_base",
+      "//third_party/webrtc/base:rtc_task_runner",
     ]
   }
 }
