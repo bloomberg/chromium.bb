@@ -136,24 +136,17 @@ String HTMLElement::nodeName() const {
   return Element::nodeName();
 }
 
-bool HTMLElement::ieForbidsInsertHTML() const {
-  // FIXME: Supposedly IE disallows settting innerHTML, outerHTML
-  // and createContextualFragment on these tags.  We have no tests to
-  // verify this however, so this list could be totally wrong.
-  // This list was moved from the previous endTagRequirement() implementation.
-  // This is also called from editing and assumed to be the list of tags
-  // for which no end tag should be serialized. It's unclear if the list for
-  // IE compat and the list for serialization sanity are the same.
+bool HTMLElement::shouldSerializeEndTag() const {
+  // See https://www.w3.org/TR/DOM-Parsing/
   if (hasTagName(areaTag) || hasTagName(baseTag) || hasTagName(basefontTag) ||
-      hasTagName(brTag) || hasTagName(colTag) || hasTagName(embedTag) ||
-      hasTagName(frameTag) || hasTagName(hrTag) || hasTagName(imageTag) ||
+      hasTagName(bgsoundTag) || hasTagName(brTag) || hasTagName(colTag) ||
+      hasTagName(embedTag) || hasTagName(frameTag) || hasTagName(hrTag) ||
       hasTagName(imgTag) || hasTagName(inputTag) || hasTagName(keygenTag) ||
-      hasTagName(linkTag) || (RuntimeEnabledFeatures::contextMenuEnabled() &&
-                              hasTagName(menuitemTag)) ||
-      hasTagName(metaTag) || hasTagName(paramTag) || hasTagName(sourceTag) ||
-      hasTagName(trackTag) || hasTagName(wbrTag))
-    return true;
-  return false;
+      hasTagName(linkTag) || hasTagName(menuitemTag) || hasTagName(metaTag) ||
+      hasTagName(paramTag) || hasTagName(sourceTag) || hasTagName(trackTag) ||
+      hasTagName(wbrTag))
+    return false;
+  return true;
 }
 
 static inline CSSValueID unicodeBidiAttributeForDirAuto(HTMLElement* element) {
@@ -507,29 +500,8 @@ DocumentFragment* HTMLElement::textToFragment(const String& text,
   return fragment;
 }
 
-static inline bool shouldProhibitSetInnerOuterText(const HTMLElement& element) {
-  return element.hasTagName(colTag) || element.hasTagName(colgroupTag) ||
-         element.hasTagName(framesetTag) || element.hasTagName(headTag) ||
-         element.hasTagName(htmlTag) || element.hasTagName(tableTag) ||
-         element.hasTagName(tbodyTag) || element.hasTagName(tfootTag) ||
-         element.hasTagName(theadTag) || element.hasTagName(trTag);
-}
-
 void HTMLElement::setInnerText(const String& text,
                                ExceptionState& exceptionState) {
-  if (ieForbidsInsertHTML()) {
-    exceptionState.throwDOMException(
-        NoModificationAllowedError,
-        "The '" + localName() + "' element does not support text insertion.");
-    return;
-  }
-  if (shouldProhibitSetInnerOuterText(*this)) {
-    exceptionState.throwDOMException(
-        NoModificationAllowedError,
-        "The '" + localName() + "' element does not support text insertion.");
-    return;
-  }
-
   // FIXME: This doesn't take whitespace collapsing into account at all.
 
   if (!text.contains('\n') && !text.contains('\r')) {
@@ -567,19 +539,6 @@ void HTMLElement::setInnerText(const String& text,
 
 void HTMLElement::setOuterText(const String& text,
                                ExceptionState& exceptionState) {
-  if (ieForbidsInsertHTML()) {
-    exceptionState.throwDOMException(
-        NoModificationAllowedError,
-        "The '" + localName() + "' element does not support text insertion.");
-    return;
-  }
-  if (shouldProhibitSetInnerOuterText(*this)) {
-    exceptionState.throwDOMException(
-        NoModificationAllowedError,
-        "The '" + localName() + "' element does not support text insertion.");
-    return;
-  }
-
   ContainerNode* parent = parentNode();
   if (!parent) {
     exceptionState.throwDOMException(NoModificationAllowedError,

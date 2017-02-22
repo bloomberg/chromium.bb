@@ -182,11 +182,7 @@ static bool elementCannotHaveEndTag(const Node& node) {
   if (!node.isHTMLElement())
     return false;
 
-  // FIXME: ieForbidsInsertHTML may not be the right function to call here
-  // ieForbidsInsertHTML is used to disallow setting innerHTML/outerHTML
-  // or createContextualFragment.  It does not necessarily align with
-  // which elements should be serialized w/o end tags.
-  return toHTMLElement(node).ieForbidsInsertHTML();
+  return !toHTMLElement(node).shouldSerializeEndTag();
 }
 
 void MarkupFormatter::appendEndMarkup(StringBuilder& result,
@@ -495,7 +491,7 @@ EntityMask MarkupFormatter::entityMaskForText(const Text& text) const {
 // Rules of self-closure
 // 1. No elements in HTML documents use the self-closing syntax.
 // 2. Elements w/ children never self-close because they use a separate end tag.
-// 3. HTML elements which do not have a "forbidden" end tag will close with a
+// 3. HTML elements which do not listed in spec will close with a
 // separate end tag.
 // 4. Other elements self-close.
 bool MarkupFormatter::shouldSelfClose(const Element& element) const {

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 56 tests; 27 PASS, 29 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 56 tests; 55 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Simplest possible test 
 PASS Newlines convert to <br> in non-white-space:pre elements 
 PASS Newlines convert to <br> in <pre> element 
@@ -27,34 +27,34 @@ PASS Existing <br> deleted
 PASS Assigning the empty string 
 PASS Assigning null 
 PASS Assigning undefined 
-FAIL innerText on <area> element Failed to set the 'innerText' property on 'HTMLElement': The 'area' element does not support text insertion.
-FAIL innerText on <base> element Failed to set the 'innerText' property on 'HTMLElement': The 'base' element does not support text insertion.
-FAIL innerText on <basefont> element Failed to set the 'innerText' property on 'HTMLElement': The 'basefont' element does not support text insertion.
+PASS innerText on <area> element 
+PASS innerText on <base> element 
+PASS innerText on <basefont> element 
 PASS innerText on <bgsound> element 
-FAIL innerText on <br> element Failed to set the 'innerText' property on 'HTMLElement': The 'br' element does not support text insertion.
-FAIL innerText on <col> element Failed to set the 'innerText' property on 'HTMLElement': The 'col' element does not support text insertion.
-FAIL innerText on <embed> element Failed to set the 'innerText' property on 'HTMLElement': The 'embed' element does not support text insertion.
-FAIL innerText on <frame> element Failed to set the 'innerText' property on 'HTMLElement': The 'frame' element does not support text insertion.
-FAIL innerText on <hr> element Failed to set the 'innerText' property on 'HTMLElement': The 'hr' element does not support text insertion.
-FAIL innerText on <image> element Failed to set the 'innerText' property on 'HTMLElement': The 'image' element does not support text insertion.
-FAIL innerText on <img> element Failed to set the 'innerText' property on 'HTMLElement': The 'img' element does not support text insertion.
-FAIL innerText on <input> element Failed to set the 'innerText' property on 'HTMLElement': The 'input' element does not support text insertion.
-FAIL innerText on <keygen> element Failed to set the 'innerText' property on 'HTMLElement': The 'keygen' element does not support text insertion.
-FAIL innerText on <link> element Failed to set the 'innerText' property on 'HTMLElement': The 'link' element does not support text insertion.
-FAIL innerText on <menuitem> element Failed to set the 'innerText' property on 'HTMLElement': The 'menuitem' element does not support text insertion.
-FAIL innerText on <meta> element Failed to set the 'innerText' property on 'HTMLElement': The 'meta' element does not support text insertion.
-FAIL innerText on <param> element Failed to set the 'innerText' property on 'HTMLElement': The 'param' element does not support text insertion.
-FAIL innerText on <source> element Failed to set the 'innerText' property on 'HTMLElement': The 'source' element does not support text insertion.
-FAIL innerText on <track> element Failed to set the 'innerText' property on 'HTMLElement': The 'track' element does not support text insertion.
-FAIL innerText on <wbr> element Failed to set the 'innerText' property on 'HTMLElement': The 'wbr' element does not support text insertion.
-FAIL innerText on <colgroup> element Failed to set the 'innerText' property on 'HTMLElement': The 'colgroup' element does not support text insertion.
-FAIL innerText on <frameset> element Failed to set the 'innerText' property on 'HTMLElement': The 'frameset' element does not support text insertion.
-FAIL innerText on <head> element Failed to set the 'innerText' property on 'HTMLElement': The 'head' element does not support text insertion.
-FAIL innerText on <html> element Failed to set the 'innerText' property on 'HTMLElement': The 'html' element does not support text insertion.
-FAIL innerText on <table> element Failed to set the 'innerText' property on 'HTMLElement': The 'table' element does not support text insertion.
-FAIL innerText on <tbody> element Failed to set the 'innerText' property on 'HTMLElement': The 'tbody' element does not support text insertion.
-FAIL innerText on <tfoot> element Failed to set the 'innerText' property on 'HTMLElement': The 'tfoot' element does not support text insertion.
-FAIL innerText on <thead> element Failed to set the 'innerText' property on 'HTMLElement': The 'thead' element does not support text insertion.
-FAIL innerText on <tr> element Failed to set the 'innerText' property on 'HTMLElement': The 'tr' element does not support text insertion.
+PASS innerText on <br> element 
+PASS innerText on <col> element 
+PASS innerText on <embed> element 
+PASS innerText on <frame> element 
+PASS innerText on <hr> element 
+PASS innerText on <image> element 
+PASS innerText on <img> element 
+PASS innerText on <input> element 
+PASS innerText on <keygen> element 
+PASS innerText on <link> element 
+PASS innerText on <menuitem> element 
+PASS innerText on <meta> element 
+PASS innerText on <param> element 
+PASS innerText on <source> element 
+PASS innerText on <track> element 
+PASS innerText on <wbr> element 
+PASS innerText on <colgroup> element 
+PASS innerText on <frameset> element 
+PASS innerText on <head> element 
+PASS innerText on <html> element 
+PASS innerText on <table> element 
+PASS innerText on <tbody> element 
+PASS innerText on <tfoot> element 
+PASS innerText on <thead> element 
+PASS innerText on <tr> element 
 Harness: the test ran to completion.
 

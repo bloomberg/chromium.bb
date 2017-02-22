@@ -385,7 +385,7 @@ void WebFrameSerializerImpl::endTagToString(Element* element,
       result.append('>');
       // FIXME: This code is horribly wrong.  WebFrameSerializerImpl must die.
       if (!element->isHTMLElement() ||
-          !toHTMLElement(element)->ieForbidsInsertHTML()) {
+          toHTMLElement(element)->shouldSerializeEndTag()) {
         // We need to write end tag when it is required.
         result.append("</");
         result.append(element->nodeName().lower());

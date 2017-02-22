@@ -82,7 +82,7 @@ class CORE_EXPORT HTMLElement : public Element {
 
   void accessKeyAction(bool sendMouseEvents) override;
 
-  bool ieForbidsInsertHTML() const;
+  bool shouldSerializeEndTag() const;
 
   virtual HTMLFormElement* formOwner() const { return nullptr; }
 
