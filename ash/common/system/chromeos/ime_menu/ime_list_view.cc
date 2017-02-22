@@ -16,7 +16,7 @@
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_shell.h"
-#include "grit/ash_resources.h"
+#include "ash/resources/grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"

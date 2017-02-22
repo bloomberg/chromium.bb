@@ -4,9 +4,9 @@
 
 #include "ash/common/system/chromeos/audio/tray_audio_delegate_chromeos.h"
 
+#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "grit/ash_resources.h"
 #include "ui/gfx/paint_vector_icon.h"
 
 using chromeos::CrasAudioHandler;

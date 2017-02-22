@@ -4,8 +4,8 @@
 
 #include "ash/wm/resize_shadow.h"
 
+#include "ash/resources/grit/ash_resources.h"
 #include "base/time/time.h"
-#include "grit/ash_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"

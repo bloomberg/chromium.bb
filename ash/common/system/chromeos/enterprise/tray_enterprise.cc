@@ -9,9 +9,9 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/grit/ash_resources.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "grit/ash_resources.h"
 
 namespace ash {
 

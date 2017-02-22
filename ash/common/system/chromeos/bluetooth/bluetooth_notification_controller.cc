@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/common/system/system_notifier.h"
+#include "ash/resources/grit/ash_resources.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -15,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

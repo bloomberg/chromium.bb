@@ -11,6 +11,7 @@ assert(enable_hidpi)
 
 grit("resources") {
   source = "ash_resources.grd"
+  use_qualified_include = true
   outputs = [
     "grit/ash_resources.h",
     "ash_resources_100_percent.pak",

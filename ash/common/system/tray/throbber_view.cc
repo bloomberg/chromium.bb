@@ -5,7 +5,7 @@
 #include "ash/common/system/tray/throbber_view.h"
 
 #include "ash/common/system/tray/tray_constants.h"
-#include "grit/ash_resources.h"
+#include "ash/resources/grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

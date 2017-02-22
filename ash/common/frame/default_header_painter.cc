@@ -7,10 +7,10 @@
 #include "ash/common/ash_layout_constants.h"
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/header_painter_util.h"
+#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"  // DCHECK
-#include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/slide_animation.h"
