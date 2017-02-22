@@ -247,6 +247,8 @@ void* ShimPvalloc(size_t size) {
   } else {
     size = (size + GetCachedPageSize() - 1) & ~(GetCachedPageSize() - 1);
   }
+  // The third argument is nullptr because pvalloc is glibc only and does not
+  // exist on OSX/BSD systems.
   return ShimMemalign(GetCachedPageSize(), size, nullptr);
 }
 
