@@ -192,7 +192,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void resetUsageTracking();
 
-  void incrementFrameCount() { m_usageCounters.numFramesSinceReset++; }
+  void finalizeFrame() override { m_usageCounters.numFramesSinceReset++; }
 
   bool isPaintable() const final { return hasImageBuffer(); }
 

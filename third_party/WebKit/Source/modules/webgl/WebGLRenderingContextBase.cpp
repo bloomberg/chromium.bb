@@ -1204,6 +1204,7 @@ void WebGLRenderingContextBase::initializeNewContext() {
   ASSERT(drawingBuffer());
 
   m_markedCanvasDirty = false;
+  m_animationFrameInProgress = false;
   m_activeTextureUnit = 0;
   m_packAlignment = 4;
   m_unpackAlignment = 4;
@@ -1419,15 +1420,21 @@ void WebGLRenderingContextBase::markContextChanged(
   if (!canvas())
     return;
 
-  LayoutBox* layoutBox = canvas()->layoutBox();
-  if (layoutBox && layoutBox->hasAcceleratedCompositing()) {
-    layoutBox->contentChanged(changeType);
-  }
-  if (!m_markedCanvasDirty) {
-    m_markedCanvasDirty = true;
+  m_markedCanvasDirty = true;
+
+  if (!m_animationFrameInProgress) {
+    m_animationFrameInProgress = true;
+    LayoutBox* layoutBox = canvas()->layoutBox();
+    if (layoutBox && layoutBox->hasAcceleratedCompositing()) {
+      layoutBox->contentChanged(changeType);
+    }
     IntSize canvasSize = clampedCanvasSize();
     didDraw(SkIRect::MakeXYWH(0, 0, canvasSize.width(), canvasSize.height()));
   }
+}
+
+void WebGLRenderingContextBase::finalizeFrame() {
+  m_animationFrameInProgress = false;
 }
 
 void WebGLRenderingContextBase::onErrorMessage(const char* message,

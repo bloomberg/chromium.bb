@@ -134,6 +134,11 @@ class CORE_EXPORT CanvasRenderingContext
   };
   virtual void loseContext(LostContextMode) {}
 
+  // This method gets called at the end of script tasks that modified
+  // the contents of the canvas (called didDraw). It marks the completion
+  // of a presentable frame.
+  virtual void finalizeFrame() {}
+
   // WebThread::TaskObserver implementation
   void didProcessTask() override;
   void willProcessTask() final {}
@@ -157,7 +162,6 @@ class CORE_EXPORT CanvasRenderingContext
   virtual String getIdFromControl(const Element* element) { return String(); }
   virtual bool isAccelerationOptimalForCanvasContent() const { return true; }
   virtual void resetUsageTracking(){};
-  virtual void incrementFrameCount(){};
 
   // WebGL-specific interface
   virtual bool is3d() const { return false; }

@@ -328,7 +328,6 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect) {
 void HTMLCanvasElement::finalizeFrame() {
   if (hasImageBuffer())
     m_imageBuffer->finalizeFrame();
-  m_context->incrementFrameCount();
   notifyListenersCanvasChanged();
 }
 

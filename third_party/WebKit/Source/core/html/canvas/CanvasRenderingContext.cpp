@@ -160,12 +160,11 @@ void CanvasRenderingContext::didProcessTask() {
   Platform::current()->currentThread()->removeTaskObserver(this);
   m_finalizeFrameScheduled = false;
 
-  if (!canvas())
-    return;
-
   // The end of a script task that drew content to the canvas is the point
   // at which the current frame may be considered complete.
-  canvas()->finalizeFrame();
+  if (canvas())
+    canvas()->finalizeFrame();
+  finalizeFrame();
 }
 
 CanvasRenderingContext::ContextType CanvasRenderingContext::contextTypeFromId(

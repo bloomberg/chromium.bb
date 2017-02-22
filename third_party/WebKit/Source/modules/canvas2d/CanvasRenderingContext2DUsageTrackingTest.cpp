@@ -637,11 +637,11 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, incrementFrameCount) {
   createContext(NonOpaque);
   EXPECT_EQ(0, context2d()->getUsage().numFramesSinceReset);
 
-  context2d()->incrementFrameCount();
+  context2d()->finalizeFrame();
   EXPECT_EQ(1, context2d()->getUsage().numFramesSinceReset);
 
-  context2d()->incrementFrameCount();
-  context2d()->incrementFrameCount();
+  context2d()->finalizeFrame();
+  context2d()->finalizeFrame();
   EXPECT_EQ(3, context2d()->getUsage().numFramesSinceReset);
 }
 
@@ -649,8 +649,8 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, resetUsageTracking) {
   createContext(NonOpaque);
   EXPECT_EQ(0, context2d()->getUsage().numFramesSinceReset);
 
-  context2d()->incrementFrameCount();
-  context2d()->incrementFrameCount();
+  context2d()->finalizeFrame();
+  context2d()->finalizeFrame();
   EXPECT_EQ(2, context2d()->getUsage().numFramesSinceReset);
 
   const int numReps = 100;

@@ -625,6 +625,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool paintRenderingResultsToCanvas(SourceDrawingBuffer) override;
   WebLayer* platformLayer() const override;
   void stop() override;
+  void finalizeFrame() override;
 
   // DrawingBuffer::Client implementation.
   bool DrawingBufferClientIsBoundForDraw() override;
@@ -687,6 +688,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   TaskRunnerTimer<WebGLRenderingContextBase> m_restoreTimer;
 
   bool m_markedCanvasDirty;
+  bool m_animationFrameInProgress;
 
   // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and
   // stored values for ELEMENT_ARRAY_BUFFER
