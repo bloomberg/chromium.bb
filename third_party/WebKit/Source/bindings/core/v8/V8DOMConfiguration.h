@@ -64,7 +64,7 @@ class CORE_EXPORT V8DOMConfiguration final {
 
   // AttributeConfiguration translates into calls to SetNativeDataProperty() on
   // either the instance or the prototype ObjectTemplate, based on
-  // |instanceOrPrototypeConfiguration|.
+  // |propertyLocationConfiguration|.
   struct AttributeConfiguration {
     AttributeConfiguration& operator=(const AttributeConfiguration&) = delete;
     DISALLOW_NEW();
