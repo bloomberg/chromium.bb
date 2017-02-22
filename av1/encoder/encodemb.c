@@ -887,6 +887,15 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize,
   if (x->skip) return;
 
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+#if CONFIG_CB4X4
+    if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+      continue;
+    if (plane) bsize = AOMMAX(bsize, BLOCK_8X8);
+#else
+    (void)mi_row;
+    (void)mi_col;
+#endif
+
 #if CONFIG_VAR_TX
     // TODO(jingning): Clean this up.
     const struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -906,19 +915,12 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize,
     const TX_SIZE tx_size = plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
     av1_get_entropy_contexts(bsize, tx_size, pd, ctx.ta[plane], ctx.tl[plane]);
 #endif
+
 #if !CONFIG_PVQ
     av1_subtract_plane(x, bsize, plane);
 #endif
     arg.ta = ctx.ta[plane];
     arg.tl = ctx.tl[plane];
-
-#if CONFIG_CB4X4
-    if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
-      continue;
-#else
-    (void)mi_row;
-    (void)mi_col;
-#endif
 
 #if CONFIG_VAR_TX
     for (idy = 0; idy < mi_height; idy += bh) {
