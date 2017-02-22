@@ -343,12 +343,7 @@ void DOMSelection::setBaseAndExtent(Node* baseNode,
 
   clearCachedRangeIfSelectionOfDocument();
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term, we should change FrameSelection::setSelection to take a
-  // parameter that does not require clean layout, so that modifying selection
-  // no longer performs synchronous layout by itself.
-  // TODO(editing-dev): Once SVG USE element doesn't modifies DOM tree, we
+  // TODO(editing-dev): Once SVG USE element doesn't modify DOM tree, we
   // should get rid of this update layout call.
   // See http://crbug.com/566281
   // See "svg/text/textpath-reference-crash.html"
@@ -423,10 +418,6 @@ void DOMSelection::modify(const String& alterString,
     granularity = DocumentBoundary;
   else
     return;
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   frame()->selection().modify(alter, direction, granularity);
 }
@@ -603,13 +594,6 @@ void DOMSelection::addRange(Range* newRange) {
     // "editing/selection/selection-in-iframe-removed-crash.html" goes here.
     return;
   }
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term, we should change FrameSelection::setSelection to take a
-  // parameter that does not require clean layout, so that modifying selection
-  // no longer performs synchronous layout by itself.
-  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   if (rangeCount() == 0) {
     selection.setSelectedRange(EphemeralRange(newRange), VP_DEFAULT_AFFINITY);

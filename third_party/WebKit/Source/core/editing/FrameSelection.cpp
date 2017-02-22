@@ -265,11 +265,6 @@ void FrameSelection::setSelection(const SelectionInDOMTree& passedSelection,
                       ? ScrollAlignment::alignTopAlways
                       : ScrollAlignment::alignToEdgeIfNeeded;
 
-    // TODO(editing-dev): The use of
-    // updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-
     revealSelection(alignment, RevealExtent);
   }
 

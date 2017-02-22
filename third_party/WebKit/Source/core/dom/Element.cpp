@@ -2755,10 +2755,6 @@ void Element::updateFocusAppearance(
             .rootEditableElement())
       return;
 
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-
     // FIXME: We should restore the previous selection if there is one.
     // Passing DoNotSetFocus as this function is called after
     // FocusController::setFocusedElement() and we don't want to change the
