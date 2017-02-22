@@ -193,6 +193,8 @@ class PLATFORM_EXPORT FontCache {
 
   void invalidateShapeCache();
 
+  static void crashWithFontInfo(const FontDescription*);
+
   // Memory reporting
   void dumpFontPlatformDataCache(base::trace_event::ProcessMemoryDump*);
   void dumpShapeResultCache(base::trace_event::ProcessMemoryDump*);

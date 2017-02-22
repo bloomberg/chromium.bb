@@ -29,6 +29,7 @@
 
 #include "platform/fonts/FontCache.h"
 
+#include <memory>
 #include "base/trace_event/process_memory_dump.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/Histogram.h"
@@ -54,9 +55,9 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
+#include "wtf/debug/Alias.h"
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/StringHash.h"
-#include <memory>
 
 using namespace WTF;
 
@@ -454,6 +455,24 @@ void FontCache::invalidate() {
     clients[i]->fontCacheInvalidated();
 
   purge(ForcePurge);
+}
+
+void FontCache::crashWithFontInfo(const FontDescription* fontDescription) {
+  FontCache* fontCache = FontCache::fontCache();
+  SkFontMgr* fontMgr = nullptr;
+  int numFamilies = std::numeric_limits<int>::min();
+  if (fontCache) {
+    fontMgr = fontCache->m_fontManager.get();
+    if (fontMgr)
+      numFamilies = fontMgr->countFamilies();
+  }
+
+  debug::alias(&fontDescription);
+  debug::alias(&fontCache);
+  debug::alias(&fontMgr);
+  debug::alias(&numFamilies);
+
+  CHECK(false);
 }
 
 void FontCache::dumpFontPlatformDataCache(

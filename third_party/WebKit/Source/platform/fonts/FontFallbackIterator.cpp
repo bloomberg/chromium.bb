@@ -116,7 +116,8 @@ PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(
     m_fallbackStage = OutOfLuck;
     RefPtr<SimpleFontData> lastResort =
         fontCache->getLastResortFallbackFont(m_fontDescription).get();
-    RELEASE_ASSERT(lastResort);
+    if (!lastResort)
+      FontCache::crashWithFontInfo(&m_fontDescription);
     // Don't skip the LastResort font in uniqueOrNext() since HarfBuzzShaper
     // needs to use this one to place missing glyph boxes.
     return adoptRef(new FontDataForRangeSetFromCache(lastResort));
