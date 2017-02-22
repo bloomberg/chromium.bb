@@ -673,12 +673,8 @@ void DOMSelection::deleteFromDocument() {
   if (!selectedRange)
     return;
 
+  // |selectedRange| may point nodes in a different root.
   selectedRange->deleteContents(ASSERT_NO_EXCEPTION);
-
-  setBaseAndExtent(selectedRange->startContainer(),
-                   selectedRange->startOffset(),
-                   selectedRange->startContainer(),
-                   selectedRange->startOffset(), ASSERT_NO_EXCEPTION);
 }
 
 bool DOMSelection::containsNode(const Node* n, bool allowPartial) const {
