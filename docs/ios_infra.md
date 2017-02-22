@@ -118,14 +118,239 @@ that need to be compiled in order to run the affected tests. If a patch is
 determined not to affect a certain test target, compilation and execution of the
 test target will be skipped.
 
+## Configuring the bots
+
+See the [configs code location](#Configs) for where to find the config files for
+the bots. The config files are JSON which describe how the bot should compile
+and which tests it should run. The config files are located in the configs
+directory. The configs directory contains a named directory for each master. For
+example:
+```shell
+$ ls ios/build/bots
+OWNERS  scripts  tests  chromium.fyi  chromium.mac
+```
+In this case, configs are defined for iOS bots on [chromium.fyi] and
+[chromium.mac]. Inside each master-specific directory are JSON config files
+named after each bot. For example:
+```shell
+$ ls ios/build/bots/chromium.mac
+ios-device.json ios-simulator.json
+```
+The `ios-device` bot on [chromium.mac] will read its configuration from
+`chromium.mac/ios-device.json` in the configs directory.
+
+### Example
+
+```json
+{
+  "comments": [
+    "Sample config for a bot."
+  ],
+  "gn_args": [
+    "is_debug=true",
+    "target_cpu=\"x64\""
+  ],
+  "tests": [
+    {
+      "app": "ios_chrome_unittests",
+      "device type": "iPhone 5s",
+      "os": "10.0",
+      "xcode version": "8.0"
+    }
+  ]
+}
+```
+The `comments` key is optional and defines a list of strings which can be used
+to annotate the config. You may want to explain why the bot exists and what it's
+doing, particularly if there are extensive and atypical `gn_args`.
+
+The `gn_args` key is a required list of arguments to pass to [GN] to generate
+the build files. Two GN args are required, `is_debug` and `target_cpu`. Use
+`is_debug` to define whether to compile for Debug or Release, and `target_cpu`
+to define whether to compile for x86, x64, arm, or arm64. The iOS bots typically
+perform Debug builds for x86 and x64, and Release builds for arm and arm64. An
+x86/x64 build can only be tested on the [iOS simulator], while an arm/arm64
+build can only be tested on a physical device.
+
+Since Chromium for iOS is shipped as a [universal binary], it's also fairly
+common to set `additional_target_cpus`. For simulator builds, we typically set:
+```json
+"gn_args": [
+  "additional_target_cpus=[\"x86\"]",
+  "is_debug=true",
+  "target_cpu=\"x64\""
+]
+```
+This builds universal binaries which run in 32-bit mode on 32-bit simulators and
+64-bit mode on 64-bit simulators. For device builds we typically set:
+```json
+"gn_args": [
+  "additional_target_cpus=[\"arm\"]",
+  "is_debug=false",
+  "target_cpu=\"arm64\""
+]
+```
+In order to build universal binaries which run in 32-bit mode on 32-bit devices
+and 64-bit mode on 64-bit devices.
+
+The `tests` key is an optional list of dictionaries defining tests to run. There
+are two types of test dictionary, `app` and `include`. An `app` dict defines a
+specific compiled app to run, for example:
+```json
+"tests": [
+  {
+    "app": "ios_chrome_unittests",
+    "device type": "iPhone 5s",
+    "os": "10.0",
+    "xcode version": "8.0"
+  }
+]
+```
+This dict says to run `ios_chrome_unittests` on an `iPhone 5s` running iOS
+`10.0` using Xcode `8.0`. A test dict may optionally define a list of `test
+args`, which are arguments to pass directly to the test on the command line,
+and it may define a boolean value `xctest` to indicate whether the test is an
+[xctest] \(default if unspecified is `false`\). For example:
+```json
+"tests": [
+  {
+    "app": "ios_chrome_unittests",
+    "device type": "iPhone 5s",
+    "os": "10.0",
+    "test args": [
+      "--foo",
+      "--bar"
+    ],
+    "xcode version": "8.0"
+  },
+  {
+    "app": "ios_chrome_integration_egtests",
+    "device type": "iPhone 5s",
+    "os": "10.0",
+    "xcode version": "8.0",
+    "xctest": true
+  }
+]
+```
+This defines two tests to run, first `ios_chrome_unittests` will be run with
+`--foo` and `--bar` passed directly to the test on the command line. Next,
+`ios_chrome_integration_egtests` will be run as an xctest. `"xctest": true`
+must be specified for all xctests, it is an error to try and launch an xctest as
+a regular test.
+
+An `include` dict defines a list of tests to import from the `tests`
+subdirectory in the configs directory. For example:
+```json
+"tests": [
+  {
+    "include": "common_tests.json",
+    "device type": "iPhone 5s",
+    "os": "10.0",
+    "xcode version": "8.0"
+  }
+]
+```
+This dict says to import the list of tests from the `tests` subdirectory and run
+each one on an `iPhone 5s` running iOS `10.0` using Xcode `8.0`. Here's what
+`common_tests.json` might look like:
+```json
+"tests": [
+  {
+    "app": "ios_chrome_unittests"
+  },
+  {
+    "app": "ios_net_unittests"
+  },
+  {
+    "app": "ios_web_unittests"
+  },
+]
+```
+Includes may contain other keys besides `app` which can then be omitted in the
+bot config. For example if `common_tests.json` specifies:
+```json
+"tests": [
+  {
+    "app": "ios_chrome_integration_egtests",
+    "xctest": true,
+    "xcode version": "8.0"
+  }
+]
+```
+Then the bot config may omit the `xctest` or `xcode version` keys, for example:
+```json
+{
+  "comments": [
+    "Sample config for a bot."
+  ],
+  "gn_args": [
+    "is_debug=true",
+    "target_cpu=\"x64\""
+  ],
+  "tests": [
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 5s",
+      "os": "10.0"
+    }
+  ]
+}
+```
+Includes are not recursive, so `common_tests.json` may not itself include any
+`include` dicts.
+
+### Uploading compiled artifacts from a bot
+
+A bot may be configured to upload compiled artifacts. This is defined by the
+`upload` key. For example:
+```json
+{
+  "comments": [
+    "Sample config for a bot which uploads artifacts."
+  ],
+  "gn_args": [
+    "is_debug=true",
+    "target_cpu=\"x64\""
+  ],
+  "upload": [
+    {
+      "artifact": "Chromium.breakpad",
+      "bucket": "my-gcs-bucket",
+    },
+    {
+      "artifact": "Chromium.app",
+      "bucket": "my-gcs-bucket",
+      "compress": true,
+    },
+    {
+      "artifact": "Chromium.breakpad",
+      "symupload": true,
+    }
+  ]
+}
+```
+After compilation, the bot will upload three artifacts. First the
+`Chromium.breakpad` symbols will be uploaded to
+`gs://my-gcs-bucket/<buildername>/<buildnumber>/Chromium.breakpad`. Next
+`Chromium.app` will be tarred, gzipped, and uploaded to
+`gs://my-gcs-bucket/<buildername>/<buildnumber>/Chromium.tar.gz`. Finally
+the `Chromium.breakpad` symbols will be uploaded to the [breakpad] crash
+reporting server where they can be used to symbolicate stack traces.
+
+If `artifact` is a directory, you must specify `"compress": true`.
+
 [analyzer]: ../tools/mb
+[breakpad]: https://chromium.googlesource.com/breakpad/breakpad
 [buildbucket]: https://cr-buildbucket.appspot.com
+[chromium.fyi]: https://build.chromium.org/p/chromium.fyi/waterfall
 [chromium.mac]: https://build.chromium.org/p/chromium.mac
 [clang]: ../tools/clang
 [commit queue]: https://dev.chromium.org/developers/testing/commit-queue
 [gitiles]: https://gerrit.googlesource.com/gitiles
+[GN]: ../tools/gn
 [instructions]: ./ios_build_instructions.md
 [iOS recipes]: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipes/ios
+[iOS simulator]: ../testing/iossim
 [recipe module]: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/ios
 [recipes]: https://chromium.googlesource.com/infra/infra/+/HEAD/doc/users/recipes.md
 [simulator]: https://developer.apple.com/library/content/documentation/IDEs/Conceptual/iOS_Simulator_Guide/Introduction/Introduction.html
@@ -138,3 +363,5 @@ test target will be skipped.
 [try job access]: https://www.chromium.org/getting-involved/become-a-committer#TOC-Try-job-access
 [try server]: https://build.chromium.org/p/tryserver.chromium.mac/waterfall
 [tryserver.chromium.mac]: https://build.chromium.org/p/tryserver.chromium.mac/waterfall
+[universal binary]: https://en.wikipedia.org/wiki/Universal_binary
+[xctest]: https://developer.apple.com/reference/xctest
