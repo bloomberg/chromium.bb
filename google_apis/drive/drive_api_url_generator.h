@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "google_apis/drive/drive_switches.h"
 #include "url/gurl.h"
 
 namespace google_apis {
@@ -21,7 +22,9 @@ class DriveApiUrlGenerator {
   // |base_url| is the path to the target drive api server.
   // Note that this is an injecting point for a testing server.
   DriveApiUrlGenerator(const GURL& base_url,
-                       const GURL& base_thumbnail_url);
+                       const GURL& base_thumbnail_url,
+                       TeamDrivesIntegrationStatus team_drives_integration);
+  DriveApiUrlGenerator(const DriveApiUrlGenerator& src);
   ~DriveApiUrlGenerator();
 
   // The base URL for communicating with the production drive api server.
@@ -126,6 +129,7 @@ class DriveApiUrlGenerator {
   const GURL base_url_;
   const GURL base_download_url_;
   const GURL base_thumbnail_url_;
+  const bool enable_team_drives_;
 
   // This class is copyable hence no DISALLOW_COPY_AND_ASSIGN here.
 };

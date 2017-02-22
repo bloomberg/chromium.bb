@@ -170,7 +170,8 @@ class DriveApiRequestsTest : public testing::Test {
 
     GURL test_base_url = test_util::GetBaseUrlForTesting(test_server_.port());
     url_generator_.reset(
-        new DriveApiUrlGenerator(test_base_url, test_base_url));
+        new DriveApiUrlGenerator(test_base_url, test_base_url,
+                                 TEAM_DRIVES_INTEGRATION_DISABLED));
 
     // Reset the server's expected behavior just in case.
     ResetExpectedResponse();

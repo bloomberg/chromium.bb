@@ -258,7 +258,8 @@ DriveAPIService::DriveAPIService(
     : oauth2_token_service_(oauth2_token_service),
       url_request_context_getter_(url_request_context_getter),
       blocking_task_runner_(blocking_task_runner),
-      url_generator_(base_url, base_thumbnail_url),
+      url_generator_(base_url, base_thumbnail_url,
+                     google_apis::GetTeamDrivesIntegrationSwitch()),
       custom_user_agent_(custom_user_agent) {
 }
 

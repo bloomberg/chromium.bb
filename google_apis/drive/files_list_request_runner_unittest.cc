@@ -80,7 +80,8 @@ class FilesListRequestRunnerTest : public testing::Test {
     runner_.reset(new FilesListRequestRunner(
         request_sender_.get(),
         google_apis::DriveApiUrlGenerator(test_server_.base_url(),
-                                          test_server_.GetURL("/thumbnail/"))));
+                                          test_server_.GetURL("/thumbnail/"),
+                                          TEAM_DRIVES_INTEGRATION_DISABLED)));
   }
 
   void TearDown() override {

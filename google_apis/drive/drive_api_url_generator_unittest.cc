@@ -25,10 +25,15 @@ class DriveApiUrlGeneratorTest : public testing::Test {
  public:
   DriveApiUrlGeneratorTest()
       : url_generator_(GURL(kBaseUrlForTesting),
-                       GURL(kBaseThumbnailUrlForTesting)) {}
+                       GURL(kBaseThumbnailUrlForTesting),
+                       TEAM_DRIVES_INTEGRATION_DISABLED),
+        team_drives_url_generator_(GURL(kBaseUrlForTesting),
+                                   GURL(kBaseThumbnailUrlForTesting),
+                                   TEAM_DRIVES_INTEGRATION_ENABLED) {}
 
  protected:
   DriveApiUrlGenerator url_generator_;
+  DriveApiUrlGenerator team_drives_url_generator_;
 };
 
 // Make sure the hard-coded urls are returned.
@@ -59,6 +64,10 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesGetUrl) {
   EXPECT_EQ(
       "https://www.example.com/drive/v2/files/file%3Afile_id",
       url_generator_.GetFilesGetUrl("file:file_id", false, GURL()).spec());
+  EXPECT_EQ("https://www.example.com/drive/v2beta/files/0Bz0bd074"
+                "?supportsTeamDrives=true",
+            team_drives_url_generator_.GetFilesGetUrl(
+                "0Bz0bd074", false, GURL()).spec());
 
   // If |use_internal_endpoint| is true, the generated url should point to the
   // v2internal.
@@ -156,25 +165,38 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
   };
   const TestPattern kTestPatterns[] = {
     { 100, "", "", "" },
-    { 150, "", "", "?maxResults=150" },
-    { 10, "", "", "?maxResults=10" },
-    { 100, "token", "", "?pageToken=token" },
-    { 150, "token", "", "?maxResults=150&pageToken=token" },
-    { 10, "token", "", "?maxResults=10&pageToken=token" },
-    { 100, "", "query", "?q=query" },
-    { 150, "", "query", "?maxResults=150&q=query" },
-    { 10, "", "query", "?maxResults=10&q=query" },
-    { 100, "token", "query", "?pageToken=token&q=query" },
-    { 150, "token", "query", "?maxResults=150&pageToken=token&q=query" },
-    { 10, "token", "query", "?maxResults=10&pageToken=token&q=query" },
+    { 150, "", "", "maxResults=150" },
+    { 10, "", "", "maxResults=10" },
+    { 100, "token", "", "pageToken=token" },
+    { 150, "token", "", "maxResults=150&pageToken=token" },
+    { 10, "token", "", "maxResults=10&pageToken=token" },
+    { 100, "", "query", "q=query" },
+    { 150, "", "query", "maxResults=150&q=query" },
+    { 10, "", "query", "maxResults=10&q=query" },
+    { 100, "token", "query", "pageToken=token&q=query" },
+    { 150, "token", "query", "maxResults=150&pageToken=token&q=query" },
+    { 10, "token", "query", "maxResults=10&pageToken=token&q=query" },
   };
+  const std::string kV2FilesUrlPrefix =
+      "https://www.example.com/drive/v2/files";
+  const std::string kV2BetaFilesUrlPrefix =
+      "https://www.example.com/drive/v2beta/files?"
+      "supportsTeamDrives=true&includeTeamDriveItems=true";
 
   for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
-    EXPECT_EQ("https://www.example.com/drive/v2/files" +
+    EXPECT_EQ(kV2FilesUrlPrefix +
+                  (kTestPatterns[i].expected_query.empty() ? "" : "?") +
                   kTestPatterns[i].expected_query,
               url_generator_.GetFilesListUrl(kTestPatterns[i].max_results,
                                              kTestPatterns[i].page_token,
                                              kTestPatterns[i].q).spec());
+    EXPECT_EQ(kV2BetaFilesUrlPrefix +
+                  (kTestPatterns[i].expected_query.empty() ? "" : "&") +
+                  kTestPatterns[i].expected_query,
+              team_drives_url_generator_.GetFilesListUrl(
+                  kTestPatterns[i].max_results,
+                  kTestPatterns[i].page_token,
+                  kTestPatterns[i].q).spec());
   }
 }
 
@@ -208,52 +230,67 @@ TEST_F(DriveApiUrlGeneratorTest, GetChangesListUrl) {
   };
   const TestPattern kTestPatterns[] = {
     { true, 100, "", 0, "" },
-    { false, 100, "", 0, "?includeDeleted=false" },
-    { true, 150, "", 0, "?maxResults=150" },
-    { false, 150, "", 0, "?includeDeleted=false&maxResults=150" },
-    { true, 10, "", 0, "?maxResults=10" },
-    { false, 10, "", 0, "?includeDeleted=false&maxResults=10" },
+    { false, 100, "", 0, "includeDeleted=false" },
+    { true, 150, "", 0, "maxResults=150" },
+    { false, 150, "", 0, "includeDeleted=false&maxResults=150" },
+    { true, 10, "", 0, "maxResults=10" },
+    { false, 10, "", 0, "includeDeleted=false&maxResults=10" },
 
-    { true, 100, "token", 0, "?pageToken=token" },
-    { false, 100, "token", 0, "?includeDeleted=false&pageToken=token" },
-    { true, 150, "token", 0, "?maxResults=150&pageToken=token" },
+    { true, 100, "token", 0, "pageToken=token" },
+    { false, 100, "token", 0, "includeDeleted=false&pageToken=token" },
+    { true, 150, "token", 0, "maxResults=150&pageToken=token" },
     { false, 150, "token", 0,
-      "?includeDeleted=false&maxResults=150&pageToken=token" },
-    { true, 10, "token", 0, "?maxResults=10&pageToken=token" },
+      "includeDeleted=false&maxResults=150&pageToken=token" },
+    { true, 10, "token", 0, "maxResults=10&pageToken=token" },
     { false, 10, "token", 0,
-      "?includeDeleted=false&maxResults=10&pageToken=token" },
+      "includeDeleted=false&maxResults=10&pageToken=token" },
 
-    { true, 100, "", 12345, "?startChangeId=12345" },
-    { false, 100, "", 12345, "?includeDeleted=false&startChangeId=12345" },
-    { true, 150, "", 12345, "?maxResults=150&startChangeId=12345" },
+    { true, 100, "", 12345, "startChangeId=12345" },
+    { false, 100, "", 12345, "includeDeleted=false&startChangeId=12345" },
+    { true, 150, "", 12345, "maxResults=150&startChangeId=12345" },
     { false, 150, "", 12345,
-      "?includeDeleted=false&maxResults=150&startChangeId=12345" },
-    { true, 10, "", 12345, "?maxResults=10&startChangeId=12345" },
+      "includeDeleted=false&maxResults=150&startChangeId=12345" },
+    { true, 10, "", 12345, "maxResults=10&startChangeId=12345" },
     { false, 10, "", 12345,
-      "?includeDeleted=false&maxResults=10&startChangeId=12345" },
+      "includeDeleted=false&maxResults=10&startChangeId=12345" },
 
-    { true, 100, "token", 12345, "?pageToken=token&startChangeId=12345" },
+    { true, 100, "token", 12345, "pageToken=token&startChangeId=12345" },
     { false, 100, "token", 12345,
-      "?includeDeleted=false&pageToken=token&startChangeId=12345" },
+      "includeDeleted=false&pageToken=token&startChangeId=12345" },
     { true, 150, "token", 12345,
-      "?maxResults=150&pageToken=token&startChangeId=12345" },
+      "maxResults=150&pageToken=token&startChangeId=12345" },
     { false, 150, "token", 12345,
-      "?includeDeleted=false&maxResults=150&pageToken=token"
+      "includeDeleted=false&maxResults=150&pageToken=token"
       "&startChangeId=12345" },
     { true, 10, "token", 12345,
-      "?maxResults=10&pageToken=token&startChangeId=12345" },
+      "maxResults=10&pageToken=token&startChangeId=12345" },
     { false, 10, "token", 12345,
-      "?includeDeleted=false&maxResults=10&pageToken=token"
+      "includeDeleted=false&maxResults=10&pageToken=token"
       "&startChangeId=12345" },
   };
 
+  const std::string kV2ChangesUrlPrefix =
+      "https://www.example.com/drive/v2/changes";
+  const std::string kV2BetaChangesUrlPrefix =
+      "https://www.example.com/drive/v2beta/changes?"
+      "supportsTeamDrives=true&includeTeamDriveItems=true";
   for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
-    EXPECT_EQ("https://www.example.com/drive/v2/changes" +
+    EXPECT_EQ(kV2ChangesUrlPrefix +
+                  (kTestPatterns[i].expected_query.empty() ? "" : "?") +
                   kTestPatterns[i].expected_query,
               url_generator_.GetChangesListUrl(kTestPatterns[i].include_deleted,
                                                kTestPatterns[i].max_results,
                                                kTestPatterns[i].page_token,
                                                kTestPatterns[i].start_change_id)
+                  .spec());
+    EXPECT_EQ(kV2BetaChangesUrlPrefix +
+                  (kTestPatterns[i].expected_query.empty() ? "" : "&") +
+                  kTestPatterns[i].expected_query,
+              team_drives_url_generator_.GetChangesListUrl(
+                  kTestPatterns[i].include_deleted,
+                  kTestPatterns[i].max_results,
+                  kTestPatterns[i].page_token,
+                  kTestPatterns[i].start_change_id)
                   .spec());
   }
 }
