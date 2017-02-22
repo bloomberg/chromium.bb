@@ -42,13 +42,16 @@ EventWithDispatchType::EventWithDispatchType(
 EventWithDispatchType::~EventWithDispatchType() {}
 
 void EventWithDispatchType::CoalesceWith(const EventWithDispatchType& other) {
-  if (other.dispatch_type_ == DISPATCH_TYPE_BLOCKING) {
+  // If this event was blocking push the event id to the blocking
+  // list before updating the dispatch_type of this event.
+  if (dispatch_type_ == DISPATCH_TYPE_BLOCKING) {
     blocking_coalesced_event_ids_.push_back(
-        ui::WebInputEventTraits::GetUniqueTouchEventId(other.event()));
+        ui::WebInputEventTraits::GetUniqueTouchEventId(event()));
   } else {
     non_blocking_coalesced_count_++;
   }
   ScopedWebInputEventWithLatencyInfo::CoalesceWith(other);
+  dispatch_type_ = other.dispatch_type_;
   last_coalesced_timestamp_ = base::TimeTicks::Now();
 }
 
