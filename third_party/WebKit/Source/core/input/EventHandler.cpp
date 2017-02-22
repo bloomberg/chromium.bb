@@ -762,6 +762,9 @@ WebInputEventResult EventHandler::handleMouseMoveEvent(
 void EventHandler::handleMouseLeaveEvent(const WebMouseEvent& event) {
   TRACE_EVENT0("blink", "EventHandler::handleMouseLeaveEvent");
 
+  Page* page = m_frame->page();
+  if (page)
+    page->chromeClient().clearToolTip(*m_frame);
   handleMouseMoveOrLeaveEvent(event, Vector<WebMouseEvent>(), 0, false, true);
 }
 

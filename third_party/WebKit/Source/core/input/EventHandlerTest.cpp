@@ -4,6 +4,7 @@
 
 #include "core/input/EventHandler.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
@@ -11,11 +12,11 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/loader/EmptyClients.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -29,7 +30,7 @@ class EventHandlerTest : public ::testing::Test {
 
   void setHtmlInnerHTML(const char* htmlContent);
 
- private:
+ protected:
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
 
@@ -459,6 +460,65 @@ TEST_F(EventHandlerTest, dragEndInNewDrag) {
                                                        DragOperationNone);
 
   // This test passes if it doesn't crash.
+}
+
+class TooltipCapturingChromeClient : public EmptyChromeClient {
+ public:
+  TooltipCapturingChromeClient() {}
+
+  void setToolTip(LocalFrame&, const String& str, TextDirection) override {
+    m_lastToolTip = str;
+  }
+
+  String& lastToolTip() { return m_lastToolTip; }
+
+ private:
+  String m_lastToolTip;
+};
+
+class EventHandlerTooltipTest : public EventHandlerTest {
+ public:
+  EventHandlerTooltipTest() {}
+
+  void SetUp() override {
+    m_chromeClient = new TooltipCapturingChromeClient();
+    Page::PageClients clients;
+    fillWithEmptyClients(clients);
+    clients.chromeClient = m_chromeClient.get();
+    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &clients);
+  }
+
+  String& lastToolTip() { return m_chromeClient->lastToolTip(); }
+
+ private:
+  Persistent<TooltipCapturingChromeClient> m_chromeClient;
+};
+
+TEST_F(EventHandlerTooltipTest, mouseLeaveClearsTooltip) {
+  setHtmlInnerHTML(
+      "<style>.box { width: 100%; height: 100%; }</style>"
+      "<img src='image.png' class='box' title='tooltip'>link</img>");
+
+  EXPECT_EQ(WTF::String(), lastToolTip());
+
+  WebMouseEvent mouseMoveEvent(
+      WebInputEvent::MouseMove, WebFloatPoint(51, 50), WebFloatPoint(51, 50),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveEvent.setFrameScale(1);
+  document().frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveEvent, Vector<WebMouseEvent>());
+
+  EXPECT_EQ("tooltip", lastToolTip());
+
+  WebMouseEvent mouseLeaveEvent(
+      WebInputEvent::MouseLeave, WebFloatPoint(0, 0), WebFloatPoint(0, 0),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseLeaveEvent.setFrameScale(1);
+  document().frame()->eventHandler().handleMouseLeaveEvent(mouseLeaveEvent);
+
+  EXPECT_EQ(WTF::String(), lastToolTip());
 }
 
 }  // namespace blink
