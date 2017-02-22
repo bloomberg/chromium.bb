@@ -11401,4 +11401,15 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
   webViewHelper.reset();
 }
 
+TEST_F(WebFrameTest, ClearClosedOpener) {
+  FrameTestHelpers::TestWebViewClient openerWebViewClient;
+  FrameTestHelpers::WebViewHelper openerHelper;
+  openerHelper.initialize(false, nullptr, &openerWebViewClient);
+  FrameTestHelpers::WebViewHelper helper;
+  helper.initializeWithOpener(openerHelper.webView()->mainFrame());
+
+  openerHelper.reset();
+  EXPECT_EQ(nullptr, helper.webView()->mainFrameImpl()->opener());
+}
+
 }  // namespace blink

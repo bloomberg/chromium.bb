@@ -47,8 +47,6 @@ WebRemoteFrameImpl::~WebRemoteFrameImpl() {}
 DEFINE_TRACE(WebRemoteFrameImpl) {
   visitor->trace(m_frameClient);
   visitor->trace(m_frame);
-  visitor->template registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(
-      this);
   WebFrame::traceFrames(visitor, this);
   WebFrameImplBase::trace(visitor);
 }
@@ -71,6 +69,8 @@ WebRemoteFrame* WebRemoteFrameImpl::toWebRemoteFrame() {
 }
 
 void WebRemoteFrameImpl::close() {
+  WebRemoteFrame::close();
+
   m_selfKeepAlive.clear();
 }
 

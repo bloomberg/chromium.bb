@@ -10,7 +10,6 @@
 
 namespace blink {
 
-class Visitor;
 class WebFrame;
 
 // Small helper class to track the set of frames that a WebFrame has opened.
@@ -31,7 +30,8 @@ class OpenedFrameTracker {
   // opener for opened frames to point to the new frame being swapped in.
   void transferTo(WebFrame*);
 
-  void traceFrames(Visitor*);
+  // Helper function to clear the openers when the frame is being detached.
+  void dispose() { transferTo(nullptr); }
 
  private:
   WTF::HashSet<WebFrame*> m_openedFrames;

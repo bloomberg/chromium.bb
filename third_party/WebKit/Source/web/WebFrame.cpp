@@ -291,16 +291,6 @@ WebFrame::~WebFrame() {
   m_openedFrameTracker.reset(0);
 }
 
-ALWAYS_INLINE bool WebFrame::isFrameAlive(const WebFrame* frame) {
-  if (!frame)
-    return true;
-
-  if (frame->isWebLocalFrame())
-    return ThreadHeap::isHeapObjectAlive(toWebLocalFrameImpl(frame));
-
-  return ThreadHeap::isHeapObjectAlive(toWebRemoteFrameImpl(frame));
-}
-
 void WebFrame::traceFrame(Visitor* visitor, WebFrame* frame) {
   if (!frame)
     return;
@@ -317,13 +307,10 @@ void WebFrame::traceFrames(Visitor* visitor, WebFrame* frame) {
   for (WebFrame* child = frame->firstChild(); child;
        child = child->nextSibling())
     traceFrame(visitor, child);
-  // m_opener is a weak reference.
-  frame->m_openedFrameTracker->traceFrames(visitor);
 }
 
-void WebFrame::clearWeakFrames(Visitor* visitor) {
-  if (!isFrameAlive(m_opener))
-    m_opener = nullptr;
+void WebFrame::close() {
+  m_openedFrameTracker->dispose();
 }
 
 }  // namespace blink

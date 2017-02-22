@@ -112,7 +112,7 @@ class WebFrame {
   // This method closes and deletes the WebFrame. This is typically called by
   // the embedder in response to a frame detached callback to the WebFrame
   // client.
-  virtual void close() = 0;
+  virtual void close();
 
   // Called by the embedder when it needs to detach the subtree rooted at this
   // frame.
@@ -433,7 +433,6 @@ class WebFrame {
   bool inShadowTree() const { return m_scope == WebTreeScopeType::Shadow; }
 
   static void traceFrames(Visitor*, WebFrame*);
-  void clearWeakFrames(Visitor*);
 #endif
 
  protected:
@@ -452,7 +451,6 @@ class WebFrame {
   friend class WebFrameTest;
 
   static void traceFrame(Visitor*, WebFrame*);
-  static bool isFrameAlive(const WebFrame*);
 #endif
 
   const WebTreeScopeType m_scope;

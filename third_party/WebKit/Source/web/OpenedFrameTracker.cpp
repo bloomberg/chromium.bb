@@ -11,7 +11,9 @@ namespace blink {
 
 OpenedFrameTracker::OpenedFrameTracker() {}
 
-OpenedFrameTracker::~OpenedFrameTracker() {}
+OpenedFrameTracker::~OpenedFrameTracker() {
+  DCHECK(isEmpty());
+}
 
 bool OpenedFrameTracker::isEmpty() const {
   return m_openedFrames.isEmpty();
@@ -31,11 +33,6 @@ void OpenedFrameTracker::transferTo(WebFrame* opener) {
   HashSet<WebFrame*> frames(m_openedFrames);
   for (WebFrame* frame : frames)
     frame->setOpener(opener);
-}
-
-void OpenedFrameTracker::traceFrames(Visitor* visitor) {
-  for (WebFrame* frame : m_openedFrames)
-    WebFrame::traceFrame(visitor, frame);
 }
 
 }  // namespace blink
