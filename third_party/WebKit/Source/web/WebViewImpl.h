@@ -286,6 +286,7 @@ class WEB_EXPORT WebViewImpl final
 
   void setBaseBackgroundColor(WebColor);
   void setBaseBackgroundColorOverride(WebColor);
+  void clearBaseBackgroundColorOverride();
   void setBackgroundColorOverride(WebColor);
   void setZoomFactorOverride(float);
   void setCompositorDeviceScaleFactorOverride(float);
@@ -706,6 +707,7 @@ class WEB_EXPORT WebViewImpl final
   std::unique_ptr<FullscreenController> m_fullscreenController;
 
   WebColor m_baseBackgroundColor;
+  bool m_baseBackgroundColorOverrideEnabled;
   WebColor m_baseBackgroundColorOverride;
   WebColor m_backgroundColorOverride;
   float m_zoomFactorOverride;

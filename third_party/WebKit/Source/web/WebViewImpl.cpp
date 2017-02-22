@@ -372,6 +372,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       m_flingSourceDevice(WebGestureDeviceUninitialized),
       m_fullscreenController(FullscreenController::create(this)),
       m_baseBackgroundColor(Color::white),
+      m_baseBackgroundColorOverrideEnabled(false),
       m_baseBackgroundColorOverride(Color::transparent),
       m_backgroundColorOverride(Color::transparent),
       m_zoomFactorOverride(0),
@@ -2451,11 +2452,11 @@ WebColor WebViewImpl::backgroundColor() const {
   if (isTransparent())
     return Color::transparent;
   if (!m_page)
-    return m_baseBackgroundColor;
+    return baseBackgroundColor().rgb();
   if (!m_page->mainFrame())
-    return m_baseBackgroundColor;
+    return baseBackgroundColor().rgb();
   if (!m_page->mainFrame()->isLocalFrame())
-    return m_baseBackgroundColor;
+    return baseBackgroundColor().rgb();
   FrameView* view = m_page->deprecatedLocalMainFrame()->view();
   return view->documentBackgroundColor().rgb();
 }
@@ -3535,9 +3536,8 @@ WebInputMethodControllerImpl* WebViewImpl::getActiveWebInputMethodController()
 }
 
 Color WebViewImpl::baseBackgroundColor() const {
-  return alphaChannel(m_baseBackgroundColorOverride)
-             ? m_baseBackgroundColorOverride
-             : m_baseBackgroundColor;
+  return m_baseBackgroundColorOverrideEnabled ? m_baseBackgroundColorOverride
+                                              : m_baseBackgroundColor;
 }
 
 void WebViewImpl::setBaseBackgroundColor(WebColor color) {
@@ -3549,7 +3549,21 @@ void WebViewImpl::setBaseBackgroundColor(WebColor color) {
 }
 
 void WebViewImpl::setBaseBackgroundColorOverride(WebColor color) {
+  m_baseBackgroundColorOverrideEnabled = true;
   m_baseBackgroundColorOverride = color;
+  if (mainFrameImpl()) {
+    // Force lifecycle update to ensure we're good to call
+    // FrameView::setBaseBackgroundColor().
+    mainFrameImpl()
+        ->frame()
+        ->view()
+        ->updateLifecycleToCompositingCleanPlusScrolling();
+  }
+  updateBaseBackgroundColor();
+}
+
+void WebViewImpl::clearBaseBackgroundColorOverride() {
+  m_baseBackgroundColorOverrideEnabled = false;
   if (mainFrameImpl()) {
     // Force lifecycle update to ensure we're good to call
     // FrameView::setBaseBackgroundColor().

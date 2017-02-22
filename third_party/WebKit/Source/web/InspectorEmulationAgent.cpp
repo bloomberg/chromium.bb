@@ -188,7 +188,7 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
     Maybe<protocol::DOM::RGBA> color) {
   if (!color.isJust()) {
     // Clear the override and state.
-    webViewImpl()->setBaseBackgroundColorOverride(Color::transparent);
+    webViewImpl()->clearBaseBackgroundColorOverride();
     m_state->remove(EmulationAgentState::defaultBackgroundColorOverrideRGBA);
     return Response::OK();
   }
