@@ -7,20 +7,19 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_controller.h"
 
-@class TabHistoryViewController;
+#include "ios/web/public/navigation_item_list.h"
 
 // The view controller for the tab history menu that appears when the user long
 // presses the back or forward button.
 @interface TabHistoryPopupController : PopupMenuController
 
-// Initializes the popup to display |entries| with the given |origin| that is
+// Initializes the popup to display |items| with the given |origin| that is
 // relevant to the |parent|'s coordinate system.
 // |entries| is an array of CRWSessionEntries.
-// TODO(crbug.com/546355): Convert this class to use an array of
-//    NavigationEntries
 - (id)initWithOrigin:(CGPoint)origin
           parentView:(UIView*)parent
-             entries:(NSArray*)entries;
+               items:(const web::NavigationItemList&)items
+    NS_DESIGNATED_INITIALIZER;
 
 @end
 

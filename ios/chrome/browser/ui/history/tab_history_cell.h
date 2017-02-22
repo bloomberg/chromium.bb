@@ -7,18 +7,20 @@
 
 #import <UIKit/UIKit.h>
 
-@class CRWSessionEntry;
+namespace web {
+class NavigationItem;
+}
 
 // Table cell used in TabHistoryViewController.
 @interface TabHistoryCell : UICollectionViewCell
-@property(strong, nonatomic) CRWSessionEntry* entry;
-@property(weak, nonatomic, readonly) UILabel* titleLabel;
+@property(assign, nonatomic) const web::NavigationItem* item;
+@property(strong, nonatomic, readonly) UILabel* titleLabel;
 @end
 
 // Header for a section of TabHistoryCells.
 @interface TabHistorySectionHeader : UICollectionReusableView
-@property(weak, nonatomic, readonly) UIImageView* iconView;
-@property(weak, nonatomic, readonly) UIView* lineView;
+@property(strong, nonatomic, readonly) UIImageView* iconView;
+@property(strong, nonatomic, readonly) UIView* lineView;
 @end
 
 // Footer for a section of TabHistoryCells.

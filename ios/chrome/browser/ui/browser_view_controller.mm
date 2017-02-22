@@ -3361,7 +3361,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   DCHECK([tab navigationManager]);
   CRWSessionController* sc = [tab navigationManager]->GetSessionController();
   [_toolbarController showTabHistoryPopupInView:[self view]
-                             withSessionEntries:[sc backwardEntries]
+                                      withItems:[sc backwardItems]
                                  forBackHistory:YES];
 }
 
@@ -3377,14 +3377,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   DCHECK([tab navigationManager]);
   CRWSessionController* sc = [tab navigationManager]->GetSessionController();
   [_toolbarController showTabHistoryPopupInView:[self view]
-                             withSessionEntries:[sc forwardEntries]
+                                      withItems:[sc forwardItems]
                                  forBackHistory:NO];
 }
 
 - (void)navigateToSelectedEntry:(id)sender {
   DCHECK([sender isKindOfClass:[TabHistoryCell class]]);
   TabHistoryCell* selectedCell = (TabHistoryCell*)sender;
-  [[_model currentTab] goToItem:selectedCell.entry.navigationItem];
+  [[_model currentTab] goToItem:selectedCell.item];
   [_toolbarController dismissTabHistoryPopup];
 }
 

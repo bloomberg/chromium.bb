@@ -7,12 +7,21 @@
 
 #import <UIKit/UIKit.h>
 
-// View controller for displaying a list of CRWSessionEntry objects in a table.
+#include "ios/web/public/navigation_item_list.h"
+
+// View controller for displaying a list of NavigationItems in a table.
 @interface TabHistoryViewController : UICollectionViewController
 
-// TODO(crbug.com/546355): Convert this class to use an array of
-//    NavigationEntries.
-@property(nonatomic, strong) NSArray* sessionEntries;
+// Designated initializer that takes a NavigationItemList.
+- (instancetype)initWithItems:(const web::NavigationItemList&)items
+    NS_DESIGNATED_INITIALIZER;
+
+// TabHistoryViewControllers must be initialized with |-initWithItems:|.
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+- (instancetype)initWithCollectionViewLayout:(UICollectionViewLayout*)layout
+    NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 
 // Returns the optimal height needed to display the session entries.
 // The height returned is usually less than the |suggestedHeight| unless
