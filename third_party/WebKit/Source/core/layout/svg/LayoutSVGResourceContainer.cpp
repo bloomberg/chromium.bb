@@ -82,10 +82,10 @@ void LayoutSVGResourceContainer::styleDidChange(StyleDifference diff,
                                                 const ComputedStyle* oldStyle) {
   LayoutSVGHiddenContainer::styleDidChange(diff, oldStyle);
 
-  if (!m_registered) {
-    m_registered = true;
-    registerResource();
-  }
+  if (m_registered)
+    return;
+  m_registered = true;
+  svgTreeScopeResourcesFromElement(element()).updateResource(m_id, this);
 }
 
 void LayoutSVGResourceContainer::detachAllClients() {
@@ -116,8 +116,7 @@ void LayoutSVGResourceContainer::idChanged() {
       svgTreeScopeResourcesFromElement(element());
   treeScopeResources.removeResource(m_id);
   m_id = element()->getIdAttribute();
-
-  registerResource();
+  treeScopeResources.updateResource(m_id, this);
 }
 
 void LayoutSVGResourceContainer::markAllClientsForInvalidation(
@@ -207,38 +206,6 @@ void LayoutSVGResourceContainer::invalidateCacheAndMarkForLayout(
 
   if (everHadLayout())
     removeAllClientsFromCache();
-}
-
-void LayoutSVGResourceContainer::registerResource() {
-  SVGTreeScopeResources& treeScopeResources =
-      svgTreeScopeResourcesFromElement(element());
-  if (!treeScopeResources.hasPendingResource(m_id)) {
-    treeScopeResources.addResource(m_id, this);
-    return;
-  }
-
-  SVGTreeScopeResources::SVGPendingElements* clients(
-      treeScopeResources.removePendingResource(m_id));
-
-  // Cache us with the new id.
-  treeScopeResources.addResource(m_id, this);
-
-  // Update cached resources of pending clients.
-  for (const auto& pendingClient : *clients) {
-    DCHECK(pendingClient->hasPendingResources());
-    treeScopeResources.clearHasPendingResourcesIfPossible(pendingClient);
-    LayoutObject* layoutObject = pendingClient->layoutObject();
-    if (!layoutObject)
-      continue;
-    DCHECK(layoutObject->isSVG());
-
-    StyleDifference diff;
-    diff.setNeedsFullLayout();
-    SVGResourcesCache::clientStyleChanged(layoutObject, diff,
-                                          layoutObject->styleRef());
-    layoutObject->setNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::SvgResourceInvalidated);
-  }
 }
 
 static inline void removeFromCacheAndInvalidateDependencies(

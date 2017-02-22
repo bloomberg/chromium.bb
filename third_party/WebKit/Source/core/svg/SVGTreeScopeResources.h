@@ -30,7 +30,7 @@ class SVGTreeScopeResources
   explicit SVGTreeScopeResources(TreeScope*);
   ~SVGTreeScopeResources();
 
-  void addResource(const AtomicString& id, LayoutSVGResourceContainer*);
+  void updateResource(const AtomicString& id, LayoutSVGResourceContainer*);
   void removeResource(const AtomicString& id);
   LayoutSVGResourceContainer* resourceById(const AtomicString& id) const;
 

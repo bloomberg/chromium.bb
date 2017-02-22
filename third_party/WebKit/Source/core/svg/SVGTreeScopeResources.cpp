@@ -7,6 +7,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/TreeScope.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -21,13 +22,35 @@ SVGTreeScopeResources::SVGTreeScopeResources(TreeScope* treeScope) {
 
 SVGTreeScopeResources::~SVGTreeScopeResources() = default;
 
-void SVGTreeScopeResources::addResource(const AtomicString& id,
-                                        LayoutSVGResourceContainer* resource) {
+void SVGTreeScopeResources::updateResource(
+    const AtomicString& id,
+    LayoutSVGResourceContainer* resource) {
   DCHECK(resource);
   if (id.isEmpty())
     return;
-  // Replaces resource if already present, to handle potential id changes
+  // Replaces resource if already present, to handle potential id changes.
   m_resources.set(id, resource);
+
+  SVGPendingElements* pendingElements = m_pendingResources.take(id);
+  if (!pendingElements)
+    return;
+  // Update cached resources of pending clients.
+  for (Element* clientElement : *pendingElements) {
+    DCHECK(clientElement->hasPendingResources());
+    clearHasPendingResourcesIfPossible(clientElement);
+
+    LayoutObject* layoutObject = clientElement->layoutObject();
+    if (!layoutObject)
+      continue;
+    DCHECK(layoutObject->isSVG());
+
+    StyleDifference diff;
+    diff.setNeedsFullLayout();
+    SVGResourcesCache::clientStyleChanged(layoutObject, diff,
+                                          layoutObject->styleRef());
+    layoutObject->setNeedsLayoutAndFullPaintInvalidation(
+        LayoutInvalidationReason::SvgResourceInvalidated);
+  }
 }
 
 void SVGTreeScopeResources::removeResource(const AtomicString& id) {

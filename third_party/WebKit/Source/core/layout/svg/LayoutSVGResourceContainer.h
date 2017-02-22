@@ -99,8 +99,6 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   void removeClient(LayoutObject*);
   void detachAllClients();
 
-  void registerResource();
-
   AtomicString m_id;
   // Track global (markAllClientsForInvalidation) invals to avoid redundant
   // crawls.
