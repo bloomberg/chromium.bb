@@ -55,7 +55,6 @@ class ChildResourceMessageFilter;
 class FileSystemDispatcher;
 class InProcessChildThreadParams;
 class NotificationDispatcher;
-class PushDispatcher;
 class ServiceWorkerMessageFilter;
 class QuotaDispatcher;
 class QuotaMessageFilter;
@@ -136,10 +135,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   NotificationDispatcher* notification_dispatcher() const {
     return notification_dispatcher_.get();
-  }
-
-  PushDispatcher* push_dispatcher() const {
-    return push_dispatcher_.get();
   }
 
   IPC::SyncMessageFilter* sync_message_filter() const {
@@ -302,8 +297,6 @@ class CONTENT_EXPORT ChildThreadImpl
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
-
-  scoped_refptr<PushDispatcher> push_dispatcher_;
 
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 

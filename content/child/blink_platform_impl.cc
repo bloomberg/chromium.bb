@@ -41,7 +41,6 @@
 #include "content/child/content_child_helpers.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/notifications/notification_manager.h"
-#include "content/child/push_messaging/push_dispatcher.h"
 #include "content/child/push_messaging/push_provider.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_url_loader_impl.h"
@@ -365,7 +364,6 @@ void BlinkPlatformImpl::InternalInit() {
     thread_safe_sender_ = ChildThreadImpl::current()->thread_safe_sender();
     notification_dispatcher_ =
         ChildThreadImpl::current()->notification_dispatcher();
-    push_dispatcher_ = ChildThreadImpl::current()->push_dispatcher();
   }
 }
 
@@ -735,11 +733,7 @@ BlinkPlatformImpl::notificationManager() {
 }
 
 blink::WebPushProvider* BlinkPlatformImpl::pushProvider() {
-  if (!thread_safe_sender_.get() || !push_dispatcher_.get())
-    return nullptr;
-
-  return PushProvider::ThreadSpecificInstance(thread_safe_sender_.get(),
-                                              push_dispatcher_.get());
+  return PushProvider::ThreadSpecificInstance(main_thread_task_runner_);
 }
 
 WebThemeEngine* BlinkPlatformImpl::themeEngine() {

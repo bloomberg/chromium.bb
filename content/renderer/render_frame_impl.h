@@ -145,7 +145,7 @@ class MediaPermissionDispatcher;
 class NavigationState;
 class PepperPluginInstanceImpl;
 class PresentationDispatcher;
-class PushMessagingDispatcher;
+class PushMessagingClient;
 class RelatedAppsFetcher;
 class RenderAccessibilityImpl;
 class RendererMediaPlayerManager;
@@ -1282,12 +1282,12 @@ class CONTENT_EXPORT RenderFrameImpl
   // local roots.
   DevToolsAgent* devtools_agent_;
 
-  // The push messaging dispatcher attached to this frame, lazily initialized.
-  PushMessagingDispatcher* push_messaging_dispatcher_;
-
   // The presentation dispatcher implementation attached to this frame, lazily
   // initialized.
   PresentationDispatcher* presentation_dispatcher_;
+
+  // The PushMessagingClient attached to this frame, lazily initialized.
+  PushMessagingClient* push_messaging_client_;
 
   std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;

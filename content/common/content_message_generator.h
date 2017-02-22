@@ -34,7 +34,6 @@
 #include "content/common/memory_messages.h"
 #include "content/common/page_messages.h"
 #include "content/common/platform_notification_messages.h"
-#include "content/common/push_messaging_messages.h"
 #include "content/common/quota_messages.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"

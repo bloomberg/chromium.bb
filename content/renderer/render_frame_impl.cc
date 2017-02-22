@@ -129,7 +129,7 @@
 #include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/presentation/presentation_dispatcher.h"
-#include "content/renderer/push_messaging/push_messaging_dispatcher.h"
+#include "content/renderer/push_messaging/push_messaging_client.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -1094,8 +1094,8 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #endif
       media_surface_manager_(nullptr),
       devtools_agent_(nullptr),
-      push_messaging_dispatcher_(NULL),
       presentation_dispatcher_(NULL),
+      push_messaging_client_(NULL),
       screen_orientation_dispatcher_(NULL),
       manifest_manager_(NULL),
       accessibility_mode_(AccessibilityModeOff),
@@ -4576,9 +4576,9 @@ blink::WebPresentationClient* RenderFrameImpl::presentationClient() {
 }
 
 blink::WebPushClient* RenderFrameImpl::pushClient() {
-  if (!push_messaging_dispatcher_)
-    push_messaging_dispatcher_ = new PushMessagingDispatcher(this);
-  return push_messaging_dispatcher_;
+  if (!push_messaging_client_)
+    push_messaging_client_ = new PushMessagingClient(this);
+  return push_messaging_client_;
 }
 
 blink::WebRelatedAppsFetcher* RenderFrameImpl::relatedAppsFetcher() {

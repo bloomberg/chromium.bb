@@ -1,0 +1,161 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+import "url/mojo/url.mojom";
+
+// TODO(heke): The type-mapping struct and enums are duplicately defined. Need
+// to remove/replace those defined in content or blink namespace.
+
+struct PushSubscriptionOptions {
+  bool user_visible_only;
+  string sender_info;
+};
+
+// Push registration success/error codes for internal use & reporting in UMA.
+// Enum values can be added, but must never be renumbered or deleted and reused.
+enum PushRegistrationStatus {
+  // New successful registration (there was not yet a registration cached in
+  // Service Worker storage, so the browser successfully registered with the
+  // push service. This is likely to be a new push registration, though it's
+  // possible that the push service had its own cache (for example if Chrome's
+  // app data was cleared, we might have forgotten about a registration that the
+  // push service still stores).
+  SUCCESS_FROM_PUSH_SERVICE = 0,
+
+  // Registration failed because there is no Service Worker.
+  NO_SERVICE_WORKER = 1,
+
+  // Registration failed because the push service is not available.
+  SERVICE_NOT_AVAILABLE = 2,
+
+  // Registration failed because the maximum number of registratons has been
+  // reached.
+  LIMIT_REACHED = 3,
+
+  // Registration failed because permission was denied.
+  PERMISSION_DENIED = 4,
+
+  // Registration failed in the push service implemented by the embedder.
+  SERVICE_ERROR = 5,
+
+  // Registration failed because no sender id was provided by the page.
+  NO_SENDER_ID = 6,
+
+  // Registration succeeded, but we failed to persist it.
+  STORAGE_ERROR = 7,
+
+  // A successful registration was already cached in Service Worker storage.
+  SUCCESS_FROM_CACHE = 8,
+
+  // Registration failed due to a network error.
+  NETWORK_ERROR = 9,
+
+  // Registration failed because the push service is not available in incognito,
+  // but we tell JS that permission was denied to not reveal incognito.
+  INCOGNITO_PERMISSION_DENIED = 10,
+
+  // Registration failed because the public key could not be retrieved.
+  PUBLIC_KEY_UNAVAILABLE = 11,
+
+  // Registration failed because the manifest could not be retrieved or was
+  // empty.
+  MANIFEST_EMPTY_OR_MISSING = 12,
+
+  // Registration failed because a subscription with a different sender id
+  // already exists.
+  SENDER_ID_MISMATCH = 13,
+
+  // NOTE: Do not renumber these as that would confuse interpretation of
+  // previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
+  // update LAST below.
+
+  LAST = SENDER_ID_MISMATCH
+};
+
+enum PushErrorType {
+  ABORT = 0,
+  NETWORK = 1,
+  NOT_ALLOWED = 2,
+  NOT_FOUND = 3,
+  NOT_SUPPORTED = 4,
+  UNKNOWN = 5,
+  INVALID_STATE = 6,
+  LAST = INVALID_STATE
+};
+
+// Push getregistration success/error codes for internal use & reporting in UMA.
+// Enum values can be added, but must never be renumbered or deleted and reused.
+enum PushGetRegistrationStatus {
+  // Getting the registration was successful.
+  SUCCESS = 0,
+
+  // Getting the registration failed because the push service is not available.
+  SERVICE_NOT_AVAILABLE = 1,
+
+  // Getting the registration failed because we failed to read from storage.
+  STORAGE_ERROR = 2,
+
+  // Getting the registration failed because there is no push registration.
+  REGISTRATION_NOT_FOUND = 3,
+
+  // Getting the registration failed because the push service isn't available in
+  // incognito, but we tell JS registration not found to not reveal incognito.
+  INCOGNITO_REGISTRATION_NOT_FOUND = 4,
+
+  // Registration failed because the public key could not be retrieved.
+  PUBLIC_KEY_UNAVAILABLE = 5,
+
+  // NOTE: Do not renumber these as that would confuse interpretation of
+  // previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
+  // update LAST below.
+
+  LAST = PUBLIC_KEY_UNAVAILABLE
+};
+
+enum PushPermissionStatus {
+  GRANTED = 0,
+  DENIED = 1,
+  PROMPT = 2,
+  LAST = PROMPT
+};
+
+interface PushMessaging {
+  Subscribe(int32 render_frame_id,
+            int64 service_worker_registration_id,
+            PushSubscriptionOptions options)
+           => (PushRegistrationStatus status,
+               url.mojom.Url? endpoint,
+               PushSubscriptionOptions? options,
+               array<uint8>? p256dh,
+               array<uint8>? auth);
+
+  // It returns |did_unsubscribe| if is_success is true, and returns
+  // |error_type| and |error_message| if is_success is false.
+  Unsubscribe(int64 service_worker_registration_id)
+             => (bool is_success,
+                 bool did_unsubscribe,
+                 PushErrorType error_type,
+                 string? error_message);
+
+  GetSubscription(int64 service_worker_registration_id)
+                 => (PushGetRegistrationStatus status,
+                     url.mojom.Url? endpoint,
+                     PushSubscriptionOptions? options,
+                     array<uint8>? p256dh,
+                     array<uint8>? auth);
+
+  // It returns |status| if |is_success| is true and returns |error| if
+  // |is_success| is false.
+  GetPermissionStatus(int64 service_worker_registration_id,
+                      bool user_visible)
+                     => (bool is_success,
+                         // |status| is meaningful when (is_success == true)
+                         PushPermissionStatus status,
+                         // |error| is meaningful when (is_success == false)
+                         PushErrorType error);
+};

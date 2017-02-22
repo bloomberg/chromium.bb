@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_DISPATCHER_H_
-#define CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_CLIENT_H_
+#define CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_CLIENT_H_
 
 #include <stdint.h>
 
@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/id_map.h"
 #include "base/macros.h"
+#include "content/common/push_messaging.mojom.h"
 #include "content/public/common/push_messaging_status.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushClient.h"
@@ -24,25 +24,20 @@ namespace blink {
 struct WebPushSubscriptionOptions;
 }
 
-namespace IPC {
-class Message;
-}  // namespace IPC
-
 namespace content {
 
 struct Manifest;
 struct ManifestDebugInfo;
 struct PushSubscriptionOptions;
 
-class PushMessagingDispatcher : public RenderFrameObserver,
-                                public blink::WebPushClient {
+class PushMessagingClient : public RenderFrameObserver,
+                            public blink::WebPushClient {
  public:
-  explicit PushMessagingDispatcher(RenderFrame* render_frame);
-  ~PushMessagingDispatcher() override;
+  explicit PushMessagingClient(RenderFrame* render_frame);
+  ~PushMessagingClient() override;
 
  private:
   // RenderFrameObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
 
   // WebPushClient implementation.
@@ -64,21 +59,19 @@ class PushMessagingDispatcher : public RenderFrameObserver,
       const PushSubscriptionOptions& options,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks);
 
-  void OnSubscribeFromDocumentSuccess(int32_t request_id,
-                                      const GURL& endpoint,
-                                      const PushSubscriptionOptions& options,
-                                      const std::vector<uint8_t>& p256dh,
-                                      const std::vector<uint8_t>& auth);
+  void SubscribeCallback(
+      std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
+      content::PushRegistrationStatus status,
+      const base::Optional<GURL>& endpoint,
+      const base::Optional<content::PushSubscriptionOptions>& options,
+      const base::Optional<std::vector<uint8_t>>& p256dh,
+      const base::Optional<std::vector<uint8_t>>& auth);
 
-  void OnSubscribeFromDocumentError(int32_t request_id,
-                                    PushRegistrationStatus status);
+  mojom::PushMessagingPtr push_messaging_manager_;
 
-  IDMap<std::unique_ptr<blink::WebPushSubscriptionCallbacks>>
-      subscription_callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(PushMessagingDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(PushMessagingClient);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_CLIENT_H_

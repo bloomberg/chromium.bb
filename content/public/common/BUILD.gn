@@ -191,6 +191,7 @@ source_set("common_sources") {
     "process_type.h",
     "push_messaging_status.cc",
     "push_messaging_status.h",
+    "push_subscription_options.h",
     "quarantine.h",
     "referrer.cc",
     "referrer.h",

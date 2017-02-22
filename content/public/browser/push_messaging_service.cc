@@ -5,7 +5,7 @@
 #include "content/public/browser/push_messaging_service.h"
 
 #include "base/callback.h"
-#include "content/browser/push_messaging/push_messaging_message_filter.h"
+#include "content/browser/push_messaging/push_messaging_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"

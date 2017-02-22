@@ -45,7 +45,6 @@ class WebThreadBase;
 namespace content {
 
 class NotificationDispatcher;
-class PushDispatcher;
 class ThreadSafeSender;
 class WebCryptoImpl;
 
@@ -137,7 +136,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
-  scoped_refptr<PushDispatcher> push_dispatcher_;
 
   blink::scheduler::WebThreadBase* compositor_thread_;
 };

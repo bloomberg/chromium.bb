@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_MESSAGE_FILTER_H_
-#define CONTENT_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_MESSAGE_FILTER_H_
+#ifndef CONTENT_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_MANAGER_H_
+#define CONTENT_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_MANAGER_H_
 
 #include <stdint.h>
 
@@ -13,9 +13,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/push_messaging.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
-#include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/push_messaging_status.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -28,54 +30,64 @@ struct PushSubscriptionOptions;
 extern const char kPushSenderIdServiceWorkerKey[];
 extern const char kPushRegistrationIdServiceWorkerKey[];
 
-class PushMessagingMessageFilter : public BrowserMessageFilter {
+class PushMessagingManager : public mojom::PushMessaging {
  public:
-  PushMessagingMessageFilter(
-      int render_process_id,
-      ServiceWorkerContextWrapper* service_worker_context);
+  PushMessagingManager(int render_process_id,
+                       ServiceWorkerContextWrapper* service_worker_context);
+
+  void BindRequest(mojom::PushMessagingRequest request);
+
+  // mojom::PushMessaging impl, run on IO thread.
+  void Subscribe(int32_t render_frame_id,
+                 int64_t service_worker_registration_id,
+                 const PushSubscriptionOptions& options,
+                 const SubscribeCallback& callback) override;
+  void Unsubscribe(int64_t service_worker_registration_id,
+                   const UnsubscribeCallback& callback) override;
+  void GetSubscription(int64_t service_worker_registration_id,
+                       const GetSubscriptionCallback& callback) override;
+  void GetPermissionStatus(
+      int64_t service_worker_registration_id,
+      bool user_visible,
+      const GetPermissionStatusCallback& callback) override;
 
  private:
   struct RegisterData;
   class Core;
 
   friend class BrowserThread;
-  friend class base::DeleteHelper<PushMessagingMessageFilter>;
+  friend class base::DeleteHelper<PushMessagingManager>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
-  ~PushMessagingMessageFilter() override;
-
-  // BrowserMessageFilter implementation.
-  void OnDestruct() const override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  // Subscribe methods on IO thread --------------------------------------------
-
-  void OnSubscribe(int render_frame_id,
-                   int request_id,
-                   int64_t service_worker_registration_id,
-                   const PushSubscriptionOptions& options);
+  ~PushMessagingManager() override;
 
   void DidCheckForExistingRegistration(
+      const SubscribeCallback& callback,
       const RegisterData& data,
       const std::vector<std::string>& push_registration_id,
       ServiceWorkerStatusCode service_worker_status);
 
-  void DidGetEncryptionKeys(const RegisterData& data,
+  void DidGetEncryptionKeys(const SubscribeCallback& callback,
+                            const RegisterData& data,
                             const std::string& push_registration_id,
                             bool success,
                             const std::vector<uint8_t>& p256dh,
                             const std::vector<uint8_t>& auth);
 
-  void DidGetSenderIdFromStorage(const RegisterData& data,
+  void DidGetSenderIdFromStorage(const SubscribeCallback& callback,
+                                 const RegisterData& data,
                                  const std::vector<std::string>& sender_id,
                                  ServiceWorkerStatusCode service_worker_status);
 
   // Called via PostTask from UI thread.
-  void PersistRegistrationOnIO(const RegisterData& data,
+  void PersistRegistrationOnIO(const SubscribeCallback& callback,
+                               const RegisterData& data,
                                const std::string& push_registration_id,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth);
 
   void DidPersistRegistrationOnIO(
+      const SubscribeCallback& callback,
       const RegisterData& data,
       const std::string& push_registration_id,
       const std::vector<uint8_t>& p256dh,
@@ -83,58 +95,40 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
       ServiceWorkerStatusCode service_worker_status);
 
   // Called both from IO thread, and via PostTask from UI thread.
-  void SendSubscriptionError(const RegisterData& data,
+  void SendSubscriptionError(const SubscribeCallback& callback,
+                             const RegisterData& data,
                              PushRegistrationStatus status);
   // Called both from IO thread, and via PostTask from UI thread.
-  void SendSubscriptionSuccess(const RegisterData& data,
+  void SendSubscriptionSuccess(const SubscribeCallback& callback,
+                               const RegisterData& data,
                                PushRegistrationStatus status,
                                const std::string& push_subscription_id,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth);
 
-  // Unsubscribe methods on IO thread ------------------------------------------
-
-  void OnUnsubscribe(int request_id, int64_t service_worker_registration_id);
-
   void UnsubscribeHavingGottenSenderId(
-      int request_id,
+      const UnsubscribeCallback& callback,
       int64_t service_worker_registration_id,
       const GURL& requesting_origin,
       const std::vector<std::string>& sender_id,
       ServiceWorkerStatusCode service_worker_status);
 
   // Called both from IO thread, and via PostTask from UI thread.
-  void DidUnregister(int request_id,
+  void DidUnregister(const UnsubscribeCallback& callback,
                      PushUnregistrationStatus unregistration_status);
 
-  // GetSubscription methods on IO thread --------------------------------------
-
-  void OnGetSubscription(int request_id,
-                         int64_t service_worker_registration_id);
-
   void DidGetSubscription(
-      int request_id,
+      const GetSubscriptionCallback& callback,
       int64_t service_worker_registration_id,
       const std::vector<std::string>& push_subscription_id_and_sender_info,
       ServiceWorkerStatusCode service_worker_status);
 
-  void DidGetSubscriptionKeys(int request_id,
+  void DidGetSubscriptionKeys(const GetSubscriptionCallback& callback,
                               const GURL& endpoint,
                               const std::string& sender_info,
                               bool success,
                               const std::vector<uint8_t>& p256dh,
                               const std::vector<uint8_t>& auth);
-
-  // GetPermission methods on IO thread ----------------------------------------
-
-  void OnGetPermissionStatus(int request_id,
-                             int64_t service_worker_registration_id,
-                             bool user_visible);
-
-  // Helper methods on IO thread -----------------------------------------------
-
-  // Called via PostTask from UI thread.
-  void SendIPC(std::unique_ptr<IPC::Message> message);
 
   // Helper methods on either thread -------------------------------------------
 
@@ -154,11 +148,13 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   GURL default_endpoint_;
   GURL web_push_protocol_endpoint_;
 
-  base::WeakPtrFactory<PushMessagingMessageFilter> weak_factory_io_to_io_;
+  mojo::BindingSet<mojom::PushMessaging> bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(PushMessagingMessageFilter);
+  base::WeakPtrFactory<PushMessagingManager> weak_factory_io_to_io_;
+
+  DISALLOW_COPY_AND_ASSIGN(PushMessagingManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_MANAGER_H_
