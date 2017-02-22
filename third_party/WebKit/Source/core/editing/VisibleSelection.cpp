@@ -190,7 +190,7 @@ VisibleSelectionTemplate<Strategy>::toNormalizedEphemeralRange() const {
   // in the course of running edit commands which modify the DOM.
   // Failing to ensure this can result in equivalentXXXPosition calls returning
   // incorrect results.
-  DCHECK(!m_start.document()->needsLayoutTreeUpdate());
+  DCHECK(!needsLayoutTreeUpdate(m_start)) << *this;
 
   if (isCaret()) {
     // If the selection is a caret, move the range start upstream. This

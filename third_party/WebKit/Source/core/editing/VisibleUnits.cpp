@@ -2844,6 +2844,7 @@ template <typename Strategy>
 static PositionTemplate<Strategy> mostBackwardCaretPosition(
     const PositionTemplate<Strategy>& position,
     EditingBoundaryCrossingRule rule) {
+  DCHECK(!needsLayoutTreeUpdate(position)) << position;
   TRACE_EVENT0("input", "VisibleUnits::mostBackwardCaretPosition");
 
   Node* startNode = position.anchorNode();

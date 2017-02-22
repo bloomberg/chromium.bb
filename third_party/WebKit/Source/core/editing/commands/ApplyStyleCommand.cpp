@@ -1397,6 +1397,11 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style,
       pushDownStart.computeOffsetInContainerNode() ==
           pushDownStartContainer->maxCharacterOffset())
     pushDownStart = nextVisuallyDistinctCandidate(pushDownStart);
+
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   Position pushDownEnd = mostBackwardCaretPosition(end);
   // If pushDownEnd is at the start of a text node, then this node is not fully
   // selected. Move it to the previous deep equivalent position to avoid

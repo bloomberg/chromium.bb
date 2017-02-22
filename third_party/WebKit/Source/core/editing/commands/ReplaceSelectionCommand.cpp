@@ -253,6 +253,10 @@ ReplacementFragment::ReplacementFragment(Document* document,
   if (text != evt->text() || !hasRichlyEditableStyle(*editableRoot)) {
     restoreAndRemoveTestRenderingNodesToFragment(holder);
 
+    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    document->updateStyleAndLayoutIgnorePendingStylesheets();
+
     m_fragment = createFragmentFromText(selection.toNormalizedEphemeralRange(),
                                         evt->text());
     if (!m_fragment->hasChildren())
