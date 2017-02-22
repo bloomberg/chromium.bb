@@ -472,6 +472,15 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
   SdpMessage sdp_message(description_sdp);
   UpdateCodecParameters(&sdp_message, /*incoming=*/false);
   description_sdp = sdp_message.ToString();
+  webrtc::SdpParseError parse_error;
+  description.reset(webrtc::CreateSessionDescription(
+      description->type(), description_sdp, &parse_error));
+  if (!description) {
+    LOG(ERROR) << "Failed to parse the session description: "
+               << parse_error.description << " line: " << parse_error.line;
+    Close(CHANNEL_CONNECTION_ERROR);
+    return;
+  }
 
   // Format and send the session description to the peer.
   std::unique_ptr<XmlElement> transport_info(

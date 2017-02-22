@@ -623,7 +623,7 @@ TEST_P(ConnectionTest, VideoStats) {
 }
 
 // Disabling due to failures after WebRTC roll http://crbug.com/685910
-TEST_P(ConnectionTest, DISABLED_Audio) {
+TEST_P(ConnectionTest, Audio) {
   Connect();
 
   std::unique_ptr<AudioStream> audio_stream =
