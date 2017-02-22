@@ -9,7 +9,7 @@ var test = function () {
   }
 
   function createCookie(data) {
-    const cookie = new SDK.Cookie(null, data.name, data.value);
+    const cookie = new SDK.Cookie(data.name, data.value);
     for (let key in data) {
       if (key === 'name' || key === 'value')
         continue;
@@ -20,7 +20,7 @@ var test = function () {
   }
 
   function createSortAndDumpCookies(cookieData, column, isAsc) {
-    const table = new CookieTable.CookiesTable(true);
+    const table = new CookieTable.CookiesTable(SDK.targetManager.mainTarget(), true);
     const cookies = cookieData.map(createCookie);
     table._dataGrid = {isSortOrderAscending: () => isAsc, sortColumnId: () => column};
     table._sortCookies(cookies);
