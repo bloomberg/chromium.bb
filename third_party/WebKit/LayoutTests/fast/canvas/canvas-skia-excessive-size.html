@@ -1,37 +1,21 @@
-<head>
-<script>
-function print(message)
-{
-    var paragraph = document.createElement("li");
-    paragraph.appendChild(document.createTextNode(message));
-    document.getElementById("console").appendChild(paragraph);
-}
-function test()
-{
-    if (window.testRunner)
-        testRunner.dumpAsText();
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<canvas id="bigCanvas" width="134217728" height="1"></canvas>
 
+<script>
+function runTest() {
     var canvas = document.getElementById("bigCanvas");
     var width = canvas.width;
-    // We need to perform a context fetch to force allocation of
-    // canvas resources.
-    if (canvas.getContext)
-    {
-      var ctx = canvas.getContext("2d");
-      if (ctx == null)
-      {
-        print("Canvas 2d context = null!");
-      }
-    }
-
-    print("Survived canvas creation attempt. Width = " + width);
+    // We need to perform a context fetch to force allocation of canvas resources.
+    var ctx = canvas.getContext("2d");
+    assert_false(ctx == null);
+    assert_equals(canvas.width, 134217728);
 }
+
+async_test(t => {
+        window.onload = function() {
+            t.step(runTest);
+            t.done();
+        }
+}, 'Verifies if the browser survives the attempted creation of an excessively large canvas.');
 </script>
-</head>
-<body onload="test();">
-<canvas id="bigCanvas" width="134217728" height="1"></canvas>
-<p>This test checks to see if the browser survives the attempted creation
-of an excessively large canvas.</p>
-<hr>
-<p><ol id=console></ol></p>
-</body>
