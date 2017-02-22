@@ -1529,6 +1529,22 @@
             ]
         }
     ],
+    "OmniboxBundledExperimentV1": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Beta_Android_PhysWeb_QuerySuggest_Experiment",
+                    "params": {
+                        "PhysicalWebAfterTyping": "true",
+                        "PhysicalWebZeroSuggest": "true"
+                    }
+                }
+            ]
+        }
+    ],
     "OutOfProcessPac": [
         {
             "platforms": [
