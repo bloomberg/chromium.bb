@@ -214,7 +214,7 @@ void InterfaceRegistry::GetInterface(const std::string& interface_name,
 
       std::stringstream details;
       Serialize(&details);
-      LOG(WARNING) << details.str();
+      DVLOG(1) << details.str();
     }
   } else {
     std::stringstream error;
@@ -226,7 +226,7 @@ void InterfaceRegistry::GetInterface(const std::string& interface_name,
 
     std::stringstream details;
     Serialize(&details);
-    LOG(WARNING) << details.str();
+    DVLOG(1) << details.str();
   }
 }
 
