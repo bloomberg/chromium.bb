@@ -7900,6 +7900,116 @@ typedef struct {
 #endif  // CONFIG_EXT_INTER
 } HandleInterModeArgs;
 
+static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                            const BLOCK_SIZE bsize,
+                            int_mv (*const mode_mv)[TOTAL_REFS_PER_FRAME],
+                            const int mi_row, const int mi_col,
+                            int *const rate_mv, int_mv *const single_newmv,
+                            HandleInterModeArgs *const opt_args) {
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  const int is_comp_pred = has_second_ref(mbmi);
+  const PREDICTION_MODE this_mode = mbmi->mode;
+#if CONFIG_EXT_INTER
+  const int mv_idx = (this_mode == NEWFROMNEARMV) ? 1 : 0;
+  const int is_comp_interintra_pred = (mbmi->ref_frame[1] == INTRA_FRAME);
+#endif  // CONFIG_EXT_INTER
+  int_mv *const frame_mv = mode_mv[this_mode];
+  const int refs[2] = { mbmi->ref_frame[0],
+                        mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1] };
+  int i;
+
+  (void)opt_args;
+
+  if (is_comp_pred) {
+#if CONFIG_EXT_INTER
+    for (i = 0; i < 2; ++i) {
+      single_newmv[refs[i]].as_int =
+          opt_args->single_newmvs[mv_idx][refs[i]].as_int;
+    }
+
+    if (this_mode == NEW_NEWMV) {
+      frame_mv[refs[0]].as_int = single_newmv[refs[0]].as_int;
+      frame_mv[refs[1]].as_int = single_newmv[refs[1]].as_int;
+
+      if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
+        joint_motion_search(cpi, x, bsize, frame_mv, mi_row, mi_col, NULL,
+                            single_newmv, rate_mv, 0);
+      } else {
+        *rate_mv = 0;
+        for (i = 0; i < 2; ++i) {
+#if CONFIG_REF_MV
+          av1_set_mvcost(x, mbmi->ref_frame[i], i, mbmi->ref_mv_idx);
+#endif  // CONFIG_REF_MV
+          *rate_mv += av1_mv_bit_cost(
+              &frame_mv[refs[i]].as_mv, &mbmi_ext->ref_mvs[refs[i]][0].as_mv,
+              x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
+        }
+      }
+    } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
+      frame_mv[refs[1]].as_int = single_newmv[refs[1]].as_int;
+      *rate_mv = av1_mv_bit_cost(&frame_mv[refs[1]].as_mv,
+                                 &mbmi_ext->ref_mvs[refs[1]][0].as_mv,
+                                 x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
+    } else {
+      frame_mv[refs[0]].as_int = single_newmv[refs[0]].as_int;
+      *rate_mv = av1_mv_bit_cost(&frame_mv[refs[0]].as_mv,
+                                 &mbmi_ext->ref_mvs[refs[0]][0].as_mv,
+                                 x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
+    }
+#else
+    // Initialize mv using single prediction mode result.
+    frame_mv[refs[0]].as_int = single_newmv[refs[0]].as_int;
+    frame_mv[refs[1]].as_int = single_newmv[refs[1]].as_int;
+
+    if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
+      joint_motion_search(cpi, x, bsize, frame_mv, mi_row, mi_col, single_newmv,
+                          rate_mv, 0);
+    } else {
+      *rate_mv = 0;
+      for (i = 0; i < 2; ++i) {
+#if CONFIG_REF_MV
+        av1_set_mvcost(x, mbmi->ref_frame[i], i, mbmi->ref_mv_idx);
+#endif  // CONFIG_REF_MV
+        *rate_mv += av1_mv_bit_cost(&frame_mv[refs[i]].as_mv,
+                                    &mbmi_ext->ref_mvs[refs[i]][0].as_mv,
+                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
+      }
+    }
+#endif  // CONFIG_EXT_INTER
+  } else {
+#if CONFIG_EXT_INTER
+    if (is_comp_interintra_pred) {
+      x->best_mv = opt_args->single_newmvs[mv_idx][refs[0]];
+      *rate_mv = opt_args->single_newmvs_rate[mv_idx][refs[0]];
+    } else {
+      single_motion_search(cpi, x, bsize, mi_row, mi_col, 0, mv_idx, rate_mv);
+      opt_args->single_newmvs[mv_idx][refs[0]] = x->best_mv;
+      opt_args->single_newmvs_rate[mv_idx][refs[0]] = *rate_mv;
+    }
+#else
+    single_motion_search(cpi, x, bsize, mi_row, mi_col, rate_mv);
+    single_newmv[refs[0]] = x->best_mv;
+#endif  // CONFIG_EXT_INTER
+
+    if (x->best_mv.as_int == INVALID_MV) return INT64_MAX;
+
+    frame_mv[refs[0]] = x->best_mv;
+    xd->mi[0]->bmi[0].as_mv[0] = x->best_mv;
+
+    // Estimate the rate implications of a new mv but discount this
+    // under certain circumstances where we want to help initiate a weak
+    // motion field, where the distortion gain for a single block may not
+    // be enough to overcome the cost of a new mv.
+    if (discount_newmv_test(cpi, this_mode, x->best_mv, mode_mv, refs[0])) {
+      *rate_mv = AOMMAX(*rate_mv / NEW_MV_DISCOUNT_FACTOR, 1);
+    }
+  }
+
+  return 0;
+}
+
 // TODO(afergs): put arrays of size TOTAL_REFS_PER_FRAME in a single struct
 static int64_t handle_inter_mode(
     const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
@@ -8019,94 +8129,13 @@ static int64_t handle_inter_mode(
 
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   if (have_newmv_in_inter_mode(this_mode)) {
-    if (is_comp_pred) {
-#if CONFIG_EXT_INTER
-      for (i = 0; i < 2; ++i) {
-        single_newmv[refs[i]].as_int =
-            opt_args->single_newmvs[mv_idx][refs[i]].as_int;
-      }
-
-      if (this_mode == NEW_NEWMV) {
-        frame_mv[refs[0]].as_int = single_newmv[refs[0]].as_int;
-        frame_mv[refs[1]].as_int = single_newmv[refs[1]].as_int;
-
-        if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
-          joint_motion_search(cpi, x, bsize, frame_mv, mi_row, mi_col, NULL,
-                              single_newmv, &rate_mv, 0);
-        } else {
-          rate_mv = 0;
-          for (i = 0; i < 2; ++i) {
-#if CONFIG_REF_MV
-            av1_set_mvcost(x, mbmi->ref_frame[i], i, mbmi->ref_mv_idx);
-#endif  // CONFIG_REF_MV
-            rate_mv += av1_mv_bit_cost(
-                &frame_mv[refs[i]].as_mv, &mbmi_ext->ref_mvs[refs[i]][0].as_mv,
-                x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
-          }
-        }
-      } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
-        frame_mv[refs[1]].as_int = single_newmv[refs[1]].as_int;
-        rate_mv = av1_mv_bit_cost(&frame_mv[refs[1]].as_mv,
-                                  &mbmi_ext->ref_mvs[refs[1]][0].as_mv,
-                                  x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
-      } else {
-        frame_mv[refs[0]].as_int = single_newmv[refs[0]].as_int;
-        rate_mv = av1_mv_bit_cost(&frame_mv[refs[0]].as_mv,
-                                  &mbmi_ext->ref_mvs[refs[0]][0].as_mv,
-                                  x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
-      }
-#else
-      // Initialize mv using single prediction mode result.
-      frame_mv[refs[0]].as_int = single_newmv[refs[0]].as_int;
-      frame_mv[refs[1]].as_int = single_newmv[refs[1]].as_int;
-
-      if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
-        joint_motion_search(cpi, x, bsize, frame_mv, mi_row, mi_col,
-                            single_newmv, &rate_mv, 0);
-      } else {
-        rate_mv = 0;
-        for (i = 0; i < 2; ++i) {
-#if CONFIG_REF_MV
-          av1_set_mvcost(x, mbmi->ref_frame[i], i, mbmi->ref_mv_idx);
-#endif  // CONFIG_REF_MV
-          rate_mv += av1_mv_bit_cost(
-              &frame_mv[refs[i]].as_mv, &mbmi_ext->ref_mvs[refs[i]][0].as_mv,
-              x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
-        }
-      }
-#endif  // CONFIG_EXT_INTER
-    } else {
-#if CONFIG_EXT_INTER
-      if (is_comp_interintra_pred) {
-        x->best_mv = opt_args->single_newmvs[mv_idx][refs[0]];
-        rate_mv = opt_args->single_newmvs_rate[mv_idx][refs[0]];
-      } else {
-        single_motion_search(cpi, x, bsize, mi_row, mi_col, 0, mv_idx,
-                             &rate_mv);
-        opt_args->single_newmvs[mv_idx][refs[0]] = x->best_mv;
-        opt_args->single_newmvs_rate[mv_idx][refs[0]] = rate_mv;
-      }
-#else
-      single_motion_search(cpi, x, bsize, mi_row, mi_col, &rate_mv);
-      single_newmv[refs[0]] = x->best_mv;
-#endif  // CONFIG_EXT_INTER
-
-      if (x->best_mv.as_int == INVALID_MV) return INT64_MAX;
-
-      frame_mv[refs[0]] = x->best_mv;
-      xd->mi[0]->bmi[0].as_mv[0] = x->best_mv;
-
-      // Estimate the rate implications of a new mv but discount this
-      // under certain circumstances where we want to help initiate a weak
-      // motion field, where the distortion gain for a single block may not
-      // be enough to overcome the cost of a new mv.
-      if (discount_newmv_test(cpi, this_mode, x->best_mv, mode_mv, refs[0])) {
-        rate_mv = AOMMAX((rate_mv / NEW_MV_DISCOUNT_FACTOR), 1);
-      }
-    }
-    rd_stats->rate += rate_mv;
+    const int64_t ret_val = handle_newmv(cpi, x, bsize, mode_mv, mi_row, mi_col,
+                                         &rate_mv, single_newmv, opt_args);
+    if (ret_val != 0)
+      return ret_val;
+    else
+      rd_stats->rate += rate_mv;
   }
-
   for (i = 0; i < is_comp_pred + 1; ++i) {
     cur_mv[i] = frame_mv[refs[i]];
 // Clip "next_nearest" so that it does not extend to far out of image
@@ -8893,7 +8922,7 @@ static int64_t handle_inter_mode(
       av1_merge_rd_stats(rd_stats, rd_stats_uv);
 #if CONFIG_RD_DEBUG
       // record transform block coefficient cost
-      // TODO(angiebird): So far rd_debug tool only detects descrepancy of
+      // TODO(angiebird): So far rd_debug tool only detects discrepancy of
       // coefficient cost. Therefore, it is fine to copy rd_stats into mbmi
       // here because we already collect the coefficient cost. Move this part to
       // other place when we need to compare non-coefficient cost.
