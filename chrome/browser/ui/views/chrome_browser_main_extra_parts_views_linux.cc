@@ -39,8 +39,10 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
   // If using the system (GTK) theme, don't use an Aura NativeTheme at all.
   // NB: ThemeService::UsingSystemTheme() might lag behind this pref. See
   // http://crbug.com/585522
-  if (!profile || profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme))
+  if (!profile || (!profile->IsSupervised() &&
+                   profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme))) {
     return nullptr;
+  }
 
   // Use a dark theme for incognito browser windows that aren't
   // custom-themed. Otherwise, normal Aura theme.
