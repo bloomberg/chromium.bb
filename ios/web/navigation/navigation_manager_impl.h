@@ -28,8 +28,12 @@ class SessionStorageBuilder;
 
 // Defines the ways how a pending navigation can be initiated.
 enum class NavigationInitiationType {
+  // Navigation initiation type is only valid for pending navigations, use NONE
+  // if a navigation is already committed.
+  NONE = 0,
+
   // Navigation was initiated by actual user action.
-  USER_INITIATED = 1,
+  USER_INITIATED,
 
   // Navigation was initiated by renderer. Examples of renderer-initiated
   // navigations include:

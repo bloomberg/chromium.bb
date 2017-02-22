@@ -95,8 +95,7 @@ class NavigationItemImpl : public web::NavigationItem {
   void SetIsCreatedFromHashChange(bool hash_change);
   bool IsCreatedFromHashChange() const;
 
-  // The initiation type of this pending navigation. Resets to user-initiated
-  // after commit.
+  // Initiation type of this pending navigation. Resets to NONE after commit.
   void SetNavigationInitiationType(
       web::NavigationInitiationType navigation_initiation_type);
   web::NavigationInitiationType NavigationInitiationType() const;

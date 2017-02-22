@@ -45,8 +45,7 @@ NavigationItemImpl::NavigationItemImpl()
       has_state_been_replaced_(false),
       is_created_from_hash_change_(false),
       should_skip_repost_form_confirmation_(false),
-      navigation_initiation_type_(
-          web::NavigationInitiationType::USER_INITIATED),
+      navigation_initiation_type_(web::NavigationInitiationType::NONE),
       is_unsafe_(false),
       facade_delegate_(nullptr) {}
 
@@ -306,9 +305,9 @@ void NavigationItemImpl::ResetHttpRequestHeaders() {
 }
 
 void NavigationItemImpl::ResetForCommit() {
-  // Any state that only matters when a navigation item is pending should be
-  // cleared here.
-  SetNavigationInitiationType(web::NavigationInitiationType::USER_INITIATED);
+  // Navigation initiation type is only valid for pending navigations, thus
+  // always reset to NONE after the item is committed.
+  SetNavigationInitiationType(web::NavigationInitiationType::NONE);
 }
 
 }  // namespace web
