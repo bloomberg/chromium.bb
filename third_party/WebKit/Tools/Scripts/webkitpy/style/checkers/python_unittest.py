@@ -25,7 +25,7 @@
 import os
 import unittest
 
-from python import PythonChecker
+from webkitpy.style.checkers.python import PythonChecker
 
 
 class PythonCheckerTest(unittest.TestCase):

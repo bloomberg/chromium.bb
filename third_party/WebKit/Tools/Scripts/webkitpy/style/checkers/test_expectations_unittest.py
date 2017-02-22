@@ -28,7 +28,7 @@
 
 import unittest
 
-from test_expectations import TestExpectationsChecker
+from webkitpy.style.checkers.test_expectations import TestExpectationsChecker
 from webkitpy.common.host_mock import MockHost
 
 

@@ -24,7 +24,7 @@
 
 import unittest
 
-import jsonchecker
+from webkitpy.style.checkers import jsonchecker
 
 
 class MockErrorHandler(object):

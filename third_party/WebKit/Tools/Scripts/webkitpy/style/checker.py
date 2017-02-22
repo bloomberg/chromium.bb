@@ -35,21 +35,21 @@ import os.path
 import re
 import sys
 
-from checkers.common import categories as CommonCategories
-from checkers.common import CarriageReturnChecker
-from checkers.cpp import CppChecker
-from checkers.jsonchecker import JSONChecker
-from checkers.png import PNGChecker
-from checkers.python import PythonChecker
-from checkers.test_expectations import TestExpectationsChecker
-from checkers.text import TextChecker
-from checkers.xcodeproj import XcodeProjectFileChecker
-from checkers.xml import XMLChecker
-from error_handlers import DefaultStyleErrorHandler
-from filter import FilterConfiguration
-from optparser import ArgumentParser
-from optparser import DefaultCommandOptionValues
 from webkitpy.common.system.log_utils import configure_logging as _configure_logging
+from webkitpy.style.checkers.common import CarriageReturnChecker
+from webkitpy.style.checkers.common import categories as CommonCategories
+from webkitpy.style.checkers.cpp import CppChecker
+from webkitpy.style.checkers.jsonchecker import JSONChecker
+from webkitpy.style.checkers.png import PNGChecker
+from webkitpy.style.checkers.python import PythonChecker
+from webkitpy.style.checkers.test_expectations import TestExpectationsChecker
+from webkitpy.style.checkers.text import TextChecker
+from webkitpy.style.checkers.xcodeproj import XcodeProjectFileChecker
+from webkitpy.style.checkers.xml import XMLChecker
+from webkitpy.style.error_handlers import DefaultStyleErrorHandler
+from webkitpy.style.filter import FilterConfiguration
+from webkitpy.style.optparser import ArgumentParser
+from webkitpy.style.optparser import DefaultCommandOptionValues
 
 
 _log = logging.getLogger(__name__)

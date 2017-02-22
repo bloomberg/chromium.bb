@@ -26,12 +26,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Unit test for text_style.py."""
-
 import unittest
 
-import text as text_style
-from text import TextChecker
+from webkitpy.style.checkers.text import process_file_data, TextChecker
 
 
 class TextStyleTestCase(unittest.TestCase):
@@ -45,7 +42,7 @@ class TextStyleTestCase(unittest.TestCase):
             """Records if an error occurs."""
             self.had_error = True
 
-        text_style.process_file_data('', lines, error_for_test)
+        process_file_data('', lines, error_for_test)
         self.assertFalse(self.had_error, '%s should not have any errors.' % lines)
 
     def assertError(self, lines, expected_line_number):
@@ -58,7 +55,7 @@ class TextStyleTestCase(unittest.TestCase):
             self.assertEqual('whitespace/tab', category)
             self.had_error = True
 
-        text_style.process_file_data('', lines, error_for_test)
+        process_file_data('', lines, error_for_test)
         self.assertTrue(self.had_error, '%s should have an error [whitespace/tab].' % lines)
 
     def test_no_error(self):

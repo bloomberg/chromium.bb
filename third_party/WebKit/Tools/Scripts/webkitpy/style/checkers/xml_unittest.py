@@ -23,7 +23,8 @@
 """Unit test for xml.py."""
 
 import unittest
-import xml
+
+from webkitpy.style.checkers import xml
 
 
 class MockErrorHandler(object):

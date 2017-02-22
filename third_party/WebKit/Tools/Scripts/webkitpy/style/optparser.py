@@ -26,7 +26,7 @@ import logging
 from optparse import OptionParser
 import sys
 
-from filter import validate_filter_rules
+from webkitpy.style.filter import validate_filter_rules
 # This module should not import anything from checker.py.
 
 _log = logging.getLogger(__name__)

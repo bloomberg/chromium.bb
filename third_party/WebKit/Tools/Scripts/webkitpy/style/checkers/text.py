@@ -29,11 +29,10 @@
 
 """Checks WebKit style for text files."""
 
-from common import TabChecker
+from webkitpy.style.checkers.common import TabChecker
 
 
 class TextChecker(object):
-
     """Processes text lines for checking style."""
 
     def __init__(self, file_path, handle_style_error):

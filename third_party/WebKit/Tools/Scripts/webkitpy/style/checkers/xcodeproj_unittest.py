@@ -22,9 +22,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Unit test for xcodeproj.py."""
+
 import unittest
 
-import xcodeproj
+from webkitpy.style.checkers import xcodeproj
 
 
 class TestErrorHandler(object):
