@@ -38,9 +38,10 @@ Bug(none) external/wpt/html/browsers/history/the-location-interface/location-pro
 # Missing error messages.
 Bug(none) external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure ]
 
-# Missing console error line number.
-Bug(none) http/tests/security/location-href-clears-username-password.html [ Failure ]
-Bug(none) virtual/mojo-loading/http/tests/security/location-href-clears-username-password.html [ Failure ]
+# https://crbug.com/695072: Preserve SourceLocation information.
+# This results in a missing line number in console error messages.
+Bug(695072) http/tests/security/location-href-clears-username-password.html [ Failure ]
+Bug(695072) virtual/mojo-loading/http/tests/security/location-href-clears-username-password.html [ Failure ]
 
 # Timeout
 Bug(none) fast/loader/crash-replacing-location-before-load.html [ Timeout ]
