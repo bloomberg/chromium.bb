@@ -10,7 +10,6 @@
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/screen_android.h"
 #include "ui/android/view_android.h"
-#include "ui/android/view_root.h"
 #include "ui/android/window_android.h"
 
 namespace ui {
@@ -18,7 +17,6 @@ namespace ui {
 static base::android::RegistrationMethod kAndroidRegisteredMethods[] = {
     {"DisplayAndroidManager", ui::RegisterScreenAndroid},
     {"ResourceManager", ui::ResourceManagerImpl::RegisterResourceManager},
-    {"ViewRoot", ui::RegisterViewRoot},
     {"WindowAndroid", WindowAndroid::RegisterWindowAndroid},
 };
 

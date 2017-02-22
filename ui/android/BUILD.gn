@@ -42,10 +42,6 @@ component("android") {
     "ui_android_jni_registrar.h",
     "view_android.cc",
     "view_android.h",
-    "view_client.cc",
-    "view_client.h",
-    "view_root.cc",
-    "view_root.h",
     "window_android.cc",
     "window_android.h",
     "window_android_compositor.h",
@@ -85,7 +81,6 @@ generate_jni("ui_android_jni_headers") {
   sources = [
     "java/src/org/chromium/ui/OverscrollRefreshHandler.java",
     "java/src/org/chromium/ui/base/ViewAndroidDelegate.java",
-    "java/src/org/chromium/ui/base/ViewRoot.java",
     "java/src/org/chromium/ui/base/WindowAndroid.java",
     "java/src/org/chromium/ui/display/DisplayAndroidManager.java",
     "java/src/org/chromium/ui/resources/ResourceManager.java",
@@ -181,7 +176,6 @@ android_library("ui_java") {
     "java/src/org/chromium/ui/base/SelectFileDialog.java",
     "java/src/org/chromium/ui/base/TouchDevice.java",
     "java/src/org/chromium/ui/base/ViewAndroidDelegate.java",
-    "java/src/org/chromium/ui/base/ViewRoot.java",
     "java/src/org/chromium/ui/base/WindowAndroid.java",
     "java/src/org/chromium/ui/display/DisplayAndroid.java",
     "java/src/org/chromium/ui/display/DisplayAndroidManager.java",
@@ -252,7 +246,6 @@ test("ui_android_unittests") {
     "overscroll_refresh_unittest.cc",
     "resources/resource_manager_impl_unittest.cc",
     "run_all_unittests.cc",
-    "view_android_unittest.cc",
   ]
   deps = [
     ":android",
