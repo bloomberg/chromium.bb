@@ -49,8 +49,8 @@ class AvatarIconControllerTest : public CocoaProfileTest {
 };
 
 TEST_F(AvatarIconControllerTest, ShowingAvatarIconInIncognito) {
-  Browser* browser =
-      new Browser(Browser::CreateParams(profile()->GetOffTheRecordProfile()));
+  Browser* browser = new Browser(
+      Browser::CreateParams(profile()->GetOffTheRecordProfile(), true));
   BrowserWindowCocoa* window =
       static_cast<BrowserWindowCocoa*>(browser->window());
   AvatarBaseController* icon_controller =

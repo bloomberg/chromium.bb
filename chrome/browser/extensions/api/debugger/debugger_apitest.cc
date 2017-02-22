@@ -195,7 +195,8 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   scoped_refptr<DebuggerAttachFunction> attach_function;
   scoped_refptr<DebuggerDetachFunction> detach_function;
 
-  Browser* another_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* another_browser =
+      new Browser(Browser::CreateParams(profile(), true));
   AddBlankTabAndShow(another_browser);
   AddBlankTabAndShow(another_browser);
   int tab_id2 = SessionTabHelper::IdForTab(

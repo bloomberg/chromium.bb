@@ -102,7 +102,7 @@ class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
   }
 
   Browser* CreateBrowser() override {
-    Browser::CreateParams params(profile());
+    Browser::CreateParams params(profile(), true);
     return chrome::CreateBrowserWithTestWindowForParams(&params).release();
   }
 };

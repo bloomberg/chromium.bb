@@ -194,8 +194,10 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params,
         extensions::AppLaunchInfo::GetLaunchHeight(extension));
   }
 
+  // TODO(erg): AppLaunchParams should pass through the user_gesture from the
+  // extension system here.
   Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
-      app_name, true /* trusted_source */, initial_bounds, profile));
+      app_name, true /* trusted_source */, initial_bounds, profile, true));
 
   browser_params.initial_show_state = DetermineWindowShowState(profile,
                                                                params.container,
@@ -230,7 +232,11 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
   WebContents* contents = NULL;
   if (!browser) {
     // No browser for this profile, need to open a new one.
-    browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile));
+    //
+    // TODO(erg): AppLaunchParams should pass user_gesture from the extension
+    // system to here.
+    browser =
+        new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile, true));
     browser->window()->Show();
     // There's no current tab in this browser window, so add a new one.
     disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;

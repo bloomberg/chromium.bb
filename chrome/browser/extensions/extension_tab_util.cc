@@ -95,8 +95,11 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
   return NULL;
 }
 
-Browser* CreateBrowser(Profile* profile, int window_id, std::string* error) {
-  Browser::CreateParams params(Browser::TYPE_TABBED, profile);
+Browser* CreateBrowser(Profile* profile,
+                       int window_id,
+                       bool user_gesture,
+                       std::string* error) {
+  Browser::CreateParams params(Browser::TYPE_TABBED, profile, user_gesture);
   Browser* browser = new Browser(params);
   browser->window()->Show();
   return browser;
@@ -126,6 +129,7 @@ ExtensionTabUtil::OpenTabParams::~OpenTabParams() {
 base::DictionaryValue* ExtensionTabUtil::OpenTab(
     UIThreadExtensionFunction* function,
     const OpenTabParams& params,
+    bool user_gesture,
     std::string* error) {
   ChromeExtensionFunctionDetails chrome_details(function);
   Profile* profile = chrome_details.GetProfile();
@@ -139,7 +143,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
     if (!params.create_browser_if_needed) {
       return NULL;
     }
-    browser = CreateBrowser(profile, window_id, error);
+    browser = CreateBrowser(profile, window_id, user_gesture, error);
     if (!browser)
       return NULL;
   }
@@ -215,8 +219,9 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
 
     browser = chrome::FindTabbedBrowser(profile, false);
     if (!browser) {
-      browser =
-          new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile));
+      Browser::CreateParams params =
+          Browser::CreateParams(Browser::TYPE_TABBED, profile, user_gesture);
+      browser = new Browser(params);
       browser->window()->Show();
     }
   }
@@ -583,8 +588,10 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
-  if (!browser)
-    browser = new Browser(Browser::CreateParams(profile));
+  if (!browser) {
+    Browser::CreateParams params = Browser::CreateParams(profile, user_gesture);
+    browser = new Browser(params);
+  }
   chrome::NavigateParams params(browser, web_contents);
 
   // The extension_app_id parameter ends up as app_name in the Browser
@@ -636,7 +643,7 @@ bool ExtensionTabUtil::OpenOptionsPageFromAPI(
   DCHECK(!profile->IsOffTheRecord() || IncognitoInfo::IsSplitMode(extension));
   Browser* browser = chrome::FindBrowserWithProfile(profile);
   if (!browser)
-    browser = new Browser(Browser::CreateParams(profile));
+    browser = new Browser(Browser::CreateParams(profile, true));
   return extensions::ExtensionTabUtil::OpenOptionsPage(extension, browser);
 }
 

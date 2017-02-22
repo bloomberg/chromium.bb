@@ -1561,7 +1561,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, GetActiveBrowserTest) {
       aura::client::GetActivationClient(window(0)->GetRootWindow());
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   Profile* profile = multi_user_util::GetProfileFromAccountId(account_id_A);
-  Browser::CreateParams params(profile);
+  Browser::CreateParams params(profile, true);
   std::unique_ptr<Browser> browser(CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(16, 32, 640, 320), &params));
   aura::Window* browser_native_window = browser->window()->GetNativeWindow();

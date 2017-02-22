@@ -657,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarIncognitoTest, IncognitoMode) {
       test_data_dir_.AppendASCII("api_test/browser_action_with_icon"));
   ASSERT_TRUE(extension);
   Browser* second_browser =
-      new Browser(Browser::CreateParams(profile()->GetOriginalProfile()));
+      new Browser(Browser::CreateParams(profile()->GetOriginalProfile(), true));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(second_browser->profile()->IsOffTheRecord());
 

@@ -127,7 +127,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   // And make sure a controller for a pop-up window is not normal.
   // popup_browser will be owned by its window.
   Browser* popup_browser(
-      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile())));
+      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile(), true)));
   NSWindow* cocoaWindow = popup_browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
       static_cast<BrowserWindowController*>([cocoaWindow windowController]);
@@ -141,7 +141,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
 
 TEST_F(BrowserWindowControllerTest, TestSetBounds) {
   // Create a normal browser with bounds smaller than the minimum.
-  Browser::CreateParams params(Browser::TYPE_TABBED, profile());
+  Browser::CreateParams params(Browser::TYPE_TABBED, profile(), true);
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = new Browser(params);
   NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
@@ -166,7 +166,7 @@ TEST_F(BrowserWindowControllerTest, TestSetBounds) {
 
 TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {
   // Create a popup with bounds smaller than the minimum.
-  Browser::CreateParams params(Browser::TYPE_POPUP, profile());
+  Browser::CreateParams params(Browser::TYPE_POPUP, profile(), true);
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = new Browser(params);
   NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
@@ -206,7 +206,7 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
 }
 
 TEST_F(BrowserWindowControllerTest, BookmarkBarToggleRespectMinWindowHeight) {
-  Browser::CreateParams params(Browser::TYPE_TABBED, profile());
+  Browser::CreateParams params(Browser::TYPE_TABBED, profile(), true);
   params.initial_bounds = gfx::Rect(0, 0, 50, 280);
   Browser* browser = new Browser(params);
   NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
@@ -233,7 +233,7 @@ TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
   std::unique_ptr<TestingProfile> incognito_profile(new TestingProfile());
   incognito_profile->set_off_the_record(true);
   std::unique_ptr<Browser> browser(
-      new Browser(Browser::CreateParams(incognito_profile.get())));
+      new Browser(Browser::CreateParams(incognito_profile.get(), true)));
   controller_.reset([[BrowserWindowController alloc]
                               initWithBrowser:browser.get()
                                 takeOwnership:NO]);

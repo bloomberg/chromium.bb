@@ -56,47 +56,6 @@ const int kUserFadeTimeMS = 110;
 // The animation time in ms for a window which get teleported to another screen.
 const int kTeleportAnimationTimeMS = 300;
 
-// Checks if a given event is a user event.
-bool IsUserEvent(const ui::Event* e) {
-  if (e) {
-    ui::EventType type = e->type();
-    if (type != ui::ET_CANCEL_MODE &&
-        type != ui::ET_UMA_DATA &&
-        type != ui::ET_UNKNOWN)
-      return true;
-  }
-  return false;
-}
-
-// Test if we are currently processing a user event which might lead to a
-// browser / app creation.
-bool IsProcessingUserEvent() {
-  // When there is a nested message loop (e.g. active menu or drag and drop
-  // operation) - we are in a nested loop and can ignore this.
-  // Note: Unit tests might not have a message loop.
-  base::MessageLoop* message_loop = base::MessageLoop::current();
-  if (message_loop && message_loop->is_running() && message_loop->IsNested())
-    return false;
-
-  // TODO(skuhne): "Open link in new window" will come here after the menu got
-  // closed, executing the command from the nested menu loop. However at that
-  // time there is no active event processed. A solution for that need to be
-  // found past M-32. A global event handler filter (pre and post) might fix
-  // that problem in conjunction with a depth counter - but - for the menu
-  // execution we come here after the loop was finished (so it's not nested
-  // anymore) and the root window should therefore still have the event which
-  // lead to the menu invocation, but it is not. By fixing that problem this
-  // would "magically work".
-  aura::Window::Windows root_window_list = ash::Shell::GetAllRootWindows();
-  for (aura::Window::Windows::iterator it = root_window_list.begin();
-       it != root_window_list.end();
-       ++it) {
-    if (IsUserEvent((*it)->GetHost()->dispatcher()->current_event()))
-      return true;
-  }
-  return false;
-}
-
 // Records the type of window which was transferred to another desktop.
 void RecordUMAForTransferredWindowType(aura::Window* window) {
   // We need to figure out what kind of window this is to record the transfer.
@@ -317,7 +276,7 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
 
   // Check if this window was created due to a user interaction. If it was,
   // transfer it to the current user.
-  if (IsProcessingUserEvent())
+  if (window->GetProperty(aura::client::kCreatedByUserGesture))
     window_to_entry_[window]->set_show_for_user(current_account_id_);
 
   // Add all transient children to our set of windows. Note that the function

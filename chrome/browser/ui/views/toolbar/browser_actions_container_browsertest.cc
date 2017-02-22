@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
           browser_actions();
 
   // Create a second browser.
-  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   BrowserActionsContainer* second =
       BrowserView::GetBrowserViewForBrowser(second_browser)->toolbar()->
           browser_actions();

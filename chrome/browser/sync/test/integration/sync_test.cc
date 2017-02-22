@@ -531,7 +531,8 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   profiles_[index] = profile;
 
   // CheckInitialState() assumes that no windows are open at startup.
-  browsers_[index] = new Browser(Browser::CreateParams(GetProfile(index)));
+  browsers_[index] =
+      new Browser(Browser::CreateParams(GetProfile(index), true));
 
   EXPECT_NE(nullptr, GetBrowser(index)) << "Could not create Browser " << index;
 

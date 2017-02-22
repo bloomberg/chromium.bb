@@ -1289,7 +1289,7 @@ void CheckForOneFutureHttpWarningConsoleMessage(
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
                        ConsoleMessage) {
   ConsoleWebContentsDelegate* delegate = new ConsoleWebContentsDelegate(
-      Browser::CreateParams(browser()->profile()));
+      Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::WebContents* contents =
@@ -1359,7 +1359,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, ConsoleMessage) {
   ASSERT_TRUE(embedded_test_server()->Start());
   host_resolver()->AddRule("*", embedded_test_server()->GetURL("/").host());
   ConsoleWebContentsDelegate* delegate = new ConsoleWebContentsDelegate(
-      Browser::CreateParams(browser()->profile()));
+      Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::WebContents* contents =
@@ -1448,7 +1448,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, ConsoleMessage) {
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
                        ConsoleMessageNotPrintedForFrameNavigation) {
   ConsoleWebContentsDelegate* delegate = new ConsoleWebContentsDelegate(
-      Browser::CreateParams(browser()->profile()));
+      Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::WebContents* contents =
@@ -1529,7 +1529,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
                        ConsoleMessageNotPrintedForPushStateNavigation) {
   ConsoleWebContentsDelegate* delegate = new ConsoleWebContentsDelegate(
-      Browser::CreateParams(browser()->profile()));
+      Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::WebContents* contents =

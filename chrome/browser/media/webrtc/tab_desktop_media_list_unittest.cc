@@ -171,7 +171,7 @@ class TabDesktopMediaListTest : public testing::Test {
     ASSERT_TRUE(profile_);
 
     // Create browser.
-    Browser::CreateParams profile_params(profile_);
+    Browser::CreateParams profile_params(profile_, true);
     browser_ = chrome::CreateBrowserWithTestWindowForParams(&profile_params);
     ASSERT_TRUE(browser_);
     for (int i = 0; i < kDefaultSourceCount; i++) {

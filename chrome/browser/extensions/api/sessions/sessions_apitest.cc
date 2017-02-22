@@ -235,7 +235,7 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
   EXPECT_CALL(*service, AddObserver(testing::_)).Times(testing::AnyNumber());
   EXPECT_CALL(*service, RemoveObserver(testing::_)).Times(testing::AnyNumber());
 
-  browser_ = new Browser(Browser::CreateParams(profile));
+  browser_ = new Browser(Browser::CreateParams(profile, true));
 
   service->Initialize();
 }

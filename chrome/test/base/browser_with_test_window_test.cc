@@ -198,10 +198,10 @@ Browser* BrowserWithTestWindowTest::CreateBrowser(
     Browser::Type browser_type,
     bool hosted_app,
     BrowserWindow* browser_window) {
-  Browser::CreateParams params(profile);
+  Browser::CreateParams params(profile, true);
   if (hosted_app) {
     params = Browser::CreateParams::CreateForApp(
-        "Test", true /* trusted_source */, gfx::Rect(), profile);
+        "Test", true /* trusted_source */, gfx::Rect(), profile, true);
   } else {
     params.type = browser_type;
   }

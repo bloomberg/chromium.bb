@@ -250,8 +250,8 @@ namespace {
 // How long we wait before updating the browser chrome while loading a page.
 const int kUIUpdateCoalescingTimeMS = 200;
 
-BrowserWindow* CreateBrowserWindow(Browser* browser) {
-  return BrowserWindow::CreateBrowserWindow(browser);
+BrowserWindow* CreateBrowserWindow(Browser* browser, bool user_gesture) {
+  return BrowserWindow::CreateBrowserWindow(browser, user_gesture);
 }
 
 // Is the fast tab unload experiment enabled?
@@ -282,20 +282,24 @@ const extensions::Extension* GetExtensionForOrigin(
 ////////////////////////////////////////////////////////////////////////////////
 // Browser, CreateParams:
 
-Browser::CreateParams::CreateParams(Profile* profile)
+Browser::CreateParams::CreateParams(Profile* profile, bool user_gesture)
     : type(TYPE_TABBED),
       profile(profile),
       trusted_source(false),
       initial_show_state(ui::SHOW_STATE_DEFAULT),
       is_session_restore(false),
+      user_gesture(user_gesture),
       window(NULL) {}
 
-Browser::CreateParams::CreateParams(Type type, Profile* profile)
+Browser::CreateParams::CreateParams(Type type,
+                                    Profile* profile,
+                                    bool user_gesture)
     : type(type),
       profile(profile),
       trusted_source(false),
       initial_show_state(ui::SHOW_STATE_DEFAULT),
       is_session_restore(false),
+      user_gesture(user_gesture),
       window(NULL) {}
 
 Browser::CreateParams::CreateParams(const CreateParams& other) = default;
@@ -305,10 +309,11 @@ Browser::CreateParams Browser::CreateParams::CreateForApp(
     const std::string& app_name,
     bool trusted_source,
     const gfx::Rect& window_bounds,
-    Profile* profile) {
+    Profile* profile,
+    bool user_gesture) {
   DCHECK(!app_name.empty());
 
-  CreateParams params(TYPE_POPUP, profile);
+  CreateParams params(TYPE_POPUP, profile, user_gesture);
   params.app_name = app_name;
   params.trusted_source = trusted_source;
   params.initial_bounds = window_bounds;
@@ -319,7 +324,7 @@ Browser::CreateParams Browser::CreateParams::CreateForApp(
 // static
 Browser::CreateParams Browser::CreateParams::CreateForDevTools(
     Profile* profile) {
-  CreateParams params(TYPE_POPUP, profile);
+  CreateParams params(TYPE_POPUP, profile, true);
   params.app_name = DevToolsWindow::kDevToolsApp;
   params.trusted_source = true;
   return params;
@@ -438,7 +443,8 @@ Browser::Browser(const CreateParams& params)
 
   ProfileMetrics::LogProfileLaunch(profile_);
 
-  window_ = params.window ? params.window : CreateBrowserWindow(this);
+  window_ = params.window ? params.window
+                          : CreateBrowserWindow(this, params.user_gesture);
 
   if (hosted_app_controller_)
     hosted_app_controller_->UpdateLocationBarVisibility(false);

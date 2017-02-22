@@ -49,6 +49,9 @@ AURA_EXPORT extern const WindowProperty<int>* const kAppType;
 // A property key to store if a window is a constrained window or not.
 AURA_EXPORT extern const WindowProperty<bool>* const kConstrainedWindowKey;
 
+// A property key to store if a window was created by a user gesture.
+AURA_EXPORT extern const WindowProperty<bool>* const kCreatedByUserGesture;
+
 // A property key to indicate that a window should show that it deserves
 // attention.
 AURA_EXPORT extern const aura::WindowProperty<bool>* const kDrawAttentionKey;

@@ -24,7 +24,7 @@ ExtensionFunction::ResponseAction BrowserOpenTabFunction::Run() {
 
   std::string error;
   std::unique_ptr<base::DictionaryValue> result(
-      ExtensionTabUtil::OpenTab(this, options, &error));
+      ExtensionTabUtil::OpenTab(this, options, user_gesture(), &error));
   if (!result)
     return RespondNow(Error(error));
 

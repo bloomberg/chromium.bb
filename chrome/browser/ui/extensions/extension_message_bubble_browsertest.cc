@@ -108,7 +108,7 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToExtensionAction() {
           extensions::Manifest::UNPACKED);
   extension_service()->AddExtension(action_extension.get());
 
-  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
   base::RunLoop().RunUntilIdle();
@@ -124,7 +124,7 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToAppMenu() {
           extensions::extension_action_test_util::NO_ACTION,
           extensions::Manifest::UNPACKED);
   extension_service()->AddExtension(no_action_extension.get());
-  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
   base::RunLoop().RunUntilIdle();
@@ -148,7 +148,7 @@ void ExtensionMessageBubbleBrowserTest::
           extensions::Manifest::INTERNAL);
   extension_service()->AddExtension(action_extension.get());
 
-  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
   base::RunLoop().RunUntilIdle();
@@ -169,7 +169,7 @@ void ExtensionMessageBubbleBrowserTest::TestUninstallDangerousExtension() {
 
   // Create a second browser with the extension installed - the bubble will be
   // set to show.
-  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
   // Uninstall the extension before the bubble is shown. This should not crash,
@@ -199,7 +199,7 @@ void ExtensionMessageBubbleBrowserTest::TestDevModeBubbleIsntShownTwice() {
           extensions::Manifest::UNPACKED);
   extension_service()->AddExtension(action_extension.get());
 
-  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
   base::RunLoop().RunUntilIdle();
@@ -209,7 +209,7 @@ void ExtensionMessageBubbleBrowserTest::TestDevModeBubbleIsntShownTwice() {
   base::RunLoop().RunUntilIdle();
 
   // The bubble was already shown, so it shouldn't be shown again.
-  Browser* third_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* third_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(third_browser);
   third_browser->window()->Show();
   base::RunLoop().RunUntilIdle();
@@ -297,13 +297,13 @@ void ExtensionMessageBubbleBrowserTest::
 void ExtensionMessageBubbleBrowserTest::TestBubbleWithMultipleWindows() {
   CheckBubbleIsNotPresent(browser(), false, false);
   LoadExtension(test_data_dir_.AppendASCII("good_unpacked"));
-  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
-  Browser* third_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* third_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(third_browser);
   third_browser->window()->Show();
-  Browser* fourth_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* fourth_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(fourth_browser);
   fourth_browser->window()->Show();
   base::RunLoop().RunUntilIdle();
@@ -319,7 +319,7 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleWithMultipleWindows() {
 void ExtensionMessageBubbleBrowserTest::TestClickingLearnMoreButton() {
   CheckBubbleIsNotPresent(browser(), false, false);
   LoadExtension(test_data_dir_.AppendASCII("good_unpacked"));
-  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
   base::RunLoop().RunUntilIdle();
@@ -344,7 +344,7 @@ void ExtensionMessageBubbleBrowserTest::TestClickingActionButton() {
       extensions::ExtensionRegistry::Get(profile());
   std::string id = extension->id();
   EXPECT_TRUE(registry->enabled_extensions().GetByID(id));
-  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
   base::RunLoop().RunUntilIdle();
@@ -364,7 +364,7 @@ void ExtensionMessageBubbleBrowserTest::TestClickingDismissButton() {
       extensions::ExtensionRegistry::Get(profile());
   std::string id = extension->id();
   EXPECT_TRUE(registry->enabled_extensions().GetByID(id));
-  Browser* second_browser = new Browser(Browser::CreateParams(profile()));
+  Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
   base::RunLoop().RunUntilIdle();

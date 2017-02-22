@@ -48,7 +48,7 @@ class AppShimMenuControllerUITest : public extensions::PlatformAppBrowserTest {
     app1_ = GetFirstAppWindow();
     app2_ = CreateAppWindow(browser()->profile(), extension);
     browser1_ = browser()->window();
-    browser2_ = (new Browser(Browser::CreateParams(profile())))->window();
+    browser2_ = (new Browser(Browser::CreateParams(profile(), true)))->window();
     browser2_->Show();
 
     // Since a pending key status change on any window could cause the test to

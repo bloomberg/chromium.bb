@@ -74,8 +74,8 @@ IN_PROC_BROWSER_TEST_P(BrowserViewTestParam, BrowserRemembersDockedState) {
   Browser::CreateParams params =
       test_app ? Browser::CreateParams::CreateForApp(
                      "test_browser_app", true /* trusted_source */, gfx::Rect(),
-                     browser()->profile())
-               : Browser::CreateParams(browser()->profile());
+                     browser()->profile(), true)
+               : Browser::CreateParams(browser()->profile(), true);
   params.initial_show_state = ui::SHOW_STATE_DEFAULT;
 
   // Default |browser()| is not used by this test.

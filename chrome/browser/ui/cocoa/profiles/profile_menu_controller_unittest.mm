@@ -204,7 +204,7 @@ TEST_F(ProfileMenuControllerTest, SetActiveAndRemove) {
   ASSERT_EQ(7, [menu numberOfItems]);
 
   // Create a browser and "show" it.
-  Browser::CreateParams profile2_params(profile2);
+  Browser::CreateParams profile2_params(profile2, true);
   std::unique_ptr<Browser> p2_browser(
       chrome::CreateBrowserWithTestWindowForParams(&profile2_params));
   BrowserList::SetLastActive(p2_browser.get());
@@ -215,7 +215,7 @@ TEST_F(ProfileMenuControllerTest, SetActiveAndRemove) {
   VerifyProfileNamedIsActive(@"Profile 2", __LINE__);
 
   // Open a new browser and make sure it takes effect.
-  Browser::CreateParams profile3_params(profile3);
+  Browser::CreateParams profile3_params(profile3, true);
   std::unique_ptr<Browser> p3_browser(
       chrome::CreateBrowserWithTestWindowForParams(&profile3_params));
   BrowserList::SetLastActive(p3_browser.get());
@@ -282,7 +282,7 @@ TEST_F(ProfileMenuControllerTest, SupervisedProfile) {
   EXPECT_TRUE([controller() validateMenuItem:item]);
 
   // Open a new browser for the supervised user and switch to it.
-  Browser::CreateParams supervised_profile_params(supervised_profile);
+  Browser::CreateParams supervised_profile_params(supervised_profile, true);
   std::unique_ptr<Browser> supervised_browser(
       chrome::CreateBrowserWithTestWindowForParams(&supervised_profile_params));
   BrowserList::SetLastActive(supervised_browser.get());

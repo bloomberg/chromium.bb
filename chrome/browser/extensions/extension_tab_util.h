@@ -58,6 +58,7 @@ class ExtensionTabUtil {
   // optionally sets |error| if an error occurs.
   static base::DictionaryValue* OpenTab(UIThreadExtensionFunction* function,
                                         const OpenTabParams& params,
+                                        bool user_gesture,
                                         std::string* error);
 
   static int GetWindowId(const Browser* browser);

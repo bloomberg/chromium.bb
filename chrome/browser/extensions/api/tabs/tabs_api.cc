@@ -589,13 +589,15 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
 #endif  // defined(USE_ASH)
 
   // Create a new BrowserWindow.
-  Browser::CreateParams create_params(window_type, window_profile);
+  Browser::CreateParams create_params(window_type, window_profile,
+                                      user_gesture());
   if (extension_id.empty()) {
     create_params.initial_bounds = window_bounds;
   } else {
     create_params = Browser::CreateParams::CreateForApp(
         web_app::GenerateApplicationNameFromExtensionId(extension_id),
-        false /* trusted_source */, window_bounds, window_profile);
+        false /* trusted_source */, window_bounds, window_profile,
+        user_gesture());
   }
   create_params.initial_show_state = ui::SHOW_STATE_NORMAL;
   if (create_data && create_data->state) {
@@ -1004,7 +1006,7 @@ ExtensionFunction::ResponseAction TabsCreateFunction::Run() {
 
   std::string error;
   std::unique_ptr<base::DictionaryValue> result(
-      ExtensionTabUtil::OpenTab(this, options, &error));
+      ExtensionTabUtil::OpenTab(this, options, user_gesture(), &error));
   if (!result)
     return RespondNow(Error(error));
 

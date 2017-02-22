@@ -39,8 +39,12 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
 
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
-  if (!browser)
-    browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile));
+  if (!browser) {
+    // TODO(erg): OpenURLParams should pass a user_gesture flag, pass it to
+    // CreateParams, and pass the real value to nav_params below.
+    browser =
+        new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile, true));
+  }
   chrome::NavigateParams nav_params(browser, params.url, params.transition);
   nav_params.referrer = params.referrer;
   if (source && source->IsCrashed() &&
@@ -82,14 +86,16 @@ void ChromeWebContentsHandler::AddNewContents(
 
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
-  if (!browser)
-    browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile));
+  if (!browser) {
+    browser = new Browser(
+        Browser::CreateParams(Browser::TYPE_TABBED, profile, user_gesture));
+  }
   chrome::NavigateParams params(browser, new_contents);
   params.source_contents = source;
   params.disposition = disposition;
   params.window_bounds = initial_rect;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  params.user_gesture = true;
+  params.user_gesture = user_gesture;
   chrome::Navigate(&params);
 
   // Close the browser if chrome::Navigate created a new one.

@@ -223,7 +223,7 @@ TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
 
 TEST_F(BrowserInstantControllerTest, BrowserWindowLifecycle) {
   std::unique_ptr<BrowserWindow> window(CreateBrowserWindow());
-  Browser::CreateParams params(profile());
+  Browser::CreateParams params(profile(), true);
   params.window = window.get();
   std::unique_ptr<Browser> browser(new Browser(params));
   InstantServiceObserver* bic;

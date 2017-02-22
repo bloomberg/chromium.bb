@@ -447,8 +447,15 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
   if (!profile_ && browser)
     profile_ = browser->profile();
 
-  if (!browser || !browser->is_type_tabbed())
-    browser = new Browser(Browser::CreateParams(profile_));
+  if (!browser || !browser->is_type_tabbed()) {
+    // Startup browsers are not counted as being created by a user_gesture
+    // because of historical accident, even though the startup browser was
+    // created in response to the user clicking on chrome. There was an
+    // incomplete check on whether a user gesture created a window which looked
+    // at the state of the MessageLoop.
+    Browser::CreateParams params = Browser::CreateParams(profile_, false);
+    browser = new Browser(params);
+  }
 
   bool first_tab = true;
   ProtocolHandlerRegistry* registry = profile_ ?

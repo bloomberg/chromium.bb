@@ -81,9 +81,10 @@ bool WindowCanOpenTabs(Browser* browser) {
 
 // Finds an existing Browser compatible with |profile|, making a new one if no
 // such Browser is located.
-Browser* GetOrCreateBrowser(Profile* profile) {
+Browser* GetOrCreateBrowser(Profile* profile, bool user_gesture) {
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
-  return browser ? browser : new Browser(Browser::CreateParams(profile));
+  return browser ? browser
+                 : new Browser(Browser::CreateParams(profile, user_gesture));
 }
 
 // Change some of the navigation parameters based on the particular URL.
@@ -114,7 +115,7 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
     }
 
     params->disposition = WindowOpenDisposition::SINGLETON_TAB;
-    params->browser = GetOrCreateBrowser(profile);
+    params->browser = GetOrCreateBrowser(profile, params->user_gesture);
     params->window_action = chrome::NavigateParams::SHOW_WINDOW;
   }
 
@@ -142,7 +143,7 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
         return params->browser;
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
-      return GetOrCreateBrowser(profile);
+      return GetOrCreateBrowser(profile, params->user_gesture);
     case WindowOpenDisposition::SINGLETON_TAB:
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
@@ -151,7 +152,7 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
         return params->browser;
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
-      return GetOrCreateBrowser(profile);
+      return GetOrCreateBrowser(profile, params->user_gesture);
     case WindowOpenDisposition::NEW_POPUP: {
       // Make a new popup window.
       // Coerce app-style if |source| represents an app.
@@ -172,22 +173,25 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
       }
 #endif
       if (app_name.empty()) {
-        Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile);
+        Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile,
+                                             params->user_gesture);
         browser_params.trusted_source = params->trusted_source;
         browser_params.initial_bounds = params->window_bounds;
         return new Browser(browser_params);
       }
 
       return new Browser(Browser::CreateParams::CreateForApp(
-          app_name, params->trusted_source, params->window_bounds, profile));
+          app_name, params->trusted_source, params->window_bounds, profile,
+          params->user_gesture));
     }
     case WindowOpenDisposition::NEW_WINDOW: {
       // Make a new normal browser window.
-      return new Browser(Browser::CreateParams(profile));
+      return new Browser(Browser::CreateParams(profile, params->user_gesture));
     }
     case WindowOpenDisposition::OFF_THE_RECORD:
       // Make or find an incognito window.
-      return GetOrCreateBrowser(profile->GetOffTheRecordProfile());
+      return GetOrCreateBrowser(profile->GetOffTheRecordProfile(),
+                                params->user_gesture);
     // The following types result in no navigation.
     case WindowOpenDisposition::SAVE_TO_DISK:
     case WindowOpenDisposition::IGNORE_ACTION:

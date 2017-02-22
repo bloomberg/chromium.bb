@@ -77,7 +77,7 @@
   }
 
   if ((self = [super init])) {
-    browser_ = new Browser(Browser::CreateParams(aProfile));
+    browser_ = new Browser(Browser::CreateParams(aProfile, false));
     chrome::NewTab(browser_);
     browser_->window()->Show();
     base::scoped_nsobject<NSNumber> numID(

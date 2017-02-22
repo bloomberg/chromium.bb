@@ -213,10 +213,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     bool use_new_window = disposition == WindowOpenDisposition::NEW_WINDOW;
 
-    Browser* browser =
-        use_new_window
-            ? new Browser(Browser::CreateParams(profile_))
-            : browser_;
+    Browser* browser = use_new_window
+                           ? new Browser(Browser::CreateParams(profile_, true))
+                           : browser_;
 
     RecordAppLaunchForTab(browser, tab, selected_index);
 
@@ -293,7 +292,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                std::vector<RestoredTab>* contents_created) {
     Browser* browser = nullptr;
     if (!created_tabbed_browser && always_create_tabbed_browser_) {
-      browser = new Browser(Browser::CreateParams(profile_));
+      browser = new Browser(Browser::CreateParams(profile_, false));
       if (urls_to_open_.empty()) {
         // No tab browsers were created and no URLs were supplied on the command
         // line. Open the new tab page.
@@ -630,11 +629,11 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                  const std::string& workspace,
                                  ui::WindowShowState show_state,
                                  const std::string& app_name) {
-    Browser::CreateParams params(type, profile_);
+    Browser::CreateParams params(type, profile_, false);
     if (!app_name.empty()) {
       const bool trusted_source = true;  // We only store trusted app windows.
       params = Browser::CreateParams::CreateForApp(app_name, trusted_source,
-                                                   bounds, profile_);
+                                                   bounds, profile_, false);
     } else {
       params.initial_bounds = bounds;
     }

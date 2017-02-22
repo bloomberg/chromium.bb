@@ -348,7 +348,8 @@ class BrowserWindow : public ui::BaseWindow {
                                      const gfx::Size& new_size) {}
 
   // Construct a BrowserWindow implementation for the specified |browser|.
-  static BrowserWindow* CreateBrowserWindow(Browser* browser);
+  static BrowserWindow* CreateBrowserWindow(Browser* browser,
+                                            bool user_gesture);
 
   // Shows the avatar bubble on the window frame off of the avatar button with
   // the given mode. The Service Type specified by GAIA is provided as well.

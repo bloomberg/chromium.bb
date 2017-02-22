@@ -292,7 +292,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
     profile_->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
 
-    Browser::CreateParams native_params(profile_.get());
+    Browser::CreateParams native_params(profile_.get(), true);
     browser_ = chrome::CreateBrowserWithTestWindowForParams(&native_params);
 
     local_state_.reset(new ScopedTestingLocalState(

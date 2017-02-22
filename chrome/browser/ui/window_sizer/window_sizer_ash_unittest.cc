@@ -416,25 +416,25 @@ TEST_F(WindowSizerAshTest, PlaceNewWindows) {
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
-  Browser::CreateParams native_params(profile.get());
+  Browser::CreateParams native_params(profile.get(), true);
   std::unique_ptr<Browser> browser(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
-  Browser::CreateParams params2(profile.get());
+  Browser::CreateParams params2(profile.get(), true);
   std::unique_ptr<Browser> browser2(CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(16, 32, 640, 320), &params2));
   BrowserWindow* browser_window = browser2->window();
 
   // Creating a popup to make sure it does not interfere with the positioning.
-  Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get());
+  Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get(), true);
   std::unique_ptr<Browser> browser_popup(
       CreateTestBrowser(CreateTestWindowInShellWithId(1),
                         gfx::Rect(16, 32, 128, 256), &params_popup));
 
   // Creating a panel to make sure it does not interfere with the positioning.
-  Browser::CreateParams params_panel(Browser::TYPE_POPUP, profile.get());
+  Browser::CreateParams params_panel(Browser::TYPE_POPUP, profile.get(), true);
   std::unique_ptr<Browser> browser_panel(
       CreateTestBrowser(CreateTestWindowInShellWithId(2),
                         gfx::Rect(32, 48, 256, 512), &params_panel));
@@ -482,7 +482,7 @@ TEST_F(WindowSizerAshTest, PlaceNewWindows) {
 TEST_F(WindowSizerAshTest, PlaceNewBrowserWindowOnEmptyDesktop) {
   // Create a browser to pass into the GetWindowBoundsAndShowState function.
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
-  Browser::CreateParams native_params(profile.get());
+  Browser::CreateParams native_params(profile.get(), true);
   std::unique_ptr<Browser> browser(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
@@ -567,7 +567,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
 
   // Create browser windows that are used as reference.
-  Browser::CreateParams params(profile.get());
+  Browser::CreateParams params(profile.get(), true);
   std::unique_ptr<Browser> browser(CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(10, 10, 200, 200), &params));
   BrowserWindow* browser_window = browser->window();
@@ -575,7 +575,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   browser_window->Show();
   EXPECT_EQ(native_window->GetRootWindow(), ash::Shell::GetTargetRootWindow());
 
-  Browser::CreateParams another_params(profile.get());
+  Browser::CreateParams another_params(profile.get(), true);
   std::unique_ptr<Browser> another_browser(
       CreateTestBrowser(CreateTestWindowInShellWithId(1),
                         gfx::Rect(400, 10, 300, 300), &another_params));
@@ -585,7 +585,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   another_browser_window->Show();
 
   // Creating a new window to verify the new placement.
-  Browser::CreateParams new_params(profile.get());
+  Browser::CreateParams new_params(profile.get(), true);
   std::unique_ptr<Browser> new_browser(CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(), &new_params));
 
@@ -654,12 +654,12 @@ TEST_F(WindowSizerAshTest, TestShowState) {
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
 
   // Creating a browser & window to play with.
-  Browser::CreateParams params(Browser::TYPE_TABBED, profile.get());
+  Browser::CreateParams params(Browser::TYPE_TABBED, profile.get(), true);
   std::unique_ptr<Browser> browser(CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(16, 32, 640, 320), &params));
 
   // Create also a popup browser since that behaves different.
-  Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get());
+  Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get(), true);
   std::unique_ptr<Browser> browser_popup(
       CreateTestBrowser(CreateTestWindowInShellWithId(1),
                         gfx::Rect(16, 32, 640, 320), &params_popup));
@@ -691,7 +691,7 @@ TEST_F(WindowSizerAshTest, TestShowState) {
   // Now create a top level window and check again for both. Only the tabbed
   // window should follow the top level window's state.
   // Creating a browser & window to play with.
-  Browser::CreateParams params2(Browser::TYPE_TABBED, profile.get());
+  Browser::CreateParams params2(Browser::TYPE_TABBED, profile.get(), true);
   std::unique_ptr<Browser> browser2(CreateTestBrowser(
       CreateTestWindowInShellWithId(3), gfx::Rect(16, 32, 640, 320), &params2));
 
@@ -727,13 +727,13 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
   // Creating a browser & window to play with.
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
 
-  Browser::CreateParams params(Browser::TYPE_TABBED, profile.get());
+  Browser::CreateParams params(Browser::TYPE_TABBED, profile.get(), true);
   std::unique_ptr<Browser> browser(CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(16, 32, 640, 320), &params));
 
   // Create also a popup browser since that behaves slightly different for
   // defaults.
-  Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get());
+  Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get(), true);
   std::unique_ptr<Browser> browser_popup(
       CreateTestBrowser(CreateTestWindowInShellWithId(1),
                         gfx::Rect(16, 32, 128, 256), &params_popup));
@@ -784,7 +784,7 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
 TEST_F(WindowSizerAshTest, DefaultStateBecomesMaximized) {
   // Create a browser to pass into the GetWindowBounds function.
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
-  Browser::CreateParams native_params(profile.get());
+  Browser::CreateParams native_params(profile.get(), true);
   std::unique_ptr<Browser> browser(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
@@ -850,7 +850,7 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
 TEST_F(WindowSizerAshTest, TrustedPopupBehavior) {
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
   Browser::CreateParams trusted_popup_create_params(Browser::TYPE_POPUP,
-                                                    profile.get());
+                                                    profile.get(), true);
   trusted_popup_create_params.trusted_source = true;
 
   std::unique_ptr<Browser> trusted_popup(CreateTestBrowser(

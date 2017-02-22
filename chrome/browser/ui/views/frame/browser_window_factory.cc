@@ -6,11 +6,14 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/grit/chromium_strings.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 
 // static
-BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
+BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser,
+                                                  bool user_gesture) {
   // Create the view and the frame. The frame will attach itself via the view
   // so we don't need to do anything with the pointer.
   BrowserView* view = new BrowserView();
@@ -18,5 +21,8 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   (new BrowserFrame(view))->InitBrowserFrame();
   view->GetWidget()->non_client_view()->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  // For now, all browser windows are true.
+  view->GetWidget()->GetNativeWindow()->SetProperty(
+      aura::client::kCreatedByUserGesture, user_gesture);
   return view;
 }

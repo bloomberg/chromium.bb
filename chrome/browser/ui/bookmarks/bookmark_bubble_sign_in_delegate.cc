@@ -38,7 +38,7 @@ void BookmarkBubbleSignInDelegate::EnsureBrowser() {
     Profile* original_profile = profile_->GetOriginalProfile();
     browser_ = chrome::FindLastActiveWithProfile(original_profile);
     if (!browser_) {
-      browser_ = new Browser(Browser::CreateParams(original_profile));
+      browser_ = new Browser(Browser::CreateParams(original_profile, true));
     }
   }
 }

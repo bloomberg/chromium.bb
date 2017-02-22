@@ -125,8 +125,8 @@ void SigninSupervisedUserImportHandler::OpenUrlInLastActiveProfileBrowser(
     // it doesn't exist.
     Browser* browser = chrome::FindLastActiveWithProfile(last_used_profile);
     if (!browser)
-      browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED,
-                                                  last_used_profile));
+      browser = new Browser(
+          Browser::CreateParams(Browser::TYPE_TABBED, last_used_profile, true));
     browser->OpenURL(params);
   }
 }

@@ -116,7 +116,7 @@ TEST_F(BrowserFinderChromeOSTest, IncognitoBrowserMatchTest) {
   set_browser(nullptr);
 
   // Create an incognito browser.
-  Browser::CreateParams params(profile()->GetOffTheRecordProfile());
+  Browser::CreateParams params(profile()->GetOffTheRecordProfile(), true);
   std::unique_ptr<Browser> incognito_browser(
       chrome::CreateBrowserWithAuraTestWindowForParams(nullptr, &params));
   // Incognito windows are excluded in GetBrowserCount() because kMatchAll
@@ -129,7 +129,7 @@ TEST_F(BrowserFinderChromeOSTest, IncognitoBrowserMatchTest) {
 TEST_F(BrowserFinderChromeOSTest, FindBrowserOwnedByAnotherProfile) {
   set_browser(nullptr);
 
-  Browser::CreateParams params(profile()->GetOriginalProfile());
+  Browser::CreateParams params(profile()->GetOriginalProfile(), true);
   std::unique_ptr<Browser> browser(
       chrome::CreateBrowserWithAuraTestWindowForParams(nullptr, &params));
   GetUserWindowManager()->SetWindowOwner(browser->window()->GetNativeWindow(),

@@ -94,5 +94,5 @@ void CocoaProfileTest::CloseBrowserWindow() {
 }
 
 Browser* CocoaProfileTest::CreateBrowser() {
-  return new Browser(Browser::CreateParams(profile()));
+  return new Browser(Browser::CreateParams(profile(), true));
 }

@@ -46,7 +46,7 @@ Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
   // autorelease pool. Flush the pool when this function returns.
   base::mac::ScopedNSAutoreleasePool pool;
 
-  Browser* browser = new Browser(Browser::CreateParams(profile));
+  Browser* browser = new Browser(Browser::CreateParams(profile, true));
   AddBlankTabAndShow(browser);
   return browser;
 }
@@ -57,8 +57,8 @@ Browser* InProcessBrowserTest::CreateIncognitoBrowser() {
   base::mac::ScopedNSAutoreleasePool pool;
 
   // Create a new browser with using the incognito profile.
-  Browser* incognito = new Browser(
-      Browser::CreateParams(browser()->profile()->GetOffTheRecordProfile()));
+  Browser* incognito = new Browser(Browser::CreateParams(
+      browser()->profile()->GetOffTheRecordProfile(), true));
   AddBlankTabAndShow(incognito);
   return incognito;
 }
@@ -69,7 +69,7 @@ Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
   base::mac::ScopedNSAutoreleasePool pool;
 
   Browser* browser =
-      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile));
+      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile, true));
   AddBlankTabAndShow(browser);
   return browser;
 }
@@ -82,7 +82,7 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(
   base::mac::ScopedNSAutoreleasePool pool;
 
   Browser* browser = new Browser(Browser::CreateParams::CreateForApp(
-      app_name, false /* trusted_source */, gfx::Rect(), profile));
+      app_name, false /* trusted_source */, gfx::Rect(), profile, true));
   AddBlankTabAndShow(browser);
   return browser;
 }

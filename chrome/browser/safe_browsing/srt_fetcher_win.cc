@@ -528,7 +528,7 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
   if (browser->type() != Browser::TYPE_TABBED) {
     browser = chrome::FindTabbedBrowser(profile, false);
     if (!browser)
-      browser = new Browser(Browser::CreateParams(profile));
+      browser = new Browser(Browser::CreateParams(profile, false));
   }
   GlobalErrorService* global_error_service =
       GlobalErrorServiceFactory::GetForProfile(profile);
