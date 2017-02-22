@@ -5334,7 +5334,7 @@ getLastTableList ()
 
 /* Return the emphasis classes declared in tableList. */
 char const**
-getEmphClasses(const char* tableList)
+lou_getEmphClasses(const char* tableList)
 {
   const char *names[MAX_EMPH_CLASSES + 1];
   unsigned int count = 0;

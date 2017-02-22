@@ -141,7 +141,7 @@ read_tables (yaml_parser_t *parser, char *tables_list) {
     }
     yaml_event_delete(&event);
   }
-  emph_classes = getEmphClasses(tables_list); // get declared emphasis classes
+  emph_classes = lou_getEmphClasses(tables_list); // get declared emphasis classes
 }
 
 void
