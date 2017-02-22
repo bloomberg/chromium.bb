@@ -1150,7 +1150,10 @@ bool DragController::startDrag(LocalFrame* src,
       // a user can initiate a drag on a link without having any text
       // selected.  In this case, we should expand the selection to
       // the enclosing anchor element
-      if (Node* node = enclosingAnchorElement(src->selection().base())) {
+      if (Node* node = enclosingAnchorElement(
+              src->selection()
+                  .computeVisibleSelectionInDOMTreeDeprecated()
+                  .base())) {
         src->selection().setSelection(
             SelectionInDOMTree::Builder().selectAllChildren(*node).build());
       }

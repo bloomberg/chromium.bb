@@ -57,7 +57,10 @@ TEST_F(DeleteSelectionCommandTest, deleteListFromTable) {
   EXPECT_TRUE(frame->selection()
                   .computeVisibleSelectionInDOMTreeDeprecated()
                   .isCaret());
-  EXPECT_EQ(Position(div, 0), frame->selection().base().toOffsetInAnchor());
+  EXPECT_EQ(Position(div, 0), frame->selection()
+                                  .computeVisibleSelectionInDOMTree()
+                                  .base()
+                                  .toOffsetInAnchor());
 }
 
 }  // namespace blink

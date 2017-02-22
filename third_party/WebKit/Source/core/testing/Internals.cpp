@@ -2626,14 +2626,16 @@ void Internals::forceReload(bool bypassCache) {
 Node* Internals::visibleSelectionAnchorNode() {
   if (!frame())
     return nullptr;
-  Position position = frame()->selection().base();
+  Position position =
+      frame()->selection().computeVisibleSelectionInDOMTreeDeprecated().base();
   return position.isNull() ? nullptr : position.computeContainerNode();
 }
 
 unsigned Internals::visibleSelectionAnchorOffset() {
   if (!frame())
     return 0;
-  Position position = frame()->selection().base();
+  Position position =
+      frame()->selection().computeVisibleSelectionInDOMTreeDeprecated().base();
   return position.isNull() ? 0 : position.computeOffsetInContainerNode();
 }
 

@@ -186,9 +186,6 @@ class CORE_EXPORT FrameSelection final
 
   TextGranularity granularity() const { return m_granularity; }
 
-  Position base() const {
-    return computeVisibleSelectionInDOMTreeDeprecated().base();
-  }
   Position extent() const {
     return computeVisibleSelectionInDOMTreeDeprecated().extent();
   }

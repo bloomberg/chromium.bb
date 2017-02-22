@@ -584,7 +584,8 @@ void InputMethodController::setComposition(
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   // Find out what node has the composition now.
-  Position base = mostForwardCaretPosition(frame().selection().base());
+  Position base = mostForwardCaretPosition(
+      frame().selection().computeVisibleSelectionInDOMTree().base());
   Node* baseNode = base.anchorNode();
   if (!baseNode || !baseNode->isTextNode())
     return;
