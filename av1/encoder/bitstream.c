@@ -2065,7 +2065,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   adapt = &cpi->td.mb.daala_enc.state.adapt;
 #endif
 
-#if !CONFIG_PVQ
 #if CONFIG_PALETTE
   for (plane = 0; plane <= 1; ++plane) {
     const uint8_t palette_size_plane =
@@ -2081,6 +2080,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   }
 #endif  // CONFIG_PALETTE
 
+#if !CONFIG_PVQ
 #if CONFIG_COEF_INTERLEAVE
   if (!m->mbmi.skip) {
     const struct macroblockd_plane *const pd_y = &xd->plane[0];
@@ -2242,7 +2242,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     }
   }
 #endif  // CONFIG_COEF_INTERLEAVE
-#else
+#else   // !CONFIG_PVQ
   // PVQ writes its tokens (i.e. symbols) here.
   if (!m->mbmi.skip) {
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
@@ -2320,7 +2320,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
       }  // for (idy = 0;
     }    // for (plane =
   }      // if (!m->mbmi.skip)
-#endif
+#endif  // !CONFIG_PVQ
 }
 
 #if CONFIG_MOTION_VAR && CONFIG_NCOBMC
