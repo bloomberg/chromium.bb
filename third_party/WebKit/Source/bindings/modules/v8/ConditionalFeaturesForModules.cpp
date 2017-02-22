@@ -57,7 +57,9 @@ void installConditionalFeaturesForModules(
                                           v8::Local<v8::Object>(),
                                           prototypeObject, interfaceObject);
     }
-    if (OriginTrials::webUSBEnabled(executionContext)) {
+    // Mimics the [SecureContext] extended attribute.
+    if (OriginTrials::webUSBEnabled(executionContext) &&
+        executionContext->isSecureContext()) {
       V8NavigatorPartial::installWebUSB(isolate, world, v8::Local<v8::Object>(),
                                         prototypeObject, interfaceObject);
     }
@@ -71,7 +73,9 @@ void installConditionalFeaturesForModules(
       V8WindowPartial::installImageCapture(isolate, world, instanceObject,
                                            prototypeObject, interfaceObject);
     }
-    if (OriginTrials::webUSBEnabled(executionContext)) {
+    // Mimics the [SecureContext] extended attribute.
+    if (OriginTrials::webUSBEnabled(executionContext) &&
+        executionContext->isSecureContext()) {
       V8WindowPartial::installWebUSB(isolate, world, instanceObject,
                                      prototypeObject, interfaceObject);
     }

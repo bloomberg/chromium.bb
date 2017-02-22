@@ -80,16 +80,11 @@ ScriptPromise USB::getDevices(ScriptState* scriptState) {
   if (!m_deviceManager) {
     resolver->reject(DOMException::create(NotSupportedError));
   } else {
-    String errorMessage;
-    if (!scriptState->getExecutionContext()->isSecureContext(errorMessage)) {
-      resolver->reject(DOMException::create(SecurityError, errorMessage));
-    } else {
-      m_deviceManagerRequests.insert(resolver);
-      m_deviceManager->GetDevices(
-          nullptr, convertToBaseCallback(WTF::bind(&USB::onGetDevices,
-                                                   wrapPersistent(this),
-                                                   wrapPersistent(resolver))));
-    }
+    m_deviceManagerRequests.insert(resolver);
+    m_deviceManager->GetDevices(
+        nullptr, convertToBaseCallback(WTF::bind(&USB::onGetDevices,
+                                                 wrapPersistent(this),
+                                                 wrapPersistent(resolver))));
   }
   return promise;
 }
@@ -116,10 +111,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState,
                                         wrapWeakPersistent(this))));
   }
 
-  String errorMessage;
-  if (!executionContext->isSecureContext(errorMessage)) {
-    resolver->reject(DOMException::create(SecurityError, errorMessage));
-  } else if (!UserGestureIndicator::consumeUserGesture()) {
+  if (!UserGestureIndicator::consumeUserGesture()) {
     resolver->reject(DOMException::create(
         SecurityError,
         "Must be handling a user gesture to show a permission request."));
