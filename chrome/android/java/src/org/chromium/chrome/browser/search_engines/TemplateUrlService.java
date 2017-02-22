@@ -119,9 +119,8 @@ public class TemplateUrlService {
         public boolean equals(Object other) {
             if (!(other instanceof TemplateUrl)) return false;
             TemplateUrl otherTemplateUrl = (TemplateUrl) other;
-            // Explicitly excluding mTemplateUrlType as that will change if the search engine is
-            // set as default.
             return mIndex == otherTemplateUrl.mIndex
+                    && mTemplateUrlType == otherTemplateUrl.mTemplateUrlType
                     && mIsPrepopulated == otherTemplateUrl.mIsPrepopulated
                     && TextUtils.equals(mKeyword, otherTemplateUrl.mKeyword)
                     && TextUtils.equals(mShortName, otherTemplateUrl.mShortName);

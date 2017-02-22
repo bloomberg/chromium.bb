@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableString;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -125,21 +126,6 @@ public class SearchEngineAdapter extends BaseAdapter
         return toKeyword(index);
     }
 
-    private void initializeSearchEngineGroups(List<TemplateUrl> templateUrls) {
-        mPrepopulatedSearchEngines = new ArrayList<>();
-        mRecentSearchEngines = new ArrayList<>();
-
-        for (int i = 0; i < templateUrls.size(); i++) {
-            TemplateUrl templateUrl = templateUrls.get(i);
-            if (templateUrl.getType() == TemplateUrlService.TYPE_PREPOPULATED
-                    || templateUrl.getType() == TemplateUrlService.TYPE_DEFAULT) {
-                mPrepopulatedSearchEngines.add(templateUrl);
-            } else {
-                mRecentSearchEngines.add(templateUrl);
-            }
-        }
-    }
-
     /**
      * Initialize the search engine list.
      */
@@ -153,21 +139,22 @@ public class SearchEngineAdapter extends BaseAdapter
         }
 
         List<TemplateUrl> templateUrls = templateUrlService.getSearchEngines();
-        boolean searchEnginesChanged = templateUrls.size()
-                != mPrepopulatedSearchEngines.size() + mRecentSearchEngines.size();
-        if (!searchEnginesChanged) {
-            for (int i = 0; i < templateUrls.size(); i++) {
-                TemplateUrl templateUrl = templateUrls.get(i);
-                if (!mPrepopulatedSearchEngines.contains(templateUrl)
-                        && !mRecentSearchEngines.contains(templateUrl)) {
-                    searchEnginesChanged = true;
-                    break;
-                }
+        if (!didSearchEnginesChange(templateUrls)) return;
+        mPrepopulatedSearchEngines = new ArrayList<>();
+        mRecentSearchEngines = new ArrayList<>();
+
+        for (int i = 0; i < templateUrls.size(); i++) {
+            TemplateUrl templateUrl = templateUrls.get(i);
+            if (templateUrl.getType() == TemplateUrlService.TYPE_PREPOPULATED
+                    || templateUrl.getType() == TemplateUrlService.TYPE_DEFAULT) {
+                mPrepopulatedSearchEngines.add(templateUrl);
+            } else {
+                mRecentSearchEngines.add(templateUrl);
             }
         }
-        if (searchEnginesChanged) initializeSearchEngineGroups(templateUrls);
 
-        int defaultSearchEngineIndex = templateUrlService.getDefaultSearchEngineIndex();
+        int defaultSearchEngineIndex =
+                TemplateUrlService.getInstance().getDefaultSearchEngineIndex();
 
         // Convert the TemplateUrl index into an index of mSearchEngines.
         mSelectedSearchEnginePosition = -1;
@@ -192,6 +179,38 @@ public class SearchEngineAdapter extends BaseAdapter
         mInitialEnginePosition = mSelectedSearchEnginePosition;
 
         notifyDataSetChanged();
+    }
+
+    private static boolean containsTemplateUrl(
+            List<TemplateUrl> templateUrls, TemplateUrl targetTemplateUrl) {
+        for (int i = 0; i < templateUrls.size(); i++) {
+            TemplateUrl templateUrl = templateUrls.get(i);
+            // Explicitly excluding TemplateUrlType and Index as they might change if a search
+            // engine is set as default.
+            if (templateUrl.getIsPrepopulated() == targetTemplateUrl.getIsPrepopulated()
+                    && TextUtils.equals(templateUrl.getKeyword(), targetTemplateUrl.getKeyword())
+                    && TextUtils.equals(
+                               templateUrl.getShortName(), targetTemplateUrl.getShortName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean didSearchEnginesChange(List<TemplateUrl> templateUrls) {
+        if (templateUrls.size()
+                != mPrepopulatedSearchEngines.size() + mRecentSearchEngines.size()) {
+            return true;
+        }
+        for (int i = 0; i < templateUrls.size(); i++) {
+            TemplateUrl templateUrl = templateUrls.get(i);
+            if (!containsTemplateUrl(mPrepopulatedSearchEngines, templateUrl)
+                    && !SearchEngineAdapter.containsTemplateUrl(
+                               mRecentSearchEngines, templateUrl)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String toKeyword(int position) {
