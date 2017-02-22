@@ -711,7 +711,6 @@ var vrShellUi = (function() {
       /** @const */ var TAB_CONTAINER_Y_OFFSET = 0.4;
       /** @const */ var TAB_CONTAINER_Z_OFFSET = -1;
 
-      this.tabs = {};
       this.domTabs = {};
       this.contentQuadId = contentQuadId;
       this.domTabTemplate = document.querySelector(DOM_TAB_TEMPLATE_SELECTOR);
@@ -734,10 +733,6 @@ var vrShellUi = (function() {
           parseInt(domTabStyle.marginRight, 10);
     }
 
-    getQualifiedTabId(tab) {
-      return (tab.incognito ? 'i' : 'n') + tab.id;
-    }
-
     makeDomTab(tab) {
       // Make a copy of the template tab and add this copy to the tab container
       // view.
@@ -748,14 +743,14 @@ var vrShellUi = (function() {
       });
       domTab.tab = tab;
       this.domTabClip.appendChild(domTab);
-      this.domTabs[this.getQualifiedTabId(tab)] = domTab;
+      this.domTabs[tab.id] = domTab;
       return domTab;
     }
 
     resizeClipElement() {
       // Resize clip element so that scrolling works.
       this.domTabClip.style.width =
-          (Object.keys(this.tabs).length * this.domTabWidth) + 'px';
+          (Object.keys(this.domTabs).length * this.domTabWidth) + 'px';
     }
 
     setTabs(tabs) {
@@ -763,7 +758,7 @@ var vrShellUi = (function() {
       while (this.domTabClip.firstChild) {
         this.domTabClip.removeChild(this.domTabClip.firstChild);
       }
-      this.tabs = {};
+      this.domTabs = {};
 
       // Add new tabs.
       for (let i = 0; i < tabs.length; i++) {
@@ -772,18 +767,17 @@ var vrShellUi = (function() {
     }
 
     hasTab(tab) {
-      return this.getQualifiedTabId(tab) in this.tabs;
+      return tab.id in this.domTabs;
     }
 
     addTab(tab) {
-      this.tabs[this.getQualifiedTabId(tab)] = tab;
       this.makeDomTab(tab);
       this.updateTab(tab);
       this.resizeClipElement();
     }
 
     updateTab(tab) {
-      let domTab = this.domTabs[this.getQualifiedTabId(tab)];
+      let domTab = this.domTabs[tab.id];
       domTab.textContent = tab.title;
       domTab.classList.remove('tab-incognito');
       if (tab.incognito) {
@@ -792,11 +786,10 @@ var vrShellUi = (function() {
     }
 
     removeTab(tab) {
-      let qualifiedTabId = this.getQualifiedTabId(tab);
+      let qualifiedTabId = tab.id;
       let domTab = this.domTabs[qualifiedTabId];
       delete this.domTabs[qualifiedTabId];
       this.domTabClip.removeChild(domTab);
-      delete this.tabs[qualifiedTabId];
       this.resizeClipElement();
     }
 
@@ -946,7 +939,7 @@ var vrShellUi = (function() {
 
     /** @override */
     onSetTabs(tabs) {
-      uiManager.tabContainer.setTabs(tabs)
+      uiManager.tabContainer.setTabs(tabs);
     }
 
     /** @override */

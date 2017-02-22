@@ -642,7 +642,7 @@ api.NativeCommandHandler = class {
       this.onSetTabs(dict['setTabs']);
     }
     if ('updateTab' in dict) {
-      this.onUpdateTab(dict['updateTabs']);
+      this.onUpdateTab(dict['updateTab']);
     }
     if ('removeTab' in dict) {
       this.onRemoveTab(dict['removeTab']);
