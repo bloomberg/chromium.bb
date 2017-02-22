@@ -15,7 +15,7 @@ without any warranty. */
 #include "louis.h"
 #include "brl_checks.h"
 
-static char** emph_classes = NULL;
+static const char** emph_classes = NULL;
 
 static formtype *
 typeform(const char* class, const char* fromString)
@@ -69,11 +69,12 @@ main (int argc, char **argv)
 		fprintf(stderr, "%s should be valid\n", table);
 		return 1;
 	}
-	emph_classes = getEmphClasses(table);
+	emph_classes = lou_getEmphClasses(table);
 	result |= check_translation(table,
 	                            "foobar",
 	                            typeform("foo", "+++++"),
 	                            "~,foobar");
+        if (emph_classes) free(emph_classes);
 	lou_free();
 	return result;
 }
