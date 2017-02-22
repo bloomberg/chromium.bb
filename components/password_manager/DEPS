@@ -8,6 +8,7 @@ include_rules = [
   "+components/sync/protocol",
   "+net/base",
   "+net/http/http_status_code.h",
+  "+net/traffic_annotation",
   "+net/url_request",
   "+sql",
   "+third_party/re2",

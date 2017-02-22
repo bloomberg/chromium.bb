@@ -16,6 +16,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -91,8 +92,39 @@ void AffiliationFetcher::SetFactoryForTesting(
 void AffiliationFetcher::StartRequest() {
   DCHECK(!fetcher_);
 
-  fetcher_ =
-      net::URLFetcher::Create(BuildQueryURL(), net::URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("affiliation_lookup", R"(
+        semantics {
+          sender: "Android Credentials Affiliation Fetcher"
+          description:
+            "Users syncing their passwords may have credentials stored for "
+            "Android apps. Unless synced data is encrypted with a custom "
+            "passphrase, this service downloads the associations between "
+            "Android apps and the corresponding websites. Thus, the Android "
+            "credentials can be used while browsing the web. "
+          trigger: "Periodically in the background."
+          data:
+            "List of Android apps the user has credentials for. The passwords "
+            "and usernames aren't sent."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can enable or disable this feature either by stoping "
+            "syncing passwords to Google (via unchecking 'Passwords' in "
+            "Chrome's settings under 'Sign In', 'Advanced sync settings') or "
+            "by introducing a custom passphrase to disable this service. The "
+            "feature is enabled by default."
+          policy {
+            SyncDisabled {
+              policy_options {mode: MANDATORY}
+              value: True
+            }
+          }
+        })");
+  fetcher_ = net::URLFetcher::Create(BuildQueryURL(), net::URLFetcher::POST,
+                                     this, traffic_annotation);
   fetcher_->SetRequestContext(request_context_getter_.get());
   fetcher_->SetUploadData("application/x-protobuf", PreparePayload());
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
