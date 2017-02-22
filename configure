@@ -498,12 +498,12 @@ post_process_cmdline() {
       log_echo "disabling tile_groups"
       disable_feature tile_groups
     fi
-
+    # Enable accounting and inspection when building the analyzer
+    if enabled analyzer; then
+      soft_enable accounting
+      soft_enable inspection
+    fi
 }
-
-# Enable accounting if building the analyzer
-enabled analyzer && soft_enable accounting
-
 
 process_targets() {
     enabled child || write_common_config_banner
