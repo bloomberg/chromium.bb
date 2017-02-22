@@ -10,10 +10,15 @@
 #define IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_COORDINATOR_H_
 
 #import "ios/clean/chrome/browser/browser_coordinator.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+
+namespace web {
+class WebState;
+}
 
 // Coordinator to run a toolbar -- a UI element housing controls.
-@interface ToolbarCoordinator : BrowserCoordinator<CRWWebStateObserver>
+@interface ToolbarCoordinator : BrowserCoordinator
+// The web state this ToolbarCoordinator is handling.
+@property(nonatomic, assign) web::WebState* webState;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_COORDINATOR_H_

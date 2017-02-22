@@ -171,7 +171,7 @@ CGFloat kHorizontalMargin = 8.0f;
   }
 }
 
-#pragma mark - Public API
+#pragma mark - ToolbarWebStateConsumer
 
 - (void)setCurrentPageText:(NSString*)text {
   self.omnibox.text = text;

@@ -19,7 +19,6 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_coordinator.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -35,10 +34,7 @@ const BOOL kUseBottomToolbar = NO;
 @property(nonatomic, strong) TabContainerViewController* viewController;
 @end
 
-@implementation TabCoordinator {
-  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
-}
-
+@implementation TabCoordinator
 @synthesize presentationKey = _presentationKey;
 @synthesize viewController = _viewController;
 @synthesize webState = _webState;
@@ -57,11 +53,9 @@ const BOOL kUseBottomToolbar = NO;
   [webCoordinator start];
 
   ToolbarCoordinator* toolbarCoordinator = [[ToolbarCoordinator alloc] init];
+  toolbarCoordinator.webState = self.webState;
   [self addChildCoordinator:toolbarCoordinator];
-  // PLACEHOLDER : Pass the WebState into the toolbar coordinator and let it
-  // create a mediator (or whatever) that observes the webState.
-  _webStateObserver = base::MakeUnique<web::WebStateObserverBridge>(
-      self.webState, toolbarCoordinator);
+
   // Unset the base view controller, so |toolbarCoordinator| doesn't present
   // its view controller.
   toolbarCoordinator.context.baseViewController = nil;
@@ -93,7 +87,6 @@ const BOOL kUseBottomToolbar = NO;
   [self.viewController.presentingViewController
       dismissViewControllerAnimated:self.context.animated
                          completion:nil];
-  _webStateObserver.reset();
 }
 
 - (BOOL)canAddOverlayCoordinator:(BrowserCoordinator*)overlayCoordinator {

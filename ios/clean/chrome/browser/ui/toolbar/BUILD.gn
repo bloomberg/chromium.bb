@@ -6,6 +6,8 @@ source_set("toolbar") {
   sources = [
     "toolbar_coordinator.h",
     "toolbar_coordinator.mm",
+    "toolbar_mediator.h",
+    "toolbar_mediator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -23,6 +25,7 @@ source_set("toolbar") {
 
 source_set("toolbar_ui") {
   sources = [
+    "toolbar_consumer.h",
     "toolbar_view_controller.h",
     "toolbar_view_controller.mm",
   ]

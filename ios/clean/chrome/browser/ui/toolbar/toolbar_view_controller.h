@@ -12,6 +12,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_consumer.h"
 
 @protocol ToolbarCommands;
 
@@ -20,14 +21,11 @@
 // This view controller will fill its container; it is up to the containing
 // view controller or presentation controller to configure an appropriate
 // height for it.
-@interface ToolbarViewController : UIViewController<ZoomTransitionDelegate>
+@interface ToolbarViewController
+    : UIViewController<ZoomTransitionDelegate, ToolbarConsumer>
 
 // The action delegate for this view controller.
 @property(nonatomic, weak) id<ToolbarCommands> toolbarCommandHandler;
-
-// Sets the text for a label appearing in the center of the toolbar.
-- (void)setCurrentPageText:(NSString*)text;
-
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_VIEW_CONTROLLER_H_
