@@ -3122,7 +3122,7 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
       current_scroll_chain.push_front(scroll_node);
     }
   }
-  scroll_state->set_scroll_chain_and_layer_tree(&current_scroll_chain,
+  scroll_state->set_scroll_chain_and_layer_tree(current_scroll_chain,
                                                 active_tree());
   scroll_state->DistributeToScrollChainDescendant();
 }
