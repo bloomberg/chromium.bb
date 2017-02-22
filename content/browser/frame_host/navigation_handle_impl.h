@@ -25,6 +25,7 @@
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/navigation_type.h"
+#include "content/public/browser/restore_type.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/request_context_type.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
@@ -145,6 +146,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const GURL& GetSearchableFormURL() override;
   const std::string& GetSearchableFormEncoding() override;
   ReloadType GetReloadType() override;
+  RestoreType GetRestoreType() override;
   const GlobalRequestID& GetGlobalRequestID() override;
 
   NavigationData* GetNavigationData() override;
@@ -486,6 +488,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Stores the reload type, or NONE if it's not a reload.
   ReloadType reload_type_;
+
+  // Stores the restore type, or NONE it it's not a restore.
+  RestoreType restore_type_;
 
   GURL searchable_form_url_;
   std::string searchable_form_encoding_;

@@ -108,6 +108,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       is_stream_(false),
       started_from_context_menu_(started_from_context_menu),
       reload_type_(ReloadType::NONE),
+      restore_type_(RestoreType::NONE),
       navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       weak_factory_(this) {
   DCHECK(!navigation_start.is_null());
@@ -130,8 +131,10 @@ NavigationHandleImpl::NavigationHandleImpl(
       nav_entry = nav_controller->GetPendingEntry();
     }
 
-    if (nav_entry)
+    if (nav_entry) {
       reload_type_ = nav_entry->reload_type();
+      restore_type_ = nav_entry->restore_type();
+    }
   }
 
   if (!IsRendererDebugURL(url_))
@@ -450,6 +453,10 @@ const std::string& NavigationHandleImpl::GetSearchableFormEncoding() {
 
 ReloadType NavigationHandleImpl::GetReloadType() {
   return reload_type_;
+}
+
+RestoreType NavigationHandleImpl::GetRestoreType() {
+  return restore_type_;
 }
 
 NavigationData* NavigationHandleImpl::GetNavigationData() {

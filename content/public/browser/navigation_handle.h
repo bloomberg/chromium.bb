@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/reload_type.h"
+#include "content/public/browser/restore_type.h"
 #include "content/public/common/referrer.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -104,6 +105,10 @@ class CONTENT_EXPORT NavigationHandle {
   // reloads (via location.reload()) won't count as a reload and do return
   // ReloadType::NONE.
   virtual ReloadType GetReloadType() = 0;
+
+  // Returns the restore type for this navigation. RestoreType::NONE is returned
+  // if the navigation is not a restore.
+  virtual RestoreType GetRestoreType() = 0;
 
   // Parameters available at network request start time ------------------------
   //
