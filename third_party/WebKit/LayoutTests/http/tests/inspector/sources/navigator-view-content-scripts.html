@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+
+<script>
+function test()
+{
+    function addUISourceCode(url, isContentScript)
+    {
+        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
+        var networkProject = Bindings.NetworkProject.forTarget(InspectorTest.mainTarget);
+        var uiSourceCode = networkProject.addFile(contentProvider, InspectorTest.mainFrame(), isContentScript);
+        return uiSourceCode;
+    }
+
+    var rootURL = "http://localhost:8080/LayoutTests/inspector/debugger/";
+    var sourcesNavigatorView = new Sources.SourcesNavigatorView();
+    sourcesNavigatorView.show(UI.inspectorView.element);
+
+    InspectorTest.addResult("\n\n================================================");
+    InspectorTest.addResult("Adding urls");
+    addUISourceCode(rootURL + "foo/bar/script.js", false);
+    var contentUISourceCode = addUISourceCode(rootURL + "foo/bar/contentScript2.js?a=1", true);
+    InspectorTest.dumpNavigatorView(sourcesNavigatorView);
+
+    InspectorTest.addResult("\n\n================================================");
+    InspectorTest.addResult("Removing contentScripts project");
+    contentUISourceCode.project().removeProject();
+    InspectorTest.dumpNavigatorView(sourcesNavigatorView);
+    InspectorTest.completeTest();
+}
+</script>
+
+</head>
+<body onload="runTest()">
+<p>Verify that removal of one of the multiple projects, all of which are associated with the same
+frame, doesn't lead navigator to discard the frame treenode.</p>
+</p>
+</body>
+
+</html>
