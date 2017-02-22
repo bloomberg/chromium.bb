@@ -128,15 +128,13 @@ public class FadingBackgroundView extends View implements View.OnClickListener,
      * Triggers a fade out of the omnibox results background creating a new animation if necessary.
      */
     public void hideFadingOverlay(boolean fadeOut) {
-        // If the overlay is already invisible, do nothing.
-        if (getVisibility() != VISIBLE) return;
-
         if (mOverlayFadeOutAnimator == null) {
             mOverlayFadeOutAnimator = ObjectAnimator.ofFloat(this, ALPHA, 0f);
             mOverlayFadeOutAnimator.setDuration(FADE_DURATION_MS);
             mOverlayFadeOutAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
         }
 
+        mOverlayFadeOutAnimator.setFloatValues(getAlpha(), 0f);
         runFadeOverlayAnimation(mOverlayFadeOutAnimator);
         if (!fadeOut) mOverlayFadeOutAnimator.end();
     }
