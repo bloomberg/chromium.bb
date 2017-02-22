@@ -12,7 +12,6 @@
 #import <UIKit/UIKit.h>
 #include <cmath>
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -175,7 +174,7 @@ UIImage* CaptureViewWithOption(UIView* view,
                                CaptureViewOption option) {
   UIGraphicsBeginImageContextWithOptions(view.bounds.size, YES /* opaque */,
                                          scale);
-  if (base::ios::IsRunningOnIOS9OrLater() && option != kClientSideRendering) {
+  if (option != kClientSideRendering) {
     [view drawViewHierarchyInRect:view.bounds
                afterScreenUpdates:option == kAfterScreenUpdate];
   } else {
