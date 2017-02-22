@@ -101,7 +101,7 @@ function createGraph(context, distanceModel, nodeCount) {
 
 // distanceModel should be the distance model string like
 // "linear", "inverse", or "exponential".
-function createTestAndRun(context, distanceModel) {
+function createTestAndRun(context, distanceModel, should) {
     // To test the distance models, we create a number of panners at
     // uniformly spaced intervals on the z-axis.  Each of these are
     // started at equally spaced time intervals.  After rendering the
@@ -111,8 +111,8 @@ function createTestAndRun(context, distanceModel) {
 
     createGraph(context, distanceModel, nodesToCreate);
 
-    context.oncomplete = checkDistanceResult(distanceModel);
-    context.startRendering();
+    return context.startRendering()
+        .then(buffer => checkDistanceResult(buffer, distanceModel, should));
 }
 
 // The gain caused by the EQUALPOWER panning model, if we stay on the
@@ -121,86 +121,72 @@ function equalPowerGain() {
     return Math.SQRT1_2;
 }
 
-function checkDistanceResult(model) {
-    return function(event) {
-        renderedBuffer = event.renderedBuffer;
-        renderedData = renderedBuffer.getChannelData(0);
+function checkDistanceResult(renderedBuffer, model, should) {
+    renderedData = renderedBuffer.getChannelData(0);
 
-        // The max allowed error between the actual gain and the expected
-        // value.  This is determined experimentally.  Set to 0 to see what
-        // the actual errors are.
-        var maxAllowedError = 3.3e-6;
+    // The max allowed error between the actual gain and the expected
+    // value.  This is determined experimentally.  Set to 0 to see
+    // what the actual errors are.
+    var maxAllowedError = 3.3e-6;
    
-        var success = true;
+    var success = true;
 
-        // Number of impulses we found in the rendered result.
-        var impulseCount = 0;
+    // Number of impulses we found in the rendered result.
+    var impulseCount = 0;
 
-        // Maximum relative error in the gain of the impulses.
-        var maxError = 0;
+    // Maximum relative error in the gain of the impulses.
+    var maxError = 0;
 
-        // Array of locations of the impulses that were not at the
-        // expected location.  (Contains the actual and expected frame
-        // of the impulse.)
-        var impulsePositionErrors = new Array();
+    // Array of locations of the impulses that were not at the
+    // expected location.  (Contains the actual and expected frame
+    // of the impulse.)
+    var impulsePositionErrors = new Array();
 
-        // Step through the rendered data to find all the non-zero points
-        // so we can find where our distance-attenuated impulses are.
-        // These are tested against the expected attenuations at that
-        // distance.
-        for (var k = 0; k < renderedData.length; ++k) {
-            if (renderedData[k] != 0) {
-                // Convert from string to index.
-                var distanceFunction = distanceModelFunction[model];
-                var expected = distanceFunction(panner[impulseCount], 0, 0, position[impulseCount]);
+    // Step through the rendered data to find all the non-zero points
+    // so we can find where our distance-attenuated impulses are.
+    // These are tested against the expected attenuations at that
+    // distance.
+    for (var k = 0; k < renderedData.length; ++k) {
+        if (renderedData[k] != 0) {
+            // Convert from string to index.
+            var distanceFunction = distanceModelFunction[model];
+            var expected =
+                distanceFunction(panner[impulseCount], 0, 0,
+                    position[impulseCount]);
 
-                // Adjust for the center-panning of the EQUALPOWER panning
-                // model that we're using.
-                expected *= equalPowerGain();
+            // Adjust for the center-panning of the EQUALPOWER panning
+            // model that we're using.
+            expected *= equalPowerGain();
 
-                var error = Math.abs(renderedData[k] - expected) / Math.abs(expected);
+            var error =
+                Math.abs(renderedData[k] - expected) / Math.abs(expected);
 
-                maxError = Math.max(maxError, Math.abs(error));
+            maxError = Math.max(maxError, Math.abs(error));
 
-                // Keep track of any impulses that aren't where we expect them
-                // to be.
-                var expectedOffset = timeToSampleFrame(time[impulseCount], sampleRate);
-                if (k != expectedOffset) {
-                    impulsePositionErrors.push({ actual : k, expected : expectedOffset});
-                }
-                ++impulseCount;
+            // Keep track of any impulses that aren't where we expect them
+            // to be.
+            var expectedOffset = timeToSampleFrame(time[impulseCount],
+                sampleRate);
+            if (k != expectedOffset) {
+                impulsePositionErrors.push({
+                    actual: k,
+                    expected: expectedOffset
+                });
             }
+            ++impulseCount;
         }
+    }
+    should(impulseCount, "Number of impulses")
+        .beEqualTo(nodesToCreate);
 
-        if (impulseCount == nodesToCreate) {
-            testPassed("Number of impulses found matches number of panner nodes.");
-        } else {
-            testFailed("Number of impulses is incorrect.  Found " + impulseCount + " but expected " + nodesToCreate + ".");
-            success = false;
-        }
+    should(maxError, "Max error in distance gains")
+        .beLessThanOrEqualTo(maxAllowedError);
 
-        if (maxError <= maxAllowedError) {
-            testPassed("Distance gains are correct.");
-        } else {
-            testFailed("Distance gains are incorrect.  Max rel error = " + maxError + " (maxAllowedError = " + maxAllowedError + ")");
-            success = false;
-        }
-
-        // Display any timing errors that we found.
-        if (impulsePositionErrors.length > 0) {
-            success = false;
-            testFailed(impulsePositionErrors.length + " timing errors found");
-            for (var k = 0; k < impulsePositionErrors.length; ++k) {
-                testFailed("Sample at frame " + impulsePositionErrors[k].actual + " but expected " + impulsePositionErrors[k].expected);
-            }
-        }
-
-        if (success) {
-            testPassed("Distance test passed for distance model " + model);
-        } else {
-            testFailed("Distance test failed for distance model " + model);
-        }
-
-        finishJSTest();
+    // Display any timing errors that we found.
+    if (impulsePositionErrors.length > 0) {
+        let actual = impulsePositionErrors.map(x => x.actual);
+        let expected = impulsePositionErrors.map(x => x.expected);
+        should(actual, "Actual impulse positions found")
+            .beEqualToArray(expected);
     }
 }
