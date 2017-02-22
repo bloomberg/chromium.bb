@@ -12,16 +12,17 @@
 #if !CONFIG_PVQ
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
-#endif
-#if !CONFIG_PVQ
+#endif  // !CONFIG_PVQ
+
 #if CONFIG_ANS
 #include "aom_dsp/ans.h"
 #endif  // CONFIG_ANS
 #include "av1/common/blockd.h"
+
+#if !CONFIG_PVQ
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
 #include "av1/common/idct.h"
-
 #include "av1/decoder/detokenize.h"
 
 #define ACCT_STR __func__
@@ -440,6 +441,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 
   return c;
 }
+#endif  // !CONFIG_PVQ
 
 #if CONFIG_PALETTE
 void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
@@ -481,6 +483,7 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
 }
 #endif  // CONFIG_PALETTE
 
+#if !CONFIG_PVQ
 int av1_decode_block_tokens(MACROBLOCKD *const xd, int plane,
                             const SCAN_ORDER *sc, int x, int y, TX_SIZE tx_size,
                             TX_TYPE tx_type, int16_t *max_scan_line,
@@ -513,4 +516,4 @@ int av1_decode_block_tokens(MACROBLOCKD *const xd, int plane,
   av1_set_contexts(xd, pd, plane, tx_size, eob > 0, x, y);
   return eob;
 }
-#endif
+#endif  // !CONFIG_PVQ

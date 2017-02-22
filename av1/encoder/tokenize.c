@@ -397,6 +397,7 @@ static INLINE int get_tx_eob(const struct segmentation *seg, int segment_id,
   return segfeature_active(seg, segment_id, SEG_LVL_SKIP) ? 0 : eob_max;
 }
 #endif
+#endif  // !CONFIG_PVQ
 
 #if CONFIG_PALETTE
 void av1_tokenize_palette_sb(const AV1_COMP *cpi,
@@ -439,6 +440,7 @@ void av1_tokenize_palette_sb(const AV1_COMP *cpi,
 }
 #endif  // CONFIG_PALETTE
 
+#if !CONFIG_PVQ
 static void tokenize_b(int plane, int block, int blk_row, int blk_col,
                        BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {
   struct tokenize_b_args *const args = arg;
@@ -597,7 +599,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 
   av1_set_contexts(xd, pd, plane, tx_size, c > 0, blk_col, blk_row);
 }
-#endif
+#endif  //  !CONFIG_PVQ
 
 struct is_skippable_args {
   uint16_t *eobs;
@@ -679,7 +681,7 @@ static void tokenize_pvq(int plane, int block, int blk_row, int blk_col,
   pvq_info = &x->pvq[block][plane];
   add_pvq_block((AV1_COMMON * const)cm, x, pvq_info);
 }
-#endif
+#endif  // CONFIG_PVQ
 #if CONFIG_VAR_TX
 void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
                     TX_SIZE tx_size, BLOCK_SIZE plane_bsize, int blk_row,
