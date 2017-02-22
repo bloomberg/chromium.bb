@@ -296,6 +296,7 @@ Polymer({
    * @private
    */
   onSelectedNetworkConnected_: function() {
+    this.networkLastSelectedGuid_ = '';
     chrome.send('login.NetworkScreen.userActed', ['continue']);
   },
 
