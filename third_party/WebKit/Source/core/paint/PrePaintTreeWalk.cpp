@@ -136,22 +136,18 @@ void PrePaintTreeWalk::invalidatePaintLayerOptimizationsIfNeeded(
     return;
 
   PaintLayer& paintLayer = *toLayoutBoxModelObject(object).layer();
+  const ObjectPaintProperties& ancestorPaintProperties =
+      *ancestorTransformedOrRootPaintLayer.layoutObject().paintProperties();
   PropertyTreeState ancestorState =
-      *ancestorTransformedOrRootPaintLayer.layoutObject()
-           .paintProperties()
-           ->localBorderBoxProperties();
+      *ancestorPaintProperties.localBorderBoxProperties();
 
 #ifdef CHECK_CLIP_RECTS
   ShouldRespectOverflowClipType respectOverflowClip = RespectOverflowClip;
 #endif
   if (ancestorTransformedOrRootPaintLayer.compositingState() ==
           PaintsIntoOwnBacking &&
-      ancestorTransformedOrRootPaintLayer.layoutObject()
-          .paintProperties()
-          ->overflowClip()) {
-    ancestorState.setClip(ancestorTransformedOrRootPaintLayer.layoutObject()
-                              .paintProperties()
-                              ->overflowClip());
+      ancestorPaintProperties.overflowClip()) {
+    ancestorState.setClip(ancestorPaintProperties.overflowClip());
 #ifdef CHECK_CLIP_RECTS
     respectOverflowClip = IgnoreOverflowClip;
 #endif
@@ -164,29 +160,28 @@ void PrePaintTreeWalk::invalidatePaintLayerOptimizationsIfNeeded(
 
   bool hasClip = false;
   RefPtr<ClipRects> clipRects = ClipRects::create();
-  clipRects->setOverflowClipRect(clipRectForContext(
-      context.current, context.currentEffect, ancestorState,
-      ancestorTransformedOrRootPaintLayer.layoutObject().paintOffset(),
-      hasClip));
+  const LayoutPoint& ancestorPaintOffset =
+      ancestorTransformedOrRootPaintLayer.layoutObject().paintOffset();
+  clipRects->setOverflowClipRect(
+      clipRectForContext(context.current, context.currentEffect, ancestorState,
+                         ancestorPaintOffset, hasClip));
 #ifdef CHECK_CLIP_RECTS
   CHECK(!hasClip ||
         clipRects->overflowClipRect() == oldClipRects.overflowClipRect())
       << "rect= " << clipRects->overflowClipRect().toString();
 #endif
 
-  clipRects->setFixedClipRect(clipRectForContext(
-      context.fixedPosition, context.currentEffect, ancestorState,
-      ancestorTransformedOrRootPaintLayer.layoutObject().paintOffset(),
-      hasClip));
+  clipRects->setFixedClipRect(
+      clipRectForContext(context.fixedPosition, context.currentEffect,
+                         ancestorState, ancestorPaintOffset, hasClip));
 #ifdef CHECK_CLIP_RECTS
   CHECK(hasClip || clipRects->fixedClipRect() == oldClipRects.fixedClipRect())
       << " fixed=" << clipRects->fixedClipRect().toString();
 #endif
 
-  clipRects->setPosClipRect(clipRectForContext(
-      context.absolutePosition, context.currentEffect, ancestorState,
-      ancestorTransformedOrRootPaintLayer.layoutObject().paintOffset(),
-      hasClip));
+  clipRects->setPosClipRect(
+      clipRectForContext(context.absolutePosition, context.currentEffect,
+                         ancestorState, ancestorPaintOffset, hasClip));
 #ifdef CHECK_CLIP_RECTS
   CHECK(!hasClip || clipRects->posClipRect() == oldClipRects.posClipRect())
       << " abs=" << clipRects->posClipRect().toString();
