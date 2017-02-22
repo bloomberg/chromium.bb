@@ -249,10 +249,16 @@ _js_minifier = "//third_party/closure_compiler/js_minify.py"
 grit_resource_id_file = "//tools/gritsettings/resource_ids"
 grit_info_script = "//tools/grit/grit_info.py"
 
+# TODO(asvitkine): Add predetermined ids files for other platforms.
 grit_predetermined_resource_ids_file = ""
-
-# TODO(asvitkine): Add platform-specific resource id file paths here.
-#                  http://crbug.com/692670
+if (is_mac) {
+  grit_predetermined_resource_ids_file =
+      "//tools/gritsettings/startup_resources_mac.txt"
+}
+if (is_win) {
+  grit_predetermined_resource_ids_file =
+      "//tools/gritsettings/startup_resources_win.txt"
+}
 
 template("grit") {
   assert(defined(invoker.source),
