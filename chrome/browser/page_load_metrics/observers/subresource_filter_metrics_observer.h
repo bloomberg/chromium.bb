@@ -27,6 +27,9 @@ extern const char kHistogramSubresourceFilterLoad[];
 
 extern const char kHistogramSubresourceFilterCount[];
 
+extern const char kHistogramSubresourceFilterActivationDecision[];
+extern const char kHistogramSubresourceFilterActivationDecisionReload[];
+
 }  // namespace internal
 
 class SubresourceFilterMetricsObserver
@@ -36,6 +39,7 @@ class SubresourceFilterMetricsObserver
   ~SubresourceFilterMetricsObserver() override = default;
 
   // page_load_metrics::PageLoadMetricsObserver:
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;

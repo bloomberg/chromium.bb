@@ -46,11 +46,43 @@ class ContentSubresourceFilterDriverFactory
     : public base::SupportsUserData::Data,
       public content::WebContentsObserver {
  public:
+  // NOTE: ActivationDecision backs a UMA histogram, so it is append-only.
+  enum class ActivationDecision {
+    // The activation decision is unknown, or not known yet.
+    UNKNOWN,
+
+    // Subresource filtering was activated.
+    ACTIVATED,
+
+    // Did not activate because subresource filtering was disabled.
+    ACTIVATION_DISABLED,
+
+    // Did not activate because the main frame document URL had an unsupported
+    // scheme.
+    UNSUPPORTED_SCHEME,
+
+    // Did not activate because the main frame document URL was whitelisted.
+    URL_WHITELISTED,
+
+    // Did not activate because the main frame document URL did not match the
+    // activation list.
+    ACTIVATION_LIST_NOT_MATCHED,
+
+    // Max value for enum.
+    ACTIVATION_DECISION_MAX
+  };
+
   static void CreateForWebContents(
       content::WebContents* web_contents,
       std::unique_ptr<SubresourceFilterClient> client);
   static ContentSubresourceFilterDriverFactory* FromWebContents(
       content::WebContents* web_contents);
+
+  // Whether the |url|, |referrer|, and |transition| are considered to be
+  // associated with a page reload.
+  static bool NavigationIsPageReload(const GURL& url,
+                                     const content::Referrer& referrer,
+                                     ui::PageTransition transition);
 
   explicit ContentSubresourceFilterDriverFactory(
       content::WebContents* web_contents,
@@ -74,6 +106,12 @@ class ContentSubresourceFilterDriverFactory
 
   // Reloads the page and inserts the host of its URL to the whitelist.
   void OnReloadRequested();
+
+  // Returns the |ActivationDecision| for the current main frame
+  // document.
+  ActivationDecision GetActivationDecisionForLastCommittedPageLoad() const {
+    return activation_decision_;
+  }
 
  private:
   friend class ContentSubresourceFilterDriverFactoryTest;
@@ -99,12 +137,12 @@ class ContentSubresourceFilterDriverFactory
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
 
-  // Checks base on the value of |urr| and current activation scope if
+  // Checks base on the value of |url| and current activation scope if
   // activation signal should be sent.
-  bool ShouldActivateForMainFrameURL(const GURL& url) const;
+  ActivationDecision ComputeActivationDecisionForMainFrameURL(
+      const GURL& url) const;
   void ActivateForFrameHostIfNeeded(content::RenderFrameHost* render_frame_host,
-                                    const GURL& url,
-                                    bool failed_navigation);
+                                    const GURL& url);
 
   // Internal implementation of ReadyToCommitNavigation which doesn't use
   // NavigationHandle to ease unit tests.
@@ -112,8 +150,7 @@ class ContentSubresourceFilterDriverFactory
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
       const content::Referrer& referrer,
-      ui::PageTransition page_transition,
-      bool failed_navigation);
+      ui::PageTransition page_transition);
 
   bool DidURLMatchCurrentActivationList(const GURL& url) const;
 
@@ -125,6 +162,7 @@ class ContentSubresourceFilterDriverFactory
   HostPathSet whitelisted_hosts_;
 
   ActivationLevel activation_level_;
+  ActivationDecision activation_decision_;
   bool measure_performance_;
 
   // The URLs in the navigation chain.

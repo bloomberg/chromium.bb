@@ -5,7 +5,13 @@
 #include "chrome/browser/page_load_metrics/observers/subresource_filter_metrics_observer.h"
 
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
+
+using subresource_filter::ContentSubresourceFilterDriverFactory;
+
+using ActivationDecision = subresource_filter::
+    ContentSubresourceFilterDriverFactory::ActivationDecision;
 
 namespace internal {
 
@@ -47,7 +53,33 @@ const char kHistogramSubresourceFilterCacheBytes[] =
 const char kHistogramSubresourceFilterCount[] =
     "PageLoad.Clients.SubresourceFilter.Count";
 
+const char kHistogramSubresourceFilterActivationDecision[] =
+    "PageLoad.Clients.SubresourceFilter.ActivationDecision";
+const char kHistogramSubresourceFilterActivationDecisionReload[] =
+    "PageLoad.Clients.SubresourceFilter.ActivationDecision.LoadType.Reload";
+
 }  // namespace internal
+
+namespace {
+
+void LogActivationDecisionMetrics(content::NavigationHandle* navigation_handle,
+                                  ActivationDecision decision) {
+  UMA_HISTOGRAM_ENUMERATION(
+      internal::kHistogramSubresourceFilterActivationDecision,
+      static_cast<int>(decision),
+      static_cast<int>(ActivationDecision::ACTIVATION_DECISION_MAX));
+
+  if (ContentSubresourceFilterDriverFactory::NavigationIsPageReload(
+          navigation_handle->GetURL(), navigation_handle->GetReferrer(),
+          navigation_handle->GetPageTransition())) {
+    UMA_HISTOGRAM_ENUMERATION(
+        internal::kHistogramSubresourceFilterActivationDecisionReload,
+        static_cast<int>(decision),
+        static_cast<int>(ActivationDecision::ACTIVATION_DECISION_MAX));
+  }
+}
+
+}  // namespace
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 SubresourceFilterMetricsObserver::FlushMetricsOnAppEnterBackground(
@@ -60,6 +92,19 @@ SubresourceFilterMetricsObserver::FlushMetricsOnAppEnterBackground(
   if (info.did_commit)
     OnGoingAway(timing, info);
   return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+SubresourceFilterMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle) {
+  const auto* subres_filter =
+      ContentSubresourceFilterDriverFactory::FromWebContents(
+          navigation_handle->GetWebContents());
+  if (subres_filter)
+    LogActivationDecisionMetrics(
+        navigation_handle,
+        subres_filter->GetActivationDecisionForLastCommittedPageLoad());
+  return CONTINUE_OBSERVING;
 }
 
 void SubresourceFilterMetricsObserver::OnComplete(
