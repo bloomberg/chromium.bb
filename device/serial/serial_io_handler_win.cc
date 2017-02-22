@@ -4,8 +4,10 @@
 
 #include "device/serial/serial_io_handler_win.h"
 
-#include <windows.h>
+#define INITGUID
+#include <devpkey.h>
 #include <setupapi.h>
+#include <windows.h>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -203,7 +205,7 @@ void SerialIoHandlerWin::OnDeviceRemoved(const std::string& device_path) {
   }
 
   // This will add the device so we can query driver info.
-  if (!device_info_query.AddDevice(device_path.c_str())) {
+  if (!device_info_query.AddDevice(device_path)) {
     DVPLOG(1) << "Failed to get device interface data for " << device_path;
     return;
   }
@@ -214,7 +216,7 @@ void SerialIoHandlerWin::OnDeviceRemoved(const std::string& device_path) {
   }
 
   std::string friendly_name;
-  if (!device_info_query.GetDeviceStringProperty(SPDRP_FRIENDLYNAME,
+  if (!device_info_query.GetDeviceStringProperty(DEVPKEY_Device_FriendlyName,
                                                  &friendly_name)) {
     DVPLOG(1) << "Failed to get device service property";
     return;

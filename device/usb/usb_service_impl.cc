@@ -28,6 +28,8 @@
 #include "third_party/libusb/src/libusb/libusb.h"
 
 #if defined(OS_WIN)
+#define INITGUID
+#include <devpkey.h>
 #include <setupapi.h>
 #include <usbiodef.h>
 
@@ -54,7 +56,7 @@ bool IsWinUsbInterface(const std::string& device_path) {
   }
 
   // This will add the device so we can query driver info.
-  if (!device_info_query.AddDevice(device_path.c_str())) {
+  if (!device_info_query.AddDevice(device_path)) {
     USB_PLOG(ERROR) << "Failed to get device interface data for "
                     << device_path;
     return false;
@@ -66,7 +68,8 @@ bool IsWinUsbInterface(const std::string& device_path) {
   }
 
   std::string buffer;
-  if (!device_info_query.GetDeviceStringProperty(SPDRP_SERVICE, &buffer)) {
+  if (!device_info_query.GetDeviceStringProperty(DEVPKEY_Device_Service,
+                                                 &buffer)) {
     USB_PLOG(ERROR) << "Failed to get device service property";
     return false;
   }

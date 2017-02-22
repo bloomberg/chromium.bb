@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "base/strings/string_util.h"
+#include "base/strings/sys_string_conversions.h"
 
 namespace device {
 
@@ -25,8 +26,8 @@ DeviceInfoQueryWin::~DeviceInfoQueryWin() {
   }
 }
 
-bool DeviceInfoQueryWin::AddDevice(const char* device_path) {
-  return SetupDiOpenDeviceInterfaceA(device_info_list_, device_path, 0,
+bool DeviceInfoQueryWin::AddDevice(const std::string& device_path) {
+  return SetupDiOpenDeviceInterfaceA(device_info_list_, device_path.c_str(), 0,
                                      nullptr) != FALSE;
 }
 
@@ -41,26 +42,26 @@ bool DeviceInfoQueryWin::GetDeviceInfo() {
   return true;
 }
 
-bool DeviceInfoQueryWin::GetDeviceStringProperty(DWORD property,
+bool DeviceInfoQueryWin::GetDeviceStringProperty(const DEVPROPKEY& property,
                                                  std::string* property_buffer) {
-  DWORD property_reg_data_type;
-  const size_t property_buffer_length = 512;
-  if (!SetupDiGetDeviceRegistryPropertyA(
-          device_info_list_, &device_info_data_, property,
-          &property_reg_data_type,
-          reinterpret_cast<PBYTE>(
-              base::WriteInto(property_buffer, property_buffer_length)),
-          static_cast<DWORD>(property_buffer_length), nullptr))
+  DEVPROPTYPE property_type;
+  DWORD required_size;
+  if (SetupDiGetDeviceProperty(device_info_list_, &device_info_data_, &property,
+                               &property_type, nullptr, 0, &required_size, 0) ||
+      GetLastError() != ERROR_INSUFFICIENT_BUFFER ||
+      property_type != DEVPROP_TYPE_STRING) {
     return false;
+  }
 
-  if (property_reg_data_type != REG_SZ)
+  std::wstring wide_buffer;
+  if (!SetupDiGetDeviceProperty(
+          device_info_list_, &device_info_data_, &property, &property_type,
+          reinterpret_cast<PBYTE>(base::WriteInto(&wide_buffer, required_size)),
+          required_size, nullptr, 0)) {
     return false;
+  }
 
-  // Shrink |property_buffer| down to its correct size.
-  size_t eos = property_buffer->find('\0');
-  if (eos != std::string::npos)
-    property_buffer->resize(eos);
-
+  *property_buffer = base::SysWideToUTF8(wide_buffer);
   return true;
 }
 
