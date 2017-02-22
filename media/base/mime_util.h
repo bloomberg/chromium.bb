@@ -16,14 +16,14 @@ namespace media {
 // supported/recognized MIME types.
 MEDIA_EXPORT bool IsSupportedMediaMimeType(const std::string& mime_type);
 
-// Parses a codec string, populating |codecs_out| with the prefix of each codec
-// in the string |codecs_in|. For example, passed "aaa.b.c,dd.eee", if
+// Splits various codecs into |codecs_out|, conditionally stripping the profile
+// and level info when |strip| == true. For example, passed "aaa.b.c,dd.eee", if
 // |strip| == true |codecs_out| will contain {"aaa", "dd"}, if |strip| == false
 // |codecs_out| will contain {"aaa.b.c", "dd.eee"}.
 // See http://www.ietf.org/rfc/rfc4281.txt.
-MEDIA_EXPORT void ParseCodecString(const std::string& codecs,
-                                   std::vector<std::string>* codecs_out,
-                                   bool strip);
+MEDIA_EXPORT void SplitCodecsToVector(const std::string& codecs,
+                                      std::vector<std::string>* codecs_out,
+                                      bool strip);
 
 // Indicates that the MIME type and (possible codec string) are supported.
 enum SupportsType {

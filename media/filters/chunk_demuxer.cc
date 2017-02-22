@@ -587,7 +587,7 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
     return kReachedIdLimit;
 
   std::vector<std::string> parsed_codec_ids;
-  media::ParseCodecString(codecs, &parsed_codec_ids, false);
+  media::SplitCodecsToVector(codecs, &parsed_codec_ids, false);
 
   std::unique_ptr<media::StreamParser> stream_parser(
       StreamParserFactory::Create(type, parsed_codec_ids, media_log_));

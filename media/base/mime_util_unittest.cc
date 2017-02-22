@@ -20,7 +20,7 @@
 namespace media {
 namespace internal {
 
-// MIME type for use with IsCodecSupportedOnPlatform() test; type is ignored in
+// MIME type for use with IsCodecSupportedOnAndroid() test; type is ignored in
 // all cases except for when paired with the Opus codec.
 const char kTestMimeType[] = "foo/foo";
 
@@ -35,7 +35,7 @@ static std::vector<bool> CreateTestVector(bool test_all_values,
   return std::vector<bool>(1, single_value);
 }
 
-// Helper method for running IsCodecSupportedOnPlatform() tests that will
+// Helper method for running IsCodecSupportedOnAndroid() tests that will
 // iterate over all possible field values for a MimeUtil::PlatformInfo struct.
 //
 // To request a field be varied, set its value to true in the |states_to_vary|
@@ -179,7 +179,7 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
 
 // Note: codecs should only be a list of 2 or fewer; hence the restriction of
 // results' length to 2.
-TEST(MimeUtilTest, ParseCodecString) {
+TEST(MimeUtilTest, SplitCodecsToVector) {
   const struct {
     const char* const original;
     size_t expected_size;
@@ -199,7 +199,7 @@ TEST(MimeUtilTest, ParseCodecString) {
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::vector<std::string> codecs_out;
-    ParseCodecString(tests[i].original, &codecs_out, true);
+    SplitCodecsToVector(tests[i].original, &codecs_out, true);
     ASSERT_EQ(tests[i].expected_size, codecs_out.size());
     for (size_t j = 0; j < tests[i].expected_size; ++j)
       EXPECT_EQ(tests[i].results[j], codecs_out[j]);
@@ -207,14 +207,13 @@ TEST(MimeUtilTest, ParseCodecString) {
 
   // Test without stripping the codec type.
   std::vector<std::string> codecs_out;
-  ParseCodecString("avc1.42E01E, mp4a.40.2", &codecs_out, false);
+  SplitCodecsToVector("avc1.42E01E, mp4a.40.2", &codecs_out, false);
   ASSERT_EQ(2u, codecs_out.size());
   EXPECT_EQ("avc1.42E01E", codecs_out[0]);
   EXPECT_EQ("mp4a.40.2", codecs_out[1]);
 }
 
-TEST(IsCodecSupportedOnPlatformTest,
-     EncryptedCodecsFailWithoutPlatformSupport) {
+TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecsFailWithoutPlatformSupport) {
   // Vary all parameters except |has_platform_decoders|.
   MimeUtil::PlatformInfo states_to_vary = VaryAllFields();
   states_to_vary.has_platform_decoders = false;
@@ -228,12 +227,12 @@ TEST(IsCodecSupportedOnPlatformTest,
   RunCodecSupportTest(
       states_to_vary, test_states,
       [](const MimeUtil::PlatformInfo& info, MimeUtil::Codec codec) {
-        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnPlatform(codec, kTestMimeType,
-                                                          true, info));
+        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnAndroid(codec, kTestMimeType,
+                                                         true, info));
       });
 }
 
-TEST(IsCodecSupportedOnPlatformTest, EncryptedCodecBehavior) {
+TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecBehavior) {
   // Vary all parameters except |has_platform_decoders|.
   MimeUtil::PlatformInfo states_to_vary = VaryAllFields();
   states_to_vary.has_platform_decoders = false;
@@ -245,7 +244,7 @@ TEST(IsCodecSupportedOnPlatformTest, EncryptedCodecBehavior) {
   RunCodecSupportTest(
       states_to_vary, test_states,
       [](const MimeUtil::PlatformInfo& info, MimeUtil::Codec codec) {
-        const bool result = MimeUtil::IsCodecSupportedOnPlatform(
+        const bool result = MimeUtil::IsCodecSupportedOnAndroid(
             codec, kTestMimeType, true, info);
         switch (codec) {
           // These codecs are never supported by the Android platform.
@@ -288,7 +287,7 @@ TEST(IsCodecSupportedOnPlatformTest, EncryptedCodecBehavior) {
       });
 }
 
-TEST(IsCodecSupportedOnPlatformTest, ClearCodecBehavior) {
+TEST(IsCodecSupportedOnAndroidTest, ClearCodecBehavior) {
   MimeUtil::PlatformInfo states_to_vary = VaryAllFields();
 
   MimeUtil::PlatformInfo test_states;
@@ -296,7 +295,7 @@ TEST(IsCodecSupportedOnPlatformTest, ClearCodecBehavior) {
   RunCodecSupportTest(
       states_to_vary, test_states,
       [](const MimeUtil::PlatformInfo& info, MimeUtil::Codec codec) {
-        const bool result = MimeUtil::IsCodecSupportedOnPlatform(
+        const bool result = MimeUtil::IsCodecSupportedOnAndroid(
             codec, kTestMimeType, false, info);
         switch (codec) {
           // These codecs are never supported by the Android platform.
@@ -332,7 +331,7 @@ TEST(IsCodecSupportedOnPlatformTest, ClearCodecBehavior) {
       });
 }
 
-TEST(IsCodecSupportedOnPlatformTest, OpusOggSupport) {
+TEST(IsCodecSupportedOnAndroidTest, OpusOggSupport) {
   // Vary all parameters; thus use default initial state.
   MimeUtil::PlatformInfo states_to_vary = VaryAllFields();
   MimeUtil::PlatformInfo test_states;
@@ -340,12 +339,12 @@ TEST(IsCodecSupportedOnPlatformTest, OpusOggSupport) {
   RunCodecSupportTest(
       states_to_vary, test_states,
       [](const MimeUtil::PlatformInfo& info, MimeUtil::Codec codec) {
-        EXPECT_TRUE(MimeUtil::IsCodecSupportedOnPlatform(
+        EXPECT_TRUE(MimeUtil::IsCodecSupportedOnAndroid(
             MimeUtil::OPUS, "audio/ogg", false, info));
       });
 }
 
-TEST(IsCodecSupportedOnPlatformTest, HLSDoesNotSupportMPEG2AAC) {
+TEST(IsCodecSupportedOnAndroidTest, HLSDoesNotSupportMPEG2AAC) {
   // Vary all parameters; thus use default initial state.
   MimeUtil::PlatformInfo states_to_vary = VaryAllFields();
   MimeUtil::PlatformInfo test_states;
@@ -353,13 +352,13 @@ TEST(IsCodecSupportedOnPlatformTest, HLSDoesNotSupportMPEG2AAC) {
   RunCodecSupportTest(
       states_to_vary, test_states,
       [](const MimeUtil::PlatformInfo& info, MimeUtil::Codec codec) {
-        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnPlatform(
+        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnAndroid(
             MimeUtil::MPEG2_AAC, "application/x-mpegurl", false, info));
-        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnPlatform(
+        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnAndroid(
             MimeUtil::MPEG2_AAC, "application/vnd.apple.mpegurl", false, info));
-        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnPlatform(
+        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnAndroid(
             MimeUtil::MPEG2_AAC, "audio/mpegurl", false, info));
-        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnPlatform(
+        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnAndroid(
             MimeUtil::MPEG2_AAC, "audio/x-mpegurl", false, info));
       });
 }

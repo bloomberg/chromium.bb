@@ -98,7 +98,7 @@ bool MediaRecorderHandler::canSupportMimeType(
       video ? arraysize(kVideoCodecs) : arraysize(kAudioCodecs);
 
   std::vector<std::string> codecs_list;
-  media::ParseCodecString(web_codecs.utf8(), &codecs_list, true /* strip */);
+  media::SplitCodecsToVector(web_codecs.utf8(), &codecs_list, true /* strip */);
   for (const auto& codec : codecs_list) {
     auto* const* found = std::find_if(
         &codecs[0], &codecs[codecs_count], [&codec](const char* name) {

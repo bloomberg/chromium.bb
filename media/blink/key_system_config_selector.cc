@@ -299,7 +299,7 @@ bool IsSupportedMediaFormat(const std::string& container_mime_type,
                             const std::string& codecs,
                             bool use_aes_decryptor) {
   std::vector<std::string> codec_vector;
-  ParseCodecString(codecs, &codec_vector, false);
+  SplitCodecsToVector(codecs, &codec_vector, false);
   // AesDecryptor decrypts the stream in the demuxer before it reaches the
   // decoder so check whether the media format is supported when clear.
   SupportsType support_result =
@@ -339,7 +339,7 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   // This check does not handle extended codecs, so extended codec information
   // is stripped (extended codec information was checked above).
   std::vector<std::string> stripped_codec_vector;
-  ParseCodecString(codecs, &stripped_codec_vector, true);
+  SplitCodecsToVector(codecs, &stripped_codec_vector, true);
   EmeConfigRule codecs_rule = key_systems_->GetContentTypeConfigRule(
       key_system, media_type, container_lower, stripped_codec_vector);
   if (!config_state->IsRuleSupported(codecs_rule))

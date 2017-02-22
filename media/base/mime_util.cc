@@ -29,10 +29,10 @@ SupportsType IsSupportedEncryptedMediaFormat(
   return GetMimeUtil()->IsSupportedMediaFormat(mime_type, codecs, true);
 }
 
-void ParseCodecString(const std::string& codecs,
-                      std::vector<std::string>* codecs_out,
-                      bool strip) {
-  GetMimeUtil()->ParseCodecString(codecs, codecs_out, strip);
+void SplitCodecsToVector(const std::string& codecs,
+                         std::vector<std::string>* codecs_out,
+                         bool strip) {
+  GetMimeUtil()->SplitCodecsToVector(codecs, codecs_out, strip);
 }
 
 void RemoveProprietaryMediaTypesAndCodecsForTests() {
