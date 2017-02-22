@@ -8316,21 +8316,12 @@ static int64_t handle_inter_mode(
         mbmi->interp_filter = best_filter;
 #endif
       } else {
-#if !CONFIG_DUAL_FILTER
-        int tmp_rs;
-        InterpFilter best_filter = mbmi->interp_filter;
-        rs = av1_get_switchable_rate(cpi, xd);
-        for (i = 1; i < SWITCHABLE_FILTERS; ++i) {
-          mbmi->interp_filter = i;
-          tmp_rs = av1_get_switchable_rate(cpi, xd);
-          if (tmp_rs < rs) {
-            rs = tmp_rs;
-            best_filter = i;
-          }
-        }
-        mbmi->interp_filter = best_filter;
+#if CONFIG_DUAL_FILTER
+        int dir;
+        for (dir = 0; dir < 4; ++dir)
+          assert(mbmi->interp_filter[dir] == EIGHTTAP_REGULAR);
 #else
-        assert(0);
+        assert(mbmi->interp_filter == EIGHTTAP_REGULAR);
 #endif
       }
     }
