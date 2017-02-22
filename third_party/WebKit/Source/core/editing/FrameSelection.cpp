@@ -975,7 +975,7 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment,
 
   LayoutRect rect;
 
-  switch (getSelectionType()) {
+  switch (computeVisibleSelectionInDOMTree().getSelectionType()) {
     case NoSelection:
       return;
     case CaretSelection:

@@ -158,10 +158,6 @@ class CORE_EXPORT FrameSelection final
 
   bool contains(const LayoutPoint&);
 
-  SelectionType getSelectionType() const {
-    return computeVisibleSelectionInDOMTreeDeprecated().getSelectionType();
-  }
-
   bool modify(EAlteration,
               SelectionDirection,
               TextGranularity,

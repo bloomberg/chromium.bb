@@ -773,7 +773,10 @@ Element* Editor::findEventTargetFromSelection() const {
 
 void Editor::applyStyle(StylePropertySet* style,
                         InputEvent::InputType inputType) {
-  switch (frame().selection().getSelectionType()) {
+  switch (frame()
+              .selection()
+              .computeVisibleSelectionInDOMTreeDeprecated()
+              .getSelectionType()) {
     case NoSelection:
       // do nothing
       break;
@@ -1428,9 +1431,14 @@ void Editor::changeSelectionAfterCommand(
   // call does not call EditorClient::respondToChangedSelection(), which, on the
   // Mac, sends selection change notifications and starts a new kill ring
   // sequence, but we want to do these things (matches AppKit).
-  if (selectionDidNotChangeDOMPosition)
-    client().respondToChangedSelection(m_frame,
-                                       frame().selection().getSelectionType());
+  if (selectionDidNotChangeDOMPosition) {
+    client().respondToChangedSelection(
+        m_frame,
+        frame()
+            .selection()
+            .computeVisibleSelectionInDOMTreeDeprecated()
+            .getSelectionType());
+  }
 }
 
 IntRect Editor::firstRectForRange(const EphemeralRange& range) const {
