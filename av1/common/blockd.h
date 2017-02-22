@@ -1123,6 +1123,10 @@ static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
+static INLINE PLANE_TYPE get_plane_type(const int plane) {
+  return (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

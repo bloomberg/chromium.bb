@@ -496,7 +496,7 @@ static void predict_and_reconstruct_intra_block(
     MB_MODE_INFO *const mbmi, int plane, int row, int col, TX_SIZE tx_size) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   PREDICTION_MODE mode = (plane == 0) ? mbmi->mode : mbmi->uv_mode;
-  PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
+  PLANE_TYPE plane_type = get_plane_type(plane);
   uint8_t *dst;
   const int block_idx = (row << 1) + col;
 #if CONFIG_PVQ
@@ -555,7 +555,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
   if (tx_size == plane_tx_size) {
-    PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
+    PLANE_TYPE plane_type = get_plane_type(plane);
     int block_idx = (blk_row << 1) + blk_col;
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, plane_tx_size);
     const SCAN_ORDER *sc = get_scan(cm, plane_tx_size, tx_type, 1);
@@ -599,7 +599,7 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                    aom_reader *const r, int segment_id,
                                    int plane, int row, int col,
                                    TX_SIZE tx_size) {
-  PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
+  PLANE_TYPE plane_type = get_plane_type(plane);
   int block_idx = (row << 1) + col;
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, tx_size);
 #if CONFIG_PVQ

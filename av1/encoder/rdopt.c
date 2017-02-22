@@ -1294,7 +1294,7 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
       DECLARE_ALIGNED(16, uint8_t, recon[MAX_TX_SQUARE]);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-      const PLANE_TYPE plane_type = plane == 0 ? PLANE_TYPE_Y : PLANE_TYPE_UV;
+      const PLANE_TYPE plane_type = get_plane_type(plane);
 
       INV_TXFM_PARAM inv_txfm_param;
       const int block_raster_idx =
@@ -3770,7 +3770,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   struct macroblockd_plane *const pd = &xd->plane[plane];
   int64_t tmp;
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-  PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
+  PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *const scan_order =
       get_scan(cm, tx_size, tx_type, is_inter_block(&xd->mi[0]->mbmi));

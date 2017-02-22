@@ -503,7 +503,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
 #endif
-  PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
+  PLANE_TYPE plane_type = get_plane_type(plane);
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block_raster_idx, tx_size);
   const int is_inter = is_inter_block(&xd->mi[0]->mbmi);
@@ -976,7 +976,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-  PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
+  PLANE_TYPE plane_type = get_plane_type(plane);
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
   const TX_TYPE tx_type =
       get_tx_type(plane_type, xd, block_raster_idx, tx_size);
