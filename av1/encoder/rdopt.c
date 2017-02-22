@@ -2185,7 +2185,6 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 #if CONFIG_PVQ
   od_encode_checkpoint(&x->daala_enc, &buf);
 #endif
-
   for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
     RD_STATS this_rd_stats;
 #if CONFIG_REF_MV
@@ -2203,6 +2202,9 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
       best_tx_type = tx_type;
       best_tx = mbmi->tx_size;
     }
+#if CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+    if (mbmi->sb_type < BLOCK_8X8 && is_inter) break;
+#endif  // USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
   }
 
   mbmi->tx_size = best_tx;

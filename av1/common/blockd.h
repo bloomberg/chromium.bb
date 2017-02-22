@@ -635,11 +635,12 @@ static const int ext_tx_set_index_inter[EXT_TX_SET_TYPES] = {
   0, 3, -1, -1, 2, 1
 };
 
+#define USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4 1
 static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
                                             int is_inter, int use_reduced_set) {
   const TX_SIZE tx_size2 = txsize_sqr_up_map[tx_size];
   tx_size = txsize_sqr_map[tx_size];
-#if CONFIG_CB4X4
+#if CONFIG_CB4X4 && USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
   (void)bs;
   if (tx_size > TX_32X32) return EXT_TX_SET_DCTONLY;
 #else
