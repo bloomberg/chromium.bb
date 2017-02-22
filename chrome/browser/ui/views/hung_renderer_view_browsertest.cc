@@ -30,16 +30,12 @@ class HungRendererDialogViewBrowserTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialogViewBrowserTest);
 };
 
-// TODO(tapted): On OSX the framework doesn't pick up the spawned dialog, and
-// the ASSERT_EQ in TestBrowserDialog::RunDialog() fails, so disabled for now.
-#if defined(OS_MACOSX)
-#define MAYBE_InvokeDialog_default DISABLED_InvokeDialog_default
-#else
-#define MAYBE_InvokeDialog_default InvokeDialog_default
-#endif
 // Invokes the hung renderer (aka page unresponsive) dialog. See
 // test_browser_dialog.h.
+// TODO(tapted): The framework sometimes doesn't pick up the spawned dialog and
+// the ASSERT_EQ in TestBrowserDialog::RunDialog() fails. This seems to only
+// happen on the bots. So the test is disabled for now.
 IN_PROC_BROWSER_TEST_F(HungRendererDialogViewBrowserTest,
-                       MAYBE_InvokeDialog_default) {
+                       DISABLED_InvokeDialog_default) {
   RunDialog();
 }
