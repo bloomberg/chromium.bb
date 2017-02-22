@@ -192,9 +192,6 @@ class CORE_EXPORT FrameSelection final
   Position extent() const {
     return computeVisibleSelectionInDOMTreeDeprecated().extent();
   }
-  Position start() const {
-    return computeVisibleSelectionInDOMTreeDeprecated().start();
-  }
 
   // Returns true if specified layout block should paint caret. This function is
   // called during painting only.

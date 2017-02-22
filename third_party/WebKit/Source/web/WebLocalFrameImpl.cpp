@@ -1086,7 +1086,10 @@ bool WebLocalFrameImpl::hasSelection() const {
     return pluginContainer->plugin()->hasSelection();
 
   // frame()->selection()->isNone() never returns true.
-  return frame()->selection().start() !=
+  return frame()
+             ->selection()
+             .computeVisibleSelectionInDOMTreeDeprecated()
+             .start() !=
          frame()
              ->selection()
              .computeVisibleSelectionInDOMTreeDeprecated()

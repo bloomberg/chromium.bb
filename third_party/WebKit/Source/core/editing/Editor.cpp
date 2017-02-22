@@ -208,7 +208,8 @@ static bool isCaretAtStartOfWrappedLine(const FrameSelection& selection) {
     return false;
   if (selection.selectionInDOMTree().affinity() != TextAffinity::Downstream)
     return false;
-  const Position& position = selection.start();
+  const Position& position =
+      selection.computeVisibleSelectionInDOMTreeDeprecated().start();
   return !inSameLine(PositionWithAffinity(position, TextAffinity::Upstream),
                      PositionWithAffinity(position, TextAffinity::Downstream));
 }
@@ -1096,7 +1097,10 @@ void Editor::cut(EditorCommandSource source) {
   // TODO(yosin) We should use early return style here.
   if (canDeleteRange(selectedRange())) {
     spellChecker().updateMarkersForWordsAffectedByEditing(true);
-    if (enclosingTextControl(frame().selection().start())) {
+    if (enclosingTextControl(frame()
+                                 .selection()
+                                 .computeVisibleSelectionInDOMTreeDeprecated()
+                                 .start())) {
       String plainText = frame().selectedTextForClipboard();
       Pasteboard::generalPasteboard()->writePlainText(
           plainText, canSmartCopyOrDelete() ? Pasteboard::CanSmartReplace
@@ -1133,7 +1137,10 @@ void Editor::copy() {
   // we need clean layout to obtain the selected content.
   frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (enclosingTextControl(frame().selection().start())) {
+  if (enclosingTextControl(frame()
+                               .selection()
+                               .computeVisibleSelectionInDOMTreeDeprecated()
+                               .start())) {
     Pasteboard::generalPasteboard()->writePlainText(
         frame().selectedTextForClipboard(),
         canSmartCopyOrDelete() ? Pasteboard::CanSmartReplace

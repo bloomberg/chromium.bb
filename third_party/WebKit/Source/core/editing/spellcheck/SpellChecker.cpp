@@ -1049,7 +1049,12 @@ bool SpellChecker::selectionStartHasMarkerFor(
     DocumentMarker::MarkerType markerType,
     int from,
     int length) const {
-  Node* node = findFirstMarkable(frame().selection().start().anchorNode());
+  Node* node =
+      findFirstMarkable(frame()
+                            .selection()
+                            .computeVisibleSelectionInDOMTreeDeprecated()
+                            .start()
+                            .anchorNode());
   if (!node)
     return false;
 

@@ -157,13 +157,17 @@ TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {
                                   NotUserTriggered))
       << "Selection.modify() returns false for non-user-triggered call when "
          "selection isn't modified.";
-  EXPECT_EQ(endOfText, selection().start()) << "Selection isn't modified";
+  EXPECT_EQ(endOfText,
+            selection().computeVisibleSelectionInDOMTreeDeprecated().start())
+      << "Selection isn't modified";
 
   EXPECT_TRUE(selection().modify(FrameSelection::AlterationMove,
                                  DirectionForward, CharacterGranularity,
                                  UserTriggered))
       << "Selection.modify() returns true for user-triggered call";
-  EXPECT_EQ(endOfText, selection().start()) << "Selection isn't modified";
+  EXPECT_EQ(endOfText,
+            selection().computeVisibleSelectionInDOMTreeDeprecated().start())
+      << "Selection isn't modified";
 }
 
 TEST_F(FrameSelectionTest, MoveRangeSelectionTest) {
@@ -264,18 +268,24 @@ TEST_F(FrameSelectionTest, updateIfNeededAndFrameCaret) {
   Element* sample = document().getElementById("sample");
   selection().setSelection(
       SelectionInDOMTree::Builder().collapse(Position(sample, 0)).build());
-  EXPECT_EQ(Position(document().body(), 0), selection().start());
-  EXPECT_EQ(selection().start(), caretPosition().position());
+  EXPECT_EQ(Position(document().body(), 0),
+            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
+  EXPECT_EQ(selection().computeVisibleSelectionInDOMTreeDeprecated().start(),
+            caretPosition().position());
   document().body()->remove();
-  EXPECT_EQ(Position(), selection().start())
+  EXPECT_EQ(Position(),
+            selection().computeVisibleSelectionInDOMTreeDeprecated().start())
       << "Selection has been removed by BODY.remove().";
-  EXPECT_EQ(selection().start(), caretPosition().position());
+  EXPECT_EQ(selection().computeVisibleSelectionInDOMTreeDeprecated().start(),
+            caretPosition().position());
   document().updateStyleAndLayout();
   selection().updateIfNeeded();
 
-  EXPECT_EQ(Position(), selection().start())
+  EXPECT_EQ(Position(),
+            selection().computeVisibleSelectionInDOMTreeDeprecated().start())
       << "selection().updateIfNeeded() does nothing.";
-  EXPECT_EQ(selection().start(), caretPosition().position());
+  EXPECT_EQ(selection().computeVisibleSelectionInDOMTreeDeprecated().start(),
+            caretPosition().position());
 }
 
 }  // namespace blink

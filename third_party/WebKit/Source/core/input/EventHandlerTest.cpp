@@ -156,7 +156,8 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
   document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
   ASSERT_TRUE(
       selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  EXPECT_EQ(Position(line, 0), selection().start());
+  EXPECT_EQ(Position(line, 0),
+            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
 
   // Multi-tap events on editable elements should trigger selection, just
   // like multi-click events.
@@ -164,7 +165,8 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
   document().frame()->eventHandler().handleGestureEvent(doubleTapEvent);
   ASSERT_TRUE(
       selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
-  EXPECT_EQ(Position(line, 0), selection().start());
+  EXPECT_EQ(Position(line, 0),
+            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
   if (document().frame()->editor().isSelectTrailingWhitespaceEnabled()) {
     EXPECT_EQ(Position(line, 4),
               selection().computeVisibleSelectionInDOMTreeDeprecated().end());
@@ -179,7 +181,8 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
   document().frame()->eventHandler().handleGestureEvent(tripleTapEvent);
   ASSERT_TRUE(
       selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
-  EXPECT_EQ(Position(line, 0), selection().start());
+  EXPECT_EQ(Position(line, 0),
+            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
   EXPECT_EQ(Position(line, 13),
             selection().computeVisibleSelectionInDOMTreeDeprecated().end());
   EXPECT_EQ("One Two Three", WebString(selection().selectedText()).utf8());
@@ -197,20 +200,23 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTapDisabledIfNotEditable) {
   document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
   ASSERT_TRUE(
       selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  EXPECT_EQ(Position(line, 0), selection().start());
+  EXPECT_EQ(Position(line, 0),
+            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
 
   // As the text is readonly, multi-tap events should not trigger selection.
   TapEventBuilder doubleTapEvent(IntPoint(0, 0), 2);
   document().frame()->eventHandler().handleGestureEvent(doubleTapEvent);
   ASSERT_TRUE(
       selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  EXPECT_EQ(Position(line, 0), selection().start());
+  EXPECT_EQ(Position(line, 0),
+            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
 
   TapEventBuilder tripleTapEvent(IntPoint(0, 0), 3);
   document().frame()->eventHandler().handleGestureEvent(tripleTapEvent);
   ASSERT_TRUE(
       selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  EXPECT_EQ(Position(line, 0), selection().start());
+  EXPECT_EQ(Position(line, 0),
+            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
 }
 
 TEST_F(EventHandlerTest, draggedInlinePositionTest) {

@@ -322,7 +322,8 @@ void DataTransfer::writeSelection(const FrameSelection& selection) {
   if (!m_dataObject)
     return;
 
-  if (!enclosingTextControl(selection.start())) {
+  if (!enclosingTextControl(
+          selection.computeVisibleSelectionInDOMTreeDeprecated().start())) {
     m_dataObject->setHTMLAndBaseURL(selection.selectedHTMLForClipboard(),
                                     selection.frame()->document()->url());
   }

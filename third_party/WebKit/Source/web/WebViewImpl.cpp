@@ -2421,8 +2421,10 @@ bool WebViewImpl::selectionTextDirection(WebTextDirection& start,
           .toNormalizedEphemeralRange()
           .isNull())
     return false;
-  start =
-      toWebTextDirection(primaryDirectionOf(*selection.start().anchorNode()));
+  start = toWebTextDirection(
+      primaryDirectionOf(*selection.computeVisibleSelectionInDOMTreeDeprecated()
+                              .start()
+                              .anchorNode()));
   end = toWebTextDirection(
       primaryDirectionOf(*selection.computeVisibleSelectionInDOMTreeDeprecated()
                               .end()

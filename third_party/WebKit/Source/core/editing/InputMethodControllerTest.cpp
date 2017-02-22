@@ -193,7 +193,11 @@ TEST_F(InputMethodControllerTest, SetCompositionAfterEmoji) {
 
   document().updateStyleAndLayout();
   controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
-  EXPECT_EQ(2, frame().selection().start().computeOffsetInContainerNode());
+  EXPECT_EQ(2, frame()
+                   .selection()
+                   .computeVisibleSelectionInDOMTreeDeprecated()
+                   .start()
+                   .computeOffsetInContainerNode());
   EXPECT_EQ(2, frame()
                    .selection()
                    .computeVisibleSelectionInDOMTreeDeprecated()
@@ -345,7 +349,11 @@ TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
   controller().setCompositionFromExistingText(underlines, 0, 5);
 
   controller().finishComposingText(InputMethodController::KeepSelection);
-  EXPECT_EQ(0, frame().selection().start().computeOffsetInContainerNode());
+  EXPECT_EQ(0, frame()
+                   .selection()
+                   .computeVisibleSelectionInDOMTreeDeprecated()
+                   .start()
+                   .computeOffsetInContainerNode());
   EXPECT_EQ(0, frame()
                    .selection()
                    .computeVisibleSelectionInDOMTreeDeprecated()

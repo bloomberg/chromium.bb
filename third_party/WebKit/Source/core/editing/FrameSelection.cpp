@@ -694,7 +694,8 @@ Range* FrameSelection::firstRange() const {
 }
 
 bool FrameSelection::isInPasswordField() const {
-  TextControlElement* textControl = enclosingTextControl(start());
+  TextControlElement* textControl = enclosingTextControl(
+      computeVisibleSelectionInDOMTreeDeprecated().start());
   return isHTMLInputElement(textControl) &&
          toHTMLInputElement(textControl)->type() == InputTypeNames::password;
 }
@@ -945,7 +946,7 @@ HTMLFormElement* FrameSelection::currentForm() const {
   // selection is.
   Node* start = document().focusedElement();
   if (!start)
-    start = this->start().anchorNode();
+    start = computeVisibleSelectionInDOMTreeDeprecated().start().anchorNode();
   if (!start)
     return 0;
 
@@ -986,7 +987,7 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment,
       break;
   }
 
-  Position start = this->start();
+  Position start = computeVisibleSelectionInDOMTreeDeprecated().start();
   DCHECK(start.anchorNode());
   if (start.anchorNode() && start.anchorNode()->layoutObject()) {
     // FIXME: This code only handles scrolling the startContainer's layer, but

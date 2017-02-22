@@ -818,7 +818,9 @@ void InputMethodController::extendSelectionAndDelete(int before, int after) {
     if (before == 0)
       break;
     ++before;
-  } while (frame().selection().start() ==
+  } while (frame().selection()
+                   .computeVisibleSelectionInDOMTreeDeprecated()
+                   .start() ==
                frame()
                    .selection()
                    .computeVisibleSelectionInDOMTreeDeprecated()
