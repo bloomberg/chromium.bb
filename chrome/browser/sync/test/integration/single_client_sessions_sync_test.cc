@@ -20,6 +20,10 @@
 #include "components/sync/test/fake_server/fake_server_verifier.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 using base::HistogramBase;
 using base::HistogramSamples;
 using base::HistogramTester;
@@ -66,6 +70,15 @@ class SingleClientSessionsSyncTest : public SyncTest {
 
     if (!cl->HasSwitch(switches::kSyncShortInitialRetryOverride))
       cl->AppendSwitch(switches::kSyncShortInitialRetryOverride);
+
+#if defined(OS_CHROMEOS)
+    // kIgnoreUserProfileMappingForTests will let UserManager always return
+    // active user. If this switch is not set, sync test's profile will not
+    // match UserManager's active user, then UserManager won't return active
+    // user to our tests.
+    if (!cl->HasSwitch(chromeos::switches::kIgnoreUserProfileMappingForTests))
+      cl->AppendSwitch(chromeos::switches::kIgnoreUserProfileMappingForTests);
+#endif
   }
 
  private:

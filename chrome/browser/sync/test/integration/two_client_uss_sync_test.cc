@@ -201,6 +201,13 @@ class TwoClientUssSyncTest : public SyncTest {
     ProfileSyncServiceFactory::SetSyncClientFactoryForTest(
         &sync_client_factory_);
     ProfileSyncComponentsFactoryImpl::OverridePrefsForUssTest(true);
+    // The test infra creates a profile before the two made for sync tests.
+    number_of_clients_ignored_ = 1;
+#if defined(OS_CHROMEOS)
+    // ChromeOS will force loading a signin profile, so we need to ingore one
+    // more client.
+    ++number_of_clients_ignored_;
+#endif
   }
 
   ~TwoClientUssSyncTest() override {
@@ -216,9 +223,8 @@ class TwoClientUssSyncTest : public SyncTest {
 
  protected:
   std::unique_ptr<syncer::SyncClient> CreateSyncClient(Profile* profile) {
-    if (!first_client_ignored_) {
-      // The test infra creates a profile before the two made for sync tests.
-      first_client_ignored_ = true;
+    if (number_of_clients_ignored_ > 0) {
+      --number_of_clients_ignored_;
       return base::MakeUnique<ChromeSyncClient>(profile);
     }
     auto bridge = base::MakeUnique<TestModelTypeSyncBridge>();
@@ -231,7 +237,7 @@ class TwoClientUssSyncTest : public SyncTest {
   ProfileSyncServiceFactory::SyncClientFactory sync_client_factory_;
   std::vector<std::unique_ptr<TestModelTypeSyncBridge>> bridges_;
   std::vector<TestSyncClient*> clients_;
-  bool first_client_ignored_ = false;
+  size_t number_of_clients_ignored_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientUssSyncTest);
