@@ -1,5 +1,22 @@
 
 
+Running: testIgnoreCaseAndIgnoreDynamicScript
+Search result #1: uiSourceCode.url = http://127.0.0.1:8000/inspector/search/resources/search.css
+  search match #1: lineNumber = 0, lineContent = 'div.searchTestUniqueString {'
+  search match #2: lineNumber = 4, lineContent = 'div.searchTestUniqueString:hover {'
+  search match #3: lineNumber = 5, lineContent = '    /* another searchTestUniqueString occurence */'
+Search result #2: uiSourceCode.url = http://127.0.0.1:8000/inspector/search/resources/search.html
+  search match #1: lineNumber = 4, lineContent = '<script>window.eval("function searchTestUniqueString() {}");</script>'
+  search match #2: lineNumber = 6, lineContent = '<div>searchTestUniqueString</div>'
+  search match #3: lineNumber = 8, lineContent = '<!-- searchTestUniqueString -->'
+  search match #4: lineNumber = 10, lineContent = '<div id="searchTestUniqueString">div text</div>'
+Search result #3: uiSourceCode.url = http://127.0.0.1:8000/inspector/search/resources/search.js
+  search match #1: lineNumber = 0, lineContent = 'function searchTestUniqueString()'
+  search match #2: lineNumber = 3, lineContent = '    // searchTestUniqueString two occurences on the same line searchTestUniqueString'
+  search match #3: lineNumber = 4, lineContent = '    // searchTestUniqueString on the next line.'
+  search match #4: lineNumber = 10, lineContent = '    searchTestUniqueString();'
+  search match #5: lineNumber = 11, lineContent = '    // SEARCHTestUniqueString();'
+
 Running: testIgnoreCase
 Search result #1: uiSourceCode.url = debugger:///VMXX
   search match #1: lineNumber = 0, lineContent = 'function searchTestUniqueString() {}'

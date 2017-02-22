@@ -20,12 +20,21 @@ function test()
     function step2()
     {
         InspectorTest.runTestSuite([
-            function testIgnoreCase(next)
+            function testIgnoreCaseAndIgnoreDynamicScript(next)
             {
                 var query = "searchTest" + "UniqueString";
                 var searchConfig = new Workspace.SearchConfig(query, true, false);
                 InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
             },
+
+            function testIgnoreCase(next)
+            {
+                Common.settingForTest('searchInAnonymousAndContentScripts').set(true);
+                var query = "searchTest" + "UniqueString";
+                var searchConfig = new Workspace.SearchConfig(query, true, false);
+                InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            },
+
 
             function testCaseSensitive(next)
             {
