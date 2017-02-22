@@ -50,9 +50,6 @@ class LargeIconService : public KeyedService {
     base::CancelableTaskTracker* tracker);
 
  private:
-  // For testing.
-  friend class TestLargeIconService;
-
   FaviconService* favicon_service_;
   scoped_refptr<base::TaskRunner> background_task_runner_;
 

@@ -103,6 +103,7 @@ source_set("unit_tests") {
     ":reading_list",
     "//base",
     "//components/favicon/core",
+    "//components/favicon/core/test:test_support",
     "//components/prefs",
     "//components/reading_list/ios",
     "//components/url_formatter",

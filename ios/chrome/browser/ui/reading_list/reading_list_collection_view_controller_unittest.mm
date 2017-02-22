@@ -12,9 +12,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/favicon/core/favicon_client.h"
-#include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/large_icon_service.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/reading_list/ios/reading_list_model.h"
 #include "components/reading_list/ios/reading_list_model_impl.h"
 #include "components/reading_list/ios/reading_list_model_storage.h"
@@ -24,38 +23,14 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
-namespace {
-
-#pragma mark - MockFaviconService
-
-// A mock FaviconService that emits an empty response.
-class MockFaviconService : public favicon::FaviconService {
- public:
-  MockFaviconService() : FaviconService(nullptr, nullptr) {}
-
-  ~MockFaviconService() override {}
-
-  base::CancelableTaskTracker::TaskId GetLargestRawFaviconForPageURL(
-      const GURL& page_url,
-      const std::vector<int>& icon_types,
-      int minimum_size_in_pixels,
-      const favicon_base::FaviconRawBitmapCallback& callback,
-      base::CancelableTaskTracker* tracker) override {
-    favicon_base::FaviconRawBitmapResult mock_result;
-    return tracker->PostTask(base::ThreadTaskRunnerHandle::Get().get(),
-                             FROM_HERE, base::Bind(callback, mock_result));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockFaviconService);
-};
-
-}  // namespace
+using favicon::PostReply;
+using testing::_;
 
 #pragma mark - ReadingListCollectionViewControllerTest
 
@@ -64,9 +39,9 @@ class ReadingListCollectionViewControllerTest : public testing::Test {
   ReadingListCollectionViewControllerTest() {}
   ~ReadingListCollectionViewControllerTest() override {}
 
+  testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   std::unique_ptr<favicon::LargeIconService> large_icon_service_;
-  std::unique_ptr<MockFaviconService> mock_favicon_service_;
 
   base::scoped_nsobject<ReadingListCollectionViewController>
       reading_list_view_controller_;
@@ -76,11 +51,14 @@ class ReadingListCollectionViewControllerTest : public testing::Test {
   // readinglistdownloadservice.
   void SetUp() override {
     testing::Test::SetUp();
-    mock_favicon_service_.reset(new MockFaviconService());
+
+    EXPECT_CALL(mock_favicon_service_,
+                GetLargestRawFaviconForPageURL(_, _, _, _, _))
+        .WillRepeatedly(PostReply<5>(favicon_base::FaviconRawBitmapResult()));
 
     reading_list_model_.reset(new ReadingListModelImpl(nullptr, nullptr));
     large_icon_service_.reset(new favicon::LargeIconService(
-        mock_favicon_service_.get(), base::ThreadTaskRunnerHandle::Get()));
+        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get()));
     reading_list_view_controller_.reset(
         [[ReadingListCollectionViewController alloc]
                          initWithModel:reading_list_model_.get()

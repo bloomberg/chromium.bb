@@ -4,12 +4,14 @@
 
 #include "chrome/browser/favicon/favicon_service_factory.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/favicon/chrome_favicon_client.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/favicon/core/favicon_service.h"
+#include "components/favicon/core/favicon_service_impl.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
@@ -19,7 +21,7 @@ namespace {
 std::unique_ptr<KeyedService> BuildFaviconService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  return base::MakeUnique<favicon::FaviconService>(
+  return base::MakeUnique<favicon::FaviconServiceImpl>(
       base::WrapUnique(new ChromeFaviconClient(profile)),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS));

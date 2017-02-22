@@ -16,9 +16,8 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
-#include "components/favicon/core/favicon_client.h"
-#include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/large_icon_service.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #import "ios/chrome/app/spotlight/bookmarks_spotlight_manager.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
@@ -27,12 +26,16 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/spotlight/spotlight_provider.h"
 #import "net/base/mac/url_conversions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using favicon::PostReply;
+using testing::_;
 
 const char kDummyIconUrl[] = "http://www.example.com/touch_icon.png";
 
@@ -59,59 +62,24 @@ favicon_base::FaviconRawBitmapResult CreateTestBitmap(int w, int h) {
   return result;
 }
 
-// A mock FaviconService that emits pre-programmed response.
-class MockFaviconService : public favicon::FaviconService {
- public:
-  MockFaviconService() : FaviconService(nullptr, nullptr) {}
-
-  ~MockFaviconService() override {}
-
-  base::CancelableTaskTracker::TaskId GetLargestRawFaviconForPageURL(
-      const GURL& page_url,
-      const std::vector<int>& icon_types,
-      int minimum_size_in_pixels,
-      const favicon_base::FaviconRawBitmapCallback& callback,
-      base::CancelableTaskTracker* tracker) override {
-    favicon_base::FaviconRawBitmapResult mock_result = CreateTestBitmap(24, 24);
-    return tracker->PostTask(base::ThreadTaskRunnerHandle::Get().get(),
-                             FROM_HERE, base::Bind(callback, mock_result));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockFaviconService);
-};
-
-// This class provides access to LargeIconService internals, using the current
-// thread's task runner for testing.
-class TestLargeIconService : public favicon::LargeIconService {
- public:
-  explicit TestLargeIconService(MockFaviconService* mock_favicon_service)
-      : LargeIconService(mock_favicon_service,
-                         base::ThreadTaskRunnerHandle::Get()) {}
-  ~TestLargeIconService() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestLargeIconService);
-};
-
 class SpotlightManagerTest : public testing::Test {
  protected:
   SpotlightManagerTest() {
-    mock_favicon_service_.reset(new MockFaviconService());
-    large_icon_service_.reset(
-        new TestLargeIconService(mock_favicon_service_.get()));
     model_ = bookmarks::TestBookmarkClient::CreateModel();
-    mock_favicon_service_.reset(new MockFaviconService());
-    large_icon_service_.reset(
-        new TestLargeIconService(mock_favicon_service_.get()));
+    large_icon_service_.reset(new favicon::LargeIconService(
+        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get()));
     bookmarksSpotlightManager_ = [[BookmarksSpotlightManager alloc]
         initWithLargeIconService:large_icon_service_.get()
                    bookmarkModel:model_.get()];
+
+    EXPECT_CALL(mock_favicon_service_,
+                GetLargestRawFaviconForPageURL(_, _, _, _, _))
+        .WillRepeatedly(PostReply<5>(CreateTestBitmap(24, 24)));
   }
 
   base::MessageLoop loop_;
-  std::unique_ptr<MockFaviconService> mock_favicon_service_;
-  std::unique_ptr<TestLargeIconService> large_icon_service_;
+  testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
+  std::unique_ptr<favicon::LargeIconService> large_icon_service_;
   base::CancelableTaskTracker cancelable_task_tracker_;
   std::unique_ptr<bookmarks::BookmarkModel> model_;
   BookmarksSpotlightManager* bookmarksSpotlightManager_;

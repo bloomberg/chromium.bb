@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_client.h"
-#include "components/favicon/core/favicon_service.h"
+#include "components/favicon/core/favicon_service_impl.h"
 #include "components/favicon/core/favicon_util.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
@@ -88,7 +88,7 @@ class IconCacherTest : public ::testing::Test {
   std::unique_ptr<MockImageFetcher> image_fetcher_;
   base::ScopedTempDir history_dir_;
   history::HistoryService history_service_;
-  favicon::FaviconService favicon_service_;
+  favicon::FaviconServiceImpl favicon_service_;
 };
 
 template <typename Fn>

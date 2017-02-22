@@ -55,6 +55,8 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
  public:
   void SetUp() override {
     CocoaProfileTest::SetUp();
+    ASSERT_TRUE(profile()->CreateHistoryService(/*delete_file=*/true,
+                                                /*no_db=*/false));
     profile()->CreateFaviconService();
     bridge_.reset(new MockBridge(profile()));
   }

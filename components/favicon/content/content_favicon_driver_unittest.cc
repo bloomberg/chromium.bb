@@ -5,14 +5,15 @@
 #include "components/favicon/content/content_favicon_driver.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/favicon/core/favicon_client.h"
-#include "components/favicon/core/favicon_handler.h"
-#include "components/favicon/core/favicon_service.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/test/test_renderer_host.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/favicon_size.h"
@@ -20,8 +21,11 @@
 namespace favicon {
 namespace {
 
+using testing::Mock;
+using testing::Return;
+
 class ContentFaviconDriverTest : public content::RenderViewHostTestHarness {
- public:
+ protected:
   ContentFaviconDriverTest() {}
 
   ~ContentFaviconDriverTest() override {}
@@ -30,26 +34,17 @@ class ContentFaviconDriverTest : public content::RenderViewHostTestHarness {
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
 
-    favicon_service_.reset(new FaviconService(nullptr, nullptr));
     ContentFaviconDriver::CreateForWebContents(
-        web_contents(), favicon_service(), nullptr, nullptr);
+        web_contents(), &favicon_service_, nullptr, nullptr);
   }
 
-  FaviconService* favicon_service() {
-    return favicon_service_.get();
-  }
-
- private:
-  std::unique_ptr<FaviconService> favicon_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentFaviconDriverTest);
+  testing::StrictMock<MockFaviconService> favicon_service_;
 };
 
 // Test that Favicon is not requested repeatedly during the same session if
 // server returns HTTP 404 status.
 TEST_F(ContentFaviconDriverTest, UnableToDownloadFavicon) {
   const GURL missing_icon_url("http://www.google.com/favicon.ico");
-  const GURL another_icon_url("http://www.youtube.com/favicon.ico");
 
   ContentFaviconDriver* content_favicon_driver =
       ContentFaviconDriver::FromWebContents(web_contents());
@@ -59,54 +54,37 @@ TEST_F(ContentFaviconDriverTest, UnableToDownloadFavicon) {
   int download_id = 0;
 
   // Try to download missing icon.
+  EXPECT_CALL(favicon_service_, WasUnableToDownloadFavicon(missing_icon_url))
+      .WillOnce(Return(false));
   download_id = content_favicon_driver->StartDownload(missing_icon_url, 0);
   EXPECT_NE(0, download_id);
-  EXPECT_FALSE(favicon_service()->WasUnableToDownloadFavicon(missing_icon_url));
 
   // Report download failure with HTTP 503 status.
   content_favicon_driver->DidDownloadFavicon(download_id, 503, missing_icon_url,
                                              empty_icons, empty_icon_sizes);
-  // Icon is not marked as UnableToDownload as HTTP status is not 404.
-  EXPECT_FALSE(favicon_service()->WasUnableToDownloadFavicon(missing_icon_url));
+  Mock::VerifyAndClearExpectations(&favicon_service_);
 
   // Try to download again.
+  EXPECT_CALL(favicon_service_, WasUnableToDownloadFavicon(missing_icon_url))
+      .WillOnce(Return(false));
   download_id = content_favicon_driver->StartDownload(missing_icon_url, 0);
   EXPECT_NE(0, download_id);
-  EXPECT_FALSE(favicon_service()->WasUnableToDownloadFavicon(missing_icon_url));
+  Mock::VerifyAndClearExpectations(&favicon_service_);
 
-  // Report download failure with HTTP 404 status.
+  // Report download failure with HTTP 404 status, which causes the icon to be
+  // marked as UnableToDownload.
+  EXPECT_CALL(favicon_service_, UnableToDownloadFavicon(missing_icon_url));
   content_favicon_driver->DidDownloadFavicon(download_id, 404, missing_icon_url,
                                              empty_icons, empty_icon_sizes);
-  // Icon is marked as UnableToDownload.
-  EXPECT_TRUE(favicon_service()->WasUnableToDownloadFavicon(missing_icon_url));
+  Mock::VerifyAndClearExpectations(&favicon_service_);
 
   // Try to download again.
+  EXPECT_CALL(favicon_service_, WasUnableToDownloadFavicon(missing_icon_url))
+      .WillOnce(Return(true));
   download_id = content_favicon_driver->StartDownload(missing_icon_url, 0);
   // Download is not started and Icon is still marked as UnableToDownload.
   EXPECT_EQ(0, download_id);
-  EXPECT_TRUE(favicon_service()->WasUnableToDownloadFavicon(missing_icon_url));
-
-  // Try to download another icon.
-  download_id = content_favicon_driver->StartDownload(another_icon_url, 0);
-  // Download is started as another icon URL is not same as missing_icon_url.
-  EXPECT_NE(0, download_id);
-  EXPECT_FALSE(favicon_service()->WasUnableToDownloadFavicon(another_icon_url));
-
-  // Clear the list of missing icons.
-  favicon_service()->ClearUnableToDownloadFavicons();
-  EXPECT_FALSE(favicon_service()->WasUnableToDownloadFavicon(missing_icon_url));
-  EXPECT_FALSE(favicon_service()->WasUnableToDownloadFavicon(another_icon_url));
-
-  // Try to download again.
-  download_id = content_favicon_driver->StartDownload(missing_icon_url, 0);
-  EXPECT_NE(0, download_id);
-  // Report download success with HTTP 200 status.
-  content_favicon_driver->DidDownloadFavicon(download_id, 200, missing_icon_url,
-                                             empty_icons, empty_icon_sizes);
-  // Icon is not marked as UnableToDownload as HTTP status is not 404.
-  EXPECT_FALSE(favicon_service()->WasUnableToDownloadFavicon(missing_icon_url));
-
-  favicon_service()->Shutdown();
+  Mock::VerifyAndClearExpectations(&favicon_service_);
 }
 
 // Test that ContentFaviconDriver ignores updated favicon URLs if there is no

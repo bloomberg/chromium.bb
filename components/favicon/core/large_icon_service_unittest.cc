@@ -15,9 +15,10 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_client.h"
-#include "components/favicon/core/favicon_service.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -29,9 +30,10 @@
 namespace favicon {
 namespace {
 
+using testing::_;
+
 const char kDummyUrl[] = "http://www.example.com";
 const char kDummyIconUrl[] = "http://www.example.com/touch_icon.png";
-
 const SkColor kTestColor = SK_ColorRED;
 
 favicon_base::FaviconRawBitmapResult CreateTestBitmap(
@@ -54,69 +56,14 @@ favicon_base::FaviconRawBitmapResult CreateTestBitmap(
   return result;
 }
 
-// A mock FaviconService that emits pre-programmed response.
-class MockFaviconService : public FaviconService {
- public:
-  MockFaviconService() : FaviconService(nullptr, nullptr) {
-  }
-
-  ~MockFaviconService() override {
-  }
-
-  base::CancelableTaskTracker::TaskId GetLargestRawFaviconForPageURL(
-      const GURL& page_url,
-      const std::vector<int>& icon_types,
-      int minimum_size_in_pixels,
-      const favicon_base::FaviconRawBitmapCallback& callback,
-      base::CancelableTaskTracker* tracker) override {
-    favicon_base::FaviconRawBitmapResult mock_result =
-        mock_result_queue_.front();
-    mock_result_queue_.pop_front();
-    return tracker->PostTask(base::ThreadTaskRunnerHandle::Get().get(),
-                             FROM_HERE, base::Bind(callback, mock_result));
-  }
-
-  void InjectResult(const favicon_base::FaviconRawBitmapResult& mock_result) {
-    mock_result_queue_.push_back(mock_result);
-  }
-
-  bool HasUnusedResults() {
-    return !mock_result_queue_.empty();
-  }
-
- private:
-  std::deque<favicon_base::FaviconRawBitmapResult> mock_result_queue_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockFaviconService);
-};
-
-// This class provides access to LargeIconService internals, using the current
-// thread's task runner for testing.
-class TestLargeIconService : public LargeIconService {
- public:
-  explicit TestLargeIconService(MockFaviconService* mock_favicon_service)
-      : LargeIconService(mock_favicon_service,
-                         base::ThreadTaskRunnerHandle::Get()) {}
-  ~TestLargeIconService() override {
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestLargeIconService);
-};
-
 class LargeIconServiceTest : public testing::Test {
  public:
-  LargeIconServiceTest() : is_callback_invoked_(false) {
-  }
+  LargeIconServiceTest()
+      : large_icon_service_(&mock_favicon_service_,
+                            base::ThreadTaskRunnerHandle::Get()),
+        is_callback_invoked_(false) {}
 
   ~LargeIconServiceTest() override {
-  }
-
-  void SetUp() override {
-    testing::Test::SetUp();
-    mock_favicon_service_.reset(new MockFaviconService());
-    large_icon_service_.reset(
-        new TestLargeIconService(mock_favicon_service_.get()));
   }
 
   void ResultCallback(const favicon_base::LargeIconResult& result) {
@@ -135,15 +82,21 @@ class LargeIconServiceTest : public testing::Test {
       EXPECT_EQ(*expected_fallback_icon_style_,
                 *result.fallback_icon_style);
     }
-    // Ensure all mock results have been consumed.
-    EXPECT_FALSE(mock_favicon_service_->HasUnusedResults());
+  }
+
+  void InjectMockResult(
+      const GURL& page_url,
+      const favicon_base::FaviconRawBitmapResult& mock_result) {
+    EXPECT_CALL(mock_favicon_service_,
+                GetLargestRawFaviconForPageURL(page_url, _, _, _, _))
+        .WillOnce(PostReply<5>(mock_result));
   }
 
  protected:
   base::MessageLoopForIO loop_;
 
-  std::unique_ptr<MockFaviconService> mock_favicon_service_;
-  std::unique_ptr<TestLargeIconService> large_icon_service_;
+  testing::StrictMock<MockFaviconService> mock_favicon_service_;
+  LargeIconService large_icon_service_;
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   favicon_base::FaviconRawBitmapResult expected_bitmap_;
@@ -157,9 +110,9 @@ class LargeIconServiceTest : public testing::Test {
 };
 
 TEST_F(LargeIconServiceTest, SameSize) {
-  mock_favicon_service_->InjectResult(CreateTestBitmap(24, 24, kTestColor));
+  InjectMockResult(GURL(kDummyUrl), CreateTestBitmap(24, 24, kTestColor));
   expected_bitmap_ = CreateTestBitmap(24, 24, kTestColor);
-  large_icon_service_->GetLargeIconOrFallbackStyle(
+  large_icon_service_.GetLargeIconOrFallbackStyle(
       GURL(kDummyUrl),
       24,  // |min_source_size_in_pixel|
       24,  // |desired_size_in_pixel|
@@ -170,12 +123,10 @@ TEST_F(LargeIconServiceTest, SameSize) {
 }
 
 TEST_F(LargeIconServiceTest, ScaleDown) {
-  mock_favicon_service_->InjectResult(CreateTestBitmap(32, 32, kTestColor));
+  InjectMockResult(GURL(kDummyUrl), CreateTestBitmap(32, 32, kTestColor));
   expected_bitmap_ = CreateTestBitmap(24, 24, kTestColor);
-  large_icon_service_->GetLargeIconOrFallbackStyle(
-      GURL(kDummyUrl),
-      24,
-      24,
+  large_icon_service_.GetLargeIconOrFallbackStyle(
+      GURL(kDummyUrl), 24, 24,
       base::Bind(&LargeIconServiceTest::ResultCallback, base::Unretained(this)),
       &cancelable_task_tracker_);
   base::RunLoop().RunUntilIdle();
@@ -183,9 +134,9 @@ TEST_F(LargeIconServiceTest, ScaleDown) {
 }
 
 TEST_F(LargeIconServiceTest, ScaleUp) {
-  mock_favicon_service_->InjectResult(CreateTestBitmap(16, 16, kTestColor));
+  InjectMockResult(GURL(kDummyUrl), CreateTestBitmap(16, 16, kTestColor));
   expected_bitmap_ = CreateTestBitmap(24, 24, kTestColor);
-  large_icon_service_->GetLargeIconOrFallbackStyle(
+  large_icon_service_.GetLargeIconOrFallbackStyle(
       GURL(kDummyUrl),
       14,  // Lowered requirement so stored bitmap is admitted.
       24,
@@ -197,12 +148,10 @@ TEST_F(LargeIconServiceTest, ScaleUp) {
 
 // |desired_size_in_pixel| == 0 means retrieve original image without scaling.
 TEST_F(LargeIconServiceTest, NoScale) {
-  mock_favicon_service_->InjectResult(CreateTestBitmap(24, 24, kTestColor));
+  InjectMockResult(GURL(kDummyUrl), CreateTestBitmap(24, 24, kTestColor));
   expected_bitmap_ = CreateTestBitmap(24, 24, kTestColor);
-  large_icon_service_->GetLargeIconOrFallbackStyle(
-      GURL(kDummyUrl),
-      16,
-      0,
+  large_icon_service_.GetLargeIconOrFallbackStyle(
+      GURL(kDummyUrl), 16, 0,
       base::Bind(&LargeIconServiceTest::ResultCallback, base::Unretained(this)),
       &cancelable_task_tracker_);
   base::RunLoop().RunUntilIdle();
@@ -210,14 +159,12 @@ TEST_F(LargeIconServiceTest, NoScale) {
 }
 
 TEST_F(LargeIconServiceTest, FallbackSinceIconTooSmall) {
-  mock_favicon_service_->InjectResult(CreateTestBitmap(16, 16, kTestColor));
+  InjectMockResult(GURL(kDummyUrl), CreateTestBitmap(16, 16, kTestColor));
   expected_fallback_icon_style_.reset(new favicon_base::FallbackIconStyle);
   expected_fallback_icon_style_->background_color = kTestColor;
   expected_fallback_icon_style_->is_default_background_color = false;
-  large_icon_service_->GetLargeIconOrFallbackStyle(
-      GURL(kDummyUrl),
-      24,
-      24,
+  large_icon_service_.GetLargeIconOrFallbackStyle(
+      GURL(kDummyUrl), 24, 24,
       base::Bind(&LargeIconServiceTest::ResultCallback, base::Unretained(this)),
       &cancelable_task_tracker_);
   base::RunLoop().RunUntilIdle();
@@ -225,14 +172,12 @@ TEST_F(LargeIconServiceTest, FallbackSinceIconTooSmall) {
 }
 
 TEST_F(LargeIconServiceTest, FallbackSinceIconNotSquare) {
-  mock_favicon_service_->InjectResult(CreateTestBitmap(24, 32, kTestColor));
+  InjectMockResult(GURL(kDummyUrl), CreateTestBitmap(24, 32, kTestColor));
   expected_fallback_icon_style_.reset(new favicon_base::FallbackIconStyle);
   expected_fallback_icon_style_->background_color = kTestColor;
   expected_fallback_icon_style_->is_default_background_color = false;
-  large_icon_service_->GetLargeIconOrFallbackStyle(
-      GURL(kDummyUrl),
-      24,
-      24,
+  large_icon_service_.GetLargeIconOrFallbackStyle(
+      GURL(kDummyUrl), 24, 24,
       base::Bind(&LargeIconServiceTest::ResultCallback, base::Unretained(this)),
       &cancelable_task_tracker_);
   base::RunLoop().RunUntilIdle();
@@ -240,13 +185,11 @@ TEST_F(LargeIconServiceTest, FallbackSinceIconNotSquare) {
 }
 
 TEST_F(LargeIconServiceTest, FallbackSinceIconMissing) {
-  mock_favicon_service_->InjectResult(favicon_base::FaviconRawBitmapResult());
+  InjectMockResult(GURL(kDummyUrl), favicon_base::FaviconRawBitmapResult());
   // Expect default fallback style, including background.
   expected_fallback_icon_style_.reset(new favicon_base::FallbackIconStyle);
-  large_icon_service_->GetLargeIconOrFallbackStyle(
-      GURL(kDummyUrl),
-      24,
-      24,
+  large_icon_service_.GetLargeIconOrFallbackStyle(
+      GURL(kDummyUrl), 24, 24,
       base::Bind(&LargeIconServiceTest::ResultCallback, base::Unretained(this)),
       &cancelable_task_tracker_);
   base::RunLoop().RunUntilIdle();
@@ -254,13 +197,11 @@ TEST_F(LargeIconServiceTest, FallbackSinceIconMissing) {
 }
 
 TEST_F(LargeIconServiceTest, FallbackSinceIconMissingNoScale) {
-  mock_favicon_service_->InjectResult(favicon_base::FaviconRawBitmapResult());
+  InjectMockResult(GURL(kDummyUrl), favicon_base::FaviconRawBitmapResult());
   // Expect default fallback style, including background.
   expected_fallback_icon_style_.reset(new favicon_base::FallbackIconStyle);
-  large_icon_service_->GetLargeIconOrFallbackStyle(
-      GURL(kDummyUrl),
-      24,
-      0,
+  large_icon_service_.GetLargeIconOrFallbackStyle(
+      GURL(kDummyUrl), 24, 0,
       base::Bind(&LargeIconServiceTest::ResultCallback, base::Unretained(this)),
       &cancelable_task_tracker_);
   base::RunLoop().RunUntilIdle();
@@ -270,14 +211,12 @@ TEST_F(LargeIconServiceTest, FallbackSinceIconMissingNoScale) {
 // Oddball case where we demand a high resolution icon to scale down. Generates
 // fallback even though an icon with the final size is available.
 TEST_F(LargeIconServiceTest, FallbackSinceTooPicky) {
-  mock_favicon_service_->InjectResult(CreateTestBitmap(24, 24, kTestColor));
+  InjectMockResult(GURL(kDummyUrl), CreateTestBitmap(24, 24, kTestColor));
   expected_fallback_icon_style_.reset(new favicon_base::FallbackIconStyle);
   expected_fallback_icon_style_->background_color = kTestColor;
   expected_fallback_icon_style_->is_default_background_color = false;
-  large_icon_service_->GetLargeIconOrFallbackStyle(
-      GURL(kDummyUrl),
-      32,
-      24,
+  large_icon_service_.GetLargeIconOrFallbackStyle(
+      GURL(kDummyUrl), 32, 24,
       base::Bind(&LargeIconServiceTest::ResultCallback, base::Unretained(this)),
       &cancelable_task_tracker_);
   base::RunLoop().RunUntilIdle();

@@ -16,6 +16,8 @@ static_library("core") {
     "favicon_handler.h",
     "favicon_service.cc",
     "favicon_service.h",
+    "favicon_service_impl.cc",
+    "favicon_service_impl.h",
     "favicon_url.cc",
     "favicon_url.h",
     "favicon_util.cc",
@@ -51,14 +53,19 @@ source_set("unit_tests") {
   sources = [
     "fallback_url_util_unittest.cc",
     "favicon_handler_unittest.cc",
+    "favicon_service_impl_unittest.cc",
     "large_icon_service_unittest.cc",
   ]
 
   deps = [
     ":core",
     "//base",
+    "//components/favicon/core/test:test_support",
     "//components/favicon_base",
+    "//components/history/core/browser:browser",
+    "//components/history/core/test:test",
     "//skia",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/base",
     "//ui/gfx",

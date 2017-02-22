@@ -7,9 +7,8 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/favicon/core/favicon_client.h"
-#include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/large_icon_service.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/reading_list/ios/reading_list_entry.h"
 #include "components/reading_list/ios/reading_list_model_impl.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -19,37 +18,13 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 #include "ui/base/page_transition_types.h"
 
-namespace {
-
-#pragma mark - MockFaviconService
-
-// A mock FaviconService that emits an empty response.
-class MockFaviconService : public favicon::FaviconService {
- public:
-  MockFaviconService() : FaviconService(nullptr, nullptr) {}
-
-  ~MockFaviconService() override {}
-
-  base::CancelableTaskTracker::TaskId GetLargestRawFaviconForPageURL(
-      const GURL& page_url,
-      const std::vector<int>& icon_types,
-      int minimum_size_in_pixels,
-      const favicon_base::FaviconRawBitmapCallback& callback,
-      base::CancelableTaskTracker* tracker) override {
-    favicon_base::FaviconRawBitmapResult mock_result;
-    return tracker->PostTask(base::ThreadTaskRunnerHandle::Get().get(),
-                             FROM_HERE, base::Bind(callback, mock_result));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockFaviconService);
-};
-
-}  // namespace
+using favicon::PostReply;
+using testing::_;
 
 #pragma mark - UrlLoader
 
@@ -117,19 +92,23 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
  public:
   ReadingListCoordinatorTest() {
     loader_mock_.reset([[UrlLoaderStub alloc] init]);
-    mock_favicon_service_.reset(new MockFaviconService());
 
     TestChromeBrowserState::Builder builder;
     browser_state_ = builder.Build();
 
     reading_list_model_.reset(new ReadingListModelImpl(nullptr, nullptr));
     large_icon_service_.reset(new favicon::LargeIconService(
-        mock_favicon_service_.get(), base::ThreadTaskRunnerHandle::Get()));
+        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get()));
     coordinator_.reset([[ReadingListCoordinator alloc]
         initWithBaseViewController:nil
                       browserState:browser_state_.get()
                             loader:loader_mock_]);
+
+    EXPECT_CALL(mock_favicon_service_,
+                GetLargestRawFaviconForPageURL(_, _, _, _, _))
+        .WillRepeatedly(PostReply<5>(favicon_base::FaviconRawBitmapResult()));
   }
+
   ~ReadingListCoordinatorTest() override {}
 
   ReadingListCoordinator* GetCoordinator() { return coordinator_; }
@@ -150,8 +129,8 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
   base::scoped_nsobject<ReadingListCoordinator> coordinator_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   base::scoped_nsobject<UrlLoaderStub> loader_mock_;
+  testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
   std::unique_ptr<favicon::LargeIconService> large_icon_service_;
-  std::unique_ptr<MockFaviconService> mock_favicon_service_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
 };
 

@@ -53,7 +53,7 @@ class Thread;
 }
 
 namespace favicon {
-class FaviconService;
+class FaviconServiceImpl;
 }
 
 namespace history {
@@ -544,7 +544,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   class BackendDelegate;
   friend class base::RefCountedThreadSafe<HistoryService>;
   friend class BackendDelegate;
-  friend class favicon::FaviconService;
+  friend class favicon::FaviconServiceImpl;
   friend class HistoryBackend;
   friend class HistoryQueryTest;
   friend class ::HistoryQuickProviderTest;

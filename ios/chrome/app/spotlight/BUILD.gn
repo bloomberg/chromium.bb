@@ -61,6 +61,7 @@ source_set("unit_tests") {
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
     "//components/favicon/core",
+    "//components/favicon/core/test:test_support",
     "//components/favicon_base",
     "//ios/chrome/browser/bookmarks",
     "//ios/public/provider/chrome/browser",
