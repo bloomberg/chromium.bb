@@ -20,6 +20,9 @@ import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 @CommandLineFlags.Add({"enable-features=ChromeHome"})
 @Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBase {
+    /** A handle to the bottom sheet. */
+    protected BottomSheet mBottomSheet;
+
     private boolean mOldChromeHomeFlagValue;
     @Override
     protected void setUp() throws Exception {
@@ -41,6 +44,8 @@ public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBa
         });
         RecyclerViewTestUtils.waitForStableRecyclerView(
                 getBottomSheetContent().getScrollingContentView());
+
+        mBottomSheet = getActivity().getBottomSheet();
     }
 
     @Override
@@ -52,6 +57,33 @@ public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBa
     protected void tearDown() throws Exception {
         super.tearDown();
         ChromePreferenceManager.getInstance().setChromeHomeEnabled(mOldChromeHomeFlagValue);
+    }
+
+    /**
+     * Set the bottom sheet's state on the UI thread.
+     * @param state The state to set the sheet to.
+     * @param animate If the sheet should animate to the provided state.
+     */
+    protected void setSheetState(final int state, final boolean animate) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mBottomSheet.setSheetState(state, animate);
+            }
+        });
+    }
+
+    /**
+     * Set the bottom sheet's offset from the bottom of the screen on the UI thread.
+     * @param offset The offset from the bottom that the sheet should be.
+     */
+    protected void setSheetOffsetFromBottom(final float offset) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mBottomSheet.setSheetOffsetFromBottomForTesting(offset);
+            }
+        });
     }
 
     protected BottomSheetContent getBottomSheetContent() {

@@ -151,4 +151,13 @@ public class FadingBackgroundView extends View implements View.OnClickListener,
     public void onTransitionPeekToHalf(float transitionFraction) {
         setViewAlpha(transitionFraction);
     }
+
+    @Override
+    public void onSheetOpened() {}
+
+    @Override
+    public void onSheetClosed() {}
+
+    @Override
+    public void onLoadUrl(String url) {}
 }

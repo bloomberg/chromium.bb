@@ -9,6 +9,23 @@ package org.chromium.chrome.browser.widget;
  */
 public interface BottomSheetObserver {
     /**
+     * A notification that the sheet has been opened, meaning the sheet is any height greater
+     * than its peeking state.
+     */
+    void onSheetOpened();
+
+    /**
+     * A notification that the sheet has closed, meaning the sheet has reached its peeking state.
+     */
+    void onSheetClosed();
+
+    /**
+     * A notification that the sheet has begun loading a URL.
+     * @param url The URL being loaded.
+     */
+    void onLoadUrl(String url);
+
+    /**
      * An event for when the sheet is transitioning from the peeking state to the half expanded
      * state. Once the sheet is outside the peek-half range, this event will no longer be
      * called.

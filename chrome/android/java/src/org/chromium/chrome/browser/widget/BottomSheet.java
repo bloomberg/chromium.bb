@@ -337,7 +337,6 @@ public class BottomSheet
      * Adds layout change listeners to the views that the bottom sheet depends on. Namely the
      * heights of the root view and control container are important as they are used in many of the
      * calculations in this class.
-     * @param activity An activity for loading native pages.
      * @param root The container of the bottom sheet.
      * @param controlContainer The container for the toolbar.
      */
@@ -394,6 +393,8 @@ public class BottomSheet
 
     @Override
     public int loadUrl(LoadUrlParams params) {
+        for (BottomSheetObserver o : mObservers) o.onLoadUrl(params.getUrl());
+
         // Native page URLs in this context do not need to communicate with the tab.
         if (NativePageFactory.isNativePageUrl(params.getUrl(), isIncognito())) {
             return TabLoadStatus.PAGE_LOAD_FAILED;
@@ -448,13 +449,22 @@ public class BottomSheet
     /**
      * A notification that the sheet is exiting the peek state into one that shows content.
      */
-    private void onExitPeekState() {
+    private void onSheetOpened() {
         if (mSuggestionsContent == null) {
             mSuggestionsContent = new SuggestionsBottomSheetContent(
                     mTabModelSelector.getCurrentTab().getActivity(), this, mTabModelSelector);
         }
 
         showContent(mSuggestionsContent);
+
+        for (BottomSheetObserver o : mObservers) o.onSheetOpened();
+    }
+
+    /**
+     * A notification that the sheet has returned to the peeking state.
+     */
+    private void onSheetClosed() {
+        for (BottomSheetObserver o : mObservers) o.onSheetClosed();
     }
 
     /**
@@ -599,7 +609,10 @@ public class BottomSheet
     private void setSheetOffsetFromBottom(float offset) {
         if (MathUtils.areFloatsEqual(getSheetOffsetFromBottom(), getMinOffset())
                 && offset > getMinOffset()) {
-            onExitPeekState();
+            onSheetOpened();
+        } else if (MathUtils.areFloatsEqual(offset, getMinOffset())
+                && getSheetOffsetFromBottom() > getMinOffset()) {
+            onSheetClosed();
         }
 
         setTranslationY(mContainerHeight - offset);
@@ -607,24 +620,44 @@ public class BottomSheet
     }
 
     /**
+     * This is the same as {@link #setSheetOffsetFromBottom(float)} but exclusively for testing.
+     * @param offset The offset to set the sheet to.
+     */
+    @VisibleForTesting
+    public void setSheetOffsetFromBottomForTesting(float offset) {
+        setSheetOffsetFromBottom(offset);
+    }
+
+    /**
      * @return The ratio of the height of the screen that the peeking state is.
      */
-    private float getPeekRatio() {
+    @VisibleForTesting
+    public float getPeekRatio() {
         return mStateRatios[0];
     }
 
     /**
      * @return The ratio of the height of the screen that the half expanded state is.
      */
-    private float getHalfRatio() {
+    @VisibleForTesting
+    public float getHalfRatio() {
         return mStateRatios[1];
     }
 
     /**
      * @return The ratio of the height of the screen that the fully expanded state is.
      */
-    private float getFullRatio() {
+    @VisibleForTesting
+    public float getFullRatio() {
         return mStateRatios[2];
+    }
+
+    /**
+     * @return The height of the container that the bottom sheet exists in.
+     */
+    @VisibleForTesting
+    public float getSheetContainerHeight() {
+        return mContainerHeight;
     }
 
     /**
@@ -643,9 +676,9 @@ public class BottomSheet
         // If the ratio is close enough to zero, just set it to zero.
         if (MathUtils.areFloatsEqual(peekHalfRatio, 0f)) peekHalfRatio = 0f;
 
-        for (BottomSheetObserver o : mObservers) {
-            if (mLastPeekToHalfRatioSent < 1f || peekHalfRatio < 1f) {
-                mLastPeekToHalfRatioSent = peekHalfRatio;
+        if (mLastPeekToHalfRatioSent < 1f || peekHalfRatio < 1f) {
+            mLastPeekToHalfRatioSent = peekHalfRatio;
+            for (BottomSheetObserver o : mObservers) {
                 o.onTransitionPeekToHalf(peekHalfRatio);
             }
         }
