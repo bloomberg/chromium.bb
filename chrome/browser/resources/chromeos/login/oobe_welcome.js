@@ -346,13 +346,10 @@ Polymer({
       if (!lastError)
         return;
 
-      if (lastError.message == 'connected') {
-        self.onNetworkConnected_({'detail': networkStateCopy});
+      if (lastError.message == 'connected' || lastError.message == 'connecting')
         return;
-      }
 
-      if (lastError.message != 'connecting')
-        console.error('networkingPrivate.startConnect error: ' + lastError);
+      console.error('networkingPrivate.startConnect error: ' + lastError);
     });
   },
 
