@@ -69,7 +69,7 @@
   if (motion == UIEventSubtypeMotionShake) {
     UIApplication* app = [UIApplication sharedApplication];
     [app.delegate application:app
-                      openURL:[NSURL URLWithString:@"https://www.google.com"]
+                      openURL:[NSURL URLWithString:@"chrome://newtab"]
                       options:@{}];
   }
   [super motionEnded:motion withEvent:event];

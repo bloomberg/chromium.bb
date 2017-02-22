@@ -15,10 +15,13 @@
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
+#import "ios/clean/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_coordinator.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
+#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,11 +33,15 @@ namespace {
 const BOOL kUseBottomToolbar = NO;
 }  // namespace
 
-@interface TabCoordinator ()<UIViewControllerTransitioningDelegate>
+@interface TabCoordinator ()<CRWWebStateObserver,
+                             UIViewControllerTransitioningDelegate>
 @property(nonatomic, strong) TabContainerViewController* viewController;
 @end
 
-@implementation TabCoordinator
+@implementation TabCoordinator {
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
+}
+
 @synthesize presentationKey = _presentationKey;
 @synthesize viewController = _viewController;
 @synthesize webState = _webState;
@@ -43,6 +50,8 @@ const BOOL kUseBottomToolbar = NO;
   self.viewController = [self newTabContainer];
   self.viewController.transitioningDelegate = self;
   self.viewController.modalPresentationStyle = UIModalPresentationCustom;
+  _webStateObserver =
+      base::MakeUnique<web::WebStateObserverBridge>(self.webState, self);
 
   WebCoordinator* webCoordinator = [[WebCoordinator alloc] init];
   webCoordinator.webState = self.webState;
@@ -87,6 +96,7 @@ const BOOL kUseBottomToolbar = NO;
   [self.viewController.presentingViewController
       dismissViewControllerAnimated:self.context.animated
                          completion:nil];
+  _webStateObserver.reset();
 }
 
 - (BOOL)canAddOverlayCoordinator:(BrowserCoordinator*)overlayCoordinator {
@@ -104,6 +114,21 @@ const BOOL kUseBottomToolbar = NO;
     return [[BottomToolbarTabViewController alloc] init];
   }
   return [[TopToolbarTabViewController alloc] init];
+}
+
+#pragma mark - CRWWebStateObserver
+
+// This will eventually be called in -didFinishNavigation and perhaps as an
+// optimization in some equivalent to loadURL.
+- (void)webState:(web::WebState*)webState
+    didCommitNavigationWithDetails:(const web::LoadCommittedDetails&)details {
+  if (webState->GetLastCommittedURL() == GURL("chrome://newtab/")) {
+    NTPCoordinator* ntpCoordinator = [[NTPCoordinator alloc] init];
+    [self addChildCoordinator:ntpCoordinator];
+    ntpCoordinator.context.baseViewController = nil;
+    [ntpCoordinator start];
+    self.viewController.contentViewController = ntpCoordinator.viewController;
+  }
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate
