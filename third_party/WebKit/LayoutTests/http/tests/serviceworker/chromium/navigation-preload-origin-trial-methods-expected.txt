@@ -1,4 +1,5 @@
-CONSOLE MESSAGE: line 65: --normal SW--
+CONSOLE WARNING: line 13: This test relies on console message comparison so there can be different -expected.txt files for virtual test suites.
+CONSOLE MESSAGE: line 68: --normal SW--
 disable() rejected with: AbortError: Failed to enable or disable navigation preload: The service worker script does not have a valid Navigation Preload Origin Trial token.
 enable() rejected with: AbortError: Failed to enable or disable navigation preload: The service worker script does not have a valid Navigation Preload Origin Trial token.
 getState() resolved with: {"enabled":false,"headerValue":"true"}
@@ -9,7 +10,7 @@ registration.navigationPreload not found
 Fetch event handler
 event.preloadResponse not found
 
-CONSOLE MESSAGE: line 76: --Origin-Trial enabled SW--
+CONSOLE MESSAGE: line 79: --Origin-Trial enabled SW--
 disable() resolved with: undefined
 enable() resolved with: undefined
 getState() resolved with: {"enabled":true,"headerValue":"world"}

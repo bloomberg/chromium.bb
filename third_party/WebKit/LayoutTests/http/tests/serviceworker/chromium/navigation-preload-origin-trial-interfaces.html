@@ -10,6 +10,9 @@ generate_token.py  http://127.0.0.1:8000 ServiceWorkerNavigationPreload -expire-
 <script src="../resources/test-helpers.js"></script>
 <script src="./resources/get-interface-names.js"></script>
 <script>
+console.warn('This test relies on console message comparison so there can ' +
+    'be different -expected.txt files for virtual test suites.');
+
 test(t => {
   var interfaces =
       get_interface_names(this, ['NavigationPreloadManager',

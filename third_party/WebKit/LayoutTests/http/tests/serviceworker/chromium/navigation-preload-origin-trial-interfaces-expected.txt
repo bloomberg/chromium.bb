@@ -1,4 +1,5 @@
-CONSOLE MESSAGE: line 18: Interfaces in document
+CONSOLE WARNING: line 13: This test relies on console message comparison so there can be different -expected.txt files for virtual test suites.
+CONSOLE MESSAGE: line 21: Interfaces in document
 interface NavigationPreloadManager
  method constructor
  method disable
@@ -21,7 +22,7 @@ interface ServiceWorkerRegistration
  method unregister
  method update
  setter onupdatefound
-CONSOLE MESSAGE: line 55: Interfaces in normal Service Worker
+CONSOLE MESSAGE: line 58: Interfaces in normal Service Worker
 interface FetchEvent
  getter clientId
  getter isReload
@@ -43,7 +44,7 @@ interface ServiceWorkerRegistration
  method unregister
  method update
  setter onupdatefound
-CONSOLE MESSAGE: line 67: Interfaces in Origin-Trial enabled Service Worker
+CONSOLE MESSAGE: line 70: Interfaces in Origin-Trial enabled Service Worker
 interface FetchEvent
  getter clientId
  getter isReload
