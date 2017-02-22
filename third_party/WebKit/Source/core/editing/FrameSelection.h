@@ -87,8 +87,7 @@ class CORE_EXPORT FrameSelection final
     CloseTyping = 1 << 1,
     ClearTypingStyle = 1 << 2,
     DoNotSetFocus = 1 << 3,
-    DoNotUpdateAppearance = 1 << 4,
-    DoNotClearStrategy = 1 << 5,
+    DoNotClearStrategy = 1 << 4,
   };
   // Union of values in SetSelectionOption and EUserTriggered
   typedef unsigned SetSelectionOptions;

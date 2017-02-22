@@ -56,9 +56,7 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
 
   Position newPosition(input->innerEditorElement()->firstChild(), 3);
   document().frame()->selection().setSelection(
-      SelectionInDOMTree::Builder().collapse(newPosition).build(),
-      FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle |
-          FrameSelection::DoNotUpdateAppearance);
+      SelectionInDOMTree::Builder().collapse(newPosition).build());
   ASSERT_EQ(3u, input->selectionStart());
 
   Persistent<SpellChecker> spellChecker(SpellChecker::create(page().frame()));

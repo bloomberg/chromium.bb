@@ -235,10 +235,8 @@ void FrameSelection::setSelection(const SelectionInDOMTree& passedSelection,
     }
   }
 
-  if (!(options & DoNotUpdateAppearance)) {
-    m_frameCaret->stopCaretBlinkTimer();
-    updateAppearance();
-  }
+  m_frameCaret->stopCaretBlinkTimer();
+  updateAppearance();
 
   // Always clear the x position used for vertical arrow navigation.
   // It will be restored by the vertical arrow navigation code if necessary.
