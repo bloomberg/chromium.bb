@@ -813,6 +813,13 @@
                   '|components/payments'\
                   '|third_party/WebKit/LayoutTests/payments/'\
                   '|third_party/WebKit/Source/modules/payments'\
+                  '|ios/web/payments/'\
+                  '|ios/web/public/payments/'\
+                  '|ios/chrome/browser/payments/'
+    },
+    'payments_ios': {
+      'filepath': 'ios/web/payments/'\
+                  '|ios/web/public/payments/'\
                   '|ios/chrome/browser/payments/'
     },
     'pepper_api': {
@@ -2024,7 +2031,9 @@
                          'vabr+watchlistpasswordmanager@chromium.org'],
     'payments': ['rouslan+payments@chromium.org',
                  'sebsg+paymentswatch@chromium.org',
-                 'gogerald+paymentswatch@chromium.org'],
+                 'gogerald+paymentswatch@chromium.org',
+                 'mahmadi+paymentswatch@chromium.org'],
+    'payments_ios': ['mahmadi+paymentsioswatch@chromium.org'],
     'pepper_api': ['binji+watch@chromium.org',
                    'bradnelson+warch@chromium.org',
                    'ihf+watch@chromium.org',
