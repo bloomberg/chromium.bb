@@ -11,11 +11,13 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/view.h"
 
@@ -418,7 +420,12 @@ class VIEWS_EXPORT MenuItemView : public View {
     actual_menu_position_ = actual_menu_position;
   }
 
-  void set_controller(MenuController* controller) { controller_ = controller; }
+  void set_controller(MenuController* controller) {
+    if (controller)
+      controller_ = controller->AsWeakPtr();
+    else
+      controller_.reset();
+  }
 
   // Returns true if this MenuItemView contains a single child
   // that is responsible for rendering the content.
@@ -442,7 +449,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuDelegate* delegate_;
 
   // The controller for the run operation, or NULL if the menu isn't showing.
-  MenuController* controller_;
+  base::WeakPtr<MenuController> controller_;
 
   // Used to detect when Cancel was invoked.
   bool canceled_;

@@ -454,7 +454,9 @@ MenuScrollViewContainer* SubmenuView::GetScrollViewContainer() {
 
 void SubmenuView::MenuHostDestroyed() {
   host_ = NULL;
-  GetMenuItem()->GetMenuController()->Cancel(MenuController::EXIT_DESTROYED);
+  MenuController* controller = GetMenuItem()->GetMenuController();
+  if (controller)
+    controller->Cancel(MenuController::EXIT_DESTROYED);
 }
 
 const char* SubmenuView::GetClassName() const {
