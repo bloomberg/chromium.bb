@@ -10,6 +10,7 @@
 #include "ui/events/android/key_event_utils.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
@@ -110,20 +111,18 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(
   return result;
 }
 
-WebMouseEvent WebMouseEventBuilder::Build(
-      WebInputEvent::Type type,
-      double time_sec,
-      int window_x,
-      int window_y,
-      int modifiers,
-      int click_count,
-      int pointer_id,
-      float pressure,
-      float orientation_rad,
-      float tilt_rad,
-      int changed_button,
-      int tool_type) {
-
+WebMouseEvent WebMouseEventBuilder::Build(WebInputEvent::Type type,
+                                          double time_sec,
+                                          int window_x,
+                                          int window_y,
+                                          int modifiers,
+                                          int click_count,
+                                          int pointer_id,
+                                          float pressure,
+                                          float orientation_rad,
+                                          float tilt_rad,
+                                          int action_button,
+                                          int tool_type) {
   DCHECK(WebInputEvent::isMouseEventType(type));
   WebMouseEvent result(type, ui::EventFlagsToWebEventModifiers(modifiers),
                        time_sec);
@@ -134,14 +133,23 @@ WebMouseEvent WebMouseEventBuilder::Build(
   result.windowY = window_y;
   result.clickCount = click_count;
 
-  ui::SetWebPointerPropertiesFromMotionEventData(
-      result,
-      pointer_id,
-      pressure,
-      orientation_rad,
-      tilt_rad,
-      changed_button,
-      tool_type);
+  int button = action_button;
+  // For events other than MouseDown/Up, action_button is not defined. So we are
+  // determining |button| value from |modifiers| as is done in other platforms.
+  if (type != WebInputEvent::MouseDown && type != WebInputEvent::MouseUp) {
+    if (modifiers & ui::EF_LEFT_MOUSE_BUTTON)
+      button = ui::MotionEvent::BUTTON_PRIMARY;
+    else if (modifiers & ui::EF_MIDDLE_MOUSE_BUTTON)
+      button = ui::MotionEvent::BUTTON_TERTIARY;
+    else if (modifiers & ui::EF_RIGHT_MOUSE_BUTTON)
+      button = ui::MotionEvent::BUTTON_SECONDARY;
+    else
+      button = 0;
+  }
+
+  ui::SetWebPointerPropertiesFromMotionEventData(result, pointer_id, pressure,
+                                                 orientation_rad, tilt_rad,
+                                                 button, tool_type);
 
   return result;
 }

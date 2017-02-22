@@ -130,7 +130,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                           jfloat pressure,
                           jfloat orientation,
                           jfloat tilt,
-                          jint android_changed_button,
+                          jint android_action_button,
                           jint android_button_state,
                           jint android_meta_state,
                           jint tool_type);

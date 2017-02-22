@@ -80,7 +80,13 @@ class WebPointerProperties {
   // degrees in the range [0,359]. Always 0 if the device does not support it.
   int twist;
 
+  // - For pointerup/down events, the button of pointing device that triggered
+  // the event.
+  // - For other events, the button that was depressed during the move event. If
+  // multiple buttons were depressed, one of the depressed buttons (platform
+  // dependent).
   Button button;
+
   PointerType pointerType;
 
   int movementX;

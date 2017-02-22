@@ -2762,7 +2762,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
     private native int nativeSendMouseEvent(long nativeContentViewCoreImpl, long timeMs, int action,
             float x, float y, int pointerId, float pressure, float orientaton, float tilt,
-            int changedButton, int buttonState, int metaState, int toolType);
+            int actionButton, int buttonState, int metaState, int toolType);
 
     private native int nativeSendMouseWheelEvent(long nativeContentViewCoreImpl, long timeMs,
             float x, float y, float ticksX, float ticksY, float pixelsPerTick);

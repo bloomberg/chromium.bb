@@ -198,7 +198,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
   SkColor GetCachedBackgroundColor() const;
   void SendKeyEvent(const NativeWebKeyboardEvent& event);
-  void SendMouseEvent(const ui::MotionEventAndroid&, int changed_button);
+  void SendMouseEvent(const ui::MotionEventAndroid&, int action_button);
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
 

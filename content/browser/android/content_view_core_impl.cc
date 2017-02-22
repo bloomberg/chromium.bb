@@ -966,22 +966,20 @@ jboolean ContentViewCoreImpl::OnTouchEvent(
                                : rwhv->OnTouchEvent(event);
 }
 
-jboolean ContentViewCoreImpl::SendMouseEvent(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jlong time_ms,
-    jint android_action,
-    jfloat x,
-    jfloat y,
-    jint pointer_id,
-    jfloat pressure,
-    jfloat orientation,
-    jfloat tilt,
-    jint android_changed_button,
-    jint android_button_state,
-    jint android_meta_state,
-    jint android_tool_type) {
-
+jboolean ContentViewCoreImpl::SendMouseEvent(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj,
+                                             jlong time_ms,
+                                             jint android_action,
+                                             jfloat x,
+                                             jfloat y,
+                                             jint pointer_id,
+                                             jfloat pressure,
+                                             jfloat orientation,
+                                             jfloat tilt,
+                                             jint android_action_button,
+                                             jint android_button_state,
+                                             jint android_meta_state,
+                                             jint android_tool_type) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (!rwhv)
     return false;
@@ -1012,7 +1010,7 @@ jboolean ContentViewCoreImpl::SendMouseEvent(
 
   // Note: This relies on identical button enum values in MotionEvent and
   // MotionEventAndroid.
-  rwhv->SendMouseEvent(motion_event, android_changed_button);
+  rwhv->SendMouseEvent(motion_event, android_action_button);
 
   return true;
 }

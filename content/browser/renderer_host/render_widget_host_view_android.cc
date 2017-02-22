@@ -1592,7 +1592,7 @@ void RenderWidgetHostViewAndroid::SendKeyEvent(
 
 void RenderWidgetHostViewAndroid::SendMouseEvent(
     const ui::MotionEventAndroid& motion_event,
-    int changed_button) {
+    int action_button) {
   blink::WebInputEvent::Type webMouseEventType =
       ui::ToWebMouseEventType(motion_event.GetAction());
 
@@ -1607,7 +1607,7 @@ void RenderWidgetHostViewAndroid::SendMouseEvent(
       motion_event.GetPressure(0),
       motion_event.GetOrientation(0),
       motion_event.GetTilt(0),
-      changed_button,
+      action_button,
       motion_event.GetToolType(0));
 
   if (host_)
