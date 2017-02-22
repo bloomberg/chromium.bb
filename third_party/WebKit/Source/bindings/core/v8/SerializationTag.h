@@ -12,6 +12,8 @@ namespace blink {
 // begins with a complete VersionTag. If the stream does not begin with a
 // VersionTag, we assume that the stream is in format 0.
 
+// Tags which are not interpreted by Blink (but instead by V8) are omitted here.
+
 // This format is private to the implementation of SerializedScriptValue. Do not
 // rely on it externally. It is safe to persist a SerializedScriptValue as a
 // binary blob, but this code should always be used to interpret it.
@@ -35,20 +37,8 @@ namespace blink {
 // GenerateFreshObjectTag/GenerateFreshArrayTag); these reference IDs are then
 // used with ObjectReferenceTag to tie the recursive knot.
 enum SerializationTag {
-  InvalidTag = '!',      // Causes deserialization to fail.
-  PaddingTag = '\0',     // Is ignored (but consumed).
-  UndefinedTag = '_',    // -> <undefined>
-  NullTag = '0',         // -> <null>
-  TrueTag = 'T',         // -> <true>
-  FalseTag = 'F',        // -> <false>
-  StringTag = 'S',       // string:RawString -> string
-  StringUCharTag = 'c',  // string:RawUCharString -> string
-  Int32Tag = 'I',        // value:ZigZag-encoded int32 -> Integer
-  Uint32Tag = 'U',       // value:uint32_t -> Integer
-  DateTag = 'D',         // value:double -> Date (ref)
   MessagePortTag = 'M',  // index:int -> MessagePort. Fills the result with
                          // transferred MessagePort.
-  NumberTag = 'N',       // value:double -> Number
   BlobTag = 'b',  // uuid:WebCoreString, type:WebCoreString, size:uint64_t ->
                   // Blob (ref)
   BlobIndexTag = 'i',      // index:int32_t -> Blob (ref)
@@ -63,36 +53,12 @@ enum SerializationTag {
   ImageDataTag = '#',  // width:uint32_t, height:uint32_t,
                        // pixelDataLength:uint32_t, data:byte[pixelDataLength]
                        // -> ImageData (ref)
-  // numProperties:uint32_t -> pops the last object from the open stack; fills
-  // it with the last numProperties name,value pairs pushed onto the
-  // deserialization stack
-  ObjectTag = '{',
-  // numProperties:uint32_t, length:uint32_t -> pops the last object from the
-  // open stack; fills it with the last numProperties name,value pairs pushed
-  // onto the deserialization stack
-  SparseArrayTag = '@',
-  // numProperties:uint32_t, length:uint32_t -> pops the last object from the
-  // open stack; fills it with the last length elements and numProperties
-  // name,value pairs pushed onto deserialization stack
-  DenseArrayTag = '$',
-  RegExpTag = 'R',  // pattern:RawString, flags:uint32_t -> RegExp (ref)
-  ArrayBufferTag =
-      'B',  // byteLength:uint32_t, data:byte[byteLength] -> ArrayBuffer (ref)
-  ArrayBufferTransferTag =
-      't',  // index:uint32_t -> ArrayBuffer. For ArrayBuffer transfer
   ImageBitmapTag = 'g',  // size:uint32_t, data:byte[size] -> ImageBitmap (ref)
   ImageBitmapTransferTag =
       'G',  // index:uint32_t -> ImageBitmap. For ImageBitmap transfer
   OffscreenCanvasTransferTag = 'H',  // index, width, height, id:uint32_t ->
                                      // OffscreenCanvas. For OffscreenCanvas
                                      // transfer
-  // subtag:byte, byteOffset:uint32_t, byteLength:uint32_t -> ArrayBufferView
-  // (ref).  Consumes an ArrayBuffer from the top of the deserialization stack.
-  ArrayBufferViewTag = 'V',
-  SharedArrayBufferTransferTag = 'u',  // index:uint32_t -> SharedArrayBuffer.
-                                       // For SharedArrayBuffer transfer
-  WasmModuleTag = 'W',
-  RawBytesTag = 'y',
   CryptoKeyTag = 'K',  // subtag:byte, props, usages:uint32_t,
                        // keyDataLength:uint32_t, keyData:byte[keyDataLength]
   //                 If subtag=AesKeyTag:
@@ -110,52 +76,9 @@ enum SerializationTag {
   //                     namedCurve:uint32_t
   RTCCertificateTag = 'k',   // length:uint32_t, pemPrivateKey:WebCoreString,
                              // pemCertificate:WebCoreString
-  ObjectReferenceTag = '^',  // ref:uint32_t -> reference table[ref]
-  GenerateFreshObjectTag = 'o',  // -> empty object allocated an object ID and
-                                 // pushed onto the open stack (ref)
-  GenerateFreshSparseArrayTag = 'a',  // length:uint32_t -> empty array[length]
-                                      // allocated an object ID and pushed onto
-                                      // the open stack (ref)
-  GenerateFreshDenseArrayTag = 'A',   // length:uint32_t -> empty array[length]
-                                      // allocated an object ID and pushed onto
-                                      // the open stack (ref)
-  ReferenceCountTag = '?',  // refTableSize:uint32_t -> If the reference table
-                            // is not refTableSize big, fails.
-  StringObjectTag = 's',    //  string:RawString -> new String(string) (ref)
-  NumberObjectTag = 'n',    // value:double -> new Number(value) (ref)
-  TrueObjectTag = 'y',      // new Boolean(true) (ref)
-  FalseObjectTag = 'x',     // new Boolean(false) (ref)
   CompositorProxyTag =
       'C',  // elementId:uint64_t, bitfields:uint32_t -> CompositorProxy (ref)
-  MapTag = ':',  // length:uint32_t -> pops the last object from the open stack
-                 // (it will be a Map);
-  //                              fills it with the last length elements pushed
-  //                              onto the deserialization stack, treating them
-  //                              as key/value pairs and passing them to
-  //                              Map::Set;
-  //                              length must be an even number.
-  SetTag = ',',  // length:uint32_t -> pops the last object from the open stack
-                 // (it will be a Set);
-  //                              fills it with the last length elements pushed
-  //                              onto the deserialization stack, using Set::Add
-  GenerateFreshMapTag = ';',   // -> empty Map allocated an object ID and pushed
-                               // onto the open stack (ref)
-  GenerateFreshSetTag = '\'',  // -> empty Set allocated an object ID and pushed
-                               // onto the open stack (ref)
   VersionTag = 0xFF  // version:uint32_t -> Uses this as the file version.
-};
-
-enum ArrayBufferViewSubTag {
-  ByteArrayTag = 'b',
-  UnsignedByteArrayTag = 'B',
-  UnsignedByteClampedArrayTag = 'C',
-  ShortArrayTag = 'w',
-  UnsignedShortArrayTag = 'W',
-  IntArrayTag = 'd',
-  UnsignedIntArrayTag = 'D',
-  FloatArrayTag = 'f',
-  DoubleArrayTag = 'F',
-  DataViewTag = '?'
 };
 
 }  // namespace blink

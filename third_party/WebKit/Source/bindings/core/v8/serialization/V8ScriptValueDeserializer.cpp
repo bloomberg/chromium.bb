@@ -319,7 +319,7 @@ v8::MaybeLocal<v8::Object> V8ScriptValueDeserializer::ReadHostObject(
   ExceptionState exceptionState(isolate, ExceptionState::UnknownContext,
                                 nullptr, nullptr);
   ScriptWrappable* wrappable = nullptr;
-  SerializationTag tag = PaddingTag;
+  SerializationTag tag = VersionTag;
   if (readTag(&tag))
     wrappable = readDOMObject(tag);
   if (!wrappable) {
