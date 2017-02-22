@@ -1494,20 +1494,16 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   base::WeakNSObject<Tab> weakSelf(self);
   // TODO(crbug.com/692117): Remove |window_name| from constructor.
   web::BlockedPopupInfo poupInfo(popupURL, referrer, nil /* window_name */, ^{
-    base::scoped_nsobject<Tab> strongSelf([weakSelf retain]);
-    if (!strongSelf) {
-      return;
+    web::WebState* webState = [weakSelf webState];
+    if (webState) {
+      web::WebState::OpenURLParams params(
+          localPopupURL, referrer, WindowOpenDisposition::NEW_POPUP,
+          ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
+      params.url = localPopupURL;
+      params.referrer = referrer;
+      params.transition = ui::PAGE_TRANSITION_LINK;
+      webState->OpenURL(params);
     }
-    [strongSelf updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-    [strongSelf.get()->parentTabModel_
-        insertOrUpdateTabWithURL:localPopupURL
-                        referrer:referrer
-                      transition:ui::PAGE_TRANSITION_LINK
-                      windowName:nil
-                          opener:self
-                     openedByDOM:YES
-                         atIndex:TabModelConstants::kTabPositionAutomatically
-                    inBackground:NO];
   });
   BlockedPopupTabHelper::FromWebState(self.webState)->HandlePopup(poupInfo);
 }

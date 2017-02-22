@@ -2374,6 +2374,18 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       webState->GetNavigationManager()->LoadURLWithParams(loadParams);
       return webState;
     }
+    case WindowOpenDisposition::NEW_POPUP: {
+      Tab* tab = [[self tabModel]
+          insertOrUpdateTabWithURL:params.url
+                          referrer:params.referrer
+                        transition:params.transition
+                        windowName:nil
+                            opener:LegacyTabHelper::GetTabForWebState(webState)
+                       openedByDOM:YES
+                           atIndex:TabModelConstants::kTabPositionAutomatically
+                      inBackground:NO];
+      return tab.webState;
+    }
     default:
       NOTIMPLEMENTED();
       return nullptr;
