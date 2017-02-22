@@ -77,9 +77,10 @@ void ImageController::StopWorkerTasks() {
     ImageDecodeRequestId id = request_to_complete.first;
     ImageDecodeRequest& request = request_to_complete.second;
 
-    // The task (if one exists) would have run already, so we just need to
-    // complete it.
-    if (request.task)
+    // The task (if one exists) would have run already, we just need to make
+    // sure it was completed. Multiple requests for the same image use the same
+    // task so it could have already been completed.
+    if (request.task && !request.task->HasCompleted())
       request.task->DidComplete();
 
     // Issue the callback, and unref the image immediately. This is so that any
@@ -106,7 +107,9 @@ void ImageController::StopWorkerTasks() {
       // several different image deque requests for the same image.
       if (request.task->state().IsNew())
         request.task->state().DidCancel();
-      request.task->DidComplete();
+
+      if (!request.task->HasCompleted())
+        request.task->DidComplete();
     }
     // Run the callback and unref the image.
     request.callback.Run(id);
@@ -116,11 +119,14 @@ void ImageController::StopWorkerTasks() {
 }
 
 void ImageController::SetImageDecodeCache(ImageDecodeCache* cache) {
+  DCHECK(!cache_ || !cache);
+
   if (!cache) {
     SetPredecodeImages(std::vector<DrawImage>(),
                        ImageDecodeCache::TracingInfo());
     StopWorkerTasks();
   }
+
   cache_ = cache;
 }
 

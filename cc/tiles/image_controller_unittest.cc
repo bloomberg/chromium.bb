@@ -447,5 +447,31 @@ TEST_F(ImageControllerTest, QueueImageDecodeLockedImageControllerChange) {
   EXPECT_EQ(0, cache()->number_of_refs());
 }
 
+TEST_F(ImageControllerTest, DispatchesDecodeCallbacksAfterCacheChanged) {
+  scoped_refptr<SimpleTask> task(new SimpleTask);
+  cache()->SetTaskToUse(task);
+
+  base::RunLoop run_loop1;
+  DecodeClient decode_client1;
+  base::RunLoop run_loop2;
+  DecodeClient decode_client2;
+
+  controller()->QueueImageDecode(
+      image(),
+      base::Bind(&DecodeClient::Callback, base::Unretained(&decode_client1),
+                 run_loop1.QuitClosure()));
+  controller()->QueueImageDecode(
+      image(),
+      base::Bind(&DecodeClient::Callback, base::Unretained(&decode_client2),
+                 run_loop2.QuitClosure()));
+
+  // Now reset the image cache before decode completed callbacks are posted to
+  // the compositor thread. Ensure that the completion callbacks for the decode
+  // is still run.
+  controller()->SetImageDecodeCache(nullptr);
+  RunOrTimeout(&run_loop1);
+  RunOrTimeout(&run_loop2);
+}
+
 }  // namespace
 }  // namespace cc
