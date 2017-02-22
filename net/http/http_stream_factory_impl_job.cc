@@ -301,8 +301,7 @@ int HttpStreamFactoryImpl::Job::Preconnect(int num_streams) {
   return StartInternal();
 }
 
-int HttpStreamFactoryImpl::Job::RestartTunnelWithProxyAuth(
-    const AuthCredentials& credentials) {
+int HttpStreamFactoryImpl::Job::RestartTunnelWithProxyAuth() {
   DCHECK(establishing_tunnel_);
   next_state_ = STATE_RESTART_TUNNEL_AUTH;
   stream_.reset();

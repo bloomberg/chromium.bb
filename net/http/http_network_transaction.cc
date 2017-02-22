@@ -212,7 +212,7 @@ int HttpNetworkTransaction::RestartWithAuth(
     DCHECK(stream_request_ != NULL);
     auth_controllers_[target] = NULL;
     ResetStateForRestart();
-    rv = stream_request_->RestartTunnelWithProxyAuth(credentials);
+    rv = stream_request_->RestartTunnelWithProxyAuth();
   } else {
     // In this case, we've gathered credentials for the server or the proxy
     // but it is not during the tunneling phase.

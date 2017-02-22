@@ -14904,7 +14904,7 @@ class FakeStreamRequest : public HttpStreamRequest,
     return weak_stream;
   }
 
-  int RestartTunnelWithProxyAuth(const AuthCredentials& credentials) override {
+  int RestartTunnelWithProxyAuth() override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
