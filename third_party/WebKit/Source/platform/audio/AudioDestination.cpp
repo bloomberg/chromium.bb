@@ -91,10 +91,6 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
 }
 
 AudioDestination::~AudioDestination() {
-#if OS(ANDROID)
-  // Log when AudioDestination is destructed. (crbug.com/692423)
-  LOG(WARNING) << "[WebAudio/AudioDestination] going away...";
-#endif
   stop();
 }
 
