@@ -12,5 +12,4 @@ The states are as follows:
 4. IndependentInherit -> Same as Inherit except style recalc stops early if only independent properties were changed. We still visit every descendant, but we apply the styles directly instead of doing selector matching to compute a new style. Independent properties are those which do not depend on and do not affect any other properties on ComputedStyle (e.g. visibility and Pointer Events).
 5. Inherit -> Do a full style recalc of children.
 6. Force -> Fallback that causes us to do a full style recalc. This is as we don't know what changes. The primary reason for it is SubtreeStyleChange.
-7. Reattach -> reattachLayoutTree() has been completed.
-8. ReattachNoLayoutObject -> reattachLayoutTree() has been completed and now dont have a layoutObject.
+7. Reattach -> reattachLayoutTree() needs to be performed.

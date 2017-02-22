@@ -240,6 +240,7 @@ class CORE_EXPORT ContainerNode : public Node {
                                    Node* nodeBeforeChange,
                                    Node* nodeAfterChange);
   void recalcDescendantStyles(StyleRecalcChange);
+  void rebuildChildrenLayoutTrees();
 
   bool childrenSupportStyleSharing() const { return !hasRestyleFlags(); }
 

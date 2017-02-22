@@ -147,10 +147,19 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change) {
 
   // There's no style to update so just calling recalcStyle means we're updated.
   clearNeedsStyleRecalc();
-  clearNeedsReattachLayoutTree();
 
   recalcDescendantStyles(change);
   clearChildNeedsStyleRecalc();
+}
+
+void ShadowRoot::rebuildLayoutTree() {
+  // ShadowRoot doesn't support custom callbacks.
+  DCHECK(!hasCustomStyleCallbacks());
+
+  StyleSharingDepthScope sharingScope(*this);
+
+  clearNeedsReattachLayoutTree();
+  rebuildChildrenLayoutTrees();
   clearChildNeedsReattachLayoutTree();
 }
 

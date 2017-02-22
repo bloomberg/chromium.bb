@@ -400,14 +400,23 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling) {
       layoutItem.setText(dataImpl());
     clearNeedsStyleRecalc();
   } else if (needsStyleRecalc() || needsWhitespaceLayoutObject()) {
-    rebuildTextLayoutTree(nextTextSibling);
+    StyleReattachData styleReattachData;
+    styleReattachData.nextTextSibling = nextTextSibling;
+    document().addStyleReattachData(*this, styleReattachData);
+    setNeedsReattachLayoutTree();
   }
 }
 
-void Text::rebuildTextLayoutTree(Text* nextTextSibling) {
+void Text::rebuildTextLayoutTree() {
+  DCHECK(!childNeedsStyleRecalc());
+  DCHECK(needsReattachLayoutTree());
+  DCHECK(parentNode());
+
   reattachLayoutTree();
-  if (layoutObject())
-    reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
+  if (layoutObject()) {
+    reattachWhitespaceSiblingsIfNeeded(
+        document().getStyleReattachData(*this).nextTextSibling);
+  }
   clearNeedsReattachLayoutTree();
 }
 

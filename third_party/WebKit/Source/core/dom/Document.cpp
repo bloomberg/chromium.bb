@@ -2064,6 +2064,9 @@ void Document::updateStyle() {
     inheritHtmlAndBodyElementStyles(change);
     if (documentElement->shouldCallRecalcStyle(change))
       documentElement->recalcStyle(change);
+    if (documentElement->needsReattachLayoutTree() ||
+        documentElement->childNeedsReattachLayoutTree())
+      documentElement->rebuildLayoutTree();
   }
 
   view()->recalcOverflowAfterStyleChange();

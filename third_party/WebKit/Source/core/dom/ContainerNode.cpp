@@ -788,6 +788,7 @@ void ContainerNode::detachLayoutTree(const AttachContext& context) {
     child->detachLayoutTree(childrenContext);
 
   setChildNeedsStyleRecalc();
+  setChildNeedsReattachLayoutTree();
   Node::detachLayoutTree(context);
 }
 
@@ -795,9 +796,15 @@ void ContainerNode::childrenChanged(const ChildrenChange& change) {
   document().incDOMTreeVersion();
   document().notifyChangeChildren(*this);
   invalidateNodeListCachesInAncestors();
-  if (change.isChildInsertion() && !childNeedsStyleRecalc()) {
-    setChildNeedsStyleRecalc();
-    markAncestorsWithChildNeedsStyleRecalc();
+  if (change.isChildInsertion()) {
+    if (!childNeedsStyleRecalc()) {
+      setChildNeedsStyleRecalc();
+      markAncestorsWithChildNeedsStyleRecalc();
+    }
+    if (!childNeedsReattachLayoutTree()) {
+      setChildNeedsReattachLayoutTree();
+      markAncestorsWithChildNeedsReattachLayoutTree();
+    }
   }
 }
 
@@ -1303,6 +1310,24 @@ void ContainerNode::recalcDescendantStyles(StyleRecalcChange change) {
         lastTextNode = nullptr;
     }
   }
+}
+
+void ContainerNode::rebuildChildrenLayoutTrees() {
+  DCHECK(!needsReattachLayoutTree());
+
+  for (Node* child = lastChild(); child; child = child->previousSibling()) {
+    if (child->needsReattachLayoutTree() ||
+        child->childNeedsReattachLayoutTree()) {
+      if (child->isTextNode())
+        toText(child)->rebuildTextLayoutTree();
+      else if (child->isElementNode())
+        toElement(child)->rebuildLayoutTree();
+    }
+  }
+  // This is done in ContainerNode::attachLayoutTree but will never be cleared
+  // if we don't enter ContainerNode::attachLayoutTree so we do it here.
+  clearChildNeedsStyleRecalc();
+  clearChildNeedsReattachLayoutTree();
 }
 
 void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType,
