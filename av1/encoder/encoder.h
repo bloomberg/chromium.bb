@@ -577,9 +577,9 @@ typedef struct AV1_COMP {
 #if CONFIG_PALETTE
   int palette_y_size_cost[PALETTE_BLOCK_SIZES][PALETTE_SIZES];
   int palette_uv_size_cost[PALETTE_BLOCK_SIZES][PALETTE_SIZES];
-  int palette_y_color_cost[PALETTE_MAX_SIZE - 1][PALETTE_COLOR_INDEX_CONTEXTS]
+  int palette_y_color_cost[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
                           [PALETTE_COLORS];
-  int palette_uv_color_cost[PALETTE_MAX_SIZE - 1][PALETTE_COLOR_INDEX_CONTEXTS]
+  int palette_uv_color_cost[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
                            [PALETTE_COLORS];
 #endif  // CONFIG_PALETTE
   int tx_size_cost[TX_SIZES - 1][TX_SIZE_CONTEXTS][TX_SIZES];

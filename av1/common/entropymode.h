@@ -40,6 +40,8 @@ extern "C" {
 
 // Maximum number of colors in a palette.
 #define PALETTE_MAX_SIZE 8
+// Minimum number of colors in a palette.
+#define PALETTE_MIN_SIZE 2
 
 // Palette mode is available for block sizes >= 8x8.
 #define PALETTE_BLOCK_SIZES (BLOCK_LARGEST - BLOCK_8X8 + 1)
@@ -390,9 +392,9 @@ extern const aom_prob av1_default_palette_y_size_prob[PALETTE_BLOCK_SIZES]
 extern const aom_prob av1_default_palette_uv_size_prob[PALETTE_BLOCK_SIZES]
                                                       [PALETTE_SIZES - 1];
 extern const aom_prob av1_default_palette_y_color_index_prob
-    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1];
+    [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1];
 extern const aom_prob av1_default_palette_uv_color_index_prob
-    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1];
+    [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1];
 #endif  // CONFIG_PALETTE
 
 extern const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
@@ -420,8 +422,7 @@ extern const aom_tree_index
 #if CONFIG_PALETTE
 extern const aom_tree_index av1_palette_size_tree[TREE_SIZE(PALETTE_SIZES)];
 extern const aom_tree_index
-    av1_palette_color_index_tree[PALETTE_MAX_SIZE - 1]
-                                [TREE_SIZE(PALETTE_COLORS)];
+    av1_palette_color_index_tree[PALETTE_SIZES][TREE_SIZE(PALETTE_COLORS)];
 #endif  // CONFIG_PALETTE
 extern const aom_tree_index av1_tx_size_tree[MAX_TX_DEPTH][TREE_SIZE(TX_SIZES)];
 #if CONFIG_EXT_INTRA

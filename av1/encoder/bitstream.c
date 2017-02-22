@@ -74,9 +74,9 @@ static const struct av1_token
     };
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_PALETTE
-static struct av1_token palette_size_encodings[PALETTE_MAX_SIZE - 1];
-static struct av1_token palette_color_index_encodings[PALETTE_MAX_SIZE - 1]
-                                                     [PALETTE_MAX_SIZE];
+static struct av1_token palette_size_encodings[PALETTE_SIZES];
+static struct av1_token palette_color_index_encodings[PALETTE_SIZES]
+                                                     [PALETTE_COLORS];
 #endif  // CONFIG_PALETTE
 #if !CONFIG_EC_MULTISYMBOL
 static const struct av1_token tx_size_encodings[MAX_TX_DEPTH][TX_SIZES] = {
@@ -159,7 +159,7 @@ void av1_encode_token_init(void) {
 
 #if CONFIG_PALETTE
   av1_tokens_from_tree(palette_size_encodings, av1_palette_size_tree);
-  for (s = 0; s < PALETTE_MAX_SIZE - 1; ++s) {
+  for (s = 0; s < PALETTE_SIZES; ++s) {
     av1_tokens_from_tree(palette_color_index_encodings[s],
                          av1_palette_color_index_tree[s]);
   }
@@ -741,8 +741,9 @@ static void pack_palette_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
   const TOKENEXTRA *p = *tp;
 
   for (i = 0; i < num; ++i) {
-    av1_write_token(w, av1_palette_color_index_tree[n - 2], p->context_tree,
-                    &palette_color_index_encodings[n - 2][p->token]);
+    av1_write_token(
+        w, av1_palette_color_index_tree[n - PALETTE_MIN_SIZE], p->context_tree,
+        &palette_color_index_encodings[n - PALETTE_MIN_SIZE][p->token]);
     ++p;
   }
 
@@ -1246,7 +1247,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     if (n > 0) {
       av1_write_token(w, av1_palette_size_tree,
                       av1_default_palette_y_size_prob[bsize - BLOCK_8X8],
-                      &palette_size_encodings[n - 2]);
+                      &palette_size_encodings[n - PALETTE_MIN_SIZE]);
       for (i = 0; i < n; ++i)
         aom_write_literal(w, pmi->palette_colors[i], cm->bit_depth);
       write_uniform(w, n, pmi->palette_first_color_idx[0]);
@@ -1260,7 +1261,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     if (n > 0) {
       av1_write_token(w, av1_palette_size_tree,
                       av1_default_palette_uv_size_prob[bsize - BLOCK_8X8],
-                      &palette_size_encodings[n - 2]);
+                      &palette_size_encodings[n - PALETTE_MIN_SIZE]);
       for (i = 0; i < n; ++i) {
         aom_write_literal(w, pmi->palette_colors[PALETTE_MAX_SIZE + i],
                           cm->bit_depth);

@@ -2442,7 +2442,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
                                block_height);
       palette_mode_cost =
           dc_mode_cost + cpi->common.bit_depth * k * av1_cost_bit(128, 0) +
-          cpi->palette_y_size_cost[bsize - BLOCK_8X8][k - 2] +
+          cpi->palette_y_size_cost[bsize - BLOCK_8X8][k - PALETTE_MIN_SIZE] +
           write_uniform_cost(k, color_map[0]) +
           av1_cost_bit(
               av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_ctx],
@@ -2453,8 +2453,8 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
           const int color_ctx = av1_get_palette_color_index_context(
               color_map, block_width, i, j, k, color_order, &color_idx);
           assert(color_idx >= 0 && color_idx < k);
-          palette_mode_cost +=
-              cpi->palette_y_color_cost[k - 2][color_ctx][color_idx];
+          palette_mode_cost += cpi->palette_y_color_cost[k - PALETTE_MIN_SIZE]
+                                                        [color_ctx][color_idx];
         }
       }
       this_model_rd = intra_model_yrd(cpi, x, bsize, palette_mode_cost);
@@ -4543,7 +4543,7 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
       this_rate =
           tokenonly_rd_stats.rate + dc_mode_cost +
           2 * cpi->common.bit_depth * n * av1_cost_bit(128, 0) +
-          cpi->palette_uv_size_cost[bsize - BLOCK_8X8][n - 2] +
+          cpi->palette_uv_size_cost[bsize - BLOCK_8X8][n - PALETTE_MIN_SIZE] +
           write_uniform_cost(n, color_map[0]) +
           av1_cost_bit(
               av1_default_palette_uv_mode_prob[pmi->palette_size[0] > 0], 1);
@@ -4554,7 +4554,8 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
           const int color_ctx = av1_get_palette_color_index_context(
               color_map, plane_block_width, i, j, n, color_order, &color_idx);
           assert(color_idx >= 0 && color_idx < n);
-          this_rate += cpi->palette_uv_color_cost[n - 2][color_ctx][color_idx];
+          this_rate += cpi->palette_uv_color_cost[n - PALETTE_MIN_SIZE]
+                                                 [color_ctx][color_idx];
         }
       }
 

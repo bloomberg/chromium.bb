@@ -833,8 +833,7 @@ const aom_prob av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS] = {
 // Trees to code palette color indices (for various palette sizes), and the
 // corresponding probability tables for Y and UV planes.
 const aom_tree_index
-    av1_palette_color_index_tree[PALETTE_MAX_SIZE -
-                                 1][TREE_SIZE(PALETTE_COLORS)] = {
+    av1_palette_color_index_tree[PALETTE_SIZES][TREE_SIZE(PALETTE_COLORS)] = {
       { // 2 colors
         -PALETTE_COLOR_ONE, -PALETTE_COLOR_TWO },
       { // 3 colors
@@ -862,7 +861,7 @@ const aom_tree_index
 #define UNUSED_PROB 128
 
 const aom_prob av1_default_palette_y_color_index_prob
-    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] = {
+    [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] = {
       {
           // 2 colors
           { 231, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
@@ -932,7 +931,7 @@ const aom_prob av1_default_palette_y_color_index_prob
     };
 
 const aom_prob av1_default_palette_uv_color_index_prob
-    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] = {
+    [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] = {
       {
           // 2 colors
           { 233, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
