@@ -1089,6 +1089,8 @@ source_set("browser") {
     "renderer_host/input/touch_event_queue.h",
     "renderer_host/input/touch_selection_controller_client_aura.cc",
     "renderer_host/input/touch_selection_controller_client_aura.h",
+    "renderer_host/input/touch_timeout_handler.cc",
+    "renderer_host/input/touch_timeout_handler.h",
     "renderer_host/input/touchpad_tap_suppression_controller.cc",
     "renderer_host/input/touchpad_tap_suppression_controller.h",
     "renderer_host/input/touchscreen_tap_suppression_controller.cc",

@@ -112,7 +112,19 @@ class CONTENT_EXPORT TouchEventQueue {
 
   virtual bool Empty() const WARN_UNUSED_RESULT = 0;
 
+ protected:
+  virtual void SendTouchCancelEventForTouchEvent(
+      const TouchEventWithLatencyInfo& event_to_cancel) = 0;
+
+  // Empties the queue of touch events. This may result in any number of gesture
+  // events being sent to the renderer.
+  virtual void FlushQueue() = 0;
+  virtual void UpdateTouchConsumerStates(const blink::WebTouchEvent& event,
+                                         InputEventAckState ack_result) = 0;
+
  private:
+  friend class TouchTimeoutHandler;
+
   DISALLOW_COPY_AND_ASSIGN(TouchEventQueue);
 };
 

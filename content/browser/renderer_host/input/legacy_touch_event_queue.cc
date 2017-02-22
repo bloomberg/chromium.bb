@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/renderer_host/input/timeout_monitor.h"
+#include "content/browser/renderer_host/input/touch_timeout_handler.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -27,22 +27,6 @@ namespace {
 // Time interval at which touchmove events will be forwarded to the client while
 // scrolling is active and possible.
 const double kAsyncTouchMoveIntervalSec = .2;
-
-TouchEventWithLatencyInfo ObtainCancelEventForTouchEvent(
-    const TouchEventWithLatencyInfo& event_to_cancel) {
-  TouchEventWithLatencyInfo event = event_to_cancel;
-  WebTouchEventTraits::ResetTypeAndTouchStates(
-      WebInputEvent::TouchCancel,
-      // TODO(rbyers): Shouldn't we use a fresh timestamp?
-      event.event.timeStampSeconds(), &event.event);
-  return event;
-}
-
-bool ShouldTouchTriggerTimeout(const WebTouchEvent& event) {
-  return (event.type() == WebInputEvent::TouchStart ||
-          event.type() == WebInputEvent::TouchMove) &&
-         event.dispatchType == WebInputEvent::Blocking;
-}
 
 // Compare all properties of touch points to determine the state.
 bool HasPointChanged(const WebTouchPoint& point_1,
@@ -61,219 +45,6 @@ bool HasPointChanged(const WebTouchPoint& point_1,
 }
 
 }  // namespace
-
-// Cancels a touch sequence if a touchstart or touchmove ack response is
-// sufficiently delayed.
-class LegacyTouchEventQueue::TouchTimeoutHandler {
- public:
-  TouchTimeoutHandler(LegacyTouchEventQueue* touch_queue,
-                      base::TimeDelta desktop_timeout_delay,
-                      base::TimeDelta mobile_timeout_delay)
-      : touch_queue_(touch_queue),
-        desktop_timeout_delay_(desktop_timeout_delay),
-        mobile_timeout_delay_(mobile_timeout_delay),
-        use_mobile_timeout_(false),
-        pending_ack_state_(PENDING_ACK_NONE),
-        timeout_monitor_(base::Bind(&TouchTimeoutHandler::OnTimeOut,
-                                    base::Unretained(this))),
-        enabled_(true),
-        enabled_for_current_sequence_(false),
-        sequence_awaiting_uma_update_(false),
-        sequence_using_mobile_timeout_(false) {
-    SetUseMobileTimeout(false);
-  }
-
-  ~TouchTimeoutHandler() { LogSequenceEndForUMAIfNecessary(false); }
-
-  void StartIfNecessary(const TouchEventWithLatencyInfo& event) {
-    if (pending_ack_state_ != PENDING_ACK_NONE)
-      return;
-
-    if (!enabled_)
-      return;
-
-    const base::TimeDelta timeout_delay = GetTimeoutDelay();
-    if (timeout_delay.is_zero())
-      return;
-
-    if (!ShouldTouchTriggerTimeout(event.event))
-      return;
-
-    if (WebTouchEventTraits::IsTouchSequenceStart(event.event)) {
-      LogSequenceStartForUMA();
-      enabled_for_current_sequence_ = true;
-    }
-
-    if (!enabled_for_current_sequence_)
-      return;
-
-    timeout_event_ = event;
-    timeout_monitor_.Restart(timeout_delay);
-  }
-
-  bool ConfirmTouchEvent(InputEventAckState ack_result) {
-    switch (pending_ack_state_) {
-      case PENDING_ACK_NONE:
-        if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
-          enabled_for_current_sequence_ = false;
-        timeout_monitor_.Stop();
-        return false;
-      case PENDING_ACK_ORIGINAL_EVENT:
-        if (AckedTimeoutEventRequiresCancel(ack_result)) {
-          SetPendingAckState(PENDING_ACK_CANCEL_EVENT);
-          TouchEventWithLatencyInfo cancel_event =
-              ObtainCancelEventForTouchEvent(timeout_event_);
-          touch_queue_->SendTouchEventImmediately(&cancel_event);
-        } else {
-          SetPendingAckState(PENDING_ACK_NONE);
-          touch_queue_->UpdateTouchConsumerStates(timeout_event_.event,
-                                                  ack_result);
-        }
-        return true;
-      case PENDING_ACK_CANCEL_EVENT:
-        SetPendingAckState(PENDING_ACK_NONE);
-        return true;
-    }
-    return false;
-  }
-
-  bool FilterEvent(const WebTouchEvent& event) {
-    if (!HasTimeoutEvent())
-      return false;
-
-    if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
-      // If a new sequence is observed while we're still waiting on the
-      // timed-out sequence response, also count the new sequence as timed-out.
-      LogSequenceStartForUMA();
-      LogSequenceEndForUMAIfNecessary(true);
-    }
-
-    return true;
-  }
-
-  void SetEnabled(bool enabled) {
-    if (enabled_ == enabled)
-      return;
-
-    enabled_ = enabled;
-
-    if (enabled_)
-      return;
-
-    enabled_for_current_sequence_ = false;
-    // Only reset the |timeout_handler_| if the timer is running and has not
-    // yet timed out. This ensures that an already timed out sequence is
-    // properly flushed by the handler.
-    if (IsTimeoutTimerRunning()) {
-      pending_ack_state_ = PENDING_ACK_NONE;
-      timeout_monitor_.Stop();
-    }
-  }
-
-  void SetUseMobileTimeout(bool use_mobile_timeout) {
-    use_mobile_timeout_ = use_mobile_timeout;
-  }
-
-  bool IsTimeoutTimerRunning() const { return timeout_monitor_.IsRunning(); }
-
-  bool IsEnabled() const { return enabled_ && !GetTimeoutDelay().is_zero(); }
-
- private:
-  enum PendingAckState {
-    PENDING_ACK_NONE,
-    PENDING_ACK_ORIGINAL_EVENT,
-    PENDING_ACK_CANCEL_EVENT,
-  };
-
-  void OnTimeOut() {
-    LogSequenceEndForUMAIfNecessary(true);
-    SetPendingAckState(PENDING_ACK_ORIGINAL_EVENT);
-    touch_queue_->FlushQueue();
-  }
-
-  // Skip a cancel event if the timed-out event had no consumer and was the
-  // initial event in the gesture.
-  bool AckedTimeoutEventRequiresCancel(InputEventAckState ack_result) const {
-    DCHECK(HasTimeoutEvent());
-    if (ack_result != INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS)
-      return true;
-    return !WebTouchEventTraits::IsTouchSequenceStart(timeout_event_.event);
-  }
-
-  void SetPendingAckState(PendingAckState new_pending_ack_state) {
-    DCHECK_NE(pending_ack_state_, new_pending_ack_state);
-    switch (new_pending_ack_state) {
-      case PENDING_ACK_ORIGINAL_EVENT:
-        DCHECK_EQ(pending_ack_state_, PENDING_ACK_NONE);
-        TRACE_EVENT_ASYNC_BEGIN0("input", "TouchEventTimeout", this);
-        break;
-      case PENDING_ACK_CANCEL_EVENT:
-        DCHECK_EQ(pending_ack_state_, PENDING_ACK_ORIGINAL_EVENT);
-        DCHECK(!timeout_monitor_.IsRunning());
-        DCHECK(touch_queue_->empty());
-        TRACE_EVENT_ASYNC_STEP_INTO0("input", "TouchEventTimeout", this,
-                                     "CancelEvent");
-        break;
-      case PENDING_ACK_NONE:
-        DCHECK(!timeout_monitor_.IsRunning());
-        DCHECK(touch_queue_->empty());
-        TRACE_EVENT_ASYNC_END0("input", "TouchEventTimeout", this);
-        break;
-    }
-    pending_ack_state_ = new_pending_ack_state;
-  }
-
-  void LogSequenceStartForUMA() {
-    // Always flush any unlogged entries before starting a new one.
-    LogSequenceEndForUMAIfNecessary(false);
-    sequence_awaiting_uma_update_ = true;
-    sequence_using_mobile_timeout_ = use_mobile_timeout_;
-  }
-
-  void LogSequenceEndForUMAIfNecessary(bool timed_out) {
-    if (!sequence_awaiting_uma_update_)
-      return;
-
-    sequence_awaiting_uma_update_ = false;
-
-    if (sequence_using_mobile_timeout_) {
-      UMA_HISTOGRAM_BOOLEAN("Event.Touch.TimedOutOnMobileSite", timed_out);
-    } else {
-      UMA_HISTOGRAM_BOOLEAN("Event.Touch.TimedOutOnDesktopSite", timed_out);
-    }
-  }
-
-  base::TimeDelta GetTimeoutDelay() const {
-    return use_mobile_timeout_ ? mobile_timeout_delay_ : desktop_timeout_delay_;
-  }
-
-  bool HasTimeoutEvent() const {
-    return pending_ack_state_ != PENDING_ACK_NONE;
-  }
-
-  LegacyTouchEventQueue* touch_queue_;
-
-  // How long to wait on a touch ack before cancelling the touch sequence.
-  const base::TimeDelta desktop_timeout_delay_;
-  const base::TimeDelta mobile_timeout_delay_;
-  bool use_mobile_timeout_;
-
-  // The touch event source for which we expect the next ack.
-  PendingAckState pending_ack_state_;
-
-  // The event for which the ack timeout is triggered.
-  TouchEventWithLatencyInfo timeout_event_;
-
-  // Provides timeout-based callback behavior.
-  TimeoutMonitor timeout_monitor_;
-
-  bool enabled_;
-  bool enabled_for_current_sequence_;
-
-  // Bookkeeping to classify and log whether a touch sequence times out.
-  bool sequence_awaiting_uma_update_;
-  bool sequence_using_mobile_timeout_;
-};
 
 // This class represents a single coalesced touch event. However, it also keeps
 // track of all the original touch-events that were coalesced into a single
@@ -472,7 +243,8 @@ void LegacyTouchEventQueue::ProcessTouchAck(
   DCHECK(!dispatching_touch_ack_);
   dispatching_touch_ = false;
 
-  if (timeout_handler_ && timeout_handler_->ConfirmTouchEvent(ack_result))
+  if (timeout_handler_ &&
+      timeout_handler_->ConfirmTouchEvent(unique_touch_event_id, ack_result))
     return;
 
   if (touch_queue_.empty())
@@ -719,6 +491,16 @@ void LegacyTouchEventQueue::AckTouchEventToClient(
   touch_queue_.pop_front();
 }
 
+void LegacyTouchEventQueue::SendTouchCancelEventForTouchEvent(
+    const TouchEventWithLatencyInfo& event_to_cancel) {
+  TouchEventWithLatencyInfo event = event_to_cancel;
+  WebTouchEventTraits::ResetTypeAndTouchStates(
+      WebInputEvent::TouchCancel,
+      // TODO(rbyers): Shouldn't we use a fresh timestamp?
+      event.event.timeStampSeconds(), &event.event);
+  SendTouchEventImmediately(&event);
+}
+
 void LegacyTouchEventQueue::SendTouchEventImmediately(
     TouchEventWithLatencyInfo* touch) {
   // TODO(crbug.com/600773): Hack to avoid cyclic reentry to this method.
@@ -794,7 +576,6 @@ LegacyTouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
     pending_async_touchmove_.reset();
     last_sent_touchevent_.reset();
 
-    touch_sequence_start_position_ = gfx::PointF(event.touches[0].position);
     drop_remaining_touches_in_sequence_ = false;
     if (!has_handlers_) {
       drop_remaining_touches_in_sequence_ = true;
