@@ -57,6 +57,7 @@ namespace banners {
 AppBannerManagerAndroid::AppBannerManagerAndroid(
     content::WebContents* web_contents)
     : AppBannerManager(web_contents) {
+  can_install_webapk_ = ChromeWebApkHost::CanInstallWebApk();
   CreateJavaBannerManager();
 }
 
@@ -106,14 +107,14 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
   native_app_data_.Reset(japp_data);
   app_title_ = ConvertJavaStringToUTF16(env, japp_title);
   native_app_package_ = ConvertJavaStringToUTF8(env, japp_package);
-  icon_url_ = GURL(ConvertJavaStringToUTF8(env, jicon_url));
+  primary_icon_url_ = GURL(ConvertJavaStringToUTF8(env, jicon_url));
 
   if (!CheckIfShouldShowBanner())
     return false;
 
   return ManifestIconDownloader::Download(
-      web_contents(), icon_url_, GetIdealIconSizeInPx(),
-      GetMinimumIconSizeInPx(),
+      web_contents(), primary_icon_url_, GetIdealPrimaryIconSizeInPx(),
+      GetMinimumPrimaryIconSizeInPx(),
       base::Bind(&AppBannerManager::OnAppIconFetched, GetWeakPtr()));
 }
 
@@ -126,6 +127,10 @@ void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url,
   AppBannerManager::RequestAppBanner(validated_url, is_debug_mode);
 }
 
+int AppBannerManagerAndroid::GetIdealBadgeIconSizeInPx() {
+  return ShortcutHelper::GetIdealBadgeIconSizeInPx();
+}
+
 std::string AppBannerManagerAndroid::GetAppIdentifier() {
   return native_app_data_.is_null() ? AppBannerManager::GetAppIdentifier()
                                     : native_app_package_;
@@ -136,11 +141,11 @@ std::string AppBannerManagerAndroid::GetBannerType() {
                                     : "play";
 }
 
-int AppBannerManagerAndroid::GetIdealIconSizeInPx() {
+int AppBannerManagerAndroid::GetIdealPrimaryIconSizeInPx() {
   return ShortcutHelper::GetIdealHomescreenIconSizeInPx();
 }
 
-int AppBannerManagerAndroid::GetMinimumIconSizeInPx() {
+int AppBannerManagerAndroid::GetMinimumPrimaryIconSizeInPx() {
   return ShortcutHelper::GetMinimumHomescreenIconSizeInPx();
 }
 
@@ -158,6 +163,19 @@ bool AppBannerManagerAndroid::IsWebAppInstalled(
                                            manifest_url);
 }
 
+InstallableParams AppBannerManagerAndroid::ParamsToPerformInstallableCheck() {
+  InstallableParams params =
+      AppBannerManager::ParamsToPerformInstallableCheck();
+
+  if (can_install_webapk_) {
+    params.ideal_badge_icon_size_in_px = GetIdealBadgeIconSizeInPx();
+    params.minimum_badge_icon_size_in_px = GetIdealBadgeIconSizeInPx();
+    params.fetch_valid_badge_icon = true;
+  }
+
+  return params;
+}
+
 void AppBannerManagerAndroid::PerformInstallableCheck() {
   // Check if the manifest prefers that we show a native app banner. If so, call
   // to Java to verify the details.
@@ -172,7 +190,7 @@ void AppBannerManagerAndroid::PerformInstallableCheck() {
     Stop();
   }
 
-  if (ChromeWebApkHost::CanInstallWebApk()) {
+  if (can_install_webapk_) {
     if (!AreWebManifestUrlsWebApkCompatible(manifest_)) {
       ReportStatus(web_contents(), URL_NOT_SUPPORTED_FOR_WEBAPK);
       Stop();
@@ -184,6 +202,18 @@ void AppBannerManagerAndroid::PerformInstallableCheck() {
   AppBannerManager::PerformInstallableCheck();
 }
 
+void AppBannerManagerAndroid::OnDidPerformInstallableCheck(
+    const InstallableData& data) {
+  if (data.badge_icon && !data.badge_icon->drawsNothing()) {
+    DCHECK(!data.badge_icon_url.is_empty());
+
+    badge_icon_url_ = data.badge_icon_url;
+    badge_icon_.reset(new SkBitmap(*data.badge_icon));
+  }
+
+  AppBannerManager::OnDidPerformInstallableCheck(data);
+}
+
 void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
   if (bitmap.drawsNothing()) {
     ReportStatus(web_contents(), NO_ICON_AVAILABLE);
@@ -193,7 +223,7 @@ void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
   if (!is_active())
     return;
 
-  icon_.reset(new SkBitmap(bitmap));
+  primary_icon_.reset(new SkBitmap(bitmap));
   SendBannerPromptRequest();
 }
 
@@ -208,10 +238,11 @@ void AppBannerManagerAndroid::ShowBanner() {
   DCHECK(contents);
 
   if (native_app_data_.is_null()) {
+    // TODO(zpeng): Add badge to WebAPK installation flow.
     if (AppBannerInfoBarDelegateAndroid::Create(
             contents, GetWeakPtr(), app_title_,
-            CreateShortcutInfo(manifest_url_, manifest_, icon_url_),
-            std::move(icon_), event_request_id(),
+            CreateShortcutInfo(manifest_url_, manifest_, primary_icon_url_),
+            std::move(primary_icon_), event_request_id(),
             webapk::INSTALL_SOURCE_BANNER)) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
@@ -221,7 +252,7 @@ void AppBannerManagerAndroid::ShowBanner() {
     }
   } else {
     if (AppBannerInfoBarDelegateAndroid::Create(
-            contents, app_title_, native_app_data_, std::move(icon_),
+            contents, app_title_, native_app_data_, std::move(primary_icon_),
             native_app_package_, referrer_, event_request_id())) {
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);
@@ -264,7 +295,7 @@ bool AppBannerManagerAndroid::CanHandleNonWebApp(const std::string& platform,
   ScopedJavaLocalRef<jstring> jreferrer(ConvertUTF8ToJavaString(env, referrer));
   Java_AppBannerManager_fetchAppDetails(env, java_banner_manager_, jurl,
                                         jpackage, jreferrer,
-                                        GetIdealIconSizeInPx());
+                                        GetIdealPrimaryIconSizeInPx());
   return true;
 }
 

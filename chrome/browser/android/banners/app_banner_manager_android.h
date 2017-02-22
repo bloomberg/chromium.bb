@@ -65,15 +65,20 @@ class AppBannerManagerAndroid
   static bool Register(JNIEnv* env);
 
  protected:
+  // Return the ideal badge icon size.
+  int GetIdealBadgeIconSizeInPx();
+
   // AppBannerManager overrides.
   std::string GetAppIdentifier() override;
   std::string GetBannerType() override;
-  int GetIdealIconSizeInPx() override;
-  int GetMinimumIconSizeInPx() override;
+  int GetIdealPrimaryIconSizeInPx() override;
+  int GetMinimumPrimaryIconSizeInPx() override;
   bool IsWebAppInstalled(content::BrowserContext* browser_context,
                          const GURL& start_url,
                          const GURL& manifest_url) override;
+  InstallableParams ParamsToPerformInstallableCheck() override;
   void PerformInstallableCheck() override;
+  void OnDidPerformInstallableCheck(const InstallableData& result) override;
   void OnAppIconFetched(const SkBitmap& bitmap) override;
   void ResetCurrentPageData() override;
   void ShowBanner() override;
@@ -101,6 +106,12 @@ class AppBannerManagerAndroid
                           const GURL& url,
                           const std::string& id);
 
+  // The URL of the badge icon.
+  GURL badge_icon_url_;
+
+  // The badge icon object.
+  std::unique_ptr<SkBitmap> badge_icon_;
+
   // The Java-side AppBannerManager.
   base::android::ScopedJavaGlobalRef<jobject> java_banner_manager_;
 
@@ -109,6 +120,9 @@ class AppBannerManagerAndroid
 
   // App package name for a native app banner.
   std::string native_app_package_;
+
+  // Whether WebAPKs can be installed.
+  bool can_install_webapk_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerManagerAndroid);
 };

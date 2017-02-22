@@ -36,19 +36,6 @@ InstallableParams ParamsToGetManifest() {
   return InstallableParams();
 }
 
-// Returns an InstallableParams object that requests all checks necessary for
-// a web app banner.
-InstallableParams ParamsToPerformInstallableCheck(int ideal_icon_size_in_px,
-                                                  int minimum_icon_size_in_px) {
-  InstallableParams params;
-  params.ideal_primary_icon_size_in_px = ideal_icon_size_in_px;
-  params.minimum_primary_icon_size_in_px = minimum_icon_size_in_px;
-  params.check_installable = true;
-  params.fetch_valid_primary_icon = true;
-
-  return params;
-}
-
 }  // anonymous namespace
 
 namespace banners {
@@ -199,11 +186,11 @@ std::string AppBannerManager::GetStatusParam(InstallableStatusCode code) {
   return std::string();
 }
 
-int AppBannerManager::GetIdealIconSizeInPx() {
+int AppBannerManager::GetIdealPrimaryIconSizeInPx() {
   return InstallableManager::GetMinimumIconSizeInPx();
 }
 
-int AppBannerManager::GetMinimumIconSizeInPx() {
+int AppBannerManager::GetMinimumPrimaryIconSizeInPx() {
   return InstallableManager::GetMinimumIconSizeInPx();
 }
 
@@ -244,13 +231,22 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   PerformInstallableCheck();
 }
 
+InstallableParams AppBannerManager::ParamsToPerformInstallableCheck() {
+  InstallableParams params;
+  params.ideal_primary_icon_size_in_px = GetIdealPrimaryIconSizeInPx();
+  params.minimum_primary_icon_size_in_px = GetMinimumPrimaryIconSizeInPx();
+  params.check_installable = true;
+  params.fetch_valid_primary_icon = true;
+
+  return params;
+}
+
 void AppBannerManager::PerformInstallableCheck() {
   if (!CheckIfShouldShowBanner())
     return;
 
   // Fetch and verify the other required information.
-  manager_->GetData(ParamsToPerformInstallableCheck(GetIdealIconSizeInPx(),
-                                                    GetMinimumIconSizeInPx()),
+  manager_->GetData(ParamsToPerformInstallableCheck(),
                     base::Bind(&AppBannerManager::OnDidPerformInstallableCheck,
                                GetWeakPtr()));
 }
@@ -275,8 +271,8 @@ void AppBannerManager::OnDidPerformInstallableCheck(
   DCHECK(!data.primary_icon_url.is_empty());
   DCHECK(data.primary_icon);
 
-  icon_url_ = data.primary_icon_url;
-  icon_.reset(new SkBitmap(*data.primary_icon));
+  primary_icon_url_ = data.primary_icon_url;
+  primary_icon_.reset(new SkBitmap(*data.primary_icon));
 
   SendBannerPromptRequest();
 }
@@ -524,8 +520,8 @@ void AppBannerManager::OnBannerPromptReply(
 
   DCHECK(!manifest_url_.is_empty());
   DCHECK(!manifest_.IsEmpty());
-  DCHECK(!icon_url_.is_empty());
-  DCHECK(icon_.get());
+  DCHECK(!primary_icon_url_.is_empty());
+  DCHECK(primary_icon_.get());
 
   TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_COMPLETE);
   ShowBanner();
