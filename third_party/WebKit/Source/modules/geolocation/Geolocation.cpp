@@ -181,7 +181,7 @@ void Geolocation::getCurrentPosition(PositionCallback* successCallback,
 
   reportGeolocationViolation(document());
   InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-      document(), "navigator.geolocation.getCurrentPosition", true);
+      document(), "Geolocation.getCurrentPosition", true);
 
   GeoNotifier* notifier =
       GeoNotifier::create(this, successCallback, errorCallback, options);
@@ -198,7 +198,7 @@ int Geolocation::watchPosition(PositionCallback* successCallback,
 
   reportGeolocationViolation(document());
   InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-      document(), "navigator.geolocation.watchPosition", true);
+      document(), "Geolocation.watchPosition", true);
 
   GeoNotifier* notifier =
       GeoNotifier::create(this, successCallback, errorCallback, options);

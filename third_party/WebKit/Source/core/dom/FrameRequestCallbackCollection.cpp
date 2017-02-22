@@ -29,7 +29,7 @@ FrameRequestCallbackCollection::registerCallback(
   InspectorInstrumentation::asyncTaskScheduled(
       m_context, "requestAnimationFrame", callback);
   InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-      m_context, "requestAnimationFrame", true);
+      m_context, "DOMWindow.requestAnimationFrame", true);
   return id;
 }
 
@@ -38,7 +38,7 @@ void FrameRequestCallbackCollection::cancelCallback(CallbackId id) {
     if (m_callbacks[i]->m_id == id) {
       InspectorInstrumentation::asyncTaskCanceled(m_context, m_callbacks[i]);
       InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-          m_context, "cancelAnimationFrame", true);
+          m_context, "DOMWindow.cancelAnimationFrame", true);
       m_callbacks.remove(i);
       TRACE_EVENT_INSTANT1("devtools.timeline", "CancelAnimationFrame",
                            TRACE_EVENT_SCOPE_THREAD, "data",
@@ -50,7 +50,7 @@ void FrameRequestCallbackCollection::cancelCallback(CallbackId id) {
     if (callback->m_id == id) {
       InspectorInstrumentation::asyncTaskCanceled(m_context, callback);
       InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-          m_context, "cancelAnimationFrame", true);
+          m_context, "DOMWindow.cancelAnimationFrame", true);
       TRACE_EVENT_INSTANT1("devtools.timeline", "CancelAnimationFrame",
                            TRACE_EVENT_SCOPE_THREAD, "data",
                            InspectorAnimationFrameEvent::data(m_context, id));
@@ -75,7 +75,7 @@ void FrameRequestCallbackCollection::executeCallbacks(
           "devtools.timeline", "FireAnimationFrame", "data",
           InspectorAnimationFrameEvent::data(m_context, callback->m_id));
       InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-          m_context, "animationFrameFired", false);
+          m_context, "DOMWindow.requestAnimationFrame.callback", false);
       InspectorInstrumentation::AsyncTask asyncTask(m_context, callback);
       PerformanceMonitor::HandlerCall handlerCall(
           m_context, "requestAnimationFrame", true);

@@ -13,7 +13,7 @@ function test()
     InspectorTest.sendCommand("Debugger.enable", {});
     InspectorTest.sendCommand("DOM.enable", {});
     InspectorTest.sendCommand("DOMDebugger.enable", {});
-    InspectorTest.sendCommand("DOMDebugger.setInstrumentationBreakpoint", {"eventName":"setInnerHTML"});
+    InspectorTest.sendCommand("DOMDebugger.setInstrumentationBreakpoint", {"eventName":"Element.setInnerHTML"});
     InspectorTest.sendCommand("Runtime.evaluate", { "expression": "modifyHTML()" });
     InspectorTest.eventHandler["Debugger.paused"] = handleDebuggerPausedOne;
 
