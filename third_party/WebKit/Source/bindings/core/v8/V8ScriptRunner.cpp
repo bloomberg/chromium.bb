@@ -652,11 +652,10 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
     TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data",
                        InspectorFunctionCallEvent::data(context, function));
 
-  if (frame) {
-    CHECK(BindingSecurity::shouldAllowAccessToFrame(
-        toDOMWindow(function->CreationContext())->toLocalDOMWindow(), frame,
-        BindingSecurity::ErrorReportOption::DoNotReport));
-  }
+  DCHECK(!frame ||
+         BindingSecurity::shouldAllowAccessToFrame(
+             toDOMWindow(function->CreationContext())->toLocalDOMWindow(),
+             frame, BindingSecurity::ErrorReportOption::DoNotReport));
   CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);
