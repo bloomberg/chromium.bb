@@ -42,6 +42,17 @@ class RelevantChangesTest(patch_unittest.MockPatchBase):
 
     return test_build_id, changes
 
+  def test_GetSlaveMappingAndCLActionsOnNotMasterBuild(self):
+    """Test _GetSlaveMappingAndCLActions on not-master build."""
+    self.build_config.master = False
+    mock_cidb = mock.Mock()
+    self.assertRaises(
+        Exception,
+        relevant_changes.RelevantChanges._GetSlaveMappingAndCLActions,
+        self.master_build_id, mock_cidb, self.build_config, mock.Mock(),
+        ['bb_id_1'])
+    self.assertFalse(mock_cidb.GetSlaveStatuses.called)
+
   def test_GetSlaveMappingAndCLActionsIncludesMaster(self):
     """Tests _GetSlaveMappingAndCLActions with include_master=True."""
     slave_config = 'test-paladin'

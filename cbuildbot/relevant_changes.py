@@ -36,6 +36,7 @@ class RelevantChanges(object):
       action_history is a list of all CL actions associated with |changes|.
     """
     assert db, 'No database connection to use.'
+    assert config.master, 'This is not a master build.'
 
     slave_list = db.GetSlaveStatuses(
         master_build_id, buildbucket_ids=slave_buildbucket_ids)
@@ -51,12 +52,7 @@ class RelevantChanges(object):
       config_map[d['id']] = d['build_config']
 
     if include_master:
-      # TODO(akeshet): We are giving special treatment to the CQ master, which
-      # makes this logic CQ specific. We only use this logic in the CQ anyway at
-      # the moment, but may need to reconsider if we need to generalize to other
-      # master-slave builds.
-      assert config.name == constants.CQ_MASTER
-      config_map[master_build_id] = constants.CQ_MASTER
+      config_map[master_build_id] = config.name
 
     return config_map, action_history
 
