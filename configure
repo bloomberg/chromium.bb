@@ -468,23 +468,14 @@ post_process_cmdline() {
         enabled ${c} && enable_feature ${c##*_}s
     done
 
-    # Enable adapt_scan by default
+    # Enable adopted experiments by default
     soft_enable adapt_scan
-
-    # Enable ref_mv by default
     soft_enable ref_mv
-
-    # Enable filter_7bit by default
     soft_enable filter_7bit
-
-    # Enable reference_buffer by default
     soft_enable reference_buffer
-
-    #Enable delta_q by default
     soft_enable delta_q
-
-    # Enable daala_ec by default
     ! enabled ans && soft_enable daala_ec
+    soft_enable palette
 
     # Fix up experiment dependencies
     enabled pvq && enable_feature ec_adapt
