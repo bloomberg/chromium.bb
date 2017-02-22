@@ -37,7 +37,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(WmWindow* window)
       root_window_(window->GetRootWindow()),
       root_window_controller_(root_window_->GetRootWindowController()),
       shell_(window_->GetShell()),
-      work_area_in_parent_(wm::GetDisplayWorkAreaBounds(window_)),
+      work_area_in_parent_(wm::GetDisplayWorkAreaBoundsInParent(window_)),
       is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr) {
   shell_->AddShellObserver(this);
   shell_->AddActivationObserver(this);
@@ -283,7 +283,7 @@ void WorkspaceLayoutManager::OnDisplayMetricsChanged(
   if (window_->GetDisplayNearestWindow().id() != display.id())
     return;
 
-  const gfx::Rect work_area(wm::GetDisplayWorkAreaBounds(window_));
+  const gfx::Rect work_area(wm::GetDisplayWorkAreaBoundsInParent(window_));
   if (work_area != work_area_in_parent_) {
     const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
     AdjustAllWindowsBoundsForWorkAreaChange(&event);
@@ -332,7 +332,7 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
   DCHECK(event->type() == wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED ||
          event->type() == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
 
-  work_area_in_parent_ = wm::GetDisplayWorkAreaBounds(window_);
+  work_area_in_parent_ = wm::GetDisplayWorkAreaBoundsInParent(window_);
 
   // Don't do any adjustments of the insets while we are in screen locked mode.
   // This would happen if the launcher was auto hidden before the login screen

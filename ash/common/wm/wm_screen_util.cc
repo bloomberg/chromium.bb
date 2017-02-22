@@ -15,10 +15,6 @@ namespace ash {
 namespace wm {
 
 gfx::Rect GetDisplayWorkAreaBoundsInParent(WmWindow* window) {
-  return GetDisplayWorkAreaBounds(window->GetParent());
-}
-
-gfx::Rect GetDisplayWorkAreaBounds(WmWindow* window) {
   display::Display display = window->GetDisplayNearestWindow();
   return window->GetParent()->ConvertRectFromScreen(display.work_area());
 }

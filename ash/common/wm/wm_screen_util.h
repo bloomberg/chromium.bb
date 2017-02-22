@@ -18,7 +18,6 @@ class WmWindow;
 namespace wm {
 
 ASH_EXPORT gfx::Rect GetDisplayWorkAreaBoundsInParent(WmWindow* window);
-ASH_EXPORT gfx::Rect GetDisplayWorkAreaBounds(WmWindow* window);
 ASH_EXPORT gfx::Rect GetDisplayBoundsInParent(WmWindow* window);
 ASH_EXPORT gfx::Rect GetMaximizedWindowBoundsInParent(WmWindow* window);
 
