@@ -393,11 +393,10 @@ void RenderViewContextMenuBase::OpenURLWithExtraHeaders(
   if (!extra_headers.empty())
     open_url_params.extra_headers = extra_headers;
 
-  WebContents* new_contents = source_web_contents_->OpenURL(open_url_params);
-  if (!new_contents)
-    return;
+  open_url_params.source_render_process_id = render_process_id_;
+  open_url_params.source_render_frame_id = render_frame_id_;
 
-  NotifyURLOpened(url, new_contents);
+  source_web_contents_->OpenURL(open_url_params);
 }
 
 bool RenderViewContextMenuBase::IsCustomItemChecked(int id) const {

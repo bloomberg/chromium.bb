@@ -798,6 +798,9 @@ void NavigatorImpl::RequestOpenURL(
   // RequestOpenURL and go through RequestTransferURL instead.
   params.source_site_instance = current_site_instance;
 
+  params.source_render_frame_id = render_frame_host->GetRoutingID();
+  params.source_render_process_id = render_frame_host->GetProcess()->GetID();
+
   if (render_frame_host->web_ui()) {
     // Note that we hide the referrer for Web UI pages. We don't really want
     // web sites to see a referrer of "chrome://blah" (and some chrome: URLs
@@ -814,7 +817,7 @@ void NavigatorImpl::RequestOpenURL(
       &params.referrer);
 
   if (delegate_)
-    delegate_->RequestOpenURL(render_frame_host, params);
+    delegate_->OpenURL(params);
 }
 
 void NavigatorImpl::RequestTransferURL(

@@ -68,7 +68,8 @@ class WebNavigationTabObserver
                            const GURL& url,
                            const content::Referrer& referrer,
                            WindowOpenDisposition disposition,
-                           ui::PageTransition transition) override;
+                           ui::PageTransition transition,
+                           bool started_from_context_menu) override;
   void WebContentsDestroyed() override;
 
   // This method dispatches the already created onBeforeNavigate event.

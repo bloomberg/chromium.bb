@@ -142,8 +142,6 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
 
   // Subclasses should send notification.
   virtual void NotifyMenuShown() = 0;
-  virtual void NotifyURLOpened(const GURL& url,
-                               content::WebContents* new_contents) = 0;
 
   // TODO(oshima): Remove this.
   virtual void AppendPlatformEditableItems() {}

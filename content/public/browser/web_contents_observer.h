@@ -274,7 +274,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                    const GURL& url,
                                    const Referrer& referrer,
                                    WindowOpenDisposition disposition,
-                                   ui::PageTransition transition) {}
+                                   ui::PageTransition transition,
+                                   bool started_from_context_menu) {}
 
   // This method is invoked when the renderer process has completed its first
   // paint after a non-empty layout.

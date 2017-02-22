@@ -383,7 +383,8 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
     const GURL& url,
     const content::Referrer& referrer,
     WindowOpenDisposition disposition,
-    ui::PageTransition transition) {
+    ui::PageTransition transition,
+    bool started_from_context_menu) {
   if (!navigation_state_.CanSendEvents(source_render_frame_host))
     return;
 

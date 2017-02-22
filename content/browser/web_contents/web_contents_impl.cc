@@ -2587,6 +2587,24 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
     return NULL;
 
   WebContents* new_contents = delegate_->OpenURLFromTab(this, params);
+
+  RenderFrameHost* source_render_frame_host = RenderFrameHost::FromID(
+      params.source_render_process_id, params.source_render_frame_id);
+
+  if (source_render_frame_host && params.source_site_instance) {
+    CHECK_EQ(source_render_frame_host->GetSiteInstance(),
+             params.source_site_instance.get());
+  }
+
+  if (new_contents && source_render_frame_host && new_contents != this) {
+    for (auto& observer : observers_) {
+      observer.DidOpenRequestedURL(new_contents, source_render_frame_host,
+                                   params.url, params.referrer,
+                                   params.disposition, params.transition,
+                                   params.started_from_context_menu);
+    }
+  }
+
   return new_contents;
 }
 
@@ -3378,25 +3396,6 @@ void WebContentsImpl::DidStartNavigationToPendingEntry(const GURL& url,
   // Notify observers about navigation.
   for (auto& observer : observers_)
     observer.DidStartNavigationToPendingEntry(url, reload_type);
-}
-
-void WebContentsImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
-                                     const OpenURLParams& params) {
-  // OpenURL can blow away the source RFH. Use the process/frame routing ID as a
-  // weak pointer of sorts.
-  const int32_t process_id = render_frame_host->GetProcess()->GetID();
-  const int32_t frame_id = render_frame_host->GetRoutingID();
-
-  WebContents* new_contents = OpenURL(params);
-
-  if (new_contents && RenderFrameHost::FromID(process_id, frame_id)) {
-    // Notify observers.
-    for (auto& observer : observers_) {
-      observer.DidOpenRequestedURL(new_contents, render_frame_host, params.url,
-                                   params.referrer, params.disposition,
-                                   params.transition);
-    }
-  }
 }
 
 bool WebContentsImpl::ShouldTransferNavigation(bool is_main_frame_navigation) {

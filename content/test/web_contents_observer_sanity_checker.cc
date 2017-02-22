@@ -243,7 +243,8 @@ void WebContentsObserverSanityChecker::DidOpenRequestedURL(
     const GURL& url,
     const Referrer& referrer,
     WindowOpenDisposition disposition,
-    ui::PageTransition transition) {
+    ui::PageTransition transition,
+    bool started_from_context_menu) {
   AssertRenderFrameExists(source_render_frame_host);
 }
 

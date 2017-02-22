@@ -95,6 +95,9 @@ class CONTENT_EXPORT InterstitialPageImpl
       RenderViewHost* render_view_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
+  // NavigatorDelegate implementation.
+  WebContents* OpenURL(const OpenURLParams& params) override;
+
  protected:
   // NotificationObserver method:
   void Observe(int type,

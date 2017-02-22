@@ -599,8 +599,6 @@ class CONTENT_EXPORT WebContentsImpl
   void NotifyChangedNavigationState(InvalidateTypes changed_flags) override;
   void DidStartNavigationToPendingEntry(const GURL& url,
                                         ReloadType reload_type) override;
-  void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
-                      const OpenURLParams& params) override;
   bool ShouldTransferNavigation(bool is_main_frame_navigation) override;
   bool ShouldPreserveAbortedURLs() override;
   void DidStartLoading(FrameTreeNode* frame_tree_node,

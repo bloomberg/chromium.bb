@@ -121,8 +121,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void HandleAuthorizeAllPlugins() override;
 #endif
   void NotifyMenuShown() override;
-  void NotifyURLOpened(const GURL& url,
-                       content::WebContents* new_contents) override;
 
   // Gets the extension (if any) associated with the WebContents that we're in.
   const extensions::Extension* GetExtension() const;
