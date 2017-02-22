@@ -618,7 +618,8 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
       base::MakeUnique<ColorTransformMatrix>(Invert(GetTransferMatrix(from))));
 
   // If the target color space is not defined, just apply the adjust and
-  // tranfer matrices.
+  // tranfer matrices. This path is used by YUV to RGB color conversion
+  // when full color conversion is not enabled.
   if (!to.IsValid())
     return;
 
@@ -732,8 +733,15 @@ ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
   if (!src_.IsValid())
     return;
 
-  ScopedQcmsProfile src_profile = GetQCMSProfileIfNecessary(src_);
-  ScopedQcmsProfile dst_profile = GetQCMSProfileIfNecessary(dst_);
+  // If the target color space is not defined, just apply the adjust and
+  // tranfer matrices. This path is used by YUV to RGB color conversion
+  // when full color conversion is not enabled.
+  ScopedQcmsProfile src_profile;
+  ScopedQcmsProfile dst_profile;
+  if (dst.IsValid()) {
+    src_profile = GetQCMSProfileIfNecessary(src_);
+    dst_profile = GetQCMSProfileIfNecessary(dst_);
+  }
   bool has_src_profile = !!src_profile;
   bool has_dst_profile = !!dst_profile;
 
