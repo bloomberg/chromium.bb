@@ -61,13 +61,13 @@ TextDirection SelectionModifier::directionOfEnclosingBlock() const {
   return blink::directionOfEnclosingBlock(m_selection.extent());
 }
 
-TextDirection SelectionModifier::directionOfSelection() const {
+static TextDirection directionOf(const VisibleSelection& visibleSelection) {
   InlineBox* startBox = nullptr;
   InlineBox* endBox = nullptr;
   // Cache the VisiblePositions because visibleStart() and visibleEnd()
   // can cause layout, which has the potential to invalidate lineboxes.
-  VisiblePosition startPosition = m_selection.visibleStart();
-  VisiblePosition endPosition = m_selection.visibleEnd();
+  const VisiblePosition& startPosition = visibleSelection.visibleStart();
+  const VisiblePosition& endPosition = visibleSelection.visibleEnd();
   if (startPosition.isNotNull())
     startBox = computeInlineBoxPosition(startPosition).inlineBox;
   if (endPosition.isNotNull())
@@ -75,57 +75,51 @@ TextDirection SelectionModifier::directionOfSelection() const {
   if (startBox && endBox && startBox->direction() == endBox->direction())
     return startBox->direction();
 
-  return directionOfEnclosingBlock();
+  return directionOfEnclosingBlock(visibleSelection.extent());
 }
 
-void SelectionModifier::willBeModified(EAlteration alter,
-                                       SelectionDirection direction) {
-  if (alter != FrameSelection::AlterationExtend)
-    return;
+TextDirection SelectionModifier::directionOfSelection() const {
+  return directionOf(m_selection);
+}
 
-  Position start = m_selection.start();
-  Position end = m_selection.end();
-
-  bool baseIsStart = true;
-
-  if (m_selection.isDirectional()) {
+static bool isBaseStart(const VisibleSelection& visibleSelection,
+                        SelectionDirection direction) {
+  if (visibleSelection.isDirectional()) {
     // Make base and extent match start and end so we extend the user-visible
     // selection. This only matters for cases where base and extend point to
     // different positions than start and end (e.g. after a double-click to
     // select a word).
-    if (m_selection.isBaseFirst())
-      baseIsStart = true;
-    else
-      baseIsStart = false;
-  } else {
-    switch (direction) {
-      case DirectionRight:
-        if (directionOfSelection() == TextDirection::kLtr)
-          baseIsStart = true;
-        else
-          baseIsStart = false;
-        break;
-      case DirectionForward:
-        baseIsStart = true;
-        break;
-      case DirectionLeft:
-        if (directionOfSelection() == TextDirection::kLtr)
-          baseIsStart = false;
-        else
-          baseIsStart = true;
-        break;
-      case DirectionBackward:
-        baseIsStart = false;
-        break;
-    }
+    return visibleSelection.isBaseFirst();
   }
-  if (baseIsStart) {
-    m_selection.setBase(start);
-    m_selection.setExtent(end);
-  } else {
-    m_selection.setBase(end);
-    m_selection.setExtent(start);
+  switch (direction) {
+    case DirectionRight:
+      return directionOf(visibleSelection) == TextDirection::kLtr;
+    case DirectionForward:
+      return true;
+    case DirectionLeft:
+      return directionOf(visibleSelection) != TextDirection::kLtr;
+    case DirectionBackward:
+      return false;
   }
+  NOTREACHED() << "We should handle " << direction;
+  return true;
+}
+
+// This function returns |SelectionInDOMTree| from start and end position of
+// |visibleSelection| with |direction| and ordering of base and extent to
+// handle base/extent don't match to start/end, e.g. granularity != character,
+// and start/end adjustment in |visibleSelection::validate()| for range
+// selection.
+static SelectionInDOMTree prepareToExtendSeelction(
+    const VisibleSelection& visibleSelection,
+    SelectionDirection direction) {
+  if (visibleSelection.start().isNull())
+    return visibleSelection.asSelection();
+  const bool baseIsStart = isBaseStart(visibleSelection, direction);
+  return SelectionInDOMTree::Builder(visibleSelection.asSelection())
+      .collapse(baseIsStart ? visibleSelection.start() : visibleSelection.end())
+      .extend(baseIsStart ? visibleSelection.end() : visibleSelection.start())
+      .build();
 }
 
 VisiblePosition SelectionModifier::positionForPlatform(bool isGetStart) const {
@@ -593,7 +587,10 @@ bool SelectionModifier::modify(EAlteration alter,
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       frame()->document()->lifecycle());
 
-  willBeModified(alter, direction);
+  if (alter == FrameSelection::AlterationExtend) {
+    m_selection = createVisibleSelection(
+        prepareToExtendSeelction(m_selection, direction));
+  }
 
   bool wasRange = m_selection.isRange();
   VisiblePosition originalStartPosition = m_selection.visibleStart();
@@ -721,9 +718,12 @@ bool SelectionModifier::modifyWithPageGranularity(EAlteration alter,
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       frame()->document()->lifecycle());
 
-  willBeModified(alter, direction == FrameSelection::DirectionUp
-                            ? DirectionBackward
-                            : DirectionForward);
+  if (alter == FrameSelection::AlterationExtend) {
+    m_selection = createVisibleSelection(prepareToExtendSeelction(
+        m_selection, direction == FrameSelection::DirectionUp
+                         ? DirectionBackward
+                         : DirectionForward));
+  }
 
   VisiblePosition pos;
   LayoutUnit xPos;
