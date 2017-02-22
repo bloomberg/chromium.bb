@@ -71,18 +71,6 @@ Document& SelectionEditor::document() const {
   return *lifecycleContext();
 }
 
-template <>
-const VisibleSelection& SelectionEditor::visibleSelection<EditingStrategy>()
-    const {
-  return computeVisibleSelectionInDOMTree();
-}
-
-template <>
-const VisibleSelectionInFlatTree&
-SelectionEditor::visibleSelection<EditingInFlatTreeStrategy>() const {
-  return computeVisibleSelectionInFlatTree();
-}
-
 const VisibleSelection& SelectionEditor::computeVisibleSelectionInDOMTree()
     const {
   DCHECK_EQ(frame()->document(), document());

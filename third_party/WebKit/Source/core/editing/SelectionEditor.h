@@ -53,8 +53,6 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   bool isContentEditable() const;
   bool isContentRichlyEditable() const;
 
-  template <typename Strategy>
-  const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
   const SelectionInDOMTree& selectionInDOMTree() const;
 
   const VisibleSelection& computeVisibleSelectionInDOMTree() const;

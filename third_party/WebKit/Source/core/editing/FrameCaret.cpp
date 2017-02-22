@@ -69,7 +69,7 @@ const DisplayItemClient& FrameCaret::displayItemClient() const {
 
 const PositionWithAffinity FrameCaret::caretPosition() const {
   const VisibleSelection& selection =
-      m_selectionEditor->visibleSelection<EditingStrategy>();
+      m_selectionEditor->computeVisibleSelectionInDOMTree();
   if (!selection.isCaret())
     return PositionWithAffinity();
   return PositionWithAffinity(selection.start(), selection.affinity());
@@ -149,7 +149,7 @@ void FrameCaret::updateStyleAndLayoutIfNeeded() {
   bool shouldPaintCaret =
       m_shouldPaintCaret && isActive() &&
       m_caretVisibility == CaretVisibility::Visible &&
-      m_selectionEditor->visibleSelection<EditingStrategy>().hasEditableStyle();
+      m_selectionEditor->computeVisibleSelectionInDOMTree().hasEditableStyle();
 
   m_displayItemClient->updateStyleAndLayoutIfNeeded(
       shouldPaintCaret ? caretPosition() : PositionWithAffinity());
