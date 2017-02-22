@@ -892,7 +892,8 @@ class IDLParser(object):
                   | PromiseType Null
                   | identifier TypeSuffix
                   | SEQUENCE '<' Type '>' Null
-                  | FROZENARRAY '<' Type '>' Null"""
+                  | FROZENARRAY '<' Type '>' Null
+                  | RecordType Null"""
     if len(p) == 3:
       if type(p[1]) == str:
         typeref = self.BuildNamed('Typeref', p, 1)
@@ -917,15 +918,14 @@ class IDLParser(object):
       p[0] = p[1]
 
 
-  # [81] Added BYTESTRING, DOMSTRING, OBJECT, DATE, REGEXP
+  # [81] Added StringType, OBJECT, DATE, REGEXP
   def p_PrimitiveType(self, p):
     """PrimitiveType : UnsignedIntegerType
                      | UnrestrictedFloatType
+                     | StringType
                      | BOOLEAN
                      | BYTE
                      | OCTET
-                     | BYTESTRING
-                     | DOMSTRING
                      | OBJECT
                      | DATE
                      | REGEXP"""
@@ -1076,6 +1076,23 @@ class IDLParser(object):
     value = self.BuildNamed('Call', p, 3, args)
     p[0] = self.BuildNamed('ExtAttribute', p, 1, value)
 
+  # [99]
+  def p_StringType(self, p):
+    """StringType : BYTESTRING
+                  | DOMSTRING
+                  | USVSTRING"""
+    p[0] = self.BuildNamed('StringType', p, 1)
+
+  # [100]
+  def p_RecordType(self, p):
+    """RecordType : RECORD '<' StringType ',' Type '>'"""
+    p[0] = self.BuildProduction('Record', p, 2, ListFromConcat(p[3], p[5]))
+
+  # [100.1] Error recovery for RecordType.
+  def p_RecordTypeError(self, p):
+    """RecordType : RECORD '<' error ',' Type '>'"""
+    p[0] = self.BuildError(p, 'RecordType')
+
 #
 # Parser Errors
 #
@@ -1138,9 +1155,9 @@ class IDLParser(object):
 # Production is the set of items sent to a grammar rule resulting in a new
 # item being returned.
 #
+# cls - The type of item being producted
 # p - Is the Yacc production object containing the stack of items
 # index - Index into the production of the name for the item being produced.
-# cls - The type of item being producted
 # childlist - The children of the new item
   def BuildProduction(self, cls, p, index, childlist=None):
     try:

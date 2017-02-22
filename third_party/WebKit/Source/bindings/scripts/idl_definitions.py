@@ -1015,7 +1015,7 @@ def type_node_inner_to_type(node):
     # Note Type*r*ef, not Typedef, meaning the type is an identifier, thus
     # either a typedef shorthand (but not a Typedef declaration itself) or an
     # interface type. We do not distinguish these, and just use the type name.
-    if node_class in ['PrimitiveType', 'Typeref']:
+    if node_class in ['PrimitiveType', 'StringType', 'Typeref']:
         # unrestricted syntax: unrestricted double | unrestricted float
         is_unrestricted = bool(node.GetProperty('UNRESTRICTED'))
         return IdlType(node.GetName(), is_unrestricted=is_unrestricted)
