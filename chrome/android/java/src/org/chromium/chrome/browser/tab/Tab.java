@@ -1695,8 +1695,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
             if (mInfoBarContainer == null) {
-                ViewGroup bottomContainer = (ViewGroup) getActivity()
-                        .findViewById(R.id.bottom_container);
+                WindowAndroid windowAndroid = getWindowAndroid();
+                Activity activity =
+                        windowAndroid == null ? null : windowAndroid.getActivity().get();
+                ViewGroup bottomContainer = activity == null ? null
+                        : (ViewGroup) activity.findViewById(R.id.bottom_container);
                 // The InfoBarContainer needs to be created after the ContentView has been natively
                 // initialized.
                 mInfoBarContainer = new InfoBarContainer(mThemedApplicationContext, bottomContainer,

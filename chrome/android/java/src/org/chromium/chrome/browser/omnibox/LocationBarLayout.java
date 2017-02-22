@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -1022,7 +1023,7 @@ public class LocationBarLayout extends FrameLayout
         }
 
         if (hasFocus && currentTab != null) {
-            ChromeActivity activity = (ChromeActivity) mWindowAndroid.getActivity().get();
+            SnackbarManageable activity = (SnackbarManageable) mWindowAndroid.getActivity().get();
             if (activity != null) {
                 GeolocationSnackbarController.maybeShowSnackbar(activity.getSnackbarManager(),
                         LocationBarLayout.this, currentTab.isIncognito(),
@@ -2129,7 +2130,11 @@ public class LocationBarLayout extends FrameLayout
         loadUrl(url, transition);
     }
 
-    private void loadUrl(String url, int transition) {
+    /**
+     * Load the url given with the given transition. Exposed for child classes to overwrite as
+     * necessary.
+     */
+    protected void loadUrl(String url, int transition) {
         Tab currentTab = getCurrentTab();
 
         // The code of the rest of this class ensures that this can't be called until the native
@@ -2244,12 +2249,14 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public void onFadingViewVisibilityChanged(boolean visible) {
-        ChromeActivity activity = (ChromeActivity) mWindowAndroid.getActivity().get();
+        Activity activity = mWindowAndroid.getActivity().get();
+        if (!(activity instanceof ChromeActivity)) return;
+        ChromeActivity chromeActivity = (ChromeActivity) activity;
 
         if (visible) {
-            if (activity != null) activity.addViewObscuringAllTabs(mFadingView);
+            chromeActivity.addViewObscuringAllTabs(mFadingView);
         } else {
-            if (activity != null) activity.removeViewObscuringAllTabs(mFadingView);
+            chromeActivity.removeViewObscuringAllTabs(mFadingView);
             updateOmniboxResultsContainerVisibility(false);
         }
     }
