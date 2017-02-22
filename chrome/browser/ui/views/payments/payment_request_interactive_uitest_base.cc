@@ -30,6 +30,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 
 namespace payments {
@@ -241,6 +242,14 @@ const base::string16& PaymentRequestInteractiveTestBase::GetStyledLabelText(
   views::View* view = dialog_view()->GetViewByID(static_cast<int>(view_id));
   DCHECK(view);
   return static_cast<views::StyledLabel*>(view)->text();
+}
+
+const base::string16& PaymentRequestInteractiveTestBase::GetErrorLabelForType(
+    autofill::ServerFieldType type) {
+  views::View* view = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET) + type);
+  DCHECK(view);
+  return static_cast<views::Label*>(view)->text();
 }
 
 PaymentRequestInteractiveTestBase::DialogEventObserver::DialogEventObserver(

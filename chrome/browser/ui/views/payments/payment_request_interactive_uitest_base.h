@@ -101,6 +101,8 @@ class PaymentRequestInteractiveTestBase
   // Returns the text of the StyledLabel with the specific |view_id| that is a
   // child of the Payment Request dialog view.
   const base::string16& GetStyledLabelText(DialogViewID view_id);
+  // Returns the error label text associated with a given field |type|.
+  const base::string16& GetErrorLabelForType(autofill::ServerFieldType type);
 
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 

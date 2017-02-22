@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_EDITOR_VIEW_CONTROLLER_H_
 
 #include <memory>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
 
@@ -25,6 +26,8 @@ class ComboboxModel;
 }
 
 namespace views {
+class GridLayout;
+class Label;
 class Textfield;
 class View;
 }  // namespace views
@@ -52,6 +55,12 @@ struct EditorField {
         required(required),
         control_type(control_type) {}
 
+  struct Compare {
+    bool operator()(const EditorField& lhs, const EditorField& rhs) const {
+      return std::tie(lhs.type, lhs.label) < std::tie(rhs.type, rhs.label);
+    }
+  };
+
   // Data type in the field.
   const autofill::ServerFieldType type;
   // Label to be shown alongside the field.
@@ -74,6 +83,8 @@ class EditorViewController : public PaymentRequestSheetController,
       std::unordered_map<ValidatingTextfield*, const EditorField>;
   using ComboboxMap =
       std::unordered_map<ValidatingCombobox*, const EditorField>;
+  using ErrorLabelMap =
+      std::map<const EditorField, views::Label*, EditorField::Compare>;
 
   // Does not take ownership of the arguments, which should outlive this object.
   EditorViewController(PaymentRequest* request,
@@ -96,6 +107,11 @@ class EditorViewController : public PaymentRequestSheetController,
   virtual std::unique_ptr<ui::ComboboxModel> GetComboboxModelForType(
       const autofill::ServerFieldType& type) = 0;
 
+  // Will display |error_message| alongside the input field represented by
+  // |field|.
+  void DisplayErrorMessageForField(const EditorField& field,
+                                   const base::string16& error_message);
+
   const ComboboxMap& comboboxes() const { return comboboxes_; }
   const TextFieldsMap& text_fields() const { return text_fields_; }
 
@@ -114,10 +130,15 @@ class EditorViewController : public PaymentRequestSheetController,
   // views::ComboboxListener:
   void OnPerformAction(views::Combobox* combobox) override;
 
-  // Creates a view for an input field to be added in the editor sheet. |field|
-  // is the field definition, which contains the label and the hint about
-  // the length of the input field.
-  std::unique_ptr<views::View> CreateInputField(const EditorField& field);
+  // Creates the whole editor view to go within the editor dialog. It
+  // encompasses all the input fields created by CreateInputField().
+  std::unique_ptr<views::View> CreateEditorView();
+
+  // Adds some views to |layout|, to represent an input field and its labels.
+  // |field| is the field definition, which contains the label and the hint
+  // about the length of the input field. A placeholder error label is also
+  // added (see implementation).
+  void CreateInputField(views::GridLayout* layout, const EditorField& field);
 
   // Used to remember the association between the input field UI element and the
   // original field definition. The ValidatingTextfield* and ValidatingCombobox*
@@ -125,6 +146,8 @@ class EditorViewController : public PaymentRequestSheetController,
   // long as the input field is visible.
   TextFieldsMap text_fields_;
   ComboboxMap comboboxes_;
+  // Tracks the relationship between a field and its error label.
+  ErrorLabelMap error_labels_;
 
   DISALLOW_COPY_AND_ASSIGN(EditorViewController);
 };

@@ -5,13 +5,15 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_DIALOG_VIEW_IDS_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_DIALOG_VIEW_IDS_H_
 
+#include "components/autofill/core/browser/field_types.h"
+
 // This defines an enumeration of IDs that can uniquely identify a view within
 // the scope of the Payment Request Dialog.
 
 namespace payments {
 
 enum class DialogViewID : int {
-  VIEW_ID_NONE,
+  VIEW_ID_NONE = autofill::MAX_VALID_FIELD_TYPE,
 
   // The following are views::Button (clickable).
   PAYMENT_SHEET_CONTACT_INFO_SECTION,
@@ -26,6 +28,10 @@ enum class DialogViewID : int {
   ORDER_SUMMARY_LINE_ITEM_1,
   ORDER_SUMMARY_LINE_ITEM_2,
   ORDER_SUMMARY_LINE_ITEM_3,
+
+  // Used to label the error labels with an offset, which gets added to
+  // the Autofill type value they represent (for tests).
+  ERROR_LABEL_OFFSET,
 };
 
 }  // namespace payments

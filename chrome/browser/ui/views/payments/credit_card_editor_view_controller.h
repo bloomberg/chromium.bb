@@ -35,7 +35,8 @@ class CreditCardEditorViewController : public EditorViewController {
  private:
   class CreditCardValidationDelegate : public ValidationDelegate {
    public:
-    explicit CreditCardValidationDelegate(const EditorField& field);
+    CreditCardValidationDelegate(const EditorField& field,
+                                 EditorViewController* controller);
     ~CreditCardValidationDelegate() override;
 
     // ValidationDelegate:
@@ -47,6 +48,8 @@ class CreditCardEditorViewController : public EditorViewController {
     bool ValidateValue(const base::string16& value);
 
     EditorField field_;
+    // Outlives this class.
+    EditorViewController* controller_;
 
     DISALLOW_COPY_AND_ASSIGN(CreditCardValidationDelegate);
   };

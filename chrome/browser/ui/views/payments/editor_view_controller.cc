@@ -61,14 +61,13 @@ std::unique_ptr<views::View> EditorViewController::CreateView() {
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   content_view->SetLayoutManager(layout);
+  // No insets. Child views below are responsible for their padding.
 
+  // An editor can optionally have a header view specific to it.
   content_view->AddChildView(CreateHeaderView().release());
 
-  // Create an input label/textfield for each field definition.
-  std::vector<EditorField> fields = GetFieldDefinitions();
-  for (const auto& field : fields) {
-    content_view->AddChildView(CreateInputField(field).release());
-  }
+  // The heart of the editor dialog: all the input fields with their labels.
+  content_view->AddChildView(CreateEditorView().release());
 
   return CreatePaymentView(
       CreateSheetHeaderView(
@@ -102,6 +101,16 @@ std::unique_ptr<views::View> EditorViewController::CreateLeadingFooterView() {
   return content_view;
 }
 
+void EditorViewController::DisplayErrorMessageForField(
+    const EditorField& field,
+    const base::string16& error_message) {
+  const auto& label_it = error_labels_.find(field);
+  DCHECK(label_it != error_labels_.end());
+  label_it->second->SetText(error_message);
+  label_it->second->SchedulePaint();
+  dialog()->Layout();
+}
+
 std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
   std::unique_ptr<views::Button> button(
       views::MdTextButton::CreateSecondaryUiBlueButton(
@@ -133,31 +142,59 @@ void EditorViewController::OnPerformAction(views::Combobox* sender) {
   static_cast<ValidatingCombobox*>(sender)->OnContentsChanged();
 }
 
-std::unique_ptr<views::View> EditorViewController::CreateInputField(
-    const EditorField& field) {
-  std::unique_ptr<views::View> row = base::MakeUnique<views::View>();
+std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
+  std::unique_ptr<views::View> editor_view = base::MakeUnique<views::View>();
 
-  row->SetBorder(payments::CreatePaymentRequestRowBorder());
+  views::GridLayout* editor_layout = new views::GridLayout(editor_view.get());
 
-  views::GridLayout* layout = new views::GridLayout(row.get());
+  // The editor grid layout is padded vertically from the top and bottom, and
+  // horizontally inset like other content views. The top padding needs to be
+  // added to the top padding of the first row.
+  constexpr int kEditorVerticalInset = 16;
+  editor_layout->SetInsets(
+      kEditorVerticalInset, payments::kPaymentRequestRowHorizontalInsets,
+      kEditorVerticalInset, payments::kPaymentRequestRowHorizontalInsets);
 
-  // The vertical spacing for these rows is slightly different than the spacing
-  // spacing for clickable rows, so don't use kPaymentRequestRowVerticalInsets.
-  constexpr int kRowVerticalInset = 12;
-  layout->SetInsets(
-      kRowVerticalInset, payments::kPaymentRequestRowHorizontalInsets,
-      kRowVerticalInset, payments::kPaymentRequestRowHorizontalInsets);
-
-  row->SetLayoutManager(layout);
-  views::ColumnSet* columns = layout->AddColumnSet(0);
+  editor_view->SetLayoutManager(editor_layout);
+  views::ColumnSet* columns = editor_layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(1, 0);
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
+
+  // This is the horizontal padding between the label and the input field.
+  constexpr int kLabelInputFieldHorizontalPadding = 16;
+  columns->AddPaddingColumn(0, kLabelInputFieldHorizontalPadding);
+
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
                      views::GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, 0);
-  layout->AddView(new views::Label(field.label));
+  std::vector<EditorField> fields = GetFieldDefinitions();
+  for (const auto& field : fields) {
+    CreateInputField(editor_layout, field);
+  }
+
+  return editor_view;
+}
+
+// Each input field is a 4-quadrant grid.
+// +----------------------------------------------------------+
+// | Field Label           | Input field (textfield/combobox) |
+// |_______________________|__________________________________|
+// |   (empty)             | Error label                      |
+// +----------------------------------------------------------+
+void EditorViewController::CreateInputField(views::GridLayout* layout,
+                                            const EditorField& field) {
+  // This is the top padding for every row.
+  constexpr int kInputRowSpacing = 6;
+  layout->StartRowWithPadding(0, 0, 0, kInputRowSpacing);
+
+  std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
+      field.required ? field.label + base::ASCIIToUTF16("*") : field.label);
+  // A very long label will wrap. Value picked so that left + right label
+  // padding bring the label to half-way in the dialog (~225).
+  constexpr int kMaximumLabelWidth = 192;
+  label->SetMultiLine(true);
+  label->SetMaximumWidth(kMaximumLabelWidth);
+  layout->AddView(label.release());
 
   if (field.control_type == EditorField::ControlType::TEXTFIELD) {
     ValidatingTextfield* text_field =
@@ -186,7 +223,22 @@ std::unique_ptr<views::View> EditorViewController::CreateInputField(
     NOTREACHED();
   }
 
-  return row;
+  // This is the vertical space between the input field and its error label.
+  constexpr int kInputErrorLabelPadding = 6;
+  layout->StartRowWithPadding(0, 0, 0, kInputErrorLabelPadding);
+  layout->SkipColumns(1);
+  // Error label is initially empty.
+  std::unique_ptr<views::Label> error_label =
+      base::MakeUnique<views::Label>(base::ASCIIToUTF16(""));
+  error_label->set_id(static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET) +
+                      field.type);
+  error_label->SetFontList(
+      error_label->GetDefaultFontList().DeriveWithSizeDelta(-1));
+  error_label->SetEnabledColor(error_label->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_AlertSeverityHigh));
+  error_labels_[field] = error_label.get();
+
+  layout->AddView(error_label.release());
 }
 
 }  // namespace payments
