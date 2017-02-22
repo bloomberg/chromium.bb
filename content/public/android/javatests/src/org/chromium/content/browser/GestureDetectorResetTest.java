@@ -78,7 +78,7 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
                 "test", "not clicked"));
 
         // Click the button.
-        DOMUtils.clickNode(contentViewCore, "button");
+        DOMUtils.clickNode(this, contentViewCore, "button");
 
         // After the click, the text on the page should say "clicked".
         CriteriaHelper.pollInstrumentationThread(new NodeContentsIsEqualToCriteria(

@@ -183,7 +183,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     protected void clickNodeAndWait(String nodeId, CallbackHelper helper)
             throws InterruptedException, ExecutionException, TimeoutException {
         int callCount = helper.getCallCount();
-        DOMUtils.clickNode(mViewCoreRef.get(), nodeId);
+        DOMUtils.clickNode(this, mViewCoreRef.get(), nodeId);
         helper.waitForCallback(callCount);
     }
 

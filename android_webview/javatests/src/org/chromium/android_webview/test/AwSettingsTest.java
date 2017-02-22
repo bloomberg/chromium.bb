@@ -2111,7 +2111,7 @@ public class AwSettingsTest extends AwTestBase {
             int count = callback.getCallCount();
             loadDataSync(awContents, contentClient.getOnPageFinishedHelper(), pageHtml,
                     "text/html", false);
-            DOMUtils.clickNode(testContainer.getContentViewCore(), "play");
+            DOMUtils.clickNode(this, testContainer.getContentViewCore(), "play");
             callback.waitForCallback(count, 1);
             assertEquals(0, webServer.getRequestCount(httpPath));
 

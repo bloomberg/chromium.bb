@@ -201,7 +201,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     public void longPressNodeWithoutWaiting(String nodeId)
             throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
-        DOMUtils.longPressNode(tab.getContentViewCore(), nodeId);
+        DOMUtils.longPressNode(this, tab.getContentViewCore(), nodeId);
     }
 
     /**
@@ -219,7 +219,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     public void clickNode(String nodeId) throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
-        DOMUtils.clickNode(tab.getContentViewCore(), nodeId);
+        DOMUtils.clickNode(this, tab.getContentViewCore(), nodeId);
     }
 
     /**
