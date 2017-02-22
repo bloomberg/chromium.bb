@@ -33,3 +33,11 @@ div {
   <div>AAAAA<br>A<span class="break-all">XXXX</span></div>
   <div>国国国国<br>国、<span class="break-all">XXX</span></div>
 </body>
+<script>
+if (window.testRunner) {
+    testRunner.waitUntilDone();
+    window.onload = function () {
+        document.fonts.ready.then(function () { testRunner.notifyDone(); });
+    };
+}
+</script>
