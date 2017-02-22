@@ -49,7 +49,8 @@ std::string GetDefaultMediaDeviceIDOnUIThread(MediaDeviceType device_type,
   return delegate->GetDefaultMediaDeviceID(media_stream_type);
 }
 
-// This function is intended for testing purposes.
+// This function is intended for testing purposes. It returns an empty string
+// if no default device is supplied via the command line.
 std::string GetDefaultMediaDeviceIDFromCommandLine(
     MediaDeviceType device_type) {
   DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -94,8 +95,12 @@ void GetDefaultMediaDeviceID(
     const base::Callback<void(const std::string&)>& callback) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)) {
-    callback.Run(GetDefaultMediaDeviceIDFromCommandLine(device_type));
-    return;
+    std::string command_line_default_device_id =
+        GetDefaultMediaDeviceIDFromCommandLine(device_type);
+    if (!command_line_default_device_id.empty()) {
+      callback.Run(command_line_default_device_id);
+      return;
+    }
   }
 
   BrowserThread::PostTaskAndReplyWithResult(
