@@ -9,8 +9,11 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
@@ -47,6 +50,9 @@ const int kBackgroundRouteId = 43;
 
 const char kPrioritySupportedRequestsDelayable[] =
     "PrioritySupportedRequestsDelayable";
+
+const char kNetworkSchedulerYielding[] = "NetworkSchedulerYielding";
+const int kMaxRequestsBeforeYielding = 5;  // sync with .cc.
 
 class TestRequest : public ResourceThrottle::Delegate {
  public:
@@ -317,6 +323,117 @@ TEST_F(ResourceSchedulerTest, MediumDoesNotBlockCriticalComplete) {
   EXPECT_TRUE(lowest2->started());
 }
 
+TEST_F(ResourceSchedulerTest, SchedulerYieldsWithFeatureEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(kNetworkSchedulerYielding, "");
+  InitializeScheduler();
+
+  // Use spdy so that we don't throttle.
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), true);
+
+  // Add enough async requests that the last one should yield.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (int i = 0; i < kMaxRequestsBeforeYielding + 1; ++i)
+    requests.push_back(NewRequest("http://host/higher", net::HIGHEST));
+
+  // Verify that the number of requests before yielding started.
+  for (int i = 0; i < kMaxRequestsBeforeYielding; ++i)
+    EXPECT_TRUE(requests[i]->started());
+
+  // The next async request should have yielded.
+  EXPECT_FALSE(requests[kMaxRequestsBeforeYielding]->started());
+
+  // Verify that with time the yielded request eventually runs.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(requests[kMaxRequestsBeforeYielding]->started());
+}
+
+TEST_F(ResourceSchedulerTest, SchedulerDoesNotYieldForSyncRequests) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(kNetworkSchedulerYielding, "");
+  InitializeScheduler();
+
+  // Use spdy so that we don't throttle.
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), true);
+
+  // Add enough async requests that the last one should yield.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (int i = 0; i < kMaxRequestsBeforeYielding + 1; ++i)
+    requests.push_back(NewRequest("http://host/higher", net::HIGHEST));
+
+  // Add a sync requests.
+  requests.push_back(NewSyncRequest("http://host/higher", net::HIGHEST));
+
+  // Verify that the number of requests before yielding started.
+  for (int i = 0; i < kMaxRequestsBeforeYielding; ++i)
+    EXPECT_TRUE(requests[i]->started());
+
+  // The next async request should have yielded.
+  EXPECT_FALSE(requests[kMaxRequestsBeforeYielding]->started());
+
+  // The next sync request should have started even though async is yielding.
+  EXPECT_TRUE(requests[kMaxRequestsBeforeYielding + 1]->started());
+
+  // Verify that with time the yielded request eventually runs.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(requests[kMaxRequestsBeforeYielding]->started());
+}
+
+TEST_F(ResourceSchedulerTest, SchedulerDoesNotYieldForAlternativeSchemes) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(kNetworkSchedulerYielding, "");
+  InitializeScheduler();
+
+  // Use spdy so that we don't throttle.
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), true);
+
+  // Add enough async requests that the last one should yield.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (int i = 0; i < kMaxRequestsBeforeYielding + 1; ++i)
+    requests.push_back(NewRequest("http://host/higher", net::HIGHEST));
+
+  // Add a non-http request.
+  requests.push_back(NewRequest("zzz://host/higher", net::HIGHEST));
+
+  // Verify that the number of requests before yielding started.
+  for (int i = 0; i < kMaxRequestsBeforeYielding; ++i)
+    EXPECT_TRUE(requests[i]->started());
+
+  // The next async request should have yielded.
+  EXPECT_FALSE(requests[kMaxRequestsBeforeYielding]->started());
+
+  // The non-http(s) request should have started even though async is
+  // yielding.
+  EXPECT_TRUE(requests[kMaxRequestsBeforeYielding + 1]->started());
+
+  // Verify that with time the yielded request eventually runs.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(requests[kMaxRequestsBeforeYielding]->started());
+}
+
+TEST_F(ResourceSchedulerTest, SchedulerDoesNotYieldWithFeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("", kNetworkSchedulerYielding);
+  InitializeScheduler();
+
+  // Use spdy so that we don't throttle.
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), true);
+
+  // Add enough async requests that the last one would yield if yielding were
+  // enabled.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (int i = 0; i < kMaxRequestsBeforeYielding + 1; ++i)
+    requests.push_back(NewRequest("http://host/higher", net::HIGHEST));
+
+  // Verify that none of the requests yield.
+  for (int i = 0; i < kMaxRequestsBeforeYielding + 1; ++i)
+    EXPECT_TRUE(requests[i]->started());
+}
+
 TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInsertedExceptSpdy) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine("",
@@ -459,6 +576,11 @@ TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
 }
 
 TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
+  // The yielding feature will sometimes yield requests before they get a
+  // chance to start, which conflicts this test. So disable the feature.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("", kNetworkSchedulerYielding);
+
   // We only load low priority resources if there's a body.
   scheduler()->OnWillInsertBody(kChildId, kRouteId);
 
