@@ -60,7 +60,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
 
     /**
      * Removes an observer from the {@link AccountManager#LOGIN_ACCOUNTS_CHANGED_ACTION} broadcasts.
-     * @param observer the observer to add.
+     * @param observer the observer to remove.
      */
     public static void removeObserver(AccountsChangedObserver observer) {
         sObservers.removeObserver(observer);
