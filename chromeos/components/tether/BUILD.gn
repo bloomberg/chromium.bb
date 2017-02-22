@@ -24,6 +24,8 @@ static_library("tether") {
     "initializer.h",
     "local_device_data_provider.cc",
     "local_device_data_provider.h",
+    "message_wrapper.cc",
+    "message_wrapper.h",
   ]
 
   deps = [
@@ -70,6 +72,7 @@ source_set("unit_tests") {
     "ble_scanner_unittest.cc",
     "host_scan_scheduler_unittest.cc",
     "local_device_data_provider_unittest.cc",
+    "message_wrapper_unittest.cc",
   ]
 
   deps = [
