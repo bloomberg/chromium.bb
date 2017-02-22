@@ -1043,6 +1043,11 @@ Node* Range::checkNodeWOffset(Node* n,
                                 " is larger than the node's length (" +
                                 String::number(toCharacterData(n)->length()) +
                                 ").");
+      } else if (offset >
+                 static_cast<unsigned>(std::numeric_limits<int>::max())) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            "The offset " + String::number(offset) + " is invalid.");
       }
       return nullptr;
     case Node::kProcessingInstructionNode:
@@ -1053,6 +1058,11 @@ Node* Range::checkNodeWOffset(Node* n,
                 " is larger than the node's length (" +
                 String::number(toProcessingInstruction(n)->data().length()) +
                 ").");
+      } else if (offset >
+                 static_cast<unsigned>(std::numeric_limits<int>::max())) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            "The offset " + String::number(offset) + " is invalid.");
       }
       return nullptr;
     case Node::kAttributeNode:
@@ -1061,6 +1071,12 @@ Node* Range::checkNodeWOffset(Node* n,
     case Node::kElementNode: {
       if (!offset)
         return nullptr;
+      if (offset > static_cast<unsigned>(std::numeric_limits<int>::max())) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            "The offset " + String::number(offset) + " is invalid.");
+        return nullptr;
+      }
       Node* childBefore = NodeTraversal::childAt(*n, offset - 1);
       if (!childBefore) {
         exceptionState.throwDOMException(
