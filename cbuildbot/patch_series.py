@@ -528,7 +528,7 @@ class PatchSeries(object):
       ordered_plan, seen = [], set()
       for change in unordered_plan:
         # Iterate over the required CLs, adding them to our plan in order.
-        new_changes = list(dep_change for dep_change in deps[change]
+        new_changes = list(dep_change for dep_change in deps.get(change, [])
                            if dep_change not in seen)
         new_plan_size = len(ordered_plan) + len(new_changes)
         if not max_txn_length or new_plan_size <= max_txn_length:

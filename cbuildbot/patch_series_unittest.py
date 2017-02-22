@@ -567,3 +567,28 @@ class TestPatchSeries(PatchSeriesTestCase):
     # verify that the checkout is reset.
     head, remote = _GetHeadAndRemote()
     self.assertEqual(head, remote)
+
+  def TestCreateDisjointTransactions(self):
+    """Test CreateDisjointTransactions."""
+    series = self.GetPatchSeries()
+    p = self.GetPatches(6)
+    changes = p[0:5]
+    ex = Exception('error transaction')
+    # A -> B means A depends on B.
+    # p0 -> (p1, p2)
+    # p1 -> (p2)
+    # p2 -> ()
+    # p3 -> ()
+    # p4 -> (p5)
+    transactions = [(p[0], [p[0], p[1], p[2]], None),
+                    (p[1], [p[1], p[2]], None),
+                    (p[2], [p[2]], None),
+                    (p[3], [p[3], p[4]], None),
+                    (p[5], (), ex)]
+    self.PatchObject(patch_series.PatchSeries, 'CreateTransactions',
+                     return_value=transactions)
+    ordered_plans, failed = series.CreateDisjointTransactions(changes)
+    changes_in_plan = [change for plan in ordered_plans for change in plan]
+
+    self.assertItemsEqual(changes_in_plan, p[0:5])
+    self.assertItemsEqual(failed, [ex])
