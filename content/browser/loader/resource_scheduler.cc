@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"
@@ -40,16 +39,6 @@ namespace {
 const base::Feature kPrioritySupportedRequestsDelayable{
     "PrioritySupportedRequestsDelayable", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// In the event that many resource requests are started quickly, this feature
-// will periodically yield (e.g., delaying starting of requests) by posting a
-// task and waiting for the task to run to resume. This allows other
-// operations that rely on the IO thread (e.g., already running network
-// requests) to make progress.
-const base::Feature kNetworkSchedulerYielding{
-    "NetworkSchedulerYielding", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kMaxRequestsBeforeYieldingParam[] = "MaxRequestsBeforeYieldingParam";
-const int kMaxRequestsBeforeYieldingDefault = 5;
-
 enum StartMode {
   START_SYNC,
   START_ASYNC
@@ -72,7 +61,6 @@ enum class RequestStartTrigger {
   CLIENT_KILL,
   SPDY_PROXY_DETECTED,
   REQUEST_REPRIORITIZED,
-  START_WAS_YIELDED,
 };
 
 const char* RequestStartTriggerString(RequestStartTrigger trigger) {
@@ -91,8 +79,6 @@ const char* RequestStartTriggerString(RequestStartTrigger trigger) {
       return "SPDY_PROXY_DETECTED";
     case RequestStartTrigger::REQUEST_REPRIORITIZED:
       return "REQUEST_REPRIORITIZED";
-    case RequestStartTrigger::START_WAS_YIELDED:
-      return "START_WAS_YIELDED";
   }
   NOTREACHED();
   return "Unknown";
@@ -362,9 +348,7 @@ void ResourceScheduler::RequestQueue::Insert(
 // Each client represents a tab.
 class ResourceScheduler::Client {
  public:
-  Client(bool priority_requests_delayable,
-         bool yielding_scheduler_enabled,
-         int max_requests_before_yielding)
+  explicit Client(bool priority_requests_delayable)
       : is_loaded_(false),
         has_html_body_(false),
         using_spdy_proxy_(false),
@@ -372,9 +356,6 @@ class ResourceScheduler::Client {
         total_layout_blocking_count_(0),
         priority_requests_delayable_(priority_requests_delayable),
         has_pending_start_task_(false),
-        requests_since_yielding_(0),
-        yielding_scheduler_enabled_(yielding_scheduler_enabled),
-        max_requests_before_yielding_(max_requests_before_yielding),
         weak_ptr_factory_(this) {}
 
   ~Client() {}
@@ -382,8 +363,7 @@ class ResourceScheduler::Client {
   void ScheduleRequest(net::URLRequest* url_request,
                        ScheduledResourceRequest* request) {
     SetRequestAttributes(request, DetermineRequestAttributes(request));
-    if (ShouldStartRequest(request) == START_REQUEST &&
-        (!request->is_async() || !ShouldYieldScheduler())) {
+    if (ShouldStartRequest(request) == START_REQUEST) {
       // New requests can be started synchronously without issue.
       StartRequest(request, START_SYNC, RequestStartTrigger::NONE);
     } else {
@@ -758,38 +738,6 @@ class ResourceScheduler::Client {
                               weak_ptr_factory_.GetWeakPtr(), trigger));
   }
 
-  void ResumeAfterYielding() {
-    bool yielded_requests =
-        requests_since_yielding_ > max_requests_before_yielding_;
-    requests_since_yielding_ = 0;
-
-    if (yielded_requests)
-      LoadAnyStartablePendingRequests(RequestStartTrigger::START_WAS_YIELDED);
-  }
-
-  // Returns true if the scheduler should not start the next request and
-  // instead return so that other tasks can run on the IO thread (e.g.,
-  // existing network requests). If it returns true, ShouldYieldScheduler will
-  // have already scheduled a task to resume after yielding.
-  bool ShouldYieldScheduler() {
-    if (!yielding_scheduler_enabled_)
-      return false;
-
-    requests_since_yielding_ += 1;
-
-    if (requests_since_yielding_ == 1) {
-      // This is the first request since last yielding. Post a task to reset the
-      // counter and start any yielded tasks if necessary. We post this now
-      // instead of when we first yield so that if there is a pause between
-      // requests the counter is reset.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&Client::ResumeAfterYielding,
-                                weak_ptr_factory_.GetWeakPtr()));
-    }
-
-    return requests_since_yielding_ > max_requests_before_yielding_;
-  }
-
   void LoadAnyStartablePendingRequests(RequestStartTrigger trigger) {
     // We iterate through all the pending requests, starting with the highest
     // priority one. For each entry, one of three things can happen:
@@ -808,9 +756,6 @@ class ResourceScheduler::Client {
       ShouldStartReqResult query_result = ShouldStartRequest(request);
 
       if (query_result == START_REQUEST) {
-        if (ShouldYieldScheduler())
-          break;
-
         pending_requests_.Erase(request);
         StartRequest(request, START_ASYNC, trigger);
 
@@ -849,28 +794,12 @@ class ResourceScheduler::Client {
 
   bool has_pending_start_task_;
 
-  // The number of requests that have been started since the last
-  // ResumeAfterYielding task was posted.
-  int requests_since_yielding_;
-
-  // Whether or not to periodically yield when starting lots of requests.
-  bool yielding_scheduler_enabled_;
-
-  // The number of requests that can start before yielding.
-  int max_requests_before_yielding_;
-
   base::WeakPtrFactory<ResourceScheduler::Client> weak_ptr_factory_;
 };
 
 ResourceScheduler::ResourceScheduler()
     : priority_requests_delayable_(
-          base::FeatureList::IsEnabled(kPrioritySupportedRequestsDelayable)),
-      yielding_scheduler_enabled_(
-          base::FeatureList::IsEnabled(kNetworkSchedulerYielding)),
-      max_requests_before_yielding_(base::GetFieldTrialParamByFeatureAsInt(
-          kNetworkSchedulerYielding,
-          kMaxRequestsBeforeYieldingParam,
-          kMaxRequestsBeforeYieldingDefault)) {}
+          base::FeatureList::IsEnabled(kPrioritySupportedRequestsDelayable)) {}
 
 ResourceScheduler::~ResourceScheduler() {
   DCHECK(unowned_requests_.empty());
@@ -927,9 +856,7 @@ void ResourceScheduler::OnClientCreated(int child_id,
   ClientId client_id = MakeClientId(child_id, route_id);
   DCHECK(!base::ContainsKey(client_map_, client_id));
 
-  Client* client =
-      new Client(priority_requests_delayable_, yielding_scheduler_enabled_,
-                 max_requests_before_yielding_);
+  Client* client = new Client(priority_requests_delayable_);
   client_map_[client_id] = client;
 }
 

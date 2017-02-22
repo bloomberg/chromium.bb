@@ -1391,25 +1391,6 @@
             ]
         }
     ],
-    "NetworkSchedulerYielding": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NetworkSchedulerYielding"
-                    ]
-                }
-            ]
-        }
-    ],
     "NetworkTimeQueries": [
         {
             "platforms": [
