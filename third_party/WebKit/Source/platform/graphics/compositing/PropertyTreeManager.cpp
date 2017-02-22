@@ -17,6 +17,8 @@
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "public/platform/WebLayerScrollClient.h"
+#include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
+#include "third_party/skia/include/effects/SkLumaColorFilter.h"
 
 namespace blink {
 
@@ -429,7 +431,17 @@ void PropertyTreeManager::buildEffectNodesRecursively(
       nextEffect->blendMode() != SkBlendMode::kSrcOver)
     effectNode.has_render_surface = true;
   effectNode.opacity = nextEffect->opacity();
-  effectNode.filters = nextEffect->filter().asCcFilterOperations();
+  if (nextEffect->colorFilter() != ColorFilterNone) {
+    // Currently color filter is only used by SVG masks.
+    // We are cutting corner here by support only specific configuration.
+    DCHECK(nextEffect->colorFilter() == ColorFilterLuminanceToAlpha);
+    DCHECK(nextEffect->blendMode() == SkBlendMode::kDstIn);
+    DCHECK(nextEffect->filter().isEmpty());
+    effectNode.filters.Append(cc::FilterOperation::CreateReferenceFilter(
+        SkColorFilterImageFilter::Make(SkLumaColorFilter::Make(), nullptr)));
+  } else {
+    effectNode.filters = nextEffect->filter().asCcFilterOperations();
+  }
   effectNode.blend_mode = nextEffect->blendMode();
   m_propertyTrees.layer_id_to_effect_node_index[effectNode.owning_layer_id] =
       effectNode.id;

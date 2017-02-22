@@ -13,8 +13,8 @@ EffectPaintPropertyNode* EffectPaintPropertyNode::root() {
       EffectPaintPropertyNode, root,
       (EffectPaintPropertyNode::create(
           nullptr, TransformPaintPropertyNode::root(),
-          ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,
-          SkBlendMode::kSrcOver)));
+          ClipPaintPropertyNode::root(), ColorFilterNone,
+          CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver)));
   return root;
 }
 

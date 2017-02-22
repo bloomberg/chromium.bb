@@ -1267,8 +1267,8 @@ void updateDummyEffectNode(ObjectPaintProperties& properties,
                            CompositingReasons reasons) {
   properties.updateEffect(
       EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,
-      SkBlendMode::kSrcOver, reasons);
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver, reasons);
 }
 
 }  // namespace

@@ -4,6 +4,7 @@
 
 #include "core/paint/PaintPropertyTreeBuilder.h"
 
+#include <memory>
 #include "core/dom/DOMNodeIds.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -11,15 +12,17 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositingReasonFinder.h"
+#include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/FindPropertiesNeedingUpdate.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/SVGRootPainter.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -413,14 +416,23 @@ void PaintPropertyTreeBuilder::updateTransform(
 }
 
 static bool computeMaskParameters(IntRect& maskClip,
+                                  ColorFilter& maskColorFilter,
                                   const LayoutObject& object,
                                   const LayoutPoint& paintOffset) {
   DCHECK(object.isBoxModelObject() || object.isSVGChild());
   const ComputedStyle& style = object.styleRef();
 
   if (object.isSVGChild()) {
-    // TODO(trchen): Implement SVG masks.
-    return false;
+    SVGResources* resources =
+        SVGResourcesCache::cachedResourcesForLayoutObject(&object);
+    LayoutSVGResourceMasker* masker = resources ? resources->masker() : nullptr;
+    if (!masker)
+      return false;
+    maskClip = enclosingIntRect(object.objectBoundingBox());
+    maskColorFilter = masker->style()->svgStyle().maskType() == MT_LUMINANCE
+                          ? ColorFilterLuminanceToAlpha
+                          : ColorFilterNone;
+    return true;
   }
   if (!style.hasMask())
     return false;
@@ -441,6 +453,7 @@ static bool computeMaskParameters(IntRect& maskClip,
   }
   maximumMaskRegion.moveBy(paintOffset);
   maskClip = enclosingIntRect(maximumMaskRegion);
+  maskColorFilter = ColorFilterNone;
   return true;
 }
 
@@ -507,8 +520,9 @@ void PaintPropertyTreeBuilder::updateEffect(
            compositingReasons != CompositingReasonNone);
 
     IntRect maskClip;
-    bool hasMask =
-        computeMaskParameters(maskClip, object, context.current.paintOffset);
+    ColorFilter maskColorFilter;
+    bool hasMask = computeMaskParameters(maskClip, maskColorFilter, object,
+                                         context.current.paintOffset);
     if (hasMask) {
       effectNodeNeeded = true;
 
@@ -531,8 +545,8 @@ void PaintPropertyTreeBuilder::updateEffect(
       auto& properties = object.getMutableForPainting().ensurePaintProperties();
       context.forceSubtreeUpdate |= properties.updateEffect(
           context.currentEffect, context.current.transform, outputClip,
-          CompositorFilterOperations(), opacity, blendMode, compositingReasons,
-          compositorElementId);
+          ColorFilterNone, CompositorFilterOperations(), opacity, blendMode,
+          compositingReasons, compositorElementId);
       if (hasMask) {
         // TODO(crbug.com/683425): PaintArtifactCompositor does not handle
         // grouping (i.e. descendant-dependent compositing reason) properly yet.
@@ -540,8 +554,9 @@ void PaintPropertyTreeBuilder::updateEffect(
         // squashed into a child effect. Have no compositing reason otherwise.
         context.forceSubtreeUpdate |= properties.updateMask(
             properties.effect(), context.current.transform, outputClip,
-            CompositorFilterOperations(), 1.f, SkBlendMode::kDstIn,
-            CompositingReasonSquashingDisallowed, CompositorElementId());
+            maskColorFilter, CompositorFilterOperations(), 1.f,
+            SkBlendMode::kDstIn, CompositingReasonSquashingDisallowed,
+            CompositorElementId());
       } else {
         context.forceSubtreeUpdate |= properties.clearMask();
       }
@@ -622,8 +637,8 @@ void PaintPropertyTreeBuilder::updateFilter(
       auto& properties = object.getMutableForPainting().ensurePaintProperties();
       context.forceSubtreeUpdate |= properties.updateFilter(
           context.currentEffect, context.current.transform, outputClip,
-          std::move(filter), 1.f, SkBlendMode::kSrcOver, compositingReasons,
-          compositorElementId);
+          ColorFilterNone, std::move(filter), 1.f, SkBlendMode::kSrcOver,
+          compositingReasons, compositorElementId);
     }
   }
 

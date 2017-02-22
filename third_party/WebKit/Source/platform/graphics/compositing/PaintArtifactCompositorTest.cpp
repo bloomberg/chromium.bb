@@ -1054,10 +1054,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MergeTransformOrigin) {
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MergeOpacity) {
   float opacity = 2.0 / 255.0;
-  RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
-      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), opacity,
-      SkBlendMode::kSrcOver);
+  RefPtr<EffectPaintPropertyNode> effect =
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), opacity);
 
   TestPaintArtifact testArtifact;
   testArtifact
@@ -1119,7 +1117,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MergeNested) {
   float opacity = 2.0 / 255.0;
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), transform.get(), clip.get(),
-      CompositorFilterOperations(), opacity, SkBlendMode::kSrcOver);
+      ColorFilterNone, CompositorFilterOperations(), opacity,
+      SkBlendMode::kSrcOver);
 
   TestPaintArtifact testArtifact;
   testArtifact
@@ -1242,8 +1241,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectPushedUp) {
   float opacity = 2.0 / 255.0;
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), transform2.get(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), opacity,
-      SkBlendMode::kSrcOver);
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), opacity, SkBlendMode::kSrcOver);
 
   TestPaintArtifact testArtifact;
   testArtifact
@@ -1309,7 +1308,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectAndClipPushedUp) {
   float opacity = 2.0 / 255.0;
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), transform2.get(), clip.get(),
-      CompositorFilterOperations(), opacity, SkBlendMode::kSrcOver);
+      ColorFilterNone, CompositorFilterOperations(), opacity,
+      SkBlendMode::kSrcOver);
 
   TestPaintArtifact testArtifact;
   testArtifact
@@ -1364,7 +1364,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, ClipAndEffectNoTransform) {
   float opacity = 2.0 / 255.0;
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      clip.get(), CompositorFilterOperations(), opacity, SkBlendMode::kSrcOver);
+      clip.get(), ColorFilterNone, CompositorFilterOperations(), opacity,
+      SkBlendMode::kSrcOver);
 
   TestPaintArtifact testArtifact;
   testArtifact
@@ -1703,9 +1704,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectWithElementId) {
   float opacity = 2.0 / 255.0;
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), opacity,
-      SkBlendMode::kSrcOver, CompositingReasonNone,
-      expectedCompositorElementId);
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), opacity, SkBlendMode::kSrcOver,
+      CompositingReasonNone, expectedCompositorElementId);
 
   TestPaintArtifact artifact;
   artifact
@@ -1715,6 +1716,52 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectWithElementId) {
   update(artifact.build());
 
   EXPECT_EQ(2, elementIdToEffectNodeIndex(expectedCompositorElementId));
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, CompositedLuminanceMask) {
+  RefPtr<EffectPaintPropertyNode> masked = EffectPaintPropertyNode::create(
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver,
+      CompositingReasonIsolateCompositedDescendants);
+  RefPtr<EffectPaintPropertyNode> masking = EffectPaintPropertyNode::create(
+      masked, TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+      ColorFilterLuminanceToAlpha, CompositorFilterOperations(), 1.0,
+      SkBlendMode::kDstIn, CompositingReasonSquashingDisallowed);
+
+  TestPaintArtifact artifact;
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             masked.get())
+      .rectDrawing(FloatRect(100, 100, 200, 200), Color::gray);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             masking.get())
+      .rectDrawing(FloatRect(150, 150, 100, 100), Color::white);
+  update(artifact.build());
+
+  ASSERT_EQ(2u, contentLayerCount());
+
+  const cc::Layer* maskedLayer = contentLayerAt(0);
+  EXPECT_THAT(maskedLayer->GetPicture(),
+              Pointee(drawsRectangle(FloatRect(0, 0, 200, 200), Color::gray)));
+  EXPECT_EQ(translation(100, 100), maskedLayer->screen_space_transform());
+  EXPECT_EQ(gfx::Size(200, 200), maskedLayer->bounds());
+  const cc::EffectNode* maskedGroup =
+      propertyTrees().effect_tree.Node(maskedLayer->effect_tree_index());
+  EXPECT_TRUE(maskedGroup->has_render_surface);
+
+  const cc::Layer* maskingLayer = contentLayerAt(1);
+  EXPECT_THAT(maskingLayer->GetPicture(),
+              Pointee(drawsRectangle(FloatRect(0, 0, 100, 100), Color::white)));
+  EXPECT_EQ(translation(150, 150), maskingLayer->screen_space_transform());
+  EXPECT_EQ(gfx::Size(100, 100), maskingLayer->bounds());
+  const cc::EffectNode* maskingGroup =
+      propertyTrees().effect_tree.Node(maskingLayer->effect_tree_index());
+  EXPECT_TRUE(maskingGroup->has_render_surface);
+  EXPECT_EQ(maskedGroup->id, maskingGroup->parent_id);
+  ASSERT_EQ(1u, maskingGroup->filters.size());
+  EXPECT_EQ(cc::FilterOperation::REFERENCE, maskingGroup->filters.at(0).type());
 }
 
 }  // namespace blink

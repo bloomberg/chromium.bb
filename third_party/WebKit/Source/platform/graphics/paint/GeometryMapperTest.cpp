@@ -785,7 +785,7 @@ TEST_F(GeometryMapperTest, FilterWithClipsAndTransforms) {
   filters.appendBlurFilter(20);
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       rootPropertyTreeState().effect(), transformAboveEffect, clipAboveEffect,
-      filters, 1.0, SkBlendMode::kSrcOver);
+      ColorFilterNone, filters, 1.0, SkBlendMode::kSrcOver);
 
   PropertyTreeState localState(transformBelowEffect.get(),
                                clipBelowEffect.get(), effect.get());
@@ -820,8 +820,9 @@ TEST_F(GeometryMapperTest, ReflectionWithPaintOffset) {
       BoxReflection(BoxReflection::HorizontalReflection, 0), nullptr));
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       rootPropertyTreeState().effect(), rootPropertyTreeState().transform(),
-      rootPropertyTreeState().clip(), filters, 1.0, SkBlendMode::kSrcOver,
-      CompositingReasonNone, CompositorElementId(), FloatPoint(100, 100));
+      rootPropertyTreeState().clip(), ColorFilterNone, filters, 1.0,
+      SkBlendMode::kSrcOver, CompositingReasonNone, CompositorElementId(),
+      FloatPoint(100, 100));
 
   PropertyTreeState localState = rootPropertyTreeState();
   localState.setEffect(effect);

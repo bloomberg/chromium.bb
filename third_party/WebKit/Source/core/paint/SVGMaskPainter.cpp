@@ -6,12 +6,14 @@
 
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
 #include "platform/graphics/paint/CompositingRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 
 namespace blink {
 
@@ -44,6 +46,17 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object,
             : ColorFilterNone;
     CompositingRecorder maskCompositing(context, object, SkBlendMode::kDstIn, 1,
                                         &visualRect, maskLayerFilter);
+    Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      const auto* objectPaintProperties = object.paintProperties();
+      DCHECK(objectPaintProperties && objectPaintProperties->mask());
+      PaintChunkProperties properties(
+          context.getPaintController().currentPaintChunkProperties());
+      properties.propertyTreeState.setEffect(objectPaintProperties->mask());
+      scopedPaintChunkProperties.emplace(context.getPaintController(), object,
+                                         properties);
+    }
+
     drawMaskForLayoutObject(context, object, object.objectBoundingBox(),
                             visualRect);
   }

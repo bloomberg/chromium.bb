@@ -22,7 +22,8 @@ TEST_F(PropertyTreeStateTest, TransformOnEffectOnClip) {
 
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      clip.get(), CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver);
+      clip.get(), ColorFilterNone, CompositorFilterOperations(), 1.0,
+      SkBlendMode::kSrcOver);
 
   PropertyTreeState state(transform.get(), clip.get(), effect.get());
   EXPECT_EQ(PropertyTreeState::Transform, state.innermostNode());
@@ -51,7 +52,8 @@ TEST_F(PropertyTreeStateTest, EffectOnClipOnTransform) {
 
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), transform.get(), clip.get(),
-      CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver);
+      ColorFilterNone, CompositorFilterOperations(), 1.0,
+      SkBlendMode::kSrcOver);
 
   PropertyTreeState state(transform.get(), clip.get(), effect.get());
   EXPECT_EQ(PropertyTreeState::Effect, state.innermostNode());
@@ -73,8 +75,8 @@ TEST_F(PropertyTreeStateTest, ClipOnEffectOnTransform) {
 
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), transform.get(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,
-      SkBlendMode::kSrcOver);
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver);
 
   PropertyTreeState state(transform.get(), clip.get(), effect.get());
   EXPECT_EQ(PropertyTreeState::Clip, state.innermostNode());
@@ -100,8 +102,8 @@ TEST_F(PropertyTreeStateTest, ClipDescendantOfTransform) {
 
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,
-      SkBlendMode::kSrcOver);
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver);
 
   // Here the clip is inside of its own transform, but the transform is an
   // ancestor of the clip's transform. This models situations such as
@@ -133,7 +135,8 @@ TEST_F(PropertyTreeStateTest, EffectDescendantOfTransform) {
 
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), transform2.get(), clip.get(),
-      CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver);
+      ColorFilterNone, CompositorFilterOperations(), 1.0,
+      SkBlendMode::kSrcOver);
 
   // Here the clip is inside of its own transform, but the transform is an
   // ancestor of the clip's transform. This models situations such as
@@ -171,9 +174,9 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnEffectNode) {
   CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,
-      SkBlendMode::kSrcOver, CompositingReasonNone,
-      expectedCompositorElementId);
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver,
+      CompositingReasonNone, expectedCompositorElementId);
   PropertyTreeState state(TransformPaintPropertyNode::root(),
                           ClipPaintPropertyNode::root(), effect.get());
   EXPECT_EQ(expectedCompositorElementId, state.compositorElementId());
@@ -188,9 +191,9 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnMultipleNodes) {
                                          expectedCompositorElementId);
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
       EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
-      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,
-      SkBlendMode::kSrcOver, CompositingReasonNone,
-      expectedCompositorElementId);
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver,
+      CompositingReasonNone, expectedCompositorElementId);
   PropertyTreeState state(transform.get(), ClipPaintPropertyNode::root(),
                           effect.get());
   EXPECT_EQ(expectedCompositorElementId, state.compositorElementId());

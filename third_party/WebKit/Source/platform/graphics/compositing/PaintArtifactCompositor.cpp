@@ -4,6 +4,9 @@
 
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
@@ -15,6 +18,7 @@
 #include "cc/playback/transform_display_item.h"
 #include "cc/trees/layer_tree_host.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/compositing/PropertyTreeManager.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/DisplayItem.h"
@@ -40,9 +44,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <memory>
-#include <utility>
 
 namespace blink {
 
@@ -371,7 +372,9 @@ static void recordPairedBeginDisplayItems(
                 gfx::ToFlooredInt(255 * pairedState->effect()->opacity())),
             pairedState->effect()->blendMode(),
             // TODO(chrishtr): compute bounds as necessary.
-            nullptr, nullptr, kLcdTextRequiresOpaqueLayer);
+            nullptr, GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
+                         pairedState->effect()->colorFilter()),
+            kLcdTextRequiresOpaqueLayer);
 
         ccList.CreateAndAppendPairedBeginItem<cc::FilterDisplayItem>(
             pairedState->effect()->filter().asCcFilterOperations(), clipRect,

@@ -19,7 +19,8 @@ static inline PassRefPtr<EffectPaintPropertyNode> createOpacityOnlyEffect(
       const_cast<ClipPaintPropertyNode*>(parent->outputClip());
   return EffectPaintPropertyNode::create(
       std::move(parent), std::move(localTransformSpace), std::move(outputClip),
-      CompositorFilterOperations(), opacity, SkBlendMode::kSrcOver);
+      ColorFilterNone, CompositorFilterOperations(), opacity,
+      SkBlendMode::kSrcOver);
 }
 
 static inline PaintChunkProperties defaultPaintChunkProperties() {
