@@ -449,9 +449,16 @@ public class ChromeFullscreenManager
         if (mInGesture || mContentViewScrolling) return;
 
         // Update content viewport size only when the browser controls are not animating.
-        int contentOffset = (int) mRendererTopContentOffset;
-        if (contentOffset != 0 && contentOffset != getTopControlsHeight()) return;
-        viewCore.setTopControlsHeight(getTopControlsHeight(), contentOffset > 0);
+        int topContentOffset = (int) mRendererTopContentOffset;
+        int bottomControlOffset = (int) mRendererBottomControlOffset;
+        if ((topContentOffset != 0 && topContentOffset != getTopControlsHeight())
+                && bottomControlOffset != 0 && bottomControlOffset != getBottomControlsHeight()) {
+            return;
+        }
+        boolean controlsResizeView =
+                topContentOffset > 0 || bottomControlOffset < getBottomControlsHeight();
+        viewCore.setTopControlsHeight(getTopControlsHeight(), controlsResizeView);
+        viewCore.setBottomControlsHeight(getBottomControlsHeight());
     }
 
     @Override
