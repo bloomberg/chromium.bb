@@ -237,13 +237,13 @@ class Git(object):
 
         return self._remote_merge_base()
 
-    def changed_files(self, git_commit=None):
+    def changed_files(self, git_commit=None, diff_filter='ADM'):
         # FIXME: --diff-filter could be used to avoid the "extract_filenames" step.
         status_command = ['diff', '-r', '--name-status',
                           "--no-renames", "--no-ext-diff", "--full-index", self._merge_base(git_commit)]
         # FIXME: I'm not sure we're returning the same set of files that SVN.changed_files is.
         # Added (A), Copied (C), Deleted (D), Modified (M), Renamed (R)
-        return self._run_status_and_extract_filenames(status_command, self._status_regexp("ADM"))
+        return self._run_status_and_extract_filenames(status_command, self._status_regexp(diff_filter))
 
     def added_files(self):
         return self._run_status_and_extract_filenames(self.status_command(), self._status_regexp("A"))

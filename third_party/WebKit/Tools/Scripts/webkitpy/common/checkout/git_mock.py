@@ -107,7 +107,7 @@ class MockGit(object):
         if self._filesystem:
             self._filesystem.move(self.absolute_path(origin), self.absolute_path(destination))
 
-    def changed_files(self):
+    def changed_files(self, diff_filter='ADM'):
         return []
 
     def unstaged_changes(self):
