@@ -1040,43 +1040,6 @@ void NavigatorImpl::OnBeginNavigation(
 }
 
 // PlzNavigate
-void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
-                                     bool has_stale_copy_in_cache,
-                                     int error_code) {
-  CHECK(IsBrowserSideNavigationEnabled());
-
-  NavigationRequest* navigation_request = frame_tree_node->navigation_request();
-  DCHECK(navigation_request);
-
-  // With PlzNavigate, debug URLs will give a failed navigation because the
-  // WebUI backend won't find a handler for them. They will be processed in the
-  // renderer, however do not discard the pending entry so that the URL bar
-  // shows them correctly.
-  if (!IsRendererDebugURL(navigation_request->navigation_handle()->GetURL()))
-    DiscardPendingEntryIfNeeded(navigation_request->navigation_handle());
-
-  // If the request was canceled by the user do not show an error page.
-  if (error_code == net::ERR_ABORTED) {
-    frame_tree_node->ResetNavigationRequest(false);
-    return;
-  }
-
-  // Select an appropriate renderer to show the error page.
-  RenderFrameHostImpl* render_frame_host =
-      frame_tree_node->render_manager()->GetFrameHostForNavigation(
-          *navigation_request);
-  CheckWebUIRendererDoesNotDisplayNormalURL(
-      render_frame_host, navigation_request->common_params().url);
-
-  navigation_request->TransferNavigationHandleOwnership(render_frame_host);
-  render_frame_host->navigation_handle()->ReadyToCommitNavigation(
-      render_frame_host);
-  render_frame_host->FailedNavigation(navigation_request->common_params(),
-                                      navigation_request->request_params(),
-                                      has_stale_copy_in_cache, error_code);
-}
-
-// PlzNavigate
 void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
   CHECK(IsBrowserSideNavigationEnabled());
   frame_tree_node->ResetNavigationRequest(false);

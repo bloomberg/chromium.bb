@@ -88,9 +88,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void OnBeginNavigation(FrameTreeNode* frame_tree_node,
                          const CommonNavigationParams& common_params,
                          const BeginNavigationParams& begin_params) override;
-  void FailedNavigation(FrameTreeNode* frame_tree_node,
-                        bool has_stale_copy_in_cache,
-                        int error_code) override;
   void LogResourceRequestTime(base::TimeTicks timestamp,
                               const GURL& url) override;
   void LogBeforeUnloadTime(

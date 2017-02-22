@@ -11,6 +11,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -552,8 +553,33 @@ void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
   DCHECK(state_ == STARTED || state_ == RESPONSE_STARTED);
   state_ = FAILED;
   navigation_handle_->set_net_error_code(static_cast<net::Error>(net_error));
-  frame_tree_node_->navigator()->FailedNavigation(
-      frame_tree_node_, has_stale_copy_in_cache, net_error);
+
+  // With PlzNavigate, debug URLs will give a failed navigation because the
+  // WebUI backend won't find a handler for them. They will be processed in the
+  // renderer, however do not discard the pending entry so that the URL bar
+  // shows them correctly.
+  if (!IsRendererDebugURL(common_params_.url)) {
+    frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
+        navigation_handle_.get());
+  }
+
+  // If the request was canceled by the user do not show an error page.
+  if (net_error == net::ERR_ABORTED) {
+    frame_tree_node_->ResetNavigationRequest(false);
+    return;
+  }
+
+  // Select an appropriate renderer to show the error page.
+  RenderFrameHostImpl* render_frame_host =
+      frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+  NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host,
+                                                           common_params_.url);
+
+  TransferNavigationHandleOwnership(render_frame_host);
+  render_frame_host->navigation_handle()->ReadyToCommitNavigation(
+      render_frame_host);
+  render_frame_host->FailedNavigation(common_params_, request_params_,
+                                      has_stale_copy_in_cache, net_error);
 }
 
 void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
