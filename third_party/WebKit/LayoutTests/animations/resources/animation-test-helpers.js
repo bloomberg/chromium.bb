@@ -167,6 +167,10 @@ function comparePropertyValue(computedValue, expectedValue, tolerance, expectedI
     return true;
 }
 
+function waitForCompositor() {
+    return document.body.animate({opacity: [1, 1]}, 1).finished;
+}
+
 function endTest()
 {
     log('Ending test');
@@ -175,8 +179,11 @@ function endTest()
         result += '<br>Log:<br>' + logMessages.join('<br>');
     resultElement.innerHTML = result;
 
-    if (window.testRunner)
-        testRunner.notifyDone();
+    if (window.testRunner) {
+        waitForCompositor().then(() => {
+            testRunner.notifyDone();
+        });
+    }
 }
 
 function runChecksWithRAF(checks)
