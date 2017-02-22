@@ -580,13 +580,11 @@ void HTMLParserScriptRunner::requestDeferredScript(Element* element) {
 
 PendingScript* HTMLParserScriptRunner::requestPendingScript(
     Element* element) const {
-  // This should correctly return 0 for empty or invalid srcValues.
   ScriptResource* resource = toScriptLoaderIfPossible(element)->resource();
-  if (!resource) {
-    DVLOG(1) << "Not implemented.";  // Dispatch error event.
-    return nullptr;
-  }
-
+  // Here |resource| should be non-null. If it were nullptr,
+  // ScriptLoader::fetchScript() should have returned false and
+  // thus the control shouldn't have reached here.
+  CHECK(resource);
   return PendingScript::create(element, resource);
 }
 
