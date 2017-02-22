@@ -1989,7 +1989,8 @@ public class LocationBarLayout extends FrameLayout
         }
     }
 
-    private void backKeyPressed() {
+    // TODO(dfalcantara): Make private again after M58.
+    protected void backKeyPressed() {
         hideSuggestions();
         UiUtils.hideKeyboard(mUrlBar);
         // Revert the URL to match the current page.
