@@ -74,6 +74,21 @@ void AutoplayUmaHelper::onAutoplayInitiated(AutoplaySource source) {
     audioHistogram.count(static_cast<int>(m_source));
   }
 
+  // Record the child frame and top-level frame URLs for autoplay muted videos
+  // by attribute.
+  if (m_element->isHTMLVideoElement() && m_element->muted()) {
+    if (source == AutoplaySource::Attribute) {
+      Platform::current()->recordRapporURL(
+          "Media.Video.Autoplay.Muted.Attribute.Frame",
+          m_element->document().url());
+    } else {
+      DCHECK(source == AutoplaySource::Method);
+      Platform::current()->recordRapporURL(
+          "Media.Video.Autoplay.Muted.PlayMethod.Frame",
+          m_element->document().url());
+    }
+  }
+
   // Record if it will be blocked by Data Saver or Autoplay setting.
   if (m_element->isHTMLVideoElement() && m_element->muted() &&
       RuntimeEnabledFeatures::autoplayMutedVideosEnabled()) {
