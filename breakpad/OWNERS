@@ -4,3 +4,5 @@ thestig@chromium.org
 per-file *.isolate=maruel@chromium.org
 per-file *.isolate=tandrii@chromium.org
 per-file *.isolate=vadimsh@chromium.org
+
+# TEAM: google-breakpad-dev@googlegroups.com
