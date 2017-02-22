@@ -305,7 +305,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 getInstrumentation(), getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
         assertEquals("Failed to click node.", true,
                 DOMUtils.clickNode(
-                        this, getActivity().getActivityTab().getContentViewCore(), "input_text"));
+                        getActivity().getActivityTab().getContentViewCore(), "input_text"));
         assertWaitForKeyboardStatus(true);
 
         // Open a new tab(the 2nd tab).
@@ -314,7 +314,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         assertWaitForKeyboardStatus(false);
 
         // Click node in the 2nd tab.
-        DOMUtils.clickNode(this, getActivity().getActivityTab().getContentViewCore(), "input_text");
+        DOMUtils.clickNode(getActivity().getActivityTab().getContentViewCore(), "input_text");
         assertWaitForKeyboardStatus(true);
 
         // Switch to the 1st tab.
@@ -322,7 +322,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         assertWaitForKeyboardStatus(false);
 
         // Click node in the 1st tab.
-        DOMUtils.clickNode(this, getActivity().getActivityTab().getContentViewCore(), "input_text");
+        DOMUtils.clickNode(getActivity().getActivityTab().getContentViewCore(), "input_text");
         assertWaitForKeyboardStatus(true);
 
         // Close current tab(the 1st tab).
@@ -343,13 +343,12 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 getInstrumentation(), getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
         assertEquals("Failed to click textarea.", true,
                 DOMUtils.clickNode(
-                        this, getActivity().getActivityTab().getContentViewCore(), "textarea"));
+                        getActivity().getActivityTab().getContentViewCore(), "textarea"));
         assertWaitForKeyboardStatus(true);
 
         // Click the button to open a new window.
         assertEquals("Failed to click button.", true,
-                DOMUtils.clickNode(
-                        this, getActivity().getActivityTab().getContentViewCore(), "button"));
+                DOMUtils.clickNode(getActivity().getActivityTab().getContentViewCore(), "button"));
         assertWaitForKeyboardStatus(false);
     }
 

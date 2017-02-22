@@ -203,7 +203,7 @@ public class ContextMenuTest extends DownloadTestBase {
     @RetryOnFailure
     public void testDismissContextMenuOnBack() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
-        ContextMenu menu = ContextMenuUtils.openContextMenu(this, tab, "testImage");
+        ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
         assertNotNull("Context menu was not properly created", menu);
         CriteriaHelper.pollUiThread(new Criteria("Context menu did not have window focus") {
             @Override
@@ -226,7 +226,7 @@ public class ContextMenuTest extends DownloadTestBase {
     @RetryOnFailure
     public void testDismissContextMenuOnClick() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
-        ContextMenu menu = ContextMenuUtils.openContextMenu(this, tab, "testImage");
+        ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
         assertNotNull("Context menu was not properly created", menu);
         CriteriaHelper.pollUiThread(new Criteria("Context menu did not have window focus") {
             @Override
@@ -291,7 +291,7 @@ public class ContextMenuTest extends DownloadTestBase {
     public void testSaveVideo()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         // Click the video to enable playback
-        DOMUtils.clickNode(this, getActivity().getCurrentContentViewCore(), "videoDOMElement");
+        DOMUtils.clickNode(getActivity().getCurrentContentViewCore(), "videoDOMElement");
         saveMediaFromContextMenu("videoDOMElement", R.id.contextmenu_save_video, FILENAME_WEBM);
     }
 

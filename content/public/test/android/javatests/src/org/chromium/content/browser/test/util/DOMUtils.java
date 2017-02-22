@@ -7,7 +7,6 @@ package org.chromium.content.browser.test.util;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.graphics.Rect;
-import android.test.ActivityInstrumentationTestCase2;
 import android.util.JsonReader;
 
 import junit.framework.Assert;
@@ -225,12 +224,10 @@ public class DOMUtils {
 
     /**
      * Click a DOM node by its id, scrolling it into view first.
-     * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
      * @param viewCore The ContentViewCore in which the node lives.
      * @param nodeId The id of the node.
      */
-    public static boolean clickNode(ActivityInstrumentationTestCase2 activityTestCase,
-            final ContentViewCore viewCore, String nodeId)
+    public static boolean clickNode(final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
         scrollNodeIntoView(viewCore.getWebContents(), nodeId);
         int[] clickTarget = getClickTargetForNode(viewCore, nodeId);
@@ -240,12 +237,10 @@ public class DOMUtils {
 
     /**
      * Click a DOM node returned by JS code, scrolling it into view first.
-     * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
      * @param viewCore The ContentViewCore in which the node lives.
      * @param jsCode The JS code to find the node.
      */
-    public static void clickNodeByJs(ActivityInstrumentationTestCase2 activityTestCase,
-            final ContentViewCore viewCore, String jsCode)
+    public static void clickNodeByJs(final ContentViewCore viewCore, String jsCode)
             throws InterruptedException, TimeoutException {
         scrollNodeIntoViewByJs(viewCore.getWebContents(), jsCode);
         int[] clickTarget = getClickTargetForNodeByJs(viewCore, jsCode);
@@ -266,28 +261,24 @@ public class DOMUtils {
 
     /**
      * Long-press a DOM node by its id, scrolling it into view first.
-     * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
      * @param viewCore The ContentViewCore in which the node lives.
      * @param nodeId The id of the node.
      */
-    public static void longPressNode(ActivityInstrumentationTestCase2 activityTestCase,
-            final ContentViewCore viewCore, String nodeId)
+    public static void longPressNode(final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
         scrollNodeIntoView(viewCore.getWebContents(), nodeId);
         String jsCode = "document.getElementById('" + nodeId + "')";
-        longPressNodeByJs(activityTestCase, viewCore, jsCode);
+        longPressNodeByJs(viewCore, jsCode);
     }
 
     /**
      * Long-press a DOM node by its id.
      * <p>Note that content view should be located in the current position for a foreseeable
      * amount of time because this involves sleep to simulate touch to long press transition.
-     * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
      * @param viewCore The ContentViewCore in which the node lives.
      * @param nodeId The id of the node.
      */
-    public static void longPressNodeByJs(ActivityInstrumentationTestCase2 activityTestCase,
-            final ContentViewCore viewCore, String jsCode)
+    public static void longPressNodeByJs(final ContentViewCore viewCore, String jsCode)
             throws InterruptedException, TimeoutException {
         int[] clickTarget = getClickTargetForNodeByJs(viewCore, jsCode);
         TouchCommon.longPressView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);

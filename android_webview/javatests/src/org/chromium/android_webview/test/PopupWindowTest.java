@@ -122,7 +122,7 @@ public class PopupWindowTest extends AwTestBase {
         enableJavaScriptOnUiThread(popupContents);
 
         // Now long press on some texts and see if the text handles show up.
-        DOMUtils.longPressNode(this, popupContents.getContentViewCore(), "plain_text");
+        DOMUtils.longPressNode(popupContents.getContentViewCore(), "plain_text");
         assertWaitForSelectActionBarStatus(true, popupContents.getContentViewCore());
         assertTrue(runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
             @Override

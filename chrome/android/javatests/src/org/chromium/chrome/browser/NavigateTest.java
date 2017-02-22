@@ -218,7 +218,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
 
         Tab tab = getActivity().getActivityTab();
 
-        DOMUtils.clickNode(this, tab.getContentViewCore(), "aboutLink");
+        DOMUtils.clickNode(tab.getContentViewCore(), "aboutLink");
         ChromeTabUtils.waitForTabPageLoaded(tab, url2);
         assertEquals("Desired Link not open", url2, getActivity().getActivityTab().getUrl());
     }
@@ -246,7 +246,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         };
         Tab tab = getActivity().getActivityTab();
         tab.addObserver(onPageLoadStartedObserver);
-        DOMUtils.clickNode(this, tab.getContentViewCore(), "aboutLink");
+        DOMUtils.clickNode(tab.getContentViewCore(), "aboutLink");
         ChromeTabUtils.waitForTabPageLoaded(tab, url2);
         assertEquals("Desired Link not open", url2, getActivity().getActivityTab().getUrl());
     }
@@ -417,7 +417,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
             assertWaitForPageScaleFactorMatch(0.5f);
 
             // Click the page, which triggers the URL load.
-            DOMUtils.clickNode(this, getActivity().getCurrentContentViewCore(), "body");
+            DOMUtils.clickNode(getActivity().getCurrentContentViewCore(), "body");
 
             // Wait for the proper URL to be served.
             assertTrue(urlServedSemaphore.tryAcquire(5, TimeUnit.SECONDS));

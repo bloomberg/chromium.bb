@@ -746,7 +746,7 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
     public void testSwitchingTabsHidesKeyboard() throws Throwable {
         loadUrl("data:text/html;charset=utf-8,<html><head></head><body><form>"
                 + "<input type='text' id='input0'></form></body></html>");
-        DOMUtils.clickNode(this, getActivity().getActivityTab().getContentViewCore(), "input0");
+        DOMUtils.clickNode(getActivity().getActivityTab().getContentViewCore(), "input0");
         assertWaitForKeyboardStatus(true);
 
         getInstrumentation().waitForIdleSync();

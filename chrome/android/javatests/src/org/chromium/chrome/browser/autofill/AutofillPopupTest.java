@@ -172,7 +172,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
 
         // Click the input field for the first name.
         DOMUtils.waitForNonZeroNodeBounds(webContents, "fn");
-        DOMUtils.clickNode(this, viewCore, "fn");
+        DOMUtils.clickNode(viewCore, "fn");
 
         waitForKeyboardShowRequest(immw, 1);
 

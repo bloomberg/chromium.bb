@@ -87,7 +87,7 @@ public class SelectPopupTest extends ContentShellTestBase {
         final OnPageFinishedHelper onPageFinishedHelper = viewClient.getOnPageFinishedHelper();
 
         // Once clicked, the popup should show up.
-        DOMUtils.clickNode(this, viewCore, "select");
+        DOMUtils.clickNode(viewCore, "select");
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria());
 
         // Reload the test page.
@@ -106,7 +106,7 @@ public class SelectPopupTest extends ContentShellTestBase {
         CriteriaHelper.pollInstrumentationThread(new PopupHiddenCriteria());
 
         // Click the select and wait for the popup to show.
-        DOMUtils.clickNode(this, viewCore, "select");
+        DOMUtils.clickNode(viewCore, "select");
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria());
     }
 }

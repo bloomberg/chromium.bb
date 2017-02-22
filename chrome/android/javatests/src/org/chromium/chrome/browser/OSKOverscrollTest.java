@@ -136,7 +136,7 @@ public class OSKOverscrollTest extends ChromeActivityTestCaseBase<ChromeActivity
 
         // Click on the unfocused input element for the first time to focus on it. This brings up
         // the OSK.
-        DOMUtils.clickNode(this, viewCoreRef.get(), "fn");
+        DOMUtils.clickNode(viewCoreRef.get(), "fn");
 
         waitForKeyboard();
 

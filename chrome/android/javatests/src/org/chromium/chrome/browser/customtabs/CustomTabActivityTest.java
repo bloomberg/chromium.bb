@@ -306,7 +306,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
         final int expectedMenuSize = 12;
-        Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(), "logo");
+        Menu menu = ContextMenuUtils.openContextMenu(getActivity().getActivityTab(), "logo");
         assertEquals(expectedMenuSize, menu.size());
 
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address));
@@ -347,8 +347,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
         final int expectedMenuSize = 12;
-        Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(),
-                "aboutLink");
+        Menu menu = ContextMenuUtils.openContextMenu(getActivity().getActivityTab(), "aboutLink");
         assertEquals(expectedMenuSize, menu.size());
 
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address));
@@ -388,7 +387,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
         final int expectedMenuSize = 12;
-        Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(), "email");
+        Menu menu = ContextMenuUtils.openContextMenu(getActivity().getActivityTab(), "email");
         assertEquals(expectedMenuSize, menu.size());
 
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address));
@@ -428,7 +427,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
         final int expectedMenuSize = 12;
-        Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(), "tel");
+        Menu menu = ContextMenuUtils.openContextMenu(getActivity().getActivityTab(), "tel");
         assertEquals(expectedMenuSize, menu.size());
 
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address));
@@ -672,8 +671,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             }
         });
         try {
-            DOMUtils.clickNode(CustomTabActivityTest.this,
-                    getActivity().getActivityTab().getContentViewCore(), "select");
+            DOMUtils.clickNode(getActivity().getActivityTab().getContentViewCore(), "select");
         } catch (TimeoutException e) {
             fail();
         }
@@ -903,7 +901,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 });
             }
         });
-        DOMUtils.clickNode(this, getActivity().getActivityTab().getContentViewCore(), "new_window");
+        DOMUtils.clickNode(getActivity().getActivityTab().getContentViewCore(), "new_window");
 
         openTabHelper.waitForCallback(0, 1);
         assertEquals("A new tab should have been created.", 2,

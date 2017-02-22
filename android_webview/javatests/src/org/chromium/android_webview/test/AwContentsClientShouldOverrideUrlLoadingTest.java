@@ -722,7 +722,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         assertEquals(indirectLoadCallCount, mShouldOverrideUrlLoadingHelper.getCallCount());
 
         // Simulate touch, hasUserGesture must be true only on the first call.
-        DOMUtils.clickNode(this, mAwContents.getContentViewCore(), "link");
+        DOMUtils.clickNode(mAwContents.getContentViewCore(), "link");
 
         mShouldOverrideUrlLoadingHelper.waitForCallback(indirectLoadCallCount, 1);
         assertEquals(redirectUrl,
@@ -941,7 +941,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             assertNull(getActivity().getLastSentIntent());
 
             // Clicking on a link should create an intent.
-            DOMUtils.clickNode(this, mAwContents.getContentViewCore(), "link");
+            DOMUtils.clickNode(mAwContents.getContentViewCore(), "link");
             pollUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
@@ -999,7 +999,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
             final String findContentJs = setupForContentClickTest(pageContent, true);
             // Clicking on the content should create an intent.
-            DOMUtils.clickNodeByJs(this, mAwContents.getContentViewCore(), findContentJs);
+            DOMUtils.clickNodeByJs(mAwContents.getContentViewCore(), findContentJs);
             pollUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
@@ -1041,7 +1041,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
         final String findContentJs = setupForContentClickTest(pageContent, inMainFrame);
         int callCount = mShouldOverrideUrlLoadingHelper.getCallCount();
-        DOMUtils.clickNodeByJs(this, mAwContents.getContentViewCore(), findContentJs);
+        DOMUtils.clickNodeByJs(mAwContents.getContentViewCore(), findContentJs);
         mShouldOverrideUrlLoadingHelper.waitForCallback(callCount);
         assertEquals(intentContent,
                 mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());

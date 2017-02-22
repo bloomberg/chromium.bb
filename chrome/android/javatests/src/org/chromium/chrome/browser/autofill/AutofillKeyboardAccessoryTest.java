@@ -125,7 +125,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
     public void testTapInputFieldShowsKeyboardAccessory() throws ExecutionException,
              InterruptedException, TimeoutException {
         loadTestPage(false);
-        DOMUtils.clickNode(this, mViewCoreRef.get(), "fn");
+        DOMUtils.clickNode(mViewCoreRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
@@ -152,7 +152,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
     public void testSwitchFieldsRescrollsKeyboardAccessory() throws ExecutionException,
              InterruptedException, TimeoutException {
         loadTestPage(false);
-        DOMUtils.clickNode(this, mViewCoreRef.get(), "fn");
+        DOMUtils.clickNode(mViewCoreRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
@@ -179,7 +179,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
                         }
                     }
                 });
-        DOMUtils.clickNode(this, mViewCoreRef.get(), "ln");
+        DOMUtils.clickNode(mViewCoreRef.get(), "ln");
         CriteriaHelper.pollUiThread(
                 new Criteria("First suggestion should be on the screen after switching fields.") {
                     @Override
@@ -203,7 +203,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
     public void testSwitchFieldsRescrollsKeyboardAccessoryRtl() throws ExecutionException,
              InterruptedException, TimeoutException {
         loadTestPage(true);
-        DOMUtils.clickNode(this, mViewCoreRef.get(), "fn");
+        DOMUtils.clickNode(mViewCoreRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
@@ -230,7 +230,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
                         }
                     }
                 });
-        DOMUtils.clickNode(this, mViewCoreRef.get(), "ln");
+        DOMUtils.clickNode(mViewCoreRef.get(), "ln");
         CriteriaHelper.pollUiThread(
                 new Criteria("Last suggestion should be off the screen after switching fields.") {
                     @Override
@@ -256,7 +256,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
     public void testSelectSuggestionHidesKeyboardAccessory() throws ExecutionException,
              InterruptedException, TimeoutException {
         loadTestPage(false);
-        DOMUtils.clickNode(this, mViewCoreRef.get(), "fn");
+        DOMUtils.clickNode(mViewCoreRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {

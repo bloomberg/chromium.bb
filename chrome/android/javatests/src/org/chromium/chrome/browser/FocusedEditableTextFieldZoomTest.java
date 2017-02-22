@@ -81,7 +81,7 @@ public class FocusedEditableTextFieldZoomTest extends ChromeActivityTestCaseBase
         final ContentViewCore contentViewCore = tab.getContentViewCore();
         float initialZoomLevel = contentViewCore.getScale();
 
-        DOMUtils.clickNode(this, contentViewCore, TEXTFIELD_DOM_ID);
+        DOMUtils.clickNode(contentViewCore, TEXTFIELD_DOM_ID);
 
         // Wait for the zoom in to complete.
         waitForZoomIn(contentViewCore, initialZoomLevel);
@@ -98,7 +98,7 @@ public class FocusedEditableTextFieldZoomTest extends ChromeActivityTestCaseBase
         final float initialZoomLevel = contentViewCore.getScale();
 
         // This should focus the text field and initiate a zoom in.
-        DOMUtils.clickNode(this, contentViewCore, TEXTFIELD_DOM_ID);
+        DOMUtils.clickNode(contentViewCore, TEXTFIELD_DOM_ID);
 
         // Wait for the zoom in to complete.
         waitForZoomIn(contentViewCore, initialZoomLevel);
