@@ -48,7 +48,6 @@ constexpr char kGPUDriverVersion[] = "gpu-driver";
 constexpr char kGPUPixelShaderVersion[] = "gpu-psver";
 constexpr char kGPUVertexShaderVersion[] = "gpu-vsver";
 
-constexpr char kHungAudioThreadDetails[] = "hung-audio-thread-details";
 constexpr char kHungRendererOutstandingAckCount[] = "hung-outstanding-acks";
 constexpr char kHungRendererOutstandingEventType[] =
     "hung-outstanding-event-type";
@@ -127,7 +126,6 @@ size_t RegisterCrashKeysHelper() {
       {kInputEventFilterSendFailure, kSmallSize},
 
       // media/:
-      {kHungAudioThreadDetails, kSmallSize},
       {kZeroEncodeDetails, kSmallSize},
 
       // gin/:

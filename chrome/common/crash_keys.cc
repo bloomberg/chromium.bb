@@ -50,8 +50,6 @@ const char kGPURenderer[] = "gpu-gl-renderer";
 #endif
 
 #if defined(OS_WIN)
-const char kHungAudioThreadDetails[] = "hung-audio-thread-details";
-
 const char kHungRendererOutstandingAckCount[] = "hung-outstanding-acks";
 const char kHungRendererOutstandingEventType[] = "hung-outstanding-event-type";
 const char kHungRendererLastEventType[] = "hung-last-event-type";
@@ -177,9 +175,6 @@ size_t RegisterChromeCrashKeys() {
     { kViewCount, kSmallSize },
 
     // media/:
-#if defined(OS_WIN)
-    { kHungAudioThreadDetails, kSmallSize },
-#endif
     { kZeroEncodeDetails, kSmallSize },
 
     // gin/:

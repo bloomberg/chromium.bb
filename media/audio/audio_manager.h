@@ -39,9 +39,7 @@ using ScopedAudioManagerPtr =
 // the need to provide iterators over the existing streams.
 //
 // Except on OSX, a hang monitor for the audio thread is always created. When a
-// thread hang is detected, it is reported to UMA.  Optionally, if called prior,
-// EnableCrashKeyLoggingForAudioThreadHangs() will cause a non-crash dump to be
-// logged on Windows (this allows us to report driver hangs to Microsoft).
+// thread hang is detected, it is reported to UMA.
 class MEDIA_EXPORT AudioManager {
  public:
   // Construct the audio manager; only one instance is allowed.
@@ -76,13 +74,6 @@ class MEDIA_EXPORT AudioManager {
   // This must be called only after an AudioManager instance is created.
   static void StartHangMonitorIfNeeded(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
-  // Enables non-crash dumps when audio thread hangs are detected.
-  // TODO(dalecurtis): There are no callers to this function at present. A list
-  // of bad drivers has been given to Microsoft. This should be re-enabled in
-  // the future if Microsoft is able to triage third party drivers.
-  // See http://crbug.com/422522
-  static void EnableCrashKeyLoggingForAudioThreadHangs();
 
 #if defined(OS_LINUX)
   // Sets the name of the audio source as seen by external apps. Only actually

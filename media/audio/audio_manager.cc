@@ -11,9 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -101,8 +98,6 @@ class AudioManagerHelper : public base::PowerObserver {
   const std::string& app_name() const { return app_name_; }
 #endif
 
-  void enable_crash_key_logging() { enable_crash_key_logging_ = true; }
-
  private:
   // base::PowerObserver overrides.
   // Disable hang detection when the system goes into the suspend state.
@@ -159,8 +154,6 @@ class AudioManagerHelper : public base::PowerObserver {
         successful_pings_ = 0;
         if (++failed_pings_ >= kMaxFailedPingsCount &&
             audio_thread_status_ < THREAD_HUNG) {
-          if (enable_crash_key_logging_)
-            LogAudioDriverCrashKeys();
           HistogramThreadStatus(THREAD_HUNG);
         }
       } else {
@@ -215,25 +208,6 @@ class AudioManagerHelper : public base::PowerObserver {
                               THREAD_MAX + 1);
   }
 
-  void LogAudioDriverCrashKeys() {
-    DCHECK(monitor_task_runner_->BelongsToCurrentThread());
-    DCHECK(enable_crash_key_logging_);
-
-#if defined(OS_WIN)
-    std::string driver_name, driver_version;
-    if (!CoreAudioUtil::GetDxDiagDetails(&driver_name, &driver_version))
-      return;
-
-    base::debug::ScopedCrashKey crash_key(
-        "hung-audio-thread-details",
-        base::StringPrintf("%s:%s", driver_name.c_str(),
-                           driver_version.c_str()));
-
-    // Please forward crash reports to http://crbug.com/422522
-    base::debug::DumpWithoutCrashing();
-#endif
-  }
-
   FakeAudioLogFactory fake_log_factory_;
 
   const base::TimeDelta max_hung_task_time_ = base::TimeDelta::FromMinutes(1);
@@ -247,7 +221,6 @@ class AudioManagerHelper : public base::PowerObserver {
   bool io_task_running_ = false;
   bool audio_task_running_ = false;
   ThreadStatus audio_thread_status_ = THREAD_NONE;
-  bool enable_crash_key_logging_ = false;
   uint32_t successful_pings_ = 0;
 
 #if defined(OS_WIN)
@@ -361,12 +334,6 @@ void AudioManager::StartHangMonitorIfNeeded(
   DCHECK_NE(task_runner, AudioManager::Get()->GetTaskRunner());
 
   GetHelper()->StartHangTimer(std::move(task_runner));
-}
-
-// static
-void AudioManager::EnableCrashKeyLoggingForAudioThreadHangs() {
-  CHECK(!g_last_created);
-  GetHelper()->enable_crash_key_logging();
 }
 
 #if defined(OS_LINUX)
