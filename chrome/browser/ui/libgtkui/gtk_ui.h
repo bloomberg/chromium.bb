@@ -122,10 +122,6 @@ class GtkUi : public views::LinuxUI {
   // Sets the Xcursor theme and size with the GTK theme and size.
   void UpdateCursorTheme();
 
-  // Reads in explicit theme frame colors from the ChromeGtkFrame style class
-  // or generates them per our fallback algorithm.
-  void BuildFrameColors();
-
   // Updates |default_font_*|.
   void UpdateDefaultFont();
 

@@ -94,7 +94,16 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // FocusableBorder
     case ui::NativeTheme::kColorId_FocusedBorderColor:
-      return GetBorderColor("GtkEntry#entry:focus");
+      // GetBorderColor("GtkEntry#entry:focus") is correct here.  The focus ring
+      // around widgets is usually a lighter version of the "canonical theme
+      // color" - orange on Ambiance, blue on Adwaita, etc.  However, Chrome
+      // lightens the color we give it, so it would look wrong if we give it an
+      // already-lightened color.  This workaround returns the theme color
+      // directly, taken from a selected table row.  This has matched the theme
+      // color on every theme that I've tested.
+      return GetBgColor(
+          "GtkTreeView#treeview.view "
+          "GtkTreeView#treeview.view.cell:selected:focus");
     case ui::NativeTheme::kColorId_UnfocusedBorderColor:
       return GetBorderColor("GtkEntry#entry");
 
@@ -183,42 +192,48 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;
 
+    // BlueButton
     case ui::NativeTheme::kColorId_BlueButtonEnabledColor:
       return GetFgColor(
-          "GtkButton#button.text-button.suggested-action GtkLabel");
+          "GtkButton#button.text-button.default.suggested-action GtkLabel");
     case ui::NativeTheme::kColorId_BlueButtonDisabledColor:
       return GetFgColor(
-          "GtkButton#button.text-button.suggested-action:disabled "
+          "GtkButton#button.text-button.default.suggested-action:disabled "
           "GtkLabel");
     case ui::NativeTheme::kColorId_BlueButtonHoverColor:
       return GetFgColor(
-          "GtkButton#button.text-button.suggested-action:hover GtkLabel");
+          "GtkButton#button.text-button.default.suggested-action:hover "
+          "GtkLabel");
     case ui::NativeTheme::kColorId_BlueButtonPressedColor:
       return GetFgColor(
-          "GtkButton#button.text-button.suggested-action:hover:active "
+          "GtkButton#button.text-button.default.suggested-action:hover:active "
           "GtkLabel");
     case ui::NativeTheme::kColorId_BlueButtonShadowColor:
       return SK_ColorTRANSPARENT;
 
+    // ProminentButton
     case ui::NativeTheme::kColorId_ProminentButtonColor:
-      return GetBgColor("GtkButton#button.text-button.destructive-action");
+      return GetBgColor(
+          "GtkTreeView#treeview.view "
+          "GtkTreeView#treeview.view.cell:selected:focus");
     case ui::NativeTheme::kColorId_TextOnProminentButtonColor:
       return GetFgColor(
-          "GtkButton#button.text-button.destructive-action GtkLabel");
+          "GtkTreeView#treeview.view "
+          "GtkTreeview#treeview.view.cell:selected:focus GtkLabel");
 
     // Textfield
     case ui::NativeTheme::kColorId_TextfieldDefaultColor:
-      return GetFgColor("GtkEntry#entry");
+      return GetFgColor("GtkTextView#textview.view");
     case ui::NativeTheme::kColorId_TextfieldDefaultBackground:
-      return GetBgColor("GtkEntry#entry");
+      return GetBgColor("GtkTextView#textview.view");
     case ui::NativeTheme::kColorId_TextfieldReadOnlyColor:
-      return GetFgColor("GtkEntry#entry:disabled");
+      return GetFgColor("GtkTextView#textview.view:disabled");
     case ui::NativeTheme::kColorId_TextfieldReadOnlyBackground:
-      return GetBgColor("GtkEntry#entry:disabled");
+      return GetBgColor("GtkTextView#textview.view:disabled");
     case ui::NativeTheme::kColorId_TextfieldSelectionColor:
-      return GetSelectedTextColor("GtkEntry#entry");
+      return GetSelectedTextColor("GtkTextView#textview.view");
     case ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
-      return GetSelectedBgColor("GtkEntry#entry");
+      return GetSelectedBgColor("GtkTextView#textview.view");
 
     // Tooltips
     case ui::NativeTheme::kColorId_TooltipBackground:
@@ -230,22 +245,27 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     // Trees and Tables (implemented on GTK using the same class)
     case ui::NativeTheme::kColorId_TableBackground:
     case ui::NativeTheme::kColorId_TreeBackground:
-      return GetBgColor("GtkTreeView#treeview.view .view.cell");
+      return GetBgColor(
+          "GtkTreeView#treeview.view GtkTreeView#treeview.view.cell");
     case ui::NativeTheme::kColorId_TableText:
     case ui::NativeTheme::kColorId_TreeText:
     case ui::NativeTheme::kColorId_TableGroupingIndicatorColor:
-      return GetFgColor("GtkTreeView#treeview.view .view.cell GtkLabel");
+      return GetFgColor(
+          "GtkTreeView#treeview.view GtkTreeView#treeview.view.cell GtkLabel");
     case ui::NativeTheme::kColorId_TableSelectedText:
     case ui::NativeTheme::kColorId_TableSelectedTextUnfocused:
     case ui::NativeTheme::kColorId_TreeSelectedText:
     case ui::NativeTheme::kColorId_TreeSelectedTextUnfocused:
       return GetFgColor(
-          "GtkTreeView#treeview.view .view.cell:selected:focus GtkLabel");
+          "GtkTreeView#treeview.view "
+          "GtkTreeView#treeview.view.cell:selected:focus GtkLabel");
     case ui::NativeTheme::kColorId_TableSelectionBackgroundFocused:
     case ui::NativeTheme::kColorId_TableSelectionBackgroundUnfocused:
     case ui::NativeTheme::kColorId_TreeSelectionBackgroundFocused:
     case ui::NativeTheme::kColorId_TreeSelectionBackgroundUnfocused:
-      return GetBgColor("GtkTreeView#treeview.view .view.cell:selected:focus");
+      return GetBgColor(
+          "GtkTreeView#treeview.view "
+          "GtkTreeView#treeview.view.cell:selected:focus");
 
     // Table Header
     case ui::NativeTheme::kColorId_TableHeaderText:
@@ -257,50 +277,77 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // Results Table
     case ui::NativeTheme::kColorId_ResultsTableNormalBackground:
-      return GetBgColor("GtkEntry#entry");
+      return SkColorFromColorId(
+          ui::NativeTheme::kColorId_TextfieldDefaultBackground);
     case ui::NativeTheme::kColorId_ResultsTableHoveredBackground:
-      return color_utils::AlphaBlend(GetBgColor("GtkEntry#entry"),
-                                     GetSelectedBgColor("GtkEntry#entry"),
-                                     0x80);
+      return color_utils::AlphaBlend(
+          SkColorFromColorId(
+              ui::NativeTheme::kColorId_TextfieldDefaultBackground),
+          SkColorFromColorId(
+              ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused),
+          0x80);
     case ui::NativeTheme::kColorId_ResultsTableSelectedBackground:
-      return GetSelectedBgColor("GtkEntry#entry");
+      return SkColorFromColorId(
+          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
     case ui::NativeTheme::kColorId_ResultsTableNormalText:
     case ui::NativeTheme::kColorId_ResultsTableHoveredText:
-      return GetFgColor("GtkEntry#entry");
+      return SkColorFromColorId(
+          ui::NativeTheme::kColorId_TextfieldDefaultColor);
     case ui::NativeTheme::kColorId_ResultsTableSelectedText:
-      return GetSelectedTextColor("GtkEntry#entry");
+      return SkColorFromColorId(
+          ui::NativeTheme::kColorId_TextfieldSelectionColor);
     case ui::NativeTheme::kColorId_ResultsTableNormalDimmedText:
     case ui::NativeTheme::kColorId_ResultsTableHoveredDimmedText:
-      return color_utils::AlphaBlend(GetFgColor("GtkEntry#entry"),
-                                     GetBgColor("GtkEntry#entry"), 0x80);
+      return color_utils::AlphaBlend(
+          SkColorFromColorId(ui::NativeTheme::kColorId_TextfieldDefaultColor),
+          SkColorFromColorId(
+              ui::NativeTheme::kColorId_TextfieldDefaultBackground),
+          0x80);
     case ui::NativeTheme::kColorId_ResultsTableSelectedDimmedText:
-      return color_utils::AlphaBlend(GetSelectedTextColor("GtkEntry#entry"),
-                                     GetBgColor("GtkEntry#entry"), 0x80);
+      return color_utils::AlphaBlend(
+          SkColorFromColorId(ui::NativeTheme::kColorId_TextfieldSelectionColor),
+          SkColorFromColorId(
+              ui::NativeTheme::kColorId_TextfieldDefaultBackground),
+          0x80);
     case ui::NativeTheme::kColorId_ResultsTableNormalUrl:
     case ui::NativeTheme::kColorId_ResultsTableHoveredUrl:
-      return NormalURLColor(GetFgColor("GtkEntry#entry"));
+      return NormalURLColor(
+          SkColorFromColorId(ui::NativeTheme::kColorId_TextfieldDefaultColor));
     case ui::NativeTheme::kColorId_ResultsTableSelectedUrl:
-      return SelectedURLColor(GetSelectedTextColor("GtkEntry#entry"),
-                              GetSelectedBgColor("GtkEntry#entry"));
-
+      return SelectedURLColor(
+          SkColorFromColorId(ui::NativeTheme::kColorId_TextfieldSelectionColor),
+          SkColorFromColorId(
+              ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
     case ui::NativeTheme::kColorId_ResultsTablePositiveText:
-      return color_utils::GetReadableColor(kPositiveTextColor,
-                                           GetBgColor("GtkEntry#entry"));
+      return color_utils::GetReadableColor(
+          kPositiveTextColor,
+          SkColorFromColorId(
+              ui::NativeTheme::kColorId_TextfieldDefaultBackground));
     case ui::NativeTheme::kColorId_ResultsTablePositiveHoveredText:
-      return color_utils::GetReadableColor(kPositiveTextColor,
-                                           GetBgColor("GtkEntry#entry:hover"));
+      return color_utils::GetReadableColor(
+          kPositiveTextColor,
+          SkColorFromColorId(
+              ui::NativeTheme::kColorId_TextfieldDefaultBackground));
     case ui::NativeTheme::kColorId_ResultsTablePositiveSelectedText:
       return color_utils::GetReadableColor(
-          kPositiveTextColor, GetBgColor("GtkEntry#entry:selected"));
+          kPositiveTextColor,
+          SkColorFromColorId(
+              ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
     case ui::NativeTheme::kColorId_ResultsTableNegativeText:
-      return color_utils::GetReadableColor(kNegativeTextColor,
-                                           GetBgColor("GtkEntry#entry"));
+      return color_utils::GetReadableColor(
+          kNegativeTextColor,
+          SkColorFromColorId(
+              ui::NativeTheme::kColorId_TextfieldDefaultBackground));
     case ui::NativeTheme::kColorId_ResultsTableNegativeHoveredText:
-      return color_utils::GetReadableColor(kNegativeTextColor,
-                                           GetBgColor("GtkEntry#entry:hover"));
+      return color_utils::GetReadableColor(
+          kNegativeTextColor,
+          SkColorFromColorId(
+              ui::NativeTheme::kColorId_TextfieldDefaultBackground));
     case ui::NativeTheme::kColorId_ResultsTableNegativeSelectedText:
       return color_utils::GetReadableColor(
-          kNegativeTextColor, GetBgColor("GtkEntry#entry:selected"));
+          kNegativeTextColor,
+          SkColorFromColorId(
+              ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
 
     // Throbber
     // TODO(thomasanderson): Render GtkSpinner directly.
@@ -343,22 +390,22 @@ NativeThemeGtk3::NativeThemeGtk3() {
   // this point.  We need the g_type_class magic to make sure the compiler
   // doesn't optimize away this code.
   g_type_class_unref(g_type_class_ref(gtk_button_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_label_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_window_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_link_button_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_spinner_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_menu_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_menu_item_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_entry_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_info_bar_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_tooltip_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_scrollbar_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_toolbar_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_text_view_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_separator_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_label_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_menu_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_menu_bar_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_scrolled_window_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_menu_item_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_range_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_scrollbar_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_scrolled_window_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_separator_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_spinner_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_text_view_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_toolbar_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_tooltip_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_tree_view_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_window_get_type()));
 
   g_signal_connect_after(gtk_settings_get_default(), "notify::gtk-theme-name",
                          G_CALLBACK(OnThemeChanged), this);

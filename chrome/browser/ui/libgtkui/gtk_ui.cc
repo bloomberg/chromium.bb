@@ -379,6 +379,59 @@ views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
   }
 }
 
+#if GTK_MAJOR_VERSION > 2
+// COLOR_TOOLBAR_TOP_SEPARATOR represents the border between tabs and the
+// frame, as well as the border between tabs and the toolbar.  For this
+// reason, it is difficult to calculate the One True Color that works well on
+// all themes and is opaque.  However, we can cheat to get a good color that
+// works well for both borders.  The idea is we have two variables: alpha and
+// lightness.  And we have two constraints (on lightness):
+// 1. the border color, when painted on |header_bg|, should give |header_fg|
+// 2. the border color, when painted on |toolbar_bg|, should give |toolbar_fg|
+// This gives the equations:
+// alpha*lightness + (1 - alpha)*header_bg = header_fg
+// alpha*lightness + (1 - alpha)*toolbar_bg = toolbar_fg
+// The algorithm below is just a result of solving those equations for alpha
+// and lightness.  If a problem is encountered, like division by zero, or
+// |a| or |l| not in [0, 1], then fallback on |header_fg| or |toolbar_fg|.
+SkColor GetToolbarTopSeparatorColor(SkColor header_fg,
+                                    SkColor header_bg,
+                                    SkColor toolbar_fg,
+                                    SkColor toolbar_bg) {
+  using namespace color_utils;
+
+  SkColor default_color = SkColorGetA(header_fg) ? header_fg : toolbar_fg;
+  if (!SkColorGetA(default_color))
+    return SK_ColorTRANSPARENT;
+
+  auto get_lightness = [](SkColor color) {
+    HSL hsl;
+    SkColorToHSL(color, &hsl);
+    return hsl.l;
+  };
+
+  double f1 = get_lightness(GetResultingPaintColor(header_fg, header_bg));
+  double b1 = get_lightness(header_bg);
+  double f2 = get_lightness(GetResultingPaintColor(toolbar_fg, toolbar_bg));
+  double b2 = get_lightness(toolbar_bg);
+
+  if (b1 == b2)
+    return default_color;
+  double a = (f1 - f2 - b1 + b2) / (b2 - b1);
+  if (a == 0)
+    return default_color;
+  double l = (f1 - (1 - a) * b1) / a;
+  if (a < 0 || a > 1 || l < 0 || l > 1)
+    return default_color;
+  // Take the hue and saturation from |default_color|, but use the
+  // calculated lightness.
+  HSL border;
+  SkColorToHSL(default_color, &border);
+  border.l = l;
+  return HSLToSkColor(border, a * 0xff);
+}
+#endif
+
 }  // namespace
 
 GtkUi::GtkUi() : middle_click_action_(GetDefaultMiddleClickAction()) {
@@ -768,9 +821,29 @@ void GtkUi::LoadGtkValues() {
   UpdateDeviceScaleFactor();
   UpdateCursorTheme();
 
-  BuildFrameColors();
-
 #if GTK_MAJOR_VERSION == 2
+  const color_utils::HSL kDefaultFrameShift = {-1, -1, 0.4};
+  SkColor frame_color =
+      native_theme_->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
+  frame_color = color_utils::HSLShift(frame_color, kDefaultFrameShift);
+  GetChromeStyleColor("frame-color", &frame_color);
+  colors_[ThemeProperties::COLOR_FRAME] = frame_color;
+
+  GtkStyle* style = gtk_rc_get_style(fake_window_);
+  SkColor temp_color = color_utils::HSLShift(
+      GdkColorToSkColor(style->bg[GTK_STATE_INSENSITIVE]), kDefaultFrameShift);
+  GetChromeStyleColor("inactive-frame-color", &temp_color);
+  colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = temp_color;
+
+  temp_color = color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
+  GetChromeStyleColor("incognito-frame-color", &temp_color);
+  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] = temp_color;
+
+  temp_color =
+      color_utils::HSLShift(frame_color, kDefaultTintFrameIncognitoInactive);
+  GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
+  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
+
   SkColor toolbar_color =
       native_theme_->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
   SkColor label_color = native_theme_->GetSystemColor(
@@ -808,6 +881,16 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_NTP_HEADER] =
       colors_[ThemeProperties::COLOR_FRAME];
 #else
+  SkColor frame_color = GetBgColor("#headerbar.header-bar.titlebar");
+  SkColor frame_color_inactive =
+      GetBgColor("#headerbar.header-bar.titlebar:backdrop");
+  colors_[ThemeProperties::COLOR_FRAME] = frame_color;
+  colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = frame_color_inactive;
+  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] =
+      color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
+  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] =
+      color_utils::HSLShift(frame_color_inactive, kDefaultTintFrameIncognito);
+
   SkColor toolbar_color = GetBgColor("GtkToolbar#toolbar");
   SkColor toolbar_text_color = color_utils::GetReadableColor(
       GetFgColor("GtkToolbar#toolbar GtkLabel#label"),
@@ -824,50 +907,54 @@ void GtkUi::LoadGtkValues() {
 
   SkColor location_bar_border =
       GetBorderColor("GtkToolbar#toolbar GtkEntry#entry");
-  if (SkColorGetA(location_bar_border)) {
+  if (SkColorGetA(location_bar_border))
     colors_[ThemeProperties::COLOR_LOCATION_BAR_BORDER] = location_bar_border;
-  }
 
-  inactive_selection_bg_color_ = GetSelectedBgColor("GtkEntry#entry:backdrop");
+  inactive_selection_bg_color_ =
+      GetSelectedBgColor("GtkTextView#textview.view:backdrop");
   inactive_selection_fg_color_ =
-      GetSelectedTextColor("GtkEntry#entry:backdrop");
+      GetSelectedTextColor("GtkTextView#textview.view:backdrop");
 
-  SkColor toolbar_separator_horizontal =
-      GetSeparatorColor("GtkToolbar#toolbar GtkSeparator#separator.horizontal");
-  SkColor toolbar_separator_vertical =
-      GetSeparatorColor("GtkToolbar#toolbar GtkSeparator#separator.vertical");
+  SkColor toolbar_button_border =
+      GetBorderColor("GtkToolbar#toolbar GtkButton#button");
   colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND] =
       toolbar_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT] =
       toolbar_text_color;
   // Separates the toolbar from the bookmark bar or butter bars.
   colors_[ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR] =
-      toolbar_separator_horizontal;
+      toolbar_button_border;
   // Separates entries in the downloads bar.
   colors_[ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR] =
-      toolbar_separator_vertical;
+      toolbar_button_border;
   // Separates the bookmark bar from the web content.
   colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR] =
-      toolbar_separator_horizontal;
+      toolbar_button_border;
 
   // These colors represent the border drawn around tabs and between
   // the tabstrip and toolbar.
-  SkColor header_button_border =
-      GetBorderColor("#headerbar.header-bar.titlebar GtkButton#button");
-  SkColor header_button_inactive_border = GetBorderColor(
-      "#headerbar.header-bar.titlebar:backdrop GtkButton#button");
+  SkColor toolbar_top_separator = GetToolbarTopSeparatorColor(
+      GetBorderColor("#headerbar.header-bar.titlebar GtkButton#button"),
+      frame_color, toolbar_button_border, toolbar_color);
+  SkColor toolbar_top_separator_inactive = GetToolbarTopSeparatorColor(
+      GetBorderColor(
+          "#headerbar.header-bar.titlebar:backdrop GtkButton#button"),
+      frame_color_inactive, toolbar_button_border, toolbar_color);
   // Unlike with toolbars, we always want a border around tabs, so let
   // ThemeService choose the border color if the theme doesn't provide one.
-  if (SkColorGetA(header_button_border) &&
-      SkColorGetA(header_button_inactive_border)) {
+  if (SkColorGetA(toolbar_top_separator) &&
+      SkColorGetA(toolbar_top_separator_inactive)) {
     colors_[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR] =
-        header_button_border;
+        toolbar_top_separator;
     colors_[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE] =
-        header_button_inactive_border;
+        toolbar_top_separator_inactive;
   }
 
-  colors_[ThemeProperties::COLOR_NTP_BACKGROUND] = GetBgColor("GtkEntry#entry");
-  colors_[ThemeProperties::COLOR_NTP_TEXT] = GetFgColor("GtkEntry#entry");
+  colors_[ThemeProperties::COLOR_NTP_BACKGROUND] =
+      native_theme_->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+  colors_[ThemeProperties::COLOR_NTP_TEXT] = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
   colors_[ThemeProperties::COLOR_NTP_HEADER] =
       GetBorderColor("GtkButton#button");
 #endif
@@ -880,8 +967,8 @@ void GtkUi::LoadGtkValues() {
 
   // Generate the colors that we pass to WebKit.
   SetScrollbarColors();
-  focus_ring_color_ =
-      native_theme_->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
+  focus_ring_color_ = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_FocusedBorderColor);
 
   // Some GTK themes only define the text selection colors on the GtkEntry
   // class, so we need to use that for getting selection colors.
@@ -890,12 +977,14 @@ void GtkUi::LoadGtkValues() {
   active_selection_fg_color_ = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionColor);
 
+  SkColor throbber_spinning = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_ThrobberSpinningColor);
   colors_[ThemeProperties::COLOR_TAB_THROBBER_SPINNING] =
-      native_theme_->GetSystemColor(
-          ui::NativeTheme::kColorId_ThrobberSpinningColor);
+      color_utils::GetReadableColor(throbber_spinning, toolbar_color);
+  SkColor throbber_waiting = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_ThrobberWaitingColor);
   colors_[ThemeProperties::COLOR_TAB_THROBBER_WAITING] =
-      native_theme_->GetSystemColor(
-          ui::NativeTheme::kColorId_ThrobberWaitingColor);
+      color_utils::GetReadableColor(throbber_waiting, toolbar_color);
 }
 
 void GtkUi::UpdateCursorTheme() {
@@ -912,42 +1001,6 @@ void GtkUi::UpdateCursorTheme() {
     XcursorSetDefaultSize(gfx::GetXDisplay(), size);
 
   g_free(theme);
-}
-
-void GtkUi::BuildFrameColors() {
-#if GTK_MAJOR_VERSION == 2
-  const color_utils::HSL kDefaultFrameShift = {-1, -1, 0.4};
-  SkColor frame_color =
-      native_theme_->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
-  frame_color = color_utils::HSLShift(frame_color, kDefaultFrameShift);
-  GetChromeStyleColor("frame-color", &frame_color);
-  colors_[ThemeProperties::COLOR_FRAME] = frame_color;
-
-  GtkStyle* style = gtk_rc_get_style(fake_window_);
-  SkColor temp_color = color_utils::HSLShift(
-      GdkColorToSkColor(style->bg[GTK_STATE_INSENSITIVE]), kDefaultFrameShift);
-  GetChromeStyleColor("inactive-frame-color", &temp_color);
-  colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = temp_color;
-
-  temp_color = color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
-  GetChromeStyleColor("incognito-frame-color", &temp_color);
-  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] = temp_color;
-
-  temp_color =
-      color_utils::HSLShift(frame_color, kDefaultTintFrameIncognitoInactive);
-  GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
-  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
-#else
-  SkColor color_frame = GetBgColor("#headerbar.header-bar.titlebar");
-  SkColor color_frame_inactive =
-      GetBgColor("#headerbar.header-bar.titlebar:backdrop");
-  colors_[ThemeProperties::COLOR_FRAME] = color_frame;
-  colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = color_frame_inactive;
-  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] =
-      color_utils::HSLShift(color_frame, kDefaultTintFrameIncognito);
-  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] =
-      color_utils::HSLShift(color_frame_inactive, kDefaultTintFrameIncognito);
-#endif
 }
 
 void GtkUi::UpdateDefaultFont() {
