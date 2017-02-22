@@ -199,7 +199,8 @@ static DocumentFragment* documentFragmentFromDragData(
 
 bool DragController::dragIsMove(FrameSelection& selection, DragData* dragData) {
   return m_documentUnderMouse == m_dragInitiator &&
-         selection.isContentEditable() &&
+         selection.computeVisibleSelectionInDOMTreeDeprecated()
+             .isContentEditable() &&
          selection.computeVisibleSelectionInDOMTreeDeprecated().isRange() &&
          !isCopyKeyDown(dragData);
 }
@@ -479,7 +480,10 @@ static bool setSelectionToDragCaret(LocalFrame* frame,
     dragCaret = frame->selection().computeVisibleSelectionInDOMTreeDeprecated();
     range = createRange(dragCaret.toNormalizedEphemeralRange());
   }
-  return !frame->selection().isNone() && frame->selection().isContentEditable();
+  return !frame->selection().isNone() &&
+         frame->selection()
+             .computeVisibleSelectionInDOMTreeDeprecated()
+             .isContentEditable();
 }
 
 DispatchEventResult DragController::dispatchTextInputEventFor(
@@ -1146,7 +1150,9 @@ bool DragController::startDrag(LocalFrame* src,
     if (src->selection()
             .computeVisibleSelectionInDOMTreeDeprecated()
             .isCaret() &&
-        src->selection().isContentEditable()) {
+        src->selection()
+            .computeVisibleSelectionInDOMTreeDeprecated()
+            .isContentEditable()) {
       // a user can initiate a drag on a link without having any text
       // selected.  In this case, we should expand the selection to
       // the enclosing anchor element

@@ -606,7 +606,11 @@ void Editor::replaceSelectionWithFragment(DocumentFragment* fragment,
                                           InputEvent::InputType inputType) {
   DCHECK(!frame().document()->needsLayoutTreeUpdate());
   if (frame().selection().isNone() ||
-      !frame().selection().isContentEditable() || !fragment)
+      !frame()
+           .selection()
+           .computeVisibleSelectionInDOMTreeDeprecated()
+           .isContentEditable() ||
+      !fragment)
     return;
 
   ReplaceSelectionCommand::CommandOptions options =

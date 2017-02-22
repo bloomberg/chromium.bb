@@ -628,7 +628,7 @@ void FrameSelection::selectAll() {
 
   Node* root = nullptr;
   Node* selectStartTarget = nullptr;
-  if (isContentEditable()) {
+  if (computeVisibleSelectionInDOMTreeDeprecated().isContentEditable()) {
     root = highestEditableRoot(
         computeVisibleSelectionInDOMTreeDeprecated().start());
     if (Node* shadowRoot = nonBoundaryShadowTreeRootNode(

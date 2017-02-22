@@ -1942,7 +1942,9 @@ static bool enabledRangeInEditableText(LocalFrame& frame,
   return frame.selection()
              .computeVisibleSelectionInDOMTreeDeprecated()
              .isRange() &&
-         frame.selection().isContentEditable();
+         frame.selection()
+             .computeVisibleSelectionInDOMTreeDeprecated()
+             .isContentEditable();
 }
 
 static bool enabledRangeInRichlyEditableText(LocalFrame& frame,

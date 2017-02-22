@@ -987,7 +987,9 @@ void SelectionController::sendContextMenuEvent(
       // If the selection is non-editable, we do word selection to make it
       // easier to use the contextual menu items available for text selections.
       // But only if we're above text.
-      !(selection().isContentEditable() ||
+      !(selection()
+            .computeVisibleSelectionInDOMTreeDeprecated()
+            .isContentEditable() ||
         (mev.innerNode() && mev.innerNode()->isTextNode())))
     return;
 

@@ -61,7 +61,9 @@ String contentAfterPastingHTML(DummyPageHolder* pageHolder,
   frame.selection().setSelection(
       SelectionInDOMTree::Builder().selectAllChildren(*body).build());
   EXPECT_EQ(CaretSelection, frame.selection().getSelectionType());
-  EXPECT_TRUE(frame.selection().isContentEditable())
+  EXPECT_TRUE(frame.selection()
+                  .computeVisibleSelectionInDOMTreeDeprecated()
+                  .isContentEditable())
       << "We should be pasting into something editable.";
 
   Pasteboard* pasteboard = Pasteboard::generalPasteboard();
