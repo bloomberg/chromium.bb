@@ -29,6 +29,13 @@ function ShareDialog(parentNode) {
 ShareDialog.FAILURE_TIMEOUT = 20000;
 
 /**
+ * Polling interval for detecting the end of resizing animation.
+ * @type {number}
+ * @const
+ */
+ShareDialog.WEBVIEW_CHECKSIZE_INTERVAL = 200;
+
+/**
  * The result of opening the dialog.
  * @enum {string}
  * @const
@@ -151,22 +158,32 @@ ShareDialog.prototype.onResized = function(width, height, callback) {
   this.webViewWrapper_.style.width = width + 'px';
   this.webViewWrapper_.style.height = height + 'px';
 
-  // Wait sending 'resizeComplete' event until the latest size can be obtained
-  // in the WebView.
-  var checkSize = function() {
+  // Wait sending 'resizeComplete' event until the size of the WebView
+  // stabilizes. This is a workaround for crbug.com/693416.
+  // TODO(yamaguchi): Detect animation end by the absolute size to distinguish
+  // it from frame drops.
+  /**
+   * @param {number} previousWidth Width in pixels.
+   * @param {number} previousHeight Height in pixels.
+   */
+  var checkSize = function(previousWidth, previousHeight) {
     this.webView_.executeScript({
       code: "[document.documentElement.clientWidth," +
             " document.documentElement.clientHeight];"
     }, function(results) {
-      if (results[0][0] === width && results[0][1] === height) {
+      var newWidth = results[0][0];
+      var newHeight = results[0][1];
+      if (newWidth === previousWidth && newHeight === previousHeight) {
         callback();
       } else {
-        setTimeout(checkSize, 50);
+        setTimeout(checkSize.bind(null, newWidth, newHeight),
+            ShareDialog.WEBVIEW_CHECKSIZE_INTERVAL);
       }
     }.bind(this));
   }.bind(this);
 
-  setTimeout(checkSize, 0);
+  setTimeout(checkSize.bind(null, -1, -1),
+      ShareDialog.WEBVIEW_CHECKSIZE_INTERVAL);
 };
 
 /**
