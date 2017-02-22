@@ -133,12 +133,6 @@ void LayerImpl::SetDebugInfo(
   SetNeedsPushProperties();
 }
 
-void LayerImpl::DistributeScroll(ScrollState* scroll_state) {
-  ScrollTree& scroll_tree = GetScrollTree();
-  ScrollNode* scroll_node = scroll_tree.Node(scroll_tree_index());
-  scroll_tree.DistributeScroll(scroll_node, scroll_state);
-}
-
 void LayerImpl::SetTransformTreeIndex(int index) {
   transform_tree_index_ = index;
 }

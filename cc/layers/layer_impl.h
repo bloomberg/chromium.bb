@@ -59,7 +59,6 @@ class RenderPass;
 class ScrollbarLayerImplBase;
 class SimpleEnclosedRegion;
 class Tile;
-class ScrollState;
 
 struct AppendQuadsData;
 
@@ -89,8 +88,6 @@ class CC_EXPORT LayerImpl {
   void OnIsAnimatingChanged(const PropertyAnimationState& mask,
                             const PropertyAnimationState& state);
   bool IsActive() const;
-
-  void DistributeScroll(ScrollState* scroll_state);
 
   void set_property_tree_sequence_number(int sequence_number) {}
 

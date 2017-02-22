@@ -3010,7 +3010,7 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollSingleNode(
 
 void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
                                     ScrollState* scroll_state) {
-  DCHECK(scroll_state);
+  DCHECK(scroll_node && scroll_state);
   gfx::Point viewport_point(scroll_state->position_x(),
                             scroll_state->position_y());
   const gfx::Vector2dF delta(scroll_state->delta_x(), scroll_state->delta_y());
@@ -3088,7 +3088,7 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
   // is not the case here. We eventually want to have the same behaviour on both
   // sides but it may become a non issue if we get rid of scroll chaining (see
   // crbug.com/526462)
-  std::list<const ScrollNode*> current_scroll_chain;
+  std::list<ScrollNode*> current_scroll_chain;
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
   ScrollNode* viewport_scroll_node =
@@ -3115,7 +3115,7 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
       current_scroll_chain.push_front(scroll_node);
     }
   }
-  scroll_state->set_scroll_chain_and_layer_tree(current_scroll_chain,
+  scroll_state->set_scroll_chain_and_layer_tree(&current_scroll_chain,
                                                 active_tree());
   scroll_state->DistributeToScrollChainDescendant();
 }

@@ -28,9 +28,11 @@ void ScrollState::ConsumeDelta(double x, double y) {
 
 void ScrollState::DistributeToScrollChainDescendant() {
   if (!scroll_chain_.empty()) {
-    const ScrollNode* next = scroll_chain_.front();
+    ScrollNode* next = scroll_chain_.front();
     scroll_chain_.pop_front();
-    layer_tree_impl_->LayerById(next->owning_layer_id)->DistributeScroll(this);
+
+    ScrollTree& scroll_tree = layer_tree_impl_->property_trees()->scroll_tree;
+    scroll_tree.DistributeScroll(next, this);
   }
 }
 
