@@ -187,7 +187,9 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   EXPECT_EQ(dir, node->Items()[fragment->ItemIndex()].Direction())
 
 TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
-  NGInlineNodeForTest* node = CreateBidiIsolateNode(style_.get());
+  RefPtr<ComputedStyle> style = ComputedStyle::create();
+  style->setLineHeight(Length(1, Fixed));
+  NGInlineNodeForTest* node = CreateBidiIsolateNode(style.get());
   Vector<RefPtr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
   ASSERT_EQ(5u, fragments.size());

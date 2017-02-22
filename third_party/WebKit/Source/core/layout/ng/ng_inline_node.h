@@ -35,6 +35,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   NGInlineNode(LayoutObject* start_inline, const ComputedStyle* block_style);
   ~NGInlineNode() override;
 
+  const ComputedStyle* BlockStyle() const { return block_style_.get(); }
+
   RefPtr<NGPhysicalFragment> Layout(NGConstraintSpace*) override;
   void LayoutInline(NGConstraintSpace*, NGLineBuilder*);
   NGInlineNode* NextSibling() override;
@@ -123,6 +125,10 @@ class NGLayoutInlineItem {
 
   LayoutUnit InlineSize() const;
   LayoutUnit InlineSize(unsigned start, unsigned end) const;
+
+  void GetFallbackFonts(HashSet<const SimpleFontData*>*,
+                        unsigned start,
+                        unsigned end) const;
 
   static void Split(Vector<NGLayoutInlineItem>&,
                     unsigned index,

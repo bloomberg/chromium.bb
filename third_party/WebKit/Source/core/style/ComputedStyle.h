@@ -2956,6 +2956,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Line-height utility functions.
   const Length& specifiedLineHeight() const;
   int computedLineHeight() const;
+  float computedLineHeightInFloat() const;
 
   // Width/height utility functions.
   const Length& logicalWidth() const {

@@ -1928,6 +1928,20 @@ int ComputedStyle::computedLineHeight() const {
   return std::min(lh.value(), LayoutUnit::max().toFloat());
 }
 
+float ComputedStyle::computedLineHeightInFloat() const {
+  const Length& lh = lineHeight();
+
+  // Negative value means the line height is not set. Use the font's built-in
+  // spacing, if avalible.
+  if (lh.isNegative() && font().primaryFont())
+    return font().primaryFont()->getFontMetrics().floatLineSpacing();
+
+  if (lh.isPercentOrCalc())
+    return floatValueForLength(lh, computedFontSize());
+
+  return std::min(lh.value(), LayoutUnit::max().toFloat());
+}
+
 void ComputedStyle::setWordSpacing(float wordSpacing) {
   FontSelector* currentFontSelector = font().getFontSelector();
   FontDescription desc(getFontDescription());

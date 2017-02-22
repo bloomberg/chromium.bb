@@ -8,14 +8,18 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_units.h"
+#include "platform/fonts/FontBaseline.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
+class ComputedStyle;
+class FontMetrics;
 class NGConstraintSpace;
 class NGFragmentBuilder;
 class NGInlineNode;
+class NGLayoutInlineItem;
 
 // NGLineBuilder creates the fragment tree for a line.
 // NGLineBuilder manages the current line as a range, |start| and |end|.
@@ -93,6 +97,24 @@ class CORE_EXPORT NGLineBuilder final
 
   void BidiReorder(Vector<LineItemChunk, 32>*);
 
+  // Represents block-direction metrics for an |NGLayoutInlineItem|.
+  struct InlineItemMetrics {
+    float ascent;
+    float descent;
+    float ascent_and_leading;
+    float descent_and_leading;
+
+    // Use the leading from the 'line-height' property, or the font metrics of
+    // the primary font if 'line-height: normal'.
+    InlineItemMetrics(const ComputedStyle&, FontBaseline);
+
+    // Use the leading from the font metrics.
+    InlineItemMetrics(const FontMetrics&, FontBaseline);
+
+   private:
+    void Initialize(const FontMetrics&, FontBaseline, float line_height);
+  };
+
   // LineBoxData is a set of data for a line box that are computed in early
   // phases, such as in |CreateLine()|, and will be used in later phases.
   // TODO(kojii): Not sure if all these data are needed in fragment tree. If
@@ -101,7 +123,20 @@ class CORE_EXPORT NGLineBuilder final
   struct LineBoxData {
     unsigned fragment_end;
     LayoutUnit inline_size;
+    LayoutUnit top_with_leading;
+    float max_ascent = 0;
+    float max_descent = 0;
+    float max_ascent_and_leading = 0;
+    float max_descent_and_leading = 0;
+
+    // Include |InlineItemMetrics| into the metrics for this line box.
+    void UpdateMaxAscentAndDescent(const InlineItemMetrics&);
   };
+
+  void PlaceItems(const Vector<LineItemChunk, 32>&);
+  void AccumulateUsedFonts(const NGLayoutInlineItem&,
+                           const LineItemChunk&,
+                           LineBoxData*);
 
   Member<NGInlineNode> inline_box_;
   Member<const NGConstraintSpace> constraint_space_;
@@ -118,6 +153,7 @@ class CORE_EXPORT NGLineBuilder final
   LayoutUnit last_break_opportunity_position_;
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
+  FontBaseline baseline_type_;
 
 #if DCHECK_IS_ON()
   unsigned is_bidi_reordered_ : 1;

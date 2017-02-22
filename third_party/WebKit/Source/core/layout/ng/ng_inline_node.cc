@@ -215,6 +215,16 @@ LayoutUnit NGLayoutInlineItem::InlineSize(unsigned start, unsigned end) const {
                         .width());
 }
 
+void NGLayoutInlineItem::GetFallbackFonts(
+    HashSet<const SimpleFontData*>* fallback_fonts,
+    unsigned start,
+    unsigned end) const {
+  DCHECK(start >= StartOffset() && start <= end && end <= EndOffset());
+
+  // TODO(kojii): Implement |start| and |end|.
+  shape_result_->fallbackFonts(fallback_fonts);
+}
+
 void NGInlineNode::ShapeText() {
   // TODO(eae): Add support for shaping latin-1 text?
   text_content_.ensure16Bit();
