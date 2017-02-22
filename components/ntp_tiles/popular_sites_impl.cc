@@ -31,6 +31,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "base/json/json_reader.h"
@@ -306,7 +307,28 @@ void PopularSitesImpl::RegisterProfilePrefs(
 }
 
 void PopularSitesImpl::FetchPopularSites() {
-  fetcher_ = URLFetcher::Create(pending_url_, URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("popular_sites_fetch", R"(
+        semantics {
+          sender: "Popular Sites New Tab Fetch"
+          description:
+            "Google Chrome may display a list of regionally-popular web sites "
+            "on the New Tab Page. This service fetches the list of these sites."
+          trigger:
+            "Once per day, unless no popular web sites are required because "
+            "the New Tab Page is filled with suggestions based on the user's "
+            "browsing history."
+          data: "A two letter country code based on the user's location."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting: "This feature cannot be disabled in settings."
+          policy_exception_justification:
+            "Not implemented, considered not useful."
+        })");
+  fetcher_ = URLFetcher::Create(pending_url_, URLFetcher::GET, this,
+                                traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(), data_use_measurement::DataUseUserData::NTP_TILES);
   fetcher_->SetRequestContext(download_context_);
