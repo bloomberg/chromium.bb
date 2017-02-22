@@ -39,6 +39,7 @@ class StyleAdjuster {
  public:
   static void adjustComputedStyle(ComputedStyle& styleToAdjust,
                                   const ComputedStyle& parentStyle,
+                                  const ComputedStyle& layoutParentStyle,
                                   Element*);
   static void adjustStyleForEditing(ComputedStyle&);
   static void adjustStyleForAlignment(ComputedStyle&,

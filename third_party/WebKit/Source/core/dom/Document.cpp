@@ -1753,9 +1753,10 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
     bodyStyle = body->mutableComputedStyle();
     if (didRecalcDocumentElement)
       body->clearAnimationStyleChange();
-    if (!bodyStyle || body->needsStyleRecalc() || didRecalcDocumentElement)
+    if (!bodyStyle || body->needsStyleRecalc() || didRecalcDocumentElement) {
       bodyStyle = ensureStyleResolver().styleForElement(
-          body, documentElementStyle.get());
+          body, documentElementStyle.get(), documentElementStyle.get());
+    }
     rootWritingMode = bodyStyle->getWritingMode();
     rootDirection = bodyStyle->direction();
   }
@@ -2267,9 +2268,18 @@ PassRefPtr<ComputedStyle> Document::styleForElementIgnoringPendingStylesheets(
   StyleEngine::IgnoringPendingStylesheet ignoring(styleEngine());
   if (!element->canParticipateInFlatTree())
     return ensureStyleResolver().styleForElement(element, nullptr);
+
   ContainerNode* parent = LayoutTreeBuilderTraversal::parent(*element);
-  return ensureStyleResolver().styleForElement(
-      element, parent ? parent->ensureComputedStyle() : nullptr);
+  const ComputedStyle* parentStyle =
+      parent ? parent->ensureComputedStyle() : nullptr;
+
+  ContainerNode* layoutParent =
+      parent ? LayoutTreeBuilderTraversal::layoutParent(*element) : nullptr;
+  const ComputedStyle* layoutParentStyle =
+      layoutParent ? layoutParent->ensureComputedStyle() : parentStyle;
+
+  return ensureStyleResolver().styleForElement(element, parentStyle,
+                                               layoutParentStyle);
 }
 
 PassRefPtr<ComputedStyle> Document::styleForPage(int pageIndex) {

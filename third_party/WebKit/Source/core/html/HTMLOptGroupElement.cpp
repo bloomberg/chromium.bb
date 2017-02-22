@@ -43,7 +43,6 @@ using namespace HTMLNames;
 
 inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
     : HTMLElement(optgroupTag, document) {
-  setHasCustomStyleCallbacks();
 }
 
 // An explicit empty destructor should be in HTMLOptGroupElement.cpp, because
@@ -75,19 +74,6 @@ void HTMLOptGroupElement::parseAttribute(
   }
 }
 
-void HTMLOptGroupElement::attachLayoutTree(const AttachContext& context) {
-  if (context.resolvedStyle) {
-    DCHECK(!m_style || m_style == context.resolvedStyle);
-    m_style = context.resolvedStyle;
-  }
-  HTMLElement::attachLayoutTree(context);
-}
-
-void HTMLOptGroupElement::detachLayoutTree(const AttachContext& context) {
-  m_style.clear();
-  HTMLElement::detachLayoutTree(context);
-}
-
 bool HTMLOptGroupElement::supportsFocus() const {
   HTMLSelectElement* select = ownerSelectElement();
   if (select && select->usesMenuList())
@@ -115,23 +101,6 @@ void HTMLOptGroupElement::removedFrom(ContainerNode* insertionPoint) {
       toHTMLSelectElement(insertionPoint)->optGroupInsertedOrRemoved(*this);
   }
   HTMLElement::removedFrom(insertionPoint);
-}
-
-void HTMLOptGroupElement::updateNonComputedStyle() {
-  m_style = originalStyleForLayoutObject();
-  if (layoutObject()) {
-    if (HTMLSelectElement* select = ownerSelectElement())
-      select->updateListOnLayoutObject();
-  }
-}
-
-ComputedStyle* HTMLOptGroupElement::nonLayoutObjectComputedStyle() const {
-  return m_style.get();
-}
-
-PassRefPtr<ComputedStyle> HTMLOptGroupElement::customStyleForLayoutObject() {
-  updateNonComputedStyle();
-  return m_style;
 }
 
 String HTMLOptGroupElement::groupLabelText() const {

@@ -329,7 +329,8 @@ sk_sp<SkImageFilter> CanvasRenderingContext2DState::getFilter(
     filterStyle->setFont(m_fontForFilter);
 
     StyleResolverState resolverState(styleResolutionHost->document(),
-                                     styleResolutionHost, filterStyle.get());
+                                     styleResolutionHost, filterStyle.get(),
+                                     filterStyle.get());
     resolverState.setStyle(filterStyle);
 
     StyleBuilder::applyProperty(CSSPropertyFilter, resolverState,

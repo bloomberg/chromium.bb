@@ -2269,15 +2269,6 @@ crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/basic.html [ Timeou
 crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/callback-idle-periods.html [ Timeout ]
 crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/callback-timeout-with-raf.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html [ Timeout ]
-crbug.com/626703 external/csswg-test/css-display-3/display-contents-before-after-001.html [ Failure ]
-crbug.com/626703 external/csswg-test/css-display-3/display-contents-before-after-002.html [ Failure ]
-crbug.com/626703 external/csswg-test/css-display-3/display-contents-block-001.html [ Failure ]
-crbug.com/626703 external/csswg-test/css-display-3/display-contents-block-002.html [ Failure ]
-crbug.com/626703 external/csswg-test/css-display-3/display-contents-first-letter-001.html [ Failure ]
-crbug.com/626703 external/csswg-test/css-display-3/display-contents-first-line-001.html [ Failure ]
-crbug.com/626703 external/csswg-test/css-display-3/display-contents-inline-001.html [ Failure ]
-crbug.com/626703 external/csswg-test/css-display-3/display-contents-td-001.html [ Failure ]
-crbug.com/626703 external/csswg-test/css-display-3/display-contents-tr-001.html [ Failure ]
 crbug.com/626703 external/csswg-test/css-writing-modes-3/wm-propagation-body-008.xht [ Failure ]
 crbug.com/626703 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure Pass ]
 crbug.com/626703 external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001.html [ Failure Pass ]
@@ -2543,36 +2534,17 @@ crbug.com/684874 virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-duri
 
 # ====== Random order flaky tests end here ======
 
-# ====== Begin of display:contents tests ======
+# ====== Begin of display: contents tests ======
 
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-flex-001-inline.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-flex-001-none.html [ Failure ]
+crbug.com/657748 external/csswg-test/css-display-3/display-contents-before-after-001.html [ Failure ]
+crbug.com/657748 external/csswg-test/css-display-3/display-contents-before-after-002.html [ Failure ]
 crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-flex-002-inline.html [ Failure ]
 crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-flex-002-none.html [ Failure ]
 crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-flex-003-inline.html [ Failure ]
 crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-flex-003-none.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-inline-flex-001-inline.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-inline-flex-001-none.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-list-001-inline.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-list-001-none.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-multicol-001-inline.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-multicol-001-none.html [ Failure ]
 crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-table-001-inline.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-table-001-none.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-table-002-inline.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-dynamic-table-002-none.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-flex-001.html [ Failure ]
 crbug.com/657748 external/csswg-test/css-display-3/display-contents-flex-002.html [ Failure ]
 crbug.com/657748 external/csswg-test/css-display-3/display-contents-flex-003.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-float-001.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-inline-flex-001.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-list-001.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-multicol-001.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-oof-001.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-oof-002.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-table-001.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-table-002.html [ Failure ]
-crbug.com/657748 external/csswg-test/css-display-3/display-contents-text-only-001.html [ Failure ]
 
 # ====== End of display: contents tests ======
 

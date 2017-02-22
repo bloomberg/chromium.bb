@@ -922,10 +922,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   void setStyleChange(StyleChangeType);
 
-  virtual ComputedStyle* nonLayoutObjectComputedStyle() const {
-    return nullptr;
-  }
-
   virtual const ComputedStyle* virtualEnsureComputedStyle(
       PseudoId = PseudoIdNone);
 

@@ -45,9 +45,13 @@ class CORE_EXPORT ElementResolveContext {
 
   Element* element() const { return m_element; }
   const ContainerNode* parentNode() const { return m_parentNode; }
+  const ContainerNode* layoutParent() const { return m_layoutParent; }
   const ComputedStyle* rootElementStyle() const { return m_rootElementStyle; }
   const ComputedStyle* parentStyle() const {
     return parentNode() ? parentNode()->computedStyle() : nullptr;
+  }
+  const ComputedStyle* layoutParentStyle() const {
+    return layoutParent() ? layoutParent()->computedStyle() : nullptr;
   }
   EInsideLink elementLinkState() const { return m_elementLinkState; }
   bool distributedToInsertionPoint() const {
@@ -57,6 +61,7 @@ class CORE_EXPORT ElementResolveContext {
  private:
   Member<Element> m_element;
   Member<ContainerNode> m_parentNode;
+  Member<ContainerNode> m_layoutParent;
   const ComputedStyle* m_rootElementStyle;
   EInsideLink m_elementLinkState;
   bool m_distributedToInsertionPoint;

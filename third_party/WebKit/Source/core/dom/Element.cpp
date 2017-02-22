@@ -1574,7 +1574,8 @@ const AtomicString Element::imageSourceURL() const {
 }
 
 bool Element::layoutObjectIsNeeded(const ComputedStyle& style) {
-  return style.display() != EDisplay::None;
+  return style.display() != EDisplay::None &&
+         style.display() != EDisplay::Contents;
 }
 
 LayoutObject* Element::createLayoutObject(const ComputedStyle& style) {
@@ -1715,9 +1716,15 @@ void Element::attachLayoutTree(const AttachContext& context) {
     data->clearComputedStyle();
   }
 
-  if (!isActiveSlotOrActiveInsertionPoint())
-    LayoutTreeBuilderForElement(*this, context.resolvedStyle)
-        .createLayoutObjectIfNeeded();
+  if (!isActiveSlotOrActiveInsertionPoint()) {
+    LayoutTreeBuilderForElement builder(*this, context.resolvedStyle);
+    builder.createLayoutObjectIfNeeded();
+
+    if (ComputedStyle* style = builder.resolvedStyle()) {
+      if (!layoutObject() && shouldStoreNonLayoutObjectComputedStyle(*style))
+        storeNonLayoutObjectComputedStyle(style);
+    }
+  }
 
   addCallbackSelectors();
 
@@ -1893,8 +1900,28 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling) {
   if (change >= IndependentInherit || needsStyleRecalc()) {
     if (hasRareData()) {
       ElementRareData* data = elementRareData();
-      if (change != IndependentInherit)
-        data->clearComputedStyle();
+      if (change != IndependentInherit) {
+        // We keep the old computed style around for display: contents, option
+        // and optgroup. This way we can call stylePropagationDiff accurately.
+        //
+        // We could clear it always, but we'd have more expensive restyles for
+        // children.
+        //
+        // Note that we can't just keep stored other kind of non-layout object
+        // computed style (like the one that gets set when getComputedStyle is
+        // called on a display: none element), because that is a sizable memory
+        // hit.
+        //
+        // Also, we don't want to leave a stale computed style, which may happen
+        // if we don't end up calling recalcOwnStyle because there's no parent
+        // style.
+        const ComputedStyle* nonLayoutStyle = nonLayoutObjectComputedStyle();
+        if (!nonLayoutStyle ||
+            !shouldStoreNonLayoutObjectComputedStyle(*nonLayoutStyle) ||
+            !parentComputedStyle()) {
+          data->clearComputedStyle();
+        }
+      }
 
       if (change >= IndependentInherit) {
         if (ElementAnimations* elementAnimations = data->elementAnimations())
@@ -2016,6 +2043,9 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change,
       // https://codereview.chromium.org/30453002/
       layoutObject->setStyleInternal(newStyle.get());
     }
+  } else if (localChange != NoChange &&
+             shouldStoreNonLayoutObjectComputedStyle(*newStyle)) {
+    storeNonLayoutObjectComputedStyle(newStyle);
   }
 
   if (getStyleChangeType() >= SubtreeStyleChange)
@@ -3176,13 +3206,47 @@ const ComputedStyle* Element::ensureComputedStyle(
           elementStyle->getCachedPseudoStyle(pseudoElementSpecifier))
     return pseudoElementStyle;
 
+  // TODO(ecobos): Passing two times elementStyle may be wrong, though we don't
+  // support display: contents elements' pseudo-elements yet, so this is not a
+  // problem for now.
   RefPtr<ComputedStyle> result =
       document().ensureStyleResolver().pseudoStyleForElement(
           this, PseudoStyleRequest(pseudoElementSpecifier,
                                    PseudoStyleRequest::ForComputedStyle),
-          elementStyle);
+          elementStyle, elementStyle);
   DCHECK(result);
   return elementStyle->addCachedPseudoStyle(result.release());
+}
+
+const ComputedStyle* Element::nonLayoutObjectComputedStyle() const {
+  if (layoutObject() || !hasRareData())
+    return nullptr;
+
+  return elementRareData()->computedStyle();
+}
+
+bool Element::hasDisplayContentsStyle() const {
+  if (const ComputedStyle* style = nonLayoutObjectComputedStyle())
+    return style->display() == EDisplay::Contents;
+  return false;
+}
+
+bool Element::shouldStoreNonLayoutObjectComputedStyle(
+    const ComputedStyle& style) const {
+#if DCHECK_IS_ON()
+  if (style.display() == EDisplay::Contents)
+    DCHECK(!layoutObject());
+#endif
+
+  return style.display() == EDisplay::Contents ||
+         isHTMLOptGroupElement(*this) || isHTMLOptionElement(*this);
+}
+
+void Element::storeNonLayoutObjectComputedStyle(
+    PassRefPtr<ComputedStyle> style) {
+  DCHECK(style);
+  DCHECK(shouldStoreNonLayoutObjectComputedStyle(*style));
+  ensureElementRareData().setComputedStyle(std::move(style));
 }
 
 AtomicString Element::computeInheritedLanguage() const {

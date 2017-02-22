@@ -30,7 +30,7 @@ ComputedStyle* SVGElementRareData::overrideComputedStyle(
     // animation sandwhich model.
     m_overrideComputedStyle =
         element->document().ensureStyleResolver().styleForElement(
-            element, parentStyle, DisallowStyleSharing,
+            element, parentStyle, parentStyle, DisallowStyleSharing,
             MatchAllRulesExcludingSMIL);
     m_needsOverrideComputedStyleUpdate = false;
   }

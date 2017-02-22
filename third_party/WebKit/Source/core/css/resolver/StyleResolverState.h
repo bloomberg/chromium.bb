@@ -50,8 +50,12 @@ class CORE_EXPORT StyleResolverState {
  public:
   StyleResolverState(Document&,
                      const ElementResolveContext&,
-                     const ComputedStyle* parentStyle);
-  StyleResolverState(Document&, Element*, const ComputedStyle* parentStyle = 0);
+                     const ComputedStyle* parentStyle,
+                     const ComputedStyle* layoutParentStyle);
+  StyleResolverState(Document&,
+                     Element*,
+                     const ComputedStyle* parentStyle = nullptr,
+                     const ComputedStyle* layoutParentStyle = nullptr);
   ~StyleResolverState();
 
   // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to
@@ -119,6 +123,13 @@ class CORE_EXPORT StyleResolverState {
   }
   const ComputedStyle* parentStyle() const { return m_parentStyle.get(); }
   ComputedStyle* parentStyle() { return m_parentStyle.get(); }
+
+  void setLayoutParentStyle(PassRefPtr<ComputedStyle> parentStyle) {
+    m_layoutParentStyle = parentStyle;
+  }
+  const ComputedStyle* layoutParentStyle() const {
+    return m_layoutParentStyle.get();
+  }
 
   // FIXME: These are effectively side-channel "out parameters" for the various
   // map functions. When we map from CSS to style objects we use this state
@@ -216,6 +227,10 @@ class CORE_EXPORT StyleResolverState {
   // m_parentStyle is not always just ElementResolveContext::parentStyle,
   // so we keep it separate.
   RefPtr<ComputedStyle> m_parentStyle;
+  // This will almost-always be the same that m_parentStyle, except in the
+  // presence of display: contents. This is the style against which we have to
+  // do adjustment.
+  RefPtr<const ComputedStyle> m_layoutParentStyle;
 
   CSSAnimationUpdate m_animationUpdate;
   bool m_isAnimationInterpolationMapReady;

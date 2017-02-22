@@ -33,17 +33,17 @@
 
 namespace blink {
 
-namespace LayoutTreeBuilderTraversal {
+inline static bool hasDisplayContentsStyle(const Node& node) {
+  return node.isElementNode() && toElement(node).hasDisplayContentsStyle();
+}
 
 static bool isLayoutObjectReparented(const LayoutObject* layoutObject) {
   if (!layoutObject->node()->isElementNode())
     return false;
-  if (toElement(layoutObject->node())->isInTopLayer())
-    return true;
-  return false;
+  return toElement(layoutObject->node())->isInTopLayer();
 }
 
-void ParentDetails::didTraverseInsertionPoint(
+void LayoutTreeBuilderTraversal::ParentDetails::didTraverseInsertionPoint(
     const InsertionPoint* insertionPoint) {
   if (!m_insertionPoint) {
     m_insertionPoint = insertionPoint;
@@ -56,7 +56,8 @@ inline static void assertPseudoElementParent(
   DCHECK(pseudoElement.parentNode()->canParticipateInFlatTree());
 }
 
-ContainerNode* parent(const Node& node, ParentDetails* details) {
+ContainerNode* LayoutTreeBuilderTraversal::parent(const Node& node,
+                                                  ParentDetails* details) {
   // TODO(hayato): Uncomment this once we can be sure
   // LayoutTreeBuilderTraversal::parent() is used only for a node which is
   // connected.
@@ -68,7 +69,23 @@ ContainerNode* parent(const Node& node, ParentDetails* details) {
   return FlatTreeTraversal::parent(node, details);
 }
 
-Node* nextSibling(const Node& node) {
+ContainerNode* LayoutTreeBuilderTraversal::layoutParent(
+    const Node& node,
+    ParentDetails* details) {
+  ContainerNode* parent = LayoutTreeBuilderTraversal::parent(node, details);
+
+  while (parent && hasDisplayContentsStyle(*parent))
+    parent = LayoutTreeBuilderTraversal::parent(*parent, details);
+
+  return parent;
+}
+
+LayoutObject* LayoutTreeBuilderTraversal::parentLayoutObject(const Node& node) {
+  ContainerNode* parent = LayoutTreeBuilderTraversal::layoutParent(node);
+  return parent ? parent->layoutObject() : nullptr;
+}
+
+Node* LayoutTreeBuilderTraversal::nextSibling(const Node& node) {
   if (node.isBeforePseudoElement()) {
     assertPseudoElementParent(toPseudoElement(node));
     if (Node* next = FlatTreeTraversal::firstChild(*node.parentNode()))
@@ -87,7 +104,7 @@ Node* nextSibling(const Node& node) {
   return nullptr;
 }
 
-Node* previousSibling(const Node& node) {
+Node* LayoutTreeBuilderTraversal::previousSibling(const Node& node) {
   if (node.isAfterPseudoElement()) {
     assertPseudoElementParent(toPseudoElement(node));
     if (Node* previous = FlatTreeTraversal::lastChild(*node.parentNode()))
@@ -111,8 +128,8 @@ static Node* lastChild(const Node& node) {
 }
 
 static Node* pseudoAwarePreviousSibling(const Node& node) {
-  Node* previousNode = previousSibling(node);
-  Node* parentNode = parent(node);
+  Node* previousNode = LayoutTreeBuilderTraversal::previousSibling(node);
+  Node* parentNode = LayoutTreeBuilderTraversal::parent(node);
 
   if (parentNode && parentNode->isElementNode() && !previousNode) {
     if (node.isAfterPseudoElement()) {
@@ -141,7 +158,8 @@ static Node* pseudoAwareLastChild(const Node& node) {
   return lastChild(node);
 }
 
-Node* previous(const Node& node, const Node* stayWithin) {
+Node* LayoutTreeBuilderTraversal::previous(const Node& node,
+                                           const Node* stayWithin) {
   if (node == stayWithin)
     return 0;
 
@@ -153,17 +171,17 @@ Node* previous(const Node& node, const Node* stayWithin) {
   return parent(node);
 }
 
-Node* firstChild(const Node& node) {
+Node* LayoutTreeBuilderTraversal::firstChild(const Node& node) {
   return FlatTreeTraversal::firstChild(node);
 }
 
 static Node* pseudoAwareNextSibling(const Node& node) {
-  Node* parentNode = parent(node);
-  Node* nextNode = nextSibling(node);
+  Node* parentNode = LayoutTreeBuilderTraversal::parent(node);
+  Node* nextNode = LayoutTreeBuilderTraversal::nextSibling(node);
 
   if (parentNode && parentNode->isElementNode() && !nextNode) {
     if (node.isBeforePseudoElement()) {
-      if (Node* child = firstChild(*parentNode))
+      if (Node* child = LayoutTreeBuilderTraversal::firstChild(*parentNode))
         return child;
     }
     if (!node.isAfterPseudoElement())
@@ -178,20 +196,20 @@ static Node* pseudoAwareFirstChild(const Node& node) {
     Node* first = currentElement.pseudoElement(PseudoIdBefore);
     if (first)
       return first;
-    first = firstChild(currentElement);
+    first = LayoutTreeBuilderTraversal::firstChild(currentElement);
     if (!first)
       first = currentElement.pseudoElement(PseudoIdAfter);
     return first;
   }
 
-  return firstChild(node);
+  return LayoutTreeBuilderTraversal::firstChild(node);
 }
 
 static Node* nextAncestorSibling(const Node& node, const Node* stayWithin) {
   DCHECK(!pseudoAwareNextSibling(node));
   DCHECK_NE(node, stayWithin);
-  for (Node* parentNode = parent(node); parentNode;
-       parentNode = parent(*parentNode)) {
+  for (Node* parentNode = LayoutTreeBuilderTraversal::parent(node); parentNode;
+       parentNode = LayoutTreeBuilderTraversal::parent(*parentNode)) {
     if (parentNode == stayWithin)
       return 0;
     if (Node* nextNode = pseudoAwareNextSibling(*parentNode))
@@ -200,7 +218,8 @@ static Node* nextAncestorSibling(const Node& node, const Node* stayWithin) {
   return 0;
 }
 
-Node* nextSkippingChildren(const Node& node, const Node* stayWithin) {
+Node* LayoutTreeBuilderTraversal::nextSkippingChildren(const Node& node,
+                                                       const Node* stayWithin) {
   if (node == stayWithin)
     return 0;
   if (Node* nextNode = pseudoAwareNextSibling(node))
@@ -208,37 +227,107 @@ Node* nextSkippingChildren(const Node& node, const Node* stayWithin) {
   return nextAncestorSibling(node, stayWithin);
 }
 
-Node* next(const Node& node, const Node* stayWithin) {
+Node* LayoutTreeBuilderTraversal::next(const Node& node,
+                                       const Node* stayWithin) {
   if (Node* child = pseudoAwareFirstChild(node))
     return child;
   return nextSkippingChildren(node, stayWithin);
 }
 
-LayoutObject* nextSiblingLayoutObject(const Node& node, int32_t limit) {
-  DCHECK(limit == kTraverseAllSiblings || limit >= 0) << limit;
-  for (Node* sibling = LayoutTreeBuilderTraversal::nextSibling(node);
-       sibling && limit-- != 0;
+static LayoutObject* nextSiblingLayoutObjectInternal(Node* node,
+                                                     int32_t& limit) {
+  for (Node* sibling = node; sibling && limit-- != 0;
        sibling = LayoutTreeBuilderTraversal::nextSibling(*sibling)) {
     LayoutObject* layoutObject = sibling->layoutObject();
+
+#if DCHECK_IS_ON()
+    if (hasDisplayContentsStyle(*sibling))
+      DCHECK(!layoutObject);
+#endif
+
+    if (!layoutObject && hasDisplayContentsStyle(*sibling)) {
+      layoutObject = nextSiblingLayoutObjectInternal(
+          pseudoAwareFirstChild(*sibling), limit);
+      if (layoutObject)
+        return layoutObject;
+      if (!limit)
+        return nullptr;
+    }
+
     if (layoutObject && !isLayoutObjectReparented(layoutObject))
       return layoutObject;
   }
-  return 0;
+
+  return nullptr;
 }
 
-LayoutObject* previousSiblingLayoutObject(const Node& node, int32_t limit) {
+LayoutObject* LayoutTreeBuilderTraversal::nextSiblingLayoutObject(
+    const Node& node,
+    int32_t limit) {
   DCHECK(limit == kTraverseAllSiblings || limit >= 0) << limit;
-  for (Node* sibling = LayoutTreeBuilderTraversal::previousSibling(node);
-       sibling && limit-- != 0;
+  if (LayoutObject* sibling =
+          nextSiblingLayoutObjectInternal(nextSibling(node), limit))
+    return sibling;
+
+  Node* parent = LayoutTreeBuilderTraversal::parent(node);
+  while (limit && parent && hasDisplayContentsStyle(*parent)) {
+    if (LayoutObject* sibling =
+            nextSiblingLayoutObjectInternal(nextSibling(*parent), limit))
+      return sibling;
+    parent = LayoutTreeBuilderTraversal::parent(*parent);
+  }
+
+  return nullptr;
+}
+
+static LayoutObject* previousSiblingLayoutObjectInternal(Node* node,
+                                                         int32_t& limit) {
+  for (Node* sibling = node; sibling && limit-- != 0;
        sibling = LayoutTreeBuilderTraversal::previousSibling(*sibling)) {
     LayoutObject* layoutObject = sibling->layoutObject();
+
+#if DCHECK_IS_ON()
+    if (hasDisplayContentsStyle(*sibling))
+      DCHECK(!layoutObject);
+#endif
+
+    if (!layoutObject && hasDisplayContentsStyle(*sibling)) {
+      layoutObject = previousSiblingLayoutObjectInternal(
+          pseudoAwareLastChild(*sibling), limit);
+      if (layoutObject)
+        return layoutObject;
+      if (!limit)
+        return nullptr;
+    }
+
     if (layoutObject && !isLayoutObjectReparented(layoutObject))
       return layoutObject;
   }
-  return 0;
+
+  return nullptr;
 }
 
-LayoutObject* nextInTopLayer(const Element& element) {
+LayoutObject* LayoutTreeBuilderTraversal::previousSiblingLayoutObject(
+    const Node& node,
+    int32_t limit) {
+  DCHECK(limit == kTraverseAllSiblings || limit >= 0) << limit;
+  if (LayoutObject* sibling =
+          previousSiblingLayoutObjectInternal(previousSibling(node), limit))
+    return sibling;
+
+  Node* parent = LayoutTreeBuilderTraversal::parent(node);
+  while (limit && parent && hasDisplayContentsStyle(*parent)) {
+    if (LayoutObject* sibling = previousSiblingLayoutObjectInternal(
+            previousSibling(*parent), limit))
+      return sibling;
+    parent = LayoutTreeBuilderTraversal::parent(*parent);
+  }
+
+  return nullptr;
+}
+
+LayoutObject* LayoutTreeBuilderTraversal::nextInTopLayer(
+    const Element& element) {
   if (!element.isInTopLayer())
     return 0;
   const HeapVector<Member<Element>>& topLayerElements =
@@ -251,7 +340,5 @@ LayoutObject* nextInTopLayer(const Element& element) {
   }
   return 0;
 }
-
-}  // namespace LayoutTreeBuilderTraversal
 
 }  // namespace blink

@@ -29,7 +29,6 @@
 
 namespace blink {
 
-class ComputedStyle;
 class HTMLSelectElement;
 class HTMLDivElement;
 
@@ -54,21 +53,11 @@ class CORE_EXPORT HTMLOptGroupElement final : public HTMLElement {
   void parseAttribute(const AttributeModificationParams&) override;
   void accessKeyAction(bool sendMouseEvents) override;
   void didAddUserAgentShadowRoot(ShadowRoot&) override;
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
-  void detachLayoutTree(const AttachContext& = AttachContext()) override;
   bool matchesEnabledPseudoClass() const override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void removedFrom(ContainerNode*) override;
 
-  // <optgroup> might not have a layoutObject so we manually manage a cached
-  // style.
-  void updateNonComputedStyle();
-  ComputedStyle* nonLayoutObjectComputedStyle() const override;
-  PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
-
   void updateGroupLabel();
-
-  RefPtr<ComputedStyle> m_style;
 };
 
 }  // namespace blink

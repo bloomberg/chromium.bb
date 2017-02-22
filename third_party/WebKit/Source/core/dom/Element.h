@@ -458,6 +458,17 @@ class CORE_EXPORT Element : public ContainerNode {
   // display none.
   const ComputedStyle* ensureComputedStyle(PseudoId = PseudoIdNone);
 
+  const ComputedStyle* nonLayoutObjectComputedStyle() const;
+
+  bool hasDisplayContentsStyle() const;
+
+  ComputedStyle* mutableNonLayoutObjectComputedStyle() const {
+    return const_cast<ComputedStyle*>(nonLayoutObjectComputedStyle());
+  }
+
+  bool shouldStoreNonLayoutObjectComputedStyle(const ComputedStyle&) const;
+  void storeNonLayoutObjectComputedStyle(PassRefPtr<ComputedStyle>);
+
   // Methods for indicating the style is affected by dynamic updates (e.g.,
   // children changing, our position changing in our sibling list, etc.)
   bool styleAffectedByEmpty() const {

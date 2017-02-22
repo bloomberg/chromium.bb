@@ -577,8 +577,11 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document) {
 
 void StyleResolver::adjustComputedStyle(StyleResolverState& state,
                                         Element* element) {
+  DCHECK(state.layoutParentStyle());
+  DCHECK(state.parentStyle());
   StyleAdjuster::adjustComputedStyle(state.mutableStyleRef(),
-                                     *state.parentStyle(), element);
+                                     *state.parentStyle(),
+                                     *state.layoutParentStyle(), element);
 }
 
 // Start loading resources referenced by this style.
@@ -620,6 +623,7 @@ static void updateBaseComputedStyle(StyleResolverState& state,
 PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
     Element* element,
     const ComputedStyle* defaultParent,
+    const ComputedStyle* defaultLayoutParent,
     StyleSharingBehavior sharingBehavior,
     RuleMatchingBehavior matchingBehavior) {
   DCHECK(document().frame());
@@ -656,15 +660,18 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
       return sharedStyle.release();
   }
 
-  StyleResolverState state(document(), elementContext, defaultParent);
+  StyleResolverState state(document(), elementContext, defaultParent,
+                           defaultLayoutParent);
 
   const ComputedStyle* baseComputedStyle =
       calculateBaseComputedStyle(state, element);
 
   if (baseComputedStyle) {
     state.setStyle(ComputedStyle::clone(*baseComputedStyle));
-    if (!state.parentStyle())
+    if (!state.parentStyle()) {
       state.setParentStyle(initialStyleForElement());
+      state.setLayoutParentStyle(state.parentStyle());
+    }
   } else {
     if (state.parentStyle()) {
       RefPtr<ComputedStyle> style = ComputedStyle::create();
@@ -676,6 +683,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
     } else {
       state.setStyle(initialStyleForElement());
       state.setParentStyle(ComputedStyle::clone(*state.style()));
+      state.setLayoutParentStyle(state.parentStyle());
     }
   }
 
@@ -790,7 +798,8 @@ PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(
     const CSSValue* value) {
   // TODO(alancutter): Avoid creating a StyleResolverState just to apply a
   // single value on a ComputedStyle.
-  StyleResolverState state(element.document(), &element, parentStyle);
+  StyleResolverState state(element.document(), &element, parentStyle,
+                           parentStyle);
   state.setStyle(ComputedStyle::clone(baseStyle));
   if (value) {
     StyleBuilder::applyProperty(property, state, *value);
@@ -838,7 +847,7 @@ PseudoElement* StyleResolver::createPseudoElementIfNeeded(Element& parent,
     return createPseudoElement(&parent, pseudoId);
   }
 
-  StyleResolverState state(document(), &parent, parentStyle);
+  StyleResolverState state(document(), &parent, parentStyle, parentStyle);
   if (!pseudoStyleForElementInternal(parent, pseudoId, parentStyle, state))
     return nullptr;
   RefPtr<ComputedStyle> style = state.takeStyle();
@@ -939,12 +948,14 @@ bool StyleResolver::pseudoStyleForElementInternal(
 PassRefPtr<ComputedStyle> StyleResolver::pseudoStyleForElement(
     Element* element,
     const PseudoStyleRequest& pseudoStyleRequest,
-    const ComputedStyle* parentStyle) {
+    const ComputedStyle* parentStyle,
+    const ComputedStyle* parentLayoutObjectStyle) {
   DCHECK(parentStyle);
   if (!element)
     return nullptr;
 
-  StyleResolverState state(document(), element, parentStyle);
+  StyleResolverState state(document(), element, parentStyle,
+                           parentLayoutObjectStyle);
   if (!pseudoStyleForElementInternal(*element, pseudoStyleRequest, parentStyle,
                                      state)) {
     if (pseudoStyleRequest.type == PseudoStyleRequest::ForRenderer)
@@ -1911,7 +1922,7 @@ void StyleResolver::computeFont(ComputedStyle* style,
   };
 
   // TODO(timloh): This is weird, the style is being used as its own parent
-  StyleResolverState state(document(), nullptr, style);
+  StyleResolverState state(document(), nullptr, style, style);
   state.setStyle(style);
 
   for (CSSPropertyID property : properties) {

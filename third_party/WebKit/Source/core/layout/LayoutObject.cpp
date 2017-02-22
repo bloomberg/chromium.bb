@@ -3046,14 +3046,14 @@ PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyle(
 
   if (pseudoStyleRequest.pseudoId == PseudoIdFirstLineInherited) {
     RefPtr<ComputedStyle> result =
-        document().ensureStyleResolver().styleForElement(element, parentStyle,
-                                                         DisallowStyleSharing);
+        document().ensureStyleResolver().styleForElement(
+            element, parentStyle, parentStyle, DisallowStyleSharing);
     result->setStyleType(PseudoIdFirstLineInherited);
     return result.release();
   }
 
   return document().ensureStyleResolver().pseudoStyleForElement(
-      element, pseudoStyleRequest, parentStyle);
+      element, pseudoStyleRequest, parentStyle, parentStyle);
 }
 
 PassRefPtr<ComputedStyle>

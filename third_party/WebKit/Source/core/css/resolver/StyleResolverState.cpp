@@ -34,13 +34,15 @@ namespace blink {
 StyleResolverState::StyleResolverState(
     Document& document,
     const ElementResolveContext& elementContext,
-    const ComputedStyle* parentStyle)
+    const ComputedStyle* parentStyle,
+    const ComputedStyle* layoutParentStyle)
     : m_elementContext(elementContext),
       m_document(document),
       m_style(nullptr),
       // TODO(jchaffraix): We should make m_parentStyle const
       // (https://crbug.com/468152)
       m_parentStyle(const_cast<ComputedStyle*>(parentStyle)),
+      m_layoutParentStyle(layoutParentStyle),
       m_isAnimationInterpolationMapReady(false),
       m_isAnimatingCustomProperties(false),
       m_applyPropertyToRegularStyle(true),
@@ -48,22 +50,32 @@ StyleResolverState::StyleResolverState(
       m_hasDirAutoAttribute(false),
       m_fontBuilder(document),
       m_elementStyleResources(document, document.devicePixelRatio()) {
+  DCHECK(!!m_parentStyle == !!m_layoutParentStyle);
+
   if (!m_parentStyle) {
     // TODO(jchaffraix): We should make m_parentStyle const
     // (https://crbug.com/468152)
     m_parentStyle = const_cast<ComputedStyle*>(m_elementContext.parentStyle());
   }
 
+  if (!m_layoutParentStyle)
+    m_layoutParentStyle = m_elementContext.layoutParentStyle();
+
+  if (!m_layoutParentStyle)
+    m_layoutParentStyle = m_parentStyle;
+
   DCHECK(document.isActive());
 }
 
 StyleResolverState::StyleResolverState(Document& document,
                                        Element* element,
-                                       const ComputedStyle* parentStyle)
+                                       const ComputedStyle* parentStyle,
+                                       const ComputedStyle* layoutParentStyle)
     : StyleResolverState(document,
                          element ? ElementResolveContext(*element)
                                  : ElementResolveContext(document),
-                         parentStyle) {}
+                         parentStyle,
+                         layoutParentStyle) {}
 
 StyleResolverState::~StyleResolverState() {
   // For performance reasons, explicitly clear HeapVectors and

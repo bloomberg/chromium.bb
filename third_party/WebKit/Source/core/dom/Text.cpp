@@ -346,12 +346,17 @@ LayoutText* Text::createTextLayoutObject(const ComputedStyle& style) {
 }
 
 void Text::attachLayoutTree(const AttachContext& context) {
-  if (ContainerNode* layoutParent = LayoutTreeBuilderTraversal::parent(*this)) {
-    if (LayoutObject* parentLayoutObject = layoutParent->layoutObject()) {
-      if (textLayoutObjectIsNeeded(*parentLayoutObject->style(),
-                                   *parentLayoutObject))
-        LayoutTreeBuilderForText(*this, parentLayoutObject)
-            .createLayoutObject();
+  ContainerNode* styleParent = LayoutTreeBuilderTraversal::parent(*this);
+  LayoutObject* parentLayoutObject =
+      LayoutTreeBuilderTraversal::parentLayoutObject(*this);
+
+  if (styleParent && parentLayoutObject) {
+    DCHECK(styleParent->computedStyle());
+    if (textLayoutObjectIsNeeded(*styleParent->computedStyle(),
+                                 *parentLayoutObject)) {
+      LayoutTreeBuilderForText(*this, parentLayoutObject,
+                               styleParent->mutableComputedStyle())
+          .createLayoutObject();
     }
   }
   CharacterData::attachLayoutTree(context);
@@ -359,13 +364,13 @@ void Text::attachLayoutTree(const AttachContext& context) {
 
 void Text::reattachLayoutTreeIfNeeded(const AttachContext& context) {
   bool layoutObjectIsNeeded = false;
-  ContainerNode* layoutParent = LayoutTreeBuilderTraversal::parent(*this);
-  if (layoutParent) {
-    if (LayoutObject* parentLayoutObject = layoutParent->layoutObject()) {
-      if (textLayoutObjectIsNeeded(*parentLayoutObject->style(),
-                                   *parentLayoutObject))
-        layoutObjectIsNeeded = true;
-    }
+  ContainerNode* styleParent = LayoutTreeBuilderTraversal::parent(*this);
+  LayoutObject* parentLayoutObject =
+      LayoutTreeBuilderTraversal::parentLayoutObject(*this);
+  if (styleParent && parentLayoutObject) {
+    DCHECK(styleParent->computedStyle());
+    layoutObjectIsNeeded = textLayoutObjectIsNeeded(
+        *styleParent->computedStyle(), *parentLayoutObject);
   }
 
   if (layoutObjectIsNeeded == !!layoutObject())
@@ -379,9 +384,11 @@ void Text::reattachLayoutTreeIfNeeded(const AttachContext& context) {
 
   if (getStyleChangeType() < NeedsReattachStyleChange)
     detachLayoutTree(reattachContext);
-  if (layoutObjectIsNeeded)
-    LayoutTreeBuilderForText(*this, layoutParent->layoutObject())
+  if (layoutObjectIsNeeded) {
+    LayoutTreeBuilderForText(*this, parentLayoutObject,
+                             styleParent->mutableComputedStyle())
         .createLayoutObject();
+  }
   CharacterData::attachLayoutTree(reattachContext);
 }
 

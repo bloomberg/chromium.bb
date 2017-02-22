@@ -81,7 +81,8 @@ class CORE_EXPORT StyleResolver final
 
   PassRefPtr<ComputedStyle> styleForElement(
       Element*,
-      const ComputedStyle* parentStyle = 0,
+      const ComputedStyle* parentStyle = nullptr,
+      const ComputedStyle* layoutParentStyle = nullptr,
       StyleSharingBehavior = AllowStyleSharing,
       RuleMatchingBehavior = MatchAllRules);
 
@@ -95,7 +96,8 @@ class CORE_EXPORT StyleResolver final
   PassRefPtr<ComputedStyle> pseudoStyleForElement(
       Element*,
       const PseudoStyleRequest&,
-      const ComputedStyle* parentStyle);
+      const ComputedStyle* parentStyle,
+      const ComputedStyle* layoutParentStyle);
 
   PassRefPtr<ComputedStyle> styleForPage(int pageIndex);
   PassRefPtr<ComputedStyle> styleForText(Text*);

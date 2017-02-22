@@ -77,6 +77,8 @@ class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
       createLayoutObject();
   }
 
+  ComputedStyle* resolvedStyle() const { return m_style.get(); }
+
  private:
   LayoutObject* parentLayoutObject() const;
   LayoutObject* nextLayoutObject() const;
@@ -89,9 +91,12 @@ class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
 
 class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
  public:
-  LayoutTreeBuilderForText(Text& text, LayoutObject* layoutParent)
-      : LayoutTreeBuilder(text, layoutParent) {}
+  LayoutTreeBuilderForText(Text& text,
+                           LayoutObject* layoutParent,
+                           ComputedStyle* styleFromParent)
+      : LayoutTreeBuilder(text, layoutParent), m_style(styleFromParent) {}
 
+  RefPtr<ComputedStyle> m_style;
   void createLayoutObject();
 };
 
