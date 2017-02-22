@@ -37,6 +37,10 @@
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
 
+namespace gl {
+class GLShareGroup;
+}
+
 namespace gpu {
 struct Mailbox;
 struct SyncToken;
@@ -232,6 +236,7 @@ class GPU_EXPORT GpuCommandBufferStub
   std::unique_ptr<CommandExecutor> executor_;
   std::unique_ptr<SyncPointClient> sync_point_client_;
   scoped_refptr<gl::GLSurface> surface_;
+  scoped_refptr<gl::GLShareGroup> share_group_;
 
   base::ObserverList<DestructionObserver> destruction_observers_;
 

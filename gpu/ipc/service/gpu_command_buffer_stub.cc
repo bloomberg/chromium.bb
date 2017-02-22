@@ -538,6 +538,8 @@ void GpuCommandBufferStub::Destroy() {
   for (auto& observer : destruction_observers_)
     observer.OnWillDestroyStub();
 
+  share_group_ = nullptr;
+
   // Remove this after crbug.com/248395 is sorted out.
   // Destroy the surface before the context, some surface destructors make GL
   // calls.
@@ -670,23 +672,36 @@ bool GpuCommandBufferStub::Initialize(
     }
   }
 
+  if (context_group_->gpu_preferences().use_passthrough_cmd_decoder) {
+    // When using the passthrough command decoder, only share with other
+    // contexts in the explicitly requested share group
+    if (share_command_buffer_stub) {
+      share_group_ = share_command_buffer_stub->share_group_;
+    } else {
+      share_group_ = new gl::GLShareGroup();
+    }
+  } else {
+    // When using the validating command decoder, always use the global share
+    // group
+    share_group_ = channel_->share_group();
+  }
+
   scoped_refptr<gl::GLContext> context;
-  gl::GLShareGroup* gl_share_group = channel_->share_group();
-  if (use_virtualized_gl_context_ && gl_share_group) {
-    context = gl_share_group->GetSharedContext(surface_.get());
+  if (use_virtualized_gl_context_ && share_group_) {
+    context = share_group_->GetSharedContext(surface_.get());
     if (!context.get()) {
       context = gl::init::CreateGLContext(
-          gl_share_group, surface_.get(),
+          share_group_.get(), surface_.get(),
           GenerateGLContextAttribs(init_params.attribs,
                                    context_group_->gpu_preferences()));
       if (!context.get()) {
         DLOG(ERROR) << "Failed to create shared context for virtualization.";
         return false;
       }
-      // Ensure that context creation did not lose track of the intended
-      // gl_share_group.
-      DCHECK(context->share_group() == gl_share_group);
-      gl_share_group->SetSharedContext(surface_.get(), context.get());
+      // Ensure that context creation did not lose track of the intended share
+      // group.
+      DCHECK(context->share_group() == share_group_.get());
+      share_group_->SetSharedContext(surface_.get(), context.get());
     }
     // This should be either:
     // (1) a non-virtual GL context, or
@@ -694,8 +709,8 @@ bool GpuCommandBufferStub::Initialize(
     DCHECK(context->GetHandle() ||
            gl::GetGLImplementation() == gl::kGLImplementationMockGL ||
            gl::GetGLImplementation() == gl::kGLImplementationStubGL);
-    context = new GLContextVirtual(
-        gl_share_group, context.get(), decoder_->AsWeakPtr());
+    context = new GLContextVirtual(share_group_.get(), context.get(),
+                                   decoder_->AsWeakPtr());
     if (!context->Initialize(
             surface_.get(),
             GenerateGLContextAttribs(init_params.attribs,
@@ -709,7 +724,7 @@ bool GpuCommandBufferStub::Initialize(
   }
   if (!context.get()) {
     context = gl::init::CreateGLContext(
-        gl_share_group, surface_.get(),
+        share_group_.get(), surface_.get(),
         GenerateGLContextAttribs(init_params.attribs,
                                  context_group_->gpu_preferences()));
   }

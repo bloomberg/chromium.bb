@@ -308,6 +308,8 @@ enum ContextType {
   CONTEXT_TYPE_LAST = CONTEXT_TYPE_OPENGLES3
 };
 GLES2_UTILS_EXPORT bool IsWebGLContextType(ContextType context_type);
+GLES2_UTILS_EXPORT bool IsWebGL1OrES2ContextType(ContextType context_type);
+GLES2_UTILS_EXPORT bool IsWebGL2OrES3ContextType(ContextType context_type);
 
 struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   ContextCreationAttribHelper();

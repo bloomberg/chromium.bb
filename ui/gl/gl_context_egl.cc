@@ -32,6 +32,11 @@ extern "C" {
 #define EGL_CONTEXT_WEBGL_COMPATIBILITY_ANGLE 0x3AAC
 #endif /* EGL_ANGLE_create_context_webgl_compatibility */
 
+#ifndef EGL_ANGLE_display_texture_share_group
+#define EGL_ANGLE_display_texture_share_group 1
+#define EGL_DISPLAY_TEXTURE_SHARE_GROUP_ANGLE 0x3AAF
+#endif /* EGL_ANGLE_display_texture_share_group */
+
 using ui::GetLastEGLErrorString;
 
 namespace gl {
@@ -61,16 +66,36 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
     return false;
   }
 
-  EGLint context_client_version = 2;
-  if ((config_renderable_type & EGL_OPENGL_ES3_BIT) != 0 &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableES3GLContext)) {
-    context_client_version = 3;
+  EGLint context_client_major_version = attribs.client_major_es_version;
+  EGLint context_client_minor_version = attribs.client_minor_es_version;
+
+  // If the requested context is ES3 but the config cannot support ES3, request
+  // ES2 instead.
+  if ((config_renderable_type & EGL_OPENGL_ES3_BIT) == 0 &&
+      context_client_major_version >= 3) {
+    context_client_major_version = 2;
+    context_client_minor_version = 0;
   }
 
   std::vector<EGLint> context_attributes;
-  context_attributes.push_back(EGL_CONTEXT_CLIENT_VERSION);
-  context_attributes.push_back(context_client_version);
+
+  // EGL_KHR_create_context allows requesting both a major and minor context
+  // version
+  if (GLSurfaceEGL::HasEGLExtension("EGL_KHR_create_context")) {
+    context_attributes.push_back(EGL_CONTEXT_MAJOR_VERSION);
+    context_attributes.push_back(context_client_major_version);
+
+    context_attributes.push_back(EGL_CONTEXT_MINOR_VERSION);
+    context_attributes.push_back(context_client_minor_version);
+  } else {
+    context_attributes.push_back(EGL_CONTEXT_CLIENT_VERSION);
+    context_attributes.push_back(context_client_major_version);
+
+    // Can only request 2.0 or 3.0 contexts without the EGL_KHR_create_context
+    // extension, DCHECK to make sure we update the code to support devices
+    // without this extension
+    DCHECK(context_client_minor_version == 0);
+  }
 
   if (GLSurfaceEGL::IsCreateContextRobustnessSupported()) {
     DVLOG(1) << "EGL_EXT_create_context_robustness supported.";
@@ -103,6 +128,14 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
         attribs.webgl_compatibility_context ? EGL_TRUE : EGL_FALSE);
   } else {
     DCHECK(!attribs.webgl_compatibility_context);
+  }
+
+  if (GLSurfaceEGL::HasEGLExtension("EGL_ANGLE_display_texture_share_group")) {
+    context_attributes.push_back(EGL_DISPLAY_TEXTURE_SHARE_GROUP_ANGLE);
+    context_attributes.push_back(
+        attribs.global_texture_share_group ? EGL_TRUE : EGL_FALSE);
+  } else {
+    DCHECK(!attribs.global_texture_share_group);
   }
 
   // Append final EGL_NONE to signal the context attributes are finished

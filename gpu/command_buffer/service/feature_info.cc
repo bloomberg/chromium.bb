@@ -1509,33 +1509,11 @@ bool FeatureInfo::IsWebGLContext() const {
 }
 
 bool FeatureInfo::IsWebGL1OrES2Context() const {
-  // Switch statement to cause a compile-time error if we miss a case.
-  switch (context_type_) {
-    case CONTEXT_TYPE_WEBGL1:
-    case CONTEXT_TYPE_OPENGLES2:
-      return true;
-    case CONTEXT_TYPE_WEBGL2:
-    case CONTEXT_TYPE_OPENGLES3:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
+  return IsWebGL1OrES2ContextType(context_type_);
 }
 
 bool FeatureInfo::IsWebGL2OrES3Context() const {
-  // Switch statement to cause a compile-time error if we miss a case.
-  switch (context_type_) {
-    case CONTEXT_TYPE_WEBGL2:
-    case CONTEXT_TYPE_OPENGLES3:
-      return true;
-    case CONTEXT_TYPE_WEBGL1:
-    case CONTEXT_TYPE_OPENGLES2:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
+  return IsWebGL2OrES3ContextType(context_type_);
 }
 
 void FeatureInfo::AddExtensionString(const char* s) {
