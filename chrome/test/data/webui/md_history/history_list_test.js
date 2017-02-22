@@ -28,8 +28,8 @@ suite('<history-list>', function() {
 
   setup(function() {
     app = replaceApp();
-    element = app.$['history'].$['infinite-list'];
-    toolbar = app.$['toolbar'];
+    element = app.$.history;
+    toolbar = app.$.toolbar;
     app.queryState_.incremental = true;
   });
 
@@ -96,63 +96,46 @@ suite('<history-list>', function() {
       MockInteractions.tap(items[1].$.checkbox);
       assertDeepEquals([false, true, false, false],
                        element.historyData_.map(i => i.selected));
-      assertDeepEquals(
-          ['historyData_.1'],
-          Array.from(element.selectedPaths).sort());
+      assertDeepEquals([1], Array.from(element.selectedItems).sort());
 
       // Shift-select to the last item.
       shiftClick(items[3].$.checkbox);
       assertDeepEquals([false, true, true, true],
                        element.historyData_.map(i => i.selected));
-      assertDeepEquals(
-          ['historyData_.1', 'historyData_.2', 'historyData_.3'],
-          Array.from(element.selectedPaths).sort());
+      assertDeepEquals([1, 2, 3], Array.from(element.selectedItems).sort());
 
       // Shift-select back to the first item.
       shiftClick(items[0].$.checkbox);
       assertDeepEquals([true, true, true, true],
                        element.historyData_.map(i => i.selected));
-      assertDeepEquals(
-          [
-            'historyData_.0', 'historyData_.1', 'historyData_.2',
-            'historyData_.3'
-          ],
-          Array.from(element.selectedPaths).sort());
+      assertDeepEquals([0, 1, 2, 3], Array.from(element.selectedItems).sort());
 
       // Shift-deselect to the third item.
       shiftClick(items[2].$.checkbox);
       assertDeepEquals([false, false, false, true],
                        element.historyData_.map(i => i.selected));
-      assertDeepEquals(
-          ['historyData_.3'],
-          Array.from(element.selectedPaths).sort());
+      assertDeepEquals([3], Array.from(element.selectedItems).sort());
 
       // Select the second item.
       MockInteractions.tap(items[1].$.checkbox);
       assertDeepEquals([false, true, false, true],
                        element.historyData_.map(i => i.selected));
-      assertDeepEquals(
-          ['historyData_.1', 'historyData_.3'],
-          Array.from(element.selectedPaths).sort());
+      assertDeepEquals([1, 3], Array.from(element.selectedItems).sort());
 
       // Shift-deselect to the last item.
       shiftClick(items[3].$.checkbox);
       assertDeepEquals([false, false, false, false],
                        element.historyData_.map(i => i.selected));
-      assertDeepEquals(
-          [],
-          Array.from(element.selectedPaths).sort());
+      assertDeepEquals([], Array.from(element.selectedItems).sort());
 
       // Shift-select back to the third item.
       shiftClick(items[2].$.checkbox);
       assertDeepEquals([false, false, true, true],
                        element.historyData_.map(i => i.selected));
-      assertDeepEquals(
-          ['historyData_.2', 'historyData_.3'],
-          Array.from(element.selectedPaths).sort());
+      assertDeepEquals([2, 3], Array.from(element.selectedItems).sort());
 
       // Remove selected items.
-      element.removeItemsByPath(Array.from(element.selectedPaths));
+      element.removeItemsByIndex_(Array.from(element.selectedItems));
       assertDeepEquals(
           ['https://www.google.com', 'https://www.example.com'],
           element.historyData_.map(i => i.title));
@@ -196,9 +179,7 @@ suite('<history-list>', function() {
     app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
     return PolymerTest.flushTasks().then(function() {
 
-      element.removeItemsByPath([
-        'historyData_.2', 'historyData_.5', 'historyData_.7'
-      ]);
+      element.removeItemsByIndex_([2, 5, 7]);
 
       return PolymerTest.flushTasks();
     }).then(function() {

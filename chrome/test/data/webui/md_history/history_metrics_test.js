@@ -89,8 +89,7 @@ suite('Metrics', function() {
     ]);
 
     return PolymerTest.flushTasks().then(() => {
-      var items = polymerSelectAll(
-          app.$.history.$['infinite-list'], 'history-item');
+      var items = polymerSelectAll(app.$.history, 'history-item');
       MockInteractions.tap(items[1].$$('#bookmark-star'));
       assertEquals(1, actionMap['BookmarkStarClicked']);
       MockInteractions.tap(items[1].$.title);
@@ -108,8 +107,7 @@ suite('Metrics', function() {
       ]);
       return PolymerTest.flushTasks();
     }).then(() => {
-      items = polymerSelectAll(
-          app.$.history.$['infinite-list'], 'history-item');
+      items = polymerSelectAll(app.$.history, 'history-item');
       MockInteractions.tap(items[0].$.title);
       assertEquals(1, actionMap['SearchResultClick']);
       assertEquals(1, histogramMap['HistoryPage.ClickPosition'][0]);
@@ -131,8 +129,7 @@ suite('Metrics', function() {
       assertEquals(1, actionMap['ConfirmRemoveSelected']);
       return PolymerTest.flushTasks();
     }).then(() => {
-      items = polymerSelectAll(
-          app.$.history.$['infinite-list'], 'history-item');
+      items = polymerSelectAll(app.$.history, 'history-item');
       MockInteractions.tap(items[0].$['menu-button']);
       return PolymerTest.flushTasks();
     }).then(() => {

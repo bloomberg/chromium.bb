@@ -60,7 +60,7 @@ suite('<history-item> integration test', function() {
   var element;
 
   setup(function() {
-    element = replaceApp().$['history'].$['infinite-list'];
+    element = replaceApp().$.history;
   });
 
   test('basic separator insertion', function() {
@@ -96,13 +96,13 @@ suite('<history-item> integration test', function() {
     return PolymerTest.flushTasks().then(function() {
       var items = Polymer.dom(element.root).querySelectorAll('history-item');
 
-      element.removeItemsByPath(['historyData_.3']);
+      element.removeItemsByIndex_([3]);
       assertEquals(5, element.historyData_.length);
 
       // Checks that a new time gap separator has been inserted.
       assertTrue(items[2].hasTimeGap);
 
-      element.removeItemsByPath(['historyData_.3']);
+      element.removeItemsByIndex_([3]);
 
       // Checks time gap separator is removed.
       assertFalse(items[2].hasTimeGap);

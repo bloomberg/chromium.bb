@@ -121,7 +121,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
 
     setup(function() {
       app = replaceApp();
-      element = app.$['history'].$['infinite-list'];
+      element = app.$.history;
     });
 
     test('list focus and keyboard nav', function(done) {

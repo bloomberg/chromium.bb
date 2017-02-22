@@ -122,9 +122,6 @@ cr.define('md_history', function() {
 
       numberOfItems: Number,
 
-      // The path of this history item inside its parent.
-      path: String,
-
       // Search term used to obtain this history-item.
       searchTerm: String,
     },
@@ -199,7 +196,7 @@ cr.define('md_history', function() {
 
       this.$.checkbox.focus();
       this.fire('history-checkbox-select', {
-        element: this,
+        index: this.index,
         shiftKey: e.shiftKey,
       });
     },
@@ -262,7 +259,6 @@ cr.define('md_history', function() {
         target: Polymer.dom(e).localTarget,
         index: this.index,
         item: this.item,
-        path: this.path,
       });
 
       // Stops the 'tap' event from closing the menu when it opens.
@@ -327,28 +323,6 @@ cr.define('md_history', function() {
       this.unlisten(el, 'mouseover', 'addTimeTitle_');
     },
   });
-
-  /**
-   * Check whether the time difference between the given history item and the
-   * next one is large enough for a spacer to be required.
-   * @param {Array<HistoryEntry>} visits
-   * @param {number} currentIndex
-   * @param {string} searchedTerm
-   * @return {boolean} Whether or not time gap separator is required.
-   */
-  HistoryItem.needsTimeGap = function(visits, currentIndex, searchedTerm) {
-    if (currentIndex >= visits.length - 1 || visits.length == 0)
-      return false;
-
-    var currentItem = visits[currentIndex];
-    var nextItem = visits[currentIndex + 1];
-
-    if (searchedTerm)
-      return currentItem.dateShort != nextItem.dateShort;
-
-    return currentItem.time - nextItem.time > BROWSING_GAP_TIME &&
-        currentItem.dateRelativeDay == nextItem.dateRelativeDay;
-  };
 
   /**
    * @param {number} numberOfResults

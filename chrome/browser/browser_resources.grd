@@ -293,16 +293,12 @@
             <include name="IDR_MD_HISTORY_BROWSER_SERVICE_JS" file="resources\md_history\browser_service.js" type="BINDATA" />
             <include name="IDR_MD_HISTORY_HISTORY_ITEM_HTML" file="resources\md_history\history_item.html" type="BINDATA" />
             <include name="IDR_MD_HISTORY_HISTORY_ITEM_JS" file="resources\md_history\history_item.js" type="BINDATA" />
-            <include name="IDR_MD_HISTORY_HISTORY_LIST_BEHAVIOR_HTML" file="resources\md_history\history_list_behavior.html" type="BINDATA" />
-            <include name="IDR_MD_HISTORY_HISTORY_LIST_BEHAVIOR_JS" file="resources\md_history\history_list_behavior.js" type="BINDATA" />
             <include name="IDR_MD_HISTORY_HISTORY_LIST_HTML" file="resources\md_history\history_list.html" type="BINDATA" />
             <include name="IDR_MD_HISTORY_HISTORY_LIST_JS" file="resources\md_history\history_list.js" type="BINDATA" />
             <include name="IDR_MD_HISTORY_HISTORY_TOOLBAR_HTML" file="resources\md_history\history_toolbar.html" type="BINDATA" />
             <include name="IDR_MD_HISTORY_HISTORY_TOOLBAR_JS" file="resources\md_history\history_toolbar.js" type="BINDATA" />
             <include name="IDR_MD_HISTORY_ICONS_HTML" file="resources\md_history\icons.html" type="BINDATA" />
             <include name="IDR_MD_HISTORY_LAZY_LOAD_HTML" file="resources\md_history\lazy_load.html" type="BINDATA" />
-            <include name="IDR_MD_HISTORY_LIST_CONTAINER_HTML" file="resources\md_history\list_container.html" type="BINDATA" />
-            <include name="IDR_MD_HISTORY_LIST_CONTAINER_JS" file="resources\md_history\list_container.js" type="BINDATA" />
             <include name="IDR_MD_HISTORY_QUERY_MANAGER_HTML" file="resources\md_history\query_manager.html" type="BINDATA" />
             <include name="IDR_MD_HISTORY_QUERY_MANAGER_JS" file="resources\md_history\query_manager.js" type="BINDATA" />
             <include name="IDR_MD_HISTORY_ROUTER_HTML" file="resources\md_history\router.html" type="BINDATA" />

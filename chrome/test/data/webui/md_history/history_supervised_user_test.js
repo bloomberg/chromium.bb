@@ -15,8 +15,8 @@ suite('history-list supervised-user', function() {
 
   setup(function() {
     app = replaceApp();
-    historyList = app.$['history'].$['infinite-list'];
-    toolbar = app.$['toolbar'];
+    historyList = app.$.history;
+    toolbar = app.$.toolbar;
     app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
   });
 

@@ -4,8 +4,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-scroll-target-behavior/iron-scroll-target-behavior.html">
+<link rel="import" href="chrome://history/history_list.html">
 <link rel="import" href="chrome://history/history_toolbar.html">
-<link rel="import" href="chrome://history/list_container.html">
 <link rel="import" href="chrome://history/query_manager.html">
 <link rel="import" href="chrome://history/router.html">
 <link rel="import" href="chrome://history/shared_style.html">
@@ -93,10 +93,13 @@
       <iron-pages id="content" attr-for-selected="path"
           fallback-selection="history"
           selected="[[getSelectedPage_(selectedPage_, items)]]"
+          selected-item="{{scrollTarget}}"
           items="{{items}}">
-        <history-list-container id="history" query-state="[[queryState_]]"
-            query-result="[[queryResult_]]" path="history">
-        </history-list-container>
+        <history-list id="history" query-state="[[queryState_]]"
+            searched-term="[[queryResult_.info.term]]"
+            query-result="[[queryResult_]]"
+            path="history">
+        </history-list>
         <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">
           <history-synced-device-manager id="synced-devices"
               session-list="[[queryResult_.sessionList]]"

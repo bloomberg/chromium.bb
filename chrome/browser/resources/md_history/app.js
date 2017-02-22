@@ -176,7 +176,7 @@ Polymer({
    */
   checkboxSelected: function(e) {
     var toolbar = /** @type {HistoryToolbarElement} */ (this.$.toolbar);
-    toolbar.count = /** @type {HistoryListContainerElement} */ (this.$.history)
+    toolbar.count = /** @type {HistoryListElement} */ (this.$.history)
                         .getSelectedItemCount();
   },
 
@@ -186,10 +186,9 @@ Polymer({
    * @private
    */
   unselectAll: function() {
-    var listContainer =
-        /** @type {HistoryListContainerElement} */ (this.$.history);
+    var list = /** @type {HistoryListElement} */ (this.$.history);
     var toolbar = /** @type {HistoryToolbarElement} */ (this.$.toolbar);
-    listContainer.unselectAllItems(toolbar.count);
+    list.unselectAllItems();
     toolbar.count = 0;
   },
 
@@ -206,9 +205,8 @@ Polymer({
     this.set('queryState_.querying', false);
     this.set('queryResult_.info', info);
     this.set('queryResult_.results', results);
-    var listContainer =
-        /** @type {HistoryListContainerElement} */ (this.$['history']);
-    listContainer.historyResult(info, results);
+    var list = /** @type {HistoryListElement} */ (this.$['history']);
+    list.historyResult(info, results);
   },
 
   /**
@@ -311,15 +309,7 @@ Polymer({
     // This allows the synced-device-manager to render so that it can be set as
     // the scroll target.
     requestAnimationFrame(function() {
-      md_history.ensureLazyLoaded().then(function() {
-        // <iron-pages> can occasionally end up with no item selected during
-        // tests.
-        if (!this.$.content.selectedItem)
-          return;
-        this.scrollTarget =
-            this.$.content.selectedItem.getContentScrollTarget();
-        this._scrollHandler();
-      }.bind(this));
+      this._scrollHandler();
     }.bind(this));
     this.recordHistoryPageView_();
   },

@@ -15,8 +15,8 @@ suite('history-toolbar', function() {
 
   setup(function() {
     app = replaceApp();
-    element = app.$['history'].$['infinite-list'];
-    toolbar = app.$['toolbar'];
+    element = app.$.history;
+    toolbar = app.$.toolbar;
     return PolymerTest.flushTasks();
   });
 
