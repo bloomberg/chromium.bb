@@ -34,7 +34,12 @@ std::unique_ptr<NavigationItemImpl>
 NavigationItemStorageBuilder::BuildNavigationItemImpl(
     CRWNavigationItemStorage* navigation_item_storage) const {
   std::unique_ptr<NavigationItemImpl> item(new web::NavigationItemImpl());
-  item->virtual_url_ = navigation_item_storage.virtualURL;
+  // While the virtual URL is persisted, we still need the original request URL
+  // and the non-virtual URL to be set upon NavigationItem creation.  Since
+  // GetVirtualURL() returns |url_| for the non-overridden case, this will also
+  // update the virtual URL reported by this object.
+  item->original_request_url_ = navigation_item_storage.virtualURL;
+  item->url_ = navigation_item_storage.virtualURL;
   item->referrer_ = navigation_item_storage.referrer;
   item->timestamp_ = navigation_item_storage.timestamp;
   item->title_ = navigation_item_storage.title;
