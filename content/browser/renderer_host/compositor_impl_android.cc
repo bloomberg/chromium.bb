@@ -157,10 +157,10 @@ class AndroidOutputSurface : public cc::OutputSurface {
 
   void SwapBuffers(cc::OutputSurfaceFrame frame) override {
     GetCommandBufferProxy()->SetLatencyInfo(frame.latency_info);
-    if (frame.sub_buffer_rect.IsEmpty()) {
+    if (frame.sub_buffer_rect) {
+      DCHECK(frame.sub_buffer_rect->IsEmpty());
       context_provider_->ContextSupport()->CommitOverlayPlanes();
     } else {
-      DCHECK(frame.sub_buffer_rect == gfx::Rect(frame.size));
       context_provider_->ContextSupport()->Swap();
     }
   }

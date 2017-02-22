@@ -73,7 +73,8 @@ void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
   // TODO(ccameron): What if a swap comes again before OnGpuSwapBuffersCompleted
   // happens, we'd see the wrong swap size there?
   swap_size_ = reshape_size_;
-  buffer_queue_->SwapBuffers(frame.sub_buffer_rect);
+  buffer_queue_->SwapBuffers(frame.sub_buffer_rect ? *frame.sub_buffer_rect
+                                                   : gfx::Rect(swap_size_));
   GpuBrowserCompositorOutputSurface::SwapBuffers(std::move(frame));
 }
 

@@ -82,11 +82,11 @@ class DirectOutputSurface : public cc::OutputSurface {
   }
   void SwapBuffers(cc::OutputSurfaceFrame frame) override {
     DCHECK(context_provider_.get());
-    if (frame.sub_buffer_rect == gfx::Rect(frame.size)) {
-      context_provider_->ContextSupport()->Swap();
-    } else {
+    if (frame.sub_buffer_rect) {
       context_provider_->ContextSupport()->PartialSwapBuffers(
-          frame.sub_buffer_rect);
+          *frame.sub_buffer_rect);
+    } else {
+      context_provider_->ContextSupport()->Swap();
     }
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
     const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();

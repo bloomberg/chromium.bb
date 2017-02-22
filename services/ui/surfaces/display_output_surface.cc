@@ -65,11 +65,11 @@ void DisplayOutputSurface::Reshape(const gfx::Size& size,
 
 void DisplayOutputSurface::SwapBuffers(cc::OutputSurfaceFrame frame) {
   DCHECK(context_provider_);
-  if (frame.sub_buffer_rect == gfx::Rect(frame.size)) {
-    context_provider_->ContextSupport()->Swap();
-  } else {
+  if (frame.sub_buffer_rect) {
     context_provider_->ContextSupport()->PartialSwapBuffers(
-        frame.sub_buffer_rect);
+        *frame.sub_buffer_rect);
+  } else {
+    context_provider_->ContextSupport()->Swap();
   }
 }
 

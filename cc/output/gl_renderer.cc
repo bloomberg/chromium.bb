@@ -2603,12 +2603,7 @@ void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
                   FlippedRootFramebuffer() ? flipped_y_pos_of_rect_bottom
                                            : swap_buffer_rect_.y(),
                   swap_buffer_rect_.width(), swap_buffer_rect_.height());
-  } else {
-    // Expand the swap rect to the full surface unless it's empty, and empty
-    // swap is allowed.
-    if (!swap_buffer_rect_.IsEmpty() || !allow_empty_swap_) {
-      swap_buffer_rect_ = gfx::Rect(surface_size);
-    }
+  } else if (swap_buffer_rect_.IsEmpty() && allow_empty_swap_) {
     output_frame.sub_buffer_rect = swap_buffer_rect_;
   }
 

@@ -45,15 +45,6 @@ void FakeOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   last_sent_frame_.reset(new OutputSurfaceFrame(std::move(frame)));
   ++num_sent_frames_;
 
-  if (context_provider()) {
-    last_swap_rect_ = last_sent_frame_->sub_buffer_rect;
-    last_swap_rect_valid_ = true;
-  } else {
-    // Unknown for direct software frames.
-    last_swap_rect_ = gfx::Rect();
-    last_swap_rect_valid_ = false;
-  }
-
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&FakeOutputSurface::SwapBuffersAck,
                             weak_ptr_factory_.GetWeakPtr()));

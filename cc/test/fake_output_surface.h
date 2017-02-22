@@ -93,11 +93,6 @@ class FakeOutputSurface : public OutputSurface {
     suspended_for_recycle_ = suspended;
   }
 
-  gfx::Rect last_swap_rect() const {
-    DCHECK(last_swap_rect_valid_);
-    return last_swap_rect_;
-  }
-
   const gfx::ColorSpace& last_reshape_color_space() {
     return last_reshape_color_space_;
   }
@@ -115,8 +110,6 @@ class FakeOutputSurface : public OutputSurface {
   GLint framebuffer_ = 0;
   GLenum framebuffer_format_ = 0;
   OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
-  bool last_swap_rect_valid_ = false;
-  gfx::Rect last_swap_rect_;
   gfx::ColorSpace last_reshape_color_space_;
 
  private:

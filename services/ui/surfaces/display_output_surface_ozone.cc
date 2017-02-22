@@ -83,7 +83,8 @@ void DisplayOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {
   DCHECK(reshape_size_ == frame.size);
   swap_size_ = reshape_size_;
 
-  buffer_queue_->SwapBuffers(frame.sub_buffer_rect);
+  buffer_queue_->SwapBuffers(frame.sub_buffer_rect ? *frame.sub_buffer_rect
+                                                   : gfx::Rect(swap_size_));
   DisplayOutputSurface::SwapBuffers(std::move(frame));
 }
 
