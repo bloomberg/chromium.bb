@@ -209,6 +209,9 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_convolve_optimz_test.cc
 ifneq ($(findstring yes,$(CONFIG_GLOBAL_MOTION) $(CONFIG_WARPED_MOTION)),)
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += warp_filter_test.cc
 endif
+ifeq ($(CONFIG_LOOP_RESTORATION),yes)
+LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += selfguided_filter_test.cc
+endif
 
 TEST_INTRA_PRED_SPEED_SRCS-yes := test_intra_pred_speed.cc
 TEST_INTRA_PRED_SPEED_SRCS-yes += ../md5_utils.h ../md5_utils.c

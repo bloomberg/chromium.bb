@@ -55,7 +55,11 @@ extern "C" {
 // 4 32-bit buffers needed for the filter:
 // 2 for the restored versions of the frame and
 // 2 for each restoration operation
-#define SGRPROJ_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX * 4 * sizeof(int32_t))
+#define SGRPROJ_OUTBUF_SIZE \
+  ((RESTORATION_TILESIZE_BIG * 3 / 2) * (RESTORATION_TILESIZE_BIG * 3 / 2 + 16))
+#define SGRPROJ_TMPBUF_SIZE                         \
+  (RESTORATION_TILEPELS_MAX * 2 * sizeof(int32_t) + \
+   SGRPROJ_OUTBUF_SIZE * 2 * sizeof(int32_t))
 #define SGRPROJ_EXTBUF_SIZE (0)
 #define SGRPROJ_PARAMS_BITS 4
 #define SGRPROJ_PARAMS (1 << SGRPROJ_PARAMS_BITS)
@@ -74,6 +78,12 @@ extern "C" {
 #define SGRPROJ_PRJ_MAX1 (SGRPROJ_PRJ_MIN1 + (1 << SGRPROJ_PRJ_BITS) - 1)
 
 #define SGRPROJ_BITS (SGRPROJ_PRJ_BITS * 2 + SGRPROJ_PARAMS_BITS)
+
+#define MAX_RADIUS 3  // Only 1, 2, 3 allowed
+#define MAX_EPS 80    // Max value of eps
+#define MAX_NELEM ((2 * MAX_RADIUS + 1) * (2 * MAX_RADIUS + 1))
+#define SGRPROJ_MTABLE_BITS 20
+#define SGRPROJ_RECIP_BITS 12
 
 #define WIENER_HALFWIN 3
 #define WIENER_HALFWIN1 (WIENER_HALFWIN + 1)
@@ -229,6 +239,9 @@ static INLINE void av1_get_rest_tile_limits(
 }
 
 extern const sgr_params_type sgr_params[SGRPROJ_PARAMS];
+extern int sgrproj_mtable[MAX_EPS][MAX_NELEM];
+extern const int32_t x_by_xplus1[256];
+extern const int32_t one_by_x[MAX_NELEM];
 
 int av1_alloc_restoration_struct(struct AV1Common *cm,
                                  RestorationInfo *rst_info, int width,

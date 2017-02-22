@@ -126,7 +126,7 @@ static void GenDomainTxfmRFVtable() {
 
 // TODO(debargha): This table can be substantially reduced since only a few
 // values are actually used.
-static int sgrproj_mtable[MAX_EPS][MAX_NELEM];
+int sgrproj_mtable[MAX_EPS][MAX_NELEM];
 
 static void GenSgrprojVtable() {
   int e, n;
@@ -581,7 +581,7 @@ void decode_xq(int *xqd, int *xq) {
 }
 
 #if APPROXIMATE_SGR
-static const uint16_t x_by_xplus1[256] = {
+const int32_t x_by_xplus1[256] = {
   0,   128, 171, 192, 205, 213, 219, 224, 228, 230, 233, 235, 236, 238, 239,
   240, 241, 242, 243, 243, 244, 244, 245, 245, 246, 246, 247, 247, 247, 247,
   248, 248, 248, 248, 249, 249, 249, 249, 249, 250, 250, 250, 250, 250, 250,
@@ -602,7 +602,7 @@ static const uint16_t x_by_xplus1[256] = {
   256,
 };
 
-static const uint16_t one_by_x[MAX_NELEM] = {
+const int32_t one_by_x[MAX_NELEM] = {
   4096, 2048, 1365, 1024, 819, 683, 585, 512, 455, 410, 372, 341, 315,
   293,  273,  256,  241,  228, 216, 205, 195, 186, 178, 171, 164, 158,
   152,  146,  141,  137,  132, 128, 124, 120, 117, 114, 111, 108, 105,
@@ -617,18 +617,23 @@ void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
   int32_t *B = A + RESTORATION_TILEPELS_MAX;
   int8_t num[RESTORATION_TILEPELS_MAX];
   int i, j;
+  // Adjusting the stride of A and B here appears to avoid bad cache effects,
+  // leading to a significant speed improvement.
+  // We also align the stride to a multiple of 16 bytes, for consistency
+  // with the SIMD version of this function.
+  int buf_stride = ((width + 3) & ~3) + 16;
 
   // Don't filter tiles with dimensions < 5 on any axis
   if ((width < 5) || (height < 5)) return;
 
-  boxsum(dgd, width, height, stride, r, 0, B, width);
-  boxsum(dgd, width, height, stride, r, 1, A, width);
+  boxsum(dgd, width, height, stride, r, 0, B, buf_stride);
+  boxsum(dgd, width, height, stride, r, 1, A, buf_stride);
   boxnum(width, height, r, num, width);
   assert(r <= 3);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
-      const int k = i * width + j;
-      const int n = num[k];
+      const int k = i * buf_stride + j;
+      const int n = num[i * width + j];
 #if APPROXIMATE_SGR
       // a < 2^16 * n < 2^22 regardless of bit depth
       uint32_t a = ROUND_POWER_OF_TWO(A[k], 2 * (bit_depth - 8));
@@ -671,117 +676,119 @@ void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
   i = 0;
   j = 0;
   {
-    const int k = i * width + j;
+    const int k = i * buf_stride + j;
     const int l = i * stride + j;
     const int nb = 3;
     const int32_t a =
-        3 * A[k] + 2 * A[k + 1] + 2 * A[k + width] + A[k + width + 1];
+        3 * A[k] + 2 * A[k + 1] + 2 * A[k + buf_stride] + A[k + buf_stride + 1];
     const int32_t b =
-        3 * B[k] + 2 * B[k + 1] + 2 * B[k + width] + B[k + width + 1];
+        3 * B[k] + 2 * B[k + 1] + 2 * B[k + buf_stride] + B[k + buf_stride + 1];
     const int32_t v = a * dgd[l] + b;
     dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   i = 0;
   j = width - 1;
   {
-    const int k = i * width + j;
+    const int k = i * buf_stride + j;
     const int l = i * stride + j;
     const int nb = 3;
     const int32_t a =
-        3 * A[k] + 2 * A[k - 1] + 2 * A[k + width] + A[k + width - 1];
+        3 * A[k] + 2 * A[k - 1] + 2 * A[k + buf_stride] + A[k + buf_stride - 1];
     const int32_t b =
-        3 * B[k] + 2 * B[k - 1] + 2 * B[k + width] + B[k + width - 1];
+        3 * B[k] + 2 * B[k - 1] + 2 * B[k + buf_stride] + B[k + buf_stride - 1];
     const int32_t v = a * dgd[l] + b;
     dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   i = height - 1;
   j = 0;
   {
-    const int k = i * width + j;
+    const int k = i * buf_stride + j;
     const int l = i * stride + j;
     const int nb = 3;
     const int32_t a =
-        3 * A[k] + 2 * A[k + 1] + 2 * A[k - width] + A[k - width + 1];
+        3 * A[k] + 2 * A[k + 1] + 2 * A[k - buf_stride] + A[k - buf_stride + 1];
     const int32_t b =
-        3 * B[k] + 2 * B[k + 1] + 2 * B[k - width] + B[k - width + 1];
+        3 * B[k] + 2 * B[k + 1] + 2 * B[k - buf_stride] + B[k - buf_stride + 1];
     const int32_t v = a * dgd[l] + b;
     dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   i = height - 1;
   j = width - 1;
   {
-    const int k = i * width + j;
+    const int k = i * buf_stride + j;
     const int l = i * stride + j;
     const int nb = 3;
     const int32_t a =
-        3 * A[k] + 2 * A[k - 1] + 2 * A[k - width] + A[k - width - 1];
+        3 * A[k] + 2 * A[k - 1] + 2 * A[k - buf_stride] + A[k - buf_stride - 1];
     const int32_t b =
-        3 * B[k] + 2 * B[k - 1] + 2 * B[k - width] + B[k - width - 1];
+        3 * B[k] + 2 * B[k - 1] + 2 * B[k - buf_stride] + B[k - buf_stride - 1];
     const int32_t v = a * dgd[l] + b;
     dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   i = 0;
   for (j = 1; j < width - 1; ++j) {
-    const int k = i * width + j;
+    const int k = i * buf_stride + j;
     const int l = i * stride + j;
     const int nb = 3;
-    const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k + width] +
-                      A[k + width - 1] + A[k + width + 1];
-    const int32_t b = B[k] + 2 * (B[k - 1] + B[k + 1]) + B[k + width] +
-                      B[k + width - 1] + B[k + width + 1];
+    const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k + buf_stride] +
+                      A[k + buf_stride - 1] + A[k + buf_stride + 1];
+    const int32_t b = B[k] + 2 * (B[k - 1] + B[k + 1]) + B[k + buf_stride] +
+                      B[k + buf_stride - 1] + B[k + buf_stride + 1];
     const int32_t v = a * dgd[l] + b;
     dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   i = height - 1;
   for (j = 1; j < width - 1; ++j) {
-    const int k = i * width + j;
+    const int k = i * buf_stride + j;
     const int l = i * stride + j;
     const int nb = 3;
-    const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k - width] +
-                      A[k - width - 1] + A[k - width + 1];
-    const int32_t b = B[k] + 2 * (B[k - 1] + B[k + 1]) + B[k - width] +
-                      B[k - width - 1] + B[k - width + 1];
+    const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k - buf_stride] +
+                      A[k - buf_stride - 1] + A[k - buf_stride + 1];
+    const int32_t b = B[k] + 2 * (B[k - 1] + B[k + 1]) + B[k - buf_stride] +
+                      B[k - buf_stride - 1] + B[k - buf_stride + 1];
     const int32_t v = a * dgd[l] + b;
     dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   j = 0;
   for (i = 1; i < height - 1; ++i) {
-    const int k = i * width + j;
+    const int k = i * buf_stride + j;
     const int l = i * stride + j;
     const int nb = 3;
-    const int32_t a = A[k] + 2 * (A[k - width] + A[k + width]) + A[k + 1] +
-                      A[k - width + 1] + A[k + width + 1];
-    const int32_t b = B[k] + 2 * (B[k - width] + B[k + width]) + B[k + 1] +
-                      B[k - width + 1] + B[k + width + 1];
+    const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
+                      A[k + 1] + A[k - buf_stride + 1] + A[k + buf_stride + 1];
+    const int32_t b = B[k] + 2 * (B[k - buf_stride] + B[k + buf_stride]) +
+                      B[k + 1] + B[k - buf_stride + 1] + B[k + buf_stride + 1];
     const int32_t v = a * dgd[l] + b;
     dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   j = width - 1;
   for (i = 1; i < height - 1; ++i) {
-    const int k = i * width + j;
+    const int k = i * buf_stride + j;
     const int l = i * stride + j;
     const int nb = 3;
-    const int32_t a = A[k] + 2 * (A[k - width] + A[k + width]) + A[k - 1] +
-                      A[k - width - 1] + A[k + width - 1];
-    const int32_t b = B[k] + 2 * (B[k - width] + B[k + width]) + B[k - 1] +
-                      B[k - width - 1] + B[k + width - 1];
+    const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
+                      A[k - 1] + A[k - buf_stride - 1] + A[k + buf_stride - 1];
+    const int32_t b = B[k] + 2 * (B[k - buf_stride] + B[k + buf_stride]) +
+                      B[k - 1] + B[k - buf_stride - 1] + B[k + buf_stride - 1];
     const int32_t v = a * dgd[l] + b;
     dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   for (i = 1; i < height - 1; ++i) {
     for (j = 1; j < width - 1; ++j) {
-      const int k = i * width + j;
+      const int k = i * buf_stride + j;
       const int l = i * stride + j;
       const int nb = 5;
       const int32_t a =
-          (A[k] + A[k - 1] + A[k + 1] + A[k - width] + A[k + width]) * 4 +
-          (A[k - 1 - width] + A[k - 1 + width] + A[k + 1 - width] +
-           A[k + 1 + width]) *
+          (A[k] + A[k - 1] + A[k + 1] + A[k - buf_stride] + A[k + buf_stride]) *
+              4 +
+          (A[k - 1 - buf_stride] + A[k - 1 + buf_stride] +
+           A[k + 1 - buf_stride] + A[k + 1 + buf_stride]) *
               3;
       const int32_t b =
-          (B[k] + B[k - 1] + B[k + 1] + B[k - width] + B[k + width]) * 4 +
-          (B[k - 1 - width] + B[k - 1 + width] + B[k + 1 - width] +
-           B[k + 1 + width]) *
+          (B[k] + B[k - 1] + B[k + 1] + B[k - buf_stride] + B[k + buf_stride]) *
+              4 +
+          (B[k - 1 - buf_stride] + B[k - 1 + buf_stride] +
+           B[k + 1 - buf_stride] + B[k + 1 + buf_stride]) *
               3;
       const int32_t v = a * dgd[l] + b;
       dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
@@ -793,7 +800,7 @@ void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
   boxsum(B, width, height, width, r, 0, B, width);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
-      const int k = i * width + j;
+      const int k = i * buf_stride + j;
       const int l = i * stride + j;
       const int n = num[k];
       const int32_t v =
@@ -804,10 +811,10 @@ void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
 #endif  // APPROXIMATE_SGR
 }
 
-static void apply_selfguided_restoration(uint8_t *dat, int width, int height,
-                                         int stride, int bit_depth, int eps,
-                                         int *xqd, uint8_t *dst, int dst_stride,
-                                         int32_t *tmpbuf) {
+void apply_selfguided_restoration_c(uint8_t *dat, int width, int height,
+                                    int stride, int bit_depth, int eps,
+                                    int *xqd, uint8_t *dst, int dst_stride,
+                                    int32_t *tmpbuf) {
   int xq[2];
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
@@ -833,7 +840,7 @@ static void apply_selfguided_restoration(uint8_t *dat, int width, int height,
       const int32_t u = ((int32_t)dat[l] << SGRPROJ_RST_BITS);
       const int32_t f1 = (int32_t)flt1[k] - u;
       const int32_t f2 = (int32_t)flt2[k] - u;
-      const int64_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
+      const int32_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
       const int16_t w =
           (int16_t)ROUND_POWER_OF_TWO(v, SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
       dst[m] = clip_pixel(w);
@@ -1171,7 +1178,7 @@ static void apply_selfguided_restoration_highbd(
       const int32_t u = ((int32_t)dat[l] << SGRPROJ_RST_BITS);
       const int32_t f1 = (int32_t)flt1[k] - u;
       const int32_t f2 = (int32_t)flt2[k] - u;
-      const int64_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
+      const int32_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
       const int16_t w =
           (int16_t)ROUND_POWER_OF_TWO(v, SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
       dst[m] = (uint16_t)clip_pixel_highbd(w, bit_depth);

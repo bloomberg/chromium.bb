@@ -777,4 +777,11 @@ if ((aom_config("CONFIG_WARPED_MOTION") eq "yes") ||
   specialize qw/av1_warp_affine sse2/;
 }
 
+# LOOP_RESTORATION functions
+
+if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
+  add_proto qw/void apply_selfguided_restoration/, "uint8_t *dat, int width, int height, int stride, int bit_depth, int eps, int *xqd, uint8_t *dst, int dst_stride, int32_t *tmpbuf";
+  specialize qw/apply_selfguided_restoration sse4_1/;
+}
+
 1;

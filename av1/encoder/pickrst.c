@@ -183,7 +183,7 @@ static int64_t get_pixel_proj_error(uint8_t *src8, int width, int height,
             (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
         const int32_t f1 = (int32_t)flt1[i * flt1_stride + j] - u;
         const int32_t f2 = (int32_t)flt2[i * flt2_stride + j] - u;
-        const int64_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
+        const int32_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
         const int32_t e =
             ROUND_POWER_OF_TWO(v, SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS) -
             src[i * src_stride + j];
@@ -199,7 +199,7 @@ static int64_t get_pixel_proj_error(uint8_t *src8, int width, int height,
             (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
         const int32_t f1 = (int32_t)flt1[i * flt1_stride + j] - u;
         const int32_t f2 = (int32_t)flt2[i * flt2_stride + j] - u;
-        const int64_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
+        const int32_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
         const int32_t e =
             ROUND_POWER_OF_TWO(v, SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS) -
             src[i * src_stride + j];
