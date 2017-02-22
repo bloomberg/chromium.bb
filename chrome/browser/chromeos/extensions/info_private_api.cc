@@ -135,6 +135,15 @@ const char kPlayStoreStatusAvailable[] = "available";
 // JS.
 const char kPlayStoreStatusEnabled[] = "enabled";
 
+// Key which corresponds to the managedDeviceStatus property in JS.
+const char kPropertyManagedDeviceStatus[] = "managedDeviceStatus";
+
+// Value to which managedDeviceStatus property is set for unmanaged devices.
+const char kManagedDeviceStatusNotManaged[] = "not managed";
+
+// Value to which managedDeviceStatus property is set for managed devices.
+const char kManagedDeviceStatusManaged[] = "managed";
+
 const struct {
   const char* api_name;
   const char* preference_name;
@@ -266,6 +275,15 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     if (arc::IsArcAvailable())
       return new base::StringValue(kPlayStoreStatusAvailable);
     return new base::StringValue(kPlayStoreStatusNotAvailable);
+  }
+
+  if (property_name == kPropertyManagedDeviceStatus) {
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    if (connector->IsEnterpriseManaged()) {
+      return new base::StringValue(kManagedDeviceStatusManaged);
+    }
+    return new base::StringValue(kManagedDeviceStatusNotManaged);
   }
 
   if (property_name == kPropertyClientId) {

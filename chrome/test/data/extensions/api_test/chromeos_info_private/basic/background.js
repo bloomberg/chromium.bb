@@ -23,6 +23,9 @@ function getTestFunctionFor(keys, fails) {
               if (keys[i] == 'playStoreStatus') {
                 chrome.test.assertEq('not available', values[keys[i]]);
               }
+              if (keys[i] == 'managedDeviceStatus') {
+                chrome.test.assertEq('not managed', values[keys[i]]);
+              }
               // Debug
               if (keys[i] in values) {
                 console.log('  values["' + keys[i] + '"] = ' +
@@ -117,6 +120,7 @@ var tests = generateTestsForKeys(['hwid',
                                   'isOwner',
                                   'sessionType',
                                   'playStoreStatus',
+                                  'managedDeviceStatus',
                                   'clientId',
                                   'a11yLargeCursorEnabled',
                                   'a11yStickyKeysEnabled',
