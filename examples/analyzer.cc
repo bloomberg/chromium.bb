@@ -23,6 +23,13 @@
 #define OD_FLIPSIGNI(a, b) (((a) + OD_SIGNMASK(b)) ^ OD_SIGNMASK(b))
 #define OD_DIV_ROUND(x, y) (((x) + OD_FLIPSIGNI((y) >> 1, x)) / (y))
 
+enum {
+  OD_LUMA_MASK = 1 << 0,
+  OD_CB_MASK = 1 << 1,
+  OD_CR_MASK = 1 << 2,
+  OD_ALL_MASK = OD_LUMA_MASK | OD_CB_MASK | OD_CR_MASK
+};
+
 class AV1Decoder {
  private:
   FILE *input;
@@ -37,6 +44,8 @@ class AV1Decoder {
  public:
   aom_image_t *image;
   int frame;
+
+  int plane_mask;
 
   AV1Decoder();
   ~AV1Decoder();
@@ -126,6 +135,8 @@ class AnalyzerPanel : public wxPanel {
   const bool bit_accounting;
   double *bpp_q3;
 
+  int plane_mask;
+
   // The display size is the decode size, scaled by the zoom.
   int getDisplayWidth() const;
   int getDisplayHeight() const;
@@ -148,6 +159,8 @@ class AnalyzerPanel : public wxPanel {
   int getZoom() const;
   bool setZoom(int zoom);
 
+  void setShowPlane(bool show_plane, int mask);
+
   void onPaint(wxPaintEvent &event);  // NOLINT
 };
 
@@ -158,9 +171,17 @@ END_EVENT_TABLE()
 AnalyzerPanel::AnalyzerPanel(wxWindow *parent, const wxString &path,
                              const bool bit_accounting)
     : wxPanel(parent), path(path), zoom(0), pixels(NULL),
-      bit_accounting(bit_accounting), bpp_q3(NULL) {}
+      bit_accounting(bit_accounting), bpp_q3(NULL), plane_mask(OD_ALL_MASK) {}
 
 AnalyzerPanel::~AnalyzerPanel() { close(); }
+
+void AnalyzerPanel::setShowPlane(bool show_plane, int mask) {
+  if (show_plane) {
+    plane_mask |= mask;
+  } else {
+    plane_mask &= ~mask;
+  }
+}
 
 void AnalyzerPanel::render() {
   aom_image_t *img = decoder.image;
@@ -181,15 +202,21 @@ void AnalyzerPanel::render() {
       int64_t yval;
       int64_t cbval;
       int64_t crval;
+      int pmask;
       unsigned rval;
       unsigned gval;
       unsigned bval;
       yval = *y;
       cbval = *cb;
       crval = *cr;
-      yval -= 16;
-      cbval -= 128;
-      crval -= 128;
+      pmask = plane_mask;
+      if (pmask & OD_LUMA_MASK) {
+        yval -= 16;
+      } else {
+        yval = 128;
+      }
+      cbval = ((pmask & OD_CB_MASK) >> 1) * (cbval - 128);
+      crval = ((pmask & OD_CR_MASK) >> 2) * (crval - 128);
       /*This is intentionally slow and very accurate.*/
       rval = OD_CLAMPI(0, (int32_t)OD_DIV_ROUND(
                               2916394880000LL * yval + 4490222169144LL * crval,
@@ -364,6 +391,9 @@ class AnalyzerFrame : public wxFrame {
   void onZoomOut(wxCommandEvent &event);     // NOLINT
   void onActualSize(wxCommandEvent &event);  // NOLINT
 
+  void onToggleViewMenuCheckBox(wxCommandEvent &event);          // NOLINT
+  void onResetAndToggleViewMenuCheckBox(wxCommandEvent &event);  // NOLINT
+
   void onNextFrame(wxCommandEvent &event);  // NOLINT
   void onGotoFrame(wxCommandEvent &event);  // NOLINT
   void onRestart(wxCommandEvent &event);    // NOLINT
@@ -372,10 +402,14 @@ class AnalyzerFrame : public wxFrame {
 
   bool open(const wxString &path);
   bool setZoom(int zoom);
+  void updateViewMenu();
 };
 
 enum {
   wxID_NEXT_FRAME = 6000,
+  wxID_SHOW_Y,
+  wxID_SHOW_U,
+  wxID_SHOW_V,
   wxID_GOTO_FRAME,
   wxID_RESTART,
   wxID_ACTUAL_SIZE
@@ -388,6 +422,9 @@ EVT_MENU(wxID_EXIT, AnalyzerFrame::onQuit)
 EVT_MENU(wxID_ZOOM_IN, AnalyzerFrame::onZoomIn)
 EVT_MENU(wxID_ZOOM_OUT, AnalyzerFrame::onZoomOut)
 EVT_MENU(wxID_ACTUAL_SIZE, AnalyzerFrame::onActualSize)
+EVT_MENU(wxID_SHOW_Y, AnalyzerFrame::onResetAndToggleViewMenuCheckBox)
+EVT_MENU(wxID_SHOW_U, AnalyzerFrame::onResetAndToggleViewMenuCheckBox)
+EVT_MENU(wxID_SHOW_V, AnalyzerFrame::onResetAndToggleViewMenuCheckBox)
 EVT_MENU(wxID_NEXT_FRAME, AnalyzerFrame::onNextFrame)
 EVT_MENU(wxID_GOTO_FRAME, AnalyzerFrame::onGotoFrame)
 EVT_MENU(wxID_RESTART, AnalyzerFrame::onRestart)
@@ -418,6 +455,13 @@ AnalyzerFrame::AnalyzerFrame(const bool bit_accounting)
   viewMenu->Append(wxID_ZOOM_OUT, _("Zoom-Out\tCtrl--"), _("Half image size"));
   viewMenu->Append(wxID_ACTUAL_SIZE, _("Actual size\tCtrl-0"),
                    _("Actual size of the frame"));
+  viewMenu->AppendSeparator();
+  viewMenu->AppendCheckItem(wxID_SHOW_Y, _("&Y plane\tCtrl-Y"),
+                            _("Show Y plane"));
+  viewMenu->AppendCheckItem(wxID_SHOW_U, _("&U plane\tCtrl-U"),
+                            _("Show U plane"));
+  viewMenu->AppendCheckItem(wxID_SHOW_V, _("&V plane\tCtrl-V"),
+                            _("Show V plane"));
   mb->Append(viewMenu, _("&View"));
 
   playbackMenu = new wxMenu();
@@ -463,6 +507,22 @@ void AnalyzerFrame::onActualSize(wxCommandEvent &WXUNUSED(event)) {
   setZoom(MIN_ZOOM);
 }
 
+void AnalyzerFrame::onToggleViewMenuCheckBox(wxCommandEvent &event) {  // NOLINT
+  GetMenuBar()->Check(event.GetId(), event.IsChecked());
+  updateViewMenu();
+}
+
+void AnalyzerFrame::onResetAndToggleViewMenuCheckBox(
+    wxCommandEvent &event) {  // NOLINT
+  int id = event.GetId();
+  if (id != wxID_SHOW_Y && id != wxID_SHOW_U && id != wxID_SHOW_V) {
+    GetMenuBar()->Check(wxID_SHOW_Y, true);
+    GetMenuBar()->Check(wxID_SHOW_U, true);
+    GetMenuBar()->Check(wxID_SHOW_V, true);
+  }
+  onToggleViewMenuCheckBox(event);
+}
+
 void AnalyzerFrame::onNextFrame(wxCommandEvent &WXUNUSED(event)) {
   panel->nextFrame();
   panel->Refresh(false);
@@ -505,6 +565,15 @@ bool AnalyzerFrame::setZoom(int zoom) {
     return true;
   }
   return false;
+}
+
+void AnalyzerFrame::updateViewMenu() {
+  panel->setShowPlane(GetMenuBar()->IsChecked(wxID_SHOW_Y), OD_LUMA_MASK);
+  panel->setShowPlane(GetMenuBar()->IsChecked(wxID_SHOW_U), OD_CB_MASK);
+  panel->setShowPlane(GetMenuBar()->IsChecked(wxID_SHOW_V), OD_CR_MASK);
+  SetClientSize(panel->GetSize());
+  panel->render();
+  panel->Refresh(false);
 }
 
 class Analyzer : public wxApp {
