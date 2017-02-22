@@ -204,27 +204,6 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionTest) {
   EXPECT_EQ_SELECTED_TEXT("Foo Bar");
 }
 
-// TODO(yosin): We should move |SelectionControllerTest" to
-// "SelectionControllerTest.cpp"
-class SelectionControllerTest : public EditingTestBase {
- protected:
-  SelectionControllerTest() = default;
-
-  const VisibleSelection& visibleSelectionInDOMTree() const {
-    return selection().computeVisibleSelectionInDOMTreeDeprecated();
-  }
-
-  const VisibleSelectionInFlatTree& visibleSelectionInFlatTree() const {
-    return selection().selectionInFlatTree();
-  }
-
-  void setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree&,
-                                          TextGranularity);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SelectionControllerTest);
-};
-
 TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
   Element* select = document().createElement("select");
   document().replaceChild(select, document().documentElement());
