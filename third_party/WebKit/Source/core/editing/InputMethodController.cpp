@@ -356,15 +356,14 @@ static int computeAbsoluteCaretPosition(size_t textStart,
 
 void InputMethodController::addCompositionUnderlines(
     const Vector<CompositionUnderline>& underlines,
-    ContainerNode* rootEditableElement,
-    unsigned offset) {
+    ContainerNode* baseElement,
+    unsigned offsetInPlainChars) {
   for (const auto& underline : underlines) {
-    unsigned underlineStart = offset + underline.startOffset();
-    unsigned underlineEnd = offset + underline.endOffset();
+    unsigned underlineStart = offsetInPlainChars + underline.startOffset();
+    unsigned underlineEnd = offsetInPlainChars + underline.endOffset();
 
     EphemeralRange ephemeralLineRange =
-        PlainTextRange(underlineStart, underlineEnd)
-            .createRange(*rootEditableElement);
+        PlainTextRange(underlineStart, underlineEnd).createRange(*baseElement);
     if (ephemeralLineRange.isNull())
       continue;
 
