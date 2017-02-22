@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_COUNTRY_COMBOBOX_MODEL_H_
-#define CHROME_BROWSER_UI_AUTOFILL_COUNTRY_COMBOBOX_MODEL_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_COUNTRY_COMBOBOX_MODEL_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_COUNTRY_COMBOBOX_MODEL_H_
 
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/base/models/combobox_model.h"
 
 namespace autofill {
@@ -33,7 +30,8 @@ class CountryComboboxModel : public ui::ComboboxModel {
   // true, an item for that country is added to the model (else it's omitted).
   // |manager| determines the default choice.
   void SetCountries(const PersonalDataManager& manager,
-                    const base::Callback<bool(const std::string&)>& filter);
+                    const base::Callback<bool(const std::string&)>& filter,
+                    const std::string& app_locale);
 
   // ui::ComboboxModel implementation:
   int GetItemCount() const override;
@@ -55,4 +53,4 @@ class CountryComboboxModel : public ui::ComboboxModel {
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_COUNTRY_COMBOBOX_MODEL_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_COUNTRY_COMBOBOX_MODEL_H_

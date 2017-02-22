@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/autofill/country_combobox_model.h"
+#include "components/autofill/core/browser/country_combobox_model.h"
 
 #include <algorithm>
 #include <iterator>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/country_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -27,7 +26,8 @@ CountryComboboxModel::~CountryComboboxModel() {}
 
 void CountryComboboxModel::SetCountries(
     const PersonalDataManager& manager,
-    const base::Callback<bool(const std::string&)>& filter) {
+    const base::Callback<bool(const std::string&)>& filter,
+    const std::string& app_locale) {
   countries_.clear();
 
   // Insert the default country at the top as well as in the ordered list.
@@ -35,7 +35,6 @@ void CountryComboboxModel::SetCountries(
       manager.GetDefaultCountryCodeForNewAddress();
   DCHECK(!default_country_code.empty());
 
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
   if (filter.is_null() || filter.Run(default_country_code)) {
     countries_.push_back(
         base::MakeUnique<AutofillCountry>(default_country_code, app_locale));
@@ -69,8 +68,7 @@ void CountryComboboxModel::SetCountries(
           base::MakeUnique<AutofillCountry>(country_code, app_locale));
   }
 
-  l10n_util::SortStringsUsingMethod(app_locale,
-                                    &sorted_countries,
+  l10n_util::SortStringsUsingMethod(app_locale, &sorted_countries,
                                     &AutofillCountry::name);
   std::move(sorted_countries.begin(), sorted_countries.end(),
             std::back_inserter(countries_));

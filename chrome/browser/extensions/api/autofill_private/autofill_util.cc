@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
@@ -14,12 +15,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/autofill/country_combobox_model.h"
 #include "chrome/common/extensions/api/autofill_private.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/country_combobox_model.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/prefs/pref_service.h"
@@ -190,7 +191,8 @@ AddressEntryList GenerateAddressList(
 CountryEntryList GenerateCountryList(
     const autofill::PersonalDataManager& personal_data) {
   autofill::CountryComboboxModel model;
-  model.SetCountries(personal_data, base::Callback<bool(const std::string&)>());
+  model.SetCountries(personal_data, base::Callback<bool(const std::string&)>(),
+                     g_browser_process->GetApplicationLocale());
   const std::vector<std::unique_ptr<autofill::AutofillCountry>>& countries =
       model.countries();
 
