@@ -3159,7 +3159,8 @@ void Document::write(const SegmentedString& text,
   }
 
   if (enteredDocument &&
-      !getSecurityOrigin()->canAccess(enteredDocument->getSecurityOrigin())) {
+      !getSecurityOrigin()->isSameSchemeHostPortAndSuborigin(
+          enteredDocument->getSecurityOrigin())) {
     exceptionState.throwSecurityError(
         "Can only call write() on same-origin documents.");
     return;
