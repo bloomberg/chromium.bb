@@ -8,10 +8,10 @@ html {
 
 #ui {
   left: 0;
-  max-width: 1920px;
   position: absolute;
   top: 0;
   transform-origin: left top;
+  width: 1920px;
 }
 
 /* This class manages the position of elements on the texture page.
