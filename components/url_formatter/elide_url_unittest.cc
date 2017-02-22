@@ -20,20 +20,11 @@
 #include "ui/gfx/text_utils.h"  // nogncheck
 #endif
 
-#if defined(OS_IOS)
-#include "base/ios/ios_util.h"
-#endif
-
 namespace {
 
 struct Testcase {
   const std::string input;
   const std::string output;
-  enum SupportedPlatforms {
-    ALL = 0,
-    NO_IOS9_OR_LATER,
-    NO_IOS,
-  } platforms;
 };
 
 #if !defined(OS_ANDROID)
@@ -187,37 +178,29 @@ TEST(TextEliderTest, TestFileURLEliding) {
 TEST(TextEliderTest, TestHostEliding) {
   const std::string kEllipsisStr(gfx::kEllipsis);
   Testcase testcases[] = {
-      {"http://google.com", "google.com"},
-      // iOS width calculations are off by a letter from other platforms for
-      // strings with too many kerned letters on the default font set.
-      // TODO(rohitrao): Fix secure_display::ElideHost for iOS
-      // (crbug.com/517604).
-      {"http://subdomain.google.com", kEllipsisStr + ".google.com",
-       Testcase::NO_IOS9_OR_LATER},
-      {"http://reallyreallyreallylongdomainname.com",
-       "reallyreallyreallylongdomainname.com"},
-      {"http://a.b.c.d.e.f.com", kEllipsisStr + "f.com",
-       Testcase::NO_IOS9_OR_LATER},
-      {"http://foo", "foo"},
-      {"http://foo.bar", "foo.bar"},
-      {"http://subdomain.foo.bar", kEllipsisStr + "in.foo.bar",
-       Testcase::NO_IOS9_OR_LATER},
-      {"http://subdomain.reallylongdomainname.com",
-       kEllipsisStr + "ain.reallylongdomainname.com", Testcase::NO_IOS},
-      {"http://a.b.c.d.e.f.com", kEllipsisStr + ".e.f.com", Testcase::NO_IOS},
-      // IDN - Greek alpha.beta.gamma.delta.epsilon.zeta.com
-      {"http://xn--mxa.xn--nxa.xn--oxa.xn--pxa.xn--qxa.xn--rxa.com",
-       kEllipsisStr + ".\xCE\xB5.\xCE\xB6.com", Testcase::NO_IOS},
+    {"http://google.com", "google.com"},
+    {"http://reallyreallyreallylongdomainname.com",
+     "reallyreallyreallylongdomainname.com"},
+    {"http://foo", "foo"},
+    {"http://foo.bar", "foo.bar"},
+#if !defined(OS_IOS)
+    // iOS width calculations are off by a letter from other platforms for
+    // strings with too many kerned letters on the default font set.
+    // TODO(rohitrao): Fix secure_display::ElideHost for iOS
+    // (crbug.com/517604).
+    {"http://subdomain.google.com", kEllipsisStr + ".google.com"},
+    {"http://a.b.c.d.e.f.com", kEllipsisStr + "f.com"},
+    {"http://subdomain.foo.bar", kEllipsisStr + "in.foo.bar"},
+    {"http://subdomain.reallylongdomainname.com",
+     kEllipsisStr + "ain.reallylongdomainname.com"},
+    {"http://a.b.c.d.e.f.com", kEllipsisStr + ".e.f.com"},
+    // IDN - Greek alpha.beta.gamma.delta.epsilon.zeta.com
+    {"http://xn--mxa.xn--nxa.xn--oxa.xn--pxa.xn--qxa.xn--rxa.com",
+     kEllipsisStr + ".\xCE\xB5.\xCE\xB6.com"},
+#endif  // !defined(OS_IOS)
   };
 
   for (size_t i = 0; i < arraysize(testcases); ++i) {
-#if defined(OS_IOS)
-    if (testcases[i].platforms == Testcase::NO_IOS ||
-        (testcases[i].platforms == Testcase::NO_IOS9_OR_LATER &&
-         base::ios::IsRunningOnIOS9OrLater())) {
-      continue;
-    }
-#endif
     const float available_width = gfx::GetStringWidthF(
         base::UTF8ToUTF16(testcases[i].output), gfx::FontList());
     EXPECT_EQ(base::UTF8ToUTF16(testcases[i].output),
