@@ -252,7 +252,7 @@ and hence is not useful on third_party projects that use another style.
 ## CodeSearch Integration with Chromium X-Refs
 
 With [Chromium X-Refs](https://github.com/karlinjf/ChromiumXRefs/) you can
-perform [https://cs.chromium.org](https://cs.chromium.org] cross-reference
+perform [https://cs.chromium.org](https://cs.chromium.org) cross-reference
 searches in your editor. This gives you the call graph, overrides, references,
 declaration, and definition of most of the code. The results are as fresh as
 the search engine's index so uncomitted changes won't be reflected.
