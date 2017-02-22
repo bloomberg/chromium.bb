@@ -132,8 +132,8 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
 
   bool m_documentOrderIndexesDirty;
 
-  Timer<SMILTimeContainer> m_wakeupTimer;
-  Timer<SMILTimeContainer> m_animationPolicyOnceTimer;
+  TaskRunnerTimer<SMILTimeContainer> m_wakeupTimer;
+  TaskRunnerTimer<SMILTimeContainer> m_animationPolicyOnceTimer;
 
   using ElementAttributePair = std::pair<WeakMember<SVGElement>, QualifiedName>;
   using AnimationsLinkedHashSet = HeapLinkedHashSet<WeakMember<SVGSMILElement>>;

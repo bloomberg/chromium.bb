@@ -48,12 +48,15 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
       m_started(false),
       m_paused(false),
       m_documentOrderIndexesDirty(false),
-      m_wakeupTimer(this, &SMILTimeContainer::wakeupTimerFired),
-      m_animationPolicyOnceTimer(this,
-                                 &SMILTimeContainer::animationPolicyTimerFired),
-      m_ownerSVGElement(&owner)
-{
-}
+      m_wakeupTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &owner.document()),
+          this,
+          &SMILTimeContainer::wakeupTimerFired),
+      m_animationPolicyOnceTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &owner.document()),
+          this,
+          &SMILTimeContainer::animationPolicyTimerFired),
+      m_ownerSVGElement(&owner) {}
 
 SMILTimeContainer::~SMILTimeContainer() {
   cancelAnimationFrame();
