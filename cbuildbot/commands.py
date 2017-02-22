@@ -471,7 +471,7 @@ def RunChromiteTests(buildroot, network=False):
   # Since Chromite tests include testing our ability to enter the chroot, they
   # must run outside the chroot. Also note, this command will create the chroot
   # if it doesn't already exist.
-  cros_build_lib.RunCommand(cmd)
+  cros_build_lib.RunCommand(cmd, cwd=os.path.join(buildroot, 'chromite'))
 
 
 def UpdateBinhostJson(buildroot):

@@ -542,7 +542,7 @@ class CrosSigningTestStage(generic_stages.BuilderStage):
     commands.RunCrosSigningTests(self._build_root)
 
 
-class ChromiteStage(generic_stages.BuilderStage):
+class ChromiteTestStage(generic_stages.BuilderStage):
   """Stage that runs Chromite tests, including network tests."""
 
   def PerformStage(self):
