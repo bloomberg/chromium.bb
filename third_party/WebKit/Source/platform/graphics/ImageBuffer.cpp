@@ -99,6 +99,8 @@ ImageBuffer::ImageBuffer(std::unique_ptr<ImageBufferSurface> surface)
       m_snapshotState(InitialSnapshotState),
       m_surface(std::move(surface)),
       m_client(0),
+      m_gpuReadbackInvokedInCurrentFrame(false),
+      m_gpuReadbackSuccessiveFrames(0),
       m_gpuMemoryUsage(0) {
   m_surface->setImageBuffer(this);
   updateGPUMemoryUsage();
@@ -149,6 +151,22 @@ bool ImageBuffer::isSurfaceValid() const {
 }
 
 void ImageBuffer::finalizeFrame() {
+  if (isAccelerated() &&
+      ExpensiveCanvasHeuristicParameters::GPUReadbackForcesNoAcceleration &&
+      !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled()) {
+    if (m_gpuReadbackInvokedInCurrentFrame) {
+      m_gpuReadbackSuccessiveFrames++;
+      m_gpuReadbackInvokedInCurrentFrame = false;
+    } else {
+      m_gpuReadbackSuccessiveFrames = 0;
+    }
+
+    if (m_gpuReadbackSuccessiveFrames >=
+        ExpensiveCanvasHeuristicParameters::GPUReadbackMinSuccessiveFrames) {
+      disableAcceleration();
+    }
+  }
+
   m_surface->finalizeFrame();
 }
 
@@ -359,11 +377,6 @@ bool ImageBuffer::getImageData(Multiply multiplied,
 
   DCHECK(canvas());
 
-  if (ExpensiveCanvasHeuristicParameters::GetImageDataForcesNoAcceleration &&
-      !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled()) {
-    const_cast<ImageBuffer*>(this)->disableAcceleration();
-  }
-
   sk_sp<SkImage> snapshot = m_surface->newImageSnapshot(
       PreferNoAcceleration, SnapshotReasonGetImageData);
   if (!snapshot)
@@ -409,6 +422,7 @@ bool ImageBuffer::getImageData(Multiply multiplied,
 
   snapshot->readPixels(info, result.data(), bytesPerPixel * rect.width(),
                        rect.x(), rect.y());
+  m_gpuReadbackInvokedInCurrentFrame = true;
 
   if (useF16Workaround) {
     uint32_t* pixel = (uint32_t*)result.data();
