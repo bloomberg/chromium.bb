@@ -318,7 +318,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
                         mCard.getNumber().toString(), true)
                     == null) {
                 mHasValidNumberAndName = false;
-                editMessageResId = R.string.payments_card_number_invalid;
+                editMessageResId = R.string.payments_card_number_invalid_validation_message;
                 editTitleResId = R.string.payments_add_valid_card_number;
                 invalidFieldsCount++;
             }

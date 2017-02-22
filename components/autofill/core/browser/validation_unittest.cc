@@ -255,19 +255,19 @@ INSTANTIATE_TEST_CASE_P(
         ValidationCase(kInvalidNumbers[0],
                        CREDIT_CARD_NUMBER,
                        false,
-                       IDS_PAYMENTS_CARD_NUMBER_INVALID),
+                       IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
         ValidationCase(kInvalidNumbers[1],
                        CREDIT_CARD_NUMBER,
                        false,
-                       IDS_PAYMENTS_CARD_NUMBER_INVALID),
+                       IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
         ValidationCase(kInvalidNumbers[2],
                        CREDIT_CARD_NUMBER,
                        false,
-                       IDS_PAYMENTS_CARD_NUMBER_INVALID),
+                       IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
         ValidationCase(kInvalidNumbers[3],
                        CREDIT_CARD_NUMBER,
                        false,
-                       IDS_PAYMENTS_CARD_NUMBER_INVALID)));
+                       IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE)));
 
 INSTANTIATE_TEST_CASE_P(
     CreditCardMonth,

@@ -271,9 +271,10 @@ bool IsValidForType(const base::string16& value,
       if (IsValidCreditCardNumber(value))
         return true;
 
-      if (error_message)
-        *error_message =
-            l10n_util::GetStringUTF16(IDS_PAYMENTS_CARD_NUMBER_INVALID);
+      if (error_message) {
+        *error_message = l10n_util::GetStringUTF16(
+            IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE);
+      }
       break;
 
     default:

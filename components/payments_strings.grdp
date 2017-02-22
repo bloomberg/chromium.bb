@@ -129,9 +129,6 @@
   <message name="IDS_PAYMENTS_NAME_ON_CARD_REQUIRED" desc="The label to indicate name on card is required for payment card." formatter_data="android_java">
     Name on card required
   </message>
-  <message name="IDS_PAYMENTS_CARD_NUMBER_INVALID" desc="The label to indicate payment card number is invalid." formatter_data="android_java">
-    Card number invalid
-  </message>
   <message name="IDS_PAYMENTS_MORE_INFORMATION_REQUIRED" desc="The label to indicate more information is required for payment card or shipping address or contact info." formatter_data="android_java">
     More information required
   </message>
