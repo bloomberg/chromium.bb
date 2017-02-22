@@ -16,8 +16,14 @@ NGLayoutInlineItemsBuilder::~NGLayoutInlineItemsBuilder() {
 }
 
 String NGLayoutInlineItemsBuilder::ToString() {
-  if (has_pending_newline_)
-    ProcessPendingNewline(emptyString, nullptr);
+  // Segment Break Transformation Rules[1] defines to keep trailing new lines,
+  // but it will be removed in Phase II[2]. We prefer not to add trailing new
+  // lines and collapsible spaces in Phase I.
+  // [1] https://drafts.csswg.org/css-text-3/#line-break-transform
+  // [2] https://drafts.csswg.org/css-text-3/#white-space-phase-2
+  unsigned next_start_offset = text_.length();
+  RemoveTrailingCollapsibleSpace(&next_start_offset);
+
   return text_.toString();
 }
 
@@ -189,10 +195,12 @@ void NGLayoutInlineItemsBuilder::ProcessPendingNewline(
     const String& string,
     const ComputedStyle* style) {
   DCHECK(has_pending_newline_);
-  NGLayoutInlineItem& item = items_->back();
-  if (!ShouldRemoveNewline(text_, item.Style(), string, 0, style)) {
-    text_.append(spaceCharacter);
-    item.SetEndOffset(text_.length());
+  if (!items_->isEmpty()) {
+    NGLayoutInlineItem& item = items_->back();
+    if (!ShouldRemoveNewline(text_, item.Style(), string, 0, style)) {
+      text_.append(spaceCharacter);
+      item.SetEndOffset(text_.length());
+    }
   }
   // Remove spaces following a newline even when the newline was removed.
   is_last_collapsible_space_ = true;
