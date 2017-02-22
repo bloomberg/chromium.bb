@@ -318,8 +318,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   virtual SelectionState getSelectionState() const;
 
   virtual bool canAccommodateEllipsis(bool ltr,
-                                      int blockEdge,
-                                      int ellipsisWidth) const;
+                                      LayoutUnit blockEdge,
+                                      LayoutUnit ellipsisWidth) const;
   // visibleLeftEdge, visibleRightEdge are in the parent's coordinate system.
   virtual LayoutUnit placeEllipsisBox(bool ltr,
                                       LayoutUnit visibleLeftEdge,

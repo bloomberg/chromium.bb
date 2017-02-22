@@ -92,12 +92,12 @@ LayoutUnit RootInlineBox::lineHeight() const {
 }
 
 bool RootInlineBox::lineCanAccommodateEllipsis(bool ltr,
-                                               int blockEdge,
-                                               int lineBoxEdge,
-                                               int ellipsisWidth) {
+                                               LayoutUnit blockEdge,
+                                               LayoutUnit lineBoxEdge,
+                                               LayoutUnit ellipsisWidth) {
   // First sanity-check the unoverflowed width of the whole line to see if there
   // is sufficient room.
-  int delta = ltr ? lineBoxEdge - blockEdge : blockEdge - lineBoxEdge;
+  LayoutUnit delta = ltr ? lineBoxEdge - blockEdge : blockEdge - lineBoxEdge;
   if (logicalWidth() - delta < ellipsisWidth)
     return false;
 
@@ -113,10 +113,9 @@ LayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,
                                         LayoutUnit blockRightEdge,
                                         LayoutUnit ellipsisWidth) {
   // Create an ellipsis box.
-  EllipsisBox* ellipsisBox =
-      new EllipsisBox(getLineLayoutItem(), ellipsisStr, this, ellipsisWidth,
-                      logicalHeight().toFloat(), x().toInt(), y().toInt(),
-                      !prevRootBox(), isHorizontal());
+  EllipsisBox* ellipsisBox = new EllipsisBox(
+      getLineLayoutItem(), ellipsisStr, this, ellipsisWidth, logicalHeight(),
+      location(), !prevRootBox(), isHorizontal());
 
   if (!gEllipsisBoxMap)
     gEllipsisBoxMap = new EllipsisBoxMap();

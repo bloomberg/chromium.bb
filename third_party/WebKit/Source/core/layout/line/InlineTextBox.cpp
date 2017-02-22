@@ -354,8 +354,8 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
     if (ltr != flowIsLTR) {
       // Width in pixels of the visible portion of the box, excluding the
       // ellipsis.
-      int visibleBoxWidth =
-          (visibleRightEdge - visibleLeftEdge - ellipsisWidth).toInt();
+      LayoutUnit visibleBoxWidth =
+          visibleRightEdge - visibleLeftEdge - ellipsisWidth;
       ellipsisX = flowIsLTR ? logicalLeft() + visibleBoxWidth
                             : logicalRight() - visibleBoxWidth;
     }

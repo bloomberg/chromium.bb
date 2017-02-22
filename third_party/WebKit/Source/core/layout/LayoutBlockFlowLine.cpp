@@ -2420,8 +2420,8 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
       LayoutUnit width(indentText == IndentText ? firstLineEllipsisWidth
                                                 : ellipsisWidth);
       LayoutUnit blockEdge = ltr ? blockRightEdge : blockLeftEdge;
-      if (curr->lineCanAccommodateEllipsis(
-              ltr, blockEdge.toInt(), lineBoxEdge.toInt(), width.toInt())) {
+      if (curr->lineCanAccommodateEllipsis(ltr, blockEdge, lineBoxEdge,
+                                           width)) {
         LayoutUnit totalLogicalWidth = curr->placeEllipsis(
             selectedEllipsisStr, ltr, blockLeftEdge, blockRightEdge, width);
         LayoutUnit logicalLeft;  // We are only interested in the delta from the

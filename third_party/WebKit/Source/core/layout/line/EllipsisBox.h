@@ -33,13 +33,12 @@ class EllipsisBox final : public InlineBox {
               const AtomicString& ellipsisStr,
               InlineFlowBox* parent,
               LayoutUnit width,
-              int height,
-              int x,
-              int y,
+              LayoutUnit height,
+              LayoutPoint location,
               bool firstLine,
               bool isVertical)
       : InlineBox(item,
-                  LayoutPoint(x, y),
+                  location,
                   width,
                   firstLine,
                   true,
@@ -67,16 +66,14 @@ class EllipsisBox final : public InlineBox {
   void setSelectionState(SelectionState s) { m_selectionState = s; }
   IntRect selectionRect() const;
 
-  LayoutUnit virtualLogicalHeight() const override {
-    return LayoutUnit(m_height);
-  }
+  LayoutUnit virtualLogicalHeight() const override { return m_height; }
   SelectionState getSelectionState() const override { return m_selectionState; }
   const AtomicString& ellipsisStr() const { return m_str; }
 
   const char* boxName() const override;
 
  private:
-  int m_height;
+  LayoutUnit m_height;
   AtomicString m_str;
   SelectionState m_selectionState;
 };

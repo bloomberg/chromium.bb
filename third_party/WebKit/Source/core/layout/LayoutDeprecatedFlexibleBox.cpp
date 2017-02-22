@@ -1173,9 +1173,9 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator,
     LayoutUnit blockRightEdge = destBlock.logicalRightOffsetForLine(
         lastVisibleLine->y(), DoNotIndentText);
     if (!lastVisibleLine->lineCanAccommodateEllipsis(
-            leftToRight, blockRightEdge.toInt(),
-            (lastVisibleLine->x() + lastVisibleLine->logicalWidth()).toInt(),
-            totalWidth))
+            leftToRight, blockRightEdge,
+            lastVisibleLine->x() + lastVisibleLine->logicalWidth(),
+            LayoutUnit(totalWidth)))
       continue;
 
     // Let the truncation code kick in.

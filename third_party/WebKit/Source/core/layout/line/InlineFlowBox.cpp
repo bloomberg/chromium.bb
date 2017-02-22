@@ -1409,8 +1409,8 @@ SelectionState InlineFlowBox::getSelectionState() const {
 }
 
 bool InlineFlowBox::canAccommodateEllipsis(bool ltr,
-                                           int blockEdge,
-                                           int ellipsisWidth) const {
+                                           LayoutUnit blockEdge,
+                                           LayoutUnit ellipsisWidth) const {
   for (InlineBox* box = firstChild(); box; box = box->nextOnLine()) {
     if (!box->canAccommodateEllipsis(ltr, blockEdge, ellipsisWidth))
       return false;
@@ -1434,23 +1434,21 @@ LayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr,
   InlineBox* box = ltr ? firstChild() : lastChild();
 
   // NOTE: these will cross after foundBox = true.
-  int visibleLeftEdge = blockLeftEdge.toInt();
-  int visibleRightEdge = blockRightEdge.toInt();
+  LayoutUnit visibleLeftEdge = blockLeftEdge;
+  LayoutUnit visibleRightEdge = blockRightEdge;
 
   while (box) {
-    int currResult =
-        box->placeEllipsisBox(ltr, LayoutUnit(visibleLeftEdge),
-                              LayoutUnit(visibleRightEdge), ellipsisWidth,
-                              truncatedWidth, foundBox)
-            .toInt();
+    LayoutUnit currResult = box->placeEllipsisBox(
+        ltr, LayoutUnit(visibleLeftEdge), LayoutUnit(visibleRightEdge),
+        ellipsisWidth, truncatedWidth, foundBox);
     if (currResult != -1 && result == -1)
-      result = LayoutUnit(currResult);
+      result = currResult;
 
     // List markers will sit outside the box so don't let them contribute
     // width.
-    int boxWidth = box->getLineLayoutItem().isListMarker()
-                       ? 0
-                       : box->logicalWidth().round();
+    LayoutUnit boxWidth = box->getLineLayoutItem().isListMarker()
+                              ? LayoutUnit()
+                              : box->logicalWidth();
     if (ltr) {
       visibleLeftEdge += boxWidth;
       box = box->nextOnLine();

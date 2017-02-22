@@ -104,9 +104,9 @@ class RootInlineBox : public InlineFlowBox {
   void childRemoved(InlineBox*);
 
   bool lineCanAccommodateEllipsis(bool ltr,
-                                  int blockEdge,
-                                  int lineBoxEdge,
-                                  int ellipsisWidth);
+                                  LayoutUnit blockEdge,
+                                  LayoutUnit lineBoxEdge,
+                                  LayoutUnit ellipsisWidth);
   // Return the truncatedWidth, the width of the truncated text + ellipsis.
   LayoutUnit placeEllipsis(const AtomicString& ellipsisStr,
                            bool ltr,
