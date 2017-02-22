@@ -131,7 +131,7 @@ bool MHTMLFrameSerializerDelegate::shouldIgnoreHiddenElement(
     return false;
   if (isHTMLHeadElement(element) || isHTMLMetaElement(element) ||
       isHTMLStyleElement(element) || isHTMLDataListElement(element) ||
-      isHTMLOptionElement(element)) {
+      isHTMLOptionElement(element) || isHTMLLinkElement(element)) {
     return false;
   }
   Element* parent = element.parentElement();

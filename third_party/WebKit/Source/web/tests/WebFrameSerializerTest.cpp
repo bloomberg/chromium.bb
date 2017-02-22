@@ -283,13 +283,14 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveHiddenElements) {
   EXPECT_NE(WTF::kNotFound, mhtml.find("<head"));
   EXPECT_NE(WTF::kNotFound, mhtml.find("<style"));
   EXPECT_NE(WTF::kNotFound, mhtml.find("<title"));
-  EXPECT_NE(WTF::kNotFound, mhtml.find("<link"));
   EXPECT_NE(WTF::kNotFound, mhtml.find("<datalist"));
   EXPECT_NE(WTF::kNotFound, mhtml.find("<option"));
   // One for meta in head and another for meta in body.
   EXPECT_EQ(2, matchSubstring(mhtml, "<meta", 5));
   // One for style in head and another for style in body.
   EXPECT_EQ(2, matchSubstring(mhtml, "<style", 6));
+  // One for link in head and another for link in body.
+  EXPECT_EQ(2, matchSubstring(mhtml, "<link", 5));
 
   // These hidden elements that affect layout should remain intact.
   EXPECT_NE(WTF::kNotFound, mhtml.find("<h2"));
