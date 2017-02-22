@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target2' class='outer'",
           "rect": [0, 200, 140, 140],
-          "reason": "background obscuration change"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target1' class='outer'",
-          "rect": [0, 100, 140, 40],
-          "reason": "incremental"
+          "rect": [0, 0, 140, 140],
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV class='inner'",
@@ -25,11 +25,6 @@
           "object": "LayoutBlockFlow DIV class='inner'",
           "rect": [0, 200, 100, 100],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target1' class='outer'",
-          "rect": [100, 0, 40, 140],
-          "reason": "incremental"
         }
       ]
     }
@@ -37,11 +32,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target1' class='outer'",
-      "reason": "incremental"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target2' class='outer'",
-      "reason": "background obscuration change"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow DIV class='inner'",

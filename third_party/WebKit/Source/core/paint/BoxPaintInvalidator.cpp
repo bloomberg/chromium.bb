@@ -117,8 +117,7 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
   const ComputedStyle& style = m_box.styleRef();
 
   if ((style.backgroundLayers().thisOrNextLayersUseContentBox() ||
-       style.maskLayers().thisOrNextLayersUseContentBox() ||
-       style.boxSizing() == EBoxSizing::kBorderBox) &&
+       style.maskLayers().thisOrNextLayersUseContentBox()) &&
       previousContentBoxRect() != m_box.contentBoxRect())
     return PaintInvalidationContentBoxChange;
 
@@ -318,11 +317,6 @@ bool BoxPaintInvalidator::needsToSavePreviousBoxGeometries() {
     return false;
 
   const ComputedStyle& style = m_box.styleRef();
-
-  // If we use border-box sizing we need to track changes in the size of the
-  // content box.
-  if (style.boxSizing() == EBoxSizing::kBorderBox)
-    return true;
 
   // Background and mask layers can depend on other boxes than border box. See
   // crbug.com/490533

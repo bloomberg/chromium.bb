@@ -640,6 +640,9 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
         borderBottomWidth() != other.borderBottomWidth() ||
         borderRightWidth() != other.borderRightWidth())
       return true;
+
+    if (m_surround->padding != other.m_surround->padding)
+      return true;
   }
 
   if (m_rareNonInheritedData.get() != other.m_rareNonInheritedData.get()) {
@@ -883,11 +886,6 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const {
           other.m_nonInheritedData.m_verticalAlign ||
       position() != other.position())
     return true;
-
-  if (m_surround.get() != other.m_surround.get()) {
-    if (m_surround->padding != other.m_surround->padding)
-      return true;
-  }
 
   if (m_rareNonInheritedData.get() != other.m_rareNonInheritedData.get()) {
     if (m_rareNonInheritedData->m_alignContent !=
