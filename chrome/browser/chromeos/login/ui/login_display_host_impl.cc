@@ -308,6 +308,8 @@ class LoginDisplayHostImpl::LoginWidgetDelegate : public views::WidgetDelegate {
   }
   ~LoginWidgetDelegate() override {}
 
+  void LoginDisplayHostDestroyed() { login_display_host_ = nullptr; }
+
   // Overridden from WidgetDelegate:
   void WindowClosing() override {
     // Reset the cached Widget and View pointers. The Widget may close due to:
@@ -315,7 +317,7 @@ class LoginDisplayHostImpl::LoginWidgetDelegate : public views::WidgetDelegate {
     // * Ash crash at the login screen on mustash
     // In the latter case the mash root process will trigger a clean restart
     // of content_browser.
-    if (chrome::IsRunningInMash())
+    if (chrome::IsRunningInMash() && login_display_host_)
       login_display_host_->ResetLoginWindowAndView();
   }
   void DeleteDelegate() override { delete this; }
@@ -326,6 +328,7 @@ class LoginDisplayHostImpl::LoginWidgetDelegate : public views::WidgetDelegate {
 
  private:
   views::Widget* widget_;
+  // Set to null if LoginDisplayHostImpl is destroyed before us.
   LoginDisplayHostImpl* login_display_host_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginWidgetDelegate);
@@ -478,6 +481,9 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
 
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);
+
+  if (login_window_delegate_)
+    login_window_delegate_->LoginDisplayHostDestroyed();
 
   chrome::MultiUserWindowManager* window_manager =
       chrome::MultiUserWindowManager::GetInstance();
@@ -1219,7 +1225,8 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
             ash::kShellWindowId_LockScreenContainer);
   }
   login_window_ = new views::Widget;
-  params.delegate = new LoginWidgetDelegate(login_window_, this);
+  params.delegate = login_window_delegate_ =
+      new LoginWidgetDelegate(login_window_, this);
   login_window_->Init(params);
 
   login_view_ = new WebUILoginView(WebUILoginView::WebViewSettings());
@@ -1264,6 +1271,7 @@ void LoginDisplayHostImpl::ResetLoginWindowAndView() {
   if (login_window_) {
     login_window_->Close();
     login_window_ = nullptr;
+    login_window_delegate_ = nullptr;
   }
 }
 
