@@ -11,12 +11,13 @@
 
     <uses-sdk
         android:minSdkVersion="16"
-        android:targetSdkVersion="23" />
+        android:targetSdkVersion="25" />
 
     <application
         android:icon="@mipmap/app_icon"
         android:label="{{ short_name }}"
-        android:allowBackup="false">
+        android:allowBackup="false"
+        android:resizeableActivity="true">
         <activity android:name="org.chromium.webapk.shell_apk.MainActivity"
                   android:theme="@android:style/Theme.Translucent.NoTitleBar"
                   android:excludeFromRecents="true">
