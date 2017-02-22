@@ -82,7 +82,7 @@ license is not included in about:credits page.
 ### Modify DEPS
 
 If the code is applicable and will be compiled on all supported Chromium
-platforms (Windows, Mac, Linux, ChromeOS, iOS, Android), check it in to
+platforms (Windows, Mac, Linux, Chrome OS, iOS, Android), check it in to
 [src/third_party](http://src.chromium.org/viewvc/chrome/trunk/src/third_party/). 
 
 If the code is only applicable to certain platforms, check it in to

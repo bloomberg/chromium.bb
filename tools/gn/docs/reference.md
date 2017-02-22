@@ -3893,7 +3893,7 @@
 
   This should be set to the most specific value possible. So, "android" or
   "chromeos" should be used instead of "linux" where applicable, even though
-  Android and ChromeOS are both Linux variants. This can mean that one needs to
+  Android and Chrome OS are both Linux variants. This can mean that one needs to
   write
 
       if (target_os == "android" || target_os == "linux") {

@@ -81,16 +81,16 @@ https://cs.chromium.org/chromium/src/storage/browser/blob/blob_memory_controller
 
 **In-Memory Storage Limit**
 
-* If the architecture is x64 and NOT ChromeOS or Android: `2GB`
+* If the architecture is x64 and NOT Chrome OS or Android: `2GB`
 * Otherwise: `total_physical_memory / 5`
 
 **Disk Storage Limit**
 
-* If ChromeOS: `disk_size / 2`
+* If Chrome OS: `disk_size / 2`
 * If Android: `disk_size / 20`
 * Else: `disk_size / 10`
 
-Note: ChromeOS's disk is part of the user partition, which is separate from the
+Note: Chrome OS's disk is part of the user partition, which is separate from the
 system partition.
 
 **Minimum Disk Availability**

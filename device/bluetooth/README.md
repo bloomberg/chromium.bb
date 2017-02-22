@@ -10,15 +10,15 @@ Classic and Low Energy based profiles differ substantially. Platform
 implementations may support only one or the other, even though several classes
 have interfaces for both, e.g. `BluetoothAdapter` & `BluetoothDevice`.
 
-|          | Classic |  Low Energy |
-|----------|:-------:|:-----------:|
-| Android  |   no    |     yes     |
-| ChromeOS |   yes   |     yes     |
-| Linux    |   yes   |     yes     |
-| Mac      |   yes   |     yes     |
-| Windows  |   some  |    nearly   |
+|           | Classic |  Low Energy |
+|-----------|:-------:|:-----------:|
+| Android   |   no    |     yes     |
+| Chrome OS |   yes   |     yes     |
+| Linux     |   yes   |     yes     |
+| Mac       |   yes   |     yes     |
+| Windows   |   some  |    nearly   |
 
-ChromeOS and Linux are supported via BlueZ, see `*_bluez` files.
+Chrome OS and Linux are supported via BlueZ, see `*_bluez` files.
 
 
 Maintainer History
@@ -26,7 +26,7 @@ Maintainer History
 
 Initial implementation OWNERS were youngki@chromium.org, keybuk@chromium.org,
 armansito@chromium.org, and rpaquay@chromium.org. They no longer contribute to
-chromium fulltime. They were responsible for support for ChromeOS Bluetooth
+chromium fulltime. They were responsible for support for Chrome OS Bluetooth
 features and the Chrome Apps APIs:
 
 * [chrome.bluetooth](https://developer.chrome.com/apps/bluetooth)
@@ -36,7 +36,7 @@ features and the Chrome Apps APIs:
 Active development in 2015 & 2016 is focused on enabling GATT features for:
 
 * [Web Bluetooth](https://crbug.com/419413)
-* Peripheral mode for ChromeOS.
+* Peripheral mode for Chrome OS.
 
 Known future work is tracked in the
 [Refactoring meta issue](https://crbug.com/580406).
@@ -84,10 +84,10 @@ tests](https://crbug.com/580403).
 client code.
 
 
-### ChromeOS Blueooth Controller Tests
+### Chrome OS Blueooth Controller Tests
 
 Bluetooth controller system tests generating radio signals are run and managed
-by the ChromeOS team. See:
+by the Chrome OS team. See:
 https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/server/site_tests/
 https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/server/cros/bluetooth/
 https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/client/cros/bluetooth/

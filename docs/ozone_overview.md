@@ -118,7 +118,7 @@ through creating a new ozone platform called `foo`.
 
 ## Building with Ozone
 
-### ChromeOS - ([waterfall](https://build.chromium.org/p/chromium.chromiumos/waterfall?builder=Linux+ChromiumOS+Ozone+Builder&builder=Linux+ChromiumOS+Ozone+Tests+%281%29&builder=Linux+ChromiumOS+Ozone+Tests+%282%29&reload=none))
+### Chrome OS - ([waterfall](https://build.chromium.org/p/chromium.chromiumos/waterfall?builder=Linux+ChromiumOS+Ozone+Builder&builder=Linux+ChromiumOS+Ozone+Tests+%281%29&builder=Linux+ChromiumOS+Ozone+Tests+%282%29&reload=none))
 
 To build `chrome`, do this from the `src` directory:
 
@@ -224,9 +224,9 @@ content_shell --ozone-platform=headless \
 
 This is Linux direct rending with acceleration via mesa GBM & linux DRM/KMS
 (EGL/GLES2 accelerated rendering & modesetting in GPU process) and is in
-production use on [ChromeOS](https://www.chromium.org/chromium-os).
+production use on [Chrome OS](https://www.chromium.org/chromium-os).
 
-Note that all ChromeOS builds of Chrome will compile and attempt to use this.
+Note that all Chrome OS builds of Chrome will compile and attempt to use this.
 See [Building Chromium for Chromium OS](https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/building-chromium-browser) for build instructions.
 
 ### Cast

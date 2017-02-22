@@ -1,4 +1,4 @@
-# ChromeOS Build Instructions (Chromium OS on Linux)
+# Chrome OS Build Instructions (Chromium OS on Linux)
 
 Chromium on Chromium OS is built from a mix of code sourced from Chromium
 on Linux and Chromium on Windows. Much of the user interface code is

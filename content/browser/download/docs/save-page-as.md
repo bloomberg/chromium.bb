@@ -101,7 +101,7 @@ Very high-level flow of saving a page as MHTML:
           `SavePackage::OnMHTMLGenerated`.
 
 Note: MHTML format is by default disabled in Save-Page-As UI on Windows, MacOS
-and Linux (it is the default on ChromeOS), but for testing this can be easily
+and Linux (it is the default on Chrome OS), but for testing this can be easily
 changed using `--save-page-as-mhtml` command line switch.
 
 

@@ -2,7 +2,7 @@
 
 Chrome (version 10 and above) uses WebUI settings by default for all platforms.
 Access it via the wrench menu ("Preferences" on Mac and Linux; "Options" on
-Windows and ChromeOS), or by typing chrome://settings into the address bar.
+Windows and Chrome OS), or by typing chrome://settings into the address bar.
 
 One advantage of chrome://settings over platform-native dialogs is that it is
 shared by all platforms; therefore, it is easier to add new options UI and to
