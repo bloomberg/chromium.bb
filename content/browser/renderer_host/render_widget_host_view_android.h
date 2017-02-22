@@ -250,6 +250,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnTextSelectionChanged(TextInputManager* text_input_manager,
                               RenderWidgetHostViewBase* updated_view) override;
 
+  ImeAdapterAndroid* ime_adapter_for_testing() { return &ime_adapter_android_; }
+
  private:
   void RunAckCallbacks();
 

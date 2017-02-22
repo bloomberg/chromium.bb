@@ -93,6 +93,14 @@
 #include "ui/base/test/scoped_preferred_scroller_style_mac.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
+#include "content/browser/renderer_host/ime_adapter_android.h"
+#include "content/browser/renderer_host/render_widget_host_view_android.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -9409,5 +9417,136 @@ IN_PROC_BROWSER_TEST_F(RequestDelayingSitePerProcessBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(), "createFrames()", &result));
   EXPECT_TRUE(result);
 }
+
+#if defined(OS_ANDROID)
+class TextSelectionObserver : public TextInputManager::Observer {
+ public:
+  explicit TextSelectionObserver(TextInputManager* text_input_manager)
+      : text_input_manager_(text_input_manager) {
+    text_input_manager->AddObserver(this);
+  }
+
+  ~TextSelectionObserver() { text_input_manager_->RemoveObserver(this); }
+
+  void WaitForSelectedText(const std::string& expected_text) {
+    if (last_selected_text_ == expected_text)
+      return;
+    expected_text_ = expected_text;
+    loop_runner_ = new MessageLoopRunner();
+    loop_runner_->Run();
+  }
+
+ private:
+  void OnTextSelectionChanged(TextInputManager* text_input_manager,
+                              RenderWidgetHostViewBase* updated_view) override {
+    base::string16 text;
+    if (text_input_manager->GetTextSelection(updated_view)
+            ->GetSelectedText(&text)) {
+      last_selected_text_ = base::UTF16ToUTF8(text);
+      if (last_selected_text_ == expected_text_ && loop_runner_)
+        loop_runner_->Quit();
+    }
+  }
+  TextInputManager* const text_input_manager_;
+  std::string last_selected_text_;
+  std::string expected_text_;
+  scoped_refptr<MessageLoopRunner> loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextSelectionObserver);
+};
+
+class SitePerProcessAndroidImeTest : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessAndroidImeTest() : SitePerProcessBrowserTest() {}
+  ~SitePerProcessAndroidImeTest() override {}
+
+ protected:
+  ImeAdapterAndroid* ime_adapter() {
+    return static_cast<RenderWidgetHostViewAndroid*>(
+               web_contents()->GetRenderWidgetHostView())
+        ->ime_adapter_for_testing();
+  }
+
+  std::string GetInputValue(RenderFrameHostImpl* frame) {
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        frame, "window.domAutomationController.send(input.value);", &result));
+    return result;
+  }
+
+  void FocusInputInFrame(RenderFrameHostImpl* frame) {
+    ASSERT_TRUE(ExecuteScript(frame, "window.focus(); input.focus();"));
+  }
+
+  // Creates a page with multiple (nested) OOPIFs and populates all of them
+  // with an <input> element along with the required handlers for the test.
+  void LoadPage() {
+    ASSERT_TRUE(NavigateToURL(
+        shell(),
+        GURL(embedded_test_server()->GetURL(
+            "a.com", "/cross_site_iframe_factory.html?a(b,c(a(b)))"))));
+    FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+    frames_.push_back(root->current_frame_host());
+    frames_.push_back(root->child_at(0)->current_frame_host());
+    frames_.push_back(root->child_at(1)->current_frame_host());
+    frames_.push_back(root->child_at(1)->child_at(0)->current_frame_host());
+    frames_.push_back(
+        root->child_at(1)->child_at(0)->child_at(0)->current_frame_host());
+
+    // Adds an <input> to frame and sets up a handler for |window.oninput|. When
+    // the input event is fired (by changing the value of <input> element), the
+    // handler will select all the text so that the corresponding text selection
+    // update on the browser side notifies the test about input insertion.
+    std::string add_input_script =
+        "var input = document.createElement('input');"
+        "document.body.appendChild(input);"
+        "window.oninput = function() {"
+        "  input.select();"
+        "};";
+
+    for (auto* frame : frames_)
+      ASSERT_TRUE(ExecuteScript(frame, add_input_script));
+  }
+
+  // This methods tries to commit |text| by simulating a native call from Java.
+  void CommitText(const char* text) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+
+    // A valid caller is needed for ImeAdapterAndroid::GetUnderlinesFromSpans.
+    base::android::ScopedJavaLocalRef<jobject> caller =
+        ime_adapter()->java_ime_adapter_for_testing(env);
+
+    // Input string from Java side.
+    base::android::ScopedJavaLocalRef<jstring> jtext =
+        base::android::ConvertUTF8ToJavaString(env, text);
+
+    // Simulating a native call from Java side.
+    ime_adapter()->CommitText(
+        env, base::android::JavaParamRef<jobject>(env, caller.obj()),
+        base::android::JavaParamRef<jobject>(env, jtext.obj()),
+        base::android::JavaParamRef<jstring>(env, jtext.obj()), 0);
+  }
+
+  std::vector<RenderFrameHostImpl*> frames_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SitePerProcessAndroidImeTest);
+};
+
+// This test verifies that committing text will be applied on the focused
+// RenderWidgetHost.
+IN_PROC_BROWSER_TEST_F(SitePerProcessAndroidImeTest,
+                       CommitTextForFocusedWidget) {
+  LoadPage();
+  TextSelectionObserver selection_observer(
+      web_contents()->GetTextInputManager());
+  for (size_t index = 0; index < frames_.size(); ++index) {
+    std::string text = base::StringPrintf("text%zu", index);
+    FocusInputInFrame(frames_[index]);
+    CommitText(text.c_str());
+    selection_observer.WaitForSelectedText(text);
+  }
+}
+#endif  // OS_ANDROID
 
 }  // namespace content

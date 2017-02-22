@@ -11,6 +11,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/strings/string16.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
@@ -24,14 +25,13 @@ namespace content {
 class RenderFrameHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewAndroid;
-class WebContents;
 
 // This class is in charge of dispatching key events from the java side
 // and forward to renderer along with input method results via
 // corresponding host view.
 // Ownership of these objects remains on the native side (see
 // RenderWidgetHostViewAndroid).
-class ImeAdapterAndroid {
+class CONTENT_EXPORT ImeAdapterAndroid {
  public:
   explicit ImeAdapterAndroid(RenderWidgetHostViewAndroid* rwhva);
   ~ImeAdapterAndroid();
@@ -86,10 +86,14 @@ class ImeAdapterAndroid {
   void FocusedNodeChanged(bool is_editable_node);
   void SetCharacterBounds(const std::vector<gfx::RectF>& rects);
 
+  base::android::ScopedJavaLocalRef<jobject> java_ime_adapter_for_testing(
+      JNIEnv* env) {
+    return java_ime_adapter_.get(env);
+  }
+
  private:
-  RenderWidgetHostImpl* GetRenderWidgetHostImpl();
+  RenderWidgetHostImpl* GetFocusedWidget();
   RenderFrameHost* GetFocusedFrame();
-  WebContents* GetWebContents();
   std::vector<blink::WebCompositionUnderline> GetUnderlinesFromSpans(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
