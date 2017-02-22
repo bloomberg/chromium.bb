@@ -87,6 +87,30 @@ cr.define('settings_menu', function() {
         var path = new window.URL(selector.selected).pathname;
         assertEquals('/reset', path);
       });
+
+      test('navigateToAnotherSection', function() {
+        var selector = settingsMenu.$.subMenu;
+        var path = new window.URL(selector.selected).pathname;
+        assertEquals('/reset', path);
+
+        settings.navigateTo(settings.Route.PEOPLE, '');
+        Polymer.dom.flush();
+
+        path = new window.URL(selector.selected).pathname;
+        assertEquals('/people', path);
+      });
+
+      test('navigateToBasic', function() {
+        var selector = settingsMenu.$.subMenu;
+        var path = new window.URL(selector.selected).pathname;
+        assertEquals('/reset', path);
+
+        settings.navigateTo(settings.Route.BASIC, '');
+        Polymer.dom.flush();
+
+        // BASIC has no sub page selected.
+        assertFalse(!!selector.selected);
+      });
     });
   }
 

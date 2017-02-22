@@ -9,6 +9,8 @@
 Polymer({
   is: 'settings-menu',
 
+  behaviors: [settings.RouteObserverBehavior],
+
   properties: {
     advancedOpened: {
       type: Boolean,
@@ -29,18 +31,20 @@ Polymer({
     'subMenu.tap': 'onLinkTap_',
   },
 
-  /** @override */
-  attached: function() {
-    var currentPath = settings.getCurrentRoute().path;
+  /** @param {!settings.Route} newRoute */
+  currentRouteChanged: function(newRoute) {
+    var currentPath = newRoute.path;
 
     // Focus the initially selected path.
     var anchors = this.root.querySelectorAll('a');
     for (var i = 0; i < anchors.length; ++i) {
       if (anchors[i].getAttribute('href') == currentPath) {
         this.setSelectedUrl_(anchors[i].href);
-        break;
+        return;
       }
     }
+
+    this.setSelectedUrl_('');  // Nothing is selected.
   },
 
   /**
