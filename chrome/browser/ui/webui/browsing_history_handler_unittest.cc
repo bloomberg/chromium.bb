@@ -40,10 +40,6 @@
 
 namespace {
 
-// Duplicates on the same day in the local timezone are removed, so set a
-// baseline time in local time.
-const base::Time baseline_time = base::Time::UnixEpoch().LocalMidnight();
-
 base::Time PretendNow() {
   base::Time::Exploded exploded_reference_time;
   exploded_reference_time.year = 2015;
