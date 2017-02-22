@@ -32,12 +32,6 @@
 
     </org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView>
 
-    <org.chromium.chrome.browser.widget.DualControlLayout
-        android:id="@+id/button_bar"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:padding="@dimen/payments_section_large_spacing"
-        android:background="@android:color/white"
-        android:visibility="gone" />
+     <include layout="@layout/payment_request_bottom_bar" />
 
 </org.chromium.chrome.browser.widget.BoundedLinearLayout>

@@ -11,8 +11,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -34,8 +32,7 @@ public class PaymentRequestUiErrorView extends BoundedLinearLayout {
      * @param origin  Origin of the webpage.
      */
     public void initialize(String title, String origin) {
-        ((TextView) findViewById(R.id.page_title)).setText(title);
-        ((TextView) findViewById(R.id.hostname)).setText(origin);
+        ((PaymentRequestHeader) findViewById(R.id.header)).setTitleAndOrigin(title, origin);
 
         // Remove the close button, then expand the page information to take up the space formerly
         // occupied by the X.
@@ -79,7 +76,7 @@ public class PaymentRequestUiErrorView extends BoundedLinearLayout {
      * @param bitmap Icon to display.
      */
     public void setBitmap(Bitmap bitmap) {
-        ((ImageView) findViewById(R.id.icon_view)).setImageBitmap(bitmap);
+        ((PaymentRequestHeader) findViewById(R.id.header)).setTitleBitmap(bitmap);
     }
 
     /**

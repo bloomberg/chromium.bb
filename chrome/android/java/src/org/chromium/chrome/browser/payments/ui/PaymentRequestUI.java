@@ -36,7 +36,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -51,7 +50,6 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBre
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
-import org.chromium.chrome.browser.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 import org.chromium.chrome.browser.widget.animation.FocusAnimator;
 import org.chromium.components.signin.ChromeSigninController;
@@ -317,7 +315,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     private ScrollView mPaymentContainer;
     private LinearLayout mPaymentContainerLayout;
-    private DualControlLayout mButtonBar;
+    private LinearLayout mBottomBar;
     private Button mEditButton;
     private Button mPayButton;
     private View mCloseButton;
@@ -542,22 +540,17 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         TextView messageView = (TextView) mRequestView.findViewById(R.id.message);
         messageView.setText(R.string.payments_loading_message);
 
-        ((TextView) mRequestView.findViewById(R.id.page_title)).setText(title);
-        ((TextView) mRequestView.findViewById(R.id.hostname)).setText(origin);
+        ((PaymentRequestHeader) mRequestView.findViewById(R.id.header))
+                .setTitleAndOrigin(title, origin);
 
         // Set up the buttons.
         mCloseButton = mRequestView.findViewById(R.id.close_button);
         mCloseButton.setOnClickListener(this);
-        mPayButton = DualControlLayout.createButtonForLayout(
-                context, true, context.getString(R.string.payments_pay_button), this);
-        mEditButton = DualControlLayout.createButtonForLayout(
-                context, false, context.getString(R.string.payments_edit_button), this);
-        mButtonBar = (DualControlLayout) mRequestView.findViewById(R.id.button_bar);
-        mButtonBar.setAlignment(DualControlLayout.ALIGN_END);
-        mButtonBar.setStackedMargin(context.getResources().getDimensionPixelSize(
-                R.dimen.infobar_margin_between_stacked_buttons));
-        mButtonBar.addView(mPayButton);
-        mButtonBar.addView(mEditButton);
+        mBottomBar = (LinearLayout) mRequestView.findViewById(R.id.bottom_bar);
+        mPayButton = (Button) mBottomBar.findViewById(R.id.button_primary);
+        mPayButton.setOnClickListener(this);
+        mEditButton = (Button) mBottomBar.findViewById(R.id.button_secondary);
+        mEditButton.setOnClickListener(this);
 
         // Create all the possible sections.
         mSectionSeparators = new ArrayList<>();
@@ -659,7 +652,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param bitmap The bitmap to show next to the title.
      */
     public void setTitleBitmap(Bitmap bitmap) {
-        ((ImageView) mRequestView.findViewById(R.id.icon_view)).setImageBitmap(bitmap);
+        ((PaymentRequestHeader) mRequestView.findViewById(R.id.header)).setTitleBitmap(bitmap);
         mErrorView.setBitmap(bitmap);
     }
 
@@ -925,7 +918,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         if (showSpinner) {
             mPaymentContainer.setVisibility(View.GONE);
-            mButtonBar.setVisibility(View.GONE);
+            mBottomBar.setVisibility(View.GONE);
             mCloseButton.setVisibility(View.GONE);
             mSpinnyLayout.setVisibility(View.VISIBLE);
 
@@ -936,7 +929,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mRequestView.requestLayout();
         } else {
             mPaymentContainer.setVisibility(View.VISIBLE);
-            mButtonBar.setVisibility(View.VISIBLE);
+            mBottomBar.setVisibility(View.VISIBLE);
             mCloseButton.setVisibility(View.VISIBLE);
             mSpinnyLayout.setVisibility(View.GONE);
 
@@ -1274,11 +1267,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     /** Animates the bottom sheet expanding to a larger sheet. */
     private class SheetEnlargingAnimator
             extends AnimatorListenerAdapter implements OnLayoutChangeListener {
-        private final boolean mIsButtonBarLockedInPlace;
+        private final boolean mIsBottomBarLockedInPlace;
         private int mContainerHeightDifference;
 
-        public SheetEnlargingAnimator(boolean isButtonBarLockedInPlace) {
-            mIsButtonBarLockedInPlace = isButtonBarLockedInPlace;
+        public SheetEnlargingAnimator(boolean isBottomBarLockedInPlace) {
+            mIsBottomBarLockedInPlace = isBottomBarLockedInPlace;
         }
 
         /**
@@ -1292,17 +1285,17 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             float containerTranslation = mContainerHeightDifference * progress;
             mRequestView.setTranslationY(containerTranslation);
 
-            if (mIsButtonBarLockedInPlace) {
-                // The button bar is translated along the dialog so that is looks like it stays in
+            if (mIsBottomBarLockedInPlace) {
+                // The bottom bar is translated along the dialog so that is looks like it stays in
                 // place at the bottom while the entire bottom sheet is translating upwards.
-                mButtonBar.setTranslationY(-containerTranslation);
+                mBottomBar.setTranslationY(-containerTranslation);
 
-                // The payment container is sandwiched between the header and the button bar.
+                // The payment container is sandwiched between the header and the bottom bar.
                 // Expansion animates by changing where its "bottom" is, letting its shadows appear
                 // and disappear as it changes size.
-                int paymentContainerBottom = Math.min(
-                        mPaymentContainer.getTop() + mPaymentContainer.getMeasuredHeight(),
-                        mButtonBar.getTop());
+                int paymentContainerBottom =
+                        Math.min(mPaymentContainer.getTop() + mPaymentContainer.getMeasuredHeight(),
+                                mBottomBar.getTop());
                 mPaymentContainer.setBottom(paymentContainerBottom);
             }
         }
@@ -1335,7 +1328,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         public void onAnimationEnd(Animator animation) {
             // Reset the layout so that everything is in the expected place.
             mRequestView.setTranslationY(0);
-            mButtonBar.setTranslationY(0);
+            mBottomBar.setTranslationY(0);
             mRequestView.requestLayout();
 
             // Indicate that the dialog is ready to use.

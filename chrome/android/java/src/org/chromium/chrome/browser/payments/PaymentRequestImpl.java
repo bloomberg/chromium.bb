@@ -335,9 +335,8 @@ public class PaymentRequestImpl
         mWebContents = webContents;
 
         mMerchantName = webContents.getTitle();
-        // The feature is available only in secure context, so it's OK to not show HTTPS.
-        mOrigin = UrlFormatter.formatUrlForSecurityDisplay(
-                mWebContents.getLastCommittedUrl(), false);
+        mOrigin =
+                UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl(), true);
         mCertificateChain = CertificateChainHelper.getCertificateChain(mWebContents);
 
         mApps = new ArrayList<>();
