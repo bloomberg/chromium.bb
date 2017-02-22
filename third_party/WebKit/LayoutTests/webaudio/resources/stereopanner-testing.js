@@ -176,59 +176,23 @@ var StereoPannerTest = (function () {
 
 
   Test.prototype.showResult = function () {
-    if (this.impulseIndex === gNodesToCreate) {
-      testPassed('Number of impulses matches the number of panner nodes.');
-    } else {
-      testFailed('Number of impulses is incorrect. (Found '
-        + this.impulseIndex
-        + ' but expected '
-        + gNodesToCreate
-        + ')'
-      );
-      this.success = false;
-    }
+    Should("Number of impulses found", this.impulseIndex)
+      .beEqualTo(gNodesToCreate);
 
-    if (this.errors.length === 0) {
-      testPassed('All impulses at expected offsets.');
-    } else {
-      testFailed(this.errors.length + ' timing errors found in '
-        + this.nodesToCreate + ' panner nodes.'
-      );
-      for (var i = 0; i < this.errors.length; i++) {
-        testFailed('Impulse at sample ' + this.errors[i].actual
-          + ' but expected ' + this.errors[i].expected
-        );
-      }
-      this.success = false;
-    }
+    Should("Number of impulse at the wrong offset", this.errors.length)
+      .beEqualTo(0);
 
-    if (this.maxErrorL <= this.maxAllowedError) {
-      testPassed('Left channel gain values are correct.');
-    } else {
-      testFailed('Left channel gain values are incorrect.  Max error = '
-        + this.maxErrorL + ' at time ' + this.onsets[this.maxErrorIndexL]
-        + ' (threshold = ' + this.maxAllowedError + ')'
-      );
-      this.success = false;
-    }
+    Should("Left channel error magnitude", this.maxErrorL)
+      .beLessThanOrEqualTo(this.maxAllowedError);
 
-    if (this.maxErrorR <= this.maxAllowedError) {
-      testPassed('Right channel gain values are correct.');
-    } else {
-      testFailed('Right channel gain values are incorrect.  Max error = '
-        + this.maxErrorR + ' at time ' + this.onsets[this.maxErrorIndexR]
-        + ' (threshold = ' + this.maxAllowedError + ')'
-      );
-      this.success = false;
-    }
+    Should("Right channel error magnitude", this.maxErrorR)
+      .beLessThanOrEqualTo(this.maxAllowedError);
   };
 
 
   Test.prototype.finish = function () {
-    if (this.success)
-      testPassed(this.description + ': passed.');
-    else
-      testFailed(this.description + ': failed.');
+    Should(this.description, this.success)
+      .summarize('passed', 'failed');
   };
 
 

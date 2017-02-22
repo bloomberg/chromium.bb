@@ -2,41 +2,44 @@
 <html>
 
 <head>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
 </head>
 
 <body>
-  <div id="description"></div>
-  <div id="console"></div>
   <script>
-    description("Test attribute and basic functionality of StereoPannerNode.");
+    let audit = Audit.createTaskRunner();
 
-    function checkAttributes() {
-      window.jsTestIsAsync = true;
+    audit.define('test', (task, should) => {
+      task.describe('Attributes and basic functionality of StereoPannerNode');
 
-      var context = new AudioContext();
-      var panner = context.createStereoPanner();
-      window.panner = panner;
+      let context = new AudioContext();
+      let panner = context.createStereoPanner();
 
-      shouldBeTrue('panner.numberOfInputs === 1');
-      shouldBeTrue('panner.numberOfOutputs === 1');
-      shouldBeTrue('panner.pan.defaultValue === 0.0');
-      shouldBeTrue('panner.pan.value === 0.0');
-      panner.pan.value = 1.0;
-      shouldBeTrue('panner.pan.value === 1.0');
+      should(panner.numberOfInputs, 'panner.numberOfInputs').beEqualTo(1);
+      should(panner.numberOfOutputs, 'panner.numberOfOutputs').beEqualTo(1);
+      should(panner.pan.defaultValue, 'panner.pan.defaultValue').beEqualTo(0.0);
+      should(() => panner.pan.value = 1.0, 'panner.pan.value = 1.0').notThrow();
+      should(panner.pan.value, 'panner.pan.value').beEqualTo(1.0);
 
-      shouldNotThrow('panner.channelCount = 1');
-      shouldThrow('panner.channelCount = 3');
-      shouldNotThrow('panner.channelCountMode = "explicit"');
-      shouldThrow('panner.channelCountMode = "max"');
+      should(() => panner.channelCount = 1, 'panner.channelCount = 1')
+          .notThrow();
+      should(() => panner.channelCount = 3, 'panner.channelCount = 3').throw();
+      should(
+          () => panner.channelCountMode = 'explicit',
+          'panner.channelCountMode = "explicit"')
+          .notThrow();
+      should(
+          () => panner.channelCountMode = 'max',
+          'panner.channelCountMode = "max"')
+          .throw();
 
-      finishJSTest();
-    }
+      task.done();
+    });
 
-    checkAttributes();
-    successfullyParsed = true;
+    audit.run();
   </script>
 </body>
 

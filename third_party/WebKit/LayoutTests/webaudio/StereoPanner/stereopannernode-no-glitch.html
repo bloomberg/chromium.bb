@@ -2,16 +2,14 @@
 <html>
 
 <head>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
   <script src="../resources/audio-testing.js"></script>
 </head>
 
 <body>
   <script>
-    description('Test if StereoPannerNode producing glitches by crossing zero.');
-    window.jsTestIsAsync = true;
-
     var sampleRate = 44100;
     var renderDuration = 0.5;
 
@@ -42,7 +40,8 @@
       // samples are identical, the transition has not started.
       while (chanL[index-1] === chanL[index] || chanR[index-1] === chanR[index]) {
         if (++index >= input.length) {
-          testFailed('No transition found in the channel data.');
+          Should(false, 'Transition in the channel data')
+            .summarize('found', 'not found');
           return null;
         }
       }
@@ -52,13 +51,16 @@
       // the transition is still ongoing.
       while (chanL[index-1] !== chanL[index] || chanR[index-1] !== chanR[index]) {
         if (++index >= input.length) {
-          testFailed('A transition found but the buffer ended prematurely.');
+          Should(false, 'Transition found')
+            .summarize('', 'but the buffer ended prematurely');
           return null;
         }
       }
       end = index;
 
-      testPassed('Transition found between sample #' + start + ' and #' + end + '.');
+      Should('Transition found between sample #' + start + ' and #' + end,
+        true)
+        .summarize('correctly', 'incorrectly');
 
       return {
         left: chanL.subarray(start, end),
@@ -171,7 +173,6 @@
 
     audit.defineTask('finish-test', function (done) {
       done();
-      finishJSTest();
     });
 
     audit.runTasks(
@@ -179,8 +180,6 @@
       'positive-to-negative',
       'finish-test'
     );
-
-    successfullyParsed = true;
   </script>
 </body>
 
