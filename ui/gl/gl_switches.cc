@@ -135,3 +135,13 @@ const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
     arraysize(kGLSwitchesCopiedFromGpuProcessHost);
 
 }  // namespace switches
+
+namespace features {
+
+#if defined(OS_WIN)
+// Wait for D3D VSync signals in GPU process (as opposed to delay based VSync
+// generated in Browser process based on VSync parameters).
+const base::Feature kD3DVsync{"D3DVsync", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN)
+
+}  // namespace features

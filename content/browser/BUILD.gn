@@ -1928,6 +1928,8 @@ source_set("browser") {
       "compositor/gpu_process_transport_factory.h",
       "compositor/gpu_surfaceless_browser_compositor_output_surface.cc",
       "compositor/gpu_surfaceless_browser_compositor_output_surface.h",
+      "compositor/gpu_vsync_begin_frame_source.cc",
+      "compositor/gpu_vsync_begin_frame_source.h",
       "compositor/image_transport_factory.cc",
       "compositor/image_transport_factory.h",
       "compositor/offscreen_browser_compositor_output_surface.cc",

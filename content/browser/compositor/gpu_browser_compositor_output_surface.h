@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
+#include "content/browser/compositor/gpu_vsync_begin_frame_source.h"
 #include "ui/gfx/swap_result.h"
 
 namespace display_compositor {
@@ -33,8 +34,8 @@ class ReflectorTexture;
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
 // cc::OutputSurface that also handles vsync parameter updates
 // arriving from the GPU process.
-class GpuBrowserCompositorOutputSurface
-    : public BrowserCompositorOutputSurface {
+class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
+                                          public GpuVSyncControl {
  public:
   GpuBrowserCompositorOutputSurface(
       scoped_refptr<ui::ContextProviderCommandBuffer> context,
@@ -75,6 +76,9 @@ class GpuBrowserCompositorOutputSurface
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   bool SurfaceIsSuspendForRecycle() const override;
+
+  // GpuVSyncControl implementation.
+  void SetNeedsVSync(bool needs_vsync) override;
 
  protected:
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();

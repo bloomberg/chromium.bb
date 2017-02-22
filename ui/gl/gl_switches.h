@@ -7,6 +7,7 @@
 
 // Defines all the command-line switches used by ui/gl.
 
+#include "base/feature_list.h"
 #include "ui/gl/gl_export.h"
 
 namespace gl {
@@ -63,5 +64,13 @@ GL_EXPORT extern const char* kGLSwitchesCopiedFromGpuProcessHost[];
 GL_EXPORT extern const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches;
 
 }  // namespace switches
+
+namespace features {
+
+#if defined(OS_WIN)
+GL_EXPORT extern const base::Feature kD3DVsync;
+#endif  // defined(OS_WIN)
+
+}  // namespace features
 
 #endif  // UI_GL_GL_SWITCHES_H_

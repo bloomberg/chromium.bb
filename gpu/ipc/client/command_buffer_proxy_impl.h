@@ -152,6 +152,8 @@ class GPU_EXPORT CommandBufferProxyImpl
   void SetUpdateVSyncParametersCallback(
       const UpdateVSyncParametersCallback& callback);
 
+  void SetNeedsVSync(bool needs_vsync);
+
   int32_t route_id() const { return route_id_; }
 
   const scoped_refptr<GpuChannelHost>& channel() const { return channel_; }
