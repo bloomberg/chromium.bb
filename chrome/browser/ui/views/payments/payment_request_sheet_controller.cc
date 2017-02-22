@@ -25,6 +25,10 @@ PaymentRequestSheetController::CreatePrimaryButton() {
   return nullptr;
 }
 
+std::unique_ptr<views::View> PaymentRequestSheetController::CreateExtraView() {
+  return nullptr;
+}
+
 void PaymentRequestSheetController::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
   switch (static_cast<PaymentRequestCommonTags>(sender->tag())) {
@@ -86,25 +90,19 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                      0, views::GridLayout::USE_PREF, 0, 0);
 
-  // The horizontal distance between the right/left edges of the dialog and the
-  // elements.
-  constexpr int kFooterHorizontalInset = 16;
-  // The vertical distance between footer elements and the top/bottom border
-  // (the bottom border is the edge of the dialog).
-  constexpr int kFooterVerticalInset = 16;
-  layout->SetInsets(kFooterVerticalInset, kFooterHorizontalInset,
-                    kFooterVerticalInset, kFooterHorizontalInset);
-
   layout->StartRow(0, 0);
-
-  layout->AddView(CreateLeadingFooterView().release());
+  std::unique_ptr<views::View> extra_view = CreateExtraView();
+  if (extra_view)
+    layout->AddView(extra_view.release());
+  else
+    layout->SkipColumns(1);
 
   std::unique_ptr<views::View> trailing_buttons_container =
       base::MakeUnique<views::View>();
 
-  constexpr int kButtonSpacing = 10;
   trailing_buttons_container->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, kButtonSpacing));
+      views::BoxLayout::kHorizontal, kPaymentRequestRowHorizontalInsets,
+      kPaymentRequestRowVerticalInsets, kPaymentRequestButtonSpacing));
 
   std::unique_ptr<views::Button> primary_button = CreatePrimaryButton();
   if (primary_button)

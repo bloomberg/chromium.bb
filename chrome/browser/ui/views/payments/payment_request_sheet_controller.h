@@ -55,6 +55,17 @@ class PaymentRequestSheetController : public views::VectorIconButtonDelegate {
   // enabled state).
   virtual std::unique_ptr<views::Button> CreatePrimaryButton();
 
+  // Creates and returns the view to be displayed next to the "Pay" and "Cancel"
+  // buttons. May return an empty std::unique_ptr (nullptr) to indicate that no
+  // extra view is to be displayed.The caller takes ownership of the view but
+  // the view is guaranteed to be outlived by the controller so subclasses may
+  // retain a raw pointer to the returned view (for example to control its
+  // enabled state).
+  // +---------------------------+
+  // | EXTRA VIEW | PAY | CANCEL |
+  // +---------------------------+
+  virtual std::unique_ptr<views::View> CreateExtraView();
+
   // views::VectorIconButtonDelegate:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -71,7 +82,7 @@ class PaymentRequestSheetController : public views::VectorIconButtonDelegate {
   // |          CONTENT          |
   // |           VIEW            |
   // +---------------------------+
-  // |            | CANCEL | PAY | <-- footer
+  // | EXTRA VIEW | PAY | CANCEL | <-- footer
   // +---------------------------+
   std::unique_ptr<views::View> CreatePaymentView(
       std::unique_ptr<views::View> header_view,

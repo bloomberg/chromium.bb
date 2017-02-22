@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -301,8 +300,7 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
 // +----------------------------------------------+
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreatePaymentMethodRow() {
-  autofill::CreditCard* selected_card =
-      request()->GetCurrentlySelectedCreditCard();
+  autofill::CreditCard* selected_card = request()->selected_credit_card();
 
   std::unique_ptr<views::View> content_view;
   std::unique_ptr<views::ImageView> card_icon_view;

@@ -91,10 +91,12 @@ class PaymentRequest : payments::mojom::PaymentRequest {
     selected_contact_profile_ = profile;
   }
 
+  const std::vector<autofill::CreditCard*>& credit_cards();
+
   // Returns the currently selected credit card for this PaymentRequest flow.
   // It's not guaranteed to be complete. Returns nullptr if there is no selected
   // card.
-  autofill::CreditCard* GetCurrentlySelectedCreditCard();
+  autofill::CreditCard* selected_credit_card() { return selected_credit_card_; }
 
   autofill::PersonalDataManager* personal_data_manager() {
     return delegate_->GetPersonalDataManager();
@@ -111,7 +113,8 @@ class PaymentRequest : payments::mojom::PaymentRequest {
   // and stores copies of them, owned by this Request, in profile_cache_.
   void PopulateProfileCache();
 
-  // Sets the default values for the selected Shipping and Contact profiles.
+  // Sets the default values for the selected Shipping and Contact profiles, as
+  // well as the selected Credit Card.
   void SetDefaultProfileSelections();
 
   // Validates the |method_data| and fills |supported_card_networks_|.
@@ -137,6 +140,9 @@ class PaymentRequest : payments::mojom::PaymentRequest {
   std::vector<autofill::AutofillProfile*> contact_profiles_;
   autofill::AutofillProfile* selected_shipping_profile_;
   autofill::AutofillProfile* selected_contact_profile_;
+  std::vector<std::unique_ptr<autofill::CreditCard>> card_cache_;
+  std::vector<autofill::CreditCard*> credit_cards_;
+  autofill::CreditCard* selected_credit_card_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

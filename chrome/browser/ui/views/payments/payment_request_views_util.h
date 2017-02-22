@@ -25,9 +25,11 @@ namespace payments {
 
 constexpr int kPaymentRequestRowHorizontalInsets = 16;
 constexpr int kPaymentRequestRowVerticalInsets = 8;
+
 // Extra inset relative to the header when a right edge should line up with the
 // close button's X rather than its invisible right edge.
 constexpr int kPaymentRequestRowExtraRightInset = 8;
+constexpr int kPaymentRequestButtonSpacing = 10;
 
 enum class PaymentRequestCommonTags {
   BACK_BUTTON_TAG = 0,

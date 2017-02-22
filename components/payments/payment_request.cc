@@ -31,7 +31,8 @@ PaymentRequest::PaymentRequest(
       manager_(manager),
       binding_(this, std::move(request)),
       selected_shipping_profile_(nullptr),
-      selected_contact_profile_(nullptr) {
+      selected_contact_profile_(nullptr),
+      selected_credit_card_(nullptr) {
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).
@@ -128,20 +129,8 @@ const std::vector<autofill::AutofillProfile*>&
   return contact_profiles_;
 }
 
-autofill::CreditCard* PaymentRequest::GetCurrentlySelectedCreditCard() {
-  // TODO(anthonyvd): Change this code to prioritize server cards and implement
-  // a way to modify this function's return value.
-  const std::vector<autofill::CreditCard*> cards =
-      personal_data_manager()->GetCreditCardsToSuggest();
-
-  auto first_complete_card = std::find_if(
-      cards.begin(),
-      cards.end(),
-      [] (autofill::CreditCard* card) {
-        return card->IsValid();
-  });
-
-  return first_complete_card == cards.end() ? nullptr : *first_complete_card;
+const std::vector<autofill::CreditCard*>& PaymentRequest::credit_cards() {
+  return credit_cards_;
 }
 
 void PaymentRequest::PopulateProfileCache() {
@@ -150,7 +139,7 @@ void PaymentRequest::PopulateProfileCache() {
 
   // PaymentRequest may outlive the Profiles returned by the Data Manager.
   // Thus, we store copies, and return a vector of pointers to these copies
-  // whenever Profiles are requested.
+  // whenever Profiles are requested. The same is true for credit cards.
   for (size_t i = 0; i < profiles.size(); i++) {
     profile_cache_.push_back(
         base::MakeUnique<autofill::AutofillProfile>(*profiles[i]));
@@ -160,6 +149,13 @@ void PaymentRequest::PopulateProfileCache() {
     shipping_profiles_.push_back(profile_cache_[i].get());
     contact_profiles_.push_back(profile_cache_[i].get());
   }
+
+  const std::vector<autofill::CreditCard*>& cards =
+      personal_data_manager()->GetCreditCardsToSuggest();
+  for (autofill::CreditCard* card : cards) {
+    card_cache_.push_back(base::MakeUnique<autofill::CreditCard>(*card));
+    credit_cards_.push_back(card_cache_.back().get());
+  }
 }
 
 void PaymentRequest::SetDefaultProfileSelections() {
@@ -168,6 +164,16 @@ void PaymentRequest::SetDefaultProfileSelections() {
 
   if (!contact_profiles().empty())
     set_selected_contact_profile(contact_profiles()[0]);
+
+  // TODO(anthonyvd): Change this code to prioritize server cards and implement
+  // a way to modify this function's return value.
+  const std::vector<autofill::CreditCard*> cards = credit_cards();
+  auto first_complete_card =
+      std::find_if(cards.begin(), cards.end(),
+                   [](autofill::CreditCard* card) { return card->IsValid(); });
+
+  selected_credit_card_ =
+      first_complete_card == cards.end() ? nullptr : *first_complete_card;
 }
 
 void PaymentRequest::PopulateValidatedMethodData(
