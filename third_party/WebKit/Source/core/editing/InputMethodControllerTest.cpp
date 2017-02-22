@@ -1246,4 +1246,48 @@ TEST_F(InputMethodControllerTest,
   EXPECT_EQ(5u, document().markers().markers()[0]->endOffset());
 }
 
+TEST_F(InputMethodControllerTest, SelectionWhenFocusChangeFinishesComposition) {
+  document().settings()->setScriptEnabled(true);
+  Element* editable =
+      insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+  editable->focus();
+
+  // Simulate composition in the |contentEditable|.
+  Vector<CompositionUnderline> underlines;
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  controller().setComposition("foo", underlines, 3, 3);
+
+  EXPECT_TRUE(controller().hasComposition());
+  EXPECT_EQ(0u, controller().compositionRange()->startOffset());
+  EXPECT_EQ(3u, controller().compositionRange()->endOffset());
+  EXPECT_EQ(3, frame()
+                   .selection()
+                   .computeVisibleSelectionInDOMTreeDeprecated()
+                   .start()
+                   .computeOffsetInContainerNode());
+
+  // Insert 'test'.
+  NonThrowableExceptionState exceptionState;
+  document().execCommand("insertText", false, "test", exceptionState);
+
+  EXPECT_TRUE(controller().hasComposition());
+  EXPECT_EQ(7, frame()
+                   .selection()
+                   .computeVisibleSelectionInDOMTreeDeprecated()
+                   .start()
+                   .computeOffsetInContainerNode());
+
+  // Focus change finishes composition.
+  editable->blur();
+  editable->focus();
+
+  // Make sure that caret is still at the end of the inserted text.
+  EXPECT_FALSE(controller().hasComposition());
+  EXPECT_EQ(7, frame()
+                   .selection()
+                   .computeVisibleSelectionInDOMTreeDeprecated()
+                   .start()
+                   .computeOffsetInContainerNode());
+}
+
 }  // namespace blink

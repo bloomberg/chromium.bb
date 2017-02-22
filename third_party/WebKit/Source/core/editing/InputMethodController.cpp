@@ -1121,7 +1121,7 @@ WebTextInputType InputMethodController::textInputType() const {
 }
 
 void InputMethodController::willChangeFocus() {
-  finishComposingText(DoNotKeepSelection);
+  finishComposingText(KeepSelection);
 }
 
 DEFINE_TRACE(InputMethodController) {
