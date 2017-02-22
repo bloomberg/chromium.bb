@@ -153,12 +153,18 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ(gfx::Rect(0, 0, 300, 252).ToString(),
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
-  views::Widget* minimized = CreateTestWidget(gfx::Rect(800, 10, 100, 100));
+  views::Widget* minimized = CreateTestWidget(gfx::Rect(550, 10, 200, 200));
   minimized->Minimize();
   EXPECT_EQ(root_windows[1], minimized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("800,10 100x100", minimized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("550,10 200x200", minimized->GetWindowBoundsInScreen().ToString());
 
-  views::Widget* fullscreen = CreateTestWidget(gfx::Rect(850, 10, 100, 100));
+  views::Widget* fullscreen = CreateTestWidget(gfx::Rect(850, 10, 200, 200));
+  display::Display secondary_display =
+      Shell::GetInstance()->display_manager()->GetSecondaryDisplay();
+  gfx::Rect orig_bounds = fullscreen->GetWindowBoundsInScreen();
+  EXPECT_TRUE(secondary_display.work_area().Intersects(orig_bounds));
+  EXPECT_FALSE(secondary_display.work_area().Contains(orig_bounds));
+
   fullscreen->SetFullscreen(true);
   EXPECT_EQ(root_windows[1], fullscreen->GetNativeView()->GetRootWindow());
 
@@ -224,7 +230,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   EXPECT_EQ(root_windows[0], minimized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("400,20 100x100", minimized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("0,20 200x200", minimized->GetWindowBoundsInScreen().ToString());
 
   EXPECT_EQ(root_windows[0], fullscreen->GetNativeView()->GetRootWindow());
   EXPECT_TRUE(fullscreen->IsFullscreen());
@@ -239,8 +245,8 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   fullscreen->SetFullscreen(false);
-  EXPECT_EQ("500,20 100x100", fullscreen->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("500,20 100x100",
+  EXPECT_EQ("400,20 200x200", fullscreen->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("400,20 200x200",
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   // Test if the unparented widget has moved.

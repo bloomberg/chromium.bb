@@ -35,6 +35,7 @@
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_shell.h"
@@ -175,15 +176,20 @@ void ReparentWindow(WmWindow* window, WmWindow* new_parent) {
   bool update_bounds =
       (state->IsNormalOrSnapped() || state->IsMinimized()) &&
       new_parent->GetShellWindowId() != kShellWindowId_DockedContainer;
+  gfx::Rect work_area_in_new_parent =
+      wm::GetDisplayWorkAreaBoundsInParent(new_parent);
+
   gfx::Rect local_bounds;
   if (update_bounds) {
     local_bounds = state->window()->GetBounds();
     MoveOriginRelativeToSize(src_size, dst_size, &local_bounds);
+    local_bounds.AdjustToFit(work_area_in_new_parent);
   }
 
   if (has_restore_bounds) {
     restore_bounds = state->GetRestoreBoundsInParent();
     MoveOriginRelativeToSize(src_size, dst_size, &restore_bounds);
+    restore_bounds.AdjustToFit(work_area_in_new_parent);
   }
 
   new_parent->AddChild(window);
