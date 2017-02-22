@@ -614,14 +614,13 @@ bool GpuImageDecodeCache::OnMemoryDump(
       MemoryAllocatorDump* dump =
           image_data->decode.data()->CreateMemoryAllocatorDump(
               discardable_dump_name.c_str(), pmd);
-      // If our image is locked, dump the "locked_size" as an additional
-      // column.
+      // Dump the "locked_size" as an additional column.
       // This lets us see the amount of discardable which is contributing to
       // memory pressure.
-      if (image_data->decode.is_locked()) {
-        dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
-                        image_data->size);
-      }
+      size_t locked_size =
+          image_data->decode.is_locked() ? image_data->size : 0u;
+      dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
+                      locked_size);
     }
 
     // If we have an uploaded image (that is actually on the GPU, not just a

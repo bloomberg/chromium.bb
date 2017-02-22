@@ -864,15 +864,15 @@ void SoftwareImageDecodeCache::DumpImageMemoryForCache(
         reinterpret_cast<uintptr_t>(this), cache_name,
         image_pair.second->tracing_id(), image_pair.first.image_id());
     // CreateMemoryAllocatorDump will automatically add tracking values for the
-    // total size. If locked, we also add a "locked_size" below.
+    // total size. We also add a "locked_size" below.
     MemoryAllocatorDump* dump =
         image_pair.second->memory()->CreateMemoryAllocatorDump(
             dump_name.c_str(), pmd);
     DCHECK(dump);
-    if (image_pair.second->is_locked()) {
-      dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
-                      image_pair.first.locked_bytes());
-    }
+    size_t locked_bytes =
+        image_pair.second->is_locked() ? image_pair.first.locked_bytes() : 0u;
+    dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
+                    locked_bytes);
   }
 }
 
