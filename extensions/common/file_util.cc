@@ -38,7 +38,7 @@
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "grit/extensions_strings.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "ui/base/l10n/l10n_util.h"
