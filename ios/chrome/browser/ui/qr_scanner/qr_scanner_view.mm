@@ -39,7 +39,9 @@ const CGFloat kViewportBorderShadowOpacity = 1.0;
 // Shadow radius of the viewport border.
 const CGFloat kViewportBorderShadowRadius = 10.0;
 // Padding of the viewport caption, below the viewport.
-const CGFloat kViewportCaptionPadding = 24.0;
+const CGFloat kViewportCaptionVerticalPadding = 14.0;
+// Padding of the viewport caption from the edges of the superview.
+const CGFloat kViewportCaptionHorizontalPadding = 20.0;
 // Shadow opacity of the viewport caption.
 const CGFloat kViewportCaptionShadowOpacity = 1.0;
 // Shadow radius of the viewport caption.
@@ -468,6 +470,8 @@ CGFloat GetViewportSize() {
   UILabel* viewportCaption = [[[UILabel alloc] init] autorelease];
   NSString* label = l10n_util::GetNSString(IDS_IOS_QR_SCANNER_VIEWPORT_CAPTION);
   [viewportCaption setText:label];
+  [viewportCaption setNumberOfLines:0];
+  [viewportCaption setTextAlignment:NSTextAlignmentCenter];
   [viewportCaption setAccessibilityLabel:label];
   [viewportCaption setAccessibilityIdentifier:@"qr_scanner_viewport_caption"];
   [viewportCaption setTextColor:[UIColor whiteColor]];
@@ -482,11 +486,16 @@ CGFloat GetViewportSize() {
   // Constraints for viewportCaption.
   [viewportCaption setTranslatesAutoresizingMaskIntoConstraints:NO];
   [NSLayoutConstraint activateConstraints:@[
-    [[viewportCaption centerXAnchor]
-        constraintEqualToAnchor:[self centerXAnchor]],
-    [[viewportCaption centerYAnchor]
+    [[viewportCaption topAnchor]
         constraintEqualToAnchor:[self centerYAnchor]
-                       constant:GetViewportSize() / 2 + kViewportCaptionPadding]
+                       constant:GetViewportSize() / 2 +
+                                kViewportCaptionVerticalPadding],
+    [viewportCaption.leadingAnchor
+        constraintEqualToAnchor:self.leadingAnchor
+                       constant:kViewportCaptionHorizontalPadding],
+    [viewportCaption.trailingAnchor
+        constraintEqualToAnchor:self.trailingAnchor
+                       constant:-kViewportCaptionHorizontalPadding],
   ]];
 }
 
