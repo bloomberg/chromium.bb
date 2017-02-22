@@ -1066,14 +1066,22 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (NSDictionary*)WKWebViewObservers {
-  return @{
-    @"certificateChain" : @"webViewSecurityFeaturesDidChange",
+  NSMutableDictionary* result = [NSMutableDictionary dictionary];
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    result[@"serverTrust"] = @"webViewSecurityFeaturesDidChange";
+  } else {
+    result[@"certificateChain"] = @"webViewSecurityFeaturesDidChange";
+  }
+
+  [result addEntriesFromDictionary:@{
     @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
     @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
     @"loading" : @"webViewLoadingStateDidChange",
     @"title" : @"webViewTitleDidChange",
     @"URL" : @"webViewURLDidChange",
-  };
+  }];
+
+  return result;
 }
 
 // NativeControllerDelegate method, called to inform that title has changed.
