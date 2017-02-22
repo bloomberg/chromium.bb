@@ -24,6 +24,10 @@ declare_args() {
 
   # List of plist templates to merge when generating chrome entitlements.
   ios_chrome_entitlements_additions = []
+
+  # List of plist templates to merge when generating EarlGrey tests
+  # entitlements.
+  ios_egtests_entitlements_additions = []
 }
 assert(!(ios_enable_today_extension && ios_enable_widget_extension),
        "Both today extensions cannot be enabled simultaneously.")

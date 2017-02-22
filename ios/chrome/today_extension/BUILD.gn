@@ -26,8 +26,7 @@ compile_plist("entitlements") {
   substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
   output_name = "$target_gen_dir/today_extension.appex.entitlements"
   plist_templates =
-      [ "entitlements/external/today_extension.appex.entitlements" ] +
-      ios_chrome_entitlements_additions
+      [ "entitlements/external/today_extension.appex.entitlements" ]
 }
 
 ios_appex_bundle("today_extension") {
