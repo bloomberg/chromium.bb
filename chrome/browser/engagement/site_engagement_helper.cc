@@ -23,7 +23,6 @@
 namespace {
 
 int g_seconds_to_pause_engagement_detection = 10;
-int g_seconds_delay_after_navigation = 10;
 int g_seconds_delay_after_media_starts = 10;
 int g_seconds_delay_after_show = 5;
 
@@ -35,12 +34,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(SiteEngagementService::Helper);
 void SiteEngagementService::Helper::SetSecondsBetweenUserInputCheck(
     int seconds) {
   g_seconds_to_pause_engagement_detection = seconds;
-}
-
-// static
-void SiteEngagementService::Helper::SetSecondsTrackingDelayAfterNavigation(
-    int seconds) {
-  g_seconds_delay_after_navigation = seconds;
 }
 
 // static
@@ -267,8 +260,7 @@ void SiteEngagementService::Helper::DidFinishNavigation(
 
   service_->HandleNavigation(web_contents(), handle->GetPageTransition());
 
-  input_tracker_.Start(
-      base::TimeDelta::FromSeconds(g_seconds_delay_after_navigation));
+  input_tracker_.Start(base::TimeDelta::FromSeconds(0));
 }
 
 void SiteEngagementService::Helper::ReadyToCommitNavigation(

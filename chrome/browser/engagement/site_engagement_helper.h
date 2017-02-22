@@ -30,7 +30,6 @@ class SiteEngagementService::Helper
       public content::WebContentsUserData<SiteEngagementService::Helper> {
  public:
   static void SetSecondsBetweenUserInputCheck(int seconds);
-  static void SetSecondsTrackingDelayAfterNavigation(int seconds);
   static void SetSecondsTrackingDelayAfterShow(int seconds);
 
   ~Helper() override;
