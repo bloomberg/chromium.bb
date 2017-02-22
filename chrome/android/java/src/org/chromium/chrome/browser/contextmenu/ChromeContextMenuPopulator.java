@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -76,8 +77,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     // Additional items for custom tabs mode.
     private static final int[] CUSTOM_TAB_MODE_WHITELIST = {
-            R.id.contextmenu_open_image,
-            R.id.contextmenu_search_by_image
+            R.id.contextmenu_open_image, R.id.contextmenu_search_by_image,
+            R.id.contextmenu_open_in_new_chrome_tab, R.id.contextmenu_open_in_chrome_incognito_tab,
+            R.id.contextmenu_open_in_browser_id,
     };
 
     // Additional items for fullscreen tabs mode.
@@ -319,6 +321,14 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             removeUnsupportedItems(menu, FULLSCREEN_TAB_MODE_WHITELIST);
         } else if (mMode == CUSTOM_TAB_MODE) {
             removeUnsupportedItems(menu, CUSTOM_TAB_MODE_WHITELIST);
+            MenuItem defaultOpenMenuItem = menu.findItem(R.id.contextmenu_open_in_browser_id);
+            if (ChromePreferenceManager.getInstance().getCachedChromeDefaultBrowser()) {
+                defaultOpenMenuItem.setVisible(false);
+            } else {
+                menu.findItem(R.id.contextmenu_open_in_new_chrome_tab).setVisible(false);
+                menu.findItem(R.id.contextmenu_open_in_chrome_incognito_tab).setVisible(false);
+                defaultOpenMenuItem.setTitle(mDelegate.getTitleForOpenTabInExternalApp());
+            }
         } else {
             removeUnsupportedItems(menu, NORMAL_MODE_WHITELIST);
         }
@@ -427,6 +437,12 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             helper.shareImage();
         } else if (itemId == R.id.menu_id_open_in_chrome) {
             mDelegate.onOpenInChrome(params.getLinkUrl(), params.getPageUrl());
+        } else if (itemId == R.id.contextmenu_open_in_new_chrome_tab) {
+            mDelegate.onOpenInNewChromeTabFromCCT(params.getLinkUrl(), false);
+        } else if (itemId == R.id.contextmenu_open_in_chrome_incognito_tab) {
+            mDelegate.onOpenInNewChromeTabFromCCT(params.getLinkUrl(), true);
+        } else if (itemId == R.id.contextmenu_open_in_browser_id) {
+            mDelegate.onOpenInDefaultBrowser(params.getLinkUrl());
         } else {
             assert false;
         }

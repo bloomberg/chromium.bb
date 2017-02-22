@@ -4,6 +4,14 @@
      found in the LICENSE file. -->
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/contextmenu_group_tab_cct">
+        <item android:id="@+id/contextmenu_open_in_new_chrome_tab"
+	    android:title="@string/contextmenu_open_in_new_chrome_tab"/>
+        <item android:id="@+id/contextmenu_open_in_chrome_incognito_tab"
+	    android:title="@string/contextmenu_open_in_chrome_incognito_tab"/>
+        <item android:id="@+id/contextmenu_open_in_browser_id"
+            android:title=""/>
+    </group>
     <group android:id="@+id/contextmenu_group_anchor">
         <item android:id="@+id/contextmenu_load_images"
             android:title="@string/contextmenu_load_images"/>

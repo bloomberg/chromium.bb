@@ -5,10 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ResolveInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Looper;
 import android.os.MessageQueue;
@@ -176,6 +173,8 @@ public class DeferredStartupHandler {
                 // Punt all tasks that may block on disk off onto a background thread.
                 initAsyncDiskTask();
 
+                DefaultBrowserInfo.initBrowserFetcher();
+
                 AfterStartupTaskUtils.setStartupComplete();
 
                 PartnerBrowserCustomizations.setOnInitializeAsyncFinished(new Runnable() {
@@ -283,8 +282,6 @@ public class DeferredStartupHandler {
 
                     removeSnapshotDatabase();
 
-                    cacheIsChromeDefaultBrowser();
-
                     // Warm up all web app shared prefs. This must be run after the WebappRegistry
                     // instance is initialized.
                     WebappRegistry.warmUpSharedPrefs();
@@ -317,20 +314,6 @@ public class DeferredStartupHandler {
                         .equals("Enabled");
         ChildProcessLauncher.startModerateBindingManagement(
                 mAppContext, moderateBindingTillBackgrounded);
-    }
-
-    /**
-     * Caches whether Chrome is set as a default browser on the device.
-     */
-    @WorkerThread
-    private void cacheIsChromeDefaultBrowser() {
-        // Retrieve whether Chrome is default in background to avoid strict mode checks.
-        Intent intent = new Intent(Intent.ACTION_VIEW,
-                Uri.parse("http://www.madeupdomainforcheck123.com/"));
-        ResolveInfo info = mAppContext.getPackageManager().resolveActivity(intent, 0);
-        boolean isDefault = (info != null && info.match != 0
-                && mAppContext.getPackageName().equals(info.activityInfo.packageName));
-        ChromePreferenceManager.getInstance().setCachedChromeDefaultBrowser(isDefault);
     }
 
     /**

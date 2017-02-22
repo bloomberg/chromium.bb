@@ -153,4 +153,22 @@ public interface ContextMenuItemDelegate {
      * @param pageUrl URL of the current page.
      */
     void onOpenInChrome(String linkUrl, String pageUrl);
+
+    /**
+     * Called when the {@code url} should be opened in a new Chrome tab from CCT.
+     * @param url The URL to open.
+     * @param isIncognito true if the {@code url} should be opened in a new incognito tab.
+     */
+    void onOpenInNewChromeTabFromCCT(String linkUrl, boolean isIncognito);
+
+    /**
+     * @return title of the context menu to open a page in external apps.
+     */
+    String getTitleForOpenTabInExternalApp();
+
+    /**
+     * Called when the current Chrome app is not the default to handle a View Intent.
+     * @param url The URL to open.
+     */
+    void onOpenInDefaultBrowser(String url);
 }

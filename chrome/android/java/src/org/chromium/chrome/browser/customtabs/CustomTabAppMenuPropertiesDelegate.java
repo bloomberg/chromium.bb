@@ -4,18 +4,13 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.banners.AppBannerManager;
@@ -27,7 +22,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 /**
  * App menu properties delegate for {@link CustomTabActivity}.
@@ -39,10 +33,10 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     private final boolean mIsMediaViewer;
     private final boolean mShowStar;
     private final boolean mShowDownload;
+    private final boolean mIsOpenedByChrome;
 
     private final List<String> mMenuEntries;
     private final Map<MenuItem, Integer> mItemToIndexMap = new HashMap<MenuItem, Integer>();
-    private final AsyncTask<Void, Void, String> mDefaultBrowserFetcher;
 
     private boolean mIsCustomEntryAdded;
 
@@ -58,29 +52,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
         mIsMediaViewer = isMediaViewer;
         mShowStar = showStar;
         mShowDownload = showDownload;
-
-        mDefaultBrowserFetcher = new AsyncTask<Void, Void, String>() {
-            @Override
-            protected String doInBackground(Void... params) {
-                String packageLabel = null;
-                if (isOpenedByChrome) {
-                    // If the Custom Tab was created by Chrome, Chrome should open it.
-                    packageLabel = BuildInfo.getPackageLabel(activity);
-                } else {
-                    // Check if there is a default handler for the Intent.  If so, grab its label.
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(SAMPLE_URL));
-                    PackageManager pm = activity.getPackageManager();
-                    ResolveInfo info = pm.resolveActivity(intent, 0);
-                    if (info != null && info.match != 0) {
-                        packageLabel = info.loadLabel(pm).toString();
-                    }
-                }
-
-                return packageLabel == null
-                        ? activity.getString(R.string.menu_open_in_product_default)
-                        : activity.getString(R.string.menu_open_in_product, packageLabel);
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        mIsOpenedByChrome = isOpenedByChrome;
     }
 
     @Override
@@ -122,13 +94,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 menu.findItem(R.id.request_desktop_site_id).setVisible(false);
                 addToHomeScreenItem.setVisible(false);
             } else {
-                try {
-                    openInChromeItem.setTitle(mDefaultBrowserFetcher.get());
-                } catch (InterruptedException | ExecutionException e) {
-                    openInChromeItem.setTitle(
-                            mActivity.getString(R.string.menu_open_in_product_default));
-                }
-                updateBookmarkMenuItem(bookmarkItem, currentTab);
+                openInChromeItem.setTitle(
+                        DefaultBrowserInfo.getTitleOpenInDefaultBrowser(mIsOpenedByChrome));
             }
             bookmarkItem.setVisible(mShowStar);
             downloadItem.setVisible(mShowDownload);
