@@ -7,14 +7,11 @@
 
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
 typedef unsigned int SkColor;
-
-namespace gfx {
-class SlideAnimation;
-}
 
 namespace views {
 
@@ -50,10 +47,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // Internal class name.
   static const char kViewClassName[];
 
-  // Based on the bool |is_material_design|, either a md version or a non-md
-  // version of the slider will be created.
-  static Slider* CreateSlider(bool is_material_design,
-                              SliderListener* listener);
+  explicit Slider(SliderListener* listener);
   ~Slider() override;
 
   float value() const { return value_; }
@@ -66,23 +60,15 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   }
 
   // Update UI based on control on/off state.
-  virtual void UpdateState(bool control_on) = 0;
+  void UpdateState(bool control_on);
 
  protected:
-  explicit Slider(SliderListener* listener);
-
   // Returns the current position of the thumb on the slider.
   float GetAnimatingValue() const;
 
   // Shows or hides the highlight on the slider thumb. The default
   // implementation does nothing.
-  virtual void SetHighlighted(bool is_highlighted);
-
-  // Gets the size of the slider's thumb.
-  virtual int GetThumbWidth() = 0;
-
-  // views::View:
-  void OnPaint(gfx::Canvas* canvas) override;
+  void SetHighlighted(bool is_highlighted);
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -117,6 +103,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
 
@@ -131,16 +118,24 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
 
   std::unique_ptr<gfx::SlideAnimation> move_animation_;
 
-  float value_;
-  float keyboard_increment_;
-  float initial_animating_value_;
-  bool value_is_valid_;
+  float value_ = 0.f;
+  float keyboard_increment_ = 0.1f;
+  float initial_animating_value_ = 0.f;
+  bool value_is_valid_ = false;
   base::string16 accessible_name_;
-  bool accessibility_events_enabled_;
+  bool accessibility_events_enabled_ = true;
 
   // Relative position of the mouse cursor (or the touch point) on the slider's
   // button.
-  int initial_button_offset_;
+  int initial_button_offset_ = 0;
+
+  // Record whether the slider is in the active state or the disabled state.
+  bool is_active_ = true;
+
+  // Animating value of the current radius of the thumb's highlight.
+  float thumb_highlight_radius_ = 0.f;
+
+  gfx::SlideAnimation highlight_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(Slider);
 };

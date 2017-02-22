@@ -25,8 +25,7 @@ SliderExample::~SliderExample() {
 
 void SliderExample::CreateExampleView(View* container) {
   label_ = new Label();
-  // Create a material design slider in this example.
-  slider_ = Slider::CreateSlider(true /** is_material_design **/, this);
+  slider_ = new views::Slider(this);
 
   slider_->SetValue(0.5);
 

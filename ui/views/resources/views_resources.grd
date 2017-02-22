@@ -159,16 +159,6 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_MENU_CHECK" file="cros/menu_check.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_LEFT" file="slider_left_active.png" />
-      <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_CENTER" file="slider_center_active.png" />
-      <structure type="chrome_scaled_image" name="IDR_SLIDER_DISABLED_LEFT" file="slider_left_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_SLIDER_DISABLED_RIGHT" file="slider_right_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_SLIDER_DISABLED_CENTER" file="slider_center_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_SLIDER_PRESSED_LEFT" file="slider_left_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_SLIDER_PRESSED_RIGHT" file="slider_right_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_SLIDER_PRESSED_CENTER" file="slider_center_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_THUMB" file="slider_thumb.png" />
-      <structure type="chrome_scaled_image" name="IDR_SLIDER_DISABLED_THUMB" file="slider_thumb_disabled.png" />
       <if expr="desktop_linux">
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE" file="linux/linux_minimize.png" />
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE_H" file="linux/linux_minimize_hover.png" />

@@ -52,10 +52,6 @@ extern const int kTrayPopupLabelHorizontalPadding;
 // before the transition starts.
 ASH_EXPORT extern const int kTrayDetailedViewTransitionDelayMs;
 
-// Padding used to adjust the slider position in volume row and brightness
-// row horizontally.
-extern const int kTrayPopupSliderPaddingMD;
-
 // Padding used on right side of labels to keep minimum distance to the next
 // item. This applies to all labels in the system menu.
 extern const int kTrayPopupLabelRightPadding;

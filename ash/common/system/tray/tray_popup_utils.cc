@@ -9,7 +9,6 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_view_ids.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/size_range_layout.h"
@@ -230,15 +229,8 @@ views::ImageView* TrayPopupUtils::CreateMoreImageView() {
 }
 
 views::Slider* TrayPopupUtils::CreateSlider(views::SliderListener* listener) {
-  const bool is_material = MaterialDesignController::IsSystemTrayMenuMaterial();
-  views::Slider* slider = views::Slider::CreateSlider(is_material, listener);
-  if (is_material) {
-    slider->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets(0, kTrayPopupSliderPaddingMD)));
-  } else {
-    slider->SetBorder(
-        views::CreateEmptyBorder(0, 0, 0, kTrayPopupPaddingBetweenItems));
-  }
+  views::Slider* slider = new views::Slider(listener);
+  slider->SetBorder(views::CreateEmptyBorder(gfx::Insets(0, 16)));
   return slider;
 }
 

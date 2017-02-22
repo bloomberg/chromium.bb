@@ -49,7 +49,6 @@ const int kTrayPopupLabelHorizontalPadding = 4;
 
 const int kTrayDetailedViewTransitionDelayMs = 100;
 
-const int kTrayPopupSliderPaddingMD = 16;
 const int kTrayPopupLabelRightPadding = 8;
 
 const int kTrayPopupDetailsIconWidth = 25;

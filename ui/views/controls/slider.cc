@@ -10,20 +10,18 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
-#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/controls/md_slider.h"
-#include "ui/views/controls/non_md_slider.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/widget/widget.h"
 
@@ -41,19 +39,50 @@ enum BorderElements {
 
 namespace views {
 
+namespace {
+
+// Color of slider at the active and the disabled state, respectively.
+const SkColor kActiveColor = SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
+const SkColor kDisabledColor = SkColorSetARGB(0xFF, 0xBD, 0xBD, 0xBD);
+constexpr uint8_t kHighlightColorAlpha = 0x4D;
+
+// The thickness of the slider.
+constexpr int kLineThickness = 2;
+
+// The radius used to draw rounded slider ends.
+constexpr float kSliderRoundedRadius = 2.f;
+
+// The radius of the thumb and the highlighted thumb of the slider,
+// respectively.
+constexpr float kThumbRadius = 6.f;
+constexpr float kThumbWidth = 2 * kThumbRadius;
+constexpr float kThumbHighlightRadius = 10.f;
+
+// The stroke of the thumb when the slider is disabled.
+constexpr int kThumbStroke = 2;
+
+// Duration of the thumb highlight growing effect animation.
+constexpr int kSlideHighlightChangeDurationMs = 150;
+
+}  // namespace
+
 // static
 const char Slider::kViewClassName[] = "Slider";
 
-// static
-Slider* Slider::CreateSlider(bool is_material_design,
-                             SliderListener* listener) {
-  if (is_material_design)
-    return new MdSlider(listener);
-  return new NonMdSlider(listener);
+Slider::Slider(SliderListener* listener)
+    : listener_(listener), highlight_animation_(this) {
+  highlight_animation_.SetSlideDuration(kSlideHighlightChangeDurationMs);
+  EnableCanvasFlippingForRTLUI(true);
+#if defined(OS_MACOSX)
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+#else
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+#endif
+
+  SchedulePaint();
 }
 
-Slider::~Slider() {
-}
+Slider::~Slider() {}
 
 void Slider::SetValue(float value) {
   SetValueInternal(value, VALUE_CHANGED_BY_API);
@@ -63,20 +92,9 @@ void Slider::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 
-Slider::Slider(SliderListener* listener)
-    : listener_(listener),
-      value_(0.f),
-      keyboard_increment_(0.1f),
-      initial_animating_value_(0.f),
-      value_is_valid_(false),
-      accessibility_events_enabled_(true),
-      initial_button_offset_(0) {
-  EnableCanvasFlippingForRTLUI(true);
-#if defined(OS_MACOSX)
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-#else
-  SetFocusBehavior(FocusBehavior::ALWAYS);
-#endif
+void Slider::UpdateState(bool control_on) {
+  is_active_ = control_on;
+  SchedulePaint();
 }
 
 float Slider::GetAnimatingValue() const{
@@ -86,21 +104,28 @@ float Slider::GetAnimatingValue() const{
              : value_;
 }
 
-void Slider::SetHighlighted(bool is_highlighted) {}
-
-void Slider::OnPaint(gfx::Canvas* canvas) {
-  View::OnPaint(canvas);
-  OnPaintFocus(canvas);
+void Slider::SetHighlighted(bool is_highlighted) {
+  if (is_highlighted)
+    highlight_animation_.Show();
+  else
+    highlight_animation_.Hide();
 }
 
 void Slider::AnimationProgressed(const gfx::Animation* animation) {
-  if (animation == move_animation_.get())
-    SchedulePaint();
+  if (animation == &highlight_animation_) {
+    thumb_highlight_radius_ =
+        animation->CurrentValueBetween(kThumbRadius, kThumbHighlightRadius);
+  }
+
+  SchedulePaint();
 }
 
 void Slider::AnimationEnded(const gfx::Animation* animation) {
-  if (animation == move_animation_.get())
+  if (animation == move_animation_.get()) {
     move_animation_.reset();
+    return;
+  }
+  DCHECK_EQ(animation, &highlight_animation_);
 }
 
 void Slider::SetValueInternal(float value, SliderChangeReason reason) {
@@ -140,26 +165,24 @@ void Slider::PrepareForMove(const int new_x) {
   gfx::Rect content = GetContentsBounds();
   float value = GetAnimatingValue();
 
-  const int thumb_width = GetThumbWidth();
-  const int thumb_x = value * (content.width() - thumb_width);
+  const int thumb_x = value * (content.width() - kThumbWidth);
   const int candidate_x = (base::i18n::IsRTL() ?
       width() - (new_x - inset.left()) :
       new_x - inset.left()) - thumb_x;
-  if (candidate_x >= 0 && candidate_x < thumb_width)
+  if (candidate_x >= 0 && candidate_x < kThumbWidth)
     initial_button_offset_ = candidate_x;
   else
-    initial_button_offset_ = thumb_width / 2;
+    initial_button_offset_ = kThumbRadius;
 }
 
 void Slider::MoveButtonTo(const gfx::Point& point) {
   const gfx::Insets inset = GetInsets();
-  const int thumb_width = GetThumbWidth();
   // Calculate the value.
   int amount = base::i18n::IsRTL()
                    ? width() - inset.left() - point.x() - initial_button_offset_
                    : point.x() - inset.left() - initial_button_offset_;
   SetValueInternal(
-      static_cast<float>(amount) / (width() - inset.width() - thumb_width),
+      static_cast<float>(amount) / (width() - inset.width() - kThumbWidth),
       VALUE_CHANGED_BY_USER);
 }
 
@@ -236,6 +259,60 @@ void Slider::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
   node_data->SetValue(base::UTF8ToUTF16(
       base::StringPrintf("%d%%", static_cast<int>(value_ * 100 + 0.5))));
+}
+
+void Slider::OnPaint(gfx::Canvas* canvas) {
+  // Paint the slider.
+  const gfx::Rect content = GetContentsBounds();
+  const int width = content.width() - kThumbRadius * 2;
+  const int full = GetAnimatingValue() * width;
+  const int empty = width - full;
+  const int y = content.height() / 2 - kLineThickness / 2;
+  const int x = content.x() + full + kThumbRadius;
+  const SkColor current_thumb_color =
+      is_active_ ? kActiveColor : kDisabledColor;
+
+  // Extra space used to hide slider ends behind the thumb.
+  const int extra_padding = 1;
+
+  cc::PaintFlags slider_flags;
+  slider_flags.setAntiAlias(true);
+  slider_flags.setColor(current_thumb_color);
+  canvas->DrawRoundRect(
+      gfx::Rect(content.x(), y, full + extra_padding, kLineThickness),
+      kSliderRoundedRadius, slider_flags);
+  slider_flags.setColor(kDisabledColor);
+  canvas->DrawRoundRect(gfx::Rect(x + kThumbRadius - extra_padding, y,
+                                  empty + extra_padding, kLineThickness),
+                        kSliderRoundedRadius, slider_flags);
+
+  gfx::Point thumb_center(x, content.height() / 2);
+
+  // Paint the thumb highlight if it exists.
+  const int thumb_highlight_radius =
+      HasFocus() ? kThumbHighlightRadius : thumb_highlight_radius_;
+  if (is_active_ && thumb_highlight_radius > kThumbRadius) {
+    cc::PaintFlags highlight;
+    SkColor kHighlightColor = SkColorSetA(kActiveColor, kHighlightColorAlpha);
+    highlight.setColor(kHighlightColor);
+    highlight.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+    canvas->DrawCircle(thumb_center, thumb_highlight_radius, highlight);
+  }
+
+  // Paint the thumb of the slider.
+  cc::PaintFlags flags;
+  flags.setColor(current_thumb_color);
+  flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+
+  if (!is_active_) {
+    flags.setStrokeWidth(kThumbStroke);
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+  }
+  canvas->DrawCircle(
+      thumb_center,
+      is_active_ ? kThumbRadius : (kThumbRadius - kThumbStroke / 2), flags);
+
+  OnPaintFocus(canvas);
 }
 
 void Slider::OnFocus() {
