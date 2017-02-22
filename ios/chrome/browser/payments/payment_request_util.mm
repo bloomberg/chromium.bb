@@ -8,7 +8,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/payments/payment_request.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace payment_request_util {
 
@@ -66,6 +69,102 @@ web::PaymentAddress PaymentAddressFromAutofillProfile(
   address.phone = profile->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER);
 
   return address;
+}
+
+NSString* GetShippingSectionTitle(PaymentRequest* payment_request) {
+  switch (payment_request->payment_options().shipping_type) {
+    case web::PaymentShippingType::SHIPPING:
+      return l10n_util::GetNSString(IDS_PAYMENTS_SHIPPING_SUMMARY_LABEL);
+    case web::PaymentShippingType::DELIVERY:
+      return l10n_util::GetNSString(IDS_PAYMENTS_DELIVERY_SUMMARY_LABEL);
+    case web::PaymentShippingType::PICKUP:
+      return l10n_util::GetNSString(IDS_PAYMENTS_PICKUP_SUMMARY_LABEL);
+    default:
+      NOTREACHED();
+      return @"";
+  }
+}
+
+NSString* GetShippingAddressSelectorTitle(PaymentRequest* payment_request) {
+  switch (payment_request->payment_options().shipping_type) {
+    case web::PaymentShippingType::SHIPPING:
+      return l10n_util::GetNSString(IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL);
+    case web::PaymentShippingType::DELIVERY:
+      return l10n_util::GetNSString(IDS_PAYMENTS_DELIVERY_ADDRESS_LABEL);
+    case web::PaymentShippingType::PICKUP:
+      return l10n_util::GetNSString(IDS_PAYMENTS_PICKUP_ADDRESS_LABEL);
+    default:
+      NOTREACHED();
+      return @"";
+  }
+}
+
+NSString* GetShippingAddressSelectorInfoMessage(
+    PaymentRequest* payment_request) {
+  switch (payment_request->payment_options().shipping_type) {
+    case web::PaymentShippingType::SHIPPING:
+      return l10n_util::GetNSString(
+          IDS_PAYMENTS_SELECT_SHIPPING_ADDRESS_FOR_SHIPPING_METHODS);
+    case web::PaymentShippingType::DELIVERY:
+      return l10n_util::GetNSString(
+          IDS_PAYMENTS_SELECT_DELIVERY_ADDRESS_FOR_DELIVERY_METHODS);
+    case web::PaymentShippingType::PICKUP:
+      return l10n_util::GetNSString(
+          IDS_PAYMENTS_SELECT_PICKUP_ADDRESS_FOR_PICKUP_METHODS);
+    default:
+      NOTREACHED();
+      return @"";
+  }
+}
+
+NSString* GetShippingAddressSelectorErrorMessage(
+    PaymentRequest* payment_request) {
+  if (!payment_request->payment_details().error.empty())
+    return base::SysUTF16ToNSString(payment_request->payment_details().error);
+
+  switch (payment_request->payment_options().shipping_type) {
+    case web::PaymentShippingType::SHIPPING:
+      return l10n_util::GetNSString(IDS_PAYMENTS_UNSUPPORTED_SHIPPING_ADDRESS);
+    case web::PaymentShippingType::DELIVERY:
+      return l10n_util::GetNSString(IDS_PAYMENTS_UNSUPPORTED_DELIVERY_ADDRESS);
+    case web::PaymentShippingType::PICKUP:
+      return l10n_util::GetNSString(IDS_PAYMENTS_UNSUPPORTED_PICKUP_ADDRESS);
+    default:
+      NOTREACHED();
+      return @"";
+  }
+}
+
+NSString* GetShippingOptionSelectorTitle(PaymentRequest* payment_request) {
+  switch (payment_request->payment_options().shipping_type) {
+    case web::PaymentShippingType::SHIPPING:
+      return l10n_util::GetNSString(IDS_PAYMENTS_SHIPPING_OPTION_LABEL);
+    case web::PaymentShippingType::DELIVERY:
+      return l10n_util::GetNSString(IDS_PAYMENTS_DELIVERY_OPTION_LABEL);
+    case web::PaymentShippingType::PICKUP:
+      return l10n_util::GetNSString(IDS_PAYMENTS_PICKUP_OPTION_LABEL);
+    default:
+      NOTREACHED();
+      return @"";
+  }
+}
+
+NSString* GetShippingOptionSelectorErrorMessage(
+    PaymentRequest* payment_request) {
+  if (!payment_request->payment_details().error.empty())
+    return base::SysUTF16ToNSString(payment_request->payment_details().error);
+
+  switch (payment_request->payment_options().shipping_type) {
+    case web::PaymentShippingType::SHIPPING:
+      return l10n_util::GetNSString(IDS_PAYMENTS_UNSUPPORTED_SHIPPING_OPTION);
+    case web::PaymentShippingType::DELIVERY:
+      return l10n_util::GetNSString(IDS_PAYMENTS_UNSUPPORTED_DELIVERY_OPTION);
+    case web::PaymentShippingType::PICKUP:
+      return l10n_util::GetNSString(IDS_PAYMENTS_UNSUPPORTED_PICKUP_OPTION);
+    default:
+      NOTREACHED();
+      return @"";
+  }
 }
 
 }  // namespace payment_request_util

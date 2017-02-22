@@ -39,6 +39,11 @@ class PaymentRequest {
     return web_payment_request_->details;
   }
 
+  // Returns the payment options from |web_payment_request_|.
+  const web::PaymentOptions& payment_options() const {
+    return web_payment_request_->options;
+  }
+
   // Updates the payment details of the |web_payment_request_|. It also updates
   // the cached references to the shipping options in |web_payment_request_| as
   // well as the reference to the selected shipping option.

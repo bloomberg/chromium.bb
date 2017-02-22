@@ -13,6 +13,8 @@ namespace autofill {
 class AutofillProfile;
 }  // namespace autofill
 
+class PaymentRequest;
+
 namespace payment_request_util {
 
 // Helper function to get the name label from an autofill profile.
@@ -29,6 +31,31 @@ NSString* PhoneNumberLabelFromAutofillProfile(
 // profile.
 web::PaymentAddress PaymentAddressFromAutofillProfile(
     autofill::AutofillProfile* profile);
+
+// Returns the title for the shipping section of the payment summary view given
+// the shipping type specified in |payment_request|.
+NSString* GetShippingSectionTitle(PaymentRequest* payment_request);
+
+// Returns the title for the shipping address selection view given the shipping
+// type specified in |payment_request|.
+NSString* GetShippingAddressSelectorTitle(PaymentRequest* payment_request);
+
+// Returns the informational message to be displayed in the shipping address
+// selection view given the shipping type specified in |payment_request|.
+NSString* GetShippingAddressSelectorInfoMessage(PaymentRequest* paymentRequest);
+
+// Returns the error message to be displayed in the shipping address selection
+// view given the shipping type specified in |payment_request|.
+NSString* GetShippingAddressSelectorErrorMessage(
+    PaymentRequest* paymentRequest);
+
+// Returns the title for the shipping option selection view given the shipping
+// type specified in |payment_request|.
+NSString* GetShippingOptionSelectorTitle(PaymentRequest* payment_request);
+
+// Returns the error message to be displayed in the shipping option selection
+// view given the shipping type specified in |payment_request|.
+NSString* GetShippingOptionSelectorErrorMessage(PaymentRequest* paymentRequest);
 
 }  // namespace payment_request_util
 

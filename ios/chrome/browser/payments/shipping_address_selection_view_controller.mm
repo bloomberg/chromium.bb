@@ -6,7 +6,6 @@
 
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/strings/grit/components_strings.h"
@@ -76,8 +75,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
-    self.title = l10n_util::GetNSString(
-        IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_TITLE);
+    self.title =
+        payment_request_util::GetShippingAddressSelectorTitle(paymentRequest);
 
     UIBarButtonItem* returnButton =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
@@ -129,8 +128,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     messageItem.text = _errorMessage;
     messageItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
   } else {
-    messageItem.text = l10n_util::GetNSString(
-        IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_MESSAGE);
+    messageItem.text =
+        payment_request_util::GetShippingAddressSelectorInfoMessage(
+            _paymentRequest);
   }
   [model addItem:messageItem
       toSectionWithIdentifier:SectionIdentifierShippingAddress];

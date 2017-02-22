@@ -236,6 +236,11 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   base::DictionaryValue request_dict;
 
   // Add the expected values to expected_request.
+  expected_request.details.total.label = base::ASCIIToUTF16("TOTAL");
+  expected_request.details.total.amount.currency = base::ASCIIToUTF16("GBP");
+  expected_request.details.total.amount.value = base::ASCIIToUTF16("6.66");
+  expected_request.details.error = base::ASCIIToUTF16("Error in details");
+
   PaymentMethodData method_data;
   std::vector<base::string16> supported_methods;
   supported_methods.push_back(base::ASCIIToUTF16("Visa"));
@@ -243,6 +248,18 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   expected_request.method_data.push_back(method_data);
 
   // Add the same values to the dictionary to be parsed.
+  std::unique_ptr<base::DictionaryValue> details_dict(
+      new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> total_dict(new base::DictionaryValue);
+  total_dict->SetString("label", "TOTAL");
+  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
+  amount_dict->SetString("currency", "GBP");
+  amount_dict->SetString("value", "6.66");
+  total_dict->Set("amount", std::move(amount_dict));
+  details_dict->Set("total", std::move(total_dict));
+  details_dict->SetString("error", "Error in details");
+  request_dict.Set("details", std::move(details_dict));
+
   std::unique_ptr<base::ListValue> method_data_list(new base::ListValue);
   std::unique_ptr<base::DictionaryValue> method_data_dict(
       new base::DictionaryValue);
@@ -256,23 +273,19 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   EXPECT_TRUE(output_request.FromDictionaryValue(request_dict));
   EXPECT_EQ(expected_request, output_request);
 
-  // If payment details are present, parse those as well.
-  expected_request.details.total.label = base::ASCIIToUTF16("TOTAL");
-  expected_request.details.total.amount.currency = base::ASCIIToUTF16("GBP");
-  expected_request.details.total.amount.value = base::ASCIIToUTF16("6.66");
-  expected_request.details.error = base::ASCIIToUTF16("Error in details");
-
-  std::unique_ptr<base::DictionaryValue> details_dict(
+  // If payment options are present, parse those as well.
+  std::unique_ptr<base::DictionaryValue> options_dict(
       new base::DictionaryValue);
-  std::unique_ptr<base::DictionaryValue> total_dict(new base::DictionaryValue);
-  total_dict->SetString("label", "TOTAL");
-  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
-  amount_dict->SetString("currency", "GBP");
-  amount_dict->SetString("value", "6.66");
-  total_dict->Set("amount", std::move(amount_dict));
-  details_dict->Set("total", std::move(total_dict));
-  details_dict->SetString("error", "Error in details");
-  request_dict.Set("details", std::move(details_dict));
+  options_dict->SetBoolean("requestPayerPhone", true);
+  options_dict->SetBoolean("requestShipping", true);
+  options_dict->SetString("shippingType", "delivery");
+  request_dict.Set("options", std::move(options_dict));
+
+  PaymentOptions payment_options;
+  payment_options.request_payer_phone = true;
+  payment_options.request_shipping = true;
+  payment_options.shipping_type = PaymentShippingType::DELIVERY;
+  expected_request.options = payment_options;
 
   EXPECT_TRUE(output_request.FromDictionaryValue(request_dict));
   EXPECT_EQ(expected_request, output_request);
@@ -647,6 +660,11 @@ TEST(PaymentRequestTest, PaymentOptionsEquality) {
   PaymentOptions options2;
   EXPECT_EQ(options1, options2);
 
+  options1.request_payer_name = true;
+  EXPECT_NE(options1, options2);
+  options2.request_payer_name = true;
+  EXPECT_EQ(options1, options2);
+
   options1.request_payer_email = true;
   EXPECT_NE(options1, options2);
   options2.request_payer_email = true;
@@ -660,6 +678,14 @@ TEST(PaymentRequestTest, PaymentOptionsEquality) {
   options1.request_shipping = true;
   EXPECT_NE(options1, options2);
   options2.request_shipping = true;
+  EXPECT_EQ(options1, options2);
+
+  // PaymentShippingType::SHIPPING is the default value for shipping_type.
+  options1.shipping_type = PaymentShippingType::SHIPPING;
+  EXPECT_EQ(options1, options2);
+  options1.shipping_type = PaymentShippingType::PICKUP;
+  EXPECT_NE(options1, options2);
+  options2.shipping_type = PaymentShippingType::PICKUP;
   EXPECT_EQ(options1, options2);
 }
 

@@ -12,6 +12,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -22,7 +23,6 @@
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -71,8 +71,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
-    self.title = l10n_util::GetNSString(
-        IDS_IOS_PAYMENT_REQUEST_SHIPPING_OPTION_SELECTION_TITLE);
+    self.title =
+        payment_request_util::GetShippingOptionSelectorTitle(paymentRequest);
 
     UIBarButtonItem* returnButton =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]

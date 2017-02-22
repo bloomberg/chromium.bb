@@ -184,6 +184,9 @@
   <message name="IDS_PAYMENTS_UNSUPPORTED_SHIPPING_ADDRESS" desc="Text implying that a user needs to pick a different shipping address, because the currently selected address is not supported. Shipping is typically used for packages." formatter_data="android_java">
     Unsupported shipping address. Select a different address.
   </message>
+  <message name="IDS_PAYMENTS_UNSUPPORTED_SHIPPING_OPTION" desc="Text implying that a user needs to pick a different shipping option, because the currently selected option is not supported. Shipping is typically used for packages." formatter_data="android_java">
+    That shipping option isn’t available. Try a different option.
+  </message>
 
   <!-- Delivery address in web payments API -->
   <message name="IDS_PAYMENTS_DELIVERY_SUMMARY_LABEL" desc="The title for the section of delivery information. Delivery is commonly faster than shipping. For example, it might be used for food delivery." formatter_data="android_java">
@@ -201,6 +204,9 @@
   <message name="IDS_PAYMENTS_UNSUPPORTED_DELIVERY_ADDRESS" desc="Text implying that a user needs to pick a different delivery address, because the currently selected address is not supported. Delivery is commonly faster than shipping. For example, it might be used for food delivery." formatter_data="android_java">
     Unsupported delivery address. Select a different address.
   </message>
+  <message name="IDS_PAYMENTS_UNSUPPORTED_DELIVERY_OPTION" desc="Text implying that a user needs to pick a different delivery option, because the currently selected option is not supported. Delivery is commonly faster than shipping. For example, it might be used for food delivery." formatter_data="android_java">
+    That delivery option isn’t available. Try a different option.
+  </message>
 
   <!-- Pickup address in web payments API -->
   <message name="IDS_PAYMENTS_PICKUP_SUMMARY_LABEL" desc="The title for the section of pickup information. For example, this could be the address for laundry pickup." formatter_data="android_java">
@@ -217,6 +223,9 @@
   </message>
   <message name="IDS_PAYMENTS_UNSUPPORTED_PICKUP_ADDRESS" desc="Text implying that a user needs to choose a different pickup address, because the currently selected address is not supported. This address can be used, for example, for laundry pickup." formatter_data="android_java">
     Unsupported pickup address. Select a different address.
+  </message>
+  <message name="IDS_PAYMENTS_UNSUPPORTED_PICKUP_OPTION" desc="Text implying that a user needs to choose a different pickup option, because the currently selected option is not supported. This option can be used, for example, for laundry pickup." formatter_data="android_java">
+    That pickup option isn’t available. Try a different option.
   </message>
   <message name="IDS_PAYMENTS_ANDROID_APP_ERROR" desc="Error message that is shown when an Android payment application fails to start." formatter_data="android_java">
     Unable to launch payment app.

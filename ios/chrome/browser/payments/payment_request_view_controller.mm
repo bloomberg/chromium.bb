@@ -223,7 +223,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewTextItem* shippingTitle = [[[CollectionViewTextItem alloc]
       initWithType:ItemTypeShippingTitle] autorelease];
   shippingTitle.text =
-      l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_HEADER);
+      payment_request_util::GetShippingSectionTitle(_paymentRequest);
   [model setHeader:shippingTitle
       forSectionWithIdentifier:SectionIdentifierShipping];
 
@@ -242,8 +242,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [[[CollectionViewDetailItem alloc]
             initWithType:ItemTypeAddShippingAddress] autorelease];
     shippingAddressItem = addAddressItem;
-    addAddressItem.text = l10n_util::GetNSString(
-        IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_TITLE);
+    addAddressItem.text =
+        payment_request_util::GetShippingAddressSelectorTitle(_paymentRequest);
     addAddressItem.detailText = [l10n_util::GetNSString(
         IDS_IOS_PAYMENT_REQUEST_ADD_SHIPPING_ADDRESS_BUTTON)
         uppercaseStringWithLocale:[NSLocale currentLocale]];
@@ -266,8 +266,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [[[CollectionViewDetailItem alloc]
             initWithType:ItemTypeSelectShippingOption] autorelease];
     shippingOptionItem = selectShippingOptionItem;
-    selectShippingOptionItem.text = l10n_util::GetNSString(
-        IDS_IOS_PAYMENT_REQUEST_SHIPPING_OPTION_SELECTION_TITLE);
+    selectShippingOptionItem.text =
+        payment_request_util::GetShippingOptionSelectorTitle(_paymentRequest);
     selectShippingOptionItem.accessoryType =
         MDCCollectionViewCellAccessoryDisclosureIndicator;
   }

@@ -93,6 +93,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/payments:payment_validation",
+    "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/payments/cells",

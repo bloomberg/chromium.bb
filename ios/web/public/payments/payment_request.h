@@ -248,6 +248,14 @@ class PaymentDetails {
   base::string16 error;
 };
 
+// Possible values for affecting the payment request user interface for
+// gathering the shipping address.
+enum class PaymentShippingType : int {
+  SHIPPING = 0,
+  DELIVERY = 1,
+  PICKUP = 2,
+};
+
 // Information describing a shipping option.
 class PaymentOptions {
  public:
@@ -256,6 +264,15 @@ class PaymentOptions {
 
   bool operator==(const PaymentOptions& other) const;
   bool operator!=(const PaymentOptions& other) const;
+
+  // Populates the properties of this PaymentOptions from |value|. Returns true
+  // if the required values are present.
+  bool FromDictionaryValue(const base::DictionaryValue& value);
+
+  // Indicates whether the user agent should collect and return the payer's name
+  // as part of the payment request. For example, this would be set to true to
+  // allow a merchant to make a booking in the payer's name.
+  bool request_payer_name;
 
   // Indicates whether the user agent should collect and return the payer's
   // email address as part of the payment request. For example, this would be
@@ -273,6 +290,11 @@ class PaymentOptions {
   // This would be set to false for an online-only electronic purchase
   // transaction.
   bool request_shipping;
+
+  // If request_shipping is set to true, then this field may only be used to
+  // influence the way the user agent presents the user interface for gathering
+  // the shipping address.
+  PaymentShippingType shipping_type;
 };
 
 // All of the information provided by a page making a request for payment.

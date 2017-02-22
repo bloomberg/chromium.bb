@@ -7,6 +7,7 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/payments/payment_request_util.h"
 
 @interface ShippingOptionSelectionCoordinator () {
   base::WeakNSProtocol<id<ShippingOptionSelectionCoordinatorDelegate>>
@@ -58,9 +59,10 @@
   _viewController.get().view.userInteractionEnabled = YES;
 
   [_viewController setIsLoading:NO];
-  [_viewController
-      setErrorMessage:base::SysUTF16ToNSString(
-                          _paymentRequest->payment_details().error)];
+  NSString* errorMessage =
+      payment_request_util::GetShippingOptionSelectorErrorMessage(
+          _paymentRequest);
+  [_viewController setErrorMessage:errorMessage];
   [_viewController loadModel];
   [[_viewController collectionView] reloadData];
 }

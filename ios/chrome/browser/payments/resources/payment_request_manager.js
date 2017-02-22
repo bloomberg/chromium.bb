@@ -417,20 +417,56 @@ window.PaymentRequest = function(methodData, details, opt_options) {
 
   // TODO(crbug.com/602666): Perform other validation per spec.
 
+  // TODO(crbug.com/602666): Process payment methods then set parsedMethodData
+  // instead of methodData on this instance.
+  // /**
+  //  * @type {!Object<!Array<string>, ?string>}
+  //  * @private
+  //  */
+  // this.parsedMethodData = ...;
+
   /**
    * @type {!Array<!window.PaymentMethodData>}
+   * @private
    */
   this.methodData = methodData;
 
   /**
    * @type {!window.PaymentDetails}
+   * @private
    */
   this.details = details;
 
   /**
    * @type {?window.PaymentOptions}
+   * @private
    */
   this.options = opt_options || null;
+
+  /**
+   * The state of this request, used to govern its lifecycle.
+   * TODO(crbug.com/602666): Implement state transitions per spec.
+   * @type {string}
+   * @private
+   */
+  this.state = 'created';
+
+  /**
+   * True if there is a pending updateWith call to update the payment request
+   * and false otherwise.
+   * TODO(crbug.com/602666): Implement changes in the value of this property per
+   * spec.
+   * @type {boolean}
+   * @private
+   */
+  this.updating = false;
+
+  /**
+   * A provided or generated ID for the this Payment Request instance.
+   * TODO(crbug.com/602666): Generate an ID if one is not provided.
+   * @type {?string}
+   */
+  this.paymentRequestID = null;
 
   /**
    * Shipping address selected by the user.
@@ -445,12 +481,19 @@ window.PaymentRequest = function(methodData, details, opt_options) {
   this.shippingOption = null;
 
   /**
-   * The state of this request, used to govern its lifecycle.
-   * TODO(crbug.com/602666): Implement state transitions per spec.
-   * @type {string}
-   * @private
+   * Set to the value of shippingType property of |opt_options| if it is a valid
+   * PaymentShippingType. Otherwise set to PaymentShippingType.SHIPPING.
+   * @type {?PaymentShippingType}
    */
-  this.state = 'created';
+  this.shippingType = null;
+
+  if (opt_options && opt_options.requestShipping) {
+    if (opt_options.shippingType != PaymentShippingType.SHIPPING &&
+        opt_options.shippingType != PaymentShippingType.DELIVERY &&
+        opt_options.shippingType != PaymentShippingType.PICKUP) {
+      this.shippingType = PaymentShippingType.SHIPPING;
+    }
+  }
 };
 
 window.PaymentRequest.prototype = {
@@ -518,10 +561,24 @@ window.PaymentDetails;
 window.PaymentDetailsModifier;
 
 /**
+ * Contains the possible values for affecting the payment request user interface
+ * for gathering the shipping address if window.PaymentOptions.requestShipping
+ * is set to true.
+ * @enum {string}
+ */
+var PaymentShippingType = {
+  SHIPPING: 'shipping',
+  DELIVERY: 'delivery',
+  PICKUP: 'pickup'
+};
+
+/**
  * @typedef {{
+ *   requestPayerName: (boolean|undefined),
  *   requestPayerEmail: (boolean|undefined),
  *   requestPayerPhone: (boolean|undefined),
- *   requestShipping: (boolean|undefined)
+ *   requestShipping: (boolean|undefined),
+ *   shippingType: (!PaymentShippingType|undefined)
  * }}
  */
 window.PaymentOptions;

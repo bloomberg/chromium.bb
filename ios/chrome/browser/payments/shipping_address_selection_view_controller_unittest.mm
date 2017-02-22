@@ -8,13 +8,13 @@
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/cells/shipping_address_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
-#include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,7 +59,7 @@ class ShippingAddressSelectionViewControllerTest
 TEST_F(ShippingAddressSelectionViewControllerTest, TestModel) {
   CreateController();
   CheckController();
-  CheckTitleWithId(IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_TITLE);
+  CheckTitleWithId(IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL);
 
   [GetShippingAddressSelectionViewController() loadModel];
 
