@@ -13,9 +13,8 @@ var initialize_CSSTracker = function() {
 
 function test()
 {
-    InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_updateTree", displayResults);
-
     var tracker = self.runtime.sharedInstance(CSSTracker.CSSTrackerView);
+    InspectorTest.addSniffer(tracker._listView, "update", displayResults);
 
     tracker._toggleRecording(true);
     UI.viewManager.showView("css_tracker");
@@ -23,11 +22,12 @@ function test()
 
     function displayResults()
     {
-        tracker._treeOutline.rootElement().firstChild().expand();
+        var treeOutline = tracker._listView._treeOutline;
+        treeOutline.rootElement().firstChild().expand();
 
-        InspectorTest.addResult(tracker._treeOutline.element.shadowRoot.querySelectorAll(
+        InspectorTest.addResult(treeOutline.element.shadowRoot.querySelectorAll(
             ".rule-result-matches-count")[0].innerHTML);
-        tracker._treeOutline.element.shadowRoot.querySelectorAll(".rule-match-content").forEach(
+        treeOutline.element.shadowRoot.querySelectorAll(".rule-match-content").forEach(
             match => InspectorTest.addResult(match.innerHTML));
 
         InspectorTest.completeTest();
