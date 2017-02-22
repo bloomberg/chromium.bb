@@ -43,26 +43,9 @@ PreferencesConnectionManager::PreferencesConnectionManager() {}
 
 PreferencesConnectionManager::~PreferencesConnectionManager() {}
 
-void PreferencesConnectionManager::OnConnectionError(
-    mojo::StrongBindingPtr<prefs::mojom::PreferencesService> binding) {
-  if (!binding)
-    return;
-  for (auto it = manager_bindings_.begin(); it != manager_bindings_.end();
-       ++it) {
-    if (it->get() == binding.get()) {
-      manager_bindings_.erase(it);
-      return;
-    }
-  }
-}
-
 void PreferencesConnectionManager::OnProfileDestroyed() {
-  for (auto& it : manager_bindings_) {
-    // Shutdown any PreferenceManager that is still alive.
-    if (it)
-      it->Close();
-  }
-
+  // Shutdown any PreferenceService that is still alive.
+  manager_bindings_.CloseAllBindings();
   profile_shutdown_notification_.reset();
 }
 
@@ -74,16 +57,10 @@ void PreferencesConnectionManager::Create(
   if (!g_browser_process->profile_manager()->GetNumberOfProfiles())
     return;
 
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  mojo::StrongBindingPtr<prefs::mojom::PreferencesService> binding =
-      mojo::MakeStrongBinding(
-          base::MakeUnique<PreferencesService>(std::move(client), profile),
-          std::move(service));
-  // Copying the base::WeakPtr for future deletion.
-  binding->set_connection_error_handler(
-      base::Bind(&PreferencesConnectionManager::OnConnectionError,
-                 base::Unretained(this), binding));
-  manager_bindings_.push_back(std::move(binding));
+  manager_bindings_.AddBinding(
+      base::MakeUnique<PreferencesService>(
+          std::move(client), ProfileManager::GetActiveUserProfile()),
+      std::move(service));
 }
 
 void PreferencesConnectionManager::Create(
@@ -99,13 +76,6 @@ void PreferencesConnectionManager::Create(
                 base::Bind(&PreferencesConnectionManager::OnProfileDestroyed,
                            base::Unretained(this)));
   }
-}
-
-void PreferencesConnectionManager::OnStart() {
-  // Certain tests have no profiles to connect to, and static initializers
-  // which block the creation of test profiles.
-  if (!g_browser_process->profile_manager()->GetNumberOfProfiles())
-    return;
 }
 
 bool PreferencesConnectionManager::OnConnect(

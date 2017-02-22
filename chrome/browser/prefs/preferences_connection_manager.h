@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -33,10 +33,6 @@ class PreferencesConnectionManager
   ~PreferencesConnectionManager() override;
 
  private:
-  // mojo::StrongBinding callback:
-  void OnConnectionError(
-      mojo::StrongBindingPtr<prefs::mojom::PreferencesService> binding);
-
   // KeyedServiceShutdownNotifier::Subscription callback. Used to cleanup when
   // the active PrefService is being destroyed.
   void OnProfileDestroyed();
@@ -50,15 +46,13 @@ class PreferencesConnectionManager
               prefs::mojom::PreferencesServiceFactoryRequest request) override;
 
   // service_manager::Service:
-  void OnStart() override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
   mojo::BindingSet<prefs::mojom::PreferencesServiceFactory> factory_bindings_;
 
   // Bindings that automatically cleanup during connection errors.
-  std::vector<mojo::StrongBindingPtr<prefs::mojom::PreferencesService>>
-      manager_bindings_;
+  mojo::StrongBindingSet<prefs::mojom::PreferencesService> manager_bindings_;
 
   // Observes shutdown, when PrefService is being destroyed.
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
