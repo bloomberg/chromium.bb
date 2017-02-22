@@ -50,8 +50,8 @@ class MusDemo : public service_manager::Service,
 
  private:
   virtual void OnStartImpl(
-      std::unique_ptr<aura::WindowTreeClient>& window_tree_client,
-      std::unique_ptr<WindowTreeData>& window_tree_data) = 0;
+      std::unique_ptr<aura::WindowTreeClient>* window_tree_client,
+      std::unique_ptr<WindowTreeData>* window_tree_data) = 0;
 
   // service_manager::Service:
   void OnStart() override;

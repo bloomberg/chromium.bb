@@ -51,7 +51,7 @@ void MusDemo::OnStart() {
   property_converter_ = base::MakeUnique<aura::PropertyConverter>();
   wm_state_ = base::MakeUnique<::wm::WMState>();
 
-  OnStartImpl(window_tree_client_, window_tree_data_);
+  OnStartImpl(&window_tree_client_, &window_tree_data_);
 
   env_->SetWindowTreeClient(window_tree_client_.get());
 }

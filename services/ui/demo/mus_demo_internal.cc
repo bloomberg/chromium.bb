@@ -23,12 +23,12 @@ MusDemoInternal::MusDemoInternal() {}
 MusDemoInternal::~MusDemoInternal() {}
 
 void MusDemoInternal::OnStartImpl(
-    std::unique_ptr<aura::WindowTreeClient>& window_tree_client,
-    std::unique_ptr<WindowTreeData>& window_tree_data) {
-  window_tree_client = base::MakeUnique<aura::WindowTreeClient>(
+    std::unique_ptr<aura::WindowTreeClient>* window_tree_client,
+    std::unique_ptr<WindowTreeData>* window_tree_data) {
+  *window_tree_client = base::MakeUnique<aura::WindowTreeClient>(
       context()->connector(), this, this);
-  window_tree_client->ConnectAsWindowManager();
-  window_tree_data = base::MakeUnique<WindowTreeData>(kSquareSize);
+  window_tree_client->get()->ConnectAsWindowManager();
+  *window_tree_data = base::MakeUnique<WindowTreeData>(kSquareSize);
 }
 
 void MusDemoInternal::SetWindowManagerClient(

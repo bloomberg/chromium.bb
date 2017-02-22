@@ -17,14 +17,18 @@
 namespace ui {
 namespace demo {
 
+// MusDemoInternal demonstrates Mus operating in "internal" mode: There is a
+// single acceleratedWidget for a single display and all aura windows are
+// contained in that display.
 class MusDemoInternal : public MusDemo, public aura::WindowManagerDelegate {
  public:
   MusDemoInternal();
   ~MusDemoInternal() final;
 
  private:
-  void OnStartImpl(std::unique_ptr<aura::WindowTreeClient>& window_tree_client,
-                   std::unique_ptr<WindowTreeData>& window_tree_data) final;
+  // ui::demo::MusDemo:
+  void OnStartImpl(std::unique_ptr<aura::WindowTreeClient>* window_tree_client,
+                   std::unique_ptr<WindowTreeData>* window_tree_data) final;
 
   // aura::WindowManagerDelegate:
   void SetWindowManagerClient(aura::WindowManagerClient* client) final;
