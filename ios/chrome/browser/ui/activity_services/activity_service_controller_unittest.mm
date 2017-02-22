@@ -307,10 +307,9 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForDataWithPasswordAppEx) {
   EXPECT_NSEQ(@"https://chromium.org/login.html", appExUrlString);
 
   // Checks that the list includes the page's title.
-  NSArray* sources =
-      FindItemsOfClass(items, [UIActivityFindLoginActionSource class]);
+  NSArray* sources = FindItemsOfClass(items, [UIActivityURLSource class]);
   EXPECT_EQ(1U, [sources count]);
-  UIActivityFindLoginActionSource* actionSource = sources[0];
+  UIActivityURLSource* actionSource = sources[0];
   id mockActivityViewController =
       [OCMockObject niceMockForClass:[UIActivityViewController class]];
   NSString* title = [actionSource

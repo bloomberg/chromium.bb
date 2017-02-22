@@ -103,16 +103,16 @@
 
 @end
 
-#pragma mark - UIActivityFindLoginActionSource
+#pragma mark - UIActivityURLSource
 
-@interface UIActivityFindLoginActionSource () {
+@interface UIActivityURLSource () {
   NSString* _subject;
   NSURL* _url;
   ThumbnailGeneratorBlock _thumbnailGenerator;
 }
 @end
 
-@implementation UIActivityFindLoginActionSource
+@implementation UIActivityURLSource
 
 - (instancetype)init {
   NOTREACHED();

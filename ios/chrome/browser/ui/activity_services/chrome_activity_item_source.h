@@ -32,8 +32,7 @@
 // with other Social Sharing Extensions as well. The |subject| is used by
 // Mail applications to pre-fill in the subject line. The |thumbnailGenerator|
 // is used to provide thumbnails to extensions that request one.
-// TODO(crbug.com/685225): Rename UIActivityFindLoginActionSource.
-@interface UIActivityFindLoginActionSource : NSObject<UIActivityItemSource>
+@interface UIActivityURLSource : NSObject<UIActivityItemSource>
 
 // Default initializer. |subject|, |url|, and |thumbnailGenerator| must not be
 // nil.
