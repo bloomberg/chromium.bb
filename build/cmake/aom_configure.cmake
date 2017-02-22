@@ -35,6 +35,20 @@ if (NOT AOM_TARGET_CPU)
   endif ()
 endif ()
 
+# Store the args passed to cmake, the generator used, and the target CPU.
+get_cmake_property(cmake_cache_vars CACHE_VARIABLES)
+foreach(cache_var ${cmake_cache_vars})
+  get_property(cache_var_helpstring CACHE ${cache_var} PROPERTY HELPSTRING)
+  if(cache_var_helpstring STREQUAL
+     "No help, variable specified on the command line.")
+   set(AOM_CMAKE_CONFIG "${AOM_CMAKE_CONFIG} -D${cache_var}=${${cache_var}}")
+  endif()
+endforeach()
+
+string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
+set(AOM_CMAKE_CONFIG "CMAKE_GENERATOR=${CMAKE_GENERATOR} ${AOM_CMAKE_CONFIG}")
+set(AOM_CMAKE_CONFIG "AOM_TARGET_CPU=${AOM_TARGET_CPU} ${AOM_CMAKE_CONFIG}")
+
 message("--- aom_configure: Detected CPU: ${AOM_TARGET_CPU}")
 set(AOM_TARGET_SYSTEM ${CMAKE_SYSTEM_NAME})
 
@@ -130,16 +144,6 @@ if (GIT_FOUND)
   string(STRIP "${AOM_GIT_DESCRIPTION}" AOM_GIT_DESCRIPTION)
 endif ()
 
-# TODO(tomfinegan): An alternative to dumping the configure command line to
-# aom_config.c is needed in cmake. Normal cmake generation runs do not make the
-# command line available in the cmake script. For now, we just set the variable
-# to the following. The configure_file() command will expand the message in
-# aom_config.c.
-# Note: This message isn't strictly true. When cmake is run in script mode (with
-# the -P argument), CMAKE_ARGC and CMAKE_ARGVn are defined (n = 0 through
-# n = CMAKE_ARGC become valid). Normal cmake generation runs do not make the
-# information available.
-set(AOM_CMAKE_CONFIG "cmake")
 configure_file("${AOM_ROOT}/build/cmake/aom_config.c.cmake"
                "${AOM_CONFIG_DIR}/aom_config.c")
 
