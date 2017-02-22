@@ -17,6 +17,9 @@ scoped_refptr<ScanoutBuffer> MockScanoutBufferGenerator::Create(
     const scoped_refptr<DrmDevice>& drm,
     uint32_t format,
     const gfx::Size& size) {
+  if (allocation_failure_)
+    return nullptr;
+
   scoped_refptr<MockScanoutBuffer> buffer(new MockScanoutBuffer(size, format));
 
   return buffer;

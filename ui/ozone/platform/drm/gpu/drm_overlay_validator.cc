@@ -45,7 +45,8 @@ scoped_refptr<ScanoutBuffer> GetBufferForPageFlipTest(
 
   scoped_refptr<ScanoutBuffer> scanout_buffer =
       buffer_generator->Create(drm_device, format, size);
-  reusable_buffers->push_back(scanout_buffer);
+  if (scanout_buffer)
+    reusable_buffers->push_back(scanout_buffer);
 
   return scanout_buffer;
 }
@@ -132,15 +133,14 @@ std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
 
     uint32_t original_format = GetFourCCFormatForFramebuffer(overlay.format);
     scoped_refptr<ScanoutBuffer> buffer =
-        GetBufferForPageFlipTest(drm, scaled_buffer_size, original_format,
+        GetBufferForPageFlipTest(drm, overlay.buffer_size, original_format,
                                  buffer_generator_, &reusable_buffers);
-    DCHECK(buffer);
 
     OverlayPlane plane(buffer, overlay.plane_z_order, overlay.transform,
                        overlay.display_rect, overlay.crop_rect);
     test_list.push_back(plane);
 
-    if (controller->TestPageFlip(test_list)) {
+    if (buffer && controller->TestPageFlip(test_list)) {
       overlay.is_overlay_candidate = true;
 
       // If size scaling is needed, find an optimal format.
@@ -180,7 +180,6 @@ std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
       // hardware resources and they might be already in use by other planes.
       // For example this plane has requested scaling capabilities and all
       // available scalars are already in use by other planes.
-      DCHECK(test_list.size() > 1);
       overlay.is_overlay_candidate = false;
       test_list.pop_back();
     }

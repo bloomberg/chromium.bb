@@ -628,3 +628,13 @@ TEST_F(DrmOverlayValidatorTest, DontResetOriginalBufferIfProcessedIsInvalid) {
   plane_list_.back().processing_callback = base::Bind(
       &DrmOverlayValidatorTest::ProcessBuffer, base::Unretained(this));
 }
+
+TEST_F(DrmOverlayValidatorTest, RejectBufferAllocationFail) {
+  // Buffer allocation for scanout might fail.
+  // In that case we should reject the overlay candidate.
+  buffer_generator_->set_allocation_failure(true);
+
+  std::vector<ui::OverlayCheck_Params> validated_params =
+      overlay_validator_->TestPageFlip(overlay_params_, ui::OverlayPlaneList());
+  EXPECT_FALSE(validated_params.front().is_overlay_candidate);
+}
