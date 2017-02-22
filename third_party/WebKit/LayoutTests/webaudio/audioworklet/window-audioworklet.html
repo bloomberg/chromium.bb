@@ -4,28 +4,35 @@
   <title>Checking window.audioWorklet</title>
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script>
-  <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
   <script src="audioworklet-testing.js"></script>
 </head>
 <body>
   <script>
-    var audit = Audit.createTaskRunner();
+    // This test requires AudioWorklet.
+    let audioWorkletStatus = isAudioWorkletEnabled();
 
-    audit.defineTask('window-audioworklet', function (taskDone) {
+    let audit = Audit.createTaskRunner();
 
-      // TODO: remove this check if AudioWorklet ships to the stable.
-      if (!checkInternalsAndAudioWorkletRuntimeFlag(taskDone))
-        return;
+    // Test if AudioWorklet exists.
+    audit.define({
+        label: 'window-audioworklet',
+        description: 'Test if AudioWorklet exists.',
+      }, (task, should) => {
+        // TODO(hongchan): remove this assertion when AudioWorklet is shipped.
+        should(audioWorkletStatus.onContentShell || 
+               audioWorkletStatus.onBrowser,
+               'AudioWorklet is available on ContentShell or Browser')
+            .beTrue();
 
-      Should('window.audioWorklet is an instance of Worklet',
-        window.audioWorklet instanceof Worklet).beEqualTo(true);
+        should(window.audioWorklet instanceof Worklet,
+               'window.audioWorklet is an instance of Worklet')
+            .beTrue();
 
-      taskDone();
+        task.done();
     });
 
-
-    audit.runTasks();
+    audit.run();
   </script>
 </body>
 </html>
