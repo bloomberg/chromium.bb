@@ -468,6 +468,9 @@ message ClientDownloadResponse {
 
   // An arbitrary token that should be sent along for further server requests.
   optional bytes token = 3;
+
+  // Whether the server requests that this binary be uploaded.
+  optional bool upload = 5;
 }
 
 // The following protocol buffer holds the feedback report gathered

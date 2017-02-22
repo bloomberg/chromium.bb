@@ -91,19 +91,19 @@ DownloadFeedbackService::~DownloadFeedbackService() {
 // static
 void DownloadFeedbackService::MaybeStorePingsForDownload(
     DownloadProtectionService::DownloadCheckResult result,
+    bool upload_requested,
     content::DownloadItem* download,
     const std::string& ping,
     const std::string& response) {
-  switch (result) {
-    case DownloadProtectionService::UNKNOWN:
-    case DownloadProtectionService::SAFE:
-    case DownloadProtectionService::DANGEROUS:
-      return;
-    case DownloadProtectionService::UNCOMMON:
-    case DownloadProtectionService::DANGEROUS_HOST:
-    case DownloadProtectionService::POTENTIALLY_UNWANTED:
-      break;  // Fall through.
-  }
+  // We never upload SAFE files.
+  if (result == DownloadProtectionService::SAFE)
+    return;
+
+  UMA_HISTOGRAM_BOOLEAN("SBDownloadFeedback.UploadRequestedByServer",
+                        upload_requested);
+  if (!upload_requested)
+    return;
+
   UMA_HISTOGRAM_COUNTS("SBDownloadFeedback.SizeEligibleKB",
                        download->GetReceivedBytes() / 1024);
   if (download->GetReceivedBytes() > DownloadFeedback::kMaxUploadSize)

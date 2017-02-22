@@ -42,10 +42,13 @@ class DownloadFeedbackService {
 
   // Stores the request and response ping data from the download check, if the
   // check result and file size are eligible. This must be called after a
-  // download has been flagged as malicious in order for the download to be
-  // enabled for uploading.
+  // download has been flagged as un-SAFE in order for the download to be
+  // enabled for uploading. Some un-SAFE downloads can be marked for
+  // upload by the server with |upload_requested| if it's needed for better
+  // classification.
   static void MaybeStorePingsForDownload(
       DownloadProtectionService::DownloadCheckResult result,
+      bool upload_requested,
       content::DownloadItem* download,
       const std::string& ping,
       const std::string& response);

@@ -597,8 +597,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
       if (!token.empty())
         SetDownloadPingToken(item_, token);
 
+      bool upload_requested = response.upload();
       DownloadFeedbackService::MaybeStorePingsForDownload(
-          result, item_, client_download_request_data_, data);
+          result, upload_requested, item_, client_download_request_data_, data);
     }
     // We don't need the fetcher anymore.
     fetcher_.reset();
