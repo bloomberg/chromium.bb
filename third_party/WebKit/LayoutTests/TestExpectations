@@ -135,8 +135,6 @@ crbug.com/664852 virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ 
 crbug.com/664852 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure ]
 crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 
-crbug.com/674396 compositing/reflections/nested-reflection-transition.html [ NeedsRebaseline ]
-
 # Added 2017-01-16
 crbug.com/681471 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
 crbug.com/681471 virtual/disable-spinvalidation/paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
