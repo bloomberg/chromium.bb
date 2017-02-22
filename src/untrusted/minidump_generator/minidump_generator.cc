@@ -271,6 +271,20 @@ static void ConvertRegisters(MinidumpAllocator *minidump_writer,
       regs.get()->cpsr = src_regs->cpsr;
       break;
     }
+    case EM_MIPS: {
+      struct NaClUserRegisterStateMIPS *src_regs =
+          (struct NaClUserRegisterStateMIPS *) &context->regs;
+      TypedMDRVA<MDRawContextMIPS> regs(minidump_writer);
+      if (!regs.Allocate())
+        return;
+      thread->thread_context = regs.location();
+      regs.get()->context_flags = MD_CONTEXT_MIPS | MD_CONTEXT_MIPS_INTEGER;
+      for (int regnum = 0; regnum < 32; regnum++) {
+        regs.get()->iregs[regnum] = ((uint32_t *) &src_regs->zero)[regnum];
+      }
+      regs.get()->epc = src_regs->prog_ctr;
+      break;
+    }
     default: {
       // Architecture not recognized.  Dump the register state anyway.
       // Maybe we should do this on all architectures, and Breakpad
