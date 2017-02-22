@@ -82,10 +82,31 @@ public class FadingBackgroundView extends View implements View.OnClickListener,
         super.setAlpha(alpha);
 
         int newVisibility = alpha <= 0f ? View.GONE : View.VISIBLE;
-
         setVisibility(newVisibility);
-        for (FadingViewObserver o : mObservers) {
-            o.onFadingViewVisibilityChanged(newVisibility == View.VISIBLE);
+    }
+
+    @Override
+    public void setVisibility(int visibility) {
+        if (getAlpha() <= 0f && visibility == View.VISIBLE) return;
+        super.setVisibility(visibility);
+    }
+
+    @Override
+    protected void dispatchVisibilityChanged(View view, int visibility) {
+        if (getAlpha() <= 0f && visibility == View.VISIBLE) return;
+        super.dispatchVisibilityChanged(view, visibility);
+    }
+
+    @Override
+    public void onVisibilityChanged(View view, int visibility) {
+        super.onVisibilityChanged(view, visibility);
+
+        // This check is added for the exclusive purpose of testing on Android K. Later versions
+        // of Android do not run into the problem of the observer list being null.
+        if (mObservers != null) {
+            for (FadingViewObserver o : mObservers) {
+                o.onFadingViewVisibilityChanged(visibility == View.VISIBLE);
+            }
         }
     }
 
