@@ -9,7 +9,6 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
-#include "ash/common/system/tray/tray_utils.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -75,11 +74,14 @@ void ButtonFromView::OnBlur() {
 }
 
 void ButtonFromView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_BUTTON;
-  std::vector<base::string16> labels;
-  for (int i = 0; i < child_count(); ++i)
-    GetAccessibleLabelFromDescendantViews(child_at(i), labels);
-  node_data->SetName(base::JoinString(labels, base::ASCIIToUTF16(" ")));
+  views::CustomButton::GetAccessibleNodeData(node_data);
+  // If no label has been explicitly set via CustomButton::SetAccessibleName(),
+  // use the content's label.
+  if (node_data->GetStringAttribute(ui::AX_ATTR_NAME).empty()) {
+    ui::AXNodeData content_data;
+    content_->GetAccessibleNodeData(&content_data);
+    node_data->SetName(content_data.GetStringAttribute(ui::AX_ATTR_NAME));
+  }
 }
 
 void ButtonFromView::Layout() {

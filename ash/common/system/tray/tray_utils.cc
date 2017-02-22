@@ -74,21 +74,4 @@ void SetTrayLabelItemBorder(TrayItemView* tray_view, ShelfAlignment alignment) {
   }
 }
 
-void GetAccessibleLabelFromDescendantViews(
-    views::View* view,
-    std::vector<base::string16>& out_labels) {
-  ui::AXNodeData temp_node_data;
-  view->GetAccessibleNodeData(&temp_node_data);
-  if (!temp_node_data.GetStringAttribute(ui::AX_ATTR_NAME).empty())
-    out_labels.push_back(temp_node_data.GetString16Attribute(ui::AX_ATTR_NAME));
-
-  // Do not descend into static text labels which may compute their own labels
-  // recursively.
-  if (temp_node_data.role == ui::AX_ROLE_STATIC_TEXT)
-    return;
-
-  for (int i = 0; i < view->child_count(); ++i)
-    GetAccessibleLabelFromDescendantViews(view->child_at(i), out_labels);
-}
-
 }  // namespace ash

@@ -16,7 +16,6 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
-#include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/user/rounded_image_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -90,6 +89,7 @@ class PublicAccountUserDetails : public views::View,
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Overridden from views::LinkListener.
   void LinkClicked(views::Link* source, int event_flags) override;
@@ -222,6 +222,12 @@ void PublicAccountUserDetails::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 }
 
+void PublicAccountUserDetails::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_STATIC_TEXT;
+  node_data->SetName(text_);
+}
+
 void PublicAccountUserDetails::LinkClicked(views::Link* source,
                                            int event_flags) {
   DCHECK_EQ(source, learn_more_);
@@ -325,8 +331,30 @@ void UserCardView::PaintChildren(const ui::PaintContext& context) {
 void UserCardView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_STATIC_TEXT;
   std::vector<base::string16> labels;
-  for (int i = 0; i < child_count(); ++i)
-    GetAccessibleLabelFromDescendantViews(child_at(i), labels);
+
+  // Construct the name by concatenating descendants' names.
+  std::list<views::View*> descendants;
+  descendants.push_back(this);
+  while (!descendants.empty()) {
+    auto view = descendants.front();
+    descendants.pop_front();
+    if (view != this) {
+      ui::AXNodeData descendant_data;
+      view->GetAccessibleNodeData(&descendant_data);
+      base::string16 label =
+          descendant_data.GetString16Attribute(ui::AX_ATTR_NAME);
+      // If we find a non-empty name, use that and don't descend further into
+      // the tree.
+      if (!label.empty()) {
+        labels.push_back(label);
+        continue;
+      }
+    }
+
+    // This view didn't have its own name, so look over its children.
+    for (int i = view->child_count() - 1; i >= 0; --i)
+      descendants.push_front(view->child_at(i));
+  }
   node_data->SetName(base::JoinString(labels, base::ASCIIToUTF16(" ")));
 }
 
