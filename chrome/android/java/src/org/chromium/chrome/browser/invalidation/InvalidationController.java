@@ -14,7 +14,9 @@ import com.google.ipc.invalidation.ticl.android2.channel.AndroidGcmController;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.FieldTrialList;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -31,6 +33,8 @@ import java.util.HashSet;
  * client library used by Sync.
  */
 public class InvalidationController implements ApplicationStatus.ApplicationStateListener {
+    private static final String TAG = "cr_invalidation";
+
     /**
      * Timer which can be paused. When the timer is paused, the execution of its scheduled task is
      * delayed till the timer is resumed.
@@ -194,6 +198,11 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
                 typesToRegister);
         registerIntent.setClass(
                 mContext, InvalidationClientService.getRegisteredClass());
+
+        if (shouldRestrictBackgroundServices()) {
+            Log.e(TAG, "Failed to register types");
+            return;
+        }
         mContext.startService(registerIntent);
     }
 
@@ -221,6 +230,11 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
      * Starts the invalidation client without updating the registered invalidation types.
      */
     private void start() {
+        if (shouldRestrictBackgroundServices()) {
+            Log.e(TAG, "Failed to start invalidation client");
+            return;
+        }
+
         mStarted = true;
         mEnableSessionInvalidationsTimer.resume();
         Intent intent = new Intent(
@@ -232,6 +246,11 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
      * Stops the invalidation client.
      */
     public void stop() {
+        if (shouldRestrictBackgroundServices()) {
+            Log.e(TAG, "Failed to stop invalidation client");
+            return;
+        }
+
         mStarted = false;
         mEnableSessionInvalidationsTimer.pause();
         Intent intent = new Intent(
@@ -337,6 +356,11 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
         mEnableSessionInvalidationsTimer = new Timer();
 
         ApplicationStatus.registerApplicationStateListener(this);
+    }
+
+    private boolean shouldRestrictBackgroundServices() {
+        // Restricts the use of background services when not in foreground. See crbug.com/680812.
+        return BuildInfo.isGreaterThanN() && !ApplicationStatus.hasVisibleActivities();
     }
 
     @Override

@@ -10,6 +10,9 @@ import android.content.Intent;
 
 import com.google.protos.ipc.invalidation.Types;
 
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -28,6 +31,8 @@ public class InvalidationService {
     private final Context mContext;
 
     private final long mNativeInvalidationServiceAndroid;
+
+    private static final String TAG = "cr_invalidation";
 
     private InvalidationService(Context context, long nativeInvalidationServiceAndroid) {
         mContext = context.getApplicationContext();
@@ -71,7 +76,17 @@ public class InvalidationService {
                 account, objectSources, objectNames);
         registerIntent.setClass(
                 mContext, InvalidationClientService.getRegisteredClass());
+
+        if (shouldRestrictBackgroundServices()) {
+            Log.e(TAG, "Failed to register objects");
+            return;
+        }
         mContext.startService(registerIntent);
+    }
+
+    private boolean shouldRestrictBackgroundServices() {
+        // Restricts the use of background services when not in foreground. See crbug.com/680812.
+        return BuildInfo.isGreaterThanN() && !ApplicationStatus.hasVisibleActivities();
     }
 
     /**

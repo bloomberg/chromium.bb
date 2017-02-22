@@ -22,6 +22,7 @@ import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.protos.ipc.invalidation.Types.ClientType;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -317,12 +318,21 @@ public class InvalidationClientService extends AndroidListener {
     private void startClient() {
         byte[] clientName = InvalidationClientNameProvider.get().getInvalidatorClientName();
         Intent startIntent = AndroidListener.createStartIntent(this, CLIENT_TYPE, clientName);
+
+        if (shouldRestrictBackgroundServices()) {
+            Log.e(TAG, "Failed to start client");
+            return;
+        }
         startService(startIntent);
         setIsClientStarted(true);
     }
 
     /** Stops the notification client. */
     private void stopClient() {
+        if (shouldRestrictBackgroundServices()) {
+            Log.e(TAG, "Failed to stop client");
+            return;
+        }
         startService(AndroidListener.createStopIntent(this));
         setIsClientStarted(false);
         setClientId(null);
@@ -539,5 +549,10 @@ public class InvalidationClientService extends AndroidListener {
 
     private static void setIsClientStarted(boolean isStarted) {
         sIsClientStarted = isStarted;
+    }
+
+    private boolean shouldRestrictBackgroundServices() {
+        // Restricts the use of background services when not in foreground. See crbug.com/680812.
+        return BuildInfo.isGreaterThanN() && !isChromeInForeground();
     }
 }
