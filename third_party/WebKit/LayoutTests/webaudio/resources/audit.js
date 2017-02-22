@@ -970,11 +970,36 @@ window.Audit = (function () {
    */
   class Task {
 
+    /**
+     * Task constructor.
+     * @param  {Object} taskRunner Reference of associated task runner.
+     * @param  {String||Object} taskLabel Task label if a string is given. This
+     *                                    parameter can be a dictionary with the
+     *                                    following fields.
+     * @param  {String} taskLabel.label Task label.
+     * @param  {String} taskLabel.description Description of task.
+     * @param  {Function} taskFunction Task function to be performed.
+     * @return {Object} Task object.
+     */
     constructor (taskRunner, taskLabel, taskFunction) {
       this._taskRunner = taskRunner;
       this._taskFunction = taskFunction;
-      this._label = taskLabel;
-      this._description = '';
+
+      if (typeof taskLabel === 'string') {
+        this._label = taskLabel;
+        this._description = null;
+      } else if (typeof taskLabel === 'object') {
+        if (typeof taskLabel.label !== 'string') {
+          _throwException('Task.constructor:: task label must be string.');
+        }
+        this._label = taskLabel.label;
+        this._description = (typeof taskLabel.description === 'string')
+            ? taskLabel.description : null;
+      } else {
+        _throwException('Task.constructor:: task label must be a string or ' +
+                        'a dictionary.');
+      }
+
       this._state = TaskState.PENDING;
       this._result = true;
 
@@ -982,12 +1007,12 @@ window.Audit = (function () {
       this._failedAssertions = 0;
     }
 
-    // Set the description of this task. This is printed out in the test
-    // result.
-    describe (message) {
-      this._description = message;
-      _logPassed('> [' + this._label + '] '
-          + this._description);
+    // TODO(hongchan): This does not have any effect. Remove this method and fix
+    // layout test files use it.
+    describe (message) {}
+
+    get label () {
+      return this._label;
     }
 
     get state () {
@@ -1011,6 +1036,11 @@ window.Audit = (function () {
     // task function.
     run () {
       this._state = TaskState.STARTED;
+
+      // Print out the task entry with label and description.
+      _logPassed('> [' + this._label + '] '
+          + (this._description ? this._description : ''));
+
       this._taskFunction(
           this,
           this.should.bind(this));
@@ -1103,14 +1133,16 @@ window.Audit = (function () {
       done();
     }
 
+    // |taskLabel| can be either a string or a dictionary. See Task constructor
+    // for the detail.
     define (taskLabel, taskFunction) {
-      if (this._tasks.hasOwnProperty(taskLabel)) {
+      let task = new Task(this, taskLabel, taskFunction);
+      if (this._tasks.hasOwnProperty(task.label)) {
         _throwException('Audit.define:: Duplicate task definition.');
         return;
       }
-
-      this._tasks[taskLabel] = new Task(this, taskLabel, taskFunction);
-      this._taskSequence.push(taskLabel);
+      this._tasks[task.label] = task;
+      this._taskSequence.push(task.label);
     }
 
     // Start running all the tasks scheduled. Multiple task names can be passed

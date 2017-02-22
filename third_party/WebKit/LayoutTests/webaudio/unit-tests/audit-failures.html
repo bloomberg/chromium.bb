@@ -20,59 +20,62 @@
 
 
     // Basic assertions.
-    audit.define('basic-failure', function (task, should) {
-      task.describe('Testing basic assertion failures.');
+    audit.define({
+        label: 'basic-failure',
+        description: 'Testing basic assertion failures.'
+      }, function (task, should) {
+        should(function () { var foo = bar; }, 'Setting foo to bar').notThrow();
+        should(function () { var foo = 0; }).throw('ReferenceError');
+        should(3 > 5, '3 < 5').beTrue();
+        should(true).beFalse();
+        should(1, 'The number of channels').beEqualTo(2);
+        should(1).notBeEqualTo(1);
+        should(typeof 3.141592, 'typeof 3.141592').beEqualTo('string');
+        should(1).beGreaterThan(2);
+        should(1).beGreaterThanOrEqualTo(2);
+        should(2).beLessThan(1);
+        should(2).beLessThanOrEqualTo(1);
+        should(should(1).beEqualTo(2), 'should(1).beEqualTo(2)').beTrue();
+        should(false, 'The message is').message('truthful!', 'false!');
 
-      should(function () { var foo = bar; }, 'Setting foo to bar').notThrow();
-      should(function () { var foo = 0; }).throw('ReferenceError');
-      should(3 > 5, '3 < 5').beTrue();
-      should(true).beFalse();
-      should(1, 'The number of channels').beEqualTo(2);
-      should(1).notBeEqualTo(1);
-      should(typeof 3.141592, 'typeof 3.141592').beEqualTo('string');
-      should(1).beGreaterThan(2);
-      should(1).beGreaterThanOrEqualTo(2);
-      should(2).beLessThan(1);
-      should(2).beLessThanOrEqualTo(1);
-      should(should(1).beEqualTo(2), 'should(1).beEqualTo(2)').beTrue();
-      should(false, 'The message is').message('truthful!', 'false!');
-
-      let oac = new OfflineAudioContext(1, 128, 44100);
-      Promise.all([
-          should(oac.decodeAudioData(), 'Decoding audio data with no argument')
-            .beResolved(),
-          should(oac.startRendering(), 'Start OAC rendering').beRejected(),
-          should(oac.suspend(), 'Suspending OAC with no argument')
-            .beRejectedWith('IndexSizeError')
-        ]).then(task.done.bind(task));
-    });
+        let oac = new OfflineAudioContext(1, 128, 44100);
+        Promise.all([
+            should(oac.decodeAudioData(), 'Decoding audio data with no argument')
+              .beResolved(),
+            should(oac.startRendering(), 'Start OAC rendering').beRejected(),
+            should(oac.suspend(), 'Suspending OAC with no argument')
+              .beRejectedWith('IndexSizeError')
+          ]).then(task.done.bind(task));
+      }
+    );
 
 
     // Numerical assertions.
-    audit.define('numerical-failures', function (task, should) {
-      task.describe('Testing numerical assertion failures.');
-
-      should(0).beCloseTo(0.1, { threshold: 0 });
-      should(59, 'The measured decibel').beCloseTo(62, { threshold: 0.01 });
-      should([1, 8, 11, 18, 6, 5, 5, 5, 123, 49]).beConstantValueOf(5);
-      should([0, 0, 0]).notBeConstantValueOf(0);
-      should([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        .beEqualToArray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      should([1, 1, 1, 1, 2, 2, 3, 3, 3]).containValues([1, 3, 2]);
-      should([0.5, 0.5, 0.55, 0.5, 0.45, 0.5]).notGlitch(0.04);
-      should([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9])
-        .beCloseToArray([0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1], {
-            absoluteThreshold: 0.02
-          });
-      should([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9])
-        .beCloseToArray([0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1], {
-            relativeThreshold: 0.1
-          });
-      should([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9])
-        .beCloseToArray([0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1], {
-            absoluteThreshold: 0.02,
-            relativeThreshold: 0.1
-          });
+    audit.define({
+        label: 'numerical-failures',
+        description: 'Testing numerical assertion failures.'
+      }, function (task, should) {
+        should(0).beCloseTo(0.1, { threshold: 0 });
+        should(59, 'The measured decibel').beCloseTo(62, { threshold: 0.01 });
+        should([1, 8, 11, 18, 6, 5, 5, 5, 123, 49]).beConstantValueOf(5);
+        should([0, 0, 0]).notBeConstantValueOf(0);
+        should([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+          .beEqualToArray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        should([1, 1, 1, 1, 2, 2, 3, 3, 3]).containValues([1, 3, 2]);
+        should([0.5, 0.5, 0.55, 0.5, 0.45, 0.5]).notGlitch(0.04);
+        should([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9])
+          .beCloseToArray([0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1], {
+              absoluteThreshold: 0.02
+            });
+        should([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9])
+          .beCloseToArray([0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1], {
+              relativeThreshold: 0.1
+            });
+        should([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9])
+          .beCloseToArray([0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1], {
+              absoluteThreshold: 0.02,
+              relativeThreshold: 0.1
+            });
 
       // Tests extra info
       should([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
@@ -81,7 +84,6 @@
         });
       task.done();
     });
-
 
     // With no argument, this executes all tasks in the order defined.
     audit.run();
