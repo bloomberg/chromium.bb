@@ -121,6 +121,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # and updated driver. The older drivers won't ever get fixes from AMD.
     # Use ['win', ('amd', 0x6613)] for the R7 240 devices.
 
+    # Have seen this time out. Think it may be because it's currently
+    # the first test that runs in the shard, and the browser might not
+    # be coming up correctly.
+    self.Flaky('deqp/functional/gles3/multisample.html',
+        ['win', ('amd', 0x6613)], bug=687374)
+
     # It's unfortunate that these suppressions need to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
     # it's infeasible to suppress individual failures one by one.
