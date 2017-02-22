@@ -7,7 +7,6 @@
 #import <CoreText/CoreText.h>
 
 #include "base/command_line.h"
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/objc_property_releaser.h"
@@ -278,7 +277,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (NSTextAlignment)bestTextAlignment {
-  if (!base::ios::IsRunningOnIOS9OrLater() || [self isFirstResponder]) {
+  if ([self isFirstResponder]) {
     return [self bestAlignmentForText:[self text]];
   }
   return NSTextAlignmentNatural;
