@@ -362,6 +362,7 @@ CONFIG_LIST="
     size_limit
     aom_qm
     ${EXPERIMENT_LIST}
+    analyzer
 "
 CMDLINE_SELECT="
     dependency_tracking
