@@ -812,7 +812,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState) {
   if (areMethodAndURLValidForSend()) {
     if (getRequestHeader(HTTPNames::Content_Type).isEmpty()) {
       const String& blobType = body->type();
-      if (!blobType.isEmpty() && isValidContentType(blobType)) {
+      if (!blobType.isEmpty() && ParsedContentType(blobType).isValid()) {
         setRequestHeaderInternal(HTTPNames::Content_Type,
                                  AtomicString(blobType));
       }

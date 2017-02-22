@@ -39,15 +39,16 @@
 
 namespace blink {
 
-// <index, length>
-typedef std::pair<unsigned, unsigned> SubstringRange;
-PLATFORM_EXPORT bool isValidContentType(const String&);
-
+// ParsedContentType parses the constructor argument as specified in RFC2045
+// and stores the result.
 // FIXME: add support for comments.
 class PLATFORM_EXPORT ParsedContentType final {
   STACK_ALLOCATED();
 
  public:
+  // <index, length>
+  using SubstringRange = std::pair<unsigned, unsigned>;
+
   explicit ParsedContentType(const String&);
 
   String mimeType() const { return m_mimeType; }
@@ -58,14 +59,13 @@ class PLATFORM_EXPORT ParsedContentType final {
   String parameterValueForName(const String&) const;
   size_t parameterCount() const;
 
- private:
-  template <class ReceiverType>
-  friend bool parseContentType(const String&, ReceiverType&);
-  void setContentType(const SubstringRange&);
-  void setContentTypeParameter(const SubstringRange&, const SubstringRange&);
+  bool isValid() const { return m_isValid; }
 
+ private:
+  bool parse(const String&);
+
+  bool m_isValid;
   typedef HashMap<String, String> KeyValuePairs;
-  String m_contentType;
   KeyValuePairs m_parameters;
   String m_mimeType;
 };

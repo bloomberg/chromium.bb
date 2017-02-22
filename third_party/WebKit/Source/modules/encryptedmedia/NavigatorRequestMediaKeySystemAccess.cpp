@@ -51,7 +51,7 @@ static WebVector<WebMediaKeySystemMediaCapability> convertCapabilities(
   for (size_t i = 0; i < capabilities.size(); ++i) {
     const WebString& contentType = capabilities[i].contentType();
     result[i].contentType = contentType;
-    if (isValidContentType(contentType)) {
+    if (ParsedContentType(contentType).isValid()) {
       // FIXME: Fail if there are unrecognized parameters.
       // http://crbug.com/690131
       ContentType type(capabilities[i].contentType());

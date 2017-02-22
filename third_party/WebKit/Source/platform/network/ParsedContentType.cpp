@@ -36,22 +36,16 @@
 
 namespace blink {
 
-class DummyParsedContentType final {
-  STACK_ALLOCATED();
+using SubstringRange = ParsedContentType::SubstringRange;
 
- public:
-  void setContentType(const SubstringRange&) const {}
-  void setContentTypeParameter(const SubstringRange&,
-                               const SubstringRange&) const {}
-};
+namespace {
 
-static void skipSpaces(const String& input, unsigned& startIndex) {
+void skipSpaces(const String& input, unsigned& startIndex) {
   while (startIndex < input.length() && input[startIndex] == ' ')
     ++startIndex;
 }
 
-static SubstringRange parseParameterPart(const String& input,
-                                         unsigned& startIndex) {
+SubstringRange parseParameterPart(const String& input, unsigned& startIndex) {
   unsigned inputLength = input.length();
   unsigned tokenStart = startIndex;
   unsigned& tokenEnd = startIndex;
@@ -77,9 +71,29 @@ static SubstringRange parseParameterPart(const String& input,
   return SubstringRange(tokenStart, tokenEnd - tokenStart);
 }
 
-static String substringForRange(const String& string,
-                                const SubstringRange& range) {
+String substringForRange(const String& string, const SubstringRange& range) {
   return string.substring(range.first, range.second);
+}
+
+}  // namespace
+
+ParsedContentType::ParsedContentType(const String& contentType) {
+  if (contentType.contains('\r') || contentType.contains('\n'))
+    m_isValid = false;
+  else
+    m_isValid = parse(contentType.stripWhiteSpace());
+}
+
+String ParsedContentType::charset() const {
+  return parameterValueForName("charset");
+}
+
+String ParsedContentType::parameterValueForName(const String& name) const {
+  return m_parameters.get(name);
+}
+
+size_t ParsedContentType::parameterCount() const {
+  return m_parameters.size();
 }
 
 // From http://tools.ietf.org/html/rfc2045#section-5.1:
@@ -128,8 +142,7 @@ static String substringForRange(const String& string,
 //               ; Must be in quoted-string,
 //               ; to use within parameter values
 
-template <class ReceiverType>
-bool parseContentType(const String& contentType, ReceiverType& receiver) {
+bool ParsedContentType::parse(const String& contentType) {
   unsigned index = 0;
   unsigned contentTypeLength = contentType.length();
   skipSpaces(contentType, index);
@@ -141,13 +154,18 @@ bool parseContentType(const String& contentType, ReceiverType& receiver) {
   // There should not be any quoted strings until we reach the parameters.
   size_t semiColonIndex = contentType.find(';', index);
   if (semiColonIndex == kNotFound) {
-    receiver.setContentType(SubstringRange(index, contentTypeLength - index));
+    m_mimeType =
+        substringForRange(contentType,
+                          SubstringRange(index, contentTypeLength - index))
+            .stripWhiteSpace();
     return true;
   }
 
-  receiver.setContentType(SubstringRange(index, semiColonIndex - index));
+  m_mimeType = substringForRange(contentType,
+                                 SubstringRange(index, semiColonIndex - index))
+                   .stripWhiteSpace();
   index = semiColonIndex + 1;
-  while (true) {
+  do {
     skipSpaces(contentType, index);
     SubstringRange keyRange = parseParameterPart(contentType, index);
     if (!keyRange.second || index >= contentTypeLength) {
@@ -181,49 +199,11 @@ bool parseContentType(const String& contentType, ReceiverType& receiver) {
       return false;
     }
 
-    receiver.setContentTypeParameter(keyRange, valueRange);
-
-    if (index >= contentTypeLength)
-      return true;
-  }
+    m_parameters.set(substringForRange(contentType, keyRange),
+                     substringForRange(contentType, valueRange));
+  } while (index < contentTypeLength);
 
   return true;
-}
-
-bool isValidContentType(const String& contentType) {
-  if (contentType.contains('\r') || contentType.contains('\n'))
-    return false;
-
-  DummyParsedContentType parsedContentType = DummyParsedContentType();
-  return parseContentType<DummyParsedContentType>(contentType,
-                                                  parsedContentType);
-}
-
-ParsedContentType::ParsedContentType(const String& contentType)
-    : m_contentType(contentType.stripWhiteSpace()) {
-  parseContentType<ParsedContentType>(m_contentType, *this);
-}
-
-String ParsedContentType::charset() const {
-  return parameterValueForName("charset");
-}
-
-String ParsedContentType::parameterValueForName(const String& name) const {
-  return m_parameters.get(name);
-}
-
-size_t ParsedContentType::parameterCount() const {
-  return m_parameters.size();
-}
-
-void ParsedContentType::setContentType(const SubstringRange& contentRange) {
-  m_mimeType = substringForRange(m_contentType, contentRange).stripWhiteSpace();
-}
-
-void ParsedContentType::setContentTypeParameter(const SubstringRange& key,
-                                                const SubstringRange& value) {
-  m_parameters.set(substringForRange(m_contentType, key),
-                   substringForRange(m_contentType, value));
 }
 
 }  // namespace blink

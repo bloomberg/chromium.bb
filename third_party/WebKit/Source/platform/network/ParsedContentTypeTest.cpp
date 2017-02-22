@@ -8,9 +8,16 @@
 
 namespace blink {
 
+namespace {
+
+bool isValid(const String& input) {
+  return ParsedContentType(input).isValid();
+}
+
 TEST(ParsedContentTypeTest, MimeTypeWithoutCharset) {
   ParsedContentType t("text/plain");
 
+  EXPECT_TRUE(t.isValid());
   EXPECT_EQ("text/plain", t.mimeType());
   EXPECT_EQ(String(), t.charset());
 }
@@ -18,6 +25,7 @@ TEST(ParsedContentTypeTest, MimeTypeWithoutCharset) {
 TEST(ParsedContentTypeTest, MimeTypeWithCharSet) {
   ParsedContentType t(" text/plain  ;  x=y;charset=utf-8 ");
 
+  EXPECT_TRUE(t.isValid());
   EXPECT_EQ("text/plain", t.mimeType());
   EXPECT_EQ("utf-8", t.charset());
 }
@@ -25,6 +33,7 @@ TEST(ParsedContentTypeTest, MimeTypeWithCharSet) {
 TEST(ParsedContentTypeTest, MimeTypeWithQuotedCharSet) {
   ParsedContentType t("text/plain; \"charset\"=\"x=y;y=z; ;;\"");
 
+  EXPECT_TRUE(t.isValid());
   EXPECT_EQ("text/plain", t.mimeType());
   EXPECT_EQ("x=y;y=z; ;;", t.charset());
 }
@@ -35,6 +44,7 @@ TEST(ParsedContentTypeTest, MimeTypeWithQuotedCharSet) {
 TEST(ParsedContentTypeTest, InvalidMimeTypeWithoutCharset) {
   ParsedContentType t(" ");
 
+  EXPECT_FALSE(t.isValid());
   EXPECT_EQ(String(), t.mimeType());
   EXPECT_EQ(String(), t.charset());
 }
@@ -42,29 +52,30 @@ TEST(ParsedContentTypeTest, InvalidMimeTypeWithoutCharset) {
 TEST(ParsedContentTypeTest, InvalidMimeTypeWithCharset) {
   ParsedContentType t("text/plain; charset;");
 
+  EXPECT_FALSE(t.isValid());
   EXPECT_EQ("text/plain", t.mimeType());
   EXPECT_EQ(String(), t.charset());
 }
 
 TEST(ParsedContentTypeTest, Validity) {
-  EXPECT_TRUE(isValidContentType("text/plain"));
-  EXPECT_TRUE(isValidContentType("text/plain; charset=utf-8"));
-  EXPECT_TRUE(isValidContentType("  text/plain  "));
-  EXPECT_TRUE(isValidContentType(" text/plain;charset=utf-8  "));
-  EXPECT_TRUE(isValidContentType("unknown/unknown"));
-  EXPECT_TRUE(isValidContentType("unknown/unknown; charset=unknown"));
-  EXPECT_TRUE(isValidContentType("x/y;\"z=\\\"q;t\"=\"ttx&r=z;;kd==\""));
+  EXPECT_TRUE(isValid("text/plain"));
+  EXPECT_TRUE(isValid("text/plain; charset=utf-8"));
+  EXPECT_TRUE(isValid("  text/plain  "));
+  EXPECT_TRUE(isValid(" text/plain;charset=utf-8  "));
+  EXPECT_TRUE(isValid("unknown/unknown"));
+  EXPECT_TRUE(isValid("unknown/unknown; charset=unknown"));
+  EXPECT_TRUE(isValid("x/y;\"z=\\\"q;t\"=\"ttx&r=z;;kd==\""));
 
-  EXPECT_FALSE(isValidContentType("text/plain\r"));
-  EXPECT_FALSE(isValidContentType("text/plain\n"));
-  EXPECT_FALSE(isValidContentType(""));
-  EXPECT_FALSE(isValidContentType("   "));
-  EXPECT_FALSE(isValidContentType("text/plain;"));
-  EXPECT_FALSE(isValidContentType("text/plain;  "));
-  EXPECT_FALSE(isValidContentType("text/plain; charset"));
-  EXPECT_FALSE(isValidContentType("text/plain; charset;"));
-  EXPECT_FALSE(isValidContentType("x/y;\"xx"));
-  EXPECT_FALSE(isValidContentType("x/y;\"xx=y"));
+  EXPECT_FALSE(isValid("text/plain\r"));
+  EXPECT_FALSE(isValid("text/plain\n"));
+  EXPECT_FALSE(isValid(""));
+  EXPECT_FALSE(isValid("   "));
+  EXPECT_FALSE(isValid("text/plain;"));
+  EXPECT_FALSE(isValid("text/plain;  "));
+  EXPECT_FALSE(isValid("text/plain; charset"));
+  EXPECT_FALSE(isValid("text/plain; charset;"));
+  EXPECT_FALSE(isValid("x/y;\"xx"));
+  EXPECT_FALSE(isValid("x/y;\"xx=y"));
 
   // TODO(yhirano): Add tests for non-tokens. They are currently accepted.
 }
@@ -89,5 +100,7 @@ TEST(ParsedContentTypeTest, ParameterName) {
   // TODO(yhirano): Leading spaces of a parameter value should be ignored.
   // TODO(yhirano): Trailing spaces of a parameter value should be ignored.
 }
+
+}  // namespace
 
 }  // namespace blink

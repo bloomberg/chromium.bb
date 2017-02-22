@@ -110,7 +110,7 @@ class BeaconBlob final : public Beacon {
  public:
   explicit BeaconBlob(Blob* data) : m_data(data) {
     const String& blobType = m_data->type();
-    if (!blobType.isEmpty() && isValidContentType(blobType))
+    if (!blobType.isEmpty() && ParsedContentType(blobType).isValid())
       m_contentType = AtomicString(blobType);
   }
 
