@@ -134,7 +134,8 @@ MIMEHeader* MIMEHeader::parseHeader(SharedBufferChunkReader* buffer) {
   KeyValueMap::iterator mimeParametersIterator =
       keyValuePairs.find("content-type");
   if (mimeParametersIterator != keyValuePairs.end()) {
-    ParsedContentType parsedContentType(mimeParametersIterator->value);
+    ParsedContentType parsedContentType(mimeParametersIterator->value,
+                                        ParsedContentType::Mode::Relaxed);
     mimeHeader->m_contentType = parsedContentType.mimeType();
     if (!mimeHeader->isMultipart()) {
       mimeHeader->m_charset = parsedContentType.charset().stripWhiteSpace();

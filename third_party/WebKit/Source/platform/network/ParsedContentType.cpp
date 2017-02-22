@@ -31,57 +31,132 @@
 
 #include "platform/network/ParsedContentType.h"
 
-#include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringView.h"
 
 namespace blink {
 
-using SubstringRange = ParsedContentType::SubstringRange;
+using Mode = ParsedContentType::Mode;
 
 namespace {
 
-void skipSpaces(const String& input, unsigned& startIndex) {
-  while (startIndex < input.length() && input[startIndex] == ' ')
-    ++startIndex;
-}
+bool isTokenCharacter(Mode mode, UChar c) {
+  if (c >= 128)
+    return false;
+  if (c < 0x20)
+    return false;
 
-SubstringRange parseParameterPart(const String& input, unsigned& startIndex) {
-  unsigned inputLength = input.length();
-  unsigned tokenStart = startIndex;
-  unsigned& tokenEnd = startIndex;
-
-  if (tokenEnd >= inputLength)
-    return SubstringRange();
-
-  bool quoted = input[tokenStart] == '\"';
-  bool escape = false;
-
-  while (tokenEnd < inputLength) {
-    UChar c = input[tokenEnd];
-    if (quoted && tokenStart != tokenEnd && c == '\"' && !escape)
-      return SubstringRange(tokenStart + 1, tokenEnd++ - tokenStart - 1);
-    if (!quoted && (c == ';' || c == '='))
-      return SubstringRange(tokenStart, tokenEnd - tokenStart);
-    escape = !escape && c == '\\';
-    ++tokenEnd;
+  switch (c) {
+    case ' ':
+    case ';':
+    case '"':
+      return false;
+    case '(':
+    case ')':
+    case '<':
+    case '>':
+    case '@':
+    case ',':
+    case ':':
+    case '\\':
+    case '/':
+    case '[':
+    case ']':
+    case '?':
+    case '=':
+      return mode == Mode::Relaxed;
+    default:
+      return true;
   }
-
-  if (quoted)
-    return SubstringRange();
-  return SubstringRange(tokenStart, tokenEnd - tokenStart);
 }
 
-String substringForRange(const String& string, const SubstringRange& range) {
-  return string.substring(range.first, range.second);
+bool consume(char c, const String& input, unsigned& index) {
+  DCHECK_NE(c, ' ');
+  while (index < input.length() && input[index] == ' ')
+    ++index;
+
+  if (index < input.length() && input[index] == c) {
+    ++index;
+    return true;
+  }
+  return false;
+}
+
+bool consumeToken(Mode mode,
+                  const String& input,
+                  unsigned& index,
+                  StringView& output) {
+  DCHECK(output.isNull());
+
+  while (index < input.length() && input[index] == ' ')
+    ++index;
+
+  auto start = index;
+  while (index < input.length() && isTokenCharacter(mode, input[index]))
+    ++index;
+
+  if (start == index)
+    return false;
+
+  output = StringView(input, start, index - start);
+  return true;
+}
+
+bool consumeQuotedString(const String& input, unsigned& index, String& output) {
+  StringBuilder builder;
+  DCHECK_EQ('"', input[index]);
+  ++index;
+  while (index < input.length()) {
+    if (input[index] == '\\') {
+      ++index;
+      if (index == input.length())
+        return false;
+      builder.append(input[index]);
+      ++index;
+      continue;
+    }
+    if (input[index] == '"') {
+      output = builder.toString();
+      ++index;
+      return true;
+    }
+    builder.append(input[index]);
+    ++index;
+  }
+  return false;
+}
+
+bool consumeTokenOrQuotedString(Mode mode,
+                                const String& input,
+                                unsigned& index,
+                                String& output) {
+  while (index < input.length() && input[index] == ' ')
+    ++index;
+  if (input.length() == index)
+    return false;
+  if (input[index] == '"') {
+    return consumeQuotedString(input, index, output);
+  }
+  StringView view;
+  auto result = consumeToken(mode, input, index, view);
+  output = view.toString();
+  return result;
+}
+
+bool isEnd(const String& input, unsigned index) {
+  while (index < input.length()) {
+    if (input[index] != ' ')
+      return false;
+    ++index;
+  }
+  return true;
 }
 
 }  // namespace
 
-ParsedContentType::ParsedContentType(const String& contentType) {
-  if (contentType.contains('\r') || contentType.contains('\n'))
-    m_isValid = false;
-  else
-    m_isValid = parse(contentType.stripWhiteSpace());
+ParsedContentType::ParsedContentType(const String& contentType, Mode mode)
+    : m_mode(mode) {
+  m_isValid = parse(contentType);
 }
 
 String ParsedContentType::charset() const {
@@ -144,65 +219,52 @@ size_t ParsedContentType::parameterCount() const {
 
 bool ParsedContentType::parse(const String& contentType) {
   unsigned index = 0;
-  unsigned contentTypeLength = contentType.length();
-  skipSpaces(contentType, index);
-  if (index >= contentTypeLength) {
-    DVLOG(1) << "Invalid Content-Type string '" << contentType << "'";
+
+  StringView type, subtype;
+  if (!consumeToken(Mode::Normal, contentType, index, type)) {
+    DVLOG(1) << "Failed to find `type' in '" << contentType << "'";
+    return false;
+  }
+  if (!consume('/', contentType, index)) {
+    DVLOG(1) << "Failed to find '/' in '" << contentType << "'";
+    return false;
+  }
+  if (!consumeToken(Mode::Normal, contentType, index, subtype)) {
+    DVLOG(1) << "Failed to find `type' in '" << contentType << "'";
     return false;
   }
 
-  // There should not be any quoted strings until we reach the parameters.
-  size_t semiColonIndex = contentType.find(';', index);
-  if (semiColonIndex == kNotFound) {
-    m_mimeType =
-        substringForRange(contentType,
-                          SubstringRange(index, contentTypeLength - index))
-            .stripWhiteSpace();
-    return true;
-  }
+  StringBuilder builder;
+  builder.append(type);
+  builder.append('/');
+  builder.append(subtype);
+  m_mimeType = builder.toString();
 
-  m_mimeType = substringForRange(contentType,
-                                 SubstringRange(index, semiColonIndex - index))
-                   .stripWhiteSpace();
-  index = semiColonIndex + 1;
-  do {
-    skipSpaces(contentType, index);
-    SubstringRange keyRange = parseParameterPart(contentType, index);
-    if (!keyRange.second || index >= contentTypeLength) {
+  KeyValuePairs map;
+  while (!isEnd(contentType, index)) {
+    if (!consume(';', contentType, index)) {
+      DVLOG(1) << "Failed to find ';'";
+      return false;
+    }
+
+    StringView key;
+    String value;
+    if (!consumeToken(Mode::Normal, contentType, index, key)) {
       DVLOG(1) << "Invalid Content-Type parameter name. (at " << index << ")";
       return false;
     }
-
-    // Should we tolerate spaces here?
-    if (contentType[index++] != '=' || index >= contentTypeLength) {
-      DVLOG(1) << "Invalid Content-Type malformed parameter (at " << index
-               << ").";
+    if (!consume('=', contentType, index)) {
+      DVLOG(1) << "Failed to find '='";
       return false;
     }
-
-    // Should we tolerate spaces here?
-    SubstringRange valueRange = parseParameterPart(contentType, index);
-
-    if (!valueRange.second) {
+    if (!consumeTokenOrQuotedString(m_mode, contentType, index, value)) {
       DVLOG(1) << "Invalid Content-Type, invalid parameter value (at " << index
-               << ", for '"
-               << substringForRange(contentType, keyRange).stripWhiteSpace()
-               << "').";
+               << ", for '" << key.toString() << "').";
       return false;
     }
-
-    // Should we tolerate spaces here?
-    if (index < contentTypeLength && contentType[index++] != ';') {
-      DVLOG(1) << "Invalid Content-Type, invalid character at the end of "
-                  "key/value parameter (at "
-               << index << ").";
-      return false;
-    }
-
-    m_parameters.set(substringForRange(contentType, keyRange),
-                     substringForRange(contentType, valueRange));
-  } while (index < contentTypeLength);
-
+    map.set(key.toString(), value);
+  }
+  m_parameters = std::move(map);
   return true;
 }
 

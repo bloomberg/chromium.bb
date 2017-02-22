@@ -10,8 +10,10 @@ namespace blink {
 
 namespace {
 
-bool isValid(const String& input) {
-  return ParsedContentType(input).isValid();
+using Mode = ParsedContentType::Mode;
+
+bool isValid(const String& input, Mode mode = Mode::Normal) {
+  return ParsedContentType(input, mode).isValid();
 }
 
 TEST(ParsedContentTypeTest, MimeTypeWithoutCharset) {
@@ -23,7 +25,7 @@ TEST(ParsedContentTypeTest, MimeTypeWithoutCharset) {
 }
 
 TEST(ParsedContentTypeTest, MimeTypeWithCharSet) {
-  ParsedContentType t(" text/plain  ;  x=y;charset=utf-8 ");
+  ParsedContentType t("text /  plain  ;  x=y; charset = utf-8 ");
 
   EXPECT_TRUE(t.isValid());
   EXPECT_EQ("text/plain", t.mimeType());
@@ -31,15 +33,12 @@ TEST(ParsedContentTypeTest, MimeTypeWithCharSet) {
 }
 
 TEST(ParsedContentTypeTest, MimeTypeWithQuotedCharSet) {
-  ParsedContentType t("text/plain; \"charset\"=\"x=y;y=z; ;;\"");
+  ParsedContentType t("text/plain; charset=\"x=y;y=\\\"\\pz; ;;\"");
 
   EXPECT_TRUE(t.isValid());
   EXPECT_EQ("text/plain", t.mimeType());
-  EXPECT_EQ("x=y;y=z; ;;", t.charset());
+  EXPECT_EQ("x=y;y=\"pz; ;;", t.charset());
 }
-
-// TODO(yhirano): Add tests for escaped quotation: it's currently
-// mis-implemented.
 
 TEST(ParsedContentTypeTest, InvalidMimeTypeWithoutCharset) {
   ParsedContentType t(" ");
@@ -64,41 +63,64 @@ TEST(ParsedContentTypeTest, Validity) {
   EXPECT_TRUE(isValid(" text/plain;charset=utf-8  "));
   EXPECT_TRUE(isValid("unknown/unknown"));
   EXPECT_TRUE(isValid("unknown/unknown; charset=unknown"));
-  EXPECT_TRUE(isValid("x/y;\"z=\\\"q;t\"=\"ttx&r=z;;kd==\""));
+  EXPECT_TRUE(isValid("x/y;z=\"ttx&r=z;;\\u\\\"kd==\""));
+  EXPECT_TRUE(isValid("x/y; z=\"\xff\""));
 
+  EXPECT_FALSE(isValid("A"));
   EXPECT_FALSE(isValid("text/plain\r"));
   EXPECT_FALSE(isValid("text/plain\n"));
+  EXPECT_FALSE(isValid("text/plain charset=utf-8"));
+  EXPECT_FALSE(isValid("text/plain;charset=utf-8;"));
   EXPECT_FALSE(isValid(""));
   EXPECT_FALSE(isValid("   "));
+  EXPECT_FALSE(isValid("\"x\""));
+  EXPECT_FALSE(isValid("\"x\"/\"y\""));
+  EXPECT_FALSE(isValid("x/\"y\""));
   EXPECT_FALSE(isValid("text/plain;"));
   EXPECT_FALSE(isValid("text/plain;  "));
   EXPECT_FALSE(isValid("text/plain; charset"));
   EXPECT_FALSE(isValid("text/plain; charset;"));
   EXPECT_FALSE(isValid("x/y;\"xx"));
   EXPECT_FALSE(isValid("x/y;\"xx=y"));
+  EXPECT_FALSE(isValid("\"q\""));
+  EXPECT_FALSE(isValid("x/y; \"z\"=u"));
+  EXPECT_FALSE(isValid("x/y; z=\xff"));
 
-  // TODO(yhirano): Add tests for non-tokens. They are currently accepted.
+  EXPECT_FALSE(isValid("x/y;z=q/t:()<>@,:\\/[]?"));
+  EXPECT_TRUE(isValid("x/y;z=q/t:()<>@,:\\/[]?=", Mode::Relaxed));
+  EXPECT_FALSE(isValid("x/y;z=q r", Mode::Relaxed));
+  EXPECT_FALSE(isValid("x/y;z=q;r", Mode::Relaxed));
+  EXPECT_FALSE(isValid("x/y;z=q\"r", Mode::Relaxed));
+  EXPECT_FALSE(isValid("x/y; z=\xff", Mode::Relaxed));
 }
 
 TEST(ParsedContentTypeTest, ParameterName) {
-  String input = "x; y=z; y=u;  t=r;s=x;\"Q\"=U;\"T\"=S;\"z u\"=\"q a\"";
+  String input = "x/t; y=z  ; y= u ;  t=r;s= \"t \\u\\\"x\" ;Q=U;T=S";
 
   ParsedContentType t(input);
 
-  EXPECT_EQ(6u, t.parameterCount());
+  EXPECT_TRUE(t.isValid());
+  EXPECT_EQ(5u, t.parameterCount());
   EXPECT_EQ(String(), t.parameterValueForName("a"));
   EXPECT_EQ(String(), t.parameterValueForName("x"));
   EXPECT_EQ("u", t.parameterValueForName("y"));
   EXPECT_EQ("r", t.parameterValueForName("t"));
-  EXPECT_EQ("x", t.parameterValueForName("s"));
+  EXPECT_EQ("t u\"x", t.parameterValueForName("s"));
   EXPECT_EQ("U", t.parameterValueForName("Q"));
   EXPECT_EQ("S", t.parameterValueForName("T"));
-  EXPECT_EQ("q a", t.parameterValueForName("z u"));
 
   // TODO(yhirano): Case-sensitivity is mis-implemented.
-  // TODO(yhirano): Add tests for escaped quotations.
-  // TODO(yhirano): Leading spaces of a parameter value should be ignored.
-  // TODO(yhirano): Trailing spaces of a parameter value should be ignored.
+}
+
+TEST(ParsedContentTypeTest, RelaxedParameterName) {
+  String input = "x/t; z=q/t:()<>@,:\\/[]?=;y=u";
+
+  ParsedContentType t(input, Mode::Relaxed);
+
+  EXPECT_TRUE(t.isValid());
+  EXPECT_EQ(2u, t.parameterCount());
+  EXPECT_EQ("q/t:()<>@,:\\/[]?=", t.parameterValueForName("z"));
+  EXPECT_EQ("u", t.parameterValueForName("y"));
 }
 
 }  // namespace

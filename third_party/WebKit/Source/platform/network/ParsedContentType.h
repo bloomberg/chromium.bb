@@ -46,10 +46,14 @@ class PLATFORM_EXPORT ParsedContentType final {
   STACK_ALLOCATED();
 
  public:
-  // <index, length>
-  using SubstringRange = std::pair<unsigned, unsigned>;
-
-  explicit ParsedContentType(const String&);
+  // When |Relaxed| is specified, the parser parses parameter values in a sloppy
+  // manner, i.e., only ';' and '"' are treated as special characters.
+  // See https://chromiumcodereview.appspot.com/23043002.
+  enum class Mode {
+    Normal,
+    Relaxed,
+  };
+  explicit ParsedContentType(const String&, Mode = Mode::Normal);
 
   String mimeType() const { return m_mimeType; }
   String charset() const;
@@ -64,7 +68,9 @@ class PLATFORM_EXPORT ParsedContentType final {
  private:
   bool parse(const String&);
 
+  const Mode m_mode;
   bool m_isValid;
+
   typedef HashMap<String, String> KeyValuePairs;
   KeyValuePairs m_parameters;
   String m_mimeType;
