@@ -61,9 +61,7 @@ class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    # http://crbug.com/624355 (reference builds).
-    return (possible_browser.platform.GetDeviceTypeName() != 'Desktop' or
-            possible_browser.browser_type == 'reference')
+    return possible_browser.platform.GetDeviceTypeName() != 'Desktop'
 
 @benchmark.Enabled('android')
 class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
@@ -116,9 +114,7 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    # http://crbug.com/624355 (reference builds).
-    return (possible_browser.platform.GetDeviceTypeName() != 'Desktop' or
-            possible_browser.browser_type == 'reference')
+    return possible_browser.platform.GetDeviceTypeName() != 'Desktop'
 
 
 @benchmark.Enabled('android')
