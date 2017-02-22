@@ -266,10 +266,6 @@ void WebRemoteFrameImpl::setReferrerForRequest(WebURLRequest&,
   NOTREACHED();
 }
 
-void WebRemoteFrameImpl::dispatchWillSendRequest(WebURLRequest&) {
-  NOTREACHED();
-}
-
 WebAssociatedURLLoader* WebRemoteFrameImpl::createAssociatedURLLoader(
     const WebAssociatedURLLoaderOptions&) {
   NOTREACHED();

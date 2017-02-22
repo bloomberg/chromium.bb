@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -182,7 +183,7 @@ void ResourceFetcherImpl::Start(
   request_.setRequestContext(request_context);
   request_.setFrameType(frame_type);
   request_.setFirstPartyForCookies(frame->document().firstPartyForCookies());
-  frame->dispatchWillSendRequest(request_);
+  request_.addHTTPOriginIfNeeded(blink::WebSecurityOrigin::createUnique());
 
   client_.reset(new ClientImpl(this, callback));
 

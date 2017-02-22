@@ -90,7 +90,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
   void enableViewSourceMode(bool enable) override;
   bool isViewSourceModeEnabled() const override;
   void setReferrerForRequest(WebURLRequest&, const WebURL& referrer) override;
-  void dispatchWillSendRequest(WebURLRequest&) override;
   WebAssociatedURLLoader* createAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) override;
   unsigned unloadListenerCount() const override;

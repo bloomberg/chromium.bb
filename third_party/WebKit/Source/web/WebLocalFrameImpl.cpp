@@ -923,11 +923,6 @@ void WebLocalFrameImpl::setReferrerForRequest(WebURLRequest& request,
                                        request.url(), referrer));
 }
 
-void WebLocalFrameImpl::dispatchWillSendRequest(WebURLRequest& request) {
-  frame()->loader().client()->dispatchWillSendRequest(
-      request.toMutableResourceRequest());
-}
-
 WebAssociatedURLLoader* WebLocalFrameImpl::createAssociatedURLLoader(
     const WebAssociatedURLLoaderOptions& options) {
   return new WebAssociatedURLLoaderImpl(this, options);

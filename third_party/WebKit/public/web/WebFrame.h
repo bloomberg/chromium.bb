@@ -349,12 +349,6 @@ class WebFrame {
   // the referrer for a HTTP request).
   virtual void setReferrerForRequest(WebURLRequest&, const WebURL&) = 0;
 
-  // Called to associate the WebURLRequest with this frame.  The request
-  // will be modified to inherit parameters that allow it to be loaded.
-  // This method ends up triggering WebFrameClient::willSendRequest.
-  // DEPRECATED: Please use createAssociatedURLLoader instead.
-  virtual void dispatchWillSendRequest(WebURLRequest&) = 0;
-
   // Returns an AssociatedURLLoader that is associated with this frame.  The
   // loader will, for example, be cancelled when WebFrame::stopLoading is
   // called.

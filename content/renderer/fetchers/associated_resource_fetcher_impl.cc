@@ -165,7 +165,6 @@ void AssociatedResourceFetcherImpl::Start(
   request_.setRequestContext(request_context);
   request_.setFrameType(frame_type);
   request_.setFirstPartyForCookies(frame->document().firstPartyForCookies());
-  frame->dispatchWillSendRequest(request_);
 
   client_.reset(new ClientImpl(callback));
 
