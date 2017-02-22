@@ -119,6 +119,49 @@ void PendingScript::markParserBlockingLoadStartTime() {
   m_parserBlockingLoadStartTime = monotonicallyIncreasingTime();
 }
 
+// Returns true if SRI check passed.
+static bool checkScriptResourceIntegrity(Resource* resource, Element* element) {
+  DCHECK_EQ(resource->getType(), Resource::Script);
+  ScriptResource* scriptResource = toScriptResource(resource);
+  String integrityAttr = element->fastGetAttribute(HTMLNames::integrityAttr);
+
+  // It is possible to get back a script resource with integrity metadata
+  // for a request with an empty integrity attribute. In that case, the
+  // integrity check should be skipped, so this check ensures that the
+  // integrity attribute isn't empty in addition to checking if the
+  // resource has empty integrity metadata.
+  if (integrityAttr.isEmpty() || scriptResource->integrityMetadata().isEmpty())
+    return true;
+
+  switch (scriptResource->integrityDisposition()) {
+    case ResourceIntegrityDisposition::Passed:
+      return true;
+
+    case ResourceIntegrityDisposition::Failed:
+      // TODO(jww): This should probably also generate a console
+      // message identical to the one produced by
+      // CheckSubresourceIntegrity below. See https://crbug.com/585267.
+      return false;
+
+    case ResourceIntegrityDisposition::NotChecked: {
+      if (!resource->resourceBuffer())
+        return true;
+
+      bool passed = SubresourceIntegrity::CheckSubresourceIntegrity(
+          scriptResource->integrityMetadata(), *element,
+          resource->resourceBuffer()->data(),
+          resource->resourceBuffer()->size(), resource->url(), *resource);
+      scriptResource->setIntegrityDisposition(
+          passed ? ResourceIntegrityDisposition::Passed
+                 : ResourceIntegrityDisposition::Failed);
+      return passed;
+    }
+  }
+
+  NOTREACHED();
+  return true;
+}
+
 void PendingScript::notifyFinished(Resource* resource) {
   // The following SRI checks need to be here because, unfortunately, fetches
   // are not done purely according to the Fetch spec. In particular,
@@ -143,38 +186,8 @@ void PendingScript::notifyFinished(Resource* resource) {
   //
   // See https://crbug.com/500701 for more information.
   CHECK(m_isForTesting || m_element);
-  if (m_element) {
-    DCHECK_EQ(resource->getType(), Resource::Script);
-    ScriptResource* scriptResource = toScriptResource(resource);
-    String integrityAttr =
-        m_element->fastGetAttribute(HTMLNames::integrityAttr);
-
-    // It is possible to get back a script resource with integrity metadata
-    // for a request with an empty integrity attribute. In that case, the
-    // integrity check should be skipped, so this check ensures that the
-    // integrity attribute isn't empty in addition to checking if the
-    // resource has empty integrity metadata.
-    if (!integrityAttr.isEmpty() &&
-        !scriptResource->integrityMetadata().isEmpty()) {
-      ResourceIntegrityDisposition disposition =
-          scriptResource->integrityDisposition();
-      if (disposition == ResourceIntegrityDisposition::Failed) {
-        // TODO(jww): This should probably also generate a console
-        // message identical to the one produced by
-        // CheckSubresourceIntegrity below. See https://crbug.com/585267.
-        m_integrityFailure = true;
-      } else if (disposition == ResourceIntegrityDisposition::NotChecked &&
-                 resource->resourceBuffer()) {
-        m_integrityFailure = !SubresourceIntegrity::CheckSubresourceIntegrity(
-            scriptResource->integrityMetadata(), *m_element,
-            resource->resourceBuffer()->data(),
-            resource->resourceBuffer()->size(), resource->url(), *resource);
-        scriptResource->setIntegrityDisposition(
-            m_integrityFailure ? ResourceIntegrityDisposition::Failed
-                               : ResourceIntegrityDisposition::Passed);
-      }
-    }
-  }
+  if (m_element)
+    m_integrityFailure = !checkScriptResourceIntegrity(resource, m_element);
 
   // If script streaming is in use, the client will be notified in
   // streamingFinished.
