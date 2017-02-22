@@ -251,7 +251,12 @@ class BackgroundColorHoverButton : public views::LabelButton {
   void StateChanged(ButtonState old_state) override {
     LabelButton::StateChanged(old_state);
 
-    views::Label* title = title_ ? title_ : label();
+    auto set_title_color = [&](SkColor color) {
+      if (title_)
+        title_->SetEnabledColor(color);
+      else
+        SetEnabledTextColors(color);
+    };
 
     bool was_prelight =
         old_state == STATE_HOVERED || old_state == STATE_PRESSED;
@@ -260,7 +265,7 @@ class BackgroundColorHoverButton : public views::LabelButton {
       // The pointer is no longer over this button.  Set the
       // background and text colors back to their normal states.
       set_background(nullptr);
-      title->SetEnabledColor(normal_title_color_);
+      set_title_color(normal_title_color_);
       if (subtitle_)
         subtitle_->SetDisabledColor(normal_subtitle_color_);
     } else if (!was_prelight && is_prelight) {
@@ -274,12 +279,11 @@ class BackgroundColorHoverButton : public views::LabelButton {
         // When using the system (GTK) theme, use the selected menuitem colors.
         bg_color = GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
-        title->SetEnabledColor(GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
-        if (subtitle_) {
-          subtitle_->SetDisabledColor(GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_MenuItemSubtitleColor));
-        }
+        SkColor text_color = GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor);
+        set_title_color(text_color);
+        if (subtitle_)
+          subtitle_->SetDisabledColor(text_color);
       }
 #endif
       set_background(views::Background::CreateSolidBackground(bg_color));
@@ -1756,6 +1760,7 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
   views::Label* current_profile_name = new views::Label(
       profiles::GetAvatarNameForProfile(browser_->profile()->GetPath()));
   current_profile_card->set_title(current_profile_name);
+  current_profile_name->SetAutoColorReadabilityEnabled(false);
   current_profile_name->SetFontList(
       ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
           1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM));
@@ -1806,6 +1811,7 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
     } else {
       views::Label* email_label = new views::Label(avatar_item.username);
       current_profile_card->set_subtitle(email_label);
+      email_label->SetAutoColorReadabilityEnabled(false);
       email_label->SetElideBehavior(gfx::ELIDE_EMAIL);
       email_label->SetEnabled(false);
       email_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
