@@ -424,8 +424,8 @@ TEST_F(PresentationDispatcherTest, TestSendString) {
 
   base::RunLoop run_loop;
   EXPECT_CALL(connection_proxy, SendConnectionMessageInternal(_, _))
-      .WillOnce(Invoke([this, &message](ConnectionMessage* session_message,
-                                        const OnMessageCallback& callback) {
+      .WillOnce(Invoke([&message](ConnectionMessage* session_message,
+                                  const OnMessageCallback& callback) {
         EXPECT_EQ(blink::mojom::PresentationMessageType::TEXT,
                   session_message->type);
         EXPECT_EQ(message.utf8(), session_message->message.value());
