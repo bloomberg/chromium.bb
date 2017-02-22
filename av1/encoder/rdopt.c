@@ -7925,7 +7925,6 @@ static int64_t handle_inter_mode(
   int64_t rd = INT64_MAX;
   BUFFER_SET orig_dst, tmp_dst;
   int rs = 0;
-  InterpFilter assign_filter = SWITCHABLE;
 
   int skip_txfm_sb = 0;
   int64_t skip_sse_sb = INT64_MAX;
@@ -8218,10 +8217,10 @@ static int64_t handle_inter_mode(
       )
     return INT64_MAX;
 
+  InterpFilter assign_filter = SWITCHABLE;
+
   if (cm->interp_filter == SWITCHABLE) {
-#if CONFIG_DUAL_FILTER
-    if (!av1_is_interp_needed(xd)) assign_filter = EIGHTTAP_REGULAR;
-#else
+#if !CONFIG_DUAL_FILTER
     assign_filter =
         predict_interp_filter(cpi, x, bsize, mi_row, mi_col, single_filter);
 #endif
@@ -8617,12 +8616,6 @@ static int64_t handle_inter_mode(
         av1_cost_bit(cm->fc->interintra_prob[size_group_lookup[bsize]], 0);
   }
 
-#if CONFIG_DUAL_FILTER
-  if (!av1_is_interp_needed(xd) && cm->interp_filter == SWITCHABLE) {
-    for (i = 0; i < 4; ++i) mbmi->interp_filter[i] = EIGHTTAP_REGULAR;
-    pred_exists = 0;
-  }
-#endif  // CONFIG_DUAL_FILTER
   if (pred_exists == 0) {
     int tmp_rate;
     int64_t tmp_dist;
@@ -8724,9 +8717,6 @@ static int64_t handle_inter_mode(
           mbmi->interp_filter[0] = EIGHTTAP_REGULAR;
         if (!has_subpel_mv_component(xd->mi[0], xd, 1))
           mbmi->interp_filter[1] = EIGHTTAP_REGULAR;
-        // This is not quite correct with CONFIG_DUAL_FILTER when a filter
-        // is needed in only one direction
-        if (!av1_is_interp_needed(xd)) tmp_rate2 -= rs;
 #endif  // CONFIG_DUAL_FILTER
         av1_build_inter_predictors_sb(xd, mi_row, mi_col, &orig_dst, bsize);
 #if CONFIG_EXT_INTER
@@ -11229,9 +11219,6 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   if (cm->interp_filter != BILINEAR) {
     best_filter = EIGHTTAP_REGULAR;
     if (cm->interp_filter == SWITCHABLE &&
-#if CONFIG_DUAL_FILTER
-        av1_is_interp_needed(xd) &&
-#endif  // CONFIG_DUAL_FILTER
         x->source_variance >= cpi->sf.disable_filter_search_var_thresh) {
       int rs;
       int best_rs = INT_MAX;
@@ -11743,12 +11730,6 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
                 compound_seg_newmvs,
 #endif  // CONFIG_EXT_INTER
                 bsi, switchable_filter_index, mi_row, mi_col);
-#if CONFIG_DUAL_FILTER
-            if (!av1_is_interp_needed(xd) && cm->interp_filter == SWITCHABLE &&
-                (mbmi->interp_filter[0] != EIGHTTAP_REGULAR ||
-                 mbmi->interp_filter[1] != EIGHTTAP_REGULAR))  // invalid config
-              continue;
-#endif  // CONFIG_DUAL_FILTER
             if (tmp_rd == INT64_MAX) continue;
             rs = av1_get_switchable_rate(cpi, xd);
             rs_rd = RDCOST(x->rdmult, x->rddiv, rs, 0);
@@ -11822,14 +11803,6 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
             compound_seg_newmvs,
 #endif  // CONFIG_EXT_INTER
             bsi, 0, mi_row, mi_col);
-#if CONFIG_DUAL_FILTER
-        if (!av1_is_interp_needed(xd) && cm->interp_filter == SWITCHABLE &&
-            (mbmi->interp_filter[0] != EIGHTTAP_REGULAR ||
-             mbmi->interp_filter[1] != EIGHTTAP_REGULAR)) {
-          mbmi->interp_filter[0] = EIGHTTAP_REGULAR;
-          mbmi->interp_filter[1] = EIGHTTAP_REGULAR;
-        }
-#endif  // CONFIG_DUAL_FILTER
         if (tmp_rd == INT64_MAX) continue;
       } else {
         total_sse = tmp_best_sse;
