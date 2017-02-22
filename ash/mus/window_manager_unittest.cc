@@ -66,7 +66,29 @@ class WindowManagerTest : public service_manager::test::ServiceTest {
   WindowManagerTest() : service_manager::test::ServiceTest("mash_unittests") {}
   ~WindowManagerTest() override {}
 
+  // service_manager::test::ServiceTest:
+  void SetUp() override {
+    service_manager::test::ServiceTest::SetUp();
+
+    // This test connects to the real mus. This results in
+    // aura::WindowTreeClient resetting the context_factory on Env. As all
+    // tests share the same Env (see mash_test_suite) we need to restore the
+    // context_factory when done.
+    aura::Env* env = aura::Env::GetInstance();
+    initial_context_factory_ = env->context_factory();
+    initial_context_factory_private_ = env->context_factory_private();
+  }
+
+  void TearDown() override {
+    aura::Env* env = aura::Env::GetInstance();
+    env->set_context_factory(initial_context_factory_);
+    env->set_context_factory_private(initial_context_factory_private_);
+  }
+
  private:
+  ui::ContextFactory* initial_context_factory_ = nullptr;
+  ui::ContextFactoryPrivate* initial_context_factory_private_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(WindowManagerTest);
 };
 

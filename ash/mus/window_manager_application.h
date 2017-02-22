@@ -37,6 +37,9 @@ class AuraInit;
 }
 
 namespace ash {
+namespace test {
+class AshTestHelper;
+}
 namespace mus {
 
 class NetworkConnectDelegateMus;
@@ -51,6 +54,7 @@ class WindowManagerApplication : public service_manager::Service {
   WindowManager* window_manager() { return window_manager_.get(); }
 
  private:
+  friend class ash::test::AshTestHelper;
   friend class WmTestBase;
   friend class WmTestHelper;
 

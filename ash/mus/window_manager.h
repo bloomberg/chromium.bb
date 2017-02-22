@@ -45,6 +45,10 @@ class RootWindowController;
 class ScreenMus;
 class ShellDelegate;
 
+namespace test {
+class AshTestHelper;
+}
+
 namespace mus {
 
 class AcceleratorHandler;
@@ -102,6 +106,7 @@ class WindowManager : public aura::WindowManagerDelegate,
       std::unique_ptr<aura::WindowTreeHostMus> window_tree_host);
 
  private:
+  friend class ash::test::AshTestHelper;
   friend class WmTestHelper;
 
   using RootWindowControllers = std::set<std::unique_ptr<RootWindowController>>;
@@ -193,6 +198,9 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   // Only set in tests. If non-null this is used as the shell delegate.
   std::unique_ptr<ShellDelegate> shell_delegate_for_test_;
+
+  // See WmShellMus's constructor for details. Tests may set to false.
+  bool create_session_state_delegate_stub_for_test_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };

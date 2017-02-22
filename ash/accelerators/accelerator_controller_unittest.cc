@@ -667,6 +667,9 @@ TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
 
 TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
        WindowPanelDockLeftDockRightRestore) {
+  // TODO: http://crbug.com/632209.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
   std::unique_ptr<aura::Window> window0(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
 
@@ -848,6 +851,10 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
 #endif
 
 TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
+  // TODO: TestScreenshotDelegate is null in mash http://crbug.com/632111.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   // CycleBackward
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)));
@@ -1223,6 +1230,10 @@ class PreferredReservedAcceleratorsTest : public test::AshTestBase {
 }  // namespace
 
 TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
+  // TODO: needs LockStateController ported: http://crbug.com/632189.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   aura::Window* w1 = CreateTestWindowInShellWithId(0);
   aura::Window* w2 = CreateTestWindowInShellWithId(1);
   wm::ActivateWindow(w1);
@@ -1270,6 +1281,9 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
 }
 
 TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
+  // TODO: needs LockStateController ported: http://crbug.com/632189.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
   aura::Window* w1 = CreateTestWindowInShellWithId(0);
   aura::Window* w2 = CreateTestWindowInShellWithId(1);
   wm::ActivateWindow(w1);
@@ -1299,6 +1313,10 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
 }
 
 TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
+  // TODO: TestScreenshotDelegate is null in mash http://crbug.com/632111.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   std::set<AcceleratorAction> all_actions;
   for (size_t i = 0; i < kAcceleratorDataLength; ++i)
     all_actions.insert(kAcceleratorData[i].action);
@@ -1484,6 +1502,10 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
 }  // namespace
 
 TEST_F(DeprecatedAcceleratorTester, TestDeprecatedAcceleratorsBehavior) {
+  // TODO: disabled because of UnblockUserSession() not working:
+  // http://crbug.com/632201.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
   for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
     const AcceleratorData& entry = kDeprecatedAccelerators[i];
 

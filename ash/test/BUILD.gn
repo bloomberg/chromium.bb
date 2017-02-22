@@ -80,8 +80,6 @@ static_library("test_support_common") {
     "ash_test_environment.h",
     "ash_test_helper.cc",
     "ash_test_helper.h",
-    "ash_test_suite.cc",
-    "ash_test_suite.h",
     "ash_test_views_delegate.cc",
     "ash_test_views_delegate.h",
     "child_modal_window.cc",
@@ -141,6 +139,7 @@ static_library("test_support_common") {
   ]
   deps = [
     "//ash/common/test:test_support",
+    "//ash/mus:lib",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/public/interfaces",
     "//ash/resources",

@@ -58,7 +58,9 @@ scoped_refptr<ManagedDisplayMode> GetDisplayModeForUIScale(
 }  // namespace
 
 DisplayManagerTestApi::DisplayManagerTestApi(DisplayManager* display_manager)
-    : display_manager_(display_manager) {}
+    : display_manager_(display_manager) {
+  DCHECK(display_manager);
+}
 
 DisplayManagerTestApi::~DisplayManagerTestApi() {}
 

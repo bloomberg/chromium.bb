@@ -20,10 +20,6 @@ class MessageLoop;
 class SequencedWorkerPoolOwner;
 }
 
-namespace ui {
-class WindowTreeClientPrivate;
-}
-
 namespace views {
 class ViewsDelegate;
 }

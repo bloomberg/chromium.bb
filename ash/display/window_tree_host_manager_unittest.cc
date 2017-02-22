@@ -185,11 +185,6 @@ display::Display GetPrimaryDisplay() {
       Shell::GetAllRootWindows()[0]);
 }
 
-display::Display GetSecondaryDisplay() {
-  return display::Screen::GetScreen()->GetDisplayNearestWindow(
-      Shell::GetAllRootWindows()[1]);
-}
-
 class TestHelper {
  public:
   explicit TestHelper(test::AshTestBase* delegate);

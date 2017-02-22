@@ -155,6 +155,8 @@ source_set("unit_tests") {
 
 test("exo_unittests") {
   sources = [
+    "../../ash/test/ash_test_suite.cc",
+    "../../ash/test/ash_test_suite.h",
     "test/run_all_unittests.cc",
   ]
 
@@ -166,6 +168,10 @@ test("exo_unittests") {
     "//base/test:test_support",
     "//device/gamepad:test_helpers",
     "//mojo/edk/embedder:headers",
+    "//testing/gtest",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/gl:test_support",
   ]
 
   data_deps = [

@@ -84,6 +84,9 @@ WmTestHelper::~WmTestHelper() {
 }
 
 void WmTestHelper::Init() {
+  // MaterialDesignController may have already been initialized. To cover that
+  // case explicitly uninitialize before initializing.
+  ui::test::MaterialDesignControllerTestAPI::Uninitialize();
   ui::MaterialDesignController::Initialize();
 
   views_delegate_ = base::MakeUnique<views::TestViewsDelegate>();

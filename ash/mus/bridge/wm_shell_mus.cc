@@ -117,12 +117,14 @@ WmShellMus::WmShellMus(
     WmWindow* primary_root_window,
     std::unique_ptr<ShellDelegate> shell_delegate,
     WindowManager* window_manager,
-    views::PointerWatcherEventRouter* pointer_watcher_event_router)
+    views::PointerWatcherEventRouter* pointer_watcher_event_router,
+    bool create_session_state_delegate_stub)
     : WmShell(std::move(shell_delegate)),
       window_manager_(window_manager),
       primary_root_window_(primary_root_window),
-      pointer_watcher_event_router_(pointer_watcher_event_router),
-      session_state_delegate_(new SessionStateDelegateStub) {
+      pointer_watcher_event_router_(pointer_watcher_event_router) {
+  if (create_session_state_delegate_stub)
+    session_state_delegate_ = base::MakeUnique<SessionStateDelegateStub>();
   DCHECK(primary_root_window_);
   WmShell::Set(this);
 
@@ -370,7 +372,9 @@ void WmShellMus::OnOverviewModeEnded() {
 }
 
 SessionStateDelegate* WmShellMus::GetSessionStateDelegate() {
-  return session_state_delegate_.get();
+  return session_state_delegate_
+             ? session_state_delegate_.get()
+             : Shell::GetInstance()->session_state_delegate();
 }
 
 void WmShellMus::AddDisplayObserver(WmDisplayObserver* observer) {

@@ -114,8 +114,7 @@ if (is_chromeos) {
       "test/mash_unittests.cc",
     ]
     deps = [
-      "//ash/common:unittests",
-      "//ash/common/test:test_support",
+      "//ash:common_unittests",
       "//ash/mus:resources",
       "//ash/mus:unittests",
       "//base",

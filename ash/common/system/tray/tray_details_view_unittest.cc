@@ -126,17 +126,30 @@ class TrayDetailsViewTest : public AshTestBase {
 
   void TransitionFromDetailedToDefaultView(TestDetailsView* detailed) {
     detailed->TransitionToDefaultView();
-    scoped_task_runner_->FastForwardBy(
-        base::TimeDelta::FromMilliseconds(kTrayDetailedViewTransitionDelayMs));
+    (*scoped_task_runner_)
+        ->FastForwardBy(base::TimeDelta::FromMilliseconds(
+            kTrayDetailedViewTransitionDelayMs));
   }
 
   void FocusBackButton(TestDetailsView* detailed) {
     detailed->back_button_->RequestFocus();
   }
 
+  void SetUp() override {
+    AshTestBase::SetUp();
+    scoped_task_runner_ =
+        base::MakeUnique<base::ScopedMockTimeMessageLoopTaskRunner>();
+  }
+
+  void TearDown() override {
+    scoped_task_runner_.reset();
+    AshTestBase::TearDown();
+  }
+
  private:
   // Used to control the |transition_delay_timer_|.
-  base::ScopedMockTimeMessageLoopTaskRunner scoped_task_runner_;
+  std::unique_ptr<base::ScopedMockTimeMessageLoopTaskRunner>
+      scoped_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDetailsViewTest);
 };

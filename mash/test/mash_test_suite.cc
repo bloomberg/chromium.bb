@@ -17,6 +17,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace mash {
 namespace test {
@@ -61,6 +62,7 @@ MashTestSuite::~MashTestSuite() {}
 
 void MashTestSuite::Initialize() {
   base::TestSuite::Initialize();
+  gl::GLSurfaceTestSupport::InitializeOneOff();
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kOverrideUseSoftwareGLForTests);

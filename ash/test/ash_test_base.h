@@ -24,6 +24,7 @@ class WindowDelegate;
 }  // namespace aura
 
 namespace display {
+class Display;
 class DisplayManager;
 
 namespace test {
@@ -167,6 +168,8 @@ class AshTestBase : public testing::Test {
 
   // Swap the primary display with the secondary.
   void SwapPrimaryDisplay();
+
+  display::Display GetSecondaryDisplay();
 
  private:
   friend class ash::AshTestImplAura;

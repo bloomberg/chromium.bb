@@ -191,9 +191,6 @@ source_set("unittests") {
   testonly = true
 
   sources = [
-    "accelerators/accelerator_controller_registrar_test_api.cc",
-    "accelerators/accelerator_controller_registrar_test_api.h",
-    "accelerators/accelerator_controller_unittest.cc",
     "app_launch_unittest.cc",
     "bridge/wm_shell_mus_test_api.h",
     "test/ash_test_impl_mus.cc",

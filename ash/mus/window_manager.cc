@@ -195,7 +195,8 @@ void WindowManager::CreateShell(
       WmWindow::Get(window_tree_host->window()),
       shell_delegate_for_test_ ? std::move(shell_delegate_for_test_)
                                : base::MakeUnique<ShellDelegateMus>(connector_),
-      this, pointer_watcher_event_router_.get());
+      this, pointer_watcher_event_router_.get(),
+      create_session_state_delegate_stub_for_test_);
   init_params.primary_window_tree_host = window_tree_host.release();
   init_params.wm_shell = wm_shell;
   init_params.blocking_pool = blocking_pool_.get();

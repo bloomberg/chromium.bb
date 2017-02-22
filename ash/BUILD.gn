@@ -1098,6 +1098,8 @@ test("ash_content_unittests") {
     "content/display/screen_orientation_controller_chromeos_unittest.cc",
     "content/keyboard_overlay/keyboard_overlay_delegate_unittest.cc",
     "content/keyboard_overlay/keyboard_overlay_view_unittest.cc",
+    "test/ash_test_suite.cc",
+    "test/ash_test_suite.h",
     "test/ash_unittests.cc",
   ]
   configs += [
@@ -1132,6 +1134,7 @@ test("ash_content_unittests") {
     "//ui/chromeos",
     "//ui/display",
     "//ui/display:test_support",
+    "//ui/gl:test_support",
     "//ui/message_center",
     "//ui/message_center:test_support",
     "//ui/views",
@@ -1147,10 +1150,58 @@ test("ash_content_unittests") {
   ]
 }
 
+# This target includes the tests that are run by both ash and mash. Eventually
+# the majority of tests in |ash_unittests| should move here.
+source_set("common_unittests") {
+  testonly = true
+  sources = [
+    "accelerators/accelerator_controller_unittest.cc",
+    "common/accelerators/accelerator_table_unittest.cc",
+    "common/drag_drop/drag_image_view_unittest.cc",
+    "common/mus_property_mirror_ash_unittest.cc",
+    "common/system/chromeos/audio/tray_audio_unittest.cc",
+    "common/system/chromeos/brightness/tray_brightness_unittest.cc",
+    "common/system/chromeos/network/vpn_list_unittest.cc",
+    "common/system/chromeos/screen_security/screen_tray_item_unittest.cc",
+    "common/system/chromeos/supervised/tray_supervised_user_unittest.cc",
+    "common/system/date/date_view_unittest.cc",
+    "common/system/update/tray_update_unittest.cc",
+    "common/wm/container_finder_unittest.cc",
+    "common/wm/mru_window_tracker_unittest.cc",
+    "common/wm/workspace/workspace_layout_manager_unittest.cc",
+    "common/wm_window_unittest.cc",
+    "common/wm_window_user_data_unittest.cc",
+  ]
+  deps = [
+    "//ash",
+    "//ash/common/test:test_support",
+    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/interfaces",
+    "//ash/test:test_support_without_content",
+    "//base",
+    "//base/test:test_support",
+    "//services/ui/public/interfaces",
+    "//ui/app_list/presenter",
+    "//ui/app_list/presenter:test_support",
+    "//ui/aura",
+    "//ui/aura:test_support",
+    "//ui/base",
+    "//ui/base:test_support",
+    "//ui/display",
+    "//ui/events:test_support",
+    "//ui/keyboard",
+    "//ui/message_center",
+    "//ui/views",
+    "//ui/wm",
+  ]
+  public_deps = [
+    "//ash/test:test_support_without_content",
+  ]
+}
+
 test("ash_unittests") {
   sources = [
     "accelerators/accelerator_commands_unittest.cc",
-    "accelerators/accelerator_controller_unittest.cc",
     "accelerators/accelerator_filter_unittest.cc",
     "accelerators/magnifier_key_scroller_unittest.cc",
     "accelerators/spoken_feedback_toggler_unittest.cc",
@@ -1258,8 +1309,9 @@ test("ash_unittests") {
     "system/toast/toast_manager_unittest.cc",
     "system/web_notification/ash_popup_alignment_delegate_unittest.cc",
     "system/web_notification/web_notification_tray_unittest.cc",
-    "test/ash_test_environment_default.cc",
     "test/ash_test_helper_unittest.cc",
+    "test/ash_test_suite.cc",
+    "test/ash_test_suite.h",
     "test/ash_unittests.cc",
     "tooltips/tooltip_controller_unittest.cc",
     "touch/touch_observer_hud_unittest.cc",
@@ -1315,8 +1367,8 @@ test("ash_unittests") {
 
   deps = [
     ":ash",
+    ":common_unittests",
     "//ash/autoclick/common:autoclick",
-    "//ash/common:unittests",
     "//ash/common/strings",
     "//ash/common/test:test_support",
     "//ash/public/cpp:ash_public_cpp",
@@ -1364,6 +1416,7 @@ test("ash_unittests") {
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
+    "//ui/gl:test_support",
     "//ui/keyboard",
     "//ui/message_center",
     "//ui/message_center:test_support",
