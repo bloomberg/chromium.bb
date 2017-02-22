@@ -141,8 +141,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(
       m_filterQuality(kLow_SkFilterQuality),
       m_isHidden(false),
       m_isDeferralEnabled(true),
-      m_isRegisteredTaskObserver(false),
-      m_renderingTaskCompletedForCurrentFrame(false),
       m_softwareRenderingWhileHidden(false),
       m_lastImageId(0),
       m_lastFilter(GL_LINEAR),
@@ -497,7 +495,7 @@ void Canvas2DLayerBridge::hibernate() {
     return;
   }
 
-  TRACE_EVENT0("cc", "Canvas2DLayerBridge::hibernate");
+  TRACE_EVENT0("blink", "Canvas2DLayerBridge::hibernate");
   sk_sp<PaintSurface> tempHibernationSurface =
       PaintSurface::MakeRasterN32Premul(m_size.width(), m_size.height());
   if (!tempHibernationSurface) {
@@ -669,8 +667,6 @@ void Canvas2DLayerBridge::beginDestruction() {
   setIsHidden(true);
   m_surface.reset();
 
-  unregisterTaskObserver();
-
   if (m_layer && m_accelerationMode != DisableAcceleration) {
     GraphicsLayer::unregisterContentsLayer(m_layer->layer());
     m_layer->clearTexture();
@@ -681,13 +677,6 @@ void Canvas2DLayerBridge::beginDestruction() {
   }
 
   DCHECK(!m_bytesAllocated);
-}
-
-void Canvas2DLayerBridge::unregisterTaskObserver() {
-  if (m_isRegisteredTaskObserver) {
-    Platform::current()->currentThread()->removeTaskObserver(this);
-    m_isRegisteredTaskObserver = false;
-  }
 }
 
 void Canvas2DLayerBridge::setFilterQuality(SkFilterQuality filterQuality) {
@@ -772,7 +761,6 @@ void Canvas2DLayerBridge::skipQueuedDrawCommands() {
   }
 
   if (m_isDeferralEnabled) {
-    unregisterTaskObserver();
     if (m_rateLimiter)
       m_rateLimiter->reset();
   }
@@ -898,6 +886,11 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
     // 3. Javascript makes a context be lost.
     // 4. Here.
     return false;
+  }
+
+  m_framesSinceLastCommit = 0;
+  if (m_rateLimiter) {
+    m_rateLimiter->reset();
   }
 
   // If the context is lost, we don't know if we should be producing GPU or
@@ -1035,40 +1028,21 @@ void Canvas2DLayerBridge::didDraw(const FloatRect& rect) {
       disableDeferral(DisableDeferralReasonExpensiveOverdrawHeuristic);
     }
   }
-  if (!m_isRegisteredTaskObserver) {
-    Platform::current()->currentThread()->addTaskObserver(this);
-    m_isRegisteredTaskObserver = true;
-  }
   m_didDrawSinceLastFlush = true;
   m_didDrawSinceLastGpuFlush = true;
 }
 
 void Canvas2DLayerBridge::finalizeFrame() {
+  TRACE_EVENT0("blink", "Canvas2DLayerBridge::finalizeFrame");
   DCHECK(!m_destructionInProgress);
 
   // Make sure surface is ready for painting: fix the rendering mode now
   // because it will be too late during the paint invalidation phase.
   getOrCreateSurface(PreferAcceleration);
 
-  if (m_rateLimiter)
-    m_rateLimiter->reset();
-  m_renderingTaskCompletedForCurrentFrame = false;
-}
+  ++m_framesSinceLastCommit;
 
-void Canvas2DLayerBridge::doPaintInvalidation(const FloatRect& dirtyRect) {
-  DCHECK(!m_destructionInProgress);
-  if (m_layer && m_accelerationMode != DisableAcceleration)
-    m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
-}
-
-void Canvas2DLayerBridge::didProcessTask() {
-  TRACE_EVENT0("cc", "Canvas2DLayerBridge::didProcessTask");
-  DCHECK(m_isRegisteredTaskObserver);
-  // If m_renderTaskProcessedForCurrentFrame is already set to true,
-  // it means that rendering tasks are not synchronized with the compositor
-  // (i.e. not using requestAnimationFrame), so we are at risk of posting
-  // a multi-frame backlog to the GPU
-  if (m_renderingTaskCompletedForCurrentFrame) {
+  if (m_framesSinceLastCommit >= 2) {
     if (isAccelerated()) {
       flushGpu();
       if (!m_rateLimiter) {
@@ -1083,13 +1057,12 @@ void Canvas2DLayerBridge::didProcessTask() {
   if (m_rateLimiter) {
     m_rateLimiter->tick();
   }
-
-  m_renderingTaskCompletedForCurrentFrame = true;
-  unregisterTaskObserver();
 }
 
-void Canvas2DLayerBridge::willProcessTask() {
-  NOTREACHED();
+void Canvas2DLayerBridge::doPaintInvalidation(const FloatRect& dirtyRect) {
+  DCHECK(!m_destructionInProgress);
+  if (m_layer && m_accelerationMode != DisableAcceleration)
+    m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
 }
 
 sk_sp<SkImage> Canvas2DLayerBridge::newImageSnapshot(AccelerationHint hint,
