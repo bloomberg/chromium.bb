@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/ax_tree_id_registry.h"
+#include "ui/accessibility/ax_tree_id_registry.h"
 
 #include "base/memory/singleton.h"
 
-namespace content {
+namespace ui {
 
 // static
 const AXTreeIDRegistry::AXTreeID AXTreeIDRegistry::kNoAXTreeID = -1;
@@ -17,7 +17,8 @@ AXTreeIDRegistry* AXTreeIDRegistry::GetInstance() {
 }
 
 AXTreeIDRegistry::AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(
-    int process_id, int routing_id) {
+    int process_id,
+    int routing_id) {
   FrameID frame_id(process_id, routing_id);
   std::map<FrameID, AXTreeID>::iterator it;
   it = frame_to_ax_tree_id_map_.find(frame_id);
@@ -29,6 +30,10 @@ AXTreeIDRegistry::AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(
   ax_tree_to_frame_id_map_[new_id] = frame_id;
 
   return new_id;
+}
+
+int AXTreeIDRegistry::CreateID() {
+  return ++ax_tree_id_counter_;
 }
 
 AXTreeIDRegistry::FrameID AXTreeIDRegistry::GetFrameID(
@@ -55,7 +60,6 @@ AXTreeIDRegistry::AXTreeIDRegistry() : ax_tree_id_counter_(-1) {
   GetOrCreateAXTreeID(0, 0);
 }
 
-AXTreeIDRegistry::~AXTreeIDRegistry() {
-}
+AXTreeIDRegistry::~AXTreeIDRegistry() {}
 
-}  // namespace content
+}  // namespace ui

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -109,6 +110,7 @@ void AutomationEventRouter::DispatchAccessibilityLocationChange(
 void AutomationEventRouter::DispatchTreeDestroyedEvent(
     int tree_id,
     content::BrowserContext* browser_context) {
+  browser_context = browser_context ? browser_context : active_profile_;
   std::unique_ptr<base::ListValue> args(
       api::automation_internal::OnAccessibilityTreeDestroyed::Create(tree_id));
   std::unique_ptr<Event> event(new Event(

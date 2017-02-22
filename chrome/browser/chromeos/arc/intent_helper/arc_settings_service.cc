@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/gtest_prod_util.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -483,9 +485,14 @@ void ArcSettingsServiceImpl::SyncReportingConsent() const {
 }
 
 void ArcSettingsServiceImpl::SyncSpokenFeedbackEnabled() const {
-  SendBoolPrefSettingsBroadcast(
-      prefs::kAccessibilitySpokenFeedbackEnabled,
-      "org.chromium.arc.intent_helper.SET_SPOKEN_FEEDBACK_ENABLED");
+  std::string setting =
+      "org.chromium.arc.intent_helper.SET_SPOKEN_FEEDBACK_ENABLED";
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableChromeVoxArcSupport))
+    setting = "org.chromium.arc.intent_helper.SET_ACCESSIBILITY_HELPER_ENABLED";
+
+  SendBoolPrefSettingsBroadcast(prefs::kAccessibilitySpokenFeedbackEnabled,
+                                setting);
 }
 
 void ArcSettingsServiceImpl::SyncTimeZone() const {

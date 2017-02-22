@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ACCESSIBILITY_AX_TREE_ID_REGISTRY_H_
-#define CONTENT_BROWSER_ACCESSIBILITY_AX_TREE_ID_REGISTRY_H_
+#ifndef UI_ACCESSIBILITY_AX_TREE_ID_REGISTRY_H_
+#define UI_ACCESSIBILITY_AX_TREE_ID_REGISTRY_H_
 
 #include <map>
 #include <utility>
 
 #include "base/macros.h"
+#include "ui/accessibility/ax_export.h"
 
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-namespace content {
+namespace ui {
 
-// A class which generates a unique id given a process id and frame routing id.
-class AXTreeIDRegistry {
+// A class which generates a unique id.
+class AX_EXPORT AXTreeIDRegistry {
  public:
   using FrameID = std::pair<int, int>;
 
@@ -34,6 +35,9 @@ class AXTreeIDRegistry {
   AXTreeID GetOrCreateAXTreeID(int process_id, int routing_id);
   FrameID GetFrameID(AXTreeID ax_tree_id);
   void RemoveAXTreeID(AXTreeID ax_tree_id);
+
+  // Create an id not associated with any process.
+  int CreateID();
 
  private:
   friend struct base::DefaultSingletonTraits<AXTreeIDRegistry>;
@@ -53,6 +57,6 @@ class AXTreeIDRegistry {
   DISALLOW_COPY_AND_ASSIGN(AXTreeIDRegistry);
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_ACCESSIBILITY_AX_TREE_ID_REGISTRY_H_
+#endif  // UI_ACCESSIBILITY_AX_TREE_ID_REGISTRY_H_

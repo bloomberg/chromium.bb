@@ -2,18 +2,135 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 module arc.mojom;
 
 import "screen_rect.mojom";
 
-// AccessibilityEventType is a enum which corresponds to event types of
-// AccessibilityEvent in Android.
+// For future maintainers, each of the below enums were hand picked
+// from their equivalents in the Android source. Keep them in the
+// order given below and add as needed. The initial order matches the
+// order they appear in source files.
+
+// AccessibilityEventType lists the possible accessibility events on Android.
 // https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent.html
 [Extensible]
 enum AccessibilityEventType {
   VIEW_FOCUSED,
+  VIEW_CLICKED,
+  VIEW_LONG_CLICKED,
+  VIEW_SELECTED,
+  VIEW_TEXT_CHANGED,
+  WINDOW_STATE_CHANGED,
+  NOTIFICATION_STATE_CHANGED,
+  VIEW_HOVER_ENTER,
+  VIEW_HOVER_EXIT,
+  TOUCH_EXPLORATION_GESTURE_START,
+  TOUCH_EXPLORATION_GESTURE_END,
+  WINDOW_CONTENT_CHANGED,
+  VIEW_SCROLLED,
+  VIEW_TEXT_SELECTION_CHANGED,
+  ANNOUNCEMENT,
+  VIEW_ACCESSIBILITY_FOCUSED,
+  VIEW_ACCESSIBILITY_FOCUS_CLEARED,
+  VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY,
+  GESTURE_DETECTION_START,
+  GESTURE_DETECTION_END,
+  TOUCH_INTERACTION_START,
+  TOUCH_INTERACTION_END,
+  WINDOWS_CHANGED,
+  VIEW_CONTEXT_CLICKED,
+  ASSIST_READING_CONTEXT,
+};
+
+// AccessibilityActionType lists possible accessibility actions on Android.
+// https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo.html
+[Extensible]
+enum AccessibilityActionType {
+  FOCUS,
+  CLEAR_FOCUS,
+  SELECT,
+  CLEAR_SELECTION,
+  CLICK,
+  LONG_CLICK,
+  ACCESSIBILITY_FOCUS,
+  CLEAR_ACCESSIBILITY_FOCUS,
+  NEXT_AT_MOVEMENT_GRANULARITY,  // unused
+  PREVIOUS_AT_MOVEMENT_GRANULARITY,  // unused
+  NEXT_HTML_ELEMENT,  // unused
+  PREVIOUS_HTML_ELEMENT,  // unused
+  SCROLL_FORWARD,
+  SCROLL_BACKWARD,
+  COPY,
+  PASTE,
+  CUT,
+  SET_SELECTION,
+  EXPAND,
+  COLLAPSE,
+  DISMISS,
+  SET_TEXT
+};
+
+// Possible boolean properties set on an AccessibilityNodeInfo.
+// https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo.html
+// The enum values appear in the same order as they do within
+// AccessibilityNodeInfo.java.
+[Extensible]
+enum AccessibilityBooleanProperty {
+  CHECKABLE,
+  CHECKED,
+  FOCUSABLE,
+  FOCUSED,
+  SELECTED,
+  CLICKABLE,
+  LONG_CLICKABLE,
+  ENABLED,
+  PASSWORD,
+  SCROLLABLE,
+  ACCESSIBILITY_FOCUSED,
+  VISIBLE_TO_USER,
+  EDITABLE,
+  OPENS_POPUP,
+  DISMISSABLE,
+  MULTI_LINE,
+  CONTENT_INVALID,
+  CONTEXT_CLICKABLE,
+  IMPORTANCE
+};
+
+// These fields are taken from string instance members of
+// AccessibilityNodeInfo.
+[Extensible]
+enum AccessibilityStringProperty {
+  PACKAGE_NAME,
+  CLASS_NAME,
+  TEXT,
+  CONTENT_DESCRIPTION,
+  VIEW_ID_RESOURCE_NAME
+};
+
+// These fields are taken from int instance members of
+// AccessibilityNodeInfo.
+[Extensible]
+enum AccessibilityIntProperty {
+  LABEL_FOR,
+  LABELED_BY,
+  TRAVERSAL_BEFORE,
+  TRAVERSAL_AFTER,
+  MAX_TEXT_LENGTH,
+  TEXT_SELECTION_START,
+  TEXT_SELECTION_END,
+  INPUT_TYPE,
+  LIVE_REGION
+};
+
+// These fields are taken from List<int> instance members of
+// AccessibilityNodeInfo.
+[Extensible]
+enum AccessibilityIntListProperty {
+  CHILD_NODE_IDS,
+  ACTIONS
 };
 
 // AccessibilityNodeInfoData is a struct to contain info of
@@ -21,17 +138,53 @@ enum AccessibilityEventType {
 // https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo.html
 struct AccessibilityNodeInfoData {
   ScreenRect boundsInScreen;
+  [MinVersion=1]int32 id;
+  [MinVersion=1]map<AccessibilityBooleanProperty, bool>? booleanProperties;
+  [MinVersion=1]map<AccessibilityStringProperty, string>? stringProperties;
+  [MinVersion=1]map<AccessibilityIntProperty, int32>? intProperties;
+  [MinVersion=1]map<AccessibilityIntListProperty, array<int32>>? intListProperties;
 };
 
-// Next method ID: 1
+// Filters the event type (and implicitly the data) sent by the ARC
+// accessibility service.
+[Extensible]
+enum AccessibilityFilterType {
+  // No events will be sent.
+  OFF,
+
+  // Only send focus events along with the source focus node.
+  FOCUS,
+
+  // Send a complete tree from the event source's root for every event.
+  ALL
+};
+
+// AccessibilityEventData is a struct to contain info of
+// AccessibilityEvent in Android.
+// https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent.html
+struct AccessibilityEventData {
+  AccessibilityEventType eventType;
+  int32 sourceId;
+  array<AccessibilityNodeInfoData> nodeData;
+};
+
+// Next method ID: 2
 interface AccessibilityHelperHost {
+  OnAccessibilityEventDeprecated@0(AccessibilityEventType eventType,
+                                   AccessibilityNodeInfoData? eventSource);
+
   // OnAccessibilityEvent is called when a converted Android accessibility event
   // is sent from Android.
-  OnAccessibilityEvent@0(AccessibilityEventType eventType,
-                         AccessibilityNodeInfoData? eventSource);
+  OnAccessibilityEvent@1(AccessibilityEventData eventData);
 };
 
-// Next method ID: 1
+// Next method ID: 3
 interface AccessibilityHelperInstance {
   Init@0(AccessibilityHelperHost host);
+
+  // Perform the specified action on a node requested by a Chrome client.
+  PerformAction@1(int32 id, AccessibilityActionType action);
+
+  // Set a filter on the event types received.
+  SetFilter@2(AccessibilityFilterType filterType);
 };

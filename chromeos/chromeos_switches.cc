@@ -237,6 +237,9 @@ const char kEnableArc[] = "enable-arc";
 // Enables ARC OptIn flow in OOBE.
 const char kEnableArcOOBEOptIn[] = "enable-arc-oobe-optin";
 
+// Enables native ChromeVox support for Arc.
+const char kEnableChromeVoxArcSupport[] = "enable-chromevox-arc-support";
+
 // Enables consume kiosk mode.
 const char kEnableConsumerKiosk[] = "enable-consumer-kiosk";
 

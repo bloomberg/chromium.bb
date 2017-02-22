@@ -10,14 +10,14 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "content/browser/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/ax_position.h"
+#include "ui/accessibility/ax_tree_id_registry.h"
 
 namespace content {
 
 class BrowserAccessibility;
 
-using AXTreeID = content::AXTreeIDRegistry::AXTreeID;
+using AXTreeID = ui::AXTreeIDRegistry::AXTreeID;
 
 class AXPlatformPosition
     : public ui::AXPosition<AXPlatformPosition, BrowserAccessibility> {

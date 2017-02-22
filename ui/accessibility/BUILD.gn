@@ -39,6 +39,8 @@ component("accessibility") {
     "ax_tree_combiner.h",
     "ax_tree_data.cc",
     "ax_tree_data.h",
+    "ax_tree_id_registry.cc",
+    "ax_tree_id_registry.h",
     "ax_tree_serializer.cc",
     "ax_tree_serializer.h",
     "ax_tree_source.h",

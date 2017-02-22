@@ -5,14 +5,24 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ACCESSIBILITY_ARC_ACCESSIBILITY_HELPER_BRIDGE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ACCESSIBILITY_ARC_ACCESSIBILITY_HELPER_BRIDGE_H_
 
+#include <memory>
+
 #include "components/arc/arc_service.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/exo/wm_helper.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace views {
+
+class View;
+
+}  // namespace views
 
 namespace arc {
 
 class ArcBridgeService;
+class AXTreeSourceArc;
 
 // ArcAccessibilityHelperBridge is an instance to receive converted Android
 // accessibility events and info via mojo interface and dispatch them to chrome
@@ -20,7 +30,8 @@ class ArcBridgeService;
 class ArcAccessibilityHelperBridge
     : public ArcService,
       public mojom::AccessibilityHelperHost,
-      public InstanceHolder<mojom::AccessibilityHelperInstance>::Observer {
+      public InstanceHolder<mojom::AccessibilityHelperInstance>::Observer,
+      public exo::WMHelper::ActivationObserver {
  public:
   explicit ArcAccessibilityHelperBridge(ArcBridgeService* bridge_service);
   ~ArcAccessibilityHelperBridge() override;
@@ -29,12 +40,21 @@ class ArcAccessibilityHelperBridge
   void OnInstanceReady() override;
 
   // mojom::AccessibilityHelperHost overrides.
-  void OnAccessibilityEvent(
+  void OnAccessibilityEventDeprecated(
       mojom::AccessibilityEventType event_type,
       mojom::AccessibilityNodeInfoDataPtr event_source) override;
+  void OnAccessibilityEvent(
+      mojom::AccessibilityEventDataPtr event_data) override;
 
  private:
+  // exo::WMHelper::ActivationObserver overrides.
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
+
   mojo::Binding<mojom::AccessibilityHelperHost> binding_;
+
+  std::unique_ptr<AXTreeSourceArc> tree_source_;
+  std::unique_ptr<views::View> focus_stealer_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAccessibilityHelperBridge);
 };
