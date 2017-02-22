@@ -11,8 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "net/cert/cert_status_flags.h"
 
-@class CRWSessionEntry;
-
 namespace net {
 class X509Certificate;
 }
