@@ -37,14 +37,14 @@ import java.io.IOException;
  * started by the {@link GcmNetworkManager} when a Task scheduled using the GcmNetworkManager is
  * ready to be executed. The task to start this service is scheduled in
  * {@link AndroidGcmController#fetchToken}.
- * 
+ *
  * <p>The service fetches a token from GCM, stores it and sends an update to the server. In case of
  * failure to fetch the token, the task is rescheduled using the GcmNetworkManager which uses
  * exponential back-offs to control when the task is executed.
  */
 public class GcmRegistrationTaskService extends GcmTaskService {
   private static final Logger logger = AndroidLogger.forTag("RegistrationTaskService");
-  
+
   public InstanceID getInstanceID(Context context) {
     return InstanceID.getInstance(context);
   }
@@ -52,7 +52,7 @@ public class GcmRegistrationTaskService extends GcmTaskService {
   /**
    * Called when the task is ready to be executed. Registers with GCM using
    * {@link InstanceID#getToken} and stores the registration token.
-   * 
+   *
    * <p>Returns {@link GcmNetworkManager#RESULT_SUCCESS} when the token is successfully retrieved.
    * On failure {@link GcmNetworkManager#RESULT_RESCHEDULE} is used which reschedules the service
    * to be executed again using exponential back-off.
@@ -110,12 +110,20 @@ public class GcmRegistrationTaskService extends GcmTaskService {
     } else {
       sendBuffered.setClass(this, AndroidMessageSenderService.class);
     }
-    startService(sendBuffered);
+    try {
+      startService(sendBuffered);
+    } catch (IllegalStateException exception) {
+      logger.warning("Unable to send buffered message(s): %s", exception);
+    }
 
     // Inform the Ticl service that the registration id has changed. This will cause it to send
     // a message to the data center and update the GCM registration id stored at the data center.
     Intent updateServer = ProtocolIntents.InternalDowncalls.newNetworkAddrChangeIntent();
     updateServer.setClassName(this, new AndroidTiclManifest(this).getTiclServiceClass());
-    startService(updateServer);
+    try {
+      startService(updateServer);
+    } catch (IllegalStateException exception) {
+      logger.warning("Unable to inform server about new registration id: %s", exception);
+    }
   }
 }

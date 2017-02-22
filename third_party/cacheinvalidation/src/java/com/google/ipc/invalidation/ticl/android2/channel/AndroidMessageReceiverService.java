@@ -75,6 +75,8 @@ public class AndroidMessageReceiverService extends MultiplexingGcmListener.Abstr
         startService(msgIntent);
       } catch (ValidationException exception) {
         logger.warning("Failed parsing inbound message: %s", exception);
+      } catch (IllegalStateException exception) {
+        logger.warning("Unable to handle inbound message: %s", exception);
       }
     } else {
       logger.fine("GCM Intent has no message content: %s", intent);
@@ -96,13 +98,21 @@ public class AndroidMessageReceiverService extends MultiplexingGcmListener.Abstr
     final String ignoredData = "";
     sendBuffered.putExtra(AndroidChannelConstants.MESSAGE_SENDER_SVC_GCM_REGID_CHANGE, ignoredData);
     sendBuffered.setClass(this, AndroidMessageSenderService.class);
-    startService(sendBuffered);
+    try {
+      startService(sendBuffered);
+    } catch (IllegalStateException exception) {
+      logger.warning("Unable to send buffered message(s): %s", exception);
+    }
 
     // Inform the Ticl service that the registration id has changed. This will cause it to send
     // a message to the data center and update the GCM registration id stored at the data center.
     Intent updateServer = ProtocolIntents.InternalDowncalls.newNetworkAddrChangeIntent();
     updateServer.setClassName(this, new AndroidTiclManifest(this).getTiclServiceClass());
-    startService(updateServer);
+    try {
+      startService(updateServer);
+    } catch (IllegalStateException exception) {
+      logger.warning("Unable to handle new registration id: %s", exception);
+    }
   }
 
   @Override

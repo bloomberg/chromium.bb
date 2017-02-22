@@ -171,7 +171,7 @@ public class AndroidMessageSenderService extends IntentService {
     requestTokenIntent.setClassName(getApplicationContext(), simpleListenerClass);
     try {
       startService(requestTokenIntent);
-    } catch (SecurityException exception) {
+    } catch (SecurityException | IllegalStateException exception) {
       logger.warning("unable to request auth token: %s", exception);
     }
   }

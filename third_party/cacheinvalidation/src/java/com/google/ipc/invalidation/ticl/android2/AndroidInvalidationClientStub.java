@@ -17,6 +17,8 @@
 package com.google.ipc.invalidation.ticl.android2;
 
 import com.google.ipc.invalidation.external.client.InvalidationClient;
+import com.google.ipc.invalidation.external.client.SystemResources.Logger;
+import com.google.ipc.invalidation.external.client.android.service.AndroidLogger;
 import com.google.ipc.invalidation.external.client.types.AckHandle;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.ipc.invalidation.ticl.ProtoWrapperConverter;
@@ -36,6 +38,8 @@ import java.util.Collections;
  *
  */
 class AndroidInvalidationClientStub implements InvalidationClient {
+  private final Logger logger = AndroidLogger.forTag("InvClientStub");
+
   /** Android system context. */
   private final Context context;
 
@@ -98,6 +102,10 @@ class AndroidInvalidationClientStub implements InvalidationClient {
   /** Sends {@code intent} to the service implemented by {@link #serviceClass}. */
   private void issueIntent(Intent intent) {
     intent.setClassName(context, serviceClass);
-    context.startService(intent);
+    try {
+      context.startService(intent);
+    } catch (IllegalStateException exception) {
+      logger.warning("Unable to issue intent: %s", exception);
+    }
   }
 }

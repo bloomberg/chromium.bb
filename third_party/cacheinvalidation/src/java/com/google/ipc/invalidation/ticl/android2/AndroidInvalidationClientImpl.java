@@ -19,6 +19,7 @@ import com.google.ipc.invalidation.external.client.InvalidationClient;
 import com.google.ipc.invalidation.external.client.InvalidationListener;
 import com.google.ipc.invalidation.external.client.SystemResources;
 import com.google.ipc.invalidation.external.client.SystemResources.Logger;
+import com.google.ipc.invalidation.external.client.android.service.AndroidLogger;
 import com.google.ipc.invalidation.external.client.types.AckHandle;
 import com.google.ipc.invalidation.external.client.types.ErrorInfo;
 import com.google.ipc.invalidation.external.client.types.Invalidation;
@@ -58,6 +59,9 @@ import java.util.Random;
  *
  */
 class AndroidInvalidationClientImpl extends InvalidationClientCore {
+  /** Logger from Ticl resources. */
+  private static final Logger staticLogger = AndroidLogger.forTag("InvClientImpl");
+
   /** Class implementing the application listener stub (allows overriding default for tests). */
   static Class<? extends Service> listenerServiceClassForTest = null;
 
@@ -156,7 +160,11 @@ class AndroidInvalidationClientImpl extends InvalidationClientCore {
       intent.setClassName(context, (listenerServiceClassForTest != null) ?
           listenerServiceClassForTest.getName() :
               new AndroidTiclManifest(context).getListenerServiceClass());
-      context.startService(intent);
+      try {
+        context.startService(intent);
+      } catch (IllegalStateException exception) {
+        staticLogger.warning("Unable to deliver intent: %s", exception);
+      }
     }
 
     /**

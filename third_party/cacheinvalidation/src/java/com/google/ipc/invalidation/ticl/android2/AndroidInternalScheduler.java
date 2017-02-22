@@ -19,6 +19,7 @@ package com.google.ipc.invalidation.ticl.android2;
 import com.google.ipc.invalidation.external.client.SystemResources;
 import com.google.ipc.invalidation.external.client.SystemResources.Logger;
 import com.google.ipc.invalidation.external.client.SystemResources.Scheduler;
+import com.google.ipc.invalidation.external.client.android.service.AndroidLogger;
 import com.google.ipc.invalidation.ticl.RecurringTask;
 import com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidSchedulerEvent;
 import com.google.ipc.invalidation.ticl.proto.AndroidService.ScheduledTask;
@@ -57,6 +58,8 @@ import java.util.TreeMap;
 public final class AndroidInternalScheduler implements Scheduler {
   /** Class that receives AlarmManager broadcasts and reissues them as intents for this service. */
   public static final class AlarmReceiver extends BroadcastReceiver {
+    private static final Logger logger = AndroidLogger.forTag("AlarmReceiver");
+
     /*
      * This class needs to be public so that it can be instantiated by the Android runtime.
      * Additionally, it should be declared as a broadcast receiver in the application manifest:
@@ -69,7 +72,11 @@ public final class AndroidInternalScheduler implements Scheduler {
       // Resend the intent to the service so that it's processed on the handler thread and with
       // the automatic shutdown logic provided by IntentService.
       intent.setClassName(context, new AndroidTiclManifest(context).getTiclServiceClass());
-      context.startService(intent);
+      try {
+        context.startService(intent);
+      } catch (IllegalStateException exception) {
+        logger.warning("Unable to handle alarm: %s", exception);
+      }
     }
   }
 

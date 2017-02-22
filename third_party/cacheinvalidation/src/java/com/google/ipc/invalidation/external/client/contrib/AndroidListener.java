@@ -269,7 +269,11 @@ public abstract class AndroidListener extends IntentService {
     Preconditions.checkNotNull(objectIds);
 
     Context context = getApplicationContext();
-    context.startService(createRegisterIntent(context, clientId, objectIds));
+    try {
+      context.startService(createRegisterIntent(context, clientId, objectIds));
+    } catch (IllegalStateException exception) {
+      logger.info("Unable to deliver `register` intent: %s", exception);
+    }
   }
 
   /**
@@ -318,7 +322,11 @@ public abstract class AndroidListener extends IntentService {
     Preconditions.checkNotNull(objectIds);
 
     Context context = getApplicationContext();
-    context.startService(createUnregisterIntent(context, clientId, objectIds));
+    try {
+      context.startService(createUnregisterIntent(context, clientId, objectIds));
+    } catch (IllegalStateException exception) {
+      logger.info("Unable to deliver `unregister` intent: %s", exception);
+    }
   }
 
   /** See specs for {@link InvalidationClient#acknowledge}. */
@@ -334,7 +342,11 @@ public abstract class AndroidListener extends IntentService {
     Preconditions.checkNotNull(ackHandle);
 
     Context context = getApplicationContext();
-    context.startService(createAcknowledgeIntent(context, ackHandle));
+    try {
+      context.startService(createAcknowledgeIntent(context, ackHandle));
+    } catch (IllegalStateException exception) {
+      logger.info("Unable to deliver `acknowledge` intent: %s", exception);
+    }
   }
 
   /**

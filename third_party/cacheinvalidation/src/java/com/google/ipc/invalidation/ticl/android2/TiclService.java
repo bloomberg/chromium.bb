@@ -329,6 +329,9 @@ public class TiclService extends IntentService {
         }
       } catch (ValidationException exception) {
         resources.getLogger().info("Failed to parse message: %s", exception.getMessage());
+      } catch (IllegalStateException exception) {
+        resources.getLogger().info(
+            "Unable to send background invalidation intent: %s", exception.getMessage());
       }
     }
   }

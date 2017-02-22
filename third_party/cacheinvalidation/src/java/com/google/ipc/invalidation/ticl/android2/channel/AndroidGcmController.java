@@ -58,7 +58,7 @@ public class AndroidGcmController {
    * A getter method for AndroidGcmController singleton which also initializes it if it wasn't
    * already initialized.
    *
-   * @param context, the application context.
+   * @param context the application context.
    * @return a singleton instance of the AndroidGcmController
    */
   public static AndroidGcmController get(Context context) {
@@ -75,8 +75,8 @@ public class AndroidGcmController {
    * Override AndroidGcmController with a custom GcmNetworkManager in tests. This overrides the
    * existing instance of AndroidGcmController if any.
    *
-   * @param context, the application context.
-   * @param gcmNetworkManager, the custom GcmNetworkManager to use.
+   * @param context the application context.
+   * @param gcmNetworkManager the custom GcmNetworkManager to use.
    */
   public static void overrideAndroidGcmControllerForTests(
       Context context, GcmNetworkManager gcmNetworkManager) {
@@ -106,7 +106,7 @@ public class AndroidGcmController {
    * GCM channel. Sets the {@link AndroidChannelPreferences.GcmChannelType} and fetches the
    * registration token from GCM if no token is stored or if the application has been updated.
    *
-   * @param useGcmUpstream, if true, the upstream messages from the client to the data center are
+   * @param useGcmUpstream if true, the upstream messages from the client to the data center are
    * sent using GCM.
    */
   public void initializeGcm(boolean useGcmUpstream) {
@@ -170,7 +170,7 @@ public class AndroidGcmController {
   /**
    * Used by the client to forward downstream messages received from GCM.
    *
-   * @param data, the data bundle of the downstream message.
+   * @param data the data bundle of the downstream message.
    */
   public void onMessageReceived(Bundle data) {
     String content = data.getString(C2dmConstants.CONTENT_PARAM);
@@ -186,6 +186,8 @@ public class AndroidGcmController {
         context.startService(msgIntent);
       } catch (ValidationException exception) {
         logger.warning("Failed parsing inbound message: %s", exception);
+      } catch (IllegalStateException exception) {
+        logger.warning("Unable to handle inbound message: %s", exception);
       }
     } else {
       logger.warning("GCM Intent has no message content: %s", data);

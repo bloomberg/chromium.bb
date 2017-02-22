@@ -75,6 +75,9 @@ class TiclStateManager {
     AndroidInvalidationClientImpl ticl = new AndroidInvalidationClientImpl(context, resources,
         random, state);
     initScheduler(resources, ticl, state.getScheduledTask());
+    AndroidInternalScheduler scheduler =
+        (AndroidInternalScheduler) resources.getInternalScheduler();
+    scheduler.handleImplicitSchedulerEvent();
     return ticl;
   }
 

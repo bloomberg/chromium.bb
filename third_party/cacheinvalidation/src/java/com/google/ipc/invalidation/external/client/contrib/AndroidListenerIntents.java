@@ -46,7 +46,7 @@ class AndroidListenerIntents {
   /** Key of Intent byte[] holding a {@link RegistrationCommand} protocol buffer. */
   static final String EXTRA_REGISTRATION =
       "com.google.ipc.invalidation.android_listener.REGISTRATION";
-  
+
   /** Key of Intent boolean indicating whether scheduled tasks should be flushed. */
   static final String EXTRA_SCHEDULED_TASK =
       "com.google.ipc.invalidation.android_listener.SCHEDULED_TASK";
@@ -67,8 +67,12 @@ class AndroidListenerIntents {
    * Issues the given {@code intent} to the TICL service class registered in the {@code context}.
    */
   static void issueTiclIntent(Context context, Intent intent) {
-    context.startService(intent.setClassName(context,
-        new AndroidTiclManifest(context).getTiclServiceClass()));
+    try {
+      context.startService(intent.setClassName(context,
+          new AndroidTiclManifest(context).getTiclServiceClass()));
+    } catch (IllegalStateException exception) {
+      logger.info("Unable to deliver ticl intent: %s", exception);
+    }
   }
 
   /**
@@ -76,7 +80,11 @@ class AndroidListenerIntents {
    * {@code context}.
    */
   static void issueAndroidListenerIntent(Context context, Intent intent) {
-    context.startService(setAndroidListenerClass(context, intent));
+    try {
+      context.startService(setAndroidListenerClass(context, intent));
+    } catch (IllegalStateException exception) {
+      logger.info("Unable to deliver listener intent: %s", exception);
+    }
   }
 
   /**
@@ -106,7 +114,7 @@ class AndroidListenerIntents {
       return null;
     }
   }
-  
+
   /**
    * Returns {@link StartCommand} extra from the given intent or null if no valid start command
    * exists.
@@ -131,12 +139,12 @@ class AndroidListenerIntents {
   static boolean isStopIntent(Intent intent) {
     return intent.hasExtra(EXTRA_STOP);
   }
-  
+
   /** Returns {@code true} if the intent has the 'scheduled-task' extra. */
   static boolean isScheduledTaskIntent(Intent intent) {
     return intent.hasExtra(EXTRA_SCHEDULED_TASK);
   }
-  
+
   /**
    * Uses {@link AlarmManager} to schedule an intent that will cause scheduled tasks to be executed.
    * Replaces any existing scheduled-task intent, so the provided execute time should be for the
@@ -144,11 +152,11 @@ class AndroidListenerIntents {
    */
   static void issueScheduledTaskIntent(Context context, long executeMs) {
     Intent intent = createScheduledTaskintent(context);
-    
+
     // Create a pending intent that will cause the AlarmManager to fire the above intent.
     PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent,
         PendingIntent.FLAG_UPDATE_CURRENT);
-    
+
     // Schedule the pending intent after the appropriate delay.
     AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     try {
@@ -195,7 +203,7 @@ class AndroidListenerIntents {
     intent.putExtra(EXTRA_REGISTRATION, command.toByteArray());
     return setAndroidListenerClass(context, intent);
   }
-  
+
   /** Constructs an intent indicating that scheduled tasks should run. */
   static Intent createScheduledTaskintent(Context context) {
     return new Intent()

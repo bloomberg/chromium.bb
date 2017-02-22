@@ -58,7 +58,11 @@ public class AndroidNetworkChannel implements TestableNetworkChannel {
     } else {
       intent.setClassName(context, AndroidMessageSenderService.class.getName());
     }
-    context.startService(intent);
+    try {
+      context.startService(intent);
+    } catch (IllegalStateException exception) {
+      logger.warning("Unable to send message: %s", exception);
+    }
   }
 
   @Override
