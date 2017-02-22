@@ -30,7 +30,8 @@ extern "C" {
 #endif
 
 int64_t vp9_block_error_c(const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz);
-#define vp9_block_error vp9_block_error_c
+int64_t vp9_block_error_avx2(const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz);
+RTCD_EXTERN int64_t (*vp9_block_error)(const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz);
 
 int64_t vp9_block_error_fp_c(const tran_low_t *coeff, const tran_low_t *dqcoeff, int block_size);
 int64_t vp9_block_error_fp_sse2(const tran_low_t *coeff, const tran_low_t *dqcoeff, int block_size);
@@ -138,7 +139,8 @@ void vp9_iht8x8_64_add_sse2(const tran_low_t *input, uint8_t *dest, int stride, 
 RTCD_EXTERN void (*vp9_iht8x8_64_add)(const tran_low_t *input, uint8_t *dest, int stride, int tx_type);
 
 void vp9_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
-#define vp9_quantize_fp vp9_quantize_fp_c
+void vp9_quantize_fp_sse2(const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
+RTCD_EXTERN void (*vp9_quantize_fp)(const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
 
 void vp9_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
 #define vp9_quantize_fp_32x32 vp9_quantize_fp_32x32_c
@@ -157,6 +159,8 @@ static void setup_rtcd_internal(void)
 
     (void)flags;
 
+    vp9_block_error = vp9_block_error_c;
+    if (flags & HAS_AVX2) vp9_block_error = vp9_block_error_avx2;
     vp9_block_error_fp = vp9_block_error_fp_c;
     if (flags & HAS_SSE2) vp9_block_error_fp = vp9_block_error_fp_sse2;
     vp9_denoiser_filter = vp9_denoiser_filter_c;
@@ -191,6 +195,8 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_SSE2) vp9_iht4x4_16_add = vp9_iht4x4_16_add_sse2;
     vp9_iht8x8_64_add = vp9_iht8x8_64_add_c;
     if (flags & HAS_SSE2) vp9_iht8x8_64_add = vp9_iht8x8_64_add_sse2;
+    vp9_quantize_fp = vp9_quantize_fp_c;
+    if (flags & HAS_SSE2) vp9_quantize_fp = vp9_quantize_fp_sse2;
     vp9_temporal_filter_apply = vp9_temporal_filter_apply_c;
     if (flags & HAS_SSE2) vp9_temporal_filter_apply = vp9_temporal_filter_apply_sse2;
 }
