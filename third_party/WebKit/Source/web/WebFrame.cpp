@@ -160,6 +160,7 @@ void WebFrame::setFrameOwnerProperties(
   owner->setAllowPaymentRequest(properties.allowPaymentRequest);
   owner->setCsp(properties.requiredCsp);
   owner->setDelegatedpermissions(properties.delegatedPermissions);
+  owner->setAllowedFeatures(properties.allowedFeatures);
 }
 
 WebFrame* WebFrame::opener() const {

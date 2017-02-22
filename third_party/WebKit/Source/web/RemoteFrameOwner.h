@@ -52,6 +52,9 @@ class RemoteFrameOwner final
       const override {
     return m_delegatedPermissions;
   }
+  const WebVector<WebFeaturePolicyFeature>& allowedFeatures() const override {
+    return m_allowedFeatures;
+  }
 
   void setBrowsingContextContainerName(const WebString& name) {
     m_browsingContextContainerName = name;
@@ -69,6 +72,10 @@ class RemoteFrameOwner final
   void setDelegatedpermissions(
       const WebVector<mojom::blink::PermissionName>& delegatedPermissions) {
     m_delegatedPermissions = delegatedPermissions;
+  }
+  void setAllowedFeatures(
+      const WebVector<WebFeaturePolicyFeature>& allowedFeatures) {
+    m_allowedFeatures = allowedFeatures;
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -91,6 +98,7 @@ class RemoteFrameOwner final
   bool m_allowPaymentRequest;
   WebString m_csp;
   WebVector<mojom::blink::PermissionName> m_delegatedPermissions;
+  WebVector<WebFeaturePolicyFeature> m_allowedFeatures;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameOwner,

@@ -85,6 +85,9 @@ class CORE_EXPORT HTMLIFrameElement final
       const override {
     return m_delegatedPermissions;
   }
+  const WebVector<WebFeaturePolicyFeature>& allowedFeatures() const override {
+    return m_allowedFeatures;
+  }
 
   bool initializePermissionsAttribute();
 
@@ -98,7 +101,7 @@ class CORE_EXPORT HTMLIFrameElement final
   Member<HTMLIFrameElementAllow> m_allow;
 
   WebVector<mojom::blink::PermissionName> m_delegatedPermissions;
-  WebVector<WebFeaturePolicyFeature> m_allowedFeatureNames;
+  WebVector<WebFeaturePolicyFeature> m_allowedFeatures;
 
   ReferrerPolicy m_referrerPolicy;
 };

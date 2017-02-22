@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 
@@ -41,6 +42,7 @@ struct CONTENT_EXPORT FrameOwnerProperties {
   std::string required_csp;
 
   std::vector<blink::mojom::PermissionName> delegated_permissions;
+  std::vector<blink::WebFeaturePolicyFeature> allowed_features;
 };
 
 }  // namespace content

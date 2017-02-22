@@ -231,6 +231,12 @@ HTMLFrameOwnerElement::delegatedPermissions() const {
   return permissions;
 }
 
+const WebVector<WebFeaturePolicyFeature>&
+HTMLFrameOwnerElement::allowedFeatures() const {
+  DEFINE_STATIC_LOCAL(WebVector<WebFeaturePolicyFeature>, features, ());
+  return features;
+}
+
 Document* HTMLFrameOwnerElement::getSVGDocument(
     ExceptionState& exceptionState) const {
   Document* doc = contentDocument();

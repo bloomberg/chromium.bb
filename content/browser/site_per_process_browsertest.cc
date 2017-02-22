@@ -70,7 +70,9 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
@@ -9188,6 +9190,74 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // added to pending delete list.
   rfh->OnMessageReceived(
       FrameHostMsg_ContextMenu(rfh->GetRoutingID(), ContextMenuParams()));
+}
+
+// Test iframe "allow" attribute is propagated correctly.
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest, AllowedIFrames) {
+  GURL url(embedded_test_server()->GetURL("/allowed_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Iframes without "allow" attribute, or an empty "allow" attribute will not
+  // have any allowed features propagated.
+  EXPECT_TRUE(
+      root->child_at(0)->frame_owner_properties().allowed_features.empty());
+  EXPECT_TRUE(
+      root->child_at(1)->frame_owner_properties().allowed_features.empty());
+
+  // Make sure the third frame starts out at the correct cross-site page.
+  EXPECT_EQ(embedded_test_server()->GetURL("bar.com", "/title1.html"),
+            root->child_at(2)->current_url());
+  // Check allowed features are propagated correctly for cross-site iframes.
+  EXPECT_EQ(root->child_at(2)->frame_owner_properties().allowed_features.size(),
+            2u);
+  EXPECT_EQ(root->child_at(2)->frame_owner_properties().allowed_features[0],
+            blink::WebFeaturePolicyFeature::Fullscreen);
+  EXPECT_EQ(root->child_at(2)->frame_owner_properties().allowed_features[1],
+            blink::WebFeaturePolicyFeature::Vibrate);
+
+  // Check allowed features are propagated correctly for same-site iframes.
+  EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features.size(),
+            2u);
+  EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features[0],
+            blink::WebFeaturePolicyFeature::Fullscreen);
+  EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features[1],
+            blink::WebFeaturePolicyFeature::Vibrate);
+}
+
+// Test dynamic updates to iframe "allow" attribute are propagated correctly.
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+                       AllowedIFramesDynamic) {
+  GURL main_url(embedded_test_server()->GetURL("/allowed_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Test for dynamically removing "allow" attribute.
+  EXPECT_TRUE(ExecuteScript(
+      root, "document.getElementById('child-2').removeAttribute('allow')"));
+  EXPECT_TRUE(
+      root->child_at(2)->frame_owner_properties().allowed_features.empty());
+
+  // Test for dynamically setting "allow" attribute by element.setAttribute.
+  EXPECT_TRUE(ExecuteScript(
+      root,
+      "document.getElementById('child-3').setAttribute('allow', 'payment')"));
+  EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features.size(),
+            1u);
+  EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features[0],
+            blink::WebFeaturePolicyFeature::Payment);
+
+  // Test for dynamically setting "allow" attribute by frame.allow="...".
+  EXPECT_TRUE(ExecuteScript(
+      root, "document.getElementById('child-3').allow='fullscreen vibrate'"));
+  EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features.size(),
+            2u);
+  EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features[0],
+            blink::WebFeaturePolicyFeature::Fullscreen);
+  EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features[1],
+            blink::WebFeaturePolicyFeature::Vibrate);
 }
 
 // Test harness that allows for "barrier" style delaying of requests matching

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iterator>
 
+#include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 
 namespace content {
@@ -25,6 +26,9 @@ FrameOwnerProperties ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
   std::copy(web_frame_owner_properties.delegatedPermissions.begin(),
             web_frame_owner_properties.delegatedPermissions.end(),
             std::back_inserter(result.delegated_permissions));
+  std::copy(web_frame_owner_properties.allowedFeatures.begin(),
+            web_frame_owner_properties.allowedFeatures.end(),
+            std::back_inserter(result.allowed_features));
 
   return result;
 }
@@ -44,6 +48,8 @@ ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(
       blink::WebString::fromUTF8(frame_owner_properties.required_csp);
   result.delegatedPermissions = blink::WebVector<blink::mojom::PermissionName>(
       frame_owner_properties.delegated_permissions);
+  result.allowedFeatures = blink::WebVector<blink::WebFeaturePolicyFeature>(
+      frame_owner_properties.allowed_features);
 
   return result;
 }

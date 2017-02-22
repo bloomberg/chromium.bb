@@ -231,15 +231,14 @@ void HTMLIFrameElement::sandboxValueWasSet() {
 
 void HTMLIFrameElement::allowValueWasSet() {
   String invalidTokens;
-  m_allowedFeatureNames = m_allow->parseAllowedFeatureNames(invalidTokens);
+  m_allowedFeatures = m_allow->parseAllowedFeatureNames(invalidTokens);
   if (!invalidTokens.isNull()) {
     document().addConsoleMessage(ConsoleMessage::create(
         OtherMessageSource, ErrorMessageLevel,
         "Error while parsing the 'allow' attribute: " + invalidTokens));
   }
   setSynchronizedLazyAttribute(allowAttr, m_allow->value());
-  // TODO(lunalu): Once allowedFeatureNames is passed to frame owner, call
-  // frameOwnerPropertiesChanged.
+  frameOwnerPropertiesChanged();
 }
 
 ReferrerPolicy HTMLIFrameElement::referrerPolicyAttribute() {
