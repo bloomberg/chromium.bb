@@ -575,7 +575,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         List<DropdownKeyValue> result = new ArrayList<>();
 
         Locale locale = Locale.getDefault();
-        SimpleDateFormat keyFormatter = new SimpleDateFormat("M", locale);
+        SimpleDateFormat keyFormatter = new SimpleDateFormat("MM", locale);
         SimpleDateFormat valueFormatter = new SimpleDateFormat("MMMM (MM)", locale);
 
         calendar.set(Calendar.DAY_OF_MONTH, 1);
