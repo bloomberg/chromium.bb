@@ -620,7 +620,10 @@ void InputMethodController::setComposition(
     return;
   }
 
-  addCompositionUnderlines(underlines, baseNode->parentNode(), baseOffset);
+  const PlainTextRange compositionPlainTextRange =
+      PlainTextRange::create(*baseNode->parentNode(), *m_compositionRange);
+  addCompositionUnderlines(underlines, baseNode->parentNode(),
+                           compositionPlainTextRange.start());
 }
 
 PlainTextRange InputMethodController::createSelectionRangeForSetComposition(

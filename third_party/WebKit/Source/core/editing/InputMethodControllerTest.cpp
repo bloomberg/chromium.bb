@@ -1204,4 +1204,38 @@ TEST_F(InputMethodControllerTest, CommitPlainTextWithUnderlineReplace) {
   EXPECT_EQ(15u, document().markers().markers()[0]->endOffset());
 }
 
+TEST_F(InputMethodControllerTest,
+       CompositionUnderlineAppearsCorrectlyAfterNewline) {
+  Element* div =
+      insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+
+  Vector<CompositionUnderline> underlines;
+  controller().setComposition(String("hello"), underlines, 6, 6);
+  controller().finishComposingText(InputMethodController::KeepSelection);
+  frame().editor().insertLineBreak();
+
+  controller().setCompositionFromExistingText(underlines, 8, 8);
+
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  controller().setComposition(String("world"), underlines, 0, 0);
+  ASSERT_EQ(1u, document().markers().markers().size());
+
+  // Verify composition underline shows up on the second line, not the first
+  ASSERT_EQ(0u, document()
+                    .markers()
+                    .markersInRange(PlainTextRange(0, 5).createRange(*div),
+                                    DocumentMarker::AllMarkers())
+                    .size());
+  ASSERT_EQ(1u, document()
+                    .markers()
+                    .markersInRange(PlainTextRange(6, 11).createRange(*div),
+                                    DocumentMarker::AllMarkers())
+                    .size());
+
+  // Verify marker has correct start/end offsets (measured from the beginning
+  // of the node, which is the beginning of the line)
+  EXPECT_EQ(0u, document().markers().markers()[0]->startOffset());
+  EXPECT_EQ(5u, document().markers().markers()[0]->endOffset());
+}
+
 }  // namespace blink
