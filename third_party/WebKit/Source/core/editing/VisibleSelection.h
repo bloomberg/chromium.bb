@@ -69,9 +69,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   // TODO(yosin): To make |VisibleSelection| as immutable object, we should
   // get rid of |setBase()| and |setExtent()| by replacing them with
   // |createVisibleSelection()|.
-  void setBase(const PositionTemplate<Strategy>&);
   void setBase(const VisiblePositionTemplate<Strategy>&);
-  void setExtent(const PositionTemplate<Strategy>&);
   void setExtent(const VisiblePositionTemplate<Strategy>&);
 
   SelectionTemplate<Strategy> asSelection() const;

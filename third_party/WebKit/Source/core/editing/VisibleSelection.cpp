@@ -138,25 +138,9 @@ SelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::asSelection()
 
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setBase(
-    const PositionTemplate<Strategy>& position) {
-  DCHECK(!needsLayoutTreeUpdate(position));
-  m_base = position;
-  validate();
-}
-
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setBase(
     const VisiblePositionTemplate<Strategy>& visiblePosition) {
   DCHECK(visiblePosition.isValid());
   m_base = visiblePosition.deepEquivalent();
-  validate();
-}
-
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setExtent(
-    const PositionTemplate<Strategy>& position) {
-  DCHECK(!needsLayoutTreeUpdate(position));
-  m_extent = position;
   validate();
 }
 
