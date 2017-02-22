@@ -1685,6 +1685,8 @@ bool FrameLoader::shouldContinueForNavigationPolicy(
     if (form)
       client()->dispatchWillSubmitForm(form);
 
+    m_frame->document()->cancelParsing();
+
     return false;
   }
   if (!LocalDOMWindow::allowPopUp(*m_frame) &&

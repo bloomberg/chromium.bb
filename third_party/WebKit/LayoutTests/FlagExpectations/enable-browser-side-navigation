@@ -23,12 +23,6 @@ crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
 crbug.com/555418 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
 
-# https://crbug.com/638900: Failing due to flipped order of callbacks to
-# WebFrameClient::didStartProvisionalLoad() and
-# WebFrameClient::didFinishDocumentLoad().
-crbug.com/638900 http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
-crbug.com/638900 virtual/mojo-loading/http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
-
 # Issue with ServiceWorker timing.
 Bug(none) external/wpt/service-workers/service-worker/navigate-window.https.html [ Failure ]
 
