@@ -221,6 +221,8 @@ void Keyboard::OnMaximizeModeStarted() {
   OnKeyboardDeviceConfigurationChanged();
 }
 
+void Keyboard::OnMaximizeModeEnding() {}
+
 void Keyboard::OnMaximizeModeEnded() {
   OnKeyboardDeviceConfigurationChanged();
 }

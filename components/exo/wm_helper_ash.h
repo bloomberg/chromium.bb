@@ -64,6 +64,7 @@ class WMHelperAsh : public WMHelper,
 
   // Overriden from ash::ShellObserver:
   void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnding() override;
   void OnMaximizeModeEnded() override;
 
   // Overriden from ui::InputDeviceEventObserver:

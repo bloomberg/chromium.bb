@@ -182,6 +182,11 @@ void WmShell::OnMaximizeModeStarted() {
     observer.OnMaximizeModeStarted();
 }
 
+void WmShell::OnMaximizeModeEnding() {
+  for (auto& observer : shell_observers_)
+    observer.OnMaximizeModeEnding();
+}
+
 void WmShell::OnMaximizeModeEnded() {
   for (auto& observer : shell_observers_)
     observer.OnMaximizeModeEnded();

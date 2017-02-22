@@ -52,6 +52,7 @@ class Keyboard : public ui::EventHandler,
 
   // Overridden from WMHelper::MaximizeModeObserver:
   void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnding() override;
   void OnMaximizeModeEnded() override;
 
  private:

@@ -106,6 +106,11 @@ void WMHelper::NotifyMaximizeModeStarted() {
     observer.OnMaximizeModeStarted();
 }
 
+void WMHelper::NotifyMaximizeModeEnding() {
+  for (MaximizeModeObserver& observer : maximize_mode_observers_)
+    observer.OnMaximizeModeEnding();
+}
+
 void WMHelper::NotifyMaximizeModeEnded() {
   for (MaximizeModeObserver& observer : maximize_mode_observers_)
     observer.OnMaximizeModeEnded();

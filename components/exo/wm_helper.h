@@ -56,6 +56,7 @@ class WMHelper {
   class MaximizeModeObserver {
    public:
     virtual void OnMaximizeModeStarted() = 0;
+    virtual void OnMaximizeModeEnding() = 0;
     virtual void OnMaximizeModeEnded() = 0;
 
    protected:
@@ -121,6 +122,7 @@ class WMHelper {
   void NotifyCursorVisibilityChanged(bool is_visible);
   void NotifyCursorSetChanged(ui::CursorSetType cursor_set);
   void NotifyMaximizeModeStarted();
+  void NotifyMaximizeModeEnding();
   void NotifyMaximizeModeEnded();
   void NotifyAccessibilityModeChanged();
   void NotifyKeyboardDeviceConfigurationChanged();

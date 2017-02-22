@@ -2080,10 +2080,11 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
     layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET;
     ScheduleSendDisplayMetrics(kConfigureDelayAfterLayoutSwitchMs);
   }
-  void OnMaximizeModeEnded() override {
+  void OnMaximizeModeEnding() override {
     layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
     ScheduleSendDisplayMetrics(kConfigureDelayAfterLayoutSwitchMs);
   }
+  void OnMaximizeModeEnded() override {}
 
   // Overridden from WMHelper::ActivationObserver:
   void OnWindowActivated(aura::Window* gained_active,

@@ -368,6 +368,9 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
   // Called after maximize mode has started, windows might still animate though.
   void OnMaximizeModeStarted();
 
+  // Called after maximize mode is about to end.
+  void OnMaximizeModeEnding();
+
   // Called after maximize mode has ended, windows might still be returning to
   // their original position.
   void OnMaximizeModeEnded();

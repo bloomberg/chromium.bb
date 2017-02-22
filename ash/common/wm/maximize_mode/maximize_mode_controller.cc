@@ -146,6 +146,7 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
     });
 
   } else {
+    shell->OnMaximizeModeEnding();
     maximize_mode_window_manager_.reset();
     shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
     shell->OnMaximizeModeEnded();

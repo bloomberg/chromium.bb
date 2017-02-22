@@ -136,6 +136,10 @@ void WMHelperAsh::OnMaximizeModeStarted() {
   NotifyMaximizeModeStarted();
 }
 
+void WMHelperAsh::OnMaximizeModeEnding() {
+  NotifyMaximizeModeEnding();
+}
+
 void WMHelperAsh::OnMaximizeModeEnded() {
   NotifyMaximizeModeEnded();
 }
