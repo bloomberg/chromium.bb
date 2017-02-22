@@ -229,8 +229,8 @@ MotionEventAndroid::Action MotionEventAndroid::GetAction() const {
 }
 
 int MotionEventAndroid::GetActionIndex() const {
-  DCHECK(cached_action_ == ACTION_POINTER_UP ||
-         cached_action_ == ACTION_POINTER_DOWN)
+  DCHECK(cached_action_ == MotionEvent::ACTION_POINTER_UP ||
+         cached_action_ == MotionEvent::ACTION_POINTER_DOWN)
       << "Invalid action for GetActionIndex(): " << cached_action_;
   DCHECK_GE(cached_action_index_, 0);
   DCHECK_LT(cached_action_index_, static_cast<int>(cached_pointer_count_));
@@ -303,6 +303,8 @@ float MotionEventAndroid::GetPressure(size_t pointer_index) const {
   // caching the pressure values is not a worthwhile optimization (they're
   // accessed at most once per event instance).
   if (!event_.obj())
+    return 0.f;
+  if (cached_action_ == MotionEvent::ACTION_UP)
     return 0.f;
   return Java_MotionEvent_getPressureF_I(AttachCurrentThread(), event_,
                                          pointer_index);

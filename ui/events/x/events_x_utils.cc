@@ -725,6 +725,9 @@ float GetTouchAngleFromXEvent(const XEvent& xev) {
 }
 
 float GetTouchForceFromXEvent(const XEvent& xev) {
+  XIDeviceEvent* event = static_cast<XIDeviceEvent*>(xev.xcookie.data);
+  if (event->evtype == XI_TouchEnd)
+    return 0.0;
   double force = 0.0;
   force = GetTouchParamFromXEvent(
       xev, ui::DeviceDataManagerX11::DT_TOUCH_PRESSURE, 0.0);

@@ -305,7 +305,7 @@ TEST_F(EventsXTest, TouchEventBasic) {
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.25f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 10.0f);
-  EXPECT_FLOAT_EQ(pointer_details.force, 0.05f);
+  EXPECT_FLOAT_EQ(pointer_details.force, 0.f);
 
   // Touch with tracking id 6 should have old angle/pressure value and new
   // radius value.
@@ -321,7 +321,7 @@ TEST_F(EventsXTest, TouchEventBasic) {
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.45f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
   EXPECT_FLOAT_EQ(pointer_details.radius_x, 25.0f);
-  EXPECT_FLOAT_EQ(pointer_details.force, 0.5f);
+  EXPECT_FLOAT_EQ(pointer_details.force, 0.f);
 }
 
 int GetTouchIdForTrackingId(uint32_t tracking_id) {

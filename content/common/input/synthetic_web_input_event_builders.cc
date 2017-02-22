@@ -230,6 +230,7 @@ void SyntheticWebTouchEvent::ReleasePoint(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, kTouchesLengthCap);
   touches[index].state = WebTouchPoint::StateReleased;
+  touches[index].force = 0.f;
   WebTouchEventTraits::ResetType(WebInputEvent::TouchEnd, timeStampSeconds(),
                                  this);
 }
