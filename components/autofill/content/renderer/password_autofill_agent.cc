@@ -1053,7 +1053,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
 
   blink::WebVector<blink::WebFormElement> forms;
   frame->document().forms(forms);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kShowAutofillSignatures)) {
     AnnotateFormsWithSignatures(forms);
   }
