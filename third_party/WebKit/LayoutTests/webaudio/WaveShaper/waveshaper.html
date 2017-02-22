@@ -2,19 +2,16 @@
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 <script type="text/javascript" src="../resources/buffer-loader.js"></script>
 </head>
 
 <body>
-
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Tests that WaveShaperNode applies proper non-linear distortion.");
+var audit = Audit.createTaskRunner();
 
 var sampleRate = 44100;
 var lengthInSeconds = 4;
@@ -60,9 +57,7 @@ function generateWaveShapingCurve() {
     return curve;
 }
 
-function checkShapedCurve(event) {
-    var buffer = event.renderedBuffer;
-
+function checkShapedCurve(buffer, should) {
     var inputData = inputBuffer.getChannelData(0);
     var outputData = buffer.getChannelData(0);
 
@@ -90,23 +85,11 @@ function checkShapedCurve(event) {
         }
     }
 
-    if (success) {
-        testPassed("WaveShaperNode properly applied non-linear distortion.");
-    } else {
-        testFailed("WaveShaperNode did not properly apply non-linear distortion.");
-    }
-
-    finishJSTest();
+    should(success, "WaveShaperNode applied non-linear distortion correctly")
+      .beTrue();
 }
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-    
-    window.jsTestIsAsync = true;
-        
+audit.define("test", function (task, should) {
     // Create offline audio context.
     context = new OfflineAudioContext(1, numberOfRenderFrames, sampleRate);
     
@@ -126,11 +109,12 @@ function runTest() {
     
     source.start(0);
     
-    context.oncomplete = checkShapedCurve;
-    context.startRendering();
-}
+    context.startRendering()
+      .then(buffer => checkShapedCurve(buffer, should))
+      .then(task.done.bind(task));
+});
 
-runTest();
+audit.run();
 
 </script>
 

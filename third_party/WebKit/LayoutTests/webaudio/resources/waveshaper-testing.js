@@ -51,9 +51,7 @@ function generateWaveShapingCurve() {
     return curve;
 }
 
-function checkShapedCurve(event) {
-    var buffer = event.renderedBuffer;
-
+function checkShapedCurve(buffer, should) {
     var outputData = buffer.getChannelData(0);
     var n = buffer.length;
 
@@ -114,15 +112,9 @@ function checkShapedCurve(event) {
 
     // console.log("worstDeltaInDecibels: " + worstDeltaInDecibels);
 
-    var success = worstDeltaInDecibels < acceptableAliasingThresholdDecibels;
-
-    if (success) {
-        testPassed(oversample + " WaveShaperNode oversampling within acceptable tolerance.");
-    } else {
-        testFailed(oversample + " WaveShaperNode oversampling not within acceptable tolerance.  Error = " + worstDeltaInDecibels + " dBFS");
-    }
-
-    finishJSTest();
+    should(worstDeltaInDecibels, oversample +
+            " WaveshaperNode oversampling error (in dBFS)")
+        .beLessThan(acceptableAliasingThresholdDecibels);
 }
 
 function createImpulseBuffer(context, sampleFrameLength) {
@@ -145,31 +137,33 @@ function runWaveShaperOversamplingTest(testParams) {
     fundamentalFrequency = testParams.fundamentalFrequency;
     acceptableAliasingThresholdDecibels = testParams.acceptableAliasingThresholdDecibels;
 
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
+    let audit = Audit.createTaskRunner();
 
-    window.jsTestIsAsync = true;
+    audit.define("test", function (task, should) {
+        task.describe(testParams.description);
 
-    // Create offline audio context.
-    var numberOfRenderFrames = sampleRate * lengthInSeconds;
-    context = new OfflineAudioContext(1, numberOfRenderFrames, sampleRate);
+        // Create offline audio context.
+        var numberOfRenderFrames = sampleRate * lengthInSeconds;
+        context = new OfflineAudioContext(1, numberOfRenderFrames, sampleRate);
 
-    // source -> waveshaper -> destination
-    var source = context.createBufferSource();
-    source.buffer = createToneBuffer(context, fundamentalFrequency, lengthInSeconds, 1);
+        // source -> waveshaper -> destination
+        var source = context.createBufferSource();
+        source.buffer = createToneBuffer(context, fundamentalFrequency, lengthInSeconds, 1);
 
-    // Apply a non-linear distortion curve.
-    waveshaper = context.createWaveShaper();
-    waveshaper.curve = generateWaveShapingCurve();
-    waveshaper.oversample = oversample;
+        // Apply a non-linear distortion curve.
+        waveshaper = context.createWaveShaper();
+        waveshaper.curve = generateWaveShapingCurve();
+        waveshaper.oversample = oversample;
 
-    source.connect(waveshaper);
-    waveshaper.connect(context.destination);
+        source.connect(waveshaper);
+        waveshaper.connect(context.destination);
 
-    source.start(0);
+        source.start(0);
 
-    context.oncomplete = checkShapedCurve;
-    context.startRendering();
+        context.startRendering()
+            .then(buffer => checkShapedCurve(buffer, should))
+            .then(() => task.done());
+      });
+
+    audit.run();
 }
