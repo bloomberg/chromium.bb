@@ -88,6 +88,16 @@ DataUseMeasurement::DataUseMeasurement(
 {
   DCHECK(ascriber_);
   DCHECK(url_request_classifier_);
+
+#if defined(OS_ANDROID)
+  int64_t bytes = 0;
+  // Query Android traffic stats.
+  if (net::android::traffic_stats::GetCurrentUidRxBytes(&bytes))
+    rx_bytes_os_ = bytes;
+
+  if (net::android::traffic_stats::GetCurrentUidTxBytes(&bytes))
+    tx_bytes_os_ = bytes;
+#endif
 }
 
 DataUseMeasurement::~DataUseMeasurement(){};
@@ -312,7 +322,10 @@ void DataUseMeasurement::MaybeRecordNetworkBytesOS() {
   if (net::android::traffic_stats::GetCurrentUidRxBytes(&bytes)) {
     if (rx_bytes_os_ != 0) {
       DCHECK_GE(bytes, rx_bytes_os_);
-      UMA_HISTOGRAM_COUNTS("DataUse.BytesReceived.OS", bytes - rx_bytes_os_);
+      if (bytes > rx_bytes_os_) {
+        // Do not record samples with value 0.
+        UMA_HISTOGRAM_COUNTS("DataUse.BytesReceived.OS", bytes - rx_bytes_os_);
+      }
     }
     rx_bytes_os_ = bytes;
   }
@@ -320,7 +333,10 @@ void DataUseMeasurement::MaybeRecordNetworkBytesOS() {
   if (net::android::traffic_stats::GetCurrentUidTxBytes(&bytes)) {
     if (tx_bytes_os_ != 0) {
       DCHECK_GE(bytes, tx_bytes_os_);
-      UMA_HISTOGRAM_COUNTS("DataUse.BytesSent.OS", bytes - tx_bytes_os_);
+      if (bytes > tx_bytes_os_) {
+        // Do not record samples with value 0.
+        UMA_HISTOGRAM_COUNTS("DataUse.BytesSent.OS", bytes - tx_bytes_os_);
+      }
     }
     tx_bytes_os_ = bytes;
   }
