@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/json/json_string_value_serializer.h"
@@ -19,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
@@ -122,6 +124,13 @@ void NetworkStateHandler::RemoveObserver(
 NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
     const NetworkTypePattern& type) const {
   std::string technology = GetTechnologyForType(type);
+
+  if (technology == kTypeTether) {
+    bool is_tether_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        chromeos::switches::kEnableTether);
+    return is_tether_enabled ? TECHNOLOGY_ENABLED : TECHNOLOGY_UNAVAILABLE;
+  }
+
   TechnologyState state;
   if (shill_property_handler_->IsTechnologyEnabled(technology))
     state = TECHNOLOGY_ENABLED;
@@ -307,6 +316,20 @@ void NetworkStateHandler::GetNetworkListByType(const NetworkTypePattern& type,
   }
 }
 
+void NetworkStateHandler::GetTetherNetworkList(int limit,
+                                               NetworkStateList* list) {
+  DCHECK(list);
+  list->clear();
+  int count = 0;
+
+  for (auto iter = tether_network_list_.begin();
+       iter != tether_network_list_.end(); ++iter) {
+    list->push_back((*iter)->AsNetworkState());
+    if (limit > 0 && ++count >= limit)
+      return;
+  }
+}
+
 const NetworkState* NetworkStateHandler::GetNetworkStateFromServicePath(
     const std::string& service_path,
     bool configured_only) const {
@@ -343,9 +366,19 @@ const NetworkState* NetworkStateHandler::GetNetworkStateFromGuid(
   return nullptr;
 }
 
-const std::string NetworkStateHandler::CreateTetherNetworkState(
-    const std::string& name) {
-  const std::string& guid = base::GenerateGUID();
+void NetworkStateHandler::AddTetherNetworkState(const std::string& guid,
+                                                const std::string& name) {
+  DCHECK(!guid.empty());
+
+  // If the network already exists, do nothing.
+  for (auto iter = tether_network_list_.begin();
+       iter != tether_network_list_.end(); ++iter) {
+    if (iter->get()->AsNetworkState()->guid() == guid) {
+      NET_LOG(ERROR) << "AddTetherNetworkState: " << name
+                     << " called with existing guid:" << guid;
+      return;
+    }
+  }
 
   std::unique_ptr<NetworkState> tether_managed_state =
       base::MakeUnique<NetworkState>(base::GenerateGUID());
@@ -357,8 +390,6 @@ const std::string NetworkStateHandler::CreateTetherNetworkState(
 
   tether_network_list_.push_back(std::move(tether_managed_state));
   NotifyNetworkListChanged();
-
-  return guid;
 }
 
 void NetworkStateHandler::RemoveTetherNetworkState(const std::string& guid) {
@@ -1027,6 +1058,9 @@ std::string NetworkStateHandler::GetTechnologyForType(
 
   if (type.MatchesType(shill::kTypeCellular))
     return shill::kTypeCellular;
+
+  if (type.MatchesType(kTypeTether))
+    return kTypeTether;
 
   NOTREACHED();
   return std::string();

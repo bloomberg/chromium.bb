@@ -108,8 +108,10 @@ class NetworkListViewMd : public NetworkListViewBase,
   views::Label* no_wifi_networks_view_;
   views::Label* no_cellular_networks_view_;
   SectionHeaderRowView* cellular_header_view_;
+  SectionHeaderRowView* tether_header_view_;
   SectionHeaderRowView* wifi_header_view_;
   views::Separator* cellular_separator_view_;
+  views::Separator* tether_separator_view_;
   views::Separator* wifi_separator_view_;
 
   // An owned list of network info.

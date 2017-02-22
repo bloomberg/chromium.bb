@@ -12,10 +12,12 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
@@ -45,7 +47,10 @@ const char kShillManagerClientStubDefaultWifi[] = "/service/wifi1";
 const char kShillManagerClientStubWifi2[] = "/service/wifi2";
 const char kShillManagerClientStubCellular[] = "/service/cellular1";
 
-const char kTetherName[] = "Device";
+const char kTetherGuid1[] = "tether1";
+const char kTetherGuid2[] = "tether2";
+const char kTetherName1[] = "Device1";
+const char kTetherName2[] = "Device2";
 
 using chromeos::DeviceState;
 using chromeos::NetworkState;
@@ -371,6 +376,30 @@ TEST_F(NetworkStateHandlerTest, GetNetworkList) {
   EXPECT_EQ(1u, networks.size());
 }
 
+TEST_F(NetworkStateHandlerTest, GetTetherNetworkList) {
+  NetworkStateHandler::NetworkStateList tether_networks;
+
+  network_state_handler_->GetTetherNetworkList(0 /* no limit */,
+                                               &tether_networks);
+  EXPECT_EQ(0u, tether_networks.size());
+
+  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
+
+  network_state_handler_->GetTetherNetworkList(0 /* no limit */,
+                                               &tether_networks);
+  EXPECT_EQ(1u, tether_networks.size());
+
+  network_state_handler_->AddTetherNetworkState(kTetherGuid2, kTetherName2);
+
+  network_state_handler_->GetTetherNetworkList(0 /* no limit */,
+                                               &tether_networks);
+  EXPECT_EQ(2u, tether_networks.size());
+
+  network_state_handler_->GetTetherNetworkList(1 /* no limit */,
+                                               &tether_networks);
+  EXPECT_EQ(1u, tether_networks.size());
+}
+
 TEST_F(NetworkStateHandlerTest, NetworkListChanged) {
   size_t stub_network_count = test_observer_->network_count();
   // Set up two additional visible networks.
@@ -497,6 +526,19 @@ TEST_F(NetworkStateHandlerTest, TechnologyState) {
       network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
 }
 
+TEST_F(NetworkStateHandlerTest, TetherTechnologyState) {
+  EXPECT_EQ(
+      NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Tether()));
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kEnableTether);
+
+  EXPECT_EQ(
+      NetworkStateHandler::TECHNOLOGY_ENABLED,
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::Tether()));
+}
+
 TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
   // Set a service property.
   const std::string eth1 = kShillManagerClientStubDefaultService;
@@ -547,21 +589,20 @@ TEST_F(NetworkStateHandlerTest, GetState) {
 TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
   EXPECT_EQ(0u, test_observer_->network_list_changed_count());
 
-  const std::string& guid =
-      network_state_handler_->CreateTetherNetworkState(kTetherName);
+  network_state_handler_->AddTetherNetworkState(kTetherGuid1, kTetherName1);
 
   EXPECT_EQ(1u, test_observer_->network_list_changed_count());
 
   const NetworkState* tether_network =
-      network_state_handler_->GetNetworkStateFromGuid(guid);
+      network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
   ASSERT_TRUE(tether_network);
-  EXPECT_EQ(kTetherName, tether_network->name());
+  EXPECT_EQ(kTetherName1, tether_network->name());
 
-  network_state_handler_->RemoveTetherNetworkState(guid);
+  network_state_handler_->RemoveTetherNetworkState(kTetherGuid1);
 
   EXPECT_EQ(2u, test_observer_->network_list_changed_count());
 
-  ASSERT_FALSE(network_state_handler_->GetNetworkStateFromGuid(guid));
+  ASSERT_FALSE(network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1));
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {

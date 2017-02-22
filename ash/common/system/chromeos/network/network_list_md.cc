@@ -182,6 +182,24 @@ class CellularHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
   DISALLOW_COPY_AND_ASSIGN(CellularHeaderRowView);
 };
 
+class TetherHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
+ public:
+  TetherHeaderRowView()
+      : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_TETHER) {}
+
+  ~TetherHeaderRowView() override {}
+
+  const char* GetClassName() const override { return "TetherHeaderRowView"; }
+
+ protected:
+  void OnToggleToggled(bool is_on) override {
+    // TODO (hansberry): Persist toggle to settings/preferences.
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TetherHeaderRowView);
+};
+
 class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
  public:
   explicit WifiHeaderRowView(NetworkListDelegate* network_list_delegate)
@@ -263,8 +281,10 @@ NetworkListViewMd::NetworkListViewMd(NetworkListDelegate* delegate)
       no_wifi_networks_view_(nullptr),
       no_cellular_networks_view_(nullptr),
       cellular_header_view_(nullptr),
+      tether_header_view_(nullptr),
       wifi_header_view_(nullptr),
       cellular_separator_view_(nullptr),
+      tether_separator_view_(nullptr),
       wifi_separator_view_(nullptr) {
   CHECK(delegate_);
 }
@@ -275,10 +295,20 @@ NetworkListViewMd::~NetworkListViewMd() {
 
 void NetworkListViewMd::Update() {
   CHECK(container());
-  NetworkStateHandler::NetworkStateList network_list;
+
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+
+  NetworkStateHandler::NetworkStateList network_list;
   handler->GetVisibleNetworkList(&network_list);
   UpdateNetworks(network_list);
+
+  NetworkStateHandler::NetworkStateList tether_network_list;
+  handler->GetTetherNetworkList(0 /* no limit */, &tether_network_list);
+  for (const auto& tether_network : tether_network_list) {
+    network_list_.push_back(
+        base::MakeUnique<NetworkInfo>(tether_network->guid()));
+  }
+
   UpdateNetworkIcons();
   OrderNetworks();
   UpdateNetworkListInternal();
@@ -376,6 +406,8 @@ void NetworkListViewMd::UpdateNetworkIcons() {
       info->type = NetworkInfo::Type::WIFI;
     else if (network->Matches(NetworkTypePattern::Cellular()))
       info->type = NetworkInfo::Type::CELLULAR;
+    else if (network->Matches(NetworkTypePattern::Tether()))
+      info->type = NetworkInfo::Type::TETHER;
     if (prohibited_by_policy) {
       info->tooltip =
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED);
@@ -462,6 +494,25 @@ NetworkListViewMd::UpdateNetworkListEntries() {
         UpdateNetworkChildren(NetworkInfo::Type::CELLULAR, index);
     index += new_cellular_guids->size();
     new_guids->insert(new_cellular_guids->begin(), new_cellular_guids->end());
+  }
+
+  // TODO (hansberry): Audit existing usage of NonVirtual and consider changing
+  // it to include Tether. See crbug.com/693647.
+  if (handler->IsTechnologyAvailable(NetworkTypePattern::Tether())) {
+    index = UpdateSectionHeaderRow(
+        NetworkTypePattern::Tether(),
+        handler->IsTechnologyEnabled(NetworkTypePattern::Tether()), index,
+        &tether_header_view_, &tether_separator_view_);
+
+    // TODO (hansberry): Should a message similar to
+    // IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS be shown if Tether technology
+    // is enabled but no networks are around?
+
+    // Add Tether networks.
+    std::unique_ptr<std::set<std::string>> new_tether_guids =
+        UpdateNetworkChildren(NetworkInfo::Type::TETHER, index);
+    index += new_tether_guids->size();
+    new_guids->insert(new_tether_guids->begin(), new_tether_guids->end());
   }
 
   if (pattern.MatchesPattern(NetworkTypePattern::WiFi())) {
@@ -570,6 +621,8 @@ int NetworkListViewMd::UpdateSectionHeaderRow(
   if (!*view) {
     if (pattern.Equals(NetworkTypePattern::Cellular()))
       *view = new CellularHeaderRowView();
+    else if (pattern.Equals(NetworkTypePattern::Tether()))
+      *view = new TetherHeaderRowView();
     else if (pattern.Equals(NetworkTypePattern::WiFi()))
       *view = new WifiHeaderRowView(delegate_);
     else
