@@ -22,6 +22,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
@@ -459,6 +460,7 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     @SmallTest
+    @DisabledTest(message = "crbug.com/694812")
     @Feature({"TextInput"})
     public void testShowAndHideSoftInput() throws Exception {
         focusElement("input_radio", false);
