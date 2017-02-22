@@ -88,6 +88,8 @@ class SearchGeolocationService : public KeyedService {
 
  private:
   friend class SearchGeolocationServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(GeolocationPermissionContextTests,
+                           SearchGeolocationInIncognito);
   struct PrefValue;
 
   ~SearchGeolocationService() override;

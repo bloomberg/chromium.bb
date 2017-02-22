@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -53,8 +54,11 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/mock_location_settings.h"
+#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
+#include "chrome/common/chrome_features.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #else
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
@@ -116,6 +120,24 @@ void ClosedInfoBarTracker::Clear() {
   removed_infobars_.clear();
 }
 
+#if defined(OS_ANDROID)
+// TestSearchEngineDelegate
+class TestSearchEngineDelegate
+    : public SearchGeolocationService::SearchEngineDelegate {
+ public:
+  bool IsDSEGoogle() override { return true; }
+
+  url::Origin GetGoogleDSECCTLD() override {
+    return url::Origin(GURL(kDSETestUrl));
+  }
+
+  void SetDSEChangedCallback(const base::Closure& callback) override {}
+
+  static const char kDSETestUrl[];
+};
+
+const char TestSearchEngineDelegate::kDSETestUrl[] = "https://www.dsetest.com";
+#endif  // defined(OS_ANDROID)
 
 // GeolocationPermissionContextTests ------------------------------------------
 
@@ -871,3 +893,35 @@ TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
       CONTENT_SETTING_ASK,
       GetGeolocationContentSetting(requesting_frame_1, requesting_frame_0));
 }
+
+#if defined(OS_ANDROID)
+TEST_F(GeolocationPermissionContextTests, SearchGeolocationInIncognito) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kConsistentOmniboxGeolocation);
+
+  GURL requesting_frame(TestSearchEngineDelegate::kDSETestUrl);
+  // The DSE Geolocation setting should be used in incognito if it is BLOCK,
+  // but not if it is ALLOW.
+  SearchGeolocationService* geo_service =
+      SearchGeolocationService::Factory::GetForBrowserContext(profile());
+  geo_service->SetSearchEngineDelegateForTest(
+      base::MakeUnique<TestSearchEngineDelegate>());
+
+  Profile* otr_profile = profile()->GetOffTheRecordProfile();
+
+  // A DSE setting of ALLOW should not flow through to incognito.
+  geo_service->SetDSEGeolocationSetting(true);
+  ASSERT_EQ(blink::mojom::PermissionStatus::ASK,
+            PermissionManager::Get(otr_profile)
+                ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                      requesting_frame, requesting_frame));
+
+  // Changing the setting to BLOCK should flow through to incognito.
+  geo_service->SetDSEGeolocationSetting(false);
+  ASSERT_EQ(blink::mojom::PermissionStatus::DENIED,
+            PermissionManager::Get(otr_profile)
+                ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                      requesting_frame, requesting_frame));
+}
+#endif  // defined(OS_ANDROID)

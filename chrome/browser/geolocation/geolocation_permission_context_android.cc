@@ -46,11 +46,25 @@ ContentSetting GeolocationPermissionContextAndroid::GetPermissionStatusInternal(
     // consistent with the content setting.
     SearchGeolocationService* search_helper =
         SearchGeolocationService::Factory::GetForBrowserContext(profile());
+
+    // If the user is incognito, use the DSE Geolocation setting from the
+    // original profile - but only if it is BLOCK.
+    if (!search_helper) {
+      DCHECK(profile()->IsOffTheRecord());
+      search_helper = SearchGeolocationService::Factory::GetForBrowserContext(
+          profile()->GetOriginalProfile());
+    }
+
     if (search_helper &&
         search_helper->UseDSEGeolocationSetting(
             url::Origin(embedding_origin))) {
-      value = search_helper->GetDSEGeolocationSetting() ? CONTENT_SETTING_ALLOW
-                                                        : CONTENT_SETTING_BLOCK;
+      if (!search_helper->GetDSEGeolocationSetting()) {
+        // If the DSE setting is off, always return BLOCK.
+        value = CONTENT_SETTING_BLOCK;
+      } else if (!profile()->IsOffTheRecord()) {
+        // Otherwise, return ALLOW only if this is not incognito.
+        value = CONTENT_SETTING_ALLOW;
+      }
     }
   }
 
