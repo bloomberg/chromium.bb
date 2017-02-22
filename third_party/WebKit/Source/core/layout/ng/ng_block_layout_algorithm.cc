@@ -210,7 +210,9 @@ NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
   // Calculate the float offset if needed.
   LayoutUnit float_offset;
   if (floating_object->exclusion_type == NGExclusion::kFloatRight) {
-    float_offset = opportunity.size.inline_size - float_fragment.InlineSize();
+    LayoutUnit float_margin_box_inline_size =
+        float_fragment.InlineSize() + floating_object->margins.InlineSum();
+    float_offset = opportunity.size.inline_size - float_margin_box_inline_size;
   }
 
   // Add the float as an exclusion.
@@ -227,12 +229,13 @@ NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
 // and {@code floating_object}'s space and margins.
 void UpdateFloatingObjectLeftOffset(
     const NGConstraintSpace& new_parent_space,
-    const Persistent<NGFloatingObject>& floating_object) {
-  const auto& float_space = floating_object->space;
+    const Persistent<NGFloatingObject>& floating_object,
+    const NGLogicalOffset& float_logical_offset) {
   // TODO(glebl): We should use physical offset here.
-  floating_object->left_offset = float_space->BfcOffset().inline_offset -
-                                 new_parent_space.BfcOffset().inline_offset +
-                                 floating_object->margins.inline_start;
+  floating_object->left_offset =
+      floating_object->original_parent_space->BfcOffset().inline_offset -
+      new_parent_space.BfcOffset().inline_offset +
+      float_logical_offset.inline_offset;
 }
 
 // Positions pending floats stored on the fragment builder starting from
@@ -245,18 +248,19 @@ void PositionPendingFloats(const LayoutUnit origin_point_block_offset,
 
   for (auto& floating_object : builder->UnpositionedFloats()) {
     Member<NGConstraintSpace> float_space = floating_object->space;
-    Member<const NGConstraintSpace> float_parent_space =
-        floating_object->parent_space;
+    Member<const NGConstraintSpace> original_parent_space =
+        floating_object->original_parent_space;
 
     NGLogicalOffset origin_point = {float_space->BfcOffset().inline_offset,
                                     origin_point_block_offset};
     NGLogicalOffset from_offset = {
-        float_parent_space->BfcOffset().inline_offset, bfc_block_offset};
+        original_parent_space->BfcOffset().inline_offset, bfc_block_offset};
 
     NGLogicalOffset float_fragment_offset =
         PositionFloat(origin_point, from_offset, floating_object);
     builder->AddFloatingObject(floating_object, float_fragment_offset);
-    UpdateFloatingObjectLeftOffset(new_parent_space, floating_object);
+    UpdateFloatingObjectLeftOffset(new_parent_space, floating_object,
+                                   float_fragment_offset);
   }
   builder->MutableUnpositionedFloats().clear();
 }

@@ -815,8 +815,9 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
   setBodyInnerHTML(R"HTML(
       <style>
         #container {
-          height: 200px;
-          width: 200px;
+          height: 300px;
+          width: 300px;
+          outline: blue solid;
         }
         #empty1 {
           margin: 20px;
@@ -826,7 +827,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
           margin: 15px;
           padding: 0 15px;
         }
-        #float {
+        #left-float {
           float: left;
           height: 5px;
           width: 5px;
@@ -834,11 +835,19 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
           margin: 10px;
           background-color: green;
         }
+        #right-float {
+          float: right;
+          height: 15px;
+          width: 15px;
+          margin: 15px 10px;
+          background-color: red;
+        }
       </style>
       <div id='container'>
         <div id='empty1'>
           <div id='empty2'>
-            <div id='float'></div>
+            <div id='left-float'></div>
+            <div id='right-float'></div>
           </div>
         </div>
       </div>
@@ -876,16 +885,26 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
   int empty2_inline_offset = 35;
   EXPECT_THAT(LayoutUnit(empty2_inline_offset), empty2_fragment->LeftOffset());
 
-  ASSERT_EQ(1UL, container_fragment->PositionedFloats().size());
-  auto float_fragment = container_fragment->PositionedFloats().at(0)->fragment;
-  // 10 = float's padding
-  EXPECT_THAT(LayoutUnit(10), float_fragment->TopOffset());
-  // 25 = empty2's padding(15) + float's padding(10)
-  int float_inline_offset = 25;
-  EXPECT_THAT(float_fragment->LeftOffset(), LayoutUnit(float_inline_offset));
+  ASSERT_EQ(2UL, container_fragment->PositionedFloats().size());
+  RefPtr<NGPhysicalFragment> left_float_fragment =
+      container_fragment->PositionedFloats().at(0)->fragment;
+  // inline 25 = empty2's padding(15) + left float's margin(10)
+  // block 10 = left float's margin
+  EXPECT_THAT(NGPhysicalOffset(LayoutUnit(25), LayoutUnit(10)),
+              left_float_fragment->Offset());
+
+  auto right_float_fragment =
+      container_fragment->PositionedFloats().at(1)->fragment;
+  LayoutUnit right_float_offset = LayoutUnit(125);
+  // inline offset 150 = empty2's padding(15) + right float's margin(10) + right
+  // float offset(125)
+  // block offset 15 = right float's margin
+  EXPECT_THAT(
+      NGPhysicalOffset(LayoutUnit(25) + right_float_offset, LayoutUnit(15)),
+      right_float_fragment->Offset());
 
   // ** Verify layout tree **
-  Element* left_float = document().getElementById("float");
+  Element* left_float = document().getElementById("left-float");
   // 88 = body's margin(8) +
   // empty1's padding and margin + empty2's padding and margins + float's
   // padding
@@ -894,18 +913,28 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
   EXPECT_THAT(body_top_offset + 10, left_float->offsetTop());
 
   // ** Legacy Floating objects **
-  Element* body = document().getElementsByTagName("body")->item(0);
+  // #container is the 1st non-empty block so floats are attached to it.
+  Element* container = document().getElementById("container");
   auto& floating_objects =
       const_cast<FloatingObjects*>(
-          toLayoutBlockFlow(body->layoutObject())->floatingObjects())
+          toLayoutBlockFlow(container->layoutObject())->floatingObjects())
           ->mutableSet();
-  ASSERT_EQ(1UL, floating_objects.size());
-  auto floating_object = floating_objects.takeFirst();
-  ASSERT_TRUE(floating_object->isPlaced());
+  ASSERT_EQ(2UL, floating_objects.size());
+  auto left_floating_object = floating_objects.takeFirst();
+  ASSERT_TRUE(left_floating_object->isPlaced());
   // 80 = float_inline_offset(25) + accumulative offset of empty blocks(35 + 20)
-  EXPECT_THAT(LayoutUnit(80), floating_object->x());
-  // 10 = float's padding
-  EXPECT_THAT(LayoutUnit(10), floating_object->y());
+  EXPECT_THAT(LayoutUnit(80), left_floating_object->x());
+  // 10 = left float's margin
+  EXPECT_THAT(LayoutUnit(10), left_floating_object->y());
+
+  auto right_floating_object = floating_objects.takeFirst();
+  ASSERT_TRUE(right_floating_object->isPlaced());
+  // 205 = float_inline_offset(25) +
+  //       accumulative offset of empty blocks(35 + 20)
+  //       + right float offset(125)
+  EXPECT_THAT(LayoutUnit(80) + right_float_offset, right_floating_object->x());
+  // 15 = right float's margin
+  EXPECT_THAT(LayoutUnit(15), right_floating_object->y());
 }
 
 // Verifies that left/right floating and regular blocks can be positioned
@@ -2034,10 +2063,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionEmptyBlocksInNewBfc) {
       <div id="empty-block2"></div>
     </div>
   )HTML");
-  Element* body = document().getElementsByTagName("body")->item(0);
+  // #container is the new parent for our float because it's height != 0.
+  Element* container = document().getElementById("container");
   auto& floating_objects =
       const_cast<FloatingObjects*>(
-          toLayoutBlockFlow(body->layoutObject())->floatingObjects())
+          toLayoutBlockFlow(container->layoutObject())->floatingObjects())
           ->mutableSet();
   ASSERT_EQ(1UL, floating_objects.size());
   auto floating_object = floating_objects.takeFirst();

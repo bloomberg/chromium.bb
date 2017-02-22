@@ -27,7 +27,7 @@ struct CORE_EXPORT NGFloatingObject
                    const NGBoxStrut& margins)
       : fragment(fragment),
         space(space),
-        parent_space(parent_space),
+        original_parent_space(parent_space),
         node(node),
         margins(margins) {
     exclusion_type = NGExclusion::kFloatLeft;
@@ -42,7 +42,7 @@ struct CORE_EXPORT NGFloatingObject
 
   // Parent space is used so we can calculate the inline offset relative to
   // the original parent of this float.
-  Member<const NGConstraintSpace> parent_space;
+  Member<const NGConstraintSpace> original_parent_space;
   Member<NGBlockNode> node;
   NGExclusion::Type exclusion_type;
   EClear clear_type;
@@ -59,7 +59,7 @@ struct CORE_EXPORT NGFloatingObject
 
   DEFINE_INLINE_TRACE() {
     visitor->trace(space);
-    visitor->trace(parent_space);
+    visitor->trace(original_parent_space);
     visitor->trace(node);
   }
 };

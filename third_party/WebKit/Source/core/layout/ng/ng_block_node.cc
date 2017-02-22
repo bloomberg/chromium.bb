@@ -274,7 +274,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
         FragmentPositionUpdated(toNGPhysicalBoxFragment(*child_fragment));
 
       for (const auto& floating_object : child_fragment->PositionedFloats()) {
-        FloatingObjectPositionedUpdated(floating_object, layout_box_);
+        FloatingObjectPositionedUpdated(
+            floating_object, toLayoutBox(child_fragment->GetLayoutObject()));
       }
     }
   }
