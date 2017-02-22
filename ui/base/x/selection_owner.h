@@ -65,17 +65,24 @@ class UI_BASE_EXPORT SelectionOwner {
     IncrementalTransfer(XID window,
                         XAtom target,
                         XAtom property,
+                        std::unique_ptr<XScopedEventSelector> event_selector,
                         const scoped_refptr<base::RefCountedMemory>& data,
                         int offset,
                         base::TimeTicks timeout);
-    IncrementalTransfer(const IncrementalTransfer& other);
     ~IncrementalTransfer();
+
+    // Move-only class.
+    IncrementalTransfer(IncrementalTransfer&&);
+    IncrementalTransfer& operator=(IncrementalTransfer&&);
 
     // Parameters from the XSelectionRequest. The data is transferred over
     // |property| on |window|.
     XID window;
     XAtom target;
     XAtom property;
+
+    // Selects events on |window|.
+    std::unique_ptr<XScopedEventSelector> event_selector;
 
     // The data to be transferred.
     scoped_refptr<base::RefCountedMemory> data;
@@ -87,6 +94,9 @@ class UI_BASE_EXPORT SelectionOwner {
     // Time when the transfer should be aborted because the selection requestor
     // is taking too long to notify us that we can send the next chunk.
     base::TimeTicks timeout;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(IncrementalTransfer);
   };
 
   // Attempts to convert the selection to |target|. If the conversion is
@@ -112,9 +122,6 @@ class UI_BASE_EXPORT SelectionOwner {
   // Our X11 state.
   XDisplay* x_display_;
   XID x_window_;
-
-  // Events selected on the requesting window.
-  std::unique_ptr<XScopedEventSelector> requestor_events_;
 
   // The X11 selection that this instance communicates on.
   XAtom selection_name_;
