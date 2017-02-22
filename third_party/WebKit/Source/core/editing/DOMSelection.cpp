@@ -617,7 +617,8 @@ void DOMSelection::addRange(Range* newRange) {
     return;
   }
 
-  Range* originalRange = selection.firstRange();
+  Range* originalRange = primaryRangeOrNull();
+  DCHECK(originalRange);
 
   if (originalRange->startContainer()->treeScope() !=
       newRange->startContainer()->treeScope()) {
