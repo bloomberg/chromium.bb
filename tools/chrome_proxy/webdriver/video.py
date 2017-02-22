@@ -7,6 +7,7 @@ import time
 import common
 from common import TestDriver
 from common import IntegrationTest
+from common import NotAndroid
 
 
 class Video(IntegrationTest):
@@ -116,6 +117,18 @@ class Video(IntegrationTest):
         raise Exception('Test not complete after %d seconds.' % wait_time)
       if metrics['failed']:
         raise Exception('Test failed!')
+
+  # Make sure YouTube autoplays.
+  @NotAndroid
+  def testYoutube(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.LoadURL('http://data-saver-test.appspot.com/youtube')
+      t.WaitForJavascriptExpression(
+        'window.playerState == YT.PlayerState.PLAYING', 30)
+      for response in t.GetHTTPResponses():
+        if not response.url.startswith('https'):
+          self.assertHasChromeProxyViaHeader(response)
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
