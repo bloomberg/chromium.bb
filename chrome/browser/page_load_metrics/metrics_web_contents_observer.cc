@@ -82,7 +82,7 @@ MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
 
 MetricsWebContentsObserver::~MetricsWebContentsObserver() {
   // TODO(csharrison): Use a more user-initiated signal for CLOSE.
-  NotifyAbortAllLoads(ABORT_CLOSE, UserInitiatedInfo::NotUserInitiated());
+  NotifyPageEndAllLoads(END_CLOSE, UserInitiatedInfo::NotUserInitiated());
 }
 
 void MetricsWebContentsObserver::RegisterInputEventObserver(
@@ -293,8 +293,8 @@ void MetricsWebContentsObserver::DidFinishNavigation(
     // Notify other loads that they may have been aborted by this committed
     // load. is_certainly_browser_timestamp is set to false because
     // NavigationStart() could be set in either the renderer or browser process.
-    NotifyAbortAllLoadsWithTimestamp(
-        AbortTypeForPageTransition(navigation_handle->GetPageTransition()),
+    NotifyPageEndAllLoadsWithTimestamp(
+        EndReasonForPageTransition(navigation_handle->GetPageTransition()),
         user_initiated_info, navigation_handle->NavigationStart(), false);
 
     if (should_track) {
@@ -314,21 +314,28 @@ void MetricsWebContentsObserver::DidFinishNavigation(
 void MetricsWebContentsObserver::HandleFailedNavigationForTrackedLoad(
     content::NavigationHandle* navigation_handle,
     std::unique_ptr<PageLoadTracker> tracker) {
-  tracker->FailedProvisionalLoad(navigation_handle);
+  const base::TimeTicks now = base::TimeTicks::Now();
+  tracker->FailedProvisionalLoad(navigation_handle, now);
 
-  net::Error error = navigation_handle->GetNetErrorCode();
+  const net::Error error = navigation_handle->GetNetErrorCode();
 
   // net::OK: This case occurs when the NavigationHandle finishes and reports
   // !HasCommitted(), but reports no net::Error. This should not occur
   // pre-PlzNavigate, but afterwards it should represent the navigation stopped
   // by the user before it was ready to commit.
-  // net::ERR_ABORTED: An aborted provisional load has error
-  // net::ERR_ABORTED.
-  if ((error == net::OK) || (error == net::ERR_ABORTED)) {
-    tracker->NotifyAbort(ABORT_OTHER, UserInitiatedInfo::NotUserInitiated(),
-                         base::TimeTicks::Now(), true);
+  // net::ERR_ABORTED: An aborted provisional load has error net::ERR_ABORTED.
+  const bool is_aborted_provisional_load =
+      error == net::OK || error == net::ERR_ABORTED;
+
+  // If is_aborted_provisional_load, the page end reason is not yet known, and
+  // will be updated as additional information is available from subsequent
+  // navigations.
+  tracker->NotifyPageEnd(
+      is_aborted_provisional_load ? END_OTHER : END_PROVISIONAL_LOAD_FAILED,
+      UserInitiatedInfo::NotUserInitiated(), now, true);
+
+  if (is_aborted_provisional_load)
     aborted_provisional_loads_.push_back(std::move(tracker));
-  }
 }
 
 void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
@@ -350,7 +357,7 @@ void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
 
 void MetricsWebContentsObserver::NavigationStopped() {
   // TODO(csharrison): Use a more user-initiated signal for STOP.
-  NotifyAbortAllLoads(ABORT_STOP, UserInitiatedInfo::NotUserInitiated());
+  NotifyPageEndAllLoads(END_STOP, UserInitiatedInfo::NotUserInitiated());
 }
 
 void MetricsWebContentsObserver::OnInputEvent(
@@ -414,9 +421,7 @@ void MetricsWebContentsObserver::WasHidden() {
 
 // This will occur when the process for the main RenderFrameHost exits, either
 // normally or from a crash. We eagerly log data from the last committed load if
-// we have one. Don't notify aborts here because this is probably not user
-// initiated. If it is (e.g. browser shutdown), other code paths will take care
-// of notifying.
+// we have one.
 void MetricsWebContentsObserver::RenderProcessGone(
     base::TerminationStatus status) {
   // Other code paths will be run for normal renderer shutdown. Note that we
@@ -426,6 +431,16 @@ void MetricsWebContentsObserver::RenderProcessGone(
     return;
   }
 
+  // RenderProcessGone is associated with the render frame host for the
+  // currently committed load. We don't know if the pending navs or aborted
+  // pending navs are associated w/ the render process that died, so we can't be
+  // sure the info should propagate to them.
+  if (committed_load_) {
+    committed_load_->NotifyPageEnd(END_RENDER_PROCESS_GONE,
+                                   UserInitiatedInfo::NotUserInitiated(),
+                                   base::TimeTicks::Now(), true);
+  }
+
   // If this is a crash, eagerly log the aborted provisional loads and the
   // committed load. |provisional_loads_| don't need to be destroyed here
   // because their lifetime is tied to the NavigationHandle.
@@ -433,30 +448,30 @@ void MetricsWebContentsObserver::RenderProcessGone(
   aborted_provisional_loads_.clear();
 }
 
-void MetricsWebContentsObserver::NotifyAbortAllLoads(
-    UserAbortType abort_type,
+void MetricsWebContentsObserver::NotifyPageEndAllLoads(
+    PageEndReason page_end_reason,
     UserInitiatedInfo user_initiated_info) {
-  NotifyAbortAllLoadsWithTimestamp(abort_type, user_initiated_info,
-                                   base::TimeTicks::Now(), true);
+  NotifyPageEndAllLoadsWithTimestamp(page_end_reason, user_initiated_info,
+                                     base::TimeTicks::Now(), true);
 }
 
-void MetricsWebContentsObserver::NotifyAbortAllLoadsWithTimestamp(
-    UserAbortType abort_type,
+void MetricsWebContentsObserver::NotifyPageEndAllLoadsWithTimestamp(
+    PageEndReason page_end_reason,
     UserInitiatedInfo user_initiated_info,
     base::TimeTicks timestamp,
     bool is_certainly_browser_timestamp) {
   if (committed_load_) {
-    committed_load_->NotifyAbort(abort_type, user_initiated_info, timestamp,
-                                 is_certainly_browser_timestamp);
+    committed_load_->NotifyPageEnd(page_end_reason, user_initiated_info,
+                                   timestamp, is_certainly_browser_timestamp);
   }
   for (const auto& kv : provisional_loads_) {
-    kv.second->NotifyAbort(abort_type, user_initiated_info, timestamp,
-                           is_certainly_browser_timestamp);
+    kv.second->NotifyPageEnd(page_end_reason, user_initiated_info, timestamp,
+                             is_certainly_browser_timestamp);
   }
   for (const auto& tracker : aborted_provisional_loads_) {
     if (tracker->IsLikelyProvisionalAbort(timestamp)) {
-      tracker->UpdateAbort(abort_type, user_initiated_info, timestamp,
-                           is_certainly_browser_timestamp);
+      tracker->UpdatePageEnd(page_end_reason, user_initiated_info, timestamp,
+                             is_certainly_browser_timestamp);
     }
   }
   aborted_provisional_loads_.clear();
@@ -480,8 +495,8 @@ MetricsWebContentsObserver::NotifyAbortedProvisionalLoadsNewNavigation(
 
   base::TimeTicks timestamp = new_navigation->NavigationStart();
   if (last_aborted_load->IsLikelyProvisionalAbort(timestamp)) {
-    last_aborted_load->UpdateAbort(
-        AbortTypeForPageTransition(new_navigation->GetPageTransition()),
+    last_aborted_load->UpdatePageEnd(
+        EndReasonForPageTransition(new_navigation->GetPageTransition()),
         user_initiated_info, timestamp, false);
   }
 

@@ -19,43 +19,41 @@ namespace page_load_metrics {
 // This enum represents how a page load ends. If the action occurs before the
 // page load finishes (or reaches some point like first paint), then we consider
 // the load to be aborted.
-enum UserAbortType {
-  // Represents no abort.
-  ABORT_NONE,
+enum PageEndReason {
+  // Page lifetime has not yet ended (page is still active).
+  END_NONE,
 
-  // If the user presses reload or shift-reload.
-  ABORT_RELOAD,
+  // The page was reloaded, possibly by the user.
+  END_RELOAD,
 
-  // The user presses the back/forward button.
-  ABORT_FORWARD_BACK,
+  // The page was navigated away from, via a back or forward navigation.
+  END_FORWARD_BACK,
 
   // The navigation is replaced with a navigation with the qualifier
   // ui::PAGE_TRANSITION_CLIENT_REDIRECT, which is caused by Javascript, or the
   // meta refresh tag.
-  ABORT_CLIENT_REDIRECT,
+  END_CLIENT_REDIRECT,
 
   // If the page load is replaced by a new navigation. This includes link
   // clicks, typing in the omnibox (not a reload), and form submissions.
-  ABORT_NEW_NAVIGATION,
+  END_NEW_NAVIGATION,
 
-  // If the user presses the stop X button.
-  ABORT_STOP,
+  // The page load was stopped (e.g. the user presses the stop X button).
+  END_STOP,
 
-  // If the page load is aborted by closing the tab or browser.
-  ABORT_CLOSE,
+  // Page load ended due to closing the tab or browser.
+  END_CLOSE,
 
-  // The page load was backgrounded, e.g. the browser was minimized or the user
-  // switched tabs. Note that the same page may be foregrounded in the future,
-  // so this is not a 'terminal' abort type.
-  ABORT_BACKGROUND,
+  // The provisional load for this page load failed before committing.
+  END_PROVISIONAL_LOAD_FAILED,
 
-  // We don't know why the page load aborted. This is the value we assign to an
-  // aborted load if the only signal we get is a provisional load finishing
+  // The render process hosting the page terminated unexpectedly.
+  END_RENDER_PROCESS_GONE,
+
+  // We don't know why the page load ended. This is the value we assign to a
+  // terminated provisional load if the only signal we get is the load finished
   // without committing, either without error or with net::ERR_ABORTED.
-  ABORT_OTHER,
-
-  // Add values before this final count.
-  ABORT_LAST_ENTRY
+  END_OTHER
 };
 
 // Information related to failed provisional loads.
@@ -116,9 +114,9 @@ struct PageLoadExtraInfo {
       const GURL& url,
       const GURL& start_url,
       bool did_commit,
-      UserAbortType abort_type,
-      UserInitiatedInfo abort_user_initiated_info,
-      const base::Optional<base::TimeDelta>& time_to_abort,
+      PageEndReason page_end_reason,
+      UserInitiatedInfo page_end_user_initiated_info,
+      const base::Optional<base::TimeDelta>& page_end_time,
       const PageLoadMetadata& metadata);
 
   PageLoadExtraInfo(const PageLoadExtraInfo& other);
@@ -147,24 +145,37 @@ struct PageLoadExtraInfo {
   // Whether the navigation for this page load committed.
   const bool did_commit;
 
-  // The abort time and time to abort for this page load. If the page was not
-  // aborted, |abort_type| will be |ABORT_NONE|.
-  const UserAbortType abort_type;
+  // The reason the page load ended. If the page is still active,
+  // |page_end_reason| will be |END_NONE|. |page_end_time| contains the duration
+  // of time until the cause of the page end reason was encountered.
+  const PageEndReason page_end_reason;
 
-  // Whether the abort for this page load was user initiated. For example, if
-  // this page load was aborted by a new navigation, this field tracks whether
+  // Whether the end reason for this page load was user initiated. For example,
+  // if
+  // this page load was ended due to a new navigation, this field tracks whether
   // that new navigation was user-initiated. This field is only useful if this
-  // page load's abort type is a value other than ABORT_NONE. Note that this
+  // page load's end reason is a value other than END_NONE. Note that this
   // value is currently experimental, and is subject to change. In particular,
-  // this field is not currently set for some abort types, such as stop and
+  // this field is not currently set for some end reasons, such as stop and
   // close, since we don't yet have sufficient instrumentation to know if a stop
   // or close was caused by a user action.
   //
-  // TODO(csharrison): If more metadata for aborts is needed we should provide a
+  // TODO(csharrison): If more metadata for end reasons is needed we should
+  // provide a
   // better abstraction. Note that this is an approximation.
-  UserInitiatedInfo abort_user_initiated_info;
+  UserInitiatedInfo page_end_user_initiated_info;
 
-  const base::Optional<base::TimeDelta> time_to_abort;
+  // Total lifetime of the page from the user standoint, starting at navigation
+  // start. The page lifetime ends when the first of the following events
+  // happen:
+  // * the load of the main resource fails
+  // * the page load is stopped
+  // * the tab hosting the page is closed
+  // * the render process hosting the page goes away
+  // * a new navigation which later commits is initiated in the same tab
+  // This field will not be set if the page is still active and hasn't yet
+  // finished.
+  const base::Optional<base::TimeDelta> page_end_time;
 
   // Extra information supplied to the page load metrics system from the
   // renderer.

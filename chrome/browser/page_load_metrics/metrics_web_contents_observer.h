@@ -111,12 +111,12 @@ class MetricsWebContentsObserver
 
   // Notify all loads, provisional and committed, that we performed an action
   // that might abort them.
-  void NotifyAbortAllLoads(UserAbortType abort_type,
-                           UserInitiatedInfo user_initiated_info);
-  void NotifyAbortAllLoadsWithTimestamp(UserAbortType abort_type,
-                                        UserInitiatedInfo user_initiated_info,
-                                        base::TimeTicks timestamp,
-                                        bool is_certainly_browser_timestamp);
+  void NotifyPageEndAllLoads(PageEndReason page_end_reason,
+                             UserInitiatedInfo user_initiated_info);
+  void NotifyPageEndAllLoadsWithTimestamp(PageEndReason page_end_reason,
+                                          UserInitiatedInfo user_initiated_info,
+                                          base::TimeTicks timestamp,
+                                          bool is_certainly_browser_timestamp);
 
   // Register / Unregister input event callback to given RenderViewHost
   void RegisterInputEventObserver(content::RenderViewHost* host);

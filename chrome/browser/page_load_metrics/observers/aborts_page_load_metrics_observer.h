@@ -13,7 +13,6 @@ namespace internal {
 extern const char kHistogramAbortForwardBackBeforeCommit[];
 extern const char kHistogramAbortReloadBeforeCommit[];
 extern const char kHistogramAbortNewNavigationBeforeCommit[];
-extern const char kHistogramAbortClientRedirectBeforeCommit[];
 extern const char kHistogramAbortStopBeforeCommit[];
 extern const char kHistogramAbortCloseBeforeCommit[];
 extern const char kHistogramAbortBackgroundBeforeCommit[];

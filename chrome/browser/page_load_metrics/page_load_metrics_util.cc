@@ -6,10 +6,42 @@
 
 #include <algorithm>
 
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 
 namespace page_load_metrics {
+
+namespace {
+
+bool IsBackgroundAbort(const PageLoadExtraInfo& info) {
+  if (!info.started_in_foreground || !info.first_background_time)
+    return false;
+
+  if (!info.page_end_time)
+    return true;
+
+  return info.first_background_time <= info.page_end_time;
+}
+
+PageAbortReason GetAbortReasonForEndReason(PageEndReason end_reason) {
+  switch (end_reason) {
+    case END_RELOAD:
+      return ABORT_RELOAD;
+    case END_FORWARD_BACK:
+      return ABORT_FORWARD_BACK;
+    case END_NEW_NAVIGATION:
+      return ABORT_NEW_NAVIGATION;
+    case END_STOP:
+      return ABORT_STOP;
+    case END_CLOSE:
+      return ABORT_CLOSE;
+    case END_OTHER:
+      return ABORT_OTHER;
+    default:
+      return ABORT_NONE;
+  }
+}
+
+}  // namespace
 
 bool WasStartedInForegroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
@@ -17,6 +49,25 @@ bool WasStartedInForegroundOptionalEventInForeground(
   return info.started_in_foreground && event &&
          (!info.first_background_time ||
           event.value() <= info.first_background_time.value());
+}
+
+PageAbortInfo GetPageAbortInfo(const PageLoadExtraInfo& info) {
+  if (IsBackgroundAbort(info)) {
+    // Though most cases where a tab is backgrounded are user initiated, we
+    // can't be certain that we were backgrounded due to a user action. For
+    // example, on Android, the screen times out after a period of inactivity,
+    // resulting in a non-user-initiated backgrounding.
+    return {ABORT_BACKGROUND, UserInitiatedInfo::NotUserInitiated(),
+            info.first_background_time.value()};
+  }
+
+  PageAbortReason abort_reason =
+      GetAbortReasonForEndReason(info.page_end_reason);
+  if (abort_reason == ABORT_NONE)
+    return PageAbortInfo();
+
+  return {abort_reason, info.page_end_user_initiated_info,
+          info.page_end_time.value()};
 }
 
 }  // namespace page_load_metrics

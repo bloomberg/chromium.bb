@@ -104,6 +104,10 @@ TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
       internal::kHistogramParseBlockedOnScriptExecution,
       parse_script_exec_duration.InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+
+  histogram_tester().ExpectTotalCount(internal::kHistogramPageTimingPageEnd, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramPageTimingFirstBackground, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
@@ -260,6 +264,10 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
 
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+
+  histogram_tester().ExpectTotalCount(internal::kHistogramPageTimingPageEnd, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramPageTimingFirstBackground, 1);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, DontBackgroundQuickerLoad) {

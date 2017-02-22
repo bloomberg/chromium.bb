@@ -41,6 +41,9 @@ extern const char kHistogramLoadTypeParseStartNewNavigation[];
 
 extern const char kHistogramFailedProvisionalLoad[];
 
+extern const char kHistogramPageTimingPageEnd[];
+extern const char kHistogramPageTimingFirstBackground[];
+
 extern const char kRapporMetricsNameCoarseTiming[];
 extern const char kHistogramFirstMeaningfulPaintStatus[];
 

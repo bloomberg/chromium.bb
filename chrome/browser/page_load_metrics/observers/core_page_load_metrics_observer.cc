@@ -157,6 +157,21 @@ const char kHistogramLoadTypeFirstContentfulPaintNewNavigation[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType."
     "NewNavigation";
 
+const char kHistogramPageTimingPageEnd[] =
+    "PageLoad.Experimental.PageTiming.NavigationToPageEnd";
+const char kHistogramPageTimingFirstPaintToPageEnd[] =
+    "PageLoad.Experimental.PageTiming.FirstPaintToPageEnd";
+
+const char kHistogramPageTimingPageEndNoEndTime[] =
+    "PageLoad.Experimental.PageTiming.NavigationToPageEnd.NoEndTime";
+const char kHistogramPageTimingFirstPaintToPageEndNoEndTime[] =
+    "PageLoad.Experimental.PageTiming.FirstPaintToPageEnd.NoEndTime";
+
+const char kHistogramPageTimingFirstBackground[] =
+    "PageLoad.Experimental.PageTiming.NavigationToFirstBackground";
+const char kHistogramPageTimingFirstPaintToFirstBackground[] =
+    "PageLoad.Experimental.PageTiming.FirstPaintToFirstBackground";
+
 const char kHistogramLoadTypeParseStartReload[] =
     "PageLoad.ParseTiming.NavigationToParseStart.LoadType.Reload";
 const char kHistogramLoadTypeParseStartForwardBack[] =
@@ -169,10 +184,10 @@ const char kHistogramLoadTypeParseStartNewNavigation[] =
     "PageLoad.ParseTiming.NavigationToParseStart.LoadType.NewNavigation";
 
 const char kHistogramFirstForeground[] =
-    "PageLoad.Timing2.NavigationToFirstForeground";
+    "PageLoad.PageTiming.NavigationToFirstForeground";
 
 const char kHistogramFailedProvisionalLoad[] =
-    "PageLoad.Timing2.NavigationToFailedProvisionalLoad";
+    "PageLoad.PageTiming.NavigationToFailedProvisionalLoad";
 
 const char kHistogramForegroundToFirstPaint[] =
     "PageLoad.PaintTiming.ForegroundToFirstPaint";
@@ -632,10 +647,9 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     const page_load_metrics::PageLoadExtraInfo& info) {
   // Log time to first foreground / time to first background. Log counts that we
   // started a relevant page load in the foreground / background.
-  if (!info.started_in_foreground) {
-    if (info.first_foreground_time)
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstForeground,
-                          info.first_foreground_time.value());
+  if (!info.started_in_foreground && info.first_foreground_time) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstForeground,
+                        info.first_foreground_time.value());
   }
 
   if (timing.first_paint && !timing.first_meaningful_paint) {
@@ -666,6 +680,39 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     } else {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstMeaningfulPaintHadUserInput,
                           timing.first_meaningful_paint.value());
+    }
+  }
+
+  if (!info.started_in_foreground)
+    return;
+
+  if (info.first_background_time) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramPageTimingFirstBackground,
+                        info.first_background_time.value());
+    if (timing.first_paint &&
+        timing.first_paint <= info.first_background_time) {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramPageTimingFirstPaintToFirstBackground,
+          info.first_background_time.value() - timing.first_paint.value());
+    }
+  } else if (info.page_end_time) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramPageTimingPageEnd,
+                        info.page_end_time.value());
+    if (timing.first_paint && timing.first_paint <= info.page_end_time) {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramPageTimingFirstPaintToPageEnd,
+          info.page_end_time.value() - timing.first_paint.value());
+    }
+  } else {
+    // If we terminate via FlushMetricsOnAppEnterBackground, we may have neither
+    // a first_background_time nor a page_end_time.
+    base::TimeDelta end_time = base::TimeTicks::Now() - navigation_start_;
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramPageTimingPageEndNoEndTime,
+                        end_time);
+    if (timing.first_paint && timing.first_paint <= end_time) {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramPageTimingFirstPaintToPageEndNoEndTime,
+          end_time - timing.first_paint.value());
     }
   }
 }

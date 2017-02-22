@@ -14,9 +14,9 @@ PageLoadExtraInfo::PageLoadExtraInfo(
     const GURL& url,
     const GURL& start_url,
     bool did_commit,
-    UserAbortType abort_type,
-    UserInitiatedInfo abort_user_initiated_info,
-    const base::Optional<base::TimeDelta>& time_to_abort,
+    PageEndReason page_end_reason,
+    UserInitiatedInfo page_end_user_initiated_info,
+    const base::Optional<base::TimeDelta>& page_end_time,
     const PageLoadMetadata& metadata)
     : first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
@@ -25,9 +25,9 @@ PageLoadExtraInfo::PageLoadExtraInfo(
       url(url),
       start_url(start_url),
       did_commit(did_commit),
-      abort_type(abort_type),
-      abort_user_initiated_info(abort_user_initiated_info),
-      time_to_abort(time_to_abort),
+      page_end_reason(page_end_reason),
+      page_end_user_initiated_info(page_end_user_initiated_info),
+      page_end_time(page_end_time),
       metadata(metadata) {}
 
 PageLoadExtraInfo::PageLoadExtraInfo(const PageLoadExtraInfo& other) = default;

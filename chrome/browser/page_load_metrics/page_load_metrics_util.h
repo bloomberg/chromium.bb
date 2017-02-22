@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 
 #define PAGE_LOAD_HISTOGRAM(name, sample)                           \
   UMA_HISTOGRAM_CUSTOM_TIMES(name, sample,                          \
@@ -25,6 +26,62 @@ namespace page_load_metrics {
 
 struct PageLoadExtraInfo;
 
+// Reasons a page load can be aborted.
+enum PageAbortReason {
+  // Represents no abort.
+  ABORT_NONE,
+
+  // The page was reloaded, possibly by the user.
+  ABORT_RELOAD,
+
+  // The page was navigated away from, via a back or forward navigation.
+  ABORT_FORWARD_BACK,
+
+  // If the page load is replaced by a new navigation. This includes link
+  // clicks, typing in the omnibox (not a reload), and form submissions.
+  ABORT_NEW_NAVIGATION,
+
+  // The page load was stopped (e.g. the user presses the stop X button).
+  ABORT_STOP,
+
+  // Page load ended due to closing the tab or browser.
+  ABORT_CLOSE,
+
+  // The page load was backgrounded, e.g. the browser was minimized or the user
+  // switched tabs. Note that the same page may be foregrounded in the future,
+  // so this is not a 'terminal' abort type.
+  ABORT_BACKGROUND,
+
+  // We don't know why the page load ended. This is the value we assign to a
+  // terminated provisional load if the only signal we get is the load finished
+  // without committing, either without error or with net::ERR_ABORTED.
+  ABORT_OTHER
+};
+
+// Information related to a page load abort.
+struct PageAbortInfo {
+  PageAbortInfo()
+      : reason(ABORT_NONE),
+        user_initiated_info(UserInitiatedInfo::NotUserInitiated()) {}
+  PageAbortInfo(PageAbortReason reason,
+                UserInitiatedInfo user_initiated_info,
+                base::TimeDelta time_to_abort)
+      : reason(reason),
+        user_initiated_info(user_initiated_info),
+        time_to_abort(time_to_abort) {}
+
+  // The reason / cause for the abort.
+  const PageAbortReason reason;
+
+  // The fields below are only valid if reason != ABORT_NONE.
+
+  // Information about whether the abort was initiated by a user.
+  const UserInitiatedInfo user_initiated_info;
+
+  // The time from navigation start to the time the page load was aborted.
+  const base::TimeDelta time_to_abort;
+};
+
 // Returns true if:
 // - We have timing information for the event.
 // - The page load started while the page was in the foreground.
@@ -38,6 +95,8 @@ struct PageLoadExtraInfo;
 bool WasStartedInForegroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
     const PageLoadExtraInfo& info);
+
+PageAbortInfo GetPageAbortInfo(const PageLoadExtraInfo& info);
 
 }  // namespace page_load_metrics
 

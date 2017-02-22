@@ -215,6 +215,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramParseBlockedOnScriptExecution, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramTotalBytes, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramPageTimingPageEnd, 1);
 
   // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics
   // have been recorded.
@@ -597,7 +598,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortMultiple) {
       internal::kHistogramAbortNewNavigationBeforeCommit, 2);
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortClientRedirect) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       NoAbortMetricsOnClientRedirect) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL first_url(embedded_test_server()->GetURL("/title1.html"));
@@ -621,8 +623,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortClientRedirect) {
 
   manager.WaitForNavigationFinished();
 
-  histogram_tester_.ExpectTotalCount(
-      internal::kHistogramAbortClientRedirectBeforeCommit, 1);
+  EXPECT_TRUE(histogram_tester_
+                  .GetTotalCountsForPrefix("PageLoad.Experimental.AbortTiming.")
+                  .empty());
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
