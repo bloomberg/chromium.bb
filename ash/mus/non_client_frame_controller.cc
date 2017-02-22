@@ -298,8 +298,6 @@ NonClientFrameController::NonClientFrameController(
   widget_->Init(params);
   did_init_native_widget_ = true;
 
-  widget_->ShowInactive();
-
   WmWindow* wm_window = WmWindow::Get(window_);
   const gfx::Insets extended_hit_region =
       wm_window->ShouldUseExtendedHitRegion() ? GetExtendedHitRegion()

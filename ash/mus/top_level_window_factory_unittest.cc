@@ -2,10 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/mus/top_level_window_factory.h"
+
+#include <stdint.h>
+
+#include <map>
+#include <string>
+#include <vector>
+
 #include "ash/common/test/ash_test.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/mus/test/wm_test_base.h"
+#include "ash/mus/window_manager.h"
+#include "ash/mus/window_manager_application.h"
+#include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
 
@@ -44,6 +56,17 @@ TEST_F(TopLevelWindowFactoryWmTest, IsWindowShownInCorrectDisplay) {
             GetDisplayId(window_primary_display.get()));
   EXPECT_EQ(GetSecondaryDisplay().id(),
             GetDisplayId(window_secondary_display.get()));
+}
+
+using TopLevelWindowFactoryAshTest = test::AshTestBase;
+
+TEST_F(TopLevelWindowFactoryAshTest, TopLevelNotShownOnCreate) {
+  std::map<std::string, std::vector<uint8_t>> properties;
+  std::unique_ptr<aura::Window> window(mus::CreateAndParentTopLevelWindow(
+      ash_test_helper()->window_manager_app()->window_manager(),
+      ui::mojom::WindowType::WINDOW, &properties));
+  ASSERT_TRUE(window);
+  EXPECT_FALSE(window->IsVisible());
 }
 
 }  // namespace ash

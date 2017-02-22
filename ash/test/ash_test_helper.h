@@ -86,6 +86,11 @@ class AshTestHelper {
 
   display::Display GetSecondaryDisplay();
 
+  // Null in classic ash.
+  mus::WindowManagerApplication* window_manager_app() {
+    return window_manager_app_.get();
+  }
+
  private:
   // Called when running in mash to create the WindowManager.
   void CreateMashWindowManager();
