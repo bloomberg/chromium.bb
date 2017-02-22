@@ -111,36 +111,8 @@ void SVGElement::willRecalcStyle(StyleRecalcChange change) {
 void SVGElement::buildPendingResourcesIfNeeded() {
   if (!needsPendingResourceHandling() || !isConnected() || inUseShadowTree())
     return;
-
-  SVGTreeScopeResources& treeScopeResources =
-      treeScope().ensureSVGTreeScopedResources();
-  AtomicString resourceId = getIdAttribute();
-  if (!treeScopeResources.hasPendingResource(resourceId))
-    return;
-  // Guaranteed by hasPendingResource.
-  DCHECK(!resourceId.isEmpty());
-
-  // Get pending elements for this id.
-  SVGTreeScopeResources::SVGPendingElements* pendingElements =
-      treeScopeResources.removePendingResource(resourceId);
-  if (!pendingElements || pendingElements->isEmpty())
-    return;
-
-  // Rebuild pending resources for each client of a pending resource that is
-  // being removed.
-  for (Element* clientElement : *pendingElements) {
-    DCHECK(clientElement->hasPendingResources());
-    if (!clientElement->hasPendingResources())
-      continue;
-    // TODO(fs): Ideally we'd always resolve pending resources async instead of
-    // inside insertedInto and svgAttributeChanged. For now we only do it for
-    // <use> since that would stamp out DOM.
-    if (isSVGUseElement(clientElement))
-      toSVGUseElement(clientElement)->invalidateShadowTree();
-    else
-      clientElement->buildPendingResource();
-    treeScopeResources.clearHasPendingResourcesIfPossible(clientElement);
-  }
+  treeScope().ensureSVGTreeScopedResources().notifyResourceAvailable(
+      getIdAttribute());
 }
 
 SVGElementRareData* SVGElement::ensureSVGRareData() {

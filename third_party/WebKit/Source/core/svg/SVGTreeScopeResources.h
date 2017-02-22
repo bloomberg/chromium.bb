@@ -41,6 +41,7 @@ class SVGTreeScopeResources
   bool hasPendingResource(const AtomicString& id) const;
   bool isElementPendingResources(Element*) const;
   bool isElementPendingResource(Element*, const AtomicString& id) const;
+  void notifyResourceAvailable(const AtomicString& id);
   void clearHasPendingResourcesIfPossible(Element*);
   void removeElementFromPendingResources(Element*);
   SVGPendingElements* removePendingResource(const AtomicString& id);

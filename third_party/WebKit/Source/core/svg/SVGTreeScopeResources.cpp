@@ -8,6 +8,7 @@
 #include "core/dom/TreeScope.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/SVGResourcesCache.h"
+#include "core/svg/SVGUseElement.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -150,6 +151,31 @@ SVGTreeScopeResources::SVGPendingElements*
 SVGTreeScopeResources::removePendingResource(const AtomicString& id) {
   DCHECK(m_pendingResources.contains(id));
   return m_pendingResources.take(id);
+}
+
+void SVGTreeScopeResources::notifyResourceAvailable(const AtomicString& id) {
+  if (id.isEmpty())
+    return;
+  // Get pending elements for this id.
+  SVGPendingElements* pendingElements = m_pendingResources.take(id);
+  if (!pendingElements)
+    return;
+  // Rebuild pending resources for each client of a pending resource that is
+  // being removed.
+  for (Element* clientElement : *pendingElements) {
+    DCHECK(clientElement->hasPendingResources());
+    if (!clientElement->hasPendingResources())
+      continue;
+    // TODO(fs): Ideally we'd always resolve pending resources async instead of
+    // inside insertedInto and svgAttributeChanged. For now we only do it for
+    // <use> since that would stamp out DOM.
+    if (isSVGUseElement(clientElement))
+      toSVGUseElement(clientElement)->invalidateShadowTree();
+    else
+      clientElement->buildPendingResource();
+
+    clearHasPendingResourcesIfPossible(clientElement);
+  }
 }
 
 DEFINE_TRACE(SVGTreeScopeResources) {
