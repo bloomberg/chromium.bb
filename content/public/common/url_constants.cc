@@ -46,6 +46,7 @@ const char kChromeUIUberHost[] = "chrome";
 const char kChromeUIWebRTCInternalsHost[] = "webrtc-internals";
 
 const char kChromeUIBadCastCrashURL[] = "chrome://badcastcrash/";
+const char kChromeUICheckCrashURL[] = "chrome://checkcrash/";
 const char kChromeUIBrowserCrashURL[] = "chrome://inducebrowsercrashforrealz/";
 const char kChromeUIBrowserUIHang[] = "chrome://uithreadhang/";
 const char kChromeUICrashURL[] = "chrome://crash/";

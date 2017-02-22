@@ -549,6 +549,11 @@ void MaybeHandleDebugURL(const GURL& url) {
         << "Intentionally exhausting renderer memory because user navigated to "
         << url.spec();
     ExhaustMemory();
+  } else if (url == kChromeUICheckCrashURL) {
+    LOG(ERROR)
+        << "Intentionally causing CHECK because user navigated to "
+        << url.spec();
+    CHECK(false);
   }
 
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)

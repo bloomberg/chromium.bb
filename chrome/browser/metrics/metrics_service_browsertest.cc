@@ -58,6 +58,15 @@ void VerifyRendererExitCodeIsSignal(
 }  // namespace
 #endif  // OS_MACOSX || OS_LINUX
 
+// This test class verifies that metrics reporting works correctly for various
+// renderer behaviors such as page loads, recording crashed tabs, and browser
+// starts. It also verifies that if a renderer process crashes, the correct exit
+// code is recorded.
+//
+// TODO(isherman): We should also verify that
+// metrics::prefs::kStabilityExitedCleanly is set correctly after each of these
+// tests, but this preference isn't set until the browser exits... it's not
+// clear to me how to test that.
 class MetricsServiceBrowserTest : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -65,8 +74,39 @@ class MetricsServiceBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kMetricsRecordingOnly);
   }
 
+  // Open three tabs then navigate to |crashy_url| and wait for the renderer to
+  // crash.
+  void OpenTabsAndNavigateToCrashyUrl(const std::string& crashy_url) {
+    // Opens three tabs.
+    OpenThreeTabs();
+
+    // Kill the process for one of the tabs by navigating to |crashy_url|.
+    content::RenderProcessHostWatcher observer(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    // Opens one tab.
+    ui_test_utils::NavigateToURL(browser(), GURL(crashy_url));
+    observer.Wait();
+
+    // The MetricsService listens for the same notification, so the |observer|
+    // might finish waiting before the MetricsService has a chance to process
+    // the notification.  To avoid racing here, we repeatedly run the message
+    // loop until the MetricsService catches up.  This should happen "real soon
+    // now", since the notification is posted to all observers essentially
+    // simultaneously... so busy waiting here shouldn't be too bad.
+    const PrefService* prefs = g_browser_process->local_state();
+    while (!prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount)) {
+      content::RunAllPendingInMessageLoop();
+    }
+  }
+
   // Open a couple of tabs of random content.
-  void OpenTabs() {
+  //
+  // Calling this method causes three page load events:
+  // 1. title2.html
+  // 2. iframe.html
+  // 3. title1.html (iframed by iframe.html)
+  void OpenThreeTabs() {
     const int kBrowserTestFlags =
         ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION;
@@ -87,17 +127,13 @@ class MetricsServiceBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, CloseRenderersNormally) {
-  OpenTabs();
+  OpenThreeTabs();
 
   // Verify that the expected stability metrics were recorded.
   const PrefService* prefs = g_browser_process->local_state();
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityLaunchCount));
   EXPECT_EQ(3, prefs->GetInteger(metrics::prefs::kStabilityPageLoadCount));
   EXPECT_EQ(0, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
-  // TODO(isherman): We should also verify that
-  // metrics::prefs::kStabilityExitedCleanly
-  // is set to true, but this preference isn't set until the browser
-  // exits... it's not clear to me how to test that.
 }
 
 // Flaky on Linux. See http://crbug.com/131094
@@ -105,44 +141,23 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, CloseRenderersNormally) {
 // crbug.com/368525).
 #if defined(OS_LINUX) || defined(ADDRESS_SANITIZER)
 #define MAYBE_CrashRenderers DISABLED_CrashRenderers
+#define MAYBE_CheckCrashRenderers DISABLED_CheckCrashRenderers
 #else
 #define MAYBE_CrashRenderers CrashRenderers
+#define MAYBE_CheckCrashRenderers CheckCrashRenderers
 #endif
+
 IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
   base::HistogramTester histogram_tester;
-  OpenTabs();
 
-  // Kill the process for one of the tabs.
-  content::RenderProcessHostWatcher observer(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
-  observer.Wait();
-
-  // The MetricsService listens for the same notification, so the |observer|
-  // might finish waiting before the MetricsService has a chance to process the
-  // notification.  To avoid racing here, we repeatedly run the message loop
-  // until the MetricsService catches up.  This should happen "real soon now",
-  // since the notification is posted to all observers essentially
-  // simultaneously... so busy waiting here shouldn't be too bad.
-  const PrefService* prefs = g_browser_process->local_state();
-  while (!prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount)) {
-    content::RunAllPendingInMessageLoop();
-  }
+  OpenTabsAndNavigateToCrashyUrl(content::kChromeUICrashURL);
 
   // Verify that the expected stability metrics were recorded.
+  const PrefService* prefs = g_browser_process->local_state();
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityLaunchCount));
-  // Expect four page loads:
-  // 1. title2.html
-  // 2. iframe.html
-  // 3. title1.html (iframed by iframe.html)
-  // 4. chrome://crash
+  // The three tabs from OpenTabs() and the one tab to open chrome://crash/.
   EXPECT_EQ(4, prefs->GetInteger(metrics::prefs::kStabilityPageLoadCount));
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
-  // TODO(isherman): We should also verify that
-  // metrics::prefs::kStabilityExitedCleanly
-  // is set to true, but this preference isn't set until the browser
-  // exits... it's not clear to me how to test that.
 
 #if defined(OS_WIN)
   histogram_tester.ExpectUniqueSample(
@@ -154,33 +169,41 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
   histogram_tester.ExpectUniqueSample("Tabs.SadTab.CrashCreated", 1, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CheckCrashRenderers) {
+  base::HistogramTester histogram_tester;
+
+  OpenTabsAndNavigateToCrashyUrl(content::kChromeUICheckCrashURL);
+
+  // Verify that the expected stability metrics were recorded.
+  const PrefService* prefs = g_browser_process->local_state();
+  EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityLaunchCount));
+  // The three tabs from OpenTabs() and the one tab to open
+  // chrome://checkcrash/.
+  EXPECT_EQ(4, prefs->GetInteger(metrics::prefs::kStabilityPageLoadCount));
+  EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
+
+#if defined(OS_WIN)
+  histogram_tester.ExpectUniqueSample(
+      "CrashExitCodes.Renderer",
+      std::abs(static_cast<int32_t>(STATUS_BREAKPOINT)), 1);
+#elif defined(OS_MACOSX) || defined(OS_LINUX)
+  VerifyRendererExitCodeIsSignal(histogram_tester, SIGTRAP);
+#endif
+  histogram_tester.ExpectUniqueSample("Tabs.SadTab.CrashCreated", 1, 1);
+}
+
 // OOM code only works on Windows.
 #if defined(OS_WIN) && !defined(ADDRESS_SANITIZER)
 IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, OOMRenderers) {
   base::HistogramTester histogram_tester;
-  OpenTabs();
 
-  // Kill the process for one of the tabs.
-  content::RenderProcessHostWatcher observer(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(content::kChromeUIMemoryExhaustURL));
-  observer.Wait();
-
-  // The MetricsService listens for the same notification, so the |observer|
-  // might finish waiting before the MetricsService has a chance to process the
-  // notification.  To avoid racing here, we repeatedly run the message loop
-  // until the MetricsService catches up.  This should happen "real soon now",
-  // since the notification is posted to all observers essentially
-  // simultaneously... so busy waiting here shouldn't be too bad.
-  const PrefService* prefs = g_browser_process->local_state();
-  while (!prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount)) {
-    content::RunAllPendingInMessageLoop();
-  }
+  OpenTabsAndNavigateToCrashyUrl(content::kChromeUIMemoryExhaustURL);
 
   // Verify that the expected stability metrics were recorded.
+  const PrefService* prefs = g_browser_process->local_state();
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityLaunchCount));
+  // The three tabs from OpenTabs() and the one tab to open
+  // chrome://memory-exhaust/.
   EXPECT_EQ(4, prefs->GetInteger(metrics::prefs::kStabilityPageLoadCount));
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
 
