@@ -14,12 +14,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/extensions/path_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -160,15 +159,13 @@ void ExtensionLoaderHandler::OnLoadFailure(
 
   // This will read the manifest and call AddFailure with the read manifest
   // contents.
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::USER_BLOCKING),
       base::Bind(&ReadFileToString, file_path.Append(kManifestFilename)),
       base::Bind(&ExtensionLoaderHandler::AddFailure,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 error,
-                 line));
+                 weak_ptr_factory_.GetWeakPtr(), file_path, error, line));
 }
 
 void ExtensionLoaderHandler::DidStartNavigation(
