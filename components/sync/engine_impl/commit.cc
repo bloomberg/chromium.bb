@@ -6,12 +6,10 @@
 
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/data_type_histogram.h"
-#include "components/sync/engine/net/http_bridge.h"
 #include "components/sync/engine_impl/commit_processor.h"
 #include "components/sync/engine_impl/commit_util.h"
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
@@ -79,9 +77,7 @@ Commit* Commit::Init(ModelTypeSet requested_types,
   commit_message->set_cache_guid(cache_guid);
 
   // Set padding to mitigate CRIME attack.
-  if (base::FeatureList::IsEnabled(syncer::kSyncClientToServerCompression)) {
-    commit_message->set_padding(RandASCIIString(kPaddingSize));
-  }
+  commit_message->set_padding(RandASCIIString(kPaddingSize));
 
   // Set extensions activity if bookmark commits are present.
   ExtensionsActivity::Records extensions_activity_buffer;

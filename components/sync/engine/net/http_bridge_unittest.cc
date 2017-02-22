@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -226,41 +225,15 @@ TEST_F(MAYBE_SyncHttpBridgeTest, TestMakeSynchronousPostShunted) {
             std::string(http_bridge->GetResponseContent()));
 }
 
-// Full round-trip test of the HttpBridge, using default UA string and
-// no request cookies.
-TEST_F(MAYBE_SyncHttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
-  ASSERT_TRUE(test_server_.Start());
-
-  scoped_refptr<HttpBridge> http_bridge(BuildBridge());
-
-  std::string payload = "this should be echoed back";
-  GURL echo = test_server_.GetURL("/echo");
-  http_bridge->SetURL(echo.spec().c_str(), echo.IntPort());
-  http_bridge->SetPostPayload("application/x-www-form-urlencoded",
-                              payload.length() + 1, payload.c_str());
-  int os_error = 0;
-  int response_code = 0;
-  bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
-  EXPECT_TRUE(success);
-  EXPECT_EQ(200, response_code);
-  EXPECT_EQ(0, os_error);
-
-  EXPECT_EQ(payload.length() + 1,
-            static_cast<size_t>(http_bridge->GetResponseContentLength()));
-  EXPECT_EQ(payload, std::string(http_bridge->GetResponseContent()));
-}
-
 // Full round-trip test of the HttpBridge with compressed data, check if the
 // data is correctly compressed.
 TEST_F(MAYBE_SyncHttpBridgeTest, CompressedRequestPayloadCheck) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kSyncClientToServerCompression);
-
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
-  std::string payload = "this should be echoed back";
+  std::string payload =
+      "this should be echoed back, this should be echoed back.";
   GURL echo = test_server_.GetURL("/echo");
   http_bridge->SetURL(echo.spec().c_str(), echo.IntPort());
   http_bridge->SetPostPayload("application/x-www-form-urlencoded",
@@ -272,7 +245,8 @@ TEST_F(MAYBE_SyncHttpBridgeTest, CompressedRequestPayloadCheck) {
   EXPECT_EQ(200, response_code);
   EXPECT_EQ(0, os_error);
 
-  EXPECT_NE(payload.length() + 1,
+  // Verifying compression, check if the actual payload is compressed correctly.
+  EXPECT_GT(payload.length(),
             static_cast<size_t>(http_bridge->GetResponseContentLength()));
   std::string compressed_payload(http_bridge->GetResponseContent(),
                                  http_bridge->GetResponseContentLength());
@@ -285,9 +259,6 @@ TEST_F(MAYBE_SyncHttpBridgeTest, CompressedRequestPayloadCheck) {
 // fields("Content-Encoding" ,"Accept-Encoding" and user agent) are set
 // correctly.
 TEST_F(MAYBE_SyncHttpBridgeTest, CompressedRequestHeaderCheck) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kSyncClientToServerCompression);
-
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
@@ -318,35 +289,6 @@ TEST_F(MAYBE_SyncHttpBridgeTest, CompressedRequestHeaderCheck) {
                 "%s: %s", net::HttpRequestHeaders::kUserAgent, kUserAgent)));
 }
 
-// Full round-trip test of the HttpBridge.
-TEST_F(MAYBE_SyncHttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
-  ASSERT_TRUE(test_server_.Start());
-
-  scoped_refptr<HttpBridge> http_bridge(BuildBridge());
-
-  GURL echo_header = test_server_.GetURL("/echoall");
-  http_bridge->SetURL(echo_header.spec().c_str(), echo_header.IntPort());
-
-  std::string test_payload = "###TEST PAYLOAD###";
-  http_bridge->SetPostPayload("text/html", test_payload.length() + 1,
-                              test_payload.c_str());
-
-  int os_error = 0;
-  int response_code = 0;
-  bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
-  EXPECT_TRUE(success);
-  EXPECT_EQ(200, response_code);
-  EXPECT_EQ(0, os_error);
-
-  std::string response(http_bridge->GetResponseContent(),
-                       http_bridge->GetResponseContentLength());
-  EXPECT_EQ(std::string::npos, response.find("Cookie:"));
-  EXPECT_NE(std::string::npos,
-            response.find(base::StringPrintf(
-                "%s: %s", net::HttpRequestHeaders::kUserAgent, kUserAgent)));
-  EXPECT_NE(std::string::npos, response.find(test_payload.c_str()));
-}
-
 TEST_F(MAYBE_SyncHttpBridgeTest, TestExtraRequestHeaders) {
   ASSERT_TRUE(test_server_.Start());
 
@@ -372,7 +314,6 @@ TEST_F(MAYBE_SyncHttpBridgeTest, TestExtraRequestHeaders) {
                        http_bridge->GetResponseContentLength());
 
   EXPECT_NE(std::string::npos, response.find("fnord"));
-  EXPECT_NE(std::string::npos, response.find(test_payload.c_str()));
 }
 
 TEST_F(MAYBE_SyncHttpBridgeTest, TestResponseHeader) {
