@@ -474,9 +474,11 @@ void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
 
 // Detect if the block have sub-pixel level motion vectors
 // per component.
+#define CHECK_SUBPEL 0
 static INLINE int has_subpel_mv_component(const MODE_INFO *const mi,
                                           const MACROBLOCKD *const xd,
                                           int dir) {
+#if CHECK_SUBPEL
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   int plane;
@@ -517,6 +519,12 @@ static INLINE int has_subpel_mv_component(const MODE_INFO *const mi,
   }
 
   return 0;
+#else
+  (void)mi;
+  (void)xd;
+  (void)dir;
+  return 1;
+#endif
 }
 
 static INLINE int av1_is_interp_needed(const MACROBLOCKD *const xd) {
