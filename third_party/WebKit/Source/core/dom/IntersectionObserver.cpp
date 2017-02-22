@@ -242,35 +242,21 @@ void IntersectionObserver::observe(Element* target,
   if (target->ensureIntersectionObserverData().getObservationFor(*this))
     return;
 
-  bool isDOMDescendant = true;
-  bool shouldReportRootBounds = false;
+  bool shouldReportRootBounds = true;
   if (rootIsImplicit()) {
     Frame* rootFrame = targetFrame->tree().top();
     DCHECK(rootFrame);
-    if (rootFrame == targetFrame) {
-      shouldReportRootBounds = true;
-    } else {
+    if (rootFrame != targetFrame) {
       shouldReportRootBounds =
           targetFrame->securityContext()->getSecurityOrigin()->canAccess(
               rootFrame->securityContext()->getSecurityOrigin());
     }
-  } else {
-    shouldReportRootBounds = true;
-    isDOMDescendant = root()->isShadowIncludingInclusiveAncestorOf(target);
   }
 
   IntersectionObservation* observation =
       new IntersectionObservation(*this, *target, shouldReportRootBounds);
   target->ensureIntersectionObserverData().addObservation(*observation);
   m_observations.add(observation);
-
-  if (!isDOMDescendant) {
-    root()->document().addConsoleMessage(
-        ConsoleMessage::create(JSMessageSource, WarningMessageLevel,
-                               "IntersectionObserver.observe(target): target "
-                               "element is not a descendant of root."));
-  }
-
   if (FrameView* frameView = targetFrame->view())
     frameView->scheduleAnimation();
 }
