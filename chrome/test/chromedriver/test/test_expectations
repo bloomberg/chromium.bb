@@ -147,15 +147,23 @@ _OS_NEGATIVE_FILTER['mac'] = [
 ]
 
 _SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
-_SPECIFIC_OS_REVISION_NEGATIVE_FILTER['linux_53'] = [
-    # Flaky on Linux32 against v53:
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1418
-    'ClickTest.testShouldOnlyFollowHrefOnce',
-    'JavascriptEnabledDriverTest.*',
-    'WindowSwitchingTest.testCanCloseWindowWhenMultipleWindowsAreOpen',
-    'WindowSwitchingTest.testCanCallGetWindowHandlesAfterClosingAWindow',
-    'WindowSwitchingTest.testCanCloseWindowAndSwitchBackToMainWindow',
-    'XPathElementFindingTest.testShouldFindElementsByXPath',
+_SPECIFIC_OS_REVISION_NEGATIVE_FILTER['linux_HEAD'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1683
+    'ClickScrollingTest.testShouldBeAbleToClickElementInAFrameThatIsOutOfView',
+    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInAFrameThatIsOutOfView',
+    'ClickTest.testClickingLabelShouldSetCheckbox',
+    'ElementFindingTest.testRemovingAnElementDynamicallyFromTheDomShouldCauseAStaleRefException',
+    'FrameSwitchingTest.testShouldBeAbleToSwitchToTheTopIfTheFrameIsDeletedFromUnderUs',
+]
+_SPECIFIC_OS_REVISION_NEGATIVE_FILTER['win_HEAD'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1683
+    'RenderedWebElementTest.testMoveRelativeToBody',
+    'RenderedWebElementTest.testCanClickOnSuckerFishMenuItem',
+    'BasicKeyboardInterfaceTest.testBasicKeyboardInput',
+]
+_SPECIFIC_OS_REVISION_NEGATIVE_FILTER['mac_HEAD'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1683
+    'AlertsTest.testShouldHandleAlertOnPageLoad',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome'] = [
