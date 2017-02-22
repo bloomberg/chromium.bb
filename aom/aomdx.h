@@ -41,6 +41,23 @@ extern aom_codec_iface_t *aom_codec_av1_dx(void);
  */
 typedef struct Accounting Accounting;
 
+/** Callback that inspects decoder frame data.
+ */
+typedef void (*aom_inspect_cb)(void *decoder, void *ctx);
+
+/*!\brief Structure to hold inspection callback and context.
+ *
+ * Defines a structure to hold the inspection callback function and calling
+ * context.
+ */
+typedef struct aom_inspect_init {
+  /*! Inspection callback. */
+  aom_inspect_cb inspect_cb;
+
+  /*! Inspection context. */
+  void *inspect_ctx;
+} aom_inspect_init;
+
 /*!\enum aom_dec_control_id
  * \brief AOM decoder control functions
  *
@@ -129,6 +146,12 @@ enum aom_dec_control_id {
   AV1_SET_DECODE_TILE_ROW,
   AV1_SET_DECODE_TILE_COL,
 
+  /** control function to set an aom_inspect_cb callback that is invoked each
+   * time a frame is decoded.  When compiled without --enable-inspection, this
+   * returns AOM_CODEC_INCAPABLE.
+   */
+  AV1_SET_INSPECTION_CALLBACK,
+
   AOM_DECODER_CTRL_ID_MAX,
 };
 
@@ -184,6 +207,8 @@ AOM_CTRL_USE_TYPE(AV1_SET_DECODE_TILE_ROW, int)
 #define AOM_CTRL_AV1_SET_DECODE_TILE_ROW
 AOM_CTRL_USE_TYPE(AV1_SET_DECODE_TILE_COL, int)
 #define AOM_CTRL_AV1_SET_DECODE_TILE_COL
+AOM_CTRL_USE_TYPE(AV1_SET_INSPECTION_CALLBACK, aom_inspect_init *)
+#define AOM_CTRL_AV1_SET_INSPECTION_CALLBACK
 /*!\endcond */
 /*! @} - end defgroup aom_decoder */
 

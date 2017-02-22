@@ -80,6 +80,11 @@ struct aom_codec_alg_priv {
   void *ext_priv;  // Private data associated with the external frame buffers.
   aom_get_frame_buffer_cb_fn_t get_ext_fb_cb;
   aom_release_frame_buffer_cb_fn_t release_ext_fb_cb;
+
+#if CONFIG_INSPECTION
+  aom_inspect_cb inspect_cb;
+  void *inspect_ctx;
+#endif
 };
 
 static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx,
@@ -483,6 +488,10 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
     // decrypt config between frames.
     frame_worker_data->pbi->decrypt_cb = ctx->decrypt_cb;
     frame_worker_data->pbi->decrypt_state = ctx->decrypt_state;
+#if CONFIG_INSPECTION
+    frame_worker_data->pbi->inspect_cb = ctx->inspect_cb;
+    frame_worker_data->pbi->inspect_ctx = ctx->inspect_ctx;
+#endif
 
 #if CONFIG_EXT_TILE
     frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
@@ -1133,6 +1142,20 @@ static aom_codec_err_t ctrl_set_decode_tile_col(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_OK;
 }
 
+static aom_codec_err_t ctrl_set_inspection_callback(aom_codec_alg_priv_t *ctx,
+                                                    va_list args) {
+#if !CONFIG_INSPECTION
+  (void)ctx;
+  (void)args;
+  return AOM_CODEC_INCAPABLE;
+#else
+  aom_inspect_init *init = va_arg(args, aom_inspect_init *);
+  ctx->inspect_cb = init->inspect_cb;
+  ctx->inspect_ctx = init->inspect_ctx;
+  return AOM_CODEC_OK;
+#endif
+}
+
 static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AOM_COPY_REFERENCE, ctrl_copy_reference },
 
@@ -1149,6 +1172,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1_SET_SKIP_LOOP_FILTER, ctrl_set_skip_loop_filter },
   { AV1_SET_DECODE_TILE_ROW, ctrl_set_decode_tile_row },
   { AV1_SET_DECODE_TILE_COL, ctrl_set_decode_tile_col },
+  { AV1_SET_INSPECTION_CALLBACK, ctrl_set_inspection_callback },
 
   // Getters
   { AOMD_GET_FRAME_CORRUPTED, ctrl_get_frame_corrupted },

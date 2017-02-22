@@ -33,6 +33,11 @@ AV1_DX_SRCS-yes += decoder/decoder.h
 AV1_DX_SRCS-yes += decoder/dsubexp.c
 AV1_DX_SRCS-yes += decoder/dsubexp.h
 
+ifeq ($(CONFIG_INSPECTION),yes)
+AV1_DX_SRCS-yes += decoder/inspection.c
+AV1_DX_SRCS-yes += decoder/inspection.h
+endif
+
 ifeq ($(CONFIG_PVQ),yes)
 # PVQ from daala
 AV1_DX_SRCS-yes += decoder/pvq_decoder.c

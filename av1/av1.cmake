@@ -85,6 +85,13 @@ set(AOM_AV1_DECODER_SOURCES
     "${AOM_ROOT}/av1/decoder/dthread.c"
     "${AOM_ROOT}/av1/decoder/dthread.h")
 
+if (CONFIG_INSPECTION)
+  set(AOM_AV1_DECODER_SOURCES
+      ${AOM_AV1_DECODER_SOURCES}
+      "${AOM_ROOT}/av1/decoder/inspection.c"
+      "${AOM_ROOT}/av1/decoder/inspection.h")
+endif ()
+
 set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/av1_cx_iface.c"
     "${AOM_ROOT}/av1/encoder/aq_complexity.c"

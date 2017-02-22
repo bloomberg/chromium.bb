@@ -33,6 +33,9 @@
 #include "av1/common/clpf.h"
 #include "av1/common/dering.h"
 #endif
+#if CONFIG_INSPECTION
+#include "av1/decoder/inspection.h"
+#endif
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
@@ -5033,6 +5036,12 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Decode failed. Frame data is corrupted.");
   }
+
+#if CONFIG_INSPECTION
+  if (pbi->inspect_cb != NULL) {
+    (*pbi->inspect_cb)(pbi, pbi->inspect_ctx);
+  }
+#endif
 
   // Non frame parallel update frame context here.
   if (!cm->error_resilient_mode && !context_updated)
