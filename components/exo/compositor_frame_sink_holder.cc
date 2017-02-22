@@ -58,6 +58,7 @@ void CompositorFrameSinkHolder::DidReceiveCompositorFrameAck() {
 }
 
 void CompositorFrameSinkHolder::OnBeginFrame(const cc::BeginFrameArgs& args) {
+  // TODO(eseckler): Hook up |surface_| to the ExternalBeginFrameSource.
   if (surface_)
     surface_->BeginFrame(args.frame_time);
 
@@ -100,6 +101,10 @@ void CompositorFrameSinkHolder::OnBeginFrameSourcePausedChanged(bool paused) {}
 
 void CompositorFrameSinkHolder::OnNeedsBeginFrames(bool needs_begin_frames) {
   frame_sink_->SetNeedsBeginFrame(needs_begin_frames);
+}
+
+void CompositorFrameSinkHolder::OnDidFinishFrame(const cc::BeginFrameAck& ack) {
+  // TODO(eseckler): Pass on the ack to frame_sink_.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

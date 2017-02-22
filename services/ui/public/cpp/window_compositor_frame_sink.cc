@@ -126,6 +126,10 @@ void WindowCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
   compositor_frame_sink_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
+void WindowCompositorFrameSink::OnDidFinishFrame(const cc::BeginFrameAck& ack) {
+  // TODO(eseckler): Pass on the ack to compositor_frame_sink_.
+}
+
 WindowCompositorFrameSinkBinding::~WindowCompositorFrameSinkBinding() {}
 
 WindowCompositorFrameSinkBinding::WindowCompositorFrameSinkBinding(

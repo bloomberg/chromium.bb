@@ -37,6 +37,14 @@
       .InSequence((obs).sequence)                                              \
       .WillOnce(::testing::SaveArg<0>(&((obs).last_begin_frame_args)))
 
+#define EXPECT_BEGIN_FRAME_ARGS_DROP(obs, args) \
+  EXPECT_CALL((obs), OnBeginFrame(args)).Times(1).InSequence((obs).sequence)
+
+#define EXPECT_BEGIN_FRAME_ARGS_USED(obs, args) \
+  EXPECT_CALL((obs), OnBeginFrame(args))        \
+      .InSequence((obs).sequence)               \
+      .WillOnce(::testing::SaveArg<0>(&((obs).last_begin_frame_args)))
+
 #define EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, paused)         \
   EXPECT_CALL((obs), OnBeginFrameSourcePausedChanged(paused)) \
       .Times(1)                                               \

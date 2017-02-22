@@ -261,6 +261,10 @@ bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   if (!state_machine_.BeginFrameNeeded()) {
     TRACE_EVENT_INSTANT0("cc", "Scheduler::BeginFrameDropped",
                          TRACE_EVENT_SCOPE_THREAD);
+    // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
+    BeginFrameAck ack(args.source_id, args.sequence_number,
+                      args.sequence_number, 0, false);
+    begin_frame_source_->DidFinishFrame(this, ack);
     return false;
   }
 

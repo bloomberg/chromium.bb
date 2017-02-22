@@ -11,6 +11,8 @@
 #include <set>
 #include <string>
 
+#include "base/containers/flat_set.h"
+#include "base/containers/small_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
@@ -34,6 +36,9 @@ class CC_EXPORT BeginFrameObserver {
   // Side effects: This function can (and most of the time *will*) change the
   // return value of the LastUsedBeginFrameArgs method. See the documentation
   // on that method for more information.
+  //
+  // The observer is required call BeginFrameSource::DidFinishFrame() as soon as
+  // it has completed handling the BeginFrame.
   virtual void OnBeginFrame(const BeginFrameArgs& args) = 0;
 
   // Returns the last BeginFrameArgs used by the observer. This method's return
@@ -230,10 +235,50 @@ class CC_EXPORT DelayBasedBeginFrameSource : public SyntheticBeginFrameSource,
   DISALLOW_COPY_AND_ASSIGN(DelayBasedBeginFrameSource);
 };
 
+// Helper class that tracks outstanding acknowledgments from
+// BeginFrameObservers.
+class CC_EXPORT BeginFrameObserverAckTracker {
+ public:
+  BeginFrameObserverAckTracker();
+  virtual ~BeginFrameObserverAckTracker();
+
+  // The BeginFrameSource uses these methods to notify us when a BeginFrame was
+  // started, an observer finished a frame, or an observer was added/removed.
+  void OnBeginFrame(const BeginFrameArgs& args);
+  void OnObserverFinishedFrame(BeginFrameObserver* obs,
+                               const BeginFrameAck& ack);
+  void OnObserverAdded(BeginFrameObserver* obs);
+  void OnObserverRemoved(BeginFrameObserver* obs);
+
+  // Returns |true| if all the source's observers completed the current frame.
+  bool AllObserversFinishedFrame() const;
+
+  // Returns |true| if any observer had damage during the current frame.
+  bool AnyObserversHadDamage() const;
+
+  // Return the sequence number of the latest frame that all active observers
+  // have confirmed.
+  uint64_t LatestConfirmedSequenceNumber() const;
+
+ private:
+  void SourceChanged(const BeginFrameArgs& args);
+
+  uint32_t current_source_id_;
+  uint64_t current_sequence_number_;
+  // Small sets, but order matters for intersection computation.
+  base::flat_set<BeginFrameObserver*> observers_;
+  base::flat_set<BeginFrameObserver*> finished_observers_;
+  bool observers_had_damage_;
+  base::SmallMap<std::map<BeginFrameObserver*, uint64_t>, 4>
+      latest_confirmed_sequence_numbers_;
+};
+
 class CC_EXPORT ExternalBeginFrameSourceClient {
  public:
   // Only called when changed.  Assumed false by default.
   virtual void OnNeedsBeginFrames(bool needs_begin_frames) = 0;
+  // Called when all observers have completed a frame.
+  virtual void OnDidFinishFrame(const BeginFrameAck& ack) = 0;
 };
 
 // A BeginFrameSource that is only ticked manually.  Usually the endpoint
@@ -250,17 +295,22 @@ class CC_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
   void AddObserver(BeginFrameObserver* obs) override;
   void RemoveObserver(BeginFrameObserver* obs) override;
   void DidFinishFrame(BeginFrameObserver* obs,
-                      const BeginFrameAck& ack) override {}
+                      const BeginFrameAck& ack) override;
   bool IsThrottled() const override;
 
   void OnSetBeginFrameSourcePaused(bool paused);
   void OnBeginFrame(const BeginFrameArgs& args);
 
  protected:
+  void MaybeFinishFrame();
+  void FinishFrame();
+
   BeginFrameArgs missed_begin_frame_args_;
   std::unordered_set<BeginFrameObserver*> observers_;
   ExternalBeginFrameSourceClient* client_;
   bool paused_ = false;
+  bool frame_active_ = false;
+  BeginFrameObserverAckTracker ack_tracker_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExternalBeginFrameSource);

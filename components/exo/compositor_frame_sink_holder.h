@@ -61,8 +61,9 @@ class CompositorFrameSinkHolder
   const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
-  // Overridden from cc::ExternalBeginFrameSouceClient:
+  // Overridden from cc::ExternalBeginFrameSourceClient:
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
+  void OnDidFinishFrame(const cc::BeginFrameAck& ack) override;
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;

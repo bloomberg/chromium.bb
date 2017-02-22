@@ -55,6 +55,7 @@ class WindowCompositorFrameSink
 
   // cc::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
+  void OnDidFinishFrame(const cc::BeginFrameAck& ack) override;
 
   gfx::Size last_submitted_frame_size_;
   cc::LocalSurfaceId local_surface_id_;

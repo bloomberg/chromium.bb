@@ -64,6 +64,11 @@ void CompositorExternalBeginFrameSource::OnNeedsBeginFrames(
   Send(new ViewHostMsg_SetNeedsBeginFrames(routing_id_, needs_begin_frames));
 }
 
+void CompositorExternalBeginFrameSource::OnDidFinishFrame(
+    const cc::BeginFrameAck& ack) {
+  // TODO(eseckler): Pass on the ack to the view host.
+}
+
 void CompositorExternalBeginFrameSource::OnMessageReceived(
     const IPC::Message& message) {
   DCHECK(CalledOnValidThread());

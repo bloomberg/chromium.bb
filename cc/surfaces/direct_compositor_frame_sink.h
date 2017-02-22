@@ -69,6 +69,7 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
 
   // ExternalBeginFrameSourceClient implementation:
   void OnNeedsBeginFrames(bool needs_begin_frame) override;
+  void OnDidFinishFrame(const BeginFrameAck& ack) override;
 
   // This class is only meant to be used on a single thread.
   base::ThreadChecker thread_checker_;

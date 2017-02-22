@@ -150,4 +150,8 @@ void DirectCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }
 
+void DirectCompositorFrameSink::OnDidFinishFrame(const BeginFrameAck& ack) {
+  // TODO(eseckler): Pass on the ack to support_ and its BeginFrameSource.
+}
+
 }  // namespace cc
