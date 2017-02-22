@@ -103,8 +103,10 @@ void SecurityContext::setFeaturePolicyFromHeader(
     const WebParsedFeaturePolicyHeader& parsedHeader,
     FeaturePolicy* parentFeaturePolicy) {
   DCHECK(!m_featurePolicy);
-  m_featurePolicy = FeaturePolicy::createFromParentPolicy(parentFeaturePolicy,
-                                                          m_securityOrigin);
+  // TODO(iclelland): Use the frame owner properties here to pass the frame
+  // policy, if it exists.
+  m_featurePolicy = FeaturePolicy::createFromParentPolicy(
+      parentFeaturePolicy, nullptr, m_securityOrigin);
   m_featurePolicy->setHeaderPolicy(parsedHeader);
 }
 

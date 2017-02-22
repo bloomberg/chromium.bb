@@ -54,9 +54,17 @@ class FeaturePolicyTest : public ::testing::Test {
   std::unique_ptr<FeaturePolicy> CreateFromParentPolicy(
       const FeaturePolicy* parent,
       const url::Origin& origin) {
-    return FeaturePolicy::CreateFromParentPolicy(parent, origin, feature_list_);
+    return FeaturePolicy::CreateFromParentPolicy(parent, nullptr, origin,
+                                                 feature_list_);
   }
 
+  std::unique_ptr<FeaturePolicy> CreateFromParentWithFramePolicy(
+      const FeaturePolicy* parent,
+      const ParsedFeaturePolicyHeader* frame_policy,
+      const url::Origin& origin) {
+    return FeaturePolicy::CreateFromParentPolicy(parent, frame_policy, origin,
+                                                 feature_list_);
+  }
   url::Origin origin_a_ = url::Origin(GURL("https://example.com/"));
   url::Origin origin_b_ = url::Origin(GURL("https://example.net/"));
   url::Origin origin_c_ = url::Origin(GURL("https://example.org/"));
@@ -641,4 +649,364 @@ TEST_F(FeaturePolicyTest, TestFeatureEnabledForOrigin) {
       policy1->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_c_));
 }
 
+// Test frame policies
+
+TEST_F(FeaturePolicyTest, TestSimpleFramePolicy) {
+  // +-------------------------------------------------+
+  // |(1)Origin A                                      |
+  // |No Policy                                        |
+  // |                                                 |
+  // |<iframe policy='{"default-self": ["Origin B"]}'> |
+  // | +-------------+                                 |
+  // | |(2)Origin B  |                                 |
+  // | |No Policy    |                                 |
+  // | +-------------+                                 |
+  // +-------------------------------------------------+
+  // Default-self feature should be enabled in cross-origin child frame because
+  // permission was delegated through frame policy.
+  // This is the same scenario as when the iframe is declared as
+  // <iframe allow="default-self">
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  ParsedFeaturePolicyHeader frame_policy = {
+      {{"default-self", false, {origin_b_}}}};
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy, origin_b_);
+  EXPECT_TRUE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
+  EXPECT_FALSE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_c_));
+  EXPECT_FALSE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_c_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
+  EXPECT_TRUE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_b_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_c_));
+}
+
+TEST_F(FeaturePolicyTest, TestAllOriginFramePolicy) {
+  // +------------------------------------------+
+  // |(1)Origin A                               |
+  // |No Policy                                 |
+  // |                                          |
+  // |<iframe policy='{"default-self": ["*"]}'> |
+  // | +-------------+                          |
+  // | |(2)Origin B  |                          |
+  // | |No Policy    |                          |
+  // | +-------------+                          |
+  // +------------------------------------------+
+  // Default-self feature should be enabled in cross-origin child frame because
+  // permission was delegated through frame policy.
+  // This is the same scenario that arises when the iframe is declared as
+  // <iframe allowfullscreen>
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  ParsedFeaturePolicyHeader frame_policy = {
+      {{"default-self", true, std::vector<url::Origin>()}}};
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy, origin_b_);
+  EXPECT_TRUE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
+  EXPECT_FALSE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_b_));
+  EXPECT_FALSE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_c_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
+  EXPECT_TRUE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_b_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_c_));
+}
+
+TEST_F(FeaturePolicyTest, TestFramePolicyCanBeFurtherDelegated) {
+  // +-----------------------------------------------------+
+  // |(1)Origin A                                          |
+  // |No Policy                                            |
+  // |                                                     |
+  // |<iframe policy='{"default-self": ["Origin B"]}'>     |
+  // | +-------------------------------------------------+ |
+  // | |(2)Origin B                                      | |
+  // | |No Policy                                        | |
+  // | |                                                 | |
+  // | |<iframe policy='{"default-self": ["Origin C"]}'> | |
+  // | | +-------------+                                 | |
+  // | | |(3)Origin C  |                                 | |
+  // | | |No Policy    |                                 | |
+  // | | +-------------+                                 | |
+  // | |                                                 | |
+  // | |<iframe> (No frame policy)                       | |
+  // | | +-------------+                                 | |
+  // | | |(4)Origin C  |                                 | |
+  // | | |No Policy    |                                 | |
+  // | | +-------------+                                 | |
+  // | +-------------------------------------------------+ |
+  // +-----------------------------------------------------+
+  // Default-self feature should be enabled in cross-origin child frames 2 and
+  // 3. Feature should be disabled in frame 4 because it was not further
+  // delegated through frame policy.
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  ParsedFeaturePolicyHeader frame_policy1 = {
+      {{"default-self", false, {origin_b_}}}};
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_b_);
+  ParsedFeaturePolicyHeader frame_policy2 = {
+      {{"default-self", false, {origin_c_}}}};
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentWithFramePolicy(policy2.get(), &frame_policy2, origin_c_);
+  std::unique_ptr<FeaturePolicy> policy4 =
+      CreateFromParentWithFramePolicy(policy2.get(), nullptr, origin_c_);
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_b_));
+  EXPECT_TRUE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_c_));
+  EXPECT_FALSE(
+      policy4->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
+  EXPECT_FALSE(
+      policy4->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_b_));
+  EXPECT_FALSE(
+      policy4->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_c_));
+}
+
+TEST_F(FeaturePolicyTest, TestDefaultOnCanBeDisabledByFramePolicy) {
+  // +-------------------------------------+
+  // |(1)Origin A                          |
+  // |No Policy                            |
+  // |                                     |
+  // |<iframe policy='{"default-on": []}'> |
+  // | +-------------+                     |
+  // | |(2)Origin A  |                     |
+  // | |No Policy    |                     |
+  // | +-------------+                     |
+  // |                                     |
+  // |<iframe policy='{"default-on": []}'> |
+  // | +-------------+                     |
+  // | |(3)Origin B  |                     |
+  // | |No Policy    |                     |
+  // | +-------------+                     |
+  // +-------------------------------------+
+  // Default-on feature should be disabled in both same-origin and cross-origin
+  // child frames because permission was removed through frame policy.
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  ParsedFeaturePolicyHeader frame_policy1 = {
+      {{"default-on", false, std::vector<url::Origin>()}}};
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_a_);
+  ParsedFeaturePolicyHeader frame_policy2 = {
+      {{"default-on", false, std::vector<url::Origin>()}}};
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy2, origin_b_);
+  EXPECT_TRUE(policy1->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_a_));
+  EXPECT_TRUE(policy1->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_b_));
+  EXPECT_TRUE(policy1->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_c_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_a_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_b_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_c_));
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_a_));
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_b_));
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultOnFeature, origin_c_));
+}
+
+TEST_F(FeaturePolicyTest, TestDefaultOffMustBeEnabledByChildFrame) {
+  // +------------------------------------------------+
+  // |(1)Origin A                                     |
+  // |Policy: {"default-off": ["self"]}               |
+  // |                                                |
+  // |<iframe policy='{"default-off": ["Origin A"]}'> |
+  // | +-------------+                                |
+  // | |(2)Origin A  |                                |
+  // | |No Policy    |                                |
+  // | +-------------+                                |
+  // |                                                |
+  // |<iframe policy='{"default-off": ["Origin B"]}'> |
+  // | +-------------+                                |
+  // | |(3)Origin B  |                                |
+  // | |No Policy    |                                |
+  // | +-------------+                                |
+  // +------------------------------------------------+
+  // Default-off feature should be disabled in both same-origin and cross-origin
+  // child frames because they did not declare their own policy to enable it.
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  policy1->SetHeaderPolicy({{{"default-off", false, {origin_a_}}}});
+  ParsedFeaturePolicyHeader frame_policy1 = {
+      {{"default-off", false, {origin_a_}}}};
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_a_);
+  ParsedFeaturePolicyHeader frame_policy2 = {
+      {{"default-off", false, {origin_b_}}}};
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy2, origin_b_);
+  EXPECT_TRUE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_a_));
+  EXPECT_FALSE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_b_));
+  EXPECT_FALSE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_c_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_a_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_b_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_c_));
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_a_));
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_b_));
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_c_));
+}
+
+TEST_F(FeaturePolicyTest, TestDefaultOffCanBeEnabledByChildFrame) {
+  // +------------------------------------------------+
+  // |(1)Origin A                                     |
+  // |Policy: {"default-off": ["self"]}               |
+  // |                                                |
+  // |<iframe policy='{"default-off": ["Origin A"]}'> |
+  // | +--------------------------------------------+ |
+  // | |(2)Origin A                                 | |
+  // | |Policy: {"default-off": ["self"]}           | |
+  // | +--------------------------------------------+ |
+  // |                                                |
+  // |<iframe policy='{"default-off": ["Origin B"]}'> |
+  // | +--------------------------------------------+ |
+  // | |(3)Origin B                                 | |
+  // | |Policy: {"default-off": ["self"]}           | |
+  // | +--------------------------------------------+ |
+  // +------------------------------------------------+
+  // Default-off feature should be enabled in both same-origin and cross-origin
+  // child frames because it is delegated through the parent's frame policy, and
+  // they declare their own policy to enable it.
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  policy1->SetHeaderPolicy({{{"default-off", false, {origin_a_}}}});
+  ParsedFeaturePolicyHeader frame_policy1 = {
+      {{"default-off", false, {origin_a_}}}};
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_a_);
+  policy2->SetHeaderPolicy({{{"default-off", false, {origin_a_}}}});
+  ParsedFeaturePolicyHeader frame_policy2 = {
+      {{"default-off", false, {origin_b_}}}};
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy2, origin_b_);
+  policy3->SetHeaderPolicy({{{"default-off", false, {origin_b_}}}});
+  EXPECT_TRUE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_a_));
+  EXPECT_FALSE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_b_));
+  EXPECT_FALSE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_c_));
+  EXPECT_TRUE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_a_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_b_));
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_c_));
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_a_));
+  EXPECT_TRUE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_b_));
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultOffFeature, origin_c_));
+}
+
+TEST_F(FeaturePolicyTest, TestFramePolicyModifiesHeaderPolicy) {
+  // +-----------------------------------------------+
+  // |(1)Origin A                                    |
+  // |Policy: {"default-self": ["self", "Origin B"]} |
+  // |                                               |
+  // |<iframe policy='{"default-self": []}'>         |
+  // | +-------------------------------------------+ |
+  // | |(2)Origin B                                | |
+  // | |No Policy                                  | |
+  // | +-------------------------------------------+ |
+  // |                                               |
+  // |<iframe policy='{"default-self": []}'>         |
+  // | +-------------------------------------------+ |
+  // | |(3)Origin B                                | |
+  // | |Policy: {"default-self": ["self"]}         | |
+  // | +-------------------------------------------+ |
+  // +-----------------------------------------------+
+  // Default-self feature should be disabled in both cross-origin child frames
+  // by frame policy, even though the parent frame's header policy would
+  // otherwise enable it. This is true regardless of the child frame's header
+  // policy.
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  policy1->SetHeaderPolicy({{{"default-self", false, {origin_a_, origin_b_}}}});
+  ParsedFeaturePolicyHeader frame_policy1 = {
+      {{"default-self", false, std::vector<url::Origin>()}}};
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_b_);
+  ParsedFeaturePolicyHeader frame_policy2 = {
+      {{"default-self", false, std::vector<url::Origin>()}}};
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy2, origin_b_);
+  policy3->SetHeaderPolicy({{{"default-self", false, {origin_b_}}}});
+  EXPECT_FALSE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_b_));
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_b_));
+}
+
+TEST_F(FeaturePolicyTest, TestCombineFrameAndHeaderPolicies) {
+  // +-------------------------------------------------+
+  // |(1)Origin A                                      |
+  // |No Policy                                        |
+  // |                                                 |
+  // |<iframe policy='{"default-self": ["Origin B"]}'> |
+  // | +---------------------------------------------+ |
+  // | |(2)Origin B                                  | |
+  // | |Policy: {"default-self": ["*"]}              | |
+  // | |                                             | |
+  // | |<iframe policy='{"default-self": []}'>       | |
+  // | | +-------------+                             | |
+  // | | |(3)Origin C  |                             | |
+  // | | |No Policy    |                             | |
+  // | | +-------------+                             | |
+  // | |                                             | |
+  // | |<iframe> (No frame policy)                   | |
+  // | | +-------------+                             | |
+  // | | |(4)Origin C  |                             | |
+  // | | |No Policy    |                             | |
+  // | | +-------------+                             | |
+  // | +---------------------------------------------+ |
+  // +-------------------------------------------------+
+  // Default-self feature should be enabled in cross-origin child frames 2 and
+  // 4. Feature should be disabled in frame 3 by frame policy.
+  std::unique_ptr<FeaturePolicy> policy1 =
+      CreateFromParentPolicy(nullptr, origin_a_);
+  ParsedFeaturePolicyHeader frame_policy1 = {
+      {{"default-self", false, {origin_b_}}}};
+  std::unique_ptr<FeaturePolicy> policy2 =
+      CreateFromParentWithFramePolicy(policy1.get(), &frame_policy1, origin_b_);
+  policy2->SetHeaderPolicy(
+      {{{"default-self", true, std::vector<url::Origin>()}}});
+  ParsedFeaturePolicyHeader frame_policy2 = {
+      {{"default-self", false, std::vector<url::Origin>()}}};
+  std::unique_ptr<FeaturePolicy> policy3 =
+      CreateFromParentWithFramePolicy(policy2.get(), &frame_policy2, origin_c_);
+  std::unique_ptr<FeaturePolicy> policy4 =
+      CreateFromParentWithFramePolicy(policy2.get(), nullptr, origin_c_);
+  EXPECT_TRUE(
+      policy1->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_a_));
+  EXPECT_TRUE(
+      policy2->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_b_));
+  EXPECT_FALSE(
+      policy3->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_c_));
+  EXPECT_TRUE(
+      policy4->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_c_));
+}
 }  // namespace content

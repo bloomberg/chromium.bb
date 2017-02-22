@@ -109,8 +109,10 @@ bool FeaturePolicy::Whitelist::Contains(const url::Origin& origin) const {
 // static
 std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
     const FeaturePolicy* parent_policy,
+    const ParsedFeaturePolicyHeader* container_policy,
     const url::Origin& origin) {
-  return CreateFromParentPolicy(parent_policy, origin, GetDefaultFeatureList());
+  return CreateFromParentPolicy(parent_policy, container_policy, origin,
+                                GetDefaultFeatureList());
 }
 
 bool FeaturePolicy::IsFeatureEnabledForOrigin(
@@ -165,6 +167,7 @@ FeaturePolicy::~FeaturePolicy() {}
 // static
 std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
     const FeaturePolicy* parent_policy,
+    const ParsedFeaturePolicyHeader* container_policy,
     const url::Origin& origin,
     const FeaturePolicy::FeatureList& features) {
   std::unique_ptr<FeaturePolicy> new_policy =
@@ -176,8 +179,33 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
     } else {
       new_policy->inherited_policies_[feature.first] = false;
     }
+    if (container_policy)
+      new_policy->AddContainerPolicy(container_policy, parent_policy);
   }
   return new_policy;
+}
+
+void FeaturePolicy::AddContainerPolicy(
+    const ParsedFeaturePolicyHeader* container_policy,
+    const FeaturePolicy* parent_policy) {
+  DCHECK(container_policy);
+  DCHECK(parent_policy);
+  for (const ParsedFeaturePolicyDeclaration& parsed_declaration :
+       *container_policy) {
+    // If a feature is enabled in the parent frame, and the parent chooses to
+    // delegate it to the child frame, using the iframe attribute, then the
+    // feature should be enabled in the child frame.
+    blink::WebFeaturePolicyFeature feature =
+        FeatureForName(parsed_declaration.feature_name, feature_list_);
+    if (feature == blink::WebFeaturePolicyFeature::NotFound)
+      continue;
+    if (WhitelistFromDeclaration(parsed_declaration)->Contains(origin_) &&
+        parent_policy->IsFeatureEnabled(feature)) {
+      inherited_policies_[feature] = true;
+    } else {
+      inherited_policies_[feature] = false;
+    }
+  }
 }
 
 // static

@@ -159,6 +159,7 @@ const FeaturePolicy::FeatureList& FeaturePolicy::getDefaultFeatureList() {
 // static
 std::unique_ptr<FeaturePolicy> FeaturePolicy::createFromParentPolicy(
     const FeaturePolicy* parent,
+    const WebParsedFeaturePolicyHeader* containerPolicy,
     RefPtr<SecurityOrigin> currentOrigin,
     FeaturePolicy::FeatureList& features) {
   DCHECK(currentOrigin);
@@ -172,15 +173,42 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::createFromParentPolicy(
       newPolicy->m_inheritedFeatures.set(feature, false);
     }
   }
+  if (containerPolicy)
+    newPolicy->addContainerPolicy(containerPolicy, parent);
   return newPolicy;
 }
 
 // static
 std::unique_ptr<FeaturePolicy> FeaturePolicy::createFromParentPolicy(
     const FeaturePolicy* parent,
+    const WebParsedFeaturePolicyHeader* containerPolicy,
     RefPtr<SecurityOrigin> currentOrigin) {
-  return createFromParentPolicy(parent, std::move(currentOrigin),
+  return createFromParentPolicy(parent, containerPolicy,
+                                std::move(currentOrigin),
                                 getDefaultFeatureList());
+}
+
+void FeaturePolicy::addContainerPolicy(
+    const WebParsedFeaturePolicyHeader* containerPolicy,
+    const FeaturePolicy* parent) {
+  DCHECK(containerPolicy);
+  DCHECK(parent);
+  for (const WebParsedFeaturePolicyDeclaration& parsedDeclaration :
+       *containerPolicy) {
+    // If a feature is enabled in the parent frame, and the parent chooses to
+    // delegate it to the child frame, using the iframe attribute, then the
+    // feature should be enabled in the child frame.
+    const FeaturePolicy::Feature* feature =
+        featureForName(parsedDeclaration.featureName, m_features);
+    if (!feature)
+      continue;
+    if (Whitelist::from(parsedDeclaration)->contains(*m_origin) &&
+        parent->isFeatureEnabled(*feature)) {
+      m_inheritedFeatures.set(feature, true);
+    } else {
+      m_inheritedFeatures.set(feature, false);
+    }
+  }
 }
 
 // static

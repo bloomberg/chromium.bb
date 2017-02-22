@@ -54,7 +54,8 @@ class FeaturePolicyInFrameTest : public ::testing::Test {
   std::unique_ptr<FeaturePolicy> createFromParentPolicy(
       const FeaturePolicy* parent,
       RefPtr<SecurityOrigin> origin) {
-    return FeaturePolicy::createFromParentPolicy(parent, origin, m_featureList);
+    return FeaturePolicy::createFromParentPolicy(parent, nullptr, origin,
+                                                 m_featureList);
   }
 
   Document& document() { return m_dummyPageHolder->document(); }

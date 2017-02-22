@@ -57,6 +57,13 @@ namespace content {
 // embedded, or by the defaults for each feature in the case of the top-level
 // document.
 //
+// Container Policy
+// ----------------
+// A declared policy can be set on a specific frame by the embedding page using
+// the iframe "allow" attribute, or through attributes such as "allowfullscreen"
+// or "allowpaymentrequest". This is the container policy for the embedded
+// frame.
+//
 // Defaults
 // --------
 // Each defined feature has a default policy, which determines whether the
@@ -159,6 +166,7 @@ class CONTENT_EXPORT FeaturePolicy {
 
   static std::unique_ptr<FeaturePolicy> CreateFromParentPolicy(
       const FeaturePolicy* parent_policy,
+      const ParsedFeaturePolicyHeader* container_policy,
       const url::Origin& origin);
 
   // Returns whether or not the given feature is enabled by this policy.
@@ -180,8 +188,14 @@ class CONTENT_EXPORT FeaturePolicy {
   FeaturePolicy(url::Origin origin, const FeatureList& feature_list);
   static std::unique_ptr<FeaturePolicy> CreateFromParentPolicy(
       const FeaturePolicy* parent_policy,
+      const ParsedFeaturePolicyHeader* container_policy,
       const url::Origin& origin,
       const FeatureList& features);
+
+  // Updates the inherited policy with the declarations from the iframe allow*
+  // attributes.
+  void AddContainerPolicy(const ParsedFeaturePolicyHeader* container_policy,
+                          const FeaturePolicy* parent_policy);
 
   // Returns the list of features which can be controlled by Feature Policy.
   static const FeatureList& GetDefaultFeatureList();
