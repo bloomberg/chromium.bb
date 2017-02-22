@@ -497,11 +497,6 @@ class ExtensionWebRequestEventRouter
                             uint64_t request_id,
                             extensions::RequestStage request_stage);
 
-  // Returns event details for a given request.
-  std::unique_ptr<WebRequestEventDetails> CreateEventDetails(
-      const net::URLRequest* request,
-      int extra_info_spec);
-
   // Sets the flag that |event_type| has been signaled for |request_id|.
   // Returns the value of the flag before setting it.
   bool GetAndSetSignaled(uint64_t request_id, EventTypes event_type);

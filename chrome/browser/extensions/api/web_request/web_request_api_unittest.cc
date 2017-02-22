@@ -94,6 +94,8 @@ namespace extensions {
 
 namespace {
 
+constexpr const char kExampleUrl[] = "http://example.com";
+
 static void EventHandledOnIOThread(
     void* profile,
     const std::string& extension_id,
@@ -1569,8 +1571,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses) {
   linked_ptr<EventResponseDelta> d0(
       new EventResponseDelta("extid0", base::Time::FromInternalValue(0)));
   deltas.push_back(d0);
-  MergeOnBeforeRequestResponses(
-      deltas, &effective_new_url, &warning_set, &net_log);
+  MergeOnBeforeRequestResponses(GURL(kExampleUrl), deltas, &effective_new_url,
+                                &warning_set, &net_log);
   EXPECT_TRUE(effective_new_url.is_empty());
 
   // Single redirect.
@@ -1581,8 +1583,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses) {
   deltas.push_back(d1);
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   capturing_net_log.Clear();
-  MergeOnBeforeRequestResponses(
-      deltas, &effective_new_url, &warning_set, &net_log);
+  MergeOnBeforeRequestResponses(GURL(kExampleUrl), deltas, &effective_new_url,
+                                &warning_set, &net_log);
   EXPECT_EQ(new_url_1, effective_new_url);
   EXPECT_TRUE(warning_set.empty());
   EXPECT_EQ(1u, capturing_net_log.GetSize());
@@ -1596,8 +1598,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses) {
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   warning_set.clear();
   capturing_net_log.Clear();
-  MergeOnBeforeRequestResponses(
-      deltas, &effective_new_url, &warning_set, &net_log);
+  MergeOnBeforeRequestResponses(GURL(kExampleUrl), deltas, &effective_new_url,
+                                &warning_set, &net_log);
   EXPECT_EQ(new_url_1, effective_new_url);
   EXPECT_EQ(1u, warning_set.size());
   EXPECT_TRUE(HasWarning(warning_set, "extid2"));
@@ -1612,8 +1614,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses) {
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   warning_set.clear();
   capturing_net_log.Clear();
-  MergeOnBeforeRequestResponses(
-      deltas, &effective_new_url, &warning_set, &net_log);
+  MergeOnBeforeRequestResponses(GURL(kExampleUrl), deltas, &effective_new_url,
+                                &warning_set, &net_log);
   EXPECT_EQ(new_url_3, effective_new_url);
   EXPECT_EQ(2u, warning_set.size());
   EXPECT_TRUE(HasWarning(warning_set, "extid1"));
@@ -1628,8 +1630,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses) {
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   warning_set.clear();
   capturing_net_log.Clear();
-  MergeOnBeforeRequestResponses(
-      deltas, &effective_new_url, &warning_set, &net_log);
+  MergeOnBeforeRequestResponses(GURL(kExampleUrl), deltas, &effective_new_url,
+                                &warning_set, &net_log);
   EXPECT_EQ(new_url_3, effective_new_url);
   EXPECT_EQ(2u, warning_set.size());
   EXPECT_TRUE(HasWarning(warning_set, "extid1"));
@@ -1652,8 +1654,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses2) {
       new EventResponseDelta("extid0", base::Time::FromInternalValue(2000)));
   d0->new_url = GURL(new_url_0);
   deltas.push_back(d0);
-  MergeOnBeforeRequestResponses(
-      deltas, &effective_new_url, &warning_set, &net_log);
+  MergeOnBeforeRequestResponses(GURL(kExampleUrl), deltas, &effective_new_url,
+                                &warning_set, &net_log);
   EXPECT_EQ(new_url_0, effective_new_url);
 
   // Cancel request by redirecting to a data:// URL. This shall override
@@ -1666,8 +1668,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses2) {
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   warning_set.clear();
   capturing_net_log.Clear();
-  MergeOnBeforeRequestResponses(
-      deltas, &effective_new_url, &warning_set, &net_log);
+  MergeOnBeforeRequestResponses(GURL(kExampleUrl), deltas, &effective_new_url,
+                                &warning_set, &net_log);
   EXPECT_EQ(new_url_1, effective_new_url);
   EXPECT_TRUE(warning_set.empty());
   EXPECT_EQ(1u, capturing_net_log.GetSize());
@@ -1682,8 +1684,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses2) {
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   warning_set.clear();
   capturing_net_log.Clear();
-  MergeOnBeforeRequestResponses(
-      deltas, &effective_new_url, &warning_set, &net_log);
+  MergeOnBeforeRequestResponses(GURL(kExampleUrl), deltas, &effective_new_url,
+                                &warning_set, &net_log);
   EXPECT_EQ(new_url_1, effective_new_url);
   EXPECT_TRUE(warning_set.empty());
   EXPECT_EQ(2u, capturing_net_log.GetSize());
@@ -1698,8 +1700,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses2) {
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   warning_set.clear();
   capturing_net_log.Clear();
-  MergeOnBeforeRequestResponses(
-      deltas, &effective_new_url, &warning_set, &net_log);
+  MergeOnBeforeRequestResponses(GURL(kExampleUrl), deltas, &effective_new_url,
+                                &warning_set, &net_log);
   EXPECT_EQ(new_url_1, effective_new_url);
   EXPECT_EQ(1u, warning_set.size());
   EXPECT_TRUE(HasWarning(warning_set, "extid3"));
@@ -1721,8 +1723,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses3) {
       new EventResponseDelta("extid0", base::Time::FromInternalValue(2000)));
   d0->new_url = GURL(new_url_0);
   deltas.push_back(d0);
-  MergeOnBeforeRequestResponses(
-      deltas, &effective_new_url, &warning_set, &net_log);
+  MergeOnBeforeRequestResponses(GURL(kExampleUrl), deltas, &effective_new_url,
+                                &warning_set, &net_log);
   EXPECT_EQ(new_url_0, effective_new_url);
 
   // Cancel request by redirecting to about:blank. This shall override
@@ -1735,11 +1737,29 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses3) {
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
   warning_set.clear();
   capturing_net_log.Clear();
-  MergeOnBeforeRequestResponses(
-      deltas, &effective_new_url, &warning_set, &net_log);
+  MergeOnBeforeRequestResponses(GURL(kExampleUrl), deltas, &effective_new_url,
+                                &warning_set, &net_log);
   EXPECT_EQ(new_url_1, effective_new_url);
   EXPECT_TRUE(warning_set.empty());
   EXPECT_EQ(1u, capturing_net_log.GetSize());
+}
+
+// This tests that WebSocket requests can not be redirected.
+TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses4) {
+  EventResponseDeltas deltas;
+  net::BoundTestNetLog capturing_net_log;
+  net::NetLogWithSource net_log = capturing_net_log.bound();
+  WarningSet warning_set;
+  GURL effective_new_url;
+
+  // Single redirect.
+  linked_ptr<EventResponseDelta> delta(
+      new EventResponseDelta("extid", base::Time::FromInternalValue(2000)));
+  delta->new_url = GURL("http://foo.com");
+  deltas.push_back(delta);
+  MergeOnBeforeRequestResponses(GURL("ws://example.com"), deltas,
+                                &effective_new_url, &warning_set, &net_log);
+  EXPECT_EQ(GURL(), effective_new_url);
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
@@ -2183,12 +2203,9 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   deltas.push_back(d0);
   scoped_refptr<net::HttpResponseHeaders> new_headers0;
   GURL allowed_unsafe_redirect_url0;
-  MergeOnHeadersReceivedResponses(deltas,
-                                  base_headers.get(),
-                                  &new_headers0,
-                                  &allowed_unsafe_redirect_url0,
-                                  &warning_set,
-                                  &net_log);
+  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+                                  &new_headers0, &allowed_unsafe_redirect_url0,
+                                  &warning_set, &net_log);
   EXPECT_FALSE(new_headers0.get());
   EXPECT_TRUE(allowed_unsafe_redirect_url0.is_empty());
   EXPECT_EQ(0u, warning_set.size());
@@ -2205,12 +2222,9 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   capturing_net_log.Clear();
   scoped_refptr<net::HttpResponseHeaders> new_headers1;
   GURL allowed_unsafe_redirect_url1;
-  MergeOnHeadersReceivedResponses(deltas,
-                                  base_headers.get(),
-                                  &new_headers1,
-                                  &allowed_unsafe_redirect_url1,
-                                  &warning_set,
-                                  &net_log);
+  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+                                  &new_headers1, &allowed_unsafe_redirect_url1,
+                                  &warning_set, &net_log);
   ASSERT_TRUE(new_headers1.get());
   EXPECT_TRUE(allowed_unsafe_redirect_url1.is_empty());
   std::multimap<std::string, std::string> expected1;
@@ -2239,12 +2253,9 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   capturing_net_log.Clear();
   scoped_refptr<net::HttpResponseHeaders> new_headers2;
   GURL allowed_unsafe_redirect_url2;
-  MergeOnHeadersReceivedResponses(deltas,
-                                  base_headers.get(),
-                                  &new_headers2,
-                                  &allowed_unsafe_redirect_url2,
-                                  &warning_set,
-                                  &net_log);
+  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+                                  &new_headers2, &allowed_unsafe_redirect_url2,
+                                  &warning_set, &net_log);
   ASSERT_TRUE(new_headers2.get());
   EXPECT_TRUE(allowed_unsafe_redirect_url2.is_empty());
   iter = 0;
@@ -2285,12 +2296,9 @@ TEST(ExtensionWebRequestHelpersTest,
   deltas.push_back(d1);
   scoped_refptr<net::HttpResponseHeaders> new_headers1;
   GURL allowed_unsafe_redirect_url1;
-  MergeOnHeadersReceivedResponses(deltas,
-                                  base_headers.get(),
-                                  &new_headers1,
-                                  &allowed_unsafe_redirect_url1,
-                                  &warning_set,
-                                  &net_log);
+  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+                                  &new_headers1, &allowed_unsafe_redirect_url1,
+                                  &warning_set, &net_log);
   ASSERT_TRUE(new_headers1.get());
   EXPECT_TRUE(allowed_unsafe_redirect_url1.is_empty());
   std::multimap<std::string, std::string> expected1;
@@ -2332,12 +2340,9 @@ TEST(ExtensionWebRequestHelpersTest,
   deltas.push_back(d0);
   scoped_refptr<net::HttpResponseHeaders> new_headers0;
   GURL allowed_unsafe_redirect_url0;
-  MergeOnHeadersReceivedResponses(deltas,
-                                  base_headers.get(),
-                                  &new_headers0,
-                                  &allowed_unsafe_redirect_url0,
-                                  &warning_set,
-                                  &net_log);
+  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+                                  &new_headers0, &allowed_unsafe_redirect_url0,
+                                  &warning_set, &net_log);
   EXPECT_FALSE(new_headers0.get());
   EXPECT_TRUE(allowed_unsafe_redirect_url0.is_empty());
   EXPECT_EQ(0u, warning_set.size());
@@ -2353,12 +2358,9 @@ TEST(ExtensionWebRequestHelpersTest,
   capturing_net_log.Clear();
   scoped_refptr<net::HttpResponseHeaders> new_headers1;
   GURL allowed_unsafe_redirect_url1;
-  MergeOnHeadersReceivedResponses(deltas,
-                                  base_headers.get(),
-                                  &new_headers1,
-                                  &allowed_unsafe_redirect_url1,
-                                  &warning_set,
-                                  &net_log);
+  MergeOnHeadersReceivedResponses(GURL(kExampleUrl), deltas, base_headers.get(),
+                                  &new_headers1, &allowed_unsafe_redirect_url1,
+                                  &warning_set, &net_log);
 
   EXPECT_TRUE(new_headers1.get());
   EXPECT_TRUE(new_headers1->HasHeaderValue("Location", new_url_1.spec()));

@@ -11,6 +11,7 @@ var expectedEventOrder;
 var tabId;
 var tabIdMap;
 var frameIdMap;
+var testWebSocketPort;
 var testServerPort;
 var testServer = "www.a.com";
 var defaultScheme = "http";
@@ -36,17 +37,24 @@ var ignoreUnexpected = false;
 // information whether they were expected.
 var logAllRequests = false;
 
+// Runs the |tests| using the |tab| as a default tab.
+function runTestsForTab(tests, tab) {
+  tabId = tab.id;
+  tabIdMap = {"-1": -1};
+  tabIdMap[tabId] = 0;
+  chrome.test.getConfig(function(config) {
+    testServerPort = config.testServer.port;
+    testWebSocketPort = config.testWebSocketPort;
+    chrome.test.runTests(tests);
+  });
+}
+
+// Creates an "about:blank" tab and runs |tests| with this tab as default.
 function runTests(tests) {
   var waitForAboutBlank = function(_, info, tab) {
     if (info.status == "complete" && tab.url == "about:blank") {
-      tabId = tab.id;
-      tabIdMap = {"-1": -1};
-      tabIdMap[tabId] = 0;
       chrome.tabs.onUpdated.removeListener(waitForAboutBlank);
-      chrome.test.getConfig(function(config) {
-        testServerPort = config.testServer.port;
-        chrome.test.runTests(tests);
-      });
+      runTestsForTab(tests, tab);
     }
   };
   chrome.tabs.onUpdated.addListener(waitForAboutBlank);
@@ -207,8 +215,9 @@ function captureEvent(name, details, callback) {
   if ((details.type == "other" && !details.url.includes('dont-ignore-me')) ||
       isUnexpectedDetachedRequest(name, details) ||
       details.url.match(/\/favicon.ico$/) ||
-      details.url.match(/https:\/\/dl.google.com/))
+      details.url.match(/https:\/\/dl.google.com/)) {
     return;
+  }
 
   // Pull the extra per-event options out of the expected data. These let
   // us specify special return values per event.
@@ -338,7 +347,7 @@ function initListeners(filter, extraInfoSpec) {
   };
   listeners['onHeadersReceived'].push(onHeadersReceived);
 
-  var onAuthRequired = function(details) {
+  var onAuthRequired = function(details, callback) {
     return captureEvent("onAuthRequired", details, callback);
   };
   listeners['onAuthRequired'].push(onAuthRequired);

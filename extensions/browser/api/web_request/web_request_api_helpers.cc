@@ -417,11 +417,16 @@ void MergeCancelOfResponses(const EventResponseDeltas& deltas,
 // a higher precedence operation that redirects.
 // Returns whether a redirect occurred.
 static bool MergeRedirectUrlOfResponsesHelper(
+    const GURL& url,
     const EventResponseDeltas& deltas,
     GURL* new_url,
     extensions::WarningSet* conflicting_extensions,
     const net::NetLogWithSource* net_log,
     bool consider_only_cancel_scheme_urls) {
+  // Redirecting WebSocket handshake request is prohibited.
+  if (url.SchemeIsWSOrWSS())
+    return false;
+
   bool redirected = false;
 
   // Extension that determines the |new_url|.
@@ -458,30 +463,33 @@ static bool MergeRedirectUrlOfResponsesHelper(
   return redirected;
 }
 
-void MergeRedirectUrlOfResponses(const EventResponseDeltas& deltas,
+void MergeRedirectUrlOfResponses(const GURL& url,
+                                 const EventResponseDeltas& deltas,
                                  GURL* new_url,
                                  extensions::WarningSet* conflicting_extensions,
                                  const net::NetLogWithSource* net_log) {
   // First handle only redirects to data:// URLs and about:blank. These are a
   // special case as they represent a way of cancelling a request.
   if (MergeRedirectUrlOfResponsesHelper(
-          deltas, new_url, conflicting_extensions, net_log, true)) {
+          url, deltas, new_url, conflicting_extensions, net_log, true)) {
     // If any extension cancelled a request by redirecting to a data:// URL or
     // about:blank, we don't consider the other redirects.
     return;
   }
 
   // Handle all other redirects.
-  MergeRedirectUrlOfResponsesHelper(
-      deltas, new_url, conflicting_extensions, net_log, false);
+  MergeRedirectUrlOfResponsesHelper(url, deltas, new_url,
+                                    conflicting_extensions, net_log, false);
 }
 
 void MergeOnBeforeRequestResponses(
+    const GURL& url,
     const EventResponseDeltas& deltas,
     GURL* new_url,
     extensions::WarningSet* conflicting_extensions,
     const net::NetLogWithSource* net_log) {
-  MergeRedirectUrlOfResponses(deltas, new_url, conflicting_extensions, net_log);
+  MergeRedirectUrlOfResponses(url, deltas, new_url, conflicting_extensions,
+                              net_log);
 }
 
 static bool DoesRequestCookieMatchFilter(
@@ -1037,6 +1045,7 @@ static std::string FindRemoveResponseHeader(
 }
 
 void MergeOnHeadersReceivedResponses(
+    const GURL& url,
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
@@ -1123,8 +1132,8 @@ void MergeOnHeadersReceivedResponses(
       override_response_headers, conflicting_extensions, net_log);
 
   GURL new_url;
-  MergeRedirectUrlOfResponses(
-      deltas, &new_url, conflicting_extensions, net_log);
+  MergeRedirectUrlOfResponses(url, deltas, &new_url, conflicting_extensions,
+                              net_log);
   if (new_url.is_valid()) {
     // Only create a copy if we really want to modify the response headers.
     if (override_response_headers->get() == NULL) {

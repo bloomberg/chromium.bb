@@ -706,4 +706,7 @@ runTests([
       getServerURL('extensions/api_test/webrequest/csp/violation.html');
     document.body.appendChild(frame);
   },
+
+  // Note: The 'websocket' type is tested separately in 'test_websocket.js' and
+  // 'test_websocket_auth.js'.
 ]);

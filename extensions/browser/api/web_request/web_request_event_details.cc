@@ -9,6 +9,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/websocket_handshake_request_info.h"
 #include "content/public/common/child_process_host.h"
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
@@ -39,9 +40,18 @@ WebRequestEventDetails::WebRequestEventDetails(const net::URLRequest* request,
   if (info) {
     render_process_id_ = info->GetChildID();
     render_frame_id_ = info->GetRenderFrameID();
+  } else if (resource_type == WebRequestResourceType::WEB_SOCKET) {
+    // TODO(pkalinnikov): Consider embedding WebSocketHandshakeRequestInfo into
+    // UrlRequestUserData.
+    const content::WebSocketHandshakeRequestInfo* ws_info =
+        content::WebSocketHandshakeRequestInfo::ForRequest(request);
+    if (ws_info) {
+      render_process_id_ = ws_info->GetChildId();
+      render_frame_id_ = ws_info->GetRenderFrameId();
+    }
   } else {
-    // Fallback for requests that are not allocated by a ResourceDispatcherHost,
-    // such as the TemplateURLFetcher.
+    // Fallback for requests that are not allocated by a
+    // ResourceDispatcherHost, such as the TemplateURLFetcher.
     content::ResourceRequestInfo::GetRenderFrameForRequest(
         request, &render_process_id_, &render_frame_id_);
   }

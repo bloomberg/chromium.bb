@@ -31,17 +31,16 @@ const char* const kValidSchemes[] = {
     url::kHttpScheme,         url::kHttpsScheme,
     url::kFileScheme,         url::kFtpScheme,
     content::kChromeUIScheme, extensions::kExtensionScheme,
-    url::kFileSystemScheme,
+    url::kFileSystemScheme,   url::kWsScheme,
+    url::kWssScheme,
 };
 
 const int kValidSchemeMasks[] = {
-  URLPattern::SCHEME_HTTP,
-  URLPattern::SCHEME_HTTPS,
-  URLPattern::SCHEME_FILE,
-  URLPattern::SCHEME_FTP,
-  URLPattern::SCHEME_CHROMEUI,
-  URLPattern::SCHEME_EXTENSION,
-  URLPattern::SCHEME_FILESYSTEM,
+    URLPattern::SCHEME_HTTP,       URLPattern::SCHEME_HTTPS,
+    URLPattern::SCHEME_FILE,       URLPattern::SCHEME_FTP,
+    URLPattern::SCHEME_CHROMEUI,   URLPattern::SCHEME_EXTENSION,
+    URLPattern::SCHEME_FILESYSTEM, URLPattern::SCHEME_WS,
+    URLPattern::SCHEME_WSS,
 };
 
 static_assert(arraysize(kValidSchemes) == arraysize(kValidSchemeMasks),

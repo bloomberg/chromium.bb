@@ -87,11 +87,10 @@ const int Extension::kValidBookmarkAppSchemes = URLPattern::SCHEME_HTTP |
                                                 URLPattern::SCHEME_HTTPS |
                                                 URLPattern::SCHEME_EXTENSION;
 
-const int Extension::kValidHostPermissionSchemes = URLPattern::SCHEME_CHROMEUI |
-                                                   URLPattern::SCHEME_HTTP |
-                                                   URLPattern::SCHEME_HTTPS |
-                                                   URLPattern::SCHEME_FILE |
-                                                   URLPattern::SCHEME_FTP;
+const int Extension::kValidHostPermissionSchemes =
+    URLPattern::SCHEME_CHROMEUI | URLPattern::SCHEME_HTTP |
+    URLPattern::SCHEME_HTTPS | URLPattern::SCHEME_FILE |
+    URLPattern::SCHEME_FTP | URLPattern::SCHEME_WS | URLPattern::SCHEME_WSS;
 
 //
 // Extension

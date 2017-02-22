@@ -172,8 +172,9 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
   // Start the test WebSocket server, and store details of its state. Those
   // details will be available to javascript tests using
-  // chrome.test.getConfig().
-  bool StartWebSocketServer(const base::FilePath& root_directory);
+  // chrome.test.getConfig(). Enable HTTP basic authentication if needed.
+  bool StartWebSocketServer(const base::FilePath& root_directory,
+                            bool enable_basic_auth = false);
 
   // Start the test FTP server, and store details of its state. Those
   // details will be available to JavaScript tests using

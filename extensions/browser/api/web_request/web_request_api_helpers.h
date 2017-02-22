@@ -257,7 +257,8 @@ void MergeCancelOfResponses(const EventResponseDeltas& deltas,
 // Stores in |*new_url| the redirect request of the extension with highest
 // precedence. Extensions that did not command to redirect the request are
 // ignored in this logic.
-void MergeRedirectUrlOfResponses(const EventResponseDeltas& deltas,
+void MergeRedirectUrlOfResponses(const GURL& url,
+                                 const EventResponseDeltas& deltas,
                                  GURL* new_url,
                                  extensions::WarningSet* conflicting_extensions,
                                  const net::NetLogWithSource* net_log);
@@ -265,6 +266,7 @@ void MergeRedirectUrlOfResponses(const EventResponseDeltas& deltas,
 // precedence. Extensions that did not command to redirect the request are
 // ignored in this logic.
 void MergeOnBeforeRequestResponses(
+    const GURL& url,
     const EventResponseDeltas& deltas,
     GURL* new_url,
     extensions::WarningSet* conflicting_extensions,
@@ -301,6 +303,7 @@ void MergeCookiesInOnHeadersReceivedResponses(
 // (to request redirection) and |*allowed_unsafe_redirect_url| (to make sure
 // that the request is not cancelled with net::ERR_UNSAFE_REDIRECT).
 void MergeOnHeadersReceivedResponses(
+    const GURL& url,
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,

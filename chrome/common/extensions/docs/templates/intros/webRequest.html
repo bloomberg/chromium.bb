@@ -124,7 +124,9 @@ Moreover, only the following schemes are accessible:
 <code>http://</code>,
 <code>https://</code>,
 <code>ftp://</code>,
-<code>file://</code>, or
+<code>file://</code>,
+<code>ws://</code> (<span class="availability">since Chrome 58</span>),
+<code>wss://</code> (<span class="availability">since Chrome 58</span>), or
 <code>chrome-extension://</code>.
 In addition, even certain requests with URLs using one of the above schemes
 are hidden, e.g.,
@@ -140,6 +142,18 @@ limited due to the nature of the corresponding protocol.
 For example, for the <q>file:</q> scheme, only <code>onBeforeRequest</code>,
 <code>onResponseStarted</code>, <code>onCompleted</code>, and
 <code>onErrorOccurred</code> may be dispatched.
+</p>
+
+<p>
+<span class="availability">Starting from Chrome 58</span>, the webRequest API
+supports intercepting the WebSocket handshake request. Since the handshake is
+done by means of an HTTP upgrade request, its flow fits into HTTP-oriented
+webRequest model. Note that the API does <b>not intercept</b>:
+<ul>
+  <li>Individual messages sent over an established WebSocket connection.</li>
+  <li>WebSocket closing connection.</li>
+</ul>
+Redirects are <b>not supported</b> for WebSocket requests.
 </p>
 
 <h2 id="concepts">Concepts</h2>

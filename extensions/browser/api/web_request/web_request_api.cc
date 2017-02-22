@@ -352,6 +352,13 @@ bool IsPublicSession() {
   return false;
 }
 
+// Returns event details for a given request.
+std::unique_ptr<WebRequestEventDetails> CreateEventDetails(
+    const net::URLRequest* request,
+    int extra_info_spec) {
+  return base::MakeUnique<WebRequestEventDetails>(request, extra_info_spec);
+}
+
 }  // namespace
 
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
@@ -493,10 +500,10 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         return false;
       for (size_t i = 0; i < urls_value->GetSize(); ++i) {
         std::string url;
-        URLPattern pattern(
-            URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
-            URLPattern::SCHEME_FTP | URLPattern::SCHEME_FILE |
-            URLPattern::SCHEME_EXTENSION);
+        URLPattern pattern(URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
+                           URLPattern::SCHEME_FTP | URLPattern::SCHEME_FILE |
+                           URLPattern::SCHEME_EXTENSION |
+                           URLPattern::SCHEME_WS | URLPattern::SCHEME_WSS);
         if (!urls_value->GetString(i, &url) ||
             pattern.Parse(url) != URLPattern::PARSE_SUCCESS) {
           *error = ErrorUtils::FormatErrorMessage(
@@ -576,16 +583,6 @@ void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
     rules_registries_[key] = rules_registry;
   else
     rules_registries_.erase(key);
-}
-
-std::unique_ptr<WebRequestEventDetails>
-ExtensionWebRequestEventRouter::CreateEventDetails(
-    const net::URLRequest* request,
-    int extra_info_spec) {
-  std::unique_ptr<WebRequestEventDetails> event_details(
-      new WebRequestEventDetails(request, extra_info_spec));
-
-  return event_details;
 }
 
 int ExtensionWebRequestEventRouter::OnBeforeRequest(
@@ -943,7 +940,8 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   request_time_tracker_->LogRequestEndTime(request->identifier(),
                                            base::Time::Now());
 
-  DCHECK_EQ(net::OK, net_error);
+  // See comment in OnErrorOccurred regarding net::ERR_WS_UPGRADE.
+  DCHECK(net_error == net::OK || net_error == net::ERR_WS_UPGRADE);
 
   DCHECK(!GetAndSetSignaled(request->identifier(), kOnCompleted));
 
@@ -981,6 +979,14 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
     net::URLRequest* request,
     bool started,
     int net_error) {
+  // When WebSocket handshake request finishes, URLRequest is cancelled with an
+  // ERR_WS_UPGRADE code (see WebSocketStreamRequestImpl::PerformUpgrade).
+  // WebRequest API reports this as a completed request.
+  if (net_error == net::ERR_WS_UPGRADE) {
+    OnCompleted(browser_context, extension_info_map, request, net_error);
+    return;
+  }
+
   ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
   if (!client) {
     // |client| could be NULL during shutdown.
@@ -1806,10 +1812,8 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
   if (blocked_request.event == kOnBeforeRequest) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnBeforeRequestResponses(
-        blocked_request.response_deltas,
-        blocked_request.new_url,
-        &warnings,
-        blocked_request.net_log);
+        blocked_request.request->url(), blocked_request.response_deltas,
+        blocked_request.new_url, &warnings, blocked_request.net_log);
   } else if (blocked_request.event == kOnBeforeSendHeaders) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnBeforeSendHeadersResponses(
@@ -1820,12 +1824,10 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
   } else if (blocked_request.event == kOnHeadersReceived) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnHeadersReceivedResponses(
-        blocked_request.response_deltas,
+        blocked_request.request->url(), blocked_request.response_deltas,
         blocked_request.original_response_headers.get(),
-        blocked_request.override_response_headers,
-        blocked_request.new_url,
-        &warnings,
-        blocked_request.net_log);
+        blocked_request.override_response_headers, blocked_request.new_url,
+        &warnings, blocked_request.net_log);
   } else if (blocked_request.event == kOnAuthRequired) {
     CHECK(blocked_request.callback.is_null());
     CHECK(!blocked_request.auth_callback.is_null());
