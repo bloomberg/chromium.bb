@@ -4,7 +4,6 @@
 
 package org.chromium.net;
 
-import android.os.ConditionVariable;
 import android.support.test.filters.SmallTest;
 
 import org.json.JSONException;
@@ -71,7 +70,7 @@ public class SdchTest extends CronetTestBase {
         String targetUrl = NativeTestServer.getSdchURL() + "/sdch/test";
         long contextAdapter =
                 getContextAdapter((CronetUrlRequestContext) mTestFramework.mCronetEngine);
-        DictionaryAddedObserver observer = new DictionaryAddedObserver(targetUrl, contextAdapter);
+        SdchObserver observer = new SdchObserver(targetUrl, contextAdapter);
 
         // Make a request to /sdch which advertises the dictionary.
         TestUrlRequestCallback callback1 = startAndWaitForComplete(mTestFramework.mCronetEngine,
@@ -101,8 +100,7 @@ public class SdchTest extends CronetTestBase {
                 null, mTestFramework.getCronetEngineBuilder());
         CronetUrlRequestContext newContext = (CronetUrlRequestContext) mTestFramework.mCronetEngine;
         long newContextAdapter = getContextAdapter(newContext);
-        DictionaryAddedObserver newObserver =
-                new DictionaryAddedObserver(targetUrl, newContextAdapter);
+        SdchObserver newObserver = new SdchObserver(targetUrl, newContextAdapter);
         newObserver.waitForDictionaryAdded();
 
         // Make a request to fetch encoded response at /sdch/test.
@@ -144,27 +142,6 @@ public class SdchTest extends CronetTestBase {
                 mTestFramework.mCronetEngine, NativeTestServer.getSdchURL() + "/sdch/test");
         assertEquals(200, callback2.mResponseInfo.getHttpStatusCode());
         assertEquals("Sdch is not used.\n", callback2.mResponseAsString);
-    }
-
-    private static class DictionaryAddedObserver extends SdchObserver {
-        private final ConditionVariable mBlock;
-
-        public DictionaryAddedObserver(String targetUrl, long contextAdapter) {
-            super(targetUrl, contextAdapter);
-            mBlock = new ConditionVariable();
-        }
-
-        @Override
-        public void onDictionaryAdded() {
-            mBlock.open();
-        }
-
-        public void waitForDictionaryAdded() {
-            if (!mDictionaryAlreadyPresent) {
-                mBlock.block();
-                mBlock.close();
-            }
-        }
     }
 
     private long getContextAdapter(CronetUrlRequestContext requestContext) {
