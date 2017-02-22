@@ -55,9 +55,9 @@ class EventMatcher {
   // {url: [{hostSuffix: 'google.com'}]}
   //
   // The valid filter keys are event-specific.
-  std::unique_ptr<base::DictionaryValue> filter_;
+  const std::unique_ptr<base::DictionaryValue> filter_;
 
-  int routing_id_;
+  const int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(EventMatcher);
 };

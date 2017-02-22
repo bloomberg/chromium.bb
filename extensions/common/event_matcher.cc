@@ -32,11 +32,13 @@ bool EventMatcher::MatchNonURLCriteria(
   }
 
   if (event_info.has_window_type()) {
-    for (int i = 0; i < GetWindowTypeCount(); i++) {
+    int window_type_count = GetWindowTypeCount();
+    for (int i = 0; i < window_type_count; i++) {
       std::string window_type;
       if (GetWindowType(i, &window_type) &&
-          window_type == event_info.window_type())
+          window_type == event_info.window_type()) {
         return true;
+      }
     }
     return false;
   }
