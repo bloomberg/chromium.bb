@@ -11,7 +11,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/memory/singleton.h"
@@ -202,8 +201,6 @@ void PrivetURLFetcher::Start() {
   DCHECK_EQ(tries_, 0);  // We haven't called |Start()| yet.
 
   if (!url_.is_valid()) {
-    // Not yet clear why it's possible. crbug.com/513505
-    base::debug::DumpWithoutCrashing();
     return delegate_->OnError(this, UNKNOWN_ERROR);
   }
 
