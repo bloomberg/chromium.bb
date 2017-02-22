@@ -2006,6 +2006,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _containerView.get().frame = containerViewFrame;
     DCHECK(!CGRectIsEmpty(_containerView.get().frame));
 
+    // TODO(crbug.com/691116): Remove this workaround once tests are no longer
+    // dependent upon this accessibility ID.
+    if (!base::ios::IsRunningOnIOS10OrLater())
+      [_containerView setAccessibilityIdentifier:@"Container View"];
+
     [_containerView addGestureRecognizer:[self touchTrackingRecognizer]];
     // Is |currentUrl| a web scheme or native chrome scheme.
     web::NavigationItem* item = [self currentNavItem];
