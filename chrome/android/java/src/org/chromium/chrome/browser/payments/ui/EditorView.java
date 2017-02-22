@@ -372,6 +372,19 @@ public class EditorView extends AlwaysDismissedDialog implements OnClickListener
         mDataView.addView(mFooter);
     }
 
+    private void removeTextChangedListenersAndInputFilters() {
+        if (mCardInput != null) {
+            mCardInput.removeTextChangedListener(mCardNumberFormatter);
+            mCardInput.setFilters(new InputFilter[0]); // Null is not allowed.
+            mCardInput = null;
+        }
+
+        if (mPhoneInput != null) {
+            mPhoneInput.removeTextChangedListener(mPhoneFormatter);
+            mPhoneInput = null;
+        }
+    }
+
     private View addFieldViewToEditor(ViewGroup parent, final EditorFieldModel fieldModel) {
         View childView = null;
 
@@ -521,19 +534,6 @@ public class EditorView extends AlwaysDismissedDialog implements OnClickListener
         } else {
             // The first field will be focused, we are ready to edit.
             if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
-        }
-    }
-
-    private void removeTextChangedListenersAndInputFilters() {
-        if (mCardInput != null) {
-            mCardInput.removeTextChangedListener(mCardNumberFormatter);
-            mCardInput.setFilters(new InputFilter[0]); // Null is not allowed.
-            mCardInput = null;
-        }
-
-        if (mPhoneInput != null) {
-            mPhoneInput.removeTextChangedListener(mPhoneFormatter);
-            mPhoneInput = null;
         }
     }
 

@@ -114,7 +114,10 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
                 "Seb Doe\nGoogle, 340 Main St, Los Angeles, CA 90291\n555-555-5555"));
     }
 
-    /** Test that going into the editor and cancelling will leave the row checked. */
+    /**
+     * Test that going into the editor and clicking 'CANCEL' button to cancel editor will leave the
+     * row checked.
+     */
     @MediumTest
     @Feature({"Payments"})
     public void testEditShippingAddressAndCancelEditorShouldKeepAddressSelected()
@@ -124,14 +127,37 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
         expectShippingAddressRowIsSelected(0);
         clickInShippingAddressAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
 
-        // Cancel the editor.
+        // Cancel the editor by clicking 'CANCEL' button in the editor view.
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
 
         // Expect the row to still be selected in the Shipping Address section.
         expectShippingAddressRowIsSelected(0);
     }
 
-    /** Test that going into the "add" flow  and cancelling will leave the existing row checked. */
+    /**
+     * Test that going into the editor and clicking Android back button to cancel editor will leave
+     * the row checked.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testEditShippingAddressAndClickAndroidBackButtonShouldKeepAddressSelected()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        expectShippingAddressRowIsSelected(0);
+        clickInShippingAddressAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+
+        // Cancel the editor by clicking Android back button.
+        clickAndroidBackButtonInEditorAndWait(mReadyToPay);
+
+        // Expect the row to still be selected in the Shipping Address section.
+        expectShippingAddressRowIsSelected(0);
+    }
+
+    /**
+     * Test that going into the "add" flow  and clicking 'CANCEL' button to cancel editor will
+     * leave the existing row checked.
+     */
     @MediumTest
     @Feature({"Payments"})
     public void testAddShippingAddressAndCancelEditorShouldKeepAddressSelected()
@@ -141,8 +167,28 @@ public class PaymentRequestShippingAddressTest extends PaymentRequestTestBase {
         expectShippingAddressRowIsSelected(0);
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
 
-        // Cancel the editor.
+        // Cancel the editor by clicking 'CANCEL' button in the editor view.
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
+
+        // Expect the existing row to still be selected in the Shipping Address section.
+        expectShippingAddressRowIsSelected(0);
+    }
+
+    /**
+     * Test that going into the "add" flow  and clicking Android back button to cancel editor will
+     * leave the existing row checked.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testAddShippingAddressAndClickAndroidBackButtonShouldKeepAddressSelected()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        expectShippingAddressRowIsSelected(0);
+        clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
+
+        // Cancel the editor by clicking Android back button.
+        clickAndroidBackButtonInEditorAndWait(mReadyToPay);
 
         // Expect the existing row to still be selected in the Shipping Address section.
         expectShippingAddressRowIsSelected(0);

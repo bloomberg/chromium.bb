@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import static java.util.Arrays.asList;
 
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -276,6 +277,21 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
             @Override
             public void run() {
                 mUI.getEditorView().findViewById(resourceId).performClick();
+            }
+        });
+        helper.waitForCallback(callCount);
+    }
+
+    protected void clickAndroidBackButtonInEditorAndWait(CallbackHelper helper)
+            throws InterruptedException, TimeoutException {
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mUI.getEditorView().dispatchKeyEvent(
+                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                mUI.getEditorView().dispatchKeyEvent(
+                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
             }
         });
         helper.waitForCallback(callCount);
