@@ -138,7 +138,7 @@ bool MPEG1AudioStreamParser::ParseHeader(
     return false;
   }
 
-  if (layer == kLayer2 && kIsAllowed[bitrate_index][channel_mode]) {
+  if (layer == kLayer2 && !kIsAllowed[bitrate_index][channel_mode]) {
     MEDIA_LOG(ERROR, media_log) << "Invalid (bitrate_index, channel_mode)"
                                 << " combination :" << std::hex
                                 << " bitrate_index " << bitrate_index

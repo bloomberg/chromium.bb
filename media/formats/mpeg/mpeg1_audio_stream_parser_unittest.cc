@@ -48,6 +48,26 @@ TEST_F(MPEG1AudioStreamParserTest, UnalignedAppend) {
   EXPECT_GT(last_audio_config().codec_delay(), 0);
 }
 
+TEST_F(MPEG1AudioStreamParserTest, UnalignedAppendMP2) {
+  const std::string expected =
+      "NewSegment"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "EndOfSegment"
+      "NewSegment"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "EndOfSegment";
+  EXPECT_EQ(expected, ParseFile("sfx.mp2", 17));
+  EXPECT_GT(last_audio_config().codec_delay(), 0);
+}
+
 // Test parsing with a larger piece size to verify that multiple buffers
 // are passed to |new_buffer_cb_|.
 TEST_F(MPEG1AudioStreamParserTest, UnalignedAppend512) {
