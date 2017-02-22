@@ -174,7 +174,7 @@ public class CastSwitchVideoTest extends CastTestBase {
         waitUntilVideoReady(videoElement, webContents);
 
         // Need to click on the video first to overcome the user gesture requirement.
-        DOMUtils.clickNode(this, tab.getContentViewCore(), videoElement);
+        DOMUtils.clickNode(tab.getContentViewCore(), videoElement);
         DOMUtils.playMedia(webContents, videoElement);
         DOMUtils.waitForMediaPlay(webContents, videoElement);
     }

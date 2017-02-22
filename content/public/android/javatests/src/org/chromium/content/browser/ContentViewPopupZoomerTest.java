@@ -98,7 +98,7 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, false));
 
         // Once clicked, the popup should show up.
-        DOMUtils.clickNode(this, viewCore, "clickme");
+        DOMUtils.clickNode(viewCore, "clickme");
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, true));
 
         // The shown popup should have valid dimensions eventually.
@@ -119,7 +119,7 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
         final ViewGroup view = viewCore.getContainerView();
 
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, false));
-        DOMUtils.clickNode(this, viewCore, "clickme");
+        DOMUtils.clickNode(viewCore, "clickme");
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, true));
         sendKeys(KeyEvent.KEYCODE_BACK);
         // When device key is pressed, popup zoomer should hide if already showing.

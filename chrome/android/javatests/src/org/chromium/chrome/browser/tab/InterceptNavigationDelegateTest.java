@@ -133,7 +133,7 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
         loadUrl(mTestServer.getURL(NAVIGATION_FROM_USER_GESTURE_PAGE));
         assertEquals(1, mNavParamHistory.size());
 
-        DOMUtils.clickNode(this, mActivity.getActivityTab().getContentViewCore(), "first");
+        DOMUtils.clickNode(mActivity.getActivityTab().getContentViewCore(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         assertTrue(mNavParamHistory.get(1).hasUserGesture);
         assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
@@ -144,7 +144,7 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
         loadUrl(mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_PAGE));
         assertEquals(1, mNavParamHistory.size());
 
-        DOMUtils.clickNode(this, mActivity.getActivityTab().getContentViewCore(), "first");
+        DOMUtils.clickNode(mActivity.getActivityTab().getContentViewCore(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         assertFalse(mNavParamHistory.get(1).hasUserGesture);
         assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
@@ -156,7 +156,7 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
         loadUrl(mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_AND_SHORT_TIMEOUT_PAGE));
         assertEquals(1, mNavParamHistory.size());
 
-        DOMUtils.clickNode(this, mActivity.getActivityTab().getContentViewCore(), "first");
+        DOMUtils.clickNode(mActivity.getActivityTab().getContentViewCore(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         assertFalse(mNavParamHistory.get(1).hasUserGesture);
         assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
@@ -169,7 +169,7 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
                 mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_AND_LONG_TIMEOUT_PAGE));
         assertEquals(1, mNavParamHistory.size());
 
-        DOMUtils.clickNode(this, mActivity.getActivityTab().getContentViewCore(), "first");
+        DOMUtils.clickNode(mActivity.getActivityTab().getContentViewCore(), "first");
         waitTillExpectedCallsComplete(2, LONG_MAX_TIME_TO_WAIT_IN_MS);
         assertFalse(mNavParamHistory.get(1).hasUserGesture);
         assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
@@ -180,7 +180,7 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
         loadUrl(mTestServer.getURL(NAVIGATION_FROM_IMAGE_ONLOAD_PAGE));
         assertEquals(1, mNavParamHistory.size());
 
-        DOMUtils.clickNode(this, mActivity.getActivityTab().getContentViewCore(), "first");
+        DOMUtils.clickNode(mActivity.getActivityTab().getContentViewCore(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         assertFalse(mNavParamHistory.get(1).hasUserGesture);
         assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
@@ -191,7 +191,7 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
         loadUrl(mTestServer.getURL(NAVIGATION_FROM_USER_GESTURE_IFRAME_PAGE));
         assertEquals(1, mNavParamHistory.size());
 
-        DOMUtils.clickNode(this, mActivity.getActivityTab().getContentViewCore(), "first");
+        DOMUtils.clickNode(mActivity.getActivityTab().getContentViewCore(), "first");
         waitTillExpectedCallsComplete(3, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         assertEquals(3, mExternalNavParamHistory.size());
 

@@ -78,7 +78,7 @@ public class SelectPopupOtherContentViewTest extends ChromeActivityTestCaseBase<
         final ContentViewCore viewCore = getActivity().getCurrentContentViewCore();
 
         // Once clicked, the popup should show up.
-        DOMUtils.clickNode(this, viewCore, "select");
+        DOMUtils.clickNode(viewCore, "select");
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria());
 
         // Now create and destroy a different ContentView.

@@ -37,7 +37,7 @@ public class PlatformMediaCodecTest extends AwTestBase {
     public void testCanPlayPlatformMediaCodecs() throws Throwable {
         loadUrlSync(mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
                 "file:///android_asset/platform-media-codec-test.html");
-        DOMUtils.clickNode(this, mContentViewCore, "playButton");
+        DOMUtils.clickNode(mContentViewCore, "playButton");
         DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), "videoTag");
     }
 

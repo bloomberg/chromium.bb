@@ -64,7 +64,7 @@ public class UndoIntegrationTest extends ChromeTabbedActivityTestBase {
         final Tab tab = TabModelUtils.getCurrentTab(model);
 
         // Clock on the link that will trigger a delayed window popup.
-        DOMUtils.clickNode(this, tab.getContentViewCore(), "link");
+        DOMUtils.clickNode(tab.getContentViewCore(), "link");
 
         // Attempt to close the tab, which will delay closing until the undo timeout goes away.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

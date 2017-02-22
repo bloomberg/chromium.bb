@@ -310,8 +310,7 @@ public class VisualStateTest extends AwTestBase {
                 awContentsClient.getOnPageFinishedHelper(), WAIT_FOR_JS_TEST_URL);
 
         assertTrue(readyToUpdateColor.await(AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        DOMUtils.clickNode(
-                VisualStateTest.this, contentViewCore, UPDATE_COLOR_CONTROL_ID);
+        DOMUtils.clickNode(contentViewCore, UPDATE_COLOR_CONTROL_ID);
         assertTrue(jsObserver.waitForEvent(WAIT_TIMEOUT_MS));
 
         runTestOnUiThread(new Runnable() {
@@ -382,7 +381,7 @@ public class VisualStateTest extends AwTestBase {
 
         assertTrue(readyToEnterFullscreenSignal.await(
                 AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        DOMUtils.clickNode(VisualStateTest.this, contentViewCore, ENTER_FULLSCREEN_CONTROL_ID);
+        DOMUtils.clickNode(contentViewCore, ENTER_FULLSCREEN_CONTROL_ID);
         assertTrue(jsObserver.waitForEvent(WAIT_TIMEOUT_MS));
 
         runTestOnUiThread(new Runnable() {

@@ -307,7 +307,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
         // Enter fullscreen and verify that the power save blocker is
         // still there.
-        DOMUtils.clickNode(this, mContentViewCore, CUSTOM_FULLSCREEN_CONTROL_ID);
+        DOMUtils.clickNode(mContentViewCore, CUSTOM_FULLSCREEN_CONTROL_ID);
         mContentsClient.waitForCustomViewShown();
         assertKeepScreenOnActive(mTestContainerView, true);
 
@@ -354,7 +354,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
             // (containing the fullscreen <video>) so we just rely on that fact here.
             TouchCommon.singleClickView(mContentsClient.getCustomView());
         } else {
-            DOMUtils.clickNode(this, mContentViewCore, CUSTOM_PLAY_CONTROL_ID);
+            DOMUtils.clickNode(mContentViewCore, CUSTOM_PLAY_CONTROL_ID);
         }
     }
 
@@ -472,7 +472,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     private void loadTestPageAndClickFullscreen(String videoTestUrl) throws Exception {
         loadTestPage(videoTestUrl);
-        DOMUtils.clickNode(this, mContentViewCore, CUSTOM_FULLSCREEN_CONTROL_ID);
+        DOMUtils.clickNode(mContentViewCore, CUSTOM_FULLSCREEN_CONTROL_ID);
     }
 
     private void loadTestPage(String videoTestUrl) throws Exception {

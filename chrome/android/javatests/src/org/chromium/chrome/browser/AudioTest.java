@@ -51,7 +51,7 @@ public class AudioTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertEquals("ready_to_play", tab.getTitle());
 
         titleObserver = new TabTitleObserver(tab, "ended");
-        DOMUtils.clickNode(this, tab.getContentViewCore(), "button1");
+        DOMUtils.clickNode(tab.getContentViewCore(), "button1");
 
         // Make sure that the audio playback "ended" and title is changed.
         titleObserver.waitForTitleUpdate(15);

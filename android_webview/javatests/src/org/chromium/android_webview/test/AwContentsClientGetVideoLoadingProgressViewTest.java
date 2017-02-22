@@ -71,9 +71,9 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
         enableJavaScriptOnUiThread(awContents);
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), VIDEO_TEST_URL);
         Thread.sleep(5 * 1000);
-        DOMUtils.clickNode(this, awContents.getContentViewCore(), CUSTOM_FULLSCREEN_CONTROL_ID);
+        DOMUtils.clickNode(awContents.getContentViewCore(), CUSTOM_FULLSCREEN_CONTROL_ID);
         Thread.sleep(1 * 1000);
-        DOMUtils.clickNode(this, awContents.getContentViewCore(), CUSTOM_PLAY_CONTROL_ID);
+        DOMUtils.clickNode(awContents.getContentViewCore(), CUSTOM_PLAY_CONTROL_ID);
         waitForViewAttached();
     }
 }
