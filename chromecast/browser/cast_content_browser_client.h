@@ -53,6 +53,7 @@ class VideoResolutionPolicy;
 namespace shell {
 
 class CastBrowserMainParts;
+class CastResourceDispatcherHostDelegate;
 class URLRequestContextFactory;
 
 using DisableQuicClosure = base::OnceClosure;
@@ -208,6 +209,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   // Created by CastContentBrowserClient but owned by BrowserMainLoop.
   CastBrowserMainParts* cast_browser_main_parts_;
   std::unique_ptr<URLRequestContextFactory> url_request_context_factory_;
+  std::unique_ptr<CastResourceDispatcherHostDelegate>
+      resource_dispatcher_host_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);
 };

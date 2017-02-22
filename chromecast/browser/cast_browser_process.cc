@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_context.h"
-#include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/net/connectivity_checker.h"
@@ -100,12 +99,6 @@ void CastBrowserProcess::SetRemoteDebuggingServer(
     std::unique_ptr<RemoteDebuggingServer> remote_debugging_server) {
   DCHECK(!remote_debugging_server_);
   remote_debugging_server_.swap(remote_debugging_server);
-}
-
-void CastBrowserProcess::SetResourceDispatcherHostDelegate(
-    std::unique_ptr<CastResourceDispatcherHostDelegate> delegate) {
-  DCHECK(!resource_dispatcher_host_delegate_);
-  resource_dispatcher_host_delegate_.swap(delegate);
 }
 
 void CastBrowserProcess::SetConnectivityChecker(

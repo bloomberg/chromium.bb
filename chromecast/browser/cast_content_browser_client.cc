@@ -331,10 +331,10 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
 }
 
 void CastContentBrowserClient::ResourceDispatcherHostCreated() {
-  CastBrowserProcess::GetInstance()->SetResourceDispatcherHostDelegate(
-      base::WrapUnique(new CastResourceDispatcherHostDelegate));
+  resource_dispatcher_host_delegate_.reset(
+      new CastResourceDispatcherHostDelegate);
   content::ResourceDispatcherHost::Get()->SetDelegate(
-      CastBrowserProcess::GetInstance()->resource_dispatcher_host_delegate());
+      resource_dispatcher_host_delegate_.get());
 }
 
 std::string CastContentBrowserClient::GetApplicationLocale() {
