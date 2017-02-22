@@ -34,9 +34,9 @@ class ScriptStreamingTest : public ::testing::Test {
         m_settings(Settings::create()),
         m_resourceRequest("http://www.streaming-test.com/"),
         m_resource(ScriptResource::create(m_resourceRequest, "UTF-8")),
-        m_pendingScript(PendingScript::create(0, m_resource.get())) {
+        m_pendingScript(PendingScript::createForTesting(m_resource.get())) {
     m_resource->setStatus(ResourceStatus::Pending);
-    m_pendingScript = PendingScript::create(0, m_resource.get());
+    m_pendingScript = PendingScript::createForTesting(m_resource.get());
     ScriptStreamer::setSmallScriptThresholdForTesting(0);
   }
 

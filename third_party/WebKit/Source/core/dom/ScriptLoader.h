@@ -107,9 +107,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
     return m_pendingScript && m_pendingScript->errorOccurred();
   }
 
-  // Clears the connection to the PendingScript (and Element and Resource).
-  void detach();
-
   bool wasCreatedDuringDocumentWrite() { return m_createdDuringDocumentWrite; }
 
   bool disallowedFetchForDocWrittenScript() {
@@ -135,6 +132,9 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   bool doExecuteScript(const ScriptSourceCode&);
 
   ScriptLoaderClient* client() const;
+
+  // Clears the connection to the PendingScript.
+  void detachPendingScript();
 
   // PendingScriptClient
   void pendingScriptFinished(PendingScript*) override;

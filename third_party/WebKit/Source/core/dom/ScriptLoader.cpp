@@ -142,7 +142,7 @@ void ScriptLoader::handleAsyncAttribute() {
   m_nonBlocking = false;
 }
 
-void ScriptLoader::detach() {
+void ScriptLoader::detachPendingScript() {
   if (!m_pendingScript)
     return;
   m_pendingScript->dispose();
@@ -817,7 +817,7 @@ void ScriptLoader::execute() {
   DCHECK(m_pendingScript->resource());
   bool errorOccurred = false;
   ScriptSourceCode source = m_pendingScript->getSource(KURL(), errorOccurred);
-  m_pendingScript->dispose();
+  detachPendingScript();
   if (errorOccurred) {
     dispatchErrorEvent();
   } else if (!m_resource->wasCanceled()) {
@@ -848,7 +848,7 @@ void ScriptLoader::pendingScriptFinished(PendingScript* pendingScript) {
 
   Document* contextDocument = m_element->document().contextDocument();
   if (!contextDocument) {
-    detach();
+    detachPendingScript();
     return;
   }
 
@@ -857,7 +857,7 @@ void ScriptLoader::pendingScriptFinished(PendingScript* pendingScript) {
   if (m_resource->errorOccurred()) {
     contextDocument->scriptRunner()->notifyScriptLoadError(this,
                                                            m_asyncExecType);
-    detach();
+    detachPendingScript();
     dispatchErrorEvent();
     return;
   }

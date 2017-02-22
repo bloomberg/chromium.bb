@@ -70,13 +70,16 @@ class CORE_EXPORT PendingScript final
   WTF_MAKE_NONCOPYABLE(PendingScript);
 
  public:
+  // For script from an external file.
   static PendingScript* create(Element*, ScriptResource*);
+  // For inline script.
+  static PendingScript* create(Element*, const TextPosition&);
+
+  static PendingScript* createForTesting(ScriptResource*);
+
   ~PendingScript() override;
 
   TextPosition startingPosition() const { return m_startingPosition; }
-  void setStartingPosition(const TextPosition& position) {
-    m_startingPosition = position;
-  }
   void markParserBlockingLoadStartTime();
   // Returns the time the load of this script started blocking the parser, or
   // zero if this script hasn't yet blocked the parser, in
@@ -88,10 +91,7 @@ class CORE_EXPORT PendingScript final
   void watchForLoad(PendingScriptClient*);
   void stopWatchingForLoad();
 
-  Element* element() const { return m_element.get(); }
-  void setElement(Element*);
-
-  void setScriptResource(ScriptResource*);
+  Element* element() const;
 
   DECLARE_TRACE();
 
@@ -107,7 +107,10 @@ class CORE_EXPORT PendingScript final
   void dispose();
 
  private:
-  PendingScript(Element*, ScriptResource*);
+  PendingScript(Element*,
+                ScriptResource*,
+                const TextPosition&,
+                bool isForTesting = false);
   PendingScript() = delete;
 
   // ScriptResourceClient
@@ -119,13 +122,21 @@ class CORE_EXPORT PendingScript final
   void onPurgeMemory() override;
 
   bool m_watchingForLoad;
+
+  // |m_element| must points to the corresponding ScriptLoader's element and
+  // thus must be non-null before dispose() is called (except for unit tests).
   Member<Element> m_element;
+
   TextPosition m_startingPosition;  // Only used for inline script tags.
   bool m_integrityFailure;
   double m_parserBlockingLoadStartTime;
 
   Member<ScriptStreamer> m_streamer;
   Member<PendingScriptClient> m_client;
+
+  // This flag is used to skip non-null checks of |m_element| in unit tests,
+  // because |m_element| can be null in unit tests.
+  const bool m_isForTesting;
 };
 
 }  // namespace blink

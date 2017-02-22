@@ -157,7 +157,7 @@ HTMLParserScriptRunner::HTMLParserScriptRunner(
     : m_reentryPermit(reentryPermit),
       m_document(document),
       m_host(host),
-      m_parserBlockingScript(PendingScript::create(nullptr, nullptr)) {
+      m_parserBlockingScript(nullptr) {
   DCHECK(m_host);
 }
 
@@ -170,7 +170,9 @@ void HTMLParserScriptRunner::detach() {
   if (!m_document)
     return;
 
-  m_parserBlockingScript->dispose();
+  if (m_parserBlockingScript)
+    m_parserBlockingScript->dispose();
+  m_parserBlockingScript = nullptr;
 
   while (!m_scriptsToExecuteAfterParsing.isEmpty()) {
     PendingScript* pendingScript = m_scriptsToExecuteAfterParsing.takeFirst();
@@ -183,9 +185,10 @@ void HTMLParserScriptRunner::detach() {
 }
 
 bool HTMLParserScriptRunner::isParserBlockingScriptReady() {
+  DCHECK(parserBlockingScript());
   if (!m_document->isScriptExecutionReady())
     return false;
-  return m_parserBlockingScript->isReady();
+  return parserBlockingScript()->isReady();
 }
 
 // This has two callers and corresponds to different concepts in the spec:
@@ -228,6 +231,11 @@ void HTMLParserScriptRunner::executePendingScriptAndDispatchEvent(
   //     There is no longer a pending parsing-blocking script."
   // Clear the pending script before possible re-entrancy from executeScript()
   pendingScript->dispose();
+  pendingScript = nullptr;
+
+  if (pendingScriptType == ScriptStreamer::ParsingBlocking) {
+    m_parserBlockingScript = nullptr;
+  }
 
   if (ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element)) {
     // 7. "Increment the parser's script nesting level by one (it should be
@@ -312,15 +320,14 @@ void HTMLParserScriptRunner::possiblyFetchBlockedDocWriteScript(
     PendingScript* pendingScript) {
   // If the script was blocked as part of document.write intervention,
   // then send an asynchronous GET request with an interventions header.
-  TextPosition startingPosition;
-  bool isParserInserted = false;
 
-  if (m_parserBlockingScript != pendingScript)
+  if (!parserBlockingScript())
     return;
 
-  Element* element = m_parserBlockingScript->element();
-  if (!element)
+  if (parserBlockingScript() != pendingScript)
     return;
+
+  Element* element = parserBlockingScript()->element();
 
   ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element);
   if (!scriptLoader || !scriptLoader->disallowedFetchForDocWrittenScript())
@@ -338,8 +345,8 @@ void HTMLParserScriptRunner::possiblyFetchBlockedDocWriteScript(
 
   emitErrorForDocWriteScripts(pendingScript->resource()->url().getString(),
                               *m_document);
-  startingPosition = m_parserBlockingScript->startingPosition();
-  isParserInserted = scriptLoader->isParserInserted();
+  TextPosition startingPosition = parserBlockingScript()->startingPosition();
+  bool isParserInserted = scriptLoader->isParserInserted();
   // Remove this resource entry from memory cache as the new request
   // should not join onto this existing entry.
   memoryCache()->remove(pendingScript->resource());
@@ -402,7 +409,7 @@ void HTMLParserScriptRunner::processScriptElement(
 
     // - "Otherwise":
 
-    traceParserBlockingScript(m_parserBlockingScript.get(),
+    traceParserBlockingScript(parserBlockingScript(),
                               !m_document->isScriptExecutionReady());
     m_parserBlockingScript->markParserBlockingLoadStartTime();
 
@@ -416,7 +423,7 @@ void HTMLParserScriptRunner::processScriptElement(
 }
 
 bool HTMLParserScriptRunner::hasParserBlockingScript() const {
-  return !!m_parserBlockingScript->element();
+  return parserBlockingScript();
 }
 
 // The "Otherwise" Clause of 'An end tag whose tag name is "script"'
@@ -442,7 +449,7 @@ void HTMLParserScriptRunner::executeParsingBlockingScripts() {
     InsertionPointRecord insertionPointRecord(m_host->inputStream());
 
     // 1., 7.--9.
-    executePendingScriptAndDispatchEvent(m_parserBlockingScript.get(),
+    executePendingScriptAndDispatchEvent(m_parserBlockingScript,
                                          ScriptStreamer::ParsingBlocking);
 
     // 10. "Let the insertion point be undefined again."
@@ -458,8 +465,8 @@ void HTMLParserScriptRunner::executeScriptsWaitingForLoad(
   TRACE_EVENT0("blink", "HTMLParserScriptRunner::executeScriptsWaitingForLoad");
   DCHECK(!isExecutingScript());
   DCHECK(hasParserBlockingScript());
-  DCHECK_EQ(pendingScript, m_parserBlockingScript);
-  DCHECK(m_parserBlockingScript->isReady());
+  DCHECK_EQ(pendingScript, parserBlockingScript());
+  DCHECK(parserBlockingScript()->isReady());
   executeParsingBlockingScripts();
 }
 
@@ -522,20 +529,22 @@ void HTMLParserScriptRunner::requestParsingBlockingScript(Element* element) {
   // "The element is the pending parsing-blocking script of the Document of
   //  the parser that created the element.
   //  (There can only be one such script per Document at a time.)"
-  if (!requestPendingScript(m_parserBlockingScript.get(), element))
+  CHECK(!parserBlockingScript());
+  m_parserBlockingScript = requestPendingScript(element);
+  if (!parserBlockingScript())
     return;
 
-  DCHECK(m_parserBlockingScript->resource());
+  DCHECK(parserBlockingScript()->resource());
 
   // We only care about a load callback if resource is not already in the cache.
   // Callers will attempt to run the m_parserBlockingScript if possible before
   // returning control to the parser.
-  if (!m_parserBlockingScript->isReady()) {
+  if (!parserBlockingScript()->isReady()) {
     if (m_document->frame()) {
       ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());
       if (scriptState) {
         ScriptStreamer::startStreaming(
-            m_parserBlockingScript.get(), ScriptStreamer::ParsingBlocking,
+            m_parserBlockingScript, ScriptStreamer::ParsingBlocking,
             m_document->frame()->settings(), scriptState,
             TaskRunnerHelper::get(TaskType::Networking, m_document));
       }
@@ -547,8 +556,8 @@ void HTMLParserScriptRunner::requestParsingBlockingScript(Element* element) {
 
 // 1st Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
 void HTMLParserScriptRunner::requestDeferredScript(Element* element) {
-  PendingScript* pendingScript = PendingScript::create(nullptr, nullptr);
-  if (!requestPendingScript(pendingScript, element))
+  PendingScript* pendingScript = requestPendingScript(element);
+  if (!pendingScript)
     return;
 
   if (m_document->frame() && !pendingScript->isReady()) {
@@ -569,18 +578,16 @@ void HTMLParserScriptRunner::requestDeferredScript(Element* element) {
   m_scriptsToExecuteAfterParsing.append(pendingScript);
 }
 
-bool HTMLParserScriptRunner::requestPendingScript(PendingScript* pendingScript,
-                                                  Element* script) const {
-  DCHECK(!pendingScript->element());
-  pendingScript->setElement(script);
+PendingScript* HTMLParserScriptRunner::requestPendingScript(
+    Element* element) const {
   // This should correctly return 0 for empty or invalid srcValues.
-  ScriptResource* resource = toScriptLoaderIfPossible(script)->resource();
+  ScriptResource* resource = toScriptLoaderIfPossible(element)->resource();
   if (!resource) {
     DVLOG(1) << "Not implemented.";  // Dispatch error event.
-    return false;
+    return nullptr;
   }
-  pendingScript->setScriptResource(resource);
-  return true;
+
+  return PendingScript::create(element, resource);
 }
 
 // The initial steps for 'An end tag whose tag name is "script"'
@@ -637,15 +644,18 @@ void HTMLParserScriptRunner::processScriptElementInternal(
         // "The element is the pending parsing-blocking script of the
         //  Document of the parser that created the element.
         //  (There can only be one such script per Document at a time.)"
-        m_parserBlockingScript->setElement(script);
-        m_parserBlockingScript->setStartingPosition(scriptStartPosition);
+        CHECK(!m_parserBlockingScript);
+        m_parserBlockingScript =
+            PendingScript::create(script, scriptStartPosition);
       } else {
         // 6th Clause of Step 23.
         // "Immediately execute the script block,
         //  even if other scripts are already executing."
         // TODO(hiroshige): Merge the block into ScriptLoader::prepareScript().
         DCHECK_GT(m_reentryPermit->scriptNestingLevel(), 1u);
-        m_parserBlockingScript->dispose();
+        if (m_parserBlockingScript)
+          m_parserBlockingScript->dispose();
+        m_parserBlockingScript = nullptr;
         ScriptSourceCode sourceCode(script->textContent(),
                                     documentURLForScriptExecution(m_document),
                                     scriptStartPosition);

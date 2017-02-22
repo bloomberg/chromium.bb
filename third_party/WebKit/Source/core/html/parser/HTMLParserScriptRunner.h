@@ -107,12 +107,16 @@ class HTMLParserScriptRunner final
 
   void requestParsingBlockingScript(Element*);
   void requestDeferredScript(Element*);
-  bool requestPendingScript(PendingScript*, Element*) const;
+  PendingScript* requestPendingScript(Element*) const;
 
   // Processes the provided script element, but does not execute any
   // parsing-blocking scripts that may remain after execution.
   void processScriptElementInternal(Element*,
                                     const TextPosition& scriptStartPosition);
+
+  const PendingScript* parserBlockingScript() const {
+    return m_parserBlockingScript;
+  }
 
   bool isParserBlockingScriptReady();
 

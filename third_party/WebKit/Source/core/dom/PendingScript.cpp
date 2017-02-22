@@ -35,16 +35,31 @@ namespace blink {
 
 PendingScript* PendingScript::create(Element* element,
                                      ScriptResource* resource) {
-  return new PendingScript(element, resource);
+  return new PendingScript(element, resource, TextPosition());
 }
 
-PendingScript::PendingScript(Element* element, ScriptResource* resource)
+PendingScript* PendingScript::create(Element* element,
+                                     const TextPosition& startingPosition) {
+  return new PendingScript(element, nullptr, startingPosition);
+}
+
+PendingScript* PendingScript::createForTesting(ScriptResource* resource) {
+  return new PendingScript(nullptr, resource, TextPosition(), true);
+}
+
+PendingScript::PendingScript(Element* element,
+                             ScriptResource* resource,
+                             const TextPosition& startingPosition,
+                             bool isForTesting)
     : m_watchingForLoad(false),
       m_element(element),
+      m_startingPosition(startingPosition),
       m_integrityFailure(false),
       m_parserBlockingLoadStartTime(0),
-      m_client(nullptr) {
-  setScriptResource(resource);
+      m_client(nullptr),
+      m_isForTesting(isForTesting) {
+  CHECK(m_isForTesting || m_element);
+  setResource(resource);
   MemoryCoordinator::instance().registerClient(this);
 }
 
@@ -55,7 +70,7 @@ void PendingScript::dispose() {
   DCHECK(!m_client);
   DCHECK(!m_watchingForLoad);
 
-  setScriptResource(nullptr);
+  setResource(nullptr);
   m_startingPosition = TextPosition::belowRangePosition();
   m_integrityFailure = false;
   m_parserBlockingLoadStartTime = 0;
@@ -86,18 +101,17 @@ void PendingScript::stopWatchingForLoad() {
   m_watchingForLoad = false;
 }
 
+Element* PendingScript::element() const {
+  // As mentioned in the comment at |m_element| declaration, |m_element|
+  // must points to the corresponding ScriptLoader's element.
+  CHECK(m_element);
+  return m_element.get();
+}
+
 void PendingScript::streamingFinished() {
   DCHECK(resource());
   if (m_client)
     m_client->pendingScriptFinished(this);
-}
-
-void PendingScript::setElement(Element* element) {
-  m_element = element;
-}
-
-void PendingScript::setScriptResource(ScriptResource* resource) {
-  setResource(resource);
 }
 
 void PendingScript::markParserBlockingLoadStartTime() {
@@ -128,6 +142,7 @@ void PendingScript::notifyFinished(Resource* resource) {
   // objects (perhaps attached to identical Resource objects) per request.
   //
   // See https://crbug.com/500701 for more information.
+  CHECK(m_isForTesting || m_element);
   if (m_element) {
     DCHECK_EQ(resource->getType(), Resource::Script);
     ScriptResource* scriptResource = toScriptResource(resource);
