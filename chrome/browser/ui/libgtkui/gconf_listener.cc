@@ -43,7 +43,7 @@ namespace libgtkui {
 // Public interface:
 
 GConfListener::GConfListener(GtkUi* delegate)
-    : delegate_(delegate), client_(NULL) {
+    : delegate_(delegate), client_(nullptr) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment de =
       base::nix::GetDesktopEnvironment(env.get());
@@ -55,7 +55,7 @@ GConfListener::GConfListener(GtkUi* delegate)
     // not receiving gconf keys.
     if (client_) {
       // Register that we're interested in the values of this directory.
-      GError* error = NULL;
+      GError* error = nullptr;
       gconf_client_add_dir(client_, kMetacityGeneral,
                            GCONF_CLIENT_PRELOAD_ONELEVEL, &error);
       if (HandleGError(error, kMetacityGeneral))
@@ -80,7 +80,7 @@ GConfListener::~GConfListener() {
 void GConfListener::GetAndRegister(
     const char* key_to_subscribe,
     const base::Callback<void(GConfValue*)>& initial_setter) {
-  GError* error = NULL;
+  GError* error = nullptr;
   GConfValue* gconf_value = gconf_client_get(client_, key_to_subscribe,
                                              &error);
   if (HandleGError(error, key_to_subscribe))
@@ -94,7 +94,7 @@ void GConfListener::GetAndRegister(
       client_, key_to_subscribe,
       reinterpret_cast<void (*)(GConfClient*, guint, GConfEntry*, void*)>(
           OnChangeNotificationThunk),
-      this, NULL, &error);
+      this, nullptr, &error);
   if (HandleGError(error, key_to_subscribe))
     return;
 }
@@ -112,11 +112,11 @@ void GConfListener::OnChangeNotification(GConfClient* client,
 }
 
 bool GConfListener::HandleGError(GError* error, const char* key) {
-  if (error != NULL) {
+  if (error != nullptr) {
     LOG(ERROR) << "Error with gconf key '" << key << "': " << error->message;
     g_error_free(error);
     g_object_unref(client_);
-    client_ = NULL;
+    client_ = nullptr;
     return true;
   }
   return false;

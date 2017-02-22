@@ -147,9 +147,8 @@ static void chrome_gtk_frame_init(ChromeGtkFrame* frame) {
 }
 
 GtkWidget* chrome_gtk_frame_new(void) {
-  return GTK_WIDGET(g_object_new(chrome_gtk_frame_get_type(),
-                                 "type", GTK_WINDOW_TOPLEVEL,
-                                 NULL));
+  return GTK_WIDGET(g_object_new(chrome_gtk_frame_get_type(), "type",
+                                 GTK_WINDOW_TOPLEVEL, nullptr));
 }
 
 G_END_DECLS

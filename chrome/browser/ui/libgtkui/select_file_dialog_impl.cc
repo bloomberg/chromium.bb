@@ -28,8 +28,8 @@ UseKdeFileDialogStatus use_kde_ = UNKNOWN;
 
 namespace libgtkui {
 
-base::FilePath* SelectFileDialogImpl::last_saved_path_ = NULL;
-base::FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;
+base::FilePath* SelectFileDialogImpl::last_saved_path_ = nullptr;
+base::FilePath* SelectFileDialogImpl::last_opened_path_ = nullptr;
 
 // static
 ui::SelectFileDialog* SelectFileDialogImpl::Create(
@@ -81,7 +81,7 @@ SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener,
 SelectFileDialogImpl::~SelectFileDialogImpl() { }
 
 void SelectFileDialogImpl::ListenerDestroyed() {
-  listener_ = NULL;
+  listener_ = nullptr;
 }
 
 bool SelectFileDialogImpl::CallDirectoryExistsOnUIThread(

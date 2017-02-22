@@ -66,7 +66,7 @@ int EventFlagsFromGdkState(guint state);
 void TurnButtonBlue(GtkWidget* button);
 
 // Sets |dialog| as transient for |parent|, which will keep it on top and center
-// it above |parent|. Do nothing if |parent| is NULL.
+// it above |parent|. Do nothing if |parent| is nullptr.
 void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent);
 
 // Gets the transient parent aura window for |dialog|.
@@ -177,7 +177,7 @@ inline void ScopedGObject<GtkStyleContext>::Unref() {
 typedef ScopedGObject<GtkStyleContext> ScopedStyleContext;
 typedef ScopedGObject<GtkCssProvider> ScopedCssProvider;
 
-// If |context| is NULL, creates a new top-level style context
+// If |context| is nullptr, creates a new top-level style context
 // specified by parsing |css_node|.  Otherwise, creates the child
 // context with |context| as the parent.
 ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,

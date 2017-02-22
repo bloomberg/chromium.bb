@@ -38,18 +38,18 @@ namespace {
 bool attempted_load = false;
 
 // Unity has a singleton object that we can ask whether the unity is running.
-UnityInspector* inspector = NULL;
+UnityInspector* inspector = nullptr;
 
 // A link to the desktop entry in the panel.
-UnityLauncherEntry* chrome_entry = NULL;
+UnityLauncherEntry* chrome_entry = nullptr;
 
 // Retrieved functions from libunity.
-unity_inspector_get_unity_running_func get_unity_running = NULL;
-unity_launcher_entry_set_count_func entry_set_count = NULL;
-unity_launcher_entry_set_count_visible_func entry_set_count_visible = NULL;
-unity_launcher_entry_set_progress_func entry_set_progress = NULL;
+unity_inspector_get_unity_running_func get_unity_running = nullptr;
+unity_launcher_entry_set_count_func entry_set_count = nullptr;
+unity_launcher_entry_set_count_visible_func entry_set_count_visible = nullptr;
+unity_launcher_entry_set_progress_func entry_set_progress = nullptr;
 unity_launcher_entry_set_progress_visible_func entry_set_progress_visible =
-    NULL;
+    nullptr;
 
 void EnsureMethodsLoaded() {
   using base::nix::GetDesktopEnvironment;

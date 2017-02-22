@@ -362,7 +362,7 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
 }
 
 GtkWidget* NativeThemeGtk2::GetWindow() const {
-  static GtkWidget* fake_window = NULL;
+  static GtkWidget* fake_window = nullptr;
 
   if (!fake_window) {
     fake_window = chrome_gtk_frame_new();
@@ -373,7 +373,7 @@ GtkWidget* NativeThemeGtk2::GetWindow() const {
 }
 
 GtkWidget* NativeThemeGtk2::GetEntry() const {
-  static GtkWidget* fake_entry = NULL;
+  static GtkWidget* fake_entry = nullptr;
 
   if (!fake_entry) {
     fake_entry = gtk_entry_new();
@@ -388,7 +388,7 @@ GtkWidget* NativeThemeGtk2::GetEntry() const {
 }
 
 GtkWidget* NativeThemeGtk2::GetLabel() const {
-  static GtkWidget* fake_label = NULL;
+  static GtkWidget* fake_label = nullptr;
 
   if (!fake_label)
     fake_label = gtk_label_new("");
@@ -397,7 +397,7 @@ GtkWidget* NativeThemeGtk2::GetLabel() const {
 }
 
 GtkWidget* NativeThemeGtk2::GetButton() const {
-  static GtkWidget* fake_button = NULL;
+  static GtkWidget* fake_button = nullptr;
 
   if (!fake_button)
     fake_button = gtk_button_new();
@@ -406,7 +406,7 @@ GtkWidget* NativeThemeGtk2::GetButton() const {
 }
 
 GtkWidget* NativeThemeGtk2::GetBlueButton() const {
-  static GtkWidget* fake_bluebutton = NULL;
+  static GtkWidget* fake_bluebutton = nullptr;
 
   if (!fake_bluebutton) {
     fake_bluebutton = gtk_button_new();
@@ -417,7 +417,7 @@ GtkWidget* NativeThemeGtk2::GetBlueButton() const {
 }
 
 GtkWidget* NativeThemeGtk2::GetTree() const {
-  static GtkWidget* fake_tree = NULL;
+  static GtkWidget* fake_tree = nullptr;
 
   if (!fake_tree)
     fake_tree = gtk_tree_view_new();
@@ -426,7 +426,7 @@ GtkWidget* NativeThemeGtk2::GetTree() const {
 }
 
 GtkWidget* NativeThemeGtk2::GetTooltip() const {
-  static GtkWidget* fake_tooltip = NULL;
+  static GtkWidget* fake_tooltip = nullptr;
 
   if (!fake_tooltip) {
     fake_tooltip = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -438,7 +438,7 @@ GtkWidget* NativeThemeGtk2::GetTooltip() const {
 }
 
 GtkWidget* NativeThemeGtk2::GetMenu() const {
-  static GtkWidget* fake_menu = NULL;
+  static GtkWidget* fake_menu = nullptr;
 
   if (!fake_menu)
     fake_menu = gtk_custom_menu_new();
@@ -447,7 +447,7 @@ GtkWidget* NativeThemeGtk2::GetMenu() const {
 }
 
 GtkWidget* NativeThemeGtk2::GetMenuItem() const {
-  static GtkWidget* fake_menu_item = NULL;
+  static GtkWidget* fake_menu_item = nullptr;
 
   if (!fake_menu_item) {
     fake_menu_item = gtk_custom_menu_item_new();
@@ -458,7 +458,7 @@ GtkWidget* NativeThemeGtk2::GetMenuItem() const {
 }
 
 GtkWidget* NativeThemeGtk2::GetSeparator() const {
-  static GtkWidget* fake_separator = NULL;
+  static GtkWidget* fake_separator = nullptr;
 
   if (!fake_separator)
     fake_separator = gtk_hseparator_new();

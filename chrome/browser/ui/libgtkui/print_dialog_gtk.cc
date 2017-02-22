@@ -72,11 +72,11 @@ bool PaperSizeMatch(GtkPaperSize* gtk_paper_size,
 }
 
 // Looks up a paper size matching (in terms of PaperSizeMatch) the user selected
-// media in the paper size list reported by GTK. Returns NULL if there's no
+// media in the paper size list reported by GTK. Returns nullptr if there's no
 // match found.
 GtkPaperSize* FindPaperSizeMatch(GList* gtk_paper_sizes,
                                  const PrintSettings::RequestedMedia& media) {
-  GtkPaperSize* first_fuzzy_match = NULL;
+  GtkPaperSize* first_fuzzy_match = nullptr;
   for (GList* p = gtk_paper_sizes; p && p->data; p = g_list_next(p)) {
     GtkPaperSize* gtk_paper_size = static_cast<GtkPaperSize*>(p->data);
     if (PaperSizeMatch(gtk_paper_size, media, false)) {
@@ -116,8 +116,8 @@ base::LazyInstance<StickyPrintSettingGtk>::Leaky g_last_used_settings =
 // Helper class to track GTK printers.
 class GtkPrinterList {
  public:
-  GtkPrinterList() : default_printer_(NULL) {
-    gtk_enumerate_printers(SetPrinter, this, NULL, TRUE);
+  GtkPrinterList() : default_printer_(nullptr) {
+    gtk_enumerate_printers(SetPrinter, this, nullptr, TRUE);
   }
 
   ~GtkPrinterList() {
@@ -127,16 +127,16 @@ class GtkPrinterList {
     }
   }
 
-  // Can return NULL if there's no default printer. E.g. Printer on a laptop
+  // Can return nullptr if there's no default printer. E.g. Printer on a laptop
   // is "home_printer", but the laptop is at work.
   GtkPrinter* default_printer() { return default_printer_; }
 
-  // Can return NULL if the printer cannot be found due to:
+  // Can return nullptr if the printer cannot be found due to:
   // - Printer list out of sync with printer dialog UI.
   // - Querying for non-existant printers like 'Print to PDF'.
   GtkPrinter* GetPrinterWithName(const std::string& name) {
     if (name.empty())
-      return NULL;
+      return nullptr;
 
     for (std::vector<GtkPrinter*>::iterator it = printers_.begin();
          it < printers_.end(); ++it) {
@@ -145,7 +145,7 @@ class GtkPrinterList {
       }
     }
 
-    return NULL;
+    return nullptr;
   }
 
  private:
@@ -176,10 +176,10 @@ printing::PrintDialogGtkInterface* PrintDialogGtk2::CreatePrintDialog(
 
 PrintDialogGtk2::PrintDialogGtk2(PrintingContextLinux* context)
     : context_(context),
-      dialog_(NULL),
-      gtk_settings_(NULL),
-      page_setup_(NULL),
-      printer_(NULL) {}
+      dialog_(nullptr),
+      gtk_settings_(nullptr),
+      page_setup_(nullptr),
+      printer_(nullptr) {}
 
 PrintDialogGtk2::~PrintDialogGtk2() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -191,19 +191,19 @@ PrintDialogGtk2::~PrintDialogGtk2() {
       libgtkui::ClearAuraTransientParent(dialog_);
     }
     gtk_widget_destroy(dialog_);
-    dialog_ = NULL;
+    dialog_ = nullptr;
   }
   if (gtk_settings_) {
     g_object_unref(gtk_settings_);
-    gtk_settings_ = NULL;
+    gtk_settings_ = nullptr;
   }
   if (page_setup_) {
     g_object_unref(page_setup_);
-    page_setup_ = NULL;
+    page_setup_ = nullptr;
   }
   if (printer_) {
     g_object_unref(printer_);
-    printer_ = NULL;
+    printer_ = nullptr;
   }
 }
 
@@ -250,7 +250,7 @@ bool PrintDialogGtk2::UpdateSettings(printing::PrintSettings* settings) {
                          color_value.c_str());
 
   if (settings->duplex_mode() != printing::UNKNOWN_DUPLEX_MODE) {
-    const char* cups_duplex_mode = NULL;
+    const char* cups_duplex_mode = nullptr;
     switch (settings->duplex_mode()) {
       case printing::LONG_EDGE:
         cups_duplex_mode = kDuplexNoTumble;
@@ -302,7 +302,7 @@ bool PrintDialogGtk2::UpdateSettings(printing::PrintSettings* settings) {
                          reinterpret_cast<GDestroyNotify>(gtk_paper_size_free));
 #else
         g_list_foreach(gtk_paper_sizes,
-                       reinterpret_cast<GFunc>(gtk_paper_size_free), NULL);
+                       reinterpret_cast<GFunc>(gtk_paper_size_free), nullptr);
         g_list_free(gtk_paper_sizes);
 #endif
       }
@@ -326,12 +326,12 @@ void PrintDialogGtk2::ShowDialog(
   callback_ = callback;
   DCHECK(!callback_.is_null());
 
-  dialog_ = gtk_print_unix_dialog_new(NULL, NULL);
+  dialog_ = gtk_print_unix_dialog_new(nullptr, nullptr);
   libgtkui::SetGtkTransientForAura(dialog_, parent_view);
   if (parent_view)
     parent_view->AddObserver(this);
   g_signal_connect(dialog_, "delete-event",
-                   G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+                   G_CALLBACK(gtk_widget_hide_on_delete), nullptr);
 
   // Handle the case when the existing |gtk_settings_| has "selection" selected
   // as the page range, but |has_selection| is false.
@@ -504,8 +504,8 @@ void PrintDialogGtk2::SendDocumentToPrinter(
     const base::string16& document_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // If |printer_| is NULL then somehow the GTK printer list changed out under
-  // us. In which case, just bail out.
+  // If |printer_| is nullptr then somehow the GTK printer list changed out
+  // under us. In which case, just bail out.
   if (!printer_) {
     // Matches AddRef() in PrintDocument();
     Release();
@@ -518,8 +518,9 @@ void PrintDialogGtk2::SendDocumentToPrinter(
   GtkPrintJob* print_job =
       gtk_print_job_new(base::UTF16ToUTF8(document_name).c_str(), printer_,
                         gtk_settings_, page_setup_);
-  gtk_print_job_set_source_file(print_job, path_to_pdf_.value().c_str(), NULL);
-  gtk_print_job_send(print_job, OnJobCompletedThunk, this, NULL);
+  gtk_print_job_set_source_file(print_job, path_to_pdf_.value().c_str(),
+                                nullptr);
+  gtk_print_job_send(print_job, OnJobCompletedThunk, this, nullptr);
 }
 
 void PrintDialogGtk2::OnJobCompleted(GtkPrintJob* print_job,

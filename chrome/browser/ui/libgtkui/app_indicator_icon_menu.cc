@@ -16,7 +16,7 @@ namespace libgtkui {
 AppIndicatorIconMenu::AppIndicatorIconMenu(ui::MenuModel* model)
     : menu_model_(model),
       click_action_replacement_menu_item_added_(false),
-      gtk_menu_(NULL),
+      gtk_menu_(nullptr),
       block_activation_(false) {
   {
     ANNOTATE_SCOPED_MEMORY_LEAK; // http://crbug.com/378770
@@ -47,7 +47,7 @@ void AppIndicatorIconMenu::UpdateClickActionReplacementMenuItem(
     GList* children = gtk_container_get_children(GTK_CONTAINER(gtk_menu_));
     for (GList* child = children; child; child = g_list_next(child)) {
       if (g_object_get_data(G_OBJECT(child->data), "click-action-item") !=
-          NULL) {
+          nullptr) {
         gtk_menu_item_set_label(GTK_MENU_ITEM(child->data), label);
         break;
       }

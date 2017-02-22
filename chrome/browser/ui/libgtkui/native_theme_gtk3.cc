@@ -539,7 +539,7 @@ void NativeThemeGtk3::PaintMenuSeparator(
     gtk_style_context_get_border(context, state, &border);
     gtk_style_context_get_padding(context, state, &padding);
     int min_height = 1;
-    gtk_style_context_get(context, state, "min-height", &min_height, NULL);
+    gtk_style_context_get(context, state, "min-height", &min_height, nullptr);
     int w = rect.width() - margin.left - margin.right;
     int h = std::max(
         min_height + padding.top + padding.bottom + border.top + border.bottom,

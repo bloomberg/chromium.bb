@@ -46,7 +46,7 @@ class Gtk2KeyBindingsHandler {
   // Matches a key event against predefined gtk key bindings, false will be
   // returned if the key event doesn't correspond to a predefined key binding.
   // Edit commands matched with |event| will be stored in |edit_commands|, if
-  // non-NULL.
+  // non-nullptr.
   bool MatchEvent(const ui::Event& event,
                   std::vector<ui::TextEditCommandAuraLinux>* commands);
 

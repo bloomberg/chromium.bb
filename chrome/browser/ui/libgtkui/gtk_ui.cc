@@ -82,13 +82,6 @@
 // - Render and inject the omnibox background.
 // - Make sure to test with a light on dark theme, too.
 
-// Work around a header bug:
-// linux/debian_wheezy_i386-sysroot/usr/include/linux/stddef.h redefines NULL
-// to 0, which breaks -Wsentinel. Get back the normal definition of NULL.
-// TODO(thakis): Remove this once we update sysroots.
-#define __need_NULL
-#include <stddef.h>
-
 namespace libgtkui {
 
 namespace {
@@ -155,13 +148,13 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
     {
       // http://crbug.com/346740
       ANNOTATE_SCOPED_MEMORY_LEAK;
-      pixmap = gtk_widget_get_snapshot(button, NULL);
+      pixmap = gtk_widget_get_snapshot(button, nullptr);
     }
 
     gdk_drawable_get_size(GDK_DRAWABLE(pixmap), &w, &h);
     GdkColormap* colormap = gdk_drawable_get_colormap(pixmap);
     GdkPixbuf* pixbuf = gdk_pixbuf_get_from_drawable(
-        NULL, GDK_DRAWABLE(pixmap), colormap, 0, 0, 0, 0, w, h);
+        nullptr, GDK_DRAWABLE(pixmap), colormap, 0, 0, 0, 0, w, h);
 
     gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
     cairo_paint(cr);
@@ -302,11 +295,11 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
   CHECK(gtk_settings);
   gint antialias = 0;
   gint hinting = 0;
-  gchar* hint_style = NULL;
-  gchar* rgba = NULL;
+  gchar* hint_style = nullptr;
+  gchar* rgba = nullptr;
   g_object_get(gtk_settings, "gtk-xft-antialias", &antialias, "gtk-xft-hinting",
                &hinting, "gtk-xft-hintstyle", &hint_style, "gtk-xft-rgba",
-               &rgba, NULL);
+               &rgba, nullptr);
 
   gfx::FontRenderParams params;
   params.antialiasing = antialias != 0;
@@ -352,7 +345,7 @@ double GetDpi() {
   GtkSettings* gtk_settings = gtk_settings_get_default();
   CHECK(gtk_settings);
   gint gtk_dpi = -1;
-  g_object_get(gtk_settings, "gtk-xft-dpi", &gtk_dpi, NULL);
+  g_object_get(gtk_settings, "gtk-xft-dpi", &gtk_dpi, nullptr);
 
   // GTK multiplies the DPI by 1024 before storing it.
   return (gtk_dpi > 0) ? gtk_dpi / 1024.0 : kDefaultDPI;
@@ -559,12 +552,12 @@ double GtkUi::GetCursorBlinkInterval() const {
   gint cursor_blink_time = kGtkDefaultCursorBlinkTime;
   gboolean cursor_blink = TRUE;
   g_object_get(gtk_settings_get_default(), "gtk-cursor-blink-time",
-               &cursor_blink_time, "gtk-cursor-blink", &cursor_blink, NULL);
+               &cursor_blink_time, "gtk-cursor-blink", &cursor_blink, nullptr);
   return cursor_blink ? (cursor_blink_time / kGtkCursorBlinkCycleFactor) : 0.0;
 }
 
 ui::NativeTheme* GtkUi::GetNativeTheme(aura::Window* window) const {
-  ui::NativeTheme* native_theme_override = NULL;
+  ui::NativeTheme* native_theme_override = nullptr;
   if (!native_theme_overrider_.is_null())
     native_theme_override = native_theme_overrider_.Run(window);
 
@@ -639,7 +632,7 @@ gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,
         static_cast<GtkIconLookupFlags>(GTK_ICON_LOOKUP_FORCE_SIZE)));
     if (!icon_info)
       continue;
-    ScopedGdkPixbuf pixbuf(gtk_icon_info_load_icon(icon_info.get(), NULL));
+    ScopedGdkPixbuf pixbuf(gtk_icon_info_load_icon(icon_info.get(), nullptr));
     if (!pixbuf)
       continue;
 

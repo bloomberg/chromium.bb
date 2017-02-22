@@ -75,7 +75,7 @@ void Gtk2StatusIcon::OnContextMenuRequested(GtkStatusIcon* status_icon,
                                             guint button,
                                             guint32 activate_time) {
   if (menu_.get()) {
-    gtk_menu_popup(menu_->GetGtkMenu(), NULL, NULL,
+    gtk_menu_popup(menu_->GetGtkMenu(), nullptr, nullptr,
                    gtk_status_icon_position_menu, gtk_status_icon_, button,
                    activate_time);
   }

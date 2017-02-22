@@ -73,7 +73,7 @@ GtkWidget* AppendMenuItemToMenu(int index,
 
 bool GetMenuItemID(GtkWidget* menu_item, int* menu_id) {
   gpointer id_ptr = g_object_get_data(G_OBJECT(menu_item), "menu-id");
-  if (id_ptr != NULL) {
+  if (id_ptr != nullptr) {
     *menu_id = GPOINTER_TO_INT(id_ptr) - 1;
     return true;
   }
@@ -99,7 +99,7 @@ void BuildSubmenuFromModel(ui::MenuModel* model,
                            bool* block_activation,
                            void* this_ptr) {
   std::map<int, GtkWidget*> radio_groups;
-  GtkWidget* menu_item = NULL;
+  GtkWidget* menu_item = nullptr;
   for (int i = 0; i < model->GetItemCount(); ++i) {
     gfx::Image icon;
     std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
@@ -122,7 +122,7 @@ void BuildSubmenuFromModel(ui::MenuModel* model,
 
         if (iter == radio_groups.end()) {
           menu_item =
-              gtk_radio_menu_item_new_with_mnemonic(NULL, label.c_str());
+              gtk_radio_menu_item_new_with_mnemonic(nullptr, label.c_str());
           radio_groups[model->GetGroupIdAt(i)] = menu_item;
         } else {
           menu_item = gtk_radio_menu_item_new_with_mnemonic_from_widget(
@@ -170,9 +170,7 @@ void BuildSubmenuFromModel(ui::MenuModel* model,
 
     ui::Accelerator accelerator;
     if (model->GetAcceleratorAt(i, &accelerator)) {
-      gtk_widget_add_accelerator(menu_item,
-                                 "activate",
-                                 NULL,
+      gtk_widget_add_accelerator(menu_item, "activate", nullptr,
                                  GetGdkKeyCodeForAccelerator(accelerator),
                                  GetGdkModifierForAccelerator(accelerator),
                                  GTK_ACCEL_VISIBLE);
@@ -187,7 +185,7 @@ void BuildSubmenuFromModel(ui::MenuModel* model,
                          item_activated_cb,
                          this_ptr);
 
-    menu_item = NULL;
+    menu_item = nullptr;
   }
 }
 
@@ -243,7 +241,7 @@ void SetMenuItemInfo(GtkWidget* widget, void* block_activation_ptr) {
                 gtk_image_new_from_pixbuf(pixbuf));
             g_object_unref(pixbuf);
           } else {
-            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget), NULL);
+            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget), nullptr);
           }
         }
       }

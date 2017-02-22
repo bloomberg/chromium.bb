@@ -21,12 +21,12 @@ Gtk2EventLoop* Gtk2EventLoop::GetInstance() {
 }
 
 Gtk2EventLoop::Gtk2EventLoop() {
-  gdk_event_handler_set(DispatchGdkEvent, NULL, NULL);
+  gdk_event_handler_set(DispatchGdkEvent, nullptr, nullptr);
 }
 
 Gtk2EventLoop::~Gtk2EventLoop() {
-  gdk_event_handler_set(reinterpret_cast<GdkEventFunc>(gtk_main_do_event), NULL,
-                        NULL);
+  gdk_event_handler_set(reinterpret_cast<GdkEventFunc>(gtk_main_do_event),
+                        nullptr, nullptr);
 }
 
 // static

@@ -46,7 +46,7 @@ class GConfListener {
 
   GtkUi* delegate_;
 
-  // Pointer to our gconf context. NULL if we aren't on a desktop that uses
+  // Pointer to our gconf context. nullptr if we aren't on a desktop that uses
   // gconf.
   GConfClient* client_;
 

@@ -72,14 +72,15 @@ bool g_attempted_load = false;
 bool g_opened = false;
 
 // Retrieved functions from libappindicator.
-app_indicator_new_func app_indicator_new = NULL;
-app_indicator_new_with_path_func app_indicator_new_with_path = NULL;
-app_indicator_set_status_func app_indicator_set_status = NULL;
+app_indicator_new_func app_indicator_new = nullptr;
+app_indicator_new_with_path_func app_indicator_new_with_path = nullptr;
+app_indicator_set_status_func app_indicator_set_status = nullptr;
 app_indicator_set_attention_icon_full_func
-    app_indicator_set_attention_icon_full = NULL;
-app_indicator_set_menu_func app_indicator_set_menu = NULL;
-app_indicator_set_icon_full_func app_indicator_set_icon_full = NULL;
-app_indicator_set_icon_theme_path_func app_indicator_set_icon_theme_path = NULL;
+    app_indicator_set_attention_icon_full = nullptr;
+app_indicator_set_menu_func app_indicator_set_menu = nullptr;
+app_indicator_set_icon_full_func app_indicator_set_icon_full = nullptr;
+app_indicator_set_icon_theme_path_func app_indicator_set_icon_theme_path =
+    nullptr;
 
 void EnsureMethodsLoaded() {
   if (g_attempted_load)
@@ -177,8 +178,8 @@ AppIndicatorIcon::AppIndicatorIcon(std::string id,
                                    const gfx::ImageSkia& image,
                                    const base::string16& tool_tip)
     : id_(id),
-      icon_(NULL),
-      menu_model_(NULL),
+      icon_(nullptr),
+      menu_model_(nullptr),
       icon_change_count_(0),
       weak_factory_(this) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());

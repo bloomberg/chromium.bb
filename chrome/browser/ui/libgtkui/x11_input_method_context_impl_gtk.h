@@ -43,7 +43,7 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
   void ResetXModifierKeycodesCache();
 
   // Constructs a GdkEventKey from a XKeyEvent and returns it.  Otherwise,
-  // returns NULL.  The returned GdkEvent must be freed by gdk_event_free.
+  // returns nullptr.  The returned GdkEvent must be freed by gdk_event_free.
   GdkEvent* GdkEventFromNativeEvent(const base::NativeEvent& native_event);
 
   // Returns true if the hardware |keycode| is assigned to a modifier key.
@@ -76,7 +76,7 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
                      OnPreeditStart,
                      GtkIMContext*);
 
-  // A set of callback functions.  Must not be NULL.
+  // A set of callback functions.  Must not be nullptr.
   ui::LinuxInputMethodContextDelegate* delegate_;
 
   // IME's input GTK context.

@@ -81,7 +81,7 @@ bool Gtk2KeyBindingsHandler::MatchEvent(
 
 GtkWidget* Gtk2KeyBindingsHandler::CreateNewHandler() {
   Handler* handler =
-      static_cast<Handler*>(g_object_new(HandlerGetType(), NULL));
+      static_cast<Handler*>(g_object_new(HandlerGetType(), nullptr));
 
   handler->owner = this;
 
@@ -133,7 +133,7 @@ void Gtk2KeyBindingsHandler::BuildGdkEventKeyFromXEvent(
   gdk_keymap_translate_keyboard_state(
       keymap, gdk_event->hardware_keycode,
       static_cast<GdkModifierType>(gdk_event->state), gdk_event->group,
-      &gdk_event->keyval, NULL, NULL, &consumed);
+      &gdk_event->keyval, nullptr, nullptr, &consumed);
 
   state = static_cast<GdkModifierType>(gdk_event->state & ~consumed);
   gdk_keymap_add_virtual_modifiers(keymap, &state);
@@ -141,7 +141,7 @@ void Gtk2KeyBindingsHandler::BuildGdkEventKeyFromXEvent(
 }
 
 void Gtk2KeyBindingsHandler::HandlerInit(Handler* self) {
-  self->owner = NULL;
+  self->owner = nullptr;
 }
 
 void Gtk2KeyBindingsHandler::HandlerClassInit(HandlerClass* klass) {

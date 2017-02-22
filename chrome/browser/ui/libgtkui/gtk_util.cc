@@ -40,7 +40,7 @@ void CommonInitFromCommandLine(const base::CommandLine& command_line,
     // here.
     argv[i] = strdup(args[i].c_str());
   }
-  argv[argc] = NULL;
+  argv[argc] = nullptr;
   char** argv_pointer = argv.get();
 
   {
@@ -203,7 +203,7 @@ aura::Window* GetAuraTransientParent(GtkWidget* dialog) {
 }
 
 void ClearAuraTransientParent(GtkWidget* dialog) {
-  g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, NULL);
+  g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, nullptr);
 }
 
 #if GTK_MAJOR_VERSION > 2

@@ -76,7 +76,7 @@ SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplGTK(
 
 SelectFileDialogImplGTK::SelectFileDialogImplGTK(Listener* listener,
                                                  ui::SelectFilePolicy* policy)
-    : SelectFileDialogImpl(listener, policy), preview_(NULL) {}
+    : SelectFileDialogImpl(listener, policy), preview_(nullptr) {}
 
 SelectFileDialogImplGTK::~SelectFileDialogImplGTK() {
   for (std::set<aura::Window*>::iterator iter = parents_.begin();
@@ -134,7 +134,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
   if (file_types)
     file_types_ = *file_types;
 
-  GtkWidget* dialog = NULL;
+  GtkWidget* dialog = nullptr;
   switch (type) {
     case SELECT_FOLDER:
     case SELECT_UPLOAD_FOLDER:
@@ -156,7 +156,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
       return;
   }
   g_signal_connect(dialog, "delete-event",
-                   G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+                   G_CALLBACK(gtk_widget_hide_on_delete), nullptr);
   dialogs_.insert(dialog);
 
   preview_ = gtk_image_new();
@@ -197,7 +197,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
 
 void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {
   for (size_t i = 0; i < file_types_.extensions.size(); ++i) {
-    GtkFileFilter* filter = NULL;
+    GtkFileFilter* filter = nullptr;
     std::set<std::string> fallback_labels;
 
     for (size_t j = 0; j < file_types_.extensions[i].size(); ++j) {
@@ -296,7 +296,7 @@ GtkWidget* SelectFileDialogImplGTK::CreateFileOpenHelper(
     const base::FilePath& default_path,
     gfx::NativeWindow parent) {
   GtkWidget* dialog = gtk_file_chooser_dialog_new(
-      title.c_str(), NULL, GTK_FILE_CHOOSER_ACTION_OPEN, "_Cancel",
+      title.c_str(), nullptr, GTK_FILE_CHOOSER_ACTION_OPEN, "_Cancel",
       GTK_RESPONSE_CANCEL, "_Open", GTK_RESPONSE_ACCEPT, nullptr);
   SetGtkTransientForAura(dialog, parent);
   AddFilters(GTK_FILE_CHOOSER(dialog));
@@ -337,7 +337,7 @@ GtkWidget* SelectFileDialogImplGTK::CreateSelectFolderDialog(
           : "_Open";
 
   GtkWidget* dialog = gtk_file_chooser_dialog_new(
-      title_string.c_str(), NULL, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+      title_string.c_str(), nullptr, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
       "_Cancel", GTK_RESPONSE_CANCEL, accept_button_label.c_str(),
       GTK_RESPONSE_ACCEPT, nullptr);
   SetGtkTransientForAura(dialog, parent);
@@ -394,7 +394,7 @@ GtkWidget* SelectFileDialogImplGTK::CreateSaveAsDialog(
                      : l10n_util::GetStringUTF8(IDS_SAVE_AS_DIALOG_TITLE);
 
   GtkWidget* dialog = gtk_file_chooser_dialog_new(
-      title_string.c_str(), NULL, GTK_FILE_CHOOSER_ACTION_SAVE, "_Cancel",
+      title_string.c_str(), nullptr, GTK_FILE_CHOOSER_ACTION_SAVE, "_Cancel",
       GTK_RESPONSE_CANCEL, "_Save", GTK_RESPONSE_ACCEPT, nullptr);
   SetGtkTransientForAura(dialog, parent);
 
@@ -498,7 +498,7 @@ void SelectFileDialogImplGTK::OnSelectMultiFileDialogResponse(GtkWidget* dialog,
   }
 
   std::vector<base::FilePath> filenames_fp;
-  for (GSList* iter = filenames; iter != NULL; iter = g_slist_next(iter)) {
+  for (GSList* iter = filenames; iter != nullptr; iter = g_slist_next(iter)) {
     base::FilePath path(static_cast<char*>(iter->data));
     g_free(iter->data);
     if (CallDirectoryExistsOnUIThread(path))
@@ -517,7 +517,7 @@ void SelectFileDialogImplGTK::OnSelectMultiFileDialogResponse(GtkWidget* dialog,
 void SelectFileDialogImplGTK::OnFileChooserDestroy(GtkWidget* dialog) {
   dialogs_.erase(dialog);
 
-  // |parent| can be NULL when closing the host window
+  // |parent| can be nullptr when closing the host window
   // while opening the file-picker.
   aura::Window* parent = GetAuraTransientParent(dialog);
   if (!parent)
@@ -552,7 +552,7 @@ void SelectFileDialogImplGTK::OnUpdatePreview(GtkWidget* chooser) {
 
   // This will preserve the image's aspect ratio.
   GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file_at_size(filename, kPreviewWidth,
-                                                       kPreviewHeight, NULL);
+                                                       kPreviewHeight, nullptr);
   g_free(filename);
   if (pixbuf) {
     gtk_image_set_from_pixbuf(GTK_IMAGE(preview_), pixbuf);

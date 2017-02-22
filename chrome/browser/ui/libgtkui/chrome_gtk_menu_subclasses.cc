@@ -13,7 +13,7 @@ static void gtk_custom_menu_class_init(GtkCustomMenuClass* klass) {
 }
 
 GtkWidget* gtk_custom_menu_new() {
-  return GTK_WIDGET(g_object_new(gtk_custom_menu_get_type(), NULL));
+  return GTK_WIDGET(g_object_new(gtk_custom_menu_get_type(), nullptr));
 }
 
 G_DEFINE_TYPE(GtkCustomMenuItem, gtk_custom_menu_item, GTK_TYPE_MENU_ITEM)
@@ -25,5 +25,5 @@ static void gtk_custom_menu_item_class_init(GtkCustomMenuItemClass* klass) {
 }
 
 GtkWidget* gtk_custom_menu_item_new() {
-  return GTK_WIDGET(g_object_new(gtk_custom_menu_item_get_type(), NULL));
+  return GTK_WIDGET(g_object_new(gtk_custom_menu_item_get_type(), nullptr));
 }

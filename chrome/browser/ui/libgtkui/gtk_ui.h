@@ -178,7 +178,7 @@ class GtkUi : public views::LinuxUI {
   NonClientMiddleClickAction middle_click_action_;
 
   // Used to override the native theme for a window. If no override is provided
-  // or the callback returns NULL, GtkUi will default to a NativeThemeGtk2
+  // or the callback returns nullptr, GtkUi will default to a NativeThemeGtk2
   // instance.
   NativeThemeGetter native_theme_overrider_;
 
