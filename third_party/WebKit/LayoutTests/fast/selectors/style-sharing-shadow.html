@@ -7,6 +7,7 @@
     border: 1px solid black;
   }
 </style>
+<div id="container"></div>
 <script src="../../resources/js-test.js"></script>
 <script>
   if (window.testRunner)
@@ -30,50 +31,47 @@
     return host.shadowRoot.querySelector(selector);
   }
 
-  window.onload = function() {
-    var container = document.querySelector('#container');
-    var host1 = createElementWithShadow();
-    var host2 = createElementWithShadow();
-    container.appendChild(host1);
-    container.appendChild(host2);
-    document.body.offsetHeight;
-    shouldBeTrue(String(internals.isSharingStyle(host1, host2)));
-    shouldBeTrue(String(internals.isSharingStyle(querySelectorInShadow(host1, 'span'), querySelectorInShadow(host2, 'span'))));
+  var container = document.querySelector('#container');
+  var host1 = createElementWithShadow();
+  var host2 = createElementWithShadow();
+  container.appendChild(host1);
+  container.appendChild(host2);
+  document.body.offsetHeight;
+  shouldBeTrue("internals.isSharingStyle(host1, host2)");
+  shouldBeTrue("internals.isSharingStyle(querySelectorInShadow(host1, 'span'), querySelectorInShadow(host2, 'span'))");
 
-    var host3 = createElementWithShadow();
-    host3.createShadowRoot();
-    container.appendChild(host3);
-    document.body.offsetHeight;
-    shouldBeFalse(String(internals.isSharingStyle(host1, host3)));
+  var host3 = createElementWithShadow();
+  host3.createShadowRoot();
+  container.appendChild(host3);
+  document.body.offsetHeight;
+  shouldBeFalse("internals.isSharingStyle(host1, host3)");
 
-    var host4 = createElementWithShadow('span {font-size: 20px;}');
-    container.appendChild(host4);
-    document.body.offsetHeight;
-    shouldBeFalse(String(internals.isSharingStyle(host1, host4)));
+  var host4 = createElementWithShadow('span {font-size: 20px;}');
+  container.appendChild(host4);
+  document.body.offsetHeight;
+  shouldBeFalse("internals.isSharingStyle(host1, host4)");
 
-    host2.classList.add('foo');
-    document.body.offsetHeight;
-    shouldBeFalse(String(internals.isSharingStyle(host1, host2)));
+  host2.classList.add('foo');
+  document.body.offsetHeight;
+  shouldBeFalse("internals.isSharingStyle(host1, host2)");
 
-    var host5 = createElementWithShadowAndInsertionPoint();
-    host5.innerHTML = '<div>item 1</div><div>item 2</div>';
-    container.appendChild(host5);
-    document.body.offsetHeight;
-    var light = host5.querySelectorAll('div');
-    var shadow = querySelectorInShadow(host5, 'div');
-    shouldBeTrue(String(internals.isSharingStyle(light[0], light[1])));
-    shouldBeFalse(String(internals.isSharingStyle(light[0], shadow)));
+  var host5 = createElementWithShadowAndInsertionPoint();
+  host5.innerHTML = '<div>item 1</div><div>item 2</div>';
+  container.appendChild(host5);
+  document.body.offsetHeight;
+  var light = host5.querySelectorAll('div');
+  var shadow = querySelectorInShadow(host5, 'div');
+  shouldBeTrue("internals.isSharingStyle(light[0], light[1])");
+  shouldBeFalse("internals.isSharingStyle(light[0], shadow)");
 
-    var host6 = document.createElement('div');
-    var root1 = host6.createShadowRoot();
-    root1.innerHTML = '<style>.foo::content > p { color: red; }</style><content class="foo" select=".a"></content><content></content>';
-    var root2 = host6.createShadowRoot();
-    root2.innerHTML = '<shadow></shadow>';
-    host6.innerHTML = '<p class="a">A</p><p>B</p>';
-    container.appendChild(host6);
-    document.body.offsetHeight;
-    light = host6.querySelectorAll('p');
-    shouldBeFalse(String(internals.isSharingStyle(light[0], light[1])));
-  }
+  var host6 = document.createElement('div');
+  var root1 = host6.createShadowRoot();
+  root1.innerHTML = '<style>.foo::content > p { color: red; }</style><content class="foo" select=".a"></content><content></content>';
+  var root2 = host6.createShadowRoot();
+  root2.innerHTML = '<shadow></shadow>';
+  host6.innerHTML = '<p class="a">A</p><p>B</p>';
+  container.appendChild(host6);
+  document.body.offsetHeight;
+  light = host6.querySelectorAll('p');
+  shouldBeFalse("internals.isSharingStyle(light[0], light[1])");
 </script>
-<div id="container"></div>
