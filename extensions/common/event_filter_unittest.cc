@@ -192,15 +192,15 @@ TEST_F(EventFilterUnittest, TestMatchesOnlyAgainstPatternsForCorrectEvent) {
 }
 
 TEST_F(EventFilterUnittest, TestGetMatcherCountForEvent) {
-  ASSERT_EQ(0, event_filter_.GetMatcherCountForEvent("event1"));
+  ASSERT_EQ(0, event_filter_.GetMatcherCountForEventForTesting("event1"));
   int id1 = event_filter_.AddEventMatcher("event1", AllURLs());
-  ASSERT_EQ(1, event_filter_.GetMatcherCountForEvent("event1"));
+  ASSERT_EQ(1, event_filter_.GetMatcherCountForEventForTesting("event1"));
   int id2 = event_filter_.AddEventMatcher("event1", AllURLs());
-  ASSERT_EQ(2, event_filter_.GetMatcherCountForEvent("event1"));
+  ASSERT_EQ(2, event_filter_.GetMatcherCountForEventForTesting("event1"));
   event_filter_.RemoveEventMatcher(id1);
-  ASSERT_EQ(1, event_filter_.GetMatcherCountForEvent("event1"));
+  ASSERT_EQ(1, event_filter_.GetMatcherCountForEventForTesting("event1"));
   event_filter_.RemoveEventMatcher(id2);
-  ASSERT_EQ(0, event_filter_.GetMatcherCountForEvent("event1"));
+  ASSERT_EQ(0, event_filter_.GetMatcherCountForEventForTesting("event1"));
 }
 
 TEST_F(EventFilterUnittest, RemoveEventMatcherReturnsEventName) {
@@ -220,7 +220,7 @@ TEST_F(EventFilterUnittest, InvalidURLFilterCantBeAdded) {
   std::unique_ptr<EventMatcher> matcher(
       MatcherFromURLFilterList(std::move(filter_list)));
   int id1 = event_filter_.AddEventMatcher("event1", std::move(matcher));
-  EXPECT_TRUE(event_filter_.IsURLMatcherEmpty());
+  EXPECT_TRUE(event_filter_.IsURLMatcherEmptyForTesting());
   ASSERT_EQ(-1, id1);
 }
 
@@ -237,12 +237,12 @@ TEST_F(EventFilterUnittest, EmptyListOfURLFiltersMatchesAllURLs) {
 
 TEST_F(EventFilterUnittest,
     InternalURLMatcherShouldBeEmptyWhenThereAreNoEventMatchers) {
-  ASSERT_TRUE(event_filter_.IsURLMatcherEmpty());
+  ASSERT_TRUE(event_filter_.IsURLMatcherEmptyForTesting());
   int id = event_filter_.AddEventMatcher("event1",
                                          HostSuffixMatcher("google.com"));
-  ASSERT_FALSE(event_filter_.IsURLMatcherEmpty());
+  ASSERT_FALSE(event_filter_.IsURLMatcherEmptyForTesting());
   event_filter_.RemoveEventMatcher(id);
-  ASSERT_TRUE(event_filter_.IsURLMatcherEmpty());
+  ASSERT_TRUE(event_filter_.IsURLMatcherEmptyForTesting());
 }
 
 TEST_F(EventFilterUnittest, EmptyURLsShouldBeMatchedByEmptyURLFilters) {

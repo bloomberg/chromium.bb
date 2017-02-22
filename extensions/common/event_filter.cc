@@ -176,7 +176,7 @@ std::set<EventFilter::MatcherID> EventFilter::MatchEvent(
   return matchers;
 }
 
-int EventFilter::GetMatcherCountForEvent(const std::string& name) {
+int EventFilter::GetMatcherCountForEventForTesting(const std::string& name) {
   EventMatcherMultiMap::const_iterator it = event_matchers_.find(name);
   if (it == event_matchers_.end())
     return 0;
