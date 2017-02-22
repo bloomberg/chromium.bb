@@ -13,13 +13,13 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 
 namespace chromeos {
@@ -132,7 +132,9 @@ ExternalLoader::ExternalLoader(bool async)
   loader_instance = this;
 
   if (async) {
-    content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::USER_VISIBLE),
         base::Bind(&ExternalLoader::Load, base::Unretained(this)));
   } else {
     Load();
