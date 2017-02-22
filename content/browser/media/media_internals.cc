@@ -301,6 +301,8 @@ class MediaInternals::MediaInternalsUMAHandler {
 
   struct PipelineInfo {
     bool has_pipeline = false;
+    bool has_ever_played = false;
+    bool has_reached_have_enough = false;
     media::PipelineStatus last_pipeline_status = media::PIPELINE_OK;
     bool has_audio = false;
     bool has_video = false;
@@ -397,6 +399,10 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PlayerInfoMap& player_info = renderer_info_[render_process_id];
   switch (event.type) {
+    case media::MediaLogEvent::PLAY: {
+      player_info[event.id].has_ever_played = true;
+      break;
+    }
     case media::MediaLogEvent::PIPELINE_STATE_CHANGED: {
       player_info[event.id].has_pipeline = true;
       break;
@@ -436,6 +442,12 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
       }
       if (event.params.HasKey("video_dds")) {
         event.params.GetBoolean("video_dds", &player_info[event.id].video_dds);
+      }
+      if (event.params.HasKey("pipeline_buffering_state")) {
+        std::string buffering_state;
+        event.params.GetString("pipeline_buffering_state", &buffering_state);
+        if (buffering_state == "BUFFERING_HAVE_ENOUGH")
+          player_info[event.id].has_reached_have_enough = true;
       }
       break;
     case media::MediaLogEvent::Type::WATCH_TIME_UPDATE: {
@@ -573,6 +585,11 @@ void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
     UMA_HISTOGRAM_BOOLEAN("Media.VideoDecoderFallback",
                           player_info.video_decoder_changed);
   }
+
+  // Report whether this player ever saw a playback event. Used to measure the
+  // effectiveness of efforts to reduce loaded-but-never-used players.
+  if (player_info.has_reached_have_enough)
+    UMA_HISTOGRAM_BOOLEAN("Media.HasEverPlayed", player_info.has_ever_played);
 }
 
 void MediaInternals::MediaInternalsUMAHandler::OnProcessTerminated(
