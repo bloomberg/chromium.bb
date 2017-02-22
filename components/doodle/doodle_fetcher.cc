@@ -11,6 +11,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
 #include "net/base/load_flags.h"
@@ -101,6 +102,8 @@ void DoodleFetcher::FetchDoodle(FinishedCallback callback) {
                          net::LOAD_DO_NOT_SAVE_COOKIES |
                          net::LOAD_DO_NOT_SEND_AUTH_DATA);
   fetcher_->SetAutomaticallyRetryOnNetworkChanges(1);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher_.get(), data_use_measurement::DataUseUserData::DOODLE);
   fetcher_->Start();
 }
 

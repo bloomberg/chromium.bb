@@ -10,6 +10,7 @@ static_library("doodle") {
 
   deps = [
     "//base",
+    "//components/data_use_measurement/core",
     "//components/google/core/browser",
     "//net",
   ]
