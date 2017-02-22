@@ -45,6 +45,31 @@ class TestTimeouts(cros_test_lib.TestCase):
         self.fail('Should have thrown an exception')
 
 
+class TestTimeoutDecorator(cros_test_lib.TestCase):
+  """Tests timeout_util.TimeoutDecorator."""
+
+  def testNoTimeout(self):
+    """Test normal class with no timeout."""
+
+    @timeout_util.TimeoutDecorator(10)
+    def timedFunction(a, b):
+      return a + b
+
+    result = timedFunction(1, 2)
+
+    self.assertEqual(result, 3)
+
+  def testTimeout(self):
+    """Test timing out a function."""
+
+    @timeout_util.TimeoutDecorator(1)
+    def timedFunction():
+      time.sleep(10)
+
+    with self.assertRaises(timeout_util.TimeoutError):
+      timedFunction()
+
+
 class TestWaitFors(cros_test_lib.TestCase):
   """Tests for assorted timeout_utils WaitForX methods."""
 

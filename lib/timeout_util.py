@@ -168,7 +168,7 @@ def TimeoutDecorator(max_time):
         with Timeout(max_time):
           _Restore(new)
           try:
-            func(*args, **kwargs)
+            return func(*args, **kwargs)
           finally:
             _Restore(builtins)
       finally:

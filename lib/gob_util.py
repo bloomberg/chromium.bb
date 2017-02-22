@@ -27,6 +27,7 @@ from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import retry_util
+from chromite.lib import timeout_util
 
 
 try:
@@ -35,6 +36,7 @@ except (IOError, netrc.NetrcParseError):
   NETRC = netrc.netrc(os.devnull)
 TRY_LIMIT = 10
 SLEEP = 0.5
+REQUEST_TIMEOUT_SECONDS = 120  # 2 minutes.
 
 # Controls the transport protocol used to communicate with Gerrit servers using
 # git. This is parameterized primarily to enable cros_test_lib.GerritTestCase.
@@ -175,6 +177,7 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
   Returns:
     A string buffer containing the connection's reply.
   """
+  @timeout_util.TimeoutDecorator(REQUEST_TIMEOUT_SECONDS)
   def _FetchUrlHelper():
     err_prefix = 'A transient error occured while querying %s:\n' % (host,)
     try:
@@ -248,8 +251,10 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     else:
       raise GOBError(http_status=response.status, reason=response.reason)
 
-  return retry_util.RetryException((socket.error, InternalGOBError), TRY_LIMIT,
-                                   _FetchUrlHelper, sleep=SLEEP)
+  return retry_util.RetryException(
+      (socket.error, InternalGOBError, timeout_util.TimeoutError),
+      TRY_LIMIT,
+      _FetchUrlHelper, sleep=SLEEP)
 
 
 def FetchUrlJson(*args, **kwargs):
