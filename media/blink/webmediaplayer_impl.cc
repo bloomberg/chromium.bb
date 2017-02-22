@@ -234,7 +234,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       suspend_enabled_(params.allow_suspend()),
       use_fallback_path_(false),
       is_encrypted_(false),
-      underflow_count_(0),
       preroll_attempt_pending_(false),
       observer_(params.media_observer()),
       max_keyframe_distance_to_disable_background_video_(
@@ -1111,9 +1110,9 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   if (time_updated)
     should_notify_time_changed_ = true;
 
-  // Reset underflow count upon seek; this prevents looping videos and user
-  // actions from artificially inflating the underflow count.
-  underflow_count_ = 0;
+  // Reset underflow duration upon seek; this prevents looping videos and user
+  // actions from artificially inflating the duration.
+  underflow_timer_.reset();
 
   // Background video optimizations are delayed when shown/hidden if pipeline
   // is seeking.
@@ -1284,13 +1283,10 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
       "pipeline_buffering_state", state));
 
   if (state == BUFFERING_HAVE_ENOUGH) {
-    if (data_source_ &&
-        highest_ready_state_ < WebMediaPlayer::ReadyStateHaveEnoughData) {
-      DCHECK_EQ(underflow_count_, 0);
-      // Record a zero value for underflow histograms so that the histogram
+    if (highest_ready_state_ < WebMediaPlayer::ReadyStateHaveEnoughData) {
+      // Record a zero value for underflow histogram so that the histogram
       // includes playbacks which never encounter an underflow event.
-      UMA_HISTOGRAM_COUNTS_100("Media.UnderflowCount", 0);
-      UMA_HISTOGRAM_TIMES("Media.UnderflowDuration", base::TimeDelta());
+      RecordUnderflowDuration(base::TimeDelta());
     }
 
     // TODO(chcunningham): Monitor playback position vs buffered. Potentially
@@ -1312,11 +1308,9 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
     // report once playback starts.
     ReportMemoryUsage();
 
-    // Report the amount of time it took to leave the underflow state. Don't
-    // bother to report this for MSE playbacks since it's out of our control.
-    if (underflow_timer_ && data_source_) {
-      UMA_HISTOGRAM_TIMES("Media.UnderflowDuration",
-                          underflow_timer_->Elapsed());
+    // Report the amount of time it took to leave the underflow state.
+    if (underflow_timer_) {
+      RecordUnderflowDuration(underflow_timer_->Elapsed());
       underflow_timer_.reset();
     }
   } else {
@@ -1328,7 +1322,6 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
     // report the value when transitioning from HAVE_ENOUGH to HAVE_NOTHING.
     if (data_source_ &&
         ready_state_ == WebMediaPlayer::ReadyStateHaveEnoughData) {
-      UMA_HISTOGRAM_COUNTS_100("Media.UnderflowCount", ++underflow_count_);
       underflow_timer_.reset(new base::ElapsedTimer());
     }
 
@@ -2298,6 +2291,14 @@ void WebMediaPlayerImpl::SwitchRenderer(bool disable_pipeline_auto_suspend) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   disable_pipeline_auto_suspend_ = disable_pipeline_auto_suspend;
   ScheduleRestart();
+}
+
+void WebMediaPlayerImpl::RecordUnderflowDuration(base::TimeDelta duration) {
+  DCHECK(data_source_ || chunk_demuxer_);
+  if (data_source_)
+    UMA_HISTOGRAM_TIMES("Media.UnderflowDuration", duration);
+  else
+    UMA_HISTOGRAM_TIMES("Media.UnderflowDuration.MSE", duration);
 }
 
 }  // namespace media

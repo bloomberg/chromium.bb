@@ -446,6 +446,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void ReportTimeFromForegroundToFirstFrame(base::TimeTicks foreground_time,
                                             base::TimeTicks new_frame_time);
 
+  // Records |duration| to the appropriate metric based on whether we're
+  // handling a src= or MSE based playback.
+  void RecordUnderflowDuration(base::TimeDelta duration);
+
   blink::WebLocalFrame* frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate
@@ -659,8 +663,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   std::unique_ptr<WatchTimeReporter> watch_time_reporter_;
   bool is_encrypted_;
 
-  // Number of times we've reached BUFFERING_HAVE_NOTHING during playback.
-  int underflow_count_;
+  // Elapsed time since we've last reached BUFFERING_HAVE_NOTHING.
   std::unique_ptr<base::ElapsedTimer> underflow_timer_;
 
   // Used to track loading progress, used by IsPrerollAttemptNeeded().
