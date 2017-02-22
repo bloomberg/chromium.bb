@@ -413,8 +413,8 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
   if (!network || network->IsConnectedState() || network->IsConnectingState()) {
     WmShell::Get()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
-            ? UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS
-            : UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS);
+            ? UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS
+            : UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS);
     WmShell::Get()->system_tray_controller()->ShowNetworkSettings(
         network ? network->guid() : std::string());
   } else {
