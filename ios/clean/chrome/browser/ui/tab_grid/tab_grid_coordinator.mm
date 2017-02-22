@@ -114,6 +114,13 @@
   _webStates.erase(_webStates.begin() + index);
 }
 
+- (void)createNewTabAtIndexPath:(NSIndexPath*)indexPath {
+  web::WebState::CreateParams webStateCreateParams(self.browserState);
+  std::unique_ptr<web::WebState> webState =
+      web::WebState::Create(webStateCreateParams);
+  _webStates.push_back(std::move(webState));
+}
+
 #pragma mark - TabGridCommands
 
 - (void)showTabGrid {

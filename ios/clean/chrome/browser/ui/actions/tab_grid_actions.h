@@ -18,6 +18,9 @@
 @optional
 // Dismisses whatever UI is currently active and shows the tab grid.
 - (void)showTabGrid:(id)sender;
+
+// Create new tab and display.
+- (void)createNewTab:(id)sender;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_ACTIONS_TAB_GRID_ACTIONS_H_

@@ -18,6 +18,9 @@
 
 // Remove tab from the tab model(s) the receiver knows about.
 - (void)closeTabAtIndexPath:(NSIndexPath*)indexPath;
+
+// Create new tab in a tab model the receiver knows about.
+- (void)createNewTabAtIndexPath:(NSIndexPath*)indexPath;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_TAB_COMMANDS_H_

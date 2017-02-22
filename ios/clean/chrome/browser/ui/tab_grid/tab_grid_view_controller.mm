@@ -145,6 +145,19 @@ const CGFloat kToolbarHeight = 64.0f;
   [self.tabGridCommandHandler showTabGrid];
 }
 
+- (void)createNewTab:(id)sender {
+  // PLACEHOLDER: The new WebStateList data structure will have implications
+  // on how new tabs are created.
+  NSInteger index = [self.grid numberOfItemsInSection:0];
+  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:index inSection:0];
+  auto updateBlock = ^{
+    [self.tabCommandHandler createNewTabAtIndexPath:indexPath];
+    [self.tabCommandHandler showTabAtIndexPath:indexPath];
+    [self.grid insertItemsAtIndexPaths:@[ indexPath ]];
+  };
+  [self.grid performBatchUpdates:updateBlock completion:nil];
+}
+
 #pragma mark - SessionCellDelegate
 
 - (TabSwitcherCache*)tabSwitcherCache {

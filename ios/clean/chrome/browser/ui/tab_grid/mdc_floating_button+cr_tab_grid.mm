@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -42,6 +43,9 @@ const CGFloat kNewTabButtonDiameter = 48;
                       forState:UIControlStateDisabled];
     [button setAccessibilityLabel:l10n_util::GetNSString(
                                       IDS_IOS_TAB_SWITCHER_CREATE_NEW_TAB)];
+    [button addTarget:nil
+                  action:@selector(createNewTab:)
+        forControlEvents:UIControlEventTouchUpInside];
   }
   return button;
 }
