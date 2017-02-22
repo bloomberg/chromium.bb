@@ -171,3 +171,50 @@ function (add_preproc_definition preproc_def)
   add_c_preproc_definition(${preproc_def})
   add_cxx_preproc_definition(${preproc_def})
 endfunction ()
+
+# Adds $flag to assembler command line.
+function (append_as_flag flag)
+  unset(AS_FLAG_FOUND CACHE)
+  string(FIND "${AOM_AS_FLAGS}" "${flag}" AS_FLAG_FOUND)
+
+  if (${AS_FLAG_FOUND} EQUAL -1)
+    set(AOM_AS_FLAGS "${AOM_AS_FLAGS} ${flag}" CACHE STRING "" FORCE)
+  endif ()
+endfunction ()
+
+# Adds $flag to the C compiler command line.
+function (append_c_flag flag)
+  unset(C_FLAG_FOUND CACHE)
+  string(FIND "${CMAKE_C_FLAGS}" "${flag}" C_FLAG_FOUND)
+
+  if (${C_FLAG_FOUND} EQUAL -1)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}" CACHE STRING "" FORCE)
+  endif ()
+endfunction ()
+
+# Adds $flag to the CXX compiler command line.
+function (append_cxx_flag flag)
+  unset(CXX_FLAG_FOUND CACHE)
+  string(FIND "${CMAKE_CXX_FLAGS}" "${flag}" CXX_FLAG_FOUND)
+
+  if (${CXX_FLAG_FOUND} EQUAL -1)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}" CACHE STRING "" FORCE)
+  endif ()
+endfunction ()
+
+# Adds $flag to the C and CXX compiler command lines.
+function (append_compiler_flag flag)
+  append_c_flag(${flag})
+  append_cxx_flag(${flag})
+endfunction ()
+
+# Adds $flag to the executable linker command line.
+function (append_exe_linker_flag flag)
+  unset(LINKER_FLAG_FOUND CACHE)
+  string(FIND "${CMAKE_EXE_LINKER_FLAGS}" "${flag}" LINKER_FLAG_FOUND)
+
+  if (${LINKER_FLAG_FOUND} EQUAL -1)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${flag}" CACHE STRING
+        "" FORCE)
+  endif ()
+endfunction ()

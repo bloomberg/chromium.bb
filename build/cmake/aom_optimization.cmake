@@ -119,7 +119,8 @@ function (add_asm_library lib_name asm_sources dependent_target)
     set(asm_object "${asm_lib_obj_dir}/${asm_source_name}.o")
     add_custom_command(OUTPUT "${asm_object}"
                        COMMAND ${YASM_EXECUTABLE}
-                       ARGS -f ${objformat}
+                       ARGS ${AOM_AS_FLAGS}
+                            -f ${objformat}
                             -I${AOM_ROOT} -I${AOM_CONFIG_DIR}
                             -o "${asm_object}" "${asm_source}"
                        DEPENDS "${asm_source}"
