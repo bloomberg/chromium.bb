@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -29,6 +31,11 @@ namespace {
 class LanguageOptionsWebUITest : public InProcessBrowserTest {
  public:
   LanguageOptionsWebUITest() {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    disable_md_settings_.InitAndDisableFeature(
+        features::kMaterialDesignSettings);
+  }
 
   // This method will navigate to the language settings page and show
   // a subset of languages from the list of available languages.
@@ -84,6 +91,8 @@ class LanguageOptionsWebUITest : public InProcessBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList disable_md_settings_;
+
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsWebUITest);
 };
 

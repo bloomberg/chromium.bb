@@ -31,6 +31,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
@@ -83,6 +84,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -4364,6 +4366,9 @@ class ChromeOSPolicyTest : public PolicyTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeOSPolicyTest, SystemTimezoneAutomaticDetection) {
+  base::test::ScopedFeatureList disable_md_settings;
+  disable_md_settings.InitAndDisableFeature(features::kMaterialDesignSettings);
+
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://settings"));
   chromeos::system::TimeZoneResolverManager* manager =
       g_browser_process->platform_part()->GetTimezoneResolverManager();
