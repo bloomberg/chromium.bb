@@ -6,6 +6,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
@@ -189,7 +190,7 @@ class NotificationsApiTest : public ExtensionApiTest {
 }  // namespace
 
 // http://crbug.com/691913
-#if defined(OS_LINUX) && !defined(NDEBUG)
+#if (defined(OS_LINUX) || defined(OS_WIN)) && !defined(NDEBUG)
 #define MAYBE_TestBasicUsage DISABLED_TestBasicUsage
 #else
 #define MAYBE_TestBasicUsage TestBasicUsage
