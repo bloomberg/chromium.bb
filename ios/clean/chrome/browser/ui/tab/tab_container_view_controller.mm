@@ -96,7 +96,7 @@ CGFloat kTabStripHeight = 200.0f;
   if (self.contentViewController == contentViewController)
     return;
   if ([self isViewLoaded]) {
-    [self removeChildViewController:self.contentViewController];
+    [self detachChildViewController:self.contentViewController];
     [self addChildViewController:contentViewController
                        toSubview:self.contentView];
   }
@@ -107,7 +107,7 @@ CGFloat kTabStripHeight = 200.0f;
   if (self.toolbarViewController == toolbarViewController)
     return;
   if ([self isViewLoaded]) {
-    [self removeChildViewController:self.toolbarViewController];
+    [self detachChildViewController:self.toolbarViewController];
     [self addChildViewController:toolbarViewController
                        toSubview:self.toolbarView];
   }
@@ -118,7 +118,7 @@ CGFloat kTabStripHeight = 200.0f;
   if (self.tabStripViewController == tabStripViewController)
     return;
   if ([self isViewLoaded]) {
-    [self removeChildViewController:self.tabStripViewController];
+    [self detachChildViewController:self.tabStripViewController];
     [self addChildViewController:tabStripViewController
                        toSubview:self.tabStripView];
   }
@@ -141,7 +141,7 @@ CGFloat kTabStripHeight = 200.0f;
   [viewController didMoveToParentViewController:self];
 }
 
-- (void)removeChildViewController:(UIViewController*)viewController {
+- (void)detachChildViewController:(UIViewController*)viewController {
   if (viewController.parentViewController != self)
     return;
   [viewController willMoveToParentViewController:nil];
