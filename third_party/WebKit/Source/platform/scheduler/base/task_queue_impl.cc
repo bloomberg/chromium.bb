@@ -803,6 +803,17 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
     return;
 
   if (enable) {
+    // Check if there's any immediate work on either queue.
+    bool immediate_queues_empty =
+        main_thread_only().immediate_work_queue->Empty();
+    if (immediate_queues_empty) {
+      base::AutoLock lock(any_thread_lock_);
+      immediate_queues_empty = any_thread().immediate_incoming_queue.empty();
+    }
+    // Avoid holding the lock while we fire the notification.
+    if (!immediate_queues_empty)
+      main_thread_only().time_domain->OnQueueHasImmediateWork(this);
+
     if (!main_thread_only().delayed_incoming_queue.empty()) {
       main_thread_only().time_domain->ScheduleDelayedWork(
           this,

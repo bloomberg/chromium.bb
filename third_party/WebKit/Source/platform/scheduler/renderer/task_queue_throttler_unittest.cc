@@ -26,6 +26,20 @@
 
 using testing::ElementsAre;
 
+namespace {
+bool MessageLoopTaskCounter(size_t* count) {
+  *count = *count + 1;
+  return true;
+}
+
+void NopTask() {}
+
+void AddOneTask(size_t* count) {
+  (*count)++;
+}
+
+}  // namespace
+
 namespace blink {
 namespace scheduler {
 
@@ -248,6 +262,55 @@ TEST_F(TaskQueueThrottlerTest,
   EXPECT_TRUE(task_queue_throttler_->task_runner()->IsEmpty());
 }
 
+TEST_F(TaskQueueThrottlerTest, OnTimeDomainHasImmediateWork_EnabledQueue) {
+  task_queue_throttler_->OnTimeDomainHasImmediateWork(timer_queue_.get());
+  // Check PostPumpThrottledTasksLocked was called.
+  EXPECT_FALSE(task_queue_throttler_->task_runner()->IsEmpty());
+}
+
+TEST_F(TaskQueueThrottlerTest, OnTimeDomainHasImmediateWork_DisabledQueue) {
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      timer_queue_->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
+
+  task_queue_throttler_->OnTimeDomainHasImmediateWork(timer_queue_.get());
+  // Check PostPumpThrottledTasksLocked was not called.
+  EXPECT_TRUE(task_queue_throttler_->task_runner()->IsEmpty());
+}
+
+TEST_F(TaskQueueThrottlerTest,
+       ThrottlingADisabledQueueDoesNotPostPumpThrottledTasks) {
+  timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      timer_queue_->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
+
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_TRUE(task_queue_throttler_->task_runner()->IsEmpty());
+
+  // Enabling it should trigger a call to PostPumpThrottledTasksLocked.
+  voter->SetQueueEnabled(true);
+  EXPECT_FALSE(task_queue_throttler_->task_runner()->IsEmpty());
+}
+
+TEST_F(TaskQueueThrottlerTest,
+       ThrottlingADisabledQueueDoesNotPostPumpThrottledTasks_DelayedTask) {
+  timer_queue_->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
+                                base::TimeDelta::FromMilliseconds(1));
+
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      timer_queue_->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
+
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_TRUE(task_queue_throttler_->task_runner()->IsEmpty());
+
+  // Enabling it should trigger a call to PostPumpThrottledTasksLocked.
+  voter->SetQueueEnabled(true);
+  EXPECT_FALSE(task_queue_throttler_->task_runner()->IsEmpty());
+}
+
 TEST_F(TaskQueueThrottlerTest, WakeUpForNonDelayedTask) {
   std::vector<base::TimeTicks> run_times;
 
@@ -280,20 +343,6 @@ TEST_F(TaskQueueThrottlerTest, WakeUpForDelayedTask) {
               ElementsAre(base::TimeTicks() +
                           base::TimeDelta::FromMilliseconds(2000.0)));
 }
-
-namespace {
-bool MessageLoopTaskCounter(size_t* count) {
-  *count = *count + 1;
-  return true;
-}
-
-void NopTask() {}
-
-void AddOneTask(size_t* count) {
-  (*count)++;
-}
-
-}  // namespace
 
 TEST_F(TaskQueueThrottlerTest,
        SingleThrottledTaskPumpedAndRunWithNoExtraneousMessageLoopTasks) {

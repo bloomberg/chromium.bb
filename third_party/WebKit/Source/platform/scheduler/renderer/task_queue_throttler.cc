@@ -335,6 +335,9 @@ void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
   // enforce task alignment.
   task_queue->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
 
+  if (!task_queue->IsQueueEnabled())
+    return;
+
   if (!task_queue->IsEmpty()) {
     if (task_queue->HasPendingImmediateWork()) {
       OnTimeDomainHasImmediateWork(task_queue);
@@ -397,6 +400,11 @@ void TaskQueueThrottler::OnTimeDomainHasImmediateWork(TaskQueue* queue) {
   TRACE_EVENT0(tracing_category_,
                "TaskQueueThrottler::OnTimeDomainHasImmediateWork");
 
+  // We don't expect this to get called for disabled queues, but we can't DCHECK
+  // because of the above thread hop.  Just bail out if the queue is disabled.
+  if (!queue->IsQueueEnabled())
+    return;
+
   base::TimeTicks now = tick_clock_->NowTicks();
   base::TimeTicks next_allowed_run_time = GetNextAllowedRunTime(now, queue);
   MaybeSchedulePumpThrottledTasks(FROM_HERE, now, next_allowed_run_time);
@@ -405,6 +413,7 @@ void TaskQueueThrottler::OnTimeDomainHasImmediateWork(TaskQueue* queue) {
 void TaskQueueThrottler::OnTimeDomainHasDelayedWork(TaskQueue* queue) {
   TRACE_EVENT0(tracing_category_,
                "TaskQueueThrottler::OnTimeDomainHasDelayedWork");
+  DCHECK(queue->IsQueueEnabled());
   base::TimeTicks now = tick_clock_->NowTicks();
   LazyNow lazy_now(now);
 
