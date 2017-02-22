@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_OBSERVER_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_OBSERVER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
@@ -244,6 +246,13 @@ class PageLoadMetricsObserver {
   // OnShown is triggered when a page is brought to the foreground. It does not
   // fire when the page first loads; for that, listen for OnStart instead.
   virtual ObservePolicy OnShown();
+
+  // Called before OnCommit. The observer should return whether it wishes to
+  // observe navigations whose main resource has MIME type |mine_type|. The
+  // default is to observe HTML and XHTML only. Note that PageLoadTrackers only
+  // track XHTML, HTML, and MHTML (related/multipart).
+  virtual ObservePolicy ShouldObserveMimeType(
+      const std::string& mime_type) const;
 
   // The callbacks below are only invoked after a navigation commits, for
   // tracked page loads. Page loads that don't meet the criteria for being

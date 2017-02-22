@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 
@@ -54,6 +56,8 @@ class PreviewsPageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnParseStart(const page_load_metrics::PageLoadTiming& timing,
                     const page_load_metrics::PageLoadExtraInfo& info) override;
+  ObservePolicy ShouldObserveMimeType(
+      const std::string& mime_type) const override;
 
  private:
   // Whether |web_contents| is showing an offline pages preview. Overridden in

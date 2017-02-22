@@ -52,7 +52,8 @@ int BrowserPageTrackDecider::GetHttpStatusCode() {
 bool BrowserPageTrackDecider::IsHtmlOrXhtmlPage() {
   DCHECK(HasCommitted());
   const std::string& mime_type = web_contents_->GetContentsMimeType();
-  return mime_type == "text/html" || mime_type == "application/xhtml+xml";
+  return mime_type == "text/html" || mime_type == "application/xhtml+xml" ||
+         mime_type == "multipart/related";
 }
 
 }  // namespace page_load_metrics

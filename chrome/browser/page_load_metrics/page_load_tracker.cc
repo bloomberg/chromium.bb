@@ -18,6 +18,7 @@
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "ui/base/page_transition_types.h"
 
@@ -448,6 +449,10 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   // Some transitions (like CLIENT_REDIRECT) are only known at commit time.
   page_transition_ = navigation_handle->GetPageTransition();
   user_initiated_info_.user_gesture = navigation_handle->HasUserGesture();
+
+  INVOKE_AND_PRUNE_OBSERVERS(
+      observers_, ShouldObserveMimeType,
+      navigation_handle->GetWebContents()->GetContentsMimeType());
 
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnCommit, navigation_handle);
   LogAbortChainHistograms(navigation_handle);

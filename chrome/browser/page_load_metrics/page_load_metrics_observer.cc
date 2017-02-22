@@ -87,4 +87,12 @@ PageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   return CONTINUE_OBSERVING;
 }
 
+PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserver::ShouldObserveMimeType(
+    const std::string& mime_type) const {
+  return mime_type == "text/html" || mime_type == "application/xhtml+xml"
+             ? CONTINUE_OBSERVING
+             : STOP_OBSERVING;
+}
+
 }  // namespace page_load_metrics
