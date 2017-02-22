@@ -495,12 +495,11 @@ class ChromeSDKCommand(command.CliCommand):
              'Chrome, rather than Chromium.')
     parser.add_argument(
         '--component', action='store_true', default=False,
-        help='Sets up SDK for building a componentized build of Chrome '
-             '(is_component_build=true in GN).')
+        help='Deprecated and ignored. Set is_component_build=true in args.gn '
+             'instead.')
     parser.add_argument(
         '--fastbuild', action='store_true', default=False,
-        help='Turn off debugging information for a faster build '
-             '(symbol_level=1 in GN).')
+        help='Deprecated and ignored. Set symbol_level=1 in args.gn instead.')
     parser.add_argument(
         '--use-external-config', action='store_true', default=False,
         help='Use the external configuration for the specified board, even if '
@@ -704,6 +703,13 @@ class ChromeSDKCommand(command.CliCommand):
     # SYSROOT is necessary for Goma and the sysroot wrapper.
     env['SYSROOT'] = sysroot
 
+    # Deprecated options warnings. TODO(stevenjb): Eliminate these entirely
+    # once removed from any builders.
+    if options.component:
+      logging.warning('--component is deprecated, ignoring')
+    if options.fastbuild:
+      logging.warning('--fastbuild is deprecated, ignoring')
+
     gn_args['target_sysroot'] = sysroot
     gn_args.pop('pkg_config', None)
     if options.clang:
@@ -715,14 +721,6 @@ class ChromeSDKCommand(command.CliCommand):
       gn_args.pop('is_chrome_branded', None)
       gn_args.pop('is_official_build', None)
       gn_args.pop('internal_gles2_conform_tests', None)
-    if options.component:
-      gn_args['is_component_build'] = True
-    if options.fastbuild:
-      # symbol_level corresponds to GYP's fastbuild (https://goo.gl/ZC4fUO).
-      gn_args['symbol_level'] = 1
-    else:
-      # Enable debug fission for GN.
-      gn_args['use_debug_fission'] = True
 
     # For SimpleChrome, we use the binutils that comes bundled within Chrome.
     # We should not use the binutils from the host system.
