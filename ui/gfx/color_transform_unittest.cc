@@ -259,6 +259,51 @@ TEST(SimpleColorSpace, UnknownVideoToSRGB) {
   EXPECT_GT(tmp.z(), tmp.y());
 }
 
+TEST(SimpleColorSpace, ToUndefined) {
+  ColorSpace null;
+  ColorSpace nonnull = gfx::ColorSpace::CreateSRGB();
+  // Video should have 1 step: YUV to RGB.
+  // Anything else should have 0 steps.
+  ColorSpace video = gfx::ColorSpace::CreateREC709();
+  std::unique_ptr<ColorTransform> video_to_null(
+      ColorTransform::NewColorTransform(
+          video, null, ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_EQ(video_to_null->NumberOfStepsForTesting(), 1u);
+
+  // Test with an ICC profile that can't be represented as matrix+transfer.
+  ColorSpace luttrcicc = ICCProfileForTestingNoAnalyticTrFn().GetColorSpace();
+  std::unique_ptr<ColorTransform> luttrcicc_to_null(
+      ColorTransform::NewColorTransform(
+          luttrcicc, null, ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_EQ(luttrcicc_to_null->NumberOfStepsForTesting(), 0u);
+  std::unique_ptr<ColorTransform> luttrcicc_to_nonnull(
+      ColorTransform::NewColorTransform(
+          luttrcicc, nonnull, ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_GT(luttrcicc_to_nonnull->NumberOfStepsForTesting(), 0u);
+
+  // Test with an ICC profile that can.
+  ColorSpace adobeicc = ICCProfileForTestingAdobeRGB().GetColorSpace();
+  std::unique_ptr<ColorTransform> adobeicc_to_null(
+      ColorTransform::NewColorTransform(
+          adobeicc, null, ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_EQ(adobeicc_to_null->NumberOfStepsForTesting(), 0u);
+  std::unique_ptr<ColorTransform> adobeicc_to_nonnull(
+      ColorTransform::NewColorTransform(
+          adobeicc, nonnull, ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_GT(adobeicc_to_nonnull->NumberOfStepsForTesting(), 0u);
+
+  // And with something analytic.
+  ColorSpace srgb = gfx::ColorSpace::CreateXYZD50();
+  std::unique_ptr<ColorTransform> srgb_to_null(
+      ColorTransform::NewColorTransform(
+          srgb, null, ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_EQ(srgb_to_null->NumberOfStepsForTesting(), 0u);
+  std::unique_ptr<ColorTransform> srgb_to_nonnull(
+      ColorTransform::NewColorTransform(
+          srgb, nonnull, ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_GT(srgb_to_nonnull->NumberOfStepsForTesting(), 0u);
+}
+
 TEST(SimpleColorSpace, DefaultToSRGB) {
   // The default value should do no transformation, regardless of destination.
   ColorSpace unknown;

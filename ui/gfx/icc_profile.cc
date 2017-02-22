@@ -18,6 +18,7 @@ const uint64_t ICCProfile::test_id_adobe_rgb_ = 1;
 const uint64_t ICCProfile::test_id_color_spin_ = 2;
 const uint64_t ICCProfile::test_id_generic_rgb_ = 3;
 const uint64_t ICCProfile::test_id_srgb_ = 4;
+const uint64_t ICCProfile::test_id_no_analytic_tr_fn_ = 5;
 
 namespace {
 const size_t kMinProfileLength = 128;
@@ -33,7 +34,7 @@ struct Cache {
   ~Cache() {}
 
   // Start from-ICC-data IDs at the end of the hard-coded test id list above.
-  uint64_t next_unused_id = 5;
+  uint64_t next_unused_id = 10;
   base::MRUCache<uint64_t, ICCProfile> id_to_icc_profile_mru;
   base::Lock lock;
 };

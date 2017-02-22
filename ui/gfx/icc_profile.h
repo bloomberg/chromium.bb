@@ -75,10 +75,12 @@ class GFX_EXPORT ICCProfile {
   friend ICCProfile ICCProfileForTestingColorSpin();
   friend ICCProfile ICCProfileForTestingGenericRGB();
   friend ICCProfile ICCProfileForTestingSRGB();
+  friend ICCProfile ICCProfileForTestingNoAnalyticTrFn();
   static const uint64_t test_id_adobe_rgb_;
   static const uint64_t test_id_color_spin_;
   static const uint64_t test_id_generic_rgb_;
   static const uint64_t test_id_srgb_;
+  static const uint64_t test_id_no_analytic_tr_fn_;
 
   // Populate |icc_profile| with the ICCProfile corresponding to id |id|. Return
   // false if |id| is not in the cache. If |only_if_needed| is true, then return
