@@ -288,6 +288,7 @@ EXPERIMENT_LIST="
     pvq
     xiphrc
     cb4x4
+    chroma_2x2
     frame_size
     delta_q
     adapt_scan
