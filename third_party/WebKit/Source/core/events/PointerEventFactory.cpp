@@ -273,7 +273,10 @@ PointerEvent* PointerEventFactory::create(
   if (pointerEventName == EventTypeNames::pointermove) {
     HeapVector<Member<PointerEvent>> coalescedPointerEvents;
     for (const auto& coalescedMouseEvent : coalescedMouseEvents) {
-      DCHECK_EQ(mouseEvent.id, coalescedMouseEvent.id);
+      // TODO(crbug.com/694742): We will set the id from low-level OS events
+      // and enable this DCHECK again.
+      // DCHECK_EQ(mouseEvent.id, coalescedMouseEvent.id);
+
       // TODO(crbug.com/684292): We need further investigation of why the
       // following DCHECK fails.
       // DCHECK_EQ(mouseEvent.pointerType, coalescedMouseEvent.pointerType);
