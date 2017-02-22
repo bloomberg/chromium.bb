@@ -1981,6 +1981,10 @@ bool ReplaceSelectionCommand::performTrivialReplace(
           endingSelection().start()))
     return false;
 
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   Node* nodeAfterInsertionPos =
       mostForwardCaretPosition(endingSelection().end()).anchorNode();
   Text* textNode = toText(fragment.firstChild());

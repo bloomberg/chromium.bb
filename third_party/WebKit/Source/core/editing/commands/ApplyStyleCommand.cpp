@@ -1386,6 +1386,10 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style,
   // FIXME: We should assert that start/end are not in the middle of a text
   // node.
 
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   Position pushDownStart = mostForwardCaretPosition(start);
   // If the pushDownStart is at the end of a text node, then this node is not
   // fully selected. Move it to the next deep quivalent position to avoid

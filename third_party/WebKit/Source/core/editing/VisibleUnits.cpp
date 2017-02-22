@@ -3019,6 +3019,7 @@ template <typename Strategy>
 PositionTemplate<Strategy> mostForwardCaretPosition(
     const PositionTemplate<Strategy>& position,
     EditingBoundaryCrossingRule rule) {
+  DCHECK(!needsLayoutTreeUpdate(position)) << position;
   TRACE_EVENT0("input", "VisibleUnits::mostForwardCaretPosition");
 
   Node* startNode = position.anchorNode();
