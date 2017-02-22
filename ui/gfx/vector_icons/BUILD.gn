@@ -4,6 +4,9 @@
 
 import("//build/config/chrome_build.gni")
 
+# NB: This is a deprecated vector icon target that should be removed. Add vector
+# icons to a more specific target, or ui/vector_icons if ui/ is the right place
+# for them. TODO(estade): remove this target.
 action("aggregate_vector_icons") {
   visibility = [ ":*" ]
 
