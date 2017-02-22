@@ -149,13 +149,14 @@ std::string ChromeConfigurator::ExtraRequestParams() const {
 
 std::string ChromeConfigurator::GetDownloadPreference() const {
 #if defined(OS_WIN)
-  // This group policy is supported only on Windows and only for enterprises.
-  return base::win::IsEnterpriseManaged()
+  // This group policy is supported only on Windows and only for computers
+  // which are joined to a Windows domain.
+  return base::win::IsEnrolledToDomain()
              ? base::SysWideToUTF8(
                    GoogleUpdateSettings::GetDownloadPreference())
-             : std::string();
+             : std::string("");
 #else
-  return std::string();
+  return std::string("");
 #endif
 }
 

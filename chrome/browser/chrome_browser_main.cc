@@ -1688,7 +1688,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // Auto Import might be disabled via a field trial.  However, this field
     // trial is not intended to affect enterprise users.
     auto_import =
-        base::win::IsEnterpriseManaged() ||
+        base::win::IsEnrolledToDomain() ||
         !base::FeatureList::IsEnabled(features::kDisableFirstRunAutoImportWin);
 #endif  // defined(OS_WIN)
 

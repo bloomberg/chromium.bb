@@ -246,13 +246,13 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
 # if defined(OS_WIN)
   if (!g_disable_domain_check_for_testing) {
     static bool first_call = true;
-    static const bool is_managed = base::win::IsEnterpriseManaged();
+    static const bool is_enrolled_to_domain = base::win::IsEnrolledToDomain();
     if (first_call) {
       UMA_HISTOGRAM_BOOLEAN("Settings.TrackedPreferencesNoEnforcementOnDomain",
-                            is_managed);
+                            is_enrolled_to_domain);
       first_call = false;
     }
-    if (is_managed)
+    if (is_enrolled_to_domain)
       return GROUP_NO_ENFORCEMENT;
   }
 #endif

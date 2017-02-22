@@ -137,12 +137,11 @@ std::string BuildProtocolRequest(
     base::StringAppendF(&request, " dlpref=\"%s\"",
                         download_preference.c_str());
   if (updater_state_attributes &&
-      updater_state_attributes->count(UpdaterState::kIsEnterpriseManaged)) {
+      updater_state_attributes->count(UpdaterState::kDomainJoined)) {
     base::StringAppendF(
         &request, " %s=\"%s\"",  // domainjoined
-        UpdaterState::kIsEnterpriseManaged,
-        (*updater_state_attributes)[UpdaterState::kIsEnterpriseManaged]
-            .c_str());
+        UpdaterState::kDomainJoined,
+        (*updater_state_attributes)[UpdaterState::kDomainJoined].c_str());
   }
   base::StringAppendF(&request, ">");
 
@@ -168,7 +167,7 @@ std::string BuildProtocolRequest(
   if (updater_state_attributes) {
     base::StringAppendF(&request, "<updater");
     for (const auto& attr : *updater_state_attributes) {
-      if (attr.first != UpdaterState::IsEnterpriseManaged) {
+      if (attr.first != UpdaterState::kDomainJoined) {
         base::StringAppendF(&request, " %s=\"%s\"", attr.first.c_str(),
                           attr.second.c_str());
       }
