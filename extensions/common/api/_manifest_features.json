@@ -8,7 +8,7 @@
 
 {
   "action_handlers": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"],
     "platforms": ["chromeos"]
   },

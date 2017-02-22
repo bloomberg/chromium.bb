@@ -2214,6 +2214,7 @@ test("browser_tests") {
         "../browser/chromeos/display/quirks_browsertest.cc",
         "../browser/chromeos/drive/drive_integration_service_browsertest.cc",
         "../browser/chromeos/extensions/accessibility_features_apitest.cc",
+        "../browser/chromeos/extensions/action_handlers/action_handlers_apitest.cc",
         "../browser/chromeos/extensions/echo_private_apitest.cc",
         "../browser/chromeos/extensions/file_manager/file_browser_handler_api_test.cc",
         "../browser/chromeos/extensions/file_manager/file_manager_private_apitest.cc",

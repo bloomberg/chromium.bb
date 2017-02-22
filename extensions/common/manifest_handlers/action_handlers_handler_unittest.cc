@@ -48,7 +48,6 @@ class ActionHandlersManifestTest : public ManifestTest {
 }  // namespace
 
 TEST_F(ActionHandlersManifestTest, InvalidType) {
-  extensions::ScopedCurrentChannel channel(version_info::Channel::DEV);
   LoadAndExpectError(CreateManifest("32"),
                      manifest_errors::kInvalidActionHandlersType);
   LoadAndExpectError(CreateManifest("[true]"),
@@ -58,7 +57,6 @@ TEST_F(ActionHandlersManifestTest, InvalidType) {
 }
 
 TEST_F(ActionHandlersManifestTest, VerifyParse) {
-  extensions::ScopedCurrentChannel channel(version_info::Channel::DEV);
   scoped_refptr<Extension> none = LoadAndExpectSuccess(CreateManifest("[]"));
   EXPECT_EQ(std::set<app_runtime::ActionType>{}, GetActionHandlers(none.get()));
 
