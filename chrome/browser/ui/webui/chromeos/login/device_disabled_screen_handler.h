@@ -33,10 +33,10 @@ class DeviceDisabledScreenHandler : public DeviceDisabledScreenActor,
   // WebUIMessageHandler:
   void RegisterMessages() override;
 
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
   // Indicates whether the screen should be shown right after initialization.
-  bool show_on_init_;
+  bool show_on_init_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisabledScreenHandler);
 };

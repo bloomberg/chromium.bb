@@ -45,13 +45,13 @@ class KioskEnableScreenHandler : public KioskEnableScreenActor,
   void OnGetConsumerKioskAutoLaunchStatus(
       KioskAppManager::ConsumerKioskAutoLaunchStatus status);
 
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
-  bool show_on_init_;
+  bool show_on_init_ = false;
 
   // True if machine's consumer kiosk mode is in a configurable state.
-  bool is_configurable_;
+  bool is_configurable_ = false;
 
   base::WeakPtrFactory<KioskEnableScreenHandler> weak_ptr_factory_;
 

@@ -76,10 +76,10 @@ class EnableDebuggingScreenHandler : public EnableDebuggingScreenActor,
   // Updates UI state.
   void UpdateUIState(UIState state);
 
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
-  bool show_on_init_;
+  bool show_on_init_ = false;
 
   base::WeakPtrFactory<EnableDebuggingScreenHandler> weak_ptr_factory_;
 

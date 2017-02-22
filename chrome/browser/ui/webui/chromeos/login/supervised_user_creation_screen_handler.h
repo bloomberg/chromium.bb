@@ -132,7 +132,7 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
 
   void UpdateText(const std::string& element_id, const base::string16& text);
 
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreationScreenHandler);
 };

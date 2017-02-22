@@ -228,11 +228,11 @@ GaiaScreenHandler::GaiaContext::GaiaContext() {}
 GaiaScreenHandler::GaiaScreenHandler(
     CoreOobeActor* core_oobe_actor,
     const scoped_refptr<NetworkStateInformer>& network_state_informer)
-    : BaseScreenHandler(kJsScreenPath),
-      network_state_informer_(network_state_informer),
+    : network_state_informer_(network_state_informer),
       core_oobe_actor_(core_oobe_actor),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
+  set_call_js_prefix(kJsScreenPath);
 }
 
 GaiaScreenHandler::~GaiaScreenHandler() {

@@ -47,11 +47,11 @@ class KioskAutolaunchScreenHandler : public KioskAutolaunchScreenActor,
   void HandleOnConfirm();
   void HandleOnVisible();
 
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
-  bool show_on_init_;
-  bool is_visible_;
+  bool show_on_init_ = false;
+  bool is_visible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAutolaunchScreenHandler);
 };

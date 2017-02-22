@@ -19,16 +19,7 @@ namespace {
 const char kMethodContextChanged[] = "contextChanged";
 }  // namespace
 
-BaseScreenHandler::BaseScreenHandler()
-    : page_is_ready_(false), base_screen_(nullptr) {
-}
-
-BaseScreenHandler::BaseScreenHandler(const std::string& js_screen_path)
-    : page_is_ready_(false),
-      base_screen_(nullptr),
-      js_screen_path_prefix_(js_screen_path + ".") {
-  CHECK(!js_screen_path.empty());
-}
+BaseScreenHandler::BaseScreenHandler() = default;
 
 BaseScreenHandler::~BaseScreenHandler() {
   if (base_screen_)

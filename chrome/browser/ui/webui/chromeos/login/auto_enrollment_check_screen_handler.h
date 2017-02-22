@@ -33,10 +33,10 @@ class AutoEnrollmentCheckScreenHandler : public AutoEnrollmentCheckScreenActor,
   void RegisterMessages() override;
 
  private:
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
-  bool show_on_init_;
+  bool show_on_init_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentCheckScreenHandler);
 };

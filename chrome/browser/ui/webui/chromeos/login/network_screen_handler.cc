@@ -55,7 +55,8 @@ namespace chromeos {
 // NetworkScreenHandler, public: -----------------------------------------------
 
 NetworkScreenHandler::NetworkScreenHandler(CoreOobeActor* core_oobe_actor)
-    : BaseScreenHandler(kJsScreenPath), core_oobe_actor_(core_oobe_actor) {
+    : core_oobe_actor_(core_oobe_actor) {
+  set_call_js_prefix(kJsScreenPath);
   DCHECK(core_oobe_actor_);
 }
 

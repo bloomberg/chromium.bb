@@ -37,10 +37,10 @@ class WrongHWIDScreenHandler : public WrongHWIDScreenActor,
   // JS messages handlers.
   void HandleOnSkip();
 
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
-  bool show_on_init_;
+  bool show_on_init_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WrongHWIDScreenHandler);
 };

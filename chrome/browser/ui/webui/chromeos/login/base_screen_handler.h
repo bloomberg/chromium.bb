@@ -36,12 +36,7 @@ class OobeUI;
 class BaseScreenHandler : public content::WebUIMessageHandler,
                           public ModelViewChannel {
  public:
-  // C-tor used when JS screen prefix is not needed.
   BaseScreenHandler();
-
-  // C-tor used when JS screen prefix is needed.
-  explicit BaseScreenHandler(const std::string& js_screen_path);
-
   ~BaseScreenHandler() override;
 
   // Gets localized strings to be used on the page.
@@ -63,6 +58,13 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
   }
   const std::string& async_assets_load_id() const {
     return async_assets_load_id_;
+  }
+
+  // Set the prefix used when running CallJs with a method. For example,
+  //    set_call_js_prefix("Oobe")
+  //    CallJs("lock") -> Invokes JS global named "Oobe.lock"
+  void set_call_js_prefix(const std::string& prefix) {
+    js_screen_path_prefix_ = prefix + ".";
   }
 
  protected:
@@ -178,9 +180,9 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
   void HandleContextChanged(const base::DictionaryValue* diff);
 
   // Keeps whether page is ready.
-  bool page_is_ready_;
+  bool page_is_ready_ = false;
 
-  BaseScreen* base_screen_;
+  BaseScreen* base_screen_ = nullptr;
 
   // Full name of the corresponding JS screen object. Can be empty, if
   // there are no corresponding screen object or several different

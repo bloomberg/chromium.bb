@@ -26,11 +26,8 @@ const char kCallbackContextReady[] = "contextReady";
 
 }  // namespace
 
-HostPairingScreenHandler::HostPairingScreenHandler()
-    : BaseScreenHandler(kJsScreenPath),
-      delegate_(NULL),
-      show_on_init_(false),
-      js_context_ready_(false) {
+HostPairingScreenHandler::HostPairingScreenHandler() {
+  set_call_js_prefix(kJsScreenPath);
 }
 
 HostPairingScreenHandler::~HostPairingScreenHandler() {

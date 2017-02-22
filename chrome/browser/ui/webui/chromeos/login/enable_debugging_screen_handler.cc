@@ -35,10 +35,8 @@ const char kJsScreenPath[] = "login.EnableDebuggingScreen";
 namespace chromeos {
 
 EnableDebuggingScreenHandler::EnableDebuggingScreenHandler()
-    : BaseScreenHandler(kJsScreenPath),
-      delegate_(NULL),
-      show_on_init_(false),
-      weak_ptr_factory_(this) {
+    : weak_ptr_factory_(this) {
+  set_call_js_prefix(kJsScreenPath);
 }
 
 EnableDebuggingScreenHandler::~EnableDebuggingScreenHandler() {

@@ -123,11 +123,11 @@ enum ActiveDirectoryErrorState {
 EnrollmentScreenHandler::EnrollmentScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ErrorScreen* error_screen)
-    : BaseScreenHandler(kJsScreenPath),
-      network_state_informer_(network_state_informer),
+    : network_state_informer_(network_state_informer),
       error_screen_(error_screen),
       histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
       weak_ptr_factory_(this) {
+  set_call_js_prefix(kJsScreenPath);
   set_async_assets_load_id(
       GetOobeScreenName(OobeScreen::SCREEN_OOBE_ENROLLMENT));
   DCHECK(network_state_informer_.get());

@@ -38,11 +38,8 @@ namespace chromeos {
 
 TermsOfServiceScreenHandler::TermsOfServiceScreenHandler(
     CoreOobeActor* core_oobe_actor)
-    : BaseScreenHandler(kJsScreenPath),
-      screen_(NULL),
-      core_oobe_actor_(core_oobe_actor),
-      show_on_init_(false),
-      load_error_(false) {
+    : core_oobe_actor_(core_oobe_actor) {
+  set_call_js_prefix(kJsScreenPath);
 }
 
 TermsOfServiceScreenHandler::~TermsOfServiceScreenHandler() {

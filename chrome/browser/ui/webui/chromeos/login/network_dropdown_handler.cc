@@ -30,8 +30,8 @@ const char kJsApiLaunchAddMobileNetworkDialog[] =
 
 namespace chromeos {
 
-NetworkDropdownHandler::NetworkDropdownHandler()
-    : BaseScreenHandler(kJsScreenPath) {
+NetworkDropdownHandler::NetworkDropdownHandler() {
+  set_call_js_prefix(kJsScreenPath);
 }
 
 NetworkDropdownHandler::~NetworkDropdownHandler() {

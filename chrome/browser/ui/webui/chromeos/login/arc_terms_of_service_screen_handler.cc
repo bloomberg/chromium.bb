@@ -26,8 +26,8 @@ const char kJsScreenPath[] = "login.ArcTermsOfServiceScreen";
 
 namespace chromeos {
 
-ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler()
-    : BaseScreenHandler(kJsScreenPath) {
+ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler() {
+  set_call_js_prefix(kJsScreenPath);
 }
 
 ArcTermsOfServiceScreenHandler::~ArcTermsOfServiceScreenHandler() {

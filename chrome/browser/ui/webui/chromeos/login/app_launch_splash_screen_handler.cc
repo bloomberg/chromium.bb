@@ -39,9 +39,9 @@ namespace chromeos {
 AppLaunchSplashScreenHandler::AppLaunchSplashScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ErrorScreen* error_screen)
-    : BaseScreenHandler(kJsScreenPath),
-      network_state_informer_(network_state_informer),
+    : network_state_informer_(network_state_informer),
       error_screen_(error_screen) {
+  set_call_js_prefix(kJsScreenPath);
   network_state_informer_->AddObserver(this);
 }
 

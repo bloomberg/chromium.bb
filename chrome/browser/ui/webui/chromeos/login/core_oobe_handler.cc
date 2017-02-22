@@ -56,9 +56,8 @@ namespace chromeos {
 // Note that show_oobe_ui_ defaults to false because WizardController assumes
 // OOBE UI is not visible by default.
 CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
-    : BaseScreenHandler(kJsScreenPath),
-      oobe_ui_(oobe_ui),
-      version_info_updater_(this) {
+    : oobe_ui_(oobe_ui), version_info_updater_(this) {
+  set_call_js_prefix(kJsScreenPath);
   if (!chrome::IsRunningInMash()) {
     AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
     CHECK(accessibility_manager);

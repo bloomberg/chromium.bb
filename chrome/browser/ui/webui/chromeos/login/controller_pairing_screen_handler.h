@@ -36,8 +36,8 @@ class ControllerPairingScreenHandler : public ControllerPairingScreenActor,
   void OnContextChanged(const base::DictionaryValue& diff) override;
   content::BrowserContext* GetBrowserContext() override;
 
-  ControllerPairingScreenActor::Delegate* delegate_;
-  bool show_on_init_;
+  ControllerPairingScreenActor::Delegate* delegate_ = nullptr;
+  bool show_on_init_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerPairingScreenHandler);
 };

@@ -35,9 +35,9 @@ class HostPairingScreenHandler : public HostPairingScreenActor,
   void SetDelegate(Delegate* delegate) override;
   void OnContextChanged(const base::DictionaryValue& diff) override;
 
-  HostPairingScreenActor::Delegate* delegate_;
-  bool show_on_init_;
-  bool js_context_ready_;
+  HostPairingScreenActor::Delegate* delegate_ = nullptr;
+  bool show_on_init_ = false;
+  bool js_context_ready_ = false;
 
   // Caches context changes while JS part is not ready to receive messages.
   ::login::ScreenContext context_cache_;

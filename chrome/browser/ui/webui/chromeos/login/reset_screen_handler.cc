@@ -27,7 +27,9 @@ const char kJsScreenPath[] = "login.ResetScreen";
 
 namespace chromeos {
 
-ResetScreenHandler::ResetScreenHandler() : BaseScreenHandler(kJsScreenPath) {}
+ResetScreenHandler::ResetScreenHandler() {
+  set_call_js_prefix(kJsScreenPath);
+}
 
 ResetScreenHandler::~ResetScreenHandler() {
   if (screen_)

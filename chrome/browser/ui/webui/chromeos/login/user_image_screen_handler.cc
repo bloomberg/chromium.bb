@@ -38,8 +38,8 @@ const char kJsScreenPath[] = "login.UserImageScreen";
 
 namespace chromeos {
 
-UserImageScreenHandler::UserImageScreenHandler()
-    : BaseScreenHandler(kJsScreenPath) {
+UserImageScreenHandler::UserImageScreenHandler() {
+  set_call_js_prefix(kJsScreenPath);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   media::SoundsManager* manager = media::SoundsManager::Get();
   manager->Initialize(SOUND_OBJECT_DELETE,

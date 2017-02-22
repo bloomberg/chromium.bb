@@ -68,18 +68,18 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
   // and continue" button.
   void HandleAccept();
 
-  TermsOfServiceScreenHandler::Delegate* screen_;
+  TermsOfServiceScreenHandler::Delegate* screen_ = nullptr;
 
-  CoreOobeActor* core_oobe_actor_;
+  CoreOobeActor* core_oobe_actor_ = nullptr;
 
   // Whether the screen should be shown right after initialization.
-  bool show_on_init_;
+  bool show_on_init_ = false;
 
   // The domain name whose Terms of Service are being shown.
   std::string domain_;
 
   // Set to |true| when the download of the Terms of Service fails.
-  bool load_error_;
+  bool load_error_ = false;
 
   // Set to the Terms of Service when the download is successful.
   std::string terms_of_service_;
