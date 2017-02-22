@@ -18,10 +18,12 @@ UsbDeviceWin::UsbDeviceWin(
     const std::string& device_path,
     const std::string& hub_path,
     int port_number,
+    const std::string& driver_name,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : device_path_(device_path),
       hub_path_(hub_path),
       port_number_(port_number),
+      driver_name_(driver_name),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       blocking_task_runner_(std::move(blocking_task_runner)) {}
 

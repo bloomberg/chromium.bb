@@ -41,7 +41,8 @@ class UsbServiceWin : public DeviceMonitorWin::Observer, public UsbService {
   void HelperStarted();
   void CreateDeviceObject(const std::string& device_path,
                           const std::string& hub_path,
-                          int port_number);
+                          int port_number,
+                          const std::string& driver_name);
 
   void DeviceReady(scoped_refptr<UsbDeviceWin> device, bool success);
 

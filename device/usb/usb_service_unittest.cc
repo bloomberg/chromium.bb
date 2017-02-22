@@ -8,7 +8,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_io_thread.h"
+#include "device/base/features.h"
 #include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
@@ -49,6 +51,19 @@ TEST_F(UsbServiceTest, GetDevices) {
     loop.Run();
   }
 }
+
+#if defined(OS_WIN)
+TEST_F(UsbServiceTest, GetDevicesNewBackend) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(device::kNewUsbBackend);
+  UsbService* service = device_client_->GetUsbService();
+  if (service) {
+    base::RunLoop loop;
+    service->GetDevices(base::Bind(&OnGetDevices, loop.QuitClosure()));
+    loop.Run();
+  }
+}
+#endif  // defined(OS_WIN)
 
 TEST_F(UsbServiceTest, ClaimGadget) {
   if (!UsbTestGadget::IsTestEnabled()) return;
