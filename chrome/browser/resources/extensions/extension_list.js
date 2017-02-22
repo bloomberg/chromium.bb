@@ -464,8 +464,7 @@ cr.define('extensions', function() {
         var extensionId = extension.id;
         assert(this.extensions_.length > 0);
         var newEx = this.extensions_.filter(function(e) {
-          return e.state == chrome.developerPrivate.ExtensionState.ENABLED &&
-              e.id == extensionId;
+          return e.id == extensionId;
         })[0];
         var errors = newEx.manifestErrors.concat(newEx.runtimeErrors);
         extensions.ExtensionErrorOverlay.getInstance().setErrorsAndShowOverlay(
