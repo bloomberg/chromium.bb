@@ -44,10 +44,13 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   // |title| with the pages |total_page_number|.
   bool CreatePrintJob(const std::string& printer_name,
                       const std::string& title,
+                      int job_id,
                       int total_page_number);
 
-  // Schedule a query of CUPS for print job status.
+  // Schedule a query of CUPS for print job status with the default delay.
   void ScheduleQuery();
+  // Schedule a query of CUPS for print job status with a delay of |delay|.
+  void ScheduleQuery(const base::TimeDelta& delay);
 
   // Query CUPS for print job status.
   void QueryCups();
@@ -60,6 +63,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
 
   // Ongoing print jobs.
   std::map<std::string, std::unique_ptr<CupsPrintJob>> jobs_;
+
+  // Prevents multiple queries from being scheduled simultaneously.
+  bool in_query_ = false;
 
   ::printing::CupsConnection cups_connection_;
   content::NotificationRegistrar registrar_;
