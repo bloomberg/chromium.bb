@@ -76,7 +76,7 @@ class SelectableHoverHighlightView : public HoverHighlightView {
 class IMEDefaultView : public TrayItemMore {
  public:
   IMEDefaultView(SystemTrayItem* owner, const base::string16& label)
-      : TrayItemMore(owner, true) {
+      : TrayItemMore(owner) {
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
       SetImage(gfx::CreateVectorIcon(kSystemMenuKeyboardIcon, kMenuIconColor));
     } else {

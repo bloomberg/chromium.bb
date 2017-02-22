@@ -4,7 +4,6 @@
 
 #include "ash/common/system/tray/tray_item_more.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
@@ -12,49 +11,32 @@
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/memory/ptr_util.h"
-#include "grit/ash_resources.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {
 
-TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
+TrayItemMore::TrayItemMore(SystemTrayItem* owner)
     : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
-      show_more_(show_more),
-      icon_(nullptr),
-      label_(nullptr),
-      more_(nullptr) {
-  TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
-  AddChildView(tri_view);
+      tri_view_(TrayPopupUtils::CreateDefaultRowView()),
+      icon_(TrayPopupUtils::CreateMainImageView()),
+      label_(TrayPopupUtils::CreateDefaultLabel()),
+      more_(TrayPopupUtils::CreateMoreImageView()) {
+  AddChildView(tri_view_);
   SetLayoutManager(new views::FillLayout);
 
-  icon_ = TrayPopupUtils::CreateMainImageView();
-  tri_view->AddView(TriView::Container::START, icon_);
+  more_->SetImage(
+      gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));
 
-  label_ = TrayPopupUtils::CreateDefaultLabel();
-  tri_view->AddView(TriView::Container::CENTER, label_);
+  tri_view_->AddView(TriView::Container::START, icon_);
+  tri_view_->AddView(TriView::Container::CENTER, label_);
+  tri_view_->AddView(TriView::Container::END, more_);
 
-  if (show_more) {
-    more_ = TrayPopupUtils::CreateMoreImageView();
-    if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      // The icon doesn't change in non-md.
-      more_->SetImage(ui::ResourceBundle::GetSharedInstance()
-                          .GetImageNamed(IDR_AURA_UBER_TRAY_MORE)
-                          .ToImageSkia());
-    }
-    tri_view->AddView(TriView::Container::END, more_);
-  } else {
-    tri_view->SetContainerVisible(TriView::Container::END, false);
-  }
-
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    SetInkDropMode(InkDropHostView::InkDropMode::ON);
+  SetInkDropMode(InkDropHostView::InkDropMode::ON);
 }
 
 TrayItemMore::~TrayItemMore() {}
@@ -75,26 +57,23 @@ void TrayItemMore::SetAccessibleName(const base::string16& name) {
 }
 
 std::unique_ptr<TrayPopupItemStyle> TrayItemMore::CreateStyle() const {
+  std::unique_ptr<TrayPopupItemStyle> style = HandleCreateStyle();
+  if (!enabled())
+    style->set_color_style(TrayPopupItemStyle::ColorStyle::DISABLED);
+  return style;
+}
+
+std::unique_ptr<TrayPopupItemStyle> TrayItemMore::HandleCreateStyle() const {
   return base::MakeUnique<TrayPopupItemStyle>(
       TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
 }
 
 void TrayItemMore::UpdateStyle() {
-  if (!MaterialDesignController::IsSystemTrayMenuMaterial())
-    return;
   std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
   style->SetupLabel(label_);
-
-  if (more_) {
-    more_->SetImage(
-        gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));
-  }
 }
 
 bool TrayItemMore::PerformAction(const ui::Event& event) {
-  if (!show_more_)
-    return false;
-
   owner()->TransitionDetailedView();
   return true;
 }
@@ -103,6 +82,12 @@ void TrayItemMore::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ActionableView::GetAccessibleNodeData(node_data);
   if (!accessible_name_.empty())
     node_data->SetName(accessible_name_);
+}
+
+void TrayItemMore::OnEnabledChanged() {
+  ActionableView::OnEnabledChanged();
+  tri_view_->SetContainerVisible(TriView::Container::END, enabled());
+  UpdateStyle();
 }
 
 void TrayItemMore::OnNativeThemeChanged(const ui::NativeTheme* theme) {

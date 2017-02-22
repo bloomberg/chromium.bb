@@ -20,12 +20,14 @@ class View;
 namespace ash {
 class SystemTrayItem;
 class TrayPopupItemStyle;
+class TriView;
 
 // A view with a more arrow on the right edge. Clicking on the view brings up
-// the detailed view of the tray-item that owns it.
+// the detailed view of the tray-item that owns it. If the view is disabled, it
+// will not show the more arrow.
 class TrayItemMore : public ActionableView {
  public:
-  TrayItemMore(SystemTrayItem* owner, bool show_more);
+  explicit TrayItemMore(SystemTrayItem* owner);
   ~TrayItemMore() override;
 
   void SetLabel(const base::string16& label);
@@ -33,20 +35,21 @@ class TrayItemMore : public ActionableView {
   void SetAccessibleName(const base::string16& name);
 
  protected:
-  // Returns a style that will be applied to elements in the UpdateStyle()
-  // method. e.g. changing the label's font and color. Descendants can override
-  // to apply specialized configurations of the style. e.g. changing the style's
-  // ColorStyle based on whether Bluetooth is enabled/disabled.
-  virtual std::unique_ptr<TrayPopupItemStyle> CreateStyle() const;
+  // Returns a style that will be applied to the elements in the UpdateStyle()
+  // method if |this| is enabled; otherwise, we force |this| to use
+  // ColorStyle::DISABLED.
+  std::unique_ptr<TrayPopupItemStyle> CreateStyle() const;
+
+  // Called by CreateStyle() to give descendants a chance to customize the
+  // style; e.g. to change the style's ColorStyle based on whether Bluetooth is
+  // enabled/disabled.
+  virtual std::unique_ptr<TrayPopupItemStyle> HandleCreateStyle() const;
 
   // Applies the style created from CreateStyle(). Should be called whenever any
   // input state changes that changes the style configuration created by
-  // CreateStyle(). e.g. if Bluetooth is changed between enabled/disabled then
+  // CreateStyle(). E.g. if Bluetooth is changed between enabled/disabled then
   // a differently configured style will be returned from CreateStyle() and thus
   // it will need to be applied.
-  //
-  // By default this will be called when OnNativeThemeChanged() is called which
-  // will ensure the most up to date theme is actually applied.
   virtual void UpdateStyle();
 
  private:
@@ -55,10 +58,10 @@ class TrayItemMore : public ActionableView {
 
   // Overridden from views::View.
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnEnabledChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
-  // True if |more_| should be shown.
-  bool show_more_;
+  TriView* tri_view_;
   views::ImageView* icon_;
   views::Label* label_;
   views::ImageView* more_;

@@ -85,7 +85,7 @@ namespace tray {
 class DefaultAccessibilityView : public TrayItemMore {
  public:
   explicit DefaultAccessibilityView(SystemTrayItem* owner)
-      : TrayItemMore(owner, true) {
+      : TrayItemMore(owner) {
     base::string16 label =
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY);
     SetLabel(label);

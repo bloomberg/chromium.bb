@@ -112,9 +112,7 @@ const int kDisabledPanelLabelBaselineY = 20;
 
 class BluetoothDefaultView : public TrayItemMore {
  public:
-  BluetoothDefaultView(SystemTrayItem* owner, bool show_more)
-      : TrayItemMore(owner, show_more) {}
-
+  explicit BluetoothDefaultView(SystemTrayItem* owner) : TrayItemMore(owner) {}
   ~BluetoothDefaultView() override {}
 
   void Update() {
@@ -136,9 +134,10 @@ class BluetoothDefaultView : public TrayItemMore {
 
  protected:
   // TrayItemMore:
-  std::unique_ptr<TrayPopupItemStyle> CreateStyle() const override {
+  std::unique_ptr<TrayPopupItemStyle> HandleCreateStyle() const override {
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
-    std::unique_ptr<TrayPopupItemStyle> style = TrayItemMore::CreateStyle();
+    std::unique_ptr<TrayPopupItemStyle> style =
+        TrayItemMore::HandleCreateStyle();
     style->set_color_style(
         delegate->GetBluetoothEnabled()
             ? TrayPopupItemStyle::ColorStyle::ACTIVE
@@ -588,8 +587,8 @@ views::View* TrayBluetooth::CreateTrayView(LoginStatus status) {
 
 views::View* TrayBluetooth::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == NULL);
-  default_ =
-      new tray::BluetoothDefaultView(this, status != LoginStatus::LOCKED);
+  default_ = new tray::BluetoothDefaultView(this);
+  default_->SetEnabled(status != LoginStatus::LOCKED);
   default_->Update();
   return default_;
 }

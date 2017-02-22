@@ -80,16 +80,15 @@ namespace tray {
 // actually pick the cast receiver.
 class CastSelectDefaultView : public TrayItemMore {
  public:
-  CastSelectDefaultView(SystemTrayItem* owner, bool show_more);
+  explicit CastSelectDefaultView(SystemTrayItem* owner);
   ~CastSelectDefaultView() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastSelectDefaultView);
 };
 
-CastSelectDefaultView::CastSelectDefaultView(SystemTrayItem* owner,
-                                             bool show_more)
-    : TrayItemMore(owner, show_more) {
+CastSelectDefaultView::CastSelectDefaultView(SystemTrayItem* owner)
+    : TrayItemMore(owner) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   // Update the image and label.
@@ -215,7 +214,7 @@ void CastCastView::ButtonPressed(views::Button* sender,
 class CastDuplexView : public views::View {
  public:
   CastDuplexView(SystemTrayItem* owner,
-                 bool show_more,
+                 bool enabled,
                  const std::vector<mojom::SinkAndRoutePtr>& sinks_routes);
   ~CastDuplexView() override;
 
@@ -243,9 +242,10 @@ class CastDuplexView : public views::View {
 
 CastDuplexView::CastDuplexView(
     SystemTrayItem* owner,
-    bool show_more,
+    bool enabled,
     const std::vector<mojom::SinkAndRoutePtr>& sinks_routes) {
-  select_view_ = new CastSelectDefaultView(owner, show_more);
+  select_view_ = new CastSelectDefaultView(owner);
+  select_view_->SetEnabled(enabled);
   cast_view_ = new CastCastView();
   cast_view_->UpdateLabel(sinks_routes);
   SetLayoutManager(new views::FillLayout());

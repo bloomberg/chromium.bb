@@ -35,8 +35,7 @@ namespace tray {
 class VpnDefaultView : public TrayItemMore,
                        public network_icon::AnimationObserver {
  public:
-  VpnDefaultView(SystemTrayItem* owner, bool show_more)
-      : TrayItemMore(owner, show_more) {}
+  explicit VpnDefaultView(SystemTrayItem* owner) : TrayItemMore(owner) {}
 
   ~VpnDefaultView() override {
     network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
@@ -75,8 +74,9 @@ class VpnDefaultView : public TrayItemMore,
 
  protected:
   // TrayItemMore:
-  std::unique_ptr<TrayPopupItemStyle> CreateStyle() const override {
-    std::unique_ptr<TrayPopupItemStyle> style = TrayItemMore::CreateStyle();
+  std::unique_ptr<TrayPopupItemStyle> HandleCreateStyle() const override {
+    std::unique_ptr<TrayPopupItemStyle> style =
+        TrayItemMore::HandleCreateStyle();
     style->set_color_style(
         !IsVpnEnabled()
             ? TrayPopupItemStyle::ColorStyle::DISABLED
@@ -163,8 +163,9 @@ views::View* TrayVPN::CreateDefaultView(LoginStatus status) {
   const bool is_in_secondary_login_screen =
       WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
 
-  default_ = new tray::VpnDefaultView(
-      this, status != LoginStatus::LOCKED && !is_in_secondary_login_screen);
+  default_ = new tray::VpnDefaultView(this);
+  default_->SetEnabled(status != LoginStatus::LOCKED &&
+                       !is_in_secondary_login_screen);
 
   return default_;
 }
