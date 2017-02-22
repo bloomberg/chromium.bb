@@ -10,8 +10,6 @@
 #include <iterator>
 #include <utility>
 
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -317,10 +315,6 @@ T* ExtensionPrefs::ScopedUpdate<T, type_enum_value>::Create() {
     // might be useful. Remove the dumps after we analyze them.
     if (key_value->GetType() != type_enum_value) {
       NOTREACHED();
-      base::debug::SetCrashKeyValue(
-          "existing_extension_pref_value_type",
-          base::IntToString(static_cast<int>(key_value->GetType())));
-      base::debug::DumpWithoutCrashing();
       value_as_t = new T();
       extension->SetWithoutPathExpansion(key_, base::WrapUnique(value_as_t));
     } else {
