@@ -216,7 +216,8 @@ IN_PROC_BROWSER_TEST_F(LoginUserTest, CursorShown) {
 }
 
 // After a guest login, we should get the OTR default profile.
-IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
+// Test is flaky https://crbug.com/693106
+IN_PROC_BROWSER_TEST_F(LoginGuestTest, DISABLED_GuestIsOTR) {
   Profile* profile = browser()->profile();
   EXPECT_TRUE(profile->IsOffTheRecord());
   // Ensure there's extension service for this profile.
