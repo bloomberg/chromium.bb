@@ -129,10 +129,8 @@ bool CompositeEditCommand::apply() {
   LocalFrame* frame = document().frame();
   DCHECK(frame);
   EditingState editingState;
-  {
-    EventQueueScope eventQueueScope;
-    doApply(&editingState);
-  }
+  EventQueueScope eventQueueScope;
+  doApply(&editingState);
 
   // Only need to call appliedEditing for top-level commands, and TypingCommands
   // do it on their own (see TypingCommand::typingAddedToOpenCommand).
