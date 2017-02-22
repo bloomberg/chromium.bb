@@ -6,9 +6,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/filename_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
@@ -22,16 +22,9 @@ namespace app_file_handler_util {
 
 namespace {
 
-void GetIsDirectoryFromFileInfo(const base::FilePath& path,
-                                bool* is_directory) {
+bool GetIsDirectoryFromFileInfo(const base::FilePath& path) {
   base::File::Info file_info;
-  *is_directory = GetFileInfo(path, &file_info) && file_info.is_directory;
-}
-
-void OnGetIsDirectoryFromFileInfoCompleted(
-    std::unique_ptr<bool> is_directory,
-    const base::Callback<void(bool)>& callback) {
-  callback.Run(*is_directory);
+  return GetFileInfo(path, &file_info) && file_info.is_directory;
 }
 
 // The callback parameter contains the result and is required to support
@@ -49,14 +42,9 @@ void EntryIsDirectory(content::BrowserContext* context,
   }
 #endif
 
-  std::unique_ptr<bool> is_directory(new bool);
-  bool* const is_directory_ptr = is_directory.get();
-
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GetIsDirectoryFromFileInfo, path, is_directory_ptr),
-      base::Bind(&OnGetIsDirectoryFromFileInfoCompleted,
-                 base::Passed(&is_directory), callback));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock(),
+      base::Bind(&GetIsDirectoryFromFileInfo, path), callback);
 }
 
 }  // namespace
