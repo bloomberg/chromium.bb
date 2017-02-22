@@ -11,7 +11,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "content/public/test/test_utils.h"
@@ -100,7 +99,7 @@ class TestGuestViewManager : public GuestViewManager {
   int num_views_garbage_collected_;
   bool waiting_for_guests_created_;
 
-  std::vector<linked_ptr<content::WebContentsDestroyedWatcher>>
+  std::vector<std::unique_ptr<content::WebContentsDestroyedWatcher>>
       guest_web_contents_watchers_;
   scoped_refptr<content::MessageLoopRunner> created_message_loop_runner_;
   scoped_refptr<content::MessageLoopRunner> num_created_message_loop_runner_;

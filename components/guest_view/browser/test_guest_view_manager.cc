@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 
 namespace guest_view {
@@ -96,8 +97,8 @@ void TestGuestViewManager::AddGuest(int guest_instance_id,
   GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
 
   guest_web_contents_watchers_.push_back(
-      linked_ptr<content::WebContentsDestroyedWatcher>(
-          new content::WebContentsDestroyedWatcher(guest_web_contents)));
+      base::MakeUnique<content::WebContentsDestroyedWatcher>(
+          guest_web_contents));
 
   if (created_message_loop_runner_.get())
     created_message_loop_runner_->Quit();
