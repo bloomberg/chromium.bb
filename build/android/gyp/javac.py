@@ -420,9 +420,12 @@ def main(argv):
 
   java_files = _FilterJavaFiles(java_files, options.javac_includes)
 
-  javac_cmd = ['javac']
   if options.use_errorprone_path:
-    javac_cmd = [options.use_errorprone_path] + ERRORPRONE_OPTIONS
+    javac_path = options.use_errorprone_path
+    javac_cmd = [javac_path] + ERRORPRONE_OPTIONS
+  else:
+    javac_path = distutils.spawn.find_executable('javac')
+    javac_cmd = [javac_path]
 
   javac_cmd.extend((
       '-g',
@@ -473,8 +476,10 @@ def main(argv):
         else:
           classpath_inputs.append(path)
 
-  # Compute the list of paths that when changed, we need to rebuild.
-  input_paths = classpath_inputs + options.java_srcjars + java_files
+  # GN already knows of java_files, so listing them just make things worse when
+  # they change.
+  depfile_deps = [javac_path] + classpath_inputs + options.java_srcjars
+  input_paths = depfile_deps + java_files
 
   output_paths = [
       options.jar_path,
@@ -493,6 +498,7 @@ def main(argv):
       lambda changes: _OnStaleMd5(changes, options, javac_cmd, java_files,
                                   classpath_inputs),
       options,
+      depfile_deps=depfile_deps,
       input_paths=input_paths,
       input_strings=javac_cmd,
       output_paths=output_paths,
