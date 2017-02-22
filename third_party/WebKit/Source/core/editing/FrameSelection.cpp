@@ -166,7 +166,8 @@ const VisibleSelectionInFlatTree& FrameSelection::selectionInFlatTree() const {
 void FrameSelection::moveCaretSelection(const IntPoint& point) {
   DCHECK(!document().needsLayoutTreeUpdate());
 
-  Element* const editable = rootEditableElement();
+  Element* const editable =
+      computeVisibleSelectionInDOMTree().rootEditableElement();
   if (!editable)
     return;
 
@@ -836,7 +837,8 @@ void FrameSelection::setFocusedNodeIfNeeded() {
   if (isNone() || !isFocused())
     return;
 
-  if (Element* target = rootEditableElement()) {
+  if (Element* target =
+          computeVisibleSelectionInDOMTreeDeprecated().rootEditableElement()) {
     // Walk up the DOM tree to search for a node to focus.
     document().updateStyleAndLayoutTreeIgnorePendingStylesheets();
     while (target) {

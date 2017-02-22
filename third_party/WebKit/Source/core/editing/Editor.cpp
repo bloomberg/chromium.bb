@@ -328,7 +328,7 @@ bool Editor::canPaste() const {
 bool Editor::canDelete() const {
   FrameSelection& selection = frame().selection();
   return selection.computeVisibleSelectionInDOMTreeDeprecated().isRange() &&
-         selection.rootEditableElement();
+         selection.computeVisibleSelectionInDOMTree().rootEditableElement();
 }
 
 bool Editor::smartInsertDeleteEnabled() const {

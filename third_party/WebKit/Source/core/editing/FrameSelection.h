@@ -100,9 +100,6 @@ class CORE_EXPORT FrameSelection final
   // You should not call |document()| when |!isAvailable()|.
   Document& document() const;
   LocalFrame* frame() const { return m_frame; }
-  Element* rootEditableElement() const {
-    return computeVisibleSelectionInDOMTreeDeprecated().rootEditableElement();
-  }
   Element* rootEditableElementOrDocumentElement() const;
   ContainerNode* rootEditableElementOrTreeScopeRootNode() const;
 
