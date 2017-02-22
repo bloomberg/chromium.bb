@@ -42,6 +42,8 @@ component("views") {
   sources = [
     "accessibility/native_view_accessibility.cc",
     "accessibility/native_view_accessibility.h",
+    "accessibility/native_view_accessibility_mac.h",
+    "accessibility/native_view_accessibility_mac.mm",
     "accessibility/native_view_accessibility_win.cc",
     "accessibility/native_view_accessibility_win.h",
     "accessible_pane_view.cc",

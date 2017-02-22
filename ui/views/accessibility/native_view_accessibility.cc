@@ -127,12 +127,6 @@ gfx::NativeViewAccessible NativeViewAccessibility::GetParent() {
   if (view_->parent())
     return view_->parent()->GetNativeViewAccessible();
 
-  // TODO: move this to NativeViewAccessibilityMac.
-#if defined(OS_MACOSX)
-  if (view_->GetWidget())
-    return view_->GetWidget()->GetNativeView();
-#endif
-
   if (parent_widget_)
     return parent_widget_->GetRootView()->GetNativeViewAccessible();
 
