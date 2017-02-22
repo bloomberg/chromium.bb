@@ -201,7 +201,7 @@ void IceTransport::SendTransportInfo() {
 
 void IceTransport::OnChannelError(int error) {
   LOG(ERROR) << "Data channel failed, error=" << error;
-  event_handler_->OnIceTransportError(CHANNEL_CONNECTION_ERROR);
+  event_handler_->OnIceTransportError(error ? CHANNEL_CONNECTION_ERROR : OK);
 }
 
 }  // namespace protocol
