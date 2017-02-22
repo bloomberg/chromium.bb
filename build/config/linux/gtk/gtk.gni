@@ -8,5 +8,5 @@
 
 declare_args() {
   # Whether to compile agains GTKv3 instead of GTKv2.
-  use_gtk3 = false
+  use_gtk3 = true
 }
