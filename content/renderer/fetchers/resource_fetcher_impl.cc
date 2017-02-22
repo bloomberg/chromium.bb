@@ -172,7 +172,6 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
 void ResourceFetcherImpl::Start(
     blink::WebFrame* frame,
     blink::WebURLRequest::RequestContext request_context,
-    blink::WebURLRequest::FrameType frame_type,
     const Callback& callback) {
   DCHECK(!loader_);
   DCHECK(!client_);
@@ -181,7 +180,6 @@ void ResourceFetcherImpl::Start(
     DCHECK_NE("GET", request_.httpMethod().utf8()) << "GETs can't have bodies.";
 
   request_.setRequestContext(request_context);
-  request_.setFrameType(frame_type);
   request_.setFirstPartyForCookies(frame->document().firstPartyForCookies());
   request_.addHTTPOriginIfNeeded(blink::WebSecurityOrigin::createUnique());
 

@@ -53,7 +53,6 @@ class CONTENT_EXPORT ResourceFetcher {
   // done.
   virtual void Start(blink::WebFrame* frame,
                      blink::WebURLRequest::RequestContext request_context,
-                     blink::WebURLRequest::FrameType frame_type,
                      const Callback& callback) = 0;
 
   // Sets how long to wait for the server to reply.  By default, there is no

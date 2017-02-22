@@ -32,7 +32,6 @@ class ResourceFetcherImpl : public ResourceFetcher {
   void SetHeader(const std::string& header, const std::string& value) override;
   void Start(blink::WebFrame* frame,
              blink::WebURLRequest::RequestContext request_context,
-             blink::WebURLRequest::FrameType frame_type,
              const Callback& callback) override;
   void SetTimeout(const base::TimeDelta& timeout) override;
 

@@ -185,7 +185,6 @@ void MojoContextState::FetchModule(const std::string& id) {
   module_fetchers_.push_back(fetcher);
   fetcher->Start(frame_,
                  blink::WebURLRequest::RequestContextScript,
-                 blink::WebURLRequest::FrameTypeNone,
                  base::Bind(&MojoContextState::OnFetchModuleComplete,
                             base::Unretained(this), fetcher, id));
 }

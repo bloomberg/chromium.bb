@@ -155,7 +155,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
-                   WebURLRequest::FrameTypeNone,
                    delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -173,7 +172,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
-                   WebURLRequest::FrameTypeNone,
                    delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -191,7 +189,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
-                   WebURLRequest::FrameTypeNone,
                    delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -211,7 +208,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
-                   WebURLRequest::FrameTypeNone,
                    delegate->NewCallback());
     fetcher->SetTimeout(base::TimeDelta());
 
@@ -232,7 +228,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
-                   WebURLRequest::FrameTypeNone,
                    delegate->NewCallback());
     fetcher->SetTimeout(base::TimeDelta());
     delegate->SetFetcher(fetcher.release());
@@ -252,7 +247,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     fetcher->SetBody(kBody);
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
-                   WebURLRequest::FrameTypeNone,
                    delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -271,7 +265,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
     fetcher->SetHeader("header", kHeader);
     fetcher->Start(frame,
                    WebURLRequest::RequestContextInternal,
-                   WebURLRequest::FrameTypeNone,
                    delegate->NewCallback());
 
     delegate->WaitForResponse();
