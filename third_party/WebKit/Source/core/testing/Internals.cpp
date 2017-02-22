@@ -1041,6 +1041,9 @@ String Internals::markerDescriptionForNode(Node* node,
 
 void Internals::addTextMatchMarker(const Range* range, bool isActive) {
   DCHECK(range);
+  if (!range->ownerDocument().view())
+    return;
+
   range->ownerDocument().updateStyleAndLayoutIgnorePendingStylesheets();
   range->ownerDocument().markers().addTextMatchMarker(EphemeralRange(range),
                                                       isActive);
