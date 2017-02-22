@@ -217,9 +217,13 @@ PanelMenu.prototype = {
    * Handles key presses for first letter accelerators.
    */
   onKeyPress_: function(evt) {
-    var query = String.fromCharCode(evt.charCode).toLowerCase();
+    if (!this.items_.length)
+      return;
 
-    for (var i = this.activeIndex_ + 1; i < this.items_.length; i++) {
+    var query = String.fromCharCode(evt.charCode).toLowerCase();
+    for (var i = this.activeIndex_ + 1;
+         i != this.activeIndex_;
+         i = (i + 1) % this.items_.length) {
       if (this.items_[i].text.toLowerCase().indexOf(query) == 0) {
         this.activateItem(i);
         break;
