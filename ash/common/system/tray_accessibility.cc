@@ -6,7 +6,6 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -38,10 +37,6 @@
 
 namespace ash {
 namespace {
-
-bool UseMdMenu() {
-  return MaterialDesignController::IsSystemTrayMenuMaterial();
-}
 
 enum AccessibilityState {
   A11Y_NONE = 0,
@@ -160,14 +155,8 @@ AccessibilityDetailedView::AccessibilityDetailedView(SystemTrayItem* owner,
       virtual_keyboard_enabled_(false),
       login_(login) {
   Reset();
-
   AppendAccessibilityList();
-
-  if (!UseMdMenu())
-    AppendHelpEntries();
-
   CreateTitleRow(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TITLE);
-
   Layout();
 }
 
@@ -223,36 +212,30 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
                         kSystemMenuKeyboardIcon);
 }
 
-void AccessibilityDetailedView::AppendHelpEntries() {
-  DCHECK(!UseMdMenu());
-}
-
 HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
     const base::string16& text,
     bool highlight,
     bool checked,
     const gfx::VectorIcon& icon) {
   HoverHighlightView* container = new HoverHighlightView(this);
-  if (UseMdMenu()) {
-    gfx::ImageSkia image = CreateVectorIcon(icon, kMenuIconColor);
-    const int padding = (kMenuButtonSize - image.width()) / 2;
-    container->AddIconAndLabelCustomSize(
-        image, text, highlight,
-        image.width() + kMenuSeparatorVerticalPadding * 2, padding, padding);
-    if (checked) {
-      gfx::ImageSkia check_mark = CreateVectorIcon(
-          gfx::VectorIconId::CHECK_CIRCLE, gfx::kGoogleGreen700);
-      container->AddRightIcon(check_mark, check_mark.width());
-      container->SetRightViewVisible(true);
-      container->SetAccessiblityState(
-          HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
-    } else {
-      container->SetAccessiblityState(
-          HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
-    }
+  gfx::ImageSkia image = CreateVectorIcon(icon, kMenuIconColor);
+  const int padding = (kMenuButtonSize - image.width()) / 2;
+  container->AddIconAndLabelCustomSize(
+      image, text, highlight, image.width() + kMenuSeparatorVerticalPadding * 2,
+      padding, padding);
+
+  if (checked) {
+    gfx::ImageSkia check_mark =
+        CreateVectorIcon(gfx::VectorIconId::CHECK_CIRCLE, gfx::kGoogleGreen700);
+    container->AddRightIcon(check_mark, check_mark.width());
+    container->SetRightViewVisible(true);
+    container->SetAccessiblityState(
+        HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
   } else {
-    container->AddCheckableLabel(text, highlight, checked);
+    container->SetAccessiblityState(
+        HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
   }
+
   scroll_content()->AddChildView(container);
   return container;
 }
@@ -305,18 +288,16 @@ void AccessibilityDetailedView::HandleButtonPressed(views::Button* sender,
 }
 
 void AccessibilityDetailedView::CreateExtraTitleRowButtons() {
-  if (UseMdMenu()) {
-    DCHECK(!help_view_);
-    DCHECK(!settings_view_);
+  DCHECK(!help_view_);
+  DCHECK(!settings_view_);
 
-    tri_view()->SetContainerVisible(TriView::Container::END, true);
+  tri_view()->SetContainerVisible(TriView::Container::END, true);
 
-    help_view_ = CreateHelpButton(login_);
-    settings_view_ = CreateSettingsButton(
-        login_, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS);
-    tri_view()->AddView(TriView::Container::END, help_view_);
-    tri_view()->AddView(TriView::Container::END, settings_view_);
-  }
+  help_view_ = CreateHelpButton(login_);
+  settings_view_ =
+      CreateSettingsButton(login_, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS);
+  tri_view()->AddView(TriView::Container::END, help_view_);
+  tri_view()->AddView(TriView::Container::END, settings_view_);
 }
 
 void AccessibilityDetailedView::ShowSettings() {
