@@ -59,8 +59,8 @@ const char kHistogramMovedUpCategoryNewIndex[] =
     "NewTabPage.ContentSuggestions.MovedUpCategoryNewIndex";
 const char kHistogramCategoryDismissed[] =
     "NewTabPage.ContentSuggestions.CategoryDismissed";
-const char kHistogramContentSuggestionsTimeSinceLastBackgroundFetch[] =
-    "NewTabPage.ContentSuggestions.TimeSinceLastBackgroundFetch";
+const char kHistogramTimeSinceSuggestionFetched[] =
+    "NewTabPage.ContentSuggestions.TimeSinceSuggestionFetched";
 
 const char kPerCategoryHistogramFormat[] = "%s.%s";
 
@@ -235,6 +235,14 @@ void OnSuggestionShown(int global_position,
 
   LogCategoryHistogramScore(kHistogramShownScore, category, score);
 
+  if (category.IsKnownCategory(KnownCategories::ARTICLES)) {
+    // Records the time since the fetch time of the displayed snippet.
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        kHistogramTimeSinceSuggestionFetched, base::Time::Now() - fetch_date,
+        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(7),
+        /*bucket_count=*/100);
+  }
+
   // TODO(markusheintz): Discuss whether the code below should be move into a
   // separate method called OnSuggestionsListShown.
   // When the first of the articles suggestions is shown, then we count this as
@@ -242,14 +250,6 @@ void OnSuggestionShown(int global_position,
   if (category.IsKnownCategory(KnownCategories::ARTICLES) &&
       position_in_category == 0) {
     RecordContentSuggestionsUsage();
-
-    // Records the time since the last background fetch of the remote content
-    // suggestions.
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        kHistogramContentSuggestionsTimeSinceLastBackgroundFetch,
-        base::Time::Now() - fetch_date, base::TimeDelta::FromSeconds(1),
-        base::TimeDelta::FromDays(7),
-        /*bucket_count=*/100);
   }
 }
 
