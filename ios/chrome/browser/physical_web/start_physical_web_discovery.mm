@@ -59,13 +59,11 @@ void StartPhysicalWebDiscovery(PrefService* pref_service,
         default_search_provider->IsGoogleSearchURLWithReplaceableKeyword(
             SearchTermsData());
 
-    bool auto_enable = !is_incognito && location_services_enabled &&
-                       location_authorized && geolocation_eligible &&
-                       google_search_enabled;
-
-    pref_service->SetInteger(prefs::kIosPhysicalWebEnabled,
-                             auto_enable ? physical_web::kPhysicalWebOn
-                                         : physical_web::kPhysicalWebOff);
+    if (!is_incognito && location_services_enabled && location_authorized &&
+        geolocation_eligible && google_search_enabled) {
+      pref_service->SetInteger(prefs::kIosPhysicalWebEnabled,
+                               physical_web::kPhysicalWebOn);
+    }
     preference_state = pref_service->GetInteger(prefs::kIosPhysicalWebEnabled);
   }
 
