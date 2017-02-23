@@ -74,6 +74,8 @@ ArcImeService::~ArcImeService() {
   if (input_method)
     input_method->DetachTextInputClient(this);
 
+  if (focused_arc_window_)
+    focused_arc_window_->RemoveObserver(this);
   if (is_focus_observer_installed_)
     arc_window_delegate_->UnregisterFocusObserver();
   aura::Env* env = aura::Env::GetInstanceDontCreate();
