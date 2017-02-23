@@ -110,6 +110,11 @@ void MediaSessionImpl::WebContentsDestroyed() {
   AbandonSystemAudioFocusIfNeeded();
 }
 
+void MediaSessionImpl::RenderFrameDeleted(RenderFrameHost* rfh) {
+  if (services_.count(rfh))
+    OnServiceDestroyed(services_[rfh]);
+}
+
 void MediaSessionImpl::AddObserver(MediaSessionObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -574,7 +579,11 @@ bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
 // MediaSessionService-related methods
 
 void MediaSessionImpl::OnServiceCreated(MediaSessionServiceImpl* service) {
-  services_[service->GetRenderFrameHost()] = service;
+  RenderFrameHost* rfh = service->GetRenderFrameHost();
+  if (!rfh)
+    return;
+
+  services_[rfh] = service;
   UpdateRoutedService();
 }
 

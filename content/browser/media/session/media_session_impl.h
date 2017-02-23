@@ -166,6 +166,7 @@ class MediaSessionImpl : public MediaSession,
 
   // WebContentsObserver implementation
   void WebContentsDestroyed() override;
+  void RenderFrameDeleted(RenderFrameHost* rfh) override;
 
   // MediaSessionService-related methods
 
