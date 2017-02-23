@@ -5,8 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_TRUNCATING_ATTRIBUTED_LABEL_H_
 #define IOS_CHROME_BROWSER_UI_OMNIBOX_TRUNCATING_ATTRIBUTED_LABEL_H_
 
-#import <CoreText/CoreText.h>
-#import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
 
 #include "base/mac/scoped_nsobject.h"
@@ -18,27 +16,14 @@ typedef enum {
       OmniboxPopupTruncatingHead | OmniboxPopupTruncatingTail
 } OmniboxPopupTruncatingMode;
 
-// This is a copy of GTMFadeTruncatingLabel that supports
-// NSMutableAttributedString to change font (face and size), and color by using
-// CATextLayer.  Unlike GTMFadeTruncatingLabel, it's not based on a UILabel, so
-// it does not support shadowOffset and shadowColor, baselineAdjustment,
-// highlighted, minimumFontSize, and numberOfLines.
-@interface OmniboxPopupTruncatingLabel : UIView
+// A label which applies a fade-to-background color gradient to one or both ends
+// of the string if it is too large to fit the available area. It is based on
+// GTMFadeTruncatingLabel but uses the attributedText property of UILabel rather
+// than the text and font properties.
+@interface OmniboxPopupTruncatingLabel : UILabel
 
 // Which side(s) to truncate.
 @property(nonatomic, assign) OmniboxPopupTruncatingMode truncateMode;
-
-// Text alignment.
-@property(nonatomic, assign) NSTextAlignment textAlignment;
-
-// For display of an attributed string.
-@property(nonatomic, retain) NSMutableAttributedString* attributedText;
-
-// Set the label highlight state.
-@property(nonatomic, assign) BOOL highlighted;
-
-// Set the label highlight color.
-@property(nonatomic, retain) NSMutableAttributedString* highlightedText;
 
 @end
 

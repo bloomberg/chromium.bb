@@ -74,14 +74,6 @@ UIColor* BackgroundColorIncognito() {
 }  // namespace
 
 @interface OmniboxPopupMaterialViewController () {
-  // CTFontRef's are needed for drawing attributed strings but are expensive
-  // to create. Since we only need four, we create them here and hold on to
-  // them.
-  base::ScopedCFTypeRef<CTFontRef> _smallFont;
-  base::ScopedCFTypeRef<CTFontRef> _bigFont;
-  base::ScopedCFTypeRef<CTFontRef> _smallBoldFont;
-  base::ScopedCFTypeRef<CTFontRef> _bigBoldFont;
-
   // Alignment of omnibox text. Popup text should match this alignment.
   NSTextAlignment _alignment;
 
@@ -158,20 +150,6 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
                                   UIViewAutoresizingFlexibleHeight)];
 
   // Cache fonts needed for omnibox attributed string.
-  UIFont* smallFont = [MDCTypography body1Font];
-  UIFont* bigFont = [MDCTypography subheadFont];
-  UIFont* smallBoldFont = [[MDFRobotoFontLoader sharedInstance]
-      mediumFontOfSize:smallFont.pointSize];
-  UIFont* bigBoldFont =
-      [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:bigFont.pointSize];
-  _smallFont.reset(CTFontCreateWithName((CFStringRef)smallFont.fontName,
-                                        smallFont.pointSize, NULL));
-  _bigFont.reset(CTFontCreateWithName((CFStringRef)bigFont.fontName,
-                                      bigFont.pointSize, NULL));
-  _smallBoldFont.reset(CTFontCreateWithName((CFStringRef)smallBoldFont.fontName,
-                                            smallBoldFont.pointSize, NULL));
-  _bigBoldFont.reset(CTFontCreateWithName((CFStringRef)bigBoldFont.fontName,
-                                          bigBoldFont.pointSize, NULL));
   NSMutableArray* rowsBuilder = [[[NSMutableArray alloc] init] autorelease];
   for (int i = 0; i < kRowCount; i++) {
     OmniboxPopupMaterialRow* row = [[[OmniboxPopupMaterialRow alloc]
@@ -203,10 +181,6 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
 - (void)didReceiveMemoryWarning {
   [super didReceiveMemoryWarning];
   if (![self isViewLoaded]) {
-    _smallFont.reset();
-    _bigFont.reset();
-    _smallBoldFont.reset();
-    _bigBoldFont.reset();
     _rows.reset();
   }
 }
@@ -451,8 +425,8 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
                                              type:(int)type {
   NSDictionary* attributes = nil;
 
-  const id font = (id)kCTFontAttributeName;
-  NSString* foregroundColor = (NSString*)kCTForegroundColorAttributeName;
+  const id font = (id)NSFontAttributeName;
+  NSString* foregroundColor = (NSString*)NSForegroundColorAttributeName;
   const id baselineOffset = (id)NSBaselineOffsetAttributeName;
 
   // Answer types, sizes and colors specified at http://goto.google.com/ais_api.
@@ -461,27 +435,25 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
       attributes = @{
         font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:12],
         baselineOffset : @10.0f,
-        foregroundColor : (id)[UIColor grayColor].CGColor,
+        foregroundColor : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::DESCRIPTION_POSITIVE:
       attributes = @{
         font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16],
-        foregroundColor : (id)[UIColor colorWithRed:11 / 255.0
-                                              green:128 / 255.0
-                                               blue:67 / 255.0
-                                              alpha:1.0]
-                              .CGColor,
+        foregroundColor : [UIColor colorWithRed:11 / 255.0
+                                          green:128 / 255.0
+                                           blue:67 / 255.0
+                                          alpha:1.0],
       };
       break;
     case SuggestionAnswer::DESCRIPTION_NEGATIVE:
       attributes = @{
         font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16],
-        foregroundColor : (id)[UIColor colorWithRed:197 / 255.0
-                                              green:57 / 255.0
-                                               blue:41 / 255.0
-                                              alpha:1.0]
-                              .CGColor,
+        foregroundColor : [UIColor colorWithRed:197 / 255.0
+                                          green:57 / 255.0
+                                           blue:41 / 255.0
+                                          alpha:1.0],
       };
       break;
     case SuggestionAnswer::PERSONALIZED_SUGGESTION:
@@ -502,13 +474,13 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
       attributes = @{
         font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:12],
-        foregroundColor : (id)[UIColor grayColor].CGColor,
+        foregroundColor : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
       attributes = @{
         font : [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14],
-        foregroundColor : (id)[UIColor grayColor].CGColor,
+        foregroundColor : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::SUGGESTION:
@@ -678,21 +650,22 @@ attributedStringWithString:(NSString*)text
   if (text == nil)
     return nil;
 
-  CTFontRef fontRef = smallFont ? _smallFont : _bigFont;
+  UIFont* fontRef =
+      smallFont ? [MDCTypography body1Font] : [MDCTypography subheadFont];
 
   NSMutableAttributedString* as =
       [[[NSMutableAttributedString alloc] initWithString:text] autorelease];
 
   // Set the base attributes to the default font and color.
-  NSDictionary* dict = [NSDictionary
-      dictionaryWithObjectsAndKeys:(id)fontRef, (NSString*)kCTFontAttributeName,
-                                   defaultColor.CGColor,
-                                   (NSString*)kCTForegroundColorAttributeName,
-                                   nil];
+  NSDictionary* dict = @{
+    NSFontAttributeName : fontRef,
+    NSForegroundColorAttributeName : defaultColor,
+  };
   [as addAttributes:dict range:NSMakeRange(0, [text length])];
 
   if (classifications != NULL) {
-    CTFontRef boldFontRef = smallFont ? _smallBoldFont : _bigBoldFont;
+    UIFont* boldFontRef = [[MDFRobotoFontLoader sharedInstance]
+        mediumFontOfSize:fontRef.pointSize];
 
     for (ACMatchClassifications::const_iterator i = classifications->begin();
          i != classifications->end(); ++i) {
@@ -706,14 +679,12 @@ attributedStringWithString:(NSString*)text
         break;
       const NSRange range = NSMakeRange(location, length);
       if (0 != (i->style & ACMatchClassification::MATCH)) {
-        [as addAttribute:(id)kCTFontAttributeName
-                   value:(id)boldFontRef
-                   range:range];
+        [as addAttribute:NSFontAttributeName value:boldFontRef range:range];
       }
 
       if (0 != (i->style & ACMatchClassification::DIM)) {
-        [as addAttribute:(id)kCTForegroundColorAttributeName
-                   value:(id)dimColor.CGColor
+        [as addAttribute:NSForegroundColorAttributeName
+                   value:dimColor
                    range:range];
       }
     }
