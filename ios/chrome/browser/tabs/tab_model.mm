@@ -331,29 +331,31 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
         initWithWebStateList:&_webStateList
                 proxyFactory:[[TabModelWebStateProxyFactory alloc] init]]);
 
-    _observerBridges.push_back(base::MakeUnique<TabParentingObserver>());
-    _observerBridges.push_back(base::MakeUnique<WebStateListObserverBridge>(
-        [[TabModelObserversBridge alloc] initWithTabModel:self
-                                        tabModelObservers:_observers.get()]));
-    _observerBridges.push_back(base::MakeUnique<WebStateListMetricsObserver>());
-    for (const auto& observerBridge : _observerBridges)
-      _webStateList.AddObserver(observerBridge.get());
-
     _browserState = browserState;
     DCHECK(_browserState);
-
-    // There must be a valid session service defined to consume session windows.
-    DCHECK(service);
-    _sessionService.reset([service retain]);
 
     // Normal browser states are the only ones to get tab restore. Tab sync
     // handles incognito browser states by filtering on profile, so it's
     // important to the backend code to always have a sync window delegate.
     if (!_browserState->IsOffTheRecord()) {
       // Set up the usage recorder before tabs are created.
-      _tabUsageRecorder.reset(new TabUsageRecorder(self));
+      _tabUsageRecorder = base::MakeUnique<TabUsageRecorder>(self);
     }
-    _syncedWindowDelegate.reset(new TabModelSyncedWindowDelegate(self));
+    _syncedWindowDelegate =
+        base::MakeUnique<TabModelSyncedWindowDelegate>(self);
+
+    // There must be a valid session service defined to consume session windows.
+    DCHECK(service);
+    _sessionService.reset([service retain]);
+
+    _observerBridges.push_back(base::MakeUnique<TabParentingObserver>());
+    _observerBridges.push_back(base::MakeUnique<WebStateListObserverBridge>(
+        [[TabModelObserversBridge alloc] initWithTabModel:self
+                                        tabModelObservers:_observers.get()]));
+    _observerBridges.push_back(base::MakeUnique<WebStateListMetricsObserver>());
+
+    for (const auto& observerBridge : _observerBridges)
+      _webStateList.AddObserver(observerBridge.get());
 
     if (window) {
       DCHECK([_observers empty]);
