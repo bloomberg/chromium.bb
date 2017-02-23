@@ -42,6 +42,7 @@
 #include "core/editing/commands/InsertTextCommand.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/BeforeTextInsertedEvent.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/events/TextEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBRElement.h"
@@ -343,9 +344,11 @@ void TypingCommand::insertText(Document& document,
         options & RetainAutocorrectionIndicator);
     lastTypingCommand->setShouldPreventSpellChecking(options &
                                                      PreventSpellChecking);
-    EditingState editingState;
     lastTypingCommand->m_isIncrementalInsertion = isIncrementalInsertion;
     lastTypingCommand->m_selectionStart = selectionStart;
+
+    EditingState editingState;
+    EventQueueScope eventQueueScope;
     lastTypingCommand->insertText(newText, options & SelectInsertedText,
                                   &editingState);
     return;
@@ -373,6 +376,7 @@ bool TypingCommand::insertLineBreak(Document& document) {
           lastTypingCommandIfStillOpenForTyping(document.frame())) {
     lastTypingCommand->setShouldRetainAutocorrectionIndicator(false);
     EditingState editingState;
+    EventQueueScope eventQueueScope;
     lastTypingCommand->insertLineBreak(&editingState);
     return !editingState.isAborted();
   }
@@ -385,6 +389,7 @@ bool TypingCommand::insertParagraphSeparatorInQuotedContent(
   if (TypingCommand* lastTypingCommand =
           lastTypingCommandIfStillOpenForTyping(document.frame())) {
     EditingState editingState;
+    EventQueueScope eventQueueScope;
     lastTypingCommand->insertParagraphSeparatorInQuotedContent(&editingState);
     return !editingState.isAborted();
   }
@@ -399,6 +404,7 @@ bool TypingCommand::insertParagraphSeparator(Document& document) {
           lastTypingCommandIfStillOpenForTyping(document.frame())) {
     lastTypingCommand->setShouldRetainAutocorrectionIndicator(false);
     EditingState editingState;
+    EventQueueScope eventQueueScope;
     lastTypingCommand->insertParagraphSeparator(&editingState);
     return !editingState.isAborted();
   }
