@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
 
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/border.h"
@@ -30,9 +31,10 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
   DCHECK(button_listener != NULL);
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  SetBorder(views::CreateEmptyBorder(0, views::kPanelHorizMargin,
-                                     trailing_vertical_space,
-                                     views::kPanelHorizMargin));
+  const int border_horiz_margin = LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::PANEL_CONTENT_MARGIN);
+  SetBorder(views::CreateEmptyBorder(
+      0, border_horiz_margin, trailing_vertical_space, border_horiz_margin));
   if (menu_controller)
     set_context_menu_controller(menu_controller);
 

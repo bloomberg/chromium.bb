@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/webshare/webshare_target_picker_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -80,7 +81,9 @@ WebShareTargetPickerView::WebShareTargetPickerView(
       table_model_(base::MakeUnique<TargetPickerTableModel>(&targets_)),
       close_callback_(close_callback) {
   views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kVertical, views::kPanelHorizMargin,
+      views::BoxLayout::kVertical,
+      LayoutDelegate::Get()->GetMetric(
+          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
       views::kPanelVertMargin, views::kRelatedControlVerticalSpacing);
   SetLayoutManager(layout);
 
