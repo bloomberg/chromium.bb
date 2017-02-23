@@ -18,7 +18,14 @@
 #include "components/omnibox/browser/autocomplete_match_type.h"
 
 namespace base {
+struct Feature;
 class TimeDelta;
+}
+
+namespace omnibox {
+
+extern const base::Feature kNewOmniboxAnswerTypes;
+
 }
 
 // The set of parameters customizing the HUP scoring.

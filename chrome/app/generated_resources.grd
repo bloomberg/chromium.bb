@@ -6985,6 +6985,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OMNIBOX_ACCESSIBLE_ANSWER" desc="Readable text represening a query typed by the user in the omnibox, followed by an indication that an answer to that query will follow, followed by the answer. The commas are significant as they will introduce a pause in the spoken text.">
         <ph name="QUERY">$1<ex>weather in los angeles</ex></ph>, answer, <ph name="ANSWER">$2<ex>sunny and 84 degrees</ex></ph>
       </message>
+      <message name="IDS_FLAGS_NEW_OMNIBOX_ANSWER_TYPES_NAME" desc="Name of the flag to enable the new answers in suggest types in the omnibox.">
+        New omnibox answers in suggest types
+      </message>
+      <message name="IDS_FLAGS_NEW_OMNIBOX_ANSWER_TYPES_DESCRIPTION" desc="Description of the flag to enable the new answers in suggest types in the omnibox.">
+        Enables new types of answers in the omnibox suggest drop-down: currency conversions, dictionary definitions, sports scores, translations, and when is.
+      </message>
 
       <!--Tooltip strings-->
       <message name="IDS_TOOLTIP_BACK" desc="The tooltip for back button">

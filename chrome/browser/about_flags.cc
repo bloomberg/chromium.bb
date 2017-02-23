@@ -50,6 +50,7 @@
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/proximity_auth/switches.h"
@@ -2282,8 +2283,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-adjustable-large-cursor",
      IDS_FLAGS_ENABLE_ADJUSTABLE_LARGE_CURSOR_NAME,
      IDS_FLAGS_ENABLE_ADJUSTABLE_LARGE_CURSOR_DESCRIPTION, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshAdjustableLargeCursor)}
+     SINGLE_VALUE_TYPE(ash::switches::kAshAdjustableLargeCursor)},
 #endif  // OS_CHROMEOS
+
+    {"new-omnibox-answer-types", IDS_FLAGS_NEW_OMNIBOX_ANSWER_TYPES_NAME,
+     IDS_FLAGS_NEW_OMNIBOX_ANSWER_TYPES_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kNewOmniboxAnswerTypes)},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
