@@ -185,6 +185,8 @@ DownloadItemNotification::DownloadItemNotification(
       weak_factory_(this) {
   // Creates the notification instance. |title|, |body| and |icon| will be
   // overridden by UpdateNotificationData() below.
+  message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.should_make_spoken_feedback_for_popup_updates = false;
   notification_.reset(new Notification(
       message_center::NOTIFICATION_TYPE_PROGRESS,
       base::string16(),  // title
@@ -195,7 +197,7 @@ DownloadItemNotification::DownloadItemNotification(
       base::string16(),                    // display_source
       GURL(kDownloadNotificationOrigin),   // origin_url
       base::UintToString(item_->GetId()),  // tag
-      message_center::RichNotificationData(), watcher()));
+      rich_notification_data, watcher()));
 
   notification_->set_progress(0);
   notification_->set_never_timeout(false);

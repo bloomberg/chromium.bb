@@ -413,6 +413,9 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
       break;
     }
   }
+
+  // Notify accessibility that the contents have changed.
+  view->NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);
 }
 
 void MessageCenterView::OnLockedStateChanged(bool locked) {
