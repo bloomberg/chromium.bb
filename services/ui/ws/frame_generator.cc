@@ -43,7 +43,8 @@ void FrameGenerator::SetDeviceScaleFactor(float device_scale_factor) {
   if (device_scale_factor_ == device_scale_factor)
     return;
   device_scale_factor_ = device_scale_factor;
-  compositor_frame_sink_->SetNeedsBeginFrame(true);
+  if (window_manager_surface_info_.id().is_valid())
+    compositor_frame_sink_->SetNeedsBeginFrame(true);
 }
 
 void FrameGenerator::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
