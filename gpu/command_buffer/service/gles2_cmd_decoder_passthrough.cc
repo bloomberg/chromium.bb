@@ -176,7 +176,6 @@ bool GLES2DecoderPassthroughImpl::Initialize(
   if (!feature_info_->feature_flags().angle_robust_client_memory ||
       !feature_info_->feature_flags().chromium_bind_generates_resource ||
       !feature_info_->feature_flags().chromium_copy_texture ||
-      !feature_info_->feature_flags().chromium_copy_compressed_texture ||
       !feature_info_->feature_flags().angle_client_arrays ||
       glIsEnabled(GL_CLIENT_ARRAYS_ANGLE) != GL_FALSE) {
     // TODO(geofflang): Verify that ANGLE_webgl_compatibility is enabled if this

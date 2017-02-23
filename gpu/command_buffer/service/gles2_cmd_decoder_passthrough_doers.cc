@@ -2792,6 +2792,10 @@ error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
     GLboolean unpack_flip_y,
     GLboolean unpack_premultiply_alpha,
     GLboolean unpack_unmultiply_alpha) {
+  if (!feature_info_->feature_flags().chromium_copy_texture) {
+    return error::kUnknownCommand;
+  }
+
   glCopyTextureCHROMIUM(GetTextureServiceID(source_id, resources_, false),
                         GetTextureServiceID(dest_id, resources_, false),
                         internalformat, dest_type, unpack_flip_y,
@@ -2814,6 +2818,10 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
     GLboolean unpack_flip_y,
     GLboolean unpack_premultiply_alpha,
     GLboolean unpack_unmultiply_alpha) {
+  if (!feature_info_->feature_flags().chromium_copy_texture) {
+    return error::kUnknownCommand;
+  }
+
   glCopySubTextureCHROMIUM(GetTextureServiceID(source_id, resources_, false),
                            GetTextureServiceID(dest_id, resources_, false),
                            xoffset, yoffset, x, y, width, height, unpack_flip_y,
@@ -2824,6 +2832,10 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoCompressedCopyTextureCHROMIUM(
     GLenum source_id,
     GLenum dest_id) {
+  if (!feature_info_->feature_flags().chromium_copy_compressed_texture) {
+    return error::kUnknownCommand;
+  }
+
   glCompressedCopyTextureCHROMIUM(
       GetTextureServiceID(source_id, resources_, false),
       GetTextureServiceID(dest_id, resources_, false));
