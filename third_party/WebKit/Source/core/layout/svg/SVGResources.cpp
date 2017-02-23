@@ -181,13 +181,12 @@ std::unique_ptr<SVGResources> SVGResources::buildResources(
   ASSERT(node);
   SECURITY_DCHECK(node->isSVGElement());
 
-  SVGElement* element = toSVGElement(node);
-  ASSERT(element);
+  SVGElement& element = toSVGElement(*node);
 
-  const AtomicString& tagName = element->localName();
+  const AtomicString& tagName = element.localName();
   ASSERT(!tagName.isNull());
 
-  TreeScope& treeScope = element->treeScopeForIdResolution();
+  TreeScope& treeScope = element.treeScopeForIdResolution();
   SVGTreeScopeResources& treeScopeResources =
       treeScope.ensureSVGTreeScopedResources();
 
@@ -235,7 +234,7 @@ std::unique_ptr<SVGResources> SVGResources::buildResources(
     }
   }
 
-  if (style.hasMarkers() && supportsMarkers(*element)) {
+  if (style.hasMarkers() && supportsMarkers(element)) {
     const AtomicString& markerStartId = style.markerStartResource();
     if (!ensureResources(resources).setMarkerStart(
             getLayoutSVGResourceById<LayoutSVGResourceMarker>(
@@ -278,7 +277,7 @@ std::unique_ptr<SVGResources> SVGResources::buildResources(
   }
 
   if (chainableResourceTags().contains(tagName)) {
-    AtomicString id = targetReferenceFromResource(*element);
+    AtomicString id = targetReferenceFromResource(element);
     if (!ensureResources(resources).setLinkedResource(
             treeScopeResources.resourceById(id)))
       treeScopeResources.addPendingResource(id, element);

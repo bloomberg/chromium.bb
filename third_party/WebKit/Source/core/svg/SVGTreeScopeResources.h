@@ -25,8 +25,6 @@ class SVGTreeScopeResources
   WTF_MAKE_NONCOPYABLE(SVGTreeScopeResources);
 
  public:
-  typedef HeapHashSet<Member<Element>> SVGPendingElements;
-
   explicit SVGTreeScopeResources(TreeScope*);
   ~SVGTreeScopeResources();
 
@@ -37,18 +35,18 @@ class SVGTreeScopeResources
   // Pending resources are such which are referenced by any object in the SVG
   // document, but do NOT exist yet. For instance, dynamically built gradients
   // / patterns / clippers...
-  void addPendingResource(const AtomicString& id, Element*);
-  bool hasPendingResource(const AtomicString& id) const;
-  bool isElementPendingResources(Element*) const;
-  bool isElementPendingResource(Element*, const AtomicString& id) const;
+  void addPendingResource(const AtomicString& id, Element&);
+  bool isElementPendingResource(Element&, const AtomicString& id) const;
   void notifyResourceAvailable(const AtomicString& id);
-  void clearHasPendingResourcesIfPossible(Element*);
-  void removeElementFromPendingResources(Element*);
-  SVGPendingElements* removePendingResource(const AtomicString& id);
+  void removeElementFromPendingResources(Element&);
 
   DECLARE_TRACE();
 
  private:
+  void clearHasPendingResourcesIfPossible(Element&);
+
+  using SVGPendingElements = HeapHashSet<Member<Element>>;
+
   HashMap<AtomicString, LayoutSVGResourceContainer*> m_resources;
   // Resources that are pending.
   HeapHashMap<AtomicString, Member<SVGPendingElements>> m_pendingResources;

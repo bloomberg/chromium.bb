@@ -317,7 +317,7 @@ Element* SVGUseElement::resolveTargetElement() {
   // Don't record any pending references for external resources.
   if (!m_resource) {
     treeScope().ensureSVGTreeScopedResources().addPendingResource(
-        m_elementIdentifier, this);
+        m_elementIdentifier, *this);
     DCHECK(hasPendingResources());
   }
   return nullptr;

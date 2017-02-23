@@ -101,7 +101,7 @@ void LayoutSVGResourceContainer::detachAllClients() {
     // Add a pending resolution based on the id of the old resource.
     Element* clientElement = toElement(client->node());
     svgTreeScopeResourcesFromElement(clientElement)
-        .addPendingResource(m_id, clientElement);
+        .addPendingResource(m_id, *clientElement);
   }
 
   removeAllClientsFromCache();

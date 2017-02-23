@@ -93,7 +93,7 @@ void SVGFEImageElement::buildPendingResource() {
     if (id.isEmpty()) {
       fetchImageResource();
     } else {
-      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, this);
+      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, *this);
       DCHECK(hasPendingResources());
     }
   } else if (target->isSVGElement()) {

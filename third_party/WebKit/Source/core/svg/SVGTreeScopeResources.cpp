@@ -38,7 +38,7 @@ void SVGTreeScopeResources::updateResource(
   // Update cached resources of pending clients.
   for (Element* clientElement : *pendingElements) {
     DCHECK(clientElement->hasPendingResources());
-    clearHasPendingResourcesIfPossible(clientElement);
+    clearHasPendingResourcesIfPossible(*clientElement);
 
     LayoutObject* layoutObject = clientElement->layoutObject();
     if (!layoutObject)
@@ -68,89 +68,61 @@ LayoutSVGResourceContainer* SVGTreeScopeResources::resourceById(
 }
 
 void SVGTreeScopeResources::addPendingResource(const AtomicString& id,
-                                               Element* element) {
-  DCHECK(element);
-  DCHECK(element->isConnected());
+                                               Element& element) {
+  DCHECK(element.isConnected());
 
   if (id.isEmpty())
     return;
-
-  HeapHashMap<AtomicString, Member<SVGPendingElements>>::AddResult result =
-      m_pendingResources.insert(id, nullptr);
+  auto result = m_pendingResources.insert(id, nullptr);
   if (result.isNewEntry)
     result.storedValue->value = new SVGPendingElements;
-  result.storedValue->value->insert(element);
+  result.storedValue->value->insert(&element);
 
-  element->setHasPendingResources();
+  element.setHasPendingResources();
 }
 
-bool SVGTreeScopeResources::hasPendingResource(const AtomicString& id) const {
+bool SVGTreeScopeResources::isElementPendingResource(
+    Element& element,
+    const AtomicString& id) const {
   if (id.isEmpty())
     return false;
-  return m_pendingResources.contains(id);
+  const SVGPendingElements* pendingElements = m_pendingResources.at(id);
+  return pendingElements && pendingElements->contains(&element);
 }
 
-bool SVGTreeScopeResources::isElementPendingResources(Element* element) const {
+void SVGTreeScopeResources::clearHasPendingResourcesIfPossible(
+    Element& element) {
   // This algorithm takes time proportional to the number of pending resources
   // and need not.
   // If performance becomes an issue we can keep a counted set of elements and
   // answer the question efficiently.
-  DCHECK(element);
-
   for (const auto& entry : m_pendingResources) {
     SVGPendingElements* elements = entry.value.get();
     DCHECK(elements);
-    if (elements->contains(element))
-      return true;
+    if (elements->contains(&element))
+      return;
   }
-  return false;
-}
-
-bool SVGTreeScopeResources::isElementPendingResource(
-    Element* element,
-    const AtomicString& id) const {
-  DCHECK(element);
-  if (!hasPendingResource(id))
-    return false;
-  return m_pendingResources.at(id)->contains(element);
-}
-
-void SVGTreeScopeResources::clearHasPendingResourcesIfPossible(
-    Element* element) {
-  if (!isElementPendingResources(element))
-    element->clearHasPendingResources();
+  element.clearHasPendingResources();
 }
 
 void SVGTreeScopeResources::removeElementFromPendingResources(
-    Element* element) {
-  DCHECK(element);
-
+    Element& element) {
+  if (m_pendingResources.isEmpty() || !element.hasPendingResources())
+    return;
   // Remove the element from pending resources.
-  if (!m_pendingResources.isEmpty() && element->hasPendingResources()) {
-    Vector<AtomicString> toBeRemoved;
-    for (const auto& entry : m_pendingResources) {
-      SVGPendingElements* elements = entry.value.get();
-      DCHECK(elements);
-      DCHECK(!elements->isEmpty());
+  Vector<AtomicString> toBeRemoved;
+  for (const auto& entry : m_pendingResources) {
+    SVGPendingElements* elements = entry.value.get();
+    DCHECK(elements);
+    DCHECK(!elements->isEmpty());
 
-      elements->erase(element);
-      if (elements->isEmpty())
-        toBeRemoved.push_back(entry.key);
-    }
-
-    clearHasPendingResourcesIfPossible(element);
-
-    // We use the removePendingResource function here because it deals with set
-    // lifetime correctly.
-    for (const AtomicString& id : toBeRemoved)
-      removePendingResource(id);
+    elements->erase(&element);
+    if (elements->isEmpty())
+      toBeRemoved.push_back(entry.key);
   }
-}
+  m_pendingResources.removeAll(toBeRemoved);
 
-SVGTreeScopeResources::SVGPendingElements*
-SVGTreeScopeResources::removePendingResource(const AtomicString& id) {
-  DCHECK(m_pendingResources.contains(id));
-  return m_pendingResources.take(id);
+  clearHasPendingResourcesIfPossible(element);
 }
 
 void SVGTreeScopeResources::notifyResourceAvailable(const AtomicString& id) {
@@ -174,7 +146,7 @@ void SVGTreeScopeResources::notifyResourceAvailable(const AtomicString& id) {
     else
       clientElement->buildPendingResource();
 
-    clearHasPendingResourcesIfPossible(clientElement);
+    clearHasPendingResourcesIfPossible(*clientElement);
   }
 }
 

@@ -209,10 +209,10 @@ void SVGSMILElement::buildPendingResource() {
   if (!svgTarget) {
     // Do not register as pending if we are already pending this resource.
     if (treeScope().ensureSVGTreeScopedResources().isElementPendingResource(
-            this, id))
+            *this, id))
       return;
     if (!id.isEmpty()) {
-      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, this);
+      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, *this);
       DCHECK(hasPendingResources());
     }
   } else {
@@ -572,10 +572,11 @@ void SVGSMILElement::connectEventBaseConditions() {
         if (!condition->baseID().isEmpty() &&
             !treeScope()
                  .ensureSVGTreeScopedResources()
-                 .isElementPendingResource(this,
-                                           AtomicString(condition->baseID())))
+                 .isElementPendingResource(*this,
+                                           AtomicString(condition->baseID()))) {
           treeScope().ensureSVGTreeScopedResources().addPendingResource(
-              AtomicString(condition->baseID()), this);
+              AtomicString(condition->baseID()), *this);
+        }
         continue;
       }
       ASSERT(!condition->eventListener());

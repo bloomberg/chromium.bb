@@ -51,10 +51,10 @@ void SVGMPathElement::buildPendingResource() {
   if (!target) {
     // Do not register as pending if we are already pending this resource.
     if (treeScope().ensureSVGTreeScopedResources().isElementPendingResource(
-            this, id))
+            *this, id))
       return;
     if (!id.isEmpty()) {
-      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, this);
+      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, *this);
       DCHECK(hasPendingResources());
     }
   } else if (isSVGPathElement(target)) {

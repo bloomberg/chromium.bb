@@ -1673,7 +1673,7 @@ void Element::removedFrom(ContainerNode* insertionPoint) {
     if (hasPendingResources()) {
       treeScope()
           .ensureSVGTreeScopedResources()
-          .removeElementFromPendingResources(this);
+          .removeElementFromPendingResources(*this);
     }
 
     if (getCustomElementState() == CustomElementState::Custom)
