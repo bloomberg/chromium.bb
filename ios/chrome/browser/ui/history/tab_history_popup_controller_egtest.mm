@@ -6,7 +6,6 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/url_formatter/url_formatter.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -16,13 +15,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// Formats |url| for display and returns an NSString representation.
-NSString* GetFormattedURLString(const GURL& url) {
-  return base::SysUTF16ToNSString(url_formatter::FormatUrl(url));
-}
-}
 
 // Tests for tab history popup.
 @interface TabHistoryPopupControllerTestCase : ChromeTestCase
@@ -39,10 +31,10 @@ NSString* GetFormattedURLString(const GURL& url) {
   const GURL URL3 = web::test::HttpServer::MakeUrl("http://page3");
   const GURL URL4 = web::test::HttpServer::MakeUrl("http://page4");
   NSString* entry0 = @"New Tab";
-  NSString* entry1 = GetFormattedURLString(URL1);
-  NSString* entry2 = GetFormattedURLString(URL2);
-  NSString* entry3 = GetFormattedURLString(URL3);
-  NSString* entry4 = GetFormattedURLString(URL4);
+  NSString* entry1 = base::SysUTF8ToNSString(URL1.spec());
+  NSString* entry2 = base::SysUTF8ToNSString(URL2.spec());
+  NSString* entry3 = base::SysUTF8ToNSString(URL3.spec());
+  NSString* entry4 = base::SysUTF8ToNSString(URL4.spec());
 
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;

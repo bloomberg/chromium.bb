@@ -805,7 +805,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 - (void)showTabHistoryPopupInView:(UIView*)view
-                        withItems:(const web::NavigationItemList&)items
+               withSessionEntries:(NSArray*)sessionEntries
                    forBackHistory:(BOOL)isBackHistory {
   if (_tabHistoryPopupController)
     return;
@@ -826,15 +826,9 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   _tabHistoryPopupController.reset([[TabHistoryPopupController alloc]
       initWithOrigin:convertedOrigin
           parentView:view
-               items:items]);
+             entries:sessionEntries]);
   [_tabHistoryPopupController setDelegate:self];
 
-  // Fade in the popup and notify observers.
-  CGRect containerFrame = [[_tabHistoryPopupController popupContainer] frame];
-  CGPoint destination = CGPointMake(CGRectGetLeadingEdge(containerFrame),
-                                    CGRectGetMinY(containerFrame));
-  [_tabHistoryPopupController fadeInPopupFromSource:convertedOrigin
-                                      toDestination:destination];
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kTabHistoryPopupWillShowNotification
                     object:nil];

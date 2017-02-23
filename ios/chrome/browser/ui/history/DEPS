@@ -1,0 +1,15 @@
+specific_include_rules = {
+  # TODO(crbug.com/620907): Remove these exceptions.
+  "^tab_history_cell\.mm$": [
+    "+ios/web/navigation/crw_session_entry.h",
+  ],
+  "tab_history_popup_controller.mm": [
+    "+ios/web/navigation/crw_session_entry.h",
+  ],
+  "tab_history_popup_controller_unittest.mm": [
+    "+ios/web/navigation/crw_session_entry.h",
+  ],
+  "tab_history_view_controller.mm": [
+    "+ios/web/navigation/crw_session_entry.h",
+  ],
+}
