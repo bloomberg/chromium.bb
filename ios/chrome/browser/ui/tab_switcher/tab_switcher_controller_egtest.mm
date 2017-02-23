@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -32,6 +33,16 @@ namespace {
 // Returns the GREYMatcher for the button that closes the tab switcher.
 id<GREYMatcher> TabSwitcherCloseButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_TAB_STRIP_LEAVE_TAB_SWITCHER);
+}
+// Returns the GREYMatcher for the incognito tabs button in the tab switcher.
+id<GREYMatcher> TabSwitcherIncognitoButton() {
+  return ButtonWithAccessibilityLabelId(
+      IDS_IOS_TAB_SWITCHER_HEADER_INCOGNITO_TABS);
+}
+// Returns the GREYMatcher for the incognito tabs button in the tab switcher.
+id<GREYMatcher> TabSwitcherOtherDevicesButton() {
+  return ButtonWithAccessibilityLabelId(
+      IDS_IOS_TAB_SWITCHER_HEADER_OTHER_DEVICES_TABS);
 }
 
 // Returns the GREYMatcher for the button that creates new non incognito tabs
@@ -211,4 +222,77 @@ void EnterTabSwitcherWithCommand() {
   [self assertTabSwitcherIsInactive];
 }
 
+// Tests that elements on iPad tab switcher are accessible.
+// TODO: (crbug.com/691095) Open tabs label is not accessible
+- (void)DISABLED_testAccessibilityOnTabSwitcher {
+  if (!IsIPadIdiom())
+    return;
+  [self assertTabSwitcherIsInactive];
+
+  EnterTabSwitcherWithCommand();
+  [self assertTabSwitcherIsActive];
+  // Check that the "No Open Tabs" message is not displayed.
+  [self assertMessageIsNotVisible:
+            IDS_IOS_TAB_SWITCHER_NO_LOCAL_NON_INCOGNITO_TABS_TITLE];
+
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+
+  // Press the :: icon to exit the tab switcher.
+  [[EarlGrey selectElementWithMatcher:TabSwitcherCloseButton()]
+      performAction:grey_tap()];
+
+  [self assertTabSwitcherIsInactive];
+}
+
+// Tests that elements on iPad tab switcher incognito tab are accessible.
+// TODO: (crbug.com/691095) Incognito tabs label should be tappable.
+- (void)DISABLED_testAccessibilityOnIncognitoTabSwitcher {
+  if (!IsIPadIdiom())
+    return;
+  [self assertTabSwitcherIsInactive];
+
+  EnterTabSwitcherWithCommand();
+  [self assertTabSwitcherIsActive];
+  // Check that the "No Open Tabs" message is not displayed.
+  [self assertMessageIsNotVisible:
+            IDS_IOS_TAB_SWITCHER_NO_LOCAL_NON_INCOGNITO_TABS_TITLE];
+
+  // Press incognito tabs button.
+  [[EarlGrey selectElementWithMatcher:TabSwitcherIncognitoButton()]
+      performAction:grey_tap()];
+
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+
+  // Press the :: icon to exit the tab switcher.
+  [[EarlGrey selectElementWithMatcher:TabSwitcherCloseButton()]
+      performAction:grey_tap()];
+
+  [self assertTabSwitcherIsInactive];
+}
+
+// Tests that elements on iPad tab switcher other devices are accessible.
+// TODO: (crbug.com/691095) Other devices label should be tappable.
+- (void)DISABLED_testAccessibilityOnOtherDeviceTabSwitcher {
+  if (!IsIPadIdiom())
+    return;
+  [self assertTabSwitcherIsInactive];
+
+  EnterTabSwitcherWithCommand();
+  [self assertTabSwitcherIsActive];
+  // Check that the "No Open Tabs" message is not displayed.
+  [self assertMessageIsNotVisible:
+            IDS_IOS_TAB_SWITCHER_NO_LOCAL_NON_INCOGNITO_TABS_TITLE];
+
+  // Press other devices button.
+  [[EarlGrey selectElementWithMatcher:TabSwitcherOtherDevicesButton()]
+      performAction:grey_tap()];
+
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+
+  // Create new incognito tab to exit the tab switcher.
+  [[EarlGrey selectElementWithMatcher:TabSwitcherNewIncognitoTabButton()]
+      performAction:grey_tap()];
+
+  [self assertTabSwitcherIsInactive];
+}
 @end
