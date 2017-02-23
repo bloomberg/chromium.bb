@@ -4,17 +4,16 @@
 
 #include "core/editing/spellcheck/SpellChecker.h"
 
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/Editor.h"
+#include "core/editing/spellcheck/SpellCheckTestBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/testing/DummyPageHolder.h"
 
 namespace blink {
 
-class SpellCheckerTest : public EditingTestBase {
+class SpellCheckerTest : public SpellCheckTestBase {
  protected:
   int layoutCount() const { return page().frameView().layoutCount(); }
   DummyPageHolder& page() const { return dummyPageHolder(); }
@@ -59,10 +58,10 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
       SelectionInDOMTree::Builder().collapse(newPosition).build());
   ASSERT_EQ(3u, input->selectionStart());
 
-  Persistent<SpellChecker> spellChecker(SpellChecker::create(page().frame()));
+  EXPECT_TRUE(frame().spellChecker().isSpellCheckingEnabled());
   forceLayout();
   int startCount = layoutCount();
-  spellChecker->respondToChangedSelection(
+  frame().spellChecker().respondToChangedSelection(
       oldSelection.start(),
       FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
   EXPECT_EQ(startCount, layoutCount());

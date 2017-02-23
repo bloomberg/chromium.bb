@@ -5,15 +5,15 @@
 #ifndef EditingTestBase_h
 #define EditingTestBase_h
 
-#include "core/editing/Position.h"
-#include "wtf/Forward.h"
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
+#include "core/editing/Position.h"
+#include "core/testing/DummyPageHolder.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
-class DummyPageHolder;
 class FrameSelection;
 class LocalFrame;
 
@@ -25,6 +25,8 @@ class EditingTestBase : public ::testing::Test {
   ~EditingTestBase() override;
 
   void SetUp() override;
+
+  void setupPageWithClients(Page::PageClients*);
 
   Document& document() const;
   DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }

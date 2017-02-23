@@ -33,6 +33,11 @@ void EditingTestBase::SetUp() {
   m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
 }
 
+void EditingTestBase::setupPageWithClients(Page::PageClients* clients) {
+  DCHECK(!m_dummyPageHolder) << "Page should be set up only once";
+  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), clients);
+}
+
 ShadowRoot* EditingTestBase::createShadowRootForElementWithIDAndSetInnerHTML(
     TreeScope& scope,
     const char* hostElementID,
