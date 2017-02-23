@@ -37,8 +37,6 @@
 #include <SkRefCnt.h>
 #include <unicode/utf16.h>
 
-class SkTextBlob;
-
 namespace blink {
 
 enum TextJustify {
@@ -314,13 +312,12 @@ struct TextRunPaintInfo {
 
  public:
   explicit TextRunPaintInfo(const TextRun& r)
-      : run(r), from(0), to(r.length()), cachedTextBlob(nullptr) {}
+      : run(r), from(0), to(r.length()) {}
 
   const TextRun& run;
   unsigned from;
   unsigned to;
   FloatRect bounds;
-  sk_sp<SkTextBlob>* cachedTextBlob;
 };
 
 }  // namespace blink

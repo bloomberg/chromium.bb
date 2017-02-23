@@ -442,23 +442,7 @@ Path AppliedDecorationPainter::prepareWavyStrokePath() {
   return path;
 }
 
-typedef WTF::HashMap<const InlineTextBox*, TextBlobPtr>
-    InlineTextBoxBlobCacheMap;
-static InlineTextBoxBlobCacheMap* gTextBlobCache;
-
 static const int misspellingLineThickness = 3;
-
-void InlineTextBoxPainter::removeFromTextBlobCache(
-    const InlineTextBox& inlineTextBox) {
-  if (gTextBlobCache)
-    gTextBlobCache->remove(&inlineTextBox);
-}
-
-static TextBlobPtr* addToTextBlobCache(const InlineTextBox& inlineTextBox) {
-  if (!gTextBlobCache)
-    gTextBlobCache = new InlineTextBoxBlobCacheMap;
-  return &gTextBlobCache->insert(&inlineTextBox, nullptr).storedValue->value;
-}
 
 LayoutObject& InlineTextBoxPainter::inlineLayoutObject() const {
   return *LineLayoutAPIShim::layoutObjectFrom(
@@ -692,26 +676,13 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo,
       endOffset = selectionStart;
     }
 
-    // FIXME: This cache should probably ultimately be held somewhere else.
-    // A hashmap is convenient to avoid a memory hit when the
-    // RuntimeEnabledFeature is off.
-    bool textBlobIsCacheable = startOffset == 0 && endOffset == length;
-    TextBlobPtr* cachedTextBlob = 0;
-    if (textBlobIsCacheable)
-      cachedTextBlob = addToTextBlobCache(m_inlineTextBox);
-    textPainter.paint(startOffset, endOffset, length, textStyle,
-                      cachedTextBlob);
+    textPainter.paint(startOffset, endOffset, length, textStyle);
   }
 
   if ((paintSelectedTextOnly || paintSelectedTextSeparately) &&
       selectionStart < selectionEnd) {
     // paint only the text that is selected
-    bool textBlobIsCacheable = selectionStart == 0 && selectionEnd == length;
-    TextBlobPtr* cachedTextBlob = 0;
-    if (textBlobIsCacheable)
-      cachedTextBlob = addToTextBlobCache(m_inlineTextBox);
-    textPainter.paint(selectionStart, selectionEnd, length, selectionStyle,
-                      cachedTextBlob);
+    textPainter.paint(selectionStart, selectionEnd, length, selectionStyle);
   }
 
   // Paint decorations
@@ -1365,7 +1336,7 @@ void InlineTextBoxPainter::paintTextMatchMarkerForeground(
                           m_inlineTextBox.isHorizontal());
 
   textPainter.paint(paintOffsets.first, paintOffsets.second,
-                    m_inlineTextBox.len(), textStyle, 0);
+                    m_inlineTextBox.len(), textStyle);
 }
 
 void InlineTextBoxPainter::paintTextMatchMarkerBackground(

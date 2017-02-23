@@ -608,7 +608,6 @@ component("platform") {
     "fonts/SmallCapsIterator.h",
     "fonts/SymbolsIterator.cpp",
     "fonts/SymbolsIterator.h",
-    "fonts/TextBlob.h",
     "fonts/UTF16TextIterator.cpp",
     "fonts/UTF16TextIterator.h",
     "fonts/UnicodeRangeSet.cpp",

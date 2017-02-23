@@ -131,18 +131,10 @@ bool Font::drawText(PaintCanvas* canvas,
   if (shouldSkipDrawing())
     return false;
 
-  if (runInfo.cachedTextBlob && runInfo.cachedTextBlob->get()) {
-    // we have a pre-cached blob -- happy joy!
-    canvas->drawTextBlob(runInfo.cachedTextBlob->get(), point.x(), point.y(),
-                         flags);
-    return true;
-  }
-
   GlyphBuffer glyphBuffer;
   buildGlyphBuffer(runInfo, glyphBuffer);
 
-  drawGlyphBuffer(canvas, flags, runInfo, glyphBuffer, point,
-                  deviceScaleFactor);
+  drawGlyphBuffer(canvas, flags, glyphBuffer, point, deviceScaleFactor);
   return true;
 }
 
@@ -190,8 +182,7 @@ bool Font::drawBidiText(PaintCanvas* canvas,
     //       all subruns could be part of the same blob).
     GlyphBuffer glyphBuffer;
     float runWidth = buildGlyphBuffer(subrunInfo, glyphBuffer);
-    drawGlyphBuffer(canvas, flags, subrunInfo, glyphBuffer, currPoint,
-                    deviceScaleFactor);
+    drawGlyphBuffer(canvas, flags, glyphBuffer, currPoint, deviceScaleFactor);
 
     bidiRun = bidiRun->next();
     currPoint.move(runWidth, 0);
@@ -226,8 +217,7 @@ void Font::drawEmphasisMarks(PaintCanvas* canvas,
   if (glyphBuffer.isEmpty())
     return;
 
-  drawGlyphBuffer(canvas, flags, runInfo, glyphBuffer, point,
-                  deviceScaleFactor);
+  drawGlyphBuffer(canvas, flags, glyphBuffer, point, deviceScaleFactor);
 }
 
 float Font::width(const TextRun& run,
@@ -258,12 +248,10 @@ class GlyphBufferBloberizer {
         m_hasVerticalOffsets(buffer.hasVerticalOffsets()),
         m_index(0),
         m_endIndex(m_buffer.size()),
-        m_blobCount(0),
         m_rotation(buffer.isEmpty() ? NoRotation : computeBlobRotation(
                                                        buffer.fontDataAt(0))) {}
 
   bool done() const { return m_index >= m_endIndex; }
-  unsigned blobCount() const { return m_blobCount; }
 
   std::pair<sk_sp<SkTextBlob>, BlobRotation> next() {
     ASSERT(!done());
@@ -289,7 +277,6 @@ class GlyphBufferBloberizer {
       appendRun(start, m_index - start, fontData);
     }
 
-    m_blobCount++;
     return std::make_pair(m_builder.make(), currentRotation);
   }
 
@@ -344,7 +331,6 @@ class GlyphBufferBloberizer {
   SkTextBlobBuilder m_builder;
   unsigned m_index;
   unsigned m_endIndex;
-  unsigned m_blobCount;
   BlobRotation m_rotation;
 };
 
@@ -352,15 +338,13 @@ class GlyphBufferBloberizer {
 
 void Font::drawGlyphBuffer(PaintCanvas* canvas,
                            const PaintFlags& flags,
-                           const TextRunPaintInfo& runInfo,
                            const GlyphBuffer& glyphBuffer,
                            const FloatPoint& point,
                            float deviceScaleFactor) const {
   GlyphBufferBloberizer bloberizer(glyphBuffer, this, deviceScaleFactor);
-  std::pair<sk_sp<SkTextBlob>, BlobRotation> blob;
 
   while (!bloberizer.done()) {
-    blob = bloberizer.next();
+    auto blob = bloberizer.next();
     ASSERT(blob.first);
 
     PaintCanvasAutoRestore autoRestore(canvas, false);
@@ -374,17 +358,6 @@ void Font::drawGlyphBuffer(PaintCanvas* canvas,
 
     canvas->drawTextBlob(blob.first, point.x(), point.y(), flags);
   }
-
-  // Cache results when
-  //   1) requested by clients, and
-  //   2) the glyph buffer is encoded as a single blob, and
-  //   3) the blob is not upright/rotated
-  if (runInfo.cachedTextBlob && bloberizer.blobCount() == 1 &&
-      blob.second == NoRotation) {
-    ASSERT(!*runInfo.cachedTextBlob);
-    *runInfo.cachedTextBlob = std::move(blob.first);
-    ASSERT(*runInfo.cachedTextBlob);
-  }
 }
 
 static int getInterceptsFromBloberizer(const GlyphBuffer& glyphBuffer,
@@ -395,11 +368,10 @@ static int getInterceptsFromBloberizer(const GlyphBuffer& glyphBuffer,
                                        SkScalar* interceptsBuffer) {
   SkScalar boundsArray[2] = {std::get<0>(bounds), std::get<1>(bounds)};
   GlyphBufferBloberizer bloberizer(glyphBuffer, font, deviceScaleFactor);
-  std::pair<sk_sp<SkTextBlob>, BlobRotation> blob;
 
   int numIntervals = 0;
   while (!bloberizer.done()) {
-    blob = bloberizer.next();
+    auto blob = bloberizer.next();
     DCHECK(blob.first);
 
     // GlyphBufferBloberizer splits for a new blob rotation, but does not split
@@ -425,8 +397,6 @@ void Font::getTextIntercepts(const TextRunPaintInfo& runInfo,
                              Vector<TextIntercept>& intercepts) const {
   if (shouldSkipDrawing())
     return;
-
-  DCHECK(!runInfo.cachedTextBlob);
 
   GlyphBuffer glyphBuffer(GlyphBuffer::Type::TextIntercepts);
   buildGlyphBuffer(runInfo, glyphBuffer);

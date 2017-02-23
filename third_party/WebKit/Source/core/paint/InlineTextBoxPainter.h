@@ -58,7 +58,6 @@ class InlineTextBoxPainter {
                                       const ComputedStyle&,
                                       const Font&);
 
-  static void removeFromTextBlobCache(const InlineTextBox&);
   static bool paintsMarkerHighlights(const LayoutObject&);
 
  private:

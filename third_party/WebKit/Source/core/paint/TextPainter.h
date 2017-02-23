@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "platform/fonts/TextBlob.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
@@ -58,8 +57,7 @@ class CORE_EXPORT TextPainter {
   void paint(unsigned startOffset,
              unsigned endOffset,
              unsigned length,
-             const Style&,
-             TextBlobPtr* cachedTextBlob = 0);
+             const Style&);
 
   struct Style {
     STACK_ALLOCATED();
@@ -104,8 +102,7 @@ class CORE_EXPORT TextPainter {
   template <PaintInternalStep step>
   void paintInternal(unsigned startOffset,
                      unsigned endOffset,
-                     unsigned truncationPoint,
-                     TextBlobPtr* cachedTextBlob = 0);
+                     unsigned truncationPoint);
 
   void paintEmphasisMarkForCombinedText();
 

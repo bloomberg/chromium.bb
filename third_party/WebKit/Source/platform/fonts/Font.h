@@ -178,7 +178,6 @@ class PLATFORM_EXPORT Font {
                          const GlyphData* emphasisData = nullptr) const;
   void drawGlyphBuffer(PaintCanvas*,
                        const PaintFlags&,
-                       const TextRunPaintInfo&,
                        const GlyphBuffer&,
                        const FloatPoint&,
                        float deviceScaleFactor) const;

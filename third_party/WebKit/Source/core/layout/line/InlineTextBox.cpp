@@ -57,20 +57,15 @@ void InlineTextBox::destroy() {
 
   if (!knownToHaveNoOverflow() && gTextBoxesWithOverflow)
     gTextBoxesWithOverflow->erase(this);
-  InlineTextBoxPainter::removeFromTextBlobCache(*this);
   InlineBox::destroy();
 }
 
 void InlineTextBox::offsetRun(int delta) {
   ASSERT(!isDirty());
-  InlineTextBoxPainter::removeFromTextBlobCache(*this);
   m_start += delta;
 }
 
 void InlineTextBox::markDirty() {
-  // FIXME: Is it actually possible to try and paint a dirty InlineTextBox?
-  InlineTextBoxPainter::removeFromTextBlobCache(*this);
-
   m_len = 0;
   m_start = 0;
   InlineBox::markDirty();
@@ -305,7 +300,6 @@ void InlineTextBox::setTruncation(unsigned truncation) {
     return;
 
   m_truncation = truncation;
-  InlineTextBoxPainter::removeFromTextBlobCache(*this);
 }
 
 void InlineTextBox::clearTruncation() {
