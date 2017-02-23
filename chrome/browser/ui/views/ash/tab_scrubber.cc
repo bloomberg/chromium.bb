@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -25,7 +27,12 @@
 #include "ui/views/controls/glow_hover_controller.h"
 
 namespace {
+
 const int64_t kActivationDelayMS = 200;
+
+inline float Clamp(float value, float low, float high) {
+  return std::min(high, std::max(value, low));
+}
 }
 
 // static
@@ -306,7 +313,12 @@ void TabScrubber::UpdateSwipeX(float x_offset) {
   DCHECK(tab_strip_);
   DCHECK(scrubbing_);
 
-  swipe_x_ += x_offset;
+  // Make the swipe speed inversely proportional with the number or tabs:
+  // Each added tab introduces a reduction of 2% in |x_offset|, with a value of
+  // one fourth of |x_offset| as the minimum (i.e. we need 38 tabs to reach
+  // that minimum reduction).
+  swipe_x_ += Clamp(x_offset - (tab_strip_->tab_count() * 0.02f * x_offset),
+                    0.25f * x_offset, x_offset);
 
   // In an RTL layout, everything is mirrored, i.e. the index of the first tab
   // (with the smallest X mirrored co-ordinates) is actually the index of the
