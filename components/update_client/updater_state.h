@@ -19,7 +19,7 @@ class UpdaterState {
  public:
   using Attributes = std::map<std::string, std::string>;
 
-  static const char kDomainJoined[];
+  static const char kIsEnterpriseManaged[];
 
   // Returns a map of items representing the state of an updater. These items
   // can be serialized as XML attributes in the request building.
@@ -44,7 +44,7 @@ class UpdaterState {
   static std::string GetUpdaterName();
   static base::Version GetUpdaterVersion(bool is_machine);
   static bool IsAutoupdateCheckEnabled();
-  static bool IsJoinedToDomain();
+  static bool IsEnterpriseManaged();
   static base::Time GetUpdaterLastStartedAU(bool is_machine);
   static base::Time GetUpdaterLastChecked(bool is_machine);
   static base::Time GetUpdaterTimeValue(bool is_machine,
@@ -58,7 +58,7 @@ class UpdaterState {
   base::Version updater_version_;
   base::Time last_autoupdate_started_;
   base::Time last_checked_;
-  bool is_joined_to_domain_ = false;
+  bool is_enterprise_managed_ = false;
   bool is_autoupdate_check_enabled_ = false;
   int update_policy_ = 0;
 };

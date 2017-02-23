@@ -100,8 +100,8 @@ extern const char kHungRendererReason[];
 extern const char kThirdPartyModulesLoaded[];
 extern const char kThirdPartyModulesNotLoaded[];
 
-// Whether the machine is domain joined is only sent on Windows.
-extern const char kEnrolledToDomain[];
+// Whether the machine is enterprise managed (only sent on Windows).
+extern const char kIsEnterpriseManaged[];
 #endif
 
 // Number of input event send IPC failures. Added to debug

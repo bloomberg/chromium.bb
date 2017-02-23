@@ -409,8 +409,8 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
       return false;
 
 #if defined(OS_WIN)
-    // Don't show the update bubbles to enterprise users (i.e., on a domain).
-    if (base::win::IsEnrolledToDomain())
+    // Don't show the update bubbles to enterprise users.
+    if (base::win::IsEnterpriseManaged())
       return false;
 #endif
   }

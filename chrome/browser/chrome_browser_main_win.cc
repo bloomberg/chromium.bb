@@ -312,10 +312,11 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
 }
 
 int ChromeBrowserMainPartsWin::PreCreateThreads() {
-// Record whether the machine is domain joined in a crash key. This will be used
-// to better identify whether crashes are from enterprise users.
-  base::debug::SetCrashKeyValue(crash_keys::kEnrolledToDomain,
-                                base::win::IsEnrolledToDomain() ? "yes" : "no");
+  // Record whether the machine is enterprise managed in a crash key. This will
+  // be used to better identify whether crashes are from enterprise users.
+  base::debug::SetCrashKeyValue(
+      crash_keys::kIsEnterpriseManaged,
+      base::win::IsEnterpriseManaged() ? "yes" : "no");
 
   int rv = ChromeBrowserMainParts::PreCreateThreads();
 

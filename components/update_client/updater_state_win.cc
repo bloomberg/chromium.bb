@@ -133,8 +133,8 @@ int UpdaterState::GetUpdatePolicy() {
   return -1;
 }
 
-bool UpdaterState::IsJoinedToDomain() {
-  return base::win::IsEnrolledToDomain();
+bool UpdaterState::IsEnterpriseManaged() {
+  return base::win::IsEnterpriseManaged();
 }
 
 }  // namespace update_client
