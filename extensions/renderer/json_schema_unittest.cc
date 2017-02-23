@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/grit/extensions_renderer_resources.h"
 #include "extensions/renderer/module_system_test.h"
 #include "extensions/renderer/v8_schema_registry.h"
 #include "gin/dictionary.h"
-#include "grit/extensions_renderer_resources.h"
 
 namespace extensions {
 

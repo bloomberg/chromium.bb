@@ -18,6 +18,7 @@ group("extensions_resources") {
 
 grit("extensions_resources_grd") {
   source = "extensions_resources.grd"
+  use_qualified_include = true
   outputs = [
     "grit/extensions_resources.h",
     "extensions_resources.pak",
@@ -26,6 +27,10 @@ grit("extensions_resources_grd") {
 
 grit("extensions_browser_resources") {
   source = "browser/resources/extensions_browser_resources.grd"
+
+  # TODO(thakis): Enable, https://crbug.com/401588
+  #use_qualified_include = true
+
   outputs = [
     "grit/extensions_browser_resources.h",
     "grit/extensions_browser_resources_map.cc",
@@ -41,6 +46,7 @@ grit("extensions_browser_resources") {
 
 grit("extensions_renderer_resources") {
   source = "renderer/resources/extensions_renderer_resources.grd"
+  use_qualified_include = true
   outputs = [
     "grit/extensions_renderer_resources.h",
     "extensions_renderer_resources.pak",

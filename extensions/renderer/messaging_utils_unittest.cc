@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/strings/stringprintf.h"
+#include "extensions/grit/extensions_renderer_resources.h"
 #include "extensions/renderer/module_system_test.h"
-#include "grit/extensions_renderer_resources.h"
 
 namespace extensions {
 namespace {

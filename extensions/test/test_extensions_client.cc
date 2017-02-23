@@ -20,12 +20,12 @@
 #include "extensions/common/permissions/extensions_api_permissions.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern_set.h"
+#include "extensions/grit/extensions_resources.h"
 #include "extensions/test/test_api_features.h"
 #include "extensions/test/test_behavior_features.h"
 #include "extensions/test/test_manifest_features.h"
 #include "extensions/test/test_permission_features.h"
 #include "extensions/test/test_permission_message_provider.h"
-#include "grit/extensions_resources.h"
 
 namespace extensions {
 

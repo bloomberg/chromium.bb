@@ -21,13 +21,13 @@
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/permissions_provider.h"
 #include "extensions/common/url_pattern_set.h"
+#include "extensions/grit/extensions_resources.h"
 #include "extensions/shell/common/api/generated_schemas.h"
 #include "extensions/shell/common/api/shell_api_features.h"
 #include "extensions/shell/common/api/shell_behavior_features.h"
 #include "extensions/shell/common/api/shell_manifest_features.h"
 #include "extensions/shell/common/api/shell_permission_features.h"
 #include "grit/app_shell_resources.h"
-#include "grit/extensions_resources.h"
 
 namespace extensions {
 
