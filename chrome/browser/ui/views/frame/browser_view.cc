@@ -2469,7 +2469,8 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 void BrowserView::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,
     const signin::ManageAccountsParams& manage_accounts_params,
-    signin_metrics::AccessPoint access_point) {
+    signin_metrics::AccessPoint access_point,
+    bool focus_first_profile_button) {
 #if !defined(OS_CHROMEOS)
   // Do not show avatar bubble if there is no avatar menu button.
   if (!frame_->GetNewAvatarMenuButton())
@@ -2484,7 +2485,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   } else {
     ProfileChooserView::ShowBubble(bubble_view_mode, tutorial_mode,
                                    manage_accounts_params, access_point,
-                                   frame_->GetNewAvatarMenuButton(), browser());
+                                   frame_->GetNewAvatarMenuButton(), browser(),
+                                   focus_first_profile_button);
     ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
   }
 #else

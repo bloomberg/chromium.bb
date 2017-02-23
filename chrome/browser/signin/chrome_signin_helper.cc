@@ -76,7 +76,7 @@ void ProcessMirrorHeaderUIThread(int child_id,
         account_reconcilor->GetState());
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         bubble_mode, manage_accounts_params,
-        signin_metrics::AccessPoint::ACCESS_POINT_CONTENT_AREA);
+        signin_metrics::AccessPoint::ACCESS_POINT_CONTENT_AREA, false);
   }
 #else   // defined(OS_ANDROID)
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {

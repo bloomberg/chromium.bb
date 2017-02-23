@@ -59,7 +59,8 @@ class ProfileChooserView : public content::WebContentsDelegate,
       const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       views::View* anchor_view,
-      Browser* browser);
+      Browser* browser,
+      bool is_source_keyboard);
   static bool IsShowing();
   static void Hide();
 
@@ -126,6 +127,9 @@ class ProfileChooserView : public content::WebContentsDelegate,
   void ShowView(profiles::BubbleViewMode view_to_display,
                 AvatarMenu* avatar_menu);
   void ShowViewFromMode(profiles::BubbleViewMode mode);
+
+  // Focuses the first profile button in the menu list.
+  void FocusFirstProfileButton();
 
   // Creates the profile chooser view.
   views::View* CreateProfileChooserView(AvatarMenu* avatar_menu);
@@ -261,6 +265,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
   views::LabelButton* current_profile_card_;
 
   // Action buttons.
+  views::LabelButton* first_profile_button_;
   views::LabelButton* guest_profile_button_;
   views::LabelButton* users_button_;
   views::LabelButton* go_incognito_button_;

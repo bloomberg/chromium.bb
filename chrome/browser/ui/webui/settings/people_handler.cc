@@ -290,7 +290,7 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     if (!force_new_tab) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
-          signin::ManageAccountsParams(), access_point);
+          signin::ManageAccountsParams(), access_point, false);
     } else {
       url = signin::GetReauthURL(
           access_point, signin_metrics::Reason::REASON_REAUTHENTICATION,
@@ -300,7 +300,7 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     if (!force_new_tab) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
-          signin::ManageAccountsParams(), access_point);
+          signin::ManageAccountsParams(), access_point, false);
     } else {
       url = signin::GetPromoURL(
           access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,

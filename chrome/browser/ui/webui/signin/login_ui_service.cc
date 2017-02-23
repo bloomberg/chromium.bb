@@ -83,7 +83,7 @@ void LoginUIService::DisplayLoginResult(Browser* browser,
         error_message.empty() ? BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN
                               : BrowserWindow::AVATAR_BUBBLE_MODE_SHOW_ERROR,
         signin::ManageAccountsParams(),
-        signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS);
+        signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS, false);
   }
 }
 

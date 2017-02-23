@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   browser->window()->ShowAvatarBubbleFromAvatarButton(
       BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN,
       signin::ManageAccountsParams(),
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, false);
   ASSERT_FALSE(ProfileChooserView::IsShowing());
   CloseBrowserSynchronously(browser);
 }

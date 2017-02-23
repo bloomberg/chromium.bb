@@ -762,7 +762,8 @@ void ProfileChooserView::ShowBubble(
     const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point,
     views::View* anchor_view,
-    Browser* browser) {
+    Browser* browser,
+    bool is_source_keyboard) {
   // Don't start creating the view if it would be an empty fast user switcher.
   // It has to happen here to prevent the view system from creating an empty
   // container.
@@ -790,6 +791,8 @@ void ProfileChooserView::ShowBubble(
   profile_bubble_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   profile_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
   widget->Show();
+  if (is_source_keyboard)
+    profile_bubble_->FocusFirstProfileButton();
 }
 
 // static
@@ -850,6 +853,7 @@ void ProfileChooserView::ResetView() {
   current_profile_photo_ = nullptr;
   current_profile_name_ = nullptr;
   current_profile_card_ = nullptr;
+  first_profile_button_ = nullptr;
   guest_profile_button_ = nullptr;
   users_button_ = nullptr;
   go_incognito_button_ = nullptr;
@@ -1019,6 +1023,11 @@ void ProfileChooserView::ShowViewFromMode(profiles::BubbleViewMode mode) {
   } else {
     ShowView(mode, avatar_menu_.get());
   }
+}
+
+void ProfileChooserView::FocusFirstProfileButton() {
+  if (first_profile_button_)
+    first_profile_button_->RequestFocus();
 }
 
 void ProfileChooserView::WindowClosing() {
@@ -1939,6 +1948,8 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
         button->SetImageLabelSpacing(kMaterialMenuEdgeMargin);
         open_other_profile_indexes_map_[button] = i;
 
+        if (!first_profile_button_)
+          first_profile_button_ = button;
         layout->StartRow(1, 0);
         layout->AddView(button);
       }

@@ -59,7 +59,6 @@ void HistoryLoginHandler::HandleStartSignInFlow(
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   browser->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
-      signin::ManageAccountsParams(),
-      signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
+      BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN, signin::ManageAccountsParams(),
+      signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS, false);
 }

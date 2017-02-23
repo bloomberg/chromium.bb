@@ -65,5 +65,5 @@ void AvatarButtonManager::ButtonPressed(views::Button* sender,
   }
   frame_view_->browser_view()->ShowAvatarBubbleFromAvatarButton(
       mode, signin::ManageAccountsParams(),
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, false);
 }

@@ -437,7 +437,7 @@ void ShowBrowserSignin(Browser* browser,
   if (show_avatar_bubble) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
-        signin::ManageAccountsParams(), access_point);
+        signin::ManageAccountsParams(), access_point, false);
   } else {
     NavigateToSingletonTab(
         browser,
