@@ -201,6 +201,7 @@ public class NewTabPageView
                 (NewTabPageLayout) LayoutInflater.from(getContext())
                         .inflate(R.layout.new_tab_page_layout, mRecyclerView, false);
         mRecyclerView.setAboveTheFoldView(mNewTabPageLayout);
+        mRecyclerView.setContainsLocationBar(manager.isLocationBarShownInNTP());
 
         // Tailor the LayoutParams for the snippets UI, as the configuration in the XML is
         // made for the ScrollView UI.
@@ -438,8 +439,7 @@ public class NewTabPageView
                 assert mPendingSnapScroll;
                 mPendingSnapScroll = false;
 
-                mRecyclerView.snapScroll(mSearchBoxView,
-                        mRecyclerView.computeVerticalScrollOffset(), getHeight());
+                mRecyclerView.snapScroll(mSearchBoxView, getHeight());
             }
         };
 
@@ -764,8 +764,7 @@ public class NewTabPageView
         mRecyclerView.updatePeekingCardAndHeader();
         // The positioning of elements may have been changed (since the elements expand to fill
         // the available vertical space), so adjust the scroll.
-        mRecyclerView.snapScroll(mSearchBoxView,
-                mRecyclerView.computeVerticalScrollOffset(), getHeight());
+        mRecyclerView.snapScroll(mSearchBoxView, getHeight());
     }
 
     /**

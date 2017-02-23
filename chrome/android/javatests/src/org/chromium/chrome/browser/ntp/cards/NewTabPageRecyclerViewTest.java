@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.content.res.Resources;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -12,8 +13,10 @@ import android.view.View;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NTPTileSource;
@@ -28,6 +31,7 @@ import org.chromium.chrome.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.browser.suggestions.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
@@ -117,7 +121,6 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"NewTabPage"})
-    @CommandLineFlags.Add("enable-features=NTPSnippets")
     public void testClickSuggestion() throws InterruptedException {
         setSuggestionsAndWaitForUpdate(10);
         List<SnippetArticle> suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
@@ -137,7 +140,6 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"NewTabPage"})
-    @CommandLineFlags.Add("enable-features=NTPSnippets,NTPSuggestionsSectionDismissal")
     public void testAllDismissed() throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(3);
         assertEquals(3, mSource.getSuggestionsForCategory(TEST_CATEGORY).size());
@@ -170,7 +172,6 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"NewTabPage"})
-    @CommandLineFlags.Add("enable-features=NTPSnippets")
     public void testDismissArticleWithContextMenu() throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(10);
         List<SnippetArticle> suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
@@ -190,7 +191,6 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"NewTabPage"})
-    @CommandLineFlags.Add("enable-features=NTPSnippets,NTPSuggestionsSectionDismissal")
     public void testDismissStatusCardWithContextMenu()
             throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(0);
@@ -211,7 +211,6 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"NewTabPage"})
-    @CommandLineFlags.Add("enable-features=NTPSnippets,NTPSuggestionsSectionDismissal")
     public void testDismissActionItemWithContextMenu()
             throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(0);
@@ -227,6 +226,107 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), actionItemView);
 
         assertArrayEquals(new int[0], mSource.getCategories());
+    }
+
+    @MediumTest
+    @Feature({"NewTabPage"})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE})
+    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.NTP_CONDENSED_LAYOUT})
+    public void testSnapScroll_noCondensedLayout() {
+        setSuggestionsAndWaitForUpdate(0);
+
+        Resources res = getInstrumentation().getTargetContext().getResources();
+        int toolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
+                + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
+        View searchBox = getNtpView().findViewById(R.id.search_box);
+        int searchBoxTop = searchBox.getTop() + searchBox.getPaddingTop();
+        int searchBoxTransitionLength =
+                res.getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
+
+        // Two different snapping regions with the default behavior: snapping back up to the
+        // watershed point in the middle, snapping forward after that.
+        assertEquals(0, getSnapPosition(0));
+        assertEquals(0, getSnapPosition(toolbarHeight / 2 - 1));
+        assertEquals(toolbarHeight, getSnapPosition(toolbarHeight / 2));
+        assertEquals(toolbarHeight, getSnapPosition(toolbarHeight));
+        assertEquals(toolbarHeight + 1, getSnapPosition(toolbarHeight + 1));
+
+        assertEquals(searchBoxTop - searchBoxTransitionLength - 1,
+                getSnapPosition(searchBoxTop - searchBoxTransitionLength - 1));
+        assertEquals(searchBoxTop - searchBoxTransitionLength,
+                getSnapPosition(searchBoxTop - searchBoxTransitionLength));
+        assertEquals(searchBoxTop - searchBoxTransitionLength,
+                getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2 - 1));
+        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2));
+        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
+        assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
+    }
+
+    @MediumTest
+    @Feature({"NewTabPage"})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE})
+    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.NTP_CONDENSED_LAYOUT})
+    public void testSnapScroll_condensedLayout() {
+        setSuggestionsAndWaitForUpdate(0);
+
+        Resources res = getInstrumentation().getTargetContext().getResources();
+        int toolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
+                + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
+        View searchBox = getNtpView().findViewById(R.id.search_box);
+        int searchBoxTop = searchBox.getTop() + searchBox.getPaddingTop();
+        int searchBoxTransitionLength =
+                res.getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
+
+        // With the condensed layout, the snapping regions overlap, so the effect is that of a
+        // single snapping region.
+        assertEquals(0, getSnapPosition(0));
+        assertEquals(0, getSnapPosition(toolbarHeight / 2 - 1));
+        assertEquals(searchBoxTop, getSnapPosition(toolbarHeight / 2));
+        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop - searchBoxTransitionLength));
+        assertEquals(searchBoxTop, getSnapPosition(toolbarHeight));
+        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
+        assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
+    }
+
+    @MediumTest
+    @Feature({"NewTabPage"})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_TABLET})
+    public void testSnapScroll_tablet() {
+        setSuggestionsAndWaitForUpdate(0);
+
+        Resources res = getInstrumentation().getTargetContext().getResources();
+        int toolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
+                + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
+        View searchBox = getNtpView().findViewById(R.id.search_box);
+        int searchBoxTop = searchBox.getTop() + searchBox.getPaddingTop();
+        int searchBoxTransitionLength =
+                res.getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
+
+        // No snapping on tablets.
+        // Note: This ignores snapping for the peeking cards, which is currently disabled
+        // by default.
+        assertEquals(0, getSnapPosition(0));
+        assertEquals(toolbarHeight / 2 - 1, getSnapPosition(toolbarHeight / 2 - 1));
+        assertEquals(toolbarHeight / 2, getSnapPosition(toolbarHeight / 2));
+        assertEquals(toolbarHeight, getSnapPosition(toolbarHeight));
+        assertEquals(toolbarHeight + 1, getSnapPosition(toolbarHeight + 1));
+
+        assertEquals(searchBoxTop - searchBoxTransitionLength - 1,
+                getSnapPosition(searchBoxTop - searchBoxTransitionLength - 1));
+        assertEquals(searchBoxTop - searchBoxTransitionLength,
+                getSnapPosition(searchBoxTop - searchBoxTransitionLength));
+        assertEquals(searchBoxTop - searchBoxTransitionLength / 2 - 1,
+                getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2 - 1));
+        assertEquals(searchBoxTop - searchBoxTransitionLength / 2,
+                getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2));
+        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
+        assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
+    }
+
+    private int getSnapPosition(int scrollPosition) {
+        NewTabPageView ntpView = getNtpView();
+        return getRecyclerView().calculateSnapPosition(
+                scrollPosition, ntpView.findViewById(R.id.search_box), ntpView.getHeight());
     }
 
     private NewTabPageView getNtpView() {
