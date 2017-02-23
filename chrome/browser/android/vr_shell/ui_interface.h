@@ -28,7 +28,7 @@ class UiInterface {
  public:
   enum Mode {
     STANDARD = 0,
-    WEB_VR
+    WEB_VR,
   };
 
   explicit UiInterface(Mode initial_mode);

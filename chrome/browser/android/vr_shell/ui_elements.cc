@@ -33,7 +33,9 @@ float GetRayPlaneIntersection(gvr::Vec3f ray_origin,
 
 }  // namespace
 
-ReversibleTransform::ReversibleTransform() { MakeIdentity(); }
+ReversibleTransform::ReversibleTransform() {
+  MakeIdentity();
+}
 
 void ReversibleTransform::MakeIdentity() {
   SetIdentityM(to_world);
@@ -200,4 +202,3 @@ bool ContentRectangle::IsHitTestable() const {
 }
 
 }  // namespace vr_shell
-

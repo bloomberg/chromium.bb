@@ -106,7 +106,8 @@ void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void VrShell::SwapContents(JNIEnv* env, const JavaParamRef<jobject>& obj,
+void VrShell::SwapContents(JNIEnv* env,
+                           const JavaParamRef<jobject>& obj,
                            const JavaParamRef<jobject>& web_contents) {
   content::WebContents* contents =
       content::WebContents::FromJavaWebContents(web_contents);
@@ -205,8 +206,7 @@ void VrShell::SetContentPaused(bool paused) {
   }
 }
 
-void VrShell::OnTriggerEvent(JNIEnv* env,
-                             const JavaParamRef<jobject>& obj) {
+void VrShell::OnTriggerEvent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   gl_thread_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&VrShellGl::OnTriggerEvent, gl_thread_->GetVrShellGl()));
@@ -264,8 +264,8 @@ void VrShell::SetWebVrMode(JNIEnv* env,
     metrics_helper_->SetWebVREnabled(enabled);
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::SetWebVrMode,
                                      gl_thread_->GetVrShellGl(), enabled));
-  html_interface_->SetMode(
-      enabled ? UiInterface::Mode::WEB_VR : UiInterface::Mode::STANDARD);
+  html_interface_->SetMode(enabled ? UiInterface::Mode::WEB_VR
+                                   : UiInterface::Mode::STANDARD);
 }
 
 void VrShell::OnLoadProgressChanged(JNIEnv* env,
@@ -291,13 +291,15 @@ void VrShell::ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito) {
     TabAndroid* tab =
         TabAndroid::GetNativeTab(env, JavaParamRef<jobject>(env, jtab));
     html_interface_->AppendToTabList(incognito, tab->GetAndroidId(),
-                                           tab->GetTitle());
+                                     tab->GetTitle());
   }
 }
 
 void VrShell::OnTabUpdated(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
-                           jboolean incognito, jint id, jstring jtitle) {
+                           jboolean incognito,
+                           jint id,
+                           jstring jtitle) {
   std::string title;
   base::android::ConvertJavaStringToUTF8(env, jtitle, &title);
   html_interface_->UpdateTab(incognito, id, title);
@@ -305,7 +307,8 @@ void VrShell::OnTabUpdated(JNIEnv* env,
 
 void VrShell::OnTabRemoved(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
-                           jboolean incognito, jint id) {
+                           jboolean incognito,
+                           jint id) {
   html_interface_->RemoveTab(incognito, id);
 }
 
@@ -337,8 +340,8 @@ void VrShell::CreateVRDisplayInfo(
     const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
     uint32_t device_id) {
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::CreateVRDisplayInfo,
-                                     gl_thread_->GetVrShellGl(),
-                                     callback, device_id));
+                                     gl_thread_->GetVrShellGl(), callback,
+                                     device_id));
 }
 
 base::android::ScopedJavaGlobalRef<jobject> VrShell::TakeContentSurface(
@@ -378,7 +381,8 @@ void VrShell::AppButtonPressed() {
 
 void VrShell::ContentPhysicalBoundsChanged(JNIEnv* env,
                                            const JavaParamRef<jobject>& object,
-                                           jint width, jint height,
+                                           jint width,
+                                           jint height,
                                            jfloat dpr) {
   TRACE_EVENT0("gpu", "VrShell::ContentPhysicalBoundsChanged");
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::ContentPhysicalBoundsChanged,
@@ -389,7 +393,9 @@ void VrShell::ContentPhysicalBoundsChanged(JNIEnv* env,
 
 void VrShell::UIPhysicalBoundsChanged(JNIEnv* env,
                                       const JavaParamRef<jobject>& object,
-                                      jint width, jint height, jfloat dpr) {
+                                      jint width,
+                                      jint height,
+                                      jfloat dpr) {
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::UIPhysicalBoundsChanged,
                                      gl_thread_->GetVrShellGl(), width,
                                      height));
@@ -481,8 +487,9 @@ void VrShell::RenderViewHostChanged(content::RenderViewHost* old_host,
 }
 
 void VrShell::MainFrameWasResized(bool width_changed) {
-  display::Display display = display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(ui_contents_->GetNativeView());
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          ui_contents_->GetNativeView());
   PostToGlThreadWhenReady(
       base::Bind(&VrShellGl::UIBoundsChanged, gl_thread_->GetVrShellGl(),
                  display.size().width(), display.size().height()));
@@ -534,9 +541,9 @@ void VrShell::OnVRVsyncProviderRequest(
 
 void VrShell::UpdateVSyncInterval(int64_t timebase_nanos,
                                   double interval_seconds) {
-  PostToGlThreadWhenReady(
-      base::Bind(&VrShellGl::UpdateVSyncInterval,
-                 gl_thread_->GetVrShellGl(), timebase_nanos, interval_seconds));
+  PostToGlThreadWhenReady(base::Bind(&VrShellGl::UpdateVSyncInterval,
+                                     gl_thread_->GetVrShellGl(), timebase_nanos,
+                                     interval_seconds));
 }
 
 void VrShell::SetContentCssSize(float width, float height, float dpr) {
@@ -554,7 +561,6 @@ void VrShell::ProcessUIGesture(std::unique_ptr<blink::WebInputEvent> event) {
   if (ui_input_manager_) {
     ui_input_manager_->ProcessUpdatedGesture(std::move(event));
   }
-
 }
 
 void VrShell::ProcessContentGesture(
@@ -596,7 +602,9 @@ device::mojom::VRPosePtr VrShell::VRPosePtrFromGvrPose(gvr::Mat4f head_mat) {
 }
 
 device::mojom::VRDisplayInfoPtr VrShell::CreateVRDisplayInfo(
-    gvr::GvrApi* gvr_api, gvr::Sizei compositor_size, uint32_t device_id) {
+    gvr::GvrApi* gvr_api,
+    gvr::Sizei compositor_size,
+    uint32_t device_id) {
   TRACE_EVENT0("input", "GvrDevice::GetVRDevice");
 
   device::mojom::VRDisplayInfoPtr device = device::mojom::VRDisplayInfo::New();

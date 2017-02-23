@@ -32,8 +32,7 @@ WebGestureEvent MakeGestureEvent(WebInputEvent::Type type,
 }  // namespace
 
 VrInputManager::VrInputManager(content::WebContents* web_contents)
-    : web_contents_(web_contents) {
-}
+    : web_contents_(web_contents) {}
 
 VrInputManager::~VrInputManager() = default;
 
@@ -74,7 +73,7 @@ void VrInputManager::ForwardGestureEvent(
 void VrInputManager::ForwardMouseEvent(
     const blink::WebMouseEvent& mouse_event) {
   if (!web_contents_->GetRenderWidgetHostView())
-      return;
+    return;
   content::RenderWidgetHost* rwh =
       web_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost();
   if (rwh)

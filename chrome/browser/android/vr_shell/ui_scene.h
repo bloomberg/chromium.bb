@@ -79,7 +79,7 @@ class UiScene {
                                 ReversibleTransform* transform,
                                 float* opacity);
   void ApplyDictToElement(const base::DictionaryValue& dict,
-                          ContentRectangle *element);
+                          ContentRectangle* element);
 
   std::vector<std::unique_ptr<ContentRectangle>> ui_elements_;
   ContentRectangle* content_element_ = nullptr;

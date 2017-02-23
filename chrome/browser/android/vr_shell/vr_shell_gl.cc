@@ -143,7 +143,8 @@ enum class ViewerType {
 
 int64_t TimeInMicroseconds() {
   return std::chrono::duration_cast<std::chrono::microseconds>(
-      std::chrono::steady_clock::now().time_since_epoch()).count();
+             std::chrono::steady_clock::now().time_since_epoch())
+      .count();
 }
 
 void RunVRDisplayInfoCallback(
@@ -161,14 +162,14 @@ VrShellGl::VrShellGl(
     gvr_context* gvr_api,
     bool initially_web_vr,
     bool reprojected_rendering)
-      : web_vr_mode_(initially_web_vr),
-        surfaceless_rendering_(reprojected_rendering),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        binding_(this),
-        weak_vr_shell_(weak_vr_shell),
-        delegate_provider_(delegate_provider),
-        main_thread_task_runner_(std::move(main_thread_task_runner)),
-        weak_ptr_factory_(this) {
+    : web_vr_mode_(initially_web_vr),
+      surfaceless_rendering_(reprojected_rendering),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      binding_(this),
+      weak_vr_shell_(weak_vr_shell),
+      delegate_provider_(delegate_provider),
+      main_thread_task_runner_(std::move(main_thread_task_runner)),
+      weak_ptr_factory_(this) {
   GvrInit(gvr_api);
 }
 
@@ -178,9 +179,10 @@ VrShellGl::~VrShellGl() {
     base::ResetAndReturn(&callback_).Run(nullptr, base::TimeDelta(), -1);
   }
   if (binding_.is_bound()) {
-    main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &VrShellDelegate::OnVRVsyncProviderRequest, delegate_provider_,
-        base::Passed(binding_.Unbind())));
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&VrShellDelegate::OnVRVsyncProviderRequest,
+                   delegate_provider_, base::Passed(binding_.Unbind())));
   }
 }
 
@@ -238,7 +240,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   ui_surface_texture_->SetFrameAvailableCallback(base::Bind(
       &VrShellGl::OnUIFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
   content_surface_texture_->SetFrameAvailableCallback(base::Bind(
-        &VrShellGl::OnContentFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
+      &VrShellGl::OnContentFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
   content_surface_texture_->SetDefaultBufferSize(
       content_tex_physical_size_.width, content_tex_physical_size_.height);
   ui_surface_texture_->SetDefaultBufferSize(ui_tex_physical_size_.width,
@@ -279,7 +281,7 @@ void VrShellGl::OnContentFrameAvailable() {
 bool VrShellGl::GetPixelEncodedFrameIndex(uint16_t* frame_index) {
   TRACE_EVENT0("gpu", "VrShellGl::GetPixelEncodedFrameIndex");
   if (!received_frame_) {
-    if (last_frame_index_ == (uint16_t) -1)
+    if (last_frame_index_ == (uint16_t)-1)
       return false;
     *frame_index = last_frame_index_;
     return true;
@@ -332,7 +334,7 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
       break;
   }
   UMA_HISTOGRAM_ENUMERATION("VRViewerType", static_cast<int>(viewerType),
-      static_cast<int>(ViewerType::VIEWER_TYPE_MAX));
+                            static_cast<int>(ViewerType::VIEWER_TYPE_MAX));
 }
 
 void VrShellGl::InitializeRenderer() {
@@ -409,8 +411,8 @@ void VrShellGl::InitializeRenderer() {
                                            webvr_right_viewport_.get());
   webvr_right_viewport_->SetSourceBufferIndex(kFramePrimaryBuffer);
 
-  main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &VrShell::GvrDelegateReady, weak_vr_shell_));
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VrShell::GvrDelegateReady, weak_vr_shell_));
 }
 
 void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
@@ -427,7 +429,8 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
   if (web_vr_mode_) {
     // Process screen touch events for Cardboard button compatibility.
     // Also send tap events for controller "touchpad click" events.
-    if (touch_pending_ || controller_->ButtonUpHappened(
+    if (touch_pending_ ||
+        controller_->ButtonUpHappened(
             gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK)) {
       touch_pending_ = false;
       std::unique_ptr<WebGestureEvent> gesture(new WebGestureEvent(
@@ -664,7 +667,8 @@ void VrShellGl::DrawFrame() {
       uint16_t index = pending_bounds_.front().first;
       // If index is less than the frame_index it's possible we've wrapped, so
       // we extend the range and 'un-wrap' to account for this.
-      if (index < frame_index) index += max;
+      if (index < frame_index)
+        index += max;
       // If the pending bounds change is for an upcoming frame within our buffer
       // size, wait to apply it. Otherwise, apply it immediately. This
       // guarantees that even if we miss many frames, the queue can't fill up
@@ -715,8 +719,7 @@ void VrShellGl::DrawFrame() {
   }
 }
 
-void VrShellGl::DrawVrShell(const gvr::Mat4f& head_pose,
-                            gvr::Frame &frame) {
+void VrShellGl::DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame& frame) {
   TRACE_EVENT0("gpu", "VrShellGl::DrawVrShell");
   std::vector<const ContentRectangle*> head_locked_elements;
   std::vector<const ContentRectangle*> world_elements;
@@ -797,8 +800,8 @@ void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
   auto elementsInDrawOrder = GetElementsInDrawOrder(view_matrix, elements);
 
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
-    buffer_viewport_list_->GetBufferViewport(
-        eye + viewport_offset, buffer_viewport_.get());
+    buffer_viewport_list_->GetBufferViewport(eye + viewport_offset,
+                                             buffer_viewport_.get());
 
     view_matrix = MatrixMul(gvr_api_->GetEyeFromHeadMatrix(eye), view_matrix);
 
@@ -808,10 +811,10 @@ void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
                pixel_rect.right - pixel_rect.left,
                pixel_rect.top - pixel_rect.bottom);
 
-    const gvr::Mat4f render_matrix = MatrixMul(
-        PerspectiveMatrixFromView(
-            buffer_viewport_->GetSourceFov(), kZNear, kZFar),
-        view_matrix);
+    const gvr::Mat4f render_matrix =
+        MatrixMul(PerspectiveMatrixFromView(buffer_viewport_->GetSourceFov(),
+                                            kZNear, kZFar),
+                  view_matrix);
 
     DrawElements(render_matrix, view_matrix, elementsInDrawOrder);
     if (head_pose != nullptr && !web_vr_mode_) {
@@ -952,11 +955,9 @@ void VrShellGl::DrawCursor(const gvr::Mat4f& render_matrix) {
   const gvr::Quatf q = QuatFromAxisAngle({1.0f, 0.0f, 0.0f}, -M_PI / 2);
   mat = MatrixMul(QuatToMatrix(q), mat);
 
-  const gvr::Vec3f beam_direction = {
-    target_point_.x - kHandPosition.x,
-    target_point_.y - kHandPosition.y,
-    target_point_.z - kHandPosition.z
-  };
+  const gvr::Vec3f beam_direction = {target_point_.x - kHandPosition.x,
+                                     target_point_.y - kHandPosition.y,
+                                     target_point_.z - kHandPosition.z};
   const gvr::Mat4f beam_direction_mat =
       QuatToMatrix(GetRotationFromZAxis(beam_direction));
 
@@ -1091,7 +1092,8 @@ void VrShellGl::OnRequest(device::mojom::VRVSyncProviderRequest request) {
 void VrShellGl::GetVSync(const GetVSyncCallback& callback) {
   if (!pending_vsync_) {
     if (!callback_.is_null()) {
-      mojo::ReportBadMessage("Requested VSync before waiting for response to "
+      mojo::ReportBadMessage(
+          "Requested VSync before waiting for response to "
           "previous request.");
       return;
     }

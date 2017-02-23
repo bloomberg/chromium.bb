@@ -16,8 +16,7 @@
 namespace vr_shell {
 
 VrCompositor::VrCompositor(ui::WindowAndroid* window, bool transparent)
-    : background_color_(SK_ColorWHITE),
-      transparent_(transparent) {
+    : background_color_(SK_ColorWHITE), transparent_(transparent) {
   compositor_.reset(content::Compositor::Create(this, window));
   compositor_->SetHasTransparentBackground(transparent);
 }

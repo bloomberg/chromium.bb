@@ -19,13 +19,13 @@ class Animation;
 enum XAnchoring {
   XNONE = 0,
   XLEFT,
-  XRIGHT
+  XRIGHT,
 };
 
 enum YAnchoring {
   YNONE = 0,
   YTOP,
-  YBOTTOM
+  YBOTTOM,
 };
 
 enum Fill {
@@ -41,7 +41,7 @@ enum Fill {
   // The element is filled with the content web site. Only one content element
   // may be added to the
   // scene.
-  CONTENT = 4
+  CONTENT = 4,
 };
 
 struct ReversibleTransform {

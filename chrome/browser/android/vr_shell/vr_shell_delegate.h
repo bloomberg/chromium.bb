@@ -40,7 +40,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
                        const base::android::JavaParamRef<jobject>& obj);
   void UpdateVSyncInterval(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
-                           jlong timebase_nanos, jdouble interval_seconds);
+                           jlong timebase_nanos,
+                           jdouble interval_seconds);
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void ShowTab(int id);

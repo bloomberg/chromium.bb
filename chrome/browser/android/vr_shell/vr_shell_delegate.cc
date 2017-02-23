@@ -31,8 +31,8 @@ VrShellDelegate::~VrShellDelegate() {
   }
 }
 
-VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(
-    JNIEnv* env, jobject jdelegate) {
+VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(JNIEnv* env,
+                                                           jobject jdelegate) {
   return reinterpret_cast<VrShellDelegate*>(
       Java_VrShellDelegate_getNativePointer(env, jdelegate));
 }
@@ -65,7 +65,7 @@ void VrShellDelegate::SetDelegate(device::GvrDelegate* delegate,
 void VrShellDelegate::RemoveDelegate() {
   delegate_ = nullptr;
   device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
-        device::GAMEPAD_SOURCE_GVR);
+      device::GAMEPAD_SOURCE_GVR);
   if (device_provider_) {
     CreateNonPresentingDelegate();
     device_provider_->Device()->OnDelegateChanged();
@@ -95,8 +95,7 @@ void VrShellDelegate::UpdateVSyncInterval(JNIEnv* env,
   timebase_nanos_ = timebase_nanos;
   interval_seconds_ = interval_seconds;
   if (delegate_) {
-    delegate_->UpdateVSyncInterval(timebase_nanos_,
-                                   interval_seconds_);
+    delegate_->UpdateVSyncInterval(timebase_nanos_, interval_seconds_);
   }
   if (non_presenting_delegate_) {
     non_presenting_delegate_->UpdateVSyncInterval(timebase_nanos_,
@@ -104,15 +103,13 @@ void VrShellDelegate::UpdateVSyncInterval(JNIEnv* env,
   }
 }
 
-void VrShellDelegate::OnPause(JNIEnv* env,
-                              const JavaParamRef<jobject>& obj) {
+void VrShellDelegate::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (non_presenting_delegate_) {
     non_presenting_delegate_->Pause();
   }
 }
 
-void VrShellDelegate::OnResume(JNIEnv* env,
-                               const JavaParamRef<jobject>& obj) {
+void VrShellDelegate::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (non_presenting_delegate_) {
     non_presenting_delegate_->Resume();
   }

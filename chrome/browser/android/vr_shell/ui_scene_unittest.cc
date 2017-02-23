@@ -18,7 +18,7 @@
 
 #define TOLERANCE 0.0001
 
-#define EXPECT_VEC3F_NEAR(a, b) \
+#define EXPECT_VEC3F_NEAR(a, b)     \
   EXPECT_NEAR(a.x, b.x, TOLERANCE); \
   EXPECT_NEAR(a.y, b.y, TOLERANCE); \
   EXPECT_NEAR(a.z, b.z, TOLERANCE);
@@ -27,18 +27,20 @@ namespace vr_shell {
 
 namespace {
 
-void addElement(UiScene *scene, int id) {
+void addElement(UiScene* scene, int id) {
   std::unique_ptr<ContentRectangle> element(new ContentRectangle);
   element->id = id;
   scene->AddUiElement(element);
 }
 
-void addAnimation(UiScene *scene, int element_id, int animation_id,
+void addAnimation(UiScene* scene,
+                  int element_id,
+                  int animation_id,
                   Animation::Property property) {
-  std::unique_ptr<Animation> animation(new Animation(
-      animation_id, property,
-      std::unique_ptr<easing::Easing>(new easing::Linear()),
-      {}, {1, 1, 1, 1}, 0, 1));
+  std::unique_ptr<Animation> animation(
+      new Animation(animation_id, property,
+                    std::unique_ptr<easing::Easing>(new easing::Linear()), {},
+                    {1, 1, 1, 1}, 0, 1));
   scene->AddAnimation(element_id, animation);
 }
 
@@ -72,7 +74,7 @@ TEST(UiScene, AddRemoveElements) {
 TEST(UiScene, AddRemoveAnimations) {
   UiScene scene;
   addElement(&scene, 0);
-  auto *element = scene.GetUiElementById(0);
+  auto* element = scene.GetUiElementById(0);
 
   EXPECT_EQ(element->animations.size(), 0u);
   addAnimation(&scene, 0, 0, Animation::Property::SIZE);
@@ -119,8 +121,8 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   scene.AddUiElement(element);
   const ContentRectangle* child = scene.GetUiElementById(1);
 
-  const gvr::Vec3f origin({0,0,0});
-  const gvr::Vec3f point({1,0,0});
+  const gvr::Vec3f origin({0, 0, 0});
+  const gvr::Vec3f point({1, 0, 0});
 
   // Check resulting transform with no screen tilt.
   scene.UpdateTransforms(0, 0);
@@ -192,15 +194,16 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
 }
 
 const std::vector<AnchoringTestCase> anchoring_test_cases = {
-    { XAnchoring::XNONE, YAnchoring::YNONE, 0, 0},
-    { XAnchoring::XLEFT, YAnchoring::YNONE, -2, 0},
-    { XAnchoring::XRIGHT, YAnchoring::YNONE, 2, 0},
-    { XAnchoring::XNONE, YAnchoring::YTOP, 0, 2},
-    { XAnchoring::XNONE, YAnchoring::YBOTTOM, 0, -2},
-    { XAnchoring::XLEFT, YAnchoring::YTOP, -2, 2},
+    {XAnchoring::XNONE, YAnchoring::YNONE, 0, 0},
+    {XAnchoring::XLEFT, YAnchoring::YNONE, -2, 0},
+    {XAnchoring::XRIGHT, YAnchoring::YNONE, 2, 0},
+    {XAnchoring::XNONE, YAnchoring::YTOP, 0, 2},
+    {XAnchoring::XNONE, YAnchoring::YBOTTOM, 0, -2},
+    {XAnchoring::XLEFT, YAnchoring::YTOP, -2, 2},
 };
 
-INSTANTIATE_TEST_CASE_P(AnchoringTestCases, AnchoringTest,
+INSTANTIATE_TEST_CASE_P(AnchoringTestCases,
+                        AnchoringTest,
                         ::testing::ValuesIn(anchoring_test_cases));
 
 TEST(UiScene, AddUiElementFromDictionary) {
@@ -251,7 +254,7 @@ TEST(UiScene, AddUiElementFromDictionary) {
   dict.Set("translation", std::move(translation));
 
   scene.AddUiElementFromDict(dict);
-  const auto *element = scene.GetUiElementById(10);
+  const auto* element = scene.GetUiElementById(10);
   EXPECT_NE(element, nullptr);
 
   EXPECT_EQ(element->id, 10);
@@ -407,8 +410,8 @@ TEST(UiScene, AddAnimationFromDictionary) {
   dict.Set("from", std::move(from));
 
   scene.AddAnimationFromDict(dict, 10000000);
-  const auto *element = scene.GetUiElementById(0);
-  const auto *animation = element->animations[0].get();
+  const auto* element = scene.GetUiElementById(0);
+  const auto* animation = element->animations[0].get();
   EXPECT_NE(animation, nullptr);
 
   EXPECT_EQ(animation->id, 10);

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/vr_shell/vr_shell_ui_ui.h"
 
+#include <string>
+#include <unordered_set>
+
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/vr_shell/vr_shell_ui_message_handler.h"
@@ -169,10 +172,9 @@ void RemoteDataSource::OnURLFetchComplete(const net::URLFetcher* source) {
       // page from remote server. Empty string indicates default page.
       use_localhost_ = false;
       content::URLDataSource::GotDataCallback callback = it->second;
-      StartDataRequest(
-          std::string(),
-          content::ResourceRequestInfo::WebContentsGetter(),
-          callback);
+      StartDataRequest(std::string(),
+                       content::ResourceRequestInfo::WebContentsGetter(),
+                       callback);
     }
   } else {
     it->second.Run(base::RefCountedString::TakeString(&response));

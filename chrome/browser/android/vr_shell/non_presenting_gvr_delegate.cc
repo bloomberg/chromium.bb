@@ -108,7 +108,8 @@ void NonPresentingGvrDelegate::OnVSync() {
 void NonPresentingGvrDelegate::GetVSync(const GetVSyncCallback& callback) {
   if (!pending_vsync_) {
     if (!callback_.is_null()) {
-      mojo::ReportBadMessage("Requested VSync before waiting for response to "
+      mojo::ReportBadMessage(
+          "Requested VSync before waiting for response to "
           "previous request.");
       return;
     }

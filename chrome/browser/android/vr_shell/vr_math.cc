@@ -67,8 +67,11 @@ void TranslateMRight(gvr::Mat4f& tmat,
 }
 
 // Left multiply a scale matrix.
-void ScaleM(gvr::Mat4f& tmat, const gvr::Mat4f& mat,
-            float x, float y, float z) {
+void ScaleM(gvr::Mat4f& tmat,
+            const gvr::Mat4f& mat,
+            float x,
+            float y,
+            float z) {
   if (&tmat != &mat) {
     for (int i = 0; i < 4; ++i) {
       for (int j = 0; j < 3; ++j) {
@@ -85,8 +88,11 @@ void ScaleM(gvr::Mat4f& tmat, const gvr::Mat4f& mat,
 }
 
 // Right multiply a scale matrix.
-void ScaleMRight(gvr::Mat4f& tmat, const gvr::Mat4f& mat,
-                 float x, float y, float z) {
+void ScaleMRight(gvr::Mat4f& tmat,
+                 const gvr::Mat4f& mat,
+                 float x,
+                 float y,
+                 float z) {
   if (&tmat != &mat) {
     for (int i = 0; i < 4; ++i) {
       for (int j = 0; j < 3; ++j) {
@@ -284,8 +290,10 @@ gvr::Mat4f QuatToMatrix(const gvr::Quatf& quat) {
   const float m32 = 2.0f * (yz + xw);
   const float m33 = 1.0f - 2.0f * x2 - 2.0f * y2;
 
-  return {{{m11, m12, m13, 0.0f}, {m21, m22, m23, 0.0f},
-          {m31, m32, m33, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}}};
+  return {{{m11, m12, m13, 0.0f},
+           {m21, m22, m23, 0.0f},
+           {m31, m32, m33, 0.0f},
+           {0.0f, 0.0f, 0.0f, 1.0f}}};
 }
 
 gvr::Vec3f GetRayPoint(const gvr::Vec3f& rayOrigin,

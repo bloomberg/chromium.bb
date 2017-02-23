@@ -153,8 +153,7 @@ bool ParseEndpointToFloats(Animation::Property property,
   return false;
 }
 
-std::unique_ptr<easing::Easing> ParseEasing(
-    const base::DictionaryValue& dict) {
+std::unique_ptr<easing::Easing> ParseEasing(const base::DictionaryValue& dict) {
   easing::EasingType easingType;
   CHECK(dict.GetInteger("type", reinterpret_cast<int*>(&easingType)));
   std::unique_ptr<easing::Easing> result;
@@ -189,8 +188,10 @@ std::unique_ptr<easing::Easing> ParseEasing(
   return result;
 }
 
-void ApplyAnchoring(const ContentRectangle& parent, XAnchoring x_anchoring,
-                    YAnchoring y_anchoring, ReversibleTransform* transform) {
+void ApplyAnchoring(const ContentRectangle& parent,
+                    XAnchoring x_anchoring,
+                    YAnchoring y_anchoring,
+                    ReversibleTransform* transform) {
   // To anchor a child, use the parent's size to find its edge.
   float x_offset;
   switch (x_anchoring) {
@@ -314,9 +315,8 @@ void UiScene::AddAnimationFromDict(const base::DictionaryValue& dict,
   ContentRectangle* element = GetUiElementById(element_id);
   CHECK_NE(element, nullptr);
   element->animations.emplace_back(std::unique_ptr<Animation>(
-      new Animation(
-          animation_id, static_cast<Animation::Property>(property),
-          std::move(easing), from, to, start, duration)));
+      new Animation(animation_id, static_cast<Animation::Property>(property),
+                    std::move(easing), from, to, start, duration)));
 }
 
 void UiScene::RemoveAnimation(int element_id, int animation_id) {
@@ -410,8 +410,8 @@ float UiScene::GetBackgroundDistance() {
   return background_distance_;
 }
 
-const std::vector<std::unique_ptr<ContentRectangle>>&
-UiScene::GetUiElements() const {
+const std::vector<std::unique_ptr<ContentRectangle>>& UiScene::GetUiElements()
+    const {
   return ui_elements_;
 }
 
@@ -423,8 +423,8 @@ void UiScene::ApplyRecursiveTransforms(const ContentRectangle& element,
                                        ReversibleTransform* transform,
                                        float* opacity) {
   transform->Scale(element.scale.x, element.scale.y, element.scale.z);
-  transform->Rotate(element.rotation.x, element.rotation.y,
-                    element.rotation.z, element.rotation.angle);
+  transform->Rotate(element.rotation.x, element.rotation.y, element.rotation.z,
+                    element.rotation.angle);
   transform->Translate(element.translation.x, element.translation.y,
                        element.translation.z);
   *opacity *= element.opacity;
@@ -439,7 +439,7 @@ void UiScene::ApplyRecursiveTransforms(const ContentRectangle& element,
 }
 
 void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
-                                 ContentRectangle *element) {
+                                 ContentRectangle* element) {
   int parent_id;
   if (dict.GetInteger("parentId", &parent_id)) {
     CHECK_GE(parent_id, 0);

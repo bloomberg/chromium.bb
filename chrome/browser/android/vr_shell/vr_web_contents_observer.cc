@@ -69,7 +69,8 @@ void VrWebContentsObserver::DidChangeVisibleSecurityState() {
 }
 
 void VrWebContentsObserver::DidToggleFullscreenModeForTab(
-    bool entered_fullscreen, bool will_cause_resize) {
+    bool entered_fullscreen,
+    bool will_cause_resize) {
   ui_interface_->SetFullscreen(entered_fullscreen);
 }
 
@@ -84,7 +85,6 @@ void VrWebContentsObserver::WasHidden() {
 void VrWebContentsObserver::WasShown() {
   vr_shell_->ContentWasShown();
 }
-
 
 void VrWebContentsObserver::MainFrameWasResized(bool width_changed) {
   vr_shell_->ContentFrameWasResized(width_changed);

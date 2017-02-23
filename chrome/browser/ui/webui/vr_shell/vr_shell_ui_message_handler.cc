@@ -30,8 +30,9 @@ void VrShellUIMessageHandler::RegisterMessages() {
       "domLoaded", base::Bind(&VrShellUIMessageHandler::HandleDomLoaded,
                               base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "updateScene", base::Bind(&VrShellUIMessageHandler::HandleUpdateScene,
-                            base::Unretained(this)));
+      "updateScene",
+      base::Bind(&VrShellUIMessageHandler::HandleUpdateScene,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "doAction", base::Bind(&VrShellUIMessageHandler::HandleDoAction,
                              base::Unretained(this)));
@@ -71,7 +72,7 @@ void VrShellUIMessageHandler::HandleDoAction(const base::ListValue* args) {
   CHECK(args->GetInteger(0, &action));
   args->GetDictionary(1, &arguments);
   if (vr_shell_) {
-    vr_shell_->DoUiAction((vr_shell::UiAction) action, arguments);
+    vr_shell_->DoUiAction((vr_shell::UiAction)action, arguments);
   }
 }
 
@@ -97,7 +98,7 @@ void VrShellUIMessageHandler::SetSize(const base::ListValue* args,
   CHECK(args->GetDouble(2, &dpr));
   if (for_ui) {
     vr_shell_->SetUiCssSize(width, height, dpr);
-  } else  {
+  } else {
     vr_shell_->SetContentCssSize(width, height, dpr);
   }
 }

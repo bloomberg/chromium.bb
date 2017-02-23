@@ -53,16 +53,15 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   enum class InputTarget {
     NONE = 0,
     CONTENT,
-    UI
+    UI,
   };
 
-  VrShellGl(
-      const base::WeakPtr<VrShell>& weak_vr_shell,
-      const base::WeakPtr<VrShellDelegate>& delegate_provider,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-      gvr_context* gvr_api,
-      bool initially_web_vr,
-      bool reprojected_rendering);
+  VrShellGl(const base::WeakPtr<VrShell>& weak_vr_shell,
+            const base::WeakPtr<VrShellDelegate>& delegate_provider,
+            scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+            gvr_context* gvr_api,
+            bool initially_web_vr,
+            bool reprojected_rendering);
   ~VrShellGl() override;
 
   void Initialize();
@@ -100,10 +99,11 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void GvrInit(gvr_context* gvr_api);
   void InitializeRenderer();
   void DrawFrame();
-  void DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame &frame);
+  void DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame& frame);
   void DrawUiView(const gvr::Mat4f* head_pose,
                   const std::vector<const ContentRectangle*>& elements,
-                  const gvr::Sizei& render_size, int viewport_offset);
+                  const gvr::Sizei& render_size,
+                  int viewport_offset);
   void DrawElements(const gvr::Mat4f& view_proj_matrix,
                     const gvr::Mat4f& view_matrix,
                     const std::vector<const ContentRectangle*>& elements);
@@ -115,8 +115,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
   void UpdateController(const gvr::Vec3f& forward_vector);
-  void SendEventsToTarget(InputTarget input_target, int pixel_x,
-                          int pixel_y);
+  void SendEventsToTarget(InputTarget input_target, int pixel_x, int pixel_y);
   void SendGesture(InputTarget input_target,
                    std::unique_ptr<blink::WebInputEvent> event);
   void CreateUiSurface();

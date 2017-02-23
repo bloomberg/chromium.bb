@@ -205,17 +205,11 @@ class VrShellRenderer {
     return textured_quad_renderer_.get();
   }
 
-  WebVrRenderer* GetWebVrRenderer() {
-    return webvr_renderer_.get();
-  }
+  WebVrRenderer* GetWebVrRenderer() { return webvr_renderer_.get(); }
 
-  ReticleRenderer* GetReticleRenderer() {
-    return reticle_renderer_.get();
-  }
+  ReticleRenderer* GetReticleRenderer() { return reticle_renderer_.get(); }
 
-  LaserRenderer* GetLaserRenderer() {
-    return laser_renderer_.get();
-  }
+  LaserRenderer* GetLaserRenderer() { return laser_renderer_.get(); }
 
   GradientQuadRenderer* GetGradientQuadRenderer() {
     return gradient_quad_renderer_.get();

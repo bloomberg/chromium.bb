@@ -37,8 +37,8 @@ class CONTENT_EXPORT VrWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DidToggleFullscreenModeForTab(
-      bool entered_fullscreen, bool will_cause_resize) override;
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override;
   void DidChangeVisibleSecurityState() override;
   void WebContentsDestroyed() override;
   void WasHidden() override;

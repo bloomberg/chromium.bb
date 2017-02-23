@@ -65,7 +65,8 @@ class VrMetricsHelper;
 // must only be used on the UI thread.
 class VrShell : public device::GvrDelegate, content::WebContentsObserver {
  public:
-  VrShell(JNIEnv* env, jobject obj,
+  VrShell(JNIEnv* env,
+          jobject obj,
           ui::WindowAndroid* content_window,
           content::WebContents* ui_contents,
           ui::WindowAndroid* ui_window,
@@ -81,10 +82,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnTriggerEvent(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
-  void OnPause(JNIEnv* env,
-               const base::android::JavaParamRef<jobject>& obj);
-  void OnResume(JNIEnv* env,
-                const base::android::JavaParamRef<jobject>& obj);
+  void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void SetSurface(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
                   const base::android::JavaParamRef<jobject>& surface);
@@ -96,13 +95,17 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
                              double progress);
   void OnTabListCreated(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
-                        jobjectArray tabs, jobjectArray incognito_tabs);
+                        jobjectArray tabs,
+                        jobjectArray incognito_tabs);
   void OnTabUpdated(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
-                    jboolean incognito, jint id, jstring jtitle);
+                    jboolean incognito,
+                    jint id,
+                    jstring jtitle);
   void OnTabRemoved(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
-                    jboolean incognito, jint id);
+                    jboolean incognito,
+                    jint id);
   base::android::ScopedJavaGlobalRef<jobject> TakeContentSurface(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -130,12 +133,16 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void ContentPhysicalBoundsChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
-      jint width, jint height, jfloat dpr);
+      jint width,
+      jint height,
+      jfloat dpr);
 
   void UIPhysicalBoundsChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
-      jint width, jint height, jfloat dpr);
+      jint width,
+      jint height,
+      jfloat dpr);
 
   void UpdateScene(const base::ListValue* args);
 

@@ -227,16 +227,16 @@ BaseRenderer::BaseRenderer(ShaderID vertex_id,
                            ShaderID fragment_id,
                            bool setup_vertex_buffer = true) {
   std::string error;
-  GLuint vertex_shader_handle = CompileShader(
-      GL_VERTEX_SHADER, GetShaderSource(vertex_id), error);
+  GLuint vertex_shader_handle =
+      CompileShader(GL_VERTEX_SHADER, GetShaderSource(vertex_id), error);
   CHECK(vertex_shader_handle) << error;
 
-  GLuint fragment_shader_handle = CompileShader(
-      GL_FRAGMENT_SHADER, GetShaderSource(fragment_id), error);
+  GLuint fragment_shader_handle =
+      CompileShader(GL_FRAGMENT_SHADER, GetShaderSource(fragment_id), error);
   CHECK(fragment_shader_handle) << error;
 
-  program_handle_ = CreateAndLinkProgram(vertex_shader_handle,
-                                         fragment_shader_handle, error);
+  program_handle_ =
+      CreateAndLinkProgram(vertex_shader_handle, fragment_shader_handle, error);
   CHECK(program_handle_) << error;
 
   // Once the program is linked the shader objects are no longer needed
@@ -472,11 +472,9 @@ LaserRenderer::LaserRenderer()
     : BaseRenderer(LASER_VERTEX_SHADER, LASER_FRAGMENT_SHADER) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
-  texture_unit_handle_ =
-      glGetUniformLocation(program_handle_, "texture_unit");
+  texture_unit_handle_ = glGetUniformLocation(program_handle_, "texture_unit");
   color_handle_ = glGetUniformLocation(program_handle_, "color");
-  fade_point_handle_ =
-      glGetUniformLocation(program_handle_, "fade_point");
+  fade_point_handle_ = glGetUniformLocation(program_handle_, "fade_point");
   fade_end_handle_ = glGetUniformLocation(program_handle_, "fade_end");
 
   glGenTextures(1, &texture_data_handle_);

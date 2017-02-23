@@ -15,7 +15,7 @@ enum EasingType {
   LINEAR = 0,
   CUBICBEZIER,
   EASEIN,
-  EASEOUT
+  EASEOUT,
 };
 
 // Abstract base class for custom interpolators, mapping linear input between
