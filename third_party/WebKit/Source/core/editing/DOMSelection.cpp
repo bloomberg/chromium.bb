@@ -204,7 +204,13 @@ unsigned DOMSelection::rangeCount() const {
     return 0;
   if (documentCachedRange())
     return 1;
-  return frame()->selection().isNone() ? 0 : 1;
+  if (frame()->selection().isNone())
+    return 0;
+  // Any selection can be adjusted to Range for Document.
+  if (isSelectionOfDocument())
+    return 1;
+  // In ShadowRoot, we need to try adjustment.
+  return createRangeFromSelectionEditor() ? 1 : 0;
 }
 
 // https://www.w3.org/TR/selection-api/#dom-selection-collapse
