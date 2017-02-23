@@ -925,6 +925,7 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int idx, all_zero = 1;
 #if CONFIG_GLOBAL_MOTION
   MV_REFERENCE_FRAME rf[2];
+  BLOCK_SIZE bsize = mi->mbmi.sb_type;
 #endif
 #endif
 #if CONFIG_EXT_INTER
@@ -941,21 +942,21 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   av1_set_ref_frame(rf, ref_frame);
   zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
                                           cm->allow_high_precision_mv,
-                                          mi_col * MI_SIZE + MI_SIZE / 2,
-                                          mi_row * MI_SIZE + MI_SIZE / 2)
+                                          block_center_x(mi_col, bsize),
+                                          block_center_y(mi_row, bsize))
                          .as_int;
   zeromv[1].as_int = (rf[1] != NONE_FRAME)
                          ? gm_get_motion_vector(&cm->global_motion[rf[1]],
                                                 cm->allow_high_precision_mv,
-                                                mi_col * MI_SIZE + MI_SIZE / 2,
-                                                mi_row * MI_SIZE + MI_SIZE / 2)
+                                                block_center_x(mi_col, bsize),
+                                                block_center_y(mi_row, bsize))
                                .as_int
                          : 0;
 #else
   zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame],
                                           cm->allow_high_precision_mv,
-                                          mi_col * MI_SIZE + MI_SIZE / 2,
-                                          mi_row * MI_SIZE + MI_SIZE / 2)
+                                          block_center_x(mi_col, bsize),
+                                          block_center_y(mi_row, bsize))
                          .as_int;
   zeromv[1].as_int = 0;
 #endif  // CONFIG_REF_MV
@@ -1043,8 +1044,8 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION
   zeromv.as_int =
       gm_get_motion_vector(&cm->global_motion[ref], cm->allow_high_precision_mv,
-                           mi_col * MI_SIZE + MI_SIZE / 2,
-                           mi_row * MI_SIZE + MI_SIZE / 2)
+                           block_center_x(mi_col, mi->mbmi.sb_type),
+                           block_center_y(mi_row, mi->mbmi.sb_type))
           .as_int;
 #else
   zeromv.as_int = 0;

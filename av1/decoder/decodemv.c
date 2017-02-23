@@ -1281,13 +1281,13 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
 #else
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
+  BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
 #if CONFIG_REF_MV
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 #if CONFIG_CB4X4
   int_mv *pred_mv = mbmi->pred_mv;
   (void)block;
 #else
-  BLOCK_SIZE bsize = mbmi->sb_type;
   int_mv *pred_mv =
       (bsize >= BLOCK_8X8) ? mbmi->pred_mv : xd->mi[0]->bmi[block].pred_mv;
 #endif  // CONFIG_CB4X4
@@ -1298,6 +1298,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   (void)cm;
   (void)mi_row;
   (void)mi_col;
+  (void)bsize;
 
   switch (mode) {
 #if CONFIG_EXT_INTER
@@ -1354,14 +1355,14 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION
       mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
                                           cm->allow_high_precision_mv,
-                                          mi_col * MI_SIZE + MI_SIZE / 2,
-                                          mi_row * MI_SIZE + MI_SIZE / 2)
+                                          block_center_x(mi_col, bsize),
+                                          block_center_y(mi_row, bsize))
                          .as_int;
       if (is_compound)
         mv[1].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[1]],
                                             cm->allow_high_precision_mv,
-                                            mi_col * MI_SIZE + MI_SIZE / 2,
-                                            mi_row * MI_SIZE + MI_SIZE / 2)
+                                            block_center_x(mi_col, bsize),
+                                            block_center_y(mi_row, bsize))
                            .as_int;
 #else
       mv[0].as_int = 0;
@@ -1511,13 +1512,13 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION
       mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
                                           cm->allow_high_precision_mv,
-                                          mi_col * MI_SIZE + MI_SIZE / 2,
-                                          mi_row * MI_SIZE + MI_SIZE / 2)
+                                          block_center_x(mi_col, bsize),
+                                          block_center_y(mi_row, bsize))
                          .as_int;
       mv[1].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[1]],
                                           cm->allow_high_precision_mv,
-                                          mi_col * MI_SIZE + MI_SIZE / 2,
-                                          mi_row * MI_SIZE + MI_SIZE / 2)
+                                          block_center_x(mi_col, bsize),
+                                          block_center_y(mi_row, bsize))
                          .as_int;
 #else
       mv[0].as_int = 0;
@@ -1625,15 +1626,15 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_GLOBAL_MOTION
       zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
                                               cm->allow_high_precision_mv,
-                                              mi_col * MI_SIZE + MI_SIZE / 2,
-                                              mi_row * MI_SIZE + MI_SIZE / 2)
+                                              block_center_x(mi_col, bsize),
+                                              block_center_y(mi_row, bsize))
                              .as_int;
       zeromv[1].as_int =
           (rf[1] != NONE_FRAME)
               ? gm_get_motion_vector(&cm->global_motion[rf[1]],
                                      cm->allow_high_precision_mv,
-                                     mi_col * MI_SIZE + MI_SIZE / 2,
-                                     mi_row * MI_SIZE + MI_SIZE / 2)
+                                     block_center_x(mi_col, bsize),
+                                     block_center_y(mi_row, bsize))
                     .as_int
               : 0;
 #else

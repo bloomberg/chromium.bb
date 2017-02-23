@@ -135,7 +135,7 @@ typedef struct {
 #define GM_ALPHA_MIN -GM_ALPHA_MAX
 #define GM_ROW3HOMO_MIN -GM_ROW3HOMO_MAX
 
-// Bits used for different models
+// Maximum number of bits used for different models
 #define GM_IDENTITY_BITS 0
 #define GM_TRANSLATION_BITS ((GM_ABS_TRANS_BITS + 1) * 2)
 #define GM_ROTZOOM_BITS (GM_TRANSLATION_BITS + (GM_ABS_ALPHA_BITS + 1) * 2)
@@ -152,8 +152,6 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
                                           int allow_hp, int x, int y) {
   int_mv res;
   const int32_t *mat = gm->wmmat;
-  // Project the center point of the frame and use that to derive the
-  // motion vector. Assume the model is an AFFINE or ROTZOOM model
   int xc, yc;
   int shift = allow_hp ? WARPEDMODEL_PREC_BITS - 3 : WARPEDMODEL_PREC_BITS - 2;
   int scale = allow_hp ? 0 : 1;
@@ -164,6 +162,15 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
   }
   xc = mat[2] * x + mat[3] * y + mat[0];
   yc = mat[4] * x + mat[5] * y + mat[1];
+
+  if (gm->wmtype > AFFINE) {
+    const int Z =
+        mat[6] * x + mat[7] * y + (1 << WARPEDMODEL_ROW3HOMO_PREC_BITS);
+    xc <<= (WARPEDMODEL_ROW3HOMO_PREC_BITS - WARPEDMODEL_PREC_BITS);
+    yc <<= (WARPEDMODEL_ROW3HOMO_PREC_BITS - WARPEDMODEL_PREC_BITS);
+    xc = xc > 0 ? (xc + Z / 2) / Z : (xc - Z / 2) / Z;
+    yc = yc > 0 ? (yc + Z / 2) / Z : (yc - Z / 2) / Z;
+  }
 
   int tx = (ROUND_POWER_OF_TWO_SIGNED(xc, shift) << scale) - (x << 3);
   int ty = (ROUND_POWER_OF_TWO_SIGNED(yc, shift) << scale) - (y << 3);
