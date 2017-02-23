@@ -549,11 +549,10 @@ const char kInterestsURL[]                  = "interests-url";
 // Used for testing - keeps browser alive after last browser window closes.
 const char kKeepAliveForTest[]              = "keep-alive-for-test";
 
-// Enable Kiosk mode.
+// Enable kiosk mode. Please note this is not Chrome OS kiosk mode.
 const char kKioskMode[]                     = "kiosk";
 
-// Print automatically in kiosk mode. |kKioskMode| must be set as well.
-// See http://crbug.com/31395.
+// Enable automatically pressing the print button in print preview.
 const char kKioskModePrinting[]             = "kiosk-printing";
 
 // Loads an extension from the specified directory.

@@ -240,7 +240,7 @@ const char kEnableArcOOBEOptIn[] = "enable-arc-oobe-optin";
 // Enables native ChromeVox support for Arc.
 const char kEnableChromeVoxArcSupport[] = "enable-chromevox-arc-support";
 
-// Enables consume kiosk mode.
+// Enables consumer kiosk mode for Chrome OS.
 const char kEnableConsumerKiosk[] = "enable-consumer-kiosk";
 
 // Enables Data Saver prompt on cellular networks.
