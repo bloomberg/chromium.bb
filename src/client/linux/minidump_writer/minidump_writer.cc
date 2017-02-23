@@ -273,7 +273,7 @@ class MinidumpWriter {
   }
 
   bool FillThreadStack(MDRawThread* thread, uintptr_t stack_pointer,
-                       int max_stack_len, uint8_t** stack_copy) {
+                       uintptr_t pc, int max_stack_len, uint8_t** stack_copy) {
     *stack_copy = NULL;
     const void* stack;
     size_t stack_len;
@@ -309,7 +309,6 @@ class MinidumpWriter {
         }
         uintptr_t low_addr = principal_mapping->system_mapping_info.start_addr;
         uintptr_t high_addr = principal_mapping->system_mapping_info.end_addr;
-        uintptr_t pc = UContextReader::GetInstructionPointer(ucontext_);
         if ((pc < low_addr || pc > high_addr) &&
             !dumper_->StackHasPointerToMapping(*stack_copy, stack_len,
                                                stack_pointer_offset,
@@ -376,7 +375,9 @@ class MinidumpWriter {
           !dumper_->IsPostMortem()) {
         uint8_t* stack_copy;
         const uintptr_t stack_ptr = UContextReader::GetStackPointer(ucontext_);
-        if (!FillThreadStack(&thread, stack_ptr, -1, &stack_copy))
+        if (!FillThreadStack(&thread, stack_ptr,
+                             UContextReader::GetInstructionPointer(ucontext_),
+                             -1, &stack_copy))
           return false;
 
         // Copy 256 bytes around crashing instruction pointer to minidump.
@@ -442,8 +443,9 @@ class MinidumpWriter {
         int max_stack_len = -1;  // default to no maximum for this thread
         if (minidump_size_limit_ >= 0 && i >= kLimitBaseThreadCount)
           max_stack_len = extra_thread_stack_len;
-        if (!FillThreadStack(&thread, info.stack_pointer, max_stack_len,
-            &stack_copy))
+        if (!FillThreadStack(&thread, info.stack_pointer,
+                             info.GetInstructionPointer(), max_stack_len,
+                             &stack_copy))
           return false;
 
         TypedMDRVA<RawContextCPU> cpu(&minidump_writer_);
