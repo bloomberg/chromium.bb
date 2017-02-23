@@ -1691,20 +1691,6 @@ config("no_symbols") {
   }
 }
 
-# On Linux and Android, the "grit" template wants to disable the warning about
-# unknown pragmas. However since gn does not deduplicate the flags from configs
-# but only the config themselves, if the template declares a "config" for that
-# purpose, the flag will end up being repeated for each dependent "grit" target.
-# Using a separate config solves this problem.
-config("disable_unknown_pragma") {
-  if (is_clang) {
-    cflags = [
-      "-Wunknown-pragmas",
-      "-Wno-error=unknown-pragmas",
-    ]
-  }
-}
-
 # Default symbols.
 config("default_symbols") {
   if (symbol_level == 0) {

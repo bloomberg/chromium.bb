@@ -357,7 +357,10 @@ template("grit") {
     }
 
     if ((is_linux || is_android) && enable_resource_whitelist_generation) {
-      configs += [ "//build/config/compiler:disable_unknown_pragma" ]
+      cflags = [
+        "-Wunknown-pragmas",
+        "-Wno-error=unknown-pragmas",
+      ]
     }
     visibility = target_visibility
   }
