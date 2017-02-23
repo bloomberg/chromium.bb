@@ -9,6 +9,8 @@
 Polymer({
   is: 'settings-search-engine-entry',
 
+  behaviors: [FocusableIronListItemBehavior],
+
   properties: {
     /** @type {!SearchEngine} */
     engine: Object,
@@ -25,8 +27,8 @@ Polymer({
       reflectToAttribute: true,
       type: Boolean,
       computed: 'computeShowDots_(engine.canBeDefault,' +
-                                 'engine.canBeEdited,' +
-                                 'engine.canBeRemoved)',
+          'engine.canBeEdited,' +
+          'engine.canBeRemoved)',
     },
 
     /** @private {boolean} */

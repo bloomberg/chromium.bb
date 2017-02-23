@@ -1308,3 +1308,26 @@ CrSettingsExtensionControlledIndicatorTest.prototype = {
 TEST_F('CrSettingsExtensionControlledIndicatorTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * Test fixture for the Date and Time page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsFocusableIronListItemBehavior() {}
+
+CrSettingsFocusableIronListItemBehavior.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/focusable_iron_list_item_behavior.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'focusable_iron_list_item_behavior_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsFocusableIronListItemBehavior', 'FocusTest', function() {
+  mocha.run();
+});
