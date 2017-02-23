@@ -422,18 +422,31 @@ void PushMessagingManager::Core::RegisterOnUI(
         if (web_contents) {
           web_contents->GetMainFrame()->AddMessageToConsole(
               CONSOLE_MESSAGE_LEVEL_ERROR, kIncognitoPushUnsupportedMessage);
+
+          BrowserContext* browser_context = web_contents->GetBrowserContext();
+
+          // It's valid for embedders to return a null permission manager.
+          // Immediately reject the permission request when this happens.
+          if (!browser_context->GetPermissionManager()) {
+            BrowserThread::PostTask(
+                BrowserThread::IO, FROM_HERE,
+                base::Bind(
+                    &PushMessagingManager::SendSubscriptionError, io_parent_,
+                    callback, data,
+                    PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED));
+
+            return;
+          }
+
           // Request push messaging permission (which will fail, since
           // notifications aren't supported in incognito), so the website can't
           // detect whether incognito is active.
-          web_contents->GetBrowserContext()
-              ->GetPermissionManager()
-              ->RequestPermission(
-                  PermissionType::PUSH_MESSAGING, render_frame_host,
-                  data.requesting_origin, false /* user_gesture */,
-                  base::Bind(&PushMessagingManager::Core::
-                                 DidRequestPermissionInIncognito,
-                             weak_factory_ui_to_ui_.GetWeakPtr(), callback,
-                             data));
+          browser_context->GetPermissionManager()->RequestPermission(
+              PermissionType::PUSH_MESSAGING, render_frame_host,
+              data.requesting_origin, false /* user_gesture */,
+              base::Bind(
+                  &PushMessagingManager::Core::DidRequestPermissionInIncognito,
+                  weak_factory_ui_to_ui_.GetWeakPtr(), callback, data));
         }
       }
     }
