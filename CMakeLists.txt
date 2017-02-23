@@ -734,8 +734,9 @@ add_executable(twopass_encoder
                $<TARGET_OBJECTS:aom_encoder_app_util>)
 
 # List of app targets.
-set(AOM_APP_TARGETS aom_cx_set_ref aomdec aomenc decode_to_md5 decode_with_drops
-    lossless_encoder set_maps simple_decoder simple_encoder twopass_encoder)
+set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aom_cx_set_ref aomdec aomenc
+    decode_to_md5 decode_with_drops lossless_encoder set_maps simple_decoder
+    simple_encoder twopass_encoder)
 
 foreach (aom_app ${AOM_APP_TARGETS})
   target_link_libraries(${aom_app} PUBLIC aom)
