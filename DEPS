@@ -299,7 +299,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '0fd88df93c5dcaf858c57eb7892bd27763f0f0ac',
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '193486d7164a40ce28d8ec64552df129c0558bad',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'db20d46c05900a12539225fe800dd860b14e0061',
 
   # Used for building libFuzzers (only supports Linux).
   'src/third_party/libFuzzer/src':
