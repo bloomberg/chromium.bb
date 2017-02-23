@@ -225,15 +225,14 @@ ScriptSourceCode PendingScript::getSource(const KURL& documentURL,
                                           bool& errorOccurred) const {
   checkState();
 
+  errorOccurred = this->errorOccurred();
   if (resource()) {
-    errorOccurred = resource()->errorOccurred() || m_integrityFailure;
     DCHECK(resource()->isLoaded());
     if (m_streamer && !m_streamer->streamingSuppressed())
       return ScriptSourceCode(m_streamer, resource());
     return ScriptSourceCode(resource());
   }
 
-  errorOccurred = false;
   return ScriptSourceCode(m_element->textContent(), documentURL,
                           startingPosition());
 }
@@ -257,7 +256,7 @@ bool PendingScript::isReady() const {
 bool PendingScript::errorOccurred() const {
   checkState();
   if (resource())
-    return resource()->errorOccurred();
+    return resource()->errorOccurred() || m_integrityFailure;
 
   return false;
 }
