@@ -171,6 +171,7 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/navigation/crw_session_controller.h"
+#import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/navigation_item.h"
@@ -1916,10 +1917,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   // Hide the toolbar if displaying phone NTP.
   if (!IsIPadIdiom()) {
-    web::NavigationItem* item = [tab navigationManager]->GetVisibleItem();
+    CRWSessionEntry* entry =
+        [[tab navigationManager]->GetSessionController() currentEntry];
     BOOL hideToolbar = NO;
-    if (item) {
-      GURL url = item->GetURL();
+    if (entry) {
+      GURL url = [entry navigationItem]->GetURL();
       BOOL isNTP = url.GetOrigin() == GURL(kChromeUINewTabURL);
       hideToolbar = isNTP && !_isOffTheRecord &&
                     ![_toolbarController isOmniboxFirstResponder] &&
@@ -4813,6 +4815,13 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 - (BOOL)shouldUseDesktopUserAgent {
   return [_model currentTab].useDesktopUserAgent;
+}
+
+- (CRWSessionEntry*)currentSessionEntry {
+  Tab* tab = [_model currentTab];
+  if (![tab navigationManager])
+    return nil;
+  return [[tab navigationManager]->GetSessionController() currentEntry];
 }
 
 #pragma mark - BookmarkBridgeMethods
