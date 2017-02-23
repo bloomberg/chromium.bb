@@ -399,7 +399,6 @@ libvpx_srcs_x86_assembly = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_bilinear_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_bilinear_ssse3.asm",
   "//third_party/libvpx/source/libvpx/vpx_ports/emms.asm",
-  "//third_party/libvpx/source/libvpx/vpx_ports/x86_abi_support.asm",
 ]
 libvpx_srcs_x86_mmx = [
   "//third_party/libvpx/source/libvpx/vp8/common/x86/idct_blk_mmx.c",
@@ -849,7 +848,6 @@ libvpx_srcs_x86_64_assembly = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_bilinear_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_bilinear_ssse3.asm",
   "//third_party/libvpx/source/libvpx/vpx_ports/emms.asm",
-  "//third_party/libvpx/source/libvpx/vpx_ports/x86_abi_support.asm",
 ]
 libvpx_srcs_x86_64_mmx = [
   "//third_party/libvpx/source/libvpx/vp8/common/x86/idct_blk_mmx.c",

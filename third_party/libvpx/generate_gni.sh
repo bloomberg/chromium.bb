@@ -112,6 +112,9 @@ function convert_srcs_to_project_files {
   # Not sure why vpx_config.c is not included.
   source_list=$(echo "$source_list" | grep -v 'vpx_config\.c')
 
+  # Ignore include files.
+  source_list=$(echo "$source_list" | grep -v 'x86_abi_support\.asm')
+
   # The actual ARM files end in .asm. We have rules to translate them to .S
   source_list=$(echo "$source_list" | sed s/\.asm\.s$/.asm/)
 
