@@ -1149,7 +1149,7 @@ void WebLocalFrameImpl::selectWordAroundPosition(LocalFrame* frame,
 bool WebLocalFrameImpl::selectWordAroundCaret() {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::selectWordAroundCaret");
   FrameSelection& selection = frame()->selection();
-  if (selection.isNone() ||
+  if (selection.computeVisibleSelectionInDOMTreeDeprecated().isNone() ||
       selection.computeVisibleSelectionInDOMTreeDeprecated().isRange())
     return false;
 

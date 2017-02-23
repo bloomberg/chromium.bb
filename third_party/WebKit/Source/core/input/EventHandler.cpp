@@ -555,7 +555,10 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result,
   if (m_mouseEventManager->mousePressed() &&
       selectionController().mouseDownMayStartSelect() &&
       !m_mouseEventManager->mouseDownMayStartDrag() &&
-      !m_frame->selection().isNone() && !m_capturingMouseEventsNode) {
+      !m_frame->selection()
+           .computeVisibleSelectionInDOMTreeDeprecated()
+           .isNone() &&
+      !m_capturingMouseEventsNode) {
     return iBeam;
   }
 

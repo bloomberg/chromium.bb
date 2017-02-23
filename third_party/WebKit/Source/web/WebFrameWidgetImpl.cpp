@@ -548,7 +548,7 @@ bool WebFrameWidgetImpl::selectionBounds(WebRect& anchor,
     return false;
 
   FrameSelection& selection = localFrame->selection();
-  if (selection.isNone())
+  if (selection.computeVisibleSelectionInDOMTreeDeprecated().isNone())
     return false;
 
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets

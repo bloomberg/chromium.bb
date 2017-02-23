@@ -829,7 +829,7 @@ static bool isFrameElement(const Node* n) {
 }
 
 void FrameSelection::setFocusedNodeIfNeeded() {
-  if (isNone() || !isFocused())
+  if (computeVisibleSelectionInDOMTreeDeprecated().isNone() || !isFocused())
     return;
 
   if (Element* target =
@@ -1002,7 +1002,8 @@ void FrameSelection::setSelectionFromNone() {
   // entire WebView is editable or designMode is on for this document).
 
   Document* document = m_frame->document();
-  if (!isNone() || !(blink::hasEditableStyle(*document)))
+  if (!computeVisibleSelectionInDOMTreeDeprecated().isNone() ||
+      !(blink::hasEditableStyle(*document)))
     return;
 
   Element* documentElement = document->documentElement();
@@ -1103,7 +1104,7 @@ GranularityStrategy* FrameSelection::granularityStrategy() {
 }
 
 void FrameSelection::moveRangeSelectionExtent(const IntPoint& contentsPoint) {
-  if (isNone())
+  if (computeVisibleSelectionInDOMTreeDeprecated().isNone())
     return;
 
   VisibleSelection newSelection =

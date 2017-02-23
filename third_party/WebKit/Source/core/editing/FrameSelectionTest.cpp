@@ -63,7 +63,8 @@ TEST_F(FrameSelectionTest, SetValidSelection) {
       SelectionInDOMTree::Builder()
           .setBaseAndExtent(Position(text, 0), Position(text, 5))
           .build());
-  EXPECT_FALSE(selection().isNone());
+  EXPECT_FALSE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isNone());
 }
 
 TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
@@ -208,9 +209,10 @@ TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
   Element* select = document().createElement("select");
   document().replaceChild(select, document().documentElement());
   selection().selectAll();
-  EXPECT_TRUE(selection().isNone()) << "Nothing should be selected if the "
-                                       "content of the documentElement is not "
-                                       "selctable.";
+  EXPECT_TRUE(selection().computeVisibleSelectionInDOMTreeDeprecated().isNone())
+      << "Nothing should be selected if the "
+         "content of the documentElement is not "
+         "selctable.";
 }
 
 TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {

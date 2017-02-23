@@ -410,7 +410,7 @@ void Editor::deleteSelectionWithSmartDelete(
     DeleteMode deleteMode,
     InputEvent::InputType inputType,
     const Position& referenceMovePosition) {
-  if (frame().selection().isNone())
+  if (frame().selection().computeVisibleSelectionInDOMTreeDeprecated().isNone())
     return;
 
   const bool kMergeBlocksAfterDelete = true;
@@ -605,7 +605,10 @@ void Editor::replaceSelectionWithFragment(DocumentFragment* fragment,
                                           bool matchStyle,
                                           InputEvent::InputType inputType) {
   DCHECK(!frame().document()->needsLayoutTreeUpdate());
-  if (frame().selection().isNone() ||
+  if (frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .isNone() ||
       !frame()
            .selection()
            .computeVisibleSelectionInDOMTreeDeprecated()
@@ -796,7 +799,11 @@ void Editor::applyStyle(StylePropertySet* style,
 
 void Editor::applyParagraphStyle(StylePropertySet* style,
                                  InputEvent::InputType inputType) {
-  if (frame().selection().isNone() || !style)
+  if (frame()
+          .selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .isNone() ||
+      !style)
     return;
   DCHECK(frame().document());
   ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style),

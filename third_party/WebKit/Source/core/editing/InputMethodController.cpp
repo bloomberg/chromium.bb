@@ -326,7 +326,7 @@ bool InputMethodController::replaceComposition(const String& text) {
   // Select the text that will be deleted or replaced.
   selectComposition();
 
-  if (frame().selection().isNone())
+  if (frame().selection().computeVisibleSelectionInDOMTreeDeprecated().isNone())
     return false;
 
   if (!isAvailable())
@@ -447,7 +447,7 @@ void InputMethodController::cancelComposition() {
 
   Editor::RevealSelectionScope revealSelectionScope(&editor());
 
-  if (frame().selection().isNone())
+  if (frame().selection().computeVisibleSelectionInDOMTreeDeprecated().isNone())
     return;
 
   clear();
@@ -507,7 +507,7 @@ void InputMethodController::setComposition(
 
   selectComposition();
 
-  if (frame().selection().isNone())
+  if (frame().selection().computeVisibleSelectionInDOMTreeDeprecated().isNone())
     return;
 
   Element* target = document().focusedElement();

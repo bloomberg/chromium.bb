@@ -204,7 +204,10 @@ unsigned DOMSelection::rangeCount() const {
     return 0;
   if (documentCachedRange())
     return 1;
-  if (frame()->selection().isNone())
+  if (frame()
+          ->selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .isNone())
     return 0;
   // Any selection can be adjusted to Range for Document.
   if (isSelectionOfDocument())
@@ -463,7 +466,11 @@ void DOMSelection::extend(Node* node,
       LOG(FATAL)
           << "Selection has a cached Range, but anchorPosition is null. start="
           << range->startContainer() << " end=" << range->endContainer();
-    } else if (frame() && !frame()->selection().isNone()) {
+    } else if (frame() &&
+               !frame()
+                    ->selection()
+                    .computeVisibleSelectionInDOMTreeDeprecated()
+                    .isNone()) {
       LOG(FATAL) << "FrameSelection is not none, but anchorPosition is null.";
     }
   }
@@ -649,7 +656,7 @@ void DOMSelection::deleteFromDocument() {
 
   FrameSelection& selection = frame()->selection();
 
-  if (selection.isNone())
+  if (selection.computeVisibleSelectionInDOMTreeDeprecated().isNone())
     return;
 
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets

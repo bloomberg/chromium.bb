@@ -1914,7 +1914,9 @@ static bool enabledInRichlyEditableText(LocalFrame& frame,
   // We should update selection to canonicalize with current layout and style,
   // before accessing |FrameSelection::selection()|.
   frame.selection().updateIfNeeded();
-  return !frame.selection().isNone() &&
+  return !frame.selection()
+              .computeVisibleSelectionInDOMTreeDeprecated()
+              .isNone() &&
          frame.selection()
              .computeVisibleSelectionInDOMTreeDeprecated()
              .isContentRichlyEditable() &&

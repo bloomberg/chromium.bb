@@ -465,7 +465,9 @@ static bool setSelectionToDragCaret(LocalFrame* frame,
                                     Range*& range,
                                     const IntPoint& point) {
   frame->selection().setSelection(dragCaret);
-  if (frame->selection().isNone()) {
+  if (frame->selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .isNone()) {
     // TODO(editing-dev): The use of
     // updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
@@ -480,7 +482,9 @@ static bool setSelectionToDragCaret(LocalFrame* frame,
     dragCaret = frame->selection().computeVisibleSelectionInDOMTreeDeprecated();
     range = createRange(dragCaret.toNormalizedEphemeralRange());
   }
-  return !frame->selection().isNone() &&
+  return !frame->selection()
+              .computeVisibleSelectionInDOMTreeDeprecated()
+              .isNone() &&
          frame->selection()
              .computeVisibleSelectionInDOMTreeDeprecated()
              .isContentEditable();

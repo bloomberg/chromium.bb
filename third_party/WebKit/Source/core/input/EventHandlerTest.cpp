@@ -382,7 +382,8 @@ TEST_F(EventHandlerTest, ClearHandleAfterTap) {
   TapEventBuilder singleTapEvent(IntPoint(700, 700), 1);
   document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
 
-  ASSERT_TRUE(selection().isNone());
+  ASSERT_TRUE(
+      selection().computeVisibleSelectionInDOMTreeDeprecated().isNone());
   ASSERT_FALSE(selection().isHandleVisible());
 }
 

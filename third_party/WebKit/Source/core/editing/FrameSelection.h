@@ -190,10 +190,6 @@ class CORE_EXPORT FrameSelection final
   void didChangeFocus();
 
   const SelectionInDOMTree& selectionInDOMTree() const;
-  // TODO(yosin): We should rename |isNone()| to |isVisibleNone()|.
-  bool isNone() const {
-    return computeVisibleSelectionInDOMTreeDeprecated().isNone();
-  }
   bool isInPasswordField() const;
   bool isDirectional() const { return selectionInDOMTree().isDirectional(); }
 

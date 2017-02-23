@@ -2356,7 +2356,8 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const {
   if (!localFrame)
     return false;
   FrameSelection& selection = localFrame->selection();
-  if (!selection.isAvailable() || selection.isNone()) {
+  if (!selection.isAvailable() ||
+      selection.computeVisibleSelectionInDOMTreeDeprecated().isNone()) {
     // plugins/mouse-capture-inside-shadow.html reaches here.
     return false;
   }
