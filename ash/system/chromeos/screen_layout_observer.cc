@@ -152,18 +152,6 @@ bool IsDockedModeEnabled() {
   return true;
 }
 
-// Returns the notification message that should be shown to the user when the
-// docked mode is entered.
-base::string16 GetDockedModeEnabledMessage(
-    base::string16* out_additional_message) {
-  DCHECK(IsDockedModeEnabled());
-  DCHECK(out_additional_message);
-
-  *out_additional_message = ash::SubstituteChromeOSDeviceType(
-      IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION);
-  return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED);
-}
-
 // Returns the notification message that should be shown when mirror display
 // mode is entered.
 base::string16 GetEnterMirrorModeMessage() {
@@ -260,14 +248,11 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
       return true;
     }
 
-    if (current_display_mode_ == DisplayMode::DOCKED) {
-      *out_message = GetDockedModeEnabledMessage(out_additional_message);
-      return true;
-    }
-    if (old_display_mode_ == DisplayMode::DOCKED) {
-      *out_message =
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_EXITING);
-      return true;
+    if (current_display_mode_ == DisplayMode::DOCKED ||
+        old_display_mode_ == DisplayMode::DOCKED) {
+      // We no longer show any notification for docked mode events.
+      // crbug.com/674719.
+      return false;
     }
   }
 
@@ -407,16 +392,6 @@ bool ScreenLayoutObserver::GetExitMirrorModeMessage(
     base::string16* out_message,
     base::string16* out_additional_message) {
   switch (current_display_mode_) {
-    case DisplayMode::DOCKED:
-      // Handle disabling mirror mode as a result of going to docked mode
-      // when we only have a single display (this means we actually have two
-      // physical displays, one of which is the internal display, but they
-      // were in mirror mode, and hence considered as one. Closing the
-      // internal display disables mirror mode and we still have a single
-      // active display).
-      *out_message = GetDockedModeEnabledMessage(out_additional_message);
-      return true;
-
     case DisplayMode::EXTENDED_3_PLUS:
       // Mirror mode was turned off due to having more than two displays.
       // Show a message that mirror mode for 3+ displays is not supported.
@@ -424,6 +399,14 @@ bool ScreenLayoutObserver::GetExitMirrorModeMessage(
           l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED);
       return true;
 
+    case DisplayMode::DOCKED:
+      // Handle disabling mirror mode as a result of going to docked mode
+      // when we only have a single display (this means we actually have two
+      // physical displays, one of which is the internal display, but they
+      // were in mirror mode, and hence considered as one. Closing the
+      // internal display disables mirror mode and we still have a single
+      // active display).
+      // Falls through.
     case DisplayMode::SINGLE:
       // We're exiting mirror mode because we removed one of the two
       // displays.

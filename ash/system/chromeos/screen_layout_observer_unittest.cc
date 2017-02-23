@@ -201,11 +201,7 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
   display::Display::SetInternalDisplayId(
       display_manager()->GetSecondaryDisplay().id());
   UpdateDisplay("400x400@1.5");
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED),
-            GetDisplayNotificationText());
-  EXPECT_EQ(ash::SubstituteChromeOSDeviceType(
-                IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION),
-            GetDisplayNotificationAdditionalText());
+  EXPECT_TRUE(GetDisplayNotificationText().empty());
 }
 
 // Verify that notification shows up when display is switched from dock mode to
@@ -274,8 +270,8 @@ TEST_F(ScreenLayoutObserverTest, OverscanDisplay) {
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 }
 
-// Tests that exiting mirror mode by closing the lid shows the correct "docked
-// mode" message.
+// Tests that exiting mirror mode by closing the lid shows the correct "exiting
+// mirror mode" message.
 TEST_F(ScreenLayoutObserverTest, ExitMirrorModeBecauseOfDockedModeMessage) {
   Shell::GetInstance()
       ->screen_layout_observer()
@@ -296,11 +292,8 @@ TEST_F(ScreenLayoutObserverTest, ExitMirrorModeBecauseOfDockedModeMessage) {
   display_manager()->SetSoftwareMirroring(false);
   display::Display::SetInternalDisplayId(display_manager()->first_display_id());
   UpdateDisplay("200x200");
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED),
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT),
             GetDisplayNotificationText());
-  EXPECT_EQ(ash::SubstituteChromeOSDeviceType(
-                IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION),
-            GetDisplayNotificationAdditionalText());
 }
 
 // Tests that exiting mirror mode because of adding a third display shows the
@@ -441,13 +434,10 @@ TEST_F(ScreenLayoutObserverTest, DockedModeWithExternalPrimaryDisplayMessage) {
   display_manager()->SetLayoutForCurrentDisplays(builder.Build());
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 
-  // Close the lid and expect we show the docked mode message.
+  // Close the lid. We go to docked mode, but we show no notifications.
   UpdateDisplay("400x400");
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED),
-            GetDisplayNotificationText());
-  EXPECT_EQ(ash::SubstituteChromeOSDeviceType(
-                IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION),
-            GetDisplayNotificationAdditionalText());
+  EXPECT_TRUE(GetDisplayNotificationText().empty());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 }
 
 }  // namespace ash
