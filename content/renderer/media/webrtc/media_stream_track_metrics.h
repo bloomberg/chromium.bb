@@ -97,6 +97,8 @@ class CONTENT_EXPORT MediaStreamTrackMetrics : public base::NonThreadSafe {
   ObserverVector observers_;
 
   webrtc::PeerConnectionInterface::IceConnectionState ice_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaStreamTrackMetrics);
 };
 
 }  // namespace
