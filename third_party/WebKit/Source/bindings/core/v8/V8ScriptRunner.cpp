@@ -697,53 +697,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::evaluateModule(
   return module->Evaluate(context);
 }
 
-v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(
-    v8::Isolate* isolate,
-    v8::Local<v8::ObjectTemplate> objectTemplate) {
-  TRACE_EVENT0("v8", "v8.newInstance");
-
-  v8::MicrotasksScope microtasksScope(isolate,
-                                      v8::MicrotasksScope::kDoNotRunMicrotasks);
-  v8::MaybeLocal<v8::Object> result =
-      objectTemplate->NewInstance(isolate->GetCurrentContext());
-  CHECK(!isolate->IsDead());
-  return result;
-}
-
-v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(
-    v8::Isolate* isolate,
-    v8::Local<v8::Function> function,
-    int argc,
-    v8::Local<v8::Value> argv[]) {
-  TRACE_EVENT0("v8", "v8.newInstance");
-
-  v8::MicrotasksScope microtasksScope(isolate,
-                                      v8::MicrotasksScope::kDoNotRunMicrotasks);
-  v8::MaybeLocal<v8::Object> result =
-      function->NewInstance(isolate->GetCurrentContext(), argc, argv);
-  CHECK(!isolate->IsDead());
-  return result;
-}
-
-v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObjectInDocument(
-    v8::Isolate* isolate,
-    v8::Local<v8::Function> function,
-    ExecutionContext* context,
-    int argc,
-    v8::Local<v8::Value> argv[]) {
-  TRACE_EVENT0("v8", "v8.newInstance");
-  if (ScriptForbiddenScope::isScriptForbidden()) {
-    throwScriptForbiddenException(isolate);
-    return v8::MaybeLocal<v8::Object>();
-  }
-  v8::MicrotasksScope microtasksScope(isolate,
-                                      v8::MicrotasksScope::kRunMicrotasks);
-  v8::MaybeLocal<v8::Object> result =
-      function->NewInstance(isolate->GetCurrentContext(), argc, argv);
-  CHECK(!isolate->IsDead());
-  return result;
-}
-
 uint32_t V8ScriptRunner::tagForParserCache(
     CachedMetadataHandler* cacheHandler) {
   return cacheTag(CacheTagParser, cacheHandler);

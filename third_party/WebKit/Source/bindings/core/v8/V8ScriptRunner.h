@@ -116,26 +116,12 @@ class CORE_EXPORT V8ScriptRunner final {
   static v8::MaybeLocal<v8::Value> evaluateModule(v8::Local<v8::Module>,
                                                   v8::Local<v8::Context>,
                                                   v8::Isolate*);
-  static v8::MaybeLocal<v8::Object> instantiateObject(
-      v8::Isolate*,
-      v8::Local<v8::ObjectTemplate>);
-  static v8::MaybeLocal<v8::Object> instantiateObject(
-      v8::Isolate*,
-      v8::Local<v8::Function>,
-      int argc = 0,
-      v8::Local<v8::Value> argv[] = 0);
-  static v8::MaybeLocal<v8::Object> instantiateObjectInDocument(
-      v8::Isolate*,
-      v8::Local<v8::Function>,
-      ExecutionContext*,
-      int argc = 0,
-      v8::Local<v8::Value> argv[] = 0);
 
   static uint32_t tagForParserCache(CachedMetadataHandler*);
   static uint32_t tagForCodeCache(CachedMetadataHandler*);
   static void setCacheTimeStamp(CachedMetadataHandler*);
 
-  // Utiltiies for calling functions added to the V8 extras binding object.
+  // Utilities for calling functions added to the V8 extras binding object.
 
   template <size_t N>
   static v8::MaybeLocal<v8::Value> callExtra(ScriptState* scriptState,
