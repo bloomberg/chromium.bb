@@ -33,14 +33,14 @@
 // For non-debug builds, everything is disabled by default, except for the
 // RELEASE_ASSERT family of macros.
 
-#include "base/allocator/oom.h"
+#include <stdarg.h>
+#include "base/allocator/partition_allocator/oom.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "wtf/Compiler.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WTFExport.h"
 #include "wtf/build_config.h"
-#include <stdarg.h>
 
 #if OS(WIN)
 #include <windows.h>

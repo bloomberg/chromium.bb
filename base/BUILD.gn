@@ -152,7 +152,6 @@ component("base") {
     "allocator/allocator_interception_mac.h",
     "allocator/allocator_interception_mac.mm",
     "allocator/allocator_shim.h",
-    "allocator/oom.h",
     "android/animation_frame_time_histogram.cc",
     "android/animation_frame_time_histogram.h",
     "android/apk_assets.cc",
@@ -1307,6 +1306,7 @@ component("base") {
         # PartitionAlloc uses SpinLock, which doesn't work in NaCl (see below).
         "allocator/partition_allocator/address_space_randomization.cc",
         "allocator/partition_allocator/address_space_randomization.h",
+        "allocator/partition_allocator/oom.h",
         "allocator/partition_allocator/page_allocator.cc",
         "allocator/partition_allocator/page_allocator.h",
         "allocator/partition_allocator/partition_alloc.cc",
