@@ -447,7 +447,6 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
 
   background_color_ = frame.metadata.root_background_color;
 
-  bool did_send_ack_callback = false;
   if (frame_size.IsEmpty()) {
     DCHECK(frame.resource_list.empty());
     EvictDelegatedFrame();
@@ -477,10 +476,9 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
     }
 
     cc::SurfaceFactory::DrawCallback ack_callback;
-    if (compositor_ && !skip_frame) {
+    if (!skip_frame) {
       ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn, AsWeakPtr(),
                                 compositor_frame_sink_id);
-      did_send_ack_callback = true;
     }
     surface_factory_->SubmitCompositorFrame(local_surface_id_, std::move(frame),
                                             ack_callback);
@@ -506,14 +504,14 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
         damage_rect_in_dip);
   }
 
-  // Note that |compositor_| may be reset by SetShowSurface or
-  // SetShowDelegatedContent above.
-  if (!compositor_ || skip_frame) {
+  if (skip_frame) {
     SendReclaimCompositorResources(compositor_frame_sink_id,
-                                   !did_send_ack_callback /* is_swap_ack */);
-  } else {
-    can_lock_compositor_ = NO_PENDING_COMMIT;
+                                   true /* is_swap_ack */);
   }
+
+  if (compositor_ && !skip_frame)
+    can_lock_compositor_ = NO_PENDING_COMMIT;
+
   if (local_surface_id_.is_valid()) {
     delegated_frame_evictor_->SwappedFrame(
         client_->DelegatedFrameHostIsVisible());

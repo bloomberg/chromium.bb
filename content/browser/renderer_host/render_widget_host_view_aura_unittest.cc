@@ -1754,45 +1754,6 @@ cc::CompositorFrame MakeDelegatedFrame(float scale_factor,
   return frame;
 }
 
-// If the ui::Compositor has been reset then resources are returned back to the
-// client in response to the swap. This test verifies that the returned
-// resources are indeed reported as being in response to a swap.
-TEST_F(RenderWidgetHostViewAuraTest, ResettingCompositorReturnsResources) {
-  FakeSurfaceObserver manager_observer;
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  cc::SurfaceManager* manager =
-      factory->GetContextFactoryPrivate()->GetSurfaceManager();
-  manager->AddObserver(&manager_observer);
-
-  gfx::Size view_size(100, 100);
-  gfx::Rect view_rect(view_size);
-
-  view_->InitAsChild(nullptr);
-  aura::client::ParentWindowWithContext(
-      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
-      gfx::Rect());
-  view_->SetSize(view_size);
-  view_->Show();
-  sink_->ClearMessages();
-
-  view_->ResetCompositor();
-
-  // Swapping a frame should trigger a swap ACK IPC because we have reset the
-  // compositor.
-  view_->OnSwapCompositorFrame(0,
-                               MakeDelegatedFrame(1.f, view_size, view_rect));
-  EXPECT_EQ(1u, sink_->message_count());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
-    ViewMsg_ReclaimCompositorResources::Param params;
-    ViewMsg_ReclaimCompositorResources::Read(msg, &params);
-    EXPECT_EQ(0u, std::get<0>(params));  // compositor_frame_sink_id
-    EXPECT_TRUE(std::get<1>(params));    // is_swap_ack
-  }
-  manager->RemoveObserver(&manager_observer);
-}
-
 // This test verifies that returned resources do not require a pending ack.
 TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
   gfx::Size view_size(100, 100);
