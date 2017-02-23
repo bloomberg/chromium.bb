@@ -133,7 +133,8 @@ void DecoderSelector<StreamType>::InitializeDecryptingDecoder() {
       task_runner_, media_log_, waiting_for_decryption_key_cb_));
 
   traits_->InitializeDecoder(
-      decoder_.get(), input_stream_, cdm_context_,
+      decoder_.get(), StreamTraits::GetDecoderConfig(input_stream_),
+      input_stream_->liveness() == DemuxerStream::LIVENESS_LIVE, cdm_context_,
       base::Bind(&DecoderSelector<StreamType>::DecryptingDecoderInitDone,
                  weak_ptr_factory_.GetWeakPtr()),
       output_cb_);
@@ -208,7 +209,8 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
   decoders_.weak_erase(decoders_.begin());
 
   traits_->InitializeDecoder(
-      decoder_.get(), input_stream_, cdm_context_,
+      decoder_.get(), StreamTraits::GetDecoderConfig(input_stream_),
+      input_stream_->liveness() == DemuxerStream::LIVENESS_LIVE, cdm_context_,
       base::Bind(&DecoderSelector<StreamType>::DecoderInitDone,
                  weak_ptr_factory_.GetWeakPtr()),
       output_cb_);

@@ -35,6 +35,13 @@ scoped_refptr<DecoderStreamTraits<DemuxerStream::AUDIO>::OutputType>
   return OutputType::CreateEOSBuffer();
 }
 
+// static
+DecoderStreamTraits<DemuxerStream::AUDIO>::DecoderConfigType
+DecoderStreamTraits<DemuxerStream::AUDIO>::GetDecoderConfig(
+    DemuxerStream* stream) {
+  return stream->audio_decoder_config();
+}
+
 DecoderStreamTraits<DemuxerStream::AUDIO>::DecoderStreamTraits(
     const scoped_refptr<MediaLog>& media_log)
     : media_log_(media_log) {}
@@ -49,13 +56,13 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::ReportStatistics(
 
 void DecoderStreamTraits<DemuxerStream::AUDIO>::InitializeDecoder(
     DecoderType* decoder,
-    DemuxerStream* stream,
+    const DecoderConfigType& config,
+    bool /* low_delay */,
     CdmContext* cdm_context,
     const InitCB& init_cb,
     const OutputCB& output_cb) {
-  DCHECK(stream->audio_decoder_config().IsValidConfig());
-  decoder->Initialize(stream->audio_decoder_config(), cdm_context, init_cb,
-                      output_cb);
+  DCHECK(config.IsValidConfig());
+  decoder->Initialize(config, cdm_context, init_cb, output_cb);
 }
 
 void DecoderStreamTraits<DemuxerStream::AUDIO>::OnStreamReset(
@@ -96,6 +103,13 @@ DecoderStreamTraits<DemuxerStream::VIDEO>::CreateEOSOutput() {
   return OutputType::CreateEOSFrame();
 }
 
+// static
+DecoderStreamTraits<DemuxerStream::VIDEO>::DecoderConfigType
+DecoderStreamTraits<DemuxerStream::VIDEO>::GetDecoderConfig(
+    DemuxerStream* stream) {
+  return stream->video_decoder_config();
+}
+
 DecoderStreamTraits<DemuxerStream::VIDEO>::DecoderStreamTraits(
     const scoped_refptr<MediaLog>& media_log)
     // Randomly selected number of samples to keep.
@@ -121,14 +135,13 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::ReportStatistics(
 
 void DecoderStreamTraits<DemuxerStream::VIDEO>::InitializeDecoder(
     DecoderType* decoder,
-    DemuxerStream* stream,
+    const DecoderConfigType& config,
+    bool low_delay,
     CdmContext* cdm_context,
     const InitCB& init_cb,
     const OutputCB& output_cb) {
-  DCHECK(stream->video_decoder_config().IsValidConfig());
-  decoder->Initialize(stream->video_decoder_config(),
-                      stream->liveness() == DemuxerStream::LIVENESS_LIVE,
-                      cdm_context, init_cb, output_cb);
+  DCHECK(config.IsValidConfig());
+  decoder->Initialize(config, low_delay, cdm_context, init_cb, output_cb);
 }
 
 void DecoderStreamTraits<DemuxerStream::VIDEO>::OnStreamReset(

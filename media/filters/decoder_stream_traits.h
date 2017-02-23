@@ -17,11 +17,13 @@ namespace media {
 
 class AudioBuffer;
 class AudioDecoder;
+class AudioDecoderConfig;
 class CdmContext;
 class DecryptingAudioDecoder;
 class DecryptingVideoDecoder;
 class DemuxerStream;
 class VideoDecoder;
+class VideoDecoderConfig;
 class VideoFrame;
 
 template <DemuxerStream::Type StreamType>
@@ -32,6 +34,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
  public:
   typedef AudioBuffer OutputType;
   typedef AudioDecoder DecoderType;
+  typedef AudioDecoderConfig DecoderConfigType;
   typedef DecryptingAudioDecoder DecryptingDecoderType;
   typedef base::Callback<void(bool success)> InitCB;
   typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
@@ -39,12 +42,14 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);
   static scoped_refptr<OutputType> CreateEOSOutput();
+  static DecoderConfigType GetDecoderConfig(DemuxerStream* stream);
 
   explicit DecoderStreamTraits(const scoped_refptr<MediaLog>& media_log);
 
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
   void InitializeDecoder(DecoderType* decoder,
-                         DemuxerStream* stream,
+                         const DecoderConfigType& config,
+                         bool low_delay,
                          CdmContext* cdm_context,
                          const InitCB& init_cb,
                          const OutputCB& output_cb);
@@ -66,6 +71,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
  public:
   typedef VideoFrame OutputType;
   typedef VideoDecoder DecoderType;
+  typedef VideoDecoderConfig DecoderConfigType;
   typedef DecryptingVideoDecoder DecryptingDecoderType;
   typedef base::Callback<void(bool success)> InitCB;
   typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
@@ -73,12 +79,14 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);
   static scoped_refptr<OutputType> CreateEOSOutput();
+  static DecoderConfigType GetDecoderConfig(DemuxerStream* stream);
 
   explicit DecoderStreamTraits(const scoped_refptr<MediaLog>& media_log);
 
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
   void InitializeDecoder(DecoderType* decoder,
-                         DemuxerStream* stream,
+                         const DecoderConfigType& config,
+                         bool low_delay,
                          CdmContext* cdm_context,
                          const InitCB& init_cb,
                          const OutputCB& output_cb);
