@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_actor.h"
@@ -380,20 +381,6 @@ TEST_F(ArcSessionManagerTest, CloseUIKeepsArcEnabled) {
   arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcSessionManagerTest, EnableDisablesArc) {
-  const PrefService* pref = profile()->GetPrefs();
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-
-  EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
-  arc_session_manager()->SetArcPlayStoreEnabled(true);
-  EXPECT_TRUE(pref->GetBoolean(prefs::kArcEnabled));
-  arc_session_manager()->SetArcPlayStoreEnabled(false);
-  EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
-
-  // Correctly stop service.
-  arc_session_manager()->Shutdown();
-}
-
 TEST_F(ArcSessionManagerTest, SignInStatus) {
   PrefService* const prefs = profile()->GetPrefs();
 
@@ -606,8 +593,8 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   }
 
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  EXPECT_TRUE(arc_session_manager()->IsArcPlayStoreEnabled());
-  EXPECT_TRUE(arc_session_manager()->IsArcManaged());
+  EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
+  EXPECT_TRUE(arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
 
   // Terms of Service should be skipped if both ArcBackupRestoreEnabled and
   // ArcLocationServiceEnabled are managed.
@@ -827,7 +814,7 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsAccepted) {
             arc_session_manager()->state());
   ReportResult(true);
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_TRUE(arc_session_manager()->IsArcPlayStoreEnabled());
+  EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
 }
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
@@ -837,8 +824,8 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
             arc_session_manager()->state());
   ReportResult(false);
   EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
-  EXPECT_FALSE(!IsManagedUser() &&
-               arc_session_manager()->IsArcPlayStoreEnabled());
+  if (!IsManagedUser())
+    EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
 }
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsActorDestroyed) {
@@ -849,8 +836,8 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsActorDestroyed) {
   CloseLoginDisplayHost();
   ReportActorDestroyed();
   EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
-  EXPECT_FALSE(!IsManagedUser() &&
-               arc_session_manager()->IsArcPlayStoreEnabled());
+  if (!IsManagedUser())
+    EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
 }
 
 }  // namespace arc

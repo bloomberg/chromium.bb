@@ -123,7 +123,6 @@
 #include "ash/shell.h"  // nogncheck
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -1219,7 +1218,7 @@ void BrowserOptionsHandler::InitializePage() {
   if (arc::IsArcAllowedForProfile(profile) &&
       !arc::IsArcOptInVerificationDisabled()) {
     base::FundamentalValue is_arc_enabled(
-        arc::ArcSessionManager::Get()->IsArcPlayStoreEnabled());
+        arc::IsArcPlayStoreEnabledForProfile(profile));
     web_ui()->CallJavascriptFunctionUnsafe(
         "BrowserOptions.showAndroidAppsSection",
         is_arc_enabled);

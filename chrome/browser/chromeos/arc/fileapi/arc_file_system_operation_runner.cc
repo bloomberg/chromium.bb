@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -161,8 +162,11 @@ void ArcFileSystemOperationRunner::OnInstanceClosed() {
 
 void ArcFileSystemOperationRunner::OnStateChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SetShouldDefer(ArcSessionManager::Get()->IsArcPlayStoreEnabled() &&
-                 !arc_bridge_service()->file_system()->has_instance());
+  // TODO(hidehiko): Revisit the condition, when ARC is running without
+  // profile.
+  SetShouldDefer(
+      IsArcPlayStoreEnabledForProfile(ArcSessionManager::Get()->profile()) &&
+      !arc_bridge_service()->file_system()->has_instance());
 }
 
 void ArcFileSystemOperationRunner::SetShouldDefer(bool should_defer) {

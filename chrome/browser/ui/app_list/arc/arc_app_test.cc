@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -93,7 +94,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   arc_app_list_pref_->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
   run_loop.Run();
 
-  arc_session_manager_->SetArcPlayStoreEnabled(true);
+  arc::SetArcPlayStoreEnabledForProfile(profile_, true);
   // Check initial conditions.
   EXPECT_FALSE(arc_session_manager_->IsSessionRunning());
 

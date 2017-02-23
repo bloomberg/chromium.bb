@@ -22,7 +22,6 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -347,9 +346,8 @@ void StorageHandler::UpdateAndroidSize() {
   updating_android_size_ = true;
 
   Profile* const profile = Profile::FromWebUI(web_ui());
-  if (!arc::IsArcAllowedForProfile(profile) ||
-      arc::IsArcOptInVerificationDisabled() ||
-      !arc::ArcSessionManager::Get()->IsArcPlayStoreEnabled()) {
+  if (!arc::IsArcPlayStoreEnabledForProfile(profile) ||
+      arc::IsArcOptInVerificationDisabled()) {
     return;
   }
 

@@ -28,7 +28,8 @@ const char kArcDataRemoveRequested[] = "arc.data.remove_requested";
 // Store on ARC.
 // TODO(hidehiko): For historical reason, now the preference name does not
 // directly reflect "Google Play Store". We should get and set the values via
-// utility methods (IsArcPlayStoreEnabled() and SetArcPlayStoreEnabled()).
+// utility methods (IsArcPlayStoreEnabledForProfile() and
+// SetArcPlayStoreEnabledForProfile()) in chrome/browser/chromeos/arc/arc_util.
 const char kArcEnabled[] = "arc.enabled";
 // A preference that indicated whether Android reported that it's compliant
 // with provided policies. When it's compliant, Android kiosk app will start.

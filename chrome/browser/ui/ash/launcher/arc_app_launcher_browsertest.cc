@@ -9,6 +9,8 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -166,7 +168,7 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    arc::ArcSessionManager::Get()->SetArcPlayStoreEnabled(true);
+    arc::SetArcPlayStoreEnabledForProfile(profile(), true);
   }
 
   void InstallTestApps(const std::string& package_name, bool multi_app) {
@@ -545,6 +547,6 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, ShelfGroup) {
   EXPECT_FALSE(GetAppItemController(shelf_id2));
 
   // Disable ARC, this removes app and as result kills shelf group 3.
-  arc::ArcSessionManager::Get()->SetArcPlayStoreEnabled(false);
+  arc::SetArcPlayStoreEnabledForProfile(profile(), false);
   EXPECT_FALSE(GetAppItemController(shelf_id3));
 }

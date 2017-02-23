@@ -19,6 +19,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -997,14 +998,14 @@ TEST_F(ArcPlayStoreAppTest, PlayStore) {
   ASSERT_TRUE(app_info);
   EXPECT_TRUE(app_info->ready);
 
-  arc_test()->arc_session_manager()->SetArcPlayStoreEnabled(false);
+  arc::SetArcPlayStoreEnabledForProfile(profile(), false);
 
   app_info = prefs->GetApp(arc::kPlayStoreAppId);
   ASSERT_TRUE(app_info);
   EXPECT_FALSE(app_info->ready);
 
   arc::LaunchApp(profile(), arc::kPlayStoreAppId, ui::EF_NONE);
-  EXPECT_TRUE(arc_test()->arc_session_manager()->IsArcPlayStoreEnabled());
+  EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
 }
 
 // Test that icon is correctly extracted for shelf group.
@@ -1263,7 +1264,7 @@ TEST_F(ArcDefaulAppTest, DefaultApps) {
   ValidateHaveApps(all_apps);
 
   // OptOut and default apps should exist minus first.
-  arc_test()->arc_session_manager()->SetArcPlayStoreEnabled(false);
+  arc::SetArcPlayStoreEnabledForProfile(profile(), false);
   all_apps = fake_default_apps();
   all_apps.erase(all_apps.begin());
   ValidateHaveApps(all_apps);

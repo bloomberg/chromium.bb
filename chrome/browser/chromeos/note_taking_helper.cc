@@ -221,16 +221,20 @@ NoteTakingHelper::NoteTakingHelper()
   // Track profiles so we can observe their extension registries.
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  android_enabled_ = false;
   for (Profile* profile :
        g_browser_process->profile_manager()->GetLoadedProfiles()) {
     extension_registry_observer_.Add(
         extensions::ExtensionRegistry::Get(profile));
+    // Check if the profile has already enabled Google Play Store.
+    // IsArcPlayStoreEnabledForProfile() can return true only for the primary
+    // profile.
+    android_enabled_ |= arc::IsArcPlayStoreEnabledForProfile(profile);
   }
 
-  // Check if the primary profile has already enabled ARC and watch for changes.
+  // Watch for changes of Google Play Store enabled state.
   auto session_manager = arc::ArcSessionManager::Get();
   session_manager->AddObserver(this);
-  android_enabled_ = session_manager->IsArcPlayStoreEnabled();
 
   // ArcIntentHelperBridge will notify us about changes to the list of available
   // Android apps.

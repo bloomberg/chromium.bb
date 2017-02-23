@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,10 +46,8 @@ bool ShouldUseAndroidWallpapersApp(Profile* profile) {
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))
     return false;
 
-  // Check if the ARC is enabled.
-  const arc::ArcSessionManager* const arc_session_manager =
-      arc::ArcSessionManager::Get();
-  if (!arc_session_manager || !arc_session_manager->IsArcPlayStoreEnabled())
+  // Check if the Google Play Store is enabled.
+  if (!arc::IsArcPlayStoreEnabledForProfile(profile))
     return false;
 
   // Check if Android Wallpapers App has been installed.

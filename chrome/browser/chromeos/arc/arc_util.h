@@ -31,6 +31,32 @@ bool IsArcAllowedForProfile(const Profile* profile);
 // case.
 void DisallowArcForTesting();
 
+// Returns whether the user has opted in (or is opting in now) to use Google
+// Play Store on ARC.
+// This is almost equivalent to the value of "arc.enabled" preference. However,
+// in addition, if ARC is not allowed for the given |profile|, then returns
+// false. Please see detailed condition for the comment of
+// IsArcAllowedForProfile().
+// Note: For historical reason, the preference name is not matched with the
+// actual meaning.
+bool IsArcPlayStoreEnabledForProfile(const Profile* profile);
+
+// Returns whether the preference "arc.enabled" is managed or not.
+// It is requirement for a caller to ensure ARC is allowed for the user of
+// the given |profile|.
+bool IsArcPlayStoreEnabledPreferenceManagedForProfile(const Profile* profile);
+
+// Enables or disables Google Play Store on ARC. Currently, it is tied to
+// ARC enabled state, too, so this also should trigger to enable or disable
+// whole ARC system.
+// If the preference is managed, then no-op.
+// It is requirement for a caller to ensure ARC is allowed for the user of
+// the given |profile|.
+// TODO(hidehiko): De-couple the concept to enable ARC system and opt-in
+// to use Google Play Store. Note that there is a plan to use ARC without
+// Google Play Store, then ARC can run without opt-in.
+void SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_UTIL_H_

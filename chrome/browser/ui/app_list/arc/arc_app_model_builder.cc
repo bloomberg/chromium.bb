@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 
@@ -53,11 +53,9 @@ void ArcAppModelBuilder::OnAppRegistered(
 }
 
 void ArcAppModelBuilder::OnAppRemoved(const std::string& app_id) {
-  const arc::ArcSessionManager* arc_session_manager =
-      arc::ArcSessionManager::Get();
-  DCHECK(arc_session_manager);
-  // Don't sync app removal in case it was caused by disabling ARC.
-  const bool unsynced_change = !arc_session_manager->IsArcPlayStoreEnabled();
+  // Don't sync app removal in case it was caused by disabling Google Play
+  // Store.
+  const bool unsynced_change = !arc::IsArcPlayStoreEnabledForProfile(profile());
   RemoveApp(app_id, unsynced_change);
 }
 

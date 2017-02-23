@@ -9,7 +9,9 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/arc/arc_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 
@@ -94,6 +96,29 @@ bool IsArcAllowedForProfile(const Profile* profile) {
 
 void DisallowArcForTesting() {
   g_disallow_for_testing = true;
+}
+
+bool IsArcPlayStoreEnabledForProfile(const Profile* profile) {
+  return IsArcAllowedForProfile(profile) &&
+         profile->GetPrefs()->GetBoolean(prefs::kArcEnabled);
+}
+
+bool IsArcPlayStoreEnabledPreferenceManagedForProfile(const Profile* profile) {
+  if (!IsArcAllowedForProfile(profile)) {
+    LOG(DFATAL) << "ARC is not allowed for profile";
+    return false;
+  }
+  return profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled);
+}
+
+void SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
+  DCHECK(IsArcAllowedForProfile(profile));
+  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile)) {
+    VLOG(1) << "Do nothing, since the Google-Play-Store-enabled pref is "
+            << "managed.";
+    return;
+  }
+  profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, enabled);
 }
 
 }  // namespace arc

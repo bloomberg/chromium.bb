@@ -217,7 +217,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
@@ -3382,9 +3382,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       throttles.push_back(MergeSessionNavigationThrottle::Create(handle));
     }
 
-    const arc::ArcSessionManager* arc_session_manager =
-        arc::ArcSessionManager::Get();
-    if (arc_session_manager && arc_session_manager->IsArcPlayStoreEnabled() &&
+    if (arc::IsArcPlayStoreEnabledForProfile(Profile::FromBrowserContext(
+            handle->GetWebContents()->GetBrowserContext())) &&
         !handle->GetWebContents()->GetBrowserContext()->IsOffTheRecord()) {
       prerender::PrerenderContents* prerender_contents =
           prerender::PrerenderContents::FromWebContents(

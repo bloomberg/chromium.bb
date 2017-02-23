@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
@@ -265,28 +266,26 @@ bool LaunchApp(content::BrowserContext* context,
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   if (app_info && !app_info->ready) {
-    ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
-    DCHECK(arc_session_manager);
-
-    bool arc_activated = false;
-    if (!arc_session_manager->IsArcPlayStoreEnabled()) {
+    Profile* profile = Profile::FromBrowserContext(context);
+    bool play_store_activated = false;
+    if (!IsArcPlayStoreEnabledForProfile(profile)) {
       if (!prefs->IsDefault(app_id)) {
         NOTREACHED();
         return false;
       }
 
-      arc_session_manager->SetArcPlayStoreEnabled(true);
-      if (!arc_session_manager->IsArcPlayStoreEnabled()) {
+      SetArcPlayStoreEnabledForProfile(profile, true);
+      if (!IsArcPlayStoreEnabledForProfile(profile)) {
         NOTREACHED();
         return false;
       }
-      arc_activated = true;
+      play_store_activated = true;
     }
 
     // PlayStore item has special handling for shelf controllers. In order to
     // avoid unwanted initial animation for PlayStore item do not create
-    // deferred launch request when PlayStore item enables ARC.
-    if (!arc_activated || app_id != kPlayStoreAppId) {
+    // deferred launch request when PlayStore item enables Google Play Store.
+    if (!play_store_activated || app_id != kPlayStoreAppId) {
       ChromeLauncherController* chrome_controller =
           ChromeLauncherController::instance();
       DCHECK(chrome_controller || !ash::Shell::HasInstance());

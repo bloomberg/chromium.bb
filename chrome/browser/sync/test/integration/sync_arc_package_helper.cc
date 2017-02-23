@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -153,7 +154,7 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile, size_t id) {
   DCHECK(arc_session_manager);
   ArcSessionManager::DisableUIForTesting();
   arc_session_manager->OnPrimaryUserProfilePrepared(profile);
-  arc_session_manager->SetArcPlayStoreEnabled(true);
+  arc::SetArcPlayStoreEnabledForProfile(profile, true);
 
   ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_app_list_prefs);

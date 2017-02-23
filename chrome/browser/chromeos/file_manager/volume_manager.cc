@@ -411,7 +411,7 @@ void VolumeManager::Initialize() {
       arc::IsArcAllowedForProfile(profile_)) {
     arc::ArcSessionManager::Get()->AddObserver(this);
     OnArcPlayStoreEnabledChanged(
-        arc::ArcSessionManager::Get()->IsArcPlayStoreEnabled());
+        arc::IsArcPlayStoreEnabledForProfile(profile_));
   }
 }
 

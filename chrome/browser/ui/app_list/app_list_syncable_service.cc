@@ -40,7 +40,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"
@@ -262,10 +261,7 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
 #if defined(OS_CHROMEOS)
     if (item->GetItemType() == ArcAppItem::kItemType) {
       // Don't sync remove changes coming as result of disabling ARC.
-      const arc::ArcSessionManager* arc_session_manager =
-          arc::ArcSessionManager::Get();
-      DCHECK(arc_session_manager);
-      if (!arc_session_manager->IsArcPlayStoreEnabled())
+      if (!arc::IsArcPlayStoreEnabledForProfile(owner_->profile()))
         return;
     }
 #endif

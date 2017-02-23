@@ -34,7 +34,7 @@
 #include "url/url_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -170,9 +170,8 @@ ExtensionFunction::ResponseAction FeedbackPrivateGetStringsFunction::Run() {
   SET_STRING("screenshot", IDS_FEEDBACK_SCREENSHOT_LABEL);
   SET_STRING("user-email", IDS_FEEDBACK_USER_EMAIL_LABEL);
 #if defined(OS_CHROMEOS)
-  const arc::ArcSessionManager* arc_session_manager =
-      arc::ArcSessionManager::Get();
-  if (arc_session_manager && arc_session_manager->IsArcPlayStoreEnabled()) {
+  if (arc::IsArcPlayStoreEnabledForProfile(
+          Profile::FromBrowserContext(browser_context()))) {
     SET_STRING("sys-info",
                IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX_ARC);
   } else {

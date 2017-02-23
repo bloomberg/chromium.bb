@@ -10,14 +10,18 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_command_line.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -224,6 +228,77 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_SupervisedUserFlow) {
 
 // TODO(hidehiko): Add test for Ephemeral users. There seems no way to easily
 // simulate ephemeral user.
+
+TEST_F(ChromeArcUtilTest, ArcPlayStoreEnabledForProfile) {
+  // Ensure IsAllowedForProfile() true.
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  ASSERT_TRUE(IsArcAllowedForProfile(profile()));
+
+  // By default, Google Play Store is disabled.
+  EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+
+  // Enable Google Play Store.
+  SetArcPlayStoreEnabledForProfile(profile(), true);
+  EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
+
+  // Disable Google Play Store.
+  SetArcPlayStoreEnabledForProfile(profile(), false);
+  EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, ArcPlayStoreEnabledForProfile_NotAllowed) {
+  ASSERT_FALSE(IsArcAllowedForProfile(profile()));
+
+  // If ARC is not allowed for the profile, always return false.
+  EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+
+  // Directly set the preference value, to avoid DCHECK in
+  // SetArcPlayStoreEnabledForProfile().
+  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, ArcPlayStoreEnabledForProfile_Managed) {
+  // Ensure IsAllowedForProfile() true.
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  ASSERT_TRUE(IsArcAllowedForProfile(profile()));
+
+  // By default it is not managed.
+  EXPECT_FALSE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
+  EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+
+  // 1) Set managed preference to true, then try to set the value to false
+  // via SetArcPlayStoreEnabledForProfile().
+  profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
+                                                     new base::Value(true));
+  EXPECT_TRUE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
+  EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
+  SetArcPlayStoreEnabledForProfile(profile(), false);
+  EXPECT_TRUE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
+  EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
+
+  // Remove managed state.
+  profile()->GetTestingPrefService()->RemoveManagedPref(prefs::kArcEnabled);
+  EXPECT_FALSE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
+
+  // 2) Set managed preference to false, then try to set the value to true
+  // via SetArcPlayStoreEnabledForProfile().
+  profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
+                                                     new base::Value(false));
+  EXPECT_TRUE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
+  EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+  SetArcPlayStoreEnabledForProfile(profile(), true);
+  EXPECT_TRUE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
+  EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+
+  // Remove managed state.
+  profile()->GetTestingPrefService()->RemoveManagedPref(prefs::kArcEnabled);
+  EXPECT_FALSE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
+}
 
 }  // namespace util
 }  // namespace arc

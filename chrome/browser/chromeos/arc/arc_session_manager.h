@@ -152,28 +152,12 @@ class ArcSessionManager : public ArcSessionObserver,
   // Called from ARC support platform app when user cancels signing.
   void CancelAuthCode();
 
-  // TODO(hidehiko): Better to rename longer but descriptive one, e.g.
-  // IsArcEnabledPreferenceManaged.
-  // TODO(hidehiko): Look at the real usage, and write document.
-  bool IsArcManaged() const;
-
-  // Returns the preference value of "arc.enabled", which means whether the
-  // user has opted in (or is opting in now) to use Google Play Store on ARC.
-  bool IsArcPlayStoreEnabled() const;
-
-  // Enables/disables Google Play Store on ARC. Currently, it is tied to
-  // ARC enabled state, too, so this also should trigger to enable/disable
-  // whole ARC system.
-  // TODO(hidehiko): De-couple the concept to enable ARC system and opt-in
-  // to use Google Play Store. Note that there is a plan to use ARC without
-  // Google Play Store, then ARC can run without opt-in.
-  void SetArcPlayStoreEnabled(bool enable);
-
   // Requests to enable ARC session. This starts ARC instance, or maybe starts
   // Terms Of Service negotiation if they haven't been accepted yet.
   // If it is already requested to enable, no-op.
   // Currently, enabled/disabled is tied to whether Google Play Store is
-  // enabled or disabled. Please see also TODO of SetArcPlayStoreEnabled().
+  // enabled or disabled. Please see also TODO of
+  // SetArcPlayStoreEnabledForProfile().
   void RequestEnable();
 
   // Requests to disable ARC session. This stops ARC instance, or quits Terms

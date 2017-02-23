@@ -422,7 +422,8 @@ void ArcSessionManager::OnPrimaryUserProfilePrepared(Profile* profile) {
       !IsArcKioskMode()) {
     DCHECK(!support_host_);
     support_host_ = base::MakeUnique<ArcSupportHost>(profile_);
-    support_host_->SetArcManaged(IsArcManaged());
+    support_host_->SetArcManaged(
+        IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_));
     support_host_->AddObserver(this);
   }
 
@@ -449,7 +450,7 @@ void ArcSessionManager::OnPrimaryUserProfilePrepared(Profile* profile) {
     RemoveArcData();
   }
 
-  if (IsArcPlayStoreEnabled()) {
+  if (IsArcPlayStoreEnabledForProfile(profile_)) {
     VLOG(1) << "ARC is already enabled.";
     DCHECK(!enable_requested_);
     RequestEnable();
@@ -513,13 +514,15 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
 
-  const bool arc_enabled = IsArcPlayStoreEnabled();
-  if (!IsArcManaged()) {
+  const bool is_play_store_enabled = IsArcPlayStoreEnabledForProfile(profile_);
+  const bool is_play_store_managed =
+      IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_);
+  if (!is_play_store_managed) {
     // Update UMA only for non-Managed cases.
-    UpdateOptInActionUMA(arc_enabled ? OptInActionType::OPTED_IN
-                                     : OptInActionType::OPTED_OUT);
+    UpdateOptInActionUMA(is_play_store_enabled ? OptInActionType::OPTED_IN
+                                               : OptInActionType::OPTED_OUT);
 
-    if (!arc_enabled) {
+    if (!is_play_store_enabled) {
       // Remove the pinned Play Store icon launcher in Shelf.
       // This is only for non-Managed cases. In managed cases, it is expected
       // to be "disabled" rather than "removed", so keep it here.
@@ -530,7 +533,7 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
   }
 
   if (support_host_)
-    support_host_->SetArcManaged(IsArcManaged());
+    support_host_->SetArcManaged(is_play_store_managed);
 
   // Hide auth notification if it was opened before and arc.enabled pref was
   // explicitly set to true or false.
@@ -539,13 +542,13 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
     ArcAuthNotification::Hide();
   }
 
-  if (arc_enabled)
+  if (is_play_store_enabled)
     RequestEnable();
   else
     RequestDisable();
 
   for (auto& observer : observer_list_)
-    observer.OnArcPlayStoreEnabledChanged(arc_enabled);
+    observer.OnArcPlayStoreEnabledChanged(is_play_store_enabled);
 }
 
 void ArcSessionManager::ShutdownSession() {
@@ -647,34 +650,7 @@ void ArcSessionManager::CancelAuthCode() {
   }
 
   StopArc();
-  SetArcPlayStoreEnabled(false);
-}
-
-bool ArcSessionManager::IsArcManaged() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile_);
-  return profile_->GetPrefs()->IsManagedPreference(prefs::kArcEnabled);
-}
-
-bool ArcSessionManager::IsArcPlayStoreEnabled() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!IsAllowed())
-    return false;
-
-  DCHECK(profile_);
-  return profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled);
-}
-
-void ArcSessionManager::SetArcPlayStoreEnabled(bool enabled) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile_);
-
-  if (IsArcManaged()) {
-    VLOG(1) << "Whether Google Play Store is enabled is managed. Do nothing.";
-    return;
-  }
-
-  profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, enabled);
+  SetArcPlayStoreEnabledForProfile(profile_, false);
 }
 
 void ArcSessionManager::RecordArcState() {
@@ -722,7 +698,7 @@ void ArcSessionManager::RequestEnableImpl() {
   // backup-restore and location-service, if both are managed by the admin
   // policy. Note that the ToS agreement is anyway not shown in the case of the
   // managed ARC.
-  if (IsArcManaged() &&
+  if (arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
       prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled) &&
       prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled)) {
     prefs->SetBoolean(prefs::kArcTermsAccepted, true);
@@ -749,7 +725,7 @@ void ArcSessionManager::RequestEnableImpl() {
     // Check Android management in parallel.
     // Note: Because the callback may be called in synchronous way (i.e. called
     // on the same stack), StartCheck() needs to be called *after* StartArc().
-    // Otherwise, SetArcPlayStoreEnabled() which may be called in
+    // Otherwise, SetArcPlayStoreEnabledForProfile() which may be called in
     // OnBackgroundAndroidManagementChecked() could be ignored.
     android_management_checker_ = base::MakeUnique<ArcAndroidManagementChecker>(
         profile_, context_->token_service(), context_->account_id(),
@@ -911,7 +887,7 @@ void ArcSessionManager::OnBackgroundAndroidManagementChecked(
       // Do nothing. ARC should be started already.
       break;
     case policy::AndroidManagementClient::Result::MANAGED:
-      SetArcPlayStoreEnabled(false);
+      SetArcPlayStoreEnabledForProfile(profile_, false);
       break;
     case policy::AndroidManagementClient::Result::ERROR:
       // This code should not be reached. For background check,
