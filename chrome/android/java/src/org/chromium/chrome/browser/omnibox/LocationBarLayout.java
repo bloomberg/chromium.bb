@@ -1045,8 +1045,11 @@ public class LocationBarLayout extends FrameLayout
     }
 
     /**
-     * Make a zero suggest request if native is loaded, the URL bar has focus, and the
-     * current tab is not incognito.
+     * Make a zero suggest request if:
+     * - Native is loaded.
+     * - The URL bar has focus.
+     * - The current tab is not incognito.
+     * - Chrome Home is disabled.
      */
     private void startZeroSuggest() {
         // Reset "edited" state in the omnibox if zero suggest is triggered -- new edits
@@ -1054,9 +1057,7 @@ public class LocationBarLayout extends FrameLayout
         mHasStartedNewOmniboxEditSession = false;
         mNewOmniboxEditSessionTimestamp = -1;
         Tab currentTab = getCurrentTab();
-        if (mNativeInitialized
-                && mUrlHasFocus
-                && currentTab != null
+        if (mNativeInitialized && mBottomSheet == null && mUrlHasFocus && currentTab != null
                 && !currentTab.isIncognito()) {
             mAutocomplete.startZeroSuggest(currentTab.getProfile(), mUrlBar.getQueryText(),
                     currentTab.getUrl(), mUrlFocusedFromFakebox);
