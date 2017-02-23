@@ -150,6 +150,14 @@
     // Console is installed by v8 inspector when context is created
     // and is left commented here just for documentation.
 
+    // Compatibility
+    // https://compat.spec.whatwg.org/#windoworientation-interface
+    [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
+    // This is the interface orientation in degrees. Some examples are:
+    //  0 is straight up; -90 is when the device is rotated 90 clockwise;
+    //  90 is when rotated counter clockwise.
+    [MeasureAs=WindowOrientation, RuntimeEnabled=OrientationEvent] readonly attribute long orientation;
+
     // Non-standard APIs
     [MeasureAs=WindowClientInformation, Replaceable] readonly attribute Navigator clientInformation;
     [MeasureAs=WindowEvent, Custom, NotEnumerable] attribute Event event;
@@ -168,10 +176,6 @@
     [MeasureAs=StyleMedia] readonly attribute StyleMedia styleMedia;
     [DeprecateAs=GetMatchedCSSRules, LegacyInterfaceTypeChecking] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
                                                                                                  [Default=Undefined] optional DOMString? pseudoElement);
-    // This is the interface orientation in degrees. Some examples are:
-    //  0 is straight up; -90 is when the device is rotated 90 clockwise;
-    //  90 is when rotated counter clockwise.
-    [MeasureAs=WindowOrientation, RuntimeEnabled=OrientationEvent] readonly attribute long orientation;
     [DeprecateAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(FrameRequestCallback callback);
     [DeprecateAs=PrefixedCancelAnimationFrame, ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
     [MeasureAs=PrefixedTransitionEventConstructor] attribute TransitionEventConstructor WebKitTransitionEvent;
@@ -183,7 +187,6 @@
     attribute EventHandler onanimationend;
     attribute EventHandler onanimationiteration;
     attribute EventHandler onanimationstart;
-    [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
     attribute EventHandler onsearch;
     attribute EventHandler ontransitionend;
     attribute EventHandler onwebkitanimationend;

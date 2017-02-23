@@ -40,7 +40,8 @@ interface HTMLBodyElement : HTMLElement {
     attribute EventHandler onresize;
     attribute EventHandler onscroll;
 
-    // Non-standard APIs
+    // Compatibility
+    // https://compat.spec.whatwg.org/#windoworientation-interface
     [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
 };
 
