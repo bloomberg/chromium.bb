@@ -53,6 +53,8 @@ public class SupervisedUserContentProviderUnitTest {
 
     private SupervisedUserContentProvider mSupervisedUserContentProvider;
 
+    private static final String DEFAULT_CALLING_PACKAGE = "com.example.some.app";
+
     @Before
     public void setUp() {
         // Ensure clean state (in particular not signed in).
@@ -100,7 +102,8 @@ public class SupervisedUserContentProviderUnitTest {
     public void testShouldProceed_PermittedUrl() {
         mSupervisedUserContentProvider.setNativeSupervisedUserContentProviderForTesting(1234L);
         // Mock the native call for a permitted URL
-        WebRestrictionsResult result = mSupervisedUserContentProvider.shouldProceed("url");
+        WebRestrictionsResult result =
+                mSupervisedUserContentProvider.shouldProceed(DEFAULT_CALLING_PACKAGE, "url");
         assertThat(result.shouldProceed(), is(true));
         verify(mSupervisedUserContentProvider)
                 .nativeShouldProceed(eq(1234L),
@@ -127,7 +130,8 @@ public class SupervisedUserContentProviderUnitTest {
                 .nativeShouldProceed(anyLong(),
                         any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
                         anyString());
-        WebRestrictionsResult result = mSupervisedUserContentProvider.shouldProceed("url");
+        WebRestrictionsResult result =
+                mSupervisedUserContentProvider.shouldProceed(DEFAULT_CALLING_PACKAGE, "url");
         assertThat(result.shouldProceed(), is(false));
         assertThat(result.errorIntCount(), is(3));
         assertThat(result.getErrorInt(0), is(1));
@@ -187,7 +191,8 @@ public class SupervisedUserContentProviderUnitTest {
         ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);
 
-        WebRestrictionsResult result = mSupervisedUserContentProvider.shouldProceed("url");
+        WebRestrictionsResult result =
+                mSupervisedUserContentProvider.shouldProceed(DEFAULT_CALLING_PACKAGE, "url");
 
         assertThat(result.shouldProceed(), is(true));
         verify(mockBrowserInitializer).handleSynchronousStartup();
@@ -209,7 +214,8 @@ public class SupervisedUserContentProviderUnitTest {
         Account account = new Account("Google", "Dummy");
         when(mockDelegate.getAccountsByType("Google")).thenReturn(new Account[] {account});
 
-        WebRestrictionsResult result = mSupervisedUserContentProvider.shouldProceed("url");
+        WebRestrictionsResult result =
+                mSupervisedUserContentProvider.shouldProceed(DEFAULT_CALLING_PACKAGE, "url");
 
         assertThat(result.shouldProceed(), is(true));
         verify(mockBrowserInitializer).handleSynchronousStartup();
@@ -224,7 +230,7 @@ public class SupervisedUserContentProviderUnitTest {
     }
 
     @Test
-    public void testShouldProceed_cannotSignIn() throws ProcessInitException {
+    public void testShouldProceed_cannotSignIn() {
         // Mock things called during startup
         ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);
@@ -245,9 +251,46 @@ public class SupervisedUserContentProviderUnitTest {
                 .when(mSupervisedUserContentProvider)
                 .startForcedSigninProcessor(any(Context.class), any(Runnable.class));
 
-        WebRestrictionsResult result = mSupervisedUserContentProvider.shouldProceed("url");
+        WebRestrictionsResult result =
+                mSupervisedUserContentProvider.shouldProceed(DEFAULT_CALLING_PACKAGE, "url");
 
         assertThat(result.shouldProceed(), is(false));
         assertThat(result.getErrorInt(0), is(5));
+    }
+
+    @Test
+    public void testShouldProceed_requestWhitelisted() {
+        mSupervisedUserContentProvider.setNativeSupervisedUserContentProviderForTesting(1234L);
+
+        // Modify the result of the native call to block any URL.
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                invocation.<SupervisedUserQueryReply>getArgument(1).onQueryFailed(1, 2, 3, "url1",
+                        "url2", "custodian", "custodianEmail", "secondCustodian",
+                        "secondCustodianEmail");
+                return null;
+            }
+        })
+                .when(mSupervisedUserContentProvider)
+                .nativeShouldProceed(eq(1234L),
+                        any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
+                        anyString());
+
+        WebRestrictionsResult allowed = mSupervisedUserContentProvider.shouldProceed(
+                "com.google.android.gms.ui", "https://accounts.google.com/reauth");
+        assertThat(allowed.shouldProceed(), is(true));
+
+        WebRestrictionsResult wrongUrl = mSupervisedUserContentProvider.shouldProceed(
+                "com.google.android.gms.ui", "http://www.example.com");
+        assertThat(wrongUrl.shouldProceed(), is(false));
+
+        WebRestrictionsResult wrongCallingPackage = mSupervisedUserContentProvider.shouldProceed(
+                DEFAULT_CALLING_PACKAGE, "https://accounts.google.com/reauth");
+        assertThat(wrongCallingPackage.shouldProceed(), is(false));
+
+        WebRestrictionsResult nullCallingPackage = mSupervisedUserContentProvider.shouldProceed(
+                null, "https://accounts.google.com/reauth");
+        assertThat(nullCallingPackage.shouldProceed(), is(false));
     }
 }

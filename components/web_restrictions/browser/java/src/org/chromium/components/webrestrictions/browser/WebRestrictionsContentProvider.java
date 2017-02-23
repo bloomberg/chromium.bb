@@ -4,6 +4,7 @@
 
 package org.chromium.components.webrestrictions.browser;
 
+import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
@@ -12,6 +13,7 @@ import android.content.pm.ProviderInfo;
 import android.database.AbstractCursor;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -108,7 +110,7 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
         Matcher matcher = mSelectionPattern.matcher(selection);
         if (!matcher.find()) return null;
         final String url = matcher.group(1);
-        final WebRestrictionsResult result = shouldProceed(url);
+        final WebRestrictionsResult result = shouldProceed(maybeGetCallingPackage(), url);
         if (result == null) return null;
 
         return new AbstractCursor() {
@@ -201,6 +203,13 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
         };
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private String maybeGetCallingPackage() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return null;
+
+        return getCallingPackage();
+    }
+
     @Override
     public String getType(Uri uri) {
         // Abused to return whether we can insert
@@ -234,12 +243,13 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
     }
 
     /**
+     * @param the package calling the content provider, or null if the package is not available.
      * @param url the URL that is wanted.
      * @return a pair containing the Result and the HTML Error Message. result is true if safe to
      *         proceed, false otherwise. error message is only meaningful if result is false, a null
      *         error message means use application default.
      */
-    protected abstract WebRestrictionsResult shouldProceed(final String url);
+    protected abstract WebRestrictionsResult shouldProceed(String callingPackage, String url);
 
     /**
      * @return whether the content provider allows insertions.

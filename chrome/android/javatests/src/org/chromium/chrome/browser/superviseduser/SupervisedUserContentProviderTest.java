@@ -42,7 +42,7 @@ public class SupervisedUserContentProviderTest extends ChromeActivityTestCaseBas
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        mResolver = getInstrumentation().getContext().getContentResolver();
+        mResolver = getInstrumentation().getTargetContext().getContentResolver();
         assertNotNull(mResolver);
         mAuthority = getInstrumentation().getTargetContext().getPackageName() + AUTHORITY_SUFFIX;
         mUri = new Uri.Builder()

@@ -9,10 +9,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.UserManager;
+import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
@@ -44,6 +46,9 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
     private static Object sContentProviderLock = new Object();
 
     private static final String TAG = "SupervisedUserContent";
+
+    private static final String ACCOUNTS_GOOGLE_COM = "accounts.google.com";
+    private static final String GOOGLE_PLAY_SERVICES_UI_PACKAGE = "com.google.android.gms.ui";
 
     // Three value "boolean" caching enabled state, null if not yet known.
     private static Boolean sEnabled;
@@ -159,7 +164,7 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
     }
 
     @Override
-    protected WebRestrictionsResult shouldProceed(final String url) {
+    protected WebRestrictionsResult shouldProceed(String callingPackage, final String url) {
         // This will be called on multiple threads (but never the UI thread),
         // see http://developer.android.com/guide/components/processes-and-threads.html#ThreadSafe.
         // The reply comes back on a different thread (possibly the UI thread) some time later.
@@ -167,12 +172,17 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         // reply object for each query, and passing this through the callback structure. The reply
         // object also handles waiting for the reply.
         long startTimeMs = SystemClock.elapsedRealtime();
-        final SupervisedUserQueryReply queryReply = new SupervisedUserQueryReply();
+        if (requestIsWhitelisted(callingPackage, url)) {
+            return new WebRestrictionsResult(true, null, null);
+        }
+
         final long contentProvider = getSupervisedUserContentProvider();
         if (contentProvider == 0) {
             return new WebRestrictionsResult(
                     false, new int[] {FilteringBehaviorReason.NOT_SIGNED_IN}, null);
         }
+
+        final SupervisedUserQueryReply queryReply = new SupervisedUserQueryReply();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -195,6 +205,13 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         } catch (InterruptedException e) {
             return new WebRestrictionsResult(false, null, null);
         }
+    }
+
+    private boolean requestIsWhitelisted(String callingPackage, String url) {
+        // Always allow Google Play Services to show the reauthentication page (which is necessary
+        // to fix account issues).
+        return TextUtils.equals(callingPackage, GOOGLE_PLAY_SERVICES_UI_PACKAGE)
+                && Uri.parse(url).getHost().equals(ACCOUNTS_GOOGLE_COM);
     }
 
     @Override
