@@ -60,22 +60,30 @@ Polymer({
 
   /** @private */
   onDisplayTap_: function() {
-    settings.navigateTo(settings.Route.DISPLAY);
+    settings.navigateTo(
+        settings.Route.DISPLAY,
+        /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   /** @private */
   onAppearanceTap_: function() {
-    settings.navigateTo(settings.Route.APPEARANCE);
+    settings.navigateTo(
+        settings.Route.APPEARANCE,
+        /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   /** @private */
   onKeyboardTap_: function() {
-    settings.navigateTo(settings.Route.KEYBOARD);
+    settings.navigateTo(
+        settings.Route.KEYBOARD,
+        /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   /** @private */
   onMouseTap_: function() {
-    settings.navigateTo(settings.Route.POINTERS);
+    settings.navigateTo(
+        settings.Route.POINTERS,
+        /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   /** @private */
