@@ -34,7 +34,7 @@ class LocalWPTTest(unittest.TestCase):
         local_wpt.fetch()
 
         self.assertEqual(host.executive.calls, [
-            ['git', 'clone', 'git@github.com:w3c/web-platform-tests.git', '/tmp/wpt'],
+            ['git', 'clone', 'https://github.com/w3c/web-platform-tests.git', '/tmp/wpt'],
         ])
 
     def test_constructor(self):
@@ -83,7 +83,7 @@ class LocalWPTTest(unittest.TestCase):
         local_branch_name = local_wpt.create_branch_with_patch('message', 'patch', 'author')
         self.assertEqual(local_branch_name, 'chromium-export-try')
         self.assertEqual(host.executive.calls, [
-            ['git', 'clone', 'git@github.com:w3c/web-platform-tests.git', '/tmp/wpt'],
+            ['git', 'clone', 'https://github.com/w3c/web-platform-tests.git', '/tmp/wpt'],
             ['git', 'reset', '--hard', 'HEAD'],
             ['git', 'clean', '-fdx'],
             ['git', 'checkout', 'origin/master'],
