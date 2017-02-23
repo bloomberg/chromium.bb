@@ -53,6 +53,7 @@ ReadingListDistillerPage::ReadingListDistillerPage(
     : dom_distiller::DistillerPageIOS(browser_state),
       web_state_dispatcher_(web_state_dispatcher),
       delegate_(delegate),
+      delayed_task_id_(0),
       weak_ptr_factory_(this) {
   DCHECK(delegate);
 }
@@ -69,6 +70,7 @@ void ReadingListDistillerPage::DistillPageImpl(const GURL& url,
       web_state_dispatcher_->RequestWebState();
   AttachWebState(std::move(new_web_state));
   original_url_ = url;
+  delayed_task_id_++;
   FetchFavicon(url);
 
   DistillerPageIOS::DistillPageImpl(url, script);
@@ -105,6 +107,7 @@ void ReadingListDistillerPage::OnDistillationDone(const GURL& page_url,
     [old_web_state->GetView() removeFromSuperview];
     web_state_dispatcher_->ReturnWebState(std::move(old_web_state));
   }
+  delayed_task_id_++;
   DistillerPageIOS::OnDistillationDone(page_url, value);
 }
 
@@ -158,11 +161,17 @@ void ReadingListDistillerPage::OnLoadURLDone(
       weak_ptr_factory_.GetWeakPtr();
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ReadingListDistillerPage::DelayedOnLoadURLDone, weak_this),
+      base::Bind(&ReadingListDistillerPage::DelayedOnLoadURLDone, weak_this,
+                 delayed_task_id_),
       base::TimeDelta::FromSeconds(kPageLoadDelayInSeconds));
 }
 
-void ReadingListDistillerPage::DelayedOnLoadURLDone() {
+void ReadingListDistillerPage::DelayedOnLoadURLDone(int delayed_task_id) {
+  if (!CurrentWebState() || delayed_task_id != delayed_task_id_) {
+    // Something interrupted the distillation.
+    // Abort here.
+    return;
+  }
   if (IsGoogleCachedAMPPage()) {
     // Workaround for Google AMP pages.
     HandleGoogleCachedAMPPage();

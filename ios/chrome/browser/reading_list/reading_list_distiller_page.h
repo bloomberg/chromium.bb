@@ -86,11 +86,12 @@ class ReadingListDistillerPage : public dom_distiller::DistillerPageIOS {
   void FetchFavicon(const GURL& page_url);
 
   // Continues distillation by calling superclass |OnLoadURLDone|.
-  void DelayedOnLoadURLDone();
+  void DelayedOnLoadURLDone(int delayed_task_id);
   GURL original_url_;
 
   FaviconWebStateDispatcher* web_state_dispatcher_;
   ReadingListDistillerPageDelegate* delegate_;
+  int delayed_task_id_;
   base::WeakPtrFactory<ReadingListDistillerPage> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListDistillerPage);
