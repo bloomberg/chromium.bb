@@ -109,9 +109,11 @@ var vrShellUi = (function() {
       let anim;
       anim = new api.Animation(this.elementId, ANIM_DURATION);
       anim.setTranslation(0, y, -distance);
+      anim.setEasing(new api.InOutEasing());
       ui.addAnimation(anim);
       anim = new api.Animation(this.elementId, ANIM_DURATION);
       anim.setSize(height * this.SCREEN_RATIO, height);
+      anim.setEasing(new api.InOutEasing());
       ui.addAnimation(anim);
 
       ui.setBackgroundDistance(distance * this.BACKGROUND_DISTANCE_MULTIPLIER);

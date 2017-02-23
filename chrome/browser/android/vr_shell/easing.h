@@ -16,6 +16,7 @@ enum EasingType {
   CUBICBEZIER,
   EASEIN,
   EASEOUT,
+  EASEINOUT,
 };
 
 // Abstract base class for custom interpolators, mapping linear input between
@@ -76,6 +77,17 @@ class EaseOut : public Easing {
  private:
   double power_;
   DISALLOW_COPY_AND_ASSIGN(EaseOut);
+};
+
+// Starts with EaseIn and finishes with EaseOut.
+class EaseInOut : public Easing {
+ public:
+  explicit EaseInOut(double power);
+  double CalculateValueImpl(double input) override;
+
+ private:
+  EaseIn ease_in_;
+  DISALLOW_COPY_AND_ASSIGN(EaseInOut);
 };
 
 }  // namespace easing

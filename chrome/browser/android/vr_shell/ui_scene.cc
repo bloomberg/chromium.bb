@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
@@ -105,7 +106,7 @@ std::unique_ptr<easing::Easing> ParseEasing(const base::DictionaryValue& dict) {
 
   switch (easingType) {
     case easing::EasingType::LINEAR: {
-      result.reset(new easing::Linear());
+      result = base::MakeUnique<easing::Linear>();
       break;
     }
     case easing::EasingType::CUBICBEZIER: {
@@ -114,19 +115,25 @@ std::unique_ptr<easing::Easing> ParseEasing(const base::DictionaryValue& dict) {
       CHECK(dict.GetDouble("p1y", &p1y));
       CHECK(dict.GetDouble("p2x", &p2x));
       CHECK(dict.GetDouble("p2y", &p2y));
-      result.reset(new easing::CubicBezier(p1x, p1y, p2x, p2y));
+      result = base::MakeUnique<easing::CubicBezier>(p1x, p1y, p2x, p2y);
       break;
     }
     case easing::EasingType::EASEIN: {
       double pow;
       CHECK(dict.GetDouble("pow", &pow));
-      result.reset(new easing::EaseIn(pow));
+      result = base::MakeUnique<easing::EaseIn>(pow);
       break;
     }
     case easing::EasingType::EASEOUT: {
       double pow;
       CHECK(dict.GetDouble("pow", &pow));
-      result.reset(new easing::EaseOut(pow));
+      result = base::MakeUnique<easing::EaseOut>(pow);
+      break;
+    }
+    case easing::EasingType::EASEINOUT: {
+      double pow;
+      CHECK(dict.GetDouble("pow", &pow));
+      result = base::MakeUnique<easing::EaseInOut>(pow);
       break;
     }
   }
@@ -184,7 +191,7 @@ void UiScene::AddUiElementFromDict(const base::DictionaryValue& dict) {
   CHECK(ParseInt(dict, "id", &id));
   CHECK_EQ(GetUiElementById(id), nullptr);
 
-  std::unique_ptr<ContentRectangle> element(new ContentRectangle);
+  auto element = base::MakeUnique<ContentRectangle>();
   element->id = id;
 
   ApplyDictToElement(dict, element.get());
@@ -259,9 +266,9 @@ void UiScene::AddAnimationFromDict(const base::DictionaryValue& dict,
 
   ContentRectangle* element = GetUiElementById(element_id);
   CHECK_NE(element, nullptr);
-  element->animations.emplace_back(std::unique_ptr<Animation>(
-      new Animation(animation_id, static_cast<Animation::Property>(property),
-                    std::move(easing), from, to, start, duration)));
+  element->animations.emplace_back(base::MakeUnique<Animation>(
+      animation_id, static_cast<Animation::Property>(property),
+      std::move(easing), from, to, start, duration));
 }
 
 void UiScene::RemoveAnimation(int element_id, int animation_id) {

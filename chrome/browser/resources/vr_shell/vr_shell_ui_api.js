@@ -366,7 +366,8 @@ api.EasingType = {
   'LINEAR': 0,
   'CUBICBEZIER': 1,
   'EASEIN': 2,
-  'EASEOUT': 3
+  'EASEOUT': 3,
+  'EASEINOUT': 4
 };
 
 /** @const */ var DEFAULT_EASING_POW = 2;
@@ -415,6 +416,13 @@ api.InEasing = class extends api.Easing {
 api.OutEasing = class extends api.Easing {
   constructor(pow = DEFAULT_EASING_POW) {
     super(api.EasingType.EASEOUT);
+    this.pow = pow;
+  }
+}
+
+api.InOutEasing = class extends api.Easing {
+  constructor(pow = DEFAULT_EASING_POW) {
+    super(api.EasingType.EASEINOUT);
     this.pow = pow;
   }
 }

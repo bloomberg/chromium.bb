@@ -33,6 +33,15 @@ double EaseOut::CalculateValueImpl(double state) {
   return 1.0 - pow(1.0 - state, power_);
 }
 
+EaseInOut::EaseInOut(double power) : ease_in_(power) {}
+double EaseInOut::CalculateValueImpl(double state) {
+  if (state < 0.5) {
+    return ease_in_.CalculateValueImpl(state * 2) / 2;
+  } else {
+    return 1.0 - ease_in_.CalculateValueImpl((1.0 - state) * 2) / 2;
+  }
+}
+
 double Linear::CalculateValueImpl(double state) {
   return state;
 }
