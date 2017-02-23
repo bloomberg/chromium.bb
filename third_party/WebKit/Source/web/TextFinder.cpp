@@ -451,6 +451,9 @@ void TextFinder::flushCurrentScopingEffort(int identifier) {
 }
 
 void TextFinder::finishCurrentScopingEffort(int identifier) {
+  if (!m_totalMatchCount)
+    ownerFrame().frame()->selection().clear();
+
   flushCurrentScopingEffort(identifier);
 
   m_scopingInProgress = false;

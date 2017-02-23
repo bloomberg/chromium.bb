@@ -6730,8 +6730,6 @@ void RenderFrameImpl::SendFindReply(int request_id,
                                     int ordinal,
                                     const WebRect& selection_rect,
                                     bool final_status_update) {
-  if (final_status_update && !ordinal)
-    frame_->executeCommand(WebString::fromUTF8("Unselect"));
   DCHECK(ordinal >= -1);
 
   Send(new FrameHostMsg_Find_Reply(routing_id_,
