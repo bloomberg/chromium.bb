@@ -1104,7 +1104,7 @@ class CORE_EXPORT FrameView final
   IntSize m_initialViewportSize;
   bool m_layoutSizeFixedToFrameSize;
 
-  Timer<FrameView> m_didScrollTimer;
+  TaskRunnerTimer<FrameView> m_didScrollTimer;
 
   Vector<IntRect> m_tickmarks;
 
