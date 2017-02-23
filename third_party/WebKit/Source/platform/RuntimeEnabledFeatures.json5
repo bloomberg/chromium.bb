@@ -570,7 +570,7 @@
     // "experimental" is the support on other platforms.
     {
       name: "MiddleClickAutoscroll",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "MobileLayoutTheme",
