@@ -4,18 +4,17 @@
 
 #include "core/html/TextControlElement.h"
 
+#include <memory>
 #include "core/dom/Document.h"
-#include "core/editing/spellcheck/SpellChecker.h"
+#include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/loader/EmptyClients.h"
-#include "core/page/SpellCheckerClient.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -32,7 +31,6 @@ class TextControlElementTest : public ::testing::Test {
   void forceLayoutFlag();
 
  private:
-  std::unique_ptr<SpellCheckerClient> m_spellCheckerClient;
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 
   Persistent<Document> m_document;
@@ -40,23 +38,9 @@ class TextControlElementTest : public ::testing::Test {
   Persistent<HTMLInputElement> m_input;
 };
 
-class DummySpellCheckerClient : public EmptySpellCheckerClient {
- public:
-  virtual ~DummySpellCheckerClient() {}
-
-  bool isSpellCheckingEnabled() override { return true; }
-
-  TextCheckerClient& textChecker() override { return m_emptyTextCheckerClient; }
-
- private:
-  EmptyTextCheckerClient m_emptyTextCheckerClient;
-};
-
 void TextControlElementTest::SetUp() {
   Page::PageClients pageClients;
   fillWithEmptyClients(pageClients);
-  m_spellCheckerClient = WTF::wrapUnique(new DummySpellCheckerClient);
-  pageClients.spellCheckerClient = m_spellCheckerClient.get();
   m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
 
   m_document = &m_dummyPageHolder->document();
