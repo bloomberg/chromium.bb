@@ -68,10 +68,10 @@ SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy,
     } else if (equalIgnoringCase(sandboxToken, "allow-presentation")) {
       flags &= ~SandboxPresentation;
     } else if (equalIgnoringCase(sandboxToken,
-                                 "allow-top-navigation-with-user-activation") &&
+                                 "allow-top-navigation-by-user-activation") &&
                RuntimeEnabledFeatures::
-                   topNavWithUserActivationInSandboxEnabled()) {
-      flags &= ~SandboxTopNavigationWithUserActivation;
+                   topNavByUserActivationInSandboxEnabled()) {
+      flags &= ~SandboxTopNavigationByUserActivation;
     } else {
       tokenErrors.append(tokenErrors.isEmpty() ? "'" : ", '");
       tokenErrors.append(sandboxToken);

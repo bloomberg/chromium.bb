@@ -56,7 +56,7 @@ enum SandboxFlag {
   // https://w3c.github.io/presentation-api/#sandboxing-and-the-allow-presentation-keyword
   SandboxPresentation = 1 << 13,
   // See https://github.com/WICG/interventions/issues/42.
-  SandboxTopNavigationWithUserActivation = 1 << 14,
+  SandboxTopNavigationByUserActivation = 1 << 14,
   SandboxAll = -1  // Mask with all bits set to 1.
 };
 

@@ -20,9 +20,9 @@
     </script>
 </head>
 <body onload="loaded();">
-    <p>This tests that an iframe in sandbox with 'allow-top-navigation-by-user-activation'
-    can navigate the top level page, if it is trigged by a user gesture.</p>
+    <p>This tests that an iframe in sandbox with both 'allow-top-navigation' and 'allow-top-navigation-by-user-activation'
+    can navigate the top level page with a user gesture: Basically the later flag is ignored.</p>
     <h4>DOMAIN</h4>
-    <iframe id="i" sandbox="allow-scripts allow-top-navigation-by-user-activation" src="resources/iframe-that-performs-parent-navigation.html"></iframe>
+    <iframe id="i" sandbox="allow-scripts allow-top-navigation allow-top-navigation-by-user-activation" src="resources/iframe-that-performs-parent-navigation.html"></iframe>
 </body>
 </html>

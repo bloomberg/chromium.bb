@@ -284,12 +284,12 @@ bool Frame::canNavigateWithoutFramebusting(const Frame& targetFrame,
     }
 
     // Top navigation is forbidden unless opted-in. allow-top-navigation or
-    // allow-top-navigation-with-user-activation will also skips origin checks.
+    // allow-top-navigation-by-user-activation will also skips origin checks.
     if (targetFrame == tree().top()) {
       if (securityContext()->isSandboxed(SandboxTopNavigation) &&
           securityContext()->isSandboxed(
-              SandboxTopNavigationWithUserActivation)) {
-        // TODO(binlu): To add "or 'allow-top-navigation-with-user-activation'"
+              SandboxTopNavigationByUserActivation)) {
+        // TODO(binlu): To add "or 'allow-top-navigation-by-user-activation'"
         // to the reason below, once the new flag is shipped.
         reason =
             "The frame attempting navigation of the top-level window is "
@@ -298,13 +298,13 @@ bool Frame::canNavigateWithoutFramebusting(const Frame& targetFrame,
       }
       if (securityContext()->isSandboxed(SandboxTopNavigation) &&
           !securityContext()->isSandboxed(
-              SandboxTopNavigationWithUserActivation) &&
+              SandboxTopNavigationByUserActivation) &&
           !UserGestureIndicator::processingUserGesture()) {
-        // With only 'allow-top-navigation-with-user-activation' (but not
+        // With only 'allow-top-navigation-by-user-activation' (but not
         // 'allow-top-navigation'), top navigation requires a user gesture.
         reason =
             "The frame attempting navigation of the top-level window is "
-            "sandboxed with the 'allow-top-navigation-with-user-activation' "
+            "sandboxed with the 'allow-top-navigation-by-user-activation' "
             "flag, but has no user activation (aka gesture). See "
             "https://www.chromestatus.com/feature/5629582019395584.";
         return false;
