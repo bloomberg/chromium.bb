@@ -49,4 +49,8 @@ bool ShouldDoExperimentalRTLLayout();
 // OSes would make Chrome stick out.
 bool ShouldFlipWindowControlsInRTL();
 
+// Returns an autoreleased image containing |image| flipped
+// across the x axis.
+NSImage* FlippedImage(NSImage* image);
+
 }  // namespace cocoa_l10n_util

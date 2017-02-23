@@ -96,4 +96,28 @@ bool ShouldFlipWindowControlsInRTL() {
   return ShouldDoExperimentalRTLLayout() && base::mac::IsAtLeastOS10_12();
 }
 
+// Adapted from Apple's RTL docs (goo.gl/cBaFnT)
+NSImage* FlippedImage(NSImage* image) {
+  const NSSize size = [image size];
+  NSImage* flipped_image = [[[NSImage alloc] initWithSize:size] autorelease];
+
+  [flipped_image lockFocus];
+  [[NSGraphicsContext currentContext]
+      setImageInterpolation:NSImageInterpolationHigh];
+
+  NSAffineTransform* transform = [NSAffineTransform transform];
+  [transform translateXBy:size.width yBy:0];
+  [transform scaleXBy:-1 yBy:1];
+  [transform concat];
+
+  [image drawAtPoint:NSZeroPoint
+            fromRect:NSMakeRect(0, 0, size.width, size.height)
+           operation:NSCompositeSourceOver
+            fraction:1.0];
+
+  [flipped_image unlockFocus];
+
+  return flipped_image;
+}
+
 }  // namespace cocoa_l10n_util
