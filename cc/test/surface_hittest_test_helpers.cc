@@ -42,8 +42,8 @@ void CreateRenderPassDrawQuad(RenderPass* pass,
       pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   render_pass_quad->SetNew(pass->shared_quad_state_list.back(), quad_rect,
                            quad_rect, render_pass_id, ResourceId(),
-                           gfx::Vector2dF(), gfx::Size(), gfx::Vector2dF(),
-                           gfx::PointF());
+                           gfx::RectF(), gfx::Size(), gfx::Vector2dF(),
+                           gfx::PointF(), gfx::RectF());
 }
 
 void CreateSurfaceDrawQuad(RenderPass* pass,

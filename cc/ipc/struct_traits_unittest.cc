@@ -644,16 +644,17 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
   const ResourceId resource_id4(1337);
   const int render_pass_id = 1234;
-  const gfx::Vector2dF mask_uv_scale(1337.1f, 1234.2f);
+  const gfx::RectF mask_uv_rect(0, 0, 1337.1f, 1234.2f);
   const gfx::Size mask_texture_size(1234, 5678);
   gfx::Vector2dF filters_scale(1234.1f, 4321.2f);
   gfx::PointF filters_origin(8765.4f, 4567.8f);
+  gfx::RectF tex_coord_rect(1.f, 1.f, 1234.f, 5678.f);
 
   RenderPassDrawQuad* render_pass_quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   render_pass_quad->SetNew(sqs, rect4, rect4, render_pass_id, resource_id4,
-                           mask_uv_scale, mask_texture_size, filters_scale,
-                           filters_origin);
+                           mask_uv_rect, mask_texture_size, filters_scale,
+                           filters_origin, tex_coord_rect);
 
   const gfx::Rect rect5(123, 567, 91011, 131415);
   const ResourceId resource_id5(1337);

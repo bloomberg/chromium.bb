@@ -71,10 +71,11 @@ bool StructTraits<cc::mojom::RenderPassQuadStateDataView, cc::DrawQuad>::Read(
   // RenderPass ids are never zero.
   if (!quad->render_pass_id)
     return false;
-  return data.ReadMaskUvScale(&quad->mask_uv_scale) &&
+  return data.ReadMaskUvRect(&quad->mask_uv_rect) &&
          data.ReadMaskTextureSize(&quad->mask_texture_size) &&
          data.ReadFiltersScale(&quad->filters_scale) &&
-         data.ReadFiltersOrigin(&quad->filters_origin);
+         data.ReadFiltersOrigin(&quad->filters_origin) &&
+         data.ReadTexCoordRect(&quad->tex_coord_rect);
 }
 
 // static

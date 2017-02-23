@@ -418,9 +418,11 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
 
   RenderPassDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  quad->SetNew(shared_quad_state, content_rect(), visible_layer_rect,
-               GetRenderPassId(), mask_resource_id, mask_uv_scale,
-               mask_texture_size, surface_contents_scale, FiltersOrigin());
+  quad->SetNew(
+      shared_quad_state, content_rect(), visible_layer_rect, GetRenderPassId(),
+      mask_resource_id, gfx::ScaleRect(gfx::RectF(content_rect()),
+                                       mask_uv_scale.x(), mask_uv_scale.y()),
+      mask_texture_size, surface_contents_scale, FiltersOrigin(), gfx::RectF());
 }
 
 }  // namespace cc

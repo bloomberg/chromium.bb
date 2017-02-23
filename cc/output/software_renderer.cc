@@ -516,10 +516,9 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
     const SkBitmap* mask = mask_lock->sk_bitmap();
 
     // Scale normalized uv rect into absolute texel coordinates.
-    SkRect mask_rect =
-        gfx::RectFToSkRect(gfx::ScaleRect(quad->MaskUVRect(),
-                                          quad->mask_texture_size.width(),
-                                          quad->mask_texture_size.height()));
+    SkRect mask_rect = gfx::RectFToSkRect(
+        gfx::ScaleRect(quad->mask_uv_rect, quad->mask_texture_size.width(),
+                       quad->mask_texture_size.height()));
 
     SkMatrix mask_mat;
     mask_mat.setRectToRect(mask_rect, dest_rect, SkMatrix::kFill_ScaleToFit);

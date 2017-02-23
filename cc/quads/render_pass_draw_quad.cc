@@ -9,7 +9,6 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
-#include "ui/gfx/geometry/rect_f.h"
 
 namespace cc {
 
@@ -27,17 +26,18 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 const gfx::Rect& visible_rect,
                                 int render_pass_id,
                                 ResourceId mask_resource_id,
-                                const gfx::Vector2dF& mask_uv_scale,
+                                const gfx::RectF& mask_uv_rect,
                                 const gfx::Size& mask_texture_size,
                                 const gfx::Vector2dF& filters_scale,
-                                const gfx::PointF& filters_origin) {
+                                const gfx::PointF& filters_origin,
+                                const gfx::RectF& tex_coord_rect) {
   DCHECK(render_pass_id);
 
   gfx::Rect opaque_rect;
   bool needs_blending = false;
   SetAll(shared_quad_state, rect, opaque_rect, visible_rect, needs_blending,
-         render_pass_id, mask_resource_id, mask_uv_scale, mask_texture_size,
-         filters_scale, filters_origin);
+         render_pass_id, mask_resource_id, mask_uv_rect, mask_texture_size,
+         filters_scale, filters_origin, tex_coord_rect);
 }
 
 void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -47,10 +47,11 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 bool needs_blending,
                                 int render_pass_id,
                                 ResourceId mask_resource_id,
-                                const gfx::Vector2dF& mask_uv_scale,
+                                const gfx::RectF& mask_uv_rect,
                                 const gfx::Size& mask_texture_size,
                                 const gfx::Vector2dF& filters_scale,
-                                const gfx::PointF& filters_origin) {
+                                const gfx::PointF& filters_origin,
+                                const gfx::RectF& tex_coord_rect) {
   DCHECK(render_pass_id);
 
   DrawQuad::SetAll(shared_quad_state, DrawQuad::RENDER_PASS, rect, opaque_rect,
@@ -58,14 +59,11 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->render_pass_id = render_pass_id;
   resources.ids[kMaskResourceIdIndex] = mask_resource_id;
   resources.count = mask_resource_id ? 1 : 0;
-  this->mask_uv_scale = mask_uv_scale;
+  this->mask_uv_rect = mask_uv_rect;
   this->mask_texture_size = mask_texture_size;
   this->filters_scale = filters_scale;
   this->filters_origin = filters_origin;
-}
-
-gfx::RectF RenderPassDrawQuad::MaskUVRect() const {
-  return gfx::ScaleRect(gfx::RectF(rect), mask_uv_scale.x(), mask_uv_scale.y());
+  this->tex_coord_rect = tex_coord_rect;
 }
 
 const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(
@@ -80,7 +78,8 @@ void RenderPassDrawQuad::ExtendValue(
                         "render_pass_id");
   value->SetInteger("mask_resource_id", resources.ids[kMaskResourceIdIndex]);
   MathUtil::AddToTracedValue("mask_texture_size", mask_texture_size, value);
-  MathUtil::AddToTracedValue("mask_uv_scale", mask_uv_scale, value);
+  MathUtil::AddToTracedValue("mask_uv_rect", mask_uv_rect, value);
+  MathUtil::AddToTracedValue("tex_coord_rect", tex_coord_rect, value);
 }
 
 }  // namespace cc

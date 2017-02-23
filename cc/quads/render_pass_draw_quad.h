@@ -14,6 +14,7 @@
 #include "cc/quads/draw_quad.h"
 
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace cc {
 
@@ -30,10 +31,11 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const gfx::Rect& visible_rect,
               int render_pass_id,
               ResourceId mask_resource_id,
-              const gfx::Vector2dF& mask_uv_scale,
+              const gfx::RectF& mask_uv_rect,
               const gfx::Size& mask_texture_size,
               const gfx::Vector2dF& filters_scale,
-              const gfx::PointF& filters_origin);
+              const gfx::PointF& filters_origin,
+              const gfx::RectF& tex_coord_rect);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -42,13 +44,14 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               bool needs_blending,
               int render_pass_id,
               ResourceId mask_resource_id,
-              const gfx::Vector2dF& mask_uv_scale,
+              const gfx::RectF& mask_uv_rect,
               const gfx::Size& mask_texture_size,
               const gfx::Vector2dF& filters_scale,
-              const gfx::PointF& filters_origin);
+              const gfx::PointF& filters_origin,
+              const gfx::RectF& tex_coord_rect);
 
   int render_pass_id;
-  gfx::Vector2dF mask_uv_scale;
+  gfx::RectF mask_uv_rect;
   gfx::Size mask_texture_size;
 
   // The scale from layer space of the root layer of the render pass to
@@ -61,8 +64,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   // crop rects, lights, etc.
   gfx::PointF filters_origin;
 
-  // Helper function to generate the normalized uv rect.
-  gfx::RectF MaskUVRect() const;
+  gfx::RectF tex_coord_rect;
 
   ResourceId mask_resource_id() const {
     return resources.ids[kMaskResourceIdIndex];

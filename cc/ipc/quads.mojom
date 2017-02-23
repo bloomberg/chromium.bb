@@ -23,7 +23,8 @@ struct RenderPassQuadState {
 
   // If nonzero, resource id of mask to use when drawing this pass.
   uint32 mask_resource_id;
-  gfx.mojom.Vector2dF mask_uv_scale;
+  // Render surface's normalized mask texture rect.
+  gfx.mojom.RectF mask_uv_rect;
   gfx.mojom.Size mask_texture_size;
 
   // The scale from layer space of the root layer of the render pass to
@@ -36,6 +37,8 @@ struct RenderPassQuadState {
   // original primitive. This used to correctly position crop rects, lights,
   // etc.
   gfx.mojom.PointF filters_origin;
+  // Render surface's non-normalized texture rect.
+  gfx.mojom.RectF tex_coord_rect;
 };
 
 struct SolidColorQuadState {

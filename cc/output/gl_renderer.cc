@@ -1349,7 +1349,7 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
     DCHECK_NE(current_program_->mask_tex_coord_offset_location(), 1);
     gl_->Uniform1i(current_program_->mask_sampler_location(), 1);
 
-    gfx::RectF mask_uv_rect = params->quad->MaskUVRect();
+    gfx::RectF mask_uv_rect = params->quad->mask_uv_rect;
     if (SamplerTypeFromTextureTarget(params->mask_resource_lock->target()) !=
         SAMPLER_TYPE_2D) {
       mask_uv_rect.Scale(params->quad->mask_texture_size.width(),

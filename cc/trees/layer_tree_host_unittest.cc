@@ -6536,9 +6536,7 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     // by 20/50 and 10/50
     EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f), 1.f / 50.f)
                   .ToString(),
-              render_pass_quad->MaskUVRect().ToString());
-    EXPECT_EQ(gfx::Vector2dF(1.f / 50.f, 1.f / 50.f).ToString(),
-              render_pass_quad->mask_uv_scale.ToString());
+              render_pass_quad->mask_uv_rect.ToString());
     EndTest();
     return draw_result;
   }
@@ -6619,9 +6617,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
         EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
                   render_pass_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                  render_pass_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(0.01f, 0.01f).ToString(),
-                  render_pass_quad->mask_uv_scale.ToString());
+                  render_pass_quad->mask_uv_rect.ToString());
         break;
       case 1:
         // Applying a DSF should change the render surface size, but won't
@@ -6629,9 +6625,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
         EXPECT_EQ(gfx::Rect(0, 0, 200, 200).ToString(),
                   render_pass_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                  render_pass_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(0.005f, 0.005f).ToString(),
-                  render_pass_quad->mask_uv_scale.ToString());
+                  render_pass_quad->mask_uv_rect.ToString());
         EndTest();
         break;
     }
@@ -6707,9 +6701,7 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
         EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
                   render_pass_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                  render_pass_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(0.02f, 0.02f).ToString(),
-                  render_pass_quad->mask_uv_scale.ToString());
+                  render_pass_quad->mask_uv_rect.ToString());
         break;
       case 1:
         // Applying a DSF should change the render surface size, but won't
@@ -6717,9 +6709,7 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
         EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
                   render_pass_quad->rect.ToString());
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                  render_pass_quad->MaskUVRect().ToString());
-        EXPECT_EQ(gfx::Vector2dF(0.01f, 0.01f).ToString(),
-                  render_pass_quad->mask_uv_scale.ToString());
+                  render_pass_quad->mask_uv_rect.ToString());
         EndTest();
         break;
     }
