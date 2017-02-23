@@ -3648,7 +3648,7 @@ void WebViewImpl::postLayoutResize(WebLocalFrameImpl* webframe) {
 
 void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe) {
   LocalFrame* frame = webframe->frame();
-  if (!m_client || !frame->isLocalRoot())
+  if (!m_client || !frame->isMainFrame())
     return;
 
   if (m_shouldAutoResize) {
