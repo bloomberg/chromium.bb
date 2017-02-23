@@ -2397,6 +2397,37 @@ TEST_F(TextfieldTest, TextCursorDisplayInRTLTest) {
   base::i18n::SetICUDefaultLocale(locale);
 }
 
+TEST_F(TextfieldTest, TextCursorPositionInRTLTest) {
+  std::string locale = base::i18n::GetConfiguredLocale();
+  base::i18n::SetICUDefaultLocale("he");
+
+  InitTextfield();
+  // LTR-RTL string in RTL context.
+  int text_cursor_position_prev = test_api_->GetCursorViewOrigin().x();
+  SendKeyEvent('a');
+  SendKeyEvent('b');
+  EXPECT_STR_EQ("ab", textfield_->text());
+  int text_cursor_position_new = test_api_->GetCursorViewOrigin().x();
+  // Text cursor stays at same place after inserting new charactors in RTL mode.
+  EXPECT_EQ(text_cursor_position_prev, text_cursor_position_new);
+
+  // Reset locale.
+  base::i18n::SetICUDefaultLocale(locale);
+}
+
+TEST_F(TextfieldTest, TextCursorPositionInLTRTest) {
+  InitTextfield();
+
+  // LTR-RTL string in LTR context.
+  int text_cursor_position_prev = test_api_->GetCursorViewOrigin().x();
+  SendKeyEvent('a');
+  SendKeyEvent('b');
+  EXPECT_STR_EQ("ab", textfield_->text());
+  int text_cursor_position_new = test_api_->GetCursorViewOrigin().x();
+  // Text cursor moves to right after inserting new charactors in LTR mode.
+  EXPECT_LT(text_cursor_position_prev, text_cursor_position_new);
+}
+
 TEST_F(TextfieldTest, HitInsideTextAreaTest) {
   InitTextfield();
   textfield_->SetText(WideToUTF16(L"ab\x05E1\x5E2"));

@@ -1924,7 +1924,9 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
 }
 
 void Textfield::UpdateCursorView() {
-  cursor_view_.SetBoundsRect(GetRenderText()->GetUpdatedCursorBounds());
+  gfx::Rect location(GetRenderText()->GetUpdatedCursorBounds());
+  location.set_x(GetMirroredXForRect(location));
+  cursor_view_.SetBoundsRect(location);
 }
 
 void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
