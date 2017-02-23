@@ -196,9 +196,9 @@ class ValidationPool(object):
   REJECTION_GRACE_PERIOD = 30 * 60
 
   # How many CQ runs to go back when making a decision about the CQ health.
-  # Note this impacts the max exponential fallback (2^10=1024 max exponential
+  # Note this impacts the max exponential fallback (1.5^4 ~= 5 max exponential
   # divisor)
-  CQ_SEARCH_HISTORY = 10
+  CQ_SEARCH_HISTORY = 4
 
 
   def __init__(self, overlays, build_root, build_number, builder_name,
