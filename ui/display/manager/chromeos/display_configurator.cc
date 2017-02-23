@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chromeos/system/devicemode.h"
 #include "ui/display/display.h"
@@ -1036,8 +1037,7 @@ void DisplayConfigurator::RunPendingConfiguration() {
       requested_display_state_, pending_power_state_, pending_power_flags_, 0,
       force_configure_, base::Bind(&DisplayConfigurator::OnConfigured,
                                    weak_ptr_factory_.GetWeakPtr())));
-  configuration_task_->set_virtual_display_snapshots(
-      virtual_display_snapshots_.get());
+  configuration_task_->SetVirtualDisplaySnapshots(virtual_display_snapshots_);
 
   // Reset the flags before running the task; otherwise it may end up scheduling
   // another configuration.
@@ -1160,14 +1160,13 @@ int64_t DisplayConfigurator::AddVirtualDisplay(const gfx::Size& display_size) {
     return kInvalidDisplayId;
   }
 
-  DisplaySnapshotVirtual* virtual_snapshot =
-      new DisplaySnapshotVirtual(GenerateDisplayID(kReservedManufacturerID, 0x0,
-                                                   ++last_virtual_display_id_),
-                                 display_size);
-  virtual_display_snapshots_.push_back(virtual_snapshot);
+  int64_t display_id = GenerateDisplayID(kReservedManufacturerID, 0x0,
+                                         ++last_virtual_display_id_);
+  virtual_display_snapshots_.push_back(
+      base::MakeUnique<DisplaySnapshotVirtual>(display_id, display_size));
   ConfigureDisplays();
 
-  return virtual_snapshot->display_id();
+  return display_id;
 }
 
 bool DisplayConfigurator::RemoveVirtualDisplay(int64_t display_id) {
@@ -1186,7 +1185,7 @@ bool DisplayConfigurator::RemoveVirtualDisplay(int64_t display_id) {
     return false;
 
   int64_t max_display_id = 0;
-  for (auto* display : virtual_display_snapshots_)
+  for (const auto& display : virtual_display_snapshots_)
     max_display_id = std::max(max_display_id, display->display_id());
   last_virtual_display_id_ = max_display_id & 0xff;
 

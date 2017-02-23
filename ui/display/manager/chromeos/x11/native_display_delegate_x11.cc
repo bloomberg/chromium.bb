@@ -10,6 +10,7 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xrandr.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/logging.h"
@@ -86,8 +87,8 @@ class NativeDisplayDelegateX11::HelperDelegateX11
   void UpdateXRandRConfiguration(const base::NativeEvent& event) override {
     XRRUpdateConfiguration(event);
   }
-  const std::vector<DisplaySnapshot*>& GetCachedDisplays() const override {
-    return delegate_->cached_outputs_.get();
+  std::vector<DisplaySnapshot*> GetCachedDisplays() const override {
+    return delegate_->GetCachedDisplays();
   }
   void NotifyDisplayObservers() override {
     for (NativeDisplayObserver& observer : delegate_->observers_)
@@ -182,14 +183,13 @@ void NativeDisplayDelegateX11::GetDisplays(
     XRROutputInfo* output_info =
         XRRGetOutputInfo(display_, screen_.get(), output_id);
     if (output_info->connection == RR_Connected) {
-      DisplaySnapshotX11* output =
-          InitDisplaySnapshot(output_id, output_info, &last_used_crtcs, i);
-      cached_outputs_.push_back(output);
+      cached_outputs_.push_back(
+          InitDisplaySnapshot(output_id, output_info, &last_used_crtcs, i));
     }
     XRRFreeOutputInfo(output_info);
   }
 
-  callback.Run(cached_outputs_.get());
+  callback.Run(GetCachedDisplays());
 }
 
 void NativeDisplayDelegateX11::AddMode(const DisplaySnapshot& output,
@@ -286,6 +286,15 @@ FakeDisplayController* NativeDisplayDelegateX11::GetFakeDisplayController() {
   return nullptr;
 }
 
+std::vector<DisplaySnapshot*> NativeDisplayDelegateX11::GetCachedDisplays()
+    const {
+  std::vector<DisplaySnapshot*> snapshots(cached_outputs_.size());
+  std::transform(
+      cached_outputs_.cbegin(), cached_outputs_.cend(), snapshots.begin(),
+      [](const std::unique_ptr<DisplaySnapshot>& item) { return item.get(); });
+  return snapshots;
+}
+
 void NativeDisplayDelegateX11::InitModes() {
   CHECK(screen_) << "Server not grabbed";
 
@@ -307,11 +316,11 @@ void NativeDisplayDelegateX11::InitModes() {
   }
 }
 
-DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
-    RROutput output,
-    XRROutputInfo* info,
-    std::set<RRCrtc>* last_used_crtcs,
-    int index) {
+std::unique_ptr<DisplaySnapshotX11>
+NativeDisplayDelegateX11::InitDisplaySnapshot(RROutput output,
+                                              XRROutputInfo* info,
+                                              std::set<RRCrtc>* last_used_crtcs,
+                                              int index) {
   int64_t display_id = 0;
   EDIDParserX11 edid_parser(output);
   if (!edid_parser.GetDisplayId(static_cast<uint8_t>(index), &display_id))
@@ -363,21 +372,11 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
     }
   }
 
-  DisplaySnapshotX11* display_snapshot =
-      new DisplaySnapshotX11(display_id,
-                             origin,
-                             gfx::Size(info->mm_width, info->mm_height),
-                             type,
-                             IsOutputAspectPreservingScaling(output),
-                             has_overscan,
-                             edid_parser.GetDisplayName(),
-                             std::move(display_modes),
-                             edid_parser.edid(),
-                             current_mode,
-                             native_mode,
-                             output,
-                             crtc,
-                             index);
+  auto display_snapshot = base::MakeUnique<DisplaySnapshotX11>(
+      display_id, origin, gfx::Size(info->mm_width, info->mm_height), type,
+      IsOutputAspectPreservingScaling(output), has_overscan,
+      edid_parser.GetDisplayName(), std::move(display_modes),
+      edid_parser.edid(), current_mode, native_mode, output, crtc, index);
 
   VLOG(1) << "Found display " << cached_outputs_.size() << ":"
           << " output=" << output << " crtc=" << crtc
@@ -493,11 +492,9 @@ void NativeDisplayDelegateX11::DestroyUnusedCrtcs() {
 
   for (int i = 0; i < screen_->ncrtc; ++i) {
     bool in_use = false;
-    for (ScopedVector<DisplaySnapshot>::const_iterator it =
-             cached_outputs_.begin();
-         it != cached_outputs_.end();
-         ++it) {
-      DisplaySnapshotX11* x11_output = static_cast<DisplaySnapshotX11*>(*it);
+    for (const auto& snapshot : cached_outputs_) {
+      DisplaySnapshotX11* x11_output =
+          static_cast<DisplaySnapshotX11*>(snapshot.get());
       if (screen_->crtcs[i] == x11_output->crtc()) {
         in_use = true;
         break;
@@ -523,11 +520,9 @@ void NativeDisplayDelegateX11::UpdateCrtcsForNewFramebuffer(
   // not interested in the state we are setting - we just try to get the CRTCs
   // out of the way so we can rebuild the frame buffer.
   gfx::Rect fb_rect(min_screen_size);
-  for (ScopedVector<DisplaySnapshot>::const_iterator it =
-           cached_outputs_.begin();
-       it != cached_outputs_.end();
-       ++it) {
-    DisplaySnapshotX11* x11_output = static_cast<DisplaySnapshotX11*>(*it);
+  for (const auto& snapshot : cached_outputs_) {
+    DisplaySnapshotX11* x11_output =
+        static_cast<DisplaySnapshotX11*>(snapshot.get());
     const DisplayMode* mode_info = x11_output->current_mode();
     RROutput output = x11_output->output();
     RRMode mode = None;

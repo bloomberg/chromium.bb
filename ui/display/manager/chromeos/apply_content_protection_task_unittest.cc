@@ -5,7 +5,9 @@
 #include "ui/display/manager/chromeos/apply_content_protection_task.h"
 
 #include <stdint.h>
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -57,7 +59,7 @@ class ApplyContentProtectionTaskTest : public testing::Test {
 };
 
 TEST_F(ApplyContentProtectionTaskTest, ApplyWithNoHDCPCapableDisplay) {
-  ScopedVector<DisplaySnapshot> displays;
+  std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(
       CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_INTERNAL));
   TestDisplayLayoutManager layout_manager(std::move(displays),
@@ -76,7 +78,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyWithNoHDCPCapableDisplay) {
 }
 
 TEST_F(ApplyContentProtectionTaskTest, ApplyWithHDMIDisplay) {
-  ScopedVector<DisplaySnapshot> displays;
+  std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
@@ -99,7 +101,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyWithHDMIDisplay) {
 }
 
 TEST_F(ApplyContentProtectionTaskTest, ApplyWithUnknownDisplay) {
-  ScopedVector<DisplaySnapshot> displays;
+  std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_UNKNOWN));
   TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
@@ -117,7 +119,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyWithUnknownDisplay) {
 }
 
 TEST_F(ApplyContentProtectionTaskTest, FailGettingHDCPState) {
-  ScopedVector<DisplaySnapshot> displays;
+  std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
@@ -136,7 +138,7 @@ TEST_F(ApplyContentProtectionTaskTest, FailGettingHDCPState) {
 }
 
 TEST_F(ApplyContentProtectionTaskTest, FailSettingHDCPState) {
-  ScopedVector<DisplaySnapshot> displays;
+  std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
@@ -160,7 +162,7 @@ TEST_F(ApplyContentProtectionTaskTest, FailSettingHDCPState) {
 }
 
 TEST_F(ApplyContentProtectionTaskTest, ApplyNoopProtection) {
-  ScopedVector<DisplaySnapshot> displays;
+  std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);

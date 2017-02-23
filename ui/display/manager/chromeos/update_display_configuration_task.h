@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -41,9 +42,8 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask {
 
   // The pointers to the DisplaySnapshots in this vector are owned by
   // DisplayConfigurator.
-  void set_virtual_display_snapshots(std::vector<DisplaySnapshot*> snapshots) {
-    virtual_display_snapshots_ = snapshots;
-  }
+  void SetVirtualDisplaySnapshots(
+      const std::vector<std::unique_ptr<DisplaySnapshot>>& snapshots);
 
   void Run();
 

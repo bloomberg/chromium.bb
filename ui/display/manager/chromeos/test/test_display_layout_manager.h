@@ -5,8 +5,10 @@
 #ifndef UI_DISPLAY_MANAGER_CHROMEOS_TEST_TEST_DISPLAY_LAYOUT_MANAGER_H_
 #define UI_DISPLAY_MANAGER_CHROMEOS_TEST_TEST_DISPLAY_LAYOUT_MANAGER_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/chromeos/display_layout_manager.h"
 
@@ -15,8 +17,9 @@ namespace test {
 
 class TestDisplayLayoutManager : public DisplayLayoutManager {
  public:
-  TestDisplayLayoutManager(ScopedVector<DisplaySnapshot> displays,
-                           MultipleDisplayState display_state);
+  TestDisplayLayoutManager(
+      std::vector<std::unique_ptr<DisplaySnapshot>> displays,
+      MultipleDisplayState display_state);
   ~TestDisplayLayoutManager() override;
 
   // DisplayLayoutManager:
@@ -34,7 +37,7 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
   bool IsMirroring() const override;
 
  private:
-  ScopedVector<DisplaySnapshot> displays_;
+  std::vector<std::unique_ptr<DisplaySnapshot>> displays_;
   MultipleDisplayState display_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDisplayLayoutManager);

@@ -4,6 +4,8 @@
 
 #include "ui/display/manager/chromeos/update_display_configuration_task.h"
 
+#include <algorithm>
+
 #include "ui/display/manager/chromeos/configure_displays_task.h"
 #include "ui/display/manager/chromeos/display_layout_manager.h"
 #include "ui/display/manager/chromeos/display_util.h"
@@ -42,6 +44,14 @@ void UpdateDisplayConfigurationTask::Run() {
   delegate_->GetDisplays(
       base::Bind(&UpdateDisplayConfigurationTask::OnDisplaysUpdated,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void UpdateDisplayConfigurationTask::SetVirtualDisplaySnapshots(
+    const std::vector<std::unique_ptr<DisplaySnapshot>>& snapshots) {
+  virtual_display_snapshots_.resize(snapshots.size());
+  std::transform(
+      snapshots.cbegin(), snapshots.cend(), virtual_display_snapshots_.begin(),
+      [](const std::unique_ptr<DisplaySnapshot>& item) { return item.get(); });
 }
 
 void UpdateDisplayConfigurationTask::OnDisplaysUpdated(

@@ -12,7 +12,7 @@ namespace display {
 namespace test {
 
 TestDisplayLayoutManager::TestDisplayLayoutManager(
-    ScopedVector<DisplaySnapshot> displays,
+    std::vector<std::unique_ptr<DisplaySnapshot>> displays,
     MultipleDisplayState display_state)
     : displays_(std::move(displays)), display_state_(display_state) {}
 
@@ -49,7 +49,11 @@ bool TestDisplayLayoutManager::GetDisplayLayout(
 
 std::vector<DisplaySnapshot*> TestDisplayLayoutManager::GetDisplayStates()
     const {
-  return displays_.get();
+  std::vector<DisplaySnapshot*> snapshots(displays_.size());
+  std::transform(
+      displays_.cbegin(), displays_.cend(), snapshots.begin(),
+      [](const std::unique_ptr<DisplaySnapshot>& item) { return item.get(); });
+  return snapshots;
 }
 
 bool TestDisplayLayoutManager::IsMirroring() const {

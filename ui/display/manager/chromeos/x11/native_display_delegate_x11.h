@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/event_types.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "ui/display/manager/display_manager_export.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -63,7 +62,7 @@ class DISPLAY_MANAGER_EXPORT NativeDisplayDelegateX11
 
     // Returns the list of current outputs. This is used to discard duplicate
     // events.
-    virtual const std::vector<DisplaySnapshot*>& GetCachedDisplays() const = 0;
+    virtual std::vector<DisplaySnapshot*> GetCachedDisplays() const = 0;
 
     // Notify |observers_| that a change in configuration has occurred.
     virtual void NotifyDisplayObservers() = 0;
@@ -106,6 +105,8 @@ class DISPLAY_MANAGER_EXPORT NativeDisplayDelegateX11
   void RemoveObserver(NativeDisplayObserver* observer) override;
   FakeDisplayController* GetFakeDisplayController() override;
 
+  std::vector<DisplaySnapshot*> GetCachedDisplays() const;
+
  private:
   class HelperDelegateX11;
 
@@ -114,10 +115,11 @@ class DISPLAY_MANAGER_EXPORT NativeDisplayDelegateX11
 
   // Helper method for GetOutputs() that returns an OutputSnapshot struct based
   // on the passed-in information.
-  DisplaySnapshotX11* InitDisplaySnapshot(RROutput id,
-                                          XRROutputInfo* info,
-                                          std::set<RRCrtc>* last_used_crtcs,
-                                          int index);
+  std::unique_ptr<DisplaySnapshotX11> InitDisplaySnapshot(
+      RROutput id,
+      XRROutputInfo* info,
+      std::set<RRCrtc>* last_used_crtcs,
+      int index);
 
   // Destroys unused CRTCs.
   void DestroyUnusedCrtcs();
@@ -158,7 +160,7 @@ class DISPLAY_MANAGER_EXPORT NativeDisplayDelegateX11
   // Every time GetOutputs() is called we cache the updated list of outputs in
   // |cached_outputs_| so that we can check for duplicate events rather than
   // propagate them.
-  ScopedVector<DisplaySnapshot> cached_outputs_;
+  std::vector<std::unique_ptr<DisplaySnapshot>> cached_outputs_;
 
   std::unique_ptr<HelperDelegate> helper_delegate_;
 

@@ -15,7 +15,6 @@
 
 #include "base/event_types.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -465,7 +464,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   bool displays_suspended_;
 
   // Virtual display control.
-  ScopedVector<DisplaySnapshot> virtual_display_snapshots_;
+  std::vector<std::unique_ptr<DisplaySnapshot>> virtual_display_snapshots_;
 
   // Last used virtual display id.
   uint8_t last_virtual_display_id_ = 0;
