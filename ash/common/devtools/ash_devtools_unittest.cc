@@ -233,12 +233,11 @@ class AshDevToolsTest : public AshTest {
                          parent_id, node_id)));
   }
 
-  void ExpectStyleSheetChanged(int node_id) {
-    EXPECT_EQ(1, frontend_channel()->CountProtocolNotificationMessage(
-                     base::StringPrintf(
-                         "{\"method\":\"CSS.styleSheetChanged\",\"params\":{"
-                         "\"styleSheetId\":\"%d\"}}",
-                         node_id)));
+  int GetStyleSheetChangedCount(int node_id) {
+    return frontend_channel()->CountProtocolNotificationMessage(
+        base::StringPrintf("{\"method\":\"CSS.styleSheetChanged\",\"params\":{"
+                           "\"styleSheetId\":\"%d\"}}",
+                           node_id));
   }
 
   void CompareNodeBounds(DOM::Node* node, const gfx::Rect& bounds) {
@@ -672,29 +671,33 @@ TEST_F(AshDevToolsTest, WindowWidgetViewGetMatchedStylesForNode) {
 TEST_F(AshDevToolsTest, WindowWidgetViewStyleSheetChanged) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* parent_window = WmLookup::Get()->GetWindowForWidget(widget.get());
-  std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
-  WmWindow* window = child_owner->window();
+  WmWindow* widget_window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(widget_window));
+  WmWindow* child = child_owner->window();
 
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  gfx::Rect window_bounds(2, 2, 3, 3);
-  gfx::Rect widget_bounds(10, 10, 5, 6);
+  gfx::Rect child_bounds(2, 2, 3, 3);
+  gfx::Rect widget_bounds(10, 10, 150, 160);
   gfx::Rect view_bounds(4, 4, 3, 3);
-  window->SetBounds(window_bounds);
+  child->SetBounds(child_bounds);
   widget->SetBounds(widget_bounds);
   widget->GetRootView()->SetBoundsRect(view_bounds);
 
-  DOM::Node* parent_node = FindInRoot(parent_window, root.get());
-  ASSERT_TRUE(parent_node);
-  Array<DOM::Node>* parent_children = parent_node->getChildren(nullptr);
-  ASSERT_TRUE(parent_children);
+  DOM::Node* widget_node = FindInRoot(widget_window, root.get());
+  ASSERT_TRUE(widget_node);
+  Array<DOM::Node>* widget_node_children = widget_node->getChildren(nullptr);
+  ASSERT_TRUE(widget_node_children);
 
-  ExpectStyleSheetChanged(parent_node->getNodeId());
-  ExpectStyleSheetChanged(parent_children->get(1)->getNodeId());
-  ExpectStyleSheetChanged(
-      parent_children->get(0)->getChildren(nullptr)->get(0)->getNodeId());
+  EXPECT_EQ(1, GetStyleSheetChangedCount(widget_node->getNodeId()));
+  EXPECT_EQ(
+      1, GetStyleSheetChangedCount(widget_node_children->get(1)->getNodeId()));
+  EXPECT_EQ(2,
+            GetStyleSheetChangedCount(widget_node_children->get(0)
+                                          ->getChildren(nullptr)
+                                          ->get(0)
+                                          ->getNodeId()));
 }
 
 TEST_F(AshDevToolsTest, WindowWidgetViewSetStyleText) {

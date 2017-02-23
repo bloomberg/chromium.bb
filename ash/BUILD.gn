@@ -1157,6 +1157,7 @@ source_set("common_unittests") {
   sources = [
     "accelerators/accelerator_controller_unittest.cc",
     "common/accelerators/accelerator_table_unittest.cc",
+    "common/devtools/ash_devtools_unittest.cc",
     "common/drag_drop/drag_image_view_unittest.cc",
     "common/mus_property_mirror_ash_unittest.cc",
     "common/system/chromeos/audio/tray_audio_unittest.cc",
@@ -1209,7 +1210,6 @@ test("ash_unittests") {
     "ash_touch_exploration_manager_chromeos_unittest.cc",
     "aura/pointer_watcher_adapter_unittest.cc",
     "autoclick/autoclick_unittest.cc",
-    "common/devtools/ash_devtools_unittest.cc",
     "common/session/session_controller_unittest.cc",
 
     # TODO: convert to use AshTest http://crbug.com/654489.
