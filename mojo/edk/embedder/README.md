@@ -140,11 +140,8 @@ The launched process code uses `SetParentPipeHandle` to get connected, and might
 look something like:
 
 ```
-#include "base/process/process_handle.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 
 // You write this. It acquires the ScopedPlatformHandle that was passed by
@@ -232,8 +229,6 @@ int main(int argc, char** argv) {
   base::ProcessHandle child_handle =
       LaunchCoolChildProcess(command_line, channel.PassClientHandle());
 
-  // At this point it's safe for |child| to go out of scope and nothing will
-  // break.
   child.Connect(child_handle, channel.PassServerHandle());
 
   // We can start using our end of the pipe immediately. Here we assume the
@@ -255,12 +250,9 @@ and for the launched process:
 
 ```
 #include "base/command_line.h"
-#include "base/process/process_handle.h"
 #include "base/run_loop/run_loop.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/pending_process_connection.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
