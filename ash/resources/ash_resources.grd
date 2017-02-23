@@ -122,7 +122,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_RECORDING" file="cros/status/status_recording.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_RECORDING_RED" file="cros/status/status_recording_red.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SETTINGS" file="cros/status/status_settings.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD" file="cros/status/status_virtual_keyboard.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="cros/network/status_wifi_disabled.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="cros/network/status_wifi_disabled_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="cros/network/status_wifi_enabled.png" />

@@ -119,7 +119,6 @@ int GetTrayConstant(TrayConstant constant) {
   const int kTrayPopupItemLeftInset[] = {0, 4, 4};
   const int kTrayPopupItemMinStartWidth[] = {46, 48, 48};
   const int kTrayPopupItemMinEndWidth[] = {40, 40, 40};
-  const int kVirtualKeyboardButtonSize[] = {39, kTrayItemSize, kTrayItemSize};
   const int kTrayImeMenuIcon[] = {40, kTrayItemSize, kTrayItemSize};
   const int kTrayImageItemPadding[] = {1, 3, 3};
 
@@ -147,8 +146,6 @@ int GetTrayConstant(TrayConstant constant) {
       return kTrayPopupItemMinStartWidth[mode];
     case TRAY_POPUP_ITEM_MIN_END_WIDTH:
       return kTrayPopupItemMinEndWidth[mode];
-    case VIRTUAL_KEYBOARD_BUTTON_SIZE:
-      return kVirtualKeyboardButtonSize[mode];
     case TRAY_IME_MENU_ICON:
       return kTrayImeMenuIcon[mode];
     case TRAY_IMAGE_ITEM_PADDING:
