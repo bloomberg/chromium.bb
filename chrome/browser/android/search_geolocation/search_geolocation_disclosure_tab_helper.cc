@@ -78,12 +78,14 @@ SearchGeolocationDisclosureTabHelper::~SearchGeolocationDisclosureTabHelper() {}
 
 void SearchGeolocationDisclosureTabHelper::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
-  if (consistent_geolocation_enabled_)
-    MaybeShowDisclosure(web_contents()->GetVisibleURL());
+  MaybeShowDisclosure(web_contents()->GetVisibleURL());
 }
 
 void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosure(
     const GURL& gurl) {
+  if (!consistent_geolocation_enabled_)
+    return;
+
   if (!ShouldShowDisclosureForUrl(gurl))
     return;
 
