@@ -3,11 +3,15 @@ Checks that BreakpointManager.possibleBreakpoints returns correct locations
 Locations for first line
 All locations
 location(2, 2)
+location(2, 10)
+location(2, 20)
 location(2, 31)
 location(2, 34)
+location(2, 36)
 location(2, 47)
 location(2, 49)
 location(3, 2)
+location(3, 10)
 location(4, 2)
 location(5, 0)
 Existing location by position

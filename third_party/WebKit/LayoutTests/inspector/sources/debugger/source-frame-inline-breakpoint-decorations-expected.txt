@@ -4,7 +4,9 @@ Checks that JavaScriptSourceFrame show inline breakpoints correctly
 Running: testAddRemoveBreakpoint
 Setting breakpoint
 breakpoint at 3
-  inline breakpoint at (3, 49)
+  inline breakpoint at (3, 20)
+  inline breakpoint at (3, 30) disabled
+  inline breakpoint at (3, 49) disabled
   inline breakpoint at (3, 56) disabled
 Toggle breakpoint
 
@@ -16,16 +18,22 @@ Toggle breakpoint
 Running: clickByInlineBreakpoint
 Setting breakpoint
 breakpoint at 3
-  inline breakpoint at (3, 49)
+  inline breakpoint at (3, 20)
+  inline breakpoint at (3, 30) disabled
+  inline breakpoint at (3, 49) disabled
   inline breakpoint at (3, 56) disabled
 Click by second breakpoint
 breakpoint at 3
-  inline breakpoint at (3, 49)
-  inline breakpoint at (3, 56)
+  inline breakpoint at (3, 20)
+  inline breakpoint at (3, 30)
+  inline breakpoint at (3, 49) disabled
+  inline breakpoint at (3, 56) disabled
 Click by first breakpoint
 breakpoint at 3
+  inline breakpoint at (3, 20) disabled
+  inline breakpoint at (3, 30)
   inline breakpoint at (3, 49) disabled
-  inline breakpoint at (3, 56)
+  inline breakpoint at (3, 56) disabled
 Click by second breakpoint
 
 Running: toggleBreakpointInAnotherLineWontRemoveExisting
@@ -36,7 +44,9 @@ breakpoint at 4
   inline breakpoint at (4, 36) disabled
 Setting breakpoint in line 3
 breakpoint at 3
-  inline breakpoint at (3, 49)
+  inline breakpoint at (3, 20)
+  inline breakpoint at (3, 30) disabled
+  inline breakpoint at (3, 49) disabled
   inline breakpoint at (3, 56) disabled
 breakpoint at 4
   inline breakpoint at (4, 9)
