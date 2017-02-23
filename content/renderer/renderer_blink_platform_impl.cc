@@ -675,49 +675,18 @@ WebAudioDevice* RendererBlinkPlatformImpl::createAudioDevice(
   // The |channels| does not exactly identify the channel layout of the
   // device. The switch statement below assigns a best guess to the channel
   // layout based on number of channels.
-  media::ChannelLayout layout = media::CHANNEL_LAYOUT_UNSUPPORTED;
-  switch (channels) {
-    case 1:
-      layout = media::CHANNEL_LAYOUT_MONO;
-      break;
-    case 2:
-      layout = media::CHANNEL_LAYOUT_STEREO;
-      break;
-    case 3:
-      layout = media::CHANNEL_LAYOUT_2_1;
-      break;
-    case 4:
-      layout = media::CHANNEL_LAYOUT_4_0;
-      break;
-    case 5:
-      layout = media::CHANNEL_LAYOUT_5_0;
-      break;
-    case 6:
-      layout = media::CHANNEL_LAYOUT_5_1;
-      break;
-    case 7:
-      layout = media::CHANNEL_LAYOUT_7_0;
-      break;
-    case 8:
-      layout = media::CHANNEL_LAYOUT_7_1;
-      break;
-    default:
-      // TODO need to also pass 'channels' into RendererWebAudioDeviceImpl for
-      // CHANNEL_LAYOUT_DISCRETE
-      NOTREACHED();
-  }
+  media::ChannelLayout layout = media::GuessChannelLayout(channels);
+  if (layout == media::CHANNEL_LAYOUT_UNSUPPORTED)
+    layout = media::CHANNEL_LAYOUT_DISCRETE;
 
   int session_id = 0;
   if (input_device_id.isNull() ||
       !base::StringToInt(input_device_id.utf8(), &session_id)) {
-    if (input_channels > 0)
-      DLOG(WARNING) << "createAudioDevice(): request for audio input ignored";
-
-    input_channels = 0;
+    session_id = 0;
   }
 
   return RendererWebAudioDeviceImpl::Create(
-      layout, latency_hint, callback, session_id,
+      layout, channels, latency_hint, callback, session_id,
       static_cast<url::Origin>(security_origin));
 }
 

@@ -35,6 +35,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
 
   static RendererWebAudioDeviceImpl* Create(
       media::ChannelLayout layout,
+      int channels,
       const blink::WebAudioLatencyHint& latency_hint,
       blink::WebAudioDevice::RenderCallback* callback,
       int session_id,
@@ -57,6 +58,10 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
   void SetMediaTaskRunnerForTesting(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
 
+  const media::AudioParameters& get_sink_params_for_testing() {
+    return sink_params_;
+  }
+
  protected:
   // Callback to get output device params (for tests).
   using OutputDeviceParamsCallback = base::Callback<media::AudioParameters(
@@ -69,6 +74,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
   using RenderFrameIdCallback = base::Callback<int()>;
 
   RendererWebAudioDeviceImpl(media::ChannelLayout layout,
+                             int channels,
                              const blink::WebAudioLatencyHint& latency_hint,
                              blink::WebAudioDevice::RenderCallback* callback,
                              int session_id,

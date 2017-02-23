@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "media/base/audio_capturer_source.h"
+#include "media/base/limits.h"
 #include "media/base/mock_audio_renderer_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,11 +43,13 @@ class RendererWebAudioDeviceImplUnderTest : public RendererWebAudioDeviceImpl {
  public:
   RendererWebAudioDeviceImplUnderTest(
       media::ChannelLayout layout,
+      int channels,
       const blink::WebAudioLatencyHint& latency_hint,
       blink::WebAudioDevice::RenderCallback* callback,
       int session_id,
       const url::Origin& security_origin)
       : RendererWebAudioDeviceImpl(layout,
+                                   channels,
                                    latency_hint,
                                    callback,
                                    session_id,
@@ -66,7 +70,16 @@ class RendererWebAudioDeviceImplTest
 
   void SetupDevice(blink::WebAudioLatencyHint latencyHint) {
     webaudio_device_.reset(new RendererWebAudioDeviceImplUnderTest(
-        media::CHANNEL_LAYOUT_MONO, latencyHint, this, 0, url::Origin()));
+        media::CHANNEL_LAYOUT_MONO, 1, latencyHint, this, 0, url::Origin()));
+    webaudio_device_->SetMediaTaskRunnerForTesting(message_loop_.task_runner());
+  }
+
+  void SetupDevice(media::ChannelLayout layout, int channels) {
+    webaudio_device_.reset(new RendererWebAudioDeviceImplUnderTest(
+        layout, channels,
+        blink::WebAudioLatencyHint(
+            blink::WebAudioLatencyHint::kCategoryInteractive),
+        this, 0, url::Origin()));
     webaudio_device_->SetMediaTaskRunnerForTesting(message_loop_.task_runner());
   }
 
@@ -109,6 +122,23 @@ class RendererWebAudioDeviceImplTest
   std::unique_ptr<RendererWebAudioDeviceImpl> webaudio_device_;
   base::MessageLoop message_loop_;
 };
+
+TEST_F(RendererWebAudioDeviceImplTest, ChannelLayout) {
+  for (int ch = 1; ch < static_cast<int>(media::limits::kMaxChannels); ++ch) {
+    SCOPED_TRACE(base::StringPrintf("ch == %d", ch));
+
+    media::ChannelLayout layout = media::GuessChannelLayout(ch);
+    if (layout == media::CHANNEL_LAYOUT_UNSUPPORTED)
+      layout = media::CHANNEL_LAYOUT_DISCRETE;
+
+    SetupDevice(layout, ch);
+    media::AudioParameters sink_params =
+        webaudio_device_->get_sink_params_for_testing();
+    EXPECT_TRUE(sink_params.IsValid());
+    EXPECT_EQ(layout, sink_params.channel_layout());
+    EXPECT_EQ(ch, sink_params.channels());
+  }
+}
 
 TEST_F(RendererWebAudioDeviceImplTest, TestLatencyHintValues) {
   blink::WebAudioLatencyHint interactiveLatencyHint(

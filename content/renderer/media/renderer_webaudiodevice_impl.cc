@@ -76,18 +76,20 @@ media::AudioParameters GetOutputDeviceParameters(
 
 RendererWebAudioDeviceImpl* RendererWebAudioDeviceImpl::Create(
     media::ChannelLayout layout,
+    int channels,
     const blink::WebAudioLatencyHint& latency_hint,
     WebAudioDevice::RenderCallback* callback,
     int session_id,
     const url::Origin& security_origin) {
-  return new RendererWebAudioDeviceImpl(layout, latency_hint, callback,
-                                        session_id, security_origin,
+  return new RendererWebAudioDeviceImpl(layout, channels, latency_hint,
+                                        callback, session_id, security_origin,
                                         base::Bind(&GetOutputDeviceParameters),
                                         base::Bind(&FrameIdFromCurrentContext));
 }
 
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     media::ChannelLayout layout,
+    int channels,
     const blink::WebAudioLatencyHint& latency_hint,
     WebAudioDevice::RenderCallback* callback,
     int session_id,
@@ -135,6 +137,9 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
 
   sink_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY, layout,
                      hardware_params.sample_rate(), 16, output_buffer_size);
+  // Always set channels, this should be a no-op in all but the discrete case;
+  // this call will fail if channels doesn't match the layout in other cases.
+  sink_params_.set_channels_for_discrete(channels);
 
   // Specify the latency info to be passed to the browser side.
   sink_params_.set_latency_tag(latency);
