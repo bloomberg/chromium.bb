@@ -18,9 +18,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "net/base/cache_type.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/host_port_pair.h"
@@ -8351,6 +8355,47 @@ TEST(HttpCache, CacheEntryStatusCantConditionalize) {
   EXPECT_TRUE(response_info.network_accessed);
   EXPECT_EQ(CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE,
             response_info.cache_entry_status);
+}
+
+// Basic test to make sure HttpCache::DumpMemoryStats doesn't crash.
+TEST(HttpCache, DumpMemoryStats) {
+  MockHttpCache cache;
+  cache.FailConditionalizations();
+  RunTransactionTest(cache.http_cache(), kTypicalGET_Transaction);
+
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(),
+                                     kTypicalGET_Transaction, &response_info);
+
+  EXPECT_FALSE(response_info.was_cached);
+  EXPECT_TRUE(response_info.network_accessed);
+  EXPECT_EQ(CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE,
+            response_info.cache_entry_status);
+
+  base::trace_event::MemoryDumpArgs dump_args = {
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+  std::unique_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
+      new base::trace_event::ProcessMemoryDump(nullptr, dump_args));
+  base::trace_event::MemoryAllocatorDump* parent_dump =
+      process_memory_dump->CreateAllocatorDump("parent");
+  cache.http_cache()->DumpMemoryStats(process_memory_dump.get(),
+                                      parent_dump->absolute_name());
+
+  const base::trace_event::MemoryAllocatorDump* dump =
+      process_memory_dump->GetAllocatorDump("parent/http_cache");
+  ASSERT_NE(nullptr, dump);
+  std::unique_ptr<base::Value> raw_attrs =
+      dump->attributes_for_testing()->ToBaseValue();
+  base::DictionaryValue* attrs;
+  ASSERT_TRUE(raw_attrs->GetAsDictionary(&attrs));
+  base::DictionaryValue* size_attrs;
+  ASSERT_TRUE(attrs->GetDictionary(
+      base::trace_event::MemoryAllocatorDump::kNameSize, &size_attrs));
+  std::string size;
+  ASSERT_TRUE(size_attrs->GetString("value", &size));
+  int actual_size = 0;
+  ASSERT_TRUE(base::HexStringToInt(size, &actual_size));
+  ASSERT_LT(0, actual_size);
 }
 
 }  // namespace net

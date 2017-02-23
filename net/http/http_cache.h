@@ -38,6 +38,9 @@ class GURL;
 
 namespace base {
 class SingleThreadTaskRunner;
+namespace trace_event {
+class ProcessMemoryDump;
+}
 }  // namespace base
 
 namespace disk_cache {
@@ -215,6 +218,11 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   SetHttpNetworkTransactionFactoryForTesting(
       std::unique_ptr<HttpTransactionFactory> new_network_layer);
 
+  // Dumps memory allocation stats. |parent_dump_absolute_name| is the name
+  // used by the parent MemoryAllocatorDump in the memory dump hierarchy.
+  void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
+                       const std::string& parent_absolute_name) const;
+
  private:
   // Types --------------------------------------------------------------------
 
@@ -242,6 +250,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   struct ActiveEntry {
     explicit ActiveEntry(disk_cache::Entry* entry);
     ~ActiveEntry();
+    size_t EstimateMemoryUsage() const;
 
     disk_cache::Entry* disk_entry;
     Transaction*       writer;

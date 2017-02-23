@@ -16,6 +16,7 @@
 #include "net/base/sdch_manager.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
+#include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/socket/ssl_client_socket_impl.h"
 #include "net/url_request/http_user_agent_settings.h"
@@ -147,6 +148,9 @@ bool URLRequestContext::OnMemoryDump(
     HttpNetworkSession* network_session = transaction_factory->GetSession();
     if (network_session)
       network_session->DumpMemoryStats(pmd, dump->absolute_name());
+    HttpCache* http_cache = transaction_factory->GetCache();
+    if (http_cache)
+      http_cache->DumpMemoryStats(pmd, dump->absolute_name());
   }
   SSLClientSocketImpl::DumpSSLClientSessionMemoryStats(pmd);
   if (sdch_manager_)

@@ -28,6 +28,9 @@
 #include "base/threading/worker_pool.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_usage_estimator.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -106,6 +109,13 @@ HttpCache::ActiveEntry::~ActiveEntry() {
   }
 }
 
+size_t HttpCache::ActiveEntry::EstimateMemoryUsage() const {
+  // Skip |disk_entry| which is tracked in simple_backend_impl; Skip |readers|
+  // and |pending_queue| because the Transactions are owned by their respective
+  // URLRequestHttpJobs.
+  return 0;
+}
+
 //-----------------------------------------------------------------------------
 
 // This structure keeps track of work items that are attempting to create or
@@ -113,6 +123,14 @@ HttpCache::ActiveEntry::~ActiveEntry() {
 struct HttpCache::PendingOp {
   PendingOp() : disk_entry(NULL) {}
   ~PendingOp() {}
+
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const {
+    // |disk_entry| is tracked in |backend|.
+    return base::trace_event::EstimateMemoryUsage(backend) +
+           base::trace_event::EstimateMemoryUsage(writer) +
+           base::trace_event::EstimateMemoryUsage(pending_queue);
+  }
 
   disk_cache::Entry* disk_entry;
   std::unique_ptr<disk_cache::Backend> backend;
@@ -178,6 +196,9 @@ class HttpCache::WorkItem {
   void ClearCallback() { callback_.Reset(); }
   bool Matches(Transaction* trans) const { return trans == trans_; }
   bool IsValid() const { return trans_ || entry_ || !callback_.is_null(); }
+
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const { return 0; }
 
  private:
   WorkItemOperation operation_;
@@ -481,6 +502,22 @@ HttpCache::SetHttpNetworkTransactionFactoryForTesting(
       std::move(network_layer_));
   network_layer_ = std::move(new_network_layer);
   return old_network_layer;
+}
+
+void HttpCache::DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
+                                const std::string& parent_absolute_name) const {
+  // Skip tracking members like |clock_| and |backend_factory_| because they
+  // don't allocate.
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(parent_absolute_name + "/http_cache");
+  dump->AddScalar(
+      base::trace_event::MemoryAllocatorDump::kNameSize,
+      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+      base::trace_event::EstimateMemoryUsage(disk_cache_) +
+          base::trace_event::EstimateMemoryUsage(active_entries_) +
+          base::trace_event::EstimateMemoryUsage(doomed_entries_) +
+          base::trace_event::EstimateMemoryUsage(playback_cache_map_) +
+          base::trace_event::EstimateMemoryUsage(pending_ops_));
 }
 
 //-----------------------------------------------------------------------------

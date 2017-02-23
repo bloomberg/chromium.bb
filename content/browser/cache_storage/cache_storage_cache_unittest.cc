@@ -13,6 +13,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -116,6 +117,10 @@ class DelayableBackend : public disk_cache::Backend {
   }
   void OnExternalCacheHit(const std::string& key) override {
     return backend_->OnExternalCacheHit(key);
+  }
+  size_t EstimateMemoryUsage() const override {
+    NOTREACHED();
+    return 0;
   }
 
   // Call to continue a delayed doom.
