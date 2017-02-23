@@ -16,7 +16,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
-#include "components/gcm_driver/default_gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
 
 namespace base {
@@ -157,7 +156,8 @@ class GCMDriver {
   // Remove the handler for a given app.
   virtual void RemoveAppHandler(const std::string& app_id);
 
-  // Returns the handler for the given app.
+  // Returns the handler for the given app. May return a nullptr when no handler
+  // could be found for the |app_id|.
   GCMAppHandler* GetAppHandler(const std::string& app_id);
 
   // Adds a connection state observer.
@@ -328,12 +328,8 @@ class GCMDriver {
   // encrypted, incoming messages.
   GCMEncryptionProvider encryption_provider_;
 
-  // App handler map (from app_id to handler pointer).
-  // The handler is not owned.
+  // App handler map (from app_id to handler pointer). The handler is not owned.
   GCMAppHandlerMap app_handlers_;
-
-  // The default handler when no app handler can be found in the map.
-  DefaultGCMAppHandler default_app_handler_;
 
   base::WeakPtrFactory<GCMDriver> weak_ptr_factory_;
 

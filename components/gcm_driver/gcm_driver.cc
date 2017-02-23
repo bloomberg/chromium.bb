@@ -261,7 +261,7 @@ GCMAppHandler* GCMDriver::GetAppHandler(const std::string& app_id) {
       return iter->second;
   }
 
-  return &default_app_handler_;
+  return nullptr;
 }
 
 GCMEncryptionProvider* GCMDriver::GetEncryptionProviderInternal() {
@@ -294,9 +294,15 @@ void GCMDriver::DispatchMessageInternal(
 
   switch (result) {
     case GCMEncryptionProvider::DECRYPTION_RESULT_UNENCRYPTED:
-    case GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED:
-      GetAppHandler(app_id)->OnMessage(app_id, message);
+    case GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED: {
+      GCMAppHandler* handler = GetAppHandler(app_id);
+      if (handler)
+        handler->OnMessage(app_id, message);
+
+      // TODO(peter/harkness): Surface unavailable app handlers on
+      // chrome://gcm-internals and send a delivery receipt.
       return;
+    }
     case GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER:
     case GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER:
     case GCMEncryptionProvider::DECRYPTION_RESULT_NO_KEYS:

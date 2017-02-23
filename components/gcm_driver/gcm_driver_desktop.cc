@@ -1233,7 +1233,9 @@ void GCMDriverDesktop::MessagesDeleted(const std::string& app_id) {
   if (!gcm_started_)
     return;
 
-  GetAppHandler(app_id)->OnMessagesDeleted(app_id);
+  GCMAppHandler* handler = GetAppHandler(app_id);
+  if (handler)
+    handler->OnMessagesDeleted(app_id);
 }
 
 void GCMDriverDesktop::MessageSendError(
@@ -1245,7 +1247,9 @@ void GCMDriverDesktop::MessageSendError(
   if (!gcm_started_)
     return;
 
-  GetAppHandler(app_id)->OnSendError(app_id, send_error_details);
+  GCMAppHandler* handler = GetAppHandler(app_id);
+  if (handler)
+    handler->OnSendError(app_id, send_error_details);
 }
 
 void GCMDriverDesktop::SendAcknowledged(const std::string& app_id,
@@ -1256,7 +1260,9 @@ void GCMDriverDesktop::SendAcknowledged(const std::string& app_id,
   if (!gcm_started_)
     return;
 
-  GetAppHandler(app_id)->OnSendAcknowledged(app_id, message_id);
+  GCMAppHandler* handler = GetAppHandler(app_id);
+  if (handler)
+    handler->OnSendAcknowledged(app_id, message_id);
 }
 
 void GCMDriverDesktop::GCMClientReady(

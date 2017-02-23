@@ -176,17 +176,22 @@ void CustomFakeGCMDriver::CompleteSend(const std::string& message_id,
 }
 
 void CustomFakeGCMDriver::AcknowledgeSend(const std::string& message_id) {
-  GetAppHandler(kGCMAccountMapperAppId)
-      ->OnSendAcknowledged(kGCMAccountMapperAppId, message_id);
+  GCMAppHandler* handler = GetAppHandler(kGCMAccountMapperAppId);
+  if (handler)
+    handler->OnSendAcknowledged(kGCMAccountMapperAppId, message_id);
   SetLastMessageAction(message_id, SEND_ACKNOWLEDGED);
 }
 
 void CustomFakeGCMDriver::MessageSendError(const std::string& message_id) {
+  GCMAppHandler* handler = GetAppHandler(kGCMAccountMapperAppId);
+  if (!handler)
+    return;
+
   GCMClient::SendErrorDetails send_error;
   send_error.message_id = message_id;
   send_error.result = GCMClient::TTL_EXCEEDED;
-  GetAppHandler(kGCMAccountMapperAppId)
-      ->OnSendError(kGCMAccountMapperAppId, send_error);
+
+  handler->OnSendError(kGCMAccountMapperAppId, send_error);
 }
 
 void CustomFakeGCMDriver::SendImpl(const std::string& app_id,

@@ -6,8 +6,6 @@ static_library("gcm_driver") {
   sources = [
     "android/component_jni_registrar.cc",
     "android/component_jni_registrar.h",
-    "default_gcm_app_handler.cc",
-    "default_gcm_app_handler.h",
     "gcm_account_mapper.cc",
     "gcm_account_mapper.h",
     "gcm_account_tracker.cc",
