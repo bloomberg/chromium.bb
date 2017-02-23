@@ -633,11 +633,13 @@
             "overlays": "both",
             "useflags": [
                 "-cros-debug",
+                "-tests_cheets_SELinuxTest",
                 "-tests_network_VPNConnect.l2tpipsec_psk",
                 "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
                 "-tests_power_DarkResumeShutdownServer",
                 "-tests_security_OpenFDs",
+                "-tests_security_SMMLocked",
                 "chrome_internal",
                 "next_gcc"
             ],
@@ -692,11 +694,13 @@
             "profile": "llvm",
             "useflags": [
                 "-cros-debug",
+                "-tests_cheets_SELinuxTest",
                 "-tests_network_VPNConnect.l2tpipsec_psk",
                 "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
                 "-tests_power_DarkResumeShutdownServer",
                 "-tests_security_OpenFDs",
+                "-tests_security_SMMLocked",
                 "chrome_internal",
                 "clang",
                 "llvm-next"
@@ -737,11 +741,13 @@
             "profile": "llvm",
             "useflags": [
                 "-cros-debug",
+                "-tests_cheets_SELinuxTest",
                 "-tests_network_VPNConnect.l2tpipsec_psk",
                 "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
                 "-tests_power_DarkResumeShutdownServer",
                 "-tests_security_OpenFDs",
+                "-tests_security_SMMLocked",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
@@ -1117,11 +1123,13 @@
             "overlays": "both",
             "useflags": [
                 "-cros-debug",
+                "-tests_cheets_SELinuxTest",
                 "-tests_network_VPNConnect.l2tpipsec_psk",
                 "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
                 "-tests_power_DarkResumeShutdownServer",
                 "-tests_security_OpenFDs",
+                "-tests_security_SMMLocked",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,

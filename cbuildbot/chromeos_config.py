@@ -1661,12 +1661,16 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # power_DarkResumeShutdownServer after issue crosbug/689598 is fixed.
       # According to crosbug/653496 security_OpenFDs will not work for
       # non-official builds, so we need to leave it permanently disabled.
+      # Need to reenable cheets_SELinuxTest after crosbug/693308 is fixed.
+      # Need to reenable security_SMMLocked when crosbug/654610 is fixed.
       useflags=append_useflags(['-cros-debug',
                                 '-tests_security_OpenFDs',
                                 '-tests_platform_SyncCrash',
                                 '-tests_network_VPNConnect.l2tpipsec_xauth',
                                 '-tests_network_VPNConnect.l2tpipsec_psk',
-                                '-tests_power_DarkResumeShutdownServer']),
+                                '-tests_power_DarkResumeShutdownServer',
+                                '-tests_security_SMMLocked',
+                                '-tests_cheets_SELinuxTest']),
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
