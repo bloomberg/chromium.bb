@@ -244,51 +244,6 @@ TEST_F(ArcSessionManagerTest, PrefChangeTriggersService) {
   arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcSessionManagerTest, DisabledForEphemeralDataUsers) {
-  PrefService* const prefs = profile()->GetPrefs();
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
-  prefs->SetBoolean(prefs::kArcEnabled, true);
-
-  chromeos::FakeChromeUserManager* const fake_user_manager =
-      GetFakeUserManager();
-
-  fake_user_manager->AddUser(fake_user_manager->GetGuestAccountId());
-  fake_user_manager->SwitchActiveUser(fake_user_manager->GetGuestAccountId());
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
-            arc_session_manager()->state());
-
-  fake_user_manager->AddUser(user_manager::DemoAccountId());
-  fake_user_manager->SwitchActiveUser(user_manager::DemoAccountId());
-  arc_session_manager()->Shutdown();
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
-            arc_session_manager()->state());
-
-  const AccountId public_account_id(
-      AccountId::FromUserEmail("public_user@gmail.com"));
-  fake_user_manager->AddPublicAccountUser(public_account_id);
-  fake_user_manager->SwitchActiveUser(public_account_id);
-  arc_session_manager()->Shutdown();
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
-            arc_session_manager()->state());
-
-  const AccountId not_in_list_account_id(
-      AccountId::FromUserEmail("not_in_list_user@gmail.com"));
-  fake_user_manager->set_ephemeral_users_enabled(true);
-  fake_user_manager->AddUser(not_in_list_account_id);
-  fake_user_manager->SwitchActiveUser(not_in_list_account_id);
-  fake_user_manager->RemoveUserFromList(not_in_list_account_id);
-  arc_session_manager()->Shutdown();
-  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
-            arc_session_manager()->state());
-
-  // Correctly stop service.
-  arc_session_manager()->Shutdown();
-}
-
 TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   ASSERT_TRUE(arc_session_manager()->IsSessionStopped());
   ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,

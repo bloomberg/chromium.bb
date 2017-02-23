@@ -23,6 +23,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,6 +47,9 @@ class ScopedLogIn {
       case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
         LogIn();
         break;
+      case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+        LogInAsPublicAccount();
+        break;
       case user_manager::USER_TYPE_ARC_KIOSK_APP:
         LogInArcKioskApp();
         break;
@@ -59,6 +63,11 @@ class ScopedLogIn {
  private:
   void LogIn() {
     fake_user_manager_->AddUser(account_id_);
+    fake_user_manager_->LoginUser(account_id_);
+  }
+
+  void LogInAsPublicAccount() {
+    fake_user_manager_->AddPublicAccountUser(account_id_);
     fake_user_manager_->LoginUser(account_id_);
   }
 
@@ -159,6 +168,14 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_NonPrimaryProfile) {
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
 }
 
+// User without GAIA account.
+TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_PublicAccount) {
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmail("public_user@gmail.com"),
+                    user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+}
+
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryEnabled) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(
       {"", "--arc-availability=officially-supported-with-active-directory"});
@@ -226,8 +243,18 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_SupervisedUserFlow) {
   GetFakeUserManager()->ResetUserFlow(manager_id);
 }
 
-// TODO(hidehiko): Add test for Ephemeral users. There seems no way to easily
-// simulate ephemeral user.
+// Guest account is interpreted as EphemeralDataUser.
+TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_GuestAccount) {
+  ScopedLogIn login(GetFakeUserManager(),
+                    GetFakeUserManager()->GetGuestAccountId());
+  EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+}
+
+// Demo account is interpreted as EphemeralDataUser.
+TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_DemoAccount) {
+  ScopedLogIn login(GetFakeUserManager(), user_manager::DemoAccountId());
+  EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+}
 
 TEST_F(ChromeArcUtilTest, ArcPlayStoreEnabledForProfile) {
   // Ensure IsAllowedForProfile() true.
