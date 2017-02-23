@@ -350,8 +350,14 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   }
 
   if (id.length() <= 20) {
-    // Check if it is the RDP mirror driver "RDPUDD Chained DD"
-    if (wcscmp(dd.DeviceString, L"RDPUDD Chained DD") != 0) {
+    // EnumDisplayDevices returns an empty id when called inside a remote
+    // session (unless that session happens to be attached to the console). In
+    // that case, we do not want to fail, as we should be able to grab the
+    // device/vendor ids from the D3D context, below. Therefore, only fail if
+    // the device string is not one of either the RDP mirror driver "RDPUDD
+    // Chained DD" or the citrix display driver.
+    if (wcscmp(dd.DeviceString, L"RDPUDD Chained DD") != 0 &&
+        wcscmp(dd.DeviceString, L"Citrix Systems Inc. Display Driver") != 0) {
       gpu_info->basic_info_state = kCollectInfoNonFatalFailure;
       return kCollectInfoNonFatalFailure;
     }
