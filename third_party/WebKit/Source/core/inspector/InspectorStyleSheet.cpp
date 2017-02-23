@@ -1542,10 +1542,12 @@ InspectorStyleSheet::buildObjectForRuleUsage(CSSRule* rule, bool wasUsed) {
   if (!sourceData)
     return nullptr;
 
+  SourceRange wholeRuleRange(sourceData->ruleHeaderRange.start,
+                             sourceData->ruleBodyRange.end);
   std::unique_ptr<protocol::CSS::RuleUsage> result =
       protocol::CSS::RuleUsage::create()
           .setStyleSheetId(id())
-          .setRange(buildSourceRangeObject(sourceData->ruleBodyRange))
+          .setRange(buildSourceRangeObject(wholeRuleRange))
           .setUsed(wasUsed)
           .build();
 

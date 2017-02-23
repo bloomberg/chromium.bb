@@ -22,14 +22,12 @@ function test()
 
     function displayResults()
     {
-        var treeOutline = tracker._listView._treeOutline;
-        treeOutline.rootElement().firstChild().expand();
-
-        InspectorTest.addResult(treeOutline.element.shadowRoot.querySelectorAll(
-            ".rule-result-matches-count")[0].innerHTML);
-        treeOutline.element.shadowRoot.querySelectorAll(".rule-match-content").forEach(
-            match => InspectorTest.addResult(match.innerHTML));
-
+        var dataGrid = tracker._listView._dataGrid;
+        for (var child of dataGrid.rootNode().children) {
+            var data = child._coverageInfo;
+            var url = InspectorTest.formatters.formatAsURL(data.url);
+            InspectorTest.addResult(`${url} used: ${data.usedSize} unused: ${data.unusedSize} total: ${data.size}`);
+        }
         InspectorTest.completeTest();
     }
 }
