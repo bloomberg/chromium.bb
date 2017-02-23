@@ -10,6 +10,7 @@ import android.view.View;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.AwTestBase;
+import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.base.ThreadUtils;
 
 import java.util.concurrent.Callable;
@@ -74,6 +75,19 @@ public class GraphicsTestUtils {
             @Override
             public Integer call() throws Exception {
                 return drawAwContents(awContents, 10, 10, 0, 0).getPixel(0, 0);
+            }
+        });
+    }
+
+    // Gets the pixel color at the center of AwContents.
+    public static int getPixelColorAtCenterOfView(
+            final AwContents awContents, final AwTestContainerView testContainerView) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return drawAwContents(awContents, 2, 2, -(float) testContainerView.getWidth() / 2,
+                        -(float) testContainerView.getHeight() / 2)
+                        .getPixel(0, 0);
             }
         });
     }

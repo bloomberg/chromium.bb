@@ -8,7 +8,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.app.Instrumentation;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Build;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
@@ -104,9 +103,14 @@ public class AwTestBase
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mBrowserContext = new AwBrowserContext(prefs, appContext);
+                mBrowserContext = createAwBrowserContextOnUiThread(prefs, appContext);
             }
         });
+    }
+
+    protected AwBrowserContext createAwBrowserContextOnUiThread(
+            InMemorySharedPreferences prefs, Context appContext) {
+        return new AwBrowserContext(prefs, appContext);
     }
 
     protected void startBrowserProcess() throws Exception {
@@ -374,10 +378,8 @@ public class AwTestBase
         pollUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                Bitmap bitmap = GraphicsTestUtils.drawAwContents(awContents, 2, 2,
-                        -(float) testContainerView.getWidth() / 2,
-                        -(float) testContainerView.getHeight() / 2);
-                return bitmap.getPixel(0, 0) == expectedColor;
+                return GraphicsTestUtils.getPixelColorAtCenterOfView(awContents, testContainerView)
+                        == expectedColor;
             }
         });
     }
