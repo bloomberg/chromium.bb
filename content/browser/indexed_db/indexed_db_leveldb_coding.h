@@ -96,13 +96,13 @@ class KeyPrefix {
   // These are serialized to disk; any new items must be appended, and none can
   // be deleted.
   enum Type {
-    GLOBAL_METADATA,
-    DATABASE_METADATA,
-    OBJECT_STORE_DATA,
-    EXISTS_ENTRY,
-    INDEX_DATA,
-    INVALID_TYPE,
-    BLOB_ENTRY
+    GLOBAL_METADATA = 0,
+    DATABASE_METADATA = 1,
+    OBJECT_STORE_DATA = 2,
+    EXISTS_ENTRY = 3,
+    INDEX_DATA = 4,
+    INVALID_TYPE = 5,
+    BLOB_ENTRY = 6
   };
 
   static const size_t kMaxDatabaseIdSizeBits = 3;
