@@ -63,8 +63,10 @@ bool DelegatedFrameHostClientAura::DelegatedFrameCanCreateResizeLock() const {
   // _NET_WM_SYNC_REQUEST.
   return false;
 #else
-  if (render_widget_host_view_->host_->auto_resize_enabled())
+  if (!render_widget_host_view_->host_->renderer_initialized() ||
+      render_widget_host_view_->host_->auto_resize_enabled()) {
     return false;
+  }
   return true;
 #endif
 }
