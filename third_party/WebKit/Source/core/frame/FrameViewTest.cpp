@@ -4,9 +4,12 @@
 
 #include "core/frame/FrameView.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
@@ -18,7 +21,6 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 using testing::_;
 using testing::AnyNumber;
@@ -135,6 +137,41 @@ TEST_P(FrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
   EXPECT_FALSE(document().view()->isVisuallyNonEmpty());
   document().view()->incrementVisuallyNonEmptyPixelCount(IntSize(65536, 65536));
   EXPECT_TRUE(document().view()->isVisuallyNonEmpty());
+}
+
+TEST_P(FrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
+  // When using root layer scrolling there is no concept of viewport constrained
+  // objects, so skip this test.
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    return;
+
+  document().body()->setInnerHTML(
+      "<style>.container { height: 200%; }"
+      "#sticky { position: sticky; top: 0; height: 50px; }</style>"
+      "<div class='container'><div id='sticky'></div></div>");
+  document().view()->updateAllLifecyclePhases();
+
+  LayoutBoxModelObject* sticky = toLayoutBoxModelObject(
+      document().getElementById("sticky")->layoutObject());
+
+  EXPECT_TRUE(
+      document().view()->viewportConstrainedObjects()->contains(sticky));
+
+  // Making the element non-sticky should remove it from the set of
+  // viewport-constrained objects.
+  document().getElementById("sticky")->setAttribute(HTMLNames::styleAttr,
+                                                    "position: relative");
+  document().view()->updateAllLifecyclePhases();
+
+  EXPECT_FALSE(
+      document().view()->viewportConstrainedObjects()->contains(sticky));
+
+  // And making it sticky again should put it back in that list.
+  document().getElementById("sticky")->setAttribute(HTMLNames::styleAttr, "");
+  document().view()->updateAllLifecyclePhases();
+
+  EXPECT_TRUE(
+      document().view()->viewportConstrainedObjects()->contains(sticky));
 }
 
 }  // namespace
