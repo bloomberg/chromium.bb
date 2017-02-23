@@ -78,7 +78,6 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
-#include "content/public/common/form_field_data.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
@@ -1553,8 +1552,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_ReloadLoFiImages, OnReloadLoFiImages)
     IPC_MESSAGE_HANDLER(FrameMsg_TextSurroundingSelectionRequest,
                         OnTextSurroundingSelectionRequest)
-    IPC_MESSAGE_HANDLER(FrameMsg_FocusedFormFieldDataRequest,
-                        OnFocusedFormFieldDataRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
@@ -2288,34 +2285,6 @@ void RenderFrameImpl::OnTextSurroundingSelectionRequest(uint32_t max_length) {
       routing_id_, surroundingText.textContent().utf16(),
       surroundingText.startOffsetInTextContent(),
       surroundingText.endOffsetInTextContent()));
-}
-
-void RenderFrameImpl::OnFocusedFormFieldDataRequest(int request_id) {
-  DCHECK(frame_);
-
-  // In case of early return, the IPC response message is always needed in
-  // order to avoid leaks in the browser for unacknowledged requests.
-  if (frame_ != render_view_->GetWebView()->focusedFrame() ||
-      frame_->document().focusedElement().isNull()) {
-    Send(new FrameHostMsg_FocusedFormFieldDataResponse(routing_id_, request_id,
-                                                       FormFieldData()));
-    return;
-  }
-
-  WebElement element = frame_->document().focusedElement();
-
-  DCHECK(GetRenderWidget()->GetWebWidget());
-  blink::WebInputMethodController* controller =
-      frame_->frameWidget()->getActiveWebInputMethodController();
-  blink::WebTextInputInfo info =
-      controller ? controller->textInputInfo() : blink::WebTextInputInfo();
-  FormFieldData field;
-  field.text = info.value.utf8();
-  field.placeholder = element.getAttribute("placeholder").utf8();
-  field.text_input_type = GetRenderWidget()->GetTextInputType();
-
-  Send(new FrameHostMsg_FocusedFormFieldDataResponse(routing_id_, request_id,
-                                                     field));
 }
 
 bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,

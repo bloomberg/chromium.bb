@@ -40,9 +40,6 @@ class RenderViewHost;
 class RenderWidgetHostView;
 class SiteInstance;
 struct FileChooserFileInfo;
-struct FormFieldData;
-
-using FormFieldDataCallback = base::Callback<void(const FormFieldData&)>;
 
 // The interface provides a communication conduit with a frame in the renderer.
 class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
@@ -218,9 +215,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void RequestTextSurroundingSelection(
       const TextSurroundingSelectionCallback& callback,
       int max_length) = 0;
-
-  // Retrieves the text input info associated with the current form field.
-  virtual void RequestFocusedFormFieldData(FormFieldDataCallback& callback) = 0;
 
   // Tell the render frame to enable a set of javascript bindings. The argument
   // should be a combination of values from BindingsPolicy.

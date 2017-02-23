@@ -88,7 +88,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
-#include "content/public/common/form_field_data.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -439,8 +438,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   for (const auto& iter : visual_state_callbacks_)
     iter.second.Run(false);
 
-  form_field_data_callbacks_.clear();
-
   if (render_widget_host_ &&
       render_widget_host_->owned_by_render_frame_host()) {
     // Shutdown causes the RenderWidgetHost to delete itself.
@@ -736,8 +733,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_TextSurroundingSelectionResponse,
                         OnTextSurroundingSelectionResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedFormFieldDataResponse,
-                        OnFocusedFormFieldDataResponse)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
                         OnAccessibilityLocationChanges)
@@ -1540,7 +1535,6 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   smart_clip_callbacks_.clear();
   javascript_callbacks_.clear();
   visual_state_callbacks_.clear();
-  form_field_data_callbacks_.clear();
 
   // Ensure that future remote interface requests are associated with the new
   // process's channel.
@@ -1744,14 +1738,6 @@ void RenderFrameHostImpl::OnTextSurroundingSelectionResponse(
   text_surrounding_selection_callback_.Reset();
 }
 
-void RenderFrameHostImpl::RequestFocusedFormFieldData(
-    FormFieldDataCallback& callback) {
-  static int next_id = 1;
-  int request_id = ++next_id;
-  form_field_data_callbacks_[request_id] = callback;
-  Send(new FrameMsg_FocusedFormFieldDataRequest(GetRoutingID(), request_id));
-}
-
 void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
   // Never grant any bindings to browser plugin guests.
   if (GetProcess()->IsForGuestsOnly()) {
@@ -1792,16 +1778,6 @@ void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
 
 int RenderFrameHostImpl::GetEnabledBindings() const {
   return enabled_bindings_;
-}
-
-void RenderFrameHostImpl::OnFocusedFormFieldDataResponse(
-    int request_id,
-    const FormFieldData& field_data) {
-  auto it = form_field_data_callbacks_.find(request_id);
-  if (it != form_field_data_callbacks_.end()) {
-    it->second.Run(field_data);
-    form_field_data_callbacks_.erase(it);
-  }
 }
 
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {

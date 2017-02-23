@@ -180,7 +180,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void RequestTextSurroundingSelection(
       const TextSurroundingSelectionCallback& callback,
       int max_length) override;
-  void RequestFocusedFormFieldData(FormFieldDataCallback& callback) override;
   void AllowBindings(int binding_flags) override;
   int GetEnabledBindings() const override;
 
@@ -710,8 +709,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnTextSurroundingSelectionResponse(const base::string16& content,
                                           uint32_t start_offset,
                                           uint32_t end_offset);
-  void OnFocusedFormFieldDataResponse(int request_id,
-                                      const FormFieldData& field_data);
   void OnDidAccessInitialDocument();
   void OnDidChangeOpener(int32_t opener_routing_id);
   void OnDidChangeName(const std::string& name, const std::string& unique_name);
@@ -954,9 +951,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // ExecuteJavaScript and their corresponding callbacks.
   std::map<int, JavaScriptResultCallback> javascript_callbacks_;
   std::map<uint64_t, VisualStateCallback> visual_state_callbacks_;
-
-  // Callbacks for getting text input info.
-  std::map<int, FormFieldDataCallback> form_field_data_callbacks_;
 
   // RenderFrameHosts that need management of the rendering and input events
   // for their frame subtrees require RenderWidgetHosts. This typically

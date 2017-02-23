@@ -35,7 +35,6 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
-#include "content/public/common/form_field_data.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/page_importance_signals.h"
@@ -574,12 +573,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicyHeader)
   IPC_STRUCT_TRAITS_MEMBER(source)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::FormFieldData)
-  IPC_STRUCT_TRAITS_MEMBER(text)
-  IPC_STRUCT_TRAITS_MEMBER(placeholder)
-  IPC_STRUCT_TRAITS_MEMBER(text_input_type)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::FileChooserFileInfo)
   IPC_STRUCT_TRAITS_MEMBER(file_path)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
@@ -783,10 +776,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_TextSurroundingSelectionRequest,
 IPC_MESSAGE_ROUTED2(FrameMsg_ExtractSmartClipData,
                     uint32_t /* id */,
                     gfx::Rect /* rect */)
-
-// Requests information about currently focused text input element from the
-// renderer.
-IPC_MESSAGE_ROUTED1(FrameMsg_FocusedFormFieldDataRequest, int /* request_id */)
 
 // Change the accessibility mode in the renderer process.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode,
@@ -1461,12 +1450,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_TextSurroundingSelectionResponse,
                     base::string16,  /* content */
                     uint32_t, /* startOffset */
                     uint32_t/* endOffset */)
-
-// Response for FrameMsg_FocusedFormFieldDataRequest. Sends info about the
-// currently focused form field.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_FocusedFormFieldDataResponse,
-                    int, /* request_id */
-                    content::FormFieldData /* form field info */)
 
 // Register a new handler for URL requests with the given scheme.
 IPC_MESSAGE_ROUTED4(FrameHostMsg_RegisterProtocolHandler,

@@ -18,7 +18,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/form_field_data.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -296,42 +295,6 @@ class TextSelectionObserver : public TextInputManagerObserverBase {
   std::string selected_text_;
 
   DISALLOW_COPY_AND_ASSIGN(TextSelectionObserver);
-};
-
-// This class is used to verify the result of form field data requests.
-class FormFieldDataVerifier {
- public:
-  FormFieldDataVerifier(const std::string& text, const std::string& placeholder)
-      : text_(text), placeholder_(placeholder), success_(false) {}
-
-  void Verify(const content::FormFieldData& field) {
-    ASSERT_EQ(field.text, text_);
-    ASSERT_EQ(field.placeholder, placeholder_);
-    OnSuccess();
-  }
-
-  // Wait for success_ to be true.
-  void Wait() {
-    if (success_)
-      return;
-    message_loop_runner_ = new content::MessageLoopRunner();
-    message_loop_runner_->Run();
-  }
-
- private:
-  void OnSuccess() {
-    success_ = true;
-    if (message_loop_runner_)
-      message_loop_runner_->Quit();
-  }
-
-  std::string text_;
-  std::string placeholder_;
-
-  bool success_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(FormFieldDataVerifier);
 };
 
 // This class monitors all the changes in TextInputState and keeps a record of
@@ -904,39 +867,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
   for (auto* view : views)
     send_tab_insert_text_wait_for_bounds_change(view);
-}
-
-// This test creates a page with multiple child frames and adds two <input>
-// elements to each frame. Then, sequentially, each <input> is focused through
-// javascript. For each frame, its text and placeholder attributes are queried
-// through RenderFrameHost and verified against expected values.
-IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       RequestFocusedFormFieldDataForMultipleIFrames) {
-  CreateIframePage("a(b, c)");
-  std::vector<content::RenderFrameHost*> frames{GetFrame(IndexVector{}),
-                                                GetFrame(IndexVector{0}),
-                                                GetFrame(IndexVector{1})};
-
-  std::vector<std::string> values{"main_1",   "main_2",   "node_b_1",
-                                  "node_b_2", "node_c_1", "node_c_2"};
-  std::vector<std::string> placeholders{
-      "placeholder_main_1",   "placeholder_main_2",   "placeholder_node_b_1",
-      "placeholder_node_b_2", "placeholder_node_c_1", "placeholder_node_c_2"};
-
-  for (size_t i = 0; i < values.size(); ++i) {
-    AppendInputFieldToFrame(frames[i / 2], "text", values[i], values[i],
-                            placeholders[i]);
-  }
-
-  for (size_t i = 0; i < values.size(); ++i) {
-    content::RenderFrameHost* frame = frames[i / 2];
-    FocusFormField(frame, values[i]);
-    FormFieldDataVerifier verifier(values[i], placeholders[i]);
-    content::FormFieldDataCallback callback =
-        base::Bind(&FormFieldDataVerifier::Verify, base::Unretained(&verifier));
-    frame->RequestFocusedFormFieldData(callback);
-    verifier.Wait();
-  }
 }
 
 // This test makes sure browser correctly tracks focused editable element inside
