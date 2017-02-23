@@ -96,6 +96,14 @@ suite('CrActionMenu', function() {
     assertFalse(menu.open);
   });
 
+  test('close on popstate', function() {
+    menu.showAt(document.querySelector('#dots'));
+    assertTrue(menu.open);
+
+    window.dispatchEvent(new CustomEvent('popstate'));
+    assertFalse(menu.open);
+  });
+
   /** @param {string} key The key to use for closing. */
   function testFocusAfterClosing(key) {
     return new Promise(function(resolve) {

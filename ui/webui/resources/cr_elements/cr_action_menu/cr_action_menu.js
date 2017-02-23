@@ -20,11 +20,11 @@ Polymer({
   anchorElement_: null,
 
   /**
-   * Reference to the bound window's resize listener, such that it can be
-   * removed on detach.
+   * Bound reference to an event listener function such that it can be removed
+   * on detach.
    * @private {?Function}
    */
-  onWindowResize_: null,
+  boundClose_: null,
 
   hostAttributes: {
     tabindex: 0,
@@ -42,12 +42,13 @@ Polymer({
 
   /** override */
   detached: function() {
-    this.removeResizeListener_();
+    this.removeListeners_();
   },
 
   /** @private */
-  removeResizeListener_: function() {
-    window.removeEventListener('resize', this.onWindowResize_);
+  removeListeners_: function() {
+    window.removeEventListener('resize', this.boundClose_);
+    window.removeEventListener('popstate', this.boundClose_);
   },
 
   /**
@@ -111,8 +112,8 @@ Polymer({
 
   /** @override */
   close: function() {
-    // Removing 'resize' listener when dialog is closed.
-    this.removeResizeListener_();
+    // Removing 'resize' and 'popstate' listeners when dialog is closed.
+    this.removeListeners_();
     HTMLDialogElement.prototype.close.call(this);
     this.anchorElement_.focus();
     this.anchorElement_ = null;
@@ -124,11 +125,12 @@ Polymer({
    */
   showAt: function(anchorElement) {
     this.anchorElement_ = anchorElement;
-    this.onWindowResize_ = this.onWindowResize_ || function() {
+    this.boundClose_ = this.boundClose_ || function() {
       if (this.open)
         this.close();
     }.bind(this);
-    window.addEventListener('resize', this.onWindowResize_);
+    window.addEventListener('resize', this.boundClose_);
+    window.addEventListener('popstate', this.boundClose_);
 
     // Reset position to prevent previous values from affecting layout.
     this.style.left = '';
