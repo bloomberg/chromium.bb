@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.init;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.view.View;
 
 import com.google.ipc.invalidation.external.client.android.service.AndroidLogger;
@@ -210,7 +209,7 @@ public class ProcessInitializationHandler {
                 AccountsChangedReceiver.addObserver(
                         new AccountsChangedReceiver.AccountsChangedObserver() {
                             @Override
-                            public void onAccountsChanged(Context context, Intent intent) {
+                            public void onAccountsChanged() {
                                 ThreadUtils.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {

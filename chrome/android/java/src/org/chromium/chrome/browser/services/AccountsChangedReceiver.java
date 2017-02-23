@@ -29,45 +29,48 @@ import org.chromium.content.browser.BrowserStartupController.StartupCallback;
 /**
  * This receiver is notified when accounts are added, accounts are removed, or
  * an account's credentials (saved password, etc) are changed.
+ * All public methods must be called from the UI thread.
  */
 public class AccountsChangedReceiver extends BroadcastReceiver {
     private static final String TAG = "AccountsChangedRx";
 
     /**
-     * Receives a callback whenever {@link AccountManager#LOGIN_ACCOUNTS_CHANGED_ACTION} is
-     * broadcasted. Use {@link #addObserver} and {@link #removeObserver} to update registrations.
+     * Observer that receives account change notifications from {@link AccountManager}.
+     * Use {@link #addObserver} and {@link #removeObserver} to update registrations.
      *
      * The callback will only ever be called after the browser process has been initialized.
      */
     public interface AccountsChangedObserver {
         /**
-         * Called when {@link AccountManager#LOGIN_ACCOUNTS_CHANGED_ACTION} is triggered.
-         * @param context the application context.
-         * @param intent the broadcasted intent.
+         * Called on every change to the accounts.
          */
-        void onAccountsChanged(Context context, Intent intent);
+        void onAccountsChanged();
     }
 
     private static ObserverList<AccountsChangedObserver> sObservers = new ObserverList<>();
 
     /**
-     * Adds an observer to the {@link AccountManager#LOGIN_ACCOUNTS_CHANGED_ACTION} broadcasts.
+     * Adds an observer to receive accounts change notifications from {@link AccountManager}.
      * @param observer the observer to add.
      */
     public static void addObserver(AccountsChangedObserver observer) {
+        ThreadUtils.assertOnUiThread();
         sObservers.addObserver(observer);
     }
 
     /**
-     * Removes an observer from the {@link AccountManager#LOGIN_ACCOUNTS_CHANGED_ACTION} broadcasts.
+     * Removes an observer that was previously added using {@link #addObserver}.
      * @param observer the observer to remove.
      */
     public static void removeObserver(AccountsChangedObserver observer) {
+        ThreadUtils.assertOnUiThread();
         sObservers.removeObserver(observer);
     }
 
     @Override
     public void onReceive(Context context, final Intent intent) {
+        if (!AccountManager.LOGIN_ACCOUNTS_CHANGED_ACTION.equals(intent.getAction())) return;
+
         final Context appContext = context.getApplicationContext();
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             @Override
@@ -78,15 +81,13 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
 
             @Override
             protected void onPostExecute(Void result) {
-                continueHandleAccountChangeIfNeeded(appContext, intent);
+                continueHandleAccountChangeIfNeeded(appContext);
             }
         };
         task.execute();
     }
 
-    private void continueHandleAccountChangeIfNeeded(final Context context, final Intent intent) {
-        if (!AccountManager.LOGIN_ACCOUNTS_CHANGED_ACTION.equals(intent.getAction())) return;
-
+    private void continueHandleAccountChangeIfNeeded(final Context context) {
         AccountTrackerService.get(context).invalidateAccountSeedStatus(
                 false /* don't refresh right now */);
         boolean isChromeVisible = ApplicationStatus.hasVisibleActivities();
@@ -96,7 +97,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
             // Notify SigninHelper of changed accounts (via shared prefs).
             SigninHelper.markAccountsChangedPref(context);
         }
-        notifyAccountsChangedOnBrowserStartup(context, intent);
+        notifyAccountsChangedOnBrowserStartup(context);
     }
 
     @SuppressFBWarnings("DM_EXIT")
@@ -128,13 +129,12 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
         }
     }
 
-    private static void notifyAccountsChangedOnBrowserStartup(
-            final Context context, final Intent intent) {
+    private static void notifyAccountsChangedOnBrowserStartup(final Context context) {
         StartupCallback notifyAccountsChangedCallback = new StartupCallback() {
             @Override
             public void onSuccess(boolean alreadyStarted) {
                 for (AccountsChangedObserver observer : sObservers) {
-                    observer.onAccountsChanged(context, intent);
+                    observer.onAccountsChanged();
                 }
             }
 
