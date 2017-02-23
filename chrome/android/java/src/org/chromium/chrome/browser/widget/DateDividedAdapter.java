@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget;
 
 import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -149,10 +150,23 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         }
     }
 
+    protected static class SubsectionHeaderViewHolder extends RecyclerView.ViewHolder {
+        private View mView;
+
+        public SubsectionHeaderViewHolder(View itemView) {
+            super(itemView);
+            mView = itemView;
+        }
+
+        public View getView() {
+            return mView;
+        }
+    }
+
     /**
      * A bucket of items with the same date.
      */
-    protected static class ItemGroup {
+    public static class ItemGroup {
         private final Date mDate;
         private final List<TimedItem> mItems = new ArrayList<>();
 
@@ -227,25 +241,29 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
          * Rather than sorting the list each time a new item is added, the list is sorted when
          * something requires a correct ordering of the items.
          */
-        private void sortIfNeeded() {
+        protected void sortIfNeeded() {
             if (mIsSorted) return;
             mIsSorted = true;
 
             Collections.sort(mItems, new Comparator<TimedItem>() {
                 @Override
                 public int compare(TimedItem lhs, TimedItem rhs) {
-                    // More recent items are listed first.  Ideally we'd use Long.compare, but that
-                    // is an API level 19 call for some inexplicable reason.
-                    long timeDelta = lhs.getTimestamp() - rhs.getTimestamp();
-                    if (timeDelta > 0) {
-                        return -1;
-                    } else if (timeDelta == 0) {
-                        return 0;
-                    } else {
-                        return 1;
-                    }
+                    return compareItem(lhs, rhs);
                 }
             });
+        }
+
+        protected int compareItem(TimedItem lhs, TimedItem rhs) {
+            // More recent items are listed first.  Ideally we'd use Long.compare, but that
+            // is an API level 19 call for some inexplicable reason.
+            long timeDelta = lhs.getTimestamp() - rhs.getTimestamp();
+            if (timeDelta > 0) {
+                return -1;
+            } else if (timeDelta == 0) {
+                return 0;
+            } else {
+                return 1;
+            }
         }
     }
 
@@ -257,6 +275,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     public static final int TYPE_HEADER = -1;
     public static final int TYPE_DATE = 0;
     public static final int TYPE_NORMAL = 1;
+    public static final int TYPE_SUBSECTION_HEADER = 2;
 
     private int mSize;
     private boolean mHasListHeader;
@@ -285,6 +304,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
      * Creates a {@link BasicViewHolder} in the given view parent for the header.
      * @see #onCreateViewHolder(ViewGroup, int)
      */
+    @Nullable
     protected BasicViewHolder createHeader(ViewGroup parent) {
         return null;
     }
@@ -293,6 +313,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
      * Creates a {@link BasicViewHolder} in the given view parent for the footer.
      * See {@link #onCreateViewHolder(ViewGroup, int)}.
      */
+    @Nullable
     protected BasicViewHolder createFooter(ViewGroup parent) {
         return null;
     }
@@ -307,10 +328,35 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     }
 
     /**
+     * Creates a {@link ViewHolder} for a subsection in the given view parent.
+     * @see #onCreateViewHolder(ViewGroup, int)
+     */
+    @Nullable
+    protected SubsectionHeaderViewHolder createSubsectionHeader(ViewGroup parent) {
+        return null;
+    }
+
+    /**
+     * Helper function to determine whether an item is a subsection header.
+     * @param timedItem The item.
+     * @return Whether the item is a subsection header.
+     */
+    protected boolean isSubsectionHeader(TimedItem timedItem) {
+        return false;
+    }
+
+    /**
      * Binds the {@link ViewHolder} with the given {@link TimedItem}.
      * @see #onBindViewHolder(ViewHolder, int)
      */
     protected abstract void bindViewHolderForTimedItem(ViewHolder viewHolder, TimedItem item);
+
+    /**
+     * Binds the {@link SubsectionHeaderViewHolder} with the given {@link TimedItem}.
+     * @see #onBindViewHolder(ViewHolder, int)
+     */
+    protected void bindViewHolderForSubsectionHeader(
+            SubsectionHeaderViewHolder holder, TimedItem timedItem) {}
 
     /**
      * Gets the resource id of the view showing the date header.
@@ -337,7 +383,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
             if (!found) {
                 // Create a new ItemGroup with the date for the new item. This increases the
                 // size by two because we add new views for the date and the item itself.
-                ItemGroup newGroup = new ItemGroup(timedItem.getTimestamp());
+                ItemGroup newGroup = createGroup(timedItem.getTimestamp());
                 newGroup.addItem(timedItem);
                 mGroups.add(newGroup);
                 mSize += 2;
@@ -346,6 +392,15 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
 
         setGroupPositions();
         notifyDataSetChanged();
+    }
+
+    /**
+     * Creates and returns an item group for a given day.
+     * @param timestamp A timestamp from which the date is determined.
+     * @return The item group.
+     */
+    protected ItemGroup createGroup(long timestamp) {
+        return new ItemGroup(timestamp);
     }
 
     /**
@@ -457,12 +512,15 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     @Override
     public final int getItemViewType(int position) {
         Pair<ItemGroup, Integer> pair = getGroupAt(position);
+        ItemGroup group = pair.first;
         if (pair.second == TYPE_HEADER) {
             return TYPE_HEADER;
         } else if (pair.second == TYPE_FOOTER) {
             return TYPE_FOOTER;
         } else if (pair.second == 0) {
             return TYPE_DATE;
+        } else if (isSubsectionHeader(group.getItemAt(pair.second))) {
+            return TYPE_SUBSECTION_HEADER;
         } else {
             return TYPE_NORMAL;
         }
@@ -478,6 +536,8 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
             return createHeader(parent);
         } else if (viewType == TYPE_FOOTER) {
             return createFooter(parent);
+        } else if (viewType == TYPE_SUBSECTION_HEADER) {
+            return createSubsectionHeader(parent);
         }
         assert false;
         return null;
@@ -488,6 +548,8 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         Pair<Date, TimedItem> pair = getItemAt(position);
         if (holder instanceof DateViewHolder) {
             ((DateViewHolder) holder).setDate(pair.first);
+        } else if (holder instanceof SubsectionHeaderViewHolder) {
+            bindViewHolderForSubsectionHeader((SubsectionHeaderViewHolder) holder, pair.second);
         } else if (!(holder instanceof BasicViewHolder)) {
             bindViewHolderForTimedItem(holder, pair.second);
         }
@@ -563,7 +625,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
      * {@link #compareCalendar(Calendar, Calendar)} instead.
      * @return 0 if date1 and date2 are in the same day; 1 if date1 is before date2; -1 otherwise.
      */
-    private static int compareDate(Date date1, Date date2) {
+    protected static int compareDate(Date date1, Date date2) {
         Pair<Calendar, Calendar> pair = getCachedCalendars();
         Calendar cal1 = pair.first, cal2 = pair.second;
         cal1.setTime(date1);

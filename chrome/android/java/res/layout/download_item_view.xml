@@ -13,22 +13,11 @@
     <!-- The end margin is not assigned because the cancel button overlaps it. -->
     <LinearLayout
             android:id="@+id/layout_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal" >
+            style="@style/DownloadRowContainer" >
 
         <org.chromium.chrome.browser.widget.TintedImageView
                 android:id="@+id/icon_view"
-                android:layout_width="@dimen/downloads_item_icon_size"
-                android:layout_height="@dimen/downloads_item_icon_size"
-                android:layout_marginEnd="16dp"
-                android:contentDescription="@null"
-                android:scaleType="center"
-                android:background="@color/light_active_color" />
+                style="@style/DownloadIconView" />
 
         <!-- Shown for completed downloads. -->
         <RelativeLayout
@@ -39,43 +28,19 @@
 
             <TextView
                     android:id="@+id/filename_completed_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"
-                    android:paddingEnd="16dp"
-                    android:singleLine="true"
-                    android:textColor="@color/default_text_color"
-                    android:textSize="16sp" />
-
+                    style="@style/DownloadTitleStyle"
+                    android:layout_alignParentEnd="true" />
+    
             <TextView
                     android:id="@+id/hostname_view"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentStart="true"
+                    style="@style/DownloadDescriptionStyle"
                     android:layout_toStartOf="@+id/filesize_view"
-                    android:layout_below="@+id/filename_completed_view"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginTop="0dp"
-                    android:textAlignment="viewStart"
-                    android:textColor="@color/google_grey_600"
-                    android:ellipsize="start"
-                    android:singleLine="true" />
-
+                    android:layout_below="@+id/filename_completed_view" />
+    
             <TextView
                     android:id="@+id/filesize_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_below="@+id/filename_completed_view"
-                    android:layout_marginTop="0dp"
-                    android:paddingEnd="16dp"
-                    android:textAlignment="viewEnd"
-                    android:textColor="@color/google_grey_600"
-                    android:singleLine="true" />
+                    style="@style/DownloadFileSizeStyle"
+                    android:layout_below="@+id/filename_completed_view"/>
         </RelativeLayout>
 
         <!-- Shown for downloads that haven't been completed. -->

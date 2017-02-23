@@ -75,4 +75,9 @@ public class OfflinePageDownloadItem {
     public long getTotalBytes() {
         return mTotalBytes;
     }
+
+    /** @return Whether this page is to be shown in the suggested reading section. */
+    public boolean isSuggested() {
+        return false;
+    }
 }

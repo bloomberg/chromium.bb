@@ -28,7 +28,13 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.content_public.browser.DownloadState;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /** Bridges the user's download history and the UI used to display it. */
@@ -57,6 +63,41 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         }
     }
 
+    /** Represents the subsection header of the suggested pages for a given date. */
+    public class SubsectionHeader extends TimedItem {
+        private final long mTimestamp;
+        private final int mItemCount;
+        private final long mTotalFileSize;
+        private final Long mStableId;
+
+        public SubsectionHeader(Date date, int itemCount, long totalFileSize) {
+            mTimestamp = date.getTime();
+            mItemCount = itemCount;
+            mTotalFileSize = totalFileSize;
+
+            // Generate a stable ID based on timestamp.
+            mStableId = 0xFFFFFFFF00000000L + (getTimestamp() & 0x0FFFFFFFF);
+        }
+
+        @Override
+        public long getTimestamp() {
+            return mTimestamp;
+        }
+
+        public int getItemCount() {
+            return mItemCount;
+        }
+
+        public long getTotalFileSize() {
+            return mTotalFileSize;
+        }
+
+        @Override
+        public long getStableId() {
+            return mStableId;
+        }
+    }
+
     /**
      * Tracks externally deleted items that have been removed from downloads history.
      * Shared across instances.
@@ -69,10 +110,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     private final BackendItems mIncognitoDownloadItems = new BackendItemsImpl();
     private final BackendItems mOfflinePageItems = new BackendItemsImpl();
 
-    private final BackendItems mFilteredItems = new BackendItemsImpl();
     private final FilePathsToDownloadItemsMap mFilePathsToItemsMap =
             new FilePathsToDownloadItemsMap();
 
+    private final Map<Date, Boolean> mSubsectionExpanded = new HashMap<>();
     private final ComponentName mParentComponent;
     private final boolean mShowOffTheRecord;
     private final LoadingStateDelegate mLoadingDelegate;
@@ -208,6 +249,25 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     }
 
     @Override
+    protected SubsectionHeaderViewHolder createSubsectionHeader(ViewGroup parent) {
+        OfflineGroupHeaderView offlineHeader =
+                (OfflineGroupHeaderView) LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.offline_download_header, parent, false);
+        offlineHeader.setAdapter(this);
+        return new SubsectionHeaderViewHolder(offlineHeader);
+    }
+
+    @Override
+    protected void bindViewHolderForSubsectionHeader(
+            SubsectionHeaderViewHolder holder, TimedItem timedItem) {
+        SubsectionHeader headerItem = (SubsectionHeader) timedItem;
+        Date date = new Date(headerItem.getTimestamp());
+        OfflineGroupHeaderView headerView = (OfflineGroupHeaderView) holder.getView();
+        headerView.update(date, isSubsectionExpanded(date), headerItem.getItemCount(),
+                headerItem.getTotalFileSize());
+    }
+
+    @Override
     public ViewHolder createViewHolder(ViewGroup parent) {
         DownloadItemView v = (DownloadItemView) LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.download_item_view, parent, false);
@@ -222,6 +282,11 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
         DownloadHistoryItemViewHolder holder = (DownloadHistoryItemViewHolder) current;
         holder.getItemView().displayItem(mBackendProvider, item);
+    }
+
+    @Override
+    protected ItemGroup createGroup(long timeStamp) {
+        return new DownloadItemGroup(timeStamp);
     }
 
     /** Called when a new DownloadItem has been created by the native DownloadManager. */
@@ -392,12 +457,107 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     /** Filters the list of downloads to show only files of a specific type. */
     private void filter(int filterType) {
         mFilter = filterType;
-        mFilteredItems.clear();
-        mRegularDownloadItems.filter(mFilter, mSearchQuery, mFilteredItems);
-        mIncognitoDownloadItems.filter(mFilter, mSearchQuery, mFilteredItems);
-        mOfflinePageItems.filter(mFilter, mSearchQuery, mFilteredItems);
+
+        List<TimedItem> filteredTimedItems = new ArrayList<>();
+        mRegularDownloadItems.filter(mFilter, mSearchQuery, filteredTimedItems);
+        mIncognitoDownloadItems.filter(mFilter, mSearchQuery, filteredTimedItems);
+        filterOfflinePageItems(filteredTimedItems);
+
         clear(false);
-        loadItems(mFilteredItems);
+        loadItems(filteredTimedItems);
+    }
+
+    /**
+     * Filters the offline pages based on the current filter and search text.
+     * If there are suggested pages, they are filtered based on whether or not the subsection for
+     * that date is expanded. Also a TimedItem is added to each subsection to represent the header
+     * for the suggested pages.
+     * @param filteredTimedItems List for appending items that match the filter.
+     */
+    private void filterOfflinePageItems(List<TimedItem> filteredTimedItems) {
+        Map<Date, Integer> suggestedPageCountMap = new HashMap<>();
+        Map<Date, Long> suggestedPageTotalSizeMap = new HashMap<>();
+
+        List<TimedItem> filteredOfflinePageItems = new ArrayList<>();
+        mOfflinePageItems.filter(mFilter, mSearchQuery, filteredOfflinePageItems);
+
+        for (TimedItem item : filteredOfflinePageItems) {
+            OfflinePageItemWrapper offlineItem = (OfflinePageItemWrapper) item;
+
+            // Add the suggested pages to the adapter only if the section is expanded for that date.
+            if (offlineItem.isSuggested()) {
+                incrementSuggestedPageCount(
+                        offlineItem, suggestedPageCountMap, suggestedPageTotalSizeMap);
+                // TODO(shaktisahu): Check with UX if we need to skip this check and the subsection
+                // headers when filtering for active search text.
+                if (!isSubsectionExpanded(getDateWithoutTime(offlineItem.getTimestamp()))) continue;
+            }
+            filteredTimedItems.add(offlineItem);
+        }
+
+        generateSubsectionHeaders(
+                filteredTimedItems, suggestedPageCountMap, suggestedPageTotalSizeMap);
+    }
+
+    // Updates the total number of suggested pages and file size grouped by date.
+    private void incrementSuggestedPageCount(OfflinePageItemWrapper offlineItem,
+            Map<Date, Integer> pageCountMap, Map<Date, Long> fileSizeMap) {
+        Date date = getDateWithoutTime(offlineItem.getTimestamp());
+
+        int count = pageCountMap.containsKey(date) ? pageCountMap.get(date) : 0;
+        pageCountMap.put(date, count + 1);
+
+        long fileSize = fileSizeMap.containsKey(date) ? fileSizeMap.get(date) : 0;
+        fileSizeMap.put(date, fileSize + offlineItem.getFileSize());
+    }
+
+    // Creates subsection headers for each date and appends to |filteredTimedItems|.
+    private void generateSubsectionHeaders(List<TimedItem> filteredTimedItems,
+            Map<Date, Integer> pageCountMap, Map<Date, Long> fileSizeMap) {
+        for (Map.Entry<Date, Integer> entry : pageCountMap.entrySet()) {
+            Date date = entry.getKey();
+            filteredTimedItems.add(
+                    new SubsectionHeader(date, pageCountMap.get(date), fileSizeMap.get(date)));
+        }
+
+        // Remove entry from |mSubsectionExpanded| if there are no more suggested pages.
+        Iterator<Entry<Date, Boolean>> iter = mSubsectionExpanded.entrySet().iterator();
+        while (iter.hasNext()) {
+            Entry<Date, Boolean> entry = iter.next();
+            if (!pageCountMap.containsKey(entry.getKey())) {
+                iter.remove();
+            }
+        }
+    }
+
+    /**
+     * Whether the suggested pages section is expanded for a given date.
+     * @param date The download date.
+     * @return Whether the suggested pages section is expanded.
+     */
+    public boolean isSubsectionExpanded(Date date) {
+        // Default state is collpased.
+        if (mSubsectionExpanded.get(date) == null) {
+            mSubsectionExpanded.put(date, false);
+        }
+
+        return mSubsectionExpanded.get(date);
+    }
+
+    /**
+     * Sets the state of a subsection for a particular date and updates the adapter.
+     * @param date The download date.
+     * @param expanded Whether the suggested pages should be expanded.
+     */
+    public void setSubsectionExpanded(Date date, boolean expanded) {
+        mSubsectionExpanded.put(date, expanded);
+        clear(false);
+        filter(mFilter);
+    }
+
+    @Override
+    protected boolean isSubsectionHeader(TimedItem timedItem) {
+        return timedItem instanceof SubsectionHeader;
     }
 
     private void initializeOfflinePageBridge() {
@@ -476,5 +636,18 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         // if/when incognito downloads are persistently available in downloads home.
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Total",
                 mRegularDownloadItems.size() + mOfflinePageItems.size());
+    }
+
+    /**
+     * Calculates the {@link Date} for midnight of the date represented by the timestamp.
+     */
+    private Date getDateWithoutTime(long timestamp) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(timestamp);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 }

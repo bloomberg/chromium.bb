@@ -1858,6 +1858,18 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_MANAGER_NO_RESULTS" desc="Text explaining that no download items matched a search query.">
         No downloads found
       </message>
+      <message name="IDS_DOWNLOAD_MANAGER_OFFLINE_HEADER_TITLE" desc="Text explaining the number of suggested offline pages.">
+        %1$s Chrome suggestions
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_OFFLINE_HEADER_DESCRIPTION" desc="Text containing the offline pages description.">
+        Pages updated regularly
+      </message>
+      <message name="IDS_ACCESSIBILITY_EXPAND_OFFLINE_PAGES" desc="Content description for the suggested section header expand button.">
+        Tap to expand
+      </message>
+      <message name="IDS_ACCESSIBILITY_COLLAPSE_OFFLINE_PAGES" desc="Content description for the suggested section header collapse button.">
+        Tap to collapse
+      </message>
 
       <!-- Browsing History UI -->
       <message name="IDS_HISTORY_MANAGER_EMPTY" desc="Indicates that there are no browsing history items.">

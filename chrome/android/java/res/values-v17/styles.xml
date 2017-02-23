@@ -617,12 +617,61 @@
         <item name="android:ellipsize">start</item>
         <item name="android:singleLine">true</item>
     </style>
-
     <style name="DateView" parent="RobotoMediumStyle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">12dp</item>
         <item name="android:layout_marginBottom">10dp</item>
         <item name="android:textSize">14sp</item>
+    </style>
+    <style name="DownloadRowContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:layout_marginBottom">16dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+    <style name="DownloadTitleStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_alignParentTop">true</item>
+        <item name="android:layout_alignParentStart">true</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@color/default_text_color</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+    <style name="DownloadDescriptionStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_alignParentBottom">true</item>
+        <item name="android:layout_alignParentStart">true</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:textColor">@color/google_grey_600</item>
+        <item name="android:ellipsize">start</item>
+        <item name="android:singleLine">true</item>
+    </style>
+    <style name="DownloadFileSizeStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_alignParentBottom">true</item>
+        <item name="android:layout_alignParentEnd">true</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:textAlignment">viewEnd</item>
+        <item name="android:textColor">@color/google_grey_600</item>
+        <item name="android:singleLine">true</item>
+    </style>
+    <style name="DownloadIconView">
+        <item name="android:layout_width">@dimen/downloads_item_icon_size</item>
+        <item name="android:layout_height">@dimen/downloads_item_icon_size</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:contentDescription">@null</item>
+        <item name="android:scaleType">center</item>
+        <item name="android:background">@color/light_active_color</item>
     </style>
 </resources>

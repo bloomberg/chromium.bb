@@ -6,7 +6,10 @@ package org.chromium.chrome.browser.download.ui;
 
 import android.text.TextUtils;
 
+import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -37,7 +40,7 @@ public abstract class BackendItems extends ArrayList<DownloadHistoryItemWrapper>
      * @param query         The text to match.
      * @param filteredItems List for appending items that match the filter.
      */
-    public void filter(int filterType, String query, BackendItems filteredItems) {
+    public void filter(int filterType, String query, List<TimedItem> filteredItems) {
         if (TextUtils.isEmpty(query)) {
             filter(filterType, filteredItems);
             return;
@@ -91,7 +94,7 @@ public abstract class BackendItems extends ArrayList<DownloadHistoryItemWrapper>
      * @param filterType    Filter to use.
      * @param filteredItems List for appending items that match the filter.
      */
-    private void filter(int filterType, BackendItems filteredItems) {
+    private void filter(int filterType, List<TimedItem> filteredItems) {
         for (DownloadHistoryItemWrapper item : this) {
             if (item.isVisibleToUser(filterType)) filteredItems.add(item);
         }

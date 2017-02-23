@@ -547,6 +547,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
             return false;
         }
 
+        /** @return Whether this page is to be shown in the suggested reading section. */
+        public boolean isSuggested() {
+            return mItem.isSuggested();
+        }
+
         @Override
         public boolean isComplete() {
             return true;
