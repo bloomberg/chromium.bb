@@ -4479,14 +4479,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   // Invalid URLs should not be loaded.  However, simply doing nothing upon
   // tapping a link or button is a jarring user experience.  Instead, cancel
-  // the invalid navigation and load about:blank.
+  // the invalid navigation and load about:blank if navigation was requested for
+  // the main frame.
   GURL requestURL = net::GURLWithNSURL(action.request.URL);
   if (!requestURL.is_valid()) {
     decisionHandler(WKNavigationActionPolicyCancel);
-    GURL aboutBlankURL(url::kAboutBlankURL);
-    web::NavigationManager::WebLoadParams loadParams(aboutBlankURL);
-    loadParams.referrer = [self currentReferrer];
-    self.webState->GetNavigationManager()->LoadURLWithParams(loadParams);
+    if (action.targetFrame.mainFrame) {
+      GURL aboutBlankURL(url::kAboutBlankURL);
+      web::NavigationManager::WebLoadParams loadParams(aboutBlankURL);
+      loadParams.referrer = [self currentReferrer];
+      self.webState->GetNavigationManager()->LoadURLWithParams(loadParams);
+    }
     return;
   }
 
