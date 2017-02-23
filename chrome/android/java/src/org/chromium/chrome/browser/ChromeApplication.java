@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -442,5 +443,22 @@ public class ChromeApplication extends ContentApplication {
      */
     public AppIndexingReporter createAppIndexingReporter() {
         return new AppIndexingReporter();
+    }
+
+    /**
+     * Starts a service from {@code intent}.  Meant to eventually be used by services that want to
+     * be put into the foreground with {@code notification} via
+     * {@link android.app.Service#startForeground(int, Notification)}.
+     *
+     * @param intent The {@link Intent} to fire to start the service.
+     * @param notificationId The id of the notification to show.
+     * @param notification The {@link Notification} to show.
+     */
+    @SuppressWarnings("Unused")
+    public void startServiceWithNotification(
+            Intent intent, int notificationId, Notification notification) {
+        // TODO(dtrainor): Eventually make sure the service gets put into the foreground with
+        // {@link android.app.Service#startForeground(int, Notification)}.
+        startService(intent);
     }
 }
