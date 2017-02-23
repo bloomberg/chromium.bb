@@ -898,12 +898,12 @@ bool GpuVideoDecoder::IsProfileSupported(
     bool is_encrypted) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   for (const auto& supported_profile : capabilities.supported_profiles) {
-    if (profile != supported_profile.profile ||
-        (supported_profile.encrypted_only && !is_encrypted) ||
-        !IsCodedSizeSupported(coded_size, supported_profile.min_resolution,
-                              supported_profile.max_resolution))
-      continue;
-    return true;
+    if (profile == supported_profile.profile &&
+        !(supported_profile.encrypted_only && !is_encrypted) &&
+        IsCodedSizeSupported(coded_size, supported_profile.min_resolution,
+                             supported_profile.max_resolution)) {
+      return true;
+    }
   }
   return false;
 }
