@@ -391,6 +391,10 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     }
 
     private void updateClearBrowsingDataButtonVisibility() {
+        // If the history header is not showing (e.g. when there is no browsing history),
+        // mClearBrowsingDataButton will be null.
+        if (mClearBrowsingDataButton == null) return;
+
         mClearBrowsingDataButtonContainer.setVisibility(
                 !PrefServiceBridge.getInstance().canDeleteBrowsingHistory() ? View.GONE :
                     View.VISIBLE);
