@@ -57,18 +57,7 @@ AsyncTask::AsyncTask(ExecutionContext* context, void* task)
 
 AsyncTask::AsyncTask(ExecutionContext* context, void* task, bool enabled)
     : m_debugger(enabled ? ThreadDebugger::from(toIsolate(context)) : nullptr),
-      m_task(task),
-      m_breakpoint(nullptr, nullptr) {
-  if (m_debugger)
-    m_debugger->asyncTaskStarted(m_task);
-}
-
-AsyncTask::AsyncTask(ExecutionContext* context,
-                     void* task,
-                     const char* breakpointName)
-    : m_debugger(ThreadDebugger::from(toIsolate(context))),
-      m_task(task),
-      m_breakpoint(context, breakpointName) {
+      m_task(task) {
   if (m_debugger)
     m_debugger->asyncTaskStarted(m_task);
 }
@@ -80,18 +69,17 @@ AsyncTask::~AsyncTask() {
 
 void asyncTaskScheduled(ExecutionContext* context,
                         const String& name,
+                        void* task) {
+  if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
+    debugger->asyncTaskScheduled(name, task, false);
+}
+
+void asyncTaskScheduled(ExecutionContext* context,
+                        const String& name,
                         void* task,
                         bool recurring) {
   if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
     debugger->asyncTaskScheduled(name, task, recurring);
-}
-
-void asyncTaskScheduledBreakable(ExecutionContext* context,
-                                 const char* name,
-                                 void* task,
-                                 bool recurring) {
-  asyncTaskScheduled(context, name, task, recurring);
-  breakIfNeeded(context, name);
 }
 
 void asyncTaskCanceled(ExecutionContext* context, void* task) {
@@ -99,43 +87,27 @@ void asyncTaskCanceled(ExecutionContext* context, void* task) {
     debugger->asyncTaskCanceled(task);
 }
 
-void asyncTaskCanceledBreakable(ExecutionContext* context,
-                                const char* name,
-                                void* task) {
-  asyncTaskCanceled(context, task);
-  breakIfNeeded(context, name);
-}
-
 void allAsyncTasksCanceled(ExecutionContext* context) {
   if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
     debugger->allAsyncTasksCanceled();
 }
 
-void breakIfNeeded(ExecutionContext* context, const char* name) {
-  InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(context);
-  if (!instrumentingAgents ||
-      !instrumentingAgents->hasInspectorDOMDebuggerAgents())
-    return;
-  for (InspectorDOMDebuggerAgent* domDebuggerAgent :
-       instrumentingAgents->inspectorDOMDebuggerAgents()) {
-    domDebuggerAgent->allowNativeBreakpoint(name, nullptr, true);
-  }
-}
-
-NativeBreakpoint::NativeBreakpoint(ExecutionContext* context, const char* name)
-    : m_instrumentingAgents(instrumentingAgentsFor(context)) {
+NativeBreakpoint::NativeBreakpoint(ExecutionContext* context,
+                                   const char* name,
+                                   bool sync)
+    : m_instrumentingAgents(instrumentingAgentsFor(context)), m_sync(sync) {
   if (!m_instrumentingAgents ||
       !m_instrumentingAgents->hasInspectorDOMDebuggerAgents())
     return;
   for (InspectorDOMDebuggerAgent* domDebuggerAgent :
        m_instrumentingAgents->inspectorDOMDebuggerAgents())
-    domDebuggerAgent->allowNativeBreakpoint(name, nullptr, false);
+    domDebuggerAgent->allowNativeBreakpoint(name, nullptr, m_sync);
 }
 
 NativeBreakpoint::NativeBreakpoint(ExecutionContext* context,
                                    EventTarget* eventTarget,
                                    Event* event)
-    : m_instrumentingAgents(instrumentingAgentsFor(context)) {
+    : m_instrumentingAgents(instrumentingAgentsFor(context)), m_sync(false) {
   if (!m_instrumentingAgents ||
       !m_instrumentingAgents->hasInspectorDOMDebuggerAgents())
     return;
@@ -143,16 +115,20 @@ NativeBreakpoint::NativeBreakpoint(ExecutionContext* context,
   String targetName = node ? node->nodeName() : eventTarget->interfaceName();
   for (InspectorDOMDebuggerAgent* domDebuggerAgent :
        m_instrumentingAgents->inspectorDOMDebuggerAgents())
-    domDebuggerAgent->allowNativeBreakpoint(event->type(), &targetName, false);
+    domDebuggerAgent->allowNativeBreakpoint(event->type(), &targetName, m_sync);
 }
 
 NativeBreakpoint::~NativeBreakpoint() {
-  if (!m_instrumentingAgents ||
+  if (m_sync || !m_instrumentingAgents ||
       !m_instrumentingAgents->hasInspectorDOMDebuggerAgents())
     return;
   for (InspectorDOMDebuggerAgent* domDebuggerAgent :
        m_instrumentingAgents->inspectorDOMDebuggerAgents())
     domDebuggerAgent->cancelNativeBreakpoint();
+}
+
+bool isDebuggerPaused(LocalFrame*) {
+  return MainThreadDebugger::instance()->isPaused();
 }
 
 void didReceiveResourceResponseButCanceled(LocalFrame* frame,

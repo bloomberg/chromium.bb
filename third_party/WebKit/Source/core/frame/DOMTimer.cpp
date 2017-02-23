@@ -64,6 +64,8 @@ int DOMTimer::install(ExecutionContext* context,
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorTimerInstallEvent::data(context, timeoutID,
                                                         timeout, singleShot));
+  InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context,
+                                                              "setTimer", true);
   return timeoutID;
 }
 
@@ -72,6 +74,8 @@ void DOMTimer::removeByID(ExecutionContext* context, int timeoutID) {
   TRACE_EVENT_INSTANT1("devtools.timeline", "TimerRemove",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorTimerRemoveEvent::data(context, timeoutID));
+  InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
+      context, "clearTimer", true);
   // Eagerly unregister as ExecutionContext observer.
   if (timer)
     timer->clearContext();
@@ -93,6 +97,9 @@ DOMTimer::DOMTimer(ExecutionContext* context,
     m_userGestureToken = UserGestureIndicator::currentToken();
   }
 
+  InspectorInstrumentation::asyncTaskScheduled(
+      context, singleShot ? "setTimeout" : "setInterval", this, !singleShot);
+
   double intervalMilliseconds =
       std::max(oneMillisecond, interval * oneMillisecond);
   if (intervalMilliseconds < minimumInterval &&
@@ -102,10 +109,6 @@ DOMTimer::DOMTimer(ExecutionContext* context,
     startOneShot(intervalMilliseconds, BLINK_FROM_HERE);
   else
     startRepeating(intervalMilliseconds, BLINK_FROM_HERE);
-
-  suspendIfNeeded();
-  InspectorInstrumentation::asyncTaskScheduledBreakable(
-      context, singleShot ? "setTimeout" : "setInterval", this, !singleShot);
 }
 
 DOMTimer::~DOMTimer() {
@@ -114,10 +117,7 @@ DOMTimer::~DOMTimer() {
 }
 
 void DOMTimer::stop() {
-  InspectorInstrumentation::asyncTaskCanceledBreakable(
-      getExecutionContext(),
-      repeatInterval() ? "clearInterval" : "clearTimeout", this);
-
+  InspectorInstrumentation::asyncTaskCanceled(getExecutionContext(), this);
   m_userGestureToken = nullptr;
   // Need to release JS objects potentially protected by ScheduledAction
   // because they can form circular references back to the ExecutionContext
@@ -145,7 +145,9 @@ void DOMTimer::fired() {
                InspectorTimerFireEvent::data(context, m_timeoutID));
   PerformanceMonitor::HandlerCall handlerCall(
       context, repeatInterval() ? "setInterval" : "setTimeout", true);
-  InspectorInstrumentation::AsyncTask asyncTask(context, this, "timerFired");
+  InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
+      context, "timerFired", false);
+  InspectorInstrumentation::AsyncTask asyncTask(context, this);
 
   // Simple case for non-one-shot timers.
   if (isActive()) {

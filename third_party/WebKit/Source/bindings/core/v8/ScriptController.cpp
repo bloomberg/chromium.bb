@@ -127,7 +127,7 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(
                InspectorEvaluateScriptEvent::data(
                    frame(), source.url().getString(), source.startPosition()));
   InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-      frame()->document(), "scriptFirstStatement");
+      frame()->document(), "scriptFirstStatement", false);
 
   v8::Local<v8::Value> result;
   {

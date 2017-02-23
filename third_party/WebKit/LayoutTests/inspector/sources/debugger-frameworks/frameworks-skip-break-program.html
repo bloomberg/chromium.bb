@@ -39,7 +39,7 @@ function test()
     function step2()
     {
         InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
-        pane._setBreakpoint("instrumentation:setTimeout");
+        pane._setBreakpoint("instrumentation:setTimer");
         InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
     }
 
@@ -52,7 +52,7 @@ function test()
     function completeTest()
     {
         InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        pane._removeBreakpoint("instrumentation:setTimeout");
+        pane._removeBreakpoint("instrumentation:setTimer");
         InspectorTest.completeDebuggerTest();
     }
 }
