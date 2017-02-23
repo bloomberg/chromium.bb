@@ -1,13 +1,335 @@
-Mojo Embedder API
-=================
+# Mojo Embedder Development Kit (EDK)
 
-The Mojo Embedder API is an unstable, internal API to the Mojo system
-implementation. It should be used by code running on top of the system-level
-APIs to set up the Mojo environment (instead of directly instantiating things
-from src/mojo/edk/system).
+The Mojo EDK is a (binary-unstable) API which enables a process to use Mojo both
+internally and for IPC to other Mojo-embedding processes.
 
-Example uses: Service Manager, to set up the Mojo environment for Services;
-Chromium code, to set up the Mojo IPC system for use between processes. Note
-that most code should use the Mojo Public API (under src/mojo/public) instead.
-The Embedder API should only be used to initialize the environment, set up the
-initial MessagePipe between two processes, etc.
+Using any of the API surface in `//mojo/edk/embedder` requires (somewhat
+confusingly) a direct dependency on the GN `//mojo/edk/system` target. Despite
+this fact, you should never reference any of the headers in `mojo/edk/system`
+directly, as everything there is considered to be an internal detail of the EDK.
+
+## Basic Initialization
+
+In order to use Mojo in a given process, it's necessary to call
+`mojo::edk::Init` exactly once:
+
+```
+#include "mojo/edk/embedder/embedder.h"
+
+int main(int argc, char** argv) {
+  mojo::edk::Init();
+
+  // Now you can create message pipes, write messages, etc
+
+  return 0;
+}
+```
+
+As it happens though, Mojo is less useful without some kind of IPC support as
+well, and that's a second initialization step.
+
+## IPC Initialization
+
+You also need to provide the system with a background TaskRunner on which it can
+watch for inbound I/O from any of the various other processes you will later
+connect to it.
+
+Here we'll just create a new background thread for IPC and let Mojo use that.
+Note that in Chromium, we use the existing "IO thread" in the browser process
+and content child processes.
+
+```
+#include "base/threading/thread.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
+
+int main(int argc, char** argv) {
+  mojo::edk::Init();
+
+  base::Thread ipc_thread("ipc!");
+  ipc_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO));
+
+  // As long as this object is alive, all EDK API surface relevant to IPC
+  // connections is usable and message pipes which span a process boundary will
+  // continue to function.
+  mojo::edk::ScopedIPCSupport ipc_support(
+      ipc_thread.task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+
+  return 0;
+}
+```
+
+This process is now fully prepared to use Mojo IPC!
+
+Note that all existing process types in Chromium already perform this setup
+very early during startup.
+
+## Connecting Two Processes
+
+Now suppose you're running a process which has initialized Mojo IPC, and you
+want to launch another process which you know will also initialize Mojo IPC.
+You want to be able to connect Mojo interfaces between these two processes.
+Rejoice, because this section was written just for you.
+
+NOTE: For legacy reasons, some API terminology may refer to concepts of "parent"
+and "child" as a relationship between processes being connected by Mojo. This
+relationship is today completely orthogonal to any notion of process hierarchy
+in the OS, and so use of these APIs is not constrained by an adherence to any
+such hierarchy.
+
+Mojo requires you to bring your own OS pipe to the party, and it will do the
+rest. It also provides a convenient mechanism for creating such pipes, known as
+a `PlatformChannelPair`.
+
+You provide one end of this pipe to the EDK in the local process via
+`PendingProcessConnection` - which can also be used to create cross-process
+message pipes (see the next section) - and you're responsible for getting the
+other end into the remote process.
+
+```
+#include "base/process/process_handle.h"
+#include "base/threading/thread.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
+
+// You write this. It launches a new process, passing the pipe handle
+// encapsulated by |channel| by any means possible (e.g. on Windows or POSIX
+// you may inhert the file descriptor/HANDLE at launch and pass a commandline
+// argument to indicate its numeric value). Returns the handle of the new
+// process.
+base::ProcessHandle LaunchCoolChildProcess(
+    mojo::edk::ScopedPlatformHandle channel);
+
+int main(int argc, char** argv) {
+  mojo::edk::Init();
+
+  base::Thread ipc_thread("ipc!");
+  ipc_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO));
+
+  mojo::edk::ScopedIPCSupport ipc_support(
+      ipc_thread.task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+
+  // This is essentially always an OS pipe (domain socket pair, Windows named
+  // pipe, etc.)
+  mojo::edk::PlatformChannelPair channel;
+
+  // This is a scoper which encapsulates the intent to connect to another
+  // process. It exists because process connection is inherently asynchronous,
+  // things may go wrong, and the lifetime of any associated resources is bound
+  // by the lifetime of this object regardless of success or failure.
+  mojo::edk::PendingProcessConnection child;
+
+  base::ProcessHandle child_handle =
+      LaunchCoolChildProcess(channel.PassClientHandle());
+
+  // At this point it's safe for |child| to go out of scope and nothing will
+  // break.
+  child.Connect(child_handle, channel.PassServerHandle());
+
+  return 0;
+}
+```
+
+The launched process code uses `SetParentPipeHandle` to get connected, and might
+look something like:
+
+```
+#include "base/process/process_handle.h"
+#include "base/threading/thread.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
+
+// You write this. It acquires the ScopedPlatformHandle that was passed by
+// whomever launched this process (i.e. LaunchCoolChildProcess above).
+mojo::edk::ScopedPlatformHandle GetChannelHandle();
+
+int main(int argc, char** argv) {
+  mojo::edk::Init();
+
+  base::Thread ipc_thread("ipc!");
+  ipc_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO));
+
+  mojo::edk::ScopedIPCSupport ipc_support(
+      ipc_thread.task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+
+  mojo::edk::SetParentPipeHandle(GetChannelHandle());
+
+  return 0;
+}
+```
+
+Now you have IPC initialized between two processes. For some practical examples
+of how this is done, you can dig into the various multiprocess tests in the
+`mojo_system_unittests` test suite.
+
+## Bootstrapping Cross-Process Message Pipes
+
+Having internal Mojo IPC support initialized is pretty useless if you don't have
+any message pipes spanning the process boundary. Fortunately, this is made
+trivial by the EDK: `PendingProcessConnection` has a
+`CreateMessagePipe` method which synthesizes a new solitary message pipe
+endpoint for your immediate use, while also generating a magic token string that
+can be exchanged for the other end of the pipe via
+`mojo::edk::CreateChildMessagePipe`.
+
+The token exchange can be done by the same process (which is sometimes useful),
+or by the process that is eventually connected via `Connect()` on that
+`PendingProcessConnection`. This means that you can effectively pass message
+pipes on the commandline by passing a token string.
+
+We can modify our existing sample code as follows:
+
+```
+#include "base/command_line.h"
+#include "base/process/process_handle.h"
+#include "base/threading/thread.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/system/message_pipe.h"
+#include "local/foo.mojom.h"  // You provide this
+
+base::ProcessHandle LaunchCoolChildProcess(
+    const base::CommandLine& command_line,
+    mojo::edk::ScopedPlatformHandle channel);
+
+int main(int argc, char** argv) {
+  mojo::edk::Init();
+
+  base::Thread ipc_thread("ipc!");
+  ipc_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO));
+
+  mojo::edk::ScopedIPCSupport ipc_support(
+      ipc_thread.task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+
+  mojo::edk::PlatformChannelPair channel;
+
+  mojo::edk::PendingProcessConnection child;
+
+  base::CommandLine command_line;  // Assume this is appropriately initialized
+
+  // Create a new message pipe with one end being retrievable in the new
+  // process. Note that it doesn't matter whether we call CreateMessagePipe()
+  // before or after Connect(), and we can create as many different pipes as
+  // we like.
+  std::string pipe_token;
+  mojo::ScopedMessagePipeHandle my_pipe = child.CreateMessagePipe(&pipe_token);
+  command_line.AppendSwitchASCII("primordial-pipe", pipe_token);
+
+  base::ProcessHandle child_handle =
+      LaunchCoolChildProcess(command_line, channel.PassClientHandle());
+
+  // At this point it's safe for |child| to go out of scope and nothing will
+  // break.
+  child.Connect(child_handle, channel.PassServerHandle());
+
+  // We can start using our end of the pipe immediately. Here we assume the
+  // other end will eventually be bound to a local::mojom::Foo implementation,
+  // so we can start making calls on that interface.
+  //
+  // Note that this could even be done before the child process is launched and
+  // it would still work as expected.
+  local::mojom::FooPtr foo;
+  foo.Bind(local::mojom::FooPtrInfo(std::move(my_pipe), 0));
+  foo->DoSomeStuff(42);
+
+  return 0;
+}
+```
+
+and for the launched process:
+
+
+```
+#include "base/command_line.h"
+#include "base/process/process_handle.h"
+#include "base/run_loop/run_loop.h"
+#include "base/threading/thread.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/message_pipe.h"
+#include "local/foo.mojom.h"  // You provide this
+
+mojo::edk::ScopedPlatformHandle GetChannelHandle();
+
+class FooImpl : local::mojom::Foo {
+ public:
+  explicit FooImpl(local::mojom::FooRequest request)
+      : binding_(this, std::move(request)) {}
+  ~FooImpl() override {}
+
+  void DoSomeStuff(int32_t n) override {
+    // ...
+  }
+
+ private:
+  mojo::Binding<local::mojom::Foo> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(FooImpl);
+};
+
+int main(int argc, char** argv) {
+  base::CommandLine::Init(argc, argv);
+
+  mojo::edk::Init();
+
+  base::Thread ipc_thread("ipc!");
+  ipc_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO));
+
+  mojo::edk::ScopedIPCSupport ipc_support(
+      ipc_thread.task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+
+  mojo::edk::SetParentPipeHandle(GetChannelHandle());
+
+  mojo::ScopedMessagePipeHandle my_pipe = mojo::edk::CreateChildMessagePipe(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          "primordial-pipe"));
+
+  local::mojom::FooRequest foo_request;
+  foo_request.Bind(std::move(my_pipe));
+  FooImpl impl(std::move(foo_request));
+
+  // Run forever!
+  base::RunLoop().Run();
+
+  return 0;
+}
+```
+
+Note that the above samples assume an interface definition in
+`//local/test.mojom` which would look something like:
+
+```
+module local.mojom;
+
+interface Foo {
+  DoSomeStuff(int32 n);
+};
+```
+
+Once you've bootstrapped your process connection with a real mojom interface,
+you can avoid any further mucking around with EDK APIs or raw message pipe
+handles, as everything beyond this point - including the passing of other
+interface pipes - can be handled eloquently using public bindings APIs.
+
+See [additional Mojo documentation](
+    https://www.chromium.org/developers/design-documents/mojo) for more
+information.
