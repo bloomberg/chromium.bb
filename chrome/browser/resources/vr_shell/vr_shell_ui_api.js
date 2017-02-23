@@ -143,8 +143,10 @@ api.Fill = class {
 api.Sprite = class extends api.Fill {
   constructor(pixelX, pixelY, pixelWidth, pixelHeight) {
     super(api.FillType.SPRITE);
-    this.properties.copyRect =
-        {x: pixelX, y: pixelY, width: pixelWidth, height: pixelHeight};
+    this.properties['copyRectX'] = pixelX;
+    this.properties['copyRectY'] = pixelY;
+    this.properties['copyRectWidth'] = pixelWidth;
+    this.properties['copyRectHeight'] = pixelHeight;
   }
 }
 
@@ -207,7 +209,8 @@ api.UiElementUpdate = class {
    * @param {number} y
    */
   setSize(x, y) {
-    this.properties['size'] = {x: x, y: y};
+    this.properties['sizeX'] = x;
+    this.properties['sizeY'] = y;
   }
 
   /**
@@ -217,7 +220,9 @@ api.UiElementUpdate = class {
    * @param {number} z
    */
   setScale(x, y, z) {
-    this.properties['scale'] = {x: x, y: y, z: z};
+    this.properties['scaleX'] = x;
+    this.properties['scaleY'] = y;
+    this.properties['scaleZ'] = z;
   }
 
   /**
@@ -229,7 +234,10 @@ api.UiElementUpdate = class {
    * @param {number} a
    */
   setRotation(x, y, z, a) {
-    this.properties['rotation'] = {x: x, y: y, z: z, a: a};
+    this.properties['rotationX'] = x;
+    this.properties['rotationY'] = y;
+    this.properties['rotationZ'] = z;
+    this.properties['rotationAngle'] = a;
   }
 
   /**
@@ -241,7 +249,9 @@ api.UiElementUpdate = class {
    * @param {number} z
    */
   setTranslation(x, y, z) {
-    this.properties['translation'] = {x: x, y: y, z: z};
+    this.properties['translationX'] = x;
+    this.properties['translationY'] = y;
+    this.properties['translationZ'] = z;
   }
 
   /**

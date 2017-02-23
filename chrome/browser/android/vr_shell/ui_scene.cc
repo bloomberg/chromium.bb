@@ -16,65 +16,30 @@ namespace vr_shell {
 
 namespace {
 
+// Parse an integer to an int or enum value.
+template <typename T>
+bool ParseInt(const base::DictionaryValue& dict,
+              const std::string& key,
+              T* output) {
+  int value;
+  if (!dict.GetInteger(key, &value)) {
+    return false;
+  }
+  *output = static_cast<T>(value);
+  return true;
+}
+
+// Parse a floating point number to a float or double.
+template <typename T>
 bool ParseFloat(const base::DictionaryValue& dict,
                 const std::string& key,
-                float* output) {
+                T* output) {
   double value;
   if (!dict.GetDouble(key, &value)) {
     return false;
   }
   *output = value;
   return true;
-}
-
-bool ParseRecti(const base::DictionaryValue& dict,
-                const std::string& key,
-                Recti* output) {
-  const base::DictionaryValue* item_dict;
-  if (dict.GetDictionary(key, &item_dict)) {
-    CHECK(item_dict->GetInteger("x", &output->x));
-    CHECK(item_dict->GetInteger("y", &output->y));
-    CHECK(item_dict->GetInteger("width", &output->width));
-    CHECK(item_dict->GetInteger("height", &output->height));
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool Parse2DVec3f(const base::DictionaryValue& dict,
-                  const std::string& key,
-                  gvr::Vec3f* output) {
-  const base::DictionaryValue* item_dict;
-  if (dict.GetDictionary(key, &item_dict)) {
-    double value;
-    CHECK(item_dict->GetDouble("x", &value));
-    output->x = value;
-    CHECK(item_dict->GetDouble("y", &value));
-    output->y = value;
-    output->z = 1.0f;
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool ParseVec3f(const base::DictionaryValue& dict,
-                const std::string& key,
-                gvr::Vec3f* output) {
-  const base::DictionaryValue* item_dict;
-  if (dict.GetDictionary(key, &item_dict)) {
-    double value;
-    CHECK(item_dict->GetDouble("x", &value));
-    output->x = value;
-    CHECK(item_dict->GetDouble("y", &value));
-    output->y = value;
-    CHECK(item_dict->GetDouble("z", &value));
-    output->z = value;
-    return true;
-  } else {
-    return false;
-  }
 }
 
 bool ParseColorf(const base::DictionaryValue& dict,
@@ -91,26 +56,6 @@ bool ParseColorf(const base::DictionaryValue& dict,
     output->b = value;
     CHECK(item_dict->GetDouble("a", &value));
     output->a = value;
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool ParseRotationAxisAngle(const base::DictionaryValue& dict,
-                            const std::string& key,
-                            RotationAxisAngle* output) {
-  const base::DictionaryValue* item_dict;
-  if (dict.GetDictionary(key, &item_dict)) {
-    double value;
-    CHECK(item_dict->GetDouble("x", &value));
-    output->x = value;
-    CHECK(item_dict->GetDouble("y", &value));
-    output->y = value;
-    CHECK(item_dict->GetDouble("z", &value));
-    output->z = value;
-    CHECK(item_dict->GetDouble("a", &value));
-    output->angle = value;
     return true;
   } else {
     return false;
@@ -155,7 +100,7 @@ bool ParseEndpointToFloats(Animation::Property property,
 
 std::unique_ptr<easing::Easing> ParseEasing(const base::DictionaryValue& dict) {
   easing::EasingType easingType;
-  CHECK(dict.GetInteger("type", reinterpret_cast<int*>(&easingType)));
+  CHECK(ParseInt(dict, "type", &easingType));
   std::unique_ptr<easing::Easing> result;
 
   switch (easingType) {
@@ -236,7 +181,7 @@ void UiScene::AddUiElement(std::unique_ptr<ContentRectangle>& element) {
 
 void UiScene::AddUiElementFromDict(const base::DictionaryValue& dict) {
   int id;
-  CHECK(dict.GetInteger("id", &id));
+  CHECK(ParseInt(dict, "id", &id));
   CHECK_EQ(GetUiElementById(id), nullptr);
 
   std::unique_ptr<ContentRectangle> element(new ContentRectangle);
@@ -248,7 +193,7 @@ void UiScene::AddUiElementFromDict(const base::DictionaryValue& dict) {
 
 void UiScene::UpdateUiElementFromDict(const base::DictionaryValue& dict) {
   int id;
-  CHECK(dict.GetInteger("id", &id));
+  CHECK(ParseInt(dict, "id", &id));
   ContentRectangle* element = GetUiElementById(id);
   CHECK_NE(element, nullptr);
   ApplyDictToElement(dict, element);
@@ -290,11 +235,11 @@ void UiScene::AddAnimationFromDict(const base::DictionaryValue& dict,
   std::vector<float> from;
   std::vector<float> to;
 
-  CHECK(dict.GetInteger("id", &animation_id));
-  CHECK(dict.GetInteger("meshId", &element_id));
-  CHECK(dict.GetInteger("property", reinterpret_cast<int*>(&property)));
-  CHECK(dict.GetDouble("startInMillis", &start_time_ms));
-  CHECK(dict.GetDouble("durationMillis", &duration_ms));
+  CHECK(ParseInt(dict, "id", &animation_id));
+  CHECK(ParseInt(dict, "meshId", &element_id));
+  CHECK(ParseInt(dict, "property", &property));
+  CHECK(ParseFloat(dict, "startInMillis", &start_time_ms));
+  CHECK(ParseFloat(dict, "durationMillis", &duration_ms));
 
   CHECK(dict.GetDictionary("easing", &easing_dict));
   auto easing = ParseEasing(*easing_dict);
@@ -345,7 +290,7 @@ void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
 
     Command type;
     base::DictionaryValue* data;
-    CHECK(dict->GetInteger("type", reinterpret_cast<int*>(&type)));
+    CHECK(ParseInt(*dict, "type", &type));
     CHECK(dict->GetDictionary("data", &data));
 
     switch (type) {
@@ -357,7 +302,7 @@ void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
         break;
       case Command::REMOVE_ELEMENT: {
         int element_id;
-        CHECK(data->GetInteger("id", &element_id));
+        CHECK(ParseInt(*data, "id", &element_id));
         RemoveUiElement(element_id);
         break;
       }
@@ -366,8 +311,8 @@ void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
         break;
       case Command::REMOVE_ANIMATION: {
         int element_id, animation_id;
-        CHECK(data->GetInteger("id", &animation_id));
-        CHECK(data->GetInteger("meshId", &element_id));
+        CHECK(ParseInt(*data, "id", &animation_id));
+        CHECK(ParseInt(*data, "meshId", &element_id));
         RemoveAnimation(element_id, animation_id);
         break;
       }
@@ -441,7 +386,8 @@ void UiScene::ApplyRecursiveTransforms(const ContentRectangle& element,
 void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
                                  ContentRectangle* element) {
   int parent_id;
-  if (dict.GetInteger("parentId", &parent_id)) {
+
+  if (ParseInt(dict, "parentId", &parent_id)) {
     CHECK_GE(parent_id, 0);
     CHECK_NE(GetUiElementById(parent_id), nullptr);
     element->parent_id = parent_id;
@@ -450,27 +396,31 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
   dict.GetBoolean("visible", &element->visible);
   dict.GetBoolean("hitTestable", &element->hit_testable);
   dict.GetBoolean("lockToFov", &element->lock_to_fov);
-  Parse2DVec3f(dict, "size", &element->size);
-  ParseVec3f(dict, "scale", &element->scale);
-  ParseRotationAxisAngle(dict, "rotation", &element->rotation);
-  ParseVec3f(dict, "translation", &element->translation);
-  double opacity;
-  if (dict.GetDouble("opacity", &opacity)) {
-    element->opacity = opacity;
-  }
-  dict.GetInteger("drawPhase", &element->draw_phase);
+  ParseInt(dict, "drawPhase", &element->draw_phase);
+  ParseFloat(dict, "opacity", &element->opacity);
 
-  if (dict.GetInteger("xAnchoring",
-                      reinterpret_cast<int*>(&element->x_anchoring))) {
+  ParseFloat(dict, "sizeX", &element->size.x);
+  ParseFloat(dict, "sizeY", &element->size.y);
+  ParseFloat(dict, "scaleX", &element->scale.x);
+  ParseFloat(dict, "scaleY", &element->scale.y);
+  ParseFloat(dict, "scaleZ", &element->scale.z);
+  ParseFloat(dict, "rotationX", &element->rotation.x);
+  ParseFloat(dict, "rotationY", &element->rotation.y);
+  ParseFloat(dict, "rotationZ", &element->rotation.z);
+  ParseFloat(dict, "rotationAngle", &element->rotation.angle);
+  ParseFloat(dict, "translationX", &element->translation.x);
+  ParseFloat(dict, "translationY", &element->translation.y);
+  ParseFloat(dict, "translationZ", &element->translation.z);
+
+  if (ParseInt(dict, "xAnchoring", &element->x_anchoring)) {
     CHECK_GE(element->parent_id, 0);
   }
-  if (dict.GetInteger("yAnchoring",
-                      reinterpret_cast<int*>(&element->y_anchoring))) {
+  if (ParseInt(dict, "yAnchoring", &element->y_anchoring)) {
     CHECK_GE(element->parent_id, 0);
   }
 
   // Parse the element fill.
-  if (dict.GetInteger("fillType", reinterpret_cast<int*>(&element->fill))) {
+  if (ParseInt(dict, "fillType", &element->fill)) {
     // If the previous content element has a new filling now make sure this is
     // tracked correctly.
     if (content_element_ == element && element->fill != Fill::CONTENT) {
@@ -479,7 +429,10 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
 
     switch (element->fill) {
       case Fill::SPRITE:
-        CHECK(ParseRecti(dict, "copyRect", &element->copy_rect));
+        CHECK(ParseInt(dict, "copyRectX", &element->copy_rect.x));
+        CHECK(ParseInt(dict, "copyRectY", &element->copy_rect.y));
+        CHECK(ParseInt(dict, "copyRectWidth", &element->copy_rect.width));
+        CHECK(ParseInt(dict, "copyRectHeight", &element->copy_rect.height));
         break;
       case Fill::OPAQUE_GRADIENT:
         CHECK(ParseColorf(dict, "edgeColor", &element->edge_color));
@@ -488,7 +441,7 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
       case Fill::GRID_GRADIENT:
         CHECK(ParseColorf(dict, "edgeColor", &element->edge_color));
         CHECK(ParseColorf(dict, "centerColor", &element->center_color));
-        CHECK(dict.GetInteger("gridlineCount", &element->gridline_count));
+        CHECK(ParseInt(dict, "gridlineCount", &element->gridline_count));
         CHECK_GE(element->gridline_count, 0);
         break;
       case Fill::CONTENT:

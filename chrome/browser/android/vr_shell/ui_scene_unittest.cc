@@ -222,36 +222,26 @@ TEST(UiScene, AddUiElementFromDictionary) {
   dict.SetInteger("yAnchoring", YAnchoring::YTOP);
   dict.SetDouble("opacity", 0.357);
 
-  std::unique_ptr<base::DictionaryValue> copy_rect(new base::DictionaryValue);
-  copy_rect->SetInteger("x", 100);
-  copy_rect->SetInteger("y", 101);
-  copy_rect->SetInteger("width", 102);
-  copy_rect->SetInteger("height", 103);
-  dict.Set("copyRect", std::move(copy_rect));
+  dict.SetInteger("copyRectX", 100);
+  dict.SetInteger("copyRectY", 101);
+  dict.SetInteger("copyRectWidth", 102);
+  dict.SetInteger("copyRectHeight", 103);
 
-  std::unique_ptr<base::DictionaryValue> size(new base::DictionaryValue);
-  size->SetDouble("x", 200);
-  size->SetDouble("y", 201);
-  dict.Set("size", std::move(size));
+  dict.SetDouble("sizeX", 200);
+  dict.SetDouble("sizeY", 201);
 
-  std::unique_ptr<base::DictionaryValue> scale(new base::DictionaryValue);
-  scale->SetDouble("x", 300);
-  scale->SetDouble("y", 301);
-  scale->SetDouble("z", 302);
-  dict.Set("scale", std::move(scale));
+  dict.SetDouble("scaleX", 300);
+  dict.SetDouble("scaleY", 301);
+  dict.SetDouble("scaleZ", 302);
 
-  std::unique_ptr<base::DictionaryValue> rotation(new base::DictionaryValue);
-  rotation->SetDouble("x", 400);
-  rotation->SetDouble("y", 401);
-  rotation->SetDouble("z", 402);
-  rotation->SetDouble("a", 403);
-  dict.Set("rotation", std::move(rotation));
+  dict.SetDouble("rotationX", 400);
+  dict.SetDouble("rotationY", 401);
+  dict.SetDouble("rotationZ", 402);
+  dict.SetDouble("rotationAngle", 403);
 
-  std::unique_ptr<base::DictionaryValue> translation(new base::DictionaryValue);
-  translation->SetDouble("x", 500);
-  translation->SetDouble("y", 501);
-  translation->SetDouble("z", 502);
-  dict.Set("translation", std::move(translation));
+  dict.SetDouble("translationX", 500);
+  dict.SetDouble("translationY", 501);
+  dict.SetDouble("translationZ", 502);
 
   scene.AddUiElementFromDict(dict);
   const auto* element = scene.GetUiElementById(10);
@@ -294,11 +284,10 @@ TEST(UiScene, AddUiElementFromDictionary_Fill) {
   UiScene scene;
   base::DictionaryValue dict;
 
-  base::DictionaryValue copy_rect;
-  copy_rect.SetInteger("x", 1);
-  copy_rect.SetInteger("y", 2);
-  copy_rect.SetInteger("width", 3);
-  copy_rect.SetInteger("height", 4);
+  dict.SetInteger("copyRectX", 1);
+  dict.SetInteger("copyRectY", 2);
+  dict.SetInteger("copyRectWidth", 3);
+  dict.SetInteger("copyRectHeight", 4);
 
   base::DictionaryValue edge_color;
   edge_color.SetDouble("r", 0.1);
@@ -315,7 +304,6 @@ TEST(UiScene, AddUiElementFromDictionary_Fill) {
   // Test SPRITE filling.
   dict.SetInteger("id", 9);
   dict.SetInteger("fillType", Fill::SPRITE);
-  dict.Set("copyRect", copy_rect.DeepCopy());
   scene.AddUiElementFromDict(dict);
   const auto* element = scene.GetUiElementById(9);
 
