@@ -18,6 +18,10 @@
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 class PaymentMethodSelectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:

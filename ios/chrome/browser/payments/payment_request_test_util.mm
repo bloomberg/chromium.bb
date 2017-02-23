@@ -14,6 +14,10 @@
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/web/public/payments/payment_request.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace payment_request_test_util {
 
 web::PaymentRequest CreateTestWebPaymentRequest() {

@@ -70,6 +70,7 @@ source_set("payments") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "payment_items_display_coordinator_unittest.mm",

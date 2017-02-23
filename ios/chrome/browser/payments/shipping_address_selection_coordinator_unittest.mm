@@ -17,6 +17,10 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 typedef PlatformTest ShippingAddressSelectionCoordinatorTest;
 
 // Tests that invoking start and stop on the coordinator presents and dismisses
@@ -25,15 +29,14 @@ TEST(ShippingAddressSelectionCoordinatorTest, StartAndStop) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
-  UIViewController* base_view_controller =
-      [[[UIViewController alloc] init] autorelease];
+  UIViewController* base_view_controller = [[UIViewController alloc] init];
   UINavigationController* navigation_controller =
-      [[[UINavigationController alloc]
-          initWithRootViewController:base_view_controller] autorelease];
+      [[UINavigationController alloc]
+          initWithRootViewController:base_view_controller];
 
   ShippingAddressSelectionCoordinator* coordinator =
-      [[[ShippingAddressSelectionCoordinator alloc]
-          initWithBaseViewController:base_view_controller] autorelease];
+      [[ShippingAddressSelectionCoordinator alloc]
+          initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request.get()];
 
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
@@ -61,15 +64,14 @@ TEST(ShippingAddressSelectionCoordinatorTest, SelectedShippingAddress) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
-  UIViewController* base_view_controller =
-      [[[UIViewController alloc] init] autorelease];
+  UIViewController* base_view_controller = [[UIViewController alloc] init];
   UINavigationController* navigation_controller =
-      [[[UINavigationController alloc]
-          initWithRootViewController:base_view_controller] autorelease];
+      [[UINavigationController alloc]
+          initWithRootViewController:base_view_controller];
 
   ShippingAddressSelectionCoordinator* coordinator =
-      [[[ShippingAddressSelectionCoordinator alloc]
-          initWithBaseViewController:base_view_controller] autorelease];
+      [[ShippingAddressSelectionCoordinator alloc]
+          initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request.get()];
 
   // Mock the coordinator delegate.
@@ -108,15 +110,14 @@ TEST(ShippingAddressSelectionCoordinatorTest, DidReturn) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
-  UIViewController* base_view_controller =
-      [[[UIViewController alloc] init] autorelease];
+  UIViewController* base_view_controller = [[UIViewController alloc] init];
   UINavigationController* navigation_controller =
-      [[[UINavigationController alloc]
-          initWithRootViewController:base_view_controller] autorelease];
+      [[UINavigationController alloc]
+          initWithRootViewController:base_view_controller];
 
   ShippingAddressSelectionCoordinator* coordinator =
-      [[[ShippingAddressSelectionCoordinator alloc]
-          initWithBaseViewController:base_view_controller] autorelease];
+      [[ShippingAddressSelectionCoordinator alloc]
+          initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request.get()];
 
   // Mock the coordinator delegate.

@@ -11,6 +11,10 @@
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Tests that the payments::CurrencyFormatter is constructed with the correct
 // currency code and currency system.
 TEST(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {

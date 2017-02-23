@@ -21,6 +21,10 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 typedef PlatformTest PaymentRequestCoordinatorTest;
 
 @interface PaymentRequestCoordinatorDelegateMock<
@@ -72,13 +76,12 @@ TEST(PaymentRequestCoordinatorTest, StartAndStop) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
-  UIViewController* base_view_controller =
-      [[[UIViewController alloc] init] autorelease];
+  UIViewController* base_view_controller = [[UIViewController alloc] init];
   ScopedKeyWindow scoped_key_window_;
   [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
-  PaymentRequestCoordinator* coordinator = [[[PaymentRequestCoordinator alloc]
-      initWithBaseViewController:base_view_controller] autorelease];
+  PaymentRequestCoordinator* coordinator = [[PaymentRequestCoordinator alloc]
+      initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request.get()];
 
   [coordinator start];
@@ -110,13 +113,12 @@ TEST(PaymentRequestCoordinatorTest, FullCardRequestDidSucceed) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
-  UIViewController* base_view_controller =
-      [[[UIViewController alloc] init] autorelease];
+  UIViewController* base_view_controller = [[UIViewController alloc] init];
   ScopedKeyWindow scoped_key_window_;
   [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
-  PaymentRequestCoordinator* coordinator = [[[PaymentRequestCoordinator alloc]
-      initWithBaseViewController:base_view_controller] autorelease];
+  PaymentRequestCoordinator* coordinator = [[PaymentRequestCoordinator alloc]
+      initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request.get()];
 
   id delegate = [OCMockObject
@@ -156,13 +158,12 @@ TEST(PaymentRequestCoordinatorTest, DidSelectShippingAddress) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
-  UIViewController* base_view_controller =
-      [[[UIViewController alloc] init] autorelease];
+  UIViewController* base_view_controller = [[UIViewController alloc] init];
   ScopedKeyWindow scoped_key_window_;
   [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
-  PaymentRequestCoordinator* coordinator = [[[PaymentRequestCoordinator alloc]
-      initWithBaseViewController:base_view_controller] autorelease];
+  PaymentRequestCoordinator* coordinator = [[PaymentRequestCoordinator alloc]
+      initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request.get()];
 
   // Mock the coordinator delegate.
@@ -206,13 +207,12 @@ TEST(PaymentRequestCoordinatorTest, DidSelectShippingOption) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
-  UIViewController* base_view_controller =
-      [[[UIViewController alloc] init] autorelease];
+  UIViewController* base_view_controller = [[UIViewController alloc] init];
   ScopedKeyWindow scoped_key_window_;
   [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
-  PaymentRequestCoordinator* coordinator = [[[PaymentRequestCoordinator alloc]
-      initWithBaseViewController:base_view_controller] autorelease];
+  PaymentRequestCoordinator* coordinator = [[PaymentRequestCoordinator alloc]
+      initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request.get()];
 
   // Mock the coordinator delegate.
@@ -249,13 +249,12 @@ TEST(PaymentRequestCoordinatorTest, DidCancel) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();
 
-  UIViewController* base_view_controller =
-      [[[UIViewController alloc] init] autorelease];
+  UIViewController* base_view_controller = [[UIViewController alloc] init];
   ScopedKeyWindow scoped_key_window_;
   [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
-  PaymentRequestCoordinator* coordinator = [[[PaymentRequestCoordinator alloc]
-      initWithBaseViewController:base_view_controller] autorelease];
+  PaymentRequestCoordinator* coordinator = [[PaymentRequestCoordinator alloc]
+      initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request.get()];
 
   // Mock the coordinator delegate.
