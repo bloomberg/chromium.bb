@@ -23,9 +23,12 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/InstanceCounter.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WTFExport.h"
+
+#if ENABLE(INSTANCE_COUNTER)
+#include "wtf/InstanceCounter.h"
+#endif
 
 #if DCHECK_IS_ON()
 #define CHECK_REF_COUNTED_LIFECYCLE 1
@@ -152,7 +155,7 @@ class RefCounted : public RefCountedBase {
   }
 
  protected:
-#ifdef ENABLE_INSTANCE_COUNTER
+#if ENABLE(INSTANCE_COUNTER)
   RefCounted() { incrementInstanceCount<T>(static_cast<T*>(this)); }
 
   ~RefCounted() { decrementInstanceCount<T>(static_cast<T*>(this)); }
