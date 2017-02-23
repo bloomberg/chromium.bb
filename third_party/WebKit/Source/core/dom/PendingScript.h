@@ -113,6 +113,8 @@ class CORE_EXPORT PendingScript final
                 bool isForTesting = false);
   PendingScript() = delete;
 
+  void checkState() const;
+
   // ScriptResourceClient
   void notifyFinished(Resource*) override;
   String debugName() const override { return "PendingScript"; }

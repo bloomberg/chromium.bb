@@ -58,12 +58,19 @@ PendingScript::PendingScript(Element* element,
       m_parserBlockingLoadStartTime(0),
       m_client(nullptr),
       m_isForTesting(isForTesting) {
-  CHECK(m_isForTesting || m_element);
+  checkState();
   setResource(resource);
   MemoryCoordinator::instance().registerClient(this);
 }
 
 PendingScript::~PendingScript() {}
+
+NOINLINE void PendingScript::checkState() const {
+  // TODO(hiroshige): Turn these CHECK()s into DCHECK() before going to beta.
+  CHECK(m_isForTesting || m_element);
+  CHECK(resource() || !m_streamer);
+  CHECK(!m_streamer || m_streamer->resource() == resource());
+}
 
 void PendingScript::dispose() {
   stopWatchingForLoad();
@@ -81,6 +88,8 @@ void PendingScript::dispose() {
 }
 
 void PendingScript::watchForLoad(PendingScriptClient* client) {
+  checkState();
+
   DCHECK(!m_watchingForLoad);
   // addClient() will call streamingFinished() if the load is complete. Callers
   // who do not expect to be re-entered from this call should not call
@@ -96,6 +105,7 @@ void PendingScript::watchForLoad(PendingScriptClient* client) {
 void PendingScript::stopWatchingForLoad() {
   if (!m_watchingForLoad)
     return;
+  checkState();
   DCHECK(resource());
   m_client = nullptr;
   m_watchingForLoad = false;
@@ -109,6 +119,7 @@ Element* PendingScript::element() const {
 }
 
 void PendingScript::streamingFinished() {
+  checkState();
   DCHECK(resource());
   if (m_client)
     m_client->pendingScriptFinished(this);
@@ -185,7 +196,7 @@ void PendingScript::notifyFinished(Resource* resource) {
   // objects (perhaps attached to identical Resource objects) per request.
   //
   // See https://crbug.com/500701 for more information.
-  CHECK(m_isForTesting || m_element);
+  checkState();
   if (m_element)
     m_integrityFailure = !checkScriptResourceIntegrity(resource, m_element);
 
@@ -212,6 +223,8 @@ DEFINE_TRACE(PendingScript) {
 
 ScriptSourceCode PendingScript::getSource(const KURL& documentURL,
                                           bool& errorOccurred) const {
+  checkState();
+
   if (resource()) {
     errorOccurred = resource()->errorOccurred() || m_integrityFailure;
     DCHECK(resource()->isLoaded());
@@ -219,6 +232,7 @@ ScriptSourceCode PendingScript::getSource(const KURL& documentURL,
       return ScriptSourceCode(m_streamer, resource());
     return ScriptSourceCode(resource());
   }
+
   errorOccurred = false;
   return ScriptSourceCode(m_element->textContent(), documentURL,
                           startingPosition());
@@ -228,25 +242,28 @@ void PendingScript::setStreamer(ScriptStreamer* streamer) {
   DCHECK(!m_streamer);
   DCHECK(!m_watchingForLoad);
   m_streamer = streamer;
+  checkState();
 }
 
 bool PendingScript::isReady() const {
-  if (resource() && !resource()->isLoaded())
-    return false;
-  if (m_streamer && !m_streamer->isFinished())
-    return false;
+  checkState();
+  if (resource()) {
+    return resource()->isLoaded() && (!m_streamer || m_streamer->isFinished());
+  }
+
   return true;
 }
 
 bool PendingScript::errorOccurred() const {
+  checkState();
   if (resource())
     return resource()->errorOccurred();
-  if (m_streamer && m_streamer->resource())
-    return m_streamer->resource()->errorOccurred();
+
   return false;
 }
 
 void PendingScript::onPurgeMemory() {
+  checkState();
   if (!m_streamer)
     return;
   m_streamer->cancel();
