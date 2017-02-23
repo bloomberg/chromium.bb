@@ -11,6 +11,7 @@ source_set("tabs") {
     "web_state_list_metrics_observer.h",
     "web_state_list_metrics_observer.mm",
     "web_state_list_observer.h",
+    "web_state_list_observer.mm",
     "web_state_list_observer_bridge.h",
     "web_state_list_observer_bridge.mm",
     "web_state_list_order_controller.h",

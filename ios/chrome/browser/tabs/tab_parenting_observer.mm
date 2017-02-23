@@ -30,18 +30,9 @@ void TabParentingObserver::WebStateInsertedAt(WebStateList* web_state_list,
   OnWebStateParented(web_state);
 }
 
-void TabParentingObserver::WebStateMoved(WebStateList* web_state_list,
-                                         web::WebState* web_state,
-                                         int from_index,
-                                         int to_index) {}
-
 void TabParentingObserver::WebStateReplacedAt(WebStateList* web_state_list,
                                               web::WebState* old_web_state,
                                               web::WebState* new_web_state,
                                               int index) {
   OnWebStateParented(new_web_state);
 }
-
-void TabParentingObserver::WebStateDetachedAt(WebStateList* web_state_list,
-                                              web::WebState* web_state,
-                                              int index) {}
