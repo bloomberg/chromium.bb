@@ -109,15 +109,9 @@
     "args": ["--disable-slimming-paint-invalidation"]
   },
   {
-    "prefix": "stable",
+    "prefix": "origin-trials-runtimeflags-disabled",
     "base": "http/tests/origin_trials/webexposed",
-    "args": ["--stable-release-mode"]
-  },
-  {
-    "prefix": "origin-trials-features-disabled",
-    "base": "http/tests/origin_trials/webexposed",
-    "args": ["--disable-blink-features=ForeignFetch,ImageCapture,LinkServiceWorker,LongTaskObserver,ServiceWorkerNavigationPreload,SetRootScroller,WebUSB,WebVR,WebShare",
-             "--disable-features=ForeignFetch,ImageCapture,LinkServiceWorker,LongTaskObserver,ServiceWorkerNavigationPreload,SetRootScroller,WebUSB,WebVR,WebShare"]
+    "args": ["--disable-blink-features=ForeignFetch,ImageCapture,LinkServiceWorker,LongTaskObserver,ServiceWorkerNavigationPreload,SetRootScroller,WebUSB,WebVR,WebShare"]
   },
   {
     "prefix": "android",
