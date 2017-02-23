@@ -3033,11 +3033,11 @@
     ]
   },
 
-  "LoginApps": {
+  "DeviceLoginScreenAppInstallList": {
     "os": ["chromeos"],
-    "test_policy": { "LoginApps": [ "abcdefghijklmnopabcdefghijklmnop" ] },
+    "test_policy": { "DeviceLoginScreenAppInstallList": [ "abcdefghijklmnopabcdefghijklmnop" ] },
     "pref_mappings": [
-      { "pref": "cros.device.login_apps" }
+      { "pref": "cros.device.login_screen_app_install_list" }
     ]
   },
 

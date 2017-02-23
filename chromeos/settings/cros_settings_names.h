@@ -112,7 +112,7 @@ CHROMEOS_EXPORT extern const char kDeviceQuirksDownloadEnabled[];
 
 CHROMEOS_EXPORT extern const char kLoginVideoCaptureAllowedUrls[];
 
-CHROMEOS_EXPORT extern const char kLoginApps[];
+CHROMEOS_EXPORT extern const char kDeviceLoginScreenAppInstallList[];
 
 CHROMEOS_EXPORT extern const char kDeviceWallpaperImage[];
 

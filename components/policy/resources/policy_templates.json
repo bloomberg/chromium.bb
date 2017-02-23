@@ -8983,13 +8983,14 @@
       allowed.'''
     },
     {
-      'name': 'LoginApps',
+      'name': 'DeviceLoginScreenAppInstallList',
       'type': 'list',
       'schema': {
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome_os:54-'],
+      'supported_on': ['chrome_os:58-'],
+      'future': True,
       'device_only': True,
       'features': {
         'dynamic_refresh': True,

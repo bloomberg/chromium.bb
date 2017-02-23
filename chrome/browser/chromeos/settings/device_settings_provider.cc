@@ -63,6 +63,7 @@ const char* const kKnownSettings[] = {
     kDeviceAttestationEnabled,
     kDeviceDisabled,
     kDeviceDisabledMessage,
+    kDeviceLoginScreenAppInstallList,
     kDeviceOwner,
     kDeviceQuirksDownloadEnabled,
     kDeviceWallpaperImage,
@@ -70,7 +71,6 @@ const char* const kKnownSettings[] = {
     kExtensionCacheSize,
     kHeartbeatEnabled,
     kHeartbeatFrequency,
-    kLoginApps,
     kLoginAuthenticationBehavior,
     kLoginVideoCaptureAllowedUrls,
     kPolicyMissingMitigationMode,
@@ -310,12 +310,14 @@ void DecodeLoginPolicies(
     new_values_cache->SetValue(kLoginVideoCaptureAllowedUrls, std::move(list));
   }
 
-  if (policy.has_login_apps()) {
-    std::unique_ptr<base::ListValue> login_apps(new base::ListValue);
-    const em::LoginAppsProto& login_apps_proto(policy.login_apps());
-    for (const auto& login_app : login_apps_proto.login_apps())
-      login_apps->AppendString(login_app);
-    new_values_cache->SetValue(kLoginApps, std::move(login_apps));
+  if (policy.has_device_login_screen_app_install_list()) {
+    std::unique_ptr<base::ListValue> apps(new base::ListValue);
+    const em::DeviceLoginScreenAppInstallListProto& proto(
+        policy.device_login_screen_app_install_list());
+    for (const auto& app : proto.device_login_screen_app_install_list())
+      apps->AppendString(app);
+    new_values_cache->SetValue(kDeviceLoginScreenAppInstallList,
+                               std::move(apps));
   }
 
   if (policy.has_login_screen_locales()) {

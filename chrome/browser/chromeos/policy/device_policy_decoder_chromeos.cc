@@ -329,13 +329,15 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                   nullptr);
   }
 
-  if (policy.has_login_apps()) {
-    const em::LoginAppsProto& login_apps_proto(policy.login_apps());
-    std::unique_ptr<base::ListValue> login_apps(new base::ListValue);
-    for (const auto& login_app : login_apps_proto.login_apps())
-      login_apps->AppendString(login_app);
-    policies->Set(key::kLoginApps, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                  POLICY_SOURCE_CLOUD, std::move(login_apps), nullptr);
+  if (policy.has_device_login_screen_app_install_list()) {
+    const em::DeviceLoginScreenAppInstallListProto& proto(
+        policy.device_login_screen_app_install_list());
+    std::unique_ptr<base::ListValue> apps(new base::ListValue);
+    for (const auto& app : proto.device_login_screen_app_install_list())
+      apps->AppendString(app);
+    policies->Set(key::kDeviceLoginScreenAppInstallList, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(apps),
+                  nullptr);
   }
 
   if (policy.has_login_screen_power_management()) {

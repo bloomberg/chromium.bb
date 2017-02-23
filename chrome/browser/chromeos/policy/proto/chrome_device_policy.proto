@@ -756,9 +756,11 @@ message NetworkThrottlingEnabledProto {
   optional int32 download_rate_kbits = 3 [default = 0];
 }
 
-// A list of app-ids to install from the webstore on the login page.
-message LoginAppsProto {
-  repeated string login_apps = 1;
+// A list of apps to install from the webstore on the login page. It is a list
+// of strings, each string contains an extension ID and an update URL, delimited
+// by a semicolon.
+message DeviceLoginScreenAppInstallListProto {
+  repeated string device_login_screen_app_install_list = 1;
 }
 
 // A list of allowed locales on the login screen.
@@ -829,7 +831,8 @@ message ChromeDeviceSettingsProto {
   optional DeviceQuirksDownloadEnabledProto quirks_download_enabled = 44;
   optional LoginVideoCaptureAllowedUrlsProto login_video_capture_allowed_urls =
       45;
-  optional LoginAppsProto login_apps = 46;
+  optional DeviceLoginScreenAppInstallListProto
+      device_login_screen_app_install_list = 46;
   optional NetworkThrottlingEnabledProto network_throttling = 47;
   optional DeviceWallpaperImageProto device_wallpaper_image = 48;
   optional LoginScreenLocalesProto login_screen_locales = 49;
