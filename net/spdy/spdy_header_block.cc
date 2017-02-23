@@ -28,6 +28,14 @@ using std::string;
 namespace net {
 namespace {
 
+// By default, linked_hash_map's internal map allocates space for 100 map
+// buckets on construction, which is larger than necessary.  Standard library
+// unordered map implementations use a list of prime numbers to set the bucket
+// count for a particular capacity.  |kInitialMapBuckets| is chosen to reduce
+// memory usage for small header blocks, at the cost of having to rehash for
+// large header blocks.
+const size_t kInitialMapBuckets = 11;
+
 // SpdyHeaderBlock::Storage allocates blocks of this size by default.
 const size_t kDefaultStorageBlockSize = 2048;
 
@@ -97,6 +105,8 @@ class SpdyHeaderBlock::Storage {
 
  private:
   UnsafeArena arena_;
+
+  DISALLOW_COPY_AND_ASSIGN(Storage);
 };
 
 SpdyHeaderBlock::HeaderValue::HeaderValue(Storage* storage,
@@ -212,12 +222,9 @@ string SpdyHeaderBlock::ValueProxy::as_string() const {
   }
 }
 
-SpdyHeaderBlock::SpdyHeaderBlock() {}
+SpdyHeaderBlock::SpdyHeaderBlock() : block_(kInitialMapBuckets) {}
 
-SpdyHeaderBlock::SpdyHeaderBlock(SpdyHeaderBlock&& other) {
-  block_.swap(other.block_);
-  storage_.swap(other.storage_);
-}
+SpdyHeaderBlock::SpdyHeaderBlock(SpdyHeaderBlock&& other) = default;
 
 SpdyHeaderBlock::~SpdyHeaderBlock() {}
 
@@ -247,6 +254,7 @@ string SpdyHeaderBlock::DebugString() const {
   if (empty()) {
     return "{}";
   }
+
   string output = "\n{\n";
   for (auto it = begin(); it != end(); ++it) {
     output +=
