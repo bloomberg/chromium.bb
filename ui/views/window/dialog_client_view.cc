@@ -93,32 +93,7 @@ void DialogClientView::CancelWindow() {
 }
 
 void DialogClientView::UpdateDialogButtons() {
-  const int buttons = GetDialogDelegate()->GetDialogButtons();
-
-  if (buttons & ui::DIALOG_BUTTON_OK) {
-    if (!ok_button_) {
-      ok_button_ = CreateDialogButton(ui::DIALOG_BUTTON_OK);
-      AddChildView(ok_button_);
-    }
-
-    GetDialogDelegate()->UpdateButton(ok_button_, ui::DIALOG_BUTTON_OK);
-  } else if (ok_button_) {
-    delete ok_button_;
-    ok_button_ = nullptr;
-  }
-
-  if (buttons & ui::DIALOG_BUTTON_CANCEL) {
-    if (!cancel_button_) {
-      cancel_button_ = CreateDialogButton(ui::DIALOG_BUTTON_CANCEL);
-      AddChildView(cancel_button_);
-    }
-
-    GetDialogDelegate()->UpdateButton(cancel_button_, ui::DIALOG_BUTTON_CANCEL);
-  } else if (cancel_button_) {
-    delete cancel_button_;
-    cancel_button_ = nullptr;
-  }
-
+  SetupViews();
   SetupFocusChain();
 }
 
@@ -146,10 +121,6 @@ const DialogClientView* DialogClientView::AsDialogClientView() const {
 
 gfx::Size DialogClientView::GetPreferredSize() const {
   // Initialize the size to fit the buttons and extra view row.
-  int extra_view_padding = 0;
-  if (!GetDialogDelegate()->GetExtraViewPadding(&extra_view_padding))
-    extra_view_padding =
-        ViewsDelegate::GetInstance()->GetDialogRelatedButtonHorizontalSpacing();
   gfx::Size size(
       (ok_button_ ? ok_button_->GetPreferredSize().width() : 0) +
           (cancel_button_ ? cancel_button_->GetPreferredSize().width() : 0) +
@@ -159,8 +130,7 @@ gfx::Size DialogClientView::GetPreferredSize() const {
                : 0) +
           (ShouldShow(extra_view_) ? extra_view_->GetPreferredSize().width()
                                    : 0) +
-          (ShouldShow(extra_view_) && has_dialog_buttons() ? extra_view_padding
-                                                           : 0),
+          GetExtraViewSpacing(),
       0);
 
   int buttons_height = GetButtonsAndExtraViewRowHeight();
@@ -245,16 +215,23 @@ bool DialogClientView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 void DialogClientView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
+  View* const child = details.child;
+
+  // Dialogs must add children to contents_view(), not client_view().
+  if (details.is_add && details.parent == this) {
+    DCHECK(child == contents_view() || child == ok_button_ ||
+           child == cancel_button_ || child == extra_view_);
+  }
+
   ClientView::ViewHierarchyChanged(details);
-  if (details.is_add && details.child == this) {
+  if (details.is_add && child == this) {
     UpdateDialogButtons();
-    CreateExtraView();
-  } else if (!details.is_add && details.child != this) {
-    if (details.child == ok_button_)
+  } else if (!details.is_add) {
+    if (child == ok_button_)
       ok_button_ = nullptr;
-    else if (details.child == cancel_button_)
+    else if (child == cancel_button_)
       cancel_button_ = nullptr;
-    else if (details.child == extra_view_)
+    else if (child == extra_view_)
       extra_view_ = nullptr;
   }
 }
@@ -287,29 +264,10 @@ void DialogClientView::ButtonPressed(Button* sender, const ui::Event& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DialogClientView, protected:
-
-DialogClientView::DialogClientView(View* contents_view)
-    : ClientView(nullptr, contents_view),
-      ok_button_(nullptr),
-      cancel_button_(nullptr),
-      extra_view_(nullptr),
-      delegate_allowed_close_(false) {}
+// DialogClientView, private:
 
 DialogDelegate* DialogClientView::GetDialogDelegate() const {
   return GetWidget()->widget_delegate()->AsDialogDelegate();
-}
-
-void DialogClientView::CreateExtraView() {
-  if (extra_view_)
-    return;
-
-  extra_view_ = GetDialogDelegate()->CreateExtraView();
-  if (extra_view_) {
-    extra_view_->SetGroup(kButtonGroup);
-    AddChildView(extra_view_);
-    SetupFocusChain();
-  }
 }
 
 void DialogClientView::ChildPreferredSizeChanged(View* child) {
@@ -320,9 +278,6 @@ void DialogClientView::ChildPreferredSizeChanged(View* child) {
 void DialogClientView::ChildVisibilityChanged(View* child) {
   ChildPreferredSizeChanged(child);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// DialogClientView, private:
 
 LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   const base::string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
@@ -404,6 +359,55 @@ void DialogClientView::SetupFocusChain() {
   // since child views may be added externally to this view.
   for (size_t i = 0; i < child_views.size(); i++)
     ReorderChildView(child_views[i], i);
+}
+
+int DialogClientView::GetExtraViewSpacing() const {
+  if (!ShouldShow(extra_view_) || !has_dialog_buttons())
+    return 0;
+
+  int extra_view_padding = 0;
+  if (GetDialogDelegate()->GetExtraViewPadding(&extra_view_padding))
+    return extra_view_padding;
+
+  return ViewsDelegate::GetInstance()
+      ->GetDialogRelatedButtonHorizontalSpacing();
+}
+
+void DialogClientView::SetupViews() {
+  const int buttons = GetDialogDelegate()->GetDialogButtons();
+
+  if (buttons & ui::DIALOG_BUTTON_OK) {
+    if (!ok_button_) {
+      ok_button_ = CreateDialogButton(ui::DIALOG_BUTTON_OK);
+      AddChildView(ok_button_);
+    }
+
+    GetDialogDelegate()->UpdateButton(ok_button_, ui::DIALOG_BUTTON_OK);
+  } else if (ok_button_) {
+    delete ok_button_;
+    ok_button_ = nullptr;
+  }
+
+  if (buttons & ui::DIALOG_BUTTON_CANCEL) {
+    if (!cancel_button_) {
+      cancel_button_ = CreateDialogButton(ui::DIALOG_BUTTON_CANCEL);
+      AddChildView(cancel_button_);
+    }
+
+    GetDialogDelegate()->UpdateButton(cancel_button_, ui::DIALOG_BUTTON_CANCEL);
+  } else if (cancel_button_) {
+    delete cancel_button_;
+    cancel_button_ = nullptr;
+  }
+
+  if (extra_view_)
+    return;
+
+  extra_view_ = GetDialogDelegate()->CreateExtraView();
+  if (extra_view_) {
+    extra_view_->SetGroup(kButtonGroup);
+    AddChildView(extra_view_);
+  }
 }
 
 }  // namespace views

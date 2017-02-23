@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/window/dialog_client_view.h"
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -9,64 +11,57 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/test_views.h"
-#include "ui/views/test/views_test_base.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
 
-class TestDialogClientView : public DialogClientView {
- public:
-  explicit TestDialogClientView(DialogDelegateView* dialog_delegate_view)
-      : DialogClientView(dialog_delegate_view),
-        dialog_delegate_view_(dialog_delegate_view) {}
-  ~TestDialogClientView() override {}
-
-  // DialogClientView implementation.
-  DialogDelegate* GetDialogDelegate() const override {
-    return dialog_delegate_view_;
-  }
-
-  View* GetContentsView() { return contents_view(); }
-
-  void CreateExtraViews() {
-    CreateExtraView();
-  }
-
- private:
-  DialogDelegateView* dialog_delegate_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDialogClientView);
-};
-
 // Base class for tests. Also acts as the dialog delegate and contents view for
 // TestDialogClientView.
-class DialogClientViewTest : public ViewsTestBase,
+class DialogClientViewTest : public test::WidgetTest,
                              public DialogDelegateView {
  public:
-  DialogClientViewTest()
-      : dialog_buttons_(ui::DIALOG_BUTTON_NONE),
-        extra_view_(nullptr) {}
-  ~DialogClientViewTest() override {}
+  DialogClientViewTest() {}
 
-  // testing::Test implementation.
+  // testing::Test:
   void SetUp() override {
-    dialog_buttons_ = ui::DIALOG_BUTTON_NONE;
-    client_view_.reset(new TestDialogClientView(this));
-    // Add this (i.e. the contents view) as a child of |client_view_|. This is
-    // generally done when the client view is added to the view hierarchy.
-    client_view_->AddChildViewAt(this, 0);
-    ViewsTestBase::SetUp();
+    WidgetTest::SetUp();
+
+    // Note: not using DialogDelegate::CreateDialogWidget(..), since that can
+    // alter the frame type according to the platform.
+    widget_ = new views::Widget;
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    params.delegate = this;
+    widget_->Init(params);
+    EXPECT_EQ(this, GetContentsView());
   }
 
-  // DialogDelegateView implementation.
-  View* CreateExtraView() override { return extra_view_; }
+  void TearDown() override {
+    widget_->CloseNow();
+    WidgetTest::TearDown();
+  }
+
+  // DialogDelegateView:
+  ClientView* CreateClientView(Widget* widget) override {
+    client_view_ = new DialogClientView(widget, this);
+    return client_view_;
+  }
+
+  bool ShouldUseCustomFrame() const override { return false; }
+
+  void DeleteDelegate() override {
+    // DialogDelegateView would delete this, but |this| is owned by the test.
+  }
+
+  View* CreateExtraView() override { return next_extra_view_.release(); }
+
   bool GetExtraViewPadding(int* padding) override {
     if (extra_view_padding_)
       *padding = *extra_view_padding_;
     return extra_view_padding_.get() != nullptr;
   }
+
   int GetDialogButtons() const override { return dialog_buttons_; }
 
  protected:
@@ -83,8 +78,8 @@ class DialogClientViewTest : public ViewsTestBase,
     const gfx::Size preferred_size = this->GetPreferredSize();
     EXPECT_EQ(preferred_size.height(), this->bounds().height());
     EXPECT_LE(preferred_size.width(), this->bounds().width());
-    EXPECT_EQ(this->origin(), client_bounds.origin());
-    EXPECT_EQ(this->bounds().right(), client_bounds.right());
+    EXPECT_EQ(gfx::Point(), this->origin());
+    EXPECT_EQ(client_bounds.width(), this->width());
   }
 
   // Sets the buttons to show in the dialog and refreshes the dialog.
@@ -93,11 +88,14 @@ class DialogClientViewTest : public ViewsTestBase,
     client_view_->UpdateDialogButtons();
   }
 
-  // Sets the extra view.
+  // Sets the view to provide to CreateExtraView() and updates the dialog. This
+  // can only be called a single time because DialogClientView caches the result
+  // of CreateExtraView() and never calls it again.
   void SetExtraView(View* view) {
-    DCHECK(!extra_view_);
-    extra_view_ = view;
-    client_view_->CreateExtraViews();
+    EXPECT_FALSE(next_extra_view_);
+    next_extra_view_ = base::WrapUnique(view);
+    client_view_->UpdateDialogButtons();
+    EXPECT_FALSE(next_extra_view_);
   }
 
   // Sets the extra view padding.
@@ -107,15 +105,29 @@ class DialogClientViewTest : public ViewsTestBase,
     client_view_->Layout();
   }
 
-  TestDialogClientView* client_view() { return client_view_.get(); }
+  View* FocusableViewAfter(View* view) {
+    const bool dont_loop = false;
+    const bool reverse = false;
+    return GetFocusManager()->GetNextFocusableView(view, GetWidget(), reverse,
+                                                   dont_loop);
+  }
+
+  DialogClientView* client_view() { return client_view_; }
 
  private:
-  // The DialogClientView that's being tested.
-  std::unique_ptr<TestDialogClientView> client_view_;
+  // The dialog Widget.
+  Widget* widget_ = nullptr;
+
+  // The DialogClientView that's being tested. Owned by |widget_|.
+  DialogClientView* client_view_;
+
   // The bitmask of buttons to show in the dialog.
-  int dialog_buttons_;
-  View* extra_view_;  // weak
-  std::unique_ptr<int> extra_view_padding_;  // Null by default.
+  int dialog_buttons_ = ui::DIALOG_BUTTON_NONE;
+
+  // Set and cleared in SetExtraView().
+  std::unique_ptr<View> next_extra_view_;
+
+  std::unique_ptr<int> extra_view_padding_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientViewTest);
 };
@@ -177,20 +189,20 @@ TEST_F(DialogClientViewTest, SetupFocusChain) {
 #endif
 
   // Initially the dialog client view only contains the content view.
-  EXPECT_EQ(nullptr, client_view()->GetContentsView()->GetNextFocusableView());
+  EXPECT_EQ(nullptr, GetContentsView()->GetNextFocusableView());
 
   // Add OK and cancel buttons.
   SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
 
   if (kIsOkButtonOnLeftSide) {
     EXPECT_EQ(client_view()->ok_button(),
-              client_view()->GetContentsView()->GetNextFocusableView());
+              GetContentsView()->GetNextFocusableView());
     EXPECT_EQ(client_view()->cancel_button(),
               client_view()->ok_button()->GetNextFocusableView());
     EXPECT_EQ(nullptr, client_view()->cancel_button()->GetNextFocusableView());
   } else {
     EXPECT_EQ(client_view()->cancel_button(),
-              client_view()->GetContentsView()->GetNextFocusableView());
+              GetContentsView()->GetNextFocusableView());
     EXPECT_EQ(client_view()->ok_button(),
               client_view()->cancel_button()->GetNextFocusableView());
     EXPECT_EQ(nullptr, client_view()->ok_button()->GetNextFocusableView());
@@ -198,26 +210,35 @@ TEST_F(DialogClientViewTest, SetupFocusChain) {
 
   // Add extra view and remove OK button.
   View* extra_view = new StaticSizedView(gfx::Size(200, 200));
+  extra_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   SetExtraView(extra_view);
   SetDialogButtons(ui::DIALOG_BUTTON_CANCEL);
 
-  EXPECT_EQ(extra_view,
-            client_view()->GetContentsView()->GetNextFocusableView());
+  EXPECT_EQ(extra_view, GetContentsView()->GetNextFocusableView());
   EXPECT_EQ(client_view()->cancel_button(), extra_view->GetNextFocusableView());
   EXPECT_EQ(nullptr, client_view()->cancel_button()->GetNextFocusableView());
 
-  // Add a dummy view to the client view.
+  // Add a dummy view to the contents view. Consult the FocusManager for the
+  // traversal order since it now spans different levels of the view hierarchy.
   View* dummy_view = new StaticSizedView(gfx::Size(200, 200));
-  client_view()->AddChildView(dummy_view);
-  EXPECT_EQ(dummy_view, client_view()->cancel_button()->GetNextFocusableView());
+  dummy_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  GetContentsView()->AddChildView(dummy_view);
+  EXPECT_EQ(dummy_view, FocusableViewAfter(client_view()->cancel_button()));
+  EXPECT_EQ(extra_view, FocusableViewAfter(dummy_view));
+  EXPECT_EQ(client_view()->cancel_button(), FocusableViewAfter(extra_view));
+
+  // Views are added to the contents view, not the client view, so the focus
+  // chain within the client view is not affected.
+  EXPECT_EQ(nullptr, client_view()->cancel_button()->GetNextFocusableView());
 }
 
 // Test that the contents view gets its preferred size in the basic dialog
 // configuration.
 TEST_F(DialogClientViewTest, ContentsSize) {
   CheckContentsIsSetToPreferredSize();
-  EXPECT_EQ(GetContentsView()->bounds().bottom(),
-            client_view()->bounds().bottom());
+  EXPECT_EQ(GetContentsView()->size(), client_view()->size());
+  // There's nothing in the contents view (i.e. |this|), so it should be 0x0.
+  EXPECT_EQ(gfx::Size(), client_view()->size());
 }
 
 // Test the effect of the button strip on layout.

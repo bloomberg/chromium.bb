@@ -66,22 +66,15 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   void set_minimum_size(const gfx::Size& size) { minimum_size_ = size; }
 
- protected:
-  // For testing.
-  explicit DialogClientView(View* contents_view);
+ private:
+  bool has_dialog_buttons() const { return ok_button_ || cancel_button_; }
 
-  // Returns the DialogDelegate for the window. Virtual for testing.
-  virtual DialogDelegate* GetDialogDelegate() const;
-
-  // Create and add the extra view, if supplied by the delegate.
-  void CreateExtraView();
+  // Returns the DialogDelegate for the window.
+  DialogDelegate* GetDialogDelegate() const;
 
   // View implementation.
   void ChildPreferredSizeChanged(View* child) override;
   void ChildVisibilityChanged(View* child) override;
-
- private:
-  bool has_dialog_buttons() const { return ok_button_ || cancel_button_; }
 
   // Create a dialog button of the appropriate type.
   LabelButton* CreateDialogButton(ui::DialogButton type);
@@ -105,6 +98,13 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Sets up the focus chain for the child views. This is required since the
   // delegate may choose to add/remove views at any time.
   void SetupFocusChain();
+
+  // Returns the spacing between the extra view and the ok/cancel buttons. 0 if
+  // no extra view. Otherwise uses GetExtraViewPadding() or the default padding.
+  int GetExtraViewSpacing() const;
+
+  // Creates or deletes any buttons that are required. Updates data members.
+  void SetupViews();
 
   // How much to inset the button row.
   gfx::Insets button_row_insets_;
