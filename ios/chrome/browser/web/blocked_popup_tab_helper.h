@@ -14,6 +14,10 @@
 #import "ios/web/public/web_state/web_state_user_data.h"
 #include "ios/web/web_state/blocked_popup_info.h"
 
+namespace ios {
+class ChromeBrowserState;
+}  // namespace ios
+
 // Handles blocked popups. Will display an infobar informing the user and
 // allowing the user to add an exception and navigate to the site.
 class BlockedPopupTabHelper
@@ -22,6 +26,10 @@ class BlockedPopupTabHelper
  public:
   explicit BlockedPopupTabHelper(web::WebState* web_state);
   ~BlockedPopupTabHelper() override;
+
+  // Returns true if popup requested by the page with the given |source_url|
+  // should be blocked.
+  bool ShouldBlockPopup(const GURL& source_url);
 
   // Shows the popup blocker infobar for the given popup.
   void HandlePopup(const web::BlockedPopupInfo& blocked_popup_info);
@@ -37,6 +45,9 @@ class BlockedPopupTabHelper
   // Shows the infobar for the current popups. Will also handle replacing an
   // existing infobar with the updated count.
   void ShowInfoBar();
+
+  // Returns BrowserState for the WebState that this object is attached to.
+  ios::ChromeBrowserState* GetBrowserState() const;
 
   // Registers this object as an observer for the InfoBarManager associated with
   // |web_state_|.  Does nothing if already registered.

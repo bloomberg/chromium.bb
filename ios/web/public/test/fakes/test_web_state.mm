@@ -20,7 +20,8 @@ void TestWebState::RemoveObserver(WebStateObserver* observer) {
 }
 
 TestWebState::TestWebState()
-    : web_usage_enabled_(false),
+    : browser_state_(nullptr),
+      web_usage_enabled_(false),
       is_loading_(false),
       trust_level_(kAbsolute),
       content_is_html_(true) {}
@@ -39,7 +40,7 @@ WebStateDelegate* TestWebState::GetDelegate() {
 void TestWebState::SetDelegate(WebStateDelegate* delegate) {}
 
 BrowserState* TestWebState::GetBrowserState() const {
-  return nullptr;
+  return browser_state_;
 }
 
 bool TestWebState::IsWebUsageEnabled() const {
@@ -123,6 +124,10 @@ bool TestWebState::IsShowingWebInterstitial() const {
 
 WebInterstitial* TestWebState::GetWebInterstitial() const {
   return nullptr;
+}
+
+void TestWebState::SetBrowserState(BrowserState* browser_state) {
+  browser_state_ = browser_state;
 }
 
 void TestWebState::SetContentIsHTML(bool content_is_html) {

@@ -27,7 +27,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "components/google/core/browser/google_util.h"
@@ -58,7 +57,6 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/crash_loop_detection_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -372,9 +370,6 @@ enum class RendererTerminationTabState {
 
 // Called when the UIApplication's state becomes active.
 - (void)applicationDidBecomeActive;
-
-// Returns YES if popups requested by a page with |URL| should be blocked.
-- (BOOL)shouldBlockPopupForPageWithURL:(const GURL&)URL;
 
 // Blocks popup for page with |popupURL|, requested by the page with
 // |openerURL|.
@@ -1478,14 +1473,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   }
 }
 
-- (BOOL)shouldBlockPopupForPageWithURL:(const GURL&)URL {
-  HostContentSettingsMap* settingMap =
-      ios::HostContentSettingsMapFactory::GetForBrowserState(browserState_);
-  ContentSetting setting = settingMap->GetContentSetting(
-      URL, URL, CONTENT_SETTINGS_TYPE_POPUPS, std::string());
-  return setting != CONTENT_SETTING_ALLOW;
-}
-
 - (void)blockPopupForURL:(const GURL&)popupURL
                openerURL:(const GURL&)openerURL {
   web::NavigationItem* item = [self navigationManager]->GetLastCommittedItem();
@@ -1998,12 +1985,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
          createWebControllerForURL:(const GURL&)URL
                          openerURL:(const GURL&)openerURL
                    initiatedByUser:(BOOL)initiatedByUser {
-  BOOL shouldBlockPopUp =
-      !initiatedByUser && [self shouldBlockPopupForPageWithURL:openerURL];
-
-  if (shouldBlockPopUp) {
-    [self blockPopupForURL:URL openerURL:openerURL];
-    return nil;
+  if (!initiatedByUser) {
+    auto helper = BlockedPopupTabHelper::FromWebState(webController.webState);
+    if (helper->ShouldBlockPopup(openerURL)) {
+      [self blockPopupForURL:URL openerURL:openerURL];
+      return nil;
+    }
   }
 
   [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];

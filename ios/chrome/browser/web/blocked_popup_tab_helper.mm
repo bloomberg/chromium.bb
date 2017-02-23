@@ -94,6 +94,14 @@ BlockedPopupTabHelper::BlockedPopupTabHelper(web::WebState* web_state)
 
 BlockedPopupTabHelper::~BlockedPopupTabHelper() = default;
 
+bool BlockedPopupTabHelper::ShouldBlockPopup(const GURL& source_url) {
+  HostContentSettingsMap* settings_map =
+      ios::HostContentSettingsMapFactory::GetForBrowserState(GetBrowserState());
+  ContentSetting setting = settings_map->GetContentSetting(
+      source_url, source_url, CONTENT_SETTINGS_TYPE_POPUPS, std::string());
+  return setting != CONTENT_SETTING_ALLOW;
+}
+
 void BlockedPopupTabHelper::HandlePopup(
     const web::BlockedPopupInfo& blocked_popup_info) {
   popups_.push_back(blocked_popup_info);
@@ -122,16 +130,20 @@ void BlockedPopupTabHelper::ShowInfoBar() {
 
   RegisterAsInfoBarManagerObserverIfNeeded(infobar_manager);
 
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  std::unique_ptr<BlockPopupInfoBarDelegate> delegate(
+      base::MakeUnique<BlockPopupInfoBarDelegate>(GetBrowserState(), popups_));
   std::unique_ptr<infobars::InfoBar> infobar =
-      infobar_manager->CreateConfirmInfoBar(
-          base::MakeUnique<BlockPopupInfoBarDelegate>(browser_state, popups_));
+      infobar_manager->CreateConfirmInfoBar(std::move(delegate));
   if (infobar_) {
     infobar_ = infobar_manager->ReplaceInfoBar(infobar_, std::move(infobar));
   } else {
     infobar_ = infobar_manager->AddInfoBar(std::move(infobar));
   }
+}
+
+ios::ChromeBrowserState* BlockedPopupTabHelper::GetBrowserState() const {
+  return ios::ChromeBrowserState::FromBrowserState(
+      web_state_->GetBrowserState());
 }
 
 void BlockedPopupTabHelper::RegisterAsInfoBarManagerObserverIfNeeded(

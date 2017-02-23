@@ -74,6 +74,7 @@ class TestWebState : public WebState {
   base::WeakPtr<WebState> AsWeakPtr() override;
 
   // Setters for test data.
+  void SetBrowserState(BrowserState* browser_state);
   void SetContentIsHTML(bool content_is_html);
   void SetLoading(bool is_loading);
   void SetCurrentURL(const GURL& url);
@@ -87,6 +88,7 @@ class TestWebState : public WebState {
   void OnProvisionalNavigationStarted(const GURL& url);
 
  private:
+  BrowserState* browser_state_;
   bool web_usage_enabled_;
   bool is_loading_;
   GURL url_;
