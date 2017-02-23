@@ -108,6 +108,30 @@ GFX_EXPORT SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap,
 // for |lower_bound|, |upper_bound| and |sampler|.
 GFX_EXPORT SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap);
 
+// These enums specify general values to look for when calculating prominent
+// colors from an image. For example, a "light vibrant" prominent color would
+// tend to be brighter and more saturated. The best combination of color
+// attributes depends on how you plan to apply the color.
+enum class LumaRange {
+  LIGHT,
+  NORMAL,
+  DARK,
+};
+
+enum class SaturationRange {
+  VIBRANT,
+  MUTED,
+};
+
+// Returns a single RGB color that represents the bitmap. If a value is
+// succesfully calculated, the return value is fully opaque. For failure, the
+// return value is transparent. This currently calculates one color at a time.
+// We could save computation by calculating multiple colors at once, but there's
+// currently no need to calculate multiple colors.
+GFX_EXPORT SkColor CalculateProminentColorOfBitmap(const SkBitmap& bitmap,
+                                                   LumaRange luma,
+                                                   SaturationRange saturation);
+
 // Compute color covariance matrix for the input bitmap.
 GFX_EXPORT gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap);
 

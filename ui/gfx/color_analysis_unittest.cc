@@ -499,4 +499,65 @@ TEST_F(ColorAnalysisTest, ComputePrincipalComponentImage) {
   EXPECT_EQ(93U, SkColorGetA(result.getColor(150, 0)));
 }
 
+TEST_F(ColorAnalysisTest, ComputeProminentColor) {
+  struct {
+    LumaRange luma;
+    SaturationRange saturation;
+  } color_profiles[] = {{LumaRange::DARK, SaturationRange::VIBRANT},
+                        {LumaRange::NORMAL, SaturationRange::VIBRANT},
+                        {LumaRange::LIGHT, SaturationRange::VIBRANT},
+                        {LumaRange::DARK, SaturationRange::MUTED},
+                        {LumaRange::NORMAL, SaturationRange::MUTED},
+                        {LumaRange::LIGHT, SaturationRange::MUTED}};
+
+  // A totally dark gray image, which yields no prominent color as it's too
+  // close to black.
+  gfx::Canvas canvas(gfx::Size(300, 200), 1.0f, true);
+  canvas.FillRect(gfx::Rect(0, 0, 300, 200), SkColorSetRGB(10, 10, 10));
+  SkBitmap bitmap = skia::ReadPixels(canvas.sk_canvas());
+
+  // All expectations start at SK_ColorTRANSPARENT (i.e. 0).
+  SkColor expectations[arraysize(color_profiles)] = {};
+  for (size_t i = 0; i < arraysize(color_profiles); ++i) {
+    EXPECT_EQ(expectations[i],
+              CalculateProminentColorOfBitmap(bitmap, color_profiles[i].luma,
+                                              color_profiles[i].saturation));
+  }
+
+  // Add a green that could hit a couple values.
+  const SkColor kVibrantGreen = SkColorSetRGB(25, 200, 25);
+  canvas.FillRect(gfx::Rect(0, 1, 300, 1), kVibrantGreen);
+  bitmap = skia::ReadPixels(canvas.sk_canvas());
+  expectations[0] = kVibrantGreen;
+  expectations[1] = kVibrantGreen;
+  for (size_t i = 0; i < arraysize(color_profiles); ++i) {
+    EXPECT_EQ(expectations[i],
+              CalculateProminentColorOfBitmap(bitmap, color_profiles[i].luma,
+                                              color_profiles[i].saturation));
+  }
+
+  // Add a stripe of a dark, muted green (saturation .33, luma .29).
+  const SkColor kDarkGreen = SkColorSetRGB(50, 100, 50);
+  canvas.FillRect(gfx::Rect(0, 2, 300, 1), kDarkGreen);
+  bitmap = skia::ReadPixels(canvas.sk_canvas());
+  expectations[3] = kDarkGreen;
+  for (size_t i = 0; i < arraysize(color_profiles); ++i) {
+    EXPECT_EQ(expectations[i],
+              CalculateProminentColorOfBitmap(bitmap, color_profiles[i].luma,
+                                              color_profiles[i].saturation));
+  }
+
+  // Now draw a little bit of pure green. That should be closer to the goal for
+  // normal vibrant, but is out of range for other color profiles.
+  const SkColor kPureGreen = SkColorSetRGB(0, 255, 0);
+  canvas.FillRect(gfx::Rect(0, 3, 300, 1), kPureGreen);
+  bitmap = skia::ReadPixels(canvas.sk_canvas());
+  expectations[1] = kPureGreen;
+  for (size_t i = 0; i < arraysize(color_profiles); ++i) {
+    EXPECT_EQ(expectations[i],
+              CalculateProminentColorOfBitmap(bitmap, color_profiles[i].luma,
+                                              color_profiles[i].saturation));
+  }
+}
+
 }  // namespace color_utils

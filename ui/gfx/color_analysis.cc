@@ -8,15 +8,20 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
+#include <map>
 #include <memory>
+#include <queue>
 #include <vector>
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/range/range.h"
 
 namespace color_utils {
 namespace {
@@ -141,6 +146,308 @@ void UnPreMultiply(const SkBitmap& bitmap, uint32_t* buffer, int buffer_size) {
   int pixel_count = std::min(bitmap.width() * bitmap.height(), buffer_size);
   for (int i = 0; i < pixel_count; ++i)
     *out++ = SkUnPreMultiply::PMColorToColor(*in++);
+}
+
+// Prominent color utilities ---------------------------------------------------
+
+// A color value with an associated weight.
+struct WeightedColor {
+  WeightedColor(SkColor color, uint64_t weight)
+      : color(color), weight(weight) {}
+
+  SkColor color;
+
+  // The weight correlates to a count, so it should be 1 or greater.
+  uint64_t weight;
+};
+
+// A |ColorBox| represents a 3-dimensional region in a color space (an ordered
+// set of colors). It is a range in the ordered set, with a low index and a high
+// index. The diversity (volume) of the box is computed by looking at the range
+// of color values it spans, where r, g, and b components are considered
+// separately.
+class ColorBox {
+ public:
+  explicit ColorBox(std::vector<SkColor>* color_space)
+      : ColorBox(color_space, gfx::Range(0, color_space->size())) {}
+  ColorBox(const ColorBox& other) = default;
+  ColorBox& operator=(const ColorBox& other) = default;
+  ~ColorBox() {}
+
+  // Can't split if there's only one color in the box.
+  bool CanSplit() const { return color_range_.length() > 1; }
+
+  // Splits |this| in two and returns the other half.
+  ColorBox Split() {
+    // Calculate which component has the largest range...
+    const uint8_t r_dimension = max_r_ - min_r_;
+    const uint8_t g_dimension = max_g_ - min_g_;
+    const uint8_t b_dimension = max_b_ - min_b_;
+    const uint8_t long_dimension =
+        std::max({r_dimension, g_dimension, b_dimension});
+    const enum {
+      RED,
+      GREEN,
+      BLUE,
+    } channel = long_dimension == r_dimension
+                    ? RED
+                    : long_dimension == g_dimension ? GREEN : BLUE;
+
+    // ... and sort along that axis.
+    auto sort_function = [channel](SkColor a, SkColor b) {
+      switch (channel) {
+        case RED:
+          return SkColorGetR(a) < SkColorGetR(b);
+        case GREEN:
+          return SkColorGetG(a) < SkColorGetG(b);
+        case BLUE:
+          return SkColorGetB(a) < SkColorGetB(b);
+      }
+      NOTREACHED();
+      return SkColorGetB(a) < SkColorGetB(b);
+    };
+    // Just the portion of |color_space_| that's covered by this box should be
+    // sorted.
+    std::sort(color_space_->begin() + color_range_.start(),
+              color_space_->begin() + color_range_.end(), sort_function);
+
+    // Split at the first color value that's not less than the midpoint (mean of
+    // the start and values).
+    uint32_t split_point = color_range_.end() - 1;
+    for (uint32_t i = color_range_.start() + 1; i < color_range_.end() - 1;
+         ++i) {
+      bool past_midpoint = false;
+      switch (channel) {
+        case RED:
+          past_midpoint =
+              static_cast<uint8_t>(SkColorGetR((*color_space_)[i])) >
+              (min_r_ + max_r_) / 2;
+          break;
+        case GREEN:
+          past_midpoint =
+              static_cast<uint8_t>(SkColorGetG((*color_space_)[i])) >
+              (min_g_ + max_g_) / 2;
+          break;
+        case BLUE:
+          past_midpoint =
+              static_cast<uint8_t>(SkColorGetB((*color_space_)[i])) >
+              (min_b_ + max_b_) / 2;
+          break;
+      }
+      if (past_midpoint) {
+        split_point = i;
+        break;
+      }
+    }
+
+    // Break off half and return it.
+    gfx::Range other_range = color_range_;
+    other_range.set_end(split_point);
+    ColorBox other_box(color_space_, other_range);
+
+    // Keep the other half in |this| and recalculate our color bounds.
+    color_range_.set_start(split_point);
+    RecomputeBounds();
+    return other_box;
+  }
+
+  // Returns the average color of this box, weighted by its popularity in
+  // |color_counts|.
+  WeightedColor GetWeightedAverageColor(
+      const std::map<SkColor, int>& color_counts) const {
+    uint64_t sum_r = 0;
+    uint64_t sum_g = 0;
+    uint64_t sum_b = 0;
+    uint64_t total_count_in_box = 0;
+
+    for (uint32_t i = color_range_.start(); i < color_range_.end(); ++i) {
+      const SkColor color = (*color_space_)[i];
+      const auto color_count_iter = color_counts.find(color);
+      DCHECK(color_count_iter != color_counts.end());
+      const int color_count = color_count_iter->second;
+
+      total_count_in_box += color_count;
+      sum_r += color_count * SkColorGetR(color);
+      sum_g += color_count * SkColorGetG(color);
+      sum_b += color_count * SkColorGetB(color);
+    }
+
+    return WeightedColor(
+        SkColorSetRGB(
+            std::round(static_cast<double>(sum_r) / total_count_in_box),
+            std::round(static_cast<double>(sum_g) / total_count_in_box),
+            std::round(static_cast<double>(sum_b) / total_count_in_box)),
+        total_count_in_box);
+  }
+
+  static bool CompareByVolume(const ColorBox& a, const ColorBox& b) {
+    return a.volume_ < b.volume_;
+  }
+
+ private:
+  ColorBox(std::vector<SkColor>* color_space, const gfx::Range& color_range)
+      : color_space_(color_space), color_range_(color_range) {
+    RecomputeBounds();
+  }
+
+  void RecomputeBounds() {
+    DCHECK(!color_range_.is_reversed());
+    DCHECK(!color_range_.is_empty());
+    DCHECK_LE(color_range_.end(), color_space_->size());
+
+    min_r_ = 0xFF;
+    min_g_ = 0xFF;
+    min_b_ = 0xFF;
+    max_r_ = 0;
+    max_g_ = 0;
+    max_b_ = 0;
+
+    for (uint32_t i = color_range_.start(); i < color_range_.end(); ++i) {
+      SkColor color = (*color_space_)[i];
+      min_r_ = std::min<uint8_t>(SkColorGetR(color), min_r_);
+      min_g_ = std::min<uint8_t>(SkColorGetG(color), min_g_);
+      min_b_ = std::min<uint8_t>(SkColorGetB(color), min_b_);
+      max_r_ = std::max<uint8_t>(SkColorGetR(color), max_r_);
+      max_g_ = std::max<uint8_t>(SkColorGetG(color), max_g_);
+      max_b_ = std::max<uint8_t>(SkColorGetB(color), max_b_);
+    }
+
+    volume_ =
+        (max_r_ - min_r_ + 1) * (max_g_ - min_g_ + 1) * (max_b_ - min_b_ + 1);
+  }
+
+  // The set of colors of which this box captures a subset. This vector is not
+  // owned but may be modified during the split operation.
+  std::vector<SkColor>* color_space_;
+
+  // The range of indexes into |color_space_| that are part of this box.
+  gfx::Range color_range_;
+
+  // Cached min and max color component values for the colors in this box.
+  uint8_t min_r_ = 0;
+  uint8_t min_g_ = 0;
+  uint8_t min_b_ = 0;
+  uint8_t max_r_ = 0;
+  uint8_t max_g_ = 0;
+  uint8_t max_b_ = 0;
+
+  // Cached volume value, which is the product of the range of each color
+  // component.
+  int volume_ = 0;
+};
+
+// Some color values should be ignored for the purposes of determining prominent
+// colors.
+bool IsInterestingColor(SkColor color) {
+  const float average_channel_value =
+      (SkColorGetR(color) + SkColorGetG(color) + SkColorGetB(color)) / 3.0f;
+  // If a color is too close to white or black, ignore it.
+  if (average_channel_value >= 237 || average_channel_value <= 22)
+    return false;
+
+  HSL hsl;
+  SkColorToHSL(color, &hsl);
+  return !(hsl.h >= 0.028f && hsl.h <= 0.10f && hsl.s <= 0.82f);
+}
+
+// This algorithm is a port of Android's Palette API. Compare to package
+// android.support.v7.graphics and see that code for additional high-level
+// explanation of this algorithm. There are some minor differences:
+//   * This code doesn't exclude the same color from being used for
+//   different color profiles.
+//   * This code doesn't try to heuristically derive missing colors from
+//   existing colors.
+SkColor CalculateProminentColor(const SkBitmap& bitmap,
+                                const HSL& lower_bound,
+                                const HSL& upper_bound,
+                                const HSL& goal) {
+  DCHECK(!bitmap.empty());
+  DCHECK(!bitmap.isNull());
+
+  SkAutoLockPixels auto_lock(bitmap);
+  const uint32_t* pixels = static_cast<uint32_t*>(bitmap.getPixels());
+  int pixel_count = bitmap.width() * bitmap.height();
+  std::map<SkColor, int> color_counts;
+
+  // First extract all colors into counts.
+  for (int i = 0; i < pixel_count; ++i) {
+    // SkBitmap uses pre-multiplied alpha but the prominent color algorithm
+    // needs non-pre-multiplied alpha.
+    const SkColor pixel = SkUnPreMultiply::PMColorToColor(pixels[i]);
+    if (SkColorGetA(pixel) == SK_AlphaTRANSPARENT)
+      continue;
+
+    color_counts[pixel]++;
+  }
+
+  // Now throw out some uninteresting colors.
+  std::vector<SkColor> interesting_colors;
+  interesting_colors.reserve(color_counts.size());
+  for (auto color_count : color_counts) {
+    SkColor color = color_count.first;
+    if (IsInterestingColor(color))
+      interesting_colors.push_back(color);
+  }
+
+  if (interesting_colors.empty())
+    return SK_ColorTRANSPARENT;
+
+  // Group the colors into "boxes" and repeatedly split the most voluminous box.
+  // We stop the process when a box can no longer be split (there's only one
+  // color in it) or when the number of color boxes reaches 12. As per the
+  // Android docs,
+  //
+  //   For landscapes, good values are in the range 12-16. For images which
+  //   are largely made up of people's faces then this value should be increased
+  //   to 24-32.
+  const int kMaxColors = 12;
+  // Boxes are sorted by volume with the most voluminous at the front of the PQ.
+  std::priority_queue<ColorBox, std::vector<ColorBox>,
+                      bool (*)(const ColorBox&, const ColorBox&)>
+      boxes(&ColorBox::CompareByVolume);
+  boxes.emplace(&interesting_colors);
+  while (boxes.size() < kMaxColors) {
+    auto box = boxes.top();
+    if (!box.CanSplit())
+      break;
+    boxes.pop();
+    boxes.push(box.Split());
+    boxes.push(box);
+  }
+
+  // Now extract a single color to represent each box. This is the average color
+  // in the box, weighted by the frequency of that color in the source image.
+  std::vector<WeightedColor> box_colors;
+  uint64_t max_weight = 0;
+  while (!boxes.empty()) {
+    box_colors.push_back(boxes.top().GetWeightedAverageColor(color_counts));
+    boxes.pop();
+    max_weight = std::max(max_weight, box_colors.back().weight);
+  }
+
+  // Given these box average colors, find the best one for the desired color
+  // profile. "Best" in this case means the color which fits in the provided
+  // bounds and comes closest to |goal|. It's possible that no color will fit in
+  // the provided bounds, in which case we'll return an empty color.
+  double best_suitability = 0;
+  SkColor best_color = SK_ColorTRANSPARENT;
+  for (const auto& box_color : box_colors) {
+    HSL hsl;
+    SkColorToHSL(box_color.color, &hsl);
+    if (!IsWithinHSLRange(hsl, lower_bound, upper_bound))
+      continue;
+
+    double suitability =
+        (1 - std::abs(hsl.s - goal.s)) * 3 +
+        (1 - std::abs(hsl.l - goal.l)) * 6.5 +
+        (box_color.weight / static_cast<float>(max_weight)) * 0.5;
+    if (suitability > best_suitability) {
+      best_suitability = suitability;
+      best_color = box_color.color;
+    }
+  }
+
+  return best_color;
 }
 
 } // namespace
@@ -401,17 +708,65 @@ SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap,
   UnPreMultiply(bitmap, image.get(), pixel_count);
 
   return CalculateKMeanColorOfBuffer(reinterpret_cast<uint8_t*>(image.get()),
-                                     bitmap.width(),
-                                     bitmap.height(),
-                                     lower_bound,
-                                     upper_bound,
-                                     sampler);
+                                     bitmap.width(), bitmap.height(),
+                                     lower_bound, upper_bound, sampler);
 }
 
 SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap) {
   GridSampler sampler;
   return CalculateKMeanColorOfBitmap(
       bitmap, kDefaultLowerHSLBound, kDefaultUpperHSLBound, &sampler);
+}
+
+SkColor CalculateProminentColorOfBitmap(const SkBitmap& bitmap,
+                                        LumaRange luma,
+                                        SaturationRange saturation) {
+  if (bitmap.empty() || bitmap.isNull())
+    return SK_ColorTRANSPARENT;
+
+  // The hue is not relevant to our bounds or goal colors.
+  HSL lower_bound = {
+      -1,
+  };
+  HSL upper_bound = {
+      -1,
+  };
+  HSL goal = {
+      -1,
+  };
+
+  switch (luma) {
+    case LumaRange::LIGHT:
+      lower_bound.l = 0.55f;
+      upper_bound.l = 1;
+      goal.l = 0.74f;
+      break;
+    case LumaRange::NORMAL:
+      lower_bound.l = 0.3f;
+      upper_bound.l = 0.7f;
+      goal.l = 0.5f;
+      break;
+    case LumaRange::DARK:
+      lower_bound.l = 0;
+      upper_bound.l = 0.45f;
+      goal.l = 0.26f;
+      break;
+  }
+
+  switch (saturation) {
+    case SaturationRange::VIBRANT:
+      lower_bound.s = 0.35f;
+      upper_bound.s = 1;
+      goal.s = 1;
+      break;
+    case SaturationRange::MUTED:
+      lower_bound.s = 0;
+      upper_bound.s = 0.4f;
+      goal.s = 0.3f;
+      break;
+  }
+
+  return CalculateProminentColor(bitmap, lower_bound, upper_bound, goal);
 }
 
 gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap) {
