@@ -28,6 +28,8 @@
 
 namespace {
 
+bool g_disabled = false;
+
 // Ids of the notification shown on first run.
 const char kNotifierId[] = "arc_auth";
 const char kDisplaySource[] = "arc_auth_source";
@@ -95,6 +97,9 @@ namespace arc {
 
 // static
 void ArcAuthNotification::Show(Profile* profile) {
+  if (g_disabled)
+    return;
+
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
   notifier_id.profile_id =
@@ -121,8 +126,16 @@ void ArcAuthNotification::Show(Profile* profile) {
 
 // static
 void ArcAuthNotification::Hide() {
+  if (g_disabled)
+    return;
+
   message_center::MessageCenter::Get()->RemoveNotification(
       kFirstRunNotificationId, false);
+}
+
+// static
+void ArcAuthNotification::DisableForTesting() {
+  g_disabled = true;
 }
 
 }  // namespace arc

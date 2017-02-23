@@ -14,6 +14,9 @@ class ArcAuthNotification {
  public:
   static void Show(Profile* profile);
   static void Hide();
+
+  // Disables showing ArcAuthNotification to make testing easier.
+  static void DisableForTesting();
 };
 
 }  // namespace arc

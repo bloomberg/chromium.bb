@@ -143,6 +143,9 @@ bool ArcSessionManager::IsOobeOptInActive() {
 // static
 void ArcSessionManager::DisableUIForTesting() {
   g_disable_ui_for_testing = true;
+  // TODO(hidehiko): When the dependency to ArcAuthNotification from this
+  // class is removed, we should remove this as well.
+  ArcAuthNotification::DisableForTesting();
 }
 
 // static
@@ -478,8 +481,7 @@ void ArcSessionManager::OnIsSyncingChanged() {
     return;
 
   pref_service_syncable->RemoveObserver(this);
-  if (!g_disable_ui_for_testing &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableArcOOBEOptIn) &&
       profile_->IsNewProfile() &&
       !profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled)) {
@@ -488,8 +490,7 @@ void ArcSessionManager::OnIsSyncingChanged() {
 }
 
 void ArcSessionManager::Shutdown() {
-  if (!g_disable_ui_for_testing)
-    ArcAuthNotification::Hide();
+  ArcAuthNotification::Hide();
 
   enable_requested_ = false;
   ShutdownSession();
@@ -546,10 +547,8 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
 
   // Hide auth notification if it was opened before and arc.enabled pref was
   // explicitly set to true or false.
-  if (!g_disable_ui_for_testing &&
-      profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled)) {
+  if (profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled))
     ArcAuthNotification::Hide();
-  }
 
   if (is_play_store_enabled)
     RequestEnable();
