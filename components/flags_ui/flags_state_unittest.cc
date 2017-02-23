@@ -28,8 +28,8 @@
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
-#include "grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace flags_ui {

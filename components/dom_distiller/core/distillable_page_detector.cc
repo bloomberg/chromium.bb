@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "grit/components_resources.h"
+#include "components/grit/components_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace dom_distiller {

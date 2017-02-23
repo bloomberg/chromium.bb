@@ -8,8 +8,8 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_util.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
-#include "grit/components_strings.h"
 #include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
 

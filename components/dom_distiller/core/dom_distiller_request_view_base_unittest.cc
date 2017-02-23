@@ -6,9 +6,9 @@
 
 #include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/test_request_view_handle.h"
+#include "components/grit/components_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "grit/components_resources.h"
-#include "grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"

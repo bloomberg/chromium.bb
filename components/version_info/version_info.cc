@@ -5,8 +5,8 @@
 #include "components/version_info/version_info.h"
 
 #include "build/build_config.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info_values.h"
-#include "grit/components_strings.h"
 
 #if defined(USE_UNOFFICIAL_VERSION_NUMBER)
 #include "ui/base/l10n/l10n_util.h"  // nogncheck

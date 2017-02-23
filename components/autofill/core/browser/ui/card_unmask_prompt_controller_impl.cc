@@ -18,9 +18,9 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/prefs/pref_service.h"
-#include "grit/components_scaled_resources.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {

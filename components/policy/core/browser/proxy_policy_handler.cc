@@ -18,7 +18,7 @@
 #include "components/prefs/pref_value_map.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 
 namespace {
 

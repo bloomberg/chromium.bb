@@ -19,7 +19,7 @@
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 
 namespace policy {
 

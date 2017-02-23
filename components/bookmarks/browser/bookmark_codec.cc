@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 

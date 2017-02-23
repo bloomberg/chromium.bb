@@ -9,7 +9,7 @@
 #include "base/i18n/message_formatter.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"

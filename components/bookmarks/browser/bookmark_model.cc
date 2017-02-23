@@ -27,7 +27,7 @@
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/browser/typed_count_sorter.h"
 #include "components/favicon_base/favicon_types.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
 

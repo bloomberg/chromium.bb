@@ -5,8 +5,8 @@
 #include "components/supervised_user_error_page/supervised_user_error_page_android.h"
 
 #include "base/macros.h"
+#include "components/grit/components_resources.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
-#include "grit/components_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace supervised_user_error_page {

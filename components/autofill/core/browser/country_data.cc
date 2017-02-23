@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/singleton.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
 namespace autofill {

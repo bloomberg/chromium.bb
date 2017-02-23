@@ -13,7 +13,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 
 namespace policy {
 

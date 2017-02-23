@@ -26,8 +26,8 @@
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
-#include "grit/components_strings.h"
 #include "net/url_request/url_fetcher.h"
 #include "ui/base/l10n/l10n_util.h"
 

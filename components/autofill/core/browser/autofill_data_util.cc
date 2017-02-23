@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/grit/components_scaled_resources.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 
 namespace autofill {

@@ -10,8 +10,8 @@
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/verbatim_match.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ClipboardURLProvider::ClipboardURLProvider(

@@ -8,8 +8,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace safe_json {

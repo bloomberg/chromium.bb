@@ -5,8 +5,8 @@ include_rules = [
   "+components/prefs",
   "+components/rappor",
   "+components/ssl_errors",
+  "+components/strings/grit/components_strings.h",
   "+components/url_formatter",
-  "+grit/components_strings.h",
   "+net/base",
   "+net/ssl",
   "+ui/base"

@@ -11,7 +11,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 

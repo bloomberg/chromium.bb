@@ -1,7 +1,6 @@
 include_rules = [
+  "+components/strings/grit/components_strings.h",
   "+gin",
-  "+grit/components_scaled_resources.h",
-  "+grit/components_strings.h",
   "+skia/ext",
   "+ui/accessibility",
   "+ui/gfx",

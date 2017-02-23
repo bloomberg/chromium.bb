@@ -21,7 +21,7 @@
 #include "components/omnibox/browser/search_provider.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -11,7 +11,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data_predictions.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"

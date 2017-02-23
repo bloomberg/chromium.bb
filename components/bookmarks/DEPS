@@ -5,7 +5,7 @@ include_rules = [
   "+components/prefs",
   "+components/query_parser",
   "+components/url_formatter",
-  "+grit/components_strings.h",
+  "+components/strings/grit/components_strings.h",
   "+jni",
   "+net/base",
   "+ui",

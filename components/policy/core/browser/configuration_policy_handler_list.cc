@@ -10,7 +10,7 @@
 #include "components/policy/core/browser/configuration_policy_handler_parameters.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/prefs/pref_value_map.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 
 namespace policy {
 

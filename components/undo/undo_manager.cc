@@ -9,9 +9,9 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/undo/undo_manager_observer.h"
 #include "components/undo/undo_operation.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

@@ -1,8 +1,9 @@
 include_rules = [
+  "+components/grit/components_resources.h",
+  "+components/strings/grit/components_strings.h",
   "+content/public/browser",
   "+content/public/common",
   "+content/public/utility",
-  "+grit",  # For generated headers
   "+jni",
   "+mojo/public/cpp",
   "+ui/base",

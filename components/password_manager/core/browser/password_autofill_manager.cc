@@ -29,7 +29,6 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace password_manager {

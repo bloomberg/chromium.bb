@@ -15,7 +15,7 @@
 #include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/viewer.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace dom_distiller {

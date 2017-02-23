@@ -7,7 +7,6 @@
 
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_profile.h"
-#include "grit/components_scaled_resources.h"
 
 namespace autofill {
 namespace data_util {

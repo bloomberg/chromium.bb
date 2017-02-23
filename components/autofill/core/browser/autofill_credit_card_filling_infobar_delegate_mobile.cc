@@ -7,9 +7,9 @@
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/infobars/core/infobar_delegate.h"
-#include "grit/components_scaled_resources.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {

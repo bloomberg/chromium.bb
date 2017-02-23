@@ -16,8 +16,8 @@
 #include "components/bookmarks/browser/bookmark_undo_provider.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/undo/undo_operation.h"
-#include "grit/components_strings.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;

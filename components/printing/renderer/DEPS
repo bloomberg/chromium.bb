@@ -1,5 +1,5 @@
 include_rules = [
-  "+grit/components_resources.h",
+  "+components/grit/components_resources.h",
   "+net/base",
   "+third_party/skia",
   "+ui/base",

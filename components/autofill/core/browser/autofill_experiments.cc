@@ -16,10 +16,10 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {

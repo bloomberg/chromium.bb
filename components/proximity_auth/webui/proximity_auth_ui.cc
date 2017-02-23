@@ -5,13 +5,13 @@
 #include "components/proximity_auth/webui/proximity_auth_ui.h"
 
 #include "base/memory/ptr_util.h"
+#include "components/grit/components_resources.h"
 #include "components/proximity_auth/webui/proximity_auth_webui_handler.h"
 #include "components/proximity_auth/webui/url_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/components_resources.h"
 #include "grit/webui_resources.h"
 
 namespace proximity_auth {
