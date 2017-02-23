@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/mock_session_manager_client.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,7 +35,7 @@ class DBusThreadManagerSetter;
 // for the SessionManagerClient pointer. The helper records calls made by
 // DeviceSettingsService. The test can then verify state, after which it should
 // call one of the Flush() variants that will resume processing.
-class DeviceSettingsTestHelper : public SessionManagerClient {
+class DeviceSettingsTestHelper : public MockSessionManagerClient {
  public:
   // Wraps a device settings service instance for testing.
   DeviceSettingsTestHelper();
@@ -81,60 +81,16 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   }
 
   // SessionManagerClient:
-  void Init(dbus::Bus* bus) override;
-  void SetStubDelegate(SessionManagerClient::StubDelegate* delegate) override;
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
-  bool HasObserver(const Observer* observer) const override;
-  bool IsScreenLocked() const override;
-  void EmitLoginPromptVisible() override;
-  void RestartJob(int socket_fd,
-                  const std::vector<std::string>& argv,
-                  const VoidDBusMethodCallback& callback) override;
-  void StartSession(const cryptohome::Identification& cryptohome_id) override;
-  void StopSession() override;
-  void NotifySupervisedUserCreationStarted() override;
-  void NotifySupervisedUserCreationFinished() override;
-  void StartDeviceWipe() override;
-  void RequestLockScreen() override;
-  void NotifyLockScreenShown() override;
-  void NotifyLockScreenDismissed() override;
-  void RetrieveActiveSessions(const ActiveSessionsCallback& callback) override;
   void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) override;
-  void RetrievePolicyForUser(const cryptohome::Identification& cryptohome_id,
-                             const RetrievePolicyCallback& callback) override;
-  std::string BlockingRetrievePolicyForUser(
-      const cryptohome::Identification& cryptohome_id) override;
   void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
       const RetrievePolicyCallback& callback) override;
   void StoreDevicePolicy(const std::string& policy_blob,
                          const StorePolicyCallback& callback) override;
-  void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
-                          const std::string& policy_blob,
-                          const StorePolicyCallback& callback) override;
   void StoreDeviceLocalAccountPolicy(
       const std::string& account_id,
       const std::string& policy_blob,
       const StorePolicyCallback& callback) override;
-  bool SupportsRestartToApplyUserFlags() const override;
-  void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
-                       const std::vector<std::string>& flags) override;
-  void GetServerBackedStateKeys(const StateKeysCallback& callback) override;
-
-  void CheckArcAvailability(const ArcCallback& callback) override;
-  void StartArcInstance(const cryptohome::Identification& cryptohome_id,
-                        bool disable_boot_completed_broadcast,
-                        const StartArcInstanceCallback& callback) override;
-  void StopArcInstance(const ArcCallback& callback) override;
-  void SetArcCpuRestriction(
-      login_manager::ContainerCpuRestrictionState restriction_state,
-      const ArcCallback& callback) override;
-  void EmitArcBooted(const cryptohome::Identification& cryptohome_id,
-                     const ArcCallback& callback) override;
-  void GetArcStartTime(const GetArcStartTimeCallback& callback) override;
-  void RemoveArcData(const cryptohome::Identification& cryptohome_id,
-                     const ArcCallback& callback) override;
 
  private:
   struct PolicyState {

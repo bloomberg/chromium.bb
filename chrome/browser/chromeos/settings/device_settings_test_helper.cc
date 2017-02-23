@@ -92,60 +92,9 @@ bool DeviceSettingsTestHelper::HasPendingOperations() const {
   return false;
 }
 
-void DeviceSettingsTestHelper::Init(dbus::Bus* bus) {}
-
-void DeviceSettingsTestHelper::SetStubDelegate(
-    SessionManagerClient::StubDelegate* delegate) {}
-
-void DeviceSettingsTestHelper::AddObserver(Observer* observer) {}
-
-void DeviceSettingsTestHelper::RemoveObserver(Observer* observer) {}
-
-bool DeviceSettingsTestHelper::HasObserver(const Observer* observer) const {
-  return false;
-}
-
-bool DeviceSettingsTestHelper::IsScreenLocked() const { return false; }
-
-void DeviceSettingsTestHelper::EmitLoginPromptVisible() {}
-
-void DeviceSettingsTestHelper::RestartJob(
-    int socket_fd,
-    const std::vector<std::string>& argv,
-    const VoidDBusMethodCallback& callback) {}
-
-void DeviceSettingsTestHelper::StartSession(
-    const cryptohome::Identification& cryptohome_id) {}
-
-void DeviceSettingsTestHelper::StopSession() {}
-
-void DeviceSettingsTestHelper::NotifySupervisedUserCreationStarted() {}
-
-void DeviceSettingsTestHelper::NotifySupervisedUserCreationFinished() {}
-
-void DeviceSettingsTestHelper::StartDeviceWipe() {}
-
-void DeviceSettingsTestHelper::RequestLockScreen() {}
-
-void DeviceSettingsTestHelper::NotifyLockScreenShown() {}
-
-void DeviceSettingsTestHelper::NotifyLockScreenDismissed() {}
-
-void DeviceSettingsTestHelper::RetrieveActiveSessions(
-      const ActiveSessionsCallback& callback) {}
-
 void DeviceSettingsTestHelper::RetrieveDevicePolicy(
     const RetrievePolicyCallback& callback) {
   device_policy_.retrieve_callbacks_.push_back(callback);
-}
-
-void DeviceSettingsTestHelper::RetrievePolicyForUser(
-    const cryptohome::Identification& cryptohome_id,
-    const RetrievePolicyCallback& callback) {}
-
-std::string DeviceSettingsTestHelper::BlockingRetrievePolicyForUser(
-    const cryptohome::Identification& cryptohome_id) {
-  return "";
 }
 
 void DeviceSettingsTestHelper::RetrieveDeviceLocalAccountPolicy(
@@ -162,11 +111,6 @@ void DeviceSettingsTestHelper::StoreDevicePolicy(
   device_policy_.store_callbacks_.push_back(callback);
 }
 
-void DeviceSettingsTestHelper::StorePolicyForUser(
-    const cryptohome::Identification& cryptohome_id,
-    const std::string& policy_blob,
-    const StorePolicyCallback& callback) {}
-
 void DeviceSettingsTestHelper::StoreDeviceLocalAccountPolicy(
     const std::string& account_id,
     const std::string& policy_blob,
@@ -174,42 +118,6 @@ void DeviceSettingsTestHelper::StoreDeviceLocalAccountPolicy(
   device_local_account_policy_[account_id].policy_blob_ = policy_blob;
   device_local_account_policy_[account_id].store_callbacks_.push_back(callback);
 }
-
-bool DeviceSettingsTestHelper::SupportsRestartToApplyUserFlags() const {
-  return false;
-}
-
-void DeviceSettingsTestHelper::SetFlagsForUser(
-    const cryptohome::Identification& cryptohome_id,
-    const std::vector<std::string>& flags) {}
-
-void DeviceSettingsTestHelper::GetServerBackedStateKeys(
-    const StateKeysCallback& callback) {}
-
-void DeviceSettingsTestHelper::CheckArcAvailability(
-    const ArcCallback& callback) {}
-
-void DeviceSettingsTestHelper::StartArcInstance(
-    const cryptohome::Identification& cryptohome_id,
-    bool disable_boot_completed_broadcast,
-    const StartArcInstanceCallback& callback) {}
-
-void DeviceSettingsTestHelper::StopArcInstance(const ArcCallback& callback) {}
-
-void DeviceSettingsTestHelper::SetArcCpuRestriction(
-    login_manager::ContainerCpuRestrictionState restriction_state,
-    const ArcCallback& callback) {}
-
-void DeviceSettingsTestHelper::EmitArcBooted(
-    const cryptohome::Identification& cryptohome_id,
-    const ArcCallback& callback) {}
-
-void DeviceSettingsTestHelper::GetArcStartTime(
-    const GetArcStartTimeCallback& callback) {}
-
-void DeviceSettingsTestHelper::RemoveArcData(
-    const cryptohome::Identification& cryptohome_id,
-    const ArcCallback& callback) {}
 
 DeviceSettingsTestHelper::PolicyState::PolicyState()
     : store_result_(true) {}
