@@ -70,8 +70,10 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
 
   return base::MakeUnique<APIBinding>(
       api_name, function_definitions, type_definitions, event_definitions,
-      property_definitions, std::move(hooks), &type_reference_map_,
-      &request_handler_, &event_handler_);
+      property_definitions,
+      base::Bind(&APIBindingsSystem::CreateCustomType, base::Unretained(this)),
+      std::move(hooks), &type_reference_map_, &request_handler_,
+      &event_handler_);
 }
 
 void APIBindingsSystem::InitializeType(const std::string& type_name) {
@@ -113,6 +115,23 @@ APIBindingHooks* APIBindingsSystem::GetHooksForAPI(
   if (!hooks)
     hooks = base::MakeUnique<APIBindingHooks>(call_js_sync_);
   return hooks.get();
+}
+
+void APIBindingsSystem::RegisterCustomType(const std::string& type_name,
+                                           const CustomTypeHandler& function) {
+  DCHECK(custom_types_.find(type_name) == custom_types_.end())
+      << "Custom type already registered: " << type_name;
+  custom_types_[type_name] = function;
+}
+
+v8::Local<v8::Object> APIBindingsSystem::CreateCustomType(
+    v8::Local<v8::Context> context,
+    const std::string& type_name,
+    const std::string& property_name) {
+  auto iter = custom_types_.find(type_name);
+  DCHECK(iter != custom_types_.end()) << "Custom type not found: " << type_name;
+  return iter->second.Run(context, property_name, &request_handler_,
+                          &type_reference_map_);
 }
 
 }  // namespace extensions

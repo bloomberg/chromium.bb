@@ -41,6 +41,11 @@ class APITypeReferenceMap;
 // contexts.
 class APIBinding {
  public:
+  using CreateCustomType =
+      base::Callback<v8::Local<v8::Object>(v8::Local<v8::Context> context,
+                                           const std::string& type_name,
+                                           const std::string& property_name)>;
+
   // The callback for determining if a given API method (specified by |name|)
   // is available.
   using AvailabilityCallback = base::Callback<bool(const std::string& name)>;
@@ -56,6 +61,7 @@ class APIBinding {
              const base::ListValue* type_definitions,
              const base::ListValue* event_definitions,
              const base::DictionaryValue* property_definitions,
+             const CreateCustomType& create_custom_type,
              std::unique_ptr<APIBindingHooks> binding_hooks,
              APITypeReferenceMap* type_refs,
              APIRequestHandler* request_handler,
@@ -77,9 +83,21 @@ class APIBinding {
   // first instance is created.
   void InitializeTemplate(v8::Isolate* isolate);
 
+  // Decorates |object_template| with the properties specified by |properties|.
+  void DecorateTemplateWithProperties(
+      v8::Isolate* isolate,
+      v8::Local<v8::ObjectTemplate> object_template,
+      const base::DictionaryValue& properties);
+
   // Handler for getting the v8::Object associated with an event on the API.
   static void GetEventObject(v8::Local<v8::Name>,
                              const v8::PropertyCallbackInfo<v8::Value>& info);
+
+  // Handler for getting the v8::Object associated with a custom property on the
+  // API.
+  static void GetCustomPropertyObject(
+      v8::Local<v8::Name> property,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
 
   // Handles a call an API method with the given |name| and matches the
   // arguments against |signature|.
@@ -98,6 +116,10 @@ class APIBinding {
   struct EventData;
   std::vector<std::unique_ptr<EventData>> events_;
 
+  // The custom properties on the API; these are rare.
+  struct CustomPropertyData;
+  std::vector<std::unique_ptr<CustomPropertyData>> custom_properties_;
+
   // The pair for enum entry is <original, js-ified>. JS enum entries use
   // SCREAMING_STYLE (whereas our API enums are just inconsistent).
   using EnumEntry = std::pair<std::string, std::string>;
@@ -106,6 +128,9 @@ class APIBinding {
 
   // The associated properties of the API, if any.
   const base::DictionaryValue* property_definitions_;
+
+  // The callback for constructing a custom type.
+  CreateCustomType create_custom_type_;
 
   // The registered hooks for this API.
   std::unique_ptr<APIBindingHooks> binding_hooks_;

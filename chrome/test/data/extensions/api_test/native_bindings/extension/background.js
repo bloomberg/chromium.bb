@@ -124,6 +124,34 @@ var tests = [
       chrome.test.succeed();
     });
   },
+  function testStorage() {
+    // Check API existence; StorageArea functions.
+    chrome.test.assertTrue(!!chrome.storage);
+    chrome.test.assertTrue(!!chrome.storage.local, 'no local');
+    chrome.test.assertTrue(!!chrome.storage.local.set, 'no set');
+    chrome.test.assertTrue(!!chrome.storage.local.get, 'no get');
+    // Check some properties.
+    chrome.test.assertTrue(!!chrome.storage.local.QUOTA_BYTES,
+                           'local quota bytes');
+    chrome.test.assertFalse(!!chrome.storage.local.MAX_ITEMS,
+                            'local max items');
+    chrome.test.assertTrue(!!chrome.storage.sync, 'sync');
+    chrome.test.assertTrue(!!chrome.storage.sync.QUOTA_BYTES,
+                           'sync quota bytes');
+    chrome.test.assertTrue(!!chrome.storage.sync.MAX_ITEMS,
+                           'sync max items');
+    chrome.test.assertTrue(!!chrome.storage.managed, 'managed');
+    chrome.test.assertFalse(!!chrome.storage.managed.QUOTA_BYTES,
+                            'managed quota bytes');
+    chrome.storage.local.set({foo: 'bar'}, () => {
+      chrome.storage.local.get('foo', (results) => {
+        chrome.test.assertTrue(!!results, 'no results');
+        chrome.test.assertTrue(!!results.foo, 'no foo');
+        chrome.test.assertEq('bar', results.foo);
+        chrome.test.succeed();
+      });
+    });
+  },
 ];
 
 chrome.test.getConfig(config => {

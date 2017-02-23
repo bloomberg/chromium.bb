@@ -653,4 +653,38 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestLastError) {
                                         "lastErrorMessage"));
 }
 
+TEST_F(NativeExtensionBindingsSystemUnittest, TestCustomProperties) {
+  scoped_refptr<Extension> extension =
+      CreateExtension("storage extension", ItemType::EXTENSION, {"storage"});
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  v8::Local<v8::Value> storage =
+      V8ValueFromScriptSource(context, "chrome.storage");
+  ASSERT_FALSE(storage.IsEmpty());
+  ASSERT_TRUE(storage->IsObject());
+
+  v8::Local<v8::Value> local =
+      GetPropertyFromObject(storage.As<v8::Object>(), context, "local");
+  ASSERT_FALSE(local.IsEmpty());
+  ASSERT_TRUE(local->IsObject());
+
+  v8::Local<v8::Object> local_object = local.As<v8::Object>();
+  const std::vector<std::string> kKeys = {"get", "set", "remove", "clear",
+                                          "getBytesInUse"};
+  for (const auto& key : kKeys) {
+    v8::Local<v8::String> v8_key = gin::StringToV8(isolate(), key);
+    EXPECT_TRUE(local_object->HasOwnProperty(context, v8_key).FromJust())
+        << key;
+  }
+}
+
 }  // namespace extensions

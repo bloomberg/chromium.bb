@@ -174,6 +174,10 @@ class APIBindingUnittest : public APIBindingTest {
     ASSERT_TRUE(binding_hooks_);
   }
 
+  void SetCreateCustomType(const APIBinding::CreateCustomType& callback) {
+    create_custom_type_ = callback;
+  }
+
   void InitializeBinding() {
     if (!binding_hooks_) {
       binding_hooks_ =
@@ -184,7 +188,7 @@ class APIBindingUnittest : public APIBindingTest {
         base::Bind(&OnEventListenersChanged));
     binding_ = base::MakeUnique<APIBinding>(
         "test", binding_functions_.get(), binding_types_.get(),
-        binding_events_.get(), binding_properties_.get(),
+        binding_events_.get(), binding_properties_.get(), create_custom_type_,
         std::move(binding_hooks_), &type_refs_, request_handler_.get(),
         event_handler_.get());
     EXPECT_EQ(!binding_types_.get(), type_refs_.empty());
@@ -245,6 +249,7 @@ class APIBindingUnittest : public APIBindingTest {
   std::unique_ptr<base::ListValue> binding_types_;
   std::unique_ptr<base::DictionaryValue> binding_properties_;
   std::unique_ptr<APIBindingHooks> binding_hooks_;
+  APIBinding::CreateCustomType create_custom_type_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingUnittest);
 };
@@ -562,6 +567,54 @@ TEST_F(APIBindingUnittest, TestProperties) {
             GetStringPropertyFromObject(binding_object, context, "prop1"));
   EXPECT_EQ(R"({"subprop1":"some value","subprop2":true})",
             GetStringPropertyFromObject(binding_object, context, "prop2"));
+}
+
+TEST_F(APIBindingUnittest, TestRefProperties) {
+  SetProperties(
+      "{"
+      "  'alpha': {"
+      "    '$ref': 'AlphaRef'"
+      "  },"
+      "  'beta': {"
+      "    '$ref': 'BetaRef'"
+      "  }"
+      "}");
+  auto create_custom_type = [](v8::Local<v8::Context> context,
+                               const std::string& type_name,
+                               const std::string& property_name) {
+    v8::Isolate* isolate = context->GetIsolate();
+    v8::Local<v8::Object> result = v8::Object::New(isolate);
+    if (type_name == "AlphaRef") {
+      EXPECT_EQ("alpha", property_name);
+      result
+          ->Set(context, gin::StringToSymbol(isolate, "alphaProp"),
+                gin::StringToV8(isolate, "alphaVal"))
+          .ToChecked();
+    } else if (type_name == "BetaRef") {
+      EXPECT_EQ("beta", property_name);
+      result
+          ->Set(context, gin::StringToSymbol(isolate, "betaProp"),
+                gin::StringToV8(isolate, "betaVal"))
+          .ToChecked();
+    } else {
+      EXPECT_TRUE(false) << type_name;
+    }
+    return result;
+  };
+
+  SetCreateCustomType(base::Bind(create_custom_type));
+
+  InitializeBinding();
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, isolate(), base::Bind(&AllowAllAPIs));
+  EXPECT_EQ(R"({"alphaProp":"alphaVal"})",
+            GetStringPropertyFromObject(binding_object, context, "alpha"));
+  EXPECT_EQ(
+      R"({"betaProp":"betaVal"})",
+      GetStringPropertyFromObject(binding_object, context, "beta"));
 }
 
 TEST_F(APIBindingUnittest, TestDisposedContext) {

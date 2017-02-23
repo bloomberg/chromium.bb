@@ -16,6 +16,7 @@
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
+#include "extensions/renderer/storage_area.h"
 #include "gin/converter.h"
 #include "gin/handle.h"
 #include "gin/per_context_data.h"
@@ -330,7 +331,10 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
           base::Bind(&NativeExtensionBindingsSystem::OnEventListenerChanged,
                      base::Unretained(this)),
           APILastError(base::Bind(&GetRuntime))),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  api_system_.RegisterCustomType("storage.StorageArea",
+                                 base::Bind(&StorageArea::CreateStorageArea));
+}
 
 NativeExtensionBindingsSystem::~NativeExtensionBindingsSystem() {}
 

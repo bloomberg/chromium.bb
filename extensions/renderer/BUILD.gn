@@ -189,6 +189,8 @@ source_set("renderer") {
     "source_map.h",
     "static_v8_external_one_byte_string_resource.cc",
     "static_v8_external_one_byte_string_resource.h",
+    "storage_area.cc",
+    "storage_area.h",
     "test_features_native_handler.cc",
     "test_features_native_handler.h",
     "test_native_handler.cc",
