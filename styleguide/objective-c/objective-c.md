@@ -2,9 +2,9 @@
 
 _For other languages, please see the [Chromium style guides](https://chromium.googlesource.com/chromium/src/+/master/styleguide/styleguide.md)._
 
-Chromium follows the [Google Objective-C style guide]
-(https://google.github.io/styleguide/objcguide.xml) unless an exception
-is listed below.
+Chromium follows the
+[Google Objective-C style guide](https://google.github.io/styleguide/objcguide.xml)
+unless an exception is listed below.
 
 A checkout should give you
 [clang-format](https://chromium.googlesource.com/chromium/src/+/master/docs/clang_format.md)
