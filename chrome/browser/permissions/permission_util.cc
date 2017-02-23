@@ -194,10 +194,7 @@ PermissionUtil::ScopedRevocationReporter::~ScopedRevocationReporter() {
   ContentSetting final_content_setting = settings_map->GetContentSetting(
       primary_url_, secondary_url_, content_type_, std::string());
   if (final_content_setting != CONTENT_SETTING_ALLOW) {
-    PermissionType permission_type;
-    if (PermissionUtil::GetPermissionType(content_type_, &permission_type)) {
-      PermissionUmaUtil::PermissionRevoked(content_type_, source_ui_,
-                                           primary_url_, profile_);
-    }
+    PermissionUmaUtil::PermissionRevoked(content_type_, source_ui_,
+                                         primary_url_, profile_);
   }
 }
