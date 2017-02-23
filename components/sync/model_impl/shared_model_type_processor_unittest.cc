@@ -70,6 +70,11 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     std::swap(db_, other->db_);
   }
 
+  ~TestModelTypeSyncBridge() override {
+    EXPECT_FALSE(synchronous_data_callback_);
+    EXPECT_FALSE(data_callback_);
+  }
+
   void OnPendingCommitDataLoaded() {
     ASSERT_TRUE(data_callback_);
     data_callback_.Run();
@@ -114,15 +119,10 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     }
   }
 
-  void CheckPostConditions() override {
-    FakeModelTypeSyncBridge::CheckPostConditions();
-    EXPECT_FALSE(synchronous_data_callback_);
-    EXPECT_FALSE(data_callback_);
-  }
-
  private:
   void CaptureDataCallback(DataCallback callback,
                            std::unique_ptr<DataBatch> data) {
+    EXPECT_FALSE(data_callback_);
     data_callback_ = base::Bind(callback, base::Passed(std::move(data)));
   }
 
@@ -1264,6 +1264,12 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseLocal) {
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(1, kHash1, specifics);
   EXPECT_EQ(kValue2, db().GetValue(kKey1));
+
+  // GetData was launched as a result of UpdateWithEncryptionKey(). Since the
+  // conflict resolution encrypted all entities, the GetData result should be
+  // ignored.
+  OnPendingCommitDataLoaded();
+  EXPECT_EQ(2U, worker()->GetNumPendingCommits());
 }
 
 // Test that re-encrypting enqueues the right data for USE_REMOTE conflicts.

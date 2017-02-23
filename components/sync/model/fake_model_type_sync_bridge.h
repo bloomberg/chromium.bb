@@ -128,9 +128,6 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   const Store& db() { return *db_; }
 
  protected:
-  // Used to verify conditions upon destruction.
-  virtual void CheckPostConditions();
-
   // Contains all of the data and metadata state.
   std::unique_ptr<Store> db_;
 

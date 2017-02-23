@@ -161,7 +161,7 @@ FakeModelTypeSyncBridge::FakeModelTypeSyncBridge(
       db_(base::MakeUnique<Store>()) {}
 
 FakeModelTypeSyncBridge::~FakeModelTypeSyncBridge() {
-  CheckPostConditions();
+  EXPECT_FALSE(error_next_);
 }
 
 EntitySpecifics FakeModelTypeSyncBridge::WriteItem(const std::string& key,
@@ -336,10 +336,6 @@ void FakeModelTypeSyncBridge::SetConflictResolution(
 void FakeModelTypeSyncBridge::ErrorOnNextCall() {
   EXPECT_FALSE(error_next_);
   error_next_ = true;
-}
-
-void FakeModelTypeSyncBridge::CheckPostConditions() {
-  EXPECT_FALSE(error_next_);
 }
 
 }  // namespace syncer
