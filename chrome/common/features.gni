@@ -60,7 +60,8 @@ declare_args() {
   enable_vr_shell_ui_dev = false
 
   # Enable native notifications via XPC services (mac only).
-  enable_xpc_notifications = false
+  # TODO(miguelg): remove this.
+  enable_xpc_notifications = true
 
   # Indicates if the build is using PGO.
   pgo_build = chrome_pgo_phase > 0

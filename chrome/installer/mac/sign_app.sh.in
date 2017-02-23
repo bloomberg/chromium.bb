@@ -41,6 +41,7 @@ versioned_dir="${app_path}/Contents/Versions/@VERSION@"
 
 browser_app="${app_path}"
 framework="${versioned_dir}/@MAC_PRODUCT_NAME@ Framework.framework"
+notification_service="${framework}/XPCServices/AlertNotificationService.xpc"
 crashpad_handler="${framework}/Helpers/crashpad_handler"
 helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 
@@ -65,6 +66,7 @@ codesign --display -r- -vvvvvv "${browser_app}"
 # state (b/18474911). Use --no-strict on the app because it uses custom resource
 # rules.
 codesign --verify --deep -vvvvvv "${crashpad_handler}"
+codesign --verify --deep -vvvvvv "${notification_service}"
 codesign --verify -vvvvvv "${framework}"
 codesign --verify --deep -vvvvvv "${helper_app}"
 codesign --verify --deep --no-strict -vvvvvv "${browser_app}"

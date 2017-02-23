@@ -41,6 +41,7 @@ versioned_dir="${app_path}/Contents/Versions/@VERSION@"
 # signed directly. See copy_framework_unversioned.sh.
 
 framework="${versioned_dir}/@MAC_PRODUCT_NAME@ Framework.framework"
+notification_service="${framework}/XPCServices/AlertNotificationService.xpc"
 crashpad_handler="${framework}/Helpers/crashpad_handler"
 helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 app_mode_loader_app="${framework}/Resources/app_mode_loader.app"
@@ -74,6 +75,11 @@ cp "${app_mode_loader_tmp}" "${app_mode_loader}"
 rm -f "${app_mode_loader_tmp}"
 
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
+         "${notification_service}" \
+         -r="designated => identifier \"com.google.Chrome.AlertNotificationService\" \
+${requirement_suffix}"
+
+codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${framework}" \
     -r="designated => identifier \"com.google.Chrome.framework\" \
 ${requirement_suffix}"
@@ -89,5 +95,6 @@ ${requirement_suffix}" --options "${enforcement_flags}"
 # before 10.11 (bug 565859).
 codesign --verify --deep "${crashpad_handler}"
 # codesign --verify --ignore-resources "${app_mode_loader}"
+codesign --verify --deep "${notification_service}"
 codesign --verify "${framework}"
 codesign --verify --deep "${helper_app}"
