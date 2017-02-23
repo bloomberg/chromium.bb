@@ -40,10 +40,8 @@ void URLRequestContextGetter::OnDestruct() const {
         // Can't force-delete the object here, because some derived classes
         // can only be deleted on the owning thread, so just emit a warning to
         // aid in debugging.
-#if !defined(NDEBUG)
         DLOG(WARNING) << "URLRequestContextGetter leaking due to no owning"
-                      << " thread. Created at: " << created_at.ToString();
-#endif  // !defined(NDEBUG)
+                      << " thread.";
         // Let LSan know we know this is a leak. https://crbug.com/594130
         ANNOTATE_LEAKING_OBJECT_PTR(this);
       }
