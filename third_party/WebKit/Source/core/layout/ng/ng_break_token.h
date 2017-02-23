@@ -39,8 +39,10 @@ class CORE_EXPORT NGBreakToken
   enum NGBreakTokenType { kBlockBreakToken, kTextBreakToken };
   NGBreakTokenType Type() const { return static_cast<NGBreakTokenType>(type_); }
 
+  enum NGBreakTokenStatus { kUnfinished, kFinished };
+
   // Whether the layout node cannot produce any more fragments.
-  bool IsFinished() const { return is_finished_; }
+  bool IsFinished() const { return status_ == kFinished; }
 
   // Returns the node associated with this break token. A break token cannot be
   // used with any other node.
@@ -49,12 +51,14 @@ class CORE_EXPORT NGBreakToken
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(node_); }
 
  protected:
-  NGBreakToken(NGBreakTokenType type, bool is_finished, NGLayoutInputNode* node)
-      : type_(type), is_finished_(is_finished), node_(node) {}
+  NGBreakToken(NGBreakTokenType type,
+               NGBreakTokenStatus status,
+               NGLayoutInputNode* node)
+      : type_(type), status_(status), node_(node) {}
 
  private:
   unsigned type_ : 1;
-  unsigned is_finished_ : 1;
+  unsigned status_ : 1;
 
   Member<NGLayoutInputNode> node_;
 };
