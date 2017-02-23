@@ -28,6 +28,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
+#include "platform/CrossThreadCopier.h"
 #include "platform/WebTaskRunner.h"
 #include "public/platform/WebConnectionType.h"
 #include "wtf/Allocator.h"
@@ -45,9 +46,9 @@ class CORE_EXPORT NetworkStateNotifier {
  public:
   class NetworkStateObserver {
    public:
-    // Will be called on the task runner that is passed in addObserver.
-    virtual void connectionChange(WebConnectionType,
-                                  double maxBandwidthMbps) = 0;
+    // Will be called on the task runner that is passed in add*Observer.
+    virtual void connectionChange(WebConnectionType, double maxBandwidthMbps) {}
+    virtual void onLineStateChange(bool onLine) {}
   };
 
   NetworkStateNotifier() : m_hasOverride(false) {}
@@ -114,8 +115,11 @@ class CORE_EXPORT NetworkStateNotifier {
   // before the observer or its execution context goes away. It's possible for
   // an observer to be called twice for the same event if it is first removed
   // and then added during notification.
-  void addObserver(NetworkStateObserver*, WebTaskRunner*);
-  void removeObserver(NetworkStateObserver*, WebTaskRunner*);
+  void addConnectionObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
+  void addOnLineObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
+  void removeConnectionObserver(NetworkStateObserver*,
+                                PassRefPtr<WebTaskRunner>);
+  void removeOnLineObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
 
  private:
   struct ObserverList {
@@ -133,6 +137,7 @@ class CORE_EXPORT NetworkStateNotifier {
     WebConnectionType type = WebConnectionTypeOther;
     double maxBandwidthMbps = kInvalidMaxBandwidth;
   };
+  friend CrossThreadCopier<NetworkStateNotifier::NetworkState>;
 
   // This helper scope issues required notifications when mutating the state if
   // something has changed.  It's only possible to mutate the state on the main
@@ -148,28 +153,46 @@ class CORE_EXPORT NetworkStateNotifier {
     NetworkState m_before;
   };
 
+  enum class ObserverType {
+    ONLINE_STATE,
+    CONNECTION_TYPE,
+  };
+
   // The ObserverListMap is cross-thread accessed, adding/removing Observers
   // running on a task runner.
   using ObserverListMap =
-      HashMap<WebTaskRunner*, std::unique_ptr<ObserverList>>;
+      HashMap<RefPtr<WebTaskRunner>, std::unique_ptr<ObserverList>>;
 
-  void notifyObservers(WebConnectionType, double maxBandwidthMbps);
-  void notifyObserversOfConnectionChangeOnTaskRunner(WebConnectionType,
-                                                     double maxBandwidthMbps,
-                                                     WebTaskRunner*);
+  void notifyObservers(ObserverListMap&, ObserverType, const NetworkState&);
+  void notifyObserversOnTaskRunner(ObserverListMap*,
+                                   ObserverType,
+                                   PassRefPtr<WebTaskRunner>,
+                                   const NetworkState&);
 
-  ObserverList* lockAndFindObserverList(WebTaskRunner*);
+  void addObserver(ObserverListMap&,
+                   NetworkStateObserver*,
+                   PassRefPtr<WebTaskRunner>);
+  void removeObserver(ObserverListMap&,
+                      NetworkStateObserver*,
+                      PassRefPtr<WebTaskRunner>);
+
+  ObserverList* lockAndFindObserverList(ObserverListMap&,
+                                        PassRefPtr<WebTaskRunner>);
 
   // Removed observers are nulled out in the list in case the list is being
   // iterated over. Once done iterating, call this to clean up nulled
   // observers.
-  void collectZeroedObservers(ObserverList*, WebTaskRunner*);
+  void collectZeroedObservers(ObserverListMap&,
+                              ObserverList*,
+                              PassRefPtr<WebTaskRunner>);
 
   mutable Mutex m_mutex;
   NetworkState m_state;
   bool m_hasOverride;
   NetworkState m_override;
-  ObserverListMap m_observers;
+
+  ObserverListMap m_connectionObservers;
+  ObserverListMap m_onLineStateObservers;
 };
 
 CORE_EXPORT NetworkStateNotifier& networkStateNotifier();

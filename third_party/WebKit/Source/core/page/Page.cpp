@@ -72,28 +72,6 @@ Page::PageSet& Page::ordinaryPages() {
   return pages;
 }
 
-void Page::networkStateChanged(bool online) {
-  HeapVector<Member<LocalFrame>> frames;
-
-  // Get all the frames of all the pages in all the page groups
-  for (Page* page : allPages()) {
-    for (Frame* frame = page->mainFrame(); frame;
-         frame = frame->tree().traverseNext()) {
-      // FIXME: There is currently no way to dispatch events to out-of-process
-      // frames.
-      if (frame->isLocalFrame())
-        frames.push_back(toLocalFrame(frame));
-    }
-  }
-
-  AtomicString eventName =
-      online ? EventTypeNames::online : EventTypeNames::offline;
-  for (const auto& frame : frames) {
-    frame->domWindow()->dispatchEvent(Event::create(eventName));
-    InspectorInstrumentation::networkStateChanged(frame.get(), online);
-  }
-}
-
 float deviceScaleFactor(LocalFrame* frame) {
   if (!frame)
     return 1;

@@ -130,18 +130,18 @@ void NetworkInformation::contextDestroyed(ExecutionContext*) {
 void NetworkInformation::startObserving() {
   if (!m_observing && !m_contextStopped) {
     m_type = networkStateNotifier().connectionType();
-    networkStateNotifier().addObserver(
-        this, TaskRunnerHelper::get(TaskType::Networking, getExecutionContext())
-                  .get());
+    networkStateNotifier().addConnectionObserver(
+        this,
+        TaskRunnerHelper::get(TaskType::Networking, getExecutionContext()));
     m_observing = true;
   }
 }
 
 void NetworkInformation::stopObserving() {
   if (m_observing) {
-    networkStateNotifier().removeObserver(
-        this, TaskRunnerHelper::get(TaskType::Networking, getExecutionContext())
-                  .get());
+    networkStateNotifier().removeConnectionObserver(
+        this,
+        TaskRunnerHelper::get(TaskType::Networking, getExecutionContext()));
     m_observing = false;
   }
 }

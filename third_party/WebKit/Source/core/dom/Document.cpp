@@ -205,6 +205,7 @@
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
+#include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/scrolling/RootScrollerController.h"
@@ -404,6 +405,38 @@ static void recordLoadReasonToHistogram(WouldLoadReason reason) {
   unseenFrameHistogram.count(reason);
 }
 
+class Document::NetworkStateObserver final
+    : public GarbageCollected<Document::NetworkStateObserver>,
+      public NetworkStateNotifier::NetworkStateObserver,
+      public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(Document::NetworkStateObserver);
+
+ public:
+  explicit NetworkStateObserver(Document& document)
+      : ContextLifecycleObserver(&document) {
+    networkStateNotifier().addOnLineObserver(
+        this,
+        TaskRunnerHelper::get(TaskType::Networking, getExecutionContext()));
+  }
+
+  void onLineStateChange(bool onLine) override {
+    AtomicString eventName =
+        onLine ? EventTypeNames::online : EventTypeNames::offline;
+    Document* document = toDocument(getExecutionContext());
+    if (!document->domWindow())
+      return;
+    document->domWindow()->dispatchEvent(Event::create(eventName));
+    InspectorInstrumentation::networkStateChanged(document->frame(), onLine);
+  }
+
+  void contextDestroyed(ExecutionContext* context) override {
+    networkStateNotifier().removeOnLineObserver(
+        this, TaskRunnerHelper::get(TaskType::Networking, context));
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() { ContextLifecycleObserver::trace(visitor); }
+};
+
 Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument),
@@ -496,7 +529,8 @@ Document::Document(const DocumentInit& initializer,
       m_nodeCount(0),
       m_wouldLoadReason(Created),
       m_passwordCount(0),
-      m_engagementLevel(mojom::blink::EngagementLevel::NONE) {
+      m_engagementLevel(mojom::blink::EngagementLevel::NONE),
+      m_networkStateObserver(new NetworkStateObserver(*this)) {
   if (m_frame) {
     DCHECK(m_frame->page());
     provideContextFeaturesToDocumentFrom(*this, *m_frame->page());
@@ -6564,6 +6598,7 @@ DEFINE_TRACE(Document) {
   visitor->trace(m_resizeObserverController);
   visitor->trace(m_propertyRegistry);
   visitor->trace(m_styleReattachDataMap);
+  visitor->trace(m_networkStateObserver);
   Supplementable<Document>::trace(visitor);
   TreeScope::trace(visitor);
   ContainerNode::trace(visitor);

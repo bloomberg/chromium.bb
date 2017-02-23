@@ -220,8 +220,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   void acceptLanguagesChanged();
 
-  static void networkStateChanged(bool online);
-
   DECLARE_TRACE();
 
   void layerTreeViewInitialized(WebLayerTreeView&, FrameView*);

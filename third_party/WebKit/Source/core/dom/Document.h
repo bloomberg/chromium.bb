@@ -1333,6 +1333,7 @@ class CORE_EXPORT Document : public ContainerNode,
   friend class IgnoreDestructiveWriteCountIncrementer;
   friend class ThrowOnDynamicMarkupInsertionCountIncrementer;
   friend class NthIndexCache;
+  class NetworkStateObserver;
 
   bool isDocumentFragment() const =
       delete;  // This will catch anyone doing an unnecessary check.
@@ -1674,6 +1675,8 @@ class CORE_EXPORT Document : public ContainerNode,
   TaskHandle m_sensitiveInputVisibilityTask;
 
   mojom::EngagementLevel m_engagementLevel;
+
+  Member<NetworkStateObserver> m_networkStateObserver;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

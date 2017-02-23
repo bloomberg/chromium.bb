@@ -25,8 +25,6 @@
 
 #include "core/page/NetworkStateNotifier.h"
 
-#include "core/dom/TaskRunnerHelper.h"
-#include "core/page/Page.h"
 #include "platform/CrossThreadFunctional.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
@@ -35,6 +33,12 @@
 #include "wtf/Threading.h"
 
 namespace blink {
+
+template <>
+struct CrossThreadCopier<NetworkStateNotifier::NetworkState>
+    : public CrossThreadCopierPassThrough<NetworkStateNotifier::NetworkState> {
+  STATIC_ONLY(CrossThreadCopier);
+};
 
 NetworkStateNotifier& networkStateNotifier() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(NetworkStateNotifier, networkStateNotifier,
@@ -56,10 +60,14 @@ NetworkStateNotifier::ScopedNotifier::~ScopedNotifier() {
       m_notifier.m_hasOverride ? m_notifier.m_override : m_notifier.m_state;
   if ((after.type != m_before.type ||
        after.maxBandwidthMbps != m_before.maxBandwidthMbps) &&
-      m_before.connectionInitialized)
-    m_notifier.notifyObservers(after.type, after.maxBandwidthMbps);
-  if (after.onLine != m_before.onLine && m_before.onLineInitialized)
-    Page::networkStateChanged(after.onLine);
+      m_before.connectionInitialized) {
+    m_notifier.notifyObservers(m_notifier.m_connectionObservers,
+                               ObserverType::CONNECTION_TYPE, after);
+  }
+  if (after.onLine != m_before.onLine && m_before.onLineInitialized) {
+    m_notifier.notifyObservers(m_notifier.m_onLineStateObservers,
+                               ObserverType::ONLINE_STATE, after);
+  }
 }
 
 void NetworkStateNotifier::setOnLine(bool onLine) {
@@ -84,38 +92,28 @@ void NetworkStateNotifier::setWebConnection(WebConnectionType type,
   }
 }
 
-void NetworkStateNotifier::addObserver(NetworkStateObserver* observer,
-                                       WebTaskRunner* taskRunner) {
-  DCHECK(taskRunner->runsTasksOnCurrentThread());
-  DCHECK(observer);
-
-  MutexLocker locker(m_mutex);
-  ObserverListMap::AddResult result = m_observers.insert(taskRunner, nullptr);
-  if (result.isNewEntry)
-    result.storedValue->value = WTF::wrapUnique(new ObserverList);
-
-  DCHECK(result.storedValue->value->observers.find(observer) == kNotFound);
-  result.storedValue->value->observers.push_back(observer);
+void NetworkStateNotifier::addConnectionObserver(
+    NetworkStateObserver* observer,
+    PassRefPtr<WebTaskRunner> taskRunner) {
+  addObserver(m_connectionObservers, observer, std::move(taskRunner));
 }
 
-void NetworkStateNotifier::removeObserver(NetworkStateObserver* observer,
-                                          WebTaskRunner* taskRunner) {
-  DCHECK(taskRunner->runsTasksOnCurrentThread());
-  DCHECK(observer);
+void NetworkStateNotifier::addOnLineObserver(
+    NetworkStateObserver* observer,
+    PassRefPtr<WebTaskRunner> taskRunner) {
+  addObserver(m_onLineStateObservers, observer, std::move(taskRunner));
+}
 
-  ObserverList* observerList = lockAndFindObserverList(taskRunner);
-  if (!observerList)
-    return;
+void NetworkStateNotifier::removeConnectionObserver(
+    NetworkStateObserver* observer,
+    PassRefPtr<WebTaskRunner> taskRunner) {
+  removeObserver(m_connectionObservers, observer, std::move(taskRunner));
+}
 
-  Vector<NetworkStateObserver*>& observers = observerList->observers;
-  size_t index = observers.find(observer);
-  if (index != kNotFound) {
-    observers[index] = 0;
-    observerList->zeroedObservers.push_back(index);
-  }
-
-  if (!observerList->iterating && !observerList->zeroedObservers.isEmpty())
-    collectZeroedObservers(observerList, taskRunner);
+void NetworkStateNotifier::removeOnLineObserver(
+    NetworkStateObserver* observer,
+    PassRefPtr<WebTaskRunner> taskRunner) {
+  removeObserver(m_onLineStateObservers, observer, std::move(taskRunner));
 }
 
 void NetworkStateNotifier::setOverride(bool onLine,
@@ -143,26 +141,28 @@ void NetworkStateNotifier::clearOverride() {
   }
 }
 
-void NetworkStateNotifier::notifyObservers(WebConnectionType type,
-                                           double maxBandwidthMbps) {
+void NetworkStateNotifier::notifyObservers(ObserverListMap& map,
+                                           ObserverType type,
+                                           const NetworkState& state) {
   DCHECK(isMainThread());
   MutexLocker locker(m_mutex);
-  for (const auto& entry : m_observers) {
-    WebTaskRunner* taskRunner = entry.key;
+  for (const auto& entry : map) {
+    RefPtr<WebTaskRunner> taskRunner = entry.key;
     taskRunner->postTask(
         BLINK_FROM_HERE,
-        crossThreadBind(&NetworkStateNotifier::
-                            notifyObserversOfConnectionChangeOnTaskRunner,
-                        crossThreadUnretained(this), type, maxBandwidthMbps,
-                        crossThreadUnretained(taskRunner)));
+        crossThreadBind(&NetworkStateNotifier::notifyObserversOnTaskRunner,
+                        crossThreadUnretained(this),
+                        crossThreadUnretained(&map), type, taskRunner, state));
   }
 }
 
-void NetworkStateNotifier::notifyObserversOfConnectionChangeOnTaskRunner(
-    WebConnectionType type,
-    double maxBandwidthMbps,
-    WebTaskRunner* taskRunner) {
-  ObserverList* observerList = lockAndFindObserverList(taskRunner);
+void NetworkStateNotifier::notifyObserversOnTaskRunner(
+    ObserverListMap* map,
+    ObserverType type,
+    PassRefPtr<WebTaskRunner> passTaskRunner,
+    const NetworkState& state) {
+  RefPtr<WebTaskRunner> taskRunner = passTaskRunner;
+  ObserverList* observerList = lockAndFindObserverList(*map, taskRunner);
 
   // The context could have been removed before the notification task got to
   // run.
@@ -175,25 +175,78 @@ void NetworkStateNotifier::notifyObserversOfConnectionChangeOnTaskRunner(
 
   for (size_t i = 0; i < observerList->observers.size(); ++i) {
     // Observers removed during iteration are zeroed out, skip them.
-    if (observerList->observers[i])
-      observerList->observers[i]->connectionChange(type, maxBandwidthMbps);
+    if (!observerList->observers[i])
+      continue;
+    switch (type) {
+      case ObserverType::ONLINE_STATE:
+        observerList->observers[i]->onLineStateChange(state.onLine);
+        continue;
+      case ObserverType::CONNECTION_TYPE:
+        observerList->observers[i]->connectionChange(state.type,
+                                                     state.maxBandwidthMbps);
+        continue;
+    }
+    NOTREACHED();
   }
 
   observerList->iterating = false;
 
   if (!observerList->zeroedObservers.isEmpty())
-    collectZeroedObservers(observerList, taskRunner);
+    collectZeroedObservers(*map, observerList, taskRunner);
+}
+
+void NetworkStateNotifier::addObserver(ObserverListMap& map,
+                                       NetworkStateObserver* observer,
+                                       PassRefPtr<WebTaskRunner> taskRunner) {
+  DCHECK(taskRunner->runsTasksOnCurrentThread());
+  DCHECK(observer);
+
+  MutexLocker locker(m_mutex);
+  ObserverListMap::AddResult result =
+      map.insert(std::move(taskRunner), nullptr);
+  if (result.isNewEntry)
+    result.storedValue->value = WTF::makeUnique<ObserverList>();
+
+  DCHECK(result.storedValue->value->observers.find(observer) == kNotFound);
+  result.storedValue->value->observers.push_back(observer);
+}
+
+void NetworkStateNotifier::removeObserver(
+    ObserverListMap& map,
+    NetworkStateObserver* observer,
+    PassRefPtr<WebTaskRunner> passTaskRunner) {
+  RefPtr<WebTaskRunner> taskRunner = passTaskRunner;
+  DCHECK(taskRunner->runsTasksOnCurrentThread());
+  DCHECK(observer);
+
+  ObserverList* observerList = lockAndFindObserverList(map, taskRunner);
+  if (!observerList)
+    return;
+
+  Vector<NetworkStateObserver*>& observers = observerList->observers;
+  size_t index = observers.find(observer);
+  if (index != kNotFound) {
+    observers[index] = 0;
+    observerList->zeroedObservers.push_back(index);
+  }
+
+  if (!observerList->iterating && !observerList->zeroedObservers.isEmpty())
+    collectZeroedObservers(map, observerList, taskRunner);
 }
 
 NetworkStateNotifier::ObserverList*
-NetworkStateNotifier::lockAndFindObserverList(WebTaskRunner* taskRunner) {
+NetworkStateNotifier::lockAndFindObserverList(
+    ObserverListMap& map,
+    PassRefPtr<WebTaskRunner> taskRunner) {
   MutexLocker locker(m_mutex);
-  ObserverListMap::iterator it = m_observers.find(taskRunner);
-  return it == m_observers.end() ? nullptr : it->value.get();
+  ObserverListMap::iterator it = map.find(taskRunner);
+  return it == map.end() ? nullptr : it->value.get();
 }
 
-void NetworkStateNotifier::collectZeroedObservers(ObserverList* list,
-                                                  WebTaskRunner* taskRunner) {
+void NetworkStateNotifier::collectZeroedObservers(
+    ObserverListMap& map,
+    ObserverList* list,
+    PassRefPtr<WebTaskRunner> taskRunner) {
   DCHECK(taskRunner->runsTasksOnCurrentThread());
   DCHECK(!list->iterating);
 
@@ -206,7 +259,7 @@ void NetworkStateNotifier::collectZeroedObservers(ObserverList* list,
 
   if (list->observers.isEmpty()) {
     MutexLocker locker(m_mutex);
-    m_observers.erase(taskRunner);  // deletes list
+    map.erase(taskRunner);  // deletes list
   }
 }
 
