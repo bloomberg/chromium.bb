@@ -1,6 +1,6 @@
 # Checking out and building Chromium for iOS
 
-There are instructions for other platforms linked from the 
+There are instructions for other platforms linked from the
 [get the code](get_the_code.md) page.
 
 ## Instructions for Google Employees
@@ -16,10 +16,10 @@ Are you a Google employee? See
 * [Xcode](https://developer.apple.com/xcode) 8.0+.
 * The OS X 10.10 SDK. Run
 
-    ```shell  
+    ```shell
     $ ls `xcode-select -p`/Platforms/MacOSX.platform/Developer/SDKs
     ```
- 
+
   to check whether you have it.  Building with the 10.11 SDK works too, but
   the releases currently use the 10.10 SDK.
 * The current version of the JDK (required for the Closure compiler).
@@ -81,7 +81,7 @@ development and testing purposes.
 Since the iOS build is a bit more complicated than a desktop build, we provide
 `ios/build/tools/setup-gn.py`, which will create four appropriately configured
 build directories under `out` for Release and Debug device and simulator
-builds, and generates an appropriate Xcode workspace as well. 
+builds, and generates an appropriate Xcode workspace as well.
 
 This script is run automatically by fetch (as part of `gclient runhooks`).
 
@@ -101,9 +101,128 @@ Note: you need to run `setup-gn.py` script every time one of the `BUILD.gn`
 file is updated (either by you or after rebasing). If you forget to run it,
 the list of targets and files in the Xcode solution may be stale.
 
-You can also follow the manual instructions on the 
+You can also follow the manual instructions on the
 [Mac page](mac_build_instructions.md), but make sure you set the
 GN arg `target_os="ios"`.
+
+## Building for device
+
+To be able to build and run Chromium and the tests for devices, you need to
+have an Apple developer account (a free one will work) and the appropriate
+provisioning profiles, then configure the build to use them.
+
+### Code signing identity
+
+Please refer to the Apple documentation on how to get a code signing identity
+and certificates. You can check that you have a code signing identity correctly
+installed by running the following command.
+
+```shell
+$ xcrun security find-identity -v -p codesigning
+  1) 0123456789ABCDEF0123456789ABCDEF01234567 "iPhone Developer: someone@example.com (XXXXXXXXXX)"
+     1 valid identities found
+```
+
+If the command output says you have zero valid identities, then you do not
+have a code signing identity installed and need to get one from Apple. If
+you have more than one identity, the build system may select the wrong one
+automatically, and you can use the `ios_code_signing_identity` gn variable
+to control which one to use by setting it to the identity hash, e.g. to
+`"0123456789ABCDEF0123456789ABCDEF01234567"`.
+
+### Mobile provisioning profiles
+
+Once you have the code signing identity, you need to decide on a prefix
+for the application bundle identifier. This is controlled by the gn variable
+`ios_app_bundle_id_prefix` and usually corresponds to a reversed domain name
+(the default value is `"org.chromium"`).
+
+You then need to request provisioning profiles from Apple for your devices
+for the following bundle identifiers to build and run Chromium with these
+application extensions:
+
+-   `${prefix}.chrome.ios.herebedragons`
+-   `${prefix}.chrome.ios.herebedragons.ShareExtension`
+-   `${prefix}.chrome.ios.herebedragons.TodayExtension`
+
+All these certificates need to have the "App Groups"
+(`com.apple.security.application-groups`) capability enabled for
+the following groups:
+
+-   `group.${prefix}.chrome`
+-   `group.${prefix}.common`
+
+The `group.${prefix}.chrome` is only shared by Chromium and its extensions
+to share files and configurations while the `group.${prefix}.common` is shared
+with Chromium and other applications from the same organisation and can be used
+to send commands to Chromium.
+
+### Mobile provisioning profiles for tests
+
+In addition to that, you need provisioning profiles for the individual test
+suites that you want to run. Their bundle identifier depends on whether the
+gn variable `ios_automatically_manage_certs` is set to true (the default)
+or false.
+
+If set to true, then you just need a provisioning profile for the bundle
+identifier `${prefix}.gtest.generic-unit-test` but you can only have a
+single test application installed on the device (all the test application
+will share the same bundle identifier).
+
+If set to false, then you need a different provisioning profile for each
+test application. Those provisioning profile will have a bundle identifier
+matching the following pattern `${prefix}.gtest.${test-suite-name}` where
+`${test-suite-name}` is the name of the test suite with underscores changed
+to dashes (e.g. `base_unittests` app will use `${prefix}.gest.base-unittests`
+as bundle identifier).
+
+To be able to run the EarlGrey tests on a device, you'll need two provisioning
+profiles for EarlGrey and OCHamcrest frameworks:
+
+-   `${prefix}.test.OCHamcrest`
+-   `${prefix}.test.EarlGrey`
+
+In addition to that, then you'll need one additional provisioning profile for
+the XCTest module too. This module bundle identifier depends on whether the
+gn variable `ios_automatically_manage_certs` is set to true or false. If set
+to true, then `${prefix}.test.gtest.generic-unit-test.generic-unit-test-module`
+will be used, otherwise it will match the following pattern:
+`${prefix}.test.${test-suite-name}.${test-suite-name}-module`.
+
+### Other applications
+
+Other applications like `ios_web_shell` usually will require mobile provisioning
+profiles with bundle identifiers that may usually match the following pattern
+`${prefix}.${application-name}` and may require specific capabilities.
+
+Generally, if the mobile provisioning profile is missing then the code signing
+step will fail and will print the bundle identifier of the bundle that could not
+be signed on the command line, e.g.:
+
+```shell
+$ ninja -C out/Debug-iphoneos ios_web_shell
+ninja: Entering directory `out/Debug-iphoneos'
+FAILED: ios_web_shell.app/ios_web_shell ios_web_shell.app/_CodeSignature/CodeResources ios_web_shell.app/embedded.mobileprovision
+python ../../build/config/ios/codesign.py code-sign-bundle -t=iphoneos -i=0123456789ABCDEF0123456789ABCDEF01234567 -e=../../build/config/ios/entitlements.plist -b=obj/ios/web/shell/ios_web_shell ios_web_shell.app
+Error: no mobile provisioning profile found for "org.chromium.ios-web-shell".
+ninja: build stopped: subcommand failed.
+```
+
+Here, the build is failing because there are no mobile provisioning profiles
+installed that could sign the `ios_web_shell.app` bundle with the identity
+`0123456789ABCDEF0123456789ABCDEF01234567`. To fix the build, you'll need to
+request such a mobile provisioning profile from Apple.
+
+You can inspect the file passed via the `-e` flag to the `codesign.py` script
+to check which capabilites are required for the mobile provisioning profile
+(e.g. `src/build/config/ios/entitlements.plist` for the above build error,
+remember that the paths are relative to the build directory, not to the source
+directory).
+
+If the required capabilities are not enabled on the mobile provisioning profile,
+then it will be impossible to install the application on a device (Xcode will
+display an error stating that "The application was signed with invalid
+entitlements").
 
 ## Running apps from the commandline
 
