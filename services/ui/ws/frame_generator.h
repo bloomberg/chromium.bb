@@ -39,12 +39,13 @@ class ServerWindow;
 // submitting CompositorFrames to the owned CompositorFrameSink.
 class FrameGenerator : public cc::mojom::MojoCompositorFrameSinkClient {
  public:
-  FrameGenerator(FrameGeneratorDelegate* delegate,
-                 ServerWindow* root_window,
-                 gfx::AcceleratedWidget widget);
+  FrameGenerator(FrameGeneratorDelegate* delegate, ServerWindow* root_window);
   ~FrameGenerator() override;
 
   void SetDeviceScaleFactor(float device_scale_factor);
+
+  // Schedules a redraw for the provided region.
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget);
 
   // Updates the WindowManager's SurfaceInfo.
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info);

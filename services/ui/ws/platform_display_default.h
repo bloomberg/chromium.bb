@@ -26,7 +26,7 @@ namespace ws {
 // FrameGenerator for Chrome OS.
 class PlatformDisplayDefault : public PlatformDisplay,
                                public ui::PlatformWindowDelegate,
-                               public FrameGeneratorDelegate {
+                               private FrameGeneratorDelegate {
  public:
   explicit PlatformDisplayDefault(const PlatformDisplayInitParams& init_params);
   ~PlatformDisplayDefault() override;
@@ -83,8 +83,6 @@ class PlatformDisplayDefault : public PlatformDisplay,
   display::ViewportMetrics metrics_;
   std::unique_ptr<ui::PlatformWindow> platform_window_;
   gfx::AcceleratedWidget widget_;
-  ServerWindow* root_window_;
-  float init_device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformDisplayDefault);
 };
