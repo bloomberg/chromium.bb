@@ -225,23 +225,19 @@ void BackgroundImageGeometry::setRepeatX(const FillLayer& fillLayer,
         roundedMinimumValueForLength(fillLayer.xPosition(),
                                      unsnappedAvailableWidth) -
         offsetForCell;
+    float numberOfTilesInPosition;
     if (fillLayer.backgroundXOrigin() == RightEdge) {
-      float numberOfTilesInPosition =
+      numberOfTilesInPosition =
           (snappedAvailableWidth - computedXPosition + extraOffset).toFloat() /
           unsnappedTileWidth.toFloat();
-      float fractionalPositionWithinTile =
-          numberOfTilesInPosition - truncf(numberOfTilesInPosition);
-      setPhaseX(LayoutUnit(
-          roundf(fractionalPositionWithinTile * tileSize().width())));
     } else {
-      float numberOfTilesInPosition =
-          (computedXPosition + extraOffset).toFloat() /
-          unsnappedTileWidth.toFloat();
-      float fractionalPositionWithinTile =
-          1.0f - (numberOfTilesInPosition - truncf(numberOfTilesInPosition));
-      setPhaseX(LayoutUnit(
-          roundf(fractionalPositionWithinTile * tileSize().width())));
+      numberOfTilesInPosition = (computedXPosition + extraOffset).toFloat() /
+                                unsnappedTileWidth.toFloat();
     }
+    float fractionalPositionWithinTile =
+        1.0f - (numberOfTilesInPosition - truncf(numberOfTilesInPosition));
+    setPhaseX(
+        LayoutUnit(roundf(fractionalPositionWithinTile * tileSize().width())));
   } else {
     setPhaseX(LayoutUnit());
   }
@@ -262,23 +258,19 @@ void BackgroundImageGeometry::setRepeatY(const FillLayer& fillLayer,
         roundedMinimumValueForLength(fillLayer.yPosition(),
                                      unsnappedAvailableHeight) -
         offsetForCell;
+    float numberOfTilesInPosition;
     if (fillLayer.backgroundYOrigin() == BottomEdge) {
-      float numberOfTilesInPosition =
+      numberOfTilesInPosition =
           (snappedAvailableHeight - computedYPosition + extraOffset).toFloat() /
           unsnappedTileHeight.toFloat();
-      float fractionalPositionWithinTile =
-          numberOfTilesInPosition - truncf(numberOfTilesInPosition);
-      setPhaseY(LayoutUnit(
-          roundf(fractionalPositionWithinTile * tileSize().height())));
     } else {
-      float numberOfTilesInPosition =
-          (computedYPosition + extraOffset).toFloat() /
-          unsnappedTileHeight.toFloat();
-      float fractionalPositionWithinTile =
-          1.0f - (numberOfTilesInPosition - truncf(numberOfTilesInPosition));
-      setPhaseY(LayoutUnit(
-          roundf(fractionalPositionWithinTile * tileSize().height())));
+      numberOfTilesInPosition = (computedYPosition + extraOffset).toFloat() /
+                                unsnappedTileHeight.toFloat();
     }
+    float fractionalPositionWithinTile =
+        1.0f - (numberOfTilesInPosition - truncf(numberOfTilesInPosition));
+    setPhaseY(
+        LayoutUnit(roundf(fractionalPositionWithinTile * tileSize().height())));
   } else {
     setPhaseY(LayoutUnit());
   }
