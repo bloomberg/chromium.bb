@@ -542,8 +542,6 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
       ResourceRequesterInfo::CreateForNavigationPreload(requester_info),
       mojo::MakeRequest(&url_loader_factory));
 
-  preload_handle_ = mojom::FetchEventPreloadHandle::New();
-
   ResourceRequest request;
   request.method = original_request->method();
   request.url = original_request->url();
