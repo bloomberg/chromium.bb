@@ -872,7 +872,7 @@ public class ToolbarPhone extends ToolbarLayout
         // accepting click events.
         int toolbarButtonVisibility = mUrlExpansionPercent == 1f ? INVISIBLE : VISIBLE;
         mToolbarButtonsContainer.setVisibility(
-                shouldHideEndToolbarButtons() ? INVISIBLE : toolbarButtonVisibility);
+                shouldHideEndToolbarButtons() ? GONE : toolbarButtonVisibility);
         if (mHomeButton.getVisibility() != GONE) {
             mHomeButton.setVisibility(toolbarButtonVisibility);
         }
