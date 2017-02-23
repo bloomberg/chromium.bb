@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "net/base/url_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "printing/features/features.h"
 #include "url/gurl.h"
 
@@ -725,9 +726,36 @@ std::unique_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
   replacements.SetHostStr(host);
   std::string port = base::UintToString(host_port_.port());
   replacements.SetPortStr(port);
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("cloud_print", R"(
+        semantics {
+          sender: "Cloud Print"
+          description:
+            "Cloud Print local printing uses these requests to query "
+            "information from printers on local network and send print jobs to "
+            "them."
+          trigger:
+            "Print Preview; New printer on network; chrome://devices/"
+          data:
+            "Printer information, settings and document for printing."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can enable or disable background requests by 'Show "
+            "notifications when new printers are detected on the network' in "
+            "Chrome's settings under Advanced Settings, Google Cloud Print. "
+            "User triggered requests, like from print preview or "
+            "chrome://devices/ cannot be disabled."
+          }
+          policy_exception_justification:
+            "Not implemented, it's good to do so."
+        })");
   return std::unique_ptr<PrivetURLFetcher>(
       new PrivetURLFetcher(url.ReplaceComponents(replacements), request_type,
-                           context_getter_, delegate));
+                           context_getter_, traffic_annotation, delegate));
 }
 
 void PrivetHTTPClientImpl::RefreshPrivetToken(

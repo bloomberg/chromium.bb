@@ -66,6 +66,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
       const GURL& url,
       net::URLFetcher::RequestType request_type,
       const scoped_refptr<net::URLRequestContextGetter>& context_getter,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       Delegate* delegate);
 
   ~PrivetURLFetcher() override;
@@ -122,6 +123,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   const GURL url_;
   net::URLFetcher::RequestType request_type_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
   Delegate* delegate_;
 
   int max_retries_;
