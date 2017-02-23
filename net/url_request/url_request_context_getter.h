@@ -5,6 +5,7 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_CONTEXT_GETTER_H_
 #define NET_URL_REQUEST_URL_REQUEST_CONTEXT_GETTER_H_
 
+#include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -69,6 +70,10 @@ class NET_EXPORT URLRequestContextGetter
   void OnDestruct() const;
 
   base::ObserverList<URLRequestContextGetterObserver> observer_list_;
+
+#if !defined(NDEBUG)
+  base::debug::StackTrace created_at;
+#endif  // !defined(NDEBUG)
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextGetter);
 };
