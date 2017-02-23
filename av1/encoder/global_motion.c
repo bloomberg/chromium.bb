@@ -15,6 +15,8 @@
 #include <math.h>
 #include <assert.h>
 
+#include "av1/encoder/global_motion.h"
+
 #include "av1/common/warped_motion.h"
 
 #include "av1/encoder/segmentation.h"
@@ -29,6 +31,16 @@
 
 // Border over which to compute the global motion
 #define ERRORADV_BORDER 0
+
+const double gm_advantage_thresh[TRANS_TYPES] = {
+  1.00,  // Identity (not used)
+  0.85,  // Translation
+  0.75,  // Rot zoom
+  0.65,  // Affine
+  0.65,  // Hor Trapezoid
+  0.65,  // Ver Trapezoid
+  0.50,  // Homography
+};
 
 void convert_to_params(const double *params, int32_t *model) {
   int i;
