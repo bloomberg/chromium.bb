@@ -8,10 +8,8 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/timer/elapsed_timer.h"
-#include "content/public/browser/browser_thread.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/content_hash_reader.h"
@@ -67,9 +65,10 @@ void ContentVerifyJob::Start() {
   if (g_test_observer)
     g_test_observer->JobStarted(hash_reader_->extension_id(),
                                 hash_reader_->relative_path());
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::USER_VISIBLE),
       base::Bind(&ContentHashReader::Init, hash_reader_),
       base::Bind(&ContentVerifyJob::OnHashesReady, this));
 }
