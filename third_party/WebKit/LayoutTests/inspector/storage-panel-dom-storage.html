@@ -39,28 +39,30 @@ function test()
         InspectorTest.addResult("KeyValue pairs: " + rows.join(''));
     }
 
-    InspectorTest.deprecatedRunAfterPendingDispatches(function() {
-        var storages = InspectorTest.domStorageModel().storages();
-        if (storages) {
-            for (var i = 0; i < storages.length; i++) {
-                var storage = storages[i];
-                UI.panels.resources._showDOMStorage(storage);
-                InspectorTest.addResult("Did show: " + name(storage));
-            }
-        } else
-            InspectorTest.addResult("FAIL: no DOM storages found.");
-
-        InspectorTest.deprecatedRunAfterPendingDispatches(function() {
-            var storages = InspectorTest.domStorageModel().storages();
-            for (var i = 0; i < storages.length; i++) {
-                var storage = storages[i];
-                InspectorTest.addResult(name(storage) + " content: ");
-                var view = UI.panels.resources._domStorageViews.get(storage);
-                dumpDataGridContent(view._dataGrid);
-            }
+    function testStorageInView(storages) {
+        var storage = storages.shift();
+        if (!storage) {
             InspectorTest.addResult("DONE");
             InspectorTest.completeTest();
+            return;
+        }
+        UI.panels.resources._showDOMStorage(storage);
+        InspectorTest.addResult("Did show: " + name(storage));
+        InspectorTest.deprecatedRunAfterPendingDispatches(function() {
+            InspectorTest.addResult(name(storage) + " content: ");
+            var view = UI.panels.resources._domStorageView;
+            dumpDataGridContent(view._dataGrid);
+            InspectorTest.deprecatedRunAfterPendingDispatches(() => testStorageInView(storages));
         });
+    }
+
+    InspectorTest.deprecatedRunAfterPendingDispatches(function() {
+        var storages = InspectorTest.domStorageModel().storages();
+        if (storages)
+            testStorageInView(storages.slice());
+        else
+            InspectorTest.addResult("FAIL: no DOM storages found.");
+
     });
 }
 
