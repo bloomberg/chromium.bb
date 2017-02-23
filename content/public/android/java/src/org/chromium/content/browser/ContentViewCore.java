@@ -40,6 +40,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
@@ -59,6 +60,7 @@ import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupDropdown;
 import org.chromium.content.browser.input.SelectPopupItem;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
@@ -353,6 +355,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private float mCurrentTouchOffsetX;
     private float mCurrentTouchOffsetY;
 
+    // True if we want to disable Android native event batching and use compositor event queue.
+    private boolean mShouldRequestUnbufferedDispatch;
+
     // Whether the ContentViewCore requires the WebContents to be fullscreen in order to lock the
     // screen orientation.
     private boolean mFullscreenRequiredForOrientationLock = true;
@@ -584,6 +589,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mSelectionPopupController.setContainerView(getContainerView());
 
         mWebContentsObserver = new ContentViewWebContentsObserver(this);
+
+        mShouldRequestUnbufferedDispatch = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && CommandLine.getInstance().hasSwitch(ContentSwitches.REQUEST_UNBUFFERED_DISPATCH);
     }
 
     /**
@@ -996,6 +1004,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             int eventAction = event.getActionMasked();
 
             if (eventAction == MotionEvent.ACTION_DOWN) {
+                if (mShouldRequestUnbufferedDispatch) {
+                    requestUnbufferedDispatch(event);
+                }
                 cancelRequestToScrollFocusedEditableNodeIntoView();
             }
 
@@ -2455,6 +2466,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             createVirtualStructure(viewNode.asyncNewChild(i), node.children.get(i), true);
         }
         viewNode.asyncCommit();
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void requestUnbufferedDispatch(MotionEvent touchDownEvent) {
+        mContainerView.requestUnbufferedDispatch(touchDownEvent);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
