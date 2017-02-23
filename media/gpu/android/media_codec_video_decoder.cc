@@ -30,7 +30,8 @@ bool ConfigSupported(const VideoDecoderConfig& config) {
   // the stream is encrypted.
   const auto codec = config.codec();
   if (IsMediaCodecSoftwareDecodingForbidden(config) &&
-      VideoCodecBridge::IsKnownUnaccelerated(codec, MEDIA_CODEC_DECODER)) {
+      MediaCodecUtil::IsKnownUnaccelerated(codec,
+                                           MediaCodecDirection::DECODER)) {
     DVLOG(1) << "Config not supported: " << GetCodecName(codec)
              << " is not hardware accelerated";
     return false;

@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "media/base/android/media_codec_direction.h"
+#include "media/base/audio_codecs.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
 
@@ -22,26 +23,11 @@ namespace media {
 
 class MediaCodecBridge;
 
-// Helper macro to skip the test if MediaCodecBridge isn't available.
-#define SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE()        \
-  do {                                                            \
-    if (!MediaCodecUtil::IsMediaCodecAvailable()) {               \
-      VLOG(0) << "Could not run test - not supported on device."; \
-      return;                                                     \
-    }                                                             \
-  } while (0)
-
-// Helper macro to skip the test if VP8 decoding isn't supported.
-#define SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED()               \
-  do {                                                            \
-    if (!MediaCodecUtil::IsVp8DecoderAvailable()) {               \
-      VLOG(0) << "Could not run test - not supported on device."; \
-      return;                                                     \
-    }                                                             \
-  } while (0)
-
 class MEDIA_EXPORT MediaCodecUtil {
  public:
+  static std::string CodecToAndroidMimeType(AudioCodec codec);
+  static std::string CodecToAndroidMimeType(VideoCodec codec);
+
   // Returns true if MediaCodec is available on the device.
   // All other static methods check IsAvailable() internally. There's no need
   // to check IsAvailable() explicitly before calling them.
@@ -57,9 +43,10 @@ class MEDIA_EXPORT MediaCodecUtil {
   // Returns true if MediaCodec.setParameters() is available on the device.
   static bool SupportsSetParameters();
 
-  // Returns whether MediaCodecBridge has a decoder that |is_secure| and can
-  // decode |codec| type.
-  static bool CanDecode(const std::string& codec, bool is_secure);
+  // Returns whether it's possible to create a MediaCodec for the given codec
+  // and secureness.
+  static bool CanDecode(VideoCodec codec, bool is_secure);
+  static bool CanDecode(AudioCodec codec);
 
   // Returns a vector of supported codecs profiles and levels.
   static bool AddSupportedCodecProfileLevels(
@@ -72,7 +59,7 @@ class MEDIA_EXPORT MediaCodecUtil {
 
   // Returns true if |mime_type| is known to be unaccelerated (i.e. backed by a
   // software codec instead of a hardware one).
-  static bool IsKnownUnaccelerated(const std::string& mime_type,
+  static bool IsKnownUnaccelerated(VideoCodec codec,
                                    MediaCodecDirection direction);
 
   // Test whether a URL contains "m3u8".
@@ -102,6 +89,9 @@ class MEDIA_EXPORT MediaCodecUtil {
   // When true, the client should work around the issue by releasing the
   // decoder and instantiating a new one rather than flushing the current one.
   static bool CodecNeedsFlushWorkaround(MediaCodecBridge* codec);
+
+ private:
+  static bool CanDecodeInternal(const std::string& mime, bool is_secure);
 };
 
 }  // namespace media

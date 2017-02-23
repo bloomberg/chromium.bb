@@ -14,6 +14,8 @@
 #include "ipc/ipc_message_macros.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/base/audio_codecs.h"
+#include "media/base/video_codecs.h"
 #include "media/media_features.h"
 
 using content::BrowserThread;
@@ -24,29 +26,29 @@ namespace cdm {
 
 const size_t kMaxKeySystemLength = 256;
 
-enum CodecType {
-  CODEC_AUDIO,
-  CODEC_VIDEO
-};
-
+template <typename CodecType>
 struct CodecInfo {
-  SupportedCodecs codec;
-  CodecType codec_type;
-  const char* codec_name;
+  SupportedCodecs eme_codec;
+  CodecType codec;
   const char* container_mime_type;
 };
 
-const CodecInfo kCodecsToQuery[] = {
-  {media::EME_CODEC_WEBM_OPUS, CODEC_AUDIO, "opus", "video/webm"},
-  {media::EME_CODEC_WEBM_VORBIS, CODEC_AUDIO, "vorbis", "video/webm"},
-  {media::EME_CODEC_WEBM_VP8, CODEC_VIDEO, "vp8", "video/webm"},
-  {media::EME_CODEC_WEBM_VP9, CODEC_VIDEO, "vp9", "video/webm"},
+const CodecInfo<media::VideoCodec> kVideoCodecsToQuery[] = {
+    {media::EME_CODEC_WEBM_VP8, media::kCodecVP8, "video/webm"},
+    {media::EME_CODEC_WEBM_VP9, media::kCodecVP9, "video/webm"},
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  {media::EME_CODEC_MP4_AAC, CODEC_AUDIO, "mp4a", "video/mp4"},
-  {media::EME_CODEC_MP4_AVC1, CODEC_VIDEO, "avc1", "video/mp4"},
+    {media::EME_CODEC_MP4_AVC1, media::kCodecH264, "video/mp4"},
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  {media::EME_CODEC_MP4_HEVC, CODEC_VIDEO, "hvc1", "video/mp4"},
+    {media::EME_CODEC_MP4_HEVC, media::kCodecHEVC, "video/mp4"},
 #endif
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+};
+
+const CodecInfo<media::AudioCodec> kAudioCodecsToQuery[] = {
+    {media::EME_CODEC_WEBM_OPUS, media::kCodecOpus, "video/webm"},
+    {media::EME_CODEC_WEBM_VORBIS, media::kCodecVorbis, "video/webm"},
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    {media::EME_CODEC_MP4_AAC, media::kCodecAAC, "video/mp4"},
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 };
 
@@ -56,17 +58,24 @@ static SupportedCodecs GetSupportedCodecs(
   const std::string& key_system = request.key_system;
   SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
 
-  for (size_t i = 0; i < arraysize(kCodecsToQuery); ++i) {
-    const CodecInfo& info = kCodecsToQuery[i];
+  for (const auto& info : kVideoCodecsToQuery) {
     // TODO(qinmin): Remove the composition logic when secure contents can be
     // composited.
-    bool is_secure = (info.codec_type == CODEC_VIDEO)
-                         ? (!video_must_be_compositable) : false;
-    if ((request.codecs & info.codec) &&
+    bool is_secure = !video_must_be_compositable;
+    if ((request.codecs & info.eme_codec) &&
         MediaDrmBridge::IsKeySystemSupportedWithType(
             key_system, info.container_mime_type) &&
-        media::MediaCodecUtil::CanDecode(info.codec_name, is_secure)) {
-      supported_codecs |= info.codec;
+        media::MediaCodecUtil::CanDecode(info.codec, is_secure)) {
+      supported_codecs |= info.eme_codec;
+    }
+  }
+
+  for (const auto& info : kAudioCodecsToQuery) {
+    if ((request.codecs & info.eme_codec) &&
+        MediaDrmBridge::IsKeySystemSupportedWithType(
+            key_system, info.container_mime_type) &&
+        media::MediaCodecUtil::CanDecode(info.codec)) {
+      supported_codecs |= info.eme_codec;
     }
   }
 

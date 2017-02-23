@@ -121,8 +121,8 @@ AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
       continue;
     }
 
-    if (VideoCodecBridge::IsKnownUnaccelerated(supported_codec.codec,
-                                               MEDIA_CODEC_ENCODER)) {
+    if (MediaCodecUtil::IsKnownUnaccelerated(supported_codec.codec,
+                                             MediaCodecDirection::ENCODER)) {
       continue;
     }
 
@@ -187,7 +187,8 @@ bool AndroidVideoEncodeAccelerator::Initialize(
   last_set_bitrate_ = initial_bitrate;
 
   // Only consider using MediaCodec if it's likely backed by hardware.
-  if (VideoCodecBridge::IsKnownUnaccelerated(codec, MEDIA_CODEC_ENCODER)) {
+  if (MediaCodecUtil::IsKnownUnaccelerated(codec,
+                                           MediaCodecDirection::ENCODER)) {
     DLOG(ERROR) << "No HW support";
     return false;
   }
@@ -197,9 +198,9 @@ bool AndroidVideoEncodeAccelerator::Initialize(
     DLOG(ERROR) << "No color format support.";
     return false;
   }
-  media_codec_.reset(VideoCodecBridge::CreateEncoder(
+  media_codec_ = MediaCodecBridgeImpl::CreateVideoEncoder(
       codec, input_visible_size, initial_bitrate, INITIAL_FRAMERATE,
-      i_frame_interval, pixel_format));
+      i_frame_interval, pixel_format);
 
   if (!media_codec_) {
     DLOG(ERROR) << "Failed to create/start the codec: "
@@ -310,7 +311,7 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
   MediaCodecStatus status =
       media_codec_->DequeueInputBuffer(NoWaitTimeOut(), &input_buf_index);
   if (status != MEDIA_CODEC_OK) {
-    DCHECK(status == MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER ||
+    DCHECK(status == MEDIA_CODEC_TRY_AGAIN_LATER ||
            status == MEDIA_CODEC_ERROR);
     RETURN_ON_FAILURE(status != MEDIA_CODEC_ERROR, "MediaCodec error",
                       kPlatformFailureError);
@@ -384,7 +385,7 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
       media_codec_->DequeueOutputBuffer(NoWaitTimeOut(), &buf_index, &offset,
                                         &size, nullptr, nullptr, &key_frame);
   switch (status) {
-    case MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
+    case MEDIA_CODEC_TRY_AGAIN_LATER:
       return;
 
     case MEDIA_CODEC_ERROR:

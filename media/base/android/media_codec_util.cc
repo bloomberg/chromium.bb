@@ -35,8 +35,8 @@ using base::android::SDK_VERSION_LOLLIPOP_MR1;
 namespace media {
 
 namespace {
-
-const char kMp4aMimeType[] = "audio/mp4a-latm";
+const char kMp3MimeType[] = "audio/mpeg";
+const char kAacMimeType[] = "audio/mp4a-latm";
 const char kOpusMimeType[] = "audio/opus";
 const char kVorbisMimeType[] = "audio/vorbis";
 const char kAc3MimeType[] = "audio/ac3";
@@ -45,64 +45,24 @@ const char kAvcMimeType[] = "video/avc";
 const char kHevcMimeType[] = "video/hevc";
 const char kVp8MimeType[] = "video/x-vnd.on2.vp8";
 const char kVp9MimeType[] = "video/x-vnd.on2.vp9";
-
 }  // namespace
-
-static std::string CodecTypeToAndroidMimeType(const std::string& codec) {
-  // TODO(xhwang): Shall we handle more detailed strings like "mp4a.40.2"?
-  if (codec == "avc1")
-    return kAvcMimeType;
-  if (codec == "hvc1")
-    return kHevcMimeType;
-  if (codec == "mp4a")
-    return kMp4aMimeType;
-  if (codec == "vp8" || codec == "vp8.0")
-    return kVp8MimeType;
-  if (codec == "vp9" || codec == "vp9.0")
-    return kVp9MimeType;
-  if (codec == "vorbis")
-    return kVorbisMimeType;
-  if (codec == "opus")
-    return kOpusMimeType;
-  if (codec == "ac3")
-    return kAc3MimeType;
-  if (codec == "eac3")
-    return kEac3MimeType;
-
-  DLOG(WARNING) << "Cannot convert codec to Android MIME type: " << codec;
-  return std::string();
-}
-
-static VideoCodec AndroidCodecToCodecEnum(const std::string& codec) {
-  if (codec == "AVC")
-    return kCodecH264;
-  if (codec == "VP8")
-    return kCodecVP8;
-  if (codec == "VP9")
-    return kCodecVP9;
-  if (codec == "HEVC")
-    return kCodecHEVC;
-  DLOG(WARNING) << "Unknown video codec name \"" << codec << "\"";
-  return kUnknownVideoCodec;
-}
 
 static CodecProfileLevel MediaCodecProfileLevelToChromiumProfileLevel(
     JNIEnv* env,
     const jobject& j_codec_profile_level) {
-  ScopedJavaLocalRef<jstring> codec =
-      Java_CodecProfileLevelAdapter_getCodec(env, j_codec_profile_level);
-  int profile =
-      Java_CodecProfileLevelAdapter_getProfile(env, j_codec_profile_level);
+  VideoCodec codec = static_cast<VideoCodec>(
+      Java_CodecProfileLevelAdapter_getCodec(env, j_codec_profile_level));
+  VideoCodecProfile profile = static_cast<VideoCodecProfile>(
+      Java_CodecProfileLevelAdapter_getProfile(env, j_codec_profile_level));
   int level =
       Java_CodecProfileLevelAdapter_getLevel(env, j_codec_profile_level);
-  return {AndroidCodecToCodecEnum(ConvertJavaStringToUTF8(codec)),
-          static_cast<VideoCodecProfile>(profile), level};
+  return {codec, profile, level};
 }
 
 static bool IsSupportedAndroidMimeType(const std::string& mime_type) {
   std::vector<std::string> supported{
-      kMp4aMimeType, kOpusMimeType, kVorbisMimeType, kAvcMimeType,
-      kHevcMimeType, kVp8MimeType,  kVp9MimeType};
+      kMp3MimeType, kAacMimeType,  kOpusMimeType, kVorbisMimeType,
+      kAvcMimeType, kHevcMimeType, kVp8MimeType,  kVp9MimeType};
   return std::find(supported.begin(), supported.end(), mime_type) !=
          supported.end();
 }
@@ -114,8 +74,8 @@ static std::string GetDefaultCodecName(const std::string& mime_type,
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime_type);
   ScopedJavaLocalRef<jstring> j_codec_name =
-      Java_MediaCodecUtil_getDefaultCodecName(env, j_mime, direction,
-                                              require_software_codec);
+      Java_MediaCodecUtil_getDefaultCodecName(
+          env, j_mime, static_cast<int>(direction), require_software_codec);
   return ConvertJavaStringToUTF8(env, j_codec_name.obj());
 }
 
@@ -134,6 +94,42 @@ static bool IsEncoderSupportedByDevice(const std::string& android_mime_type) {
   ScopedJavaLocalRef<jstring> j_mime =
       ConvertUTF8ToJavaString(env, android_mime_type);
   return Java_MediaCodecUtil_isEncoderSupportedByDevice(env, j_mime);
+}
+
+// static
+std::string MediaCodecUtil::CodecToAndroidMimeType(AudioCodec codec) {
+  switch (codec) {
+    case kCodecMP3:
+      return kMp3MimeType;
+    case kCodecVorbis:
+      return kVorbisMimeType;
+    case kCodecOpus:
+      return kOpusMimeType;
+    case kCodecAAC:
+      return kAacMimeType;
+    case kCodecAC3:
+      return kAc3MimeType;
+    case kCodecEAC3:
+      return kEac3MimeType;
+    default:
+      return std::string();
+  }
+}
+
+// static
+std::string MediaCodecUtil::CodecToAndroidMimeType(VideoCodec codec) {
+  switch (codec) {
+    case kCodecH264:
+      return kAvcMimeType;
+    case kCodecHEVC:
+      return kHevcMimeType;
+    case kCodecVP8:
+      return kVp8MimeType;
+    case kCodecVP9:
+      return kVp9MimeType;
+    default:
+      return std::string();
+  }
 }
 
 // static
@@ -219,14 +215,24 @@ std::set<int> MediaCodecUtil::GetEncoderColorFormats(
 }
 
 // static
-bool MediaCodecUtil::CanDecode(const std::string& codec, bool is_secure) {
+bool MediaCodecUtil::CanDecode(VideoCodec codec, bool is_secure) {
+  return CanDecodeInternal(CodecToAndroidMimeType(codec), is_secure);
+}
+
+// static
+bool MediaCodecUtil::CanDecode(AudioCodec codec) {
+  return CanDecodeInternal(CodecToAndroidMimeType(codec), false);
+}
+
+// static
+bool MediaCodecUtil::CanDecodeInternal(const std::string& mime,
+                                       bool is_secure) {
   if (!IsMediaCodecAvailable())
+    return false;
+  if (mime.empty())
     return false;
 
   JNIEnv* env = AttachCurrentThread();
-  std::string mime = CodecTypeToAndroidMimeType(codec);
-  if (mime.empty())
-    return false;
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
   return Java_MediaCodecUtil_canDecode(env, j_mime, is_secure);
 }
@@ -251,16 +257,15 @@ bool MediaCodecUtil::AddSupportedCodecProfileLevels(
 }
 
 // static
-bool MediaCodecUtil::IsKnownUnaccelerated(const std::string& android_mime_type,
+bool MediaCodecUtil::IsKnownUnaccelerated(VideoCodec codec,
                                           MediaCodecDirection direction) {
-  DCHECK(IsSupportedAndroidMimeType(android_mime_type));
   if (!IsMediaCodecAvailable())
     return true;
 
   std::string codec_name =
-      GetDefaultCodecName(android_mime_type, direction, false);
-  DVLOG(1) << __func__ << "Default codec for " << android_mime_type << " : "
-           << codec_name << ", direction: " << direction;
+      GetDefaultCodecName(CodecToAndroidMimeType(codec), direction, false);
+  DVLOG(1) << __func__ << "Default codec for " << GetCodecName(codec) << " : "
+           << codec_name << ", direction: " << static_cast<int>(direction);
   if (codec_name.empty())
     return true;
 
@@ -268,10 +273,10 @@ bool MediaCodecUtil::IsKnownUnaccelerated(const std::string& android_mime_type,
   // MediaTek hardware vp9 is known crashy, see http://crbug.com/446974 and
   // http://crbug.com/597836.
   if (base::StartsWith(codec_name, "OMX.MTK.", base::CompareCase::SENSITIVE)) {
-    if (android_mime_type == kVp8MimeType)
+    if (codec == kCodecVP8)
       return true;
 
-    if (android_mime_type == kVp9MimeType)
+    if (codec == kCodecVP9)
       return base::android::BuildInfo::GetInstance()->sdk_int() < 21;
 
     return false;

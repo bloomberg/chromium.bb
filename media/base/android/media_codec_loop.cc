@@ -150,7 +150,7 @@ MediaCodecLoop::InputBuffer MediaCodecLoop::DequeueInputBuffer() {
   media::MediaCodecStatus status =
       media_codec_->DequeueInputBuffer(kNoWaitTimeout, &input_buf_index);
   switch (status) {
-    case media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
+    case media::MEDIA_CODEC_TRY_AGAIN_LATER:
       break;
 
     case media::MEDIA_CODEC_ERROR:
@@ -287,7 +287,7 @@ bool MediaCodecLoop::ProcessOneOutputBuffer() {
       did_work = true;
       break;
 
-    case MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
+    case MEDIA_CODEC_TRY_AGAIN_LATER:
       // Nothing to do.
       break;
 

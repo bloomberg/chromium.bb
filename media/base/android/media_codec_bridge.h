@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
@@ -21,12 +22,11 @@ namespace media {
 class EncryptionScheme;
 struct SubsampleEntry;
 
-// These must be in sync with MediaCodecBridge.MEDIA_CODEC_XXX constants in
-// MediaCodecBridge.java.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
+// GENERATED_JAVA_PREFIX_TO_STRIP: MEDIA_CODEC_
 enum MediaCodecStatus {
   MEDIA_CODEC_OK,
-  MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER,
-  MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER,
+  MEDIA_CODEC_TRY_AGAIN_LATER,
   MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED,
   MEDIA_CODEC_OUTPUT_FORMAT_CHANGED,
   MEDIA_CODEC_NO_KEY,
@@ -39,43 +39,35 @@ class MEDIA_EXPORT MediaCodecBridge {
   MediaCodecBridge() = default;
   virtual ~MediaCodecBridge() = default;
 
-  // Calls start() against the media codec instance. Returns whether media
-  // codec was successfully started.
-  virtual bool Start() = 0;
-
-  // Finishes the decode/encode session. The instance remains active
-  // and ready to be StartAudio/Video()ed again. HOWEVER, due to the buggy
-  // vendor's implementation , b/8125974, Stop() -> StartAudio/Video() may not
-  // work on some devices. For reliability, Stop() -> delete and recreate new
-  // instance -> StartAudio/Video() is recommended.
+  // Calls MediaCodec#stop(). However, due to buggy implementations (b/8125974)
+  // Stop() followed by Start() may not work on some devices. For reliability,
+  // it's recommended to delete the instance and create a new one instead.
   virtual void Stop() = 0;
 
-  // Calls flush() on the MediaCodec. All indices previously returned in calls
-  // to DequeueInputBuffer() and DequeueOutputBuffer() become invalid. Please
-  // note that this clears all the inputs in the media codec. In other words,
-  // there will be no outputs until new input is provided. Returns
-  // MEDIA_CODEC_ERROR if an unexpected error happens, or MEDIA_CODEC_OK
-  // otherwise.
+  // Calls MediaCodec#flush(). The codec takes ownership of all input and output
+  // buffers previously dequeued when this is called. Returns MEDIA_CODEC_ERROR
+  // if an unexpected error happens, or MEDIA_CODEC_OK otherwise.
   virtual MediaCodecStatus Flush() = 0;
 
-  // Used for getting the output size. This is valid after DequeueInputBuffer()
-  // returns a format change by returning INFO_OUTPUT_FORMAT_CHANGED.
+  // Returns the output size. This is valid after DequeueOutputBuffer()
+  // signals a format change by returning OUTPUT_FORMAT_CHANGED.
   // Returns MEDIA_CODEC_ERROR if an error occurs, or MEDIA_CODEC_OK otherwise.
   virtual MediaCodecStatus GetOutputSize(gfx::Size* size) = 0;
 
-  // Used for checking for new sampling rate after DequeueInputBuffer() returns
-  // INFO_OUTPUT_FORMAT_CHANGED
+  // Gets the sampling rate. This is valid after DequeueOutputBuffer()
+  // signals a format change by returning INFO_OUTPUT_FORMAT_CHANGED.
   // Returns MEDIA_CODEC_ERROR if an error occurs, or MEDIA_CODEC_OK otherwise.
   virtual MediaCodecStatus GetOutputSamplingRate(int* sampling_rate) = 0;
 
-  // Fills |channel_count| with the number of audio channels. Useful after
-  // INFO_OUTPUT_FORMAT_CHANGED.
-  // Returns MEDIA_CODEC_ERROR if an error occurs, or MEDIA_CODEC_OK otherwise.
+  // Fills |channel_count| with the number of audio channels.  This is valid
+  // after DequeueOutputBuffer() signals a format change by returning
+  // INFO_OUTPUT_FORMAT_CHANGED. Returns MEDIA_CODEC_ERROR if an error occurs,
+  // or MEDIA_CODEC_OK otherwise.
   virtual MediaCodecStatus GetOutputChannelCount(int* channel_count) = 0;
 
   // Submits a byte array to the given input buffer. Call this after getting an
-  // available buffer from DequeueInputBuffer(). If |data| is NULL, assume the
-  // input buffer has already been populated (but still obey |size|).
+  // available buffer from DequeueInputBuffer(). If |data| is NULL, it assumes
+  // the input buffer has already been populated (but still obeys |size|).
   // |data_size| must be less than kint32max (because Java).
   virtual MediaCodecStatus QueueInputBuffer(
       int index,
@@ -139,6 +131,19 @@ class MEDIA_EXPORT MediaCodecBridge {
 
   // Gets the component name. Before API level 18 this returns an empty string.
   virtual std::string GetName() = 0;
+
+  // Changes the output surface for the MediaCodec. May only be used on API
+  // level 23 and higher (Marshmallow).
+  virtual bool SetSurface(jobject surface) = 0;
+
+  // Sets the video encoder target bitrate and framerate.
+  virtual void SetVideoBitrate(int bps, int frame_rate) = 0;
+
+  // Requests that the video encoder insert a key frame.
+  virtual void RequestKeyFrameSoon() = 0;
+
+  // Returns whether the codec is configured for adaptive playback.
+  virtual bool IsAdaptivePlaybackSupported() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecBridge);
 };

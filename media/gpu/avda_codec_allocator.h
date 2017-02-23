@@ -99,7 +99,7 @@ class AVDACodecAllocatorClient {
   // Called on the main thread when a new MediaCodec is configured.
   // |media_codec| will be null if configuration failed.
   virtual void OnCodecConfigured(
-      std::unique_ptr<VideoCodecBridge> media_codec) = 0;
+      std::unique_ptr<MediaCodecBridge> media_codec) = 0;
 
  protected:
   ~AVDACodecAllocatorClient() {}
@@ -135,7 +135,7 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   void DeallocateSurface(AVDACodecAllocatorClient* client, int surface_id);
 
   // Create and configure a MediaCodec synchronously.
-  std::unique_ptr<VideoCodecBridge> CreateMediaCodecSync(
+  std::unique_ptr<MediaCodecBridge> CreateMediaCodecSync(
       scoped_refptr<CodecConfig> codec_config);
 
   // Create and configure a MediaCodec asynchronously. The result is delivered
@@ -147,7 +147,7 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // Asynchronously release |media_codec| with the attached surface.
   // TODO(watk): Bundle the MediaCodec and surface together so you can't get
   // this pairing wrong.
-  void ReleaseMediaCodec(std::unique_ptr<VideoCodecBridge> media_codec,
+  void ReleaseMediaCodec(std::unique_ptr<MediaCodecBridge> media_codec,
                          TaskType task_type,
                          int surface_id);
 

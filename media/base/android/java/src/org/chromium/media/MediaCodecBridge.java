@@ -28,16 +28,7 @@ import java.nio.ByteBuffer;
  */
 @JNINamespace("media")
 class MediaCodecBridge {
-    private static final String TAG = "cr_MediaCodecBridge";
-
-    // Status codes. Keep these in sync with MediaCodecStatus in media_codec_bridge.h.
-    private static final int MEDIA_CODEC_OK = 0;
-    private static final int MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER = 1;
-    private static final int MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER = 2;
-    private static final int MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED = 3;
-    private static final int MEDIA_CODEC_OUTPUT_FORMAT_CHANGED = 4;
-    private static final int MEDIA_CODEC_NO_KEY = 5;
-    private static final int MEDIA_CODEC_ERROR = 6;
+    private static final String TAG = "cr.MediaCodecBridge";
 
     // After a flush(), dequeueOutputBuffer() can often produce empty presentation timestamps
     // for several frames. As a result, the player may find that the time does not increase
@@ -49,12 +40,6 @@ class MediaCodecBridge {
 
     // We use only one output audio format (PCM16) that has 2 bytes per sample
     private static final int PCM16_BYTES_PER_SAMPLE = 2;
-
-    // The following values should be kept in sync with the media::EncryptionScheme::CipherMode
-    // enum in media/base/encryption_scheme.h
-    private static final int MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_UNENCRYPTED = 0;
-    private static final int MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_AES_CTR = 1;
-    private static final int MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_AES_CBC = 2;
 
     private static final int MEDIA_CODEC_UNKNOWN_CIPHER_MODE = -1;
 
@@ -153,7 +138,7 @@ class MediaCodecBridge {
     @MainDex
     private static class GetOutputFormatResult {
         private final int mStatus;
-        // May be null if mStatus is not MEDIA_CODEC_OK.
+        // May be null if mStatus is not MediaCodecStatus.OK.
         private final MediaFormat mFormat;
 
         private GetOutputFormatResult(int status, MediaFormat format) {
@@ -212,7 +197,7 @@ class MediaCodecBridge {
             String mime, boolean isSecure, int direction, boolean requireSoftwareCodec) {
         MediaCodecUtil.CodecCreationInfo info = new MediaCodecUtil.CodecCreationInfo();
         try {
-            if (direction == MediaCodecUtil.MEDIA_CODEC_ENCODER) {
+            if (direction == MediaCodecDirection.ENCODER) {
                 info = MediaCodecUtil.createEncoder(mime);
             } else {
                 // |isSecure| only applies to video decoders.
@@ -269,15 +254,15 @@ class MediaCodecBridge {
 
     @CalledByNative
     private DequeueInputResult dequeueInputBuffer(long timeoutUs) {
-        int status = MEDIA_CODEC_ERROR;
+        int status = MediaCodecStatus.ERROR;
         int index = -1;
         try {
             int indexOrStatus = mMediaCodec.dequeueInputBuffer(timeoutUs);
             if (indexOrStatus >= 0) { // index!
-                status = MEDIA_CODEC_OK;
+                status = MediaCodecStatus.OK;
                 index = indexOrStatus;
             } else if (indexOrStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
-                status = MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER;
+                status = MediaCodecStatus.TRY_AGAIN_LATER;
             } else {
                 Log.e(TAG, "Unexpected index_or_status: " + indexOrStatus);
                 assert false;
@@ -295,9 +280,9 @@ class MediaCodecBridge {
             mMediaCodec.flush();
         } catch (IllegalStateException e) {
             Log.e(TAG, "Failed to flush MediaCodec", e);
-            return MEDIA_CODEC_ERROR;
+            return MediaCodecStatus.ERROR;
         }
-        return MEDIA_CODEC_OK;
+        return MediaCodecStatus.OK;
     }
 
     @CalledByNative
@@ -324,12 +309,12 @@ class MediaCodecBridge {
     @CalledByNative
     private GetOutputFormatResult getOutputFormat() {
         MediaFormat format = null;
-        int status = MEDIA_CODEC_OK;
+        int status = MediaCodecStatus.OK;
         try {
             format = mMediaCodec.getOutputFormat();
         } catch (IllegalStateException e) {
             Log.e(TAG, "Failed to get output format", e);
-            status = MEDIA_CODEC_ERROR;
+            status = MediaCodecStatus.ERROR;
         }
         return new GetOutputFormatResult(status, format);
     }
@@ -370,9 +355,9 @@ class MediaCodecBridge {
             mMediaCodec.queueInputBuffer(index, offset, size, presentationTimeUs, flags);
         } catch (Exception e) {
             Log.e(TAG, "Failed to queue input buffer", e);
-            return MEDIA_CODEC_ERROR;
+            return MediaCodecStatus.ERROR;
         }
-        return MEDIA_CODEC_OK;
+        return MediaCodecStatus.OK;
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -412,11 +397,11 @@ class MediaCodecBridge {
     // MEDIA_CODEC_UNKNOWN_CIPHER_MODE in the case of unknown incoming value.
     private int translateCipherModeValue(int nativeValue) {
         switch (nativeValue) {
-            case MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_UNENCRYPTED:
+            case CipherMode.UNENCRYPTED:
                 return MediaCodec.CRYPTO_MODE_UNENCRYPTED;
-            case MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_AES_CTR:
+            case CipherMode.AES_CTR:
                 return MediaCodec.CRYPTO_MODE_AES_CTR;
-            case MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_AES_CBC:
+            case CipherMode.AES_CBC:
                 return MediaCodec.CRYPTO_MODE_AES_CBC;
             default:
                 Log.e(TAG, "Unsupported cipher mode: " + nativeValue);
@@ -432,12 +417,12 @@ class MediaCodecBridge {
         try {
             cipherMode = translateCipherModeValue(cipherMode);
             if (cipherMode == MEDIA_CODEC_UNKNOWN_CIPHER_MODE) {
-                return MEDIA_CODEC_ERROR;
+                return MediaCodecStatus.ERROR;
             }
             boolean usesCbcs = cipherMode == MediaCodec.CRYPTO_MODE_AES_CBC;
             if (usesCbcs && !MediaCodecUtil.platformSupportsCbcsEncryption()) {
                 Log.e(TAG, "Encryption scheme 'cbcs' not supported on this platform.");
-                return MEDIA_CODEC_ERROR;
+                return MediaCodecStatus.ERROR;
             }
             CryptoInfo cryptoInfo = new CryptoInfo();
             cryptoInfo.set(numSubSamples, numBytesOfClearData, numBytesOfEncryptedData, keyId, iv,
@@ -448,23 +433,23 @@ class MediaCodecBridge {
                     MediaCodecUtil.setPatternIfSupported(cryptoInfo, patternEncrypt, patternSkip);
                 } else {
                     Log.e(TAG, "Pattern encryption only supported for 'cbcs' scheme (CBC mode).");
-                    return MEDIA_CODEC_ERROR;
+                    return MediaCodecStatus.ERROR;
                 }
             }
             mMediaCodec.queueSecureInputBuffer(index, offset, cryptoInfo, presentationTimeUs, 0);
         } catch (MediaCodec.CryptoException e) {
             if (e.getErrorCode() == MediaCodec.CryptoException.ERROR_NO_KEY) {
                 Log.d(TAG, "Failed to queue secure input buffer: CryptoException.ERROR_NO_KEY");
-                return MEDIA_CODEC_NO_KEY;
+                return MediaCodecStatus.NO_KEY;
             }
             Log.e(TAG, "Failed to queue secure input buffer, CryptoException with error code "
                             + e.getErrorCode());
-            return MEDIA_CODEC_ERROR;
+            return MediaCodecStatus.ERROR;
         } catch (IllegalStateException e) {
             Log.e(TAG, "Failed to queue secure input buffer, IllegalStateException " + e);
-            return MEDIA_CODEC_ERROR;
+            return MediaCodecStatus.ERROR;
         }
-        return MEDIA_CODEC_OK;
+        return MediaCodecStatus.OK;
     }
 
     @CalledByNative
@@ -481,7 +466,7 @@ class MediaCodecBridge {
     @CalledByNative
     private DequeueOutputResult dequeueOutputBuffer(long timeoutUs) {
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
-        int status = MEDIA_CODEC_ERROR;
+        int status = MediaCodecStatus.ERROR;
         int index = -1;
         try {
             int indexOrStatus = mMediaCodec.dequeueOutputBuffer(info, timeoutUs);
@@ -494,22 +479,22 @@ class MediaCodecBridge {
             mLastPresentationTimeUs = info.presentationTimeUs;
 
             if (indexOrStatus >= 0) { // index!
-                status = MEDIA_CODEC_OK;
+                status = MediaCodecStatus.OK;
                 index = indexOrStatus;
             } else if (indexOrStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
                 mOutputBuffers = mMediaCodec.getOutputBuffers();
-                status = MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED;
+                status = MediaCodecStatus.OUTPUT_BUFFERS_CHANGED;
             } else if (indexOrStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                status = MEDIA_CODEC_OUTPUT_FORMAT_CHANGED;
+                status = MediaCodecStatus.OUTPUT_FORMAT_CHANGED;
                 MediaFormat newFormat = mMediaCodec.getOutputFormat();
             } else if (indexOrStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
-                status = MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER;
+                status = MediaCodecStatus.TRY_AGAIN_LATER;
             } else {
                 Log.e(TAG, "Unexpected index_or_status: " + indexOrStatus);
                 assert false;
             }
         } catch (IllegalStateException e) {
-            status = MEDIA_CODEC_ERROR;
+            status = MediaCodecStatus.ERROR;
             Log.e(TAG, "Failed to dequeue output buffer", e);
         }
 
@@ -629,7 +614,7 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private boolean isAdaptivePlaybackSupported(int width, int height) {
+    private boolean isAdaptivePlaybackSupported() {
         // If media codec has adaptive playback supported, then the max sizes
         // used during creation are only hints.
         return mAdaptivePlaybackSupported;

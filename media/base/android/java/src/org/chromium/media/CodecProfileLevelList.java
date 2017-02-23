@@ -18,33 +18,6 @@ import java.util.List;
 class CodecProfileLevelList {
     private static final String TAG = "CodecProfileLevelList";
 
-    // The following values are taken from media/base/video_codecs.h. These need to be kept in sync.
-    private static final int H264PROFILE_BASELINE = 0;
-    private static final int H264PROFILE_MAIN = 1;
-    private static final int H264PROFILE_EXTENDED = 2;
-    private static final int H264PROFILE_HIGH = 3;
-    private static final int H264PROFILE_HIGH10PROFILE = 4;
-    private static final int H264PROFILE_HIGH422PROFILE = 5;
-    private static final int H264PROFILE_HIGH444PREDICTIVEPROFILE = 6;
-    private static final int H264PROFILE_SCALABLEBASELINE = 7;
-    private static final int H264PROFILE_SCALABLEHIGH = 8;
-    private static final int H264PROFILE_STEREOHIGH = 9;
-    private static final int H264PROFILE_MULTIVIEWHIGH = 10;
-    private static final int VP8PROFILE_ANY = 11;
-    private static final int VP9PROFILE_PROFILE0 = 12;
-    private static final int VP9PROFILE_PROFILE1 = 13;
-    private static final int VP9PROFILE_PROFILE2 = 14;
-    private static final int VP9PROFILE_PROFILE3 = 15;
-    private static final int HEVCPROFILE_MAIN = 16;
-    private static final int HEVCPROFILE_MAIN10 = 17;
-    private static final int HEVCPROFILE_MAIN_STILL_PICTURE = 18;
-
-    // Constants used to keep track of the codec from a mime string.
-    private static final String CODEC_AVC = "AVC";
-    private static final String CODEC_VP8 = "VP8";
-    private static final String CODEC_VP9 = "VP9";
-    private static final String CODEC_HEVC = "HEVC";
-
     private final List<CodecProfileLevelAdapter> mList;
 
     public CodecProfileLevelList() {
@@ -53,7 +26,7 @@ class CodecProfileLevelList {
 
     public boolean addCodecProfileLevel(String mime, CodecProfileLevel codecProfileLevel) {
         try {
-            String codec = getCodecFromMime(mime);
+            int codec = getCodecFromMime(mime);
             mList.add(new CodecProfileLevelAdapter(codec,
                     mediaCodecProfileToChromiumMediaProfile(codec, codecProfileLevel.profile),
                     mediaCodecLevelToChromiumMediaLevel(codec, codecProfileLevel.level)));
@@ -63,7 +36,7 @@ class CodecProfileLevelList {
         }
     }
 
-    public boolean addCodecProfileLevel(String codec, int profile, int level) {
+    public boolean addCodecProfileLevel(int codec, int profile, int level) {
         mList.add(new CodecProfileLevelAdapter(codec, profile, level));
         return true;
     }
@@ -73,18 +46,18 @@ class CodecProfileLevelList {
     }
 
     static class CodecProfileLevelAdapter {
-        private final String mCodec;
+        private final int mCodec;
         private final int mProfile;
         private final int mLevel;
 
-        public CodecProfileLevelAdapter(String codec, int profile, int level) {
+        public CodecProfileLevelAdapter(int codec, int profile, int level) {
             mCodec = codec;
             mProfile = profile;
             mLevel = level;
         }
 
         @CalledByNative("CodecProfileLevelAdapter")
-        public String getCodec() {
+        public int getCodec() {
             return mCodec;
         }
 
@@ -101,65 +74,63 @@ class CodecProfileLevelList {
 
     private static class UnsupportedCodecProfileException extends RuntimeException {}
 
-    private static String getCodecFromMime(String mime) {
-        if (mime.endsWith("vp9")) return CODEC_VP9;
-        if (mime.endsWith("vp8")) return CODEC_VP8;
-        if (mime.endsWith("avc")) return CODEC_AVC;
-        if (mime.endsWith("hevc")) return CODEC_HEVC;
+    private static int getCodecFromMime(String mime) {
+        if (mime.endsWith("vp9")) return VideoCodec.kCodecVP9;
+        if (mime.endsWith("vp8")) return VideoCodec.kCodecVP8;
+        if (mime.endsWith("avc")) return VideoCodec.kCodecH264;
+        if (mime.endsWith("hevc")) return VideoCodec.kCodecHEVC;
         throw new UnsupportedCodecProfileException();
     }
 
-    private static int mediaCodecProfileToChromiumMediaProfile(String codec, int profile) {
-        // Note: The values returned here correspond to the VideoCodecProfile enum in
-        // media/base/video_coedecs.h. These values need to be kept in sync with that file!
+    private static int mediaCodecProfileToChromiumMediaProfile(int codec, int profile) {
         switch (codec) {
-            case CODEC_AVC:
+            case VideoCodec.kCodecH264:
                 switch (profile) {
                     case CodecProfileLevel.AVCProfileBaseline:
-                        return H264PROFILE_BASELINE;
+                        return VideoCodecProfile.H264PROFILE_BASELINE;
                     case CodecProfileLevel.AVCProfileMain:
-                        return H264PROFILE_MAIN;
+                        return VideoCodecProfile.H264PROFILE_MAIN;
                     case CodecProfileLevel.AVCProfileExtended:
-                        return H264PROFILE_EXTENDED;
+                        return VideoCodecProfile.H264PROFILE_EXTENDED;
                     case CodecProfileLevel.AVCProfileHigh:
-                        return H264PROFILE_HIGH;
+                        return VideoCodecProfile.H264PROFILE_HIGH;
                     case CodecProfileLevel.AVCProfileHigh10:
-                        return H264PROFILE_HIGH10PROFILE;
+                        return VideoCodecProfile.H264PROFILE_HIGH10PROFILE;
                     case CodecProfileLevel.AVCProfileHigh422:
-                        return H264PROFILE_HIGH422PROFILE;
+                        return VideoCodecProfile.H264PROFILE_HIGH422PROFILE;
                     case CodecProfileLevel.AVCProfileHigh444:
-                        return H264PROFILE_HIGH444PREDICTIVEPROFILE;
+                        return VideoCodecProfile.H264PROFILE_HIGH444PREDICTIVEPROFILE;
                     default:
                         throw new UnsupportedCodecProfileException();
                 }
-            case CODEC_VP8:
+            case VideoCodec.kCodecVP8:
                 switch (profile) {
                     case CodecProfileLevel.VP8ProfileMain:
-                        return VP8PROFILE_ANY;
+                        return VideoCodecProfile.VP8PROFILE_ANY;
                     default:
                         throw new UnsupportedCodecProfileException();
                 }
-            case CODEC_VP9:
+            case VideoCodec.kCodecVP9:
                 switch (profile) {
                     case CodecProfileLevel.VP9Profile0:
-                        return VP9PROFILE_PROFILE0;
+                        return VideoCodecProfile.VP9PROFILE_PROFILE0;
                     case CodecProfileLevel.VP9Profile1:
-                        return VP9PROFILE_PROFILE1;
+                        return VideoCodecProfile.VP9PROFILE_PROFILE1;
                     case CodecProfileLevel.VP9Profile2:
-                        return VP9PROFILE_PROFILE2;
+                        return VideoCodecProfile.VP9PROFILE_PROFILE2;
                     case CodecProfileLevel.VP9Profile3:
-                        return VP9PROFILE_PROFILE3;
+                        return VideoCodecProfile.VP9PROFILE_PROFILE3;
                     default:
                         throw new UnsupportedCodecProfileException();
                 }
-            case CODEC_HEVC:
+            case VideoCodec.kCodecHEVC:
                 switch (profile) {
                     case CodecProfileLevel.HEVCProfileMain:
-                        return HEVCPROFILE_MAIN;
+                        return VideoCodecProfile.HEVCPROFILE_MAIN;
                     case CodecProfileLevel.HEVCProfileMain10:
-                        return HEVCPROFILE_MAIN10;
+                        return VideoCodecProfile.HEVCPROFILE_MAIN10;
                     case CodecProfileLevel.HEVCProfileMain10HDR10:
-                        return HEVCPROFILE_MAIN_STILL_PICTURE;
+                        return VideoCodecProfile.HEVCPROFILE_MAIN_STILL_PICTURE;
                     default:
                         throw new UnsupportedCodecProfileException();
                 }
@@ -168,9 +139,9 @@ class CodecProfileLevelList {
         }
     }
 
-    private static int mediaCodecLevelToChromiumMediaLevel(String codec, int level) {
+    private static int mediaCodecLevelToChromiumMediaLevel(int codec, int level) {
         switch (codec) {
-            case CODEC_AVC:
+            case VideoCodec.kCodecH264:
                 switch (level) {
                     case CodecProfileLevel.AVCLevel1:
                         return 10;
@@ -207,7 +178,7 @@ class CodecProfileLevelList {
                     default:
                         throw new UnsupportedCodecProfileException();
                 }
-            case CODEC_VP8:
+            case VideoCodec.kCodecVP8:
                 switch (level) {
                     case CodecProfileLevel.VP8Level_Version0:
                         return 0;
@@ -220,7 +191,7 @@ class CodecProfileLevelList {
                     default:
                         throw new UnsupportedCodecProfileException();
                 }
-            case CODEC_VP9:
+            case VideoCodec.kCodecVP9:
                 switch (level) {
                     case CodecProfileLevel.VP9Level1:
                         return 10;
@@ -253,7 +224,7 @@ class CodecProfileLevelList {
                     default:
                         throw new UnsupportedCodecProfileException();
                 }
-            case CODEC_HEVC:
+            case VideoCodec.kCodecHEVC:
                 switch (level) {
                     case CodecProfileLevel.HEVCMainTierLevel1:
                         return 30;

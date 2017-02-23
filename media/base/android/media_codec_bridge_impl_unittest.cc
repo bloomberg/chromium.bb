@@ -9,11 +9,16 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+using testing::IsNull;
+using testing::NotNull;
 
 namespace {
 
@@ -111,7 +116,7 @@ static inline const base::TimeDelta InfiniteTimeOut() {
   return base::TimeDelta::FromMicroseconds(-1);
 }
 
-void DecodeMediaFrame(VideoCodecBridge* media_codec,
+void DecodeMediaFrame(MediaCodecBridge* media_codec,
                       const uint8_t* data,
                       size_t data_size,
                       const base::TimeDelta input_presentation_timestamp,
@@ -146,23 +151,32 @@ void DecodeMediaFrame(VideoCodecBridge* media_codec,
   }
 }
 
-TEST(MediaCodecBridgeTest, Initialize) {
+AudioDecoderConfig NewAudioConfig(
+    AudioCodec codec,
+    std::vector<uint8_t> extra_data = std::vector<uint8_t>(),
+    base::TimeDelta seek_preroll = base::TimeDelta(),
+    int64_t codec_delay = 0) {
+  AudioDecoderConfig config;
+  config.Initialize(codec, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
+                    extra_data, Unencrypted(), seek_preroll, codec_delay);
+  return config;
+}
+
+TEST(MediaCodecBridgeTest, CreateH264Decoder) {
   SKIP_TEST_IF_MEDIA_CODEC_IS_NOT_AVAILABLE();
 
-  std::unique_ptr<media::MediaCodecBridge> media_codec;
-  media_codec.reset(VideoCodecBridge::CreateDecoder(
+  MediaCodecBridgeImpl::CreateVideoDecoder(
       kCodecH264, false, gfx::Size(640, 480), nullptr, nullptr,
-      std::vector<uint8_t>(), std::vector<uint8_t>()));
+      std::vector<uint8_t>(), std::vector<uint8_t>());
 }
 
 TEST(MediaCodecBridgeTest, DoNormal) {
   SKIP_TEST_IF_MEDIA_CODEC_IS_NOT_AVAILABLE();
 
-  std::unique_ptr<media::AudioCodecBridge> media_codec;
-  media_codec.reset(AudioCodecBridge::Create(kCodecMP3));
-
-  ASSERT_TRUE(media_codec->ConfigureAndStart(kCodecMP3, 44100, 2, nullptr, 0, 0,
-                                             0, nullptr));
+  std::unique_ptr<media::MediaCodecBridge> media_codec =
+      MediaCodecBridgeImpl::CreateAudioDecoder(NewAudioConfig(kCodecMP3),
+                                               nullptr);
+  ASSERT_THAT(media_codec, NotNull());
 
   int input_buf_index = -1;
   MediaCodecStatus status =
@@ -193,7 +207,7 @@ TEST(MediaCodecBridgeTest, DoNormal) {
                                               &output_buf_index, &unused_offset,
                                               &size, &timestamp, &eos, nullptr);
     switch (status) {
-      case MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
+      case MEDIA_CODEC_TRY_AGAIN_LATER:
         FAIL();
         return;
 
@@ -217,65 +231,53 @@ TEST(MediaCodecBridgeTest, DoNormal) {
 TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
   SKIP_TEST_IF_MEDIA_CODEC_IS_NOT_AVAILABLE();
 
-  std::unique_ptr<media::AudioCodecBridge> media_codec;
-  media_codec.reset(AudioCodecBridge::Create(kCodecVorbis));
-
   // The first byte of the header is not 0x02.
-  uint8_t invalid_first_byte[] = {0x00, 0xff, 0xff, 0xff, 0xff};
-  EXPECT_FALSE(media_codec->ConfigureAndStart(
-      kCodecVorbis, 44100, 2, invalid_first_byte, sizeof(invalid_first_byte), 0,
-      0, nullptr));
-
-  // Size of the header does not match with the data we passed in.
-  uint8_t invalid_size[] = {0x02, 0x01, 0xff, 0x01, 0xff};
-  EXPECT_FALSE(
-      media_codec->ConfigureAndStart(kCodecVorbis, 44100, 2, invalid_size,
-                                     sizeof(invalid_size), 0, 0, nullptr));
+  std::vector<uint8_t> invalid_first_byte = {{0x00, 0xff, 0xff, 0xff, 0xff}};
+  ASSERT_THAT(MediaCodecBridgeImpl::CreateAudioDecoder(
+                  NewAudioConfig(kCodecVorbis, invalid_first_byte), nullptr),
+              IsNull());
 
   // Size of the header is too large.
   size_t large_size = 8 * 1024 * 1024 + 2;
-  uint8_t* very_large_header = new uint8_t[large_size];
-  very_large_header[0] = 0x02;
-  for (size_t i = 1; i < large_size - 1; ++i)
-    very_large_header[i] = 0xff;
-  very_large_header[large_size - 1] = 0xfe;
-  EXPECT_FALSE(media_codec->ConfigureAndStart(
-      kCodecVorbis, 44100, 2, very_large_header, 0x80000000, 0, 0, nullptr));
-  delete[] very_large_header;
+  std::vector<uint8_t> large_header(large_size, 0xff);
+  large_header.front() = 0x02;
+  large_header.back() = 0xfe;
+  ASSERT_THAT(MediaCodecBridgeImpl::CreateAudioDecoder(
+                  NewAudioConfig(kCodecVorbis, large_header), nullptr),
+              IsNull());
 }
 
 TEST(MediaCodecBridgeTest, InvalidOpusHeader) {
   SKIP_TEST_IF_MEDIA_CODEC_IS_NOT_AVAILABLE();
 
-  std::unique_ptr<media::AudioCodecBridge> media_codec;
-  media_codec.reset(AudioCodecBridge::Create(kCodecOpus));
-  if (!media_codec)
-    return;
-
-  uint8_t dummy_extra_data[] = {0, 0};
-
-  // Extra Data is NULL.
-  EXPECT_FALSE(media_codec->ConfigureAndStart(kCodecOpus, 48000, 2, nullptr, 0,
-                                              -1, 0, nullptr));
+  std::vector<uint8_t> dummy_extra_data = {{0, 0}};
 
   // Codec Delay is < 0.
-  EXPECT_FALSE(
-      media_codec->ConfigureAndStart(kCodecOpus, 48000, 2, dummy_extra_data,
-                                     sizeof(dummy_extra_data), -1, 0, nullptr));
+  ASSERT_THAT(
+      MediaCodecBridgeImpl::CreateAudioDecoder(
+          NewAudioConfig(kCodecOpus, dummy_extra_data, base::TimeDelta(), -1),
+          nullptr),
+      IsNull());
 
   // Seek Preroll is < 0.
-  EXPECT_FALSE(
-      media_codec->ConfigureAndStart(kCodecOpus, 48000, 2, dummy_extra_data,
-                                     sizeof(dummy_extra_data), 0, -1, nullptr));
+  ASSERT_THAT(MediaCodecBridgeImpl::CreateAudioDecoder(
+                  NewAudioConfig(kCodecOpus, dummy_extra_data,
+                                 base::TimeDelta::FromMicroseconds(-1)),
+                  nullptr),
+              IsNull());
 }
 
 TEST(MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
-  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
+  if (!MediaCodecUtil::IsVp8DecoderAvailable()) {
+    VLOG(0) << "Could not run test - VP8 not supported on device.";
+    return;
+  }
 
-  std::unique_ptr<VideoCodecBridge> media_codec(VideoCodecBridge::CreateDecoder(
-      kCodecVP8, false, gfx::Size(320, 240), nullptr, nullptr,
-      std::vector<uint8_t>(), std::vector<uint8_t>()));
-  EXPECT_TRUE(media_codec.get());
+  std::unique_ptr<MediaCodecBridge> media_codec(
+      MediaCodecBridgeImpl::CreateVideoDecoder(
+          kCodecVP8, false, gfx::Size(320, 240), nullptr, nullptr,
+          std::vector<uint8_t>(), std::vector<uint8_t>()));
+  ASSERT_THAT(media_codec, NotNull());
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vp8-I-frame-320x240");
   DecodeMediaFrame(media_codec.get(), buffer->data(), buffer->data_size(),
                    base::TimeDelta(), base::TimeDelta());
@@ -298,11 +300,13 @@ TEST(MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
 }
 
 TEST(MediaCodecBridgeTest, CreateUnsupportedCodec) {
-  EXPECT_EQ(nullptr, AudioCodecBridge::Create(kUnknownAudioCodec));
-  EXPECT_EQ(nullptr,
-            VideoCodecBridge::CreateDecoder(
-                kUnknownVideoCodec, false, gfx::Size(320, 240), nullptr,
-                nullptr, std::vector<uint8_t>(), std::vector<uint8_t>()));
+  EXPECT_THAT(MediaCodecBridgeImpl::CreateAudioDecoder(
+                  NewAudioConfig(kUnknownAudioCodec), nullptr),
+              IsNull());
+  EXPECT_THAT(MediaCodecBridgeImpl::CreateVideoDecoder(
+                  kUnknownVideoCodec, false, gfx::Size(320, 240), nullptr,
+                  nullptr, std::vector<uint8_t>(), std::vector<uint8_t>()),
+              IsNull());
 }
 
 }  // namespace media

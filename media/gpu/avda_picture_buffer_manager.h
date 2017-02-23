@@ -26,7 +26,7 @@ class SurfaceTexture;
 namespace media {
 class AVDACodecImage;
 class AVDASharedState;
-class VideoCodecBridge;
+class MediaCodecBridge;
 
 // AVDAPictureBufferManager is used by AVDA to associate its PictureBuffers with
 // MediaCodec output buffers. It attaches AVDACodecImages to the PictureBuffer
@@ -74,7 +74,7 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
   // Called when the MediaCodec instance changes. If |codec| is nullptr the
   // MediaCodec is being destroyed. Previously provided codecs should no longer
   // be referenced.
-  void CodecChanged(VideoCodecBridge* codec);
+  void CodecChanged(MediaCodecBridge* codec);
 
   // Whether the pictures buffers are overlayable.
   bool ArePicturesOverlayable();
@@ -112,7 +112,7 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
   // we're not rendering to a SurfaceView.
   scoped_refptr<gl::SurfaceTexture> surface_texture_;
 
-  VideoCodecBridge* media_codec_;
+  MediaCodecBridge* media_codec_;
 
   // Picture buffer IDs that are out for display. Stored in order of frames as
   // they are returned from the decoder.

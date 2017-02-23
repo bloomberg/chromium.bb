@@ -72,10 +72,9 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
     return;
   }
 
-  // We can support only the codecs that AudioCodecBridge can decode.
-  // TODO(xhwang): Get this list from AudioCodecBridge or just rely on
-  // AudioCodecBridge::ConfigureAndStart() to determine whether the codec is
-  // supported.
+  // We can support only the codecs that MediaCodecBridge can decode.
+  // TODO(xhwang): Get this list from MediaCodecBridge or just rely on
+  // attempting to create one to determine whether the codec is supported.
   const bool is_codec_supported = config.codec() == kCodecVorbis ||
                                   config.codec() == kCodecAAC ||
                                   config.codec() == kCodecOpus;
@@ -117,19 +116,11 @@ bool MediaCodecAudioDecoder::CreateMediaCodecLoop() {
   DVLOG(1) << __func__ << ": config:" << config_.AsHumanReadableString();
 
   codec_loop_.reset();
-
-  std::unique_ptr<AudioCodecBridge> audio_codec_bridge(
-      AudioCodecBridge::Create(config_.codec()));
-  if (!audio_codec_bridge) {
-    DLOG(ERROR) << __func__ << " failed: cannot create AudioCodecBridge";
-    return false;
-  }
-
   jobject media_crypto_obj = media_crypto_ ? media_crypto_->obj() : nullptr;
-
-  if (!audio_codec_bridge->ConfigureAndStart(config_, media_crypto_obj)) {
-    DLOG(ERROR) << __func__ << " failed: cannot configure audio codec for "
-                << config_.AsHumanReadableString();
+  std::unique_ptr<MediaCodecBridge> audio_codec_bridge(
+      MediaCodecBridgeImpl::CreateAudioDecoder(config_, media_crypto_obj));
+  if (!audio_codec_bridge) {
+    DLOG(ERROR) << __func__ << " failed: cannot create MediaCodecBridge";
     return false;
   }
 

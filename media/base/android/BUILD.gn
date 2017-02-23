@@ -103,12 +103,23 @@ if (is_android) {
     jni_package = "media"
   }
 
+  java_cpp_enum("java_enums") {
+    sources = [
+      "media_codec_bridge.h",
+      "media_codec_direction.h",
+    ]
+  }
+
   android_library("media_java") {
     deps = [
       "//base:base_java",
       "//content/public/android:content_java_resources",
+      "//third_party/android_tools:android_support_annotations_java",
     ]
-
+    srcjar_deps = [
+      ":java_enums",
+      "//media/base:java_enums",
+    ]
     java_files = [
       "java/src/org/chromium/media/AudioManagerAndroid.java",
       "java/src/org/chromium/media/AudioRecordInput.java",

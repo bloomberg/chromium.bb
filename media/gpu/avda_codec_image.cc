@@ -20,7 +20,7 @@ namespace media {
 
 AVDACodecImage::AVDACodecImage(
     const scoped_refptr<AVDASharedState>& shared_state,
-    VideoCodecBridge* codec,
+    MediaCodecBridge* codec,
     const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder)
     : shared_state_(shared_state),
       codec_buffer_index_(kInvalidCodecBufferIndex),

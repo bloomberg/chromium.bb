@@ -78,7 +78,7 @@ class MEDIA_GPU_EXPORT AndroidVideoEncodeAccelerator
   // error triggers.
   std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
 
-  std::unique_ptr<VideoCodecBridge> media_codec_;
+  std::unique_ptr<MediaCodecBridge> media_codec_;
 
   // Bitstream buffers waiting to be populated & returned to the client.
   std::vector<BitstreamBuffer> available_bitstream_buffers_;

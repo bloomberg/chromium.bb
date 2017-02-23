@@ -14,9 +14,9 @@ namespace media {
 
 MockMediaCodecBridge::MockMediaCodecBridge() {
   ON_CALL(*this, DequeueInputBuffer(_, _))
-      .WillByDefault(Return(MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER));
+      .WillByDefault(Return(MEDIA_CODEC_TRY_AGAIN_LATER));
   ON_CALL(*this, DequeueOutputBuffer(_, _, _, _, _, _, _))
-      .WillByDefault(Return(MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER));
+      .WillByDefault(Return(MEDIA_CODEC_TRY_AGAIN_LATER));
 }
 
 MockMediaCodecBridge::~MockMediaCodecBridge() {}

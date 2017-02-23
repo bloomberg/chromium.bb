@@ -19,14 +19,14 @@ class ScopedMakeCurrent;
 
 namespace media {
 
-class VideoCodecBridge;
+class MediaCodecBridge;
 
 // GLImage that renders MediaCodec buffers to a SurfaceTexture or SurfaceView as
 // needed in order to draw them.
 class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
  public:
   AVDACodecImage(const scoped_refptr<AVDASharedState>& shared_state,
-                 VideoCodecBridge* codec,
+                 MediaCodecBridge* codec,
                  const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder);
 
   // gl::GLImage implementation

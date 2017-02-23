@@ -12,6 +12,7 @@
 
 namespace media {
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
 enum VideoCodec {
   // These values are histogrammed over time; do not change their ordinal
   // values.  When deleting a codec replace it with a dummy value; when adding a
@@ -30,17 +31,16 @@ enum VideoCodec {
   // The only acceptable time to add a new codec is if there is production code
   // that uses said codec in the same CL.
 
-  kVideoCodecMax = kCodecHEVC  // Must equal the last "real" codec above.
+  kVideoCodecMax = kCodecHEVC,  // Must equal the last "real" codec above.
 };
 
 // Video codec profiles. Keep in sync with mojo::VideoCodecProfile (see
 // media/mojo/interfaces/media_types.mojom), gpu::VideoCodecProfile (see
-// gpu/config/gpu_info.h), and
-// media/base/android/java/src/org/chromium/media/CodecProfileLevelList.java,
-// as well as PP_VideoDecoder_Profile (translation is performed in
-// content/renderer/pepper/ppb_video_decoder_impl.cc).
-// NOTE: These values are histogrammed over time in UMA so the values must
-// never ever change (add new values to tools/metrics/histograms/histograms.xml)
+// gpu/config/gpu_info.h), and PP_VideoDecoder_Profile (translation is performed
+// in content/renderer/pepper/ppb_video_decoder_impl.cc).
+// NOTE: These values are histogrammed over time in UMA so the values must never
+// ever change (add new values to tools/metrics/histograms/histograms.xml)
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
 enum VideoCodecProfile {
   // Keep the values in this enum unique, as they imply format (h.264 vs. VP8,
   // for example), and keep the values for a particular format grouped

@@ -307,10 +307,9 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   // Only use MediaCodec for VP8/9 if it's likely backed by hardware
   // or if the stream is encrypted.
   if (IsMediaCodecSoftwareDecodingForbidden() &&
-      VideoCodecBridge::IsKnownUnaccelerated(codec_config_->codec,
-                                             MEDIA_CODEC_DECODER)) {
-    DVLOG(1) << "Initialization failed: "
-             << (codec_config_->codec == kCodecVP8 ? "vp8" : "vp9")
+      MediaCodecUtil::IsKnownUnaccelerated(codec_config_->codec,
+                                           MediaCodecDirection::DECODER)) {
+    DVLOG(1) << "Initialization failed: " << GetCodecName(codec_config_->codec)
              << " is not hardware accelerated";
     return false;
   }
@@ -492,7 +491,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
     MediaCodecStatus status =
         media_codec_->DequeueInputBuffer(NoWaitTimeOut, &input_buf_index);
     switch (status) {
-      case MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
+      case MEDIA_CODEC_TRY_AGAIN_LATER:
         return false;
       case MEDIA_CODEC_ERROR:
         NOTIFY_ERROR(PLATFORM_FAILURE, "DequeueInputBuffer failed");
@@ -665,7 +664,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
         }
         return false;
 
-      case MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
+      case MEDIA_CODEC_TRY_AGAIN_LATER:
         return false;
 
       case MEDIA_CODEC_OUTPUT_FORMAT_CHANGED: {
@@ -982,14 +981,14 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
   }
 
   codec_config_->task_type = task_type.value();
-  std::unique_ptr<VideoCodecBridge> media_codec =
-      codec_allocator_->CreateMediaCodecSync(codec_config_);
+  std::unique_ptr<MediaCodecBridge> media_codec =
+      AVDACodecAllocator::Instance()->CreateMediaCodecSync(codec_config_);
   // Note that |media_codec| might be null, which will NotifyError.
   OnCodecConfigured(std::move(media_codec));
 }
 
 void AndroidVideoDecodeAccelerator::OnCodecConfigured(
-    std::unique_ptr<VideoCodecBridge> media_codec) {
+    std::unique_ptr<MediaCodecBridge> media_codec) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_ == WAITING_FOR_CODEC || state_ == SURFACE_DESTROYED);
 
@@ -1460,8 +1459,8 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     // within the renderer sandbox. However if the content is encrypted, we
     // must use MediaCodec anyways since MediaDrm offers no way to decrypt
     // the buffers and let us use our internal software decoders.
-    profile.encrypted_only =
-        VideoCodecBridge::IsKnownUnaccelerated(kCodecVP8, MEDIA_CODEC_DECODER);
+    profile.encrypted_only = MediaCodecUtil::IsKnownUnaccelerated(
+        kCodecVP8, MediaCodecDirection::DECODER);
     profiles.push_back(profile);
 
     // Always allow encrypted content, even at low resolutions.
@@ -1474,8 +1473,8 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     const VideoCodecProfile profile_types[] = {
         VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE1, VP9PROFILE_PROFILE2,
         VP9PROFILE_PROFILE3, VIDEO_CODEC_PROFILE_UNKNOWN};
-    const bool is_known_unaccelerated =
-        VideoCodecBridge::IsKnownUnaccelerated(kCodecVP9, MEDIA_CODEC_DECODER);
+    const bool is_known_unaccelerated = MediaCodecUtil::IsKnownUnaccelerated(
+        kCodecVP9, MediaCodecDirection::DECODER);
     for (int i = 0; profile_types[i] != VIDEO_CODEC_PROFILE_UNKNOWN; i++) {
       SupportedProfile profile;
       // Limit to 360p, like we do for vp8.  See above.

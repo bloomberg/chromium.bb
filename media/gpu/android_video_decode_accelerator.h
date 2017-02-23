@@ -79,7 +79,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   void OnSurfaceAvailable(bool success) override;
   void OnSurfaceDestroyed() override;
   void OnCodecConfigured(
-      std::unique_ptr<VideoCodecBridge> media_codec) override;
+      std::unique_ptr<MediaCodecBridge> media_codec) override;
 
  private:
   friend class AVDAManager;
@@ -145,7 +145,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // Instantiate a media codec using |codec_config|.
   // This may be called on any thread.
-  static std::unique_ptr<VideoCodecBridge> ConfigureMediaCodecOnAnyThread(
+  static std::unique_ptr<MediaCodecBridge> ConfigureMediaCodecOnAnyThread(
       scoped_refptr<CodecConfig> codec_config);
 
   // Sends the decoded frame specified by |codec_buffer_index| to the client.
@@ -266,7 +266,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   std::queue<int32_t> free_picture_ids_;
 
   // The low-level decoder which Android SDK provides.
-  std::unique_ptr<VideoCodecBridge> media_codec_;
+  std::unique_ptr<MediaCodecBridge> media_codec_;
 
   // Set to true after requesting picture buffers to the client.
   bool picturebuffers_requested_;

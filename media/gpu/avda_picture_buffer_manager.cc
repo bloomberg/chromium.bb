@@ -269,7 +269,7 @@ void AVDAPictureBufferManager::MaybeRenderEarly() {
       AVDACodecImage::UpdateMode::RENDER_TO_BACK_BUFFER);
 }
 
-void AVDAPictureBufferManager::CodecChanged(VideoCodecBridge* codec) {
+void AVDAPictureBufferManager::CodecChanged(MediaCodecBridge* codec) {
   media_codec_ = codec;
   for (auto& image_kv : codec_images_)
     image_kv.second->CodecChanged(codec);

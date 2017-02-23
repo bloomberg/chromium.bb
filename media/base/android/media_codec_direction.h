@@ -7,10 +7,10 @@
 
 namespace media {
 
-// Codec direction. Keep this in sync with MediaCodecUtil.java.
-enum MediaCodecDirection {
-  MEDIA_CODEC_DECODER,
-  MEDIA_CODEC_ENCODER,
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
+enum class MediaCodecDirection {
+  DECODER,
+  ENCODER,
 };
 
 }  // namespace media

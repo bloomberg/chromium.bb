@@ -33,10 +33,6 @@ import java.util.NoSuchElementException;
 class MediaCodecUtil {
     private static final String TAG = "cr_MediaCodecUtil";
 
-    // Codec direction.  Keep this in sync with media_codec_direction.h.
-    static final int MEDIA_CODEC_DECODER = 0;
-    static final int MEDIA_CODEC_ENCODER = 1;
-
     /**
      * Class to pass parameters from createDecoder()
      */
@@ -148,7 +144,8 @@ class MediaCodecUtil {
             String mime, int direction, boolean requireSoftwareCodec) {
         MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
         for (MediaCodecInfo info : codecListHelper) {
-            int codecDirection = info.isEncoder() ? MEDIA_CODEC_ENCODER : MEDIA_CODEC_DECODER;
+            int codecDirection =
+                    info.isEncoder() ? MediaCodecDirection.ENCODER : MediaCodecDirection.DECODER;
             if (codecDirection != direction) continue;
 
             if (requireSoftwareCodec && !isSoftwareCodec(info.getName())) continue;
@@ -221,7 +218,8 @@ class MediaCodecUtil {
             int level = entry[1];
             if (videoCapabilities.getBitrateRange().contains(bitrate)) {
                 // Assume all platforms before N only support VP9 profile 0.
-                profileLevels.addCodecProfileLevel("VP9", 12 /* VP9PROFILE_PROFILE0 */, level);
+                profileLevels.addCodecProfileLevel(
+                        VideoCodec.kCodecVP9, VideoCodecProfile.VP9PROFILE_PROFILE0, level);
             }
         }
     }
@@ -281,8 +279,8 @@ class MediaCodecUtil {
         try {
             // |isSecure| only applies to video decoders.
             if (mime.startsWith("video") && isSecure) {
-                String decoderName =
-                        getDefaultCodecName(mime, MEDIA_CODEC_DECODER, requireSoftwareCodec);
+                String decoderName = getDefaultCodecName(
+                        mime, MediaCodecDirection.DECODER, requireSoftwareCodec);
                 if (decoderName.equals("")) return null;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     // To work around an issue that we cannot get the codec info from the secure
@@ -298,8 +296,8 @@ class MediaCodecUtil {
                 result.mediaCodec = MediaCodec.createByCodecName(decoderName + ".secure");
             } else {
                 if (requireSoftwareCodec) {
-                    String decoderName =
-                            getDefaultCodecName(mime, MEDIA_CODEC_DECODER, requireSoftwareCodec);
+                    String decoderName = getDefaultCodecName(
+                            mime, MediaCodecDirection.DECODER, requireSoftwareCodec);
                     result.mediaCodec = MediaCodec.createByCodecName(decoderName);
                 } else {
                     result.mediaCodec = MediaCodec.createDecoderByType(mime);
