@@ -896,6 +896,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     } else {
       CGFloat dX = NSMaxX([locationBar_ frame]) - containerFrame.origin.x;
       containerFrame = NSOffsetRect(containerFrame, dX, 0);
+      containerFrame.size.width -= dX;
     }
     [browserActionsContainerView_ setFrame:containerFrame];
   } else if (!locationBarAtMinSize_ &&
