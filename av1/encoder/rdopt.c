@@ -4186,6 +4186,7 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
 static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                                RD_STATS *rd_stats, BLOCK_SIZE bsize,
                                int64_t ref_best_rd) {
+  const AV1_COMMON *cm = &cpi->common;
   const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -4200,8 +4201,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   const int n4 = 1 << (num_pels_log2_lookup[bsize] - 2 * tx_size_wide_log2[0]);
   int idx, idy;
   int prune = 0;
-  const int count32 = 1 << (2 * (cpi->common.mib_size_log2 -
-                                 mi_width_log2_lookup[BLOCK_32X32]));
+  const int count32 =
+      1 << (2 * (cm->mib_size_log2 - mi_width_log2_lookup[BLOCK_32X32]));
 #if CONFIG_EXT_PARTITION
   RD_STATS rd_stats_stack[16];
 #else
