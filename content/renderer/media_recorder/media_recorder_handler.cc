@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/recorder/media_recorder_handler.h"
+#include "content/renderer/media_recorder/media_recorder_handler.h"
 
 #include <utility>
 
@@ -14,8 +14,8 @@
 #include "base/strings/string_util.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_track.h"
-#include "content/renderer/media/recorder/audio_track_recorder.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
+#include "content/renderer/media_recorder/audio_track_recorder.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/bind_to_current_loop.h"

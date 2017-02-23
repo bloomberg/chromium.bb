@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
-#include "content/renderer/media/recorder/media_recorder_handler.h"
+#include "content/renderer/media_recorder/media_recorder_handler.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_bus.h"
 #include "media/base/video_frame.h"

@@ -13,7 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/recorder/video_track_recorder.h"
+#include "content/renderer/media_recorder/video_track_recorder.h"
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandler.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 

@@ -1592,9 +1592,6 @@ test("content_unittests") {
       "../renderer/media/mock_media_stream_video_source.cc",
       "../renderer/media/mock_media_stream_video_source.h",
       "../renderer/media/peer_connection_tracker_unittest.cc",
-      "../renderer/media/recorder/audio_track_recorder_unittest.cc",
-      "../renderer/media/recorder/media_recorder_handler_unittest.cc",
-      "../renderer/media/recorder/video_track_recorder_unittest.cc",
       "../renderer/media/rtc_data_channel_handler_unittest.cc",
       "../renderer/media/rtc_peer_connection_handler_unittest.cc",
       "../renderer/media/speech_recognition_audio_sink_unittest.cc",
@@ -1611,6 +1608,9 @@ test("content_unittests") {
       "../renderer/media/webrtc_audio_renderer_unittest.cc",
       "../renderer/media/webrtc_local_audio_source_provider_unittest.cc",
       "../renderer/media/webrtc_uma_histograms_unittest.cc",
+      "../renderer/media_recorder/audio_track_recorder_unittest.cc",
+      "../renderer/media_recorder/media_recorder_handler_unittest.cc",
+      "../renderer/media_recorder/video_track_recorder_unittest.cc",
       "../renderer/p2p/filtering_network_manager_unittest.cc",
       "../renderer/p2p/ipc_network_manager_unittest.cc",
       "//third_party/webrtc/base/task_queue_unittest.cc",
@@ -1637,9 +1637,9 @@ test("content_unittests") {
 
     if (is_chromecast) {
       sources -= [
-        "../renderer/media/recorder/audio_track_recorder_unittest.cc",
-        "../renderer/media/recorder/media_recorder_handler_unittest.cc",
-        "../renderer/media/recorder/video_track_recorder_unittest.cc",
+        "../renderer/media_recorder/audio_track_recorder_unittest.cc",
+        "../renderer/media_recorder/media_recorder_handler_unittest.cc",
+        "../renderer/media_recorder/video_track_recorder_unittest.cc",
       ]
     }
   }
