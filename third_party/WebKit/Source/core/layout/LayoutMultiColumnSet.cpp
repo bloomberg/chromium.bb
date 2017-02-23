@@ -302,33 +302,6 @@ LayoutUnit LayoutMultiColumnSet::logicalBottomInFlowThread() const {
   return lastFragmentainerGroup().logicalBottomInFlowThread();
 }
 
-LayoutRect LayoutMultiColumnSet::flowThreadPortionOverflowRect() const {
-  return overflowRectForFlowThreadPortion(flowThreadPortionRect(),
-                                          !previousSiblingMultiColumnSet(),
-                                          !nextSiblingMultiColumnSet());
-}
-
-LayoutRect LayoutMultiColumnSet::overflowRectForFlowThreadPortion(
-    const LayoutRect& flowThreadPortionRect,
-    bool isFirstPortion,
-    bool isLastPortion) const {
-  // Only clip along the block direction axis.
-  LayoutRect clipRect(LayoutRect::infiniteIntRect());
-
-  if (m_flowThread->isHorizontalWritingMode()) {
-    if (!isFirstPortion)
-      clipRect.shiftYEdgeTo(flowThreadPortionRect.y());
-    if (!isLastPortion)
-      clipRect.shiftMaxYEdgeTo(flowThreadPortionRect.maxY());
-    return clipRect;
-  }
-  if (!isFirstPortion)
-    clipRect.shiftXEdgeTo(flowThreadPortionRect.x());
-  if (!isLastPortion)
-    clipRect.shiftMaxXEdgeTo(flowThreadPortionRect.maxX());
-  return clipRect;
-}
-
 bool LayoutMultiColumnSet::heightIsAuto() const {
   LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
   if (!flowThread->isLayoutPagedFlowThread()) {

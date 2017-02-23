@@ -160,11 +160,6 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   }
 
   LayoutRect flowThreadPortionRect() const;
-  LayoutRect flowThreadPortionOverflowRect() const;
-  LayoutRect overflowRectForFlowThreadPortion(
-      const LayoutRect& flowThreadPortionRect,
-      bool isFirstPortion,
-      bool isLastPortion) const;
 
   // The used CSS value of column-count, i.e. how many columns there are room
   // for without overflowing.

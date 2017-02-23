@@ -446,22 +446,28 @@ LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRectAt(
   bool isLastColumnInMulticolContainer =
       isLastColumnInRow && this == &m_columnSet.lastFragmentainerGroup() &&
       !m_columnSet.nextSiblingMultiColumnSet();
-  // Calculate the overflow rectangle, based on the flow thread's, clipped at
-  // column logical top/bottom unless it's the first/last column.
-  LayoutRect overflowRect = m_columnSet.overflowRectForFlowThreadPortion(
-      portionRect, isFirstColumnInMulticolContainer,
-      isLastColumnInMulticolContainer);
-
-  // Avoid overflowing into neighboring columns, by clipping in the middle of
-  // adjacent column gaps. Also make sure that we avoid rounding errors.
+  // Calculate the overflow rectangle. It will be clipped at the logical top
+  // and bottom of the column box, unless it's the first or last column in the
+  // multicol container, in which case it should allow overflow. It will also
+  // be clipped in the middle of adjacent column gaps. Care is taken here to
+  // avoid rounding errors.
+  LayoutRect overflowRect(LayoutRect::infiniteIntRect());
   LayoutUnit columnGap = m_columnSet.columnGap();
   if (m_columnSet.isHorizontalWritingMode()) {
+    if (!isFirstColumnInMulticolContainer)
+      overflowRect.shiftYEdgeTo(portionRect.y());
+    if (!isLastColumnInMulticolContainer)
+      overflowRect.shiftMaxYEdgeTo(portionRect.maxY());
     if (!isLeftmostColumn)
       overflowRect.shiftXEdgeTo(portionRect.x() - columnGap / 2);
     if (!isRightmostColumn)
       overflowRect.shiftMaxXEdgeTo(portionRect.maxX() + columnGap -
                                    columnGap / 2);
   } else {
+    if (!isFirstColumnInMulticolContainer)
+      overflowRect.shiftXEdgeTo(portionRect.x());
+    if (!isLastColumnInMulticolContainer)
+      overflowRect.shiftMaxXEdgeTo(portionRect.maxX());
     if (!isLeftmostColumn)
       overflowRect.shiftYEdgeTo(portionRect.y() - columnGap / 2);
     if (!isRightmostColumn)
