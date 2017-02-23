@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 
@@ -114,7 +114,7 @@ class CONTENT_EXPORT AudioRepetitionDetector {
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker processing_thread_checker_;
 
-  ScopedVector<State> states_;
+  std::vector<std::unique_ptr<State>> states_;
 
   // Ring buffer to store input audio.
   std::vector<float> audio_buffer_;

@@ -7,8 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +24,7 @@ const uint32_t kRequestsPerFlush = 4;
 const double kFlushPeriodSeconds = 1.f / 60;
 const int kRoutingId = 1;
 
-typedef ScopedVector<IPC::Message> ScopedMessages;
+typedef std::vector<std::unique_ptr<IPC::Message>> ScopedMessages;
 
 int GetRequestId(const IPC::Message& msg) {
   int request_id = -1;
@@ -113,7 +116,7 @@ class ResourceDispatchThrottlerTest : public testing::Test, public IPC::Sender {
 
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override {
-    sent_messages_.push_back(msg);
+    sent_messages_.push_back(base::WrapUnique(msg));
     return true;
   }
 
@@ -170,7 +173,7 @@ class ResourceDispatchThrottlerTest : public testing::Test, public IPC::Sender {
   }
 
   const IPC::Message* LastSentMessage() const {
-    return sent_messages_.empty() ? nullptr : sent_messages_.back();
+    return sent_messages_.empty() ? nullptr : sent_messages_.back().get();
   }
 
   int LastSentRequestId() const {

@@ -204,13 +204,10 @@ int32_t PepperVideoDecoderHost::OnHostMsgGetShm(
 
   base::SharedMemoryHandle shm_handle = shm->handle();
   if (shm_id == shm_buffers_.size()) {
-    shm_buffers_.push_back(shm.release());
+    shm_buffers_.push_back(std::move(shm));
     shm_buffer_busy_.push_back(false);
   } else {
-    // Remove the old buffer. Delete manually since ScopedVector won't delete
-    // the existing element if we just assign over it.
-    delete shm_buffers_[shm_id];
-    shm_buffers_[shm_id] = shm.release();
+    shm_buffers_[shm_id] = std::move(shm);
   }
 
   SerializedHandle handle(

@@ -12,7 +12,6 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/swap_promise.h"
 #include "content/common/content_export.h"

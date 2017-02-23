@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_vector.h"
+#include <memory>
+#include <vector>
+
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
@@ -90,7 +92,8 @@ class CONTENT_EXPORT MediaStreamTrackMetrics : public base::NonThreadSafe {
   // track object and the PeerConnection it is attached to both exist.
   uint64_t MakeUniqueId(const std::string& track, StreamType stream_type);
 
-  typedef ScopedVector<MediaStreamTrackMetricsObserver> ObserverVector;
+  typedef std::vector<std::unique_ptr<MediaStreamTrackMetricsObserver>>
+      ObserverVector;
   ObserverVector observers_;
 
   webrtc::PeerConnectionInterface::IceConnectionState ice_state_;

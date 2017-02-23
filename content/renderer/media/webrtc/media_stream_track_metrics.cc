@@ -152,7 +152,8 @@ struct ObserverFinder {
   ObserverFinder(MediaStreamTrackMetrics::StreamType stream_type,
                  MediaStreamInterface* stream)
       : stream_type(stream_type), stream_(stream) {}
-  bool operator()(MediaStreamTrackMetricsObserver* observer) {
+  bool operator()(
+      const std::unique_ptr<MediaStreamTrackMetricsObserver>& observer) {
     return stream_ == observer->stream() &&
            stream_type == observer->stream_type();
   }
@@ -268,26 +269,24 @@ MediaStreamTrackMetrics::MediaStreamTrackMetrics()
     : ice_state_(webrtc::PeerConnectionInterface::kIceConnectionNew) {}
 
 MediaStreamTrackMetrics::~MediaStreamTrackMetrics() {
-  for (ObserverVector::iterator it = observers_.begin(); it != observers_.end();
-       ++it) {
-    (*it)->SendLifetimeMessages(DISCONNECTED);
+  for (const auto& observer : observers_) {
+    observer->SendLifetimeMessages(DISCONNECTED);
   }
 }
 
 void MediaStreamTrackMetrics::AddStream(StreamType type,
                                         MediaStreamInterface* stream) {
   DCHECK(CalledOnValidThread());
-  MediaStreamTrackMetricsObserver* observer =
-      new MediaStreamTrackMetricsObserver(type, stream, this);
-  observers_.insert(observers_.end(), observer);
-  SendLifeTimeMessageDependingOnIceState(observer);
+  observers_.push_back(
+      base::MakeUnique<MediaStreamTrackMetricsObserver>(type, stream, this));
+  SendLifeTimeMessageDependingOnIceState(observers_.back().get());
 }
 
 void MediaStreamTrackMetrics::RemoveStream(StreamType type,
                                            MediaStreamInterface* stream) {
   DCHECK(CalledOnValidThread());
-  ObserverVector::iterator it = std::find_if(
-      observers_.begin(), observers_.end(), ObserverFinder(type, stream));
+  auto it = std::find_if(observers_.begin(), observers_.end(),
+                         ObserverFinder(type, stream));
   if (it == observers_.end()) {
     // Since external apps could call removeStream with a stream they
     // never added, this can happen without it being an error.
@@ -301,9 +300,8 @@ void MediaStreamTrackMetrics::IceConnectionChange(
     PeerConnectionInterface::IceConnectionState new_state) {
   DCHECK(CalledOnValidThread());
   ice_state_ = new_state;
-  for (ObserverVector::iterator it = observers_.begin(); it != observers_.end();
-       ++it) {
-    SendLifeTimeMessageDependingOnIceState(*it);
+  for (const auto& observer : observers_) {
+    SendLifeTimeMessageDependingOnIceState(observer.get());
   }
 }
 void MediaStreamTrackMetrics::SendLifeTimeMessageDependingOnIceState(

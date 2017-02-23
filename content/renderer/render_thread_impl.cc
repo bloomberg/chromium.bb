@@ -1342,7 +1342,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       cc::ContextProvider::ScopedContextLock lock(
           shared_context_provider.get());
       if (lock.ContextGL()->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
-        return gpu_factories_.back();
+        return gpu_factories_.back().get();
       } else {
         scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
             GetMediaThreadTaskRunner();
@@ -1351,7 +1351,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
             base::Bind(
                 base::IgnoreResult(
                     &RendererGpuVideoAcceleratorFactories::CheckContextLost),
-                base::Unretained(gpu_factories_.back())));
+                base::Unretained(gpu_factories_.back().get())));
       }
     }
   }
@@ -1392,7 +1392,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       media_task_runner, std::move(media_context_provider),
       enable_gpu_memory_buffer_video_frames, buffer_to_texture_target_map_,
       enable_video_accelerator));
-  return gpu_factories_.back();
+  return gpu_factories_.back().get();
 }
 
 scoped_refptr<ui::ContextProviderCommandBuffer>

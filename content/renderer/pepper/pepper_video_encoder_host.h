@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
 #include "media/video/video_encode_accelerator.h"
@@ -53,7 +53,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
 
     media::BitstreamBuffer ToBitstreamBuffer();
 
-    // Index of the buffer in the ScopedVector. Buffers have the same id in
+    // Index of the buffer in the |shm_buffers_|. Buffers have the same id in
     // the plugin and the host.
     uint32_t id;
     std::unique_ptr<base::SharedMemory> shm;
@@ -128,7 +128,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   // Non-owning pointer.
   RendererPpapiHost* renderer_ppapi_host_;
 
-  ScopedVector<ShmBuffer> shm_buffers_;
+  std::vector<std::unique_ptr<ShmBuffer>> shm_buffers_;
 
   // Buffer manager for shared memory that holds video frames.
   ppapi::MediaStreamBufferManager buffer_manager_;

@@ -35,6 +35,9 @@
 
 #include "content/renderer/history_entry.h"
 
+#include <algorithm>
+
+#include "base/memory/ptr_util.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -46,15 +49,16 @@ namespace content {
 
 HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::AddChild(
     const WebHistoryItem& item) {
-  children_->push_back(new HistoryNode(entry_, item));
-  return children_->back();
+  children_.push_back(base::MakeUnique<HistoryNode>(entry_, item));
+  return children_.back().get();
 }
 
 HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::AddChild() {
   return AddChild(WebHistoryItem());
 }
 
-HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::CloneAndReplace(
+std::unique_ptr<HistoryEntry::HistoryNode>
+HistoryEntry::HistoryNode::CloneAndReplace(
     const base::WeakPtr<HistoryEntry>& new_entry,
     const WebHistoryItem& new_item,
     bool clone_children_of_target,
@@ -62,7 +66,8 @@ HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::CloneAndReplace(
     RenderFrameImpl* current_frame) {
   bool is_target_frame = target_frame == current_frame;
   const WebHistoryItem& item_for_create = is_target_frame ? new_item : item_;
-  HistoryNode* new_history_node = new HistoryNode(new_entry, item_for_create);
+  auto new_history_node =
+      base::MakeUnique<HistoryNode>(new_entry, item_for_create);
 
   // Use the last committed history item for the frame rather than item_, since
   // the latter may not accurately reflect which URL is currently committed in
@@ -92,13 +97,10 @@ HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::CloneAndReplace(
           entry_->GetHistoryNodeForFrame(child_render_frame);
       if (!child_history_node)
         continue;
-      HistoryNode* new_child_node =
-          child_history_node->CloneAndReplace(new_entry,
-                                              new_item,
-                                              clone_children_of_target,
-                                              target_frame,
-                                              child_render_frame);
-      new_history_node->children_->push_back(new_child_node);
+
+      new_history_node->children_.push_back(child_history_node->CloneAndReplace(
+          new_entry, new_item, clone_children_of_target, target_frame,
+          child_render_frame));
     }
   }
   return new_history_node;
@@ -116,7 +118,6 @@ HistoryEntry::HistoryNode::HistoryNode(const base::WeakPtr<HistoryEntry>& entry,
     : entry_(entry) {
   if (!item.isNull())
     set_item(item);
-  children_.reset(new ScopedVector<HistoryNode>);
 }
 
 HistoryEntry::HistoryNode::~HistoryNode() {
@@ -129,8 +130,19 @@ HistoryEntry::HistoryNode::~HistoryNode() {
   }
 }
 
+std::vector<HistoryEntry::HistoryNode*> HistoryEntry::HistoryNode::children()
+    const {
+  std::vector<HistoryEntry::HistoryNode*> children(children_.size());
+  std::transform(children_.cbegin(), children_.cend(), children.begin(),
+                 [](const std::unique_ptr<HistoryEntry::HistoryNode>& item) {
+                   return item.get();
+                 });
+
+  return children;
+}
+
 void HistoryEntry::HistoryNode::RemoveChildren() {
-  children_.reset(new ScopedVector<HistoryNode>);
+  children_.clear();
 }
 
 HistoryEntry::HistoryEntry() : weak_ptr_factory_(this) {
@@ -151,10 +163,10 @@ HistoryEntry* HistoryEntry::CloneAndReplace(const WebHistoryItem& new_item,
                                             RenderFrameImpl* target_frame,
                                             RenderViewImpl* render_view) {
   HistoryEntry* new_entry = new HistoryEntry();
-  new_entry->root_.reset(
+  new_entry->root_ =
       root_->CloneAndReplace(new_entry->weak_ptr_factory_.GetWeakPtr(),
                              new_item, clone_children_of_target, target_frame,
-                             render_view->GetMainRenderFrame()));
+                             render_view->GetMainRenderFrame());
   return new_entry;
 }
 

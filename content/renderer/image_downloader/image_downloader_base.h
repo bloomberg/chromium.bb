@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -61,7 +61,7 @@ class ImageDownloaderBase : public RenderFrameObserver,
                      MultiResolutionImageResourceFetcher* fetcher,
                      const std::vector<SkBitmap>& images);
 
-  typedef ScopedVector<MultiResolutionImageResourceFetcher>
+  typedef std::vector<std::unique_ptr<MultiResolutionImageResourceFetcher>>
       ImageResourceFetcherList;
 
   // ImageResourceFetchers schedule via FetchImage.

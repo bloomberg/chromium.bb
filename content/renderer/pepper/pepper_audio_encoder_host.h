@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/numerics/safe_math.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/pp_codecs.h"

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/url_request_info_util.h"
@@ -162,15 +163,15 @@ void PepperURLLoaderHost::didReceiveData(const char* data, int data_length) {
   bytes_received_ += data_length;
   UpdateProgress();
 
-  PpapiPluginMsg_URLLoader_SendData* message =
-      new PpapiPluginMsg_URLLoader_SendData;
+  auto message = base::MakeUnique<PpapiPluginMsg_URLLoader_SendData>();
   message->WriteData(data, data_length);
-  SendUpdateToPlugin(message);
+  SendUpdateToPlugin(std::move(message));
 }
 
 void PepperURLLoaderHost::didFinishLoading(double finish_time) {
   // Note that |loader| will be NULL for document loads.
-  SendUpdateToPlugin(new PpapiPluginMsg_URLLoader_FinishedLoading(PP_OK));
+  SendUpdateToPlugin(
+      base::MakeUnique<PpapiPluginMsg_URLLoader_FinishedLoading>(PP_OK));
 }
 
 void PepperURLLoaderHost::didFail(const WebURLError& error) {
@@ -189,12 +190,13 @@ void PepperURLLoaderHost::didFail(const WebURLError& error) {
     // It's a WebKit error.
     pp_error = PP_ERROR_NOACCESS;
   }
-  SendUpdateToPlugin(new PpapiPluginMsg_URLLoader_FinishedLoading(pp_error));
+  SendUpdateToPlugin(
+      base::MakeUnique<PpapiPluginMsg_URLLoader_FinishedLoading>(pp_error));
 }
 
 void PepperURLLoaderHost::DidConnectPendingHostToResource() {
-  for (size_t i = 0; i < pending_replies_.size(); i++)
-    host()->SendUnsolicitedReply(pp_resource(), *pending_replies_[i]);
+  for (const auto& reply : pending_replies_)
+    host()->SendUnsolicitedReply(pp_resource(), *reply);
   pending_replies_.clear();
 }
 
@@ -209,7 +211,8 @@ int32_t PepperURLLoaderHost::OnHostMsgOpen(
   DCHECK(ret != PP_OK_COMPLETIONPENDING);
 
   if (ret != PP_OK)
-    SendUpdateToPlugin(new PpapiPluginMsg_URLLoader_FinishedLoading(ret));
+    SendUpdateToPlugin(
+        base::MakeUnique<PpapiPluginMsg_URLLoader_FinishedLoading>(ret));
   return PP_OK;
 }
 
@@ -317,7 +320,8 @@ int32_t PepperURLLoaderHost::OnHostMsgGrantUniversalAccess(
   return PP_OK;
 }
 
-void PepperURLLoaderHost::SendUpdateToPlugin(IPC::Message* message) {
+void PepperURLLoaderHost::SendUpdateToPlugin(
+    std::unique_ptr<IPC::Message> message) {
   // We must send messages to the plugin in the order that the responses are
   // received from webkit, even when the host isn't ready to send messages or
   // when the host performs an asynchronous operation.
@@ -332,31 +336,30 @@ void PepperURLLoaderHost::SendUpdateToPlugin(IPC::Message* message) {
       message->type() == PpapiPluginMsg_URLLoader_FinishedLoading::ID) {
     // Messages that must be sent after ReceivedResponse.
     if (pending_response_) {
-      out_of_order_replies_.push_back(message);
+      out_of_order_replies_.push_back(std::move(message));
     } else {
-      SendOrderedUpdateToPlugin(message);
+      SendOrderedUpdateToPlugin(std::move(message));
     }
   } else if (message->type() == PpapiPluginMsg_URLLoader_ReceivedResponse::ID) {
     // Allow SendData and FinishedLoading into the ordered queue.
     DCHECK(pending_response_);
-    SendOrderedUpdateToPlugin(message);
-    for (size_t i = 0; i < out_of_order_replies_.size(); i++)
-      SendOrderedUpdateToPlugin(out_of_order_replies_[i]);
-    // SendOrderedUpdateToPlugin destroys the messages for us.
-    out_of_order_replies_.weak_clear();
+    SendOrderedUpdateToPlugin(std::move(message));
+    for (auto& reply : out_of_order_replies_)
+      SendOrderedUpdateToPlugin(std::move(reply));
+    out_of_order_replies_.clear();
     pending_response_ = false;
   } else {
     // Messages without ordering constraints.
-    SendOrderedUpdateToPlugin(message);
+    SendOrderedUpdateToPlugin(std::move(message));
   }
 }
 
-void PepperURLLoaderHost::SendOrderedUpdateToPlugin(IPC::Message* message) {
+void PepperURLLoaderHost::SendOrderedUpdateToPlugin(
+    std::unique_ptr<IPC::Message> message) {
   if (pp_resource() == 0) {
-    pending_replies_.push_back(message);
+    pending_replies_.push_back(std::move(message));
   } else {
     host()->SendUnsolicitedReply(pp_resource(), *message);
-    delete message;
   }
 }
 
@@ -416,7 +419,8 @@ void PepperURLLoaderHost::SaveResponse(const WebURLResponse& response) {
 
 void PepperURLLoaderHost::DidDataFromWebURLResponse(
     const ppapi::URLResponseInfoData& data) {
-  SendUpdateToPlugin(new PpapiPluginMsg_URLLoader_ReceivedResponse(data));
+  SendUpdateToPlugin(
+      base::MakeUnique<PpapiPluginMsg_URLLoader_ReceivedResponse>(data));
 }
 
 void PepperURLLoaderHost::UpdateProgress() {
@@ -429,11 +433,12 @@ void PepperURLLoaderHost::UpdateProgress() {
     // getting download progress when they happen to set the upload progress
     // flag.
     ppapi::proxy::ResourceMessageReplyParams params;
-    SendUpdateToPlugin(new PpapiPluginMsg_URLLoader_UpdateProgress(
-        record_upload ? bytes_sent_ : -1,
-        record_upload ? total_bytes_to_be_sent_ : -1,
-        record_download ? bytes_received_ : -1,
-        record_download ? total_bytes_to_be_received_ : -1));
+    SendUpdateToPlugin(
+        base::MakeUnique<PpapiPluginMsg_URLLoader_UpdateProgress>(
+            record_upload ? bytes_sent_ : -1,
+            record_upload ? total_bytes_to_be_sent_ : -1,
+            record_download ? bytes_received_ : -1,
+            record_download ? total_bytes_to_be_received_ : -1));
   }
 }
 

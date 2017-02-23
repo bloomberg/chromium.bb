@@ -74,7 +74,7 @@ void RecursivelyGenerateFrameState(
   ToNullableString16Vector(node->item().getReferencedFilePaths(),
                            referenced_files);
 
-  std::vector<HistoryEntry::HistoryNode*>& children = node->children();
+  std::vector<HistoryEntry::HistoryNode*> children = node->children();
   state->children.resize(children.size());
   for (size_t i = 0; i < children.size(); ++i) {
     RecursivelyGenerateFrameState(children[i], &state->children[i],

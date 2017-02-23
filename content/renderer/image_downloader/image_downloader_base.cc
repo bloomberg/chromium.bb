@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "content/child/image_decoder.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -93,13 +94,15 @@ bool ImageDownloaderBase::FetchImage(const GURL& image_url,
   DCHECK(frame);
 
   // Create an image resource fetcher and assign it with a call back object.
-  image_fetchers_.push_back(new MultiResolutionImageResourceFetcher(
-      image_url, frame, 0, is_favicon ? WebURLRequest::RequestContextFavicon
-                                      : WebURLRequest::RequestContextImage,
-      bypass_cache ? WebCachePolicy::BypassingCache
-                   : WebCachePolicy::UseProtocolCachePolicy,
-      base::Bind(&ImageDownloaderBase::DidFetchImage, base::Unretained(this),
-                 callback)));
+  image_fetchers_.push_back(
+      base::MakeUnique<MultiResolutionImageResourceFetcher>(
+          image_url, frame, 0,
+          is_favicon ? WebURLRequest::RequestContextFavicon
+                     : WebURLRequest::RequestContextImage,
+          bypass_cache ? WebCachePolicy::BypassingCache
+                       : WebCachePolicy::UseProtocolCachePolicy,
+          base::Bind(&ImageDownloaderBase::DidFetchImage,
+                     base::Unretained(this), callback)));
   return true;
 }
 
@@ -111,11 +114,14 @@ void ImageDownloaderBase::DidFetchImage(
 
   // Remove the image fetcher from our pending list. We're in the callback from
   // MultiResolutionImageResourceFetcher, best to delay deletion.
-  ImageResourceFetcherList::iterator iter =
-      std::find(image_fetchers_.begin(), image_fetchers_.end(), fetcher);
-  if (iter != image_fetchers_.end()) {
-    image_fetchers_.weak_erase(iter);
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, fetcher);
+  for (auto iter = image_fetchers_.begin(); iter != image_fetchers_.end();
+       ++iter) {
+    if (iter->get() == fetcher) {
+      iter->release();
+      image_fetchers_.erase(iter);
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, fetcher);
+      break;
+    }
   }
 
   // |this| may be destructed after callback is run.
@@ -123,7 +129,7 @@ void ImageDownloaderBase::DidFetchImage(
 }
 
 void ImageDownloaderBase::OnDestruct() {
-  for (auto* fetchers : image_fetchers_) {
+  for (const auto& fetchers : image_fetchers_) {
     // Will run callbacks with an empty image vector.
     fetchers->OnRenderFrameDestruct();
   }

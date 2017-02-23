@@ -15,7 +15,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_codecs.h"
@@ -135,7 +134,7 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   // resource. We use a buffer's index in these vectors as its id on both sides
   // of the proxy. Only add buffers or update them in place so as not to
   // invalidate these ids.
-  ScopedVector<base::SharedMemory> shm_buffers_;
+  std::vector<std::unique_ptr<base::SharedMemory>> shm_buffers_;
   // A vector of true/false indicating if a shm buffer is in use by the decoder.
   // This is parallel to |shm_buffers_|.
   std::vector<uint8_t> shm_buffer_busy_;

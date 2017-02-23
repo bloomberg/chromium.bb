@@ -8,9 +8,9 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "gin/modules/module_registry_observer.h"
 #include "v8/include/v8.h"
 
@@ -70,7 +70,7 @@ class MojoContextState : public gin::ModuleRegistryObserver {
   std::unique_ptr<MojoMainRunner> runner_;
 
   // Set of fetchers we're waiting on to download script.
-  ScopedVector<ResourceFetcher> module_fetchers_;
+  std::vector<std::unique_ptr<ResourceFetcher>> module_fetchers_;
 
   // Set of modules we've fetched script from.
   std::set<std::string> fetched_modules_;

@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/host/resource_host.h"
@@ -76,14 +76,14 @@ class PepperURLLoaderHost : public ppapi::host::ResourceHost,
   // plugin has not connected to us yet.
   //
   // Takes ownership of the given pointer.
-  void SendUpdateToPlugin(IPC::Message* msg);
+  void SendUpdateToPlugin(std::unique_ptr<IPC::Message> msg);
 
   // Sends or queues an unsolicited message to the plugin resource. This is
   // used inside SendUpdateToPlugin for messages that are already ordered
   // properly.
   //
   // Takes ownership of the given pointer.
-  void SendOrderedUpdateToPlugin(IPC::Message* msg);
+  void SendOrderedUpdateToPlugin(std::unique_ptr<IPC::Message> msg);
 
   void Close();
 
@@ -131,8 +131,8 @@ class PepperURLLoaderHost : public ppapi::host::ResourceHost,
   // Messages sent while the resource host is pending. These will be forwarded
   // to the plugin when the plugin side connects. The pointers are owned by
   // this object and must be deleted.
-  ScopedVector<IPC::Message> pending_replies_;
-  ScopedVector<IPC::Message> out_of_order_replies_;
+  std::vector<std::unique_ptr<IPC::Message>> pending_replies_;
+  std::vector<std::unique_ptr<IPC::Message>> out_of_order_replies_;
 
   // True when there's a pending DataFromURLResponse call which will send a
   // PpapiPluginMsg_URLLoader_ReceivedResponse to the plugin, which introduces

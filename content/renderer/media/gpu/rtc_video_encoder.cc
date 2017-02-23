@@ -6,11 +6,13 @@
 
 #include <string.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
@@ -222,8 +224,8 @@ class RTCVideoEncoder::Impl
   gfx::Size input_visible_size_;
 
   // Shared memory buffers for input/output with the VEA.
-  ScopedVector<base::SharedMemory> input_buffers_;
-  ScopedVector<base::SharedMemory> output_buffers_;
+  std::vector<std::unique_ptr<base::SharedMemory>> input_buffers_;
+  std::vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
 
   // Input buffers ready to be filled with input from Encode().  As a LIFO since
   // we don't care about ordering.
@@ -426,7 +428,7 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
                         media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    input_buffers_.push_back(shm.release());
+    input_buffers_.push_back(std::move(shm));
     input_buffers_free_.push_back(i);
   }
 
@@ -438,7 +440,7 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
                         media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    output_buffers_.push_back(shm.release());
+    output_buffers_.push_back(std::move(shm));
   }
 
   // Immediately provide all output buffers to the VEA.
@@ -468,7 +470,8 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
                       media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
-  base::SharedMemory* output_buffer = output_buffers_[bitstream_buffer_id];
+  base::SharedMemory* output_buffer =
+      output_buffers_[bitstream_buffer_id].get();
   if (payload_size > output_buffer->mapped_size()) {
     LogAndNotifyError(FROM_HERE, "invalid payload_size",
                       media::VideoEncodeAccelerator::kPlatformFailureError);
@@ -579,7 +582,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
     const base::TimeDelta timestamp =
         frame ? frame->timestamp()
               : base::TimeDelta::FromMilliseconds(next_frame->ntp_time_ms());
-    base::SharedMemory* input_buffer = input_buffers_[index];
+    base::SharedMemory* input_buffer = input_buffers_[index].get();
     frame = media::VideoFrame::WrapExternalSharedMemory(
         media::PIXEL_FORMAT_I420, input_frame_coded_size_,
         gfx::Rect(input_visible_size_), input_visible_size_,

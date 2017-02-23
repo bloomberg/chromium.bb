@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -249,7 +250,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   blink::WebFrame* frame_ = nullptr;
 
-  ScopedVector<WebRtcMediaStreamAdapter> local_streams_;
+  std::vector<std::unique_ptr<WebRtcMediaStreamAdapter>> local_streams_;
 
   base::WeakPtr<PeerConnectionTracker> peer_connection_tracker_;
 

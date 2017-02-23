@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 
 namespace {
 
@@ -40,7 +41,7 @@ AudioRepetitionDetector::AudioRepetitionDetector(
 
   max_look_back_ms_ = temp.back();
   for (int look_back : temp)
-    states_.push_back(new State(look_back));
+    states_.push_back(base::MakeUnique<State>(look_back));
 }
 
 AudioRepetitionDetector::~AudioRepetitionDetector() {
@@ -70,7 +71,7 @@ void AudioRepetitionDetector::Detect(const float* data, size_t num_frames,
   AddFramesToBuffer(data, num_frames);
 
   for (size_t idx = num_frames; idx > 0; --idx, data += num_channels) {
-    for (State* state : states_) {
+    for (const auto& state : states_) {
       // Look back position depends on the sample rate. It is rounded down to
       // the closest integer.
       const size_t look_back_frames =
@@ -81,7 +82,7 @@ void AudioRepetitionDetector::Detect(const float* data, size_t num_frames,
       if (Equal(data, look_back_frames + idx)) {
         if (!state->reported()) {
           state->Increment(data, num_channels);
-          if (HasValidReport(state)) {
+          if (HasValidReport(state.get())) {
             repetition_callback_.Run(state->look_back_ms());
             state->set_reported(true);
           }
@@ -138,7 +139,7 @@ void AudioRepetitionDetector::Reset(size_t num_channels, int sample_rate) {
       (max_look_back_ms_ * sample_rate_ + 999) / 1000 + max_frames_;
 
   audio_buffer_.resize(buffer_size_frames_ * num_channels_);
-  for (State* state : states_)
+  for (const auto& state : states_)
     state->Reset();
 }
 

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
@@ -182,7 +183,7 @@ void MojoContextState::FetchModule(const std::string& id) {
   DCHECK(fetched_modules_.find(id) == fetched_modules_.end());
   fetched_modules_.insert(id);
   ResourceFetcher* fetcher = ResourceFetcher::Create(url);
-  module_fetchers_.push_back(fetcher);
+  module_fetchers_.push_back(base::WrapUnique(fetcher));
   fetcher->Start(frame_,
                  blink::WebURLRequest::RequestContextScript,
                  base::Bind(&MojoContextState::OnFetchModuleComplete,
@@ -201,9 +202,14 @@ void MojoContextState::OnFetchModuleComplete(
   DCHECK_EQ(module_prefix_ + id, response.url().string().utf8());
   // We can't delete fetch right now as the arguments to this function come from
   // it and are used below. Instead use a scope_ptr to cleanup.
-  std::unique_ptr<ResourceFetcher> deleter(fetcher);
-  module_fetchers_.weak_erase(
-      std::find(module_fetchers_.begin(), module_fetchers_.end(), fetcher));
+  auto iter =
+      std::find_if(module_fetchers_.begin(), module_fetchers_.end(),
+                   [fetcher](const std::unique_ptr<ResourceFetcher>& item) {
+                     return item.get() == fetcher;
+                   });
+  std::unique_ptr<ResourceFetcher> deleter = std::move(*iter);
+  module_fetchers_.erase(iter);
+
   if (data.empty()) {
     LOG(ERROR) << "Fetched empty source for module \"" << id << "\"";
     return;

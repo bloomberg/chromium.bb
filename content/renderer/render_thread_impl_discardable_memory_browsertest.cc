@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/discardable_memory.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
@@ -91,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   const size_t kLargeSize = 4 * 1024 * 1024;   // 4MiB.
   const size_t kNumberOfInstances = 1024 + 1;  // >4GiB total.
 
-  ScopedVector<base::DiscardableMemory> instances;
+  std::vector<std::unique_ptr<base::DiscardableMemory>> instances;
   for (size_t i = 0; i < kNumberOfInstances; ++i) {
     std::unique_ptr<base::DiscardableMemory> memory =
         child_discardable_shared_memory_manager()
