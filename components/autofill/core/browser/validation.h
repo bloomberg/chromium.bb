@@ -30,11 +30,19 @@ bool IsValidCreditCardNumber(const base::string16& text);
 bool IsValidCreditCardSecurityCode(const base::string16& code,
                                    const base::StringPiece card_type);
 
+// Returns true if |text| is a supported card type and a valid credit card
+// number. |error_message| can't be null and will be filled with the appropriate
+// error message.
+bool IsValidCreditCardNumberForBasicCardNetworks(
+    const base::string16& text,
+    const std::set<std::string>& supported_basic_card_networks,
+    base::string16* error_message);
+
 // Returns true if |text| looks like a valid e-mail address.
 bool IsValidEmailAddress(const base::string16& text);
 
-// Returns true if |text| is a valid US state name or abbreviation.  It is
-// case insensitive.  Valid for US states only.
+// Returns true if |text| is a valid US state name or abbreviation.  It is case
+// insensitive.  Valid for US states only.
 bool IsValidState(const base::string16& text);
 
 // Returns true if |text| looks like a valid zip code.

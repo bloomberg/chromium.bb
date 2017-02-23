@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_CREDIT_CARD_EDITOR_VIEW_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_CREDIT_CARD_EDITOR_VIEW_CONTROLLER_H_
 
+#include <set>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/validation_delegate.h"
@@ -35,8 +37,13 @@ class CreditCardEditorViewController : public EditorViewController {
  private:
   class CreditCardValidationDelegate : public ValidationDelegate {
    public:
-    CreditCardValidationDelegate(const EditorField& field,
-                                 EditorViewController* controller);
+    // Used to validate |field| type. A reference to the |controller| should
+    // outlive this delegate, and a list of |supported_card_networks| can be
+    // passed in to validate |field| (the data will be copied to the delegate).
+    CreditCardValidationDelegate(
+        const EditorField& field,
+        EditorViewController* controller,
+        const std::vector<std::string>& supported_card_networks);
     ~CreditCardValidationDelegate() override;
 
     // ValidationDelegate:
@@ -50,6 +57,8 @@ class CreditCardEditorViewController : public EditorViewController {
     EditorField field_;
     // Outlives this class.
     EditorViewController* controller_;
+    // The list of supported basic card networks.
+    std::set<std::string> supported_card_networks_;
 
     DISALLOW_COPY_AND_ASSIGN(CreditCardValidationDelegate);
   };

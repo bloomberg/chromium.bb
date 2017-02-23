@@ -6,11 +6,13 @@
 
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -95,6 +97,31 @@ bool IsValidCreditCardSecurityCode(const base::string16& code,
   size_t required_length = card_type == kAmericanExpressCard ? 4 : 3;
   return code.length() == required_length &&
          base::ContainsOnlyChars(code, base::ASCIIToUTF16("0123456789"));
+}
+
+bool IsValidCreditCardNumberForBasicCardNetworks(
+    const base::string16& text,
+    const std::set<std::string>& supported_basic_card_networks,
+    base::string16* error_message) {
+  DCHECK(error_message);
+
+  // The type check is cheaper than the credit card number check.
+  const std::string basic_card_payment_type =
+      autofill::data_util::GetPaymentRequestData(
+          CreditCard::GetCreditCardType(text))
+          .basic_card_payment_type;
+  if (!supported_basic_card_networks.count(basic_card_payment_type)) {
+    *error_message = l10n_util::GetStringUTF16(
+        IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE);
+    return false;
+  }
+
+  if (IsValidCreditCardNumber(text))
+    return true;
+
+  *error_message = l10n_util::GetStringUTF16(
+      IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE);
+  return false;
 }
 
 bool IsValidEmailAddress(const base::string16& text) {
@@ -268,13 +295,8 @@ bool IsValidForType(const base::string16& value,
     }
 
     case CREDIT_CARD_NUMBER:
-      if (IsValidCreditCardNumber(value))
-        return true;
-
-      if (error_message) {
-        *error_message = l10n_util::GetStringUTF16(
-            IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE);
-      }
+      NOTREACHED() << "IsValidCreditCardNumberForBasicCardNetworks should be "
+                   << "used to validate credit card numbers";
       break;
 
     default:

@@ -105,6 +105,9 @@
   <message name="IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED" desc="Message displayed to user when the credit card is expired.">
     The card is expired
   </message>
+  <message name="IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE" desc="Message displayed to user when the credit card type (e.g visa, mastercard) is not supported for this transaction.">
+    Unsupported card type
+  </message>
   <message name="IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE" desc="The text that informs the user that '*' character indicates an input field that is required. The '*' character should not be changed." formatter_data="android_java">
     * indicates required field
   </message>

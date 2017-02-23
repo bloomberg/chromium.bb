@@ -202,6 +202,42 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
+                       EnteringUnsupportedCardType) {
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(kJune2017);
+
+  InvokePaymentRequestUI();
+
+  OpenPaymentMethodScreen();
+
+  OpenCreditCardEditorScreen();
+
+  SetEditorTextfieldValue(base::ASCIIToUTF16("Bob Jones"),
+                          autofill::CREDIT_CARD_NAME_FULL);
+  // In this test case, only "visa" and "mastercard" are supported, so entering
+  // a MIR card will fail.
+  SetEditorTextfieldValue(base::ASCIIToUTF16("22222222invalidcard"),
+                          autofill::CREDIT_CARD_NUMBER);
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE),
+            GetErrorLabelForType(autofill::CREDIT_CARD_NUMBER));
+  SetComboboxValue(base::ASCIIToUTF16("05"), autofill::CREDIT_CARD_EXP_MONTH);
+  SetComboboxValue(base::ASCIIToUTF16("2026"),
+                   autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
+
+  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+
+  EXPECT_FALSE(IsEditorTextfieldInvalid(autofill::CREDIT_CARD_NAME_FULL));
+  EXPECT_TRUE(IsEditorTextfieldInvalid(autofill::CREDIT_CARD_NUMBER));
+  EXPECT_FALSE(IsEditorComboboxInvalid(autofill::CREDIT_CARD_EXP_MONTH));
+  EXPECT_FALSE(IsEditorComboboxInvalid(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  autofill::PersonalDataManager* personal_data_manager =
+      GetPaymentRequests(GetActiveWebContents())[0]->personal_data_manager();
+  EXPECT_EQ(0u, personal_data_manager->GetCreditCards().size());
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EnteringInvalidCardNumber_AndFixingIt) {
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);

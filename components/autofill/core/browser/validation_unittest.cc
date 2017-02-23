@@ -38,24 +38,24 @@ struct SecurityCodeCardTypePair {
 
 // From https://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
 const char* const kValidNumbers[] = {
-  "378282246310005",
-  "3714 4963 5398 431",
-  "3787-3449-3671-000",
-  "5610591081018250",
-  "3056 9309 0259 04",
-  "3852-0000-0232-37",
-  "6011111111111117",
-  "6011 0009 9013 9424",
-  "3530-1113-3330-0000",
-  "3566002020360505",
-  "5555 5555 5555 4444",
-  "5105-1051-0510-5100",
-  "4111111111111111",
-  "4012 8888 8888 1881",
-  "4222-2222-2222-2",
-  "5019717010103742",
-  "6331101999990016",
-  "6247130048162403",
+    "378282246310005",
+    "3714 4963 5398 431",
+    "3787-3449-3671-000",
+    "5610591081018250",
+    "3056 9309 0259 04",
+    "3852-0000-0232-37",
+    "6011111111111117",
+    "6011 0009 9013 9424",
+    "3530-1113-3330-0000",
+    "3566002020360505",
+    "5555 5555 5555 4444",  // Mastercard.
+    "5105-1051-0510-5100",
+    "4111111111111111",  // Visa.
+    "4012 8888 8888 1881",
+    "4222-2222-2222-2",
+    "5019717010103742",
+    "6331101999990016",
+    "6247130048162403",
 };
 const char* const kInvalidNumbers[] = {
   "4111 1111 112", /* too short */
@@ -230,46 +230,6 @@ INSTANTIATE_TEST_CASE_P(
                        IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED)));
 
 INSTANTIATE_TEST_CASE_P(
-    CreditCardNumber,
-    AutofillTypeValidationTest,
-    testing::Values(
-        ValidationCase(kValidNumbers[0], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[1], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[2], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[3], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[4], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[5], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[6], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[7], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[8], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[9], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[10], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[11], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[12], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[13], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[14], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[15], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[16], CREDIT_CARD_NUMBER, true, 0),
-        ValidationCase(kValidNumbers[17], CREDIT_CARD_NUMBER, true, 0),
-
-        ValidationCase(kInvalidNumbers[0],
-                       CREDIT_CARD_NUMBER,
-                       false,
-                       IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
-        ValidationCase(kInvalidNumbers[1],
-                       CREDIT_CARD_NUMBER,
-                       false,
-                       IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
-        ValidationCase(kInvalidNumbers[2],
-                       CREDIT_CARD_NUMBER,
-                       false,
-                       IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
-        ValidationCase(kInvalidNumbers[3],
-                       CREDIT_CARD_NUMBER,
-                       false,
-                       IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE)));
-
-INSTANTIATE_TEST_CASE_P(
     CreditCardMonth,
     AutofillTypeValidationTest,
     testing::Values(
@@ -351,5 +311,105 @@ INSTANTIATE_TEST_CASE_P(
             CREDIT_CARD_EXP_4_DIGIT_YEAR,
             false,
             IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_YEAR)));
+
+struct CCNumberCase {
+  CCNumberCase(const char* value,
+               const std::set<std::string> supported_basic_card_networks,
+               bool expected_valid,
+               int expected_error_id)
+      : value(value),
+        supported_basic_card_networks(supported_basic_card_networks),
+        expected_valid(expected_valid),
+        expected_error_id(expected_error_id) {}
+  ~CCNumberCase() {}
+
+  const char* const value;
+  const std::set<std::string> supported_basic_card_networks;
+  const bool expected_valid;
+  const int expected_error_id;
+};
+
+class AutofillCCNumberValidationTest
+    : public testing::TestWithParam<CCNumberCase> {};
+
+TEST_P(AutofillCCNumberValidationTest, IsValidCreditCardNumber) {
+  base::string16 error_message;
+  EXPECT_EQ(GetParam().expected_valid,
+            IsValidCreditCardNumberForBasicCardNetworks(
+                ASCIIToUTF16(GetParam().value),
+                GetParam().supported_basic_card_networks, &error_message))
+      << "Failed to validate CC number " << GetParam().value;
+  if (!GetParam().expected_valid) {
+    EXPECT_EQ(l10n_util::GetStringUTF16(GetParam().expected_error_id),
+              error_message);
+  }
+}
+
+const static std::set<std::string> kAllBasicCardNetworks{
+    "amex",       "discover", "diners",   "jcb",
+    "mastercard", "mir",      "unionpay", "visa"};
+
+INSTANTIATE_TEST_CASE_P(
+    CreditCardNumber,
+    AutofillCCNumberValidationTest,
+    testing::Values(
+        CCNumberCase(kValidNumbers[0], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[1], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[2], kAllBasicCardNetworks, true, 0),
+        // Generic card not supported.
+        CCNumberCase(kValidNumbers[3],
+                     kAllBasicCardNetworks,
+                     false,
+                     IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE),
+
+        CCNumberCase(kValidNumbers[4], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[5], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[6], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[7], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[8], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[9], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[10], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[11], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[12], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[13], kAllBasicCardNetworks, true, 0),
+        CCNumberCase(kValidNumbers[14], kAllBasicCardNetworks, true, 0),
+        // Generic cards not supported.
+        CCNumberCase(kValidNumbers[15],
+                     kAllBasicCardNetworks,
+                     false,
+                     IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE),
+        CCNumberCase(kValidNumbers[16],
+                     kAllBasicCardNetworks,
+                     false,
+                     IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE),
+
+        CCNumberCase(kValidNumbers[17], kAllBasicCardNetworks, true, 0),
+
+        CCNumberCase(kInvalidNumbers[0],
+                     kAllBasicCardNetworks,
+                     false,
+                     IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
+        CCNumberCase(kInvalidNumbers[1],
+                     kAllBasicCardNetworks,
+                     false,
+                     IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
+        CCNumberCase(kInvalidNumbers[2],
+                     kAllBasicCardNetworks,
+                     false,
+                     IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
+        CCNumberCase(kInvalidNumbers[3],
+                     kAllBasicCardNetworks,
+                     false,
+                     IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
+
+        // Valid numbers can still be invalid if the type is not supported.
+        CCNumberCase(kValidNumbers[10],  // Mastercard number.
+                     {"visa"},
+                     false,
+                     IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE),
+        CCNumberCase(kValidNumbers[12],  // Visa number.
+                     {"jcb", "diners", "unionpay", "mastercard"},
+                     false,
+                     IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE)));
 
 }  // namespace autofill

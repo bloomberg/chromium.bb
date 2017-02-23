@@ -189,9 +189,14 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
 std::unique_ptr<ValidationDelegate>
 CreditCardEditorViewController::CreateValidationDelegate(
     const EditorField& field) {
+  // The supported card networks for non-cc-number types are not passed to avoid
+  // the data copy in the delegate.
   return base::MakeUnique<
-      CreditCardEditorViewController::CreditCardValidationDelegate>(field,
-                                                                    this);
+      CreditCardEditorViewController::CreditCardValidationDelegate>(
+      field, this,
+      field.type == autofill::CREDIT_CARD_NUMBER
+          ? request()->supported_card_networks()
+          : std::vector<std::string>());
 }
 
 std::unique_ptr<ui::ComboboxModel>
@@ -216,9 +221,14 @@ CreditCardEditorViewController::GetComboboxModelForType(
 }
 
 CreditCardEditorViewController::CreditCardValidationDelegate::
-    CreditCardValidationDelegate(const EditorField& field,
-                                 EditorViewController* controller)
-    : field_(field), controller_(controller) {}
+    CreditCardValidationDelegate(
+        const EditorField& field,
+        EditorViewController* controller,
+        const std::vector<std::string>& supported_card_networks)
+    : field_(field),
+      controller_(controller),
+      supported_card_networks_(supported_card_networks.begin(),
+                               supported_card_networks.end()) {}
 CreditCardEditorViewController::CreditCardValidationDelegate::
     ~CreditCardValidationDelegate() {}
 
@@ -237,7 +247,10 @@ bool CreditCardEditorViewController::CreditCardValidationDelegate::
   if (!value.empty()) {
     base::string16 error_message;
     bool is_valid =
-        autofill::IsValidForType(value, field_.type, &error_message);
+        field_.type == autofill::CREDIT_CARD_NUMBER
+            ? autofill::IsValidCreditCardNumberForBasicCardNetworks(
+                  value, supported_card_networks_, &error_message)
+            : autofill::IsValidForType(value, field_.type, &error_message);
     controller_->DisplayErrorMessageForField(field_, error_message);
     return is_valid;
   }
