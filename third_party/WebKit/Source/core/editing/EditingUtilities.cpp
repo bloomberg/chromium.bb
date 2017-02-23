@@ -79,6 +79,27 @@ std::ostream& operator<<(std::ostream& os, PositionMoveType type) {
   return os << *it;
 }
 
+InputEvent::EventCancelable inputTypeIsCancelable(
+    InputEvent::InputType inputType) {
+  using InputType = InputEvent::InputType;
+  switch (inputType) {
+    case InputType::InsertText:
+    case InputType::InsertLineBreak:
+    case InputType::InsertParagraph:
+    case InputType::InsertCompositionText:
+    case InputType::InsertReplacementText:
+    case InputType::DeleteWordBackward:
+    case InputType::DeleteWordForward:
+    case InputType::DeleteLineBackward:
+    case InputType::DeleteLineForward:
+    case InputType::DeleteContentBackward:
+    case InputType::DeleteContentForward:
+      return InputEvent::EventCancelable::NotCancelable;
+    default:
+      return InputEvent::EventCancelable::IsCancelable;
+  }
+}
+
 }  // namespace
 
 static bool needsLayoutTreeUpdate(const Node& node) {
@@ -2060,11 +2081,11 @@ DispatchEventResult dispatchBeforeInputInsertText(Node* target,
     return DispatchEventResult::NotCanceled;
   // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
   // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
-  InputEvent* beforeInputEvent =
-      InputEvent::createBeforeInput(InputEvent::InputType::InsertText, data,
-                                    InputEvent::EventCancelable::IsCancelable,
-                                    InputEvent::EventIsComposing::NotComposing,
-                                    targetRangesForInputEvent(*target));
+  InputEvent* beforeInputEvent = InputEvent::createBeforeInput(
+      InputEvent::InputType::InsertText, data,
+      inputTypeIsCancelable(InputEvent::InputType::InsertText),
+      InputEvent::EventIsComposing::NotComposing,
+      targetRangesForInputEvent(*target));
   return target->dispatchEvent(beforeInputEvent);
 }
 
@@ -2077,7 +2098,7 @@ DispatchEventResult dispatchBeforeInputEditorCommand(
   if (!target)
     return DispatchEventResult::NotCanceled;
   InputEvent* beforeInputEvent = InputEvent::createBeforeInput(
-      inputType, nullAtom, InputEvent::EventCancelable::IsCancelable,
+      inputType, nullAtom, inputTypeIsCancelable(inputType),
       InputEvent::EventIsComposing::NotComposing, ranges);
   return target->dispatchEvent(beforeInputEvent);
 }
@@ -2101,7 +2122,7 @@ DispatchEventResult dispatchBeforeInputDataTransfer(
 
   if (hasRichlyEditableStyle(*(target->toNode())) || !dataTransfer) {
     beforeInputEvent = InputEvent::createBeforeInput(
-        inputType, dataTransfer, InputEvent::EventCancelable::IsCancelable,
+        inputType, dataTransfer, inputTypeIsCancelable(inputType),
         InputEvent::EventIsComposing::NotComposing,
         targetRangesForInputEvent(*target));
   } else {
@@ -2109,7 +2130,7 @@ DispatchEventResult dispatchBeforeInputDataTransfer(
     // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
     // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
     beforeInputEvent = InputEvent::createBeforeInput(
-        inputType, data, InputEvent::EventCancelable::IsCancelable,
+        inputType, data, inputTypeIsCancelable(inputType),
         InputEvent::EventIsComposing::NotComposing,
         targetRangesForInputEvent(*target));
   }
