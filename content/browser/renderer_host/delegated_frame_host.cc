@@ -438,12 +438,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
     // have the same id. Changing the layer to showing painted content destroys
     // the DelegatedRendererLayer.
     EvictDelegatedFrame();
-
     surface_factory_->Reset();
-    if (!surface_returned_resources_.empty()) {
-      SendReclaimCompositorResources(last_compositor_frame_sink_id_,
-                                     false /* is_swap_ack */);
-    }
+    surface_returned_resources_.clear();
     last_compositor_frame_sink_id_ = compositor_frame_sink_id;
   }
   bool skip_frame = false;

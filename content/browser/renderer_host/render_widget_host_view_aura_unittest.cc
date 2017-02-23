@@ -1823,8 +1823,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
   }
 }
 
-// This test verifies that when the compositor_frame_sink_id changes, then
-// DelegateFrameHost returns compositor resources without a swap ack.
+// This test verifies that when the compositor_frame_sink_id changes, the old
+// resources are not returned.
 TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   FakeSurfaceObserver manager_observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -1855,20 +1855,11 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   EXPECT_EQ(0u, sink_->message_count());
 
   // Swap another CompositorFrame but this time from another
-  // compositor_frame_sink_id.
-  // This should trigger a non-ACK ReclaimCompositorResources IPC.
+  // compositor_frame_sink_id. The resources held by DelegatedFrameHost are old
+  // and should not be returned.
   view_->OnSwapCompositorFrame(1,
                                MakeDelegatedFrame(1.f, view_size, view_rect));
-  EXPECT_EQ(1u, sink_->message_count());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
-    ViewMsg_ReclaimCompositorResources::Param params;
-    ViewMsg_ReclaimCompositorResources::Read(msg, &params);
-    EXPECT_EQ(0u, std::get<0>(params));  // compositor_frame_sink_id
-    EXPECT_FALSE(std::get<1>(params));   // is_swap_ack
-  }
-  sink_->ClearMessages();
+  EXPECT_EQ(0u, sink_->message_count());
 
   // Report that the surface is drawn to trigger an ACK.
   cc::Surface* surface = manager->GetSurfaceForId(view_->surface_id());
