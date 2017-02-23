@@ -50,6 +50,31 @@ public class Tile {
     }
 
     /**
+     * Imports transient data from an old tile, and reports whether there is a significant
+     * difference between the two that would require a redraw.
+     * Assumes that the current tile and the old tile (if provided) both describe the same site,
+     * so the URLs have to be the same.
+     */
+    public boolean importData(@Nullable Tile tile) {
+        if (tile == null) return true;
+
+        assert tile.getUrl().equals(mUrl);
+
+        mType = tile.getType();
+        mIcon = tile.getIcon();
+
+        if (!tile.getTitle().equals(mTitle)) return true;
+        if (tile.isOfflineAvailable() != mOfflineAvailable) return true;
+        if (tile.getIndex() != mIndex) return true;
+
+        // Ignore the whitelist changes when we already have an icon, since we won't need to reload
+        // it. We also omit requesting a redraw when |mSource| changes, as it only affects UMA.
+        if (!tile.getWhitelistIconPath().equals(mWhitelistIconPath) && mIcon == null) return true;
+
+        return false;
+    }
+
+    /**
      * @return The site URL of this tile.
      */
     public String getUrl() {

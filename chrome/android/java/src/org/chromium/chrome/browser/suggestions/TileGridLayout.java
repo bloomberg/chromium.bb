@@ -74,8 +74,8 @@ public class TileGridLayout extends FrameLayout {
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
             TileView tileView = (TileView) getChildAt(i);
-            if (TextUtils.equals(tile.getUrl(), tileView.getTile().getUrl())) {
-                tileView.renderIcon();
+            if (TextUtils.equals(tile.getUrl(), tileView.getUrl())) {
+                tileView.renderIcon(tile);
                 break;
             }
         }

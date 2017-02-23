@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.suggestions;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
@@ -38,8 +39,9 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
 
     public TileGrid(SuggestionsUiDelegate uiDelegate, ContextMenuManager contextMenuManager,
             TileGroup.Delegate tileGroupDelegate) {
-        mTileGroup = new TileGroup(
-                uiDelegate, contextMenuManager, tileGroupDelegate, /* observer = */ this);
+        mTileGroup = new TileGroup(ContextUtils.getApplicationContext(), uiDelegate,
+                contextMenuManager, tileGroupDelegate,
+                /* observer = */ this, getTileTitleLines());
         mTileGroup.startObserving(getMaxTileRows() * MAX_TILE_COLUMNS);
     }
 
@@ -103,7 +105,7 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
 
         public void onBindViewHolder(TileGroup tileGroup) {
             mLayout.setMaxRows(getMaxTileRows());
-            tileGroup.renderTileViews(mLayout, /* trackLoadTasks = */ false, getTileTitleLines());
+            tileGroup.renderTileViews(mLayout, /* trackLoadTasks = */ false);
         }
 
         public void updateIconView(Tile tile) {

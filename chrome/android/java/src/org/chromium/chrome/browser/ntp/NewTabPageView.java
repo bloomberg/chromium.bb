@@ -230,8 +230,8 @@ public class NewTabPageView
 
         mTileGridLayout = (TileGridLayout) mNewTabPageLayout.findViewById(R.id.tile_grid_layout);
         mTileGridLayout.setMaxRows(getMaxTileRows(searchProviderHasLogo));
-        mTileGroup = new TileGroup(
-                mManager, mContextMenuManager, mTileGroupDelegate, /* observer = */ this);
+        mTileGroup = new TileGroup(mActivity, mManager, mContextMenuManager, mTileGroupDelegate,
+                /* observer = */ this, getTileTitleLines());
 
         mSearchProviderLogoView =
                 (LogoView) mNewTabPageLayout.findViewById(R.id.search_provider_logo);
@@ -244,7 +244,6 @@ public class NewTabPageView
         mNewTabPageLayout.addOnLayoutChangeListener(this);
         setSearchProviderHasLogo(searchProviderHasLogo);
 
-        mPendingLoadTasks++;
         mTileGroup.startObserving(getMaxTileRows(searchProviderHasLogo) * MAX_TILE_COLUMNS);
 
         // Set up snippets
@@ -855,7 +854,7 @@ public class NewTabPageView
 
     @Override
     public void onTileDataChanged() {
-        mTileGroup.renderTileViews(mTileGridLayout, !mLoadHasCompleted, getTileTitleLines());
+        mTileGroup.renderTileViews(mTileGridLayout, !mLoadHasCompleted);
         mSnapshotTileGridChanged = true;
 
         // The page contents are initially hidden; otherwise they'll be drawn centered on the page
