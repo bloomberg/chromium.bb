@@ -35,11 +35,10 @@ PlatformDisplayDefault::PlatformDisplayDefault(
 #if !defined(OS_ANDROID)
       image_cursors_(new ImageCursors),
 #endif
-      frame_generator_(new FrameGenerator(this, init_params.root_window)),
       metrics_(init_params.metrics),
-      widget_(gfx::kNullAcceleratedWidget) {
-  frame_generator_->SetDeviceScaleFactor(
-      init_params.metrics.device_scale_factor);
+      widget_(gfx::kNullAcceleratedWidget),
+      root_window_(init_params.root_window),
+      init_device_scale_factor_(init_params.metrics.device_scale_factor) {
 }
 
 PlatformDisplayDefault::~PlatformDisplayDefault() {
@@ -148,7 +147,8 @@ bool PlatformDisplayDefault::UpdateViewportMetrics(
   }
 
   metrics_ = metrics;
-  frame_generator_->SetDeviceScaleFactor(metrics_.device_scale_factor);
+  if (frame_generator_)
+    frame_generator_->SetDeviceScaleFactor(metrics_.device_scale_factor);
   return true;
 }
 
@@ -178,7 +178,8 @@ void PlatformDisplayDefault::OnBoundsChanged(const gfx::Rect& new_bounds) {
 }
 
 void PlatformDisplayDefault::OnDamageRect(const gfx::Rect& damaged_region) {
-  frame_generator_->OnWindowDamaged();
+  if (frame_generator_)
+    frame_generator_->OnWindowDamaged();
 }
 
 void PlatformDisplayDefault::DispatchEvent(ui::Event* event) {
@@ -247,7 +248,9 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
   DCHECK_EQ(gfx::kNullAcceleratedWidget, widget_);
   widget_ = widget;
   delegate_->OnAcceleratedWidgetAvailable();
-  frame_generator_->OnAcceleratedWidgetAvailable(widget);
+  frame_generator_ =
+      base::MakeUnique<FrameGenerator>(this, root_window_, widget_);
+  frame_generator_->SetDeviceScaleFactor(init_device_scale_factor_);
 }
 
 void PlatformDisplayDefault::OnAcceleratedWidgetDestroyed() {

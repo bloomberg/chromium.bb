@@ -23,27 +23,10 @@ namespace ui {
 namespace ws {
 
 FrameGenerator::FrameGenerator(FrameGeneratorDelegate* delegate,
-                               ServerWindow* root_window)
-    : delegate_(delegate),
-      root_window_(root_window),
-      binding_(this) {
+                               ServerWindow* root_window,
+                               gfx::AcceleratedWidget widget)
+    : delegate_(delegate), root_window_(root_window), binding_(this) {
   DCHECK(delegate_);
-}
-
-void FrameGenerator::SetDeviceScaleFactor(float device_scale_factor) {
-  if (device_scale_factor_ == device_scale_factor)
-    return;
-  device_scale_factor_ = device_scale_factor;
-  if (compositor_frame_sink_)
-    compositor_frame_sink_->SetNeedsBeginFrame(true);
-}
-
-FrameGenerator::~FrameGenerator() {
-  compositor_frame_sink_.reset();
-}
-
-void FrameGenerator::OnAcceleratedWidgetAvailable(
-    gfx::AcceleratedWidget widget) {
   DCHECK_NE(gfx::kNullAcceleratedWidget, widget);
   cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request =
       mojo::MakeRequest(&compositor_frame_sink_);
@@ -52,6 +35,15 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
   root_window_->CreateDisplayCompositorFrameSink(
       widget, std::move(sink_request), binding_.CreateInterfacePtrAndBind(),
       std::move(display_request));
+}
+
+FrameGenerator::~FrameGenerator() = default;
+
+void FrameGenerator::SetDeviceScaleFactor(float device_scale_factor) {
+  if (device_scale_factor_ == device_scale_factor)
+    return;
+  device_scale_factor_ = device_scale_factor;
+  compositor_frame_sink_->SetNeedsBeginFrame(true);
 }
 
 void FrameGenerator::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
@@ -79,24 +71,21 @@ void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_arags) {
   // TODO(fsamuel): We should add a trace for generating a top level frame.
   cc::CompositorFrame frame(GenerateCompositorFrame(root_window_->bounds()));
 
-  if (compositor_frame_sink_) {
-    gfx::Size frame_size = last_submitted_frame_size_;
-    if (!frame.render_pass_list.empty())
-      frame_size = frame.render_pass_list[0]->output_rect.size();
+  gfx::Size frame_size = last_submitted_frame_size_;
+  if (!frame.render_pass_list.empty())
+    frame_size = frame.render_pass_list.back()->output_rect.size();
 
-    if (!local_surface_id_.is_valid() ||
-        frame_size != last_submitted_frame_size_) {
-      local_surface_id_ = id_allocator_.GenerateId();
-      display_private_->ResizeDisplay(frame_size);
-    }
-
-    display_private_->SetLocalSurfaceId(local_surface_id_,
-                                        device_scale_factor_);
-    compositor_frame_sink_->SubmitCompositorFrame(local_surface_id_,
-                                                  std::move(frame));
-    compositor_frame_sink_->SetNeedsBeginFrame(false);
-    last_submitted_frame_size_ = frame_size;
+  if (!local_surface_id_.is_valid() ||
+      frame_size != last_submitted_frame_size_) {
+    local_surface_id_ = id_allocator_.GenerateId();
+    display_private_->ResizeDisplay(frame_size);
   }
+
+  display_private_->SetLocalSurfaceId(local_surface_id_, device_scale_factor_);
+  compositor_frame_sink_->SubmitCompositorFrame(local_surface_id_,
+                                                std::move(frame));
+  compositor_frame_sink_->SetNeedsBeginFrame(false);
+  last_submitted_frame_size_ = frame_size;
 }
 
 void FrameGenerator::ReclaimResources(
