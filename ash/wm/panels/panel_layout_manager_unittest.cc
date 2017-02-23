@@ -839,9 +839,8 @@ TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
   aura::test::TestWindowDelegate delegate;
   std::unique_ptr<aura::Window> w(
       CreatePanelWindowWithDelegate(&delegate, gfx::Rect(0, 0, 200, 200)));
-  aura::Window* root = w->GetRootWindow();
-  ui::EventTargeter* targeter =
-      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
+  ui::EventTarget* root = w->GetRootWindow();
+  ui::EventTargeter* targeter = root->GetEventTargeter();
 
   // Note that the constants used in the touch locations below are
   // arbitrarily-selected small numbers which will ensure the point is

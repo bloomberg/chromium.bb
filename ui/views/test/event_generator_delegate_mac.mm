@@ -265,10 +265,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   ui::EventProcessor* GetEventProcessor() override { return this; }
 
   // Overridden from ui::EventProcessor:
-  ui::EventTarget* GetRootForEvent(ui::Event* event) override { return this; }
-  ui::EventTargeter* GetDefaultEventTargeter() override {
-    return this->GetEventTargeter();
-  }
+  ui::EventTarget* GetRootTarget() override { return this; }
 
   // Overridden from ui::EventDispatcherDelegate (via ui::EventProcessor):
   bool CanDispatchToTarget(EventTarget* target) override { return true; }

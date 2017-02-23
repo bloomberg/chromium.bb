@@ -10,6 +10,11 @@
 namespace ui {
 
 EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
+  EventTarget* root = GetRootTarget();
+  CHECK(root);
+  EventTargeter* targeter = root->GetEventTargeter();
+  CHECK(targeter);
+
   // If |event| is in the process of being dispatched or has already been
   // dispatched, then dispatch a copy of the event instead.
   bool dispatch_original_event = event->phase() == EP_PREDISPATCH;
@@ -21,22 +26,9 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
   }
 
   OnEventProcessingStarted(event_to_dispatch);
-  EventTarget* target = nullptr;
-  EventTargeter* targeter = nullptr;
-  if (!event_to_dispatch->handled()) {
-    target = event->target();
-    EventTarget* root = GetRootForEvent(event_to_dispatch);
-    DCHECK(root);
-    targeter = root->GetEventTargeter();
-    if (!targeter) {
-      targeter = GetDefaultEventTargeter();
-      if (!target)
-        target = targeter->FindTargetForEvent(root, event_to_dispatch);
-    } else {
-      target = targeter->FindTargetForEvent(root, event_to_dispatch);
-    }
-    DCHECK(targeter);
-  }
+  EventTarget* target = NULL;
+  if (!event_to_dispatch->handled())
+    target = targeter->FindTargetForEvent(root, event_to_dispatch);
 
   EventDispatchDetails details;
   while (target) {

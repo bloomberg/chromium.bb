@@ -38,7 +38,7 @@ class EventProcessorTest : public testing::Test {
   }
 
   TestEventTarget* root() {
-    return static_cast<TestEventTarget*>(processor_.GetRoot());
+    return static_cast<TestEventTarget*>(processor_.GetRootTarget());
   }
 
   TestEventProcessor* processor() {
