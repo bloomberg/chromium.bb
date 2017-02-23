@@ -41,9 +41,8 @@ class CastWindowManager;
 
 namespace media {
 class MediaCapsImpl;
-class MediaPipelineBackend;
+class MediaPipelineBackendFactory;
 class MediaPipelineBackendManager;
-struct MediaPipelineDeviceParams;
 class MediaResourceTracker;
 class VideoPlaneController;
 class VideoModeSwitcher;
@@ -92,11 +91,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   // Returns the task runner that must be used for media IO.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 
-  // Creates a MediaPipelineDevice (CMA backend) for media playback, called
-  // once per media player instance.
-  virtual std::unique_ptr<media::MediaPipelineBackend>
-  CreateMediaPipelineBackend(const media::MediaPipelineDeviceParams& params,
-                             const std::string& audio_device_id);
+  // Creates a MediaPipelineBackendFactory.
+  virtual media::MediaPipelineBackendFactory* GetMediaPipelineBackendFactory();
 
   media::MediaResourceTracker* media_resource_tracker();
 
@@ -211,6 +207,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<URLRequestContextFactory> url_request_context_factory_;
   std::unique_ptr<CastResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
+  std::unique_ptr<media::MediaPipelineBackendFactory>
+      media_pipeline_backend_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);
 };

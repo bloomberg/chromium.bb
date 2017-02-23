@@ -10,7 +10,7 @@ source_set("media") {
 
   deps = [
     "//chromecast/common/media:interfaces",
-    "//chromecast/media/base",
+    "//chromecast/media",
     "//ui/gfx/geometry",
   ]
 }

@@ -3,11 +3,14 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
+import("//chromecast/chromecast.gni")
 
 source_set("backend") {
   sources = [
     "audio_decoder_wrapper.cc",
     "audio_decoder_wrapper.h",
+    "media_pipeline_backend_factory.cc",
+    "media_pipeline_backend_factory.h",
     "media_pipeline_backend_manager.cc",
     "media_pipeline_backend_manager.h",
     "media_pipeline_backend_wrapper.cc",

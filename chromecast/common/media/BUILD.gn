@@ -13,7 +13,7 @@ source_set("media") {
 
   deps = [
     "//base",
-    "//chromecast/media/base",
+    "//chromecast/media",
     "//chromecast/media/cdm",
     "//chromecast/public:public",
     "//media",
@@ -25,7 +25,7 @@ source_set("media") {
       "cast_media_client_android.h",
     ]
     deps += [
-      "//chromecast/media/base",
+      "//chromecast/media",
       "//components/cdm/common",
       "//media/base/android",
     ]

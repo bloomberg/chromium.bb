@@ -44,13 +44,13 @@ void VideoModeSwitchCompletionCb(const ::media::PipelineStatusCB& init_cb,
 }  // namespace
 
 CastRenderer::CastRenderer(
-    const CreateMediaPipelineBackendCB& create_backend_cb,
+    MediaPipelineBackendFactory* backend_factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const std::string& audio_device_id,
     VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy,
     MediaResourceTracker* media_resource_tracker)
-    : create_backend_cb_(create_backend_cb),
+    : backend_factory_(backend_factory),
       task_runner_(task_runner),
       audio_device_id_(audio_device_id),
       video_mode_switcher_(video_mode_switcher),
@@ -61,6 +61,7 @@ CastRenderer::CastRenderer(
       media_task_runner_factory_(
           new BalancedMediaTaskRunnerFactory(kMaxDeltaFetcher)),
       weak_factory_(this) {
+  DCHECK(backend_factory_);
   CMALOG(kLogControl) << __FUNCTION__ << ": " << this;
 
   if (video_resolution_policy_)
@@ -93,7 +94,7 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
           : MediaPipelineDeviceParams::kModeSyncPts;
   MediaPipelineDeviceParams params(sync_type, backend_task_runner_.get());
   std::unique_ptr<MediaPipelineBackend> backend =
-      create_backend_cb_.Run(params, audio_device_id_);
+      backend_factory_->CreateBackend(params, audio_device_id_);
 
   // Create pipeline.
   MediaPipelineClient pipeline_client;

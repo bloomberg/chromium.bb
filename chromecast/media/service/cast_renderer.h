@@ -8,7 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/base/video_resolution_policy.h"
-#include "chromecast/media/service/media_pipeline_backend_factory.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
 #include "media/base/renderer.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -28,7 +28,7 @@ class VideoModeSwitcher;
 class CastRenderer : public ::media::Renderer,
                      public VideoResolutionPolicy::Observer {
  public:
-  CastRenderer(const CreateMediaPipelineBackendCB& create_backend_cb,
+  CastRenderer(MediaPipelineBackendFactory* backend_factory,
                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                const std::string& audio_device_id,
                VideoModeSwitcher* video_mode_switcher,
@@ -65,7 +65,7 @@ class CastRenderer : public ::media::Renderer,
   void OnVideoInitializationFinished(const ::media::PipelineStatusCB& init_cb,
                                      ::media::PipelineStatus status);
 
-  const CreateMediaPipelineBackendCB create_backend_cb_;
+  MediaPipelineBackendFactory* const backend_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::string audio_device_id_;
   VideoModeSwitcher* video_mode_switcher_;

@@ -37,6 +37,7 @@
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "components/crash/content/app/breakpad_linux.h"
@@ -82,8 +83,7 @@ static std::unique_ptr<service_manager::Service> CreateMediaService(
     CastContentBrowserClient* browser_client) {
   std::unique_ptr<media::CastMojoMediaClient> mojo_media_client(
       new media::CastMojoMediaClient(
-          base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
-                     base::Unretained(browser_client)),
+          browser_client->GetMediaPipelineBackendFactory(),
           base::Bind(&CastContentBrowserClient::CreateCdmFactory,
                      base::Unretained(browser_client)),
           browser_client->GetVideoModeSwitcher(),
@@ -155,11 +155,15 @@ CastContentBrowserClient::GetMediaTaskRunner() {
   return cast_browser_main_parts_->GetMediaTaskRunner();
 }
 
-std::unique_ptr<media::MediaPipelineBackend>
-CastContentBrowserClient::CreateMediaPipelineBackend(
-    const media::MediaPipelineDeviceParams& params,
-    const std::string& audio_device_id) {
-  return media_pipeline_backend_manager()->CreateMediaPipelineBackend(params);
+media::MediaPipelineBackendFactory*
+CastContentBrowserClient::GetMediaPipelineBackendFactory() {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  if (!media_pipeline_backend_factory_) {
+    media_pipeline_backend_factory_.reset(
+        new media::MediaPipelineBackendFactory(
+            media_pipeline_backend_manager()));
+  }
+  return media_pipeline_backend_factory_.get();
 }
 
 media::MediaResourceTracker*

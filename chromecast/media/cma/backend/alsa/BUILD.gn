@@ -119,7 +119,7 @@ test("cast_alsa_cma_backend_unittests") {
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
-    "//chromecast/media/base",
+    "//chromecast/media",
     "//media",
     "//media:shared_memory_support",
     "//testing/gmock",

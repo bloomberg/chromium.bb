@@ -5,7 +5,9 @@
 #include "chromecast/media/service/cast_mojo_media_client.h"
 
 #include "base/memory/ptr_util.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
 #include "chromecast/media/service/cast_renderer.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
@@ -54,12 +56,12 @@ class CastAudioRendererSink : public ::media::AudioRendererSink {
 
 class CastRendererFactory : public ::media::RendererFactory {
  public:
-  CastRendererFactory(const CreateMediaPipelineBackendCB& create_backend_cb,
+  CastRendererFactory(MediaPipelineBackendFactory* backend_factory,
                       const scoped_refptr<::media::MediaLog>& media_log,
                       VideoModeSwitcher* video_mode_switcher,
                       VideoResolutionPolicy* video_resolution_policy,
                       MediaResourceTracker* media_resource_tracker)
-      : create_backend_cb_(create_backend_cb),
+      : backend_factory_(backend_factory),
         media_log_(media_log),
         video_mode_switcher_(video_mode_switcher),
         video_resolution_policy_(video_resolution_policy),
@@ -75,14 +77,14 @@ class CastRendererFactory : public ::media::RendererFactory {
     DCHECK(audio_renderer_sink);
     DCHECK(!video_renderer_sink);
     return base::MakeUnique<CastRenderer>(
-        create_backend_cb_, media_task_runner,
+        backend_factory_, media_task_runner,
         audio_renderer_sink->GetOutputDeviceInfo().device_id(),
         video_mode_switcher_, video_resolution_policy_,
         media_resource_tracker_);
   }
 
  private:
-  const CreateMediaPipelineBackendCB create_backend_cb_;
+  MediaPipelineBackendFactory* const backend_factory_;
   scoped_refptr<::media::MediaLog> media_log_;
   VideoModeSwitcher* video_mode_switcher_;
   VideoResolutionPolicy* video_resolution_policy_;
@@ -92,17 +94,19 @@ class CastRendererFactory : public ::media::RendererFactory {
 }  // namespace
 
 CastMojoMediaClient::CastMojoMediaClient(
-    const CreateMediaPipelineBackendCB& create_backend_cb,
+    MediaPipelineBackendFactory* backend_factory,
     const CreateCdmFactoryCB& create_cdm_factory_cb,
     VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy,
     MediaResourceTracker* media_resource_tracker)
     : connector_(nullptr),
-      create_backend_cb_(create_backend_cb),
+      backend_factory_(backend_factory),
       create_cdm_factory_cb_(create_cdm_factory_cb),
       video_mode_switcher_(video_mode_switcher),
       video_resolution_policy_(video_resolution_policy),
-      media_resource_tracker_(media_resource_tracker) {}
+      media_resource_tracker_(media_resource_tracker) {
+  DCHECK(backend_factory_);
+}
 
 CastMojoMediaClient::~CastMojoMediaClient() {}
 
@@ -122,7 +126,7 @@ std::unique_ptr<::media::RendererFactory>
 CastMojoMediaClient::CreateRendererFactory(
     const scoped_refptr<::media::MediaLog>& media_log) {
   return base::MakeUnique<CastRendererFactory>(
-      create_backend_cb_, media_log, video_mode_switcher_,
+      backend_factory_, media_log, video_mode_switcher_,
       video_resolution_policy_, media_resource_tracker_);
 }
 

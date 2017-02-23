@@ -8,7 +8,6 @@ source_set("service") {
     "cast_mojo_media_client.h",
     "cast_renderer.cc",
     "cast_renderer.h",
-    "media_pipeline_backend_factory.h",
   ]
 
   public_deps = [
