@@ -26,6 +26,11 @@ public class BottomToolbarPhone extends ToolbarPhone implements BottomSheetObser
     private boolean mShouldHideEndToolbarButtons;
 
     /**
+     * This tracks the height fraction of the bottom bar to determine if it is moving up or down.
+     */
+    private float mLastHeightFraction;
+
+    /**
      * Constructs a BottomToolbarPhone object.
      * @param context The Context in which this View object is created.
      * @param attrs The AttributeSet that was specified with this View.
@@ -106,5 +111,14 @@ public class BottomToolbarPhone extends ToolbarPhone implements BottomSheetObser
     }
 
     @Override
-    public void onSheetOffsetChanged(float heightFraction) {}
+    public void onSheetOffsetChanged(float heightFraction) {
+        boolean isMovingDown = heightFraction < mLastHeightFraction;
+        mLastHeightFraction = heightFraction;
+
+        // The only time the omnibox should have focus is when the sheet is fully expanded. Any
+        // movement of the sheet should unfocus it.
+        if (isMovingDown && getLocationBar().isUrlBarFocused()) {
+            getLocationBar().setUrlBarFocus(false);
+        }
+    }
 }
