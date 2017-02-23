@@ -37,12 +37,21 @@ class PermissionManager : public KeyedService,
   // ContentSettingsType enum. The methods which take PermissionType values
   // are for the content::PermissionManager overrides and shouldn't be used
   // from chrome/.
+
   int RequestPermission(
       ContentSettingsType permission,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       bool user_gesture,
       const base::Callback<void(blink::mojom::PermissionStatus)>& callback);
+  int RequestPermissions(
+      const std::vector<ContentSettingsType>& permissions,
+      content::RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin,
+      bool user_gesture,
+      const base::Callback<
+          void(const std::vector<blink::mojom::PermissionStatus>&)>& callback);
+
   blink::mojom::PermissionStatus GetPermissionStatus(
       ContentSettingsType permission,
       const GURL& requesting_origin,

@@ -94,14 +94,14 @@ const std::string GetRapporMetric(ContentSettingsType permission,
                             permission_str.c_str(), action_str.c_str());
 }
 
-void RecordPermissionRequest(PermissionType permission,
+void RecordPermissionRequest(ContentSettingsType content_type,
                              const GURL& requesting_origin,
                              const GURL& embedding_origin,
                              Profile* profile) {
   rappor::RapporServiceImpl* rappor_service =
       g_browser_process->rappor_service();
   if (rappor_service) {
-    if (permission == PermissionType::GEOLOCATION) {
+    if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
       // TODO(dominickn): remove this deprecated metric - crbug.com/605836.
       rappor::SampleDomainAndRegistryFromGURL(
           rappor_service, "ContentSettings.PermissionRequested.Geolocation.Url",
@@ -110,7 +110,7 @@ void RecordPermissionRequest(PermissionType permission,
           "ContentSettings.PermissionRequested.Geolocation.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
-    } else if (permission == PermissionType::NOTIFICATIONS) {
+    } else if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
       // TODO(dominickn): remove this deprecated metric - crbug.com/605836.
       rappor::SampleDomainAndRegistryFromGURL(
           rappor_service,
@@ -120,8 +120,8 @@ void RecordPermissionRequest(PermissionType permission,
           "ContentSettings.PermissionRequested.Notifications.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
-    } else if (permission == PermissionType::MIDI ||
-               permission == PermissionType::MIDI_SYSEX) {
+    } else if (content_type == CONTENT_SETTINGS_TYPE_MIDI ||
+               content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
       // TODO(dominickn): remove this deprecated metric - crbug.com/605836.
       rappor::SampleDomainAndRegistryFromGURL(
           rappor_service, "ContentSettings.PermissionRequested.Midi.Url",
@@ -130,13 +130,18 @@ void RecordPermissionRequest(PermissionType permission,
           "ContentSettings.PermissionRequested.Midi.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
-    } else if (permission == PermissionType::PROTECTED_MEDIA_IDENTIFIER) {
+    } else if (content_type ==
+               CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
       rappor_service->RecordSampleString(
           "ContentSettings.PermissionRequested.ProtectedMedia.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
     }
   }
+
+  PermissionType permission;
+  bool success = PermissionUtil::GetPermissionType(content_type, &permission);
+  DCHECK(success);
 
   bool secure_origin = content::IsOriginSecure(requesting_origin);
   UMA_HISTOGRAM_ENUMERATION(
@@ -161,16 +166,16 @@ void RecordPermissionRequest(PermissionType permission,
   // ratio could be somewhat biased by repeated requests coming from a
   // single frame, but we expect this to be insignificant.
   if (requesting_origin.GetOrigin() != embedding_origin.GetOrigin()) {
-    content::PermissionManager* manager = profile->GetPermissionManager();
+    PermissionManager* manager = PermissionManager::Get(profile);
     if (!manager)
       return;
     blink::mojom::PermissionStatus embedding_permission_status =
-        manager->GetPermissionStatus(permission, embedding_origin,
+        manager->GetPermissionStatus(content_type, embedding_origin,
                                      embedding_origin);
 
     base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
         "Permissions.Requested.CrossOrigin_" +
-            PermissionUtil::GetPermissionString(permission),
+            PermissionUtil::GetPermissionString(content_type),
         1, static_cast<int>(blink::mojom::PermissionStatus::LAST),
         static_cast<int>(blink::mojom::PermissionStatus::LAST) + 1,
         base::HistogramBase::kUmaTargetedHistogramFlag);
@@ -259,22 +264,11 @@ const char
 
 // Make sure you update histograms.xml permission histogram_suffix if you
 // add new permission
-void PermissionUmaUtil::PermissionRequested(PermissionType permission,
-                                            const GURL& requesting_origin,
-                                            const GURL& embedding_origin,
-                                            Profile* profile) {
-  RecordPermissionRequest(permission, requesting_origin, embedding_origin,
-                          profile);
-}
-
 void PermissionUmaUtil::PermissionRequested(ContentSettingsType content_type,
                                             const GURL& requesting_origin,
                                             const GURL& embedding_origin,
                                             Profile* profile) {
-  PermissionType permission;
-  bool success = PermissionUtil::GetPermissionType(content_type, &permission);
-  DCHECK(success);
-  RecordPermissionRequest(permission, requesting_origin, embedding_origin,
+  RecordPermissionRequest(content_type, requesting_origin, embedding_origin,
                           profile);
 }
 

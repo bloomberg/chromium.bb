@@ -81,6 +81,8 @@ void ContentSettingToPermissionStatusCallbackWrapper(
 // Helper method to convert PermissionType to ContentSettingType.
 ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
   switch (permission) {
+    case PermissionType::MIDI:
+      return CONTENT_SETTINGS_TYPE_MIDI;
     case PermissionType::MIDI_SYSEX:
       return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
     case PermissionType::PUSH_MESSAGING:
@@ -98,9 +100,6 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
 #endif
     case PermissionType::DURABLE_STORAGE:
       return CONTENT_SETTINGS_TYPE_DURABLE_STORAGE;
-    case PermissionType::MIDI:
-      // This will hit the NOTREACHED below.
-      break;
     case PermissionType::AUDIO_CAPTURE:
       return CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC;
     case PermissionType::VIDEO_CAPTURE:
@@ -121,16 +120,10 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
 
 // Returns whether the permission has a constant PermissionStatus value (i.e.
 // always approved or always denied)
-// The PermissionTypes for which true is returned should be exactly those which
-// return nullptr in PermissionManager::GetPermissionContext since they don't
-// have a context.
-bool IsConstantPermission(PermissionType type) {
-  switch (type) {
-    case PermissionType::MIDI:
-      return true;
-    default:
-      return false;
-  }
+// The ContentSettingsTypes for which true is returned will also return nullptr
+// in PermissionManager::GetPermissionContext since they don't have a context.
+bool IsConstantPermission(ContentSettingsType type) {
+  return type == CONTENT_SETTINGS_TYPE_MIDI;
 }
 
 void PermissionRequestResponseCallbackWrapper(
@@ -146,10 +139,10 @@ void PermissionRequestResponseCallbackWrapper(
 // This function should only be called when IsConstantPermission has returned
 // true for the PermissionType.
 blink::mojom::PermissionStatus GetPermissionStatusForConstantPermission(
-    PermissionType type) {
+    ContentSettingsType type) {
   DCHECK(IsConstantPermission(type));
   switch (type) {
-    case PermissionType::MIDI:
+    case CONTENT_SETTINGS_TYPE_MIDI:
       return PermissionStatus::GRANTED;
     default:
       return PermissionStatus::DENIED;
@@ -160,10 +153,11 @@ blink::mojom::PermissionStatus GetPermissionStatusForConstantPermission(
 
 class PermissionManager::PendingRequest {
  public:
-  PendingRequest(content::RenderFrameHost* render_frame_host,
-                 const std::vector<PermissionType> permissions,
-                 const base::Callback<
-                     void(const std::vector<PermissionStatus>&)>& callback)
+  PendingRequest(
+      content::RenderFrameHost* render_frame_host,
+      const std::vector<ContentSettingsType>& permissions,
+      const base::Callback<void(const std::vector<PermissionStatus>&)>&
+          callback)
       : render_process_id_(render_frame_host->GetProcess()->GetID()),
         render_frame_id_(render_frame_host->GetRoutingID()),
         callback_(callback),
@@ -190,7 +184,7 @@ class PermissionManager::PendingRequest {
     return callback_;
   }
 
-  std::vector<PermissionType> permissions() const {
+  std::vector<ContentSettingsType> permissions() const {
     return permissions_;
   }
 
@@ -202,13 +196,13 @@ class PermissionManager::PendingRequest {
   int render_process_id_;
   int render_frame_id_;
   const base::Callback<void(const std::vector<PermissionStatus>&)> callback_;
-  std::vector<PermissionType> permissions_;
+  std::vector<ContentSettingsType> permissions_;
   std::vector<PermissionStatus> results_;
   size_t remaining_results_;
 };
 
 struct PermissionManager::Subscription {
-  PermissionType permission;
+  ContentSettingsType permission;
   GURL requesting_origin;
   GURL embedding_origin;
   base::Callback<void(PermissionStatus)> callback;
@@ -270,50 +264,19 @@ int PermissionManager::RequestPermission(
     const GURL& requesting_origin,
     bool user_gesture,
     const base::Callback<void(PermissionStatus)>& callback) {
-  // TODO(timloh): We should be operating on ContentSettingsType instead of
-  // converting these back to PermissionType.
-  PermissionType permission_type;
-  bool success = PermissionUtil::GetPermissionType(content_settings_type,
-                                                   &permission_type);
-  DCHECK(success);
   return RequestPermissions(
-      std::vector<PermissionType>(1, permission_type), render_frame_host,
-      requesting_origin, user_gesture,
-      base::Bind(&PermissionRequestResponseCallbackWrapper, callback));
-}
-
-PermissionStatus PermissionManager::GetPermissionStatus(
-    ContentSettingsType permission,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-  PermissionContextBase* context = GetPermissionContext(permission);
-  return ContentSettingToPermissionStatus(
-      context->GetPermissionStatus(requesting_origin.GetOrigin(),
-                                   embedding_origin.GetOrigin())
-      .content_setting);
-}
-
-int PermissionManager::RequestPermission(
-    PermissionType permission,
-    content::RenderFrameHost* render_frame_host,
-    const GURL& requesting_origin,
-    bool user_gesture,
-    const base::Callback<void(PermissionStatus)>& callback) {
-  return RequestPermissions(
-      std::vector<PermissionType>(1, permission),
-      render_frame_host,
-      requesting_origin,
-      user_gesture,
+      std::vector<ContentSettingsType>(1, content_settings_type),
+      render_frame_host, requesting_origin, user_gesture,
       base::Bind(&PermissionRequestResponseCallbackWrapper, callback));
 }
 
 int PermissionManager::RequestPermissions(
-    const std::vector<PermissionType>& permissions,
+    const std::vector<ContentSettingsType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(
-        const std::vector<PermissionStatus>&)>& callback) {
+    const base::Callback<void(const std::vector<PermissionStatus>&)>&
+        callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (permissions.empty()) {
     callback.Run(std::vector<PermissionStatus>());
@@ -330,10 +293,9 @@ int PermissionManager::RequestPermissions(
   const PermissionRequestID request(render_frame_host, request_id);
 
   for (size_t i = 0; i < permissions.size(); ++i) {
-    const PermissionType permission = permissions[i];
+    const ContentSettingsType permission = permissions[i];
 
-    if (IsConstantPermission(permission) ||
-        !GetPermissionContext(PermissionTypeToContentSetting(permission))) {
+    if (IsConstantPermission(permission) || !GetPermissionContext(permission)) {
       // Track permission request usages even for constant permissions.
       PermissionUmaUtil::PermissionRequested(permission, requesting_origin,
                                              embedding_origin, profile_);
@@ -342,8 +304,7 @@ int PermissionManager::RequestPermissions(
       continue;
     }
 
-    PermissionContextBase* context =
-        GetPermissionContext(PermissionTypeToContentSetting(permission));
+    PermissionContextBase* context = GetPermissionContext(permission);
     context->RequestPermission(
         web_contents, request, requesting_origin, user_gesture,
         base::Bind(&ContentSettingToPermissionStatusCallbackWrapper,
@@ -356,6 +317,49 @@ int PermissionManager::RequestPermissions(
     return kNoPendingOperation;
 
   return request_id;
+}
+
+PermissionStatus PermissionManager::GetPermissionStatus(
+    ContentSettingsType permission,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  if (IsConstantPermission(permission))
+    return GetPermissionStatusForConstantPermission(permission);
+  PermissionContextBase* context = GetPermissionContext(permission);
+  return ContentSettingToPermissionStatus(
+      context
+          ->GetPermissionStatus(requesting_origin.GetOrigin(),
+                                embedding_origin.GetOrigin())
+          .content_setting);
+}
+
+int PermissionManager::RequestPermission(
+    PermissionType permission,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin,
+    bool user_gesture,
+    const base::Callback<void(PermissionStatus)>& callback) {
+  ContentSettingsType content_settings_type =
+      PermissionTypeToContentSetting(permission);
+  return RequestPermissions(
+      std::vector<ContentSettingsType>(1, content_settings_type),
+      render_frame_host, requesting_origin, user_gesture,
+      base::Bind(&PermissionRequestResponseCallbackWrapper, callback));
+}
+
+int PermissionManager::RequestPermissions(
+    const std::vector<PermissionType>& permissions,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin,
+    bool user_gesture,
+    const base::Callback<void(const std::vector<PermissionStatus>&)>&
+        callback) {
+  std::vector<ContentSettingsType> content_settings_types;
+  std::transform(permissions.begin(), permissions.end(),
+                 back_inserter(content_settings_types),
+                 PermissionTypeToContentSetting);
+  return RequestPermissions(content_settings_types, render_frame_host,
+                            requesting_origin, user_gesture, callback);
 }
 
 PermissionContextBase* PermissionManager::GetPermissionContext(
@@ -391,9 +395,8 @@ void PermissionManager::CancelPermissionRequest(int request_id) {
   const PermissionRequestID request(pending_request->render_process_id(),
                                     pending_request->render_frame_id(),
                                     request_id);
-  for (PermissionType permission : pending_request->permissions()) {
-    PermissionContextBase* context =
-        GetPermissionContext(PermissionTypeToContentSetting(permission));
+  for (ContentSettingsType permission : pending_request->permissions()) {
+    PermissionContextBase* context = GetPermissionContext(permission);
     if (!context)
       continue;
     context->CancelPermissionRequest(web_contents, request);
@@ -419,8 +422,6 @@ PermissionStatus PermissionManager::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (IsConstantPermission(permission))
-    return GetPermissionStatusForConstantPermission(permission);
   return GetPermissionStatus(PermissionTypeToContentSetting(permission),
                              requesting_origin, embedding_origin);
 }
@@ -434,14 +435,15 @@ int PermissionManager::SubscribePermissionStatusChange(
   if (subscriptions_.IsEmpty())
     HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
 
+  ContentSettingsType content_type = PermissionTypeToContentSetting(permission);
   auto subscription = base::MakeUnique<Subscription>();
-  subscription->permission = permission;
+  subscription->permission = content_type;
   subscription->requesting_origin = requesting_origin;
   subscription->embedding_origin = embedding_origin;
   subscription->callback = callback;
 
   subscription->current_value =
-      GetPermissionStatus(permission, requesting_origin, embedding_origin);
+      GetPermissionStatus(content_type, requesting_origin, embedding_origin);
 
   return subscriptions_.Add(std::move(subscription));
 }
@@ -475,10 +477,8 @@ void PermissionManager::OnContentSettingChanged(
     Subscription* subscription = iter.GetCurrentValue();
     if (IsConstantPermission(subscription->permission))
       continue;
-    if (PermissionTypeToContentSetting(subscription->permission) !=
-        content_type) {
+    if (subscription->permission != content_type)
       continue;
-    }
 
     if (primary_pattern.IsValid() &&
         !primary_pattern.Matches(subscription->requesting_origin))

@@ -50,6 +50,10 @@ enum ContentSettingsType {
   CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
   CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
 
+  // This is special-cased in the permissions layer to always allow, and as
+  // such doesn't have associated prefs data.
+  CONTENT_SETTINGS_TYPE_MIDI,
+
   // This is only here temporarily and will be removed when we further unify
   // it with notifications, see crbug.com/563297. No prefs data is stored for
   // this content type, we instead share values with NOTIFICATIONS.

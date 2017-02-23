@@ -40,9 +40,6 @@ class PermissionUtil {
  public:
   // Returns the permission string for the given permission.
   static std::string GetPermissionString(ContentSettingsType);
-  // TODO(timloh): Remove this content::PermissionType overload when we add MIDI
-  // to ContentSettingsType.
-  static std::string GetPermissionString(content::PermissionType);
 
   // Return the stringified version of the ContentSettingsType enum that
   // Safe Browsing uses for the API Blacklist.

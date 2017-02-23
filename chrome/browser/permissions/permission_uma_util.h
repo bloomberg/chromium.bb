@@ -106,12 +106,6 @@ class PermissionUmaUtil {
   static const char kPermissionsPromptIgnoredPriorDismissCountPrefix[];
   static const char kPermissionsPromptIgnoredPriorIgnoreCountPrefix[];
 
-  // TODO(timloh): Remove this content::PermissionType overload when we add MIDI
-  // to ContentSettingsType.
-  static void PermissionRequested(content::PermissionType permission,
-                                  const GURL& requesting_origin,
-                                  const GURL& embedding_origin,
-                                  Profile* profile);
   static void PermissionRequested(ContentSettingsType permission,
                                   const GURL& requesting_origin,
                                   const GURL& embedding_origin,

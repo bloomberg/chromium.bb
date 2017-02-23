@@ -15,41 +15,33 @@
 
 using content::PermissionType;
 
-std::string PermissionUtil::GetPermissionString(
-    ContentSettingsType content_type) {
-  PermissionType permission_type;
-  bool success = PermissionUtil::GetPermissionType(
-      content_type, &permission_type);
-  DCHECK(success);
-  return GetPermissionString(permission_type);
-}
-
 // The returned strings must match the RAPPOR metrics in rappor.xml,
 // and any Field Trial configs for the Permissions kill switch e.g.
 // Permissions.Action.Geolocation etc..
-std::string PermissionUtil::GetPermissionString(PermissionType permission) {
-  switch (permission) {
-    case PermissionType::GEOLOCATION:
+std::string PermissionUtil::GetPermissionString(
+    ContentSettingsType content_type) {
+  switch (content_type) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       return "Geolocation";
-    case PermissionType::NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       return "Notifications";
-    case PermissionType::MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return "MidiSysEx";
-    case PermissionType::PUSH_MESSAGING:
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       return "PushMessaging";
-    case PermissionType::DURABLE_STORAGE:
+    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
       return "DurableStorage";
-    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       return "ProtectedMediaIdentifier";
-    case PermissionType::AUDIO_CAPTURE:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
       return "AudioCapture";
-    case PermissionType::VIDEO_CAPTURE:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
       return "VideoCapture";
-    case PermissionType::MIDI:
+    case CONTENT_SETTINGS_TYPE_MIDI:
       return "Midi";
-    case PermissionType::BACKGROUND_SYNC:
+    case CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
       return "BackgroundSync";
-    case PermissionType::FLASH:
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
       return "Flash";
     default:
       break;
