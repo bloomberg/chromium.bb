@@ -616,7 +616,7 @@ public class BottomSheet
         }
 
         setTranslationY(mContainerHeight - offset);
-        sendUpdatePeekToHalfEvent();
+        sendOffsetChangeEvents();
     }
 
     /**
@@ -661,15 +661,23 @@ public class BottomSheet
     }
 
     /**
-     * Sends a notification if the sheet is transitioning from the peeking to half expanded state.
-     * This method only sends events when the sheet is between the peeking and half states.
+     * Sends notifications if the sheet is transitioning from the peeking to half expanded state and
+     * from the peeking to fully expanded state. The peek to half events are only sent when the
+     * sheet is between the peeking and half states.
      */
-    private void sendUpdatePeekToHalfEvent() {
+    private void sendOffsetChangeEvents() {
         float screenRatio =
                 mContainerHeight > 0 ? getSheetOffsetFromBottom() / mContainerHeight : 0;
 
-        // This ratio is relative to the peek and half positions of the sheet rather than the height
-        // of the screen.
+        // This ratio is relative to the peek and full positions of the sheet.
+        float peekFullRatio = MathUtils.clamp(
+                (screenRatio - getPeekRatio()) / (getFullRatio() - getPeekRatio()), 0, 1);
+
+        for (BottomSheetObserver o : mObservers) {
+            o.onSheetOffsetChanged(MathUtils.areFloatsEqual(peekFullRatio, 0) ? 0 : peekFullRatio);
+        }
+
+        // This ratio is relative to the peek and half positions of the sheet.
         float peekHalfRatio = MathUtils.clamp(
                 (screenRatio - getPeekRatio()) / (getHalfRatio() - getPeekRatio()), 0, 1);
 

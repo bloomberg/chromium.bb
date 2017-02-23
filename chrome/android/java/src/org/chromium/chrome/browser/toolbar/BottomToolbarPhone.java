@@ -104,4 +104,7 @@ public class BottomToolbarPhone extends ToolbarPhone implements BottomSheetObser
         mToggleTabStackButton.setClickable(buttonsClickable);
         mMenuButton.setClickable(buttonsClickable);
     }
+
+    @Override
+    public void onSheetOffsetChanged(float heightFraction) {}
 }

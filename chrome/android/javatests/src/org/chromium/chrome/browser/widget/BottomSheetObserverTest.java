@@ -28,13 +28,25 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
         /** A {@link CallbackHelper} that can wait for the onTransitionPeekToHalf event. */
         private final CallbackHelper mPeekToHalfCallbackHelper = new CallbackHelper();
 
+        /** A {@link CallbackHelper} that can wait for the onOffsetChanged event. */
+        private final CallbackHelper mOffsetChangedCallbackHelper = new CallbackHelper();
+
         /** The last value that the onTransitionPeekToHalf event sent. */
         private float mLastPeekToHalfValue;
+
+        /** The last value that the onOffsetChanged event sent. */
+        private float mLastOffsetChangedValue;
 
         @Override
         public void onTransitionPeekToHalf(float fraction) {
             mLastPeekToHalfValue = fraction;
             mPeekToHalfCallbackHelper.notifyCalled();
+        }
+
+        @Override
+        public void onSheetOffsetChanged(float heightFraction) {
+            mLastOffsetChangedValue = heightFraction;
+            mOffsetChangedCallbackHelper.notifyCalled();
         }
 
         @Override
@@ -49,22 +61,6 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
 
         @Override
         public void onLoadUrl(String url) {}
-
-        public CallbackHelper getClosedCallbackHelper() {
-            return mClosedCallbackHelper;
-        }
-
-        public CallbackHelper getOpenedCallbackHelper() {
-            return mOpenedCallbackHelper;
-        }
-
-        public CallbackHelper getPeekToHalfCallbackHelper() {
-            return mPeekToHalfCallbackHelper;
-        }
-
-        public float getLastPeekToHalfValue() {
-            return mLastPeekToHalfValue;
-        }
     }
 
     @Override
@@ -82,15 +78,15 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
     public void testCloseEventCalledNoAnimation() throws InterruptedException, TimeoutException {
         setSheetState(BottomSheet.SHEET_STATE_FULL, false);
 
-        CallbackHelper closedCallbackHelper = mObserver.getClosedCallbackHelper();
+        CallbackHelper closedCallbackHelper = mObserver.mClosedCallbackHelper;
 
-        int initialOpenedCount = mObserver.getOpenedCallbackHelper().getCallCount();
+        int initialOpenedCount = mObserver.mOpenedCallbackHelper.getCallCount();
 
         int closedCallbackCount = closedCallbackHelper.getCallCount();
         setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
         closedCallbackHelper.waitForCallback(closedCallbackCount, 1);
 
-        assertEquals(initialOpenedCount, mObserver.getOpenedCallbackHelper().getCallCount());
+        assertEquals(initialOpenedCount, mObserver.mOpenedCallbackHelper.getCallCount());
     }
 
     /**
@@ -100,15 +96,15 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
     public void testCloseEventCalledWithAnimation() throws InterruptedException, TimeoutException {
         setSheetState(BottomSheet.SHEET_STATE_FULL, false);
 
-        CallbackHelper closedCallbackHelper = mObserver.getClosedCallbackHelper();
+        CallbackHelper closedCallbackHelper = mObserver.mClosedCallbackHelper;
 
-        int initialOpenedCount = mObserver.getOpenedCallbackHelper().getCallCount();
+        int initialOpenedCount = mObserver.mOpenedCallbackHelper.getCallCount();
 
         int closedCallbackCount = closedCallbackHelper.getCallCount();
         setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
         closedCallbackHelper.waitForCallback(closedCallbackCount, 1);
 
-        assertEquals(initialOpenedCount, mObserver.getOpenedCallbackHelper().getCallCount());
+        assertEquals(initialOpenedCount, mObserver.mOpenedCallbackHelper.getCallCount());
     }
 
     /**
@@ -118,15 +114,15 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
     public void testOpenedEventCalledNoAnimation() throws InterruptedException, TimeoutException {
         setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
 
-        CallbackHelper openedCallbackHelper = mObserver.getOpenedCallbackHelper();
+        CallbackHelper openedCallbackHelper = mObserver.mOpenedCallbackHelper;
 
-        int initialClosedCount = mObserver.getClosedCallbackHelper().getCallCount();
+        int initialClosedCount = mObserver.mClosedCallbackHelper.getCallCount();
 
         int openedCallbackCount = openedCallbackHelper.getCallCount();
         setSheetState(BottomSheet.SHEET_STATE_FULL, false);
         openedCallbackHelper.waitForCallback(openedCallbackCount, 1);
 
-        assertEquals(initialClosedCount, mObserver.getClosedCallbackHelper().getCallCount());
+        assertEquals(initialClosedCount, mObserver.mClosedCallbackHelper.getCallCount());
     }
 
     /**
@@ -136,15 +132,47 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
     public void testOpenedEventCalledWithAnimation() throws InterruptedException, TimeoutException {
         setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
 
-        CallbackHelper openedCallbackHelper = mObserver.getOpenedCallbackHelper();
+        CallbackHelper openedCallbackHelper = mObserver.mOpenedCallbackHelper;
 
-        int initialClosedCount = mObserver.getClosedCallbackHelper().getCallCount();
+        int initialClosedCount = mObserver.mClosedCallbackHelper.getCallCount();
 
         int openedCallbackCount = openedCallbackHelper.getCallCount();
         setSheetState(BottomSheet.SHEET_STATE_FULL, true);
         openedCallbackHelper.waitForCallback(openedCallbackCount, 1);
 
-        assertEquals(initialClosedCount, mObserver.getClosedCallbackHelper().getCallCount());
+        assertEquals(initialClosedCount, mObserver.mClosedCallbackHelper.getCallCount());
+    }
+
+    /**
+     * Test the onOffsetChanged event.
+     */
+    @MediumTest
+    public void testOffsetChangedEvent() throws InterruptedException, TimeoutException {
+        CallbackHelper callbackHelper = mObserver.mOffsetChangedCallbackHelper;
+
+        float peekHeight = mBottomSheet.getPeekRatio() * mBottomSheet.getSheetContainerHeight();
+        float fullHeight = mBottomSheet.getFullRatio() * mBottomSheet.getSheetContainerHeight();
+
+        // The sheet's half state is not necessarily 50% of the way to the top.
+        float midPeekFull = (peekHeight + fullHeight) / 2f;
+
+        // When in the peeking state, the transition value should be 0.
+        int callbackCount = callbackHelper.getCallCount();
+        setSheetOffsetFromBottom(peekHeight);
+        callbackHelper.waitForCallback(callbackCount, 1);
+        assertEquals(0f, mObserver.mLastOffsetChangedValue, MathUtils.EPSILON);
+
+        // When in the full state, the transition value should be 1.
+        callbackCount = callbackHelper.getCallCount();
+        setSheetOffsetFromBottom(fullHeight);
+        callbackHelper.waitForCallback(callbackCount, 1);
+        assertEquals(1f, mObserver.mLastOffsetChangedValue, MathUtils.EPSILON);
+
+        // Halfway between peek and full should send 0.5.
+        callbackCount = callbackHelper.getCallCount();
+        setSheetOffsetFromBottom(midPeekFull);
+        callbackHelper.waitForCallback(callbackCount, 1);
+        assertEquals(0.5f, mObserver.mLastOffsetChangedValue, MathUtils.EPSILON);
     }
 
     /**
@@ -152,7 +180,7 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
      */
     @MediumTest
     public void testPeekToHalfTransition() throws InterruptedException, TimeoutException {
-        CallbackHelper callbackHelper = mObserver.getPeekToHalfCallbackHelper();
+        CallbackHelper callbackHelper = mObserver.mPeekToHalfCallbackHelper;
 
         float peekHeight = mBottomSheet.getPeekRatio() * mBottomSheet.getSheetContainerHeight();
         float halfHeight = mBottomSheet.getHalfRatio() * mBottomSheet.getSheetContainerHeight();
@@ -165,20 +193,20 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
         int callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(peekHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(0f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
+        assertEquals(0f, mObserver.mLastPeekToHalfValue, MathUtils.EPSILON);
 
         // When in between peek and half states, the transition value should be 0.5.
         callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(midPeekHalf);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(0.5f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
+        assertEquals(0.5f, mObserver.mLastPeekToHalfValue, MathUtils.EPSILON);
 
         // After jumping to the full state (skipping the half state), the event should have
         // triggered once more with a max value of 1.
         callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(fullHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(1f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
+        assertEquals(1f, mObserver.mLastPeekToHalfValue, MathUtils.EPSILON);
 
         // Moving from full to somewhere between half and full should not trigger the event.
         callbackCount = callbackHelper.getCallCount();
@@ -189,12 +217,12 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
         callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(midPeekHalf);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(0.5f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
+        assertEquals(0.5f, mObserver.mLastPeekToHalfValue, MathUtils.EPSILON);
 
         // At the half state the event should send 1.
         callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(halfHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(1f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
+        assertEquals(1f, mObserver.mLastPeekToHalfValue, MathUtils.EPSILON);
     }
 }

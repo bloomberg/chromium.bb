@@ -172,6 +172,9 @@ public class FadingBackgroundView extends View implements View.OnClickListener,
     }
 
     @Override
+    public void onSheetOffsetChanged(float heightFraction) {}
+
+    @Override
     public void onSheetOpened() {}
 
     @Override
