@@ -8979,18 +8979,6 @@ static int64_t handle_inter_mode(
 #endif  // CONFIG_VAR_TX
       best_xskip = x->skip;
       best_disable_skip = *disable_skip;
-#if CONFIG_AOM_HIGHBITDEPTH
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        x->recon_variance = av1_high_get_sby_perpixel_variance(
-            cpi, &xd->plane[0].dst, bsize, xd->bd);
-      } else {
-        x->recon_variance =
-            av1_get_sby_perpixel_variance(cpi, &xd->plane[0].dst, bsize);
-      }
-#else
-      x->recon_variance =
-          av1_get_sby_perpixel_variance(cpi, &xd->plane[0].dst, bsize);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
     }
   }
 
@@ -9014,19 +9002,6 @@ static int64_t handle_inter_mode(
 
 #if !(CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION)
   if (!is_comp_pred) single_skippable[this_mode][refs[0]] = rd_stats->skip;
-
-#if CONFIG_AOM_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    x->recon_variance = av1_high_get_sby_perpixel_variance(
-        cpi, &xd->plane[0].dst, bsize, xd->bd);
-  } else {
-    x->recon_variance =
-        av1_get_sby_perpixel_variance(cpi, &xd->plane[0].dst, bsize);
-  }
-#else
-  x->recon_variance =
-      av1_get_sby_perpixel_variance(cpi, &xd->plane[0].dst, bsize);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif  // !(CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION)
 
   restore_dst_buf(xd, orig_dst);
@@ -9339,18 +9314,6 @@ static void pick_filter_intra_interframe(
   distortion2 = distortion_y + distortion_uv;
   av1_encode_intra_block_plane((AV1_COMMON *)cm, x, bsize, 0, 0, mi_row,
                                mi_col);
-#if CONFIG_AOM_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    x->recon_variance = av1_high_get_sby_perpixel_variance(
-        cpi, &xd->plane[0].dst, bsize, xd->bd);
-  } else {
-    x->recon_variance =
-        av1_get_sby_perpixel_variance(cpi, &xd->plane[0].dst, bsize);
-  }
-#else
-  x->recon_variance =
-      av1_get_sby_perpixel_variance(cpi, &xd->plane[0].dst, bsize);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
 
   rate2 += ref_costs_single[INTRA_FRAME];
 
@@ -10168,18 +10131,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       if (this_mode != DC_PRED && this_mode != TM_PRED)
         rate2 += intra_cost_penalty;
       distortion2 = distortion_y + distortion_uv;
-#if CONFIG_AOM_HIGHBITDEPTH
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        x->recon_variance = av1_high_get_sby_perpixel_variance(
-            cpi, &xd->plane[0].dst, bsize, xd->bd);
-      } else {
-        x->recon_variance =
-            av1_get_sby_perpixel_variance(cpi, &xd->plane[0].dst, bsize);
-      }
-#else
-      x->recon_variance =
-          av1_get_sby_perpixel_variance(cpi, &xd->plane[0].dst, bsize);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
     } else {
 #if CONFIG_REF_MV
       int_mv backup_ref_mv[2];
