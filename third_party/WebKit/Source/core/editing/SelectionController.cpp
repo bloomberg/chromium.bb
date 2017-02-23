@@ -795,7 +795,10 @@ void SelectionController::handleMousePressEvent(
   // Avoid double-tap touch gesture confusion by restricting multi-click side
   // effects, e.g., word selection, to editable regions.
   m_mouseDownAllowsMultiClick =
-      !event.event().fromTouch() || selection().hasEditableStyle();
+      !event.event().fromTouch() ||
+      selection()
+          .computeVisibleSelectionInDOMTreeDeprecated()
+          .hasEditableStyle();
 }
 
 void SelectionController::handleMouseDraggedEvent(

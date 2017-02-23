@@ -103,10 +103,6 @@ class CORE_EXPORT FrameSelection final
   Element* rootEditableElementOrDocumentElement() const;
   ContainerNode* rootEditableElementOrTreeScopeRootNode() const;
 
-  bool hasEditableStyle() const {
-    return computeVisibleSelectionInDOMTreeDeprecated().hasEditableStyle();
-  }
-
   // An implementation of |WebFrame::moveCaretSelection()|
   void moveCaretSelection(const IntPoint&);
 
