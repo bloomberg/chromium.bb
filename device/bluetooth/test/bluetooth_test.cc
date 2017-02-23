@@ -92,6 +92,30 @@ std::vector<uint8_t> BluetoothTestBase::LastNotifactionValueForCharacteristic(
   return std::vector<uint8_t>();
 }
 
+void BluetoothTestBase::ExpectedChangeNotifyValueAttempts(int attempts) {
+  EXPECT_EQ(attempts, gatt_write_descriptor_attempts_);
+  EXPECT_EQ(attempts, gatt_notify_characteristic_attempts_);
+}
+
+void BluetoothTestBase::ExpectedNotifyValue(
+    NotifyValueState expected_value_state) {
+  ASSERT_EQ(2u, last_write_value_.size());
+  switch (expected_value_state) {
+    case NotifyValueState::NONE:
+      EXPECT_EQ(0, last_write_value_[0]);
+      EXPECT_EQ(0, last_write_value_[1]);
+      break;
+    case NotifyValueState::NOTIFY:
+      EXPECT_EQ(1, last_write_value_[0]);
+      EXPECT_EQ(0, last_write_value_[1]);
+      break;
+    case NotifyValueState::INDICATE:
+      EXPECT_EQ(2, last_write_value_[0]);
+      EXPECT_EQ(0, last_write_value_[1]);
+      break;
+  }
+}
+
 std::vector<BluetoothLocalGattService*>
 BluetoothTestBase::RegisteredGattServices() {
   NOTIMPLEMENTED();

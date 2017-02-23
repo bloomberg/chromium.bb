@@ -39,6 +39,7 @@ class BluetoothTestMac : public BluetoothTestBase {
   void InitWithDefaultAdapter() override;
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;
+  void ResetEventCounts() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
   void SimulateConnectedLowEnergyDevice(
       ConnectedDeviceType device_ordinal) override;
@@ -84,6 +85,8 @@ class BluetoothTestMac : public BluetoothTestBase {
   void SimulateGattCharacteristicRemoved(
       BluetoothRemoteGattService* service,
       BluetoothRemoteGattCharacteristic* characteristic) override;
+  void ExpectedChangeNotifyValueAttempts(int attempts) override;
+  void ExpectedNotifyValue(NotifyValueState expected_value_state) override;
 
   // Callback for the bluetooth central manager mock.
   void OnFakeBluetoothDeviceConnectGattCalled();
@@ -120,7 +123,7 @@ class BluetoothTestMac : public BluetoothTestBase {
   std::unique_ptr<ScopedMockCentralManager> mock_central_manager_;
 
   // Value set by -[CBPeripheral setNotifyValue:forCharacteristic:] call.
-  bool last_notify_value = false;
+  bool last_notify_value_ = false;
 };
 
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).

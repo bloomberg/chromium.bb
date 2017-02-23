@@ -133,6 +133,11 @@ void BluetoothTestMac::InitWithFakeAdapter() {
   }
 }
 
+void BluetoothTestMac::ResetEventCounts() {
+  BluetoothTestBase::ResetEventCounts();
+  last_notify_value_ = false;
+}
+
 BluetoothDevice* BluetoothTestMac::SimulateLowEnergyDevice(int device_ordinal) {
   TestBluetoothAdapterObserver observer(adapter_);
   CBCentralManager* central_manager = adapter_mac_->low_energy_central_manager_;
@@ -465,6 +470,23 @@ void BluetoothTestMac::SimulateGattCharacteristicRemoved(
   [peripheral_mock mockDidDiscoverEvents];
 }
 
+void BluetoothTestMac::ExpectedChangeNotifyValueAttempts(int attempts) {
+  EXPECT_EQ(attempts, gatt_notify_characteristic_attempts_);
+}
+
+void BluetoothTestMac::ExpectedNotifyValue(
+    NotifyValueState expected_value_state) {
+  switch (expected_value_state) {
+    case NotifyValueState::NONE:
+      EXPECT_FALSE(last_notify_value_);
+      break;
+    case NotifyValueState::NOTIFY:
+    case NotifyValueState::INDICATE:
+      EXPECT_TRUE(last_notify_value_);
+      break;
+  }
+}
+
 void BluetoothTestMac::OnFakeBluetoothDeviceConnectGattCalled() {
   gatt_connection_attempts_++;
 }
@@ -489,7 +511,7 @@ void BluetoothTest::OnFakeBluetoothCharacteristicWriteValue(
 
 void BluetoothTest::OnFakeBluetoothGattSetCharacteristicNotification(
     bool notify_value) {
-  last_notify_value = notify_value;
+  last_notify_value_ = notify_value;
   gatt_notify_characteristic_attempts_++;
 }
 

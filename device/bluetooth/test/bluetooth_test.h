@@ -56,6 +56,12 @@ class BluetoothTestBase : public testing::Test {
     HEART_RATE_DEVICE,
   };
 
+  enum class NotifyValueState {
+    NONE,
+    NOTIFY,
+    INDICATE,
+  };
+
   static const std::string kTestAdapterName;
   static const std::string kTestAdapterAddress;
 
@@ -401,6 +407,15 @@ class BluetoothTestBase : public testing::Test {
   virtual void SimulateGattDescriptorWriteWillFailSynchronouslyOnce(
       BluetoothRemoteGattDescriptor* descriptor) {}
 
+  // Tests that functions to change the notify value have been called |attempts|
+  // times.
+  virtual void ExpectedChangeNotifyValueAttempts(int attempts);
+
+  // Tests that the notify value is |expected_value_state|. The default
+  // implementation checks that the correct value has been written to the CCC
+  // Descriptor.
+  virtual void ExpectedNotifyValue(NotifyValueState expected_value_state);
+
   // Returns a list of local GATT services registered with the adapter.
   virtual std::vector<BluetoothLocalGattService*> RegisteredGattServices();
 
@@ -465,7 +480,7 @@ class BluetoothTestBase : public testing::Test {
       bool error_in_reentrant);
 
   // Reset all event count members to 0.
-  void ResetEventCounts();
+  virtual void ResetEventCounts();
 
   void RemoveTimedOutDevices();
 
