@@ -29,6 +29,10 @@ ChromeBrowserProvider::ChromeBrowserProvider() {}
 
 ChromeBrowserProvider::~ChromeBrowserProvider() {}
 
+void ChromeBrowserProvider::AppendSwitchesFromExperimentalSettings(
+    NSUserDefaults* experimental_settings,
+    base::CommandLine* command_line) const {}
+
 void ChromeBrowserProvider::Initialize() const {}
 
 SigninErrorProvider* ChromeBrowserProvider::GetSigninErrorProvider() {

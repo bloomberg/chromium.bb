@@ -22,6 +22,10 @@ class SpotlightProvider;
 class UserFeedbackProvider;
 class VoiceSearchProvider;
 
+namespace base {
+class CommandLine;
+}
+
 namespace web {
 class WebState;
 }
@@ -63,6 +67,11 @@ class ChromeBrowserProvider {
   // The constructor is called before web startup.
   ChromeBrowserProvider();
   virtual ~ChromeBrowserProvider();
+
+  // Appends additional command-line flags. Called before web startup.
+  virtual void AppendSwitchesFromExperimentalSettings(
+      NSUserDefaults* experimental_settings,
+      base::CommandLine* command_line) const;
 
   // This is called after web startup.
   virtual void Initialize() const;
