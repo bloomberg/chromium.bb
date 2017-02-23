@@ -100,6 +100,7 @@ source_set("unit_tests") {
     "revisit/sessions_page_revisit_observer_unittest.cc",
     "revisit/typed_url_page_revisit_task_unittest.cc",
     "session_data_type_controller_unittest.cc",
+    "sessions_sync_manager_unittest.cc",
     "sync_sessions_metrics_unittest.cc",
     "synced_session_tracker_unittest.cc",
     "tab_node_pool_unittest.cc",

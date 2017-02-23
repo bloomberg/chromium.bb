@@ -3659,7 +3659,6 @@ test("unit_tests") {
       "../browser/signin/mutable_profile_oauth2_token_service_delegate_unittest.cc",
       "../browser/speech/extension_api/extension_manifests_tts_unittest.cc",
       "../browser/speech/tts_controller_unittest.cc",
-      "../browser/sync/sessions/sessions_sync_manager_unittest.cc",
       "../browser/sync/sync_ui_util_unittest.cc",  # Sync setup uses native ui.
       "../browser/task_manager/providers/browser_process_task_unittest.cc",
       "../browser/task_manager/providers/child_process_task_unittest.cc",
