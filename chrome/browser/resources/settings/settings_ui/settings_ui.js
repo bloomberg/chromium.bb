@@ -49,6 +49,8 @@ Polymer({
 
     /**
      * Dictionary defining page visibility.
+     * This is only set when in guest mode. All pages are visible when not set
+     * because polymer only notifies after a property is set.
      * @private {!GuestModePageVisibility}
      */
     pageVisibility_: Object,
