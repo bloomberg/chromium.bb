@@ -178,6 +178,12 @@ class TabManager : public TabStripModelObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
   FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, PurgeAndSuspendState);
 
+  // The time of the first purging after a renderer is backgrounded.
+  // The initial value was chosen because most of users activate backgrounded
+  // tabs within 30 minutes. (c.f. Tabs.StateTransfer.Time_Inactive_Active)
+  static constexpr base::TimeDelta kDefaultTimeToFirstPurge =
+      base::TimeDelta::FromMinutes(30);
+
   // This is needed so WebContentsData can call OnDiscardedStateChange, and
   // can use PurgeAndSuspendState.
   friend class WebContentsData;

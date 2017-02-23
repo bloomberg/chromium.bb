@@ -681,7 +681,8 @@ TEST_F(TabManagerTest, NextPurgeAndSuspendState) {
   WebContents* test_contents = CreateWebContents();
   tabstrip.AppendWebContents(test_contents, false);
 
-  base::TimeDelta threshold = base::TimeDelta::FromSeconds(180);
+  // Use default time-to-first-purge  defined in TabManager.
+  base::TimeDelta threshold = TabManager::kDefaultTimeToFirstPurge;
   base::SimpleTestTickClock test_clock;
 
   tab_manager.GetWebContentsData(test_contents)
@@ -689,11 +690,13 @@ TEST_F(TabManagerTest, NextPurgeAndSuspendState) {
   tab_manager.GetWebContentsData(test_contents)
       ->SetLastPurgeAndSuspendModifiedTimeForTesting(test_clock.NowTicks());
 
-  test_clock.Advance(base::TimeDelta::FromSeconds(180));
+  // Wait 30 minutes and verify that the tab is still RUNNING.
+  test_clock.Advance(base::TimeDelta::FromMinutes(30));
   EXPECT_EQ(TabManager::RUNNING,
             tab_manager.GetNextPurgeAndSuspendState(
                 test_contents, test_clock.NowTicks(), threshold));
 
+  // Wait another second and verify that it is now SUSPENDED.
   test_clock.Advance(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(TabManager::SUSPENDED,
             tab_manager.GetNextPurgeAndSuspendState(

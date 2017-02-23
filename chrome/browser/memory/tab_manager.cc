@@ -139,6 +139,8 @@ void NotifyRendererProcess(
 ////////////////////////////////////////////////////////////////////////////////
 // TabManager
 
+constexpr base::TimeDelta TabManager::kDefaultTimeToFirstPurge;
+
 TabManager::TabManager()
     : discard_count_(0),
       recent_tab_discard_(false),
@@ -226,13 +228,13 @@ void TabManager::Start() {
   // https://docs.google.com/document/d/1hPHkKtXXBTlsZx9s-9U17XC-ofEIzPo9FYbBEc7PPbk/edit?usp=sharing
   std::string purge_and_suspend_time = variations::GetVariationParamValue(
       "PurgeAndSuspend", "purge-and-suspend-time");
-  unsigned time_to_first_suspension_sec;
+  unsigned int time_to_first_purge_sec = 0;
   if (purge_and_suspend_time.empty() ||
-      !base::StringToUint(purge_and_suspend_time,
-                          &time_to_first_suspension_sec))
-    time_to_first_suspension_sec = 108000;
-  time_to_first_suspension_ =
-      base::TimeDelta::FromSeconds(time_to_first_suspension_sec);
+      !base::StringToUint(purge_and_suspend_time, &time_to_first_purge_sec))
+    time_to_first_suspension_ = kDefaultTimeToFirstPurge;
+  else
+    time_to_first_suspension_ =
+        base::TimeDelta::FromSeconds(time_to_first_purge_sec);
 }
 
 void TabManager::Stop() {
