@@ -16,9 +16,8 @@ set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
 include("${AOM_ROOT}/build/cmake/aom_optimization.cmake")
-
-# Defines variables and targets for aom_dsp.
 include("${AOM_ROOT}/aom_dsp/aom_dsp.cmake")
+include("${AOM_ROOT}/test/test.cmake")
 
 set(AOM_RTCD_SOURCES
     "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
@@ -305,9 +304,6 @@ set(AOM_WEBM_ENCODER_SOURCES
     "${AOM_ROOT}/webmenc.cc"
     "${AOM_ROOT}/webmenc.h")
 
-set(AOM_DECODE_PERF_TEST_SOURCES "${AOM_ROOT}/test/decode_perf_test.cc")
-set(AOM_ENCODE_PERF_TEST_SOURCES "${AOM_ROOT}/test/encode_perf_test.cc")
-set(AOM_UNIT_TEST_WEBM_SOURCES "${AOM_ROOT}/test/webm_video_source.h")
 set(AOM_PORTS_ASM_X86 "${AOM_ROOT}/aom_ports/x86_abi_support.asm")
 set(AOM_PORTS_ASM_MMX "${AOM_ROOT}/aom_ports/emms.asm")
 
@@ -350,138 +346,11 @@ set(AOM_AV1_ENCODER_AVX2_INTRIN
     "${AOM_ROOT}/av1/encoder/x86/error_intrin_avx2.c"
     "${AOM_ROOT}/av1/encoder/x86/hybrid_fwd_txfm_avx2.c")
 
-# TODO(tomfinegan): split the test sources into lists that require decoder,
-# encoder, and both.
-# TODO(tomfinegan): move tests for specific assembly variants to their own
-# lists.
-# TODO(tomfinegan): move tests that require non-default configure flags to their
-# own lists.
-set(AOM_UNIT_TEST_SOURCES
-    "${AOM_CONFIG_DIR}/usage_exit.c"
-    # requires CONFIG_ACCOUNTING
-    #"${AOM_ROOT}/test/accounting_test.cc"
-    "${AOM_ROOT}/test/acm_random.h"
-    "${AOM_ROOT}/test/active_map_test.cc"
-    "${AOM_ROOT}/test/altref_test.cc"
-    "${AOM_ROOT}/test/android"
-    "${AOM_ROOT}/test/aq_segment_test.cc"
-    "${AOM_ROOT}/test/arf_freq_test.cc"
-    "${AOM_ROOT}/test/av1_convolve_optimz_test.cc"
-    "${AOM_ROOT}/test/av1_convolve_test.cc"
-    "${AOM_ROOT}/test/av1_dct_test.cc"
-    "${AOM_ROOT}/test/av1_ext_tile_test.cc"
-    "${AOM_ROOT}/test/av1_fht16x16_test.cc"
-    "${AOM_ROOT}/test/av1_fht16x32_test.cc"
-    "${AOM_ROOT}/test/av1_fht16x8_test.cc"
-    "${AOM_ROOT}/test/av1_fht32x16_test.cc"
-    "${AOM_ROOT}/test/av1_fht4x4_test.cc"
-    "${AOM_ROOT}/test/av1_fht4x8_test.cc"
-    "${AOM_ROOT}/test/av1_fht8x16_test.cc"
-    "${AOM_ROOT}/test/av1_fht8x4_test.cc"
-    "${AOM_ROOT}/test/av1_fht8x8_test.cc"
-    "${AOM_ROOT}/test/av1_fwd_txfm1d_test.cc"
-    "${AOM_ROOT}/test/av1_fwd_txfm2d_test.cc"
-    "${AOM_ROOT}/test/av1_inv_txfm1d_test.cc"
-    "${AOM_ROOT}/test/av1_inv_txfm2d_test.cc"
-    "${AOM_ROOT}/test/av1_inv_txfm_test.cc"
-    "${AOM_ROOT}/test/av1_txfm_test.cc"
-    "${AOM_ROOT}/test/av1_txfm_test.h"
-    "${AOM_ROOT}/test/avg_test.cc"
-    "${AOM_ROOT}/test/blend_a64_mask_1d_test.cc"
-    "${AOM_ROOT}/test/blend_a64_mask_test.cc"
-    "${AOM_ROOT}/test/boolcoder_test.cc"
-    "${AOM_ROOT}/test/borders_test.cc"
-    "${AOM_ROOT}/test/clear_system_state.h"
-    "${AOM_ROOT}/test/codec_factory.h"
-    "${AOM_ROOT}/test/convolve_test.cc"
-    "${AOM_ROOT}/test/cpu_speed_test.cc"
-    "${AOM_ROOT}/test/datarate_test.cc"
-    "${AOM_ROOT}/test/dct16x16_test.cc"
-    "${AOM_ROOT}/test/dct32x32_test.cc"
-    "${AOM_ROOT}/test/decode_api_test.cc"
-    "${AOM_ROOT}/test/decode_test_driver.cc"
-    "${AOM_ROOT}/test/decode_test_driver.h"
-    "${AOM_ROOT}/test/divu_small_test.cc"
-    "${AOM_ROOT}/test/encode_api_test.cc"
-    "${AOM_ROOT}/test/encode_test_driver.cc"
-    "${AOM_ROOT}/test/encode_test_driver.h"
-    "${AOM_ROOT}/test/end_to_end_test.cc"
-    "${AOM_ROOT}/test/error_block_test.cc"
-    "${AOM_ROOT}/test/error_resilience_test.cc"
-    "${AOM_ROOT}/test/ethread_test.cc"
-    "${AOM_ROOT}/test/fdct4x4_test.cc"
-    "${AOM_ROOT}/test/fdct8x8_test.cc"
-    "${AOM_ROOT}/test/fht32x32_test.cc"
-    # require CONFIG_FILTER_INTRA and HAVE_SSE4_1
-    #"${AOM_ROOT}/test/filterintra_predictors_test.cc"
-    "${AOM_ROOT}/test/frame_size_tests.cc"
-    "${AOM_ROOT}/test/function_equivalence_test.h"
-    "${AOM_ROOT}/test/hadamard_test.cc"
-    "${AOM_ROOT}/test/i420_video_source.h"
-    "${AOM_ROOT}/test/idct8x8_test.cc"
-    # omitted from tests.mk, includes non-existing file: aom_rtcd.h.
-    #"${AOM_ROOT}/test/idct_test.cc"
-    "${AOM_ROOT}/test/intrapred_test.cc"
-    "${AOM_ROOT}/test/ivf_video_source.h"
-    "${AOM_ROOT}/test/level_test.cc"
-    "${AOM_ROOT}/test/lossless_test.cc"
-    "${AOM_ROOT}/test/lpf_8_test.cc"
-    "${AOM_ROOT}/test/md5_helper.h"
-    "${AOM_ROOT}/test/minmax_test.cc"
-    "${AOM_ROOT}/test/partial_idct_test.cc"
-    # omitted from tests.mk, includes vp8 file.
-    #"${AOM_ROOT}/test/quantize_test.cc"
-    "${AOM_ROOT}/test/realtime_test.cc"
-    "${AOM_ROOT}/test/register_state_check.h"
-    "${AOM_ROOT}/test/resize_test.cc"
-    "${AOM_ROOT}/test/sad_test.cc"
-    # requires CONFIG_ADAPT_SCAN
-    #"${AOM_ROOT}/test/scan_test.cc"
-    "${AOM_ROOT}/test/simd_cmp_impl.h"
-    "${AOM_ROOT}/test/subtract_test.cc"
-    "${AOM_ROOT}/test/sum_squares_test.cc"
-    "${AOM_ROOT}/test/superframe_test.cc"
-    "${AOM_ROOT}/test/test_libaom.cc"
-    "${AOM_ROOT}/test/tile_independence_test.cc"
-    "${AOM_ROOT}/test/transform_test_base.h"
-    # omitted from test.mk
-    #"${AOM_ROOT}/test/user_priv_test.cc"
-    "${AOM_ROOT}/test/util.h"
-    "${AOM_ROOT}/test/variance_test.cc"
-    "${AOM_ROOT}/test/video_source.h"
-    # requires CONFIG_GLOBAL_MOTION, CONFIG_WARPED_MOTION, HAVE_SSE2
-    #"${AOM_ROOT}/test/warp_filter_test.cc"
-    "${AOM_ROOT}/test/y4m_test.cc"
-    "${AOM_ROOT}/test/y4m_video_source.h"
-    "${AOM_ROOT}/test/yuv_video_source.h")
-
-set(AOM_UNIT_TEST_INTRIN_NEON "${AOM_ROOT}/test/simd_cmp_neon.cc")
-set(AOM_UNIT_TEST_INTRIN_SSE2 "${AOM_ROOT}/test/simd_cmp_sse2.cc")
-set(AOM_UNIT_TEST_INTRIN_SSSE3 "${AOM_ROOT}/test/simd_cmp_ssse3.cc")
-set(AOM_UNIT_TEST_INTRIN_SSE4_1 "${AOM_ROOT}/test/simd_cmp_sse4.cc")
-
 if (CONFIG_ACCOUNTING)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
       "${AOM_ROOT}/av1/common/accounting.c"
       "${AOM_ROOT}/av1/common/accounting.h")
-
-  set(AOM_UNIT_TEST_SOURCES
-      ${AOM_UNIT_TEST_SOURCES}
-      "${AOM_ROOT}/test/accounting_test.cc")
-endif ()
-
-if (CONFIG_ANS)
-  if (CONFIG_DAALA_EC)
-    message(FATAL_ERROR "CONFIG_ANS requires CONFIG_DAALA_EC=0.")
-  endif ()
-
-
-  set(AOM_UNIT_TEST_SOURCES
-      ${AOM_UNIT_TEST_SOURCES}
-      "${AOM_ROOT}/test/ans_codec_test.cc"
-      "${AOM_ROOT}/test/ans_test.cc")
-  list(REMOVE_ITEM AOM_UNIT_TEST_SOURCES "${AOM_ROOT}/test/boolcoder_test.cc")
 endif ()
 
 if (CONFIG_CDEF)
@@ -518,10 +387,6 @@ if (CONFIG_CDEF)
   set(AOM_AV1_ENCODER_SSE4_1_INTRIN
       ${AOM_AV1_ENCODER_SSE4_1_INTRIN}
       "${AOM_ROOT}/av1/encoder/clpf_rdo_sse4.c")
-
-  set(AOM_UNIT_TEST_SOURCES
-      ${AOM_UNIT_TEST_SOURCES}
-      "${AOM_ROOT}/test/clpf_test.cc")
 endif ()
 
 if (CONFIG_EXT_INTER)
@@ -532,12 +397,6 @@ if (CONFIG_EXT_INTER)
   set(AOM_AV1_ENCODER_SSE2_INTRIN
       ${AOM_AV1_ENCODER_SSE2_INTRIN}
       "${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c")
-
-  set(AOM_UNIT_TEST_SOURCES
-      ${AOM_UNIT_TEST_SOURCES}
-      "${AOM_ROOT}/test/av1_wedge_utils_test.cc"
-      "${AOM_ROOT}/test/masked_sad_test.cc"
-      "${AOM_ROOT}/test/masked_variance_test.cc")
 endif ()
 
 if (CONFIG_INTERNAL_STATS)
@@ -560,22 +419,8 @@ if (CONFIG_AOM_HIGHBITDEPTH)
       ${AOM_AV1_ENCODER_SSE4_1_INTRIN}
       "${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_sse4.c"
       "${AOM_ROOT}/av1/encoder/x86/highbd_fwd_txfm_sse4.c")
-
-  if (CONFIG_INTERNAL_STATS)
-    set(AOM_UNIT_TEST_SOURCES
-        ${AOM_UNIT_TEST_SOURCES}
-        "${AOM_ROOT}/test/hbd_metrics_test.cc")
-  endif ()
-
-  set(AOM_UNIT_TEST_INTRIN_SSE4_1
-      ${AOM_UNIT_TEST_INTRIN_SSE4_1}
-      "${AOM_ROOT}/test/av1_highbd_iht_test.cc"
-      "${AOM_ROOT}/test/av1_quantize_test.cc")
 endif ()
 
-set(AOM_TEST_INTRA_PRED_SPEED_SOURCES
-    "${AOM_CONFIG_DIR}/usage_exit.c"
-    "${AOM_ROOT}/test/test_intra_pred_speed.cc")
 
 include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
 
@@ -775,61 +620,12 @@ if (CONFIG_WEBM_IO)
 endif ()
 
 if (CONFIG_UNIT_TESTS)
-  if (MSVC)
-    # Force static run time to avoid collisions with googletest.
-    include("${AOM_ROOT}/build/cmake/msvc_runtime.cmake")
-  endif ()
-  include_directories(
-    "${AOM_ROOT}/third_party/googletest/src/googletest/src"
-    "${AOM_ROOT}/third_party/googletest/src/googletest/include")
-  add_subdirectory("${AOM_ROOT}/third_party/googletest/src/googletest")
+  # Create test_libaom target and the targets it depends on.
+  setup_aom_test_targets()
 
-  # Generate a stub file containing the C function usage_exit(); this is
-  # required because of the test dependency on aom_common_app_util.
-  # Specifically, the function die() in tools_common.c calls usage_exit() to
-  # terminate the program on the caller's behalf.
-  file(WRITE "${AOM_CONFIG_DIR}/usage_exit.c" "void usage_exit(void) {}")
-
-  add_executable(test_libaom ${AOM_UNIT_TEST_SOURCES}
-                 $<TARGET_OBJECTS:aom_common_app_util>
-                 $<TARGET_OBJECTS:aom_decoder_app_util>
-                 $<TARGET_OBJECTS:aom_encoder_app_util>)
-  target_link_libraries(test_libaom PUBLIC aom gtest)
-
-  add_executable(test_intra_pred_speed
-                 ${AOM_TEST_INTRA_PRED_SPEED_SOURCES}
-                 $<TARGET_OBJECTS:aom_common_app_util>)
-  target_link_libraries(test_intra_pred_speed PUBLIC aom gtest)
-
-  if (CONFIG_DECODE_PERF_TESTS AND CONFIG_WEBM_IO)
-    target_sources(test_libaom PUBLIC ${AOM_DECODE_PERF_TEST_SOURCES})
-  endif ()
-  if (CONFIG_ENCODE_PERF_TESTS)
-    target_sources(test_libaom PUBLIC ${AOM_ENCODE_PERF_TEST_SOURCES})
-  endif ()
-  if (CONFIG_LIBYUV)
-    target_sources(test_libaom PUBLIC $<TARGET_OBJECTS:yuv>)
-  endif ()
-  if (CONFIG_WEBM_IO)
-    target_sources(test_libaom PUBLIC ${AOM_UNIT_TEST_WEBM_SOURCES}
-                   $<TARGET_OBJECTS:webm>)
-  endif ()
-  if (HAVE_SSE2)
-    add_intrinsics_source_to_target("-msse2" "test_libaom"
-                                    "AOM_UNIT_TEST_INTRIN_SSE2")
-  endif ()
-  if (HAVE_SSSE3)
-    add_intrinsics_source_to_target("-mssse3" "test_libaom"
-                                    "AOM_UNIT_TEST_INTRIN_SSSE3")
-  endif ()
-  if (HAVE_SSE4_1)
-    add_intrinsics_source_to_target("-msse4.1" "test_libaom"
-                                    "AOM_UNIT_TEST_INTRIN_SSE4_1")
-  endif ()
+  # Create aom_dsp test targets and update dependent test targets.
+  setup_aom_dsp_test_targets()
 endif ()
-
-# Create aom_dsp test targets and update dependent test targets.
-setup_aom_dsp_test_targets()
 
 if (XCODE)
   if (CONFIG_LIBYUV OR CONFIG_WEBM_IO)
