@@ -98,6 +98,12 @@
   const ui::ThemeProvider* themeProvider = [window themeProvider];
   if (!themeProvider)
     return [NSColor blackColor];
+  if (themeProvider->ShouldIncreaseContrast()) {
+    if ([window hasDarkTheme])
+      return [NSColor whiteColor];
+    else
+      return [NSColor blackColor];
+  }
   return themeProvider->GetNSColor(
              ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
 }
