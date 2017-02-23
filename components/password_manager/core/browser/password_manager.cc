@@ -131,6 +131,11 @@ bool ContainsAndroidCredentials(
   return PreferredRealmIsFromAndroid(fill_data);
 }
 
+bool AreAllFieldsEmpty(const PasswordForm& form) {
+  return form.username_value.empty() && form.password_value.empty() &&
+         form.new_password_value.empty();
+}
+
 }  // namespace
 
 // static
@@ -644,6 +649,10 @@ void PasswordManager::OnPasswordFormsRendered(
             URLsEqualUpToHttpHttpsSubstitution(
                 provisional_save_manager_->pending_credentials().action,
                 all_visible_forms_[i].action)) {
+          if (provisional_save_manager_
+                  ->is_possible_change_password_form_without_username() &&
+              AreAllFieldsEmpty(all_visible_forms_[i]))
+            continue;
           provisional_save_manager_->LogSubmitFailed();
           if (logger) {
             logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,

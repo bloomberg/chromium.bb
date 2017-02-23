@@ -1683,4 +1683,45 @@ TEST_F(PasswordManagerTest, UpdatePasswordOfAffiliatedCredential) {
   EXPECT_THAT(saved_form, FormMatches(expected_form));
 }
 
+TEST_F(PasswordManagerTest, ClearedFieldsSuccessCriteria) {
+  // Test that a submission is considered to be successful on a change password
+  // form without username when fields valued are cleared.
+  PasswordForm form(MakeFormWithOnlyNewPasswordField());
+  form.username_element.clear();
+  form.username_value.clear();
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+
+  // Emulate page load.
+  EXPECT_CALL(*store_, GetLogins(_, _)).Times(2);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+  ASSERT_EQ(1u, manager()->pending_login_managers().size());
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  // Returning result from the store.
+  PasswordFormManager* form_manager =
+      manager()->pending_login_managers().front().get();
+  ASSERT_TRUE(form_manager);
+  static_cast<FormFetcherImpl*>(form_manager->form_fetcher())
+      ->OnGetPasswordStoreResults(std::vector<std::unique_ptr<PasswordForm>>());
+
+  OnPasswordFormSubmitted(form);
+
+  // JavaScript cleared field values.
+  observed[0].password_value.clear();
+  observed[0].new_password_value.clear();
+
+  // Check success of the submission.
+  std::unique_ptr<PasswordFormManager> form_manager_to_save;
+  EXPECT_CALL(client_,
+              PromptUserToSaveOrUpdatePasswordPtr(
+                  _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
 }  // namespace password_manager
