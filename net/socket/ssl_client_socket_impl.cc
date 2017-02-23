@@ -845,14 +845,15 @@ void SSLClientSocketImpl::DumpMemoryStats(SocketMemoryStats* stats) const {
   if (server_cert_chain_) {
     for (size_t i = 0; i < server_cert_chain_->size(); ++i) {
       X509* cert = server_cert_chain_->Get(i);
-      // This measures the lower bound of the serialized certificate. It doesn't
-      // measure the actual memory used, which is 4x this amount (see
-      // crbug.com/671420 for more details).
-      stats->serialized_cert_size += i2d_X509(cert, nullptr);
+      // Estimate the size of the certificate before deduplication.
+      // The multiplier (4) is added to account for the difference between the
+      // serialized cert size and the actual cert allocation.
+      // TODO(xunjieli): Update this after crbug.com/671420 is done.
+      stats->cert_size += 4 * i2d_X509(cert, nullptr);
     }
     stats->cert_count = server_cert_chain_->size();
   }
-  stats->total_size = stats->buffer_size + stats->serialized_cert_size;
+  stats->total_size = stats->buffer_size + stats->cert_size;
 }
 
 // static

@@ -721,7 +721,7 @@ void ClientSocketPoolBaseHelper::DumpMemoryStats(
   size_t total_size = 0;
   size_t buffer_size = 0;
   size_t cert_count = 0;
-  size_t serialized_cert_size = 0;
+  size_t cert_size = 0;
   for (const auto& kv : group_map_) {
     for (const auto& socket : kv.second->idle_sockets()) {
       StreamSocket::SocketMemoryStats stats;
@@ -729,7 +729,7 @@ void ClientSocketPoolBaseHelper::DumpMemoryStats(
       total_size += stats.total_size;
       buffer_size += stats.buffer_size;
       cert_count += stats.cert_count;
-      serialized_cert_size += stats.serialized_cert_size;
+      cert_size += stats.cert_size;
       ++socket_count;
     }
   }
@@ -751,9 +751,8 @@ void ClientSocketPoolBaseHelper::DumpMemoryStats(
         "cert_count", base::trace_event::MemoryAllocatorDump::kUnitsObjects,
         cert_count);
     socket_pool_dump->AddScalar(
-        "serialized_cert_size",
-        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-        serialized_cert_size);
+        "cert_size", base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+        cert_size);
   }
 }
 

@@ -386,7 +386,9 @@ TEST_F(SSLClientSessionCacheTest, TestDumpMemoryStats) {
   base::DictionaryValue* attrs;
   ASSERT_TRUE(raw_attrs->GetAsDictionary(&attrs));
   ASSERT_TRUE(attrs->HasKey("cert_count"));
-  ASSERT_TRUE(attrs->HasKey("serialized_cert_size"));
+  ASSERT_TRUE(attrs->HasKey("cert_size"));
+  ASSERT_TRUE(attrs->HasKey("undeduped_cert_size"));
+  ASSERT_TRUE(attrs->HasKey("undeduped_cert_count"));
   ASSERT_TRUE(attrs->HasKey(base::trace_event::MemoryAllocatorDump::kNameSize));
 }
 
