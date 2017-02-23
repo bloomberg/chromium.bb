@@ -2212,7 +2212,7 @@
       Add a fingerprint
     </message>
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER" desc="Text in the add fingerprint dialog telling users what to do for step 1.">
-      Locate the fingerprint sensor on your device, then place the finger you would like to register on it.
+      Find the fingerprint sensor on your device and touch it with your finger.
     </message>
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_MOVE_FINGER" desc="Text in the add fingerprint dialog telling users what to do for step 2.">
       Now move your finger slightly to capture all the different parts of your fingerprint.
