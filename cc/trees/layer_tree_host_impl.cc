@@ -154,18 +154,23 @@ void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
   }
 }
 
-// Return true if scrollable 'ancestor' is the same layer as 'child' or its
+// Return true if scrollable node for 'ancestor' is the same as 'child' or an
 // ancestor along the scroll tree.
 bool IsScrolledBy(LayerImpl* child, LayerImpl* ancestor) {
   DCHECK(ancestor && ancestor->scrollable());
   if (!child)
     return false;
 
-  ScrollTree& scroll_tree =
-      child->layer_tree_impl()->property_trees()->scroll_tree;
+  auto* property_trees = child->layer_tree_impl()->property_trees();
+  auto ancestor_scroll_id =
+      property_trees->layer_id_to_scroll_node_index.find(ancestor->id());
+  if (ancestor_scroll_id == property_trees->layer_id_to_scroll_node_index.end())
+    return false;
+
+  ScrollTree& scroll_tree = property_trees->scroll_tree;
   for (ScrollNode* scroll_node = scroll_tree.Node(child->scroll_tree_index());
        scroll_node; scroll_node = scroll_tree.parent(scroll_node)) {
-    if (scroll_node->owning_layer_id == ancestor->id())
+    if (scroll_node->id == ancestor_scroll_id->second)
       return true;
   }
   return false;
@@ -2629,13 +2634,19 @@ static bool IsClosestScrollAncestor(LayerImpl* child,
   DCHECK(scroll_ancestor);
   if (!child)
     return false;
-  ScrollTree& scroll_tree =
-      child->layer_tree_impl()->property_trees()->scroll_tree;
+
+  auto* property_trees = child->layer_tree_impl()->property_trees();
+  auto ancestor_scroll_id =
+      property_trees->layer_id_to_scroll_node_index.find(scroll_ancestor->id());
+  if (ancestor_scroll_id == property_trees->layer_id_to_scroll_node_index.end())
+    return false;
+
+  ScrollTree& scroll_tree = property_trees->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.Node(child->scroll_tree_index());
   for (; scroll_tree.parent(scroll_node);
        scroll_node = scroll_tree.parent(scroll_node)) {
     if (scroll_node->scrollable)
-      return scroll_node->owning_layer_id == scroll_ancestor->id();
+      return scroll_node->id == ancestor_scroll_id->second;
   }
   return false;
 }
