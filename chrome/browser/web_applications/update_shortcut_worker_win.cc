@@ -67,8 +67,9 @@ void UpdateShortcutWorker::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_TAB_CLOSING, type);
 
-  if (content::Source<NavigationController>(source).ptr() ==
-      &web_contents_->GetController()) {
+  if (web_contents_ &&
+      content::Source<NavigationController>(source).ptr() ==
+          &web_contents_->GetController()) {
     // Underlying tab is closing.
     web_contents_ = nullptr;
   }
@@ -79,7 +80,7 @@ void UpdateShortcutWorker::DownloadIcon() {
   // to download the icon.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (web_contents_ == NULL) {
+  if (!web_contents_) {
     DeleteMe();  // We are done if underlying WebContents is gone.
     return;
   }
@@ -110,6 +111,11 @@ void UpdateShortcutWorker::DidDownloadFavicon(
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_sizes) {
+  if (!web_contents_) {
+    DeleteMe();  // We are done if underlying WebContents is gone.
+    return;
+  }
+
   std::vector<int> requested_sizes_in_pixel;
   requested_sizes_in_pixel.push_back(requested_size);
 
