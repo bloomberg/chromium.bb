@@ -90,7 +90,8 @@ class PbufferPictureBuffer : public DXVAPictureBuffer {
   bool Initialize(const DXVAVideoDecodeAccelerator& decoder,
                   EGLConfig egl_config);
   bool InitializeTexture(const DXVAVideoDecodeAccelerator& decoder,
-                         bool use_rgb);
+                         bool use_rgb,
+                         bool use_fp16);
 
   bool ReusePictureBuffer() override;
   void ResetReuseFence() override;

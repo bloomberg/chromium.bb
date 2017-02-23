@@ -556,6 +556,13 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
                                  PLATFORM_FAILURE, false);
   }
 
+  if (config.profile == VP9PROFILE_PROFILE2 ||
+      config.profile == VP9PROFILE_PROFILE3 ||
+      config.profile == H264PROFILE_HIGH10PROFILE) {
+    // Input file has more than 8 bits per channel.
+    use_fp16_ = true;
+  }
+
   // Not all versions of Windows 7 and later include Media Foundation DLLs.
   // Instead of crashing while delay loading the DLL when calling MFStartup()
   // below, probe whether we can successfully load the DLL now.
@@ -854,6 +861,13 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
 
   if (!(nv12_format_support & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT))
     copy_nv12_textures_ = false;
+
+  UINT fp16_format_support = 0;
+  hr = d3d11_device_->CheckFormatSupport(DXGI_FORMAT_R16G16B16A16_FLOAT,
+                                         &fp16_format_support);
+  if (FAILED(hr) ||
+      !(fp16_format_support & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT))
+    use_fp16_ = false;
 
   // Enable multithreaded mode on the device. This ensures that accesses to
   // context are synchronized across threads. We have multiple threads
@@ -1517,19 +1531,36 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
 
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
 
-  EGLint config_attribs[] = {EGL_BUFFER_SIZE,  32,
-                             EGL_RED_SIZE,     8,
-                             EGL_GREEN_SIZE,   8,
-                             EGL_BLUE_SIZE,    8,
-                             EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
-                             EGL_ALPHA_SIZE,   0,
-                             EGL_NONE};
+  while (true) {
+    EGLint config_attribs[] = {EGL_BUFFER_SIZE,  32,
+                               EGL_RED_SIZE,     use_fp16_ ? 16 : 8,
+                               EGL_GREEN_SIZE,   use_fp16_ ? 16 : 8,
+                               EGL_BLUE_SIZE,    use_fp16_ ? 16 : 8,
+                               EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+                               EGL_ALPHA_SIZE,   0,
+                               EGL_NONE};
 
-  EGLint num_configs;
+    EGLint num_configs;
 
-  if (!eglChooseConfig(egl_display, config_attribs, &egl_config_, 1,
-                       &num_configs))
-    return false;
+    if (!eglChooseConfig(egl_display, config_attribs, &egl_config_, 1,
+                         &num_configs) ||
+        num_configs == 0) {
+      if (use_fp16_) {
+        // Try again, but without use_fp16_
+        use_fp16_ = false;
+        continue;
+      }
+      return false;
+    }
+
+    break;
+  }
+
+  if (use_fp16_) {
+    // TODO(hubbe): Share/copy P010/P016 textures.
+    share_nv12_textures_ = false;
+    copy_nv12_textures_ = false;
+  }
 
   return SetDecoderMediaTypes();
 }
@@ -1597,7 +1628,8 @@ bool DXVAVideoDecodeAccelerator::SetDecoderMediaTypes() {
   RETURN_ON_FAILURE(SetDecoderInputMediaType(),
                     "Failed to set decoder input media type", false);
   return SetDecoderOutputMediaType(MFVideoFormat_NV12) ||
-         SetDecoderOutputMediaType(MFVideoFormat_P010);
+         SetDecoderOutputMediaType(MFVideoFormat_P010) ||
+         SetDecoderOutputMediaType(MFVideoFormat_P016);
 }
 
 bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
@@ -1742,7 +1774,8 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
     // output which is why we need to set the state to stopped.
     if (hr == MF_E_TRANSFORM_STREAM_CHANGE) {
       if (!SetDecoderOutputMediaType(MFVideoFormat_NV12) &&
-          !SetDecoderOutputMediaType(MFVideoFormat_P010)) {
+          !SetDecoderOutputMediaType(MFVideoFormat_P010) &&
+          !SetDecoderOutputMediaType(MFVideoFormat_P016)) {
         // Decoder didn't let us set NV12 output format. Not sure as to why
         // this can happen. Give up in disgust.
         NOTREACHED() << "Failed to set decoder output media type to NV12";

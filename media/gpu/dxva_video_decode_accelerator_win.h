@@ -517,6 +517,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Copy NV12 texture to another NV12 texture.
   bool copy_nv12_textures_;
 
+  // Copy video to FP16 scRGB textures.
+  bool use_fp16_ = false;
+
   // When converting YUV to RGB, make sure we tell the blitter about the input
   // color space so that it can convert it correctly.
   bool use_color_info_ = true;
