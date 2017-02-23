@@ -116,4 +116,14 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   EXPECT_NE(paintTiming().firstMeaningfulPaint(), 0.0);
 }
 
+TEST_F(FirstMeaningfulPaintDetectorTest,
+       FirstMeaningfulPaintShouldNotBeBeforeFirstContentfulPaint) {
+  paintTiming().markFirstPaint();
+  simulateLayoutAndPaint(10);
+  paintTiming().markFirstContentfulPaint();
+  simulateNetworkStable();
+  EXPECT_GE(paintTiming().firstMeaningfulPaint(),
+            paintTiming().firstContentfulPaint());
+}
+
 }  // namespace blink
