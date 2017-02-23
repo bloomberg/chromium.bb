@@ -68,7 +68,8 @@ class CORE_EXPORT RuleFeatureSet {
   WTF_MAKE_NONCOPYABLE(RuleFeatureSet);
 
  public:
-  RuleFeatureSet() {}
+  RuleFeatureSet();
+  ~RuleFeatureSet();
 
   void add(const RuleFeatureSet&);
   void clear();
@@ -158,6 +159,8 @@ class CORE_EXPORT RuleFeatureSet {
   bool hasIdsInSelectors() const { return m_idInvalidationSets.size() > 0; }
 
   DECLARE_TRACE();
+
+  bool isAlive() const { return m_isAlive; }
 
  protected:
   InvalidationSet* invalidationSetForSimpleSelector(const CSSSelector&,
@@ -294,6 +297,9 @@ class CORE_EXPORT RuleFeatureSet {
   HeapVector<RuleFeature> m_uncommonAttributeRules;
   MediaQueryResultList m_viewportDependentMediaQueryResults;
   MediaQueryResultList m_deviceDependentMediaQueryResults;
+
+  // If true, the RuleFeatureSet is alive and can be used.
+  unsigned m_isAlive : 1;
 
   friend class RuleFeatureSetTest;
 };
