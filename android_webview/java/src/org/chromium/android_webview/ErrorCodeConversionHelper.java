@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview;
 
+import android.webkit.WebViewClient;
+
 import org.chromium.net.NetError;
 
 /**
@@ -13,35 +15,36 @@ public abstract class ErrorCodeConversionHelper {
     // Success
     public static final int ERROR_OK = 0;
     // Generic error
-    public static final int ERROR_UNKNOWN = -1;
+    public static final int ERROR_UNKNOWN = WebViewClient.ERROR_UNKNOWN;
     // Server or proxy hostname lookup failed
-    public static final int ERROR_HOST_LOOKUP = -2;
+    public static final int ERROR_HOST_LOOKUP = WebViewClient.ERROR_HOST_LOOKUP;
     // Unsupported authentication scheme (not basic or digest)
-    public static final int ERROR_UNSUPPORTED_AUTH_SCHEME = -3;
+    public static final int ERROR_UNSUPPORTED_AUTH_SCHEME =
+            WebViewClient.ERROR_UNSUPPORTED_AUTH_SCHEME;
     // User authentication failed on server
-    public static final int ERROR_AUTHENTICATION = -4;
+    public static final int ERROR_AUTHENTICATION = WebViewClient.ERROR_AUTHENTICATION;
     // User authentication failed on proxy
-    public static final int ERROR_PROXY_AUTHENTICATION = -5;
+    public static final int ERROR_PROXY_AUTHENTICATION = WebViewClient.ERROR_PROXY_AUTHENTICATION;
     // Failed to connect to the server
-    public static final int ERROR_CONNECT = -6;
+    public static final int ERROR_CONNECT = WebViewClient.ERROR_CONNECT;
     // Failed to read or write to the server
-    public static final int ERROR_IO = -7;
+    public static final int ERROR_IO = WebViewClient.ERROR_IO;
     // Connection timed out
-    public static final int ERROR_TIMEOUT = -8;
+    public static final int ERROR_TIMEOUT = WebViewClient.ERROR_TIMEOUT;
     // Too many redirects
-    public static final int ERROR_REDIRECT_LOOP = -9;
+    public static final int ERROR_REDIRECT_LOOP = WebViewClient.ERROR_REDIRECT_LOOP;
     // Unsupported URI scheme
-    public static final int ERROR_UNSUPPORTED_SCHEME = -10;
+    public static final int ERROR_UNSUPPORTED_SCHEME = WebViewClient.ERROR_UNSUPPORTED_SCHEME;
     // Failed to perform SSL handshake
-    public static final int ERROR_FAILED_SSL_HANDSHAKE = -11;
+    public static final int ERROR_FAILED_SSL_HANDSHAKE = WebViewClient.ERROR_FAILED_SSL_HANDSHAKE;
     // Malformed URL
-    public static final int ERROR_BAD_URL = -12;
+    public static final int ERROR_BAD_URL = WebViewClient.ERROR_BAD_URL;
     // Generic file error
-    public static final int ERROR_FILE = -13;
+    public static final int ERROR_FILE = WebViewClient.ERROR_FILE;
     // File not found
-    public static final int ERROR_FILE_NOT_FOUND = -14;
+    public static final int ERROR_FILE_NOT_FOUND = WebViewClient.ERROR_FILE_NOT_FOUND;
     // Too many requests during this load
-    public static final int ERROR_TOO_MANY_REQUESTS = -15;
+    public static final int ERROR_TOO_MANY_REQUESTS = WebViewClient.ERROR_TOO_MANY_REQUESTS;
 
     static int convertErrorCode(int netError) {
         // Note: many NetError.Error constants don't have an obvious mapping.
