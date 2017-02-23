@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "media/base/bind_to_current_loop.h"
 
 namespace media {
 
@@ -39,7 +38,6 @@ template <typename CB> class CallbackHolder {
   void HoldCallback() { hold_ = true; }
 
   // Runs or holds the callback as specified by |hold_|.
-  // This method has overloaded versions to support different types of CB.
   void RunOrHold() {
     DCHECK(held_cb_.is_null());
     if (hold_)
@@ -48,24 +46,14 @@ template <typename CB> class CallbackHolder {
       base::ResetAndReturn(&original_cb_).Run();
   }
 
-  template <typename A1> void RunOrHold(A1 a1) {
+  template <typename... Args>
+  void RunOrHold(Args&&... args) {
     DCHECK(held_cb_.is_null());
     if (hold_) {
-      held_cb_ = base::Bind(base::ResetAndReturn(&original_cb_),
-                            internal::TrampolineForward(a1));
+      held_cb_ = base::BindOnce(base::ResetAndReturn(&original_cb_),
+                                std::forward<Args>(args)...);
     } else {
-      base::ResetAndReturn(&original_cb_).Run(a1);
-    }
-  }
-
-  template <typename A1, typename A2> void RunOrHold(A1 a1, A2 a2) {
-    DCHECK(held_cb_.is_null());
-    if (hold_) {
-      held_cb_ = base::Bind(base::ResetAndReturn(&original_cb_),
-                            internal::TrampolineForward(a1),
-                            internal::TrampolineForward(a2));
-    } else {
-      base::ResetAndReturn(&original_cb_).Run(a1, a2);
+      base::ResetAndReturn(&original_cb_).Run(std::forward<Args>(args)...);
     }
   }
 
@@ -80,7 +68,7 @@ template <typename CB> class CallbackHolder {
  private:
   bool hold_;
   CB original_cb_;
-  base::Closure held_cb_;
+  base::OnceClosure held_cb_;
 };
 
 }  // namespace media
