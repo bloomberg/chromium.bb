@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -70,7 +71,8 @@ class AutoclickTest : public test::AshTestBase {
 
     // Make sure the display is initialized so we don't fail the test due to any
     // input events caused from creating the display.
-    Shell::GetInstance()->display_manager()->UpdateDisplays();
+    if (!WmShell::Get()->IsRunningInMash())
+      Shell::GetInstance()->display_manager()->UpdateDisplays();
     RunAllPendingInMessageLoop();
   }
 

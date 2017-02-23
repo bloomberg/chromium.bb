@@ -9,6 +9,7 @@
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/test/test_shelf_item_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "base/memory/ptr_util.h"
@@ -165,6 +166,10 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHideHidden) {
 }
 
 TEST_F(ShelfTooltipManagerTest, HideForEvents) {
+  // TODO: investigate failure in mash. http://crbug.com/695563.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   ui::test::EventGenerator& generator = GetEventGenerator();
   gfx::Rect shelf_bounds = shelf_view_->GetBoundsInScreen();
 
@@ -197,6 +202,10 @@ TEST_F(ShelfTooltipManagerTest, HideForEvents) {
 }
 
 TEST_F(ShelfTooltipManagerTest, HideForExternalEvents) {
+  // TODO: investigate failure in mash. http://crbug.com/695563.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   ui::test::EventGenerator& generator = GetEventGenerator();
 
   // Should hide for touches outside the shelf.

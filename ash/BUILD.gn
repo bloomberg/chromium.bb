@@ -1157,43 +1157,98 @@ source_set("common_unittests") {
   testonly = true
   sources = [
     "accelerators/accelerator_controller_unittest.cc",
+    "accelerators/accelerator_filter_unittest.cc",
+    "accelerators/spoken_feedback_toggler_unittest.cc",
+    "ash_touch_exploration_manager_chromeos_unittest.cc",
+    "autoclick/autoclick_unittest.cc",
     "common/accelerators/accelerator_table_unittest.cc",
     "common/devtools/ash_devtools_unittest.cc",
     "common/drag_drop/drag_image_view_unittest.cc",
+    "common/frame/caption_buttons/frame_caption_button_container_view_unittest.cc",
+    "common/frame/custom_frame_view_ash_unittest.cc",
+    "common/frame/default_header_painter_unittest.cc",
+    "common/metrics/pointer_metrics_recorder_unittest.cc",
     "common/mus_property_mirror_ash_unittest.cc",
+    "common/session/session_controller_unittest.cc",
+    "common/shelf/shelf_application_menu_model_unittest.cc",
+    "common/shelf/shelf_background_animator_unittest.cc",
+    "common/shelf/shelf_button_pressed_metric_tracker_unittest.cc",
+    "common/shelf/shelf_locking_manager_unittest.cc",
+    "common/shelf/shelf_model_unittest.cc",
+    "common/shelf/shelf_tooltip_manager_unittest.cc",
+    "common/shelf/shelf_window_watcher_unittest.cc",
     "common/system/chromeos/audio/tray_audio_unittest.cc",
     "common/system/chromeos/brightness/tray_brightness_unittest.cc",
+    "common/system/chromeos/ime_menu/ime_menu_tray_unittest.cc",
+    "common/system/chromeos/media_security/multi_profile_media_tray_item_unittest.cc",
+    "common/system/chromeos/network/sms_observer_unittest.cc",
     "common/system/chromeos/network/vpn_list_unittest.cc",
+    "common/system/chromeos/palette/mock_palette_tool_delegate.cc",
+    "common/system/chromeos/palette/mock_palette_tool_delegate.h",
+    "common/system/chromeos/palette/palette_tool_manager_unittest.cc",
+    "common/system/chromeos/palette/tools/create_note_unittest.cc",
+    "common/system/chromeos/palette/tools/screenshot_unittest.cc",
+    "common/system/chromeos/power/power_status_unittest.cc",
+    "common/system/chromeos/power/power_status_view_unittest.cc",
+    "common/system/chromeos/power/tray_power_unittest.cc",
     "common/system/chromeos/screen_security/screen_tray_item_unittest.cc",
+    "common/system/chromeos/session/logout_confirmation_controller_unittest.cc",
+    "common/system/chromeos/session/tray_session_length_limit_unittest.cc",
     "common/system/chromeos/supervised/tray_supervised_user_unittest.cc",
     "common/system/date/date_view_unittest.cc",
+    "common/system/date/system_info_default_view_unittest.cc",
+    "common/system/ime/tray_ime_chromeos_unittest.cc",
+    "common/system/tiles/tray_tiles_unittest.cc",
+    "common/system/tray/size_range_layout_unittest.cc",
+    "common/system/tray/system_tray_unittest.cc",
+    "common/system/tray/tray_details_view_unittest.cc",
+    "common/system/tray/tri_view_unittest.cc",
     "common/system/update/tray_update_unittest.cc",
+    "common/system/user/tray_user_unittest.cc",
+    "common/wallpaper/wallpaper_controller_unittest.cc",
     "common/wm/container_finder_unittest.cc",
     "common/wm/mru_window_tracker_unittest.cc",
+    "common/wm/overview/cleanup_animation_observer_unittest.cc",
     "common/wm/workspace/workspace_layout_manager_unittest.cc",
     "common/wm_window_unittest.cc",
     "common/wm_window_user_data_unittest.cc",
+    "first_run/first_run_helper_unittest.cc",
+    "focus_cycler_unittest.cc",
+    "frame/caption_buttons/frame_size_button_unittest.cc",
+    "laser/laser_pointer_controller_unittest.cc",
+    "laser/laser_pointer_points_unittest.cc",
+    "laser/laser_segment_utils_unittest.cc",
   ]
   deps = [
     "//ash",
     "//ash/common/test:test_support",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/public/interfaces",
+    "//ash/resources/vector_icons",
     "//ash/test:test_support_without_content",
     "//base",
     "//base/test:test_support",
+    "//chromeos",
+    "//chromeos:power_manager_proto",
+    "//chromeos:test_support_without_gmock",
     "//services/ui/public/interfaces",
+    "//testing/gmock",
+    "//ui/accessibility",
     "//ui/app_list/presenter",
     "//ui/app_list/presenter:test_support",
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/base",
     "//ui/base:test_support",
+    "//ui/compositor:test_support",
     "//ui/display",
     "//ui/events:test_support",
+    "//ui/gfx:test_support",
     "//ui/keyboard",
     "//ui/message_center",
+    "//ui/message_center:test_support",
     "//ui/views",
+    "//ui/views:test_support",
     "//ui/wm",
   ]
   public_deps = [
@@ -1203,62 +1258,24 @@ source_set("common_unittests") {
 
 test("ash_unittests") {
   sources = [
+    # TODO: move to common_unittests. Fails because of http://crbug.com/622486.
     "accelerators/accelerator_commands_unittest.cc",
-    "accelerators/accelerator_filter_unittest.cc",
+
+    # TODO: move to common_unittests. Fails because of http://crbug.com/557401.
     "accelerators/magnifier_key_scroller_unittest.cc",
-    "accelerators/spoken_feedback_toggler_unittest.cc",
+
+    # Specific to classic-ash.
     "app_list/app_list_presenter_delegate_unittest.cc",
-    "ash_touch_exploration_manager_chromeos_unittest.cc",
+
+    # TODO: move to common_unittests when http://crbug.com/693790 is fixed.
     "aura/pointer_watcher_adapter_unittest.cc",
-    "autoclick/autoclick_unittest.cc",
-    "common/session/session_controller_unittest.cc",
 
-    # TODO: convert to use AshTest http://crbug.com/654489.
-    "common/frame/caption_buttons/frame_caption_button_container_view_unittest.cc",
-    "common/frame/custom_frame_view_ash_unittest.cc",
-    "common/frame/default_header_painter_unittest.cc",
-
-    # TODO: convert to use AshTest http://crbug.com/654492.
-    "common/metrics/pointer_metrics_recorder_unittest.cc",
-
-    # TODO: convert to use AshTest http://crbug.com/654494.
-    "common/shelf/shelf_application_menu_model_unittest.cc",
-    "common/shelf/shelf_background_animator_unittest.cc",
-    "common/shelf/shelf_button_pressed_metric_tracker_unittest.cc",
-    "common/shelf/shelf_locking_manager_unittest.cc",
-    "common/shelf/shelf_model_unittest.cc",
-    "common/shelf/shelf_tooltip_manager_unittest.cc",
-    "common/shelf/shelf_window_watcher_unittest.cc",
-
-    # TODO: convert to use AshTest http://crbug.com/654495.
-    "common/system/chromeos/ime_menu/ime_menu_tray_unittest.cc",
-    "common/system/chromeos/media_security/multi_profile_media_tray_item_unittest.cc",
-    "common/system/chromeos/network/sms_observer_unittest.cc",
-    "common/system/chromeos/palette/mock_palette_tool_delegate.cc",
-    "common/system/chromeos/palette/mock_palette_tool_delegate.h",
-    "common/system/chromeos/palette/palette_tool_manager_unittest.cc",
-    "common/system/chromeos/palette/tools/create_note_unittest.cc",
-    "common/system/chromeos/palette/tools/screenshot_unittest.cc",
-    "common/system/chromeos/power/power_status_unittest.cc",
-    "common/system/chromeos/power/power_status_view_unittest.cc",
-    "common/system/chromeos/power/tray_power_unittest.cc",
-    "common/system/chromeos/session/logout_confirmation_controller_unittest.cc",
-    "common/system/chromeos/session/tray_session_length_limit_unittest.cc",
-    "common/system/date/system_info_default_view_unittest.cc",
-    "common/system/ime/tray_ime_chromeos_unittest.cc",
-    "common/system/tiles/tray_tiles_unittest.cc",
-    "common/system/tray/size_range_layout_unittest.cc",
-    "common/system/tray/system_tray_unittest.cc",
-    "common/system/tray/tray_details_view_unittest.cc",
-    "common/system/tray/tri_view_unittest.cc",
-    "common/system/user/tray_user_unittest.cc",
-
-    # TODO: convert to use AshTest http://crbug.com/654517.
-    "common/wallpaper/wallpaper_controller_unittest.cc",
-
-    # TODO: convert to use AshTest http://crbug.com/654524.
-    "common/wm/overview/cleanup_animation_observer_unittest.cc",
+    # TODO: decide if this needs to be ported. http://crbug.com/695566.
     "dip_unittest.cc",
+
+    # TODO: tests in display generally use display_manger(), which doesn't
+    # exist in mash. Decide which of these tests need to be ported to mash.
+    # http://crbug.com/695569
     "display/cursor_window_controller_unittest.cc",
     "display/display_color_manager_chromeos_unittest.cc",
     "display/display_error_observer_chromeos_unittest.cc",
@@ -1275,16 +1292,16 @@ test("ash_unittests") {
     "display/screen_position_controller_unittest.cc",
     "display/unified_mouse_warp_controller_unittest.cc",
     "display/window_tree_host_manager_unittest.cc",
+
+    # These exercise classic-ash specific functionality.
     "drag_drop/drag_drop_controller_unittest.cc",
     "drag_drop/drag_drop_tracker_unittest.cc",
+
+    # TODO: port to mash. http://crbug.com/695570.
     "extended_desktop_unittest.cc",
-    "first_run/first_run_helper_unittest.cc",
-    "focus_cycler_unittest.cc",
-    "frame/caption_buttons/frame_size_button_unittest.cc",
+
+    # Specific to X11.
     "host/ash_window_tree_host_x11_unittest.cc",
-    "laser/laser_pointer_controller_unittest.cc",
-    "laser/laser_pointer_points_unittest.cc",
-    "laser/laser_segment_utils_unittest.cc",
     "magnifier/magnification_controller_unittest.cc",
     "magnifier/partial_magnification_controller_unittest.cc",
     "metrics/desktop_task_switch_metric_recorder_unittest.cc",
@@ -1382,7 +1399,6 @@ test("ash_unittests") {
     "//base",
     "//base/test:test_support",
     "//chromeos",
-    "//chromeos:power_manager_proto",
     "//chromeos:test_support_without_gmock",
     "//components/quirks",
     "//components/signin/core/account_id",
@@ -1415,12 +1431,10 @@ test("ash_unittests") {
     "//ui/events:test_support",
     "//ui/events/devices",
     "//ui/gfx",
-    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
     "//ui/keyboard",
     "//ui/message_center",
-    "//ui/message_center:test_support",
     "//ui/resources",
     "//ui/strings",
     "//ui/views",

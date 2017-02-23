@@ -204,6 +204,10 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
 // Make sure the opening system tray bubble will not deactivate the
 // other window. crbug.com/120680.
 TEST_F(SystemTrayTest, Activation) {
+  // TODO: investigate why this fails in mash. http://crbug.com/695559.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 100, 100)));
@@ -456,6 +460,10 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
 }
 
 TEST_F(SystemTrayTest, PersistentBubble) {
+  // TODO: investigate why this fails in mash. http://crbug.com/695559.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 

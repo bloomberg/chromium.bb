@@ -751,16 +751,14 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
           kShellWindowId_SettingBubbleContainer);
   aura::Window* window =
       aura::test::CreateTestWindowWithId(100, settings_bubble_container);
-  window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50),
-                            display_manager()->GetSecondaryDisplay());
+  window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50), GetSecondaryDisplay());
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
   aura::Window* status_container =
       Shell::GetPrimaryRootWindowController()->GetContainer(
           kShellWindowId_StatusContainer);
   window = aura::test::CreateTestWindowWithId(100, status_container);
-  window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50),
-                            display_manager()->GetSecondaryDisplay());
+  window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50), GetSecondaryDisplay());
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 }
 
@@ -773,8 +771,7 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
   widget1->Show();
   EXPECT_EQ(root_windows[0], widget1->GetNativeView()->GetRootWindow());
-  views::Widget* widget2 =
-      CreateTestWidget(display_manager()->GetSecondaryDisplay().bounds());
+  views::Widget* widget2 = CreateTestWidget(GetSecondaryDisplay().bounds());
   widget2->Show();
   EXPECT_EQ(root_windows[1], widget2->GetNativeView()->GetRootWindow());
 

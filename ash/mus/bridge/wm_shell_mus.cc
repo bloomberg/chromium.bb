@@ -268,11 +268,13 @@ void WmShellMus::SetDisplayWorkAreaInsets(WmWindow* window,
 }
 
 bool WmShellMus::IsPinned() {
+  // TODO: http://crbug.com/622486.
   NOTIMPLEMENTED();
   return false;
 }
 
 void WmShellMus::SetPinnedWindow(WmWindow* window) {
+  // TODO: http://crbug.com/622486.
   NOTIMPLEMENTED();
 }
 

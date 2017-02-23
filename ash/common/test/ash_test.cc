@@ -105,6 +105,10 @@ display::Display AshTest::GetSecondaryDisplay() {
 bool AshTest::SetSecondaryDisplayPlacement(
     display::DisplayPlacement::Position position,
     int offset) {
+  if (WmShell::Get()->IsRunningInMash()) {
+    NOTIMPLEMENTED();
+    return false;
+  }
   return test_impl_->SetSecondaryDisplayPlacement(position, offset);
 }
 
