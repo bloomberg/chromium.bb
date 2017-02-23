@@ -2,6 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+declare_args() {
+  # Indicates whether typemapping should be supported in this build
+  # configuration. This may be disabled when building external projects which
+  # depend on //mojo but which do not need/want all of the Chromium tree
+  # dependencies that come with typemapping.
+  #
+  # Note that (perhaps obviously) a huge amount of Chromium code will not build
+  # with typemapping disabled, so it is never valid to set this to |false| in
+  # any Chromium build configuration.
+  enable_mojom_typemapping = true
+}
+
 mojom_generator_root = "//mojo/public/tools/bindings"
 mojom_generator_script = "$mojom_generator_root/mojom_bindings_generator.py"
 mojom_generator_sources = [
@@ -24,35 +36,49 @@ mojom_generator_sources = [
   "$mojom_generator_script",
 ]
 
-if (!is_ios) {
-  _bindings_configuration_files = [
-    "//mojo/public/tools/bindings/chromium_bindings_configuration.gni",
-    "//mojo/public/tools/bindings/blink_bindings_configuration.gni",
-  ]
-} else {
-  _bindings_configuration_files =
-      [ "//mojo/public/tools/bindings/chromium_bindings_configuration.gni" ]
-}
-_bindings_configurations = []
-foreach(config_file, _bindings_configuration_files) {
-  _bindings_configurations += [ read_file(config_file, "scope") ]
-}
-foreach(configuration, _bindings_configurations) {
-  # Check that the mojom field of each typemap refers to a mojom that exists.
-  foreach(typemap, configuration.typemaps) {
-    _typemap_config = {
-    }
-    _typemap_config = typemap.config
-    read_file(_typemap_config.mojom, "")
+if (enable_mojom_typemapping) {
+  if (!is_ios) {
+    _bindings_configuration_files = [
+      "//mojo/public/tools/bindings/chromium_bindings_configuration.gni",
+      "//mojo/public/tools/bindings/blink_bindings_configuration.gni",
+    ]
+  } else {
+    _bindings_configuration_files =
+        [ "//mojo/public/tools/bindings/chromium_bindings_configuration.gni" ]
   }
-  if (is_mac && defined(configuration.typemaps_mac)) {
-    foreach(typemap, configuration.typemaps_mac) {
+  _bindings_configurations = []
+  foreach(config_file, _bindings_configuration_files) {
+    _bindings_configurations += [ read_file(config_file, "scope") ]
+  }
+  foreach(configuration, _bindings_configurations) {
+    # Check that the mojom field of each typemap refers to a mojom that exists.
+    foreach(typemap, configuration.typemaps) {
       _typemap_config = {
       }
       _typemap_config = typemap.config
       read_file(_typemap_config.mojom, "")
     }
+    if (is_mac && defined(configuration.typemaps_mac)) {
+      foreach(typemap, configuration.typemaps_mac) {
+        _typemap_config = {
+        }
+        _typemap_config = typemap.config
+        read_file(_typemap_config.mojom, "")
+      }
+    }
   }
+} else {
+  _bindings_configuration_files = []
+  _bindings_configurations = [
+    {
+      typemaps = []
+    },
+    {
+      variant = "blink"
+      for_blink = true
+      typemaps = []
+    },
+  ]
 }
 
 # Generates targets for building C++, JavaScript and Java bindings from mojom
