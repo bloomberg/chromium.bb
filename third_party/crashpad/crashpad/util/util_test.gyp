@@ -29,7 +29,6 @@
         '../third_party/gtest/gmock.gyp:gmock_main',
         '../third_party/gtest/gtest.gyp:gtest',
         '../third_party/mini_chromium/mini_chromium.gyp:base',
-        '../third_party/zlib/zlib.gyp:zlib',
       ],
       'include_dirs': [
         '..',
@@ -63,7 +62,6 @@
         'misc/scoped_forbid_return_test.cc',
         'misc/random_string_test.cc',
         'misc/uuid_test.cc',
-        'net/http_body_gzip_test.cc',
         'net/http_body_test.cc',
         'net/http_body_test_util.cc',
         'net/http_body_test_util.h',
@@ -95,7 +93,6 @@
         'win/process_info_test.cc',
         'win/registration_protocol_win_test.cc',
         'win/scoped_process_suspend_test.cc',
-        'win/session_end_watcher_test.cc',
         'win/time_test.cc',
       ],
       'conditions': [
@@ -115,7 +112,6 @@
               '-ladvapi32.lib',
               '-limagehlp.lib',
               '-lrpcrt4.lib',
-              '-luser32.lib',
             ],
           },
         }],

@@ -35,8 +35,6 @@
         'file.cc',
         'file.h',
         'gtest_death_check.h',
-        'hex_string.cc',
-        'hex_string.h',
         'mac/dyld.h',
         'mac/mach_errors.cc',
         'mac/mach_errors.h',

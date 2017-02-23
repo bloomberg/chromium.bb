@@ -23,7 +23,6 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "util/net/http_body.h"
-#include "util/net/http_body_gzip.h"
 
 namespace crashpad {
 
@@ -117,16 +116,10 @@ void AssertSafeMIMEType(const std::string& string) {
 }  // namespace
 
 HTTPMultipartBuilder::HTTPMultipartBuilder()
-    : boundary_(GenerateBoundaryString()),
-      form_data_(),
-      file_attachments_(),
-      gzip_enabled_(false) {}
-
-HTTPMultipartBuilder::~HTTPMultipartBuilder() {
+    : boundary_(GenerateBoundaryString()), form_data_(), file_attachments_() {
 }
 
-void HTTPMultipartBuilder::SetGzipEnabled(bool gzip_enabled) {
-  gzip_enabled_ = gzip_enabled;
+HTTPMultipartBuilder::~HTTPMultipartBuilder() {
 }
 
 void HTTPMultipartBuilder::SetFormData(const std::string& key,
@@ -186,24 +179,13 @@ std::unique_ptr<HTTPBodyStream> HTTPMultipartBuilder::GetBodyStream() {
   streams.push_back(
       new StringHTTPBodyStream("--"  + boundary_ + "--" + kCRLF));
 
-  auto composite =
-      std::unique_ptr<HTTPBodyStream>(new CompositeHTTPBodyStream(streams));
-  if (gzip_enabled_) {
-    return std::unique_ptr<HTTPBodyStream>(
-        new GzipHTTPBodyStream(std::move(composite)));
-  }
-  return composite;
+  return std::unique_ptr<HTTPBodyStream>(new CompositeHTTPBodyStream(streams));
 }
 
-void HTTPMultipartBuilder::PopulateContentHeaders(
-    HTTPHeaders* http_headers) const {
+HTTPHeaders::value_type HTTPMultipartBuilder::GetContentType() const {
   std::string content_type =
       base::StringPrintf("multipart/form-data; boundary=%s", boundary_.c_str());
-  (*http_headers)[kContentType] = content_type;
-
-  if (gzip_enabled_) {
-    (*http_headers)[kContentEncoding] = "gzip";
-  }
+  return std::make_pair(kContentType, content_type);
 }
 
 void HTTPMultipartBuilder::EraseKey(const std::string& key) {

@@ -23,7 +23,6 @@
       'dependencies': [
         '../compat/compat.gyp:crashpad_compat',
         '../third_party/mini_chromium/mini_chromium.gyp:base',
-        '../third_party/zlib/zlib.gyp:zlib',
       ],
       'include_dirs': [
         '..',
@@ -107,12 +106,8 @@
         'misc/tri_state.h',
         'misc/uuid.cc',
         'misc/uuid.h',
-        'misc/zlib.cc',
-        'misc/zlib.h',
         'net/http_body.cc',
         'net/http_body.h',
-        'net/http_body_gzip.cc',
-        'net/http_body_gzip.h',
         'net/http_headers.cc',
         'net/http_headers.h',
         'net/http_multipart_builder.cc',
@@ -198,8 +193,6 @@
         'win/scoped_local_alloc.h',
         'win/scoped_process_suspend.cc',
         'win/scoped_process_suspend.h',
-        'win/session_end_watcher.cc',
-        'win/session_end_watcher.h',
         'win/termination_codes.h',
         'win/time.cc',
         'win/time.h',
@@ -270,7 +263,6 @@
         ['OS=="win"', {
           'link_settings': {
             'libraries': [
-              '-luser32.lib',
               '-lwinhttp.lib',
             ],
           },
