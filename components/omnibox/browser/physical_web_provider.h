@@ -79,8 +79,15 @@ class PhysicalWebProvider : public AutocompleteProvider {
   HistoryURLProvider* history_url_provider_;
 
   // The number of nearby Physical Web URLs when the provider last constructed
-  // matches.
+  // matches. Initialized to string::npos.
   size_t nearby_url_count_;
+
+  // The number of nearby Physical Web URLs when the omnibox input was last
+  // focused. Initialized to string::npos.
+  // This value is set when the omnibox is focused and recorded when the user
+  // selects an omnibox suggestion. If the value is still string::npos when the
+  // user makes a selection, it indicates the omnibox was never focused.
+  size_t nearby_url_count_at_focus_;
 
   // If true, provide suggestions when the user has focused the omnibox but has
   // not typed anything.

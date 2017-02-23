@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -427,4 +428,84 @@ TEST_F(PhysicalWebProviderTest, TestNoMatchesInIncognito) {
   provider_->Start(CreateInputForNTP(), false);
 
   EXPECT_TRUE(provider_->matches().empty());
+}
+
+TEST_F(PhysicalWebProviderTest, TestNearbyURLCountHistograms) {
+  FakePhysicalWebDataSource* data_source =
+      client_->GetFakePhysicalWebDataSource();
+  EXPECT_TRUE(data_source);
+
+  AutocompleteInput zero_suggest_input(CreateInputForNTP());
+  AutocompleteInput after_typing_input(
+      base::UTF8ToUTF16("Example"), 7, std::string(), GURL(),
+      metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
+      true, false, true, true, false, TestSchemeClassifier());
+
+  data_source->SetMetadataList(CreateMetadata(3));
+
+  {
+    // Simulate the user selecting a suggestion when the omnibox is empty
+    // (zero suggest case). Both histograms should record the same counts.
+    base::HistogramTester histogram_tester;
+    ProvidersInfo provider_info;
+
+    provider_->Start(zero_suggest_input, false);
+    provider_->AddProviderInfo(&provider_info);
+
+    histogram_tester.ExpectUniqueSample(
+        "Omnibox.SuggestionUsed.NearbyURLCount.AtMatchCreation", 3, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Omnibox.SuggestionUsed.NearbyURLCount.AtFocus", 3, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Omnibox.PhysicalWebProvider.SuggestionUsedWithoutOmniboxFocus", 0, 1);
+  }
+
+  {
+    // Simulate the user selecting a suggestion after typing a query (after
+    // typing case). Some additional URLs are discovered between focusing the
+    // omnibox and typing a query, so the counts should differ.
+    base::HistogramTester histogram_tester;
+    ProvidersInfo provider_info;
+
+    provider_->Start(zero_suggest_input, false);
+    data_source->SetMetadataList(CreateMetadata(6));
+    provider_->Start(after_typing_input, false);
+    provider_->AddProviderInfo(&provider_info);
+
+    histogram_tester.ExpectUniqueSample(
+        "Omnibox.SuggestionUsed.NearbyURLCount.AtMatchCreation", 6, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Omnibox.SuggestionUsed.NearbyURLCount.AtFocus", 3, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Omnibox.PhysicalWebProvider.SuggestionUsedWithoutOmniboxFocus", 0, 1);
+  }
+}
+
+TEST_F(PhysicalWebProviderTest, TestNearbyURLCountAfterTypingWithoutFocus) {
+  FakePhysicalWebDataSource* data_source =
+      client_->GetFakePhysicalWebDataSource();
+  EXPECT_TRUE(data_source);
+
+  AutocompleteInput after_typing_input(
+      base::UTF8ToUTF16("Example"), 7, std::string(), GURL(),
+      metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
+      true, false, true, true, false, TestSchemeClassifier());
+
+  data_source->SetMetadataList(CreateMetadata(3));
+
+  {
+    // Simulate selecting a suggestion without focusing the omnibox first.
+    base::HistogramTester histogram_tester;
+    ProvidersInfo provider_info;
+
+    provider_->Start(after_typing_input, false);
+    provider_->AddProviderInfo(&provider_info);
+
+    histogram_tester.ExpectUniqueSample(
+        "Omnibox.SuggestionUsed.NearbyURLCount.AtMatchCreation", 3, 1);
+    histogram_tester.ExpectTotalCount(
+        "Omnibox.SuggestionUsed.NearbyURLCount.AtFocus", 0);
+    histogram_tester.ExpectUniqueSample(
+        "Omnibox.PhysicalWebProvider.SuggestionUsedWithoutOmniboxFocus", 1, 1);
+  }
 }

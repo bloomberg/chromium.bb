@@ -57,29 +57,30 @@ void PhysicalWebProvider::Start(const AutocompleteInput& input,
   matches_.clear();
 
   had_physical_web_suggestions_ = false;
-  if (input.from_omnibox_focus())
-    had_physical_web_suggestions_at_focus_or_later_ = false;
-
-  // Don't provide suggestions in incognito mode.
-  if (client_->IsOffTheRecord()) {
-    done_ = true;
-    nearby_url_count_ = 0;
-    return;
-  }
 
   physical_web::PhysicalWebDataSource* data_source =
       client_->GetPhysicalWebDataSource();
-  if (!data_source) {
+
+  // Don't provide results in incognito mode or if the data source could not be
+  // created.
+  if (client_->IsOffTheRecord() || !data_source) {
     done_ = true;
     nearby_url_count_ = 0;
+    nearby_url_count_at_focus_ = 0;
+    had_physical_web_suggestions_at_focus_or_later_ = false;
     return;
   }
 
-  const bool input_from_focus = input.from_omnibox_focus();
-  const bool empty_input_from_user = !input_from_focus && input.text().empty();
+  auto metadata_list = data_source->GetMetadataList();
+  nearby_url_count_ = metadata_list->size();
+  if (input.from_omnibox_focus())
+    nearby_url_count_at_focus_ = nearby_url_count_;
 
-  if (input_from_focus || empty_input_from_user) {
-    ConstructZeroSuggestMatches(data_source->GetMetadataList());
+  const bool empty_input_from_user =
+      !input.from_omnibox_focus() && input.text().empty();
+
+  if (input.from_omnibox_focus() || empty_input_from_user) {
+    ConstructZeroSuggestMatches(std::move(metadata_list));
 
     if (!matches_.empty()) {
       had_physical_web_suggestions_ = true;
@@ -105,7 +106,7 @@ void PhysicalWebProvider::Start(const AutocompleteInput& input,
           client_, input, input.current_url(), history_url_provider_, -1));
     }
   } else {
-    ConstructQuerySuggestMatches(data_source->GetMetadataList(), input);
+    ConstructQuerySuggestMatches(std::move(metadata_list), input);
 
     if (!matches_.empty()) {
       had_physical_web_suggestions_ = true;
@@ -148,8 +149,29 @@ void PhysicalWebProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
 
   // When the user accepts an autocomplete suggestion, record the number of
   // nearby Physical Web URLs at the time the provider last constructed matches.
-  UMA_HISTOGRAM_EXACT_LINEAR("Omnibox.SuggestionUsed.NearbyURLCount",
-                             nearby_url_count_, 50);
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "Omnibox.SuggestionUsed.NearbyURLCount.AtMatchCreation",
+      nearby_url_count_, 50);
+
+  // On Android, it is somehow possible to accept an omnibox suggestion without
+  // first focusing the omnibox. In this situation, the nearby URL count at
+  // focus will be invalid because the omnibox was never focused. We guard
+  // against recording the invalid data and instead record that we hit this
+  // corner case.
+  // TODO(crbug.com/691059): Remove once the focus-less suggestion mystery is
+  // solved.
+  const bool suggestion_used_without_focus =
+      (nearby_url_count_at_focus_ == std::string::npos);
+  UMA_HISTOGRAM_BOOLEAN(
+      "Omnibox.PhysicalWebProvider.SuggestionUsedWithoutOmniboxFocus",
+      suggestion_used_without_focus);
+
+  if (!suggestion_used_without_focus) {
+    // When the user accepts an autocomplete suggestion, record the number of
+    // nearby Physical Web URLs at the time the omnibox input was last focused.
+    UMA_HISTOGRAM_EXACT_LINEAR("Omnibox.SuggestionUsed.NearbyURLCount.AtFocus",
+                               nearby_url_count_at_focus_, 50);
+  }
 }
 
 PhysicalWebProvider::PhysicalWebProvider(
@@ -158,6 +180,8 @@ PhysicalWebProvider::PhysicalWebProvider(
     : AutocompleteProvider(AutocompleteProvider::TYPE_PHYSICAL_WEB),
       client_(client),
       history_url_provider_(history_url_provider),
+      nearby_url_count_(std::string::npos),
+      nearby_url_count_at_focus_(std::string::npos),
       zero_suggest_enabled_(
           OmniboxFieldTrial::InPhysicalWebZeroSuggestFieldTrial()),
       after_typing_enabled_(
@@ -165,17 +189,19 @@ PhysicalWebProvider::PhysicalWebProvider(
       zero_suggest_base_relevance_(
           OmniboxFieldTrial::GetPhysicalWebZeroSuggestBaseRelevance()),
       after_typing_base_relevance_(
-          OmniboxFieldTrial::GetPhysicalWebAfterTypingBaseRelevance()) {}
+          OmniboxFieldTrial::GetPhysicalWebAfterTypingBaseRelevance()),
+      had_physical_web_suggestions_(false),
+      had_physical_web_suggestions_at_focus_or_later_(false) {}
 
 PhysicalWebProvider::~PhysicalWebProvider() {
 }
 
 void PhysicalWebProvider::ConstructZeroSuggestMatches(
     std::unique_ptr<physical_web::MetadataList> metadata_list) {
-  nearby_url_count_ = metadata_list->size();
+  size_t nearby_url_count = metadata_list->size();
   size_t used_slots = 0;
 
-  for (size_t i = 0; i < nearby_url_count_; ++i) {
+  for (size_t i = 0; i < nearby_url_count; ++i) {
     const auto& metadata_item = (*metadata_list)[i];
     std::string url_string = metadata_item.resolved_url.spec();
     std::string title_string = metadata_item.title;
@@ -189,7 +215,7 @@ void PhysicalWebProvider::ConstructZeroSuggestMatches(
     // Append an overflow item if creating a match for each metadata item would
     // exceed the match limit.
     const size_t remaining_slots = kPhysicalWebMaxMatches - used_slots;
-    const size_t remaining_metadata = nearby_url_count_ - i;
+    const size_t remaining_metadata = nearby_url_count - i;
     if ((remaining_slots == 1) && (remaining_metadata > remaining_slots)) {
       AppendOverflowItem(remaining_metadata, relevance, title);
       break;
