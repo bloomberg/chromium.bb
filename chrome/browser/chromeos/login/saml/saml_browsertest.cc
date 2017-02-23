@@ -41,6 +41,8 @@
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/media/webrtc/media_permission.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
@@ -61,6 +63,8 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -960,6 +964,7 @@ class SAMLPolicyTest : public SamlTest {
   void SetSAMLOfflineSigninTimeLimitPolicy(int limit);
   void EnableTransferSAMLCookiesPolicy();
   void SetLoginBehaviorPolicyToSAMLInterstitial();
+  void SetLoginVideoCaptureAllowedUrls(const std::vector<GURL>& allowed);
 
   void ShowGAIALoginForm();
   void ShowSAMLInterstitial();
@@ -1087,6 +1092,23 @@ void SAMLPolicyTest::SetLoginBehaviorPolicyToSAMLInterstitial() {
   base::RunLoop run_loop;
   std::unique_ptr<CrosSettings::ObserverSubscription> observer =
       CrosSettings::Get()->AddSettingsObserver(kLoginAuthenticationBehavior,
+                                               run_loop.QuitClosure());
+  device_policy_->SetDefaultSigningKey();
+  device_policy_->Build();
+  fake_session_manager_client_->set_device_policy(device_policy_->GetBlob());
+  fake_session_manager_client_->OnPropertyChangeComplete(true);
+  run_loop.Run();
+}
+
+void SAMLPolicyTest::SetLoginVideoCaptureAllowedUrls(
+    const std::vector<GURL>& allowed) {
+  em::ChromeDeviceSettingsProto& proto(device_policy_->payload());
+  for (const GURL& url : allowed)
+    proto.mutable_login_video_capture_allowed_urls()->add_urls(url.spec());
+
+  base::RunLoop run_loop;
+  std::unique_ptr<CrosSettings::ObserverSubscription> observer =
+      CrosSettings::Get()->AddSettingsObserver(kLoginVideoCaptureAllowedUrls,
                                                run_loop.QuitClosure());
   device_policy_->SetDefaultSigningKey();
   device_policy_->Build();
@@ -1404,6 +1426,63 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialNext) {
       content::NotificationService::AllSources());
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
   session_start_waiter.Wait();
+}
+
+// Ensure that the permission status of getUserMedia requests from SAML login
+// pages is controlled by the kLoginVideoCaptureAllowedUrls pref rather than the
+// underlying user content setting.
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+
+  const GURL url1("https://google.com");
+  const GURL url2("https://example.com");
+  const GURL url3("https://not-allowed.com");
+  SetLoginVideoCaptureAllowedUrls({url1, url2});
+  WaitForSigninScreen();
+
+  content::WebContents* web_contents = GetLoginUI()->GetWebContents();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  content::MediaStreamRequestResult reason;
+
+  // Mic should always be blocked.
+  {
+    MediaPermission permission(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, url1,
+                               url1, profile, web_contents);
+    EXPECT_EQ(CONTENT_SETTING_BLOCK, permission.GetPermissionStatus(&reason));
+  }
+
+  // Camera should be allowed if allowed by the whitelist, otherwise blocked.
+  {
+    MediaPermission permission(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, url1,
+                               url1, profile, web_contents);
+    EXPECT_EQ(CONTENT_SETTING_ALLOW, permission.GetPermissionStatus(&reason));
+  }
+
+  {
+    MediaPermission permission(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, url2,
+                               url2, profile, web_contents);
+    EXPECT_EQ(CONTENT_SETTING_ALLOW, permission.GetPermissionStatus(&reason));
+  }
+
+  {
+    MediaPermission permission(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, url3,
+                               url3, profile, web_contents);
+    EXPECT_EQ(CONTENT_SETTING_BLOCK, permission.GetPermissionStatus(&reason));
+  }
+
+  // Camera should be blocked in the login screen, even if it's allowed via
+  // content setting.
+  {
+    HostContentSettingsMapFactory::GetForProfile(profile)
+        ->SetContentSettingDefaultScope(
+            url3, url3, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(),
+            CONTENT_SETTING_ALLOW);
+
+    MediaPermission permission(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, url3,
+                               url3, profile, web_contents);
+    EXPECT_EQ(CONTENT_SETTING_BLOCK, permission.GetPermissionStatus(&reason));
+  }
 }
 
 }  // namespace chromeos

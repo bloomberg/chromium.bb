@@ -104,7 +104,7 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
 
   MediaPermission permission(content_settings_type, security_origin,
                              web_contents->GetLastCommittedURL().GetOrigin(),
-                             profile);
+                             profile, web_contents);
   content::MediaStreamRequestResult unused;
   return permission.GetPermissionStatus(&unused) == CONTENT_SETTING_ALLOW;
 }

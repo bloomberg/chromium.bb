@@ -546,7 +546,8 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
     DCHECK(content::IsOriginSecure(request_.security_origin) ||
            request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY);
     MediaPermission permission(content_type, request.security_origin,
-        web_contents_->GetLastCommittedURL().GetOrigin(), profile_);
+                               web_contents_->GetLastCommittedURL().GetOrigin(),
+                               profile_, web_contents_);
     return permission.GetPermissionStatusWithDeviceRequired(requested_device_id,
                                                             denial_reason);
   }
