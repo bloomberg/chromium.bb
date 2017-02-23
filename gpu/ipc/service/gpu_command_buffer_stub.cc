@@ -600,23 +600,38 @@ bool GpuCommandBufferStub::Initialize(
   // only a single context. See crbug.com/510243 for details.
   use_virtualized_gl_context_ |= channel_->mailbox_manager()->UsesSync();
 
-  gl::GLSurfaceFormat surface_format = gl::GLSurfaceFormat();
   bool offscreen = (surface_handle_ == kNullSurfaceHandle);
   gl::GLSurface* default_surface = manager->GetDefaultOffscreenSurface();
   if (!default_surface) {
     DLOG(ERROR) << "Failed to create default offscreen surface.";
     return false;
   }
+  // On low-spec Android devices, the default offscreen surface is
+  // RGB565, but WebGL rendering contexts still ask for RGBA8888 mode.
+  // That combination works for offscreen rendering, we can still use
+  // a virtualized context with the RGB565 backing surface since we're
+  // not drawing to that. Explicitly set that as the desired surface
+  // format to ensure it's treated as compatible where applicable.
+  gl::GLSurfaceFormat surface_format =
+      offscreen ? default_surface->GetFormat() : gl::GLSurfaceFormat();
 #if defined(OS_ANDROID)
   if (init_params.attribs.red_size <= 5 &&
       init_params.attribs.green_size <= 6 &&
       init_params.attribs.blue_size <= 5 &&
-      init_params.attribs.alpha_size == 0)
+      init_params.attribs.alpha_size == 0) {
+    // We hit this code path when creating the onscreen render context
+    // used for compositing on low-end Android devices.
+    //
+    // TODO(klausw): explicitly copy rgba sizes? Currently the formats
+    // supported are only RGB565 and default (RGBA8888).
     surface_format.SetRGB565();
-  // TODO(klausw): explicitly copy rgba sizes?
+    DVLOG(1) << __FUNCTION__ << ": Choosing RGB565 mode.";
+  }
 
   // We can only use virtualized contexts for onscreen command buffers if their
   // config is compatible with the offscreen ones - otherwise MakeCurrent fails.
+  // Example use case is a client requesting an onscreen RGBA8888 buffer for
+  // fullscreen video on a low-spec device with RGB565 default format.
   if (!surface_format.IsCompatible(default_surface->GetFormat()) && !offscreen)
     use_virtualized_gl_context_ = false;
 #endif
