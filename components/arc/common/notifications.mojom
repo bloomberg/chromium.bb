@@ -10,6 +10,7 @@ import "bitmap.mojom";
 
 // These values must be matched with the NOTIFICATION_EVENT_* constants in
 // com.android.server.ArcNotificationListenerService.
+[Extensible]
 enum ArcNotificationEvent {
   BODY_CLICKED = 0,
   CLOSED = 1,
