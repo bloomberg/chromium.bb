@@ -4,6 +4,7 @@
 
 #include "modules/payments/PaymentRequest.h"
 
+#include <ostream>  // NOLINT
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
@@ -13,7 +14,6 @@
 #include "modules/payments/PaymentOptions.h"
 #include "modules/payments/PaymentTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <ostream>  // NOLINT
 
 namespace blink {
 namespace {
@@ -132,9 +132,9 @@ TEST_P(PaymentRequestDetailsTest, ValidatesDetails) {
       SecurityOrigin::create(KURL(KURL(), "https://www.example.com/")));
   PaymentOptions options;
   options.setRequestShipping(true);
-  PaymentRequest::create(scope.document(), buildPaymentMethodDataForTest(),
-                         GetParam().buildDetails(), options,
-                         scope.getExceptionState());
+  PaymentRequest::create(
+      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
+      GetParam().buildDetails(), options, scope.getExceptionState());
 
   EXPECT_EQ(GetParam().expectException(),
             scope.getExceptionState().hadException());

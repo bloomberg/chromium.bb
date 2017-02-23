@@ -4,6 +4,8 @@
 
 #include "modules/payments/PaymentRequest.h"
 
+#include <stddef.h>
+#include <utility>
 #include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -41,8 +43,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/HashSet.h"
-#include <stddef.h>
-#include <utility>
 
 using payments::mojom::blink::CanMakePaymentQueryResult;
 using payments::mojom::blink::PaymentAddressPtr;
@@ -316,8 +316,8 @@ void setAndroidPayMethodData(const ScriptValue& input,
 
 // Parses basic-card data to avoid parsing JSON in the browser.
 void setBasicCardMethodData(const ScriptValue& input,
-                            Document& document,
                             PaymentMethodDataPtr& output,
+                            ExecutionContext& executionContext,
                             ExceptionState& exceptionState) {
   BasicCardRequest basicCard;
   V8BasicCardRequest::toImpl(input.isolate(), input.v8Value(), basicCard,
@@ -370,7 +370,7 @@ void setBasicCardMethodData(const ScriptValue& input,
     }
 
     if (output->supported_types.size() != arraysize(basicCardTypes)) {
-      document.addConsoleMessage(ConsoleMessage::create(
+      executionContext.addConsoleMessage(ConsoleMessage::create(
           JSMessageSource, WarningMessageLevel,
           "Cannot yet distinguish credit, debit, and prepaid cards."));
     }
@@ -379,8 +379,8 @@ void setBasicCardMethodData(const ScriptValue& input,
 
 void stringifyAndParseMethodSpecificData(const Vector<String>& supportedMethods,
                                          const ScriptValue& input,
-                                         Document& document,
                                          PaymentMethodDataPtr& output,
+                                         ExecutionContext& executionContext,
                                          ExceptionState& exceptionState) {
   DCHECK(!input.isEmpty());
   if (!input.v8Value()->IsObject() || input.v8Value()->IsArray()) {
@@ -409,7 +409,7 @@ void stringifyAndParseMethodSpecificData(const Vector<String>& supportedMethods,
   }
   if (RuntimeEnabledFeatures::paymentRequestBasicCardEnabled() &&
       supportedMethods.contains("basic-card")) {
-    setBasicCardMethodData(input, document, output, exceptionState);
+    setBasicCardMethodData(input, output, executionContext, exceptionState);
     if (exceptionState.hadException())
       exceptionState.clearException();
   }
@@ -417,8 +417,8 @@ void stringifyAndParseMethodSpecificData(const Vector<String>& supportedMethods,
 
 void validateAndConvertPaymentDetailsModifiers(
     const HeapVector<PaymentDetailsModifier>& input,
-    Document& document,
     Vector<PaymentDetailsModifierPtr>& output,
+    ExecutionContext& executionContext,
     ExceptionState& exceptionState) {
   if (input.isEmpty()) {
     exceptionState.throwTypeError(
@@ -455,8 +455,8 @@ void validateAndConvertPaymentDetailsModifiers(
 
     if (modifier.hasData() && !modifier.data().isEmpty()) {
       stringifyAndParseMethodSpecificData(
-          modifier.supportedMethods(), modifier.data(), document,
-          output.back()->method_data, exceptionState);
+          modifier.supportedMethods(), modifier.data(),
+          output.back()->method_data, executionContext, exceptionState);
     } else {
       output.back()->method_data->stringified_data = "";
     }
@@ -475,9 +475,9 @@ String getSelectedShippingOption(
 
 void validateAndConvertPaymentDetails(const PaymentDetails& input,
                                       bool requestShipping,
-                                      Document& document,
                                       PaymentDetailsPtr& output,
                                       String& shippingOptionOutput,
+                                      ExecutionContext& executionContext,
                                       ExceptionState& exceptionState) {
   if (!input.hasTotal()) {
     exceptionState.throwTypeError("Must specify total");
@@ -506,7 +506,7 @@ void validateAndConvertPaymentDetails(const PaymentDetails& input,
 
   if (input.hasModifiers()) {
     validateAndConvertPaymentDetailsModifiers(
-        input.modifiers(), document, output->modifiers, exceptionState);
+        input.modifiers(), output->modifiers, executionContext, exceptionState);
     if (exceptionState.hadException())
       return;
   }
@@ -526,8 +526,8 @@ void validateAndConvertPaymentDetails(const PaymentDetails& input,
 
 void validateAndConvertPaymentMethodData(
     const HeapVector<PaymentMethodData>& input,
-    Document& document,
     Vector<payments::mojom::blink::PaymentMethodDataPtr>& output,
+    ExecutionContext& executionContext,
     ExceptionState& exceptionState) {
   if (input.isEmpty()) {
     exceptionState.throwTypeError(
@@ -546,9 +546,9 @@ void validateAndConvertPaymentMethodData(
     output.back()->supported_methods = paymentMethodData.supportedMethods();
 
     if (paymentMethodData.hasData() && !paymentMethodData.data().isEmpty()) {
-      stringifyAndParseMethodSpecificData(paymentMethodData.supportedMethods(),
-                                          paymentMethodData.data(), document,
-                                          output.back(), exceptionState);
+      stringifyAndParseMethodSpecificData(
+          paymentMethodData.supportedMethods(), paymentMethodData.data(),
+          output.back(), executionContext, exceptionState);
     } else {
       output.back()->stringified_data = "";
     }
@@ -628,36 +628,39 @@ bool allowedToUsePaymentRequest(const Frame* frame) {
 }  // namespace
 
 PaymentRequest* PaymentRequest::create(
-    Document& document,
+    ExecutionContext* executionContext,
     const HeapVector<PaymentMethodData>& methodData,
     const PaymentDetails& details,
     ExceptionState& exceptionState) {
-  return new PaymentRequest(document, methodData, details, PaymentOptions(),
-                            exceptionState);
+  return new PaymentRequest(executionContext, methodData, details,
+                            PaymentOptions(), exceptionState);
 }
 
 PaymentRequest* PaymentRequest::create(
-    Document& document,
+    ExecutionContext* executionContext,
     const HeapVector<PaymentMethodData>& methodData,
     const PaymentDetails& details,
     const PaymentOptions& options,
     ExceptionState& exceptionState) {
-  return new PaymentRequest(document, methodData, details, options,
+  return new PaymentRequest(executionContext, methodData, details, options,
                             exceptionState);
 }
 
 PaymentRequest::~PaymentRequest() {}
 
 ScriptPromise PaymentRequest::show(ScriptState* scriptState) {
-  if (!m_paymentProvider.is_bound() || m_showResolver)
+  if (!m_paymentProvider.is_bound() || m_showResolver) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(InvalidStateError, "Already called show() once"));
+  }
 
-  if (!scriptState->domWindow() || !scriptState->domWindow()->frame())
+  if (!scriptState->contextIsValid() || !scriptState->domWindow() ||
+      !scriptState->domWindow()->frame()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(InvalidStateError,
                                           "Cannot show the payment request"));
+  }
 
   m_paymentProvider->Show();
 
@@ -666,18 +669,26 @@ ScriptPromise PaymentRequest::show(ScriptState* scriptState) {
 }
 
 ScriptPromise PaymentRequest::abort(ScriptState* scriptState) {
-  if (m_abortResolver)
+  if (!scriptState->contextIsValid()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(InvalidStateError, "Cannot abort payment"));
+  }
+
+  if (m_abortResolver) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(InvalidStateError,
                              "Cannot abort() again until the previous abort() "
                              "has resolved or rejected"));
+  }
 
-  if (!m_showResolver)
+  if (!m_showResolver) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(InvalidStateError,
                              "Never called show(), so nothing to abort"));
+  }
 
   m_abortResolver = ScriptPromiseResolver::create(scriptState);
   m_paymentProvider->Abort();
@@ -712,23 +723,32 @@ ExecutionContext* PaymentRequest::getExecutionContext() const {
 
 ScriptPromise PaymentRequest::complete(ScriptState* scriptState,
                                        PaymentComplete result) {
-  if (m_completeResolver)
+  if (!scriptState->contextIsValid()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(InvalidStateError, "Cannot complete payment"));
+  }
+
+  if (m_completeResolver) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(InvalidStateError,
                                           "Already called complete() once"));
+  }
 
-  if (!m_completeTimer.isActive())
+  if (!m_completeTimer.isActive()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(
             InvalidStateError,
             "Timed out after 60 seconds, complete() called too late"));
+  }
 
   // User has cancelled the transaction while the website was processing it.
-  if (!m_paymentProvider)
+  if (!m_paymentProvider) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(InvalidStateError, "Request cancelled"));
+  }
 
   m_completeTimer.stop();
 
@@ -760,10 +780,9 @@ void PaymentRequest::onUpdatePaymentDetails(
 
   PaymentDetailsPtr validatedDetails =
       payments::mojom::blink::PaymentDetails::New();
-  validateAndConvertPaymentDetails(
-      details, m_options.requestShipping(),
-      *detailsScriptValue.getScriptState()->domWindow()->document(),
-      validatedDetails, m_shippingOption, exceptionState);
+  validateAndConvertPaymentDetails(details, m_options.requestShipping(),
+                                   validatedDetails, m_shippingOption,
+                                   *getExecutionContext(), exceptionState);
   if (exceptionState.hadException()) {
     m_showResolver->reject(
         DOMException::create(SyntaxError, exceptionState.message()));
@@ -798,30 +817,29 @@ void PaymentRequest::onCompleteTimeoutForTesting() {
   onCompleteTimeout(0);
 }
 
-PaymentRequest::PaymentRequest(Document& document,
+PaymentRequest::PaymentRequest(ExecutionContext* executionContext,
                                const HeapVector<PaymentMethodData>& methodData,
                                const PaymentDetails& details,
                                const PaymentOptions& options,
                                ExceptionState& exceptionState)
-    : ContextLifecycleObserver(&document),
+    : ContextLifecycleObserver(executionContext),
       m_options(options),
       m_clientBinding(this),
-      m_completeTimer(
-          TaskRunnerHelper::get(TaskType::MiscPlatformAPI, document.frame()),
-          this,
-          &PaymentRequest::onCompleteTimeout) {
+      m_completeTimer(TaskRunnerHelper::get(TaskType::MiscPlatformAPI, frame()),
+                      this,
+                      &PaymentRequest::onCompleteTimeout) {
   Vector<payments::mojom::blink::PaymentMethodDataPtr> validatedMethodData;
-  validateAndConvertPaymentMethodData(methodData, document, validatedMethodData,
-                                      exceptionState);
+  validateAndConvertPaymentMethodData(methodData, validatedMethodData,
+                                      *getExecutionContext(), exceptionState);
   if (exceptionState.hadException())
     return;
 
-  if (!document.isSecureContext()) {
+  if (!getExecutionContext()->isSecureContext()) {
     exceptionState.throwSecurityError("Must be in a secure context");
     return;
   }
 
-  if (!allowedToUsePaymentRequest(document.frame())) {
+  if (!allowedToUsePaymentRequest(frame())) {
     exceptionState.throwSecurityError(
         "Must be in a top-level browsing context or an iframe needs to specify "
         "'allowpaymentrequest' explicitly");
@@ -831,8 +849,8 @@ PaymentRequest::PaymentRequest(Document& document,
   PaymentDetailsPtr validatedDetails =
       payments::mojom::blink::PaymentDetails::New();
   validateAndConvertPaymentDetails(details, m_options.requestShipping(),
-                                   document, validatedDetails, m_shippingOption,
-                                   exceptionState);
+                                   validatedDetails, m_shippingOption,
+                                   *getExecutionContext(), exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -844,7 +862,7 @@ PaymentRequest::PaymentRequest(Document& document,
   if (m_options.requestShipping())
     m_shippingType = getValidShippingType(m_options.shippingType());
 
-  document.frame()->interfaceProvider()->getInterface(
+  frame()->interfaceProvider()->getInterface(
       mojo::MakeRequest(&m_paymentProvider));
   m_paymentProvider.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this),

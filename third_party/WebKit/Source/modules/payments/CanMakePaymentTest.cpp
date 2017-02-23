@@ -21,7 +21,7 @@ TEST(CanMakePaymentTest, RejectPromiseOnUserCancel) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.document(), buildPaymentMethodDataForTest(),
+      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
 
   request->canMakePayment(scope.getScriptState())
@@ -36,7 +36,7 @@ TEST(CanMakePaymentTest, RejectPromiseOnUnknownError) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.document(), buildPaymentMethodDataForTest(),
+      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
 
   request->canMakePayment(scope.getScriptState())
@@ -51,7 +51,7 @@ TEST(CanMakePaymentTest, RejectDuplicateRequest) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.document(), buildPaymentMethodDataForTest(),
+      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
   request->canMakePayment(scope.getScriptState());
 
@@ -64,7 +64,7 @@ TEST(CanMakePaymentTest, RejectQueryQuotaExceeded) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.document(), buildPaymentMethodDataForTest(),
+      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
 
   request->canMakePayment(scope.getScriptState())
@@ -79,7 +79,7 @@ TEST(CanMakePaymentTest, ReturnCannotMakeCanMakePayment) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.document(), buildPaymentMethodDataForTest(),
+      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
   String captor;
   request->canMakePayment(scope.getScriptState())
@@ -97,7 +97,7 @@ TEST(CanMakePaymentTest, ReturnCanMakePayment) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.document(), buildPaymentMethodDataForTest(),
+      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
   String captor;
   request->canMakePayment(scope.getScriptState())

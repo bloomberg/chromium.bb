@@ -4,6 +4,7 @@
 
 #include "modules/payments/PaymentRequestUpdateEvent.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -14,7 +15,6 @@
 #include "modules/payments/PaymentUpdater.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 namespace {
@@ -126,7 +126,7 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsTimeout) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.document(), buildPaymentMethodDataForTest(),
+      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(
       scope.getExecutionContext(), EventTypeNames::shippingaddresschange);

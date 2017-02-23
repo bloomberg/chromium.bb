@@ -29,6 +29,7 @@
 namespace blink {
 
 class ExceptionState;
+class ExecutionContext;
 class PaymentAddress;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -45,11 +46,11 @@ class MODULES_EXPORT PaymentRequest final
   WTF_MAKE_NONCOPYABLE(PaymentRequest);
 
  public:
-  static PaymentRequest* create(Document&,
+  static PaymentRequest* create(ExecutionContext*,
                                 const HeapVector<PaymentMethodData>&,
                                 const PaymentDetails&,
                                 ExceptionState&);
-  static PaymentRequest* create(Document&,
+  static PaymentRequest* create(ExecutionContext*,
                                 const HeapVector<PaymentMethodData>&,
                                 const PaymentDetails&,
                                 const PaymentOptions&,
@@ -88,7 +89,7 @@ class MODULES_EXPORT PaymentRequest final
   void onCompleteTimeoutForTesting();
 
  private:
-  PaymentRequest(Document&,
+  PaymentRequest(ExecutionContext*,
                  const HeapVector<PaymentMethodData>&,
                  const PaymentDetails&,
                  const PaymentOptions&,
