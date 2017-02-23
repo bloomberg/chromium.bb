@@ -510,6 +510,8 @@ void ServiceManagerConnectionImpl::CreateService(
     service_manager::mojom::ServiceRequest request,
     const std::string& name) {
   auto it = request_handlers_.find(name);
+  DCHECK(it != request_handlers_.end())
+      << "Can't create service " << name << ". No handler found.";
   if (it != request_handlers_.end())
     it->second.Run(std::move(request));
 }
@@ -540,4 +542,3 @@ void ServiceManagerConnectionImpl::GetInterface(
 }
 
 }  // namespace content
-
