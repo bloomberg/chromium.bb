@@ -129,10 +129,6 @@ const std::vector<autofill::AutofillProfile*>&
   return contact_profiles_;
 }
 
-const std::vector<autofill::CreditCard*>& PaymentRequest::credit_cards() {
-  return credit_cards_;
-}
-
 void PaymentRequest::PopulateProfileCache() {
   std::vector<autofill::AutofillProfile*> profiles =
       personal_data_manager()->GetProfilesToSuggest();

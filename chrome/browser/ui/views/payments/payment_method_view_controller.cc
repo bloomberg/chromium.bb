@@ -147,7 +147,8 @@ std::unique_ptr<views::View> PaymentMethodViewController::CreateView() {
       payment_method_list_.CreateListView());
 }
 
-std::unique_ptr<views::View> PaymentMethodViewController::CreateExtraView() {
+std::unique_ptr<views::View>
+PaymentMethodViewController::CreateExtraFooterView() {
   std::unique_ptr<views::View> extra_view = base::MakeUnique<views::View>();
 
   extra_view->SetLayoutManager(new views::BoxLayout(

@@ -81,7 +81,7 @@ std::unique_ptr<views::View> EditorViewController::CreateView() {
 // +---------------------------------------------------------+
 // | "* indicates required fields"           | CANCEL | DONE |
 // +---------------------------------------------------------+
-std::unique_ptr<views::View> EditorViewController::CreateLeadingFooterView() {
+std::unique_ptr<views::View> EditorViewController::CreateExtraFooterView() {
   std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
 
   views::BoxLayout* layout =

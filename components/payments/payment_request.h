@@ -91,7 +91,9 @@ class PaymentRequest : payments::mojom::PaymentRequest {
     selected_contact_profile_ = profile;
   }
 
-  const std::vector<autofill::CreditCard*>& credit_cards();
+  const std::vector<autofill::CreditCard*>& credit_cards() {
+    return credit_cards_;
+  }
 
   // Returns the currently selected credit card for this PaymentRequest flow.
   // It's not guaranteed to be complete. Returns nullptr if there is no selected

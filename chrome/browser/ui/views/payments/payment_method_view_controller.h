@@ -28,7 +28,7 @@ class PaymentMethodViewController : public PaymentRequestSheetController {
 
  private:
   // PaymentRequestSheetController:
-  std::unique_ptr<views::View> CreateExtraView() override;
+  std::unique_ptr<views::View> CreateExtraFooterView() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   PaymentRequestItemList payment_method_list_;

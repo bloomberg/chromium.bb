@@ -93,7 +93,7 @@ class EditorViewController : public PaymentRequestSheetController,
 
   // PaymentRequestSheetController:
   std::unique_ptr<views::View> CreateView() override;
-  std::unique_ptr<views::View> CreateLeadingFooterView() override;
+  std::unique_ptr<views::View> CreateExtraFooterView() override;
 
   virtual std::unique_ptr<views::View> CreateHeaderView() = 0;
   // Returns the field definitions used to build the UI.

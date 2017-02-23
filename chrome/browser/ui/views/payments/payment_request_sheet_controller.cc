@@ -25,7 +25,8 @@ PaymentRequestSheetController::CreatePrimaryButton() {
   return nullptr;
 }
 
-std::unique_ptr<views::View> PaymentRequestSheetController::CreateExtraView() {
+std::unique_ptr<views::View>
+PaymentRequestSheetController::CreateExtraFooterView() {
   return nullptr;
 }
 
@@ -90,8 +91,16 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                      0, views::GridLayout::USE_PREF, 0, 0);
 
+  // The horizontal distance between the right/left edges of the dialog and the
+  // elements.
+  constexpr int kFooterHorizontalInset = 16;
+  // The vertical distance between footer elements and the top/bottom border
+  // (the bottom border is the edge of the dialog).
+  constexpr int kFooterVerticalInset = 16;
+  layout->SetInsets(kFooterVerticalInset, kFooterHorizontalInset,
+                    kFooterVerticalInset, kFooterHorizontalInset);
   layout->StartRow(0, 0);
-  std::unique_ptr<views::View> extra_view = CreateExtraView();
+  std::unique_ptr<views::View> extra_view = CreateExtraFooterView();
   if (extra_view)
     layout->AddView(extra_view.release());
   else
@@ -116,11 +125,6 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   layout->AddView(trailing_buttons_container.release());
 
   return container;
-}
-
-std::unique_ptr<views::View>
-PaymentRequestSheetController::CreateLeadingFooterView() {
-  return base::MakeUnique<views::View>();
 }
 
 }  // namespace payments
