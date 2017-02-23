@@ -147,6 +147,15 @@
           pref="{{prefs.settings.a11y.large_cursor_enabled}}"
           label="$i18n{largeMouseCursorLabel}">
       </settings-toggle-button>
+      <template is="dom-if" if="[[enableAdjustableLargeCursor_]]">
+        <div class="list-item">
+          <div>$i18n{largeMouseCursorSizeLabel}</div>
+          <cr-slider
+             disabled="[[!prefs.settings.a11y.large_cursor_enabled.value]]"
+             value="{{prefs.settings.a11y.large_cursor_dip_size.value}}"
+             min="25" max="64"></cr-slider>
+        </div>
+      </template>
       <settings-toggle-button
           pref="{{prefs.settings.a11y.cursor_highlight}}"
           label="$i18n{cursorHighlightLabel}">

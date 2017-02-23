@@ -601,6 +601,10 @@ const char kLanguageXkbAutoRepeatInterval[] =
 const char kAccessibilityLargeCursorEnabled[] =
     "settings.a11y.large_cursor_enabled";
 
+// A integer pref that specifies the size of large cursor for accessibility.
+const char kAccessibilityLargeCursorDipSize[] =
+    "settings.a11y.large_cursor_dip_size";
+
 // A boolean pref which determines whether the sticky keys feature is enabled.
 const char kAccessibilityStickyKeysEnabled[] =
     "settings.a11y.sticky_keys_enabled";

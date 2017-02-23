@@ -388,6 +388,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // returned object.
   ash::FirstRunHelper* CreateFirstRunHelper();
 
+  void SetLargeCursorSizeInDip(int large_cursor_size_in_dip);
+
   // Toggles cursor compositing on/off. Native cursor is disabled when cursor
   // compositing is enabled, and vice versa.
   void SetCursorCompositingEnabled(bool enabled);

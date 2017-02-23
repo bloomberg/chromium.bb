@@ -371,6 +371,7 @@ class AccessibilityManager
   PrefHandler switch_access_pref_handler_;
 
   bool large_cursor_enabled_;
+  int large_cursor_size_in_dip_;
   bool sticky_keys_enabled_;
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;

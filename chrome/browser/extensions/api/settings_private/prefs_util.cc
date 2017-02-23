@@ -234,6 +234,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kAccessibilityLargeCursorEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kAccessibilityLargeCursorDipSize] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kAccessibilityScreenMagnifierEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kAccessibilitySelectToSpeakEnabled] =

@@ -227,6 +227,7 @@ extern const char kLanguageXkbAutoRepeatInterval[];
 // TODO(dmazzoni): move accessibility prefs out of chrome/.
 // http://crbug.com/594887
 extern const char kAccessibilityLargeCursorEnabled[];
+extern const char kAccessibilityLargeCursorDipSize[];
 extern const char kAccessibilityStickyKeysEnabled[];
 extern const char kAccessibilitySpokenFeedbackEnabled[];
 extern const char kAccessibilityHighContrastEnabled[];

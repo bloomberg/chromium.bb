@@ -30,6 +30,8 @@ extern const SkColor kChromeOsBootColor;
 extern const SkColor kFocusBorderColor;
 extern const float kFocusBorderThickness;
 
+ASH_EXPORT extern const int kDefaultLargeCursorSize;
+
 }  // namespace ash
 
 #endif  // ASH_COMMON_ASH_CONSTANTS_H_

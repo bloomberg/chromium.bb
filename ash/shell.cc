@@ -371,6 +371,11 @@ FirstRunHelper* Shell::CreateFirstRunHelper() {
   return new FirstRunHelperImpl;
 }
 
+void Shell::SetLargeCursorSizeInDip(int large_cursor_size_in_dip) {
+  window_tree_host_manager_->cursor_window_controller()
+      ->SetLargeCursorSizeInDip(large_cursor_size_in_dip);
+}
+
 void Shell::SetCursorCompositingEnabled(bool enabled) {
   window_tree_host_manager_->cursor_window_controller()
       ->SetCursorCompositingEnabled(enabled);

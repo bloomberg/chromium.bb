@@ -4,11 +4,14 @@
 
 #include "ash/display/cursor_window_controller.h"
 
+#include "ash/common/ash_constants.h"
+#include "ash/common/ash_switches.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -26,6 +29,12 @@
 #include "ui/gfx/image/image_skia_operations.h"
 
 namespace ash {
+namespace {
+
+const int kMinLargeCursorSize = 25;
+const int kMaxLargeCursorSize = 64;
+
+}  // namespace
 
 class CursorWindowDelegate : public aura::WindowDelegate {
  public:
@@ -84,10 +93,31 @@ CursorWindowController::CursorWindowController()
       cursor_type_(ui::kCursorNone),
       visible_(true),
       cursor_set_(ui::CURSOR_SET_NORMAL),
-      delegate_(new CursorWindowDelegate()) {}
+      large_cursor_size_in_dip_(ash::kDefaultLargeCursorSize),
+      delegate_(new CursorWindowDelegate()) {
+  enable_adjustable_large_cursor_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshAdjustableLargeCursor);
+}
 
 CursorWindowController::~CursorWindowController() {
   SetContainer(NULL);
+}
+
+void CursorWindowController::SetLargeCursorSizeInDip(
+    int large_cursor_size_in_dip) {
+  large_cursor_size_in_dip =
+      std::min(large_cursor_size_in_dip, kMaxLargeCursorSize);
+  large_cursor_size_in_dip =
+      std::max(large_cursor_size_in_dip, kMinLargeCursorSize);
+
+  if (large_cursor_size_in_dip_ == large_cursor_size_in_dip)
+    return;
+
+  large_cursor_size_in_dip_ = large_cursor_size_in_dip;
+
+  if (enable_adjustable_large_cursor_ && display_.is_valid())
+    UpdateCursorImage();
 }
 
 void CursorWindowController::SetCursorCompositingEnabled(bool enabled) {
@@ -260,12 +290,31 @@ void CursorWindowController::UpdateCursorImage() {
         image_rep.pixel_size(),
         gfx::ImageSkia::CreateFrom1xBitmap(image_rep.sk_bitmap()));
   } else {
-    const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(cursor_scale);
+    gfx::ImageSkia resized = *image;
+
+    // Rescale cursor size. This is used with the combination of accessibility
+    // large cursor. We don't need to care about the case where cursor
+    // compositing is disabled as we always use cursor compositing if
+    // accessibility large cursor is enabled.
+    if (enable_adjustable_large_cursor_ &&
+        cursor_set_ == ui::CursorSetType::CURSOR_SET_LARGE &&
+        large_cursor_size_in_dip_ != image->size().width()) {
+      float rescale = static_cast<float>(large_cursor_size_in_dip_) /
+                      static_cast<float>(image->size().width());
+      resized = gfx::ImageSkiaOperations::CreateResizedImage(
+          *image, skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
+          gfx::ScaleToCeiledSize(image->size(), rescale));
+      hot_point_ = gfx::ScaleToCeiledPoint(hot_point_, rescale);
+    }
+
+    const gfx::ImageSkiaRep& image_rep =
+        resized.GetRepresentation(cursor_scale);
     delegate_->SetCursorImage(
-        image->size(),
+        resized.size(),
         gfx::ImageSkia(gfx::ImageSkiaRep(image_rep.sk_bitmap(), cursor_scale)));
     hot_point_ = gfx::ConvertPointToDIP(cursor_scale, hot_point_);
   }
+
   if (cursor_window_) {
     cursor_window_->SetBounds(gfx::Rect(delegate_->size()));
     cursor_window_->SchedulePaintInRect(

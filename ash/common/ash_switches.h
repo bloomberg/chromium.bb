@@ -16,6 +16,7 @@ namespace switches {
 
 // Please keep alphabetized.
 // TODO(sky): fix order!
+ASH_EXPORT extern const char kAshAdjustableLargeCursor[];
 ASH_EXPORT extern const char kAshAnimateFromBootSplashScreen[];
 ASH_EXPORT extern const char kAshCopyHostBackgroundAtBoot[];
 ASH_EXPORT extern const char kAshDebugShortcuts[];

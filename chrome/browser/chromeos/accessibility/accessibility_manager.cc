@@ -12,6 +12,7 @@
 
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -247,6 +248,7 @@ AccessibilityManager::AccessibilityManager()
       select_to_speak_pref_handler_(prefs::kAccessibilitySelectToSpeakEnabled),
       switch_access_pref_handler_(prefs::kAccessibilitySwitchAccessEnabled),
       large_cursor_enabled_(false),
+      large_cursor_size_in_dip_(ash::kDefaultLargeCursorSize),
       sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
@@ -385,10 +387,16 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
   const bool enabled =
       profile_->GetPrefs()->GetBoolean(prefs::kAccessibilityLargeCursorEnabled);
 
-  if (large_cursor_enabled_ == enabled)
+  const int large_cursor_size_in_dip =
+      profile_->GetPrefs()->GetInteger(prefs::kAccessibilityLargeCursorDipSize);
+
+  if (large_cursor_enabled_ == enabled &&
+      large_cursor_size_in_dip_ == large_cursor_size_in_dip) {
     return;
+  }
 
   large_cursor_enabled_ = enabled;
+  large_cursor_size_in_dip_ = large_cursor_size_in_dip;
 
   AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
                                           enabled, ash::A11Y_NOTIFICATION_NONE);
@@ -397,6 +405,7 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
 
   ash::Shell::GetInstance()->cursor_manager()->SetCursorSet(
       enabled ? ui::CURSOR_SET_LARGE : ui::CURSOR_SET_NORMAL);
+  ash::Shell::GetInstance()->SetLargeCursorSizeInDip(large_cursor_size_in_dip);
   ash::Shell::GetInstance()->SetCursorCompositingEnabled(
       ShouldEnableCursorCompositing());
 }
@@ -1030,6 +1039,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     pref_change_registrar_->Init(profile->GetPrefs());
     pref_change_registrar_->Add(
         prefs::kAccessibilityLargeCursorEnabled,
+        base::Bind(&AccessibilityManager::UpdateLargeCursorFromPref,
+                   base::Unretained(this)));
+    pref_change_registrar_->Add(
+        prefs::kAccessibilityLargeCursorDipSize,
         base::Bind(&AccessibilityManager::UpdateLargeCursorFromPref,
                    base::Unretained(this)));
     pref_change_registrar_->Add(

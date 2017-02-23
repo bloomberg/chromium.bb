@@ -8,6 +8,7 @@
 
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/accessibility_types.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -154,6 +155,8 @@ void Preferences::RegisterProfilePrefs(
       prefs::kAccessibilityLargeCursorEnabled,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kAccessibilityLargeCursorDipSize,
+                                ash::kDefaultLargeCursorSize);
   registry->RegisterBooleanPref(prefs::kAccessibilitySpokenFeedbackEnabled,
                                 false);
   registry->RegisterBooleanPref(

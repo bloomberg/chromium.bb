@@ -43,7 +43,8 @@
     </style>
     <div class="outer">
       <paper-slider id="slider" disabled="[[disabled]]" snaps
-          on-immediate-value-changed="onSliderChanged_">
+          on-immediate-value-changed="onSliderChanged_" max="[[max]]"
+          min="[[min]]">
       </paper-slider>
       <div id="labels">
         <div id="label-begin">[[labelMin]]</div>

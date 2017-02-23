@@ -22,13 +22,17 @@ Polymer({
     },
 
     /** @type {!Array<number>} Values corresponding to each tick. */
-    tickValues: Array,
+    tickValues: {type: Array, value: []},
 
     disabled: {
       type: Boolean,
       value: false,
       reflectToAttribute: true,
     },
+
+    min: Number,
+
+    max: Number,
 
     labelMin: String,
 
@@ -47,6 +51,8 @@ Polymer({
   onSliderChanged_: function() {
     if (this.tickValues && this.tickValues.length > 0)
       this.value = this.tickValues[this.$.slider.immediateValue];
+    else
+      this.value = this.$.slider.immediateValue;
   },
 
   /**
@@ -55,6 +61,12 @@ Polymer({
    * @private
    */
   valueChanged_: function() {
+    // If |tickValues| is empty, simply set current value to the slider.
+    if (this.tickValues.length == 0) {
+      this.$.slider.value = this.value;
+      return;
+    }
+
     // First update the slider settings if |tickValues| was set.
     var numTicks = Math.max(1, this.tickValues.length);
     this.$.slider.max = numTicks - 1;

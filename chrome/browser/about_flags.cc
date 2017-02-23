@@ -2279,6 +2279,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_TOUCH_SUPPORT_FOR_SCREEN_MAGNIFIER_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(
          chromeos::switches::kEnableTouchSupportForScreenMagnifier)},
+    {"ash-adjustable-large-cursor",
+     IDS_FLAGS_ENABLE_ADJUSTABLE_LARGE_CURSOR_NAME,
+     IDS_FLAGS_ENABLE_ADJUSTABLE_LARGE_CURSOR_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kAshAdjustableLargeCursor)}
 #endif  // OS_CHROMEOS
 
     // NOTE: Adding new command-line switches requires adding corresponding

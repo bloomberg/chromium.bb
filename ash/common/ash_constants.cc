@@ -19,4 +19,6 @@ const SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 const SkColor kFocusBorderColor = SkColorSetA(gfx::kGoogleBlue500, 0x99);
 const float kFocusBorderThickness = 2.f;
 
+const int kDefaultLargeCursorSize = 64;
+
 }  // namespace ash

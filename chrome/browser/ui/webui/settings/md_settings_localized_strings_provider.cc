@@ -33,6 +33,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/ash_switches.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
@@ -109,6 +110,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
     {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
     {"largeMouseCursorLabel", IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL},
+    {"largeMouseCursorSizeLabel", IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_LABEL},
     {"highContrastLabel", IDS_SETTINGS_HIGH_CONTRAST_LABEL},
     {"stickyKeysLabel", IDS_SETTINGS_STICKY_KEYS_LABEL},
     {"chromeVoxLabel", IDS_SETTINGS_CHROMEVOX_LABEL},
@@ -180,6 +182,10 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       "showExperimentalA11yFeatures",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableExperimentalAccessibilityFeatures));
+
+  html_source->AddBoolean("enableAdjustableLargeCursor",
+                          base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              ash::switches::kAshAdjustableLargeCursor));
 #endif
 }
 

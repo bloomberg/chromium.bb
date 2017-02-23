@@ -35,6 +35,8 @@ class ASH_EXPORT CursorWindowController {
     return is_cursor_compositing_enabled_;
   }
 
+  void SetLargeCursorSizeInDip(int large_cursor_size_in_dip);
+
   // Sets cursor compositing mode on/off.
   void SetCursorCompositingEnabled(bool enabled);
 
@@ -84,6 +86,9 @@ class ASH_EXPORT CursorWindowController {
 
   ui::CursorSetType cursor_set_;
   gfx::Point hot_point_;
+
+  bool enable_adjustable_large_cursor_;
+  int large_cursor_size_in_dip_;
 
   // The display on which the cursor is drawn.
   // For mirroring mode, the display is always the primary display.
