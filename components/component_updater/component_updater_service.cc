@@ -200,7 +200,7 @@ std::unique_ptr<ComponentInfo> CrxUpdateService::GetComponentForMimeType(
   const auto it = component_ids_by_mime_type_.find(mime_type);
   if (it == component_ids_by_mime_type_.end())
     return nullptr;
-  const auto component = GetComponent(it->second);
+  auto* const component = GetComponent(it->second);
   if (!component)
     return nullptr;
   return base::MakeUnique<ComponentInfo>(GetCrxComponentID(*component),

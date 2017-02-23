@@ -73,7 +73,7 @@ security_state::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
 
 const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  const auto icon_override = delegate_->GetVectorIconOverride();
+  auto* const icon_override = delegate_->GetVectorIconOverride();
   if (icon_override)
     return *icon_override;
 

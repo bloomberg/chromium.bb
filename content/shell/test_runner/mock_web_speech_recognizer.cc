@@ -319,7 +319,7 @@ void MockWebSpeechRecognizer::RunTaskFromQueue() {
 }
 
 bool MockWebSpeechRecognizer::HasPendingNewContextTasks() const {
-  for (const auto& task : task_queue_) {
+  for (auto* task : task_queue_) {
     if (task->isNewContextTask())
       return true;
   }

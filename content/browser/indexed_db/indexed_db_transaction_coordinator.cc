@@ -106,7 +106,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
   // data. ("Version change" transactions are exclusive, but handled by the
   // connection sequencing in IndexedDBDatabase.)
   std::set<int64_t> locked_scope;
-  for (const auto& transaction : started_transactions_) {
+  for (auto* transaction : started_transactions_) {
     if (transaction->mode() == blink::WebIDBTransactionModeReadWrite) {
       // Started read/write transactions have exclusive access to the object
       // stores within their scopes.

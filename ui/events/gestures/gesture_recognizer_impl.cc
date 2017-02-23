@@ -114,7 +114,7 @@ void GestureRecognizerImpl::CancelActiveTouchesExcept(
     consumers.push_back(entry.first);
   }
 
-  for (auto consumer : consumers)
+  for (auto* consumer : consumers)
     CancelActiveTouches(consumer);
 }
 

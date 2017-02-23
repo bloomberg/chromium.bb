@@ -539,8 +539,8 @@ SchedulingRemoteSuggestionsProvider::GetEnabledTriggerTypes() {
 
   std::set<TriggerType> enabled_types;
   for (const auto& token : tokens) {
-    auto it = std::find(std::begin(kTriggerTypeNames),
-                        std::end(kTriggerTypeNames), token);
+    auto** it = std::find(std::begin(kTriggerTypeNames),
+                          std::end(kTriggerTypeNames), token);
     if (it == std::end(kTriggerTypeNames)) {
       DLOG(WARNING) << "Failed to parse variation param "
                     << kTriggerTypesParamName << " with string value "

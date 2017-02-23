@@ -64,7 +64,7 @@ bool IsValidMessageHeader(const internal::MessageHeader* header,
   if (header->version < 2)
     return true;
 
-  auto header_v2 = static_cast<const internal::MessageHeaderV2*>(header);
+  auto* header_v2 = static_cast<const internal::MessageHeaderV2*>(header);
   // For the payload pointer:
   // - Check that the pointer can be safely decoded.
   // - Claim one byte that the pointer points to. It makes sure not only the

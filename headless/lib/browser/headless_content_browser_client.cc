@@ -119,7 +119,7 @@ content::BrowserMainParts* HeadlessContentBrowserClient::CreateBrowserMainParts(
 void HeadlessContentBrowserClient::OverrideWebkitPrefs(
     content::RenderViewHost* render_view_host,
     content::WebPreferences* prefs) {
-  auto browser_context = HeadlessBrowserContextImpl::From(
+  auto* browser_context = HeadlessBrowserContextImpl::From(
       render_view_host->GetProcess()->GetBrowserContext());
   const base::Callback<void(headless::WebPreferences*)>& callback =
       browser_context->options()->override_web_preferences_callback();

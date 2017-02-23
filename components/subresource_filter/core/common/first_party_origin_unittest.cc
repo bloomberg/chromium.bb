@@ -72,7 +72,7 @@ TEST(FirstPartyOriginTest, EmptyHostUrls) {
   };
 
   FirstPartyOrigin first_party(url::Origin(GURL("https://example.com")));
-  for (const auto& url_string : kUrls) {
+  for (auto* url_string : kUrls) {
     GURL url(url_string);
     EXPECT_TRUE(FirstPartyOrigin::IsThirdParty(url, first_party.origin()));
     EXPECT_TRUE(first_party.IsThirdParty(url));

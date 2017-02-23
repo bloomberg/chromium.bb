@@ -123,7 +123,7 @@ void ImageDownloaderBase::DidFetchImage(
 }
 
 void ImageDownloaderBase::OnDestruct() {
-  for (auto fetchers : image_fetchers_) {
+  for (auto* fetchers : image_fetchers_) {
     // Will run callbacks with an empty image vector.
     fetchers->OnRenderFrameDestruct();
   }

@@ -188,7 +188,7 @@ void MessageListView::ResetRepositionSession() {
     has_deferred_task_ = false;
     // cancel cause OnBoundsAnimatorDone which deletes |deleted_when_done_|.
     animator_.Cancel();
-    for (auto view : deleting_views_)
+    for (auto* view : deleting_views_)
       delete view;
     deleting_views_.clear();
     adding_views_.clear();
@@ -230,7 +230,7 @@ void MessageListView::RemoveObserver(MessageListView::Observer* observer) {
 void MessageListView::OnBoundsAnimatorProgressed(
     views::BoundsAnimator* animator) {
   DCHECK_EQ(&animator_, animator);
-  for (auto view : deleted_when_done_) {
+  for (auto* view : deleted_when_done_) {
     const gfx::SlideAnimation* animation = animator->GetAnimationForView(view);
     if (animation)
       view->layer()->SetOpacity(animation->CurrentValueBetween(1.0, 0.0));
@@ -238,7 +238,7 @@ void MessageListView::OnBoundsAnimatorProgressed(
 }
 
 void MessageListView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
-  for (auto view : deleted_when_done_)
+  for (auto* view : deleted_when_done_)
     delete view;
   deleted_when_done_.clear();
 

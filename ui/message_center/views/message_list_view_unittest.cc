@@ -187,7 +187,7 @@ void MessageListViewTest::UpdateNotificationSize(
 
 TEST_F(MessageListViewTest, AddNotification) {
   // Create a dummy notification.
-  auto notification_view = CreateNotificationView(
+  auto* notification_view = CreateNotificationView(
       Notification(NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
                    base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message1"),
                    gfx::Image(), base::UTF8ToUTF16("display source"), GURL(),

@@ -814,7 +814,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.orientation_angle = 0;
   screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
 
-  auto host_delegate =
+  auto* host_delegate =
       static_cast<MockRenderWidgetHostDelegate*>(host_->delegate());
 
   host_delegate->SetScreenInfo(screen_info);

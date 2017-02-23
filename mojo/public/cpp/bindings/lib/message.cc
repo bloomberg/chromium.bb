@@ -106,13 +106,13 @@ uint32_t Message::payload_num_bytes() const {
 }
 
 uint32_t Message::payload_num_interface_ids() const {
-  auto array_pointer =
+  auto* array_pointer =
       version() < 2 ? nullptr : header_v2()->payload_interface_ids.Get();
   return array_pointer ? static_cast<uint32_t>(array_pointer->size()) : 0;
 }
 
 const uint32_t* Message::payload_interface_ids() const {
-  auto array_pointer =
+  auto* array_pointer =
       version() < 2 ? nullptr : header_v2()->payload_interface_ids.Get();
   return array_pointer ? array_pointer->storage() : nullptr;
 }
@@ -174,7 +174,7 @@ void Message::SerializeAssociatedEndpointHandles(
   DCHECK(header_v2()->payload_interface_ids.is_null());
 
   size_t size = associated_endpoint_handles_.size();
-  auto data = internal::Array_Data<uint32_t>::New(size, buffer());
+  auto* data = internal::Array_Data<uint32_t>::New(size, buffer());
   header_v2()->payload_interface_ids.Set(data);
 
   for (size_t i = 0; i < size; ++i) {

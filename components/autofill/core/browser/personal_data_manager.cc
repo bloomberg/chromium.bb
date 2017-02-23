@@ -1815,7 +1815,7 @@ void PersonalDataManager::UpdateCardsBillingAddressReference(
       C -> D
   */
 
-  for (auto& credit_card : GetCreditCards()) {
+  for (auto* credit_card : GetCreditCards()) {
     // If the credit card is not associated with a billing address, skip it.
     if (credit_card->billing_address_id().empty())
       break;

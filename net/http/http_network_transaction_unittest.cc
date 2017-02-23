@@ -136,7 +136,7 @@ class TestNetworkStreamThrottler : public NetworkThrottleManager {
 
   void UnthrottleAllRequests() {
     std::set<TestThrottle*> outstanding_throttles_copy(outstanding_throttles_);
-    for (auto& throttle : outstanding_throttles_copy) {
+    for (auto* throttle : outstanding_throttles_copy) {
       if (throttle->IsBlocked())
         throttle->Unthrottle();
     }

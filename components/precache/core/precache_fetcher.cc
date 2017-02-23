@@ -486,12 +486,12 @@ std::unique_ptr<PrecacheUnfinishedWork> PrecacheFetcher::CancelPrecaching() {
       unfinished_work_->add_top_host()->set_hostname(top_host.hostname);
   }
   for (const auto& resource : resources_fetching_) {
-    auto new_resource = unfinished_work_->add_resource();
+    auto* new_resource = unfinished_work_->add_resource();
     new_resource->set_url(resource.url.spec());
     new_resource->set_top_host_name(resource.referrer);
   }
   for (const auto& resource : resources_to_fetch_) {
-    auto new_resource = unfinished_work_->add_resource();
+    auto* new_resource = unfinished_work_->add_resource();
     new_resource->set_url(resource.url.spec());
     new_resource->set_top_host_name(resource.referrer);
   }

@@ -167,7 +167,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, InvalidType) {
   PolicyMap policy;
   BuildDefaultSearchPolicy(&policy);
 
-  for (auto policy_name : kPolicyNamesToCheck) {
+  for (auto* policy_name : kPolicyNamesToCheck) {
     // Check that policy can be successfully applied first.
     UpdateProviderPolicy(policy);
     const base::Value* temp = nullptr;

@@ -78,7 +78,7 @@ PolicyServiceImpl::PolicyServiceImpl(const Providers& providers)
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;
   providers_ = providers;
-  for (auto provider : providers) {
+  for (auto* provider : providers) {
     provider->AddObserver(this);
     for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain) {
       initialization_complete_[domain] &=
@@ -92,7 +92,7 @@ PolicyServiceImpl::PolicyServiceImpl(const Providers& providers)
 
 PolicyServiceImpl::~PolicyServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (auto provider : providers_)
+  for (auto* provider : providers_)
     provider->RemoveObserver(this);
 }
 
@@ -147,9 +147,9 @@ void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
   } else {
     // Some providers might invoke OnUpdatePolicy synchronously while handling
     // RefreshPolicies. Mark all as pending before refreshing.
-    for (auto provider : providers_)
+    for (auto* provider : providers_)
       refresh_pending_.insert(provider);
-    for (auto provider : providers_)
+    for (auto* provider : providers_)
       provider->RefreshPolicies();
   }
 }
@@ -188,7 +188,7 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   // Merge from each provider in their order of priority.
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
   PolicyBundle bundle;
-  for (auto provider : providers_) {
+  for (auto* provider : providers_) {
     PolicyBundle provided_bundle;
     provided_bundle.CopyFrom(provider->policies());
     RemapProxyPolicies(&provided_bundle.Get(chrome_namespace));
@@ -248,7 +248,7 @@ void PolicyServiceImpl::CheckInitializationComplete() {
     PolicyDomain policy_domain = static_cast<PolicyDomain>(domain);
 
     bool all_complete = true;
-    for (auto provider : providers_) {
+    for (auto* provider : providers_) {
       if (!provider->IsInitializationComplete(policy_domain)) {
         all_complete = false;
         break;

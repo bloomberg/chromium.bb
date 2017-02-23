@@ -716,7 +716,7 @@ TEST_F(PresentationDispatcherTest,
 
   // Set up |availability_set_| and |listening_status_|
   base::RunLoop run_loop;
-  for (auto& mock_observer : mock_observers_) {
+  for (auto* mock_observer : mock_observers_) {
     client()->getAvailability(
         mock_observer->urls(),
         base::MakeUnique<WebPresentationAvailabilityCallbacks>());

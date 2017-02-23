@@ -199,7 +199,7 @@ TEST_F(MemoryCoordinatorImplTest, ChildRemovedOnConnectionError) {
 }
 
 TEST_F(MemoryCoordinatorImplTest, SetMemoryStateFailsInvalidState) {
-  auto cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
+  auto* cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
 
   EXPECT_FALSE(
       coordinator_->SetChildMemoryState(1, MemoryState::UNKNOWN));
@@ -207,7 +207,7 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateFailsInvalidState) {
 }
 
 TEST_F(MemoryCoordinatorImplTest, SetMemoryStateFailsInvalidRenderer) {
-  auto cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
+  auto* cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
 
   EXPECT_FALSE(
       coordinator_->SetChildMemoryState(2, MemoryState::THROTTLED));
@@ -215,7 +215,7 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateFailsInvalidRenderer) {
 }
 
 TEST_F(MemoryCoordinatorImplTest, SetMemoryStateNotDeliveredNop) {
-  auto cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
+  auto* cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
 
   EXPECT_FALSE(
       coordinator_->SetChildMemoryState(2, MemoryState::NORMAL));
@@ -223,8 +223,8 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateNotDeliveredNop) {
 }
 
 TEST_F(MemoryCoordinatorImplTest, SetMemoryStateDelivered) {
-  auto cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
-  auto cmc2 = coordinator_->CreateChildMemoryCoordinator(2);
+  auto* cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
+  auto* cmc2 = coordinator_->CreateChildMemoryCoordinator(2);
 
   EXPECT_TRUE(
       coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
@@ -248,7 +248,7 @@ TEST_F(MemoryCoordinatorImplTest, PurgeMemoryChild) {
 }
 
 TEST_F(MemoryCoordinatorImplTest, SetChildMemoryState) {
-  auto cmc = coordinator_->CreateChildMemoryCoordinator(1);
+  auto* cmc = coordinator_->CreateChildMemoryCoordinator(1);
   auto iter = coordinator_->children().find(1);
   auto* render_process_host = coordinator_->GetMockRenderProcessHost(1);
   ASSERT_TRUE(iter != coordinator_->children().end());

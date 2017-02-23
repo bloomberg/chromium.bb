@@ -236,11 +236,11 @@ void Column::UnifySameSizedColumnSizes() {
 
   // Accumulate the size first.
   int size = 0;
-  for (auto column : same_size_columns_)
+  for (auto* column : same_size_columns_)
     size = std::max(size, column->Size());
 
   // Then apply it.
-  for (auto column : same_size_columns_)
+  for (auto* column : same_size_columns_)
     column->SetSize(size);
 }
 
@@ -496,7 +496,7 @@ void ColumnSet::AccumulateMasterColumns() {
 }
 
 void ColumnSet::UnifySameSizedColumnSizes() {
-  for (auto column : master_columns_)
+  for (auto* column : master_columns_)
     column->UnifySameSizedColumnSizes();
 }
 
@@ -583,7 +583,7 @@ void ColumnSet::ResetColumnXCoordinates() {
 void ColumnSet::CalculateSize() {
   gfx::Size pref;
   // Reset the preferred and remaining sizes.
-  for (const auto& view_state : view_states_) {
+  for (auto* view_state : view_states_) {
     if (!view_state->pref_width_fixed || !view_state->pref_height_fixed) {
       pref = view_state->view->GetPreferredSize();
       if (!view_state->pref_width_fixed)

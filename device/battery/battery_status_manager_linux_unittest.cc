@@ -325,7 +325,7 @@ void MockBatteryObject::AppendAllPropertiesToWriter(
   dbus::MessageWriter array_writer(nullptr);
   dbus::MessageWriter dict_entry_writer(nullptr);
   writer->OpenArray("{sv}", &array_writer);
-  for (auto property_name :
+  for (auto* property_name :
        {kUPowerDevicePropertyIsPresent, kUPowerDevicePropertyState,
         kUPowerDevicePropertyTimeToEmpty, kUPowerDevicePropertyTimeToFull,
         kUPowerDevicePropertyType}) {

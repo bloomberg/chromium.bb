@@ -628,7 +628,7 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
   // Map from field signatures to cached fields.
   std::map<std::string, const AutofillField*> cached_fields;
   for (size_t i = 0; i < cached_form.field_count(); ++i) {
-    const auto& field = cached_form.field(i);
+    auto* const field = cached_form.field(i);
     cached_fields[field->FieldSignatureAsStr()] = field;
   }
 
@@ -681,7 +681,7 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
   bool did_autofill_all_possible_fields = true;
   bool did_autofill_some_possible_fields = false;
   for (size_t i = 0; i < field_count(); ++i) {
-    const auto& field = this->field(i);
+    auto* const field = this->field(i);
 
     // No further logging for password fields.  Those are primarily related to a
     // different feature code path, and so make more sense to track outside of

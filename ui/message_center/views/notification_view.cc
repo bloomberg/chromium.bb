@@ -542,7 +542,7 @@ void NotificationView::CreateOrUpdateProgressBarView(
 
 void NotificationView::CreateOrUpdateListItemViews(
     const Notification& notification) {
-  for (auto item_view : item_views_)
+  for (auto* item_view : item_views_)
     delete item_view;
   item_views_.clear();
 
@@ -623,10 +623,10 @@ void NotificationView::CreateOrUpdateActionButtonViews(
   bool new_buttons = action_buttons_.size() != buttons.size();
 
   if (new_buttons || buttons.size() == 0) {
-    for (auto item : separators_)
+    for (auto* item : separators_)
       delete item;
     separators_.clear();
-    for (auto item : action_buttons_)
+    for (auto* item : action_buttons_)
       delete item;
     action_buttons_.clear();
   }

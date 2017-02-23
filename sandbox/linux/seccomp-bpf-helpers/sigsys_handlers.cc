@@ -167,7 +167,7 @@ void SetSeccompCrashKey(const struct sandbox::arch_seccomp_data& args) {
 
   size_t crash_key_length = nr.length() + arg1.length() + arg2.length() +
                             arg3.length() + arg4.length();
-  for (const auto& prefix : prefixes) {
+  for (auto* prefix : prefixes) {
     crash_key_length += strlen(prefix);
   }
   ++crash_key_length;  // For the trailing NUL byte.
@@ -178,7 +178,7 @@ void SetSeccompCrashKey(const struct sandbox::arch_seccomp_data& args) {
   size_t offset = 0;
   for (size_t i = 0; i < arraysize(values); ++i) {
     const char* strings[2] = { prefixes[i], values[i] };
-    for (const auto& string : strings) {
+    for (auto* string : strings) {
       size_t string_len = strlen(string);
       memmove(&crash_key[offset], string, string_len);
       offset += string_len;

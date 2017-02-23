@@ -270,7 +270,7 @@ void SpdyHeaderBlock::insert(const SpdyHeaderBlock::value_type& value) {
   } else {
     DVLOG(1) << "Updating key: " << iter->first
              << " with value: " << value.second;
-    auto storage = GetStorage();
+    auto* storage = GetStorage();
     iter->second =
         HeaderValue(storage, iter->first, storage->Write(value.second));
   }
@@ -313,7 +313,7 @@ size_t SpdyHeaderBlock::EstimateMemoryUsage() const {
 
 void SpdyHeaderBlock::AppendHeader(const StringPiece key,
                                    const StringPiece value) {
-  auto storage = GetStorage();
+  auto* storage = GetStorage();
   auto backed_key = storage->Write(key);
   block_.emplace(make_pair(
       backed_key, HeaderValue(storage, backed_key, storage->Write(value))));
@@ -382,7 +382,7 @@ size_t Join(char* dst,
   if (fragments.empty()) {
     return 0;
   }
-  auto original_dst = dst;
+  auto* original_dst = dst;
   auto it = fragments.begin();
   memcpy(dst, it->data(), it->size());
   dst += it->size();

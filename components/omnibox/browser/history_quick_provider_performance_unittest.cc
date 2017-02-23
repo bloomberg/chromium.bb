@@ -148,7 +148,7 @@ void HQPPerfTestOnePopularURL::PrepareData() {
 void HQPPerfTestOnePopularURL::PrintMeasurements(
     const std::string& trace_name,
     const std::vector<base::TimeDelta>& measurements) {
-  auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+  auto* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
 
   std::string durations;
   for (const auto& measurement : measurements)

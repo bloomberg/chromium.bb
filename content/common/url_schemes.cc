@@ -79,7 +79,7 @@ void RegisterContentSchemes(bool lock_schemes) {
   // Combine the default savable schemes with the additional ones given.
   delete savable_schemes;
   savable_schemes = new std::vector<std::string>;
-  for (auto& default_scheme : kDefaultSavableSchemes)
+  for (auto* default_scheme : kDefaultSavableSchemes)
     savable_schemes->push_back(default_scheme);
   savable_schemes->insert(savable_schemes->end(),
                           schemes.savable_schemes.begin(),

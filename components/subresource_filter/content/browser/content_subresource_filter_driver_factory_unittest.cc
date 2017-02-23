@@ -733,7 +733,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
       "chrome-extension://some-extension", "file:///var/www/index.html"};
   const char* supported_urls[] = {"http://example.test",
                                   "https://example.test"};
-  for (const auto url : unsupported_urls) {
+  for (auto* url : unsupported_urls) {
     SCOPED_TRACE(url);
     RedirectChainMatchPattern expected_pattern = EMPTY;
     NavigateAndExpectActivation(
@@ -742,7 +742,7 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
             ? ActivationDecision::ACTIVATION_DISABLED
             : ActivationDecision::UNSUPPORTED_SCHEME);
   }
-  for (const auto url : supported_urls) {
+  for (auto* url : supported_urls) {
     SCOPED_TRACE(url);
     RedirectChainMatchPattern expected_pattern =
         test_data.url_matches_activation_list ? NO_REDIRECTS_HIT : EMPTY;

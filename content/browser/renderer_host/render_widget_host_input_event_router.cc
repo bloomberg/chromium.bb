@@ -483,7 +483,7 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
 
   gfx::Point transformed_point;
   // Send MouseLeaves.
-  for (auto view : exited_views) {
+  for (auto* view : exited_views) {
     blink::WebMouseEvent mouse_leave(*event);
     mouse_leave.setType(blink::WebInputEvent::MouseLeave);
     // There is a chance of a race if the last target has recently created a
@@ -512,7 +512,7 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
   }
 
   // Send MouseMoves to trigger MouseEnter handlers.
-  for (auto view : entered_views) {
+  for (auto* view : entered_views) {
     if (view == target)
       continue;
     blink::WebMouseEvent mouse_enter(*event);
@@ -702,7 +702,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
     // TODO(wjmaclean,kenrb,tdresser): When scroll latching lands, we can
     // revisit how this code should work.
     // https://crbug.com/526463
-    auto rwhi =
+    auto* rwhi =
         static_cast<RenderWidgetHostImpl*>(root_view->GetRenderWidgetHost());
     // If the root view is the current gesture target, then we explicitly don't
     // send a GestureScrollBegin, as by the time we see GesturePinchBegin there
@@ -720,7 +720,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
       in_touchscreen_gesture_pinch_ = false;
       // If the root view wasn't already receiving the gesture stream, then we
       // need to wrap the diverted pinch events in a GestureScrollBegin/End.
-      auto rwhi =
+      auto* rwhi =
           static_cast<RenderWidgetHostImpl*>(root_view->GetRenderWidgetHost());
       if (root_view != touchscreen_gesture_target_.target &&
           gesture_pinch_did_send_scroll_begin_ &&

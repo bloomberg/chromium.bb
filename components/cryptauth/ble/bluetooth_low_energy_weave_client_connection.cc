@@ -610,7 +610,7 @@ BluetoothLowEnergyWeaveClientConnection::GetRemoteService() {
   if (remote_service_.id.empty()) {
     std::vector<device::BluetoothRemoteGattService*> services =
         bluetooth_device->GetGattServices();
-    for (const auto& service : services)
+    for (auto* service : services)
       if (service->GetUUID() == remote_service_.uuid) {
         remote_service_.id = service->GetIdentifier();
         break;

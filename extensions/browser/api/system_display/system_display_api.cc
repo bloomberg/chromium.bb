@@ -142,7 +142,7 @@ OverscanTracker::OverscanWebObserver* OverscanTracker::GetObserver(
   if (!create)
     return nullptr;
   auto owned_observer = base::MakeUnique<OverscanWebObserver>(web_contents);
-  auto observer_ptr = owned_observer.get();
+  auto* observer_ptr = owned_observer.get();
   observers_[web_contents] = std::move(owned_observer);
   return observer_ptr;
 }

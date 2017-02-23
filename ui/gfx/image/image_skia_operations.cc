@@ -594,7 +594,7 @@ ImageSkia ImageSkiaOperations::CreateImageWithDropShadow(
 ImageSkia ImageSkiaOperations::CreateHorizontalShadow(
     const std::vector<ShadowValue>& shadows,
     bool fades_down) {
-  auto source = new HorizontalShadowSource(shadows, fades_down);
+  auto* source = new HorizontalShadowSource(shadows, fades_down);
   return ImageSkia(source, source->size());
 }
 

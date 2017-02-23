@@ -99,7 +99,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   }
 
   void TearDown() override {
-    for (const auto& context : raw_script_contexts_)
+    for (auto* context : raw_script_contexts_)
       script_context_set_->Remove(context);
     base::RunLoop().RunUntilIdle();
     script_context_set_.reset();

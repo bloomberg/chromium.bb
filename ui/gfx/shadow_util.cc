@@ -106,7 +106,7 @@ const ShadowDetails& ShadowDetails::Get(int elevation, int corner_radius) {
   // To see what this looks like for elevation 24, try this CSS:
   //   box-shadow: 0 24px 48px rgba(0, 0, 0, .24),
   //               0 0 24px rgba(0, 0, 0, .12);
-  auto source = new ShadowNineboxSource(shadow->values, corner_radius);
+  auto* source = new ShadowNineboxSource(shadow->values, corner_radius);
   shadow->ninebox_image = ImageSkia(source, source->size());
   return *shadow;
 }

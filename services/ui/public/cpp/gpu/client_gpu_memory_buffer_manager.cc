@@ -66,7 +66,7 @@ void ClientGpuMemoryBufferManager::DisconnectGpuOnThread() {
   if (!gpu_.is_bound())
     return;
   gpu_.reset();
-  for (auto& waiter : pending_allocation_waiters_)
+  for (auto* waiter : pending_allocation_waiters_)
     waiter->Signal();
   pending_allocation_waiters_.clear();
 }

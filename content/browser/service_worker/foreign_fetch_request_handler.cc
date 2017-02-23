@@ -259,7 +259,7 @@ void ForeignFetchRequestHandler::DidFindRegistration(
     return;
   }
 
-  auto request_info = ResourceRequestInfo::ForRequest(job->request());
+  auto* request_info = ResourceRequestInfo::ForRequest(job->request());
   base::Callback<WebContents*(void)> web_contents_getter;
   if (request_info)
     web_contents_getter = request_info->GetWebContentsGetterForRequest();

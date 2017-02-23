@@ -302,7 +302,7 @@ bool ParseAppTag(xmlNode* app,
   static const char* attrs[] = {UpdateResponse::Result::kCohort,
                                 UpdateResponse::Result::kCohortHint,
                                 UpdateResponse::Result::kCohortName};
-  for (const auto& attr : attrs) {
+  for (auto* attr : attrs) {
     auto value = GetAttributePtr(app, attr);
     if (value)
       result->cohort_attrs.insert({attr, *value});

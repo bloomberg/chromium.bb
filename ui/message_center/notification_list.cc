@@ -24,7 +24,7 @@ namespace {
 bool ShouldShowNotificationAsPopup(
     const Notification& notification,
     const NotificationBlockers& blockers) {
-  for (const auto& blocker : blockers) {
+  for (auto* blocker : blockers) {
     if (!blocker->ShouldShowNotificationAsPopup(notification))
       return false;
   }

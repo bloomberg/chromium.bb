@@ -46,7 +46,7 @@ class SimpleWM::WindowListModel : public aura::WindowObserver {
   }
   ~WindowListModel() override {
     window_container_->RemoveObserver(this);
-    for (auto window : windows_)
+    for (auto* window : windows_)
       window->RemoveObserver(this);
   }
 

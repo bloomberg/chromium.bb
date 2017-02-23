@@ -115,7 +115,7 @@ WebSocketManager::~WebSocketManager() {
   if (!context_destroyed_ && url_request_context_getter_)
     url_request_context_getter_->RemoveObserver(this);
 
-  for (auto impl : impls_) {
+  for (auto* impl : impls_) {
     impl->GoAway();
     delete impl;
   }
@@ -225,7 +225,7 @@ void WebSocketManager::OnLostConnectionToClient(WebSocketImpl* impl) {
 void WebSocketManager::OnContextShuttingDown() {
   context_destroyed_ = true;
   url_request_context_getter_ = nullptr;
-  for (const auto& impl : impls_) {
+  for (auto* impl : impls_) {
     impl->GoAway();
     delete impl;
   }

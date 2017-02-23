@@ -769,14 +769,14 @@ void JingleSession::ProcessIncomingPluginMessage(
   if (!message.attachments) {
     return;
   }
-  for (const auto& plugin : plugins_) {
+  for (auto* plugin : plugins_) {
     plugin->OnIncomingMessage(*(message.attachments));
   }
 }
 
 void JingleSession::AddPluginAttachments(JingleMessage* message) {
   DCHECK(message);
-  for (const auto& plugin : plugins_) {
+  for (auto* plugin : plugins_) {
     std::unique_ptr<XmlElement> attachment = plugin->GetNextMessage();
     if (attachment) {
       message->AddAttachment(std::move(attachment));

@@ -244,7 +244,7 @@ void ImageLoader::LoadImageAtEveryScaleFactorAsync(
     scales.insert(ui::GetScaleForScaleFactor(scale));
 
   // There may not be a screen in unit tests.
-  auto screen = display::Screen::GetScreen();
+  auto* screen = display::Screen::GetScreen();
   if (screen) {
     for (const auto& display : screen->GetAllDisplays())
       scales.insert(display.device_scale_factor());

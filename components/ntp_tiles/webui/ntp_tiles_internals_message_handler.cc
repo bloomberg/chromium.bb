@@ -177,7 +177,7 @@ void NTPTilesInternalsMessageHandler::SendSourceInfo() {
   }
 
   if (most_visited_sites_->DoesSourceExist(NTPTileSource::POPULAR)) {
-    auto popular_sites = most_visited_sites_->popular_sites();
+    auto* popular_sites = most_visited_sites_->popular_sites();
     value.SetString("popular.url", popular_sites->GetURLToFetch().spec());
     value.SetString("popular.country", popular_sites->GetCountryToFetch());
     value.SetString("popular.version", popular_sites->GetVersionToFetch());

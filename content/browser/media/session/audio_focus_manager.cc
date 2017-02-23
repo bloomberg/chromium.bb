@@ -34,11 +34,11 @@ void AudioFocusManager::RequestAudioFocus(MediaSessionImpl* media_session,
   // up the relation between AudioFocusManager and MediaSessionImpl.
   // See https://crbug.com/651069
   if (type == AudioFocusType::GainTransientMayDuck) {
-    for (const auto old_session : audio_focus_stack_) {
+    for (auto* old_session : audio_focus_stack_) {
       old_session->StartDucking();
     }
   } else {
-    for (const auto old_session : audio_focus_stack_) {
+    for (auto* old_session : audio_focus_stack_) {
       if (old_session->IsActive()) {
         if (old_session->HasPepper())
           old_session->StartDucking();

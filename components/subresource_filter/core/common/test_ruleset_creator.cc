@@ -41,7 +41,7 @@ std::vector<uint8_t> SerializeUnindexedRulesetWithMultipleRules(
     ruleset_writer.AddUrlRule(rule);
   ruleset_writer.Finish();
 
-  auto data = reinterpret_cast<const uint8_t*>(ruleset_contents.data());
+  auto* data = reinterpret_cast<const uint8_t*>(ruleset_contents.data());
   return std::vector<uint8_t>(data, data + ruleset_contents.size());
 }
 

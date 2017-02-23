@@ -1288,7 +1288,7 @@ base::Optional<PasswordForm> PasswordFormManager::UpdatePendingAndGetOldKey(
     DCHECK(best_matches_.end() != updated_password_it);
     const base::string16& old_password =
         updated_password_it->second->password_value;
-    for (const auto& not_best_match : not_best_matches_) {
+    for (auto* not_best_match : not_best_matches_) {
       if (not_best_match->username_value ==
               pending_credentials_.username_value &&
           not_best_match->password_value == old_password) {

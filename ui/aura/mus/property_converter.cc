@@ -70,7 +70,7 @@ bool PropertyConverter::ConvertPropertyForTransport(
   if (transport_name->empty())
     return false;
 
-  auto image_key = static_cast<const WindowProperty<gfx::ImageSkia*>*>(key);
+  auto* image_key = static_cast<const WindowProperty<gfx::ImageSkia*>*>(key);
   if (image_properties_.count(image_key) > 0) {
     const gfx::ImageSkia* value = window->GetProperty(image_key);
     if (value) {
@@ -84,25 +84,25 @@ bool PropertyConverter::ConvertPropertyForTransport(
     return true;
   }
 
-  auto rect_key = static_cast<const WindowProperty<gfx::Rect*>*>(key);
+  auto* rect_key = static_cast<const WindowProperty<gfx::Rect*>*>(key);
   if (rect_properties_.count(rect_key) > 0) {
     *transport_value = GetArray(window, rect_key);
     return true;
   }
 
-  auto size_key = static_cast<const WindowProperty<gfx::Size*>*>(key);
+  auto* size_key = static_cast<const WindowProperty<gfx::Size*>*>(key);
   if (size_properties_.count(size_key) > 0) {
     *transport_value = GetArray(window, size_key);
     return true;
   }
 
-  auto string_key = static_cast<const WindowProperty<std::string*>*>(key);
+  auto* string_key = static_cast<const WindowProperty<std::string*>*>(key);
   if (string_properties_.count(string_key) > 0) {
     *transport_value = GetArray(window, string_key);
     return true;
   }
 
-  auto string16_key = static_cast<const WindowProperty<base::string16*>*>(key);
+  auto* string16_key = static_cast<const WindowProperty<base::string16*>*>(key);
   if (string16_properties_.count(string16_key) > 0) {
     *transport_value = GetArray(window, string16_key);
     return true;
@@ -122,23 +122,23 @@ std::string PropertyConverter::GetTransportNameForPropertyKey(const void* key) {
   if (primitive_properties_.count(key) > 0)
     return primitive_properties_[key].transport_name;
 
-  auto image_key = static_cast<const WindowProperty<gfx::ImageSkia*>*>(key);
+  auto* image_key = static_cast<const WindowProperty<gfx::ImageSkia*>*>(key);
   if (image_properties_.count(image_key) > 0)
     return image_properties_[image_key];
 
-  auto rect_key = static_cast<const WindowProperty<gfx::Rect*>*>(key);
+  auto* rect_key = static_cast<const WindowProperty<gfx::Rect*>*>(key);
   if (rect_properties_.count(rect_key) > 0)
     return rect_properties_[rect_key];
 
-  auto size_key = static_cast<const WindowProperty<gfx::Size*>*>(key);
+  auto* size_key = static_cast<const WindowProperty<gfx::Size*>*>(key);
   if (size_properties_.count(size_key) > 0)
     return size_properties_[size_key];
 
-  auto string_key = static_cast<const WindowProperty<std::string*>*>(key);
+  auto* string_key = static_cast<const WindowProperty<std::string*>*>(key);
   if (string_properties_.count(string_key) > 0)
     return string_properties_[string_key];
 
-  auto string16_key = static_cast<const WindowProperty<base::string16*>*>(key);
+  auto* string16_key = static_cast<const WindowProperty<base::string16*>*>(key);
   if (string16_properties_.count(string16_key) > 0)
     return string16_properties_[string16_key];
 

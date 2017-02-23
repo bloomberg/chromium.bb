@@ -382,7 +382,7 @@ void SpdySessionPool::DumpMemoryStats(
   size_t cert_count = 0;
   size_t serialized_cert_size = 0;
   size_t num_active_sessions = 0;
-  for (const auto& session : sessions_) {
+  for (auto* session : sessions_) {
     StreamSocket::SocketMemoryStats stats;
     bool is_session_active = false;
     total_size += session->DumpMemoryStats(&stats, &is_session_active);

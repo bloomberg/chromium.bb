@@ -110,7 +110,7 @@ void OverlayScrollBar::Thumb::OnStateChanged() {
 
 OverlayScrollBar::OverlayScrollBar(bool horizontal)
     : BaseScrollBar(horizontal), hide_timer_(false, false) {
-  auto thumb = new Thumb(this);
+  auto* thumb = new Thumb(this);
   SetThumb(thumb);
   thumb->Init();
   set_notify_enter_exit_on_child(true);

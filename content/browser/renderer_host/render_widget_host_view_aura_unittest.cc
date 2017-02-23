@@ -1593,7 +1593,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   // which sends a ViewMsg_Resize::ID message to the renderer.
   EXPECT_EQ(1u, sink_->message_count());
   EXPECT_EQ(ViewMsg_Resize::ID, sink_->GetMessageAt(0)->type());
-  auto view_delegate = static_cast<MockRenderWidgetHostDelegate*>(
+  auto* view_delegate = static_cast<MockRenderWidgetHostDelegate*>(
       static_cast<RenderWidgetHostImpl*>(view_->GetRenderWidgetHost())
           ->delegate());
   EXPECT_EQ(2.0f, view_delegate->get_last_device_scale_factor());

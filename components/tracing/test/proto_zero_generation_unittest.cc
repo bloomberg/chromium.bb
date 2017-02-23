@@ -67,7 +67,7 @@ class ProtoZeroConformanceTest : public ::testing::Test {
 };
 
 TEST_F(ProtoZeroConformanceTest, SimpleFieldsNoNesting) {
-  auto msg = CreateMessage<pbtest::EveryField>();
+  auto* msg = CreateMessage<pbtest::EveryField>();
 
   msg->set_field_int32(-1);
   msg->set_field_int64(-333123456789ll);
@@ -126,7 +126,7 @@ TEST_F(ProtoZeroConformanceTest, SimpleFieldsNoNesting) {
 }
 
 TEST_F(ProtoZeroConformanceTest, NestedMessages) {
-  auto msg_a = CreateMessage<pbtest::NestedA>();
+  auto* msg_a = CreateMessage<pbtest::NestedA>();
 
   pbtest::NestedA::NestedB* msg_b = msg_a->add_repeated_a();
   pbtest::NestedA::NestedB::NestedC* msg_c = msg_b->set_value_b();

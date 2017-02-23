@@ -524,7 +524,7 @@ void MenuItemView::ChildrenChanged() {
     }
   }
 
-  for (auto item : removed_items_)
+  for (auto* item : removed_items_)
     delete item;
   removed_items_.clear();
 }
@@ -599,7 +599,7 @@ MenuItemView::MenuItemView(MenuItemView* parent,
 
 MenuItemView::~MenuItemView() {
   delete submenu_;
-  for (auto item : removed_items_)
+  for (auto* item : removed_items_)
     delete item;
 }
 

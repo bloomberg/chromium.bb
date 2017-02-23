@@ -204,14 +204,14 @@ class EnabledStateObserverImpl final
 
   void OnTraceLogEnabled() final {
     base::AutoLock lock(mutex_);
-    for (auto o : observers_) {
+    for (auto* o : observers_) {
       o->OnTraceEnabled();
     }
   }
 
   void OnTraceLogDisabled() final {
     base::AutoLock lock(mutex_);
-    for (auto o : observers_) {
+    for (auto* o : observers_) {
       o->OnTraceDisabled();
     }
   }

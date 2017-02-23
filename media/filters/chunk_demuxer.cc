@@ -711,7 +711,7 @@ void ChunkDemuxer::OnEnabledAudioTracksChanged(
       stream->set_enabled(false, currTime);
     }
   }
-  for (const auto& stream : enabled_streams) {
+  for (auto* stream : enabled_streams) {
     DVLOG(1) << __func__ << ": enabling stream " << stream;
     stream->set_enabled(true, currTime);
   }

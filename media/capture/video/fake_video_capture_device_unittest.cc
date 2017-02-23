@@ -89,7 +89,7 @@ class StubReadWritePermission
 
 VideoCaptureDevice::Client::Buffer CreateStubBuffer(int buffer_id,
                                                     size_t mapped_size) {
-  auto buffer = new uint8_t[mapped_size];
+  auto* buffer = new uint8_t[mapped_size];
   const int arbitrary_frame_feedback_id = 0;
   return VideoCaptureDevice::Client::Buffer(
       buffer_id, arbitrary_frame_feedback_id,

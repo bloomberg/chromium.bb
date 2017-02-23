@@ -795,7 +795,7 @@ bool SourceBufferState::OnNewConfigs(
 }
 
 void SourceBufferState::SetStreamMemoryLimits() {
-  auto cmd_line = base::CommandLine::ForCurrentProcess();
+  auto* cmd_line = base::CommandLine::ForCurrentProcess();
 
   std::string audio_buf_limit_switch =
       cmd_line->GetSwitchValueASCII(switches::kMSEAudioBufferSizeLimit);

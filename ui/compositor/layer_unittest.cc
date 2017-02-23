@@ -1895,8 +1895,8 @@ TEST_F(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
   l1->SetAnimator(LayerAnimator::CreateImplicitAnimator());
   l2->SetAnimator(LayerAnimator::CreateImplicitAnimator());
 
-  auto player1 = l1->GetAnimator()->GetAnimationPlayerForTesting();
-  auto player2 = l2->GetAnimator()->GetAnimationPlayerForTesting();
+  auto* player1 = l1->GetAnimator()->GetAnimationPlayerForTesting();
+  auto* player2 = l2->GetAnimator()->GetAnimationPlayerForTesting();
 
   EXPECT_FALSE(player1->has_any_animation());
 

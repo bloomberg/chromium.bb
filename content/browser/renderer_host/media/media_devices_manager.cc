@@ -520,7 +520,7 @@ void MediaDevicesManager::NotifyDeviceChangeSubscribers(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(IsValidMediaDeviceType(type));
 
-  for (const auto& subscriber : device_change_subscribers_[type]) {
+  for (auto* subscriber : device_change_subscribers_[type]) {
     subscriber->OnDevicesChanged(type, snapshot);
   }
 }

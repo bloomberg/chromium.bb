@@ -87,7 +87,7 @@ BrowserAccessibility* AXPlatformPosition::GetNodeInTree(AXTreeID tree_id,
     return nullptr;
   }
 
-  auto manager = BrowserAccessibilityManager::FromID(tree_id);
+  auto* manager = BrowserAccessibilityManager::FromID(tree_id);
   if (!manager)
     return nullptr;
   return manager->GetFromID(node_id);

@@ -113,8 +113,8 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
           request->ssl_info().cert->os_cert_handle(), &encoded);
       DCHECK(rv);
       response->head.certificate.push_back(encoded);
-      for (auto& cert :
-               request->ssl_info().cert->GetIntermediateCertificates()) {
+      for (auto* cert :
+           request->ssl_info().cert->GetIntermediateCertificates()) {
         rv = net::X509Certificate::GetDEREncoded(cert, &encoded);
         DCHECK(rv);
         response->head.certificate.push_back(encoded);

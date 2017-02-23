@@ -57,7 +57,7 @@ ServerWindow::~ServerWindow() {
   // parent, as destroying an active transient child may otherwise attempt to
   // refocus us.
   Windows transient_children(transient_children_);
-  for (auto window : transient_children)
+  for (auto* window : transient_children)
     delete window;
   DCHECK(transient_children_.empty());
 
