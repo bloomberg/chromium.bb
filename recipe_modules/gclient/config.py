@@ -596,31 +596,3 @@ def chromedriver(c):
 @config_ctx()
 def ndk_next(c):
   c.revisions['src/third_party/android_tools/ndk'] = 'origin/next'
-
-@config_ctx()
-def android_vr_apks(c):
-  """Add VR Services and Daydream Home APKs to the gclient hooks."""
-  c.hooks.extend([
-    str({
-      'name': 'vr_services_apks',
-      'pattern': '.',
-      'action': [
-        'python',
-        'src/build/android/update_deps/update_third_party_deps.py',
-        'download',
-        '-b', 'chrome-vr-test-apks/vr_services',
-        '-l', 'third_party/gvr-android-sdk/test-apks/vr_services'
-      ],
-    }),
-    str({
-      'name': 'daydream_home_apks',
-      'pattern': '.',
-      'action': [
-        'python',
-        'src/build/android/update_deps/update_third_party_deps.py',
-        'download',
-        '-b', 'chrome-vr-test-apks/daydream_home',
-        '-l', 'third_party/gvr-android-sdk/test-apks/daydream_home'
-      ],
-    })
-  ])
