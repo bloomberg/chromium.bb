@@ -4,8 +4,9 @@
 
 static_library("doodle") {
   sources = [
-    "doodle_fetcher.cc",
     "doodle_fetcher.h",
+    "doodle_fetcher_impl.cc",
+    "doodle_fetcher_impl.h",
     "doodle_types.h",
   ]
 
@@ -20,7 +21,7 @@ static_library("doodle") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "doodle_fetcher_unittest.cc",
+    "doodle_fetcher_impl_unittest.cc",
   ]
 
   deps = [

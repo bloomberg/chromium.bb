@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/doodle/doodle_fetcher.h"
+#include "components/doodle/doodle_fetcher_impl.h"
 
 #include <utility>
 
@@ -74,7 +74,7 @@ DoodleConfig::DoodleConfig() : doodle_type(DoodleType::UNKNOWN) {}
 DoodleConfig::DoodleConfig(const DoodleConfig& config) = default;
 DoodleConfig::~DoodleConfig() = default;
 
-DoodleFetcher::DoodleFetcher(
+DoodleFetcherImpl::DoodleFetcherImpl(
     scoped_refptr<net::URLRequestContextGetter> download_context,
     GoogleURLTracker* google_url_tracker,
     const ParseJSONCallback& json_parsing_callback)
@@ -86,9 +86,9 @@ DoodleFetcher::DoodleFetcher(
   DCHECK(google_url_tracker_);
 }
 
-DoodleFetcher::~DoodleFetcher() = default;
+DoodleFetcherImpl::~DoodleFetcherImpl() = default;
 
-void DoodleFetcher::FetchDoodle(FinishedCallback callback) {
+void DoodleFetcherImpl::FetchDoodle(FinishedCallback callback) {
   if (IsFetchInProgress()) {
     callbacks_.push_back(std::move(callback));
     return;  // The callback will be called for the existing request's results.
@@ -107,7 +107,7 @@ void DoodleFetcher::FetchDoodle(FinishedCallback callback) {
   fetcher_->Start();
 }
 
-void DoodleFetcher::OnURLFetchComplete(const URLFetcher* source) {
+void DoodleFetcherImpl::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK_EQ(fetcher_.get(), source);
   std::unique_ptr<net::URLFetcher> free_fetcher = std::move(fetcher_);
 
@@ -119,14 +119,14 @@ void DoodleFetcher::OnURLFetchComplete(const URLFetcher* source) {
     return;
   }
 
-  json_parsing_callback_.Run(
-      StripSafetyPreamble(std::move(json_string)),
-      base::Bind(&DoodleFetcher::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&DoodleFetcher::OnJsonParseFailed,
-                 weak_ptr_factory_.GetWeakPtr()));
+  json_parsing_callback_.Run(StripSafetyPreamble(std::move(json_string)),
+                             base::Bind(&DoodleFetcherImpl::OnJsonParsed,
+                                        weak_ptr_factory_.GetWeakPtr()),
+                             base::Bind(&DoodleFetcherImpl::OnJsonParseFailed,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DoodleFetcher::OnJsonParsed(std::unique_ptr<base::Value> json) {
+void DoodleFetcherImpl::OnJsonParsed(std::unique_ptr<base::Value> json) {
   std::unique_ptr<base::DictionaryValue> config =
       base::DictionaryValue::From(std::move(json));
   if (!config.get()) {
@@ -151,12 +151,12 @@ void DoodleFetcher::OnJsonParsed(std::unique_ptr<base::Value> json) {
   RespondToAllCallbacks(DoodleState::AVAILABLE, std::move(doodle));
 }
 
-void DoodleFetcher::OnJsonParseFailed(const std::string& error_message) {
+void DoodleFetcherImpl::OnJsonParseFailed(const std::string& error_message) {
   DLOG(WARNING) << "JSON parsing failed: " << error_message;
   RespondToAllCallbacks(DoodleState::PARSING_ERROR, base::nullopt);
 }
 
-base::Optional<DoodleConfig> DoodleFetcher::ParseDoodle(
+base::Optional<DoodleConfig> DoodleFetcherImpl::ParseDoodle(
     const base::DictionaryValue& ddljson) const {
   DoodleConfig doodle;
   if (!ParseImage(ddljson, "large_image", &doodle.large_image)) {
@@ -169,9 +169,9 @@ base::Optional<DoodleConfig> DoodleFetcher::ParseDoodle(
   return doodle;
 }
 
-bool DoodleFetcher::ParseImage(const base::DictionaryValue& image_parent,
-                               const std::string& image_name,
-                               DoodleImage* image) const {
+bool DoodleFetcherImpl::ParseImage(const base::DictionaryValue& image_parent,
+                                   const std::string& image_name,
+                                   DoodleImage* image) const {
   DCHECK(image);
   const base::DictionaryValue* image_dict = nullptr;
   if (!image_parent.GetDictionary(image_name, &image_dict)) {
@@ -189,8 +189,9 @@ bool DoodleFetcher::ParseImage(const base::DictionaryValue& image_parent,
   return true;
 }
 
-void DoodleFetcher::ParseBaseInformation(const base::DictionaryValue& ddljson,
-                                         DoodleConfig* config) const {
+void DoodleFetcherImpl::ParseBaseInformation(
+    const base::DictionaryValue& ddljson,
+    DoodleConfig* config) const {
   config->search_url = ParseRelativeUrl(ddljson, "search_url");
   config->target_url = ParseRelativeUrl(ddljson, "target_url");
   config->fullpage_interactive_url =
@@ -213,8 +214,9 @@ void DoodleFetcher::ParseBaseInformation(const base::DictionaryValue& ddljson,
   config->expiry_date = clock_->Now() + base::TimeDelta::FromMillisecondsD(ttl);
 }
 
-GURL DoodleFetcher::ParseRelativeUrl(const base::DictionaryValue& dict_value,
-                                     const std::string& key) const {
+GURL DoodleFetcherImpl::ParseRelativeUrl(
+    const base::DictionaryValue& dict_value,
+    const std::string& key) const {
   std::string str_url;
   dict_value.GetString(key, &str_url);
   if (str_url.empty()) {
@@ -223,7 +225,7 @@ GURL DoodleFetcher::ParseRelativeUrl(const base::DictionaryValue& dict_value,
   return GetGoogleBaseUrl().Resolve(str_url);
 }
 
-void DoodleFetcher::RespondToAllCallbacks(
+void DoodleFetcherImpl::RespondToAllCallbacks(
     DoodleState state,
     const base::Optional<DoodleConfig>& config) {
   for (auto& callback : callbacks_) {
@@ -232,7 +234,7 @@ void DoodleFetcher::RespondToAllCallbacks(
   callbacks_.clear();
 }
 
-GURL DoodleFetcher::GetGoogleBaseUrl() const {
+GURL DoodleFetcherImpl::GetGoogleBaseUrl() const {
   GURL cmd_line_url = google_util::CommandLineGoogleBaseURL();
   if (cmd_line_url.is_valid()) {
     return cmd_line_url;

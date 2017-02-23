@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/doodle/doodle_fetcher.h"
+#include "components/doodle/doodle_fetcher_impl.h"
 
 #include <string>
 #include <utility>
@@ -68,9 +68,9 @@ void ParseJson(
 
 }  // namespace
 
-class DoodleFetcherTest : public testing::Test {
+class DoodleFetcherImplTest : public testing::Test {
  public:
-  DoodleFetcherTest()
+  DoodleFetcherImplTest()
       : url_(GURL(GoogleURLTracker::kDefaultGoogleHomepage)),
         google_url_tracker_(base::MakeUnique<GoogleURLTrackerClientStub>(),
                             GoogleURLTracker::UNIT_TEST_MODE),
@@ -113,7 +113,7 @@ class DoodleFetcherTest : public testing::Test {
     return url_fetcher;
   }
 
-  DoodleFetcher::FinishedCallback CreateResponseSavingCallback(
+  DoodleFetcherImpl::FinishedCallback CreateResponseSavingCallback(
       DoodleState* state_out,
       base::Optional<DoodleConfig>* config_out) {
     return base::BindOnce(
@@ -129,7 +129,7 @@ class DoodleFetcherTest : public testing::Test {
         state_out, config_out);
   }
 
-  DoodleFetcher* doodle_fetcher() { return &doodle_fetcher_; }
+  DoodleFetcherImpl* doodle_fetcher() { return &doodle_fetcher_; }
 
   GURL GetGoogleBaseURL() { return google_url_tracker_.google_url(); }
 
@@ -143,10 +143,10 @@ class DoodleFetcherTest : public testing::Test {
   net::TestURLFetcherFactory url_fetcher_factory_;
   base::SimpleTestClock* clock_;  // Owned by the doodle_fetcher.
   GoogleURLTracker google_url_tracker_;
-  DoodleFetcher doodle_fetcher_;
+  DoodleFetcherImpl doodle_fetcher_;
 };
 
-TEST_F(DoodleFetcherTest, ReturnsFromFetchWithoutError) {
+TEST_F(DoodleFetcherImplTest, ReturnsFromFetchWithoutError) {
   DoodleState state(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response;
 
@@ -161,7 +161,7 @@ TEST_F(DoodleFetcherTest, ReturnsFromFetchWithoutError) {
   EXPECT_TRUE(response.has_value());
 }
 
-TEST_F(DoodleFetcherTest, ReturnsFrom404FetchWithError) {
+TEST_F(DoodleFetcherImplTest, ReturnsFrom404FetchWithError) {
   DoodleState state(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response;
 
@@ -173,7 +173,7 @@ TEST_F(DoodleFetcherTest, ReturnsFrom404FetchWithError) {
   EXPECT_FALSE(response.has_value());
 }
 
-TEST_F(DoodleFetcherTest, ReturnsErrorForInvalidJson) {
+TEST_F(DoodleFetcherImplTest, ReturnsErrorForInvalidJson) {
   DoodleState state(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response;
 
@@ -185,7 +185,7 @@ TEST_F(DoodleFetcherTest, ReturnsErrorForInvalidJson) {
   EXPECT_FALSE(response.has_value());
 }
 
-TEST_F(DoodleFetcherTest, ReturnsErrorForIncompleteJson) {
+TEST_F(DoodleFetcherImplTest, ReturnsErrorForIncompleteJson) {
   DoodleState state(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response;
 
@@ -197,7 +197,7 @@ TEST_F(DoodleFetcherTest, ReturnsErrorForIncompleteJson) {
   EXPECT_FALSE(response.has_value());
 }
 
-TEST_F(DoodleFetcherTest, ResponseContainsValidBaseInformation) {
+TEST_F(DoodleFetcherImplTest, ResponseContainsValidBaseInformation) {
   DoodleState state(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response;
 
@@ -235,7 +235,7 @@ TEST_F(DoodleFetcherTest, ResponseContainsValidBaseInformation) {
   EXPECT_THAT(config.expiry_date, Eq(TimeFromNow(55000)));
 }
 
-TEST_F(DoodleFetcherTest, DoodleExpiresWithinThirtyDaysForTooLargeTTL) {
+TEST_F(DoodleFetcherImplTest, DoodleExpiresWithinThirtyDaysForTooLargeTTL) {
   DoodleState state(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response;
 
@@ -252,7 +252,7 @@ TEST_F(DoodleFetcherTest, DoodleExpiresWithinThirtyDaysForTooLargeTTL) {
               Eq(TimeFromNow(30ul * 24 * 60 * 60 * 1000 /* ms */)));  // 30 days
 }
 
-TEST_F(DoodleFetcherTest, DoodleExpiresNowWithNegativeTTL) {
+TEST_F(DoodleFetcherImplTest, DoodleExpiresNowWithNegativeTTL) {
   DoodleState state(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response;
 
@@ -268,7 +268,7 @@ TEST_F(DoodleFetcherTest, DoodleExpiresNowWithNegativeTTL) {
   EXPECT_THAT(response.value().expiry_date, Eq(TimeFromNow(0)));
 }
 
-TEST_F(DoodleFetcherTest, DoodleExpiresNowWithoutValidTTL) {
+TEST_F(DoodleFetcherImplTest, DoodleExpiresNowWithoutValidTTL) {
   DoodleState state(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response;
 
@@ -283,7 +283,7 @@ TEST_F(DoodleFetcherTest, DoodleExpiresNowWithoutValidTTL) {
   EXPECT_THAT(response.value().expiry_date, Eq(TimeFromNow(0)));
 }
 
-TEST_F(DoodleFetcherTest, ReturnsNoDoodleForMissingLargeImageUrl) {
+TEST_F(DoodleFetcherImplTest, ReturnsNoDoodleForMissingLargeImageUrl) {
   DoodleState state(DoodleState::AVAILABLE);
   base::Optional<DoodleConfig> response;
 
@@ -298,7 +298,7 @@ TEST_F(DoodleFetcherTest, ReturnsNoDoodleForMissingLargeImageUrl) {
   EXPECT_FALSE(response.has_value());
 }
 
-TEST_F(DoodleFetcherTest, EmptyResponsesCausesNoDoodleState) {
+TEST_F(DoodleFetcherImplTest, EmptyResponsesCausesNoDoodleState) {
   DoodleState state(DoodleState::AVAILABLE);
   base::Optional<DoodleConfig> response;
 
@@ -310,7 +310,7 @@ TEST_F(DoodleFetcherTest, EmptyResponsesCausesNoDoodleState) {
   EXPECT_FALSE(response.has_value());
 }
 
-TEST_F(DoodleFetcherTest, ResponseContainsExactlyTheSampleImages) {
+TEST_F(DoodleFetcherImplTest, ResponseContainsExactlyTheSampleImages) {
   DoodleState state(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response;
 
@@ -374,7 +374,7 @@ TEST_F(DoodleFetcherTest, ResponseContainsExactlyTheSampleImages) {
   EXPECT_TRUE(config.large_cta_image.is_cta);
 }
 
-TEST_F(DoodleFetcherTest, RespondsToMultipleRequestsWithSameFetcher) {
+TEST_F(DoodleFetcherImplTest, RespondsToMultipleRequestsWithSameFetcher) {
   DoodleState state1(DoodleState::NO_DOODLE);
   DoodleState state2(DoodleState::NO_DOODLE);
   base::Optional<DoodleConfig> response1;
@@ -403,7 +403,7 @@ TEST_F(DoodleFetcherTest, RespondsToMultipleRequestsWithSameFetcher) {
   EXPECT_TRUE(response2.has_value());
 }
 
-TEST_F(DoodleFetcherTest, ReceivesBaseUrlFromTracker) {
+TEST_F(DoodleFetcherImplTest, ReceivesBaseUrlFromTracker) {
   doodle_fetcher()->FetchDoodle(
       CreateResponseSavingCallback(/*state=*/nullptr, /*response=*/nullptr));
 
@@ -411,7 +411,7 @@ TEST_F(DoodleFetcherTest, ReceivesBaseUrlFromTracker) {
               Eq(GetGoogleBaseURL().Resolve(kDoodleConfigPath)));
 }
 
-TEST_F(DoodleFetcherTest, OverridesBaseUrlWithCommandLineArgument) {
+TEST_F(DoodleFetcherImplTest, OverridesBaseUrlWithCommandLineArgument) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kGoogleBaseURL, "http://www.google.kz");
 
