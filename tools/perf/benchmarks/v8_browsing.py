@@ -239,11 +239,6 @@ class V8RuntimeStatsMobileBrowsingBenchmark(
   PLATFORM = 'mobile'
   TEST_SUFFIX = ''
 
-  def SetExtraBrowserOptions(self, options):
-    super(V8RuntimeStatsMobileBrowsingBenchmark,
-        self).SetExtraBrowserOptions(options)
-    v8_helper.EnableTurbo(options)
-
   @classmethod
   def ShouldDisable(cls, possible_browser):
     return possible_browser.platform.GetDeviceTypeName() == 'Desktop'
