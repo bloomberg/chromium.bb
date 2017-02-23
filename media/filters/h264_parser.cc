@@ -130,12 +130,7 @@ gfx::ColorSpace H264SPS::GetColorSpace() const {
         video_full_range_flag ? gfx::ColorSpace::RangeID::FULL
                               : gfx::ColorSpace::RangeID::LIMITED);
   } else {
-    // TODO(ccameron/hubbe): Add a uniform way to handle default video frames.
-    return gfx::ColorSpace(
-        gfx::ColorSpace::PrimaryID::BT709, gfx::ColorSpace::TransferID::BT709,
-        gfx::ColorSpace::MatrixID::BT709,
-        video_full_range_flag ? gfx::ColorSpace::RangeID::FULL
-                              : gfx::ColorSpace::RangeID::LIMITED);
+    return gfx::ColorSpace();
   }
 }
 

@@ -12,6 +12,7 @@
 #include "media/video/jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
+#include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::JpegDecodeAccelerator::Error,
@@ -29,6 +30,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::VideoDecodeAccelerator::Config)
   IPC_STRUCT_TRAITS_MEMBER(supported_output_formats)
   IPC_STRUCT_TRAITS_MEMBER(sps)
   IPC_STRUCT_TRAITS_MEMBER(pps)
+  IPC_STRUCT_TRAITS_MEMBER(color_space)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::CreateVideoEncoderParams)

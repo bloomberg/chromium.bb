@@ -2130,7 +2130,10 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
   // Attempt to retrieve an output frame from the decoder. If we have one,
   // return and proceed when the output frame is processed. If we don't have a
   // frame then we are done.
-  DoDecode(config_change_detector_->current_color_space());
+  gfx::ColorSpace color_space = config_change_detector_->current_color_space();
+  if (!color_space.IsValid())
+    color_space = config_.color_space;
+  DoDecode(color_space);
   if (OutputSamplesPresent())
     return;
 
@@ -2180,6 +2183,8 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   }
 
   gfx::ColorSpace color_space = config_change_detector_->current_color_space();
+  if (!color_space.IsValid())
+    color_space = config_.color_space;
 
   if (!inputs_before_decode_) {
     TRACE_EVENT_ASYNC_BEGIN0("gpu", "DXVAVideoDecodeAccelerator.Decoding",

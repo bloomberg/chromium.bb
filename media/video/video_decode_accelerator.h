@@ -169,6 +169,9 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // Each SPS and PPS is prefixed with the Annex B framing bytes: 0, 0, 0, 1.
     std::vector<uint8_t> sps;
     std::vector<uint8_t> pps;
+
+    // Color space specified by the container.
+    gfx::ColorSpace color_space;
   };
 
   // Interface for collaborating with picture interface to provide memory for
