@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -100,6 +101,9 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
+    if (!navigation_handle->HasCommitted())
+      return;
+
     if (!nav_entry_committed_callback_.is_null())
       nav_entry_committed_callback_.Run();
   }
