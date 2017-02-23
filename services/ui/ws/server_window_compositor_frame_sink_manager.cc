@@ -109,21 +109,6 @@ void ServerWindowCompositorFrameSinkManager::RemoveChildFrameSinkId(
   frame_sink_data_->compositor_frame_sink->RemoveChildFrameSink(frame_sink_id);
 }
 
-gfx::Size ServerWindowCompositorFrameSinkManager::GetLatestFrameSize() const {
-  if (!frame_sink_data_)
-    return gfx::Size();
-
-  return frame_sink_data_->latest_submitted_surface_info.size_in_pixels();
-}
-
-void ServerWindowCompositorFrameSinkManager::SetLatestSurfaceInfo(
-    const cc::SurfaceInfo& surface_info) {
-  if (!frame_sink_data_)
-    frame_sink_data_ = base::MakeUnique<CompositorFrameSinkData>();
-
-  frame_sink_data_->latest_submitted_surface_info = surface_info;
-}
-
 void ServerWindowCompositorFrameSinkManager::OnRootChanged(
     ServerWindow* old_root,
     ServerWindow* new_root) {
@@ -146,12 +131,10 @@ CompositorFrameSinkData::~CompositorFrameSinkData() {}
 
 CompositorFrameSinkData::CompositorFrameSinkData(
     CompositorFrameSinkData&& other)
-    : latest_submitted_surface_info(other.latest_submitted_surface_info),
-      compositor_frame_sink(std::move(other.compositor_frame_sink)) {}
+    : compositor_frame_sink(std::move(other.compositor_frame_sink)) {}
 
 CompositorFrameSinkData& CompositorFrameSinkData::operator=(
     CompositorFrameSinkData&& other) {
-  latest_submitted_surface_info = other.latest_submitted_surface_info;
   compositor_frame_sink = std::move(other.compositor_frame_sink);
   return *this;
 }

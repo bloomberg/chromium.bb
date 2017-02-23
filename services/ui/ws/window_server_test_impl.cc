@@ -13,16 +13,6 @@
 namespace ui {
 namespace ws {
 
-namespace {
-
-bool WindowHasValidFrame(const ServerWindow* window) {
-  const ServerWindowCompositorFrameSinkManager* manager =
-      window->compositor_frame_sink_manager();
-  return manager && !manager->GetLatestFrameSize().IsEmpty();
-}
-
-}  // namespace
-
 WindowServerTestImpl::WindowServerTestImpl(WindowServer* window_server)
     : window_server_(window_server) {}
 
@@ -35,7 +25,7 @@ void WindowServerTestImpl::OnWindowPaint(
   WindowTree* tree = window_server_->GetTreeWithClientName(name);
   if (!tree)
     return;
-  if (tree->HasRoot(window) && WindowHasValidFrame(window)) {
+  if (tree->HasRoot(window) && window->compositor_frame_sink_manager()) {
     cb.Run(true);
     window_server_->SetPaintCallback(base::Callback<void(ServerWindow*)>());
   }
@@ -47,7 +37,7 @@ void WindowServerTestImpl::EnsureClientHasDrawnWindow(
   WindowTree* tree = window_server_->GetTreeWithClientName(client_name);
   if (tree) {
     for (const ServerWindow* window : tree->roots()) {
-      if (WindowHasValidFrame(window)) {
+      if (window->compositor_frame_sink_manager()) {
         callback.Run(true);
         return;
       }

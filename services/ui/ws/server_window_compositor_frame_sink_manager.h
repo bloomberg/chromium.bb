@@ -27,7 +27,6 @@ struct CompositorFrameSinkData {
 
   CompositorFrameSinkData& operator=(CompositorFrameSinkData&& other);
 
-  cc::SurfaceInfo latest_submitted_surface_info;
   cc::mojom::MojoCompositorFrameSinkPrivatePtr compositor_frame_sink;
   cc::mojom::MojoCompositorFrameSinkPrivateRequest
       pending_compositor_frame_sink_request;
@@ -62,9 +61,6 @@ class ServerWindowCompositorFrameSinkManager {
   // assocaited with the provided |frame_sink_id|.
   void AddChildFrameSinkId(const cc::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSinkId(const cc::FrameSinkId& frame_sink_id);
-
-  gfx::Size GetLatestFrameSize() const;
-  void SetLatestSurfaceInfo(const cc::SurfaceInfo& surface_info);
 
   void OnRootChanged(ServerWindow* old_root, ServerWindow* new_root);
 

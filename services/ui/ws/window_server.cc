@@ -774,12 +774,6 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
   if (!window)
     return;
 
-  // Cache the last submitted surface ID in the window server.
-  // DisplayCompositorFrameSink may submit a CompositorFrame without
-  // creating a CompositorFrameSinkManager.
-  window->GetOrCreateCompositorFrameSinkManager()->SetLatestSurfaceInfo(
-      surface_info);
-
   // FrameGenerator will add an appropriate reference for the new surface.
   DCHECK(display_manager_->GetDisplayContaining(window));
   auto* display = display_manager_->GetDisplayContaining(window);
