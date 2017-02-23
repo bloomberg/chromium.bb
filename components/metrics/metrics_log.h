@@ -19,7 +19,6 @@
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 
-class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -173,15 +172,11 @@ class MetricsLog {
   // call to RecordStabilityMetrics().
   bool HasStabilityMetrics() const;
 
-  // Within the stability group, write required attributes.
-  void WriteRequiredStabilityAttributes(PrefService* pref);
-
   // Within the stability group, write attributes that need to be updated asap
   // and can't be delayed until the user decides to restart chromium.
   // Delaying these stats would bias metrics away from happy long lived
   // chromium processes (ones that don't crash, and keep on running).
-  void WriteRealtimeStabilityAttributes(PrefService* pref,
-                                        base::TimeDelta incremental_uptime,
+  void WriteRealtimeStabilityAttributes(base::TimeDelta incremental_uptime,
                                         base::TimeDelta uptime);
 
   // closed_ is true when record has been packed up for sending, and should

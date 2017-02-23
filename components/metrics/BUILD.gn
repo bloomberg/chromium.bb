@@ -27,6 +27,8 @@ static_library("metrics") {
     "drive_metrics_provider_win.cc",
     "enabled_state_provider.cc",
     "enabled_state_provider.h",
+    "environment_recorder.cc",
+    "environment_recorder.h",
     "execution_phase.cc",
     "execution_phase.h",
     "file_metrics_provider.cc",
@@ -73,6 +75,8 @@ static_library("metrics") {
     "persisted_logs_metrics_impl.h",
     "stability_metrics_helper.cc",
     "stability_metrics_helper.h",
+    "stability_metrics_provider.cc",
+    "stability_metrics_provider.h",
     "system_memory_stats_recorder.h",
     "system_memory_stats_recorder_linux.cc",
     "system_memory_stats_recorder_win.cc",
@@ -311,6 +315,7 @@ source_set("unit_tests") {
     "daily_event_unittest.cc",
     "data_use_tracker_unittest.cc",
     "drive_metrics_provider_unittest.cc",
+    "environment_recorder_unittest.cc",
     "file_metrics_provider_unittest.cc",
     "histogram_encoder_unittest.cc",
     "machine_id_provider_win_unittest.cc",
@@ -325,6 +330,7 @@ source_set("unit_tests") {
     "profiler/profiler_metrics_provider_unittest.cc",
     "profiler/tracking_synchronizer_unittest.cc",
     "stability_metrics_helper_unittest.cc",
+    "stability_metrics_provider_unittest.cc",
     "ui/screen_info_metrics_provider_unittest.cc",
   ]
 

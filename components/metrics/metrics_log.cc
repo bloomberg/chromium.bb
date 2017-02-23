@@ -9,19 +9,15 @@
 #include <algorithm>
 #include <string>
 
-#include "base/base64.h"
 #include "base/build_time.h"
 #include "base/cpu.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/sha1.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/metrics/environment_recorder.h"
 #include "components/metrics/histogram_encoder.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_provider.h"
@@ -51,12 +47,6 @@ namespace {
 // Any id less than 16 bytes is considered to be a testing id.
 bool IsTestingID(const std::string& id) {
   return id.size() < 16;
-}
-
-// Computes a SHA-1 hash of |data| and returns it as a hex string.
-std::string ComputeSHA1(const std::string& data) {
-  const std::string sha1 = base::SHA1HashString(data);
-  return base::HexEncode(sha1.data(), sha1.size());
 }
 
 void WriteFieldTrials(const std::vector<ActiveGroupId>& field_trial_ids,
@@ -109,21 +99,7 @@ MetricsLog::~MetricsLog() {
 
 // static
 void MetricsLog::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kStabilityCrashCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityIncompleteSessionEndCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityLaunchCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationFail, 0);
-  registry->RegisterIntegerPref(
-      prefs::kStabilityBreakpadRegistrationSuccess, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityDebuggerPresent, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityDebuggerNotPresent, 0);
-  registry->RegisterStringPref(prefs::kStabilitySavedSystemProfile,
-                               std::string());
-  registry->RegisterStringPref(prefs::kStabilitySavedSystemProfileHash,
-                               std::string());
-  registry->RegisterIntegerPref(prefs::kStabilityDeferredCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityDiscardCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityVersionMismatchCount, 0);
+  EnvironmentRecorder::RegisterPrefs(registry);
 }
 
 // static
@@ -210,91 +186,17 @@ void MetricsLog::RecordStabilityMetrics(
   DCHECK(HasEnvironment());
   DCHECK(!HasStabilityMetrics());
 
-  PrefService* pref = local_state_;
-  DCHECK(pref);
-
-  // Get stability attributes out of Local State, zeroing out stored values.
-  // NOTE: This could lead to some data loss if this report isn't successfully
-  //       sent, but that's true for all the metrics.
-
-  WriteRequiredStabilityAttributes(pref);
-
   // Record recent delta for critical stability metrics.  We can't wait for a
   // restart to gather these, as that delay biases our observation away from
   // users that run happily for a looooong time.  We send increments with each
   // uma log upload, just as we send histogram data.
-  WriteRealtimeStabilityAttributes(pref, incremental_uptime, uptime);
+  WriteRealtimeStabilityAttributes(incremental_uptime, uptime);
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
   for (size_t i = 0; i < metrics_providers.size(); ++i) {
     if (log_type() == INITIAL_STABILITY_LOG)
       metrics_providers[i]->ProvideInitialStabilityMetrics(system_profile);
     metrics_providers[i]->ProvideStabilityMetrics(system_profile);
-  }
-
-  SystemProfileProto::Stability* stability =
-      system_profile->mutable_stability();
-
-  int incomplete_shutdown_count =
-      pref->GetInteger(prefs::kStabilityIncompleteSessionEndCount);
-  if (incomplete_shutdown_count) {
-    pref->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
-    stability->set_incomplete_shutdown_count(incomplete_shutdown_count);
-  }
-
-  int breakpad_registration_success_count =
-      pref->GetInteger(prefs::kStabilityBreakpadRegistrationSuccess);
-  if (breakpad_registration_success_count) {
-    pref->SetInteger(prefs::kStabilityBreakpadRegistrationSuccess, 0);
-    stability->set_breakpad_registration_success_count(
-        breakpad_registration_success_count);
-  }
-
-  int breakpad_registration_failure_count =
-      pref->GetInteger(prefs::kStabilityBreakpadRegistrationFail);
-  if (breakpad_registration_failure_count) {
-    pref->SetInteger(prefs::kStabilityBreakpadRegistrationFail, 0);
-    stability->set_breakpad_registration_failure_count(
-        breakpad_registration_failure_count);
-  }
-
-  int debugger_present_count =
-      pref->GetInteger(prefs::kStabilityDebuggerPresent);
-  if (debugger_present_count) {
-    pref->SetInteger(prefs::kStabilityDebuggerPresent, 0);
-    stability->set_debugger_present_count(debugger_present_count);
-  }
-
-  int debugger_not_present_count =
-      pref->GetInteger(prefs::kStabilityDebuggerNotPresent);
-  if (debugger_not_present_count) {
-    pref->SetInteger(prefs::kStabilityDebuggerNotPresent, 0);
-    stability->set_debugger_not_present_count(debugger_not_present_count);
-  }
-
-  // Note: only logging the following histograms for non-zero values.
-
-  int deferred_count = pref->GetInteger(prefs::kStabilityDeferredCount);
-  if (deferred_count) {
-    local_state_->SetInteger(prefs::kStabilityDeferredCount, 0);
-    UMA_STABILITY_HISTOGRAM_COUNTS_100(
-        "Stability.Internals.InitialStabilityLogDeferredCount", deferred_count);
-  }
-
-  int discard_count = local_state_->GetInteger(prefs::kStabilityDiscardCount);
-  if (discard_count) {
-    local_state_->SetInteger(prefs::kStabilityDiscardCount, 0);
-    UMA_STABILITY_HISTOGRAM_COUNTS_100("Stability.Internals.DataDiscardCount",
-                                       discard_count);
-  }
-
-  int version_mismatch_count =
-      local_state_->GetInteger(prefs::kStabilityVersionMismatchCount);
-  if (version_mismatch_count) {
-    local_state_->SetInteger(prefs::kStabilityVersionMismatchCount, 0);
-    UMA_STABILITY_HISTOGRAM_COUNTS_100(
-        "Stability.Internals.VersionMismatchCount",
-        version_mismatch_count);
   }
 }
 
@@ -344,26 +246,7 @@ bool MetricsLog::HasStabilityMetrics() const {
   return uma_proto()->system_profile().stability().has_launch_count();
 }
 
-// The server refuses data that doesn't have certain values.  crashcount and
-// launchcount are currently "required" in the "stability" group.
-// TODO(isherman): Stop writing these attributes specially once the migration to
-// protobufs is complete.
-void MetricsLog::WriteRequiredStabilityAttributes(PrefService* pref) {
-  int launch_count = pref->GetInteger(prefs::kStabilityLaunchCount);
-  if (launch_count)
-    pref->SetInteger(prefs::kStabilityLaunchCount, 0);
-  int crash_count = pref->GetInteger(prefs::kStabilityCrashCount);
-  if (crash_count)
-    pref->SetInteger(prefs::kStabilityCrashCount, 0);
-
-  SystemProfileProto::Stability* stability =
-      uma_proto()->mutable_system_profile()->mutable_stability();
-  stability->set_launch_count(launch_count);
-  stability->set_crash_count(crash_count);
-}
-
 void MetricsLog::WriteRealtimeStabilityAttributes(
-    PrefService* pref,
     base::TimeDelta incremental_uptime,
     base::TimeDelta uptime) {
   // Update the stats which are critical for real-time stability monitoring.
@@ -419,41 +302,17 @@ std::string MetricsLog::RecordEnvironment(
   for (size_t i = 0; i < metrics_providers.size(); ++i)
     metrics_providers[i]->ProvideSystemProfileMetrics(system_profile);
 
-  std::string serialized_system_profile;
-  std::string base64_system_profile;
-  if (system_profile->SerializeToString(&serialized_system_profile)) {
-    // Persist the system profile to disk. In the event of an unclean shutdown,
-    // it will be used as part of the initial stability report.
-    base::Base64Encode(serialized_system_profile, &base64_system_profile);
-    PrefService* local_state = local_state_;
-    local_state->SetString(prefs::kStabilitySavedSystemProfile,
-                           base64_system_profile);
-    local_state->SetString(prefs::kStabilitySavedSystemProfileHash,
-                           ComputeSHA1(serialized_system_profile));
-  }
-
-  return serialized_system_profile;
+  EnvironmentRecorder recorder(local_state_);
+  return recorder.SerializeAndRecordEnvironmentToPrefs(*system_profile);
 }
 
 bool MetricsLog::LoadSavedEnvironmentFromPrefs(std::string* app_version) {
   DCHECK(app_version);
   app_version->clear();
 
-  PrefService* local_state = local_state_;
-  const std::string base64_system_profile =
-      local_state->GetString(prefs::kStabilitySavedSystemProfile);
-  if (base64_system_profile.empty())
-    return false;
-  const std::string system_profile_hash =
-      local_state->GetString(prefs::kStabilitySavedSystemProfileHash);
-
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
-  std::string serialized_system_profile;
-
-  bool success =
-      base::Base64Decode(base64_system_profile, &serialized_system_profile) &&
-      ComputeSHA1(serialized_system_profile) == system_profile_hash &&
-      system_profile->ParseFromString(serialized_system_profile);
+  EnvironmentRecorder recorder(local_state_);
+  bool success = recorder.LoadEnvironmentFromPrefs(system_profile);
   if (success)
     *app_version = system_profile->app_version();
   return success;

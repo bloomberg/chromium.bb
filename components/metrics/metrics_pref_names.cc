@@ -128,18 +128,9 @@ const char kStabilityExtensionRendererLaunchCount[] =
 const char kStabilityIncompleteSessionEndCount[] =
     "user_experience_metrics.stability.incomplete_session_end_count";
 
-// Time when the app was last known to be running, in seconds since
-// the epoch.
-const char kStabilityLastTimestampSec[] =
-    "user_experience_metrics.stability.last_timestamp_sec";
-
 // Number of times the application was launched since last report.
 const char kStabilityLaunchCount[] =
     "user_experience_metrics.stability.launch_count";
-
-// Time when the app was last launched, in seconds since the epoch.
-const char kStabilityLaunchTimeSec[] =
-    "user_experience_metrics.stability.launch_time_sec";
 
 // Number of times a page load event occurred since the last report.
 const char kStabilityPageLoadCount[] =

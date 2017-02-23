@@ -20,6 +20,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/client_info.h"
+#include "components/metrics/environment_recorder.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -212,10 +213,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.
-  GetLocalState()->SetInt64(prefs::kStabilityStatsBuildTime,
-                            MetricsLog::GetBuildTime());
-  GetLocalState()->SetString(prefs::kStabilityStatsVersion,
-                             client.GetVersionString());
+  EnvironmentRecorder(GetLocalState())
+      .SetBuildtimeAndVersion(MetricsLog::GetBuildTime(),
+                              client.GetVersionString());
 
   // Set the clean exit flag, as that will otherwise cause a stabilty
   // log to be produced, irrespective provider requests.
@@ -284,10 +284,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.
-  GetLocalState()->SetInt64(prefs::kStabilityStatsBuildTime,
-                            MetricsLog::GetBuildTime());
-  GetLocalState()->SetString(prefs::kStabilityStatsVersion,
-                             client.GetVersionString());
+  EnvironmentRecorder(GetLocalState())
+      .SetBuildtimeAndVersion(MetricsLog::GetBuildTime(),
+                              client.GetVersionString());
 
   GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, false);
 

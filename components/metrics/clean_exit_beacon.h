@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace metrics {
@@ -31,6 +32,9 @@ class CleanExitBeacon {
 
   // Writes the provided beacon value.
   void WriteBeaconValue(bool exited_cleanly);
+
+  // Registers local state prefs used by this class.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   PrefService* const local_state_;

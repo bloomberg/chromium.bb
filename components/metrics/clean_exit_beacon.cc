@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
 #if defined(OS_WIN)
@@ -60,6 +61,11 @@ CleanExitBeacon::CleanExitBeacon(const base::string16& backup_registry_key,
 }
 
 CleanExitBeacon::~CleanExitBeacon() {
+}
+
+// static
+void CleanExitBeacon::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kStabilityExitedCleanly, true);
 }
 
 void CleanExitBeacon::WriteBeaconValue(bool value) {

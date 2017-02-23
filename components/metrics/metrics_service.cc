@@ -148,6 +148,7 @@
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "components/metrics/data_use_tracker.h"
+#include "components/metrics/environment_recorder.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -157,6 +158,7 @@
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/metrics_upload_scheduler.h"
+#include "components/metrics/stability_metrics_provider.h"
 #include "components/metrics/url_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -235,19 +237,15 @@ MetricsService::ShutdownCleanliness MetricsService::clean_shutdown_status_ =
 
 // static
 void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
+  CleanExitBeacon::RegisterPrefs(registry);
   MetricsStateManager::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
+  StabilityMetricsProvider::RegisterPrefs(registry);
   DataUseTracker::RegisterPrefs(registry);
+  ExecutionPhaseManager::RegisterPrefs(registry);
 
   registry->RegisterInt64Pref(prefs::kInstallDate, 0);
 
-  registry->RegisterInt64Pref(prefs::kStabilityLaunchTimeSec, 0);
-  registry->RegisterInt64Pref(prefs::kStabilityLastTimestampSec, 0);
-  registry->RegisterStringPref(prefs::kStabilityStatsVersion, std::string());
-  registry->RegisterInt64Pref(prefs::kStabilityStatsBuildTime, 0);
-  registry->RegisterBooleanPref(prefs::kStabilityExitedCleanly, true);
-  ExecutionPhaseManager::RegisterPrefs(registry);
-  registry->RegisterBooleanPref(prefs::kStabilitySessionEndCompleted, true);
   registry->RegisterIntegerPref(prefs::kMetricsSessionID, -1);
 
   registry->RegisterListPref(prefs::kMetricsInitialLogs);
@@ -284,6 +282,9 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
   int64_t install_date = local_state_->GetInt64(prefs::kInstallDate);
   if (install_date == 0)
     local_state_->SetInt64(prefs::kInstallDate, base::Time::Now().ToTimeT());
+
+  RegisterMetricsProvider(std::unique_ptr<metrics::MetricsProvider>(
+      new StabilityMetricsProvider(local_state_)));
 }
 
 MetricsService::~MetricsService() {
@@ -505,36 +506,17 @@ void MetricsService::SetExecutionPhase(ExecutionPhase execution_phase,
 }
 
 void MetricsService::RecordBreakpadRegistration(bool success) {
-  if (!success)
-    IncrementPrefValue(prefs::kStabilityBreakpadRegistrationFail);
-  else
-    IncrementPrefValue(prefs::kStabilityBreakpadRegistrationSuccess);
+  StabilityMetricsProvider(local_state_).RecordBreakpadRegistration(success);
 }
 
 void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
-  if (!has_debugger)
-    IncrementPrefValue(prefs::kStabilityDebuggerNotPresent);
-  else
-    IncrementPrefValue(prefs::kStabilityDebuggerPresent);
+  StabilityMetricsProvider(local_state_)
+      .RecordBreakpadHasDebugger(has_debugger);
 }
 
 void MetricsService::ClearSavedStabilityMetrics() {
   for (auto& provider : metrics_providers_)
     provider->ClearSavedStabilityMetrics();
-
-  // Reset the prefs that are managed by MetricsService/MetricsLog directly.
-  local_state_->SetInteger(prefs::kStabilityBreakpadRegistrationSuccess, 0);
-  local_state_->SetInteger(prefs::kStabilityBreakpadRegistrationFail, 0);
-  local_state_->SetInteger(prefs::kStabilityCrashCount, 0);
-  local_state_->SetInteger(prefs::kStabilityDebuggerPresent, 0);
-  local_state_->SetInteger(prefs::kStabilityDebuggerNotPresent, 0);
-  local_state_->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
-  local_state_->SetInteger(prefs::kStabilityLaunchCount, 0);
-  local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
-  local_state_->SetInteger(prefs::kStabilityDeferredCount, 0);
-  // Note: kStabilityDiscardCount is not cleared as its intent is to measure
-  // the number of times data is discarded, even across versions.
-  local_state_->SetInteger(prefs::kStabilityVersionMismatchCount, 0);
 }
 
 void MetricsService::PushExternalLog(const std::string& log) {
@@ -564,19 +546,12 @@ void MetricsService::InitializeMetricsState() {
   const int64_t buildtime = MetricsLog::GetBuildTime();
   const std::string version = client_->GetVersionString();
 
-  // Delete deprecated prefs
-  // TODO(holte): Remove these in M58
-  local_state_->ClearPref(prefs::kStabilityLaunchTimeSec);
-  local_state_->ClearPref(prefs::kStabilityLastTimestampSec);
-
   bool version_changed = false;
-  int64_t previous_buildtime =
-      local_state_->GetInt64(prefs::kStabilityStatsBuildTime);
-  std::string previous_version =
-      local_state_->GetString(prefs::kStabilityStatsVersion);
+  EnvironmentRecorder recorder(local_state_);
+  int64_t previous_buildtime = recorder.GetLastBuildtime();
+  std::string previous_version = recorder.GetLastVersion();
   if (previous_buildtime != buildtime || previous_version != version) {
-    local_state_->SetString(prefs::kStabilityStatsVersion, version);
-    local_state_->SetInt64(prefs::kStabilityStatsBuildTime, buildtime);
+    recorder.SetBuildtimeAndVersion(buildtime, version);
     version_changed = true;
   }
 
@@ -584,8 +559,9 @@ void MetricsService::InitializeMetricsState() {
 
   session_id_ = local_state_->GetInteger(prefs::kMetricsSessionID);
 
+  StabilityMetricsProvider provider(local_state_);
   if (!clean_exit_beacon_.exited_cleanly()) {
-    IncrementPrefValue(prefs::kStabilityCrashCount);
+    provider.LogCrash();
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
     clean_exit_beacon_.WriteBeaconValue(true);
@@ -608,7 +584,7 @@ void MetricsService::InitializeMetricsState() {
     if (state_manager_->IsMetricsReportingEnabled()) {
       has_initial_stability_log = PrepareInitialStabilityLog(previous_version);
       if (!has_initial_stability_log)
-        IncrementPrefValue(prefs::kStabilityDeferredCount);
+        provider.LogStabilityLogDeferred();
     }
   }
 
@@ -620,7 +596,7 @@ void MetricsService::InitializeMetricsState() {
   // normally results in stats being accumulated).
   if (version_changed && !has_initial_stability_log) {
     ClearSavedStabilityMetrics();
-    IncrementPrefValue(prefs::kStabilityDiscardCount);
+    provider.LogStabilityDataDiscarded();
   }
 
   // If the version changed, the system profile is obsolete and needs to be
@@ -630,25 +606,17 @@ void MetricsService::InitializeMetricsState() {
   // stability log, an operation that requires the previous version's system
   // profile. At this point, stability metrics pertaining to the previous
   // version have been cleared.
-  if (version_changed) {
-    local_state_->ClearPref(prefs::kStabilitySavedSystemProfile);
-    local_state_->ClearPref(prefs::kStabilitySavedSystemProfileHash);
-  }
+  if (version_changed)
+    recorder.ClearEnvironmentFromPrefs();
 
   // Update session ID.
   ++session_id_;
   local_state_->SetInteger(prefs::kMetricsSessionID, session_id_);
 
-  // Stability bookkeeping
-  IncrementPrefValue(prefs::kStabilityLaunchCount);
-
+  // Notify stability metrics providers about the launch.
+  provider.LogLaunch();
   SetExecutionPhase(ExecutionPhase::START_METRICS_RECORDING, local_state_);
-
-  if (!local_state_->GetBoolean(prefs::kStabilitySessionEndCompleted)) {
-    IncrementPrefValue(prefs::kStabilityIncompleteSessionEndCount);
-    // This is marked false when we get a WM_ENDSESSION.
-    local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
-  }
+  provider.CheckLastSessionEndCompleted();
 
   // Call GetUptimes() for the first time, thus allowing all later calls
   // to record incremental uptimes accurately.
@@ -965,7 +933,7 @@ bool MetricsService::PrepareInitialStabilityLog(
     return false;
   }
   if (system_profile_app_version != prefs_previous_version)
-    IncrementPrefValue(prefs::kStabilityVersionMismatchCount);
+    StabilityMetricsProvider(local_state_).LogStabilityVersionMismatch();
 
   log_manager_.PauseCurrentLog();
   log_manager_.BeginLoggingWithLog(std::move(initial_stability_log));
@@ -1094,11 +1062,6 @@ void MetricsService::OnLogUploadComplete(int response_code) {
     scheduler_->UploadFinished(server_is_healthy,
                                log_manager_.has_unsent_logs());
   }
-}
-
-void MetricsService::IncrementPrefValue(const char* path) {
-  int value = local_state_->GetInteger(path);
-  local_state_->SetInteger(path, value + 1);
 }
 
 void MetricsService::IncrementLongPrefsValue(const char* path) {
@@ -1252,7 +1215,7 @@ void MetricsService::LogCleanShutdown(bool end_completed) {
   client_->OnLogCleanShutdown();
   clean_exit_beacon_.WriteBeaconValue(true);
   SetExecutionPhase(ExecutionPhase::SHUTDOWN_COMPLETE, local_state_);
-  local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, end_completed);
+  StabilityMetricsProvider(local_state_).MarkSessionEndCompleted(end_completed);
 }
 
 }  // namespace metrics

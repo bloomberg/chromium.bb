@@ -332,9 +332,6 @@ class MetricsService : public base::HistogramFlattener {
   // Called after transmission completes (either successfully or with failure).
   void OnLogUploadComplete(int response_code);
 
-  // Reads, increments and then sets the specified integer preference.
-  void IncrementPrefValue(const char* path);
-
   // Reads, increments and then sets the specified long preference that is
   // stored as a string.
   void IncrementLongPrefsValue(const char* path);
