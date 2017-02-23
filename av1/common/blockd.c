@@ -130,7 +130,7 @@ void av1_foreach_transformed_block_in_plane(
   // 4x4=0, 8x8=2, 16x16=4, 32x32=6, 64x64=8
   // transform size varies per plane, look it up in a common way.
   const TX_SIZE tx_size = plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
-#if CONFIG_CB4X4
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
 #else

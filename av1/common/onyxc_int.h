@@ -585,8 +585,10 @@ static INLINE void set_plane_n4(MACROBLOCKD *const xd, int bw, int bh) {
     xd->plane[i].width = (bw * MI_SIZE) >> xd->plane[i].subsampling_x;
     xd->plane[i].height = (bh * MI_SIZE) >> xd->plane[i].subsampling_y;
 
+#if !CONFIG_CHROMA_2X2
     xd->plane[i].width = AOMMAX(xd->plane[i].width, 4);
     xd->plane[i].height = AOMMAX(xd->plane[i].height, 4);
+#endif
   }
 }
 
@@ -728,6 +730,9 @@ static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
 
 #if CONFIG_CB4X4
 static INLINE int is_chroma_reference(const int mi_row, const int mi_col) {
+#if CONFIG_CHROMA_2X2
+  return 1;
+#endif
   return !((mi_row & 0x01) || (mi_col & 0x01));
 }
 #endif

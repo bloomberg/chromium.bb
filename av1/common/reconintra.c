@@ -1895,7 +1895,7 @@ static void predict_square_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
   const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
   const int txwpx = tx_size_wide[tx_size];
   const int txhpx = tx_size_high[tx_size];
-#if CONFIG_CB4X4
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
   const int xr_chr_offset = (plane && bsize < BLOCK_8X8) ? 2 : 0;
   const int yd_chr_offset = (plane && bsize < BLOCK_8X8) ? 2 : 0;
 #else
@@ -1918,7 +1918,7 @@ static void predict_square_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
   const PARTITION_TYPE partition = xd->mi[0]->mbmi.partition;
 #endif
 
-#if CONFIG_CB4X4
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
   // force 4x4 chroma component block size.
   if (plane && bsize < BLOCK_8X8) bsize = BLOCK_8X8;
 #endif

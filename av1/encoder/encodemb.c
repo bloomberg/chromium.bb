@@ -887,7 +887,7 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize,
   if (x->skip) return;
 
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-#if CONFIG_CB4X4
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
     if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
       continue;
     if (plane) bsize = AOMMAX(bsize, BLOCK_8X8);

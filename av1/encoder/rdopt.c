@@ -974,7 +974,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   for (plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblock_plane *const p = &x->plane[plane];
     struct macroblockd_plane *const pd = &xd->plane[plane];
-#if CONFIG_CB4X4
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
     const BLOCK_SIZE bs = AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
 #else
     const BLOCK_SIZE bs = get_plane_block_size(bsize, pd);
@@ -3721,7 +3721,7 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   if (ref_best_rd < 0) is_cost_valid = 0;
 
-#if CONFIG_CB4X4
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
   if (x->skip_chroma_rd) return is_cost_valid;
   bsize = AOMMAX(BLOCK_8X8, bsize);
 #endif
@@ -4347,7 +4347,7 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   av1_init_rd_stats(rd_stats);
 
-#if CONFIG_CB4X4
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
   if (x->skip_chroma_rd) return is_cost_valid;
   bsize = AOMMAX(BLOCK_8X8, bsize);
 #endif
@@ -4845,6 +4845,10 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
   // appropriate speed flag is set.
   (void)ctx;
 #if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
+  rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
+                          bsize, max_tx_size);
+#else
   max_tx_size = AOMMAX(max_tx_size, TX_4X4);
   if (x->skip_chroma_rd) {
     *rate_uv = 0;
@@ -4854,10 +4858,13 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
     *mode_uv = DC_PRED;
     return;
   }
-#endif
-
   rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
                           bsize < BLOCK_8X8 ? BLOCK_8X8 : bsize, max_tx_size);
+#endif  // CONFIG_CHROMA_2X2
+#else
+  rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
+                          bsize < BLOCK_8X8 ? BLOCK_8X8 : bsize, max_tx_size);
+#endif  // CONFIG_CB4X4
   *mode_uv = x->e_mbd.mi[0]->mbmi.uv_mode;
 }
 
@@ -9059,7 +9066,9 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                                    [pd[1].subsampling_x][pd[1].subsampling_y];
 
 #if CONFIG_CB4X4
+#if !CONFIG_CHROMA_2X2
   max_uv_tx_size = AOMMAX(max_uv_tx_size, TX_4X4);
+#endif
   if (!x->skip_chroma_rd)
     rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
                             &uv_skip, bsize, max_uv_tx_size);
