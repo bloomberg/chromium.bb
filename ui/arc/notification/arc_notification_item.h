@@ -38,6 +38,7 @@ class ArcNotificationItem {
   void Close(bool by_user);
   void Click();
   void ButtonClick(int button_index);
+  void OpenSettings();
 
   const std::string& notification_key() const { return notification_key_; }
 

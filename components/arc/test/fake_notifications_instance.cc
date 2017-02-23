@@ -21,6 +21,9 @@ void FakeNotificationsInstance::CreateNotificationWindow(
 void FakeNotificationsInstance::CloseNotificationWindow(
     const std::string& key) {}
 
+void FakeNotificationsInstance::OpenNotificationSettings(
+    const std::string& key) {}
+
 void FakeNotificationsInstance::Init(mojom::NotificationsHostPtr host_ptr) {}
 
 const std::vector<std::pair<std::string, mojom::ArcNotificationEvent>>&

@@ -115,7 +115,7 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
   auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service()->notifications(), SendNotificationEventToAndroid);
 
-  // On shutdown, the ARC channel may quit earlier then notifications.
+  // On shutdown, the ARC channel may quit earlier than notifications.
   if (!notifications_instance) {
     VLOG(2) << "ARC Notification (key: " << key
             << ") is closed, but the ARC channel has already gone.";
@@ -137,7 +137,7 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
   auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service()->notifications(), SendNotificationEventToAndroid);
 
-  // On shutdown, the ARC channel may quit earlier then notifications.
+  // On shutdown, the ARC channel may quit earlier than notifications.
   if (!notifications_instance) {
     VLOG(2) << "ARC Notification (key: " << key
             << ") is clicked, but the ARC channel has already gone.";
@@ -160,7 +160,7 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
   auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service()->notifications(), SendNotificationEventToAndroid);
 
-  // On shutdown, the ARC channel may quit earlier then notifications.
+  // On shutdown, the ARC channel may quit earlier than notifications.
   if (!notifications_instance) {
     VLOG(2) << "ARC Notification (key: " << key
             << ")'s button is clicked, but the ARC channel has already gone.";
@@ -221,6 +221,23 @@ void ArcNotificationManager::CloseNotificationWindow(const std::string& key) {
     return;
 
   notifications_instance->CloseNotificationWindow(key);
+}
+
+void ArcNotificationManager::OpenNotificationSettings(const std::string& key) {
+  if (items_.find(key) == items_.end()) {
+    DVLOG(3) << "Chrome requests to fire a click event on the notification "
+             << "settings button (key: " << key << "), but it is gone.";
+    return;
+  }
+
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->notifications(), OpenNotificationSettings);
+
+  // On shutdown, the ARC channel may quit earlier than notifications.
+  if (!notifications_instance)
+    return;
+
+  notifications_instance->OpenNotificationSettings(key);
 }
 
 void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
