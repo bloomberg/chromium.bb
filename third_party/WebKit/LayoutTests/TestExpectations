@@ -2557,6 +2557,9 @@ crbug.com/73609 http/tests/media/video-play-stall.html [ Pass Timeout ]
 crbug.com/73609 virtual/mojo-loading/http/tests/media/video-play-stall.html [ Pass Timeout ]
 crbug.com/694467 fast/text/line-break-8bit-after-16bit.html [ Pass Failure ]
 
+# Sheriff failures 2017-02-23
+crbug.com/695352 [ Mac ] virtual/threaded/compositing/visibility/overlays-persist-on-navigation.html [ Pass Crash ]
+
 crbug.com/567293 compositing/masks/mask-with-added-filters.html [ NeedsRebaseline ]
 crbug.com/567293 compositing/masks/mask-with-removed-filters.html [ NeedsRebaseline ]
 crbug.com/567293 compositing/overflow/mask-with-filter.html [ NeedsRebaseline ]
