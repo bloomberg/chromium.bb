@@ -656,36 +656,40 @@ bool IsChromeRegisteredForProtocol(BrowserDistribution* dist,
   return AreEntriesAsDesired(entries, look_for_in);
 }
 
-// This method registers Chrome on Vista by launching an elevated setup.exe.
-// That will show the user the standard Vista elevation prompt. If the user
-// accepts it the new process will make the necessary changes and return SUCCESS
-// that we capture and return.
-// If protocol is non-empty we will also register Chrome as being capable of
-// handling the protocol.
+// This method registers Chrome by launching an elevated setup.exe. That will
+// show the user the standard elevation prompt. If the user accepts it the new
+// process will make the necessary changes and return SUCCESS that we capture
+// and return. If protocol is non-empty we will also register Chrome as being
+// capable of handling the protocol. This is most commonly used on per-user
+// installs on Windows 7 where setup.exe did not have permission to register
+// Chrome during install. It may also be used on all OSs for system-level
+// installs in case Chrome's registration is somehow broken or missing.
 bool ElevateAndRegisterChrome(BrowserDistribution* dist,
                               const base::FilePath& chrome_exe,
                               const base::string16& suffix,
                               const base::string16& protocol) {
-  // Only user-level installs prior to Windows 8 should need to elevate to
-  // register.
-  DCHECK(InstallUtil::IsPerUserInstall(chrome_exe));
-  DCHECK_LT(base::win::GetVersion(), base::win::VERSION_WIN8);
+  // Check for setup.exe in the same directory as chrome.exe, as is the case
+  // when running out of a build output directory.
   base::FilePath exe_path = chrome_exe.DirName().Append(installer::kSetupExe);
+
+  // Failing that, read the path to setup.exe from Chrome's ClientState key,
+  // which is the canonical location of the installer for all types of installs
+  // (see AddUninstallShortcutWorkItems).
+  const bool is_per_user = InstallUtil::IsPerUserInstall(chrome_exe);
   if (!base::PathExists(exe_path)) {
-    HKEY reg_root = InstallUtil::IsPerUserInstall(chrome_exe) ?
-        HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
-    RegKey key(reg_root,
-               dist->GetUninstallRegPath().c_str(),
-               KEY_READ | KEY_WOW64_32KEY);
+    RegKey key(is_per_user ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE,
+               dist->GetStateKey().c_str(), KEY_QUERY_VALUE | KEY_WOW64_32KEY);
     base::string16 uninstall_string;
-    key.ReadValue(installer::kUninstallStringField, &uninstall_string);
-    base::CommandLine command_line =
-        base::CommandLine::FromString(uninstall_string);
-    exe_path = command_line.GetProgram();
+    if (key.ReadValue(installer::kUninstallStringField, &uninstall_string) ==
+        ERROR_SUCCESS) {
+      exe_path = base::FilePath(uninstall_string);
+    }
   }
 
   if (base::PathExists(exe_path)) {
     base::CommandLine cmd(exe_path);
+    if (!is_per_user)
+      cmd.AppendSwitch(installer::switches::kSystemLevel);
     cmd.AppendSwitchPath(installer::switches::kRegisterChromeBrowser,
                          chrome_exe);
     if (!suffix.empty()) {
