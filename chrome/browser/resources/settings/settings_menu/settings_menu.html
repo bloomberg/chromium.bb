@@ -126,11 +126,13 @@
         $i18n{onStartup}
       </a>
       <paper-button toggles id="advancedButton"
-          aria-active-attribute="aria-expanded" active="{{advancedOpened}}">
+          aria-active-attribute="aria-expanded" active="{{advancedOpened}}"
+          hidden="[[!pageVisibility.advancedSettings]]">
         <span>$i18n{advancedPageTitle}</span>
         <iron-icon icon="[[arrowState_(advancedOpened)]]">
         </iron-icon></paper-button>
-      <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]">
+      <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]"
+          hidden="[[!pageVisibility.advancedSettings]]">
         <iron-selector id="subMenu" selectable="a" attr-for-selected="href"
             on-iron-activate="onSelectorActivate_">
 <if expr="chromeos">
