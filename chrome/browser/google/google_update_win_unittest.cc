@@ -533,7 +533,7 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
       : task_runner_(new base::TestSimpleTaskRunner()),
         task_runner_handle_(task_runner_),
         system_level_install_(GetParam()),
-        scoped_install_details_(system_level_install_, 0, true) {}
+        scoped_install_details_(system_level_install_, 0) {}
 
   void SetUp() override {
     ::testing::TestWithParam<bool>::SetUp();
