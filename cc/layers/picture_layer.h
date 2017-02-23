@@ -34,7 +34,7 @@ class CC_EXPORT PictureLayer : public Layer {
   void PushPropertiesTo(LayerImpl* layer) override;
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect) override;
   bool Update() override;
-  void SetLayerMaskType(Layer::LayerMaskType mask_type) override;
+  void SetLayerMaskType(LayerMaskType mask_type) override;
   sk_sp<SkPicture> GetPicture() const override;
 
   bool IsSuitableForGpuRasterization() const override;
@@ -70,7 +70,7 @@ class CC_EXPORT PictureLayer : public Layer {
 
   bool HasDrawableContent() const override;
 
-  Layer::LayerMaskType mask_type() { return mask_type_; }
+  LayerMaskType mask_type() { return mask_type_; }
 
   PictureLayerInputs picture_layer_inputs_;
 
@@ -86,7 +86,7 @@ class CC_EXPORT PictureLayer : public Layer {
   Region last_updated_invalidation_;
 
   int update_source_frame_number_;
-  Layer::LayerMaskType mask_type_;
+  LayerMaskType mask_type_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureLayer);
 };

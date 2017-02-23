@@ -419,7 +419,9 @@ void Layer::SetMaskLayer(Layer* mask_layer) {
     inputs_.mask_layer->RemoveFromParent();
     DCHECK(!inputs_.mask_layer->parent());
     inputs_.mask_layer->SetParent(this);
-    if (inputs_.filters.IsEmpty()) {
+    if (inputs_.filters.IsEmpty() &&
+        (!layer_tree_host_ ||
+         layer_tree_host_->GetSettings().enable_mask_tiling)) {
       inputs_.mask_layer->SetLayerMaskType(
           Layer::LayerMaskType::MULTI_TEXTURE_MASK);
     } else {

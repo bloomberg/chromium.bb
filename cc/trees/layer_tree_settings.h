@@ -97,6 +97,10 @@ class CC_EXPORT LayerTreeSettings {
   // tiles come before lower priority tiles.
   bool check_tile_priority_inversion = false;
 
+  // TODO(sunxd): remove this flag when filter demoting and aa of mask layers
+  // are implemented.
+  bool enable_mask_tiling = false;
+
   // If set to true, the compositor may selectively defer image decodes to the
   // Image Decode Service and raster tiles without images until the decode is
   // ready.

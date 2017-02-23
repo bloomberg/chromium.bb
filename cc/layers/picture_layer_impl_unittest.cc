@@ -1148,7 +1148,7 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
 
   // Mask layers dont create low res since they always fit on one tile.
   std::unique_ptr<FakePictureLayerImpl> mask =
-      FakePictureLayerImpl::CreateMaskWithRasterSource(
+      FakePictureLayerImpl::CreateSingleTextureMaskWithRasterSource(
           host_impl()->pending_tree(), 3, pending_raster_source);
   mask->SetBounds(layer_bounds);
   mask->SetDrawsContent(true);
@@ -1181,7 +1181,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   SetupPendingTree(valid_raster_source);
 
   std::unique_ptr<FakePictureLayerImpl> mask_ptr =
-      FakePictureLayerImpl::CreateMaskWithRasterSource(
+      FakePictureLayerImpl::CreateSingleTextureMaskWithRasterSource(
           host_impl()->pending_tree(), 3, valid_raster_source);
   mask_ptr->SetBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
@@ -1310,7 +1310,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   SetupPendingTree(valid_raster_source);
 
   std::unique_ptr<FakePictureLayerImpl> mask_ptr =
-      FakePictureLayerImpl::CreateMaskWithRasterSource(
+      FakePictureLayerImpl::CreateSingleTextureMaskWithRasterSource(
           host_impl()->pending_tree(), 3, valid_raster_source);
   mask_ptr->SetBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);

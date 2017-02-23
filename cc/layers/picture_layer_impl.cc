@@ -692,13 +692,11 @@ std::unique_ptr<Tile> PictureLayerImpl::CreateTile(
     const Tile::CreateInfo& info) {
   int flags = 0;
 
-  // We don't handle solid color masks, so we shouldn't bother analyzing those.
+  // We don't handle solid color masks if mask tiling is disabled, we also don't
+  // handle solid color single texture masks if the flag is enabled, so we
+  // shouldn't bother analyzing those.
   // Otherwise, always analyze to maximize memory savings.
-  // TODO(sunxd): the condition should be (mask_type_ ==
-  // Layer::LayerMaskType::NOT_MASK
-  // || (layer_tree_impl()->settings().enable_mask_tiling && mask_type ==
-  // Layer::LayerMaskType::MULTI_TEXTURE_MASK)).
-  if (mask_type_ == Layer::LayerMaskType::NOT_MASK)
+  if (mask_type_ != Layer::LayerMaskType::SINGLE_TEXTURE_MASK)
     flags = Tile::USE_PICTURE_ANALYSIS;
 
   if (contents_opaque())
@@ -740,11 +738,7 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
   int max_texture_size =
       layer_tree_impl()->resource_provider()->max_texture_size();
 
-  // TODO(sunxd): the condition should be mask_type_ == Layer::LayerMaskType::
-  // SINGLE_TEXTURE_MASK || (mask_type_ ==
-  // Layer::LayerMaskType::MULTI_TEXTURE_MASK &&
-  // !layer_tree_impl()->settings().enable_mask_tiling)
-  if (mask_type_ != Layer::LayerMaskType::NOT_MASK) {
+  if (mask_type_ == Layer::LayerMaskType::SINGLE_TEXTURE_MASK) {
     // Masks are not tiled, so if we can't cover the whole mask with one tile,
     // we shouldn't have such a tiling at all.
     DCHECK_LE(content_bounds.width(), max_texture_size);
@@ -1178,16 +1172,12 @@ float PictureLayerImpl::MinimumContentsScale() const {
 }
 
 float PictureLayerImpl::MaximumContentsScale() const {
-  // Masks can not have tilings that would become larger than the
-  // max_texture_size since they use a single tile for the entire
-  // tiling. Other layers can have tilings such that dimension * scale
-  // does not overflow.
-  // TODO(sunxd): the condition should be:
-  // mask_type_ == Layer::LayerMaskType::SINGLE_TEXTURE_MASK || (mask_type_ ==
-  // Layer::LayerMaskType::MULTI_TEXTURE_MASK && !layer_tree_impl()->settings().
-  // enable_mask_tiling)
+  // When mask tiling is disabled or the mask is single textured, masks can not
+  // have tilings that would become larger than the max_texture_size since they
+  // use a single tile for the entire tiling. Other layers can have tilings such
+  // that dimension * scale does not overflow.
   float max_dimension = static_cast<float>(
-      mask_type_ != Layer::LayerMaskType::NOT_MASK
+      mask_type_ == Layer::LayerMaskType::SINGLE_TEXTURE_MASK
           ? layer_tree_impl()->resource_provider()->max_texture_size()
           : std::numeric_limits<int>::max());
   float max_scale_width = max_dimension / bounds().width();

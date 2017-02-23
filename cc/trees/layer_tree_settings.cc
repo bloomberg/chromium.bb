@@ -77,6 +77,7 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
              other.max_staging_buffer_usage_in_bytes &&
          gpu_memory_policy == other.gpu_memory_policy &&
          software_memory_policy == other.software_memory_policy &&
+         enable_mask_tiling == other.enable_mask_tiling &&
          LayerTreeDebugState::Equal(initial_debug_state,
                                     other.initial_debug_state);
 }

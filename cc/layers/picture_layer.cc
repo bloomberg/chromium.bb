@@ -27,7 +27,7 @@ scoped_refptr<PictureLayer> PictureLayer::Create(ContentLayerClient* client) {
 PictureLayer::PictureLayer(ContentLayerClient* client)
     : instrumentation_object_tracker_(id()),
       update_source_frame_number_(-1),
-      mask_type_(Layer::LayerMaskType::NOT_MASK) {
+      mask_type_(LayerMaskType::NOT_MASK) {
   picture_layer_inputs_.client = client;
 }
 
@@ -68,8 +68,13 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
 
 void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   Layer::SetLayerTreeHost(host);
+
   if (!host)
     return;
+
+  if (!host->GetSettings().enable_mask_tiling &&
+      mask_type_ == LayerMaskType::MULTI_TEXTURE_MASK)
+    mask_type_ = LayerMaskType::SINGLE_TEXTURE_MASK;
 
   if (!recording_source_)
     recording_source_.reset(new RecordingSource);
@@ -137,7 +142,7 @@ bool PictureLayer::Update() {
   return updated;
 }
 
-void PictureLayer::SetLayerMaskType(Layer::LayerMaskType mask_type) {
+void PictureLayer::SetLayerMaskType(LayerMaskType mask_type) {
   mask_type_ = mask_type;
 }
 
