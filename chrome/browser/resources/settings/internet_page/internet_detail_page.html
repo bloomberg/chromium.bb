@@ -161,26 +161,32 @@
         <!-- Prefer this network. -->
         <template is="dom-if" if="[[showPreferNetwork_(networkProperties))]]">
           <div class="settings-box">
-            <div class="start">$i18n{networkPrefer}</div>
+            <div id="preferNetworkToggleLabel"class="start">
+              $i18n{networkPrefer}
+            </div>
             <cr-policy-network-indicator
                 property="[[networkProperties.Priority]]">
             </cr-policy-network-indicator>
             <paper-toggle-button checked="{{preferNetwork_}}"
                 disabled="[[isNetworkPolicyEnforced(
-                    networkProperties.Priority)]]">
+                    networkProperties.Priority)]]"
+                aria-labelledby="preferNetworkToggleLabel">
             </paper-toggle-button>
           </div>
         </template>
         <!-- Autoconnect. -->
         <template is="dom-if" if="[[showAutoConnect_(networkProperties)]]">
           <div class="settings-box">
-            <div class="start">$i18n{networkAutoConnect}</div>
+            <div id="autoConnectToggleLabel" class="start">
+              $i18n{networkAutoConnect}
+            </div>
             <cr-policy-network-indicator
                 property="[[getManagedAutoConnect_(networkProperties)]]">
             </cr-policy-network-indicator>
             <paper-toggle-button checked="{{autoConnect_}}"
                 disabled="[[!enableAutoConnect_(networkProperties,
-                          globalPolicy)]]">
+                          globalPolicy)]]"
+                aria-labelledby="autoConnectToggleLabel">
             </paper-toggle-button>
           </div>
         </template>

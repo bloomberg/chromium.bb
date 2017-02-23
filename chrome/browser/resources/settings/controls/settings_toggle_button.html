@@ -39,7 +39,7 @@
     <div id="outerRow" noSubLabel$="[[!subLabel]]">
       <div class="flex" on-tap="onLabelWrapperTap_"
           actionable$="[[!controlDisabled_(disabled, pref)]]">
-        <div class="label">
+        <div id="label" class="label">
           [[label]]
         </div>
         <div class="secondary label">[[subLabel]]</div>
@@ -49,7 +49,7 @@
         <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
       </template>
       <paper-toggle-button id="control" checked="{{checked}}"
-          on-change="notifyChangedByUserInteraction"
+          on-change="notifyChangedByUserInteraction" aria-labelledby="label"
           disabled="[[controlDisabled_(disabled, pref)]]">
       </paper-toggle-button>
     </div>

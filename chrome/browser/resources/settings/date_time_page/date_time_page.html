@@ -28,13 +28,16 @@
       }
     </style>
     <div class="settings-box first">
-      <div class="start">$i18n{timeZoneGeolocation}</div>
+      <div id="timezoneGeolocateToggleLabel" class="start">
+        $i18n{timeZoneGeolocation}
+      </div>
       <template is="dom-if" if="[[hasTimeZoneAutoDetectPolicy_]]" restamp>
         <cr-policy-pref-indicator pref="[[fakeTimeZonePolicyPref_]]">
         </cr-policy-pref-indicator>
       </template>
       <paper-toggle-button
           id="timeZoneAutoDetect"
+          aria-labelledby="timezoneGeolocateToggleLabel"
           checked="[[timeZoneAutoDetect_]]"
           disabled="[[hasTimeZoneAutoDetectPolicy_]]"
           on-change="onTimeZoneAutoDetectChange_">

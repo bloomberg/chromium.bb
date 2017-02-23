@@ -86,11 +86,12 @@
       <div class="settings-box embedded first two-line"
           hidden$="[[!showMirror_(displays)]]">
         <div class="start">
-          <div>$i18n{displayMirror}</div>
+          <div id="displayMirrorCheckboxLabel">$i18n{displayMirror}</div>
           <div class="secondary">[[getDisplayMirrorText_(displays)]]</div>
         </div>
         <paper-toggle-button checked="[[isMirrored_(displays)]]"
-            on-tap="onMirroredTap_">
+            on-tap="onMirroredTap_"
+            aria-labelledby="displayMirrorCheckboxLabel">
       </div>
       <div class="settings-box embedded"
           hidden$="[[!showDisplaySelectMenu_(displays, selectedDisplay)]]">

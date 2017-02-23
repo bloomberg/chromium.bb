@@ -76,13 +76,16 @@
     <!-- SIM unlocked -->
     <div class="settings-box two-line"
         hidden$="[[!showSimUnlocked_(networkProperties)]]">
-      <div class="start">$i18n{networkSimLockEnable}</div>
+      <div id="simLockToggleLabel" class="start">
+        $i18n{networkSimLockEnable}
+      </div>
       <paper-button on-tap="onChangePinTap_"
           hidden$="[[!networkProperties.Cellular.SIMLockStatus.LockEnabled]]">
         $i18n{networkSimChangePin}
       </paper-button>
       <paper-toggle-button on-change="onSimLockEnabledChange_"
-          checked="[[networkProperties.Cellular.SIMLockStatus.LockEnabled]]">
+          checked="[[networkProperties.Cellular.SIMLockStatus.LockEnabled]]"
+          aria-labelledby="simLockToggleLabel">
       </paper-toggle-button>
     </div>
 

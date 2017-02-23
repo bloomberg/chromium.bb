@@ -8,8 +8,9 @@
   <template>
     <style include="internet-shared"></style>
     <div class="settings-box first">
-      <div class="start">$i18n{networkIPConfigAuto}</div>
-      <paper-toggle-button checked="{{automatic_}}" disabled="[[!editable]]">
+      <div id="autoIPConfigLabel" class="start">$i18n{networkIPConfigAuto}</div>
+      <paper-toggle-button checked="{{automatic_}}" disabled="[[!editable]]"
+          aria-labelledby="autoIPConfigLabel">
       </paper-toggle-button>
     </div>
     <div class="settings-box continuation"

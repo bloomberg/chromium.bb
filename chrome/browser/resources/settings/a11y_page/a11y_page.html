@@ -19,9 +19,12 @@
         section="a11y">
       <neon-animatable route-path="default">
         <div class="settings-box first">
-          <div class="start">$i18n{optionsInMenuLabel}</div>
+          <div id="optionsInMenuLabel" class="start">
+            $i18n{optionsInMenuLabel}
+          </div>
           <paper-toggle-button id="optionsInMenuToggle"
-              checked="{{prefs.settings.a11y.enable_menu.value}}">
+              checked="{{prefs.settings.a11y.enable_menu.value}}"
+              aria-labelledby="optionsInMenuLabel">
           </paper-toggle-button>
         </div>
         <template is="dom-if" if="[[!isGuest_]]">

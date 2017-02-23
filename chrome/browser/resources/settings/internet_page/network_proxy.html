@@ -126,10 +126,13 @@
     <div id="proxyDiv" class="settings-box continuation single-column indent"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.MANUAL)]]">
       <div class="flex layout horizontal">
-        <div class="flex">$i18n{networkProxyUseSame}</div>
+        <div id="networkProxyToggleLabel" class="flex">
+          $i18n{networkProxyUseSame}
+        </div>
         <paper-toggle-button checked="{{useSameProxy_}}"
             disabled="[[!isEditable_('Type', networkProperties, editable,
-                useSharedProxies_)]]">
+                useSharedProxies_)]]"
+            aria-labelledby="networkProxyToggleLabel">
         </paper-toggle-button>
       </div>
       <div hidden$="[[!useSameProxy_]]" class="layout vertical">

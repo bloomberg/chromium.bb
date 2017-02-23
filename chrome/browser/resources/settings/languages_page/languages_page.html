@@ -210,7 +210,8 @@
                 </div>
                 <paper-toggle-button on-change="onSpellCheckChange_"
                     disabled="[[!item.language.supportsSpellcheck]]"
-                    checked="[[item.spellCheckEnabled]]">
+                    checked="[[item.spellCheckEnabled]]"
+                    aria-label$="[[item.language.displayName]]">
                 </paper-toggle-button>
               </div>
             </template>
