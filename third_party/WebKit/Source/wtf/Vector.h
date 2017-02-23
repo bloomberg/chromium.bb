@@ -64,6 +64,10 @@ class Deque;
 // Bunch of traits for Vector are defined here, with which you can customize
 // Vector's behavior. In most cases the default traits are appropriate, so you
 // usually don't have to specialize those traits by yourself.
+//
+// The behavior of the implementation below can be controlled by VectorTraits.
+// If you want to change the behavior of your type, take a look at VectorTraits
+// (defined in VectorTraits.h), too.
 
 template <bool needsDestruction, typename T>
 struct VectorDestructor;
@@ -288,8 +292,9 @@ struct VectorElementComparer<std::unique_ptr<T>> {
 };
 
 // A collection of all the traits used by Vector. This is basically an
-// implementation detail of Vector, and you should specialize individual traits
-// defined above, if you want to customize Vector's behavior.
+// implementation detail of Vector, and you probably don't want to change this.
+// If you want to customize Vector's behavior, you should specialize
+// VectorTraits instead (defined in VectorTraits.h).
 template <typename T>
 struct VectorTypeOperations {
   STATIC_ONLY(VectorTypeOperations);
@@ -820,6 +825,108 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
 //
 // Vector
 //
+
+// Vector is a container that works just like std::vector. WTF's Vector has
+// several extra functionalities: inline buffer, behavior customization via
+// traits, and Oilpan support. Those are explained in the sections below.
+//
+// Vector is the most basic container, which stores its element in a contiguous
+// buffer. The buffer is expanded automatically when necessary. The elements
+// are automatically moved to the new buffer. This event is called a
+// reallocation. A reallocation takes O(N)-time (N = number of elements), but
+// its occurrences are rare, so its time cost should not be significant,
+// compared to the time cost of other operations to the vector.
+//
+// Time complexity of key operations is as follows:
+//
+//     * Indexed access -- O(1)
+//     * Insertion or removal of an element at the end -- amortized O(1)
+//     * Other insertion or removal -- O(N)
+//     * Swapping with another vector -- O(1)
+//
+// 1. Iterator invalidation semantics
+//
+// Vector provides STL-compatible iterators and reverse iterators. Iterators
+// are _invalidated_ on certain occasions. Reading an invalidated iterator
+// causes undefined behavior.
+//
+// Iterators are invalidated on the following situations:
+//
+//     * When a reallocation happens on a vector, all the iterators for that
+//       vector will be invalidated.
+//     * Some member functions invalidate part of the existing iterators for
+//       the vector; see comments on the individual functions.
+//     * [Oilpan only] Heap compaction invalidates all the iterators for any
+//       HeapVectors. This means you can only store an iterator on stack, as
+//       a local variable.
+//
+// In this context, pointers or references to an element of a Vector are
+// essentially equivalent to iterators, in that they also become invalid
+// whenever corresponding iterators are invalidated.
+//
+// 2. Inline buffer
+//
+// Vectors may have an _inline buffer_. An inline buffer is a storage area
+// that is contained in the vector itself, along with other metadata like
+// m_size. It is used as a storage space when the vector's elements fit in
+// that space. If the inline buffer becomes full and further space is
+// necessary, an out-of-line buffer is allocated in the heap, and it will
+// take over the role of the inline buffer.
+//
+// The existence of an inline buffer is indicated by non-zero |inlineCapacity|
+// template argument. The value represents the number of elements that can be
+// stored in the inline buffer. Zero |inlineCapacity| means the vector has no
+// inline buffer.
+//
+// An inline buffer increases the size of the Vector instances, and, in trade
+// for that, it gives you several performance benefits, as long as the number
+// of elements do not exceed |inlineCapacity|:
+//
+//     * No heap allocation will be made.
+//     * Memory locality will improve.
+//
+// Generally, having an inline buffer is useful for vectors that (1) are
+// frequently accessed or modified, and (2) contain only a few elements at
+// most.
+//
+// 3. Behavior customization
+//
+// You usually do not need to customize Vector's behavior, since the default
+// behavior is appropriate for normal usage. The behavior is controlled by
+// VectorTypeOperations traits template above. Read VectorTypeOperations
+// and VectorTraits if you want to change the behavior for your types (i.e.
+// if you really want faster vector operations).
+//
+// The default traits basically do the following:
+//
+//     * Skip constructor call and fill zeros with memset for simple types;
+//     * Skip destructor call for simple types;
+//     * Copy or move by memcpy for simple types; and
+//     * Customize the comparisons for smart pointer types, so you can look
+//       up a std::unique_ptr<T> element with a raw pointer, for instance.
+//
+// 4. Oilpan
+//
+// If you want to store garbage collected objects in Vector, (1) use HeapVector
+// (defined in HeapAllocator.h) instead of Vector, and (2) make sure your
+// garbage-collected type is wrapped with Member, like:
+//
+//     HeapVector<Member<Node>> nodes;
+//
+// Unlike normal garbage-collected objects, a HeapVector object itself is
+// NOT a garbage-collected object, but its backing buffer is allocated in
+// Oilpan heap, and it may still carry garbage-collected objects.
+//
+// Even though a HeapVector object is not garbage-collected, you still need
+// to trace it, if you stored it in your class. Also, you can allocate it
+// as a local variable. This is useful when you want to build a vector locally
+// and put it in an on-heap vector with swap().
+//
+// Also, heap compaction, which may happen at any time when Blink code is not
+// running (i.e. Blink code does not appear in the call stack), may invalidate
+// existing iterators for any HeapVectors. So, essentially, you should always
+// allocate an iterator on stack (as a local variable), and you should not
+// store iterators in another heap object.
 
 template <typename T,
           size_t inlineCapacity = 0,
