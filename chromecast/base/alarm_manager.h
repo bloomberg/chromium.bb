@@ -1,0 +1,113 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMECAST_BASE_ALARM_MANAGER_H_
+#define CHROMECAST_BASE_ALARM_MANAGER_H_
+
+#include <queue>
+#include <vector>
+
+#include "base/callback.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+
+namespace base {
+class Clock;
+class SingleThreadTaskRunner;
+class Timer;
+}
+
+namespace chromecast {
+
+// Alarm manager allows setting a task for wall clock time rather than for an
+// elapsed amount of time. This is different from using long PostDelayedTasks
+// that are sensitive to time changes, clock drift, and other factors.
+//
+// Alarm manager polls the wall clock time every 5 seconds. If the clock is
+// equal or past the requested time, the alarm will fire.
+class AlarmManager {
+ public:
+  // Construct and start the alarm manager. The clock poller will run on the
+  // caller's thread.
+  AlarmManager();
+  ~AlarmManager();
+
+  // For testing only. Allows setting a fake clock and using a custom task
+  // runner.
+  AlarmManager(std::unique_ptr<base::Clock> clock,
+               scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Add an alarm.
+  // |task| will be executed at around |time|.
+  //
+  // Any thread can add alarms. The alarm will be fired on the original
+  // thread used to set the alarm.
+  //
+  // When an alarm is added to the alarm manager, the task is guaranteed to not
+  // run before the clock passes the requested time. The task may not run even
+  // if
+  // it is past the requested time if the software is suspended. However, once
+  // woken up, the event will fire within 5 seconds if the target time has
+  // passed.
+  void PostAlarmTask(const base::Closure& task, base::Time time);
+
+ private:
+  class AlarmInfo {
+   public:
+    AlarmInfo(const base::Closure& task,
+              base::Time time,
+              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+    ~AlarmInfo();
+
+    const base::Closure task() const { return task_; }
+    base::Time time() const { return time_; }
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
+      return task_runner_;
+    }
+
+   private:
+    const base::Closure task_;
+    const base::Time time_;
+    const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+    DISALLOW_COPY_AND_ASSIGN(AlarmInfo);
+  };
+
+  // Check if an alarm should fire.
+  void CheckAlarm();
+  // Add the alarm to the queue.
+  void AddAlarm(const base::Closure& task,
+                base::Time time,
+                scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Ordering alarms by earliest time.
+  struct alarm_compare
+      : public std::binary_function<std::unique_ptr<AlarmInfo>&,
+                                    std::unique_ptr<AlarmInfo>&,
+                                    bool> {
+    bool operator()(const std::unique_ptr<AlarmInfo>& lhs,
+                    const std::unique_ptr<AlarmInfo>& rhs) const {
+      return lhs->time() > rhs->time();
+    }
+  };
+
+  // Store a list of the alarms to fire with the earliest getting priority.
+  std::priority_queue<std::unique_ptr<AlarmInfo>,
+                      std::vector<std::unique_ptr<AlarmInfo>>,
+                      alarm_compare>
+      next_alarm_;
+
+  // Poller for wall clock time.
+  std::unique_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Timer> clock_tick_timer_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  base::WeakPtrFactory<AlarmManager> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(AlarmManager);
+};
+
+}  // namespace chromecast
+
+#endif  // CHROMECAST_BASE_ALARM_MANAGER_H_
