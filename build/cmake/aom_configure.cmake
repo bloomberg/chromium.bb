@@ -10,6 +10,9 @@
 ##
 cmake_minimum_required(VERSION 3.2)
 
+include(FindGit)
+include(FindPerl)
+
 include("${AOM_ROOT}/build/cmake/aom_config_defaults.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_tests.cmake")
@@ -67,9 +70,6 @@ if ("${AOM_TARGET_CPU}" STREQUAL "x86" OR "${AOM_TARGET_CPU}" STREQUAL "x86_64")
 endif ()
 
 include("${AOM_ROOT}/build/cmake/targets/${AOM_TARGET_CPU}.cmake")
-
-include(FindGit)
-include(FindPerl)
 
 # Test compiler flags.
 if (MSVC)
