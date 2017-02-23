@@ -1203,7 +1203,7 @@
     ],
 
     'gpu_fyi_tests_chromeos_ozone_release_trybot': [
-      'gpu_fyi_tests', 'release_trybot', 'chromeos', 'ozone',
+      'gpu_fyi_tests', 'release_trybot', 'chromeos', 'ozone', 'system_gbm_libdrm',
     ],
 
     'gpu_fyi_tests_chromeos_release_trybot': [
@@ -1856,6 +1856,10 @@
 
     'static': {
       'gn_args': 'is_component_build=false',
+    },
+
+    'system_gbm_libdrm': {
+      'gn_args': ('use_system_libdrm=true', 'use_system_minigbm=true'),
     },
 
     'syzyasan': {
