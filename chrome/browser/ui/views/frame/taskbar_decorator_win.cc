@@ -8,12 +8,11 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/icon_util.h"
@@ -86,9 +85,12 @@ void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
     bitmap.reset(new SkBitmap(
         profiles::GetAvatarIconAsSquare(*image->ToSkBitmap(), 1)));
   }
-  content::BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-      FROM_HERE, base::Bind(&SetOverlayIcon, hwnd, base::Passed(&bitmap)),
-      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  // TODO(robliao): Annotate this task with .WithCOM() once supported.
+  // https://crbug.com/662122
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::USER_VISIBLE),
+      base::Bind(&SetOverlayIcon, hwnd, base::Passed(&bitmap)));
 }
 
 }  // namespace chrome
