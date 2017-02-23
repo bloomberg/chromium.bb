@@ -65,6 +65,8 @@ class UndoStep : public GarbageCollectedFinalized<UndoStep> {
     return m_endingRootEditableElement.get();
   }
 
+  uint64_t sequenceNumber() const { return m_sequenceNumber; }
+
   DECLARE_TRACE();
 
  private:
@@ -80,6 +82,7 @@ class UndoStep : public GarbageCollectedFinalized<UndoStep> {
   Member<Element> m_startingRootEditableElement;
   Member<Element> m_endingRootEditableElement;
   InputEvent::InputType m_inputType;
+  const uint64_t m_sequenceNumber;
 };
 
 }  // namespace blink

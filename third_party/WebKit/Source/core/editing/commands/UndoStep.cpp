@@ -9,6 +9,10 @@
 
 namespace blink {
 
+namespace {
+uint64_t s_currentSequenceNumber = 0;
+}
+
 UndoStep* UndoStep::create(Document* document,
                            const VisibleSelection& startingSelection,
                            const VisibleSelection& endingSelection,
@@ -25,7 +29,8 @@ UndoStep::UndoStep(Document* document,
       m_endingSelection(endingSelection),
       m_startingRootEditableElement(startingSelection.rootEditableElement()),
       m_endingRootEditableElement(endingSelection.rootEditableElement()),
-      m_inputType(inputType) {}
+      m_inputType(inputType),
+      m_sequenceNumber(++s_currentSequenceNumber) {}
 
 void UndoStep::unapply() {
   DCHECK(m_document);
