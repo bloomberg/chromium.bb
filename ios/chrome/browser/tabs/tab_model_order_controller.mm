@@ -21,33 +21,6 @@
   return self;
 }
 
-- (NSUInteger)insertionIndexForTab:(Tab*)newTab
-                        transition:(ui::PageTransition)transition
-                            opener:(Tab*)parentTab
-                         adjacency:(TabModelOrderConstants::InsertionAdjacency)
-                                       adjacency {
-  if (model_.isEmpty)
-    return 0;
-
-  if (!parentTab)
-    return [self insertionIndexForAppending];
-
-  if (!PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK))
-    return [self insertionIndexForAppending];
-
-  NSUInteger referenceIndex = [model_ indexOfTab:parentTab];
-  Tab* openLocation = [model_ lastTabWithOpener:parentTab];
-  if (openLocation)
-    referenceIndex = [model_ indexOfTab:openLocation];
-
-  DCHECK_NE(referenceIndex, static_cast<NSUInteger>(NSNotFound));
-  return referenceIndex + 1;
-}
-
-- (NSUInteger)insertionIndexForAppending {
-  return model_.count;
-}
-
 - (Tab*)determineNewSelectedTabFromRemovedTab:(Tab*)removedTab {
   // While the desktop version of this code deals in indices, this deals in
   // actual tabs. As a result, the tab only needs to change iff the selection

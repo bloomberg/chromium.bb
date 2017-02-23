@@ -13,10 +13,13 @@ source_set("tabs") {
     "web_state_list_observer.h",
     "web_state_list_observer_bridge.h",
     "web_state_list_observer_bridge.mm",
+    "web_state_list_order_controller.h",
+    "web_state_list_order_controller.mm",
   ]
   deps = [
     "//base",
     "//ios/web",
+    "//ui/base",
   ]
   libs = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -26,6 +29,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "web_state_list_fast_enumeration_helper_unittest.mm",
+    "web_state_list_order_controller_unittest.mm",
     "web_state_list_unittest.mm",
   ]
   deps = [
@@ -34,6 +38,7 @@ source_set("unit_tests") {
     "//ios/web:test_support",
     "//net",
     "//testing/gtest",
+    "//ui/base",
     "//url",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

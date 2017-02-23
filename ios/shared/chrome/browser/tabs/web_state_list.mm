@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_observer.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_order_controller.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -93,7 +94,8 @@ bool WebStateList::WebStateWrapper::WasOpenedBy(const web::WebState* opener,
 }
 
 WebStateList::WebStateList(WebStateOwnership ownership)
-    : web_state_ownership_(ownership) {}
+    : web_state_ownership_(ownership),
+      order_controller_(base::MakeUnique<WebStateListOrderController>(this)) {}
 
 WebStateList::~WebStateList() = default;
 
@@ -151,6 +153,16 @@ void WebStateList::InsertWebState(int index,
 
   for (auto& observer : observers_)
     observer.WebStateInsertedAt(this, web_state, index);
+}
+
+void WebStateList::AppendWebState(ui::PageTransition transition,
+                                  web::WebState* web_state,
+                                  web::WebState* opener) {
+  int index = order_controller_->DetermineInsertionIndex(transition, opener);
+  if (index < 0 || count() < index)
+    index = count();
+
+  InsertWebState(index, web_state, opener);
 }
 
 void WebStateList::MoveWebStateAt(int from_index, int to_index) {

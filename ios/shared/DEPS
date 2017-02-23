@@ -1,5 +1,6 @@
 include_rules = [
   "+ios/web/public",
+  "+ui/base",
   "+net",
 
   # Code in ios/shared is used by both ios/chrome and ios/clean/chrome, so

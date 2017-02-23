@@ -142,7 +142,6 @@ source_set("tabs_internal_arc") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "tab_model_order_controller_unittest.mm",
     "tab_model_unittest.mm",
     "tab_unittest.mm",
   ]

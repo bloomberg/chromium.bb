@@ -240,6 +240,15 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
 // check that.
 - (void)insertTab:(Tab*)tab atIndex:(NSUInteger)index opener:(Tab*)parentTab;
 
+// Helper method to insert |tab| at the given |index| recording |parentTab| as
+// the opener. Broadcasts the proper notifications about the change. The
+// receiver should be set as the parentTabModel for |tab|; this method doesn't
+// check that.
+- (void)insertTab:(Tab*)tab
+          atIndex:(NSUInteger)index
+           opener:(Tab*)parentTab
+       transition:(ui::PageTransition)transition;
+
 @end
 
 @implementation TabModel
@@ -551,14 +560,22 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   return tab;
 }
 
-- (void)insertTab:(Tab*)tab atIndex:(NSUInteger)index opener:(Tab*)parentTab {
+- (void)insertTab:(Tab*)tab
+          atIndex:(NSUInteger)index
+           opener:(Tab*)parentTab
+       transition:(ui::PageTransition)transition {
   DCHECK(tab);
   DCHECK(![_tabRetainer containsObject:tab]);
-  DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
 
   [_tabRetainer addObject:tab];
-  _webStateList.InsertWebState(static_cast<int>(index), tab.webState,
-                               parentTab.webState);
+  if (index == TabModelConstants::kTabPositionAutomatically) {
+    _webStateList.AppendWebState(transition, tab.webState, parentTab.webState);
+  } else {
+    DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
+    const int insertion_index = static_cast<int>(index);
+    _webStateList.InsertWebState(insertion_index, tab.webState,
+                                 parentTab.webState);
+  }
 
   // Persist the session due to a new tab being inserted. If this is a
   // background tab (will not become active), saving now will capture the
@@ -569,7 +586,22 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   ++_newTabCount;
 }
 
+- (void)insertTab:(Tab*)tab atIndex:(NSUInteger)index opener:(Tab*)parentTab {
+  DCHECK(tab);
+  DCHECK(![_tabRetainer containsObject:tab]);
+  DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
+
+  [self insertTab:tab
+          atIndex:index
+           opener:parentTab
+       transition:ui::PAGE_TRANSITION_GENERATED];
+}
+
 - (void)insertTab:(Tab*)tab atIndex:(NSUInteger)index {
+  DCHECK(tab);
+  DCHECK(![_tabRetainer containsObject:tab]);
+  DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
+
   [self insertTab:tab atIndex:index opener:GetOpenerForTab(self, tab)];
 }
 
@@ -861,39 +893,10 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
             browserState:_browserState]);
   [tab webController].webUsageEnabled = webUsageEnabled_;
 
-  if ((PageTransitionCoreTypeIs(params.transition_type,
-                                ui::PAGE_TRANSITION_LINK)) &&
-      (index == TabModelConstants::kTabPositionAutomatically)) {
-    DCHECK(!parentTab || [self indexOfTab:parentTab] != NSNotFound);
-    // Assume tabs opened via link clicks are part of the same "task" as their
-    // parent and are grouped together.
-    TabModelOrderConstants::InsertionAdjacency adjacency =
-        inBackground ? TabModelOrderConstants::kAdjacentAfter
-                     : TabModelOrderConstants::kAdjacentBefore;
-    index = [_orderController insertionIndexForTab:tab
-                                        transition:params.transition_type
-                                            opener:parentTab
-                                         adjacency:adjacency];
-  } else {
-    // For all other types, respect what was passed to us, normalizing values
-    // that are too large.
-    if (index >= self.count)
-      index = [_orderController insertionIndexForAppending];
-  }
-
-  if (PageTransitionCoreTypeIs(params.transition_type,
-                               ui::PAGE_TRANSITION_TYPED) &&
-      index == self.count) {
-    // Also, any tab opened at the end of the TabStrip with a "TYPED"
-    // transition inherit group as well. This covers the cases where the user
-    // creates a New Tab (e.g. Ctrl+T, or clicks the New Tab button), or types
-    // in the address bar and presses Alt+Enter. This allows for opening a new
-    // Tab to quickly look up something. When this Tab is closed, the old one
-    // is re-selected, not the next-adjacent.
-    // TODO(crbug.com/661988): Make this work.
-  }
-
-  [self insertTab:tab atIndex:index opener:parentTab];
+  [self insertTab:tab
+          atIndex:index
+           opener:parentTab
+       transition:params.transition_type];
 
   if (!inBackground && _tabUsageRecorder)
     _tabUsageRecorder->TabCreatedForSelection(tab);
@@ -1114,7 +1117,7 @@ Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
                        referrer:referrer
                      windowName:windowName
                          opener:nil
-                        atIndex:[_orderController insertionIndexForAppending]];
+                        atIndex:self.count];
 }
 
 - (Tab*)insertTabWithURL:(const GURL&)URL

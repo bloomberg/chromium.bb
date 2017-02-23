@@ -10,8 +10,10 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "ui/base/page_transition_types.h"
 
 class WebStateListObserver;
+class WebStateListOrderController;
 
 namespace web {
 class WebState;
@@ -77,6 +79,13 @@ class WebStateList {
                       web::WebState* web_state,
                       web::WebState* opener);
 
+  // Inserts the specified WebState at the best position in the WebStateList
+  // given the specified transition, opener (optional, may be null), etc. It
+  // defaults to inserting the WebState at the end of the list.
+  void AppendWebState(ui::PageTransition transition,
+                      web::WebState* web_state,
+                      web::WebState* opener);
+
   // Moves the WebState at the specified index to another index.
   void MoveWebStateAt(int from_index, int to_index);
 
@@ -117,6 +126,10 @@ class WebStateList {
   class WebStateWrapper;
   const WebStateOwnership web_state_ownership_;
   std::vector<std::unique_ptr<WebStateWrapper>> web_state_wrappers_;
+
+  // An object that determines where new WebState should be inserted and where
+  // selection should move when a WebState is detached.
+  std::unique_ptr<WebStateListOrderController> order_controller_;
 
   // List of observers notified of changes to the model.
   base::ObserverList<WebStateListObserver, true> observers_;
