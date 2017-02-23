@@ -8,13 +8,14 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.MeasureSpec;
+import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
-import android.widget.LinearLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /** This class represents a bar to display at the bottom of the payment request UI. */
-public class PaymentRequestBottomBar extends LinearLayout {
+public class PaymentRequestBottomBar extends ViewGroup {
     private View mLogoWithName;
     private View mLogo;
     private View mPrimaryButton;
@@ -91,5 +92,47 @@ public class PaymentRequestBottomBar extends LinearLayout {
         int measuredHeightSpec =
                 MeasureSpec.makeMeasureSpec(totalHeightWithPadding, MeasureSpec.EXACTLY);
         setMeasuredDimension(widthMeasureSpec, measuredHeightSpec);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        MarginLayoutParams layoutParams = (MarginLayoutParams) getLayoutParams();
+        int leftSpace = getPaddingLeft() + layoutParams.leftMargin;
+        int rightSpace = getPaddingRight() + layoutParams.rightMargin;
+        int topSpace = getPaddingTop() + layoutParams.topMargin;
+        int bottomSpace = getPaddingBottom() + layoutParams.bottomMargin;
+        int viewHeight = bottom - top;
+        int viewWidth = right - left;
+        int childVerticalSpace = viewHeight - topSpace - bottomSpace;
+
+        int childLeft;
+        int childRight;
+        boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+        if (isRtl) {
+            childRight = viewWidth - rightSpace;
+            childLeft = childRight;
+        } else {
+            childLeft = leftSpace;
+            childRight = childLeft;
+        }
+
+        for (int childIndex = 0; childIndex < getChildCount(); childIndex++) {
+            View child = getChildAt(childIndex);
+            if (child.getVisibility() == View.GONE) continue;
+
+            int childWidth = child.getMeasuredWidth();
+            int childHeight = child.getMeasuredHeight();
+            if (isRtl) {
+                childRight = childLeft;
+                childLeft = childRight - childWidth;
+            } else {
+                childLeft = childRight;
+                childRight = childLeft + childWidth;
+            }
+
+            // Center child vertically.
+            int childTop = topSpace + (childVerticalSpace - childHeight) / 2;
+            child.layout(childLeft, childTop, childRight, childTop + childHeight);
+        }
     }
 }

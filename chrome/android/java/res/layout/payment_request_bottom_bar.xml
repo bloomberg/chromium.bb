@@ -18,7 +18,6 @@
         android:id="@+id/logo_name"
         android:layout_width="72dp"
         android:layout_height="20dp"
-        android:layout_gravity="start|center_vertical"
         android:src="@drawable/product_logo_name"
         android:contentDescription="@null" />
 
@@ -26,7 +25,6 @@
         android:id="@+id/logo"
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:layout_gravity="start|center_vertical"
         android:src="@drawable/fre_product_logo"
         android:contentDescription="@null" />
 
@@ -40,7 +38,6 @@
         style="@style/ButtonCompatBorderless"
         android:layout_width="wrap_content"
         android:layout_height="36dp"
-        android:layout_gravity="end"
         android:text="@string/payments_edit_button"
         android:textAllCaps="true"
         android:textColor="@color/light_active_color"
@@ -50,7 +47,6 @@
         android:id="@+id/button_primary"
         android:layout_width="wrap_content"
         android:layout_height="36dp"
-        android:layout_gravity="end"
         android:text="@string/payments_pay_button"
         android:textAllCaps="true"
         android:textColor="@android:color/white"

@@ -315,7 +315,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     private ScrollView mPaymentContainer;
     private LinearLayout mPaymentContainerLayout;
-    private LinearLayout mBottomBar;
+    private ViewGroup mBottomBar;
     private Button mEditButton;
     private Button mPayButton;
     private View mCloseButton;
@@ -546,7 +546,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         // Set up the buttons.
         mCloseButton = mRequestView.findViewById(R.id.close_button);
         mCloseButton.setOnClickListener(this);
-        mBottomBar = (LinearLayout) mRequestView.findViewById(R.id.bottom_bar);
+        mBottomBar = (ViewGroup) mRequestView.findViewById(R.id.bottom_bar);
         mPayButton = (Button) mBottomBar.findViewById(R.id.button_primary);
         mPayButton.setOnClickListener(this);
         mEditButton = (Button) mBottomBar.findViewById(R.id.button_secondary);
