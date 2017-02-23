@@ -1,15 +1,14 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/timeline-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../http/tests/inspector/sources-test.js"></script>
 
 <link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
 <script>
 
-var initialize_CSSTracker = function() {
-    InspectorTest.preloadModule("css_tracker");
+var initialize_Coverage = function() {
+    InspectorTest.preloadModule("coverage");
 }
 
 function test()
@@ -17,12 +16,12 @@ function test()
     InspectorTest.runTestSuite([
         function testMarking(next)
         {
-            var tracker = self.runtime.sharedInstance(CSSTracker.CSSTrackerView);
-            InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_updateGutter", printResults);
+            var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
+            InspectorTest.addSniffer(Coverage.CoverageView.prototype, "_updateGutter", printResults);
 
-            tracker._toggleRecording(true);
-            UI.viewManager.showView("css_tracker");
-            tracker._toggleRecording(false);
+            coverageView._toggleRecording(true);
+            UI.viewManager.showView("coverage");
+            coverageView._toggleRecording(false);
 
             function printResults()
             {
@@ -36,12 +35,12 @@ function test()
 
             function waitForDecorations()
             {
-                InspectorTest.addSniffer(CSSTracker.CSSTrackerView.LineDecorator.prototype, "decorate", didShowDecorations);
+                InspectorTest.addSniffer(Coverage.CoverageView.LineDecorator.prototype, "decorate", didShowDecorations);
             }
 
             function didShowDecorations(sourceFrame)
             {
-                var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-css-rule-unused-marker"), 
+                var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-coverage-unused-marker"),
                                                         e => e.parentElement.previousSibling.textContent);
 
                 InspectorTest.addResult(lines);
@@ -54,6 +53,6 @@ function test()
 </head>
 <p id="id">PASS</p>
 <body onload="runTest()">
-<p>Tests the CSS highlight in sources after the timeline recording finishes.</p>
+<p>Tests the coverage highlight in sources after the recording finishes.</p>
 </body>
 </html>

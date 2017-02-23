@@ -1,26 +1,25 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/timeline-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../http/tests/inspector/sources-test.js"></script>
 
 <link rel="stylesheet" type="text/css" href="resources/decorations-after-inplace-formatter.css">
 <script>
 
-var initialize_CSSTracker = function() {
-    InspectorTest.preloadModule("css_tracker");
+var initialize_CoverageTest = function() {
+    InspectorTest.preloadModule("coverage");
 }
 
 function test()
 {
     var scriptFormatter;
 
-    var tracker = self.runtime.sharedInstance(CSSTracker.CSSTrackerView);
-    InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_updateGutter", onTracingFinished);
+    var tracker = self.runtime.sharedInstance(Coverage.CoverageView);
+    InspectorTest.addSniffer(Coverage.CoverageView.prototype, "_updateGutter", onTracingFinished);
 
     tracker._toggleRecording(true);
-    UI.viewManager.showView("css_tracker");
+    UI.viewManager.showView("coverage");
     tracker._toggleRecording(false);
 
     function onTracingFinished()
@@ -36,19 +35,19 @@ function test()
     }
     function showSource()
     {
-        InspectorTest.addSniffer(CSSTracker.CSSTrackerView.LineDecorator.prototype, "decorate", formatSource);
+        InspectorTest.addSniffer(Coverage.CoverageView.LineDecorator.prototype, "decorate", formatSource);
         InspectorTest.showScriptSource("decorations-after-inplace-formatter.css");
     }
 
     function formatSource(frame) 
     {
-        InspectorTest.addSniffer(CSSTracker.CSSTrackerView.LineDecorator.prototype, "decorate", uiSourceCodeScriptFormatted);
+        InspectorTest.addSniffer(Coverage.CoverageView.LineDecorator.prototype, "decorate", uiSourceCodeScriptFormatted);
         scriptFormatter._formatSourceInPlace();
     }
 
     function uiSourceCodeScriptFormatted()
     {
-        var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-css-rule-unused-marker"), 
+        var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-coverage-unused-marker"),
                                                 e => e.parentElement.previousSibling.textContent);
 
         InspectorTest.addResult("Formatted line numbers of rules that were not used:");

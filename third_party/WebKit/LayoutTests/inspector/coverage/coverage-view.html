@@ -7,22 +7,22 @@
 
 <script>
 
-var initialize_CSSTracker = function() {
-    InspectorTest.preloadModule("css_tracker");
+var initialize_CoverageTest = function() {
+    InspectorTest.preloadModule("coverage");
 }
 
 function test()
 {
-    var tracker = self.runtime.sharedInstance(CSSTracker.CSSTrackerView);
-    InspectorTest.addSniffer(tracker._listView, "update", displayResults);
+    var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
+    InspectorTest.addSniffer(coverageView._listView, "update", displayResults);
 
-    tracker._toggleRecording(true);
-    UI.viewManager.showView("css_tracker");
-    tracker._toggleRecording(false);
+    coverageView._toggleRecording(true);
+    UI.viewManager.showView("coverage");
+    coverageView._toggleRecording(false);
 
     function displayResults()
     {
-        var dataGrid = tracker._listView._dataGrid;
+        var dataGrid = coverageView._listView._dataGrid;
         for (var child of dataGrid.rootNode().children) {
             var data = child._coverageInfo;
             var url = InspectorTest.formatters.formatAsURL(data.url);
@@ -37,7 +37,7 @@ function test()
 
 <body onload="runTest()">
 <p class="class">
-Tests the unused CSS list after finishing recording in the CSSTracker view.
+Tests the coverage list view after finishing recording in the Coverage view.
 </p>
 
 </body>

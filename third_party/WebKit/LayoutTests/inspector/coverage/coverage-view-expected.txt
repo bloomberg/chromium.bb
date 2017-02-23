@@ -1,0 +1,4 @@
+Tests the coverage list view after finishing recording in the Coverage view.
+
+.../inspector/coverage/resources/highlight-in-source.css used: 65 unused: 128 total: 209
+
