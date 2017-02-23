@@ -103,7 +103,7 @@ bool PermissionInfoBarDelegate::Accept() {
         content_settings_type_, persist_);
   }
 
-  SetPermission(update_content_setting, GRANTED);
+  SetPermission(update_content_setting, PermissionAction::GRANTED);
   return true;
 }
 
@@ -115,12 +115,12 @@ bool PermissionInfoBarDelegate::Cancel() {
         content_settings_type_, persist_);
   }
 
-  SetPermission(update_content_setting, DENIED);
+  SetPermission(update_content_setting, PermissionAction::DENIED);
   return true;
 }
 
 void PermissionInfoBarDelegate::InfoBarDismissed() {
-  SetPermission(false, DISMISSED);
+  SetPermission(false, PermissionAction::DISMISSED);
 }
 
 base::string16 PermissionInfoBarDelegate::GetButtonLabel(

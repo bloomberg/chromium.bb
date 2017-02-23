@@ -31,15 +31,16 @@
 
 // UMA keys need to be statically initialized so plain function would not
 // work. Use macros instead.
-#define PERMISSION_ACTION_UMA(secure_origin, permission, permission_secure, \
-                              permission_insecure, action)                  \
-  UMA_HISTOGRAM_ENUMERATION(permission, action, PERMISSION_ACTION_NUM);     \
-  if (secure_origin) {                                                      \
-    UMA_HISTOGRAM_ENUMERATION(permission_secure, action,                    \
-                              PERMISSION_ACTION_NUM);                       \
-  } else {                                                                  \
-    UMA_HISTOGRAM_ENUMERATION(permission_insecure, action,                  \
-                              PERMISSION_ACTION_NUM);                       \
+#define PERMISSION_ACTION_UMA(secure_origin, permission, permission_secure,  \
+                              permission_insecure, action)                   \
+  UMA_HISTOGRAM_ENUMERATION(permission, static_cast<int>(action),            \
+                            static_cast<int>(PermissionAction::NUM));        \
+  if (secure_origin) {                                                       \
+    UMA_HISTOGRAM_ENUMERATION(permission_secure, static_cast<int>(action),   \
+                              static_cast<int>(PermissionAction::NUM));      \
+  } else {                                                                   \
+    UMA_HISTOGRAM_ENUMERATION(permission_insecure, static_cast<int>(action), \
+                              static_cast<int>(PermissionAction::NUM));      \
   }
 
 #define PERMISSION_BUBBLE_TYPE_UMA(metric_name, permission_bubble_type) \
@@ -67,19 +68,19 @@ const std::string GetRapporMetric(ContentSettingsType permission,
                                   PermissionAction action) {
   std::string action_str;
   switch (action) {
-    case GRANTED:
+    case PermissionAction::GRANTED:
       action_str = "Granted";
       break;
-    case DENIED:
+    case PermissionAction::DENIED:
       action_str = "Denied";
       break;
-    case DISMISSED:
+    case PermissionAction::DISMISSED:
       action_str = "Dismissed";
       break;
-    case IGNORED:
+    case PermissionAction::IGNORED:
       action_str = "Ignored";
       break;
-    case REVOKED:
+    case PermissionAction::REVOKED:
       action_str = "Revoked";
       break;
     default:
@@ -279,8 +280,9 @@ void PermissionUmaUtil::PermissionGranted(
     Profile* profile) {
   PermissionDecisionAutoBlocker* autoblocker =
       PermissionDecisionAutoBlocker::GetForProfile(profile);
-  RecordPermissionAction(permission, GRANTED, PermissionSourceUI::PROMPT,
-                         gesture_type, requesting_origin, profile);
+  RecordPermissionAction(permission, PermissionAction::GRANTED,
+                         PermissionSourceUI::PROMPT, gesture_type,
+                         requesting_origin, profile);
   RecordPermissionPromptPriorCount(
       permission, kPermissionsPromptAcceptedPriorDismissCountPrefix,
       autoblocker->GetDismissCount(requesting_origin, permission));
@@ -296,8 +298,9 @@ void PermissionUmaUtil::PermissionDenied(
     Profile* profile) {
   PermissionDecisionAutoBlocker* autoblocker =
       PermissionDecisionAutoBlocker::GetForProfile(profile);
-  RecordPermissionAction(permission, DENIED, PermissionSourceUI::PROMPT,
-                         gesture_type, requesting_origin, profile);
+  RecordPermissionAction(permission, PermissionAction::DENIED,
+                         PermissionSourceUI::PROMPT, gesture_type,
+                         requesting_origin, profile);
   RecordPermissionPromptPriorCount(
       permission, kPermissionsPromptDeniedPriorDismissCountPrefix,
       autoblocker->GetDismissCount(requesting_origin, permission));
@@ -313,8 +316,9 @@ void PermissionUmaUtil::PermissionDismissed(
     Profile* profile) {
   PermissionDecisionAutoBlocker* autoblocker =
       PermissionDecisionAutoBlocker::GetForProfile(profile);
-  RecordPermissionAction(permission, DISMISSED, PermissionSourceUI::PROMPT,
-                         gesture_type, requesting_origin, profile);
+  RecordPermissionAction(permission, PermissionAction::DISMISSED,
+                         PermissionSourceUI::PROMPT, gesture_type,
+                         requesting_origin, profile);
   RecordPermissionPromptPriorCount(
       permission, kPermissionsPromptDismissedPriorDismissCountPrefix,
       autoblocker->GetDismissCount(requesting_origin, permission));
@@ -330,8 +334,9 @@ void PermissionUmaUtil::PermissionIgnored(
     Profile* profile) {
   PermissionDecisionAutoBlocker* autoblocker =
       PermissionDecisionAutoBlocker::GetForProfile(profile);
-  RecordPermissionAction(permission, IGNORED, PermissionSourceUI::PROMPT,
-                         gesture_type, requesting_origin, profile);
+  RecordPermissionAction(permission, PermissionAction::IGNORED,
+                         PermissionSourceUI::PROMPT, gesture_type,
+                         requesting_origin, profile);
   RecordPermissionPromptPriorCount(
       permission, kPermissionsPromptIgnoredPriorDismissCountPrefix,
       autoblocker->GetDismissCount(requesting_origin, permission));
@@ -357,7 +362,7 @@ void PermissionUmaUtil::PermissionRevoked(ContentSettingsType permission,
       permission == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
     // An unknown gesture type is passed in since gesture type is only
     // applicable in prompt UIs where revocations are not possible.
-    RecordPermissionAction(permission, REVOKED, source_ui,
+    RecordPermissionAction(permission, PermissionAction::REVOKED, source_ui,
                            PermissionRequestGestureType::UNKNOWN,
                            revoked_origin, profile);
   }
@@ -366,8 +371,8 @@ void PermissionUmaUtil::PermissionRevoked(ContentSettingsType permission,
 void PermissionUmaUtil::RecordEmbargoPromptSuppression(
     PermissionEmbargoStatus embargo_status) {
   UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.EmbargoPromptSuppression",
-                            embargo_status,
-                            PermissionEmbargoStatus::STATUS_NUM);
+                            static_cast<int>(embargo_status),
+                            static_cast<int>(PermissionEmbargoStatus::NUM));
 }
 
 void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
@@ -394,8 +399,8 @@ void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
 void PermissionUmaUtil::RecordEmbargoStatus(
     PermissionEmbargoStatus embargo_status) {
   UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.EmbargoStatus",
-                            embargo_status,
-                            PermissionEmbargoStatus::STATUS_NUM);
+                            static_cast<int>(embargo_status),
+                            static_cast<int>(PermissionEmbargoStatus::NUM));
 }
 
 void PermissionUmaUtil::RecordSafeBrowsingResponse(
@@ -404,7 +409,8 @@ void PermissionUmaUtil::RecordSafeBrowsingResponse(
   UMA_HISTOGRAM_TIMES("Permissions.AutoBlocker.SafeBrowsingResponseTime",
                       response_time);
   UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.SafeBrowsingResponse",
-                            response, SafeBrowsingResponse::RESPONSE_NUM);
+                            static_cast<int>(response),
+                            static_cast<int>(SafeBrowsingResponse::NUM));
 }
 
 void PermissionUmaUtil::PermissionPromptShown(
@@ -726,12 +732,14 @@ void PermissionUmaUtil::RecordPermissionAction(
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
       // Media permissions are disabled on insecure origins, so there's no
       // need to record metrics for secure/insecue.
-      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.AudioCapture", action,
-                                PERMISSION_ACTION_NUM);
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.AudioCapture",
+                                static_cast<int>(action),
+                                static_cast<int>(PermissionAction::NUM));
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.VideoCapture", action,
-                                PERMISSION_ACTION_NUM);
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.VideoCapture",
+                                static_cast<int>(action),
+                                static_cast<int>(PermissionAction::NUM));
       break;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
       PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Flash",

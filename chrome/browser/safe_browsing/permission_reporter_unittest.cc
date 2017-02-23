@@ -32,7 +32,7 @@ const ContentSettingsType kDummyPermissionOne =
     CONTENT_SETTINGS_TYPE_GEOLOCATION;
 const ContentSettingsType kDummyPermissionTwo =
     CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
-const PermissionAction kDummyAction = GRANTED;
+const PermissionAction kDummyAction = PermissionAction::GRANTED;
 const PermissionSourceUI kDummySourceUI = PermissionSourceUI::PROMPT;
 const PermissionRequestGestureType kDummyGestureType =
     PermissionRequestGestureType::GESTURE;

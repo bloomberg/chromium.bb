@@ -57,20 +57,20 @@ PermissionReport::PermissionType PermissionTypeForReport(
 
 PermissionReport::Action PermissionActionForReport(PermissionAction action) {
   switch (action) {
-    case GRANTED:
+    case PermissionAction::GRANTED:
       return PermissionReport::GRANTED;
-    case DENIED:
+    case PermissionAction::DENIED:
       return PermissionReport::DENIED;
-    case DISMISSED:
+    case PermissionAction::DISMISSED:
       return PermissionReport::DISMISSED;
-    case IGNORED:
+    case PermissionAction::IGNORED:
       return PermissionReport::IGNORED;
-    case REVOKED:
+    case PermissionAction::REVOKED:
       return PermissionReport::REVOKED;
-    case REENABLED:
-    case REQUESTED:
+    case PermissionAction::REENABLED:
+    case PermissionAction::REQUESTED:
       return PermissionReport::ACTION_UNSPECIFIED;
-    case PERMISSION_ACTION_NUM:
+    case PermissionAction::NUM:
       break;
   }
 
@@ -88,7 +88,7 @@ PermissionReport::SourceUI SourceUIForReport(PermissionSourceUI source_ui) {
       return PermissionReport::SITE_SETTINGS;
     case PermissionSourceUI::PAGE_ACTION:
       return PermissionReport::PAGE_ACTION;
-    case PermissionSourceUI::SOURCE_UI_NUM:
+    case PermissionSourceUI::NUM:
       break;
   }
 

@@ -27,7 +27,7 @@ enum class PermissionSourceUI {
   PAGE_ACTION = 3,
 
   // Always keep this at the end.
-  SOURCE_UI_NUM,
+  NUM,
 };
 
 // This should stay in sync with the PersistDecision enum in the permission
@@ -38,24 +38,24 @@ enum class PermissionPersistDecision {
   NOT_PERSISTED = 2,
 };
 
-// Any new values should be inserted immediately prior to RESPONSE_NUM.
-enum SafeBrowsingResponse {
+// Any new values should be inserted immediately prior to NUM.
+enum class SafeBrowsingResponse {
   NOT_BLACKLISTED = 0,
   TIMEOUT = 1,
   BLACKLISTED = 2,
 
   // Always keep this at the end.
-  RESPONSE_NUM,
+  NUM,
 };
 
-// Any new values should be inserted immediately prior to STATUS_NUM.
-enum PermissionEmbargoStatus {
+// Any new values should be inserted immediately prior to NUM.
+enum class PermissionEmbargoStatus {
   NOT_EMBARGOED = 0,
   PERMISSIONS_BLACKLISTING = 1,
   REPEATED_DISMISSALS = 2,
 
   // Keep this at the end.
-  STATUS_NUM,
+  NUM,
 };
 
 // A bundle for the information sent in a PermissionReport.

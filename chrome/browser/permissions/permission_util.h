@@ -22,7 +22,7 @@ enum class PermissionType;
 enum class PermissionSourceUI;
 
 // This enum backs a UMA histogram, so it must be treated as append-only.
-enum PermissionAction {
+enum class PermissionAction {
   GRANTED = 0,
   DENIED = 1,
   DISMISSED = 2,
@@ -32,7 +32,7 @@ enum PermissionAction {
   REQUESTED = 6,
 
   // Always keep this at the end.
-  PERMISSION_ACTION_NUM,
+  NUM,
 };
 
 // Identifies the source or reason for a permission status being returned. This

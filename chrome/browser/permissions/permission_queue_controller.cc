@@ -225,19 +225,19 @@ void PermissionQueueController::OnPermissionSet(const PermissionRequestID& id,
       PermissionEmbargoStatus::NOT_EMBARGOED;
 
   switch (decision) {
-    case GRANTED:
+    case PermissionAction::GRANTED:
       PermissionUmaUtil::PermissionGranted(content_settings_type_, gesture_type,
                                            requesting_frame, profile_);
       PermissionUmaUtil::RecordPermissionPromptAccepted(request_type,
                                                         gesture_type);
       break;
-    case DENIED:
+    case PermissionAction::DENIED:
       PermissionUmaUtil::PermissionDenied(content_settings_type_, gesture_type,
                                           requesting_frame, profile_);
       PermissionUmaUtil::RecordPermissionPromptDenied(request_type,
                                                       gesture_type);
       break;
-    case DISMISSED:
+    case PermissionAction::DISMISSED:
       PermissionUmaUtil::PermissionDismissed(
           content_settings_type_, gesture_type, requesting_frame, profile_);
       if (PermissionDecisionAutoBlocker::GetForProfile(profile_)
@@ -296,12 +296,12 @@ void PermissionQueueController::OnPermissionSet(const PermissionRequestID& id,
   // for block and { false, DISMISSED } for dismissed. The tuple being
   // { update_content_setting, decision }.
   ContentSetting content_setting = CONTENT_SETTING_DEFAULT;
-  if (decision == GRANTED)
+  if (decision == PermissionAction::GRANTED)
     content_setting = CONTENT_SETTING_ALLOW;
-  else if (decision == DENIED)
+  else if (decision == PermissionAction::DENIED)
     content_setting = CONTENT_SETTING_BLOCK;
   else
-    DCHECK_EQ(DISMISSED, decision);
+    DCHECK_EQ(PermissionAction::DISMISSED, decision);
 
   // Send out the permission notifications.
   for (PendingInfobarRequests::iterator i = requests_to_notify.begin();
@@ -432,7 +432,8 @@ void PermissionQueueController::UpdateContentSetting(
     const GURL& requesting_frame,
     const GURL& embedder,
     PermissionAction decision) {
-  DCHECK(decision == GRANTED || decision == DENIED);
+  DCHECK(decision == PermissionAction::GRANTED ||
+         decision == PermissionAction::DENIED);
   if (requesting_frame.GetOrigin().SchemeIsFile()) {
     // Chrome can be launched with --disable-web-security which allows
     // geolocation requests from file:// URLs. We don't want to store these
@@ -440,8 +441,9 @@ void PermissionQueueController::UpdateContentSetting(
     return;
   }
 
-  ContentSetting content_setting =
-      (decision == GRANTED) ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+  ContentSetting content_setting = (decision == PermissionAction::GRANTED)
+                                       ? CONTENT_SETTING_ALLOW
+                                       : CONTENT_SETTING_BLOCK;
 
   // TODO(timloh): Remove this logic when push and notification permissions
   // are reconciled, see crbug.com/563297.

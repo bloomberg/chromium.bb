@@ -279,8 +279,9 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestUpdateEmbargoBlacklist) {
   CheckSafeBrowsingBlacklist(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
   EXPECT_TRUE(callback_was_run());
   EXPECT_TRUE(last_embargoed_status());
-  histograms.ExpectUniqueSample("Permissions.AutoBlocker.SafeBrowsingResponse",
-                                SafeBrowsingResponse::BLACKLISTED, 1);
+  histograms.ExpectUniqueSample(
+      "Permissions.AutoBlocker.SafeBrowsingResponse",
+      static_cast<int>(SafeBrowsingResponse::BLACKLISTED), 1);
   histograms.ExpectTotalCount(
       "Permissions.AutoBlocker.SafeBrowsingResponseTime", 1);
 }
@@ -302,8 +303,9 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestRequestNotBlacklisted) {
 
   CheckSafeBrowsingBlacklist(url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   EXPECT_FALSE(last_embargoed_status());
-  histograms.ExpectUniqueSample("Permissions.AutoBlocker.SafeBrowsingResponse",
-                                SafeBrowsingResponse::NOT_BLACKLISTED, 1);
+  histograms.ExpectUniqueSample(
+      "Permissions.AutoBlocker.SafeBrowsingResponse",
+      static_cast<int>(SafeBrowsingResponse::NOT_BLACKLISTED), 1);
   histograms.ExpectTotalCount(
       "Permissions.AutoBlocker.SafeBrowsingResponseTime", 1);
 }
@@ -489,7 +491,8 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingTimeout) {
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   histograms.ExpectUniqueSample("Permissions.AutoBlocker.SafeBrowsingResponse",
-                                SafeBrowsingResponse::TIMEOUT, 1);
+                                static_cast<int>(SafeBrowsingResponse::TIMEOUT),
+                                1);
   histograms.ExpectTotalCount(
       "Permissions.AutoBlocker.SafeBrowsingResponseTime", 1);
   db_manager->SetPerformCallback(true);
@@ -504,8 +507,9 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingTimeout) {
                               2);
   histograms.ExpectTotalCount(
       "Permissions.AutoBlocker.SafeBrowsingResponseTime", 2);
-  histograms.ExpectBucketCount("Permissions.AutoBlocker.SafeBrowsingResponse",
-                               SafeBrowsingResponse::BLACKLISTED, 1);
+  histograms.ExpectBucketCount(
+      "Permissions.AutoBlocker.SafeBrowsingResponse",
+      static_cast<int>(SafeBrowsingResponse::BLACKLISTED), 1);
   clock()->Advance(base::TimeDelta::FromDays(1));
   result =
       autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
@@ -616,6 +620,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingResponse) {
 
   CheckSafeBrowsingBlacklist(url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   EXPECT_FALSE(last_embargoed_status());
-  histograms.ExpectUniqueSample("Permissions.AutoBlocker.SafeBrowsingResponse",
-                                SafeBrowsingResponse::NOT_BLACKLISTED, 1);
+  histograms.ExpectUniqueSample(
+      "Permissions.AutoBlocker.SafeBrowsingResponse",
+      static_cast<int>(SafeBrowsingResponse::NOT_BLACKLISTED), 1);
 }

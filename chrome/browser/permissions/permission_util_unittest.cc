@@ -39,7 +39,7 @@ TEST_F(PermissionUtilTest, ScopedRevocationReporter) {
                                        CONTENT_SETTING_BLOCK);
   }
   histograms.ExpectBucketCount("Permissions.Action.Geolocation",
-                               PermissionAction::REVOKED, 1);
+                               static_cast<int>(PermissionAction::REVOKED), 1);
 
   // Block->Allow does not trigger a revocation.
   {
@@ -49,7 +49,7 @@ TEST_F(PermissionUtilTest, ScopedRevocationReporter) {
                                        CONTENT_SETTING_ALLOW);
   }
   histograms.ExpectBucketCount("Permissions.Action.Geolocation",
-                               PermissionAction::REVOKED, 1);
+                               static_cast<int>(PermissionAction::REVOKED), 1);
 
   // Allow->Default triggers a revocation when default is 'ask'.
   map->SetDefaultContentSetting(type, CONTENT_SETTING_ASK);
@@ -60,7 +60,7 @@ TEST_F(PermissionUtilTest, ScopedRevocationReporter) {
                                        CONTENT_SETTING_DEFAULT);
   }
   histograms.ExpectBucketCount("Permissions.Action.Geolocation",
-                               PermissionAction::REVOKED, 2);
+                               static_cast<int>(PermissionAction::REVOKED), 2);
 
   // Allow->Default does not trigger a revocation when default is 'allow'.
   map->SetDefaultContentSetting(type, CONTENT_SETTING_ALLOW);
@@ -71,7 +71,7 @@ TEST_F(PermissionUtilTest, ScopedRevocationReporter) {
                                        CONTENT_SETTING_DEFAULT);
   }
   histograms.ExpectBucketCount("Permissions.Action.Geolocation",
-                               PermissionAction::REVOKED, 2);
+                               static_cast<int>(PermissionAction::REVOKED), 2);
 
   // Allow->Block with url pattern string triggers a revocation.
   map->SetContentSettingDefaultScope(host, host, type, std::string(),
@@ -83,7 +83,7 @@ TEST_F(PermissionUtilTest, ScopedRevocationReporter) {
                                       std::string(), CONTENT_SETTING_BLOCK);
   }
   histograms.ExpectBucketCount("Permissions.Action.Geolocation",
-                               PermissionAction::REVOKED, 3);
+                               static_cast<int>(PermissionAction::REVOKED), 3);
 
   // Allow->Block with non url pattern string does not trigger a revocation.
   map->SetContentSettingDefaultScope(host, host, type, std::string(),
@@ -97,5 +97,5 @@ TEST_F(PermissionUtilTest, ScopedRevocationReporter) {
                                       CONTENT_SETTING_BLOCK);
   }
   histograms.ExpectBucketCount("Permissions.Action.Geolocation",
-                               PermissionAction::REVOKED, 3);
+                               static_cast<int>(PermissionAction::REVOKED), 3);
 }
