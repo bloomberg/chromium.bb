@@ -5,7 +5,7 @@ The top navigation from this iframe should be blocked. This text should appear.
 window.onload = function()
 {
     try {
-        top.location = "http://localhost:8000/security/frameNavigation/resources/navigation-changed-iframe.html";
+        top.location = "navigation-changed-iframe.html";
         top.postMessage("FAIL", "*");
     } catch(e) {
         top.postMessage("PASS", "*");

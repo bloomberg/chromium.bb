@@ -253,6 +253,12 @@
      {}
     ]
    ],
+   "html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation_by_user_activation-manual.html": [
+    [
+     "/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation_by_user_activation-manual.html",
+     {}
+    ]
+   ],
    "html/semantics/forms/constraints/tooShort-input-email-add-manual.html": [
     [
      "/html/semantics/forms/constraints/tooShort-input-email-add-manual.html",
@@ -9083,11 +9089,6 @@
      {}
     ]
    ],
-   "domparsing/createContextualFragment-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "domparsing/innerhtml-01-expected.txt": [
     [
      {}
@@ -16413,6 +16414,21 @@
      {}
     ]
    ],
+   "html/semantics/embedded-content/the-iframe-element/support/iframe-that-performs-top-navigation-without-user-gesture-failed.html": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/embedded-content/the-iframe-element/support/iframe-that-performs-top-navigation.html": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/embedded-content/the-iframe-element/support/navigation-changed-iframe.html": [
+    [
+     {}
+    ]
+   ],
    "html/semantics/embedded-content/the-iframe-element/support/sandbox_allow_script.html": [
     [
      {}
@@ -16679,11 +16695,6 @@
     ]
    ],
    "html/semantics/forms/the-input-element/range-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/forms/the-input-element/selection-expected.txt": [
     [
      {}
     ]
@@ -18418,7 +18429,17 @@
      {}
     ]
    ],
+   "mixed-content/allowed/http-csp/same-host-https/audio-tag/top-level/keep-scheme-redirect/allowed.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "mixed-content/allowed/http-csp/same-host-https/audio-tag/top-level/keep-scheme-redirect/allowed.https.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/allowed/http-csp/same-host-https/audio-tag/top-level/no-redirect/allowed.https-expected.txt": [
     [
      {}
     ]
@@ -18518,7 +18539,17 @@
      {}
     ]
    ],
+   "mixed-content/allowed/http-csp/same-host-https/video-tag/top-level/keep-scheme-redirect/allowed.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "mixed-content/allowed/http-csp/same-host-https/video-tag/top-level/keep-scheme-redirect/allowed.https.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/allowed/http-csp/same-host-https/video-tag/top-level/no-redirect/allowed.https-expected.txt": [
     [
      {}
     ]
@@ -18554,6 +18585,36 @@
     ]
    ],
    "mixed-content/allowed/http-csp/same-host-wss/websocket-request/top-level/no-redirect/websocket-allowed.https.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/allowed/meta-csp/same-host-https/audio-tag/top-level/no-redirect/allowed.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/allowed/meta-csp/same-host-https/video-tag/top-level/no-redirect/allowed.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/allowed/no-opt-in/same-host-https/audio-tag/top-level/keep-scheme-redirect/allowed.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/allowed/no-opt-in/same-host-https/audio-tag/top-level/no-redirect/allowed.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/allowed/no-opt-in/same-host-https/video-tag/top-level/keep-scheme-redirect/allowed.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/allowed/no-opt-in/same-host-https/video-tag/top-level/no-redirect/allowed.https-expected.txt": [
     [
      {}
     ]
@@ -19023,6 +19084,66 @@
      {}
     ]
    ],
+   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/audio-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/audio-tag/top-level/no-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/audio-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/video-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/video-tag/top-level/no-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/video-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/no-opt-in/same-host-http/audio-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/no-opt-in/same-host-http/audio-tag/top-level/no-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/no-opt-in/same-host-http/audio-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/no-opt-in/same-host-http/video-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/no-opt-in/same-host-http/video-tag/top-level/no-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mixed-content/optionally-blockable/no-opt-in/same-host-http/video-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "mixed-content/spec.src.json": [
     [
      {}
@@ -19094,11 +19215,6 @@
     ]
    ],
    "pointerevents/idlharness-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "pointerevents/pointerevent_attributes_nohover_pointers-manual-expected.txt": [
     [
      {}
     ]
@@ -21358,42 +21474,12 @@
      {}
     ]
    ],
-   "selection/collapse-00-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/collapse-30-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "selection/collapse.js": [
     [
      {}
     ]
    ],
-   "selection/collapseToStartEnd-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "selection/common.js": [
-    [
-     {}
-    ]
-   ],
-   "selection/extend-00-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/extend-20-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/extend-40-expected.txt": [
     [
      {}
     ]
@@ -21404,11 +21490,6 @@
     ]
    ],
    "selection/interfaces-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/isCollapsed-expected.txt": [
     [
      {}
     ]
@@ -36119,6 +36200,12 @@
    "html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_script.html": [
     [
      "/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_script.html",
+     {}
+    ]
+   ],
+   "html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation_by_user_activation_without_user_gesture.html": [
+    [
+     "/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation_by_user_activation_without_user_gesture.html",
      {}
     ]
    ],
@@ -54612,7 +54699,7 @@
    "support"
   ],
   "./MANIFEST.json": [
-   "1ba6d9d96ac2726755be2db4cfbae75877b16384",
+   "13e9140a1ead023d3512d65c31debc599f6d4be2",
    "support"
   ],
   "./README.md": [
@@ -60310,10 +60397,6 @@
   "domparsing/XMLSerializer-serializeToString.html": [
    "f981058d771b4e6a0936e9f496527fe6177b2479",
    "testharness"
-  ],
-  "domparsing/createContextualFragment-expected.txt": [
-   "6fec3d7f117871eb0e4373c0977300f323886564",
-   "support"
   ],
   "domparsing/createContextualFragment.html": [
    "e3d576cab516b137b3c758f4ab7528303a28744a",
@@ -69867,6 +69950,14 @@
    "130faa6ea1a376ce786f69b672486d7056c32b05",
    "testharness"
   ],
+  "html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation_by_user_activation-manual.html": [
+   "ffed01db4e8c7b2bb566dc1f0d1108e35255be19",
+   "manual"
+  ],
+  "html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation_by_user_activation_without_user_gesture.html": [
+   "fcbb80f82ca87610d00a6307da426b63f81e5a37",
+   "testharness"
+  ],
   "html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_helper-1.html": [
    "414c2815f1fb26963df6e231e36087a7f3789164",
    "support"
@@ -69913,6 +70004,18 @@
   ],
   "html/semantics/embedded-content/the-iframe-element/support/blank.htm": [
    "941efb7368e46b27b937d34b07fc4d41da01b002",
+   "support"
+  ],
+  "html/semantics/embedded-content/the-iframe-element/support/iframe-that-performs-top-navigation-without-user-gesture-failed.html": [
+   "98cfb7f03cd2abb52634ab15a03f4f805bb2ee27",
+   "support"
+  ],
+  "html/semantics/embedded-content/the-iframe-element/support/iframe-that-performs-top-navigation.html": [
+   "b380676429cf167a475c07dc549945052cf4bc21",
+   "support"
+  ],
+  "html/semantics/embedded-content/the-iframe-element/support/navigation-changed-iframe.html": [
+   "9dd191a0b5d9c15972363e260228956f7f487c7d",
    "support"
   ],
   "html/semantics/embedded-content/the-iframe-element/support/sandbox_allow_script.html": [
@@ -70320,7 +70423,7 @@
    "testharness"
   ],
   "html/semantics/forms/textfieldselection/selection-not-application.html": [
-   "39ecb031aca3655a06152f94a514981fe59ebbaf",
+   "3763f117f8973ca9a994354ccbf22cb7114ece7a",
    "testharness"
   ],
   "html/semantics/forms/textfieldselection/selection.html": [
@@ -70578,10 +70681,6 @@
   "html/semantics/forms/the-input-element/search_input.html": [
    "09007bf5a204053412838612e97d64c21a596315",
    "testharness"
-  ],
-  "html/semantics/forms/the-input-element/selection-expected.txt": [
-   "5b0876ba1e8241cffe43238fdbd23fc82da9211a",
-   "support"
   ],
   "html/semantics/forms/the-input-element/selection.html": [
    "0ebcacbae26e48abf51d30410c490da698b087dc",
@@ -72776,7 +72875,7 @@
    "testharness"
   ],
   "html/syntax/serializing-html-fragments/serializing-expected.txt": [
-   "b5fc2fd23061b442cba52b18c44326674e1d43b9",
+   "7bb14c17a3ad5721c31f98fcca1a521cc447c36b",
    "support"
   ],
   "html/syntax/serializing-html-fragments/serializing.html": [
@@ -72828,11 +72927,11 @@
    "testharness"
   ],
   "html/webappapis/dynamic-markup-insertion/opening-the-input-stream/origin-check-in-document-open-basic.html": [
-   "8544d006dcbad6142d31c81adcba3528435a8b3b",
+   "5aea157f38d3bc075959be3d1f277ea25c731a66",
    "testharness"
   ],
   "html/webappapis/dynamic-markup-insertion/opening-the-input-stream/origin-check-in-document-open-same-origin-domain.sub.html": [
-   "4549cb718f2e4a1e22a561ef0eb0718c1ed6b05c",
+   "b4cdd98c6eb9a3946b49a6876c62c7e35501f413",
    "testharness"
   ],
   "html/webappapis/dynamic-markup-insertion/opening-the-input-stream/resources/set-document-domain.html": [
@@ -73588,7 +73687,7 @@
    "testharness"
   ],
   "innerText/setter-expected.txt": [
-   "196037647b07f1f78725b04748964d9b6dd2ba73",
+   "5330e9d6db01f7e4bbb2a99345f1be683251c815",
    "support"
   ],
   "innerText/setter-tests.js": [
@@ -73815,12 +73914,20 @@
    "70a1f9e81faa3dbbe320a71a008e4594a29878a8",
    "testharness"
   ],
+  "mixed-content/allowed/http-csp/same-host-https/audio-tag/top-level/keep-scheme-redirect/allowed.https-expected.txt": [
+   "90380d95ffc250f2bcb86a71825a532f9ea3b40a",
+   "support"
+  ],
   "mixed-content/allowed/http-csp/same-host-https/audio-tag/top-level/keep-scheme-redirect/allowed.https.html": [
    "fdeac10c0682de4545c5f0e8f43efb19070cbd91",
    "testharness"
   ],
   "mixed-content/allowed/http-csp/same-host-https/audio-tag/top-level/keep-scheme-redirect/allowed.https.html.headers": [
    "562977daf4fd9e09dc6153058804bc247cbe5354",
+   "support"
+  ],
+  "mixed-content/allowed/http-csp/same-host-https/audio-tag/top-level/no-redirect/allowed.https-expected.txt": [
+   "0da07dc88c186b2f3a970e63af82f8f3caeb5e3c",
    "support"
   ],
   "mixed-content/allowed/http-csp/same-host-https/audio-tag/top-level/no-redirect/allowed.https.html": [
@@ -73975,12 +74082,20 @@
    "562977daf4fd9e09dc6153058804bc247cbe5354",
    "support"
   ],
+  "mixed-content/allowed/http-csp/same-host-https/video-tag/top-level/keep-scheme-redirect/allowed.https-expected.txt": [
+   "8c5eb00f4e83bcfd2c1cc9ff31e022f2db38be6e",
+   "support"
+  ],
   "mixed-content/allowed/http-csp/same-host-https/video-tag/top-level/keep-scheme-redirect/allowed.https.html": [
    "3e5e01b52ef7a96b3dc41a5fd65af5ad14474a4d",
    "testharness"
   ],
   "mixed-content/allowed/http-csp/same-host-https/video-tag/top-level/keep-scheme-redirect/allowed.https.html.headers": [
    "562977daf4fd9e09dc6153058804bc247cbe5354",
+   "support"
+  ],
+  "mixed-content/allowed/http-csp/same-host-https/video-tag/top-level/no-redirect/allowed.https-expected.txt": [
+   "1a6028563007684c78190ddc8481ca2898923723",
    "support"
   ],
   "mixed-content/allowed/http-csp/same-host-https/video-tag/top-level/no-redirect/allowed.https.html": [
@@ -74039,6 +74154,10 @@
    "562977daf4fd9e09dc6153058804bc247cbe5354",
    "support"
   ],
+  "mixed-content/allowed/meta-csp/same-host-https/audio-tag/top-level/no-redirect/allowed.https-expected.txt": [
+   "c8bbd81706e37d501c775412c9a152136138389c",
+   "support"
+  ],
   "mixed-content/allowed/meta-csp/same-host-https/audio-tag/top-level/no-redirect/allowed.https.html": [
    "3233030cfc42075de689b39be9dca812e153955c",
    "testharness"
@@ -74079,6 +74198,10 @@
    "0575fd64689c5b0f3970bdad033fe944ff6644bb",
    "testharness"
   ],
+  "mixed-content/allowed/meta-csp/same-host-https/video-tag/top-level/no-redirect/allowed.https-expected.txt": [
+   "3af9b65bfe40a18917f506bd97740bef6fe4112b",
+   "support"
+  ],
   "mixed-content/allowed/meta-csp/same-host-https/video-tag/top-level/no-redirect/allowed.https.html": [
    "a55b1cc03051118df894858733f91cb794ed893e",
    "testharness"
@@ -74095,9 +74218,17 @@
    "e20eb313f66981ae7bb650a19d8fd61f62b5bd9b",
    "testharness"
   ],
+  "mixed-content/allowed/no-opt-in/same-host-https/audio-tag/top-level/keep-scheme-redirect/allowed.https-expected.txt": [
+   "1519271db01831f1d6d026b26e8d486243588479",
+   "support"
+  ],
   "mixed-content/allowed/no-opt-in/same-host-https/audio-tag/top-level/keep-scheme-redirect/allowed.https.html": [
    "e716de28d27503516e6066bfe5715880aee61d2d",
    "testharness"
+  ],
+  "mixed-content/allowed/no-opt-in/same-host-https/audio-tag/top-level/no-redirect/allowed.https-expected.txt": [
+   "2d20686592f6a6c7ebe1b22ce85135e85054d7e9",
+   "support"
   ],
   "mixed-content/allowed/no-opt-in/same-host-https/audio-tag/top-level/no-redirect/allowed.https.html": [
    "bf977afe3f0b5daa0e899dff1d55241352125531",
@@ -74175,9 +74306,17 @@
    "f87d399643fdbdc7135e1db1fd9b3ff9c9a4bbec",
    "testharness"
   ],
+  "mixed-content/allowed/no-opt-in/same-host-https/video-tag/top-level/keep-scheme-redirect/allowed.https-expected.txt": [
+   "e02952e8c0326b7c9969ad0b88b8e857859616ea",
+   "support"
+  ],
   "mixed-content/allowed/no-opt-in/same-host-https/video-tag/top-level/keep-scheme-redirect/allowed.https.html": [
    "3ac75e4ddf21586beec825628aa421ce66b3eb51",
    "testharness"
+  ],
+  "mixed-content/allowed/no-opt-in/same-host-https/video-tag/top-level/no-redirect/allowed.https-expected.txt": [
+   "06c4336dfa0266bcf24b50f9af7764a699800414",
+   "support"
   ],
   "mixed-content/allowed/no-opt-in/same-host-https/video-tag/top-level/no-redirect/allowed.https.html": [
    "1c26515cb6831d895f537df85edb2c9709cae754",
@@ -75267,13 +75406,25 @@
    "cf89b222539b6fb932f0ffb226b4584c55bd7b0b",
    "testharness"
   ],
+  "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/audio-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+   "5982f747849b2a9e65e8eac2c1920f6b86e52806",
+   "support"
+  ],
   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/audio-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https.html": [
    "a78a3c8b9950ca95859c98837d86540ed7074633",
    "testharness"
   ],
+  "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/audio-tag/top-level/no-redirect/no-opt-in-allows.https-expected.txt": [
+   "1960c3625fd0aa1e5a9dfb9df00d5f250931c7bf",
+   "support"
+  ],
   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/audio-tag/top-level/no-redirect/no-opt-in-allows.https.html": [
    "c4f7ba79294030cae5439e7d46b3a7d24a01fdf4",
    "testharness"
+  ],
+  "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/audio-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+   "ae2066d3f479d87f6a3883fca50c62741c80880c",
+   "support"
   ],
   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/audio-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https.html": [
    "fab6658b6b049386ff531ffbd38ef0a923eb7e94",
@@ -75303,25 +75454,49 @@
    "2b4266e2798cffa4df8085d85dc6192151125d13",
    "testharness"
   ],
+  "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/video-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+   "90be3eed734c8d08d0b88270473cd8249dfef3ff",
+   "support"
+  ],
   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/video-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https.html": [
    "80519194240ebaebe70a1782d972fb5e1641f5a1",
    "testharness"
+  ],
+  "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/video-tag/top-level/no-redirect/no-opt-in-allows.https-expected.txt": [
+   "ed3520fd8f5382e538408fb020cc4a5b6319b005",
+   "support"
   ],
   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/video-tag/top-level/no-redirect/no-opt-in-allows.https.html": [
    "91ad70b49d688006d8d560aa536d6d46a8de1275",
    "testharness"
   ],
+  "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/video-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+   "4f3dd5bfc7ff73c75c4cce54eb3aa81892deb6c3",
+   "support"
+  ],
   "mixed-content/optionally-blockable/no-opt-in/cross-origin-http/video-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https.html": [
    "72e3fa99e486be0aedd623da3beb2d8b0b745ad1",
    "testharness"
+  ],
+  "mixed-content/optionally-blockable/no-opt-in/same-host-http/audio-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+   "c0a9ccb24883f298b0c20dd4ffc680739c9b7dec",
+   "support"
   ],
   "mixed-content/optionally-blockable/no-opt-in/same-host-http/audio-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https.html": [
    "73429ee5cb2de97bda1090156d9bb3f716fcce4d",
    "testharness"
   ],
+  "mixed-content/optionally-blockable/no-opt-in/same-host-http/audio-tag/top-level/no-redirect/no-opt-in-allows.https-expected.txt": [
+   "b0e86c22beb7578dacb8134c29d2f5e778e5f005",
+   "support"
+  ],
   "mixed-content/optionally-blockable/no-opt-in/same-host-http/audio-tag/top-level/no-redirect/no-opt-in-allows.https.html": [
    "64069b6bbac147b17e29d53143fe136944de0daf",
    "testharness"
+  ],
+  "mixed-content/optionally-blockable/no-opt-in/same-host-http/audio-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+   "d26609e0895dfc921af2a897999acd35153a0166",
+   "support"
   ],
   "mixed-content/optionally-blockable/no-opt-in/same-host-http/audio-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https.html": [
    "5692d6f7cc2c237a203de6c5a73ff6d6fcb9fc27",
@@ -75351,13 +75526,25 @@
    "b98e1a5a55b229fabc73ff520e93d1aae5786a84",
    "testharness"
   ],
+  "mixed-content/optionally-blockable/no-opt-in/same-host-http/video-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+   "dd79d44bf5bf864deadf1dd19cced198d269b3af",
+   "support"
+  ],
   "mixed-content/optionally-blockable/no-opt-in/same-host-http/video-tag/top-level/keep-scheme-redirect/no-opt-in-allows.https.html": [
    "67b828060540ab4abb8d7070a3a777dcb6b764c4",
    "testharness"
   ],
+  "mixed-content/optionally-blockable/no-opt-in/same-host-http/video-tag/top-level/no-redirect/no-opt-in-allows.https-expected.txt": [
+   "5005b70fa14d38cb1ada1239eca1f5859cc4aa1c",
+   "support"
+  ],
   "mixed-content/optionally-blockable/no-opt-in/same-host-http/video-tag/top-level/no-redirect/no-opt-in-allows.https.html": [
    "f366b0f28d087b46c7e1b8787012b0427a5c668e",
    "testharness"
+  ],
+  "mixed-content/optionally-blockable/no-opt-in/same-host-http/video-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https-expected.txt": [
+   "4f6fb0a77a62395baa757bcf1a4bf694e4d61ac0",
+   "support"
   ],
   "mixed-content/optionally-blockable/no-opt-in/same-host-http/video-tag/top-level/swap-scheme-redirect/no-opt-in-allows.https.html": [
    "845e3332f83a552ba268bd369089cd408c5c9ed1",
@@ -75594,10 +75781,6 @@
   "pointerevents/pointerevent_attributes_hoverable_pointers-manual.html": [
    "9a71336042a931e45c7aef0e031669c26ac5c36c",
    "manual"
-  ],
-  "pointerevents/pointerevent_attributes_nohover_pointers-manual-expected.txt": [
-   "4255532d6457756bc573260613c710c684e52069",
-   "support"
   ],
   "pointerevents/pointerevent_attributes_nohover_pointers-manual.html": [
    "b010a8ff22c0522c8bbd5332e5d4ff8f1032a766",
@@ -82895,17 +83078,9 @@
    "67bd52a4653938061f121ed57ead8d768acdde2b",
    "support"
   ],
-  "selection/collapse-00-expected.txt": [
-   "cb6b89a32ab5910d7552abb9bf13c3de31a44824",
-   "support"
-  ],
   "selection/collapse-00.html": [
    "6c06617a84c3d4e5f121e4ccf8f7761ba1be1ceb",
    "testharness"
-  ],
-  "selection/collapse-30-expected.txt": [
-   "b848752153c11aba04cb02d76bf0f75541a35ec8",
-   "support"
   ],
   "selection/collapse-30.html": [
    "943e7d8960212bc5d5eadb45ff641b9d9525a44a",
@@ -82915,12 +83090,8 @@
    "4cd755764b43e348b2dcf23d1c800953ee28f059",
    "support"
   ],
-  "selection/collapseToStartEnd-expected.txt": [
-   "c255bb04eda843b87c255fdb965136b2a786a8af",
-   "support"
-  ],
   "selection/collapseToStartEnd.html": [
-   "630885adfd3996c7dc7da4088fc8c8449a8da452",
+   "2067830e0fa02de58d8459da435b13c277341196",
    "testharness"
   ],
   "selection/common.js": [
@@ -82935,25 +83106,13 @@
    "d20aba9b9ef8654b553f1adb1eb4f16e642fe649",
    "manual"
   ],
-  "selection/extend-00-expected.txt": [
-   "3c68a9961b52dbedf5eea97287db485236d34221",
-   "support"
-  ],
   "selection/extend-00.html": [
    "189e4939230b1a0540e326640f6390e64708efed",
    "testharness"
   ],
-  "selection/extend-20-expected.txt": [
-   "9acbe1d83b64ae83252fb896a21668944def8f5f",
-   "support"
-  ],
   "selection/extend-20.html": [
    "23664c8f1957d8491526ba9f53e03242f3f3042f",
    "testharness"
-  ],
-  "selection/extend-40-expected.txt": [
-   "0160a1d69f15c454ec0386418f10e8b07daa4fd9",
-   "support"
   ],
   "selection/extend-40.html": [
    "5e3ce84e8a060b0de0a5468faeec433b67c5aea7",
@@ -82972,19 +83131,15 @@
    "testharness"
   ],
   "selection/interfaces-expected.txt": [
-   "ccb4664f886a9f11a3c48eb4d99ca2fe854b0e23",
+   "ba5cf4a994fc761670c2c21dce9853c8f7acd10e",
    "support"
   ],
   "selection/interfaces.html": [
-   "9ec3001efd5e443a533d261a51c94c3f60e273ed",
+   "dc08fae99f9b481a63ed5f78aa8b32eeaba28b35",
    "testharness"
   ],
-  "selection/isCollapsed-expected.txt": [
-   "12310c61c361c3c8214e536593c310dbfb611124",
-   "support"
-  ],
   "selection/isCollapsed.html": [
-   "9304191778ec0fb6b5d613efde19d1574b867dac",
+   "d1984a9359d880dfb81197e7ec31b2456833809d",
    "testharness"
   ],
   "selection/removeAllRanges-expected.txt": [
