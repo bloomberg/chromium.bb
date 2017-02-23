@@ -5,6 +5,7 @@
 #include "ash/common/system/date/date_view.h"
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
@@ -15,7 +16,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "grit/ash_strings.h"
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/dtptngen.h"
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"

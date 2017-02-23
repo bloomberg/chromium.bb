@@ -5,6 +5,7 @@
 #include "ash/common/system/toast/toast_overlay.h"
 
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -13,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

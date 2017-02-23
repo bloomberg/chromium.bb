@@ -8,6 +8,7 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_observer.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
@@ -21,7 +22,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/gfx/image/image.h"

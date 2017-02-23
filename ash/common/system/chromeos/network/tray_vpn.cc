@@ -5,6 +5,7 @@
 #include "ash/common/system/chromeos/network/tray_vpn.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
@@ -19,7 +20,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"

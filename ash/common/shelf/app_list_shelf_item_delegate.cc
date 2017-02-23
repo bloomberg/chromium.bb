@@ -5,9 +5,9 @@
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
 
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wm_shell.h"
 #include "base/memory/ptr_util.h"
-#include "grit/ash_strings.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 

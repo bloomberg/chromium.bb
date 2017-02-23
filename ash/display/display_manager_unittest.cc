@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_commands_aura.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_util.h"
@@ -21,7 +22,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "grit/ash_strings.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_observer.h"

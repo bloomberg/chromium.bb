@@ -6,6 +6,7 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/power/power_status_view.h"
 #include "ash/common/system/tray/actionable_view.h"
@@ -18,7 +19,6 @@
 #include "ash/resources/grit/ash_resources.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"

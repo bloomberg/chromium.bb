@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/network/network_icon.h"
 
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -16,7 +17,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"

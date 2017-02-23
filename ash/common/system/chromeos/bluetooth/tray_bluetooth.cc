@@ -5,6 +5,7 @@
 #include "ash/common/system/chromeos/bluetooth/tray_bluetooth.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -20,7 +21,6 @@
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "device/bluetooth/bluetooth_common.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"

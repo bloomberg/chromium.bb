@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"
@@ -15,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"

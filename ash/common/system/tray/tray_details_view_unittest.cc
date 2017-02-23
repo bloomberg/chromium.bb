@@ -5,6 +5,7 @@
 #include "ash/common/system/tray/tray_details_view.h"
 
 #include "ash/common/ash_view_ids.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/special_popup_row.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -18,7 +19,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "grit/ash_strings.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"

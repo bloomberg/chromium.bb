@@ -4,12 +4,12 @@
 
 #include "ash/display/resolution_notification_controller.h"
 
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/gfx/geometry/size.h"

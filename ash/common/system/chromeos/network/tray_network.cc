@@ -5,6 +5,7 @@
 #include "ash/common/system/chromeos/network/tray_network.h"
 
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
@@ -24,7 +25,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -8,6 +8,7 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/metrics/user_metrics_action.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/audio/tray_audio_delegate.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/system_tray_item.h"
@@ -18,7 +19,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "grit/ash_strings.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"

@@ -9,6 +9,7 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/metrics/user_metrics_action.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wm/overview/cleanup_animation_observer.h"
 #include "ash/common/wm/overview/overview_animation_type.h"
 #include "ash/common/wm/overview/scoped_overview_animation_settings.h"
@@ -28,7 +29,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"

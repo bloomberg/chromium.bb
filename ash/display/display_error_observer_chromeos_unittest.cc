@@ -4,11 +4,11 @@
 
 #include "ash/display/display_error_observer_chromeos.h"
 
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "grit/ash_strings.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"

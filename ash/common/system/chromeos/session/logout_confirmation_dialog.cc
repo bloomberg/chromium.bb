@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/session/logout_confirmation_dialog.h"
 
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
@@ -12,7 +13,6 @@
 #include "ash/root_window_controller.h"
 #include "base/location.h"
 #include "base/time/tick_clock.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/ui_base_types.h"

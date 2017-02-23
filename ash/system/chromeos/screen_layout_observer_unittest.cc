@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/screen_layout_observer.h"
 
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/test/test_system_tray_delegate.h"
@@ -12,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ash_strings.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"

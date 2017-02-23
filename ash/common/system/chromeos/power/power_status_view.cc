@@ -5,6 +5,7 @@
 #include "ash/common/system/chromeos/power/power_status_view.h"
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/power/tray_power.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
@@ -14,7 +15,6 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ash_strings.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/native_theme/native_theme.h"

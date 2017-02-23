@@ -10,6 +10,7 @@
 
 #include "ash/common/ash_view_ids.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
@@ -33,7 +34,6 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

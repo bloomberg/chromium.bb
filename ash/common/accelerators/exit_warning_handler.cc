@@ -5,6 +5,7 @@
 #include "ash/common/accelerators/exit_warning_handler.h"
 
 #include "ash/common/shell_delegate.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -12,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "grit/ash_strings.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

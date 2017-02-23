@@ -8,6 +8,7 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/common/system/chromeos/power/battery_notification.h"
 #include "ash/common/system/chromeos/power/dual_role_notification.h"
@@ -22,7 +23,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
-#include "grit/ash_strings.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
