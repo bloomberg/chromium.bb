@@ -48,8 +48,8 @@ public class DataReductionProxyUma {
     public static final int ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_SHOWN = 0;
     public static final int ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_CLICKED = 1;
     public static final int ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_CLICKED_ON_PAGE = 2;
-    public static final int ACTION_LOFI_LOAD_IMAGES_CONTEXT_MENU_SHOWN = 3;
-    public static final int ACTION_LOFI_LOAD_IMAGES_CONTEXT_MENU_CLICKED = 4;
+    // Deprecated: ACTION_LOFI_LOAD_IMAGES_CONTEXT_MENU_SHOWN = 3;
+    // Deprecated: ACTION_LOFI_LOAD_IMAGES_CONTEXT_MENU_CLICKED = 4;
     public static final int ACTION_LOFI_CONTEXT_MENU_INDEX_BOUNDARY = 5;
 
     /**

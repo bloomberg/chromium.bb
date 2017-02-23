@@ -53,8 +53,6 @@ DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),
       deferred_initialization_(false),
       promo_allowed_(false),
-      lo_fi_mode_active_(false),
-      lo_fi_load_image_requested_(false),
       data_reduction_proxy_enabled_pref_name_(),
       prefs_(NULL),
       config_(nullptr),
@@ -178,23 +176,10 @@ PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
 
 void DataReductionProxySettings::SetLoFiModeActiveOnMainFrame(
     bool lo_fi_mode_active) {
+  // TODO(ryansturm): Remove this method and prefs::kLoFiWasUsedThisSession when
+  // Lo-Fi moves over to using the Previews blacklist completely.
   if (prefs_ && lo_fi_mode_active)
     prefs_->SetBoolean(prefs::kLoFiWasUsedThisSession, true);
-  lo_fi_load_image_requested_ = false;
-  lo_fi_mode_active_ = lo_fi_mode_active;
-}
-
-bool DataReductionProxySettings::WasLoFiModeActiveOnMainFrame() const {
-  return lo_fi_mode_active_ && !params::AreLitePagesEnabledViaFlags() &&
-         !params::IsIncludedInLitePageFieldTrial();
-}
-
-bool DataReductionProxySettings::WasLoFiLoadImageRequestedBefore() {
-  return lo_fi_load_image_requested_;
-}
-
-void DataReductionProxySettings::SetLoFiLoadImageRequested() {
-  lo_fi_load_image_requested_ = true;
 }
 
 void DataReductionProxySettings::IncrementLoFiUIShown() {

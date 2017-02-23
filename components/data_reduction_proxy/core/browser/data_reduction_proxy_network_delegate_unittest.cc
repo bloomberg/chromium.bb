@@ -229,12 +229,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
               header_value.find("empty-image") != std::string::npos);
   }
 
-  void VerifyWasLoFiModeActiveOnMainFrame(bool expected_value) {
-    test_context_->RunUntilIdle();
-    EXPECT_EQ(expected_value,
-              test_context_->settings()->WasLoFiModeActiveOnMainFrame());
-  }
-
   void VerifyDidNotifyLoFiResponse(bool lofi_response) const {
     EXPECT_EQ(lofi_response, lofi_ui_service_->DidNotifyLoFiResponse());
   }
@@ -535,7 +529,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
                             proxy_retry_info, &headers);
 
       VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
-      VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
       VerifyDataReductionProxyData(
           *fake_request, tests[i].is_data_reduction_proxy,
           config()->ShouldEnableLoFiMode(*fake_request.get()));
@@ -552,9 +545,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, false, headers);
-      // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
-      // true if the proxy is a Data Reduction Proxy.
-      VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
       VerifyDataReductionProxyData(*fake_request,
                                    tests[i].is_data_reduction_proxy, false);
     }
@@ -571,9 +561,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
-      // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
-      // true if the proxy is a Data Reduction Proxy.
-      VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
       VerifyDataReductionProxyData(*fake_request,
                                    tests[i].is_data_reduction_proxy, true);
     }
@@ -591,7 +578,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, false, headers);
-      VerifyWasLoFiModeActiveOnMainFrame(false);
       VerifyDataReductionProxyData(*fake_request,
                                    tests[i].is_data_reduction_proxy, false);
     }
@@ -607,9 +593,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, false, headers);
-      // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
-      // false.
-      VerifyWasLoFiModeActiveOnMainFrame(false);
       VerifyDataReductionProxyData(*fake_request,
                                    tests[i].is_data_reduction_proxy, false);
     }
@@ -626,8 +609,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
           config()->ShouldEnableLoFiMode(*fake_request.get()));
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
-      VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
-      VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
       VerifyDataReductionProxyData(
           *fake_request, tests[i].is_data_reduction_proxy,
           config()->ShouldEnableLoFiMode(*fake_request.get()));

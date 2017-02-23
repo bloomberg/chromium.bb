@@ -41,6 +41,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
 
     @CalledByNative
     private void destroy() {
+        if (mPopulator != null) mPopulator.onDestroy();
         mNativeContextMenuHelper = 0;
     }
 
@@ -50,6 +51,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
      */
     @CalledByNative
     private void setPopulator(ContextMenuPopulator populator) {
+        if (mPopulator != null) mPopulator.onDestroy();
         mPopulator = populator;
     }
 

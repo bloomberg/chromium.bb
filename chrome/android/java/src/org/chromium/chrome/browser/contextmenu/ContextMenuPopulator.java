@@ -13,6 +13,11 @@ import android.view.ContextMenu;
  */
 public interface ContextMenuPopulator {
     /**
+     *  Called when this ContextMenuPopulator is about to be destroyed.
+     */
+    public void onDestroy();
+
+    /**
      * Should be used to populate {@code menu} with the correct context menu items.
      * @param menu    The menu to populate.
      * @param context A {@link Context} instance.

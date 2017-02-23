@@ -47,32 +47,6 @@ jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyEnabled(
   return Settings()->IsDataReductionProxyEnabled();
 }
 
-jboolean DataReductionProxySettingsAndroid::CanUseDataReductionProxy(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& url) {
-  return Settings()->CanUseDataReductionProxy(
-      GURL(base::android::ConvertJavaStringToUTF16(env, url)));
-}
-
-jboolean DataReductionProxySettingsAndroid::WasLoFiModeActiveOnMainFrame(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return Settings()->WasLoFiModeActiveOnMainFrame();
-}
-
-jboolean DataReductionProxySettingsAndroid::WasLoFiLoadImageRequestedBefore(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return Settings()->WasLoFiLoadImageRequestedBefore();
-}
-
-void DataReductionProxySettingsAndroid::SetLoFiLoadImageRequested(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  Settings()->SetLoFiLoadImageRequested();
-}
-
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyManaged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

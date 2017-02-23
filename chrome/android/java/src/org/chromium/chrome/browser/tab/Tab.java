@@ -935,16 +935,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Reloads all the Lo-Fi images in this Tab's WebContents.
-     * This version ignores the cache and reloads from the network.
-     */
-    public void reloadLoFiImages() {
-        if (getWebContents() != null) {
-            getWebContents().reloadLoFiImages();
-        }
-    }
-
-    /**
      * @return Whether or not the loading and rendering of the page is done.
      */
     @VisibleForTesting

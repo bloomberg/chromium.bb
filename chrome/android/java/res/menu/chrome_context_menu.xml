@@ -13,8 +13,6 @@
             android:title=""/>
     </group>
     <group android:id="@+id/contextmenu_group_anchor">
-        <item android:id="@+id/contextmenu_load_images"
-            android:title="@string/contextmenu_load_images"/>
         <item android:id="@+id/contextmenu_open_in_other_window"
             android:title="@string/contextmenu_open_in_other_window"/>
         <item android:id="@+id/contextmenu_open_in_new_tab"

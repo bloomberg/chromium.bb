@@ -17,7 +17,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -66,7 +65,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     // Items that are included for normal Chrome browser mode.
     private static final int[] NORMAL_MODE_WHITELIST = {
-            R.id.contextmenu_load_images,
             R.id.contextmenu_open_in_new_tab,
             R.id.contextmenu_open_in_other_window,
             R.id.contextmenu_open_in_incognito_tab,
@@ -103,7 +101,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_OPEN_IMAGE = 7;
         static final int ACTION_OPEN_IMAGE_IN_NEW_TAB = 8;
         static final int ACTION_SEARCH_BY_IMAGE = 11;
-        static final int ACTION_LOAD_IMAGES = 12;
         static final int ACTION_LOAD_ORIGINAL_IMAGE = 13;
         static final int ACTION_SAVE_VIDEO = 14;
         static final int ACTION_SHARE_IMAGE = 19;
@@ -188,6 +185,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     }
 
     @Override
+    public void onDestroy() {
+        mDelegate.onDestroy();
+    }
+
+    @Override
     public void buildContextMenu(ContextMenu menu, Context context, ContextMenuParams params) {
         if (!TextUtils.isEmpty(params.getLinkUrl())
                 && !params.getLinkUrl().equals(UrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
@@ -253,20 +255,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
         menu.findItem(R.id.contextmenu_save_link_as).setVisible(
                 UrlUtilities.isDownloadableScheme(params.getLinkUrl()));
-
-        if (params.imageWasFetchedLoFi()
-                || !DataReductionProxySettings.getInstance().wasLoFiModeActiveOnMainFrame()
-                || !DataReductionProxySettings.getInstance().canUseDataReductionProxy(
-                        params.getPageUrl())) {
-            menu.findItem(R.id.contextmenu_load_images).setVisible(false);
-        } else {
-            // Links can have images as backgrounds that aren't recognized here as images. CSS
-            // properties can also prevent an image underlying a link from being clickable.
-            // When Lo-Fi is active, provide the user with a "Load images" option on links
-            // to get the images in these cases.
-            DataReductionProxyUma.previewsLoFiContextMenuAction(
-                    DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGES_CONTEXT_MENU_SHOWN);
-        }
 
         if (params.isVideo()) {
             menu.findItem(R.id.contextmenu_save_video).setVisible(
@@ -364,19 +352,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_open_image_in_new_tab) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IMAGE_IN_NEW_TAB);
             mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
-        } else if (itemId == R.id.contextmenu_load_images) {
-            ContextMenuUma.record(params, ContextMenuUma.ACTION_LOAD_IMAGES);
-            DataReductionProxyUma.previewsLoFiContextMenuAction(
-                    DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGES_CONTEXT_MENU_CLICKED);
-            mDelegate.onReloadLoFiImages();
         } else if (itemId == R.id.contextmenu_load_original_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_LOAD_ORIGINAL_IMAGE);
             DataReductionProxyUma.previewsLoFiContextMenuAction(
                     DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_CLICKED);
-            if (!DataReductionProxySettings.getInstance().wasLoFiLoadImageRequestedBefore()) {
+            if (!mDelegate.wasLoadOriginalImageRequestedForPageLoad()) {
                 DataReductionProxyUma.previewsLoFiContextMenuAction(
                         DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_CLICKED_ON_PAGE);
-                DataReductionProxySettings.getInstance().setLoFiLoadImageRequested();
             }
             mDelegate.onLoadOriginalImage();
         } else if (itemId == R.id.contextmenu_copy_link_address) {

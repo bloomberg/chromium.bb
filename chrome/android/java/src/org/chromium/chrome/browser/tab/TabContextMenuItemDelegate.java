@@ -41,6 +41,8 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
 
     private final Clipboard mClipboard;
     private final Tab mTab;
+    private boolean mLoadOriginalImageRequestedForPageLoad;
+    private EmptyTabObserver mDataReductionProxyContextMenuTabObserver;
 
     /**
      * Builds a {@link TabContextMenuItemDelegate} instance.
@@ -48,6 +50,18 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     public TabContextMenuItemDelegate(Tab tab) {
         mTab = tab;
         mClipboard = new Clipboard(mTab.getApplicationContext());
+        mDataReductionProxyContextMenuTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onPageLoadStarted(Tab tab, String url) {
+                mLoadOriginalImageRequestedForPageLoad = false;
+            }
+        };
+        mTab.addObserver(mDataReductionProxyContextMenuTabObserver);
+    }
+
+    @Override
+    public void onDestroy() {
+        mTab.removeObserver(mDataReductionProxyContextMenuTabObserver);
     }
 
     @Override
@@ -168,13 +182,14 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     }
 
     @Override
-    public void onReloadLoFiImages() {
-        mTab.reloadLoFiImages();
+    public void onLoadOriginalImage() {
+        mLoadOriginalImageRequestedForPageLoad = true;
+        mTab.loadOriginalImage();
     }
 
     @Override
-    public void onLoadOriginalImage() {
-        mTab.loadOriginalImage();
+    public boolean wasLoadOriginalImageRequestedForPageLoad() {
+        return mLoadOriginalImageRequestedForPageLoad;
     }
 
     @Override

@@ -41,19 +41,6 @@ class DataReductionProxySettingsAndroid {
   jboolean IsDataReductionProxyEnabled(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  jboolean CanUseDataReductionProxy(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& url);
-  jboolean WasLoFiModeActiveOnMainFrame(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  jboolean WasLoFiLoadImageRequestedBefore(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  void SetLoFiLoadImageRequested(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   jboolean IsDataReductionProxyManaged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
