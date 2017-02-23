@@ -848,7 +848,8 @@ Response InspectorPageAgent::configureOverlay(Maybe<bool> suspended,
 
 Response InspectorPageAgent::getLayoutMetrics(
     std::unique_ptr<protocol::Page::LayoutViewport>* outLayoutViewport,
-    std::unique_ptr<protocol::Page::VisualViewport>* outVisualViewport) {
+    std::unique_ptr<protocol::Page::VisualViewport>* outVisualViewport,
+    std::unique_ptr<protocol::DOM::Rect>* outContentSize) {
   LocalFrame* mainFrame = m_inspectedFrames->root();
   VisualViewport& visualViewport = mainFrame->host()->visualViewport();
 
@@ -869,6 +870,14 @@ Response InspectorPageAgent::getLayoutMetrics(
   float scale = visualViewport.scale();
   float scrollbarWidth = frameView->verticalScrollbarWidth() / scale;
   float scrollbarHeight = frameView->horizontalScrollbarHeight() / scale;
+
+  IntSize contentSize = frameView->getScrollableArea()->contentsSize();
+  *outContentSize = protocol::DOM::Rect::create()
+                        .setX(0)
+                        .setY(0)
+                        .setWidth(contentSize.width())
+                        .setHeight(contentSize.height())
+                        .build();
 
   *outVisualViewport =
       protocol::Page::VisualViewport::create()

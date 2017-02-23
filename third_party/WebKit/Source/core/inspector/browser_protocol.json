@@ -520,7 +520,8 @@
                 "experimental": true,
                 "returns": [
                     { "name": "layoutViewport", "$ref": "LayoutViewport", "description": "Metrics relating to the layout viewport." },
-                    { "name": "visualViewport", "$ref": "VisualViewport", "description": "Metrics relating to the visual viewport." }
+                    { "name": "visualViewport", "$ref": "VisualViewport", "description": "Metrics relating to the visual viewport." },
+                    { "name": "contentSize", "$ref": "DOM.Rect", "description": "Size of scrollable area."}
                 ]
             }
         ],

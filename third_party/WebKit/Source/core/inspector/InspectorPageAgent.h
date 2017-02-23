@@ -136,9 +136,9 @@ class CORE_EXPORT InspectorPageAgent final
   Response stopScreencast() override;
   Response configureOverlay(Maybe<bool> suspended,
                             Maybe<String> message) override;
-  Response getLayoutMetrics(
-      std::unique_ptr<protocol::Page::LayoutViewport>*,
-      std::unique_ptr<protocol::Page::VisualViewport>*) override;
+  Response getLayoutMetrics(std::unique_ptr<protocol::Page::LayoutViewport>*,
+                            std::unique_ptr<protocol::Page::VisualViewport>*,
+                            std::unique_ptr<protocol::DOM::Rect>*) override;
 
   // InspectorInstrumentation API
   void didClearDocumentOfWindowObject(LocalFrame*);
