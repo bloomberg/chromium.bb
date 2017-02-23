@@ -507,14 +507,24 @@ void LayoutBox::layout() {
 // an object excluding border and scrollbar.
 DISABLE_CFI_PERF
 LayoutUnit LayoutBox::clientWidth() const {
-  return m_frameRect.width() - borderLeft() - borderRight() -
-         verticalScrollbarWidth();
+  // We need to clamp negative values. The scrollbar may be wider than the
+  // padding box. Another reason: While border side values are currently limited
+  // to 2^20px (a recent change in the code), if this limit is raised again in
+  // the future, we'd have ill effects of saturated arithmetic otherwise.
+  return (m_frameRect.width() - borderLeft() - borderRight() -
+          verticalScrollbarWidth())
+      .clampNegativeToZero();
 }
 
 DISABLE_CFI_PERF
 LayoutUnit LayoutBox::clientHeight() const {
-  return m_frameRect.height() - borderTop() - borderBottom() -
-         horizontalScrollbarHeight();
+  // We need to clamp negative values. The scrollbar may be wider than the
+  // padding box. Another reason: While border side values are currently limited
+  // to 2^20px (a recent change in the code), if this limit is raised again in
+  // the future, we'd have ill effects of saturated arithmetic otherwise.
+  return (m_frameRect.height() - borderTop() - borderBottom() -
+          horizontalScrollbarHeight())
+      .clampNegativeToZero();
 }
 
 int LayoutBox::pixelSnappedClientWidth() const {

@@ -499,10 +499,24 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void updateLayerTransformAfterLayout();
 
   DISABLE_CFI_PERF LayoutUnit contentWidth() const {
-    return clientWidth() - paddingLeft() - paddingRight();
+    // We're dealing with LayoutUnit and saturated arithmetic here, so we need
+    // to guard against negative results. The value returned from clientWidth()
+    // may in itself be a victim of saturated arithmetic; e.g. if both border
+    // sides were sufficiently wide (close to LayoutUnit::max()).  Here we
+    // subtract two padding values from that result, which is another source of
+    // saturated arithmetic.
+    return (clientWidth() - paddingLeft() - paddingRight())
+        .clampNegativeToZero();
   }
   DISABLE_CFI_PERF LayoutUnit contentHeight() const {
-    return clientHeight() - paddingTop() - paddingBottom();
+    // We're dealing with LayoutUnit and saturated arithmetic here, so we need
+    // to guard against negative results. The value returned from clientHeight()
+    // may in itself be a victim of saturated arithmetic; e.g. if both border
+    // sides were sufficiently wide (close to LayoutUnit::max()).  Here we
+    // subtract two padding values from that result, which is another source of
+    // saturated arithmetic.
+    return (clientHeight() - paddingTop() - paddingBottom())
+        .clampNegativeToZero();
   }
   LayoutSize contentSize() const {
     return LayoutSize(contentWidth(), contentHeight());
