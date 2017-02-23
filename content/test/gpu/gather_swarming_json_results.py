@@ -145,6 +145,16 @@ def Merge(dest, src):
   return src
 
 
+def ExtractTestTimes(node, node_name, dest):
+  if 'times' in node:
+    dest[node_name] = sum(node['times']) / len(node['times'])
+  else:
+    # Currently the prefix names in the trie are dropped. Could
+    # concatenate them if the naming convention is changed.
+    for k in node.iterkeys():
+      if isinstance(node[k], dict):
+        ExtractTestTimes(node[k], k, dest)
+
 def main():
   rest_args = sys.argv[1:]
   parser = argparse.ArgumentParser(
@@ -162,63 +172,80 @@ def main():
   parser.add_argument('--step', type=str, default='webgl2_conformance_tests',
                       help='Which step to fetch (treated as a prefix)')
   parser.add_argument('--output', type=str, default='output.json',
-                      help='Name of output file')
+                      help='Name of output file; contains only test run times')
+  parser.add_argument('--full-output', type=str, default='',
+                      help='Name of complete output file if desired')
   parser.add_argument('--leak-temp-dir', action='store_true', default=False,
                       help='Deliberately leak temporary directory')
+  parser.add_argument('--start-from-temp-dir', type=str, default='',
+                      help='Start from temporary directory (for debugging)')
 
   options = parser.parse_args(rest_args)
 
-  Swarming.CheckAuth()
+  if options.start_from_temp_dir:
+    tmpdir = options.start_from_temp_dir
+    shard_dirs = [f for f in os.listdir(tmpdir)
+                  if os.path.isdir(os.path.join(tmpdir, f))]
+    numTaskIDs = len(shard_dirs)
+  else:
+    Swarming.CheckAuth()
 
-  waterfall = Waterfall(options.waterfall)
-  build = options.build
-  if build < 0:
-    build = waterfall.GetMostRecentlyCompletedBuildNumberForBot(options.bot)
+    waterfall = Waterfall(options.waterfall)
+    build = options.build
+    if build < 0:
+      build = waterfall.GetMostRecentlyCompletedBuildNumberForBot(options.bot)
 
-  build_json = waterfall.GetJsonForBuild(options.bot, build)
+    build_json = waterfall.GetJsonForBuild(options.bot, build)
 
-  if options.verbose:
-    print 'Fetching information from %s, bot %s, build %s' % (
-      options.waterfall, options.bot, build)
+    if options.verbose:
+      print 'Fetching information from %s, bot %s, build %s' % (
+        options.waterfall, options.bot, build)
 
-  taskIDs = []
-  for s in build_json['steps']:
-    if s['name'].startswith(options.step):
-      # Found the step.
-      #
-      # The Swarming shards happen to be listed in the 'urls' property
-      # of the step. Iterate down them.
-      if 'urls' not in s or not s['urls']:
-        # Note: we could also just download json.output if it exists.
-        print ('%s on waterfall %s, bot %s, build %s doesn\'t '
-               'look like a Swarmed task') % (
-                 s['name'], options.waterfall, options.bot, build)
-        return 1
-      taskIDs = Swarming.ExtractShardTaskIDs(s['urls'])
-      if options.verbose:
-        print 'Found Swarming task IDs for step %s' % s['name']
+    taskIDs = []
+    for s in build_json['steps']:
+      if s['name'].startswith(options.step):
+        # Found the step.
+        #
+        # The Swarming shards happen to be listed in the 'urls' property
+        # of the step. Iterate down them.
+        if 'urls' not in s or not s['urls']:
+          # Note: we could also just download json.output if it exists.
+          print ('%s on waterfall %s, bot %s, build %s doesn\'t '
+                 'look like a Swarmed task') % (
+                   s['name'], options.waterfall, options.bot, build)
+          return 1
+        taskIDs = Swarming.ExtractShardTaskIDs(s['urls'])
+        if options.verbose:
+          print 'Found Swarming task IDs for step %s' % s['name']
 
-      break
-  if not taskIDs:
-    print 'Problem gathering the Swarming task IDs for %s' % options.step
-    return 1
+        break
+    if not taskIDs:
+      print 'Problem gathering the Swarming task IDs for %s' % options.step
+      return 1
 
-  # Collect the results.
-  tmpdir = tempfile.mkdtemp()
-  Swarming.Collect(taskIDs, tmpdir, options.verbose)
+    # Collect the results.
+    tmpdir = tempfile.mkdtemp()
+    Swarming.Collect(taskIDs, tmpdir, options.verbose)
+    numTaskIDs = len(taskIDs)
 
   # Shards' JSON outputs are in sequentially-numbered subdirectories
   # of the output directory.
   merged_json = None
-  for i in xrange(len(taskIDs)):
+  for i in xrange(numTaskIDs):
     with open(os.path.join(tmpdir, str(i), 'output.json')) as f:
       cur_json = JsonLoadStrippingUnicode(f)
       if not merged_json:
         merged_json = cur_json
       else:
         merged_json = Merge(merged_json, cur_json)
+  extracted_times = {'times':{}}
+  ExtractTestTimes(merged_json, '', extracted_times['times'])
 
   with open(options.output, 'w') as f:
+    json.dump(extracted_times, f, sort_keys=True, indent=2,
+              separators=(',', ': '))
+
+  if options.full_output:
     json.dump(merged_json, f, sort_keys=True, indent=2,
               separators=(',', ': '))
 
