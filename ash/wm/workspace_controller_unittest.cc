@@ -1481,8 +1481,9 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
   ParentWindowInPrimaryRootWindow(second.get());
   second->Show();
 
-  ui::EventTarget* root = first->GetRootWindow();
-  ui::EventTargeter* targeter = root->GetEventTargeter();
+  aura::Window* root = first->GetRootWindow();
+  ui::EventTargeter* targeter =
+      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
 
   // The windows overlap, and |second| is on top of |first|. Events targeted
   // slightly outside the edges of the |second| window should still be targeted
@@ -1530,8 +1531,9 @@ TEST_F(WorkspaceControllerTest, WindowEdgeMouseHitTestPanel) {
   aura::test::TestWindowDelegate delegate;
   std::unique_ptr<Window> window(
       CreateTestPanel(&delegate, gfx::Rect(20, 10, 100, 50)));
-  ui::EventTarget* root = window->GetRootWindow();
-  ui::EventTargeter* targeter = root->GetEventTargeter();
+  aura::Window* root = window->GetRootWindow();
+  ui::EventTargeter* targeter =
+      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
   const gfx::Rect bounds = window->bounds();
   const int kNumPoints = 5;
   struct {
@@ -1566,8 +1568,9 @@ TEST_F(WorkspaceControllerTest, WindowEdgeTouchHitTestPanel) {
   aura::test::TestWindowDelegate delegate;
   std::unique_ptr<Window> window(
       CreateTestPanel(&delegate, gfx::Rect(20, 10, 100, 50)));
-  ui::EventTarget* root = window->GetRootWindow();
-  ui::EventTargeter* targeter = root->GetEventTargeter();
+  aura::Window* root = window->GetRootWindow();
+  ui::EventTargeter* targeter =
+      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
   const gfx::Rect bounds = window->bounds();
   const int kNumPoints = 5;
   struct {
@@ -1607,8 +1610,9 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTestDocked) {
       window->GetRootWindow(), kShellWindowId_DockedContainer);
   docked_container->AddChild(window.get());
   window->Show();
-  ui::EventTarget* root = window->GetRootWindow();
-  ui::EventTargeter* targeter = root->GetEventTargeter();
+  aura::Window* root = window->GetRootWindow();
+  ui::EventTargeter* targeter =
+      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
   const gfx::Rect bounds = window->bounds();
   const int kNumPoints = 5;
   struct {

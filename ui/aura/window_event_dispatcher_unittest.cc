@@ -2742,6 +2742,50 @@ TEST_F(WindowEventDispatcherMusTest, LastEventLocation) {
   EXPECT_EQ(gfx::Point(0, 0), Env::GetInstance()->last_mouse_location());
 }
 
+TEST_F(WindowEventDispatcherMusTest, UseDefaultTargeterToFindTarget) {
+  LastEventLocationDelegate last_event_location_delegate1;
+  std::unique_ptr<Window> child1(
+      CreateTestWindowWithDelegate(&last_event_location_delegate1, 123,
+                                   gfx::Rect(10, 10, 100, 100), root_window()));
+  LastEventLocationDelegate last_event_location_delegate2;
+  std::unique_ptr<Window> child2(
+      CreateTestWindowWithDelegate(&last_event_location_delegate2, 124,
+                                   gfx::Rect(20, 30, 100, 100), child1.get()));
+
+  const gfx::Point mouse_location(30, 40);
+  ui::MouseEvent mouse(ui::ET_MOUSE_PRESSED, mouse_location, mouse_location,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_LEFT_MOUSE_BUTTON);
+  DispatchEventUsingWindowDispatcher(&mouse);
+  EXPECT_EQ(0, last_event_location_delegate1.mouse_event_count());
+  EXPECT_EQ(1, last_event_location_delegate2.mouse_event_count());
+  EXPECT_EQ(gfx::Point(), last_event_location_delegate1.last_mouse_location());
+  EXPECT_EQ(mouse_location,
+            last_event_location_delegate2.last_mouse_location());
+}
+
+TEST_F(WindowEventDispatcherMusTest, UseDefaultTargeterToFindTarget2) {
+  LastEventLocationDelegate last_event_location_delegate1;
+  std::unique_ptr<Window> child1(
+      CreateTestWindowWithDelegate(&last_event_location_delegate1, 123,
+                                   gfx::Rect(10, 10, 100, 100), root_window()));
+  LastEventLocationDelegate last_event_location_delegate2;
+  std::unique_ptr<Window> child2(
+      CreateTestWindowWithDelegate(&last_event_location_delegate2, 124,
+                                   gfx::Rect(20, 30, 100, 100), child1.get()));
+
+  const gfx::Point mouse_location(15, 25);
+  ui::MouseEvent mouse(ui::ET_MOUSE_PRESSED, mouse_location, mouse_location,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_LEFT_MOUSE_BUTTON);
+  DispatchEventUsingWindowDispatcher(&mouse);
+  EXPECT_EQ(1, last_event_location_delegate1.mouse_event_count());
+  EXPECT_EQ(0, last_event_location_delegate2.mouse_event_count());
+  EXPECT_EQ(mouse_location,
+            last_event_location_delegate1.last_mouse_location());
+  EXPECT_EQ(gfx::Point(), last_event_location_delegate2.last_mouse_location());
+}
+
 class NestedLocationDelegate : public test::TestWindowDelegate {
  public:
   NestedLocationDelegate() {}

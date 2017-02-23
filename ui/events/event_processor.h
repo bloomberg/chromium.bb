@@ -10,14 +10,21 @@
 
 namespace ui {
 
+class EventTargeter;
+
 // EventProcessor receives an event from an EventSource and dispatches it to a
 // tree of EventTargets.
 class EVENTS_EXPORT EventProcessor : public EventDispatcherDelegate {
  public:
   ~EventProcessor() override {}
 
-  // Returns the root of the tree this event processor owns.
-  virtual EventTarget* GetRootTarget() = 0;
+  // Returns the EventTarget with the right EventTargeter that we should use for
+  // dispatching this |event|.
+  virtual EventTarget* GetRootForEvent(Event* event) = 0;
+
+  // If the root target returned by GetRootForEvent() does not have a
+  // targeter set, then the default targeter is used to find the target.
+  virtual EventTargeter* GetDefaultEventTargeter() = 0;
 
   // Dispatches an event received from the EventSource to the tree of
   // EventTargets (whose root is returned by GetRootTarget()).  The co-ordinate

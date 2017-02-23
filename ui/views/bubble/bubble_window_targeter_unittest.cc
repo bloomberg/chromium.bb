@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
@@ -87,8 +88,9 @@ class BubbleWindowTargeterTest : public ViewsTestBase {
 };
 
 TEST_F(BubbleWindowTargeterTest, HitTest) {
-  ui::EventTarget* root = bubble_widget()->GetNativeWindow()->GetRootWindow();
-  ui::EventTargeter* targeter = root->GetEventTargeter();
+  aura::Window* root = bubble_widget()->GetNativeWindow()->GetRootWindow();
+  ui::EventTargeter* targeter =
+      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
   aura::Window* bubble_window = bubble_widget()->GetNativeWindow();
   gfx::Rect bubble_bounds = bubble_window->GetBoundsInRootWindow();
 

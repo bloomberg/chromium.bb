@@ -27,6 +27,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/events/event.h"
+#include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_types.h"
@@ -76,6 +77,7 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
       dispatching_held_event_(nullptr),
       observer_manager_(this),
       env_controller_(new EnvInputStateController),
+      event_targeter_(new WindowTargeter),
       repost_event_factory_(this),
       held_event_factory_(this) {
   ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
@@ -88,6 +90,10 @@ WindowEventDispatcher::~WindowEventDispatcher() {
   TRACE_EVENT0("shutdown", "WindowEventDispatcher::Destructor");
   Env::GetInstance()->RemoveObserver(this);
   ui::GestureRecognizer::Get()->RemoveGestureEventHelper(this);
+}
+
+ui::EventTargeter* WindowEventDispatcher::GetDefaultEventTargeter() {
+  return event_targeter_.get();
 }
 
 void WindowEventDispatcher::RepostEvent(const ui::LocatedEvent* event) {
@@ -416,8 +422,36 @@ void WindowEventDispatcher::ReleaseNativeCapture() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowEventDispatcher, ui::EventProcessor implementation:
-ui::EventTarget* WindowEventDispatcher::GetRootTarget() {
-  return window();
+ui::EventTarget* WindowEventDispatcher::GetRootForEvent(ui::Event* event) {
+  if (Env::GetInstance()->mode() == Env::Mode::LOCAL)
+    return window();
+
+  if (!event->target())
+    return window();
+
+  ui::EventTarget* target = event->target();
+  ui::EventTarget* ancestor_with_targeter = target;
+  for (ui::EventTarget* ancestor = target->GetParentTarget(); ancestor;
+       ancestor = ancestor->GetParentTarget()) {
+    if (ancestor->GetEventTargeter())
+      ancestor_with_targeter = ancestor;
+    if (ancestor == window())
+      break;
+  }
+
+  if (ancestor_with_targeter != target && event->IsLocatedEvent()) {
+    gfx::Point location = event->AsLocatedEvent()->location();
+    gfx::Point root_location = event->AsLocatedEvent()->root_location();
+    Window::ConvertPointToTarget(static_cast<Window*>(target),
+                                 static_cast<Window*>(ancestor_with_targeter),
+                                 &location);
+    Window::ConvertPointToTarget(static_cast<Window*>(target),
+                                 static_cast<Window*>(ancestor_with_targeter),
+                                 &root_location);
+    event->AsLocatedEvent()->set_location(location);
+    event->AsLocatedEvent()->set_root_location(root_location);
+  }
+  return ancestor_with_targeter;
 }
 
 void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {

@@ -214,8 +214,9 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
   gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   EXPECT_TRUE(widget_bounds.Intersects(shelf_bounds));
 
-  ui::EventTarget* root = widget->GetNativeWindow()->GetRootWindow();
-  ui::EventTargeter* targeter = root->GetEventTargeter();
+  aura::Window* root = widget->GetNativeWindow()->GetRootWindow();
+  ui::EventTargeter* targeter =
+      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
   {
     // Create a mouse-event targeting the top of the shelf widget. The
     // window-targeter should find |widget| as the target (instead of the
@@ -290,8 +291,9 @@ TEST_F(ShelfWidgetTest, HiddenShelfHitTestTouch) {
   widget->Init(params);
   widget->Show();
 
-  ui::EventTarget* root = shelf_widget->GetNativeWindow()->GetRootWindow();
-  ui::EventTargeter* targeter = root->GetEventTargeter();
+  aura::Window* root = shelf_widget->GetNativeWindow()->GetRootWindow();
+  ui::EventTargeter* targeter =
+      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
   // Touch just over the shelf. Since the shelf is visible, the window-targeter
   // should not find the shelf as the target.
   {

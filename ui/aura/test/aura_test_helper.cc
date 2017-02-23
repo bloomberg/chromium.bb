@@ -24,6 +24,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_port_local.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/platform_window_defaults.h"
@@ -129,6 +130,8 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   if (!screen)
     display::Screen::SetScreenInstance(test_screen_.get());
   host_.reset(test_screen_->CreateHostForPrimaryDisplay());
+  host_->window()->SetEventTargeter(
+      std::unique_ptr<ui::EventTargeter>(new WindowTargeter()));
 
   client::SetFocusClient(root_window(), focus_client_.get());
   client::SetCaptureClient(root_window(), capture_client());
