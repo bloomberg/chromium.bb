@@ -197,17 +197,23 @@ BleConnectionManager::BleConnectionManager(
       device_queue_(std::move(device_queue)),
       timer_factory_(std::move(timer_factory)),
       bluetooth_throttler_(bluetooth_throttler),
-      weak_ptr_factory_(this) {
-  ble_scanner_->AddObserver(this);
-}
+      has_registered_observer_(false),
+      weak_ptr_factory_(this) {}
 
 BleConnectionManager::~BleConnectionManager() {
-  ble_scanner_->RemoveObserver(this);
+  if (has_registered_observer_) {
+    ble_scanner_->RemoveObserver(this);
+  }
 }
 
 void BleConnectionManager::RegisterRemoteDevice(
     const cryptauth::RemoteDevice& remote_device,
     const MessageType& connection_reason) {
+  if (!has_registered_observer_) {
+    ble_scanner_->AddObserver(this);
+  }
+  has_registered_observer_ = true;
+
   PA_LOG(INFO) << "Registering device with ID "
                << remote_device.GetTruncatedDeviceIdForLogs() << " for reason "
                << MessageTypeToString(connection_reason);
@@ -277,6 +283,19 @@ void BleConnectionManager::SendMessage(
   connection_metadata->SendMessage(message);
 }
 
+bool BleConnectionManager::GetStatusForDevice(
+    const cryptauth::RemoteDevice& remote_device,
+    cryptauth::SecureChannel::Status* status) const {
+  std::shared_ptr<ConnectionMetadata> connection_metadata =
+      GetConnectionMetadata(remote_device);
+  if (!connection_metadata) {
+    return false;
+  }
+
+  *status = connection_metadata->GetStatus();
+  return true;
+}
+
 void BleConnectionManager::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -321,7 +340,7 @@ void BleConnectionManager::OnReceivedAdvertisementFromDevice(
 
 std::shared_ptr<BleConnectionManager::ConnectionMetadata>
 BleConnectionManager::GetConnectionMetadata(
-    const cryptauth::RemoteDevice& remote_device) {
+    const cryptauth::RemoteDevice& remote_device) const {
   const auto map_iter = device_to_metadata_map_.find(remote_device);
   if (map_iter == device_to_metadata_map_.end()) {
     return nullptr;

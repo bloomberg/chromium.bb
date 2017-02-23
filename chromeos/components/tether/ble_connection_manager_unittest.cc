@@ -718,6 +718,72 @@ TEST_F(BleConnectionManagerTest,
   VerifyDeviceNotRegistered(test_devices_[0]);
 }
 
+TEST_F(BleConnectionManagerTest, TestGetStatusForDevice) {
+  EXPECT_CALL(*mock_ble_scanner_,
+              RegisterScanFilterForDevice(test_devices_[0]));
+  EXPECT_CALL(*mock_ble_advertiser_,
+              StartAdvertisingToDevice(test_devices_[0]));
+  EXPECT_CALL(*mock_ble_scanner_,
+              UnregisterScanFilterForDevice(test_devices_[0]));
+  EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
+
+  cryptauth::SecureChannel::Status status;
+
+  // Should return false when the device has not yet been registered at all.
+  EXPECT_FALSE(manager_->GetStatusForDevice(test_devices_[0], &status));
+
+  manager_->RegisterRemoteDevice(test_devices_[0],
+                                 MessageType::TETHER_AVAILABILITY_REQUEST);
+  VerifyAdvertisingTimeoutSet(test_devices_[0]);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED,
+       cryptauth::SecureChannel::Status::CONNECTING}});
+
+  // Should be CONNECTING at this point.
+  EXPECT_TRUE(manager_->GetStatusForDevice(test_devices_[0], &status));
+  EXPECT_EQ(cryptauth::SecureChannel::Status::CONNECTING, status);
+
+  fake_secure_channel_factory_->SetExpectedDeviceAddress(
+      std::string(kBluetoothAddress1));
+  mock_ble_scanner_->SimulateScanResults(std::string(kBluetoothAddress1),
+                                         test_devices_[0]);
+  FakeSecureChannel* channel = GetChannelForDevice(test_devices_[0]);
+
+  channel->ChangeStatus(cryptauth::SecureChannel::Status::CONNECTING);
+  EXPECT_TRUE(manager_->GetStatusForDevice(test_devices_[0], &status));
+  EXPECT_EQ(cryptauth::SecureChannel::Status::CONNECTING, status);
+
+  channel->ChangeStatus(cryptauth::SecureChannel::Status::CONNECTED);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0], cryptauth::SecureChannel::Status::CONNECTING,
+       cryptauth::SecureChannel::Status::CONNECTED}});
+  EXPECT_TRUE(manager_->GetStatusForDevice(test_devices_[0], &status));
+  EXPECT_EQ(cryptauth::SecureChannel::Status::CONNECTED, status);
+
+  channel->ChangeStatus(cryptauth::SecureChannel::Status::AUTHENTICATING);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0], cryptauth::SecureChannel::Status::CONNECTED,
+       cryptauth::SecureChannel::Status::AUTHENTICATING}});
+  EXPECT_TRUE(manager_->GetStatusForDevice(test_devices_[0], &status));
+  EXPECT_EQ(cryptauth::SecureChannel::Status::AUTHENTICATING, status);
+
+  channel->ChangeStatus(cryptauth::SecureChannel::Status::AUTHENTICATED);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0], cryptauth::SecureChannel::Status::AUTHENTICATING,
+       cryptauth::SecureChannel::Status::AUTHENTICATED}});
+  EXPECT_TRUE(manager_->GetStatusForDevice(test_devices_[0], &status));
+  EXPECT_EQ(cryptauth::SecureChannel::Status::AUTHENTICATED, status);
+
+  // Now, unregister the device and check that GetStatusForDevice() once again
+  // returns false.
+  manager_->UnregisterRemoteDevice(test_devices_[0],
+                                   MessageType::TETHER_AVAILABILITY_REQUEST);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0], cryptauth::SecureChannel::Status::AUTHENTICATED,
+       cryptauth::SecureChannel::Status::DISCONNECTED}});
+  EXPECT_FALSE(manager_->GetStatusForDevice(test_devices_[0], &status));
+}
+
 TEST_F(BleConnectionManagerTest,
        TestSuccessfulConnection_DisconnectsAfterConnection) {
   // A reconnection attempt is expected once the disconnection occurs, meaning
