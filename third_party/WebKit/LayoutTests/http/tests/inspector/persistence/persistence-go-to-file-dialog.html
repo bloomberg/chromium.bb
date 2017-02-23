@@ -50,7 +50,7 @@ function test()
             keys.push(dialog.itemKeyAt(i));
         keys.sort();
         InspectorTest.addResult(keys.join("\n"));
-        UI.Dialog._instance.detach();
+        UI.Dialog._instance.hide();
     }
 };
 </script>
