@@ -120,10 +120,7 @@ if (is_chromeos) {
   schema_sources += [ "input_ime.json" ]
 }
 if (enable_service_discovery) {
-  schema_sources += [
-    "gcd_private.idl",
-    "mdns.idl",
-  ]
+  schema_sources += [ "mdns.idl" ]
 }
 if (enable_webrtc) {
   schema_sources += [

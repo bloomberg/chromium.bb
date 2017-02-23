@@ -68,7 +68,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-#include "chrome/browser/extensions/api/gcd_private/gcd_private_api.h"
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
 #endif
 
@@ -100,9 +99,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ExtensionWebUIOverrideRegistrar::GetFactoryInstance();
   extensions::FeedbackPrivateAPI::GetFactoryInstance();
   extensions::FontSettingsAPI::GetFactoryInstance();
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-  extensions::GcdPrivateAPI::GetFactoryInstance();
-#endif
   extensions::HistoryAPI::GetFactoryInstance();
   extensions::HotwordPrivateEventService::GetFactoryInstance();
   extensions::IdentityAPI::GetFactoryInstance();

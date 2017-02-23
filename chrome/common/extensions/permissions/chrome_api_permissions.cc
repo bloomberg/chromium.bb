@@ -49,7 +49,6 @@ ChromeAPIPermissions::GetAllPermissions() const {
       {APIPermission::kGeolocation, "geolocation",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kNotifications, "notifications"},
-      {APIPermission::kGcdPrivate, "gcdPrivate"},
       {APIPermission::kGcm, "gcm"},
 
       // Register extension permissions.

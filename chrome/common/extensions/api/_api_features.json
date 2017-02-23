@@ -498,10 +498,6 @@
     "dependencies": ["permission:fontSettings"],
     "contexts": ["blessed_extension"]
   },
-  "gcdPrivate": {
-    "dependencies": ["permission:gcdPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "gcm": {
     "dependencies": ["permission:gcm"],
     "contexts": ["blessed_extension"]

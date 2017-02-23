@@ -33,10 +33,6 @@ extern const char kPrivetErrorInvalidXPrivetToken[];
 extern const char kPrivetErrorTimeout[];
 extern const char kPrivetErrorCancel[];
 
-extern const char kPrivetV3ErrorDeviceBusy[];
-extern const char kPrivetV3ErrorInvalidParams[];
-extern const char kPrivetV3ErrorSetupUnavailable[];
-
 extern const char kPrivetActionStart[];
 extern const char kPrivetActionGetClaimToken[];
 extern const char kPrivetActionComplete[];

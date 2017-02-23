@@ -118,7 +118,7 @@ class APIPermission {
     kFirstRunPrivate,
     kFontSettings,
     kFullscreen,
-    kGcdPrivate,
+    kDeleted_GcdPrivate,
     kGcm,
     kGeolocation,
     kHid,

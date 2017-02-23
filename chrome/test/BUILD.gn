@@ -2649,10 +2649,7 @@ test("browser_tests") {
       ]
     }
     if (enable_mdns) {
-      sources += [
-        "../browser/extensions/api/gcd_private/gcd_private_apitest.cc",
-        "../browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc",
-      ]
+      sources += [ "../browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc" ]
     }
     if (use_brlapi) {
       deps += [ "//build/linux/libbrlapi" ]
@@ -4152,8 +4149,6 @@ test("unit_tests") {
     ]
     if (enable_service_discovery) {
       sources += [
-        "../browser/extensions/api/gcd_private/privet_v3_context_getter_unittest.cc",
-        "../browser/extensions/api/gcd_private/privet_v3_session_unittest.cc",
         "../browser/extensions/api/mdns/dns_sd_registry_unittest.cc",
         "../browser/extensions/api/mdns/mdns_api_unittest.cc",
       ]
