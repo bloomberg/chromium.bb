@@ -215,6 +215,7 @@ class RenderingHelper {
   GLuint thumbnails_texture_id_;
   gfx::Size thumbnails_fbo_size_;
   gfx::Size thumbnail_size_;
+  GLuint vertex_buffer_;
   GLuint program_;
   base::TimeDelta frame_duration_;
   base::TimeTicks scheduled_render_time_;

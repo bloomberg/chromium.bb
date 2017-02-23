@@ -398,12 +398,22 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   // in the vertex shader for this to be rendered the right way up.
   // In the case of thumbnail rendering we use the same vertex shader
   // to render the FBO the screen, where we do not want this flipping.
+  // Vertices are 2 floats for position and 2 floats for texcoord each.
   static const float kVertices[] = {
-      -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f, -1.f,
+      -1, 1,  0, 1,  // Vertex 0
+      -1, -1, 0, 0,  // Vertex 1
+      1,  1,  1, 1,  // Vertex 2
+      1,  -1, 1, 0,  // Vertex 3
   };
-  static const float kTextureCoords[] = {
-      0, 1, 0, 0, 1, 1, 1, 0,
-  };
+  static const GLvoid* kVertexPositionOffset = 0;
+  static const GLvoid* kVertexTexcoordOffset =
+      reinterpret_cast<GLvoid*>(sizeof(float) * 2);
+  static const GLsizei kVertexStride = sizeof(float) * 4;
+
+  glGenBuffersARB(1, &vertex_buffer_);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(kVertices), kVertices, GL_STATIC_DRAW);
+
   static const char kVertexShader[] =
       STRINGIZE(varying vec2 interp_tc; attribute vec4 in_pos;
                 attribute vec2 in_tc; uniform bool tex_flip; void main() {
@@ -465,10 +475,15 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   }
   int pos_location = glGetAttribLocation(program_, "in_pos");
   glEnableVertexAttribArray(pos_location);
-  glVertexAttribPointer(pos_location, 2, GL_FLOAT, GL_FALSE, 0, kVertices);
+  glVertexAttribPointer(pos_location, 2, GL_FLOAT, GL_FALSE, kVertexStride,
+                        kVertexPositionOffset);
   int tc_location = glGetAttribLocation(program_, "in_tc");
   glEnableVertexAttribArray(tc_location);
-  glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0, kTextureCoords);
+  glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, kVertexStride,
+                        kVertexTexcoordOffset);
+
+  // Unbind the vertex buffer
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   if (!frame_duration_.is_zero()) {
     int warm_up_iterations = params.warm_up_iterations;
@@ -546,6 +561,8 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
     glDeleteTextures(1, &thumbnails_texture_id_);
     glDeleteFramebuffersEXT(1, &thumbnails_fbo_id_);
   }
+
+  glDeleteBuffersARB(1, &vertex_buffer_);
 
   gl_context_->ReleaseCurrent(gl_surface_.get());
   gl_context_ = NULL;

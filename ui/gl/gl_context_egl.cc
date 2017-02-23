@@ -37,6 +37,11 @@ extern "C" {
 #define EGL_DISPLAY_TEXTURE_SHARE_GROUP_ANGLE 0x3AAF
 #endif /* EGL_ANGLE_display_texture_share_group */
 
+#ifndef EGL_ANGLE_create_context_client_arrays
+#define EGL_ANGLE_create_context_client_arrays 1
+#define EGL_CONTEXT_CLIENT_ARRAYS_ENABLED_ANGLE 0x3452
+#endif /* EGL_ANGLE_create_context_client_arrays */
+
 using ui::GetLastEGLErrorString;
 
 namespace gl {
@@ -136,6 +141,12 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
         attribs.global_texture_share_group ? EGL_TRUE : EGL_FALSE);
   } else {
     DCHECK(!attribs.global_texture_share_group);
+  }
+
+  if (GLSurfaceEGL::HasEGLExtension("EGL_ANGLE_create_context_client_arrays")) {
+    // Disable client arrays if the context supports it
+    context_attributes.push_back(EGL_CONTEXT_CLIENT_ARRAYS_ENABLED_ANGLE);
+    context_attributes.push_back(EGL_FALSE);
   }
 
   // Append final EGL_NONE to signal the context attributes are finished

@@ -106,6 +106,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool chromium_copy_compressed_texture = false;
     bool angle_framebuffer_multisample = false;
     bool ext_disjoint_timer_query = false;
+    bool angle_client_arrays = false;
   };
 
   FeatureInfo();

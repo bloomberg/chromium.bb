@@ -1414,6 +1414,8 @@ void FeatureInfo::InitializeFeatures() {
       extensions.Contains("GL_CHROMIUM_copy_texture");
   feature_flags_.chromium_copy_compressed_texture =
       extensions.Contains("GL_CHROMIUM_copy_compressed_texture");
+  feature_flags_.angle_client_arrays =
+      extensions.Contains("GL_ANGLE_client_arrays");
 }
 
 bool FeatureInfo::IsES3Capable() const {
