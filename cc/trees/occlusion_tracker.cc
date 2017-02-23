@@ -119,7 +119,8 @@ static SimpleEnclosedRegion TransformSurfaceOpaqueRegion(
 
 void OcclusionTracker::EnterRenderTarget(const LayerImpl* new_target) {
   DCHECK(new_target->has_render_surface());
-  if (!stack_.empty() && stack_.back().target == new_target->render_surface())
+  RenderSurfaceImpl* new_target_surface = new_target->render_surface();
+  if (!stack_.empty() && stack_.back().target == new_target_surface)
     return;
 
   const RenderSurfaceImpl* old_target_surface = NULL;
@@ -130,9 +131,9 @@ void OcclusionTracker::EnterRenderTarget(const LayerImpl* new_target) {
         old_target_surface->nearest_occlusion_immune_ancestor();
   }
   const RenderSurfaceImpl* new_occlusion_immune_ancestor =
-      new_target->render_surface()->nearest_occlusion_immune_ancestor();
+      new_target_surface->nearest_occlusion_immune_ancestor();
 
-  stack_.push_back(StackObject(new_target->render_surface()));
+  stack_.push_back(StackObject(new_target_surface));
 
   // We copy the screen occlusion into the new RenderSurfaceImpl subtree, but we
   // never copy in the occlusion from inside the target, since we are looking
@@ -148,7 +149,7 @@ void OcclusionTracker::EnterRenderTarget(const LayerImpl* new_target) {
       // Note carefully, not used if screen space transform is uninvertible.
       gfx::Transform::kSkipInitialization);
   bool have_transform_from_screen_to_new_target =
-      new_target->render_surface()->screen_space_transform().GetInverse(
+      new_target_surface->screen_space_transform().GetInverse(
           &inverse_new_target_screen_space_transform);
 
   bool entering_root_target =
@@ -255,9 +256,9 @@ void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
   DCHECK(!stack_.empty());
   size_t last_index = stack_.size() - 1;
   DCHECK(new_target->has_render_surface());
+  RenderSurfaceImpl* new_surface = new_target->render_surface();
   bool surface_will_be_at_top_after_pop =
-      stack_.size() > 1 &&
-      stack_[last_index - 1].target == new_target->render_surface();
+      stack_.size() > 1 && stack_[last_index - 1].target == new_surface;
 
   // We merge the screen occlusion from the current RenderSurfaceImpl subtree
   // out to its parent target RenderSurfaceImpl. The target occlusion can be
@@ -297,7 +298,7 @@ void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
     stack_.pop_back();
   } else {
     // Replace the top of the stack with the new pushed surface.
-    stack_.back().target = new_target->render_surface();
+    stack_.back().target = new_surface;
     stack_.back().occlusion_from_inside_target =
         old_occlusion_from_inside_target_in_new_target;
     if (!new_target->layer_tree_impl()->IsRootLayer(new_target)) {

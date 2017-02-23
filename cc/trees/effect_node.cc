@@ -17,7 +17,6 @@ EffectNode::EffectNode()
       screen_space_opacity(1.f),
       blend_mode(SkBlendMode::kSrcOver),
       has_render_surface(false),
-      render_surface(nullptr),
       surface_is_clipped(false),
       has_copy_request(false),
       hidden_by_backface_visibility(false),

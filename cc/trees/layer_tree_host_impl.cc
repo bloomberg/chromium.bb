@@ -893,17 +893,18 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
     AppendQuadsData append_quads_data;
 
+    RenderSurfaceImpl* render_surface = it->render_surface();
     if (it.represents_target_render_surface()) {
-      if (it->render_surface()->HasCopyRequest()) {
+      if (render_surface->HasCopyRequest()) {
         active_tree()
             ->property_trees()
             ->effect_tree.TakeCopyRequestsAndTransformToSurface(
-                it->render_surface()->EffectTreeIndex(),
+                render_surface->EffectTreeIndex(),
                 &target_render_pass->copy_requests);
       }
     } else if (it.represents_contributing_render_surface() &&
-               it->render_surface()->contributes_to_drawn_surface()) {
-      it->render_surface()->AppendQuads(target_render_pass, &append_quads_data);
+               render_surface->contributes_to_drawn_surface()) {
+      render_surface->AppendQuads(target_render_pass, &append_quads_data);
     } else if (it.represents_itself() && !it->visible_layer_rect().IsEmpty()) {
       bool occluded =
           it->draw_properties().occlusion_in_content_space.IsOccluded(

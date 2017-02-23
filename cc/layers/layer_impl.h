@@ -230,13 +230,7 @@ class CC_EXPORT LayerImpl {
 
   bool ShowDebugBorders() const;
 
-  // These invalidate the host's render surface layer list.  The caller
-  // is responsible for calling set_needs_update_draw_properties on the tree
-  // so that its list can be recreated.
-  void ClearRenderSurfaceLayerList();
-  void SetHasRenderSurface(bool has_render_surface);
-
-  RenderSurfaceImpl* render_surface() const { return render_surface_.get(); }
+  RenderSurfaceImpl* render_surface() const;
 
   // The render surface which this layer draws into. This can be either owned by
   // the same layer or an ancestor of this layer.

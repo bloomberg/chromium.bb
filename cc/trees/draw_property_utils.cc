@@ -34,32 +34,13 @@ static bool IsRootLayer(const LayerImpl* layer) {
   return layer->layer_tree_impl()->IsRootLayer(layer);
 }
 
-#if DCHECK_IS_ON()
-static void ValidateRenderSurfaceForLayer(LayerImpl* layer) {
-  // This test verifies that there are no cases where a LayerImpl needs
-  // a render surface, but doesn't have one.
-  if (layer->has_render_surface())
-    return;
-
-  DCHECK(!IsRootLayer(layer)) << "layer: " << layer->id();
-  EffectNode* effect_node =
-      layer->layer_tree_impl()->property_trees()->effect_tree.Node(
-          layer->effect_tree_index());
-  if (effect_node->owning_layer_id != layer->id())
-    return;
-  DCHECK_EQ(effect_node->mask_layer_id, EffectTree::kInvalidNodeId)
-      << "layer: " << layer->id();
-  DCHECK(effect_node->filters.IsEmpty());
-  DCHECK(effect_node->background_filters.IsEmpty());
-}
-#endif
-
 static const EffectNode* ContentsTargetEffectNode(
     const int effect_tree_index,
     const EffectTree& effect_tree) {
   const EffectNode* effect_node = effect_tree.Node(effect_tree_index);
-  return effect_node->render_surface ? effect_node
-                                     : effect_tree.Node(effect_node->target_id);
+  return effect_tree.GetRenderSurface(effect_tree_index)
+             ? effect_node
+             : effect_tree.Node(effect_node->target_id);
 }
 
 bool ComputeClipRectInTargetSpace(const LayerImpl* layer,
@@ -715,21 +696,6 @@ void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
   }
 }
 
-void UpdateRenderSurfaceForLayer(EffectTree* effect_tree,
-                                 bool non_root_surfaces_enabled,
-                                 LayerImpl* layer) {
-  if (!non_root_surfaces_enabled) {
-    layer->SetHasRenderSurface(IsRootLayer(layer));
-    return;
-  }
-
-  EffectNode* node = effect_tree->Node(layer->effect_tree_index());
-
-  if (node->owning_layer_id == layer->id() && node->has_render_surface)
-    layer->SetHasRenderSurface(true);
-  else
-    layer->SetHasRenderSurface(false);
-}
 }  // namespace
 
 template <typename LayerType>
@@ -1011,9 +977,10 @@ void ComputeEffects(EffectTree* effect_tree) {
 static void ComputeClipsWithEffectTree(PropertyTrees* property_trees) {
   EffectTree* effect_tree = &property_trees->effect_tree;
   const ClipTree* clip_tree = &property_trees->clip_tree;
-  EffectNode* root_effect_node = effect_tree->Node(1);
+  EffectNode* root_effect_node =
+      effect_tree->Node(EffectTree::kContentsRootNodeId);
   const RenderSurfaceImpl* root_render_surface =
-      root_effect_node->render_surface;
+      effect_tree->GetRenderSurface(EffectTree::kContentsRootNodeId);
   gfx::Rect root_clip =
       gfx::ToEnclosingRect(clip_tree->Node(root_effect_node->clip_id)->clip);
   if (root_render_surface->is_clipped())
@@ -1030,7 +997,7 @@ static void ComputeClipsWithEffectTree(PropertyTrees* property_trees) {
         property_trees, include_viewport_clip, include_expanding_clips,
         effect_node->clip_id, target_node->id);
     gfx::RectF accumulated_clip = accumulated_clip_rect.clip_rect;
-    const RenderSurfaceImpl* render_surface = effect_node->render_surface;
+    const RenderSurfaceImpl* render_surface = effect_tree->GetRenderSurface(i);
     if (render_surface && render_surface->is_clipped()) {
       DCHECK(gfx::ToEnclosingRect(accumulated_clip) ==
              render_surface->clip_rect())
@@ -1080,19 +1047,26 @@ static void ComputeLayerClipRect(const PropertyTrees* property_trees,
       << gfx::ToEnclosingRect(clip_node->clip_in_target_space).ToString();
 }
 
-static void ComputeVisibleRectsInternal(
-    LayerImpl* root_layer,
-    PropertyTrees* property_trees,
-    bool can_render_to_separate_surface,
-    std::vector<LayerImpl*>* visible_layer_list) {
+void ComputeVisibleRects(LayerImpl* root_layer,
+                         PropertyTrees* property_trees,
+                         bool can_render_to_separate_surface,
+                         LayerImplList* visible_layer_list) {
+  bool render_surfaces_need_update = false;
   if (property_trees->non_root_surfaces_enabled !=
       can_render_to_separate_surface) {
     property_trees->non_root_surfaces_enabled = can_render_to_separate_surface;
     property_trees->transform_tree.set_needs_update(true);
+    render_surfaces_need_update = true;
   }
   if (property_trees->transform_tree.needs_update()) {
     property_trees->clip_tree.set_needs_update(true);
     property_trees->effect_tree.set_needs_update(true);
+  }
+
+  if (render_surfaces_need_update) {
+    property_trees->effect_tree.UpdateRenderSurfaces(
+        root_layer->layer_tree_impl(),
+        property_trees->non_root_surfaces_enabled);
   }
   UpdateRenderTarget(&property_trees->effect_tree,
                      property_trees->non_root_surfaces_enabled);
@@ -1158,30 +1132,6 @@ void VerifyClipTreeCalculations(const LayerImplList& layer_list,
   }
   for (auto* layer : layer_list)
     ComputeLayerClipRect(property_trees, layer);
-}
-
-void ComputeVisibleRects(LayerImpl* root_layer,
-                         PropertyTrees* property_trees,
-                         bool can_render_to_separate_surface,
-                         LayerImplList* visible_layer_list) {
-  for (auto* layer : *root_layer->layer_tree_impl()) {
-    UpdateRenderSurfaceForLayer(&property_trees->effect_tree,
-                                can_render_to_separate_surface, layer);
-    EffectNode* node =
-        property_trees->effect_tree.Node(layer->effect_tree_index());
-    if (node->owning_layer_id == layer->id()) {
-      node->render_surface = layer->render_surface();
-      if (node->render_surface)
-        node->render_surface->set_effect_tree_index(node->id);
-    }
-#if DCHECK_IS_ON()
-    if (can_render_to_separate_surface)
-      ValidateRenderSurfaceForLayer(layer);
-#endif
-  }
-  ComputeVisibleRectsInternal(root_layer, property_trees,
-                              can_render_to_separate_surface,
-                              visible_layer_list);
 }
 
 gfx::Rect ComputeLayerVisibleRectDynamic(const PropertyTrees* property_trees,

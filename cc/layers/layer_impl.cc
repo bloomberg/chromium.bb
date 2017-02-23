@@ -147,16 +147,14 @@ void LayerImpl::SetEffectTreeIndex(int index) {
 
 int LayerImpl::render_target_effect_tree_index() const {
   EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
-  return effect_node->render_surface ? effect_node->id : effect_node->target_id;
+
+  return GetEffectTree().GetRenderSurface(effect_tree_index_)
+             ? effect_node->id
+             : effect_node->target_id;
 }
 
 void LayerImpl::SetScrollTreeIndex(int index) {
   scroll_tree_index_ = index;
-}
-
-void LayerImpl::ClearRenderSurfaceLayerList() {
-  if (render_surface_)
-    render_surface_->ClearLayerLists();
 }
 
 void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
@@ -354,12 +352,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
     layer->layer_property_changed_ = true;
   }
 
-  // If whether layer has render surface changes, we need to update draw
-  // properties.
-  // TODO(weiliangc): Should be safely removed after impl side is able to
-  // update render surfaces without rebuilding property trees.
-  if (layer->has_render_surface() != has_render_surface())
-    layer->layer_tree_impl()->set_needs_update_draw_properties();
   layer->SetBounds(bounds_);
   layer->SetScrollClipLayer(scroll_clip_layer_id_);
   layer->SetElementId(element_id_);
@@ -483,9 +475,6 @@ void LayerImpl::ResetChangeTracking() {
 
   update_rect_.SetRect(0, 0, 0, 0);
   damage_rect_.SetRect(0, 0, 0, 0);
-
-  if (render_surface_)
-    render_surface_->ResetPropertyChangedFlags();
 }
 
 int LayerImpl::num_copy_requests_in_target_subtree() {
@@ -967,17 +956,6 @@ void LayerImpl::RunMicroBenchmark(MicroBenchmarkImpl* benchmark) {
   benchmark->RunOnLayer(this);
 }
 
-void LayerImpl::SetHasRenderSurface(bool should_have_render_surface) {
-  if (!!render_surface() == should_have_render_surface)
-    return;
-
-  if (should_have_render_surface) {
-    render_surface_ = base::MakeUnique<RenderSurfaceImpl>(this);
-    return;
-  }
-  render_surface_.reset();
-}
-
 gfx::Transform LayerImpl::DrawTransform() const {
   // Only drawn layers have up-to-date draw properties.
   if (!is_drawn_render_surface_layer_list_member()) {
@@ -1046,16 +1024,19 @@ gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
                                            gfx::Rect(scaled_bounds));
 }
 
+RenderSurfaceImpl* LayerImpl::render_surface() const {
+  EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
+  if (effect_node->owning_layer_id == id())
+    return GetEffectTree().GetRenderSurface(effect_tree_index_);
+  return nullptr;
+}
+
 RenderSurfaceImpl* LayerImpl::render_target() {
-  return GetEffectTree()
-      .Node(render_target_effect_tree_index())
-      ->render_surface;
+  return GetEffectTree().GetRenderSurface(render_target_effect_tree_index());
 }
 
 const RenderSurfaceImpl* LayerImpl::render_target() const {
-  return GetEffectTree()
-      .Node(render_target_effect_tree_index())
-      ->render_surface;
+  return GetEffectTree().GetRenderSurface(render_target_effect_tree_index());
 }
 
 bool LayerImpl::IsHidden() const {

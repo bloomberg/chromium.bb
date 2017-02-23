@@ -298,6 +298,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   static const int kContentsRootNodeId = 1;
 
+  int Insert(const EffectNode& tree_node, int parent_id);
+
   void clear();
 
   float EffectiveOpacity(const EffectNode* node) const;
@@ -326,16 +328,28 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   void AddMaskLayerId(int id);
   const std::vector<int>& mask_layer_ids() const { return mask_layer_ids_; }
 
+  RenderSurfaceImpl* GetRenderSurface(int id) {
+    return render_surfaces_[id].get();
+  }
+
+  const RenderSurfaceImpl* GetRenderSurface(int id) const {
+    return render_surfaces_[id].get();
+  }
+
+  void UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl,
+                            bool non_root_surfaces_enabled);
+
   bool ContributesToDrawnSurface(int id);
 
   void ResetChangeTracking();
 
-  // A list of pairs of stable id and render surface, sorted by stable id.
-  using StableIdRenderSurfaceList =
-      std::vector<std::pair<int, RenderSurfaceImpl*>>;
-  StableIdRenderSurfaceList CreateStableIdRenderSurfaceList() const;
-  void UpdateRenderSurfaceEffectIds(
-      const StableIdRenderSurfaceList& stable_id_render_surface_list,
+  void TakeRenderSurfaces(
+      std::vector<std::unique_ptr<RenderSurfaceImpl>>* render_surfaces);
+
+  // Returns true if render surfaces changed (that is, if any render surfaces
+  // were created or destroyed).
+  bool CreateOrReuseRenderSurfaces(
+      std::vector<std::unique_ptr<RenderSurfaceImpl>>* old_render_surfaces,
       LayerTreeImpl* layer_tree_impl);
 
  private:
@@ -349,6 +363,9 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   // Unsorted list of all mask layer ids that effect nodes refer to.
   std::vector<int> mask_layer_ids_;
+
+  // Indexed by node id.
+  std::vector<std::unique_ptr<RenderSurfaceImpl>> render_surfaces_;
 };
 
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {

@@ -291,10 +291,10 @@ static void ComputeInitialRenderSurfaceLayerList(
   // all non-skipped layers to the layer list of their target surface, and
   // add their content rect to their target surface's accumulated content rect.
   for (LayerImpl* layer : *layer_tree_impl) {
-    if (layer->render_surface()) {
-      layer->ClearRenderSurfaceLayerList();
-      ClearMaskLayersAreDrawnRenderSurfaceLayerListMembers(
-          layer->render_surface());
+    RenderSurfaceImpl* render_surface = layer->render_surface();
+    if (render_surface) {
+      render_surface->ClearLayerLists();
+      ClearMaskLayersAreDrawnRenderSurfaceLayerListMembers(render_surface);
     }
     layer->set_is_drawn_render_surface_layer_list_member(false);
 
@@ -306,29 +306,28 @@ static void ComputeInitialRenderSurfaceLayerList(
       continue;
 
     bool render_to_separate_surface =
-        is_root || (can_render_to_separate_surface && layer->render_surface());
+        is_root || (can_render_to_separate_surface && render_surface);
 
     if (render_to_separate_surface) {
-      DCHECK(layer->render_surface());
-      DCHECK(layer->render_target() == layer->render_surface());
-      RenderSurfaceImpl* surface = layer->render_surface();
-      surface->ClearAccumulatedContentRect();
+      DCHECK(render_surface);
+      DCHECK(layer->render_target() == render_surface);
+      render_surface->ClearAccumulatedContentRect();
       render_surface_layer_list->push_back(layer);
       if (is_root) {
         // The root surface does not contribute to any other surface, it has no
         // target.
-        layer->render_surface()->set_contributes_to_drawn_surface(false);
+        render_surface->set_contributes_to_drawn_surface(false);
       } else {
-        surface->render_target()->layer_list().push_back(layer);
+        render_surface->render_target()->layer_list().push_back(layer);
         bool contributes_to_drawn_surface =
             property_trees->effect_tree.ContributesToDrawnSurface(
                 layer->effect_tree_index());
-        layer->render_surface()->set_contributes_to_drawn_surface(
+        render_surface->set_contributes_to_drawn_surface(
             contributes_to_drawn_surface);
       }
 
       draw_property_utils::ComputeSurfaceDrawProperties(property_trees,
-                                                        surface);
+                                                        render_surface);
 
       // Ignore occlusion from outside the surface when surface contents need to
       // be fully drawn. Layers with copy-request need to be complete.  We could
@@ -337,17 +336,18 @@ static void ComputeInitialRenderSurfaceLayerList(
       // like overkill.
       // TODO(senorblanco): make this smarter for the SkImageFilter case (check
       // for pixel-moving filters)
-      const FilterOperations& filters = surface->Filters();
-      bool is_occlusion_immune = surface->HasCopyRequest() ||
+      const FilterOperations& filters = render_surface->Filters();
+      bool is_occlusion_immune = render_surface->HasCopyRequest() ||
                                  filters.HasReferenceFilter() ||
                                  filters.HasFilterThatMovesPixels();
       if (is_occlusion_immune) {
-        surface->SetNearestOcclusionImmuneAncestor(surface);
+        render_surface->SetNearestOcclusionImmuneAncestor(render_surface);
       } else if (is_root) {
-        surface->SetNearestOcclusionImmuneAncestor(nullptr);
+        render_surface->SetNearestOcclusionImmuneAncestor(nullptr);
       } else {
-        surface->SetNearestOcclusionImmuneAncestor(
-            surface->render_target()->nearest_occlusion_immune_ancestor());
+        render_surface->SetNearestOcclusionImmuneAncestor(
+            render_surface->render_target()
+                ->nearest_occlusion_immune_ancestor());
       }
     }
     bool layer_is_drawn =
@@ -372,20 +372,22 @@ static void ComputeSurfaceContentRects(LayerTreeImpl* layer_tree_impl,
   // Walk the list backwards, accumulating each surface's content rect into its
   // target's content rect.
   for (LayerImpl* layer : base::Reversed(*render_surface_layer_list)) {
+    RenderSurfaceImpl* render_surface = layer->render_surface();
     if (layer_tree_impl->IsRootLayer(layer)) {
       // The root layer's surface content rect is always the entire viewport.
-      layer->render_surface()->SetContentRectToViewport();
+      render_surface->SetContentRectToViewport();
       continue;
     }
-    RenderSurfaceImpl* surface = layer->render_surface();
+
     // Now all contributing drawable content rect has been accumulated to this
     // render surface, calculate the content rect.
-    surface->CalculateContentRectFromAccumulatedContentRect(max_texture_size);
+    render_surface->CalculateContentRectFromAccumulatedContentRect(
+        max_texture_size);
 
     // Now the render surface's content rect is calculated correctly, it could
     // contribute to its render target.
-    surface->render_target()
-        ->AccumulateContentRectFromContributingRenderSurface(surface);
+    render_surface->render_target()
+        ->AccumulateContentRectFromContributingRenderSurface(render_surface);
   }
 }
 

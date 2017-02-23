@@ -19,8 +19,6 @@ class TracedValue;
 
 namespace cc {
 
-class RenderSurfaceImpl;
-
 struct CC_EXPORT EffectNode {
   EffectNode();
   EffectNode(const EffectNode& other);
@@ -46,7 +44,6 @@ struct CC_EXPORT EffectNode {
   gfx::Size unscaled_mask_target_size;
 
   bool has_render_surface;
-  RenderSurfaceImpl* render_surface;
   // Only applicable if has render surface. A true value means a clip needs to
   // be applied to the output of the surface when it is drawn onto its parent
   // surface.

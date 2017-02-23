@@ -1536,6 +1536,9 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     PropertyTrees* property_trees) {
+  // Preserve render surfaces when rebuilding.
+  std::vector<std::unique_ptr<RenderSurfaceImpl>> render_surfaces;
+  property_trees->effect_tree.TakeRenderSurfaces(&render_surfaces);
   property_trees->is_main_thread = false;
   property_trees->is_active = root_layer->IsActive();
   SkColor color = root_layer->layer_tree_impl()->background_color();
@@ -1546,6 +1549,8 @@ void PropertyTreeBuilder::BuildPropertyTrees(
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
       elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
       device_transform, property_trees, color);
+  property_trees->effect_tree.CreateOrReuseRenderSurfaces(
+      &render_surfaces, root_layer->layer_tree_impl());
   property_trees->ResetCachedData();
 }
 

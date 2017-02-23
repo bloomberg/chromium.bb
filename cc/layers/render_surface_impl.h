@@ -36,7 +36,7 @@ struct AppendQuadsData;
 
 class CC_EXPORT RenderSurfaceImpl {
  public:
-  explicit RenderSurfaceImpl(LayerImpl* owning_layer);
+  RenderSurfaceImpl(LayerTreeImpl* layer_tree_impl, int stable_effect_id);
   virtual ~RenderSurfaceImpl();
 
   // Returns the RenderSurfaceImpl that this render surface contributes to. Root

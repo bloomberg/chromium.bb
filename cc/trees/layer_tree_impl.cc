@@ -389,11 +389,14 @@ static void UpdateClipTreeForBoundsDeltaOnLayer(LayerImpl* layer,
 }
 
 void LayerTreeImpl::SetPropertyTrees(PropertyTrees* property_trees) {
-  EffectTree::StableIdRenderSurfaceList stable_id_render_surface_list =
-      property_trees_.effect_tree.CreateStableIdRenderSurfaceList();
+  std::vector<std::unique_ptr<RenderSurfaceImpl>> old_render_surfaces;
+  property_trees_.effect_tree.TakeRenderSurfaces(&old_render_surfaces);
   property_trees_ = *property_trees;
-  property_trees_.effect_tree.UpdateRenderSurfaceEffectIds(
-      stable_id_render_surface_list, this);
+  bool render_surfaces_changed =
+      property_trees_.effect_tree.CreateOrReuseRenderSurfaces(
+          &old_render_surfaces, this);
+  if (render_surfaces_changed)
+    set_needs_update_draw_properties();
   property_trees->effect_tree.PushCopyRequestsTo(&property_trees_.effect_tree);
   property_trees_.is_main_thread = false;
   property_trees_.is_active = IsActiveTree();
@@ -513,9 +516,13 @@ void LayerTreeImpl::MoveChangeTrackingToLayers() {
   for (auto* layer : *this) {
     if (layer->LayerPropertyChanged())
       layer->NoteLayerPropertyChanged();
-    if (layer->render_surface() &&
-        layer->render_surface()->AncestorPropertyChanged())
-      layer->render_surface()->NoteAncestorPropertyChanged();
+  }
+  EffectTree& effect_tree = property_trees_.effect_tree;
+  for (int id = EffectTree::kContentsRootNodeId;
+       id < static_cast<int>(effect_tree.size()); ++id) {
+    RenderSurfaceImpl* render_surface = effect_tree.GetRenderSurface(id);
+    if (render_surface && render_surface->AncestorPropertyChanged())
+      render_surface->NoteAncestorPropertyChanged();
   }
 }
 
@@ -1063,15 +1070,16 @@ bool LayerTreeImpl::UpdateDrawProperties(
         const RenderSurfaceImpl* occlusion_surface =
             occlusion_tracker.OcclusionSurfaceForContributingSurface();
         gfx::Transform draw_transform;
+        RenderSurfaceImpl* render_surface = it->render_surface();
         if (occlusion_surface) {
           // We are calculating transform between two render surfaces. So, we
           // need to apply the surface contents scale at target and remove the
           // surface contents scale at source.
-          property_trees()->GetToTarget(
-              it->render_surface()->TransformTreeIndex(),
-              occlusion_surface->EffectTreeIndex(), &draw_transform);
+          property_trees()->GetToTarget(render_surface->TransformTreeIndex(),
+                                        occlusion_surface->EffectTreeIndex(),
+                                        &draw_transform);
           const EffectNode* effect_node = property_trees()->effect_tree.Node(
-              it->render_surface()->EffectTreeIndex());
+              render_surface->EffectTreeIndex());
           draw_property_utils::ConcatInverseSurfaceContentsScale(
               effect_node, &draw_transform);
         }
@@ -1079,11 +1087,11 @@ bool LayerTreeImpl::UpdateDrawProperties(
         Occlusion occlusion =
             occlusion_tracker.GetCurrentOcclusionForContributingSurface(
                 draw_transform);
-        it->render_surface()->set_occlusion_in_content_space(occlusion);
+        render_surface->set_occlusion_in_content_space(occlusion);
         // Masks are used to draw the contributing surface, so should have
         // the same occlusion as the surface (nothing inside the surface
         // occludes them).
-        if (LayerImpl* mask = it->render_surface()->MaskLayer()) {
+        if (LayerImpl* mask = render_surface->MaskLayer()) {
           mask->draw_properties().occlusion_in_content_space =
               occlusion_tracker.GetCurrentOcclusionForContributingSurface(
                   draw_transform * it->DrawTransform());
@@ -1785,13 +1793,14 @@ static const gfx::Transform SurfaceScreenSpaceTransform(
     const LayerImpl* layer) {
   const PropertyTrees* property_trees =
       layer->layer_tree_impl()->property_trees();
-  DCHECK(layer->render_surface());
+  RenderSurfaceImpl* render_surface = layer->render_surface();
+  DCHECK(render_surface);
   return layer->is_drawn_render_surface_layer_list_member()
-             ? layer->render_surface()->screen_space_transform()
+             ? render_surface->screen_space_transform()
              : property_trees
                    ->ToScreenSpaceTransformWithoutSurfaceContentsScale(
-                       layer->render_surface()->TransformTreeIndex(),
-                       layer->render_surface()->EffectTreeIndex());
+                       render_surface->TransformTreeIndex(),
+                       render_surface->EffectTreeIndex());
 }
 
 static bool PointIsClippedByAncestorClipNode(
@@ -1829,10 +1838,11 @@ static bool PointIsClippedByAncestorClipNode(
     }
     const LayerImpl* clip_node_owner =
         layer->layer_tree_impl()->LayerById(clip_node->owning_layer_id);
-    if (clip_node_owner->render_surface() &&
-        !PointHitsRect(
-            screen_space_point, SurfaceScreenSpaceTransform(clip_node_owner),
-            clip_node_owner->render_surface()->content_rect(), NULL)) {
+    RenderSurfaceImpl* render_surface = clip_node_owner->render_surface();
+    if (render_surface &&
+        !PointHitsRect(screen_space_point,
+                       SurfaceScreenSpaceTransform(clip_node_owner),
+                       render_surface->content_rect(), NULL)) {
       return true;
     }
   }

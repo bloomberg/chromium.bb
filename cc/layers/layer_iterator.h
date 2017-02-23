@@ -250,8 +250,8 @@ class LayerIterator {
   }
 
   inline bool current_layer_represents_contributing_render_surface() const {
-    return current_layer()->render_surface() &&
-           current_layer()->render_surface() != target_render_surface();
+    RenderSurfaceImpl* render_surface = current_layer()->render_surface();
+    return render_surface && render_surface != target_render_surface();
   }
   inline bool current_layer_represents_target_render_surface() const {
     return current_layer_index_ ==
