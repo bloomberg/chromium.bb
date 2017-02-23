@@ -636,9 +636,8 @@ static const int ext_tx_set_index_inter[EXT_TX_SET_TYPES] = {
 };
 
 static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
-                                            int is_inter, int use_default) {
+                                            int is_inter, int use_reduced_set) {
   const TX_SIZE tx_size2 = txsize_sqr_up_map[tx_size];
-  if (use_default) return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
   tx_size = txsize_sqr_map[tx_size];
 #if CONFIG_CB4X4
   (void)bs;
@@ -646,6 +645,8 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
 #else
   if (tx_size > TX_32X32 || bs < BLOCK_8X8) return EXT_TX_SET_DCTONLY;
 #endif
+  if (use_reduced_set)
+    return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
   if (tx_size2 == TX_32X32)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
   if (is_inter)
@@ -657,9 +658,9 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
 }
 
 static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
-                                 int use_default) {
+                                 int use_reduced_set) {
   const TxSetType set_type =
-      get_ext_tx_set_type(tx_size, bs, is_inter, use_default);
+      get_ext_tx_set_type(tx_size, bs, is_inter, use_reduced_set);
   return is_inter ? ext_tx_set_index_inter[set_type]
                   : ext_tx_set_index_intra[set_type];
 }
@@ -714,8 +715,9 @@ static const int ext_tx_used_inter_1D[EXT_TX_SETS_INTER][TX_TYPES_1D] = {
 };
 
 static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
-                                   int use_default) {
-  const int set_type = get_ext_tx_set_type(tx_size, bs, is_inter, use_default);
+                                   int use_reduced_set) {
+  const int set_type =
+      get_ext_tx_set_type(tx_size, bs, is_inter, use_reduced_set);
   return num_ext_tx_set[set_type];
 }
 
