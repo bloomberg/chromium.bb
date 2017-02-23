@@ -19,6 +19,9 @@ namespace autofill {
 // is on.
 bool IsFeatureSubstringMatchEnabled();
 
+// Returns true if showing autofill signature as HTML attributes is enabled.
+bool IsShowAutofillSignaturesEnabled();
+
 // Returns true when keyboard accessory is enabled.
 bool IsKeyboardAccessoryEnabled();
 

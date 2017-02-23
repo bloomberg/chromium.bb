@@ -30,6 +30,10 @@ class WebSecurityOrigin;
 
 namespace autofill {
 
+// Names of HTML attributes to show form and field signatures for debugging.
+const char kDebugAttributeForFormSignature[] = "form_signature";
+const char kDebugAttributeForFieldSignature[] = "field_signature";
+
 class RendererSavePasswordProgressLogger;
 
 // This class is responsible for filling password forms.

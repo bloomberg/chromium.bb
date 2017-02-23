@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
@@ -27,7 +26,6 @@
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -62,9 +60,6 @@ static const size_t kMaximumTextSizeForAutocomplete = 1000;
 
 const char kDummyUsernameField[] = "anonymous_username";
 const char kDummyPasswordField[] = "anonymous_password";
-
-const char kDebugAttributeForFormSignature[] = "form_signature";
-const char kDebugAttributeForFieldSignature[] = "field_signature";
 
 // Maps element names to the actual elements to simplify form filling.
 typedef std::map<base::string16, blink::WebInputElement> FormInputElementMap;
@@ -580,16 +575,18 @@ void AnnotateFormsWithSignatures(
           blink::WebString::fromUTF8(base::Uint64ToString(
               CalculateFormSignature(password_form->form_data))));
 
-      blink::WebVector<blink::WebFormControlElement> control_elements =
+      std::vector<blink::WebFormControlElement> control_elements =
           form_util::ExtractAutofillableElementsInForm(form);
-      DCHECK(control_elements.size() == password_form->form_data.fields.size());
+
+      if (control_elements.size() != password_form->form_data.fields.size())
+        return;
+
       for (size_t i = 0; i < control_elements.size(); ++i) {
-        blink::WebFormControlElement& control_element = control_elements[i];
-        if (!form_util::IsAutofillableElement(control_element))
-          continue;
+        blink::WebFormControlElement control_element = control_elements[i];
 
         const FormFieldData& field = password_form->form_data.fields[i];
-        DCHECK(field.name == control_element.nameForAutofill().utf16());
+        if (field.name != control_element.nameForAutofill().utf16())
+          continue;
         control_element.setAttribute(
             blink::WebString::fromASCII(kDebugAttributeForFieldSignature),
             blink::WebString::fromUTF8(
@@ -1053,10 +1050,9 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
 
   blink::WebVector<blink::WebFormElement> forms;
   frame->document().forms(forms);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowAutofillSignatures)) {
+
+  if (IsShowAutofillSignaturesEnabled())
     AnnotateFormsWithSignatures(forms);
-  }
   if (logger)
     logger->LogNumber(Logger::STRING_NUMBER_OF_ALL_FORMS, forms.size());
 

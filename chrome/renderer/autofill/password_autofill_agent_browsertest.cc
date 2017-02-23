@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -18,6 +19,7 @@
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -45,6 +47,7 @@ using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using blink::WebDocument;
 using blink::WebElement;
+using blink::WebFormElement;
 using blink::WebFrame;
 using blink::WebInputElement;
 using blink::WebString;
@@ -71,7 +74,7 @@ const char kCarolPassword[] = "test";
 const char kCarolAlternateUsername[] = "RealCarolUsername";
 
 const char kFormHTML[] =
-    "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
+    "<FORM id='LoginTestForm' action='http://www.bidule.com'>"
     "  <INPUT type='text' id='random_field'/>"
     "  <INPUT type='text' id='username'/>"
     "  <INPUT type='password' id='password'/>"
@@ -349,6 +352,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void SetFillOnAccountSelect() {
     scoped_feature_list_.InitAndEnableFeature(
         password_manager::features::kFillOnAccountSelect);
+  }
+
+  void EnableShowAutofillSignatures() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kShowAutofillSignatures);
   }
 
   void UpdateOriginForHTML(const std::string& html) {
@@ -812,7 +820,7 @@ TEST_F(PasswordAutofillAgentTest, WaitUsername) {
 }
 
 TEST_F(PasswordAutofillAgentTest, IsWebNodeVisibleTest) {
-  blink::WebVector<blink::WebFormElement> forms1, forms2, forms3;
+  blink::WebVector<WebFormElement> forms1, forms2, forms3;
   blink::WebFrame* frame;
 
   LoadHTML(kVisibleFormWithNoUsernameHTML);
@@ -1872,7 +1880,7 @@ TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
   SimulateUserInputChangeForElement(&email_element, "temp@google.com");
   SimulatePasswordChange("random");
   // Find FormData for visible password form.
-  blink::WebFormElement form_element = username_element_.form();
+  WebFormElement form_element = username_element_.form();
   FormData form_data;
   ASSERT_TRUE(WebFormElementToFormData(
       form_element, blink::WebFormControlElement(), nullptr,
@@ -2096,7 +2104,7 @@ TEST_F(PasswordAutofillAgentTest, IgnoreNotPasswordFields) {
                                     "1234123412341234");
   SimulateUserInputChangeForElement(&credit_card_verification_element, "123");
   // Find FormData for visible form.
-  blink::WebFormElement form_element = credit_card_number_element.form();
+  WebFormElement form_element = credit_card_number_element.form();
   FormData form_data;
   ASSERT_TRUE(WebFormElementToFormData(
       form_element, blink::WebFormControlElement(), nullptr,
@@ -2285,9 +2293,9 @@ TEST_F(PasswordAutofillAgentTest,
 
     // Get the username and password form input elelments.
     blink::WebDocument document = GetMainFrame()->document();
-    blink::WebVector<blink::WebFormElement> forms;
+    blink::WebVector<WebFormElement> forms;
     document.forms(forms);
-    blink::WebFormElement form_element = forms[0];
+    WebFormElement form_element = forms[0];
     std::vector<blink::WebFormControlElement> control_elements =
         form_util::ExtractAutofillableElementsInForm(form_element);
     bool has_fillable_username =
@@ -2458,6 +2466,54 @@ TEST_F(PasswordAutofillAgentTest, SuggestMultiplePasswordFields) {
   // still produce a suggestion dropdown.
   SimulateElementClick("password");
   CheckSuggestions("", false);
+}
+
+TEST_F(PasswordAutofillAgentTest, ShowAutofillSignaturesFlag) {
+  const bool kFalseTrue[] = {false, true};
+  for (bool show_signatures : kFalseTrue) {
+    if (show_signatures)
+      EnableShowAutofillSignatures();
+
+    LoadHTML(kFormHTML);
+    WebDocument document = GetMainFrame()->document();
+    WebFormElement form_element =
+        document.getElementById(WebString::fromASCII("LoginTestForm"))
+            .to<WebFormElement>();
+    ASSERT_FALSE(form_element.isNull());
+    FormData form_data;
+    ASSERT_TRUE(WebFormElementToFormData(
+        form_element, blink::WebFormControlElement(), nullptr,
+        form_util::EXTRACT_NONE, &form_data, nullptr));
+
+    // Check form signature.
+    WebString form_signature_attribute =
+        WebString::fromASCII(kDebugAttributeForFormSignature);
+    ASSERT_EQ(form_element.hasAttribute(form_signature_attribute),
+              show_signatures);
+    if (show_signatures) {
+      EXPECT_EQ(form_element.getAttribute(form_signature_attribute),
+                blink::WebString::fromUTF8(
+                    base::Uint64ToString(CalculateFormSignature(form_data))));
+    }
+
+    // Check field signatures.
+    WebString field_signature_attribute =
+        WebString::fromASCII(kDebugAttributeForFieldSignature);
+    blink::WebVector<blink::WebFormControlElement> control_elements;
+    form_element.getFormControlElements(control_elements);
+    for (size_t i = 0; i < control_elements.size(); ++i) {
+      const blink::WebFormControlElement field_element = control_elements[i];
+      bool expect_signature_for_field =
+          show_signatures && form_util::IsAutofillableElement(field_element);
+      ASSERT_EQ(field_element.hasAttribute(field_signature_attribute),
+                expect_signature_for_field);
+      if (expect_signature_for_field) {
+        EXPECT_EQ(field_element.getAttribute(field_signature_attribute),
+                  blink::WebString::fromUTF8(base::Uint64ToString(
+                      CalculateFieldSignatureForField(form_data.fields[i]))));
+      }
+    }
+  }
 }
 
 }  // namespace autofill

@@ -42,6 +42,11 @@ bool IsFeatureSubstringMatchEnabled() {
       switches::kEnableSuggestionsWithSubstringMatch);
 }
 
+bool IsShowAutofillSignaturesEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kShowAutofillSignatures);
+}
+
 bool IsKeyboardAccessoryEnabled() {
 #if defined(OS_ANDROID)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
