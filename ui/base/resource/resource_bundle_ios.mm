@@ -167,12 +167,9 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
 
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  // Another thread raced the load and has already cached the image.
-  if (images_.count(resource_id))
-    return images_[resource_id];
-
-  images_[resource_id] = image;
-  return images_[resource_id];
+  auto inserted = images_.insert(std::make_pair(resource_id, image));
+  DCHECK(inserted.second);
+  return inserted.first->second;
 }
 
 }  // namespace ui

@@ -412,8 +412,9 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   // Check to see if the image is already in the cache.
-  if (images_.count(resource_id))
-    return images_[resource_id];
+  auto found = images_.find(resource_id);
+  if (found != images_.end())
+    return found->second;
 
   gfx::Image image;
   if (delegate_)
@@ -451,8 +452,9 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   }
 
   // The load was successful, so cache the image.
-  images_[resource_id] = image;
-  return images_[resource_id];
+  auto inserted = images_.insert(std::make_pair(resource_id, image));
+  DCHECK(inserted.second);
+  return inserted.first->second;
 }
 
 base::RefCountedMemory* ResourceBundle::LoadDataResourceBytes(

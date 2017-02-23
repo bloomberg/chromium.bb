@@ -127,30 +127,6 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
       }
     }
 
-    if (ns_image.get()) {
-      image = gfx::Image(ns_image.release());
-    }
-  }
-
-  if (image.IsEmpty()) {
-    base::scoped_nsobject<NSImage> ns_image;
-    for (size_t i = 0; i < data_packs_.size(); ++i) {
-      scoped_refptr<base::RefCountedStaticMemory> data(
-          data_packs_[i]->GetStaticMemory(resource_id));
-      if (!data.get())
-        continue;
-
-      base::scoped_nsobject<NSData> ns_data(
-          [[NSData alloc] initWithBytes:data->front() length:data->size()]);
-      if (!ns_image.get()) {
-        ns_image.reset([[NSImage alloc] initWithData:ns_data]);
-      } else {
-        NSImageRep* image_rep = [NSBitmapImageRep imageRepWithData:ns_data];
-        if (image_rep)
-          [ns_image addRepresentation:image_rep];
-      }
-    }
-
     if (!ns_image.get()) {
       LOG(WARNING) << "Unable to load image with id " << resource_id;
       NOTREACHED();  // Want to assert in debug mode.
@@ -162,12 +138,9 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
 
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  // Another thread raced the load and has already cached the image.
-  if (images_.count(resource_id))
-    return images_[resource_id];
-
-  images_[resource_id] = image;
-  return images_[resource_id];
+  auto inserted = images_.insert(std::make_pair(resource_id, image));
+  DCHECK(inserted.second);
+  return inserted.first->second;
 }
 
 }  // namespace ui
