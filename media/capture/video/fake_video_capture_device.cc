@@ -580,7 +580,7 @@ void ClientBufferFrameDeliverer::PaintAndDeliverNextFrame(
   DLOG_IF(ERROR, !capture_buffer.is_valid())
       << "Couldn't allocate Capture Buffer";
   auto buffer_access =
-      capture_buffer.handle_provider()->GetHandleForInProcessAccess();
+      capture_buffer.handle_provider->GetHandleForInProcessAccess();
   DCHECK(buffer_access->data()) << "Buffer has NO backing memory";
 
   DCHECK_EQ(PIXEL_STORAGE_CPU, device_state_->format.pixel_storage);

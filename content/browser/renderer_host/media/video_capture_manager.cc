@@ -171,16 +171,13 @@ namespace content {
 // lifetime.
 // Phase 1: When first created (in GetOrCreateDeviceEntry()), this consists of
 // only the |video_capture_controller|. Clients can already connect to the
-// controller, but there is no |buffer_pool| or |video_capture_device| present.
+// controller, but there is no |video_capture_device| present.
 // Phase 2: When a request to "start" the entry comes in (via
-// HandleQueuedStartRequest()), |buffer_pool| is created and creation of
-// |video_capture_device| is scheduled to run asynchronously on the Device
-// Thread.
+// HandleQueuedStartRequest()), creation of |video_capture_device| is scheduled
+// to run asynchronously on the Device Thread.
 // Phase 3: As soon as the creation of the VideoCaptureDevice is complete, this
 // newly created VideoCaptureDevice instance is connected to the
-// VideoCaptureController via SetConsumerFeedbackObserver(). Furthermore, the
-// |buffer_pool| is moved to the |video_capture_controller| as a
-// FrameBufferPool via SetFrameBufferPool().
+// VideoCaptureController via SetConsumerFeedbackObserver().
 // Phase 4: This phase can only be reached on Android. When the application goes
 // to the background, the |video_capture_device| is asynchronously stopped and
 // released on the Device Thread. When the application is resumed, we
@@ -192,14 +189,12 @@ struct VideoCaptureManager::DeviceEntry {
               const media::VideoCaptureParams& params);
   ~DeviceEntry();
   std::unique_ptr<media::VideoCaptureDevice::Client> CreateDeviceClient();
-  std::unique_ptr<media::FrameBufferPool> CreateFrameBufferPool();
 
   const int serial_id;
   const MediaStreamType stream_type;
   const std::string id;
   const media::VideoCaptureParams parameters;
   VideoCaptureController video_capture_controller;
-  scoped_refptr<media::VideoCaptureBufferPool> buffer_pool;
   std::unique_ptr<media::VideoCaptureDevice> video_capture_device;
 };
 
@@ -214,24 +209,6 @@ struct VideoCaptureManager::DeviceInfo {
 
   media::VideoCaptureDeviceDescriptor descriptor;
   media::VideoCaptureFormats supported_formats;
-};
-
-class BufferPoolFrameBufferPool : public media::FrameBufferPool {
- public:
-  explicit BufferPoolFrameBufferPool(
-      scoped_refptr<media::VideoCaptureBufferPool> buffer_pool)
-      : buffer_pool_(std::move(buffer_pool)) {}
-
-  void SetBufferHold(int buffer_id) override {
-    buffer_pool_->HoldForConsumers(buffer_id, 1);
-  }
-
-  void ReleaseBufferHold(int buffer_id) override {
-    buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
-  }
-
- private:
-  scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;
 };
 
 // Class used for queuing request for starting a device.
@@ -282,25 +259,18 @@ VideoCaptureManager::DeviceEntry::CreateDeviceClient() {
   const int max_buffers = stream_type == MEDIA_TAB_VIDEO_CAPTURE
                               ? kMaxNumberOfBuffersForTabCapture
                               : kMaxNumberOfBuffers;
-  buffer_pool = new media::VideoCaptureBufferPoolImpl(
-      base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
-      max_buffers);
+  scoped_refptr<media::VideoCaptureBufferPool> buffer_pool =
+      new media::VideoCaptureBufferPoolImpl(
+          base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
+          max_buffers);
 
   return base::MakeUnique<media::VideoCaptureDeviceClient>(
       base::MakeUnique<VideoFrameReceiverOnIOThread>(
           video_capture_controller.GetWeakPtrForIOThread()),
-      buffer_pool,
-      base::Bind(
-          &CreateGpuJpegDecoder,
-          base::Bind(&media::VideoFrameReceiver::OnIncomingCapturedVideoFrame,
-                     video_capture_controller.GetWeakPtrForIOThread())));
-}
-
-std::unique_ptr<media::FrameBufferPool>
-VideoCaptureManager::DeviceEntry::CreateFrameBufferPool() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(buffer_pool);
-  return base::MakeUnique<BufferPoolFrameBufferPool>(std::move(buffer_pool));
+      std::move(buffer_pool),
+      base::Bind(&CreateGpuJpegDecoder,
+                 base::Bind(&media::VideoFrameReceiver::OnFrameReadyInBuffer,
+                            video_capture_controller.GetWeakPtrForIOThread())));
 }
 
 VideoCaptureManager::DeviceInfo::DeviceInfo() = default;
@@ -492,7 +462,6 @@ void VideoCaptureManager::DoStopDevice(DeviceEntry* entry) {
   entry->video_capture_controller.OnLog(
       base::StringPrintf("Stopping device: id: %s", entry->id.c_str()));
   entry->video_capture_controller.SetConsumerFeedbackObserver(nullptr);
-  entry->video_capture_controller.SetFrameBufferPool(nullptr);
 
   // |entry->video_capture_device| can be null if creating the device has
   // failed.
@@ -524,8 +493,6 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
 
   std::unique_ptr<media::VideoCaptureDevice::Client> device_client =
       entry->CreateDeviceClient();
-  std::unique_ptr<media::FrameBufferPool> frame_buffer_pool =
-      entry->CreateFrameBufferPool();
 
   base::Callback<std::unique_ptr<VideoCaptureDevice>(void)>
       start_capture_function;
@@ -589,12 +556,11 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
   base::PostTaskAndReplyWithResult(
       device_task_runner_.get(), FROM_HERE, start_capture_function,
       base::Bind(&VideoCaptureManager::OnDeviceStarted, this,
-                 request->serial_id(), base::Passed(&frame_buffer_pool)));
+                 request->serial_id()));
 }
 
 void VideoCaptureManager::OnDeviceStarted(
     int serial_id,
-    std::unique_ptr<media::FrameBufferPool> frame_buffer_pool,
     std::unique_ptr<VideoCaptureDevice> device) {
   DVLOG(3) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -617,8 +583,6 @@ void VideoCaptureManager::OnDeviceStarted(
     DCHECK(entry);
     DCHECK(!entry->video_capture_device);
     if (device) {
-      entry->video_capture_controller.SetFrameBufferPool(
-          std::move(frame_buffer_pool));
       // Passing raw pointer |device.get()| to the controller is safe,
       // because we transfer ownership of it to |entry|. We are calling
       // SetConsumerFeedbackObserver(nullptr) before releasing

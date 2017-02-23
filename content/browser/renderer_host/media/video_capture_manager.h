@@ -271,7 +271,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
                         const media::VideoCaptureParams& params);
   void OnDeviceStarted(
       int serial_id,
-      std::unique_ptr<media::FrameBufferPool> frame_buffer_pool,
       std::unique_ptr<VideoCaptureDevice> device);
   void DoStopDevice(DeviceEntry* entry);
   void HandleQueuedStartRequest();

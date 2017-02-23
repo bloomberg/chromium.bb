@@ -121,7 +121,7 @@ typedef std::vector<VideoCaptureFormat> VideoCaptureFormats;
 // This class is used by the client of a video capture device to specify the
 // format of frames in which the client would like to have captured frames
 // returned.
-struct MEDIA_EXPORT VideoCaptureParams {
+struct CAPTURE_EXPORT VideoCaptureParams {
   VideoCaptureParams();
 
   // Returns true if requested_format.IsValid() and all other values are within

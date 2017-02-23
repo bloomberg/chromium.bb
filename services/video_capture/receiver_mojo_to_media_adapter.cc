@@ -4,9 +4,6 @@
 
 #include "services/video_capture/receiver_mojo_to_media_adapter.h"
 
-#include "media/mojo/common/media_type_converters.h"
-#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
-
 namespace video_capture {
 
 ReceiverMojoToMediaAdapter::ReceiverMojoToMediaAdapter(
@@ -15,9 +12,20 @@ ReceiverMojoToMediaAdapter::ReceiverMojoToMediaAdapter(
 
 ReceiverMojoToMediaAdapter::~ReceiverMojoToMediaAdapter() = default;
 
-void ReceiverMojoToMediaAdapter::OnIncomingCapturedVideoFrame(
-    media::VideoCaptureDevice::Client::Buffer buffer,
-    scoped_refptr<media::VideoFrame> frame) {
+void ReceiverMojoToMediaAdapter::OnNewBufferHandle(
+    int buffer_id,
+    std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>
+        handle_provider) {
+  NOTIMPLEMENTED();
+}
+
+void ReceiverMojoToMediaAdapter::OnFrameReadyInBuffer(
+    int buffer_id,
+    int frame_feedback_id,
+    std::unique_ptr<
+        media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
+        buffer_usage_reservation,
+    media::mojom::VideoFrameInfoPtr frame_info) {
   NOTIMPLEMENTED();
 }
 

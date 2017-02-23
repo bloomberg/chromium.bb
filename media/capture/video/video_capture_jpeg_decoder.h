@@ -4,7 +4,9 @@
 
 #include "base/callback.h"
 #include "media/capture/capture_export.h"
+#include "media/capture/mojo/video_capture_types.mojom.h"
 #include "media/capture/video/video_capture_device.h"
+#include "media/capture/video/video_frame_receiver.h"
 
 namespace media {
 
@@ -19,9 +21,12 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoder {
                    // decode error.
   };
 
-  using DecodeDoneCB =
-      base::Callback<void(media::VideoCaptureDevice::Client::Buffer,
-                          scoped_refptr<media::VideoFrame>)>;
+  using DecodeDoneCB = base::Callback<void(
+      int buffer_id,
+      int frame_feedback_id,
+      std::unique_ptr<VideoCaptureDevice::Client::Buffer::
+                          ScopedAccessPermission> buffer_read_permission,
+      mojom::VideoFrameInfoPtr frame_info)>;
 
   virtual ~VideoCaptureJpegDecoder() {}
 

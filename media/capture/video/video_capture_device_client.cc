@@ -21,7 +21,6 @@
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 using media::VideoCaptureFormat;
@@ -38,21 +37,37 @@ bool IsFormatSupported(media::VideoPixelFormat pixel_format) {
 
 namespace media {
 
-class BufferPoolProducerReservationReleaser
+template <typename ReleaseTraits>
+class ScopedBufferPoolReservation
     : public VideoCaptureDevice::Client::Buffer::ScopedAccessPermission {
  public:
-  BufferPoolProducerReservationReleaser(
-      scoped_refptr<VideoCaptureBufferPool> buffer_pool,
-      int buffer_id)
+  ScopedBufferPoolReservation(scoped_refptr<VideoCaptureBufferPool> buffer_pool,
+                              int buffer_id)
       : buffer_pool_(std::move(buffer_pool)), buffer_id_(buffer_id) {}
 
-  ~BufferPoolProducerReservationReleaser() override {
-    buffer_pool_->RelinquishProducerReservation(buffer_id_);
+  ~ScopedBufferPoolReservation() override {
+    ReleaseTraits::Release(buffer_pool_, buffer_id_);
   }
 
  private:
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
   const int buffer_id_;
+};
+
+class ProducerReleaseTraits {
+ public:
+  static void Release(const scoped_refptr<VideoCaptureBufferPool>& buffer_pool,
+                      int buffer_id) {
+    buffer_pool->RelinquishProducerReservation(buffer_id);
+  }
+};
+
+class ConsumerReleaseTraits {
+ public:
+  static void Release(const scoped_refptr<VideoCaptureBufferPool>& buffer_pool,
+                      int buffer_id) {
+    buffer_pool->RelinquishConsumerHold(buffer_id, 1);
+  }
 };
 
 class BufferPoolBufferHandleProvider
@@ -108,8 +123,8 @@ VideoCaptureDevice::Client::Buffer VideoCaptureDeviceClient::MakeBufferStruct(
   return Buffer(
       buffer_id, frame_feedback_id,
       base::MakeUnique<BufferPoolBufferHandleProvider>(buffer_pool, buffer_id),
-      base::MakeUnique<BufferPoolProducerReservationReleaser>(buffer_pool,
-                                                              buffer_id));
+      base::MakeUnique<ScopedBufferPoolReservation<ProducerReleaseTraits>>(
+          buffer_pool, buffer_id));
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedData(
@@ -179,7 +194,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   if (!buffer.is_valid())
     return;
 
-  auto buffer_access = buffer.handle_provider()->GetHandleForInProcessAccess();
+  auto buffer_access = buffer.handle_provider->GetHandleForInProcessAccess();
   uint8_t *y_plane_data, *u_plane_data, *v_plane_data;
   InitializeI420PlanePointers(dimensions, buffer_access->data(), &y_plane_data,
                               &u_plane_data, &v_plane_data);
@@ -341,28 +356,31 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
     const VideoFrameMetadata& additional_metadata) {
   DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
 
-  if (!base::ContainsValue(buffer_ids_known_by_receiver_, buffer.id()))
-    buffer_ids_known_by_receiver_.push_back(buffer.id());
+  if (!base::ContainsValue(buffer_ids_known_by_receiver_, buffer.id)) {
+    receiver_->OnNewBufferHandle(buffer.id, std::move(buffer.handle_provider));
+    buffer_ids_known_by_receiver_.push_back(buffer.id);
+  }
 
-  auto buffer_access = buffer.handle_provider()->GetHandleForInProcessAccess();
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
-          format.pixel_format,               // format
-          format.frame_size,                 // coded_size
-          visible_rect,                      // visible_rect
-          format.frame_size,                 // natural_size
-          buffer_access->data(),             // data
-          buffer_access->mapped_size(),      // data_size
-          base::SharedMemory::NULLHandle(),  // handle
-          0u,                                // shared_memory_offset
-          timestamp);                        // timestamp
-  frame->metadata()->MergeMetadataFrom(&additional_metadata);
-  frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
-                               format.frame_rate);
-  frame->metadata()->SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
-                                  reference_time);
+  VideoFrameMetadata metadata;
+  metadata.MergeMetadataFrom(&additional_metadata);
+  metadata.SetDouble(media::VideoFrameMetadata::FRAME_RATE, format.frame_rate);
+  metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
+                        reference_time);
 
-  receiver_->OnIncomingCapturedVideoFrame(std::move(buffer), std::move(frame));
+  mojom::VideoFrameInfoPtr info = mojom::VideoFrameInfo::New();
+  info->timestamp = timestamp;
+  info->pixel_format = format.pixel_format;
+  info->storage_type = format.pixel_storage;
+  info->coded_size = format.frame_size;
+  info->visible_rect = visible_rect;
+  info->metadata = metadata.CopyInternalValues();
+
+  buffer_pool_->HoldForConsumers(buffer.id, 1);
+  receiver_->OnFrameReadyInBuffer(
+      buffer.id, buffer.frame_feedback_id,
+      base::MakeUnique<ScopedBufferPoolReservation<ConsumerReleaseTraits>>(
+          buffer_pool_, buffer.id),
+      std::move(info));
 }
 
 media::VideoCaptureDevice::Client::Buffer
@@ -442,7 +460,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedY16Data(
   // Failed to reserve output buffer, so drop the frame.
   if (!buffer.is_valid())
     return;
-  auto buffer_access = buffer.handle_provider()->GetHandleForInProcessAccess();
+  auto buffer_access = buffer.handle_provider->GetHandleForInProcessAccess();
   memcpy(buffer_access->data(), data, length);
   const VideoCaptureFormat output_format =
       VideoCaptureFormat(format.frame_size, format.frame_rate,

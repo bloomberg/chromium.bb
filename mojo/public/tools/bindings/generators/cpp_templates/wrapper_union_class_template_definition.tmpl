@@ -8,9 +8,9 @@ template <typename UnionPtrType>
     case Tag::{{field.name|upper}}:
 {%-   if field.kind|is_object_kind or
          field.kind|is_any_handle_or_interface_kind %}
-      rv->set_{{field.name}}(mojo::internal::Clone(*data_.{{field.name}}));
+      rv->set_{{field.name}}(mojo::Clone(*data_.{{field.name}}));
 {%-   else %}
-      rv->set_{{field.name}}(mojo::internal::Clone(data_.{{field.name}}));
+      rv->set_{{field.name}}(mojo::Clone(data_.{{field.name}}));
 {%-   endif %}
       break;
 {%- endfor %}

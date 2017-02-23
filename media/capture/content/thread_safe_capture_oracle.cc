@@ -131,12 +131,12 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
         base::saturated_cast<int>(attenuated_utilization * 100.0 + 0.5));
   }
 
-  TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", output_buffer.id(),
+  TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", output_buffer.id,
                            "frame_number", frame_number, "trigger",
                            VideoCaptureOracle::EventAsString(event));
 
   auto output_buffer_access =
-      output_buffer.handle_provider()->GetHandleForInProcessAccess();
+      output_buffer.handle_provider->GetHandleForInProcessAccess();
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, params_.requested_format.pixel_storage);
   *storage = VideoFrame::WrapExternalSharedMemory(
       params_.requested_format.pixel_format, coded_size,
@@ -206,7 +206,7 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
     scoped_refptr<VideoFrame> frame,
     base::TimeTicks reference_time,
     bool success) {
-  TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", buffer.id(), "success",
+  TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", buffer.id, "success",
                          success, "timestamp",
                          reference_time.ToInternalValue());
 

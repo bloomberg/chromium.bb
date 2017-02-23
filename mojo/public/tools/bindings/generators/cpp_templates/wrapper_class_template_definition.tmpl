@@ -4,7 +4,7 @@ template <typename StructPtrType>
   // without being asked.
   StructPtrType rv(New());
 {%- for field in struct.fields %}
-  rv->{{field.name}} = mojo::internal::Clone({{field.name}});
+  rv->{{field.name}} = mojo::Clone({{field.name}});
 {%- endfor %}
   return rv;
 }

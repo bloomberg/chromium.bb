@@ -40,9 +40,6 @@ target(link_target_type, "base") {
     # TODO(xhwang): Clean up the dependency graph within "media" target.
     "//media/audio",
     "//media/ffmpeg",
-
-    # TODO(xhwang): Remove this dependency.
-    "//media/capture",
   ]
   sources = [
     "audio_block_fifo.cc",

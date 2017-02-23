@@ -13,17 +13,17 @@
 
 namespace media {
 
-VideoCaptureDevice::Client::Buffer::Buffer() : id_(0), frame_feedback_id_(0) {}
+VideoCaptureDevice::Client::Buffer::Buffer() : id(0), frame_feedback_id(0) {}
 
 VideoCaptureDevice::Client::Buffer::Buffer(
     int buffer_id,
     int frame_feedback_id,
     std::unique_ptr<HandleProvider> handle_provider,
     std::unique_ptr<ScopedAccessPermission> access_permission)
-    : handle_provider_(std::move(handle_provider)),
-      access_permission_(std::move(access_permission)),
-      id_(buffer_id),
-      frame_feedback_id_(frame_feedback_id) {}
+    : id(buffer_id),
+      frame_feedback_id(frame_feedback_id),
+      handle_provider(std::move(handle_provider)),
+      access_permission(std::move(access_permission)) {}
 
 VideoCaptureDevice::Client::Buffer::Buffer(
     VideoCaptureDevice::Client::Buffer&& other) = default;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_CLONE_EQUALS_UTIL_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_CLONE_EQUALS_UTIL_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_EQUALS_TRAITS_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_LIB_EQUALS_TRAITS_H_
 
 #include <type_traits>
 #include <unordered_map>
@@ -14,73 +14,6 @@
 
 namespace mojo {
 namespace internal {
-
-template <typename T>
-struct HasCloneMethod {
-  template <typename U>
-  static char Test(decltype(&U::Clone));
-  template <typename U>
-  static int Test(...);
-  static const bool value = sizeof(Test<T>(0)) == sizeof(char);
-
- private:
-  EnsureTypeIsComplete<T> check_t_;
-};
-
-template <typename T, bool has_clone_method = HasCloneMethod<T>::value>
-struct CloneTraits;
-
-template <typename T>
-T Clone(const T& input);
-
-template <typename T>
-struct CloneTraits<T, true> {
-  static T Clone(const T& input) { return input.Clone(); }
-};
-
-template <typename T>
-struct CloneTraits<T, false> {
-  static T Clone(const T& input) { return input; }
-};
-
-template <typename T>
-struct CloneTraits<base::Optional<T>, false> {
-  static base::Optional<T> Clone(const base::Optional<T>& input) {
-    if (!input)
-      return base::nullopt;
-
-    return base::Optional<T>(internal::Clone(*input));
-  }
-};
-
-template <typename T>
-struct CloneTraits<std::vector<T>, false> {
-  static std::vector<T> Clone(const std::vector<T>& input) {
-    std::vector<T> result;
-    result.reserve(input.size());
-    for (const auto& element : input)
-      result.push_back(internal::Clone(element));
-
-    return result;
-  }
-};
-
-template <typename K, typename V>
-struct CloneTraits<std::unordered_map<K, V>, false> {
-  static std::unordered_map<K, V> Clone(const std::unordered_map<K, V>& input) {
-    std::unordered_map<K, V> result;
-    for (const auto& element : input) {
-      result.insert(std::make_pair(internal::Clone(element.first),
-                                   internal::Clone(element.second)));
-    }
-    return result;
-  }
-};
-
-template <typename T>
-T Clone(const T& input) {
-  return CloneTraits<T>::Clone(input);
-};
 
 template <typename T>
 struct HasEqualsMethod {
@@ -158,4 +91,4 @@ bool Equals(const T& a, const T& b) {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_CLONE_EQUALS_UTIL_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_EQUALS_TRAITS_H_

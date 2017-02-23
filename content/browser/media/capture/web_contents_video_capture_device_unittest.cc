@@ -284,8 +284,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
     // analysis is too slow, the backlog of frames will grow without bound and
     // trouble erupts. http://crbug.com/174519
     using media::VideoFrame;
-    auto buffer_access =
-        buffer.handle_provider()->GetHandleForInProcessAccess();
+    auto buffer_access = buffer.handle_provider->GetHandleForInProcessAccess();
     auto frame = VideoFrame::WrapExternalSharedMemory(
         media::PIXEL_FORMAT_I420, format.frame_size, visible_rect,
         format.frame_size, buffer_access->data(), buffer_access->mapped_size(),

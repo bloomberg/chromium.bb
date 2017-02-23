@@ -155,9 +155,10 @@ class MockFrameObserver : public VideoCaptureControllerEventHandler {
                        mojo::ScopedSharedBufferHandle handle,
                        int length, int buffer_id) override {}
   void OnBufferDestroyed(VideoCaptureControllerID id, int buffer_id) override {}
-  void OnBufferReady(VideoCaptureControllerID id,
-                     int buffer_id,
-                     const scoped_refptr<media::VideoFrame>& frame) override {}
+  void OnBufferReady(
+      VideoCaptureControllerID id,
+      int buffer_id,
+      const media::mojom::VideoFrameInfoPtr& frame_info) override {}
   void OnEnded(VideoCaptureControllerID id) override {}
 
   void OnGotControllerCallback(VideoCaptureControllerID) {}

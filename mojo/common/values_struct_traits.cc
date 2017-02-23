@@ -45,6 +45,14 @@ bool StructTraits<common::mojom::DictionaryValueDataView,
   return true;
 }
 
+std::unique_ptr<base::DictionaryValue>
+CloneTraits<std::unique_ptr<base::DictionaryValue>, false>::Clone(
+    const std::unique_ptr<base::DictionaryValue>& input) {
+  auto result = base::MakeUnique<base::DictionaryValue>();
+  result->MergeDictionary(input.get());
+  return result;
+}
+
 bool UnionTraits<common::mojom::ValueDataView, std::unique_ptr<base::Value>>::
     Read(common::mojom::ValueDataView data,
          std::unique_ptr<base::Value>* value_out) {

@@ -41,14 +41,6 @@ class Location;
 
 namespace media {
 
-class CAPTURE_EXPORT FrameBufferPool {
- public:
-  virtual ~FrameBufferPool() {}
-
-  virtual void SetBufferHold(int buffer_id) = 0;
-  virtual void ReleaseBufferHold(int buffer_id) = 0;
-};
-
 class CAPTURE_EXPORT VideoFrameConsumerFeedbackObserver {
  public:
   virtual ~VideoFrameConsumerFeedbackObserver() {}
@@ -86,9 +78,9 @@ class CAPTURE_EXPORT VideoCaptureDevice
   // All clients must implement OnError().
   class CAPTURE_EXPORT Client {
    public:
-    // Move-only type representing access to a buffer handle as well as
-    // read-write permission to its contents.
-    class CAPTURE_EXPORT Buffer {
+    // Struct bundling several parameters being passed between a
+    // VideoCaptureDevice and its VideoCaptureDevice::Client.
+    struct CAPTURE_EXPORT Buffer {
      public:
       // Destructor-only interface for encapsulating scoped access permission to
       // a Buffer.
@@ -117,18 +109,12 @@ class CAPTURE_EXPORT VideoCaptureDevice
       Buffer(Buffer&& other);
       Buffer& operator=(Buffer&& other);
 
-      bool is_valid() const { return handle_provider_ != nullptr; }
-      int id() const { return id_; }
-      int frame_feedback_id() const { return frame_feedback_id_; }
-      HandleProvider* handle_provider() const { return handle_provider_.get(); }
+      bool is_valid() const { return handle_provider != nullptr; }
 
-     private:
-      std::unique_ptr<HandleProvider> handle_provider_;
-      std::unique_ptr<ScopedAccessPermission> access_permission_;
-      int id_;
-      int frame_feedback_id_;
-
-      DISALLOW_COPY_AND_ASSIGN(Buffer);
+      int id;
+      int frame_feedback_id;
+      std::unique_ptr<HandleProvider> handle_provider;
+      std::unique_ptr<ScopedAccessPermission> access_permission;
     };
 
     virtual ~Client() {}

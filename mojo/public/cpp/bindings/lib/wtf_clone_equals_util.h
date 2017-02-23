@@ -7,14 +7,14 @@
 
 #include <type_traits>
 
-#include "mojo/public/cpp/bindings/lib/clone_equals_util.h"
+#include "mojo/public/cpp/bindings/clone_traits.h"
+#include "mojo/public/cpp/bindings/lib/equals_traits.h"
 #include "third_party/WebKit/Source/wtf/HashMap.h"
 #include "third_party/WebKit/Source/wtf/Optional.h"
 #include "third_party/WebKit/Source/wtf/Vector.h"
 #include "third_party/WebKit/Source/wtf/text/WTFString.h"
 
 namespace mojo {
-namespace internal {
 
 template <typename T>
 struct CloneTraits<WTF::Vector<T>, false> {
@@ -22,7 +22,7 @@ struct CloneTraits<WTF::Vector<T>, false> {
     WTF::Vector<T> result;
     result.reserveCapacity(input.size());
     for (const auto& element : input)
-      result.push_back(internal::Clone(element));
+      result.push_back(mojo::Clone(element));
 
     return result;
   }
@@ -34,10 +34,12 @@ struct CloneTraits<WTF::HashMap<K, V>, false> {
     WTF::HashMap<K, V> result;
     auto input_end = input.end();
     for (auto it = input.begin(); it != input_end; ++it)
-      result.add(internal::Clone(it->key), internal::Clone(it->value));
+      result.add(mojo::Clone(it->key), mojo::Clone(it->value));
     return result;
   }
 };
+
+namespace internal {
 
 template <typename T>
 struct EqualsTraits<WTF::Vector<T>, false> {

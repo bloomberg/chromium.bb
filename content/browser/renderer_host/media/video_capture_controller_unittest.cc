@@ -79,14 +79,17 @@ class MockVideoCaptureControllerEventHandler
   void OnBufferDestroyed(VideoCaptureControllerID id, int buffer_id) override {
     DoBufferDestroyed(id, buffer_id);
   }
-  void OnBufferReady(VideoCaptureControllerID id,
-                     int buffer_id,
-                     const scoped_refptr<media::VideoFrame>& frame) override {
-    EXPECT_EQ(expected_pixel_format_, frame->format());
+  void OnBufferReady(
+      VideoCaptureControllerID id,
+      int buffer_id,
+      const media::mojom::VideoFrameInfoPtr& frame_info) override {
+    EXPECT_EQ(expected_pixel_format_, frame_info->pixel_format);
+    media::VideoFrameMetadata metadata;
+    metadata.MergeInternalValuesFrom(*frame_info->metadata);
     base::TimeTicks reference_time;
-    EXPECT_TRUE(frame->metadata()->GetTimeTicks(
-        media::VideoFrameMetadata::REFERENCE_TIME, &reference_time));
-    DoBufferReady(id, frame->coded_size());
+    EXPECT_TRUE(metadata.GetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
+                                      &reference_time));
+    DoBufferReady(id, frame_info->coded_size);
     if (enable_auto_return_buffer_on_buffer_ready_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&VideoCaptureController::ReturnBuffer,
@@ -116,12 +119,6 @@ class MockConsumerFeedbackObserver
                void(int frame_feedback_id, double utilization));
 };
 
-class MockFrameBufferPool : public media::FrameBufferPool {
- public:
-  MOCK_METHOD1(SetBufferHold, void(int buffer_id));
-  MOCK_METHOD1(ReleaseBufferHold, void(int buffer_id));
-};
-
 // Test fixture for testing a unit consisting of an instance of
 // VideoCaptureController connected to an instance of VideoCaptureDeviceClient,
 // an instance of VideoCaptureBufferPoolImpl, as well as related threading glue
@@ -142,9 +139,6 @@ class VideoCaptureControllerTest
   void SetUp() override {
     controller_.reset(new VideoCaptureController());
     InitializeNewDeviceClientAndBufferPoolInstances();
-    auto frame_receiver_observer = base::MakeUnique<MockFrameBufferPool>();
-    mock_frame_receiver_observer_ = frame_receiver_observer.get();
-    controller_->SetFrameBufferPool(std::move(frame_receiver_observer));
     auto consumer_feedback_observer =
         base::MakeUnique<MockConsumerFeedbackObserver>();
     mock_consumer_feedback_observer_ = consumer_feedback_observer.get();
@@ -166,10 +160,9 @@ class VideoCaptureControllerTest
         base::MakeUnique<VideoFrameReceiverOnIOThread>(
             controller_->GetWeakPtrForIOThread()),
         buffer_pool_,
-        base::Bind(
-            &CreateGpuJpegDecoder,
-            base::Bind(&media::VideoFrameReceiver::OnIncomingCapturedVideoFrame,
-                       controller_->GetWeakPtrForIOThread()))));
+        base::Bind(&CreateGpuJpegDecoder,
+                   base::Bind(&media::VideoFrameReceiver::OnFrameReadyInBuffer,
+                              controller_->GetWeakPtrForIOThread()))));
   }
 
   void SendStubFrameToDeviceClient(const media::VideoCaptureFormat format) {
@@ -193,7 +186,6 @@ class VideoCaptureControllerTest
   std::unique_ptr<MockVideoCaptureControllerEventHandler> client_b_;
   std::unique_ptr<VideoCaptureController> controller_;
   std::unique_ptr<media::VideoCaptureDevice::Client> device_client_;
-  MockFrameBufferPool* mock_frame_receiver_observer_;
   MockConsumerFeedbackObserver* mock_consumer_feedback_observer_;
   const float arbitrary_frame_rate_ = 10.0f;
   const base::TimeTicks arbitrary_reference_time_ = base::TimeTicks();
@@ -327,44 +319,33 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
           device_format.frame_size, device_format.pixel_format,
           device_format.pixel_storage, arbitrary_frame_feedback_id);
   ASSERT_TRUE(buffer.is_valid());
-  auto buffer_access = buffer.handle_provider()->GetHandleForInProcessAccess();
+  auto buffer_access = buffer.handle_provider->GetHandleForInProcessAccess();
   ASSERT_EQ(1.0 / kPoolSize, device_client_->GetBufferPoolUtilization());
   memset(buffer_access->data(), buffer_no++, buffer_access->mapped_size());
   {
     InSequence s;
-    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1, _)).Times(1);
+    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1, _));
     EXPECT_CALL(*client_a_,
-                DoBufferReady(client_a_route_1, device_format.frame_size))
-        .Times(1);
+                DoBufferReady(client_a_route_1, device_format.frame_size));
   }
   {
     InSequence s;
-    EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_1, _)).Times(1);
+    EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_1, _));
     EXPECT_CALL(*client_b_,
-                DoBufferReady(client_b_route_1, device_format.frame_size))
-        .Times(1);
+                DoBufferReady(client_b_route_1, device_format.frame_size));
   }
   {
     InSequence s;
-    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2, _)).Times(1);
+    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2, _));
     EXPECT_CALL(*client_a_,
-                DoBufferReady(client_a_route_2, device_format.frame_size))
-        .Times(1);
+                DoBufferReady(client_a_route_2, device_format.frame_size));
   }
   client_a_->resource_utilization_ = 0.5;
   client_b_->resource_utilization_ = -1.0;
-  {
-    InSequence s;
-    EXPECT_CALL(*mock_frame_receiver_observer_, SetBufferHold(buffer.id()))
-        .Times(1);
-    // Expect VideoCaptureController to call the load observer with a
-    // resource utilization of 0.5 (the largest of all reported values).
-    EXPECT_CALL(*mock_consumer_feedback_observer_,
-                OnUtilizationReport(arbitrary_frame_feedback_id, 0.5))
-        .Times(1);
-    EXPECT_CALL(*mock_frame_receiver_observer_, ReleaseBufferHold(buffer.id()))
-        .Times(1);
-  }
+  // Expect VideoCaptureController to call the load observer with a
+  // resource utilization of 0.5 (the largest of all reported values).
+  EXPECT_CALL(*mock_consumer_feedback_observer_,
+              OnUtilizationReport(arbitrary_frame_feedback_id, 0.5));
 
   device_client_->OnIncomingCapturedBuffer(std::move(buffer), device_format,
                                            arbitrary_reference_time_,
@@ -374,7 +355,6 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
   Mock::VerifyAndClearExpectations(mock_consumer_feedback_observer_);
-  Mock::VerifyAndClearExpectations(mock_frame_receiver_observer_);
 
   // Second buffer which ought to use the same shared memory buffer. In this
   // case pretend that the Buffer pointer is held by the device for a long
@@ -385,25 +365,14 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
           device_format.frame_size, device_format.pixel_format,
           device_format.pixel_storage, arbitrary_frame_feedback_id_2);
   ASSERT_TRUE(buffer2.is_valid());
-  auto buffer2_access =
-      buffer2.handle_provider()->GetHandleForInProcessAccess();
+  auto buffer2_access = buffer2.handle_provider->GetHandleForInProcessAccess();
   memset(buffer2_access->data(), buffer_no++, buffer2_access->mapped_size());
   client_a_->resource_utilization_ = 0.5;
   client_b_->resource_utilization_ = 3.14;
   // Expect VideoCaptureController to call the load observer with a
   // resource utilization of 3.14 (the largest of all reported values).
-  {
-    InSequence s;
-    EXPECT_CALL(*mock_frame_receiver_observer_, SetBufferHold(buffer2.id()))
-        .Times(1);
-    // Expect VideoCaptureController to call the load observer with a
-    // resource utilization of 3.14 (the largest of all reported values).
-    EXPECT_CALL(*mock_consumer_feedback_observer_,
-                OnUtilizationReport(arbitrary_frame_feedback_id_2, 3.14))
-        .Times(1);
-    EXPECT_CALL(*mock_frame_receiver_observer_, ReleaseBufferHold(buffer2.id()))
-        .Times(1);
-  }
+  EXPECT_CALL(*mock_consumer_feedback_observer_,
+              OnUtilizationReport(arbitrary_frame_feedback_id_2, 3.14));
 
   device_client_->OnIncomingCapturedBuffer(std::move(buffer2), device_format,
                                            arbitrary_reference_time_,
@@ -412,30 +381,26 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // The buffer should be delivered to the clients in any order.
   {
     InSequence s;
-    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1, _)).Times(1);
+    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1, _));
     EXPECT_CALL(*client_a_,
-                DoBufferReady(client_a_route_1, device_format.frame_size))
-        .Times(1);
+                DoBufferReady(client_a_route_1, device_format.frame_size));
   }
   {
     InSequence s;
-    EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_1, _)).Times(1);
+    EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_1, _));
     EXPECT_CALL(*client_b_,
-                DoBufferReady(client_b_route_1, device_format.frame_size))
-        .Times(1);
+                DoBufferReady(client_b_route_1, device_format.frame_size));
   }
   {
     InSequence s;
-    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2, _)).Times(1);
+    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2, _));
     EXPECT_CALL(*client_a_,
-                DoBufferReady(client_a_route_2, device_format.frame_size))
-        .Times(1);
+                DoBufferReady(client_a_route_2, device_format.frame_size));
   }
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
   Mock::VerifyAndClearExpectations(mock_consumer_feedback_observer_);
-  Mock::VerifyAndClearExpectations(mock_frame_receiver_observer_);
 
   // Add a fourth client now that some buffers have come through.
   controller_->AddClient(client_b_route_2, client_b_.get(), 1, session_1);
@@ -449,8 +414,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
             device_format.frame_size, device_format.pixel_format,
             device_format.pixel_storage, arbitrary_frame_feedback_id);
     ASSERT_TRUE(buffer.is_valid());
-    auto buffer_access =
-        buffer.handle_provider()->GetHandleForInProcessAccess();
+    auto buffer_access = buffer.handle_provider->GetHandleForInProcessAccess();
     memset(buffer_access->data(), buffer_no++, buffer_access->mapped_size());
     device_client_->OnIncomingCapturedBuffer(std::move(buffer), device_format,
                                              arbitrary_reference_time_,
@@ -501,8 +465,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
           device_format.frame_size, device_format.pixel_format,
           device_format.pixel_storage, arbitrary_frame_feedback_id);
   ASSERT_TRUE(buffer3.is_valid());
-  auto buffer3_access =
-      buffer3.handle_provider()->GetHandleForInProcessAccess();
+  auto buffer3_access = buffer3.handle_provider->GetHandleForInProcessAccess();
   memset(buffer3_access->data(), buffer_no++, buffer3_access->mapped_size());
   device_client_->OnIncomingCapturedBuffer(std::move(buffer3), device_format,
                                            arbitrary_reference_time_,
@@ -519,8 +482,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     controller_->StopSession(200);
   }
   ASSERT_TRUE(buffer4.is_valid());
-  auto buffer4_access =
-      buffer4.handle_provider()->GetHandleForInProcessAccess();
+  auto buffer4_access = buffer4.handle_provider->GetHandleForInProcessAccess();
   memset(buffer4_access->data(), buffer_no++, buffer4_access->mapped_size());
   device_client_->OnIncomingCapturedBuffer(std::move(buffer4), device_format,
                                            arbitrary_reference_time_,

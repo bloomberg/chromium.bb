@@ -18,6 +18,7 @@ sources = [
 
 deps = [
   "//media",
+  "//media/capture:capture_base",
   "//media/capture/ipc",
   "//media/mojo/interfaces",
 ]

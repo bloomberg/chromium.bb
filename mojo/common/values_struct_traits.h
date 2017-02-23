@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "mojo/common/values.mojom.h"
 #include "mojo/public/cpp/bindings/array_traits.h"
+#include "mojo/public/cpp/bindings/clone_traits.h"
 #include "mojo/public/cpp/bindings/map_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
@@ -106,6 +107,12 @@ struct StructTraits<common::mojom::DictionaryValueDataView,
   }
   static bool Read(common::mojom::DictionaryValueDataView data,
                    std::unique_ptr<base::DictionaryValue>* value);
+};
+
+template <>
+struct CloneTraits<std::unique_ptr<base::DictionaryValue>, false> {
+  static std::unique_ptr<base::DictionaryValue> Clone(
+      const std::unique_ptr<base::DictionaryValue>& input);
 };
 
 template <>
