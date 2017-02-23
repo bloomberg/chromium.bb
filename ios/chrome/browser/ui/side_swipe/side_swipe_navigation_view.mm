@@ -66,6 +66,9 @@ const CGFloat kSelectionAnimationDuration = 0.5;
 
 @interface SideSwipeNavigationView () {
  @private
+  // Has the current swipe gone past the point where the action would trigger?
+  // Will be reset to NO if it recedes before that point (ie, not a latch).
+  BOOL thresholdTriggered_;
 
   // The back or forward sprite image.
   base::scoped_nsobject<UIImageView> arrowView_;
@@ -210,11 +213,18 @@ const CGFloat kSelectionAnimationDuration = 0.5;
     selectionCircleLayer_.opacity = 0;
     [arrowView_ setAlpha:MapValueToRange({0, 64}, {0, 1}, distance)];
     [arrowView_ setTintColor:[UIColor whiteColor]];
+    thresholdTriggered_ = NO;
   } else {
     selectionCircleLayer_.transform = CATransform3DMakeScale(1, 1, 1);
     selectionCircleLayer_.opacity = 0.75;
     [arrowView_ setAlpha:1];
     [arrowView_ setTintColor:self.backgroundColor];
+    // Trigger a small haptic blip when exceeding the threshold and mark
+    // such that only one blip gets triggered.
+    if (!thresholdTriggered_) {
+      TriggerHapticFeedbackForSelectionChange();
+      thresholdTriggered_ = YES;
+    }
   }
   [UIView commitAnimations];
 }
@@ -329,6 +339,8 @@ const CGFloat kSelectionAnimationDuration = 0.5;
     // and that the distance including expected velocity is over |threshold|.
     if (distance > kArrowThreshold && finalDistance > threshold &&
         canNavigate_ && gesture.state == UIGestureRecognizerStateEnded) {
+      TriggerHapticFeedbackForAction();
+
       // Speed up the animation for higher velocity swipes.
       CGFloat animationTime = MapValueToRange(
           {threshold, width},
@@ -358,6 +370,7 @@ const CGFloat kSelectionAnimationDuration = 0.5;
             base::UserMetricsAction("MobileEdgeSwipeNavigationBackCancelled"));
       }
     }
+    thresholdTriggered_ = NO;
   }
 }
 

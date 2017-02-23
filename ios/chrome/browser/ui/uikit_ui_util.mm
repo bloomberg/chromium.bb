@@ -12,6 +12,7 @@
 #import <UIKit/UIKit.h>
 #include <cmath>
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -659,4 +660,24 @@ UIResponder* GetFirstResponder() {
   UIResponder* firstResponder = gFirstResponder;
   gFirstResponder = nil;
   return firstResponder;
+}
+
+// On iOS10 and above, trigger a haptic vibration for the user selecting an
+// action. This is a no-op for devices that do not support it.
+void TriggerHapticFeedbackForAction() {
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    UIImpactFeedbackGenerator* generator =
+        [[UIImpactFeedbackGenerator alloc] init];
+    [generator impactOccurred];
+  }
+}
+
+// On iOS10 and above, trigger a haptic vibration for the change in selection.
+// This is a no-op for devices that do not support it.
+void TriggerHapticFeedbackForSelectionChange() {
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    UISelectionFeedbackGenerator* generator =
+        [[UISelectionFeedbackGenerator alloc] init];
+    [generator selectionChanged];
+  }
 }
