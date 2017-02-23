@@ -66,7 +66,7 @@ String CSSStyleRule::generateSelectorText() const {
 String CSSStyleRule::selectorText() const {
   if (hasCachedSelectorText()) {
     ASSERT(selectorTextCache().contains(this));
-    return selectorTextCache().get(this);
+    return selectorTextCache().at(this);
   }
 
   ASSERT(!selectorTextCache().contains(this));

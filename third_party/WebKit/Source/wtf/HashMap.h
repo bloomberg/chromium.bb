@@ -136,7 +136,7 @@ class HashMap {
   iterator find(KeyPeekInType);
   const_iterator find(KeyPeekInType) const;
   bool contains(KeyPeekInType) const;
-  MappedPeekType get(KeyPeekInType) const;
+  MappedPeekType at(KeyPeekInType) const;
 
   // replaces value but not key if key is already present return value is a
   // pair of the iterator to the key location, and a boolean that's true if a
@@ -595,7 +595,7 @@ template <typename T,
           typename X,
           typename Y>
 typename HashMap<T, U, V, W, X, Y>::MappedPeekType
-HashMap<T, U, V, W, X, Y>::get(KeyPeekInType key) const {
+HashMap<T, U, V, W, X, Y>::at(KeyPeekInType key) const {
   ValueType* entry = const_cast<HashTableType&>(m_impl).lookup(key);
   if (!entry)
     return MappedTraits::peek(MappedTraits::emptyValue());

@@ -1346,7 +1346,7 @@ void LayoutBlockFlow::rebuildFloatsFromIntruding() {
            ++it) {
         const FloatingObject& floatingObject = *it->get();
         FloatingObject* oldFloatingObject =
-            floatMap.get(floatingObject.layoutObject());
+            floatMap.at(floatingObject.layoutObject());
         LayoutUnit logicalBottom = logicalBottomForFloat(floatingObject);
         if (oldFloatingObject) {
           LayoutUnit oldLogicalBottom =

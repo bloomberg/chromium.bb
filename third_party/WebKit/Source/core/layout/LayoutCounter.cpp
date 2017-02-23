@@ -370,8 +370,8 @@ static CounterNode* makeCounterNodeIfNeeded(LayoutObject& object,
                                             const AtomicString& identifier,
                                             bool alwaysCreateCounter) {
   if (object.hasCounterNodeMap()) {
-    if (CounterMap* nodeMap = counterMaps().get(&object)) {
-      if (CounterNode* node = nodeMap->get(identifier))
+    if (CounterMap* nodeMap = counterMaps().at(&object)) {
+      if (CounterNode* node = nodeMap->at(identifier))
         return node;
     }
   }
@@ -389,7 +389,7 @@ static CounterNode* makeCounterNodeIfNeeded(LayoutObject& object,
     newParent->insertAfter(newNode.get(), newPreviousSibling.get(), identifier);
   CounterMap* nodeMap;
   if (object.hasCounterNodeMap()) {
-    nodeMap = counterMaps().get(&object);
+    nodeMap = counterMaps().at(&object);
   } else {
     nodeMap = new CounterMap;
     counterMaps().set(&object, WTF::wrapUnique(nodeMap));
@@ -410,8 +410,7 @@ static CounterNode* makeCounterNodeIfNeeded(LayoutObject& object,
     skipDescendants = false;
     if (!currentLayoutObject->hasCounterNodeMap())
       continue;
-    CounterNode* currentCounter =
-        maps.get(currentLayoutObject)->get(identifier);
+    CounterNode* currentCounter = maps.at(currentLayoutObject)->at(identifier);
     if (!currentCounter)
       continue;
     skipDescendants = true;
@@ -504,8 +503,8 @@ static void destroyCounterNodeWithoutMapRemoval(const AtomicString& identifier,
        child && child != node; child = previous) {
     previous = child->previousInPreOrder();
     child->parent()->removeChild(child.get());
-    ASSERT(counterMaps().get(&child->owner())->get(identifier) == child);
-    counterMaps().get(&child->owner())->erase(identifier);
+    ASSERT(counterMaps().at(&child->owner())->at(identifier) == child);
+    counterMaps().at(&child->owner())->erase(identifier);
   }
   if (CounterNode* parent = node->parent())
     parent->removeChild(node);
@@ -527,7 +526,7 @@ void LayoutCounter::destroyCounterNodes(LayoutObject& owner) {
 
 void LayoutCounter::destroyCounterNode(LayoutObject& owner,
                                        const AtomicString& identifier) {
-  CounterMap* map = counterMaps().get(&owner);
+  CounterMap* map = counterMaps().at(&owner);
   if (!map)
     return;
   CounterMap::iterator mapIterator = map->find(identifier);
@@ -579,11 +578,11 @@ static void updateCounters(LayoutObject& layoutObject) {
       makeCounterNodeIfNeeded(layoutObject, it->key, false);
     return;
   }
-  CounterMap* counterMap = counterMaps().get(&layoutObject);
+  CounterMap* counterMap = counterMaps().at(&layoutObject);
   ASSERT(counterMap);
   for (CounterDirectiveMap::const_iterator it = directiveMap->begin();
        it != end; ++it) {
-    RefPtr<CounterNode> node = counterMap->get(it->key);
+    RefPtr<CounterNode> node = counterMap->at(it->key);
     if (!node) {
       makeCounterNodeIfNeeded(layoutObject, it->key, false);
       continue;
@@ -593,7 +592,7 @@ static void updateCounters(LayoutObject& layoutObject) {
 
     findPlaceForCounter(layoutObject, it->key, node->hasResetType(), newParent,
                         newPreviousSibling);
-    if (node != counterMap->get(it->key))
+    if (node != counterMap->at(it->key))
       continue;
     CounterNode* parent = node->parent();
     if (newParent == parent && newPreviousSibling == node->previousSibling())
@@ -700,13 +699,13 @@ void showCounterLayoutObjectTree(const blink::LayoutObject* layoutObject,
     for (const blink::LayoutObject* parent = current; parent && parent != root;
          parent = parent->parent())
       fprintf(stderr, "    ");
-    fprintf(
-        stderr, "%p N:%p P:%p PS:%p NS:%p C:%p\n", current, current->node(),
-        current->parent(), current->previousSibling(), current->nextSibling(),
-        current->hasCounterNodeMap()
-            ? counterName ? blink::counterMaps().get(current)->get(identifier)
-                          : (blink::CounterNode*)1
-            : (blink::CounterNode*)0);
+    fprintf(stderr, "%p N:%p P:%p PS:%p NS:%p C:%p\n", current, current->node(),
+            current->parent(), current->previousSibling(),
+            current->nextSibling(),
+            current->hasCounterNodeMap()
+                ? counterName ? blink::counterMaps().at(current)->at(identifier)
+                              : (blink::CounterNode*)1
+                : (blink::CounterNode*)0);
   }
   fflush(stderr);
 }

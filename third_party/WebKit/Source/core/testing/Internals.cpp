@@ -430,7 +430,7 @@ int Internals::getResourcePriority(const String& url, Document* document) {
   if (!document)
     return ResourceLoadPriority::ResourceLoadPriorityUnresolved;
 
-  Resource* resource = document->fetcher()->allResources().get(
+  Resource* resource = document->fetcher()->allResources().at(
       URLTestHelpers::toKURL(url.utf8().data()));
 
   if (!resource)
@@ -444,7 +444,7 @@ String Internals::getResourceHeader(const String& url,
                                     Document* document) {
   if (!document)
     return String();
-  Resource* resource = document->fetcher()->allResources().get(
+  Resource* resource = document->fetcher()->allResources().at(
       URLTestHelpers::toKURL(url.utf8().data()));
   if (!resource)
     return String();

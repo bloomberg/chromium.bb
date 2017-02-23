@@ -93,7 +93,7 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
   FilterData* getFilterDataForLayoutObject(const LayoutObject* object) {
-    return m_filter.get(const_cast<LayoutObject*>(object));
+    return m_filter.at(const_cast<LayoutObject*>(object));
   }
   void setFilterDataForLayoutObject(LayoutObject* object,
                                     FilterData* filterData) {

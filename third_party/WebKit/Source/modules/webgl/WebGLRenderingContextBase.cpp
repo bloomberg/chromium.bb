@@ -203,9 +203,9 @@ WebGLRenderingContextBase* WebGLRenderingContextBase::oldestEvictedContext() {
   WebGLRenderingContextBase* candidate = nullptr;
   int generation = -1;
   for (WebGLRenderingContextBase* context : forciblyEvictedContexts().keys()) {
-    if (!candidate || forciblyEvictedContexts().get(context) < generation) {
+    if (!candidate || forciblyEvictedContexts().at(context) < generation) {
       candidate = context;
-      generation = forciblyEvictedContexts().get(context);
+      generation = forciblyEvictedContexts().at(context);
     }
   }
 

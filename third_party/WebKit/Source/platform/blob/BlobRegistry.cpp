@@ -221,7 +221,7 @@ BlobOriginMap::BlobOriginMap() {
 
 SecurityOrigin* BlobOriginMap::getOrigin(const KURL& url) {
   if (url.protocolIs("blob"))
-    return originMap()->get(url.getString());
+    return originMap()->at(url.getString());
   return 0;
 }
 

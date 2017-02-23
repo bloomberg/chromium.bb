@@ -81,7 +81,7 @@ class HashCountedSet {
     return m_impl.find(value);
   }
   bool contains(const ValueType& value) const { return m_impl.contains(value); }
-  unsigned count(const ValueType& value) const { return m_impl.get(value); }
+  unsigned count(const ValueType& value) const { return m_impl.at(value); }
 
   // Increases the count if an equal value is already present the return value
   // is a pair of an iterator to the new value's location, and a bool that is

@@ -823,7 +823,7 @@ IDBIndex* IDBObjectStore::index(const String& name,
   }
 
   DCHECK(metadata().indexes.contains(indexId));
-  RefPtr<IDBIndexMetadata> indexMetadata = metadata().indexes.get(indexId);
+  RefPtr<IDBIndexMetadata> indexMetadata = metadata().indexes.at(indexId);
   DCHECK(indexMetadata.get());
   IDBIndex* index =
       IDBIndex::create(std::move(indexMetadata), this, m_transaction.get());
@@ -1062,7 +1062,7 @@ void IDBObjectStore::revertMetadata(
     // unconditionally reset the deletion marker.
     DCHECK(oldMetadata->indexes.contains(indexId));
     RefPtr<IDBIndexMetadata> oldIndexMetadata =
-        oldMetadata->indexes.get(indexId);
+        oldMetadata->indexes.at(indexId);
     index->revertMetadata(std::move(oldIndexMetadata));
   }
   m_metadata = std::move(oldMetadata);
@@ -1081,7 +1081,7 @@ void IDBObjectStore::revertDeletedIndexMetadata(IDBIndex& deletedIndex) {
   const int64_t indexId = deletedIndex.id();
   DCHECK(m_metadata->indexes.contains(indexId))
       << "The object store's metadata was not correctly reverted";
-  RefPtr<IDBIndexMetadata> oldIndexMetadata = m_metadata->indexes.get(indexId);
+  RefPtr<IDBIndexMetadata> oldIndexMetadata = m_metadata->indexes.at(indexId);
   deletedIndex.revertMetadata(std::move(oldIndexMetadata));
 }
 

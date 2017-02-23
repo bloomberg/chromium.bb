@@ -1562,7 +1562,7 @@ CounterDirectiveMap& ComputedStyle::accessCounterDirectives() {
 const CounterDirectives ComputedStyle::getCounterDirectives(
     const AtomicString& identifier) const {
   if (const CounterDirectiveMap* directives = counterDirectives())
-    return directives->get(identifier);
+    return directives->at(identifier);
   return CounterDirectives();
 }
 

@@ -60,7 +60,7 @@ bool MediaStreamRegistry::contains(const String& url) {
 MediaStreamDescriptor* MediaStreamRegistry::lookupMediaStreamDescriptor(
     const String& url) {
   DCHECK(isMainThread());
-  return m_streamDescriptors.get(url);
+  return m_streamDescriptors.at(url);
 }
 
 MediaStreamRegistry::MediaStreamRegistry() {

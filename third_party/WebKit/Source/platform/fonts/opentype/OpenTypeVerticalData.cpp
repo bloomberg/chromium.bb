@@ -262,7 +262,7 @@ void OpenTypeVerticalData::getVerticalTranslationsForGlyphs(
     // For Y, try VORG first.
     if (useVORG) {
       if (glyph) {
-        int16_t vertOriginYFUnit = m_vertOriginY.get(glyph);
+        int16_t vertOriginYFUnit = m_vertOriginY.at(glyph);
         if (vertOriginYFUnit) {
           outXYArray[1] = -vertOriginYFUnit * sizePerUnit;
           continue;

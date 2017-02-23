@@ -120,12 +120,12 @@ bool ProcessingInstruction::checkStyleSheet(String& href, String& charset) {
   if (!m_isCSS && !m_isXSL)
     return false;
 
-  href = attrs.get("href");
-  charset = attrs.get("charset");
-  String alternate = attrs.get("alternate");
+  href = attrs.at("href");
+  charset = attrs.at("charset");
+  String alternate = attrs.at("alternate");
   m_alternate = alternate == "yes";
-  m_title = attrs.get("title");
-  m_media = attrs.get("media");
+  m_title = attrs.at("title");
+  m_media = attrs.at("media");
 
   return !m_alternate || !m_title.isEmpty();
 }

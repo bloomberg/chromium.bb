@@ -151,7 +151,7 @@ void ProgressTracker::willStartLoading(unsigned long identifier,
 
 void ProgressTracker::incrementProgress(unsigned long identifier,
                                         const ResourceResponse& response) {
-  ProgressItem* item = m_progressItems.get(identifier);
+  ProgressItem* item = m_progressItems.at(identifier);
   if (!item)
     return;
 
@@ -163,7 +163,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier,
 }
 
 void ProgressTracker::incrementProgress(unsigned long identifier, int length) {
-  ProgressItem* item = m_progressItems.get(identifier);
+  ProgressItem* item = m_progressItems.at(identifier);
   if (!item)
     return;
 
@@ -231,7 +231,7 @@ void ProgressTracker::maybeSendProgress() {
 }
 
 void ProgressTracker::completeProgress(unsigned long identifier) {
-  ProgressItem* item = m_progressItems.get(identifier);
+  ProgressItem* item = m_progressItems.at(identifier);
   if (!item)
     return;
 

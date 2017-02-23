@@ -548,7 +548,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
 
     if (retargetedCompositorTransitions.contains(id)) {
       const std::pair<Member<KeyframeEffectReadOnly>, double>& oldTransition =
-          retargetedCompositorTransitions.get(id);
+          retargetedCompositorTransitions.at(id);
       KeyframeEffectReadOnly* oldAnimation = oldTransition.first;
       double oldStartTime = oldTransition.second;
       double inheritedTime =
@@ -922,7 +922,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(
           elementAnimations->cssAnimations().m_transitions;
       for (CSSPropertyID id : update.cancelledTransitions()) {
         DCHECK(transitionMap.contains(id));
-        cancelledAnimations.insert(transitionMap.get(id).animation.get());
+        cancelledAnimations.insert(transitionMap.at(id).animation.get());
       }
     }
 

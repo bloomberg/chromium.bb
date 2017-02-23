@@ -166,7 +166,7 @@ String ParsedContentType::charset() const {
 String ParsedContentType::parameterValueForName(const String& name) const {
   if (!name.containsOnlyASCII())
     return String();
-  return m_parameters.get(name.lower());
+  return m_parameters.at(name.lower());
 }
 
 size_t ParsedContentType::parameterCount() const {

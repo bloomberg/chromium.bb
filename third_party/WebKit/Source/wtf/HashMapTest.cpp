@@ -83,9 +83,9 @@ TEST(HashMapTest, DoubleHashCollisions) {
   map.insert(negativeZeroKey, 3);
 
   EXPECT_EQ(bucketForKey(clobberKey), bucketForKey(negativeZeroKey));
-  EXPECT_EQ(1, map.get(clobberKey));
-  EXPECT_EQ(2, map.get(zeroKey));
-  EXPECT_EQ(3, map.get(negativeZeroKey));
+  EXPECT_EQ(1, map.at(clobberKey));
+  EXPECT_EQ(2, map.at(zeroKey));
+  EXPECT_EQ(3, map.at(negativeZeroKey));
 }
 
 class DestructCounter {
@@ -109,9 +109,9 @@ TEST(HashMapTest, OwnPtrAsValue) {
   map.insert(1, WTF::wrapUnique(new DestructCounter(1, &destructNumber)));
   map.insert(2, WTF::wrapUnique(new DestructCounter(2, &destructNumber)));
 
-  DestructCounter* counter1 = map.get(1);
+  DestructCounter* counter1 = map.at(1);
   EXPECT_EQ(1, counter1->get());
-  DestructCounter* counter2 = map.get(2);
+  DestructCounter* counter2 = map.at(2);
   EXPECT_EQ(2, counter2->get());
   EXPECT_EQ(0, destructNumber);
 
@@ -173,7 +173,7 @@ TEST(HashMapTest, RefPtrAsKey) {
   map.insert(ptr, 1);
   // Referenced only once (to store a copy in the container).
   EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
-  EXPECT_EQ(1, map.get(ptr));
+  EXPECT_EQ(1, map.at(ptr));
 
   DummyRefCounted* rawPtr = ptr.get();
 
@@ -205,7 +205,7 @@ TEST(HashMaptest, RemoveAdd) {
   map.insert(1, ptr);
   // Referenced only once (to store a copy in the container).
   EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
-  EXPECT_EQ(ptr, map.get(1));
+  EXPECT_EQ(ptr, map.at(1));
 
   ptr.clear();
   EXPECT_FALSE(isDeleted);
@@ -247,14 +247,14 @@ TEST(HashMapTest, AddResult) {
 
   SimpleClass* simple1 = new SimpleClass(1);
   result.storedValue->value = WTF::wrapUnique(simple1);
-  EXPECT_EQ(simple1, map.get(1));
+  EXPECT_EQ(simple1, map.at(1));
 
   IntSimpleMap::AddResult result2 =
       map.insert(1, WTF::makeUnique<SimpleClass>(2));
   EXPECT_FALSE(result2.isNewEntry);
   EXPECT_EQ(1, result.storedValue->key);
   EXPECT_EQ(1, result.storedValue->value->v());
-  EXPECT_EQ(1, map.get(1)->v());
+  EXPECT_EQ(1, map.at(1)->v());
 }
 
 TEST(HashMapTest, AddResultVectorValue) {
@@ -557,7 +557,7 @@ TEST(HashMapTest, UniquePtrAsValue) {
   EXPECT_EQ(1, iter->key);
   EXPECT_EQ(1, *iter->value);
 
-  int* onePointer = map.get(1);
+  int* onePointer = map.at(1);
   EXPECT_TRUE(onePointer);
   EXPECT_EQ(1, *onePointer);
 
@@ -656,8 +656,8 @@ TEST(HashMapTest, MoveOnlyPairKeyType) {
 
 bool isOneTwoThree(const HashMap<int, int>& map) {
   return map.size() == 3 && map.contains(1) && map.contains(2) &&
-         map.contains(3) && map.get(1) == 11 && map.get(2) == 22 &&
-         map.get(3) == 33;
+         map.contains(3) && map.at(1) == 11 && map.at(2) == 22 &&
+         map.at(3) == 33;
 };
 
 HashMap<int, int> returnOneTwoThree() {
@@ -671,16 +671,16 @@ TEST(HashMapTest, InitializerList) {
   HashMap<int, int> one({{1, 11}});
   EXPECT_EQ(one.size(), 1u);
   EXPECT_TRUE(one.contains(1));
-  EXPECT_EQ(one.get(1), 11);
+  EXPECT_EQ(one.at(1), 11);
 
   HashMap<int, int> oneTwoThree({{1, 11}, {2, 22}, {3, 33}});
   EXPECT_EQ(oneTwoThree.size(), 3u);
   EXPECT_TRUE(oneTwoThree.contains(1));
   EXPECT_TRUE(oneTwoThree.contains(2));
   EXPECT_TRUE(oneTwoThree.contains(3));
-  EXPECT_EQ(oneTwoThree.get(1), 11);
-  EXPECT_EQ(oneTwoThree.get(2), 22);
-  EXPECT_EQ(oneTwoThree.get(3), 33);
+  EXPECT_EQ(oneTwoThree.at(1), 11);
+  EXPECT_EQ(oneTwoThree.at(2), 22);
+  EXPECT_EQ(oneTwoThree.at(3), 33);
 
   // Put some jank so we can check if the assignments can clear them later.
   empty.insert(9999, 99999);
@@ -693,16 +693,16 @@ TEST(HashMapTest, InitializerList) {
   one = {{1, 11}};
   EXPECT_EQ(one.size(), 1u);
   EXPECT_TRUE(one.contains(1));
-  EXPECT_EQ(one.get(1), 11);
+  EXPECT_EQ(one.at(1), 11);
 
   oneTwoThree = {{1, 11}, {2, 22}, {3, 33}};
   EXPECT_EQ(oneTwoThree.size(), 3u);
   EXPECT_TRUE(oneTwoThree.contains(1));
   EXPECT_TRUE(oneTwoThree.contains(2));
   EXPECT_TRUE(oneTwoThree.contains(3));
-  EXPECT_EQ(oneTwoThree.get(1), 11);
-  EXPECT_EQ(oneTwoThree.get(2), 22);
-  EXPECT_EQ(oneTwoThree.get(3), 33);
+  EXPECT_EQ(oneTwoThree.at(1), 11);
+  EXPECT_EQ(oneTwoThree.at(2), 22);
+  EXPECT_EQ(oneTwoThree.at(3), 33);
 
   // Other ways of construction: as a function parameter and in a return
   // statement.

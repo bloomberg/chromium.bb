@@ -218,7 +218,7 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name,
 
   DCHECK(m_database->metadata().objectStores.contains(objectStoreId));
   RefPtr<IDBObjectStoreMetadata> objectStoreMetadata =
-      m_database->metadata().objectStores.get(objectStoreId);
+      m_database->metadata().objectStores.at(objectStoreId);
   DCHECK(objectStoreMetadata.get());
 
   IDBObjectStore* objectStore =
@@ -264,7 +264,7 @@ void IDBTransaction::objectStoreDeleted(const int64_t objectStoreId,
     // correct values from IDB{Database, Transaction}.objectStoreNames.
     DCHECK(m_database->metadata().objectStores.contains(objectStoreId));
     RefPtr<IDBObjectStoreMetadata> metadata =
-        m_database->metadata().objectStores.get(objectStoreId);
+        m_database->metadata().objectStores.at(objectStoreId);
     DCHECK(metadata.get());
     DCHECK_EQ(metadata->name, name);
     m_deletedObjectStores.push_back(std::move(metadata));

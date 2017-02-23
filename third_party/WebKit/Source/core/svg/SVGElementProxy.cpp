@@ -169,7 +169,7 @@ SVGElement* SVGElementProxy::findElement(TreeScope& treeScope) {
 }
 
 void SVGElementProxy::contentChanged(TreeScope& treeScope) {
-  if (auto* observer = m_observers.get(&treeScope))
+  if (auto* observer = m_observers.at(&treeScope))
     observer->contentChanged();
 }
 

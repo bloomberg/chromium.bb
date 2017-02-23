@@ -89,7 +89,7 @@ blink::WebMemoryAllocatorDump* WebProcessMemoryDump::getMemoryAllocatorDump(
   // is something from blink trying to get a MAD that was created from chromium,
   // which is an odd use case.
   blink::WebMemoryAllocatorDump* web_memory_allocator_dump =
-      memory_allocator_dumps_.get(memory_allocator_dump);
+      memory_allocator_dumps_.at(memory_allocator_dump);
   DCHECK(web_memory_allocator_dump);
   return web_memory_allocator_dump;
 }

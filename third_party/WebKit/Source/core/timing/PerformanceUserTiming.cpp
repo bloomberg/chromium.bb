@@ -132,11 +132,11 @@ void UserTiming::clearMarks(const String& markName) {
 double UserTiming::findExistingMarkStartTime(const String& markName,
                                              ExceptionState& exceptionState) {
   if (m_marksMap.contains(markName))
-    return m_marksMap.get(markName).back()->startTime();
+    return m_marksMap.at(markName).back()->startTime();
 
   if (restrictedKeyMap().contains(markName) && m_performance->timing()) {
     double value = static_cast<double>(
-        (m_performance->timing()->*(restrictedKeyMap().get(markName)))());
+        (m_performance->timing()->*(restrictedKeyMap().at(markName)))());
     if (!value) {
       exceptionState.throwDOMException(
           InvalidAccessError, "'" + markName +

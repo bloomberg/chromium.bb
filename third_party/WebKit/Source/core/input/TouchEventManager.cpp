@@ -210,7 +210,7 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
     for (const auto& eventTarget : changedTouches[state].m_targets) {
       EventTarget* touchEventTarget = eventTarget;
       TouchEvent* touchEvent = TouchEvent::create(
-          event, touches, touchesByTarget.get(touchEventTarget),
+          event, touches, touchesByTarget.at(touchEventTarget),
           changedTouches[state].m_touches.get(), eventName,
           touchEventTarget->toNode()->document().domWindow(),
           m_currentTouchAction);
@@ -395,8 +395,8 @@ void TouchEventManager::setAllPropertiesOfTouchInfos(
     } else {
       // No hittest is performed on move or stationary, since the target
       // is not allowed to change anyway.
-      touchNode = m_targetForTouchID.get(touchInfo.point.id);
-      regionID = m_regionForTouchID.get(touchInfo.point.id);
+      touchNode = m_targetForTouchID.at(touchInfo.point.id);
+      regionID = m_regionForTouchID.at(touchInfo.point.id);
     }
 
     LocalFrame* targetFrame = nullptr;

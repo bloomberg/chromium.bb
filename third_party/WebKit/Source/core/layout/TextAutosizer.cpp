@@ -1275,7 +1275,7 @@ void TextAutosizer::FingerprintMapper::assertMapsAreConsistent() {
     for (BlockSet::iterator blockIt = blocks->begin(); blockIt != blocks->end();
          ++blockIt) {
       const LayoutBlock* block = (*blockIt);
-      ASSERT(m_fingerprints.get(block) == fingerprint);
+      ASSERT(m_fingerprints.at(block) == fingerprint);
     }
   }
 }
@@ -1338,13 +1338,13 @@ bool TextAutosizer::FingerprintMapper::remove(LayoutObject* layoutObject) {
 
 TextAutosizer::Fingerprint TextAutosizer::FingerprintMapper::get(
     const LayoutObject* layoutObject) {
-  return m_fingerprints.get(layoutObject);
+  return m_fingerprints.at(layoutObject);
 }
 
 TextAutosizer::BlockSet*
 TextAutosizer::FingerprintMapper::getTentativeClusterRoots(
     Fingerprint fingerprint) {
-  return m_blocksForFingerprint.get(fingerprint);
+  return m_blocksForFingerprint.at(fingerprint);
 }
 
 TextAutosizer::LayoutScope::LayoutScope(LayoutBlock* block,

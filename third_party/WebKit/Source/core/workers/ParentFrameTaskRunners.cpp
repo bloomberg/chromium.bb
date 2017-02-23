@@ -27,7 +27,7 @@ ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
 
 RefPtr<WebTaskRunner> ParentFrameTaskRunners::get(TaskType type) {
   MutexLocker lock(m_taskRunnersMutex);
-  return m_taskRunners.get(type);
+  return m_taskRunners.at(type);
 }
 
 DEFINE_TRACE(ParentFrameTaskRunners) {

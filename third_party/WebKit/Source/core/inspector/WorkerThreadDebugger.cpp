@@ -143,14 +143,14 @@ void WorkerThreadDebugger::runMessageLoopOnPause(int contextGroupId) {
   DCHECK_EQ(kInvalidContextGroupId, m_pausedContextGroupId);
   DCHECK(m_workerThreads.contains(contextGroupId));
   m_pausedContextGroupId = contextGroupId;
-  m_workerThreads.get(contextGroupId)
+  m_workerThreads.at(contextGroupId)
       ->startRunningDebuggerTasksOnPauseOnWorkerThread();
 }
 
 void WorkerThreadDebugger::quitMessageLoopOnPause() {
   DCHECK_NE(kInvalidContextGroupId, m_pausedContextGroupId);
   DCHECK(m_workerThreads.contains(m_pausedContextGroupId));
-  m_workerThreads.get(m_pausedContextGroupId)
+  m_workerThreads.at(m_pausedContextGroupId)
       ->stopRunningDebuggerTasksOnPauseOnWorkerThread();
   m_pausedContextGroupId = kInvalidContextGroupId;
 }
@@ -166,7 +166,7 @@ void WorkerThreadDebugger::unmuteMetrics(int contextGroupId) {
 v8::Local<v8::Context> WorkerThreadDebugger::ensureDefaultContextInGroup(
     int contextGroupId) {
   DCHECK(m_workerThreads.contains(contextGroupId));
-  ScriptState* scriptState = m_workerThreads.get(contextGroupId)
+  ScriptState* scriptState = m_workerThreads.at(contextGroupId)
                                  ->globalScope()
                                  ->scriptController()
                                  ->getScriptState();
@@ -188,7 +188,7 @@ bool WorkerThreadDebugger::canExecuteScripts(int contextGroupId) {
 
 void WorkerThreadDebugger::runIfWaitingForDebugger(int contextGroupId) {
   DCHECK(m_workerThreads.contains(contextGroupId));
-  m_workerThreads.get(contextGroupId)
+  m_workerThreads.at(contextGroupId)
       ->stopRunningDebuggerTasksOnPauseOnWorkerThread();
 }
 
@@ -201,7 +201,7 @@ void WorkerThreadDebugger::consoleAPIMessage(
     unsigned columnNumber,
     v8_inspector::V8StackTrace* stackTrace) {
   DCHECK(m_workerThreads.contains(contextGroupId));
-  WorkerThread* workerThread = m_workerThreads.get(contextGroupId);
+  WorkerThread* workerThread = m_workerThreads.at(contextGroupId);
   std::unique_ptr<SourceLocation> location =
       SourceLocation::create(toCoreString(url), lineNumber, columnNumber,
                              stackTrace ? stackTrace->clone() : nullptr, 0);
@@ -212,7 +212,7 @@ void WorkerThreadDebugger::consoleAPIMessage(
 
 void WorkerThreadDebugger::consoleClear(int contextGroupId) {
   DCHECK(m_workerThreads.contains(contextGroupId));
-  WorkerThread* workerThread = m_workerThreads.get(contextGroupId);
+  WorkerThread* workerThread = m_workerThreads.at(contextGroupId);
   workerThread->consoleMessageStorage()->clear();
 }
 

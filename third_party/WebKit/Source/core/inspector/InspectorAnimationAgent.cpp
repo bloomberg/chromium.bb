@@ -233,8 +233,8 @@ Response InspectorAnimationAgent::getCurrentTime(const String& id,
   Response response = assertAnimation(id, animation);
   if (!response.isSuccess())
     return response;
-  if (m_idToAnimationClone.get(id))
-    animation = m_idToAnimationClone.get(id);
+  if (m_idToAnimationClone.at(id))
+    animation = m_idToAnimationClone.at(id);
 
   if (animation->paused()) {
     *currentTime = animation->currentTime();
@@ -274,7 +274,7 @@ Response InspectorAnimationAgent::setPaused(
 blink::Animation* InspectorAnimationAgent::animationClone(
     blink::Animation* animation) {
   const String id = String::number(animation->sequenceNumber());
-  if (!m_idToAnimationClone.get(id)) {
+  if (!m_idToAnimationClone.at(id)) {
     KeyframeEffectReadOnly* oldEffect =
         toKeyframeEffectReadOnly(animation->effect());
     ASSERT(oldEffect->model()->isKeyframeEffectModel());
@@ -315,7 +315,7 @@ blink::Animation* InspectorAnimationAgent::animationClone(
 
     animation->setEffectSuppressed(true);
   }
-  return m_idToAnimationClone.get(id);
+  return m_idToAnimationClone.at(id);
 }
 
 Response InspectorAnimationAgent::seekAnimations(
@@ -341,10 +341,10 @@ Response InspectorAnimationAgent::releaseAnimations(
     std::unique_ptr<protocol::Array<String>> animationIds) {
   for (size_t i = 0; i < animationIds->length(); ++i) {
     String animationId = animationIds->get(i);
-    blink::Animation* animation = m_idToAnimation.get(animationId);
+    blink::Animation* animation = m_idToAnimation.at(animationId);
     if (animation)
       animation->setEffectSuppressed(false);
-    blink::Animation* clone = m_idToAnimationClone.get(animationId);
+    blink::Animation* clone = m_idToAnimationClone.at(animationId);
     if (clone)
       clone->cancel();
     m_idToAnimationClone.erase(animationId);
@@ -366,7 +366,7 @@ Response InspectorAnimationAgent::setTiming(const String& animationId,
   animation = animationClone(animation);
   NonThrowableExceptionState exceptionState;
 
-  String type = m_idToAnimationType.get(animationId);
+  String type = m_idToAnimationType.at(animationId);
   if (type == AnimationType::CSSTransition) {
     KeyframeEffect* effect = toKeyframeEffect(animation->effect());
     KeyframeEffectModelBase* model = toKeyframeEffectModelBase(effect->model());
@@ -407,8 +407,8 @@ Response InspectorAnimationAgent::resolveAnimation(
   Response response = assertAnimation(animationId, animation);
   if (!response.isSuccess())
     return response;
-  if (m_idToAnimationClone.get(animationId))
-    animation = m_idToAnimationClone.get(animationId);
+  if (m_idToAnimationClone.at(animationId))
+    animation = m_idToAnimationClone.at(animationId);
   const Element* element =
       toKeyframeEffectReadOnly(animation->effect())->target();
   Document* document = element->ownerDocument();
@@ -450,7 +450,7 @@ static void addStringToDigestor(WebCryptoDigestor* digestor,
 
 String InspectorAnimationAgent::createCSSId(blink::Animation& animation) {
   String type =
-      m_idToAnimationType.get(String::number(animation.sequenceNumber()));
+      m_idToAnimationType.at(String::number(animation.sequenceNumber()));
   ASSERT(type != AnimationType::WebAnimation);
 
   KeyframeEffectReadOnly* effect = toKeyframeEffectReadOnly(animation.effect());
@@ -528,7 +528,7 @@ void InspectorAnimationAgent::didClearDocumentOfWindowObject(
 
 Response InspectorAnimationAgent::assertAnimation(const String& id,
                                                   blink::Animation*& result) {
-  result = m_idToAnimation.get(id);
+  result = m_idToAnimation.at(id);
   if (!result)
     return Response::Error("Could not find animation with given id");
   return Response::OK();

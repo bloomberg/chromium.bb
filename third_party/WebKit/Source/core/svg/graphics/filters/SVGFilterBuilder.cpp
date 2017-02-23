@@ -209,17 +209,17 @@ void SVGFilterBuilder::add(const AtomicString& id, FilterEffect* effect) {
 
 FilterEffect* SVGFilterBuilder::getEffectById(const AtomicString& id) const {
   if (!id.isEmpty()) {
-    if (FilterEffect* builtinEffect = m_builtinEffects.get(id))
+    if (FilterEffect* builtinEffect = m_builtinEffects.at(id))
       return builtinEffect;
 
-    if (FilterEffect* namedEffect = m_namedEffects.get(id))
+    if (FilterEffect* namedEffect = m_namedEffects.at(id))
       return namedEffect;
   }
 
   if (m_lastEffect)
     return m_lastEffect.get();
 
-  return m_builtinEffects.get(FilterInputKeywords::getSourceGraphic());
+  return m_builtinEffects.at(FilterInputKeywords::getSourceGraphic());
 }
 
 }  // namespace blink

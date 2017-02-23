@@ -99,7 +99,7 @@ void HTMLImport::recalcTreeState(HTMLImport* root) {
     i->m_state = HTMLImportStateResolver(i).resolve();
 
     HTMLImportState newState = i->state();
-    HTMLImportState oldState = snapshot.get(i);
+    HTMLImportState oldState = snapshot.at(i);
     // Once the state reaches Ready, it shouldn't go back.
     DCHECK(!oldState.isReady() || oldState <= newState);
     if (newState != oldState)

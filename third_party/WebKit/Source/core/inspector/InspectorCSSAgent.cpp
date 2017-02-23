@@ -786,7 +786,7 @@ void InspectorCSSAgent::setActiveStyleSheets(
     Document* document,
     const HeapVector<Member<CSSStyleSheet>>& allSheetsVector) {
   HeapHashSet<Member<CSSStyleSheet>>* documentCSSStyleSheets =
-      m_documentToCSSStyleSheets.get(document);
+      m_documentToCSSStyleSheets.at(document);
   if (!documentCSSStyleSheets) {
     documentCSSStyleSheets = new HeapHashSet<Member<CSSStyleSheet>>();
     m_documentToCSSStyleSheets.set(document, documentCSSStyleSheets);
@@ -804,7 +804,7 @@ void InspectorCSSAgent::setActiveStyleSheets(
 
   for (CSSStyleSheet* cssStyleSheet : removedSheets) {
     InspectorStyleSheet* inspectorStyleSheet =
-        m_cssStyleSheetToInspectorStyleSheet.get(cssStyleSheet);
+        m_cssStyleSheetToInspectorStyleSheet.at(cssStyleSheet);
     ASSERT(inspectorStyleSheet);
 
     documentCSSStyleSheets->erase(cssStyleSheet);
@@ -1027,7 +1027,7 @@ InspectorCSSAgent::animationsForNode(Element* element) {
     // Find CSSOM wrapper.
     CSSKeyframesRule* cssKeyframesRule = nullptr;
     for (CSSStyleSheet* styleSheet :
-         *m_documentToCSSStyleSheets.get(ownerDocument)) {
+         *m_documentToCSSStyleSheets.at(ownerDocument)) {
       cssKeyframesRule = findKeyframesRule(styleSheet, keyframesRule);
       if (cssKeyframesRule)
         break;
@@ -1591,7 +1591,7 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(
 
   InspectorStyleSheet* inspectorStyleSheet =
       parentStyleSheet
-          ? m_cssStyleSheetToInspectorStyleSheet.get(parentStyleSheet)
+          ? m_cssStyleSheetToInspectorStyleSheet.at(parentStyleSheet)
           : nullptr;
   std::unique_ptr<protocol::Array<protocol::CSS::MediaQuery>> mediaListArray =
       protocol::Array<protocol::CSS::MediaQuery>::create();
@@ -1794,7 +1794,7 @@ void InspectorCSSAgent::collectStyleSheets(
 InspectorStyleSheet* InspectorCSSAgent::bindStyleSheet(
     CSSStyleSheet* styleSheet) {
   InspectorStyleSheet* inspectorStyleSheet =
-      m_cssStyleSheetToInspectorStyleSheet.get(styleSheet);
+      m_cssStyleSheetToInspectorStyleSheet.at(styleSheet);
   if (!inspectorStyleSheet) {
     Document* document = styleSheet->ownerDocument();
     inspectorStyleSheet = InspectorStyleSheet::create(
@@ -1852,7 +1852,7 @@ InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(
 
   flushPendingProtocolNotifications();
 
-  return m_cssStyleSheetToInspectorStyleSheet.get(&inspectorSheet);
+  return m_cssStyleSheetToInspectorStyleSheet.at(&inspectorSheet);
 }
 
 Response InspectorCSSAgent::assertInspectorStyleSheetForId(
@@ -2459,14 +2459,14 @@ Response InspectorCSSAgent::stopRuleUsageTracking(
   HeapVector<Member<Document>> documents = m_domAgent->documents();
   for (Document* document : documents) {
     HeapHashSet<Member<CSSStyleSheet>>* newSheetsVector =
-        m_documentToCSSStyleSheets.get(document);
+        m_documentToCSSStyleSheets.at(document);
 
     if (!newSheetsVector)
       continue;
 
     for (auto sheet : *newSheetsVector) {
       InspectorStyleSheet* styleSheet =
-          m_cssStyleSheetToInspectorStyleSheet.get(sheet);
+          m_cssStyleSheetToInspectorStyleSheet.at(sheet);
       const CSSRuleVector ruleVector = styleSheet->flatRules();
       for (auto rule : ruleVector) {
         if (rule->type() != CSSRule::kStyleRule)

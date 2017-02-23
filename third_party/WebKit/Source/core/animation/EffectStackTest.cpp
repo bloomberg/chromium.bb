@@ -76,7 +76,7 @@ class AnimationEffectStackTest : public ::testing::Test {
       const ActiveInterpolationsMap& activeInterpolations,
       CSSPropertyID id) {
     Interpolation& interpolation =
-        *activeInterpolations.get(PropertyHandle(id)).at(0);
+        *activeInterpolations.at(PropertyHandle(id)).at(0);
     return toLegacyStyleInterpolation(interpolation).currentValue().get();
   }
 

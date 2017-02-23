@@ -50,7 +50,7 @@ void Worklet::notifyWorkletScriptLoadingFinished(
     WorkletScriptLoader* scriptLoader,
     const ScriptSourceCode& sourceCode) {
   DCHECK(isMainThread());
-  ScriptPromiseResolver* resolver = m_loaderAndResolvers.get(scriptLoader);
+  ScriptPromiseResolver* resolver = m_loaderAndResolvers.at(scriptLoader);
   m_loaderAndResolvers.erase(scriptLoader);
 
   if (!scriptLoader->wasScriptLoadSuccessful()) {

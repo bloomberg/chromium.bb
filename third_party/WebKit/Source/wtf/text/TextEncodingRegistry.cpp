@@ -127,7 +127,7 @@ static inline void checkExistingName(const char*, const char*) {}
 #else
 
 static void checkExistingName(const char* alias, const char* atomicName) {
-  const char* oldAtomicName = textEncodingNameMap->get(alias);
+  const char* oldAtomicName = textEncodingNameMap->at(alias);
   if (!oldAtomicName)
     return;
   if (oldAtomicName == atomicName)
@@ -163,7 +163,7 @@ static void addToTextEncodingNameMap(const char* alias, const char* name) {
   DCHECK_LE(strlen(alias), maxEncodingNameLength);
   if (isUndesiredAlias(alias))
     return;
-  const char* atomicName = textEncodingNameMap->get(name);
+  const char* atomicName = textEncodingNameMap->at(name);
   DCHECK(strcmp(alias, name) == 0 || atomicName);
   if (!atomicName)
     atomicName = name;
@@ -174,7 +174,7 @@ static void addToTextEncodingNameMap(const char* alias, const char* name) {
 static void addToTextCodecMap(const char* name,
                               NewTextCodecFunction function,
                               const void* additionalData) {
-  const char* atomicName = textEncodingNameMap->get(name);
+  const char* atomicName = textEncodingNameMap->at(name);
   DCHECK(atomicName);
   textCodecMap->insert(atomicName, TextCodecFactory(function, additionalData));
 }
@@ -182,7 +182,7 @@ static void addToTextCodecMap(const char* name,
 static void pruneBlacklistedCodecs() {
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(textEncodingNameBlacklist); ++i) {
     const char* atomicName =
-        textEncodingNameMap->get(textEncodingNameBlacklist[i]);
+        textEncodingNameMap->at(textEncodingNameBlacklist[i]);
     if (!atomicName)
       continue;
 
@@ -243,7 +243,7 @@ std::unique_ptr<TextCodec> newTextCodec(const TextEncoding& encoding) {
   MutexLocker lock(encodingRegistryMutex());
 
   DCHECK(textCodecMap);
-  TextCodecFactory factory = textCodecMap->get(encoding.name());
+  TextCodecFactory factory = textCodecMap->at(encoding.name());
   DCHECK(factory.function);
   return factory.function(encoding, factory.additionalData);
 }
@@ -256,13 +256,13 @@ const char* atomicCanonicalTextEncodingName(const char* name) {
 
   MutexLocker lock(encodingRegistryMutex());
 
-  if (const char* atomicName = textEncodingNameMap->get(name))
+  if (const char* atomicName = textEncodingNameMap->at(name))
     return atomicName;
   if (atomicDidExtendTextCodecMaps())
     return 0;
   extendTextCodecMaps();
   atomicSetDidExtendTextCodecMaps();
-  return textEncodingNameMap->get(name);
+  return textEncodingNameMap->at(name);
 }
 
 template <typename CharacterType>

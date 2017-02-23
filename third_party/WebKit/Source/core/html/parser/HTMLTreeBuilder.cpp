@@ -462,7 +462,7 @@ static void adjustSVGTagNameCase(AtomicHTMLToken* token) {
     mapLoweredLocalNameToName(caseMap, svgTags.get(), SVGNames::SVGTagsCount);
   }
 
-  const QualifiedName& casedName = caseMap->get(token->name());
+  const QualifiedName& casedName = caseMap->at(token->name());
   if (casedName.localName().isNull())
     return;
   token->setName(casedName.localName());
@@ -478,7 +478,7 @@ static void adjustAttributes(AtomicHTMLToken* token) {
   }
 
   for (auto& tokenAttribute : token->attributes()) {
-    const QualifiedName& casedName = caseMap->get(tokenAttribute.localName());
+    const QualifiedName& casedName = caseMap->at(tokenAttribute.localName());
     if (!casedName.localName().isNull())
       tokenAttribute.parserSetName(casedName);
   }
@@ -526,7 +526,7 @@ static void adjustForeignAttributes(AtomicHTMLToken* token) {
 
   for (unsigned i = 0; i < token->attributes().size(); ++i) {
     Attribute& tokenAttribute = token->attributes().at(i);
-    const QualifiedName& name = map->get(tokenAttribute.localName());
+    const QualifiedName& name = map->at(tokenAttribute.localName());
     if (!name.localName().isNull())
       tokenAttribute.parserSetName(name);
   }

@@ -189,12 +189,12 @@ AXObject* AXObjectCacheImpl::get(LayoutObject* layoutObject) {
   if (!layoutObject)
     return 0;
 
-  AXID axID = m_layoutObjectMapping.get(layoutObject);
+  AXID axID = m_layoutObjectMapping.at(layoutObject);
   ASSERT(!HashTraits<AXID>::isDeletedValue(axID));
   if (!axID)
     return 0;
 
-  return m_objects.get(axID);
+  return m_objects.at(axID);
 }
 
 // Returns true if |node| is an <option> element and its parent <select>
@@ -219,10 +219,10 @@ AXObject* AXObjectCacheImpl::get(Node* node) {
   if (isMenuListOption(node) || isHTMLAreaElement(node))
     layoutObject = nullptr;
 
-  AXID layoutID = layoutObject ? m_layoutObjectMapping.get(layoutObject) : 0;
+  AXID layoutID = layoutObject ? m_layoutObjectMapping.at(layoutObject) : 0;
   ASSERT(!HashTraits<AXID>::isDeletedValue(layoutID));
 
-  AXID nodeID = m_nodeObjectMapping.get(node);
+  AXID nodeID = m_nodeObjectMapping.at(node);
   ASSERT(!HashTraits<AXID>::isDeletedValue(nodeID));
 
   if (layoutObject && nodeID && !layoutID) {
@@ -234,24 +234,24 @@ AXObject* AXObjectCacheImpl::get(Node* node) {
   }
 
   if (layoutID)
-    return m_objects.get(layoutID);
+    return m_objects.at(layoutID);
 
   if (!nodeID)
     return 0;
 
-  return m_objects.get(nodeID);
+  return m_objects.at(nodeID);
 }
 
 AXObject* AXObjectCacheImpl::get(AbstractInlineTextBox* inlineTextBox) {
   if (!inlineTextBox)
     return 0;
 
-  AXID axID = m_inlineTextBoxObjectMapping.get(inlineTextBox);
+  AXID axID = m_inlineTextBoxObjectMapping.at(inlineTextBox);
   ASSERT(!HashTraits<AXID>::isDeletedValue(axID));
   if (!axID)
     return 0;
 
-  return m_objects.get(axID);
+  return m_objects.at(axID);
 }
 
 // FIXME: This probably belongs on Node.
@@ -470,7 +470,7 @@ void AXObjectCacheImpl::remove(AXID axID) {
     return;
 
   // first fetch object to operate some cleanup functions on it
-  AXObject* obj = m_objects.get(axID);
+  AXObject* obj = m_objects.at(axID);
   if (!obj)
     return;
 
@@ -488,7 +488,7 @@ void AXObjectCacheImpl::remove(LayoutObject* layoutObject) {
   if (!layoutObject)
     return;
 
-  AXID axID = m_layoutObjectMapping.get(layoutObject);
+  AXID axID = m_layoutObjectMapping.at(layoutObject);
   remove(axID);
   m_layoutObjectMapping.erase(layoutObject);
 }
@@ -498,7 +498,7 @@ void AXObjectCacheImpl::remove(Node* node) {
     return;
 
   // This is all safe even if we didn't have a mapping.
-  AXID axID = m_nodeObjectMapping.get(node);
+  AXID axID = m_nodeObjectMapping.at(node);
   remove(axID);
   m_nodeObjectMapping.erase(node);
 
@@ -512,7 +512,7 @@ void AXObjectCacheImpl::remove(AbstractInlineTextBox* inlineTextBox) {
   if (!inlineTextBox)
     return;
 
-  AXID axID = m_inlineTextBoxObjectMapping.get(inlineTextBox);
+  AXID axID = m_inlineTextBoxObjectMapping.at(inlineTextBox);
   remove(axID);
   m_inlineTextBoxObjectMapping.erase(inlineTextBox);
 }
@@ -561,7 +561,7 @@ void AXObjectCacheImpl::removeAXID(AXObject* object) {
   m_idsInUse.erase(objID);
 
   if (m_ariaOwnerToChildrenMapping.contains(objID)) {
-    Vector<AXID> childAXIDs = m_ariaOwnerToChildrenMapping.get(objID);
+    Vector<AXID> childAXIDs = m_ariaOwnerToChildrenMapping.at(objID);
     for (size_t i = 0; i < childAXIDs.size(); ++i)
       m_ariaOwnedChildToOwnerMapping.erase(childAXIDs[i]);
     m_ariaOwnerToChildrenMapping.erase(objID);
@@ -691,8 +691,7 @@ bool AXObjectCacheImpl::isAriaOwned(const AXObject* child) const {
 }
 
 AXObject* AXObjectCacheImpl::getAriaOwnedParent(const AXObject* child) const {
-  return objectFromAXID(
-      m_ariaOwnedChildToOwnerMapping.get(child->axObjectID()));
+  return objectFromAXID(m_ariaOwnedChildToOwnerMapping.at(child->axObjectID()));
 }
 
 void AXObjectCacheImpl::updateAriaOwns(
@@ -704,14 +703,14 @@ void AXObjectCacheImpl::updateAriaOwns(
   // children, and the reverse map from ids to possible AXID owners.
   //
 
-  HashSet<String> currentIds = m_ariaOwnerToIdsMapping.get(owner->axObjectID());
+  HashSet<String> currentIds = m_ariaOwnerToIdsMapping.at(owner->axObjectID());
   HashSet<String> newIds;
   bool idsChanged = false;
   for (const String& id : idVector) {
     newIds.insert(id);
     if (!currentIds.contains(id)) {
       idsChanged = true;
-      HashSet<AXID>* owners = m_idToAriaOwnersMapping.get(id);
+      HashSet<AXID>* owners = m_idToAriaOwnersMapping.at(id);
       if (!owners) {
         owners = new HashSet<AXID>();
         m_idToAriaOwnersMapping.set(id, WTF::wrapUnique(owners));
@@ -722,7 +721,7 @@ void AXObjectCacheImpl::updateAriaOwns(
   for (const String& id : currentIds) {
     if (!newIds.contains(id)) {
       idsChanged = true;
-      HashSet<AXID>* owners = m_idToAriaOwnersMapping.get(id);
+      HashSet<AXID>* owners = m_idToAriaOwnersMapping.at(id);
       if (owners) {
         owners->erase(owner->axObjectID());
         if (owners->isEmpty())
@@ -780,7 +779,7 @@ void AXObjectCacheImpl::updateAriaOwns(
   // Compare this to the current list of owned children, and exit early if there
   // are no changes.
   Vector<AXID> currentChildAXIDs =
-      m_ariaOwnerToChildrenMapping.get(owner->axObjectID());
+      m_ariaOwnerToChildrenMapping.at(owner->axObjectID());
   bool same = true;
   if (currentChildAXIDs.size() != newChildAXIDs.size()) {
     same = false;
@@ -816,7 +815,7 @@ void AXObjectCacheImpl::updateAriaOwns(
       // and calling childrenChanged on its real parent.
       removedChild->detachFromParent();
       AXID realParentID =
-          m_ariaOwnedChildToRealParentMapping.get(removedChildID);
+          m_ariaOwnedChildToRealParentMapping.at(removedChildID);
       AXObject* realParent = objectFromAXID(realParentID);
       childrenChanged(realParent);
     }
@@ -856,7 +855,7 @@ void AXObjectCacheImpl::updateTreeIfElementIdIsAriaOwned(Element* element) {
     return;
 
   String id = element->getIdAttribute();
-  HashSet<AXID>* owners = m_idToAriaOwnersMapping.get(id);
+  HashSet<AXID>* owners = m_idToAriaOwnersMapping.at(id);
   if (!owners)
     return;
 

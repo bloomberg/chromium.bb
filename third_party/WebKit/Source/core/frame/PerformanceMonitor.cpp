@@ -187,7 +187,7 @@ void PerformanceMonitor::subscribe(Violation violation,
                                    double threshold,
                                    Client* client) {
   DCHECK(violation < kAfterLast);
-  ClientThresholds* clientThresholds = m_subscriptions.get(violation);
+  ClientThresholds* clientThresholds = m_subscriptions.at(violation);
   if (!clientThresholds) {
     clientThresholds = new ClientThresholds();
     m_subscriptions.set(violation, clientThresholds);
@@ -328,7 +328,7 @@ void PerformanceMonitor::didProcessTask(scheduler::TaskQueue*,
     return;
   double layoutThreshold = m_thresholds[kLongLayout];
   if (layoutThreshold && m_perTaskStyleAndLayoutTime > layoutThreshold) {
-    ClientThresholds* clientThresholds = m_subscriptions.get(kLongLayout);
+    ClientThresholds* clientThresholds = m_subscriptions.at(kLongLayout);
     DCHECK(clientThresholds);
     for (const auto& it : *clientThresholds) {
       if (it.value < m_perTaskStyleAndLayoutTime)
@@ -338,7 +338,7 @@ void PerformanceMonitor::didProcessTask(scheduler::TaskQueue*,
 
   double taskTime = endTime - startTime;
   if (m_thresholds[kLongTask] && taskTime > m_thresholds[kLongTask]) {
-    ClientThresholds* clientThresholds = m_subscriptions.get(kLongTask);
+    ClientThresholds* clientThresholds = m_subscriptions.at(kLongTask);
     for (const auto& it : *clientThresholds) {
       if (it.value < taskTime) {
         it.key->reportLongTask(
@@ -356,7 +356,7 @@ void PerformanceMonitor::innerReportGenericViolation(
     const String& text,
     double time,
     std::unique_ptr<SourceLocation> location) {
-  ClientThresholds* clientThresholds = m_subscriptions.get(violation);
+  ClientThresholds* clientThresholds = m_subscriptions.at(violation);
   if (!clientThresholds)
     return;
   if (!location)

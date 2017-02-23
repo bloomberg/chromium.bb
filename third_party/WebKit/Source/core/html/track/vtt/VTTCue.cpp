@@ -1073,7 +1073,7 @@ void VTTCue::parseSettings(const VTTRegionMap* regionMap,
       }
       case RegionId:
         if (regionMap)
-          m_region = regionMap->get(input.extractString(valueRun));
+          m_region = regionMap->at(input.extractString(valueRun));
         break;
       case None:
         break;

@@ -89,7 +89,7 @@ bool InspectorWorkerAgent::autoAttachEnabled() {
 
 Response InspectorWorkerAgent::sendMessageToTarget(const String& targetId,
                                                    const String& message) {
-  WorkerInspectorProxy* proxy = m_connectedProxies.get(targetId);
+  WorkerInspectorProxy* proxy = m_connectedProxies.at(targetId);
   if (!proxy)
     return Response::Error("Not attached to a target with given id");
   proxy->sendMessageToInspector(message);

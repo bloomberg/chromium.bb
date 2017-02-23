@@ -81,7 +81,7 @@ static inline SVGResourcesCache& resourcesCache(Document& document) {
 SVGResources* SVGResourcesCache::cachedResourcesForLayoutObject(
     const LayoutObject* layoutObject) {
   ASSERT(layoutObject);
-  return resourcesCache(layoutObject->document()).m_cache.get(layoutObject);
+  return resourcesCache(layoutObject->document()).m_cache.at(layoutObject);
 }
 
 void SVGResourcesCache::clientLayoutChanged(LayoutObject* object) {

@@ -84,7 +84,7 @@ unsigned NthIndexCache::nthChildIndex(Element& element) {
   NthIndexCache* nthIndexCache = element.document().nthIndexCache();
   NthIndexData* nthIndexData = nullptr;
   if (nthIndexCache && nthIndexCache->m_parentMap)
-    nthIndexData = nthIndexCache->m_parentMap->get(element.parentNode());
+    nthIndexData = nthIndexCache->m_parentMap->at(element.parentNode());
   if (nthIndexData)
     return nthIndexData->nthIndex(element);
   unsigned index = uncachedNthChildIndex(element);
@@ -99,7 +99,7 @@ unsigned NthIndexCache::nthLastChildIndex(Element& element) {
   NthIndexCache* nthIndexCache = element.document().nthIndexCache();
   NthIndexData* nthIndexData = nullptr;
   if (nthIndexCache && nthIndexCache->m_parentMap)
-    nthIndexData = nthIndexCache->m_parentMap->get(element.parentNode());
+    nthIndexData = nthIndexCache->m_parentMap->at(element.parentNode());
   if (nthIndexData)
     return nthIndexData->nthLastIndex(element);
   unsigned index = uncachedNthLastChildIndex(element);
@@ -112,8 +112,8 @@ NthIndexData* NthIndexCache::nthTypeIndexDataForParent(Element& element) const {
   DCHECK(element.parentNode());
   if (!m_parentMapForType)
     return nullptr;
-  if (const IndexByType* map = m_parentMapForType->get(element.parentNode()))
-    return map->get(element.tagName());
+  if (const IndexByType* map = m_parentMapForType->at(element.parentNode()))
+    return map->at(element.tagName());
   return nullptr;
 }
 

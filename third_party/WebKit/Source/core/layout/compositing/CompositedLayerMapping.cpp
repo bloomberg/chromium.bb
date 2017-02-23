@@ -307,7 +307,7 @@ void CompositedLayerMapping::updateStickyConstraints(
   WebLayerStickyPositionConstraint webConstraint;
   if (sticky) {
     const StickyPositionScrollingConstraints& constraints =
-        ancestorOverflowLayer->getScrollableArea()->stickyConstraintsMap().get(
+        ancestorOverflowLayer->getScrollableArea()->stickyConstraintsMap().at(
             &m_owningLayer);
 
     // Find the layout offset of the unshifted sticky box within its enclosing

@@ -993,7 +993,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName,
   AtomicString adjustedURI = uri;
   if (m_parsingFragment && adjustedURI.isNull()) {
     if (!prefix.isNull())
-      adjustedURI = m_prefixToNamespaceMap.get(prefix);
+      adjustedURI = m_prefixToNamespaceMap.at(prefix);
     else
       adjustedURI = m_defaultNamespaceURI;
   }

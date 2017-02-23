@@ -417,7 +417,7 @@ const AtomicString& HTMLElement::eventNameForAttributeName(
       attributeNameToEventNameMap.set(name.attr.localName(), name.event);
   }
 
-  return attributeNameToEventNameMap.get(attrName.localName());
+  return attributeNameToEventNameMap.at(attrName.localName());
 }
 
 void HTMLElement::attributeChanged(const AttributeModificationParams& params) {

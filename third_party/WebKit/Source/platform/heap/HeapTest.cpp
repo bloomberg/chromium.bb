@@ -2041,7 +2041,7 @@ TEST(HeapTest, HashMapOfMembers) {
     EXPECT_TRUE(map->contains(one));
     EXPECT_TRUE(map->contains(anotherOne));
 
-    IntWrapper* gotten(map->get(one));
+    IntWrapper* gotten(map->at(one));
     EXPECT_EQ(gotten->value(), one->value());
     EXPECT_EQ(gotten, one);
 
@@ -2060,7 +2060,7 @@ TEST(HeapTest, HashMapOfMembers) {
     size_t afterAdding1000 = heap.objectPayloadSizeForTesting();
     EXPECT_TRUE(afterAdding1000 > afterGC2);
 
-    IntWrapper* gross(map->get(dozen));
+    IntWrapper* gross(map->at(dozen));
     EXPECT_EQ(gross->value(), 144);
 
     // This should clear out any junk backings created by all the adds.
@@ -2526,18 +2526,18 @@ TEST(HeapTest, HeapCollectionTypes) {
       memberMember3->swap(containedMap);
       memberMember3->swap(*memberMember);
 
-      EXPECT_TRUE(memberMember->get(one) == two);
-      EXPECT_TRUE(memberMember->get(two) == three);
-      EXPECT_TRUE(memberMember->get(three) == four);
-      EXPECT_TRUE(memberMember->get(four) == one);
-      EXPECT_TRUE(primitiveMember->get(1) == two);
-      EXPECT_TRUE(primitiveMember->get(2) == three);
-      EXPECT_TRUE(primitiveMember->get(3) == four);
-      EXPECT_TRUE(primitiveMember->get(4) == one);
-      EXPECT_EQ(1, memberPrimitive->get(four));
-      EXPECT_EQ(2, memberPrimitive->get(one));
-      EXPECT_EQ(3, memberPrimitive->get(two));
-      EXPECT_EQ(4, memberPrimitive->get(three));
+      EXPECT_TRUE(memberMember->at(one) == two);
+      EXPECT_TRUE(memberMember->at(two) == three);
+      EXPECT_TRUE(memberMember->at(three) == four);
+      EXPECT_TRUE(memberMember->at(four) == one);
+      EXPECT_TRUE(primitiveMember->at(1) == two);
+      EXPECT_TRUE(primitiveMember->at(2) == three);
+      EXPECT_TRUE(primitiveMember->at(3) == four);
+      EXPECT_TRUE(primitiveMember->at(4) == one);
+      EXPECT_EQ(1, memberPrimitive->at(four));
+      EXPECT_EQ(2, memberPrimitive->at(one));
+      EXPECT_EQ(3, memberPrimitive->at(two));
+      EXPECT_EQ(4, memberPrimitive->at(three));
       EXPECT_TRUE(set->contains(one));
       EXPECT_TRUE(set->contains(two));
       EXPECT_TRUE(set->contains(three));
@@ -2594,11 +2594,11 @@ TEST(HeapTest, HeapCollectionTypes) {
     EXPECT_EQ(3u, dequeUW->size());
     EXPECT_EQ(1u, deque2->size());
 
-    EXPECT_TRUE(memberMember->get(one) == two);
-    EXPECT_TRUE(primitiveMember->get(1) == two);
-    EXPECT_TRUE(primitiveMember->get(4) == one);
-    EXPECT_EQ(2, memberPrimitive->get(one));
-    EXPECT_EQ(3, memberPrimitive->get(two));
+    EXPECT_TRUE(memberMember->at(one) == two);
+    EXPECT_TRUE(primitiveMember->at(1) == two);
+    EXPECT_TRUE(primitiveMember->at(4) == one);
+    EXPECT_EQ(2, memberPrimitive->at(one));
+    EXPECT_EQ(3, memberPrimitive->at(two));
     EXPECT_TRUE(set->contains(one));
     EXPECT_TRUE(set->contains(two));
     EXPECT_FALSE(set->contains(oneB));
@@ -3415,9 +3415,9 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
       for (int i = 0; i < 128; i += 2) {
         IntWrapper* wrapped = keepNumbersAlive[i];
         IntWrapper* wrapped2 = keepNumbersAlive[i + 1];
-        EXPECT_EQ(wrapped2, weakStrong->get(wrapped));
-        EXPECT_EQ(wrapped, strongWeak->get(wrapped2));
-        EXPECT_EQ(wrapped2, weakWeak->get(wrapped));
+        EXPECT_EQ(wrapped2, weakStrong->at(wrapped));
+        EXPECT_EQ(wrapped, strongWeak->at(wrapped2));
+        EXPECT_EQ(wrapped2, weakWeak->at(wrapped));
         EXPECT_TRUE(weakSet->contains(wrapped));
         EXPECT_TRUE(weakOrderedSet->contains(wrapped));
       }
@@ -3895,10 +3895,10 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     EXPECT_TRUE(pLinkedSet.contains(nine));
 
     EXPECT_EQ(1u, pMap.size());
-    EXPECT_EQ(six, pMap.get(five));
+    EXPECT_EQ(six, pMap.at(five));
 
     EXPECT_EQ(1u, wpMap.size());
-    EXPECT_EQ(eleven, wpMap.get(ten));
+    EXPECT_EQ(eleven, wpMap.at(ten));
     ten.clear();
     preciselyCollectGarbage();
     EXPECT_EQ(0u, wpMap.size());
@@ -3926,16 +3926,16 @@ TEST(HeapTest, CollectionNesting) {
   map2->insert(key, IntDeque());
 
   HeapHashMap<void*, IntVector>::iterator it = map->find(key);
-  EXPECT_EQ(0u, map->get(key).size());
+  EXPECT_EQ(0u, map->at(key).size());
 
   HeapHashMap<void*, IntDeque>::iterator it2 = map2->find(key);
-  EXPECT_EQ(0u, map2->get(key).size());
+  EXPECT_EQ(0u, map2->at(key).size());
 
   it->value.push_back(IntWrapper::create(42));
-  EXPECT_EQ(1u, map->get(key).size());
+  EXPECT_EQ(1u, map->at(key).size());
 
   it2->value.append(IntWrapper::create(42));
-  EXPECT_EQ(1u, map2->get(key).size());
+  EXPECT_EQ(1u, map2->at(key).size());
 
   Persistent<HeapHashMap<void*, IntVector>> keepAlive(map);
   Persistent<HeapHashMap<void*, IntDeque>> keepAlive2(map2);
@@ -3947,8 +3947,8 @@ TEST(HeapTest, CollectionNesting) {
 
   preciselyCollectGarbage();
 
-  EXPECT_EQ(1u, map->get(key).size());
-  EXPECT_EQ(1u, map2->get(key).size());
+  EXPECT_EQ(1u, map->at(key).size());
+  EXPECT_EQ(1u, map2->at(key).size());
   EXPECT_EQ(0, IntWrapper::s_destructorCalls);
 
   keepAlive = nullptr;
@@ -3985,14 +3985,14 @@ TEST(HeapTest, CollectionNesting2) {
   map->insert(key, IntSet());
 
   HeapHashMap<void*, IntSet>::iterator it = map->find(key);
-  EXPECT_EQ(0u, map->get(key).size());
+  EXPECT_EQ(0u, map->at(key).size());
 
   it->value.insert(IntWrapper::create(42));
-  EXPECT_EQ(1u, map->get(key).size());
+  EXPECT_EQ(1u, map->at(key).size());
 
   Persistent<HeapHashMap<void*, IntSet>> keepAlive(map);
   preciselyCollectGarbage();
-  EXPECT_EQ(1u, map->get(key).size());
+  EXPECT_EQ(1u, map->at(key).size());
   EXPECT_EQ(0, IntWrapper::s_destructorCalls);
 }
 
@@ -4979,17 +4979,17 @@ TEST(HeapTest, EphemeronsInEphemerons) {
       Persistent<IntWrapper> two = IntWrapper::create(2);
       outer->insert(one, InnerMap());
       outer->begin()->value.insert(two, IntWrapper::create(3));
-      EXPECT_EQ(1u, outer->get(one).size());
+      EXPECT_EQ(1u, outer->at(one).size());
       if (!keepOuterAlive)
         one.clear();
       if (!keepInnerAlive)
         two.clear();
       preciselyCollectGarbage();
       if (keepOuterAlive) {
-        const InnerMap& inner = outer->get(one);
+        const InnerMap& inner = outer->at(one);
         if (keepInnerAlive) {
           EXPECT_EQ(1u, inner.size());
-          IntWrapper* three = inner.get(two);
+          IntWrapper* three = inner.at(two);
           EXPECT_EQ(3, three->value());
         } else {
           EXPECT_EQ(0u, inner.size());
@@ -5015,8 +5015,9 @@ TEST(HeapTest, EphemeronsInEphemerons) {
       EXPECT_EQ(10000u, outer->size());
       for (int i = 0; i < 10000; i++) {
         IntWrapper* value = keepAlive->at(i);
-        EXPECT_EQ(1u, outer->get(value)
-                          .size());  // Other one was deleted by weak handling.
+        EXPECT_EQ(1u,
+                  outer->at(value)
+                      .size());  // Other one was deleted by weak handling.
         if (i & 1)
           keepAlive->at(i) = nullptr;
       }
@@ -5058,9 +5059,9 @@ TEST(HeapTest, EphemeronsPointToEphemerons) {
   for (int i = 0; i < 100; i++) {
     EXPECT_EQ(1u, wrapper->getMap().size());
     if (i == 49)
-      wrapper = wrapper->getMap().get(key2);
+      wrapper = wrapper->getMap().at(key2);
     else
-      wrapper = wrapper->getMap().get(key);
+      wrapper = wrapper->getMap().at(key);
   }
   EXPECT_EQ(nullptr, wrapper);
 
@@ -5070,7 +5071,7 @@ TEST(HeapTest, EphemeronsPointToEphemerons) {
   wrapper = chain;
   for (int i = 0; i < 50; i++) {
     EXPECT_EQ(i == 49 ? 0u : 1u, wrapper->getMap().size());
-    wrapper = wrapper->getMap().get(key);
+    wrapper = wrapper->getMap().at(key);
   }
   EXPECT_EQ(nullptr, wrapper);
 
@@ -5184,12 +5185,12 @@ TEST(HeapTest, IndirectStrongToWeak) {
   EXPECT_EQ(2u, map->size());
   preciselyCollectGarbage();
   EXPECT_EQ(2u, map->size());
-  EXPECT_EQ(deadObject, map->get(deadObject)->link());
-  EXPECT_EQ(lifeObject, map->get(lifeObject)->link());
+  EXPECT_EQ(deadObject, map->at(deadObject)->link());
+  EXPECT_EQ(lifeObject, map->at(lifeObject)->link());
   deadObject.clear();  // Now it can live up to its name.
   preciselyCollectGarbage();
   EXPECT_EQ(1u, map->size());
-  EXPECT_EQ(lifeObject, map->get(lifeObject)->link());
+  EXPECT_EQ(lifeObject, map->at(lifeObject)->link());
   lifeObject.clear();  // Despite its name.
   preciselyCollectGarbage();
   EXPECT_EQ(0u, map->size());

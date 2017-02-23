@@ -73,7 +73,7 @@ static void create{{namespace}}FunctionMap() {
     CreateElementFlags flags) {
   if (!g_constructors)
     create{{namespace}}FunctionMap();
-  if (ConstructorFunction function = g_constructors->get(localName))
+  if (ConstructorFunction function = g_constructors->at(localName))
     return function(document, flags);
 
   {% if namespace == 'HTML' %}

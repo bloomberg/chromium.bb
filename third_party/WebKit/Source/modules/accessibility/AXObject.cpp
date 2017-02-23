@@ -1656,7 +1656,7 @@ AccessibilityRole AXObject::ariaRoleToWebCoreRole(const String& value) {
   value.split(' ', roleVector);
   AccessibilityRole role = UnknownRole;
   for (const auto& child : roleVector) {
-    role = roleMap->get(child);
+    role = roleMap->at(child);
     if (role)
       return role;
   }

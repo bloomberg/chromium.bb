@@ -351,7 +351,7 @@ bool SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
 
   // get() returns 0 (PolicyAreaNone) if there is no entry in the map.
   // Thus by default, schemes do not bypass CSP.
-  return (getURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.get(
+  return (getURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.at(
               scheme) &
           policyAreas) == policyAreas;
 }

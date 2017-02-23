@@ -62,7 +62,7 @@ LayoutScrollbar::LayoutScrollbar(ScrollableArea* scrollableArea,
   // Update the scrollbar size.
   IntRect rect(0, 0, 0, 0);
   updateScrollbarPart(ScrollbarBGPart);
-  if (LayoutScrollbarPart* part = m_parts.get(ScrollbarBGPart)) {
+  if (LayoutScrollbarPart* part = m_parts.at(ScrollbarBGPart)) {
     part->layout();
     rect.setSize(flooredIntSize(part->size()));
   } else if (this->orientation() == HorizontalScrollbar) {
@@ -172,7 +172,7 @@ void LayoutScrollbar::updateScrollbarParts(bool destroy) {
   bool isHorizontal = orientation() == HorizontalScrollbar;
   int oldThickness = isHorizontal ? height() : width();
   int newThickness = 0;
-  LayoutScrollbarPart* part = m_parts.get(ScrollbarBGPart);
+  LayoutScrollbarPart* part = m_parts.at(ScrollbarBGPart);
   if (part) {
     part->layout();
     newThickness =
@@ -262,7 +262,7 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType,
     }
   }
 
-  LayoutScrollbarPart* partLayoutObject = m_parts.get(partType);
+  LayoutScrollbarPart* partLayoutObject = m_parts.at(partType);
   if (!partLayoutObject && needLayoutObject && m_scrollableArea) {
     partLayoutObject = LayoutScrollbarPart::createAnonymous(
         &styleSource()->document(), m_scrollableArea, this, partType);
@@ -281,7 +281,7 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType,
 }
 
 IntRect LayoutScrollbar::buttonRect(ScrollbarPart partType) const {
-  LayoutScrollbarPart* partLayoutObject = m_parts.get(partType);
+  LayoutScrollbarPart* partLayoutObject = m_parts.at(partType);
   if (!partLayoutObject)
     return IntRect();
 
@@ -327,7 +327,7 @@ IntRect LayoutScrollbar::buttonRect(ScrollbarPart partType) const {
 }
 
 IntRect LayoutScrollbar::trackRect(int startLength, int endLength) const {
-  LayoutScrollbarPart* part = m_parts.get(TrackBGPart);
+  LayoutScrollbarPart* part = m_parts.at(TrackBGPart);
   if (part)
     part->layout();
 
@@ -352,7 +352,7 @@ IntRect LayoutScrollbar::trackRect(int startLength, int endLength) const {
 IntRect LayoutScrollbar::trackPieceRectWithMargins(
     ScrollbarPart partType,
     const IntRect& oldRect) const {
-  LayoutScrollbarPart* partLayoutObject = m_parts.get(partType);
+  LayoutScrollbarPart* partLayoutObject = m_parts.at(partType);
   if (!partLayoutObject)
     return oldRect;
 
@@ -370,7 +370,7 @@ IntRect LayoutScrollbar::trackPieceRectWithMargins(
 }
 
 int LayoutScrollbar::minimumThumbLength() const {
-  LayoutScrollbarPart* partLayoutObject = m_parts.get(ThumbPart);
+  LayoutScrollbarPart* partLayoutObject = m_parts.at(ThumbPart);
   if (!partLayoutObject)
     return 0;
   partLayoutObject->layout();

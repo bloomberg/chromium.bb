@@ -1386,7 +1386,7 @@ void Document::addStyleReattachData(const Node& node,
 }
 
 StyleReattachData Document::getStyleReattachData(const Node& node) const {
-  return m_styleReattachDataMap.get(&node);
+  return m_styleReattachDataMap.at(&node);
 }
 
 /*
@@ -6601,7 +6601,7 @@ DEFINE_TRACE_WRAPPERS(Document) {
   // Cannot trace in Supplementable<Document> as it is part of platform/ and
   // thus cannot refer to ScriptWrappableVisitor.
   visitor->traceWrappers(
-      static_cast<FontFaceSet*>(Supplementable<Document>::m_supplements.get(
+      static_cast<FontFaceSet*>(Supplementable<Document>::m_supplements.at(
           FontFaceSet::supplementName())));
   ContainerNode::traceWrappers(visitor);
 }

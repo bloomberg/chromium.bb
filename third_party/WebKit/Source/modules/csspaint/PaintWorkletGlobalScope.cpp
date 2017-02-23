@@ -189,7 +189,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
   m_paintDefinitions.set(name, definition);
 
   // Set the definition on any pending generators.
-  GeneratorHashSet* set = m_pendingGenerators.get(name);
+  GeneratorHashSet* set = m_pendingGenerators.at(name);
   if (set) {
     for (const auto& generator : *set) {
       if (generator) {
@@ -202,7 +202,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
 
 CSSPaintDefinition* PaintWorkletGlobalScope::findDefinition(
     const String& name) {
-  return m_paintDefinitions.get(name);
+  return m_paintDefinitions.at(name);
 }
 
 void PaintWorkletGlobalScope::addPendingGenerator(

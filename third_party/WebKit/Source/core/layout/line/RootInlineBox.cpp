@@ -517,7 +517,7 @@ void RootInlineBox::setLineBreakInfo(LineLayoutItem obj,
 EllipsisBox* RootInlineBox::ellipsisBox() const {
   if (!hasEllipsisBox())
     return nullptr;
-  return gEllipsisBoxMap->get(this);
+  return gEllipsisBoxMap->at(this);
 }
 
 void RootInlineBox::removeLineBoxFromLayoutObject() {

@@ -244,7 +244,7 @@ void ScrollbarThemeMac::setNewPainterForScrollbar(
 ScrollbarPainter ScrollbarThemeMac::painterForScrollbar(
     const ScrollbarThemeClient& scrollbar) const {
   return [scrollbarPainterMap()
-              .get(const_cast<ScrollbarThemeClient*>(&scrollbar))
+              .at(const_cast<ScrollbarThemeClient*>(&scrollbar))
               .get() painter];
 }
 

@@ -60,7 +60,7 @@ static const float kDisabledAlpha = 0.4;
 static Image* platformResource(const char* name) {
   if (!gMediaControlImageMap)
     gMediaControlImageMap = new MediaControlImageMap();
-  if (Image* image = gMediaControlImageMap->get(name))
+  if (Image* image = gMediaControlImageMap->at(name))
     return image;
   if (Image* image = Image::loadPlatformResource(name).leakRef()) {
     gMediaControlImageMap->set(name, image);

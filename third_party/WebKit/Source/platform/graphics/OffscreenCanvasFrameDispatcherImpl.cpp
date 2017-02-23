@@ -403,7 +403,7 @@ void OffscreenCanvasFrameDispatcherImpl::OnBeginFrame(
 void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   for (const auto& resource : resources) {
-    RefPtr<StaticBitmapImage> image = m_cachedImages.get(resource.id);
+    RefPtr<StaticBitmapImage> image = m_cachedImages.at(resource.id);
     if (image)
       image->updateSyncToken(resource.sync_token);
     reclaimResource(resource.id);

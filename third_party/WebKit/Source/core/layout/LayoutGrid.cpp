@@ -807,7 +807,7 @@ void LayoutGrid::placeSpecifiedMajorAxisItemsOnGrid(
     GridIterator iterator(
         grid, autoPlacementMajorAxisDirection(), majorAxisPositions.startLine(),
         isGridAutoFlowDense ? 0
-                            : minorAxisCursors.get(majorAxisInitialPosition));
+                            : minorAxisCursors.at(majorAxisInitialPosition));
     std::unique_ptr<GridArea> emptyGridArea = iterator.nextEmptyGridArea(
         majorAxisPositions.integerSpan(), minorAxisSpanSize);
     if (!emptyGridArea) {

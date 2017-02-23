@@ -221,7 +221,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
 
     if (!m_createImageChromiumFail) {
       ASSERT_TRUE(m_textureSizes.contains(texture));
-      m_mostRecentlyProducedSize = m_textureSizes.get(texture);
+      m_mostRecentlyProducedSize = m_textureSizes.at(texture);
     }
   }
 

@@ -117,7 +117,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   template <typename T>
   T* cached(CollectionType collectionType) {
     return static_cast<T*>(
-        m_atomicNameCaches.get(namedNodeListKey(collectionType, starAtom)));
+        m_atomicNameCaches.at(namedNodeListKey(collectionType, starAtom)));
   }
 
   TagCollection* addCache(ContainerNode& node,

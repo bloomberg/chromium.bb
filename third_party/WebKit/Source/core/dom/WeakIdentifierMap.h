@@ -50,7 +50,7 @@ class WeakIdentifierMap final
                                    IsGarbageCollectedType<T>::value> {
  public:
   static IdentifierType identifier(T* object) {
-    IdentifierType result = instance().m_objectToIdentifier.get(object);
+    IdentifierType result = instance().m_objectToIdentifier.at(object);
 
     if (WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(result)) {
       result = next();
@@ -60,7 +60,7 @@ class WeakIdentifierMap final
   }
 
   static T* lookup(IdentifierType identifier) {
-    return instance().m_identifierToObject.get(identifier);
+    return instance().m_identifierToObject.at(identifier);
   }
 
   static void notifyObjectDestroyed(T* object) {

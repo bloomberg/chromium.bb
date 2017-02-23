@@ -14,7 +14,7 @@ bool StyleNonInheritedVariables::operator==(
     return false;
 
   for (const auto& iter : m_data) {
-    RefPtr<CSSVariableData> otherData = other.m_data.get(iter.key);
+    RefPtr<CSSVariableData> otherData = other.m_data.at(iter.key);
     if (!dataEquivalent(iter.value, otherData))
       return false;
   }
@@ -24,7 +24,7 @@ bool StyleNonInheritedVariables::operator==(
 
 CSSVariableData* StyleNonInheritedVariables::getVariable(
     const AtomicString& name) const {
-  return m_data.get(name);
+  return m_data.at(name);
 }
 
 void StyleNonInheritedVariables::setRegisteredVariable(

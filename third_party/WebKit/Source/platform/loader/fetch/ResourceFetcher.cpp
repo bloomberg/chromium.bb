@@ -268,7 +268,7 @@ ResourceFetcher::~ResourceFetcher() {}
 
 Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const {
   KURL url = MemoryCache::removeFragmentIdentifierIfNeeded(resourceURL);
-  const WeakMember<Resource>& resource = m_documentResources.get(url);
+  const WeakMember<Resource>& resource = m_documentResources.at(url);
   return resource.get();
 }
 

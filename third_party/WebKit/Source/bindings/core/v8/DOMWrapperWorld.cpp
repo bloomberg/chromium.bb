@@ -247,7 +247,7 @@ static IsolatedWorldHumanReadableNameMap& isolatedWorldHumanReadableNames() {
 
 String DOMWrapperWorld::isolatedWorldHumanReadableName() {
   ASSERT(this->isIsolatedWorld());
-  return isolatedWorldHumanReadableNames().get(worldId());
+  return isolatedWorldHumanReadableNames().at(worldId());
 }
 
 void DOMWrapperWorld::setIsolatedWorldHumanReadableName(

@@ -246,7 +246,7 @@ void MarkupFormatter::appendNamespace(StringBuilder& result,
     return;
 
   const AtomicString& lookupKey = (!prefix) ? emptyAtom : prefix;
-  AtomicString foundURI = namespaces.get(lookupKey);
+  AtomicString foundURI = namespaces.at(lookupKey);
   if (foundURI != namespaceURI) {
     namespaces.set(lookupKey, namespaceURI);
     result.append(' ');
@@ -402,7 +402,7 @@ void MarkupFormatter::appendAttribute(StringBuilder& result,
           for (unsigned i = attribute.namespaceURI().impl()->existingHash();;
                ++i) {
             AtomicString newPrefix(String(prefixPrefix + String::number(i)));
-            AtomicString foundURI = namespaces->get(newPrefix);
+            AtomicString foundURI = namespaces->at(newPrefix);
             if (foundURI == attribute.namespaceURI() || foundURI == nullAtom) {
               // We already generated a prefix for this namespace.
               prefixedName.setPrefix(newPrefix);

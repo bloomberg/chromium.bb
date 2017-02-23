@@ -133,7 +133,7 @@ void FontFaceCache::incrementVersion() {
 
 CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
                                          const AtomicString& family) {
-  TraitsMap* familyFontFaces = m_fontFaces.get(family);
+  TraitsMap* familyFontFaces = m_fontFaces.at(family);
   if (!familyFontFaces || familyFontFaces->isEmpty())
     return nullptr;
 

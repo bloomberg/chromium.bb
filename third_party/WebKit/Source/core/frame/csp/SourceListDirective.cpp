@@ -767,9 +767,9 @@ SourceListDirective::getIntersectSchemesOnly(
       if (schemesA.contains(sourceB->getScheme()))
         addSourceToMap(intersect, sourceB);
       else if (sourceB->getScheme() == "http" && schemesA.contains("https"))
-        intersect.insert("https", schemesA.get("https"));
+        intersect.insert("https", schemesA.at("https"));
       else if (sourceB->getScheme() == "ws" && schemesA.contains("wss"))
-        intersect.insert("wss", schemesA.get("wss"));
+        intersect.insert("wss", schemesA.at("wss"));
     }
   }
 

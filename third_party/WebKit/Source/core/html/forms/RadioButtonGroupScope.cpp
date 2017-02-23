@@ -228,7 +228,7 @@ void RadioButtonGroupScope::updateCheckedState(HTMLInputElement* element) {
   DCHECK(m_nameToGroupMap);
   if (!m_nameToGroupMap)
     return;
-  RadioButtonGroup* group = m_nameToGroupMap->get(element->name());
+  RadioButtonGroup* group = m_nameToGroupMap->at(element->name());
   DCHECK(group);
   group->updateCheckedState(element);
 }
@@ -241,7 +241,7 @@ void RadioButtonGroupScope::requiredAttributeChanged(
   DCHECK(m_nameToGroupMap);
   if (!m_nameToGroupMap)
     return;
-  RadioButtonGroup* group = m_nameToGroupMap->get(element->name());
+  RadioButtonGroup* group = m_nameToGroupMap->at(element->name());
   DCHECK(group);
   group->requiredAttributeChanged(element);
 }
@@ -250,7 +250,7 @@ HTMLInputElement* RadioButtonGroupScope::checkedButtonForGroup(
     const AtomicString& name) const {
   if (!m_nameToGroupMap)
     return nullptr;
-  RadioButtonGroup* group = m_nameToGroupMap->get(name);
+  RadioButtonGroup* group = m_nameToGroupMap->at(name);
   return group ? group->checkedButton() : nullptr;
 }
 
@@ -260,7 +260,7 @@ bool RadioButtonGroupScope::isInRequiredGroup(HTMLInputElement* element) const {
     return false;
   if (!m_nameToGroupMap)
     return false;
-  RadioButtonGroup* group = m_nameToGroupMap->get(element->name());
+  RadioButtonGroup* group = m_nameToGroupMap->at(element->name());
   return group && group->isRequired() && group->contains(element);
 }
 
@@ -269,7 +269,7 @@ unsigned RadioButtonGroupScope::groupSizeFor(
   if (!m_nameToGroupMap)
     return 0;
 
-  RadioButtonGroup* group = m_nameToGroupMap->get(element->name());
+  RadioButtonGroup* group = m_nameToGroupMap->at(element->name());
   if (!group)
     return 0;
   return group->size();
@@ -282,7 +282,7 @@ void RadioButtonGroupScope::removeButton(HTMLInputElement* element) {
   if (!m_nameToGroupMap)
     return;
 
-  RadioButtonGroup* group = m_nameToGroupMap->get(element->name());
+  RadioButtonGroup* group = m_nameToGroupMap->at(element->name());
   if (!group)
     return;
   group->remove(element);

@@ -289,7 +289,7 @@ void InspectorDOMAgent::releaseDanglingNodes() {
 }
 
 int InspectorDOMAgent::bind(Node* node, NodeToIdMap* nodesMap) {
-  int id = nodesMap->get(node);
+  int id = nodesMap->at(node);
   if (id)
     return id;
   id = m_lastNodeId++;
@@ -300,7 +300,7 @@ int InspectorDOMAgent::bind(Node* node, NodeToIdMap* nodesMap) {
 }
 
 void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap) {
-  int id = nodesMap->get(node);
+  int id = nodesMap->at(node);
   if (!id)
     return;
 
@@ -515,7 +515,7 @@ void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId,
                 !node->isDocumentFragment()))
     return;
 
-  NodeToIdMap* nodeMap = m_idToNodesMap.get(nodeId);
+  NodeToIdMap* nodeMap = m_idToNodesMap.at(nodeId);
 
   if (m_childrenRequested.contains(nodeId)) {
     if (depth <= 1)
@@ -524,7 +524,7 @@ void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId,
     depth--;
 
     for (node = innerFirstChild(node); node; node = innerNextSibling(node)) {
-      int childNodeId = nodeMap->get(node);
+      int childNodeId = nodeMap->at(node);
       ASSERT(childNodeId);
       pushChildNodesToFrontend(childNodeId, depth, pierce);
     }
@@ -661,7 +661,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush,
     return 0;
 
   // Return id in case the node is known.
-  int result = nodeMap->get(nodeToPush);
+  int result = nodeMap->at(nodeToPush);
   if (result)
     return result;
 
@@ -673,17 +673,17 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush,
     if (!parent)
       return 0;
     path.push_back(parent);
-    if (nodeMap->get(parent))
+    if (nodeMap->at(parent))
       break;
     node = parent;
   }
 
   for (int i = path.size() - 1; i >= 0; --i) {
-    int nodeId = nodeMap->get(path.at(i).get());
+    int nodeId = nodeMap->at(path.at(i).get());
     ASSERT(nodeId);
     pushChildNodesToFrontend(nodeId);
   }
-  return nodeMap->get(nodeToPush);
+  return nodeMap->at(nodeToPush);
 }
 
 int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush) {
@@ -711,7 +711,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush) {
 }
 
 int InspectorDOMAgent::boundNodeId(Node* node) {
-  return m_documentNodeToIdMap->get(node);
+  return m_documentNodeToIdMap->at(node);
 }
 
 Response InspectorDOMAgent::setAttributeValue(int elementId,
@@ -1953,20 +1953,19 @@ void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame) {
   if (!frameOwner)
     return;
 
-  int frameOwnerId = m_documentNodeToIdMap->get(frameOwner);
+  int frameOwnerId = m_documentNodeToIdMap->at(frameOwner);
   if (!frameOwnerId)
     return;
 
   // Re-add frame owner element together with its new children.
-  int parentId = m_documentNodeToIdMap->get(innerParentNode(frameOwner));
+  int parentId = m_documentNodeToIdMap->at(innerParentNode(frameOwner));
   frontend()->childNodeRemoved(parentId, frameOwnerId);
   unbind(frameOwner, m_documentNodeToIdMap.get());
 
   std::unique_ptr<protocol::DOM::Node> value =
       buildObjectForNode(frameOwner, 0, false, m_documentNodeToIdMap.get());
   Node* previousSibling = innerPreviousSibling(frameOwner);
-  int prevId =
-      previousSibling ? m_documentNodeToIdMap->get(previousSibling) : 0;
+  int prevId = previousSibling ? m_documentNodeToIdMap->at(previousSibling) : 0;
   frontend()->childNodeInserted(parentId, prevId, std::move(value));
 }
 
@@ -1994,20 +1993,20 @@ void InspectorDOMAgent::didInsertDOMNode(Node* node) {
   ContainerNode* parent = node->parentNode();
   if (!parent)
     return;
-  int parentId = m_documentNodeToIdMap->get(parent);
+  int parentId = m_documentNodeToIdMap->at(parent);
   // Return if parent is not mapped yet.
   if (!parentId)
     return;
 
   if (!m_childrenRequested.contains(parentId)) {
     // No children are mapped yet -> only notify on changes of child count.
-    int count = m_cachedChildCount.get(parentId) + 1;
+    int count = m_cachedChildCount.at(parentId) + 1;
     m_cachedChildCount.set(parentId, count);
     frontend()->childNodeCountUpdated(parentId, count);
   } else {
     // Children have been requested -> return value of a new child.
     Node* prevSibling = innerPreviousSibling(node);
-    int prevId = prevSibling ? m_documentNodeToIdMap->get(prevSibling) : 0;
+    int prevId = prevSibling ? m_documentNodeToIdMap->at(prevSibling) : 0;
     std::unique_ptr<protocol::DOM::Node> value =
         buildObjectForNode(node, 0, false, m_documentNodeToIdMap.get());
     frontend()->childNodeInserted(parentId, prevId, std::move(value));
@@ -2024,15 +2023,15 @@ void InspectorDOMAgent::willRemoveDOMNode(Node* node) {
   if (!m_documentNodeToIdMap->contains(parent))
     return;
 
-  int parentId = m_documentNodeToIdMap->get(parent);
+  int parentId = m_documentNodeToIdMap->at(parent);
 
   if (!m_childrenRequested.contains(parentId)) {
     // No children are mapped yet -> only notify on changes of child count.
-    int count = m_cachedChildCount.get(parentId) - 1;
+    int count = m_cachedChildCount.at(parentId) - 1;
     m_cachedChildCount.set(parentId, count);
     frontend()->childNodeCountUpdated(parentId, count);
   } else {
-    frontend()->childNodeRemoved(parentId, m_documentNodeToIdMap->get(node));
+    frontend()->childNodeRemoved(parentId, m_documentNodeToIdMap->at(node));
   }
   unbind(node, m_documentNodeToIdMap.get());
 }
@@ -2094,7 +2093,7 @@ void InspectorDOMAgent::styleAttributeInvalidated(
 }
 
 void InspectorDOMAgent::characterDataModified(CharacterData* characterData) {
-  int id = m_documentNodeToIdMap->get(characterData);
+  int id = m_documentNodeToIdMap->at(characterData);
   if (!id) {
     // Push text node if it is being created.
     didInsertDOMNode(characterData);
@@ -2110,7 +2109,7 @@ InspectorRevalidateDOMTask* InspectorDOMAgent::revalidateTask() {
 }
 
 void InspectorDOMAgent::didInvalidateStyleAttr(Node* node) {
-  int id = m_documentNodeToIdMap->get(node);
+  int id = m_documentNodeToIdMap->at(node);
   // If node is not mapped yet -> ignore the event.
   if (!id)
     return;
@@ -2122,7 +2121,7 @@ void InspectorDOMAgent::didPushShadowRoot(Element* host, ShadowRoot* root) {
   if (!host->ownerDocument())
     return;
 
-  int hostId = m_documentNodeToIdMap->get(host);
+  int hostId = m_documentNodeToIdMap->at(host);
   if (!hostId)
     return;
 
@@ -2135,15 +2134,15 @@ void InspectorDOMAgent::willPopShadowRoot(Element* host, ShadowRoot* root) {
   if (!host->ownerDocument())
     return;
 
-  int hostId = m_documentNodeToIdMap->get(host);
-  int rootId = m_documentNodeToIdMap->get(root);
+  int hostId = m_documentNodeToIdMap->at(host);
+  int rootId = m_documentNodeToIdMap->at(root);
   if (hostId && rootId)
     frontend()->shadowRootPopped(hostId, rootId);
 }
 
 void InspectorDOMAgent::didPerformElementShadowDistribution(
     Element* shadowHost) {
-  int shadowHostId = m_documentNodeToIdMap->get(shadowHost);
+  int shadowHostId = m_documentNodeToIdMap->at(shadowHost);
   if (!shadowHostId)
     return;
 
@@ -2153,7 +2152,7 @@ void InspectorDOMAgent::didPerformElementShadowDistribution(
         root->descendantInsertionPoints();
     for (const auto& it : insertionPoints) {
       InsertionPoint* insertionPoint = it.get();
-      int insertionPointId = m_documentNodeToIdMap->get(insertionPoint);
+      int insertionPointId = m_documentNodeToIdMap->at(insertionPoint);
       if (insertionPointId)
         frontend()->distributedNodesUpdated(
             insertionPointId, buildArrayForDistributedNodes(insertionPoint));
@@ -2163,7 +2162,7 @@ void InspectorDOMAgent::didPerformElementShadowDistribution(
 
 void InspectorDOMAgent::didPerformSlotDistribution(
     HTMLSlotElement* slotElement) {
-  int insertionPointId = m_documentNodeToIdMap->get(slotElement);
+  int insertionPointId = m_documentNodeToIdMap->at(slotElement);
   if (insertionPointId)
     frontend()->distributedNodesUpdated(
         insertionPointId, buildDistributedNodesForSlot(slotElement));
@@ -2186,7 +2185,7 @@ void InspectorDOMAgent::pseudoElementCreated(PseudoElement* pseudoElement) {
   Element* parent = pseudoElement->parentOrShadowHostElement();
   if (!parent)
     return;
-  int parentId = m_documentNodeToIdMap->get(parent);
+  int parentId = m_documentNodeToIdMap->at(parent);
   if (!parentId)
     return;
 
@@ -2197,14 +2196,14 @@ void InspectorDOMAgent::pseudoElementCreated(PseudoElement* pseudoElement) {
 }
 
 void InspectorDOMAgent::pseudoElementDestroyed(PseudoElement* pseudoElement) {
-  int pseudoElementId = m_documentNodeToIdMap->get(pseudoElement);
+  int pseudoElementId = m_documentNodeToIdMap->at(pseudoElement);
   if (!pseudoElementId)
     return;
 
   // If a PseudoElement is bound, its parent element must be bound, too.
   Element* parent = pseudoElement->parentOrShadowHostElement();
   ASSERT(parent);
-  int parentId = m_documentNodeToIdMap->get(parent);
+  int parentId = m_documentNodeToIdMap->at(parent);
   ASSERT(parentId);
 
   unbind(pseudoElement, m_documentNodeToIdMap.get());

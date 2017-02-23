@@ -53,7 +53,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraints) {
   ASSERT_EQ(scroller->layer(), sticky->layer()->ancestorOverflowLayer());
 
   const StickyPositionScrollingConstraints& constraints =
-      scrollableArea->stickyConstraintsMap().get(sticky->layer());
+      scrollableArea->stickyConstraintsMap().at(sticky->layer());
   ASSERT_EQ(0.f, constraints.topOffset());
 
   // The coordinates of the constraint rects should all be with respect to the
@@ -95,7 +95,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionVerticalRLConstraints) {
   ASSERT_EQ(scroller->layer(), sticky->layer()->ancestorOverflowLayer());
 
   const StickyPositionScrollingConstraints& constraints =
-      scrollableArea->stickyConstraintsMap().get(sticky->layer());
+      scrollableArea->stickyConstraintsMap().at(sticky->layer());
   ASSERT_EQ(0.f, constraints.topOffset());
 
   // The coordinates of the constraint rects should all be with respect to the
@@ -137,7 +137,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionTransforms) {
   ASSERT_EQ(scroller->layer(), sticky->layer()->ancestorOverflowLayer());
 
   const StickyPositionScrollingConstraints& constraints =
-      scrollableArea->stickyConstraintsMap().get(sticky->layer());
+      scrollableArea->stickyConstraintsMap().at(sticky->layer());
   ASSERT_EQ(0.f, constraints.topOffset());
 
   // The coordinates of the constraint rects should all be with respect to the
@@ -174,7 +174,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionPercentageStyles) {
   ASSERT_EQ(scroller->layer(), sticky->layer()->ancestorOverflowLayer());
 
   const StickyPositionScrollingConstraints& constraints =
-      scrollableArea->stickyConstraintsMap().get(sticky->layer());
+      scrollableArea->stickyConstraintsMap().at(sticky->layer());
   ASSERT_EQ(0.f, constraints.topOffset());
 
   ASSERT_EQ(IntRect(25, 145, 200, 330),
@@ -208,7 +208,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionContainerIsScroller) {
   ASSERT_EQ(scroller->layer(), sticky->layer()->ancestorOverflowLayer());
 
   const StickyPositionScrollingConstraints& constraints =
-      scrollableArea->stickyConstraintsMap().get(sticky->layer());
+      scrollableArea->stickyConstraintsMap().at(sticky->layer());
   ASSERT_EQ(IntRect(0, 0, 400, 1100),
             enclosingIntRect(
                 getScrollContainerRelativeContainingBlockRect(constraints)));
@@ -243,7 +243,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionAnonymousContainer) {
   ASSERT_EQ(scroller->layer(), sticky->layer()->ancestorOverflowLayer());
 
   const StickyPositionScrollingConstraints& constraints =
-      scrollableArea->stickyConstraintsMap().get(sticky->layer());
+      scrollableArea->stickyConstraintsMap().at(sticky->layer());
   ASSERT_EQ(IntRect(15, 115, 170, 370),
             enclosingIntRect(
                 getScrollContainerRelativeContainingBlockRect(constraints)));
@@ -271,7 +271,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionTableContainers) {
       toLayoutBoxModelObject(getLayoutObjectByElementId("sticky"));
   sticky->updateStickyPositionConstraints();
   const StickyPositionScrollingConstraints& constraints =
-      scrollableArea->stickyConstraintsMap().get(sticky->layer());
+      scrollableArea->stickyConstraintsMap().at(sticky->layer());
   EXPECT_EQ(IntRect(0, 0, 50, 100),
             enclosingIntRect(
                 getScrollContainerRelativeContainingBlockRect(constraints)));
@@ -308,7 +308,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
   EXPECT_TRUE(scrollableArea->stickyConstraintsMap().contains(sticky->layer()));
   EXPECT_EQ(25.f,
             getScrollContainerRelativeStickyBoxRect(
-                scrollableArea->stickyConstraintsMap().get(sticky->layer()))
+                scrollableArea->stickyConstraintsMap().at(sticky->layer()))
                 .location()
                 .x());
   toHTMLElement(target->node())->classList().add("hide", ASSERT_NO_EXCEPTION);
@@ -323,7 +323,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
   document().view()->updateAllLifecyclePhases();
   EXPECT_EQ(50.f,
             getScrollContainerRelativeStickyBoxRect(
-                scrollableArea->stickyConstraintsMap().get(sticky->layer()))
+                scrollableArea->stickyConstraintsMap().at(sticky->layer()))
                 .location()
                 .x());
 }

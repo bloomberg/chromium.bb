@@ -55,7 +55,7 @@ class StringKeyframe : public Keyframe {
   }
 
   String svgPropertyValue(const QualifiedName& attributeName) const {
-    return m_svgAttributeMap.get(&attributeName);
+    return m_svgAttributeMap.at(&attributeName);
   }
 
   PropertyHandleSet properties() const override;

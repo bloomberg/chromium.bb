@@ -54,7 +54,7 @@ int Grid::smallestTrackStart(GridTrackSizingDirection direction) const {
 
 GridArea Grid::gridItemArea(const LayoutBox& item) const {
   DCHECK(m_gridItemArea.contains(&item));
-  return m_gridItemArea.get(&item);
+  return m_gridItemArea.at(&item);
 }
 
 void Grid::setGridItemArea(const LayoutBox& item, GridArea area) {
@@ -62,7 +62,7 @@ void Grid::setGridItemArea(const LayoutBox& item, GridArea area) {
 }
 
 size_t Grid::gridItemPaintOrder(const LayoutBox& item) const {
-  return m_gridItemsIndexesMap.get(&item);
+  return m_gridItemsIndexesMap.at(&item);
 }
 
 void Grid::setGridItemPaintOrder(const LayoutBox& item, size_t order) {

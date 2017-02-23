@@ -28,7 +28,7 @@ class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
   }
   AnimatableValue* propertyValue(CSSPropertyID property) const {
     DCHECK(m_propertyValues.contains(property));
-    return m_propertyValues.get(property);
+    return m_propertyValues.at(property);
   }
   PropertyHandleSet properties() const override;
 

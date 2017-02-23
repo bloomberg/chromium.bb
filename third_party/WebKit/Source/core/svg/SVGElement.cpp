@@ -478,7 +478,7 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(
     }
   }
 
-  return propertyNameToIdMap->get(attrName.localName().impl());
+  return propertyNameToIdMap->at(attrName.localName().impl());
 }
 
 void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
@@ -745,7 +745,7 @@ AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(
   // If the attribute is not present in the map, this will return the "empty
   // value" per HashTraits - which is AnimatedUnknown.
   DCHECK_EQ(HashTraits<AnimatedPropertyType>::emptyValue(), AnimatedUnknown);
-  return cssPropertyMap.get(attributeName);
+  return cssPropertyMap.at(attributeName);
 }
 
 void SVGElement::addToPropertyMap(SVGAnimatedPropertyBase* property) {
@@ -980,7 +980,7 @@ void SVGElement::synchronizeAnimatedSVGAttribute(
 
     elementData()->m_animatedSVGAttributesAreDirty = false;
   } else {
-    SVGAnimatedPropertyBase* property = m_attributeToPropertyMap.get(name);
+    SVGAnimatedPropertyBase* property = m_attributeToPropertyMap.at(name);
     if (property && property->needsSynchronizeAttribute())
       property->synchronizeAttribute();
   }

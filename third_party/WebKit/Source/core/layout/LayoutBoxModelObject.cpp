@@ -1004,7 +1004,7 @@ LayoutSize LayoutBoxModelObject::stickyPositionOffset() const {
   if (!scrollableArea->stickyConstraintsMap().contains(layer()))
     return LayoutSize();
   return LayoutSize(
-      scrollableArea->stickyConstraintsMap().get(layer()).computeStickyOffset(
+      scrollableArea->stickyConstraintsMap().at(layer()).computeStickyOffset(
           constrainingRect));
 }
 
@@ -1117,7 +1117,7 @@ LayoutUnit LayoutBoxModelObject::containingBlockLogicalWidthForContent() const {
 }
 
 LayoutBoxModelObject* LayoutBoxModelObject::continuation() const {
-  return (!continuationMap) ? nullptr : continuationMap->get(this);
+  return (!continuationMap) ? nullptr : continuationMap->at(this);
 }
 
 void LayoutBoxModelObject::setContinuation(LayoutBoxModelObject* continuation) {

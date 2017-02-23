@@ -58,7 +58,7 @@ class SVGFilterGraphNodeMap final
   // Required to change the attributes of a filter during an
   // svgAttributeChanged.
   inline FilterEffect* effectByRenderer(LayoutObject* object) {
-    return m_effectRenderer.get(object);
+    return m_effectRenderer.at(object);
   }
 
   void invalidateDependentEffects(FilterEffect*);

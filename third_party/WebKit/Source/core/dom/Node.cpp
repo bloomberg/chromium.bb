@@ -1912,12 +1912,12 @@ static EventTargetDataMap& eventTargetDataMap() {
 }
 
 EventTargetData* Node::eventTargetData() {
-  return hasEventTargetData() ? eventTargetDataMap().get(this) : nullptr;
+  return hasEventTargetData() ? eventTargetDataMap().at(this) : nullptr;
 }
 
 EventTargetData& Node::ensureEventTargetData() {
   if (hasEventTargetData())
-    return *eventTargetDataMap().get(this);
+    return *eventTargetDataMap().at(this);
   DCHECK(!eventTargetDataMap().contains(this));
   setHasEventTargetData(true);
   EventTargetData* data = new EventTargetData;

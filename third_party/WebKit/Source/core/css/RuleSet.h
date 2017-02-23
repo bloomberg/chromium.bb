@@ -160,21 +160,21 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
 
   const HeapTerminatedArray<RuleData>* idRules(const AtomicString& key) const {
     ASSERT(!m_pendingRules);
-    return m_idRules.get(key);
+    return m_idRules.at(key);
   }
   const HeapTerminatedArray<RuleData>* classRules(
       const AtomicString& key) const {
     ASSERT(!m_pendingRules);
-    return m_classRules.get(key);
+    return m_classRules.at(key);
   }
   const HeapTerminatedArray<RuleData>* tagRules(const AtomicString& key) const {
     ASSERT(!m_pendingRules);
-    return m_tagRules.get(key);
+    return m_tagRules.at(key);
   }
   const HeapTerminatedArray<RuleData>* shadowPseudoElementRules(
       const AtomicString& key) const {
     ASSERT(!m_pendingRules);
-    return m_shadowPseudoElementRules.get(key);
+    return m_shadowPseudoElementRules.at(key);
   }
   const HeapVector<RuleData>* linkPseudoClassRules() const {
     ASSERT(!m_pendingRules);

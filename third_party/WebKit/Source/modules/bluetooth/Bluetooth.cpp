@@ -261,13 +261,13 @@ void Bluetooth::RemoteCharacteristicValueChanged(
     const WTF::String& characteristicInstanceId,
     const WTF::Vector<uint8_t>& value) {
   BluetoothRemoteGATTCharacteristic* characteristic =
-      m_activeCharacteristics.get(characteristicInstanceId);
+      m_activeCharacteristics.at(characteristicInstanceId);
   if (characteristic)
     characteristic->dispatchCharacteristicValueChanged(value);
 }
 
 void Bluetooth::GattServerDisconnected(const WTF::String& deviceId) {
-  BluetoothDevice* device = m_connectedDevices.get(deviceId);
+  BluetoothDevice* device = m_connectedDevices.at(deviceId);
   if (device) {
     // Remove device from the map before calling dispatchGattServerDisconnected
     // to avoid removing a device the gattserverdisconnected event handler might
@@ -281,7 +281,7 @@ BluetoothDevice* Bluetooth::getBluetoothDeviceRepresentingDevice(
     mojom::blink::WebBluetoothDevicePtr devicePtr,
     ScriptPromiseResolver* resolver) {
   WTF::String id = devicePtr->id;
-  BluetoothDevice* device = m_deviceInstanceMap.get(id);
+  BluetoothDevice* device = m_deviceInstanceMap.at(id);
   if (!device) {
     device = BluetoothDevice::take(resolver, std::move(devicePtr), this);
     auto result = m_deviceInstanceMap.insert(id, device);

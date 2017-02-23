@@ -303,7 +303,7 @@ void DocumentMarkerController::copyMarkers(Node* srcNode,
     return;
   DCHECK(!m_markers.isEmpty());
 
-  MarkerLists* markers = m_markers.get(srcNode);
+  MarkerLists* markers = m_markers.at(srcNode);
   if (!markers)
     return;
 
@@ -356,7 +356,7 @@ void DocumentMarkerController::removeMarkers(
     return;
   DCHECK(!(m_markers.isEmpty()));
 
-  MarkerLists* markers = m_markers.get(node);
+  MarkerLists* markers = m_markers.at(node);
   if (!markers)
     return;
 
@@ -437,7 +437,7 @@ DocumentMarkerVector DocumentMarkerController::markersFor(
     DocumentMarker::MarkerTypes markerTypes) {
   DocumentMarkerVector result;
 
-  MarkerLists* markers = m_markers.get(node);
+  MarkerLists* markers = m_markers.at(node);
   if (!markers)
     return result;
 
@@ -555,7 +555,7 @@ void DocumentMarkerController::updateMarkerRenderedRectIfNeeded(
 
 void DocumentMarkerController::invalidateRectsForMarkersInNode(
     const Node& node) {
-  MarkerLists* markers = m_markers.get(&node);
+  MarkerLists* markers = m_markers.at(&node);
 
   for (auto& markerList : *markers) {
     if (!markerList || markerList->isEmpty())
@@ -734,7 +734,7 @@ void DocumentMarkerController::shiftMarkers(Node* node,
     return;
   DCHECK(!m_markers.isEmpty());
 
-  MarkerLists* markers = m_markers.get(node);
+  MarkerLists* markers = m_markers.at(node);
   if (!markers)
     return;
 
@@ -796,7 +796,7 @@ bool DocumentMarkerController::setMarkersActive(Node* node,
                                                 unsigned startOffset,
                                                 unsigned endOffset,
                                                 bool active) {
-  MarkerLists* markers = m_markers.get(node);
+  MarkerLists* markers = m_markers.at(node);
   if (!markers)
     return false;
 
@@ -832,7 +832,7 @@ void DocumentMarkerController::showMarkers() const {
        nodeIterator != end; ++nodeIterator) {
     const Node* node = nodeIterator->key;
     builder.append(String::format("%p", node));
-    MarkerLists* markers = m_markers.get(node);
+    MarkerLists* markers = m_markers.at(node);
     for (size_t markerListIndex = 0;
          markerListIndex < DocumentMarker::MarkerTypeIndexesCount;
          ++markerListIndex) {

@@ -33,7 +33,7 @@ HTMLElementType htmlElementTypeForTag(const AtomicString& tagName) {
     }
     {% endif %}
     {% endfor %}
-    return html_type_map->get(tagName);
+    return html_type_map->at(tagName);
   } else {
     return HTMLElementType::kHTMLUnknownElement;
   }

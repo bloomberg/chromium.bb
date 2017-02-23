@@ -22,7 +22,7 @@ bool StyleInheritedVariables::operator==(
     return false;
 
   for (const auto& iter : m_data) {
-    RefPtr<CSSVariableData> otherData = other.m_data.get(iter.key);
+    RefPtr<CSSVariableData> otherData = other.m_data.at(iter.key);
     if (!dataEquivalent(iter.value, otherData))
       return false;
   }

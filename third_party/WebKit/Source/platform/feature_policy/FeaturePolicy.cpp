@@ -291,11 +291,11 @@ bool FeaturePolicy::isFeatureEnabledForOrigin(
     const FeaturePolicy::Feature& feature,
     const SecurityOrigin& origin) const {
   DCHECK(m_inheritedFeatures.contains(&feature));
-  if (!m_inheritedFeatures.get(&feature)) {
+  if (!m_inheritedFeatures.at(&feature)) {
     return false;
   }
   if (m_headerWhitelists.contains(&feature)) {
-    return m_headerWhitelists.get(&feature)->contains(origin);
+    return m_headerWhitelists.at(&feature)->contains(origin);
   }
   if (feature.defaultPolicy == FeaturePolicy::FeatureDefault::EnableForAll) {
     return true;

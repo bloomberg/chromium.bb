@@ -20,17 +20,17 @@ TEST(HostsUsingFeaturesTest, countName) {
                                "test 2");
   EXPECT_EQ(2u, hostsUsingFeatures.valueByName().size());
 
-  EXPECT_TRUE(hostsUsingFeatures.valueByName().get("test 1").get(
+  EXPECT_TRUE(hostsUsingFeatures.valueByName().at("test 1").get(
       HostsUsingFeatures::Feature::EventPath));
-  EXPECT_TRUE(hostsUsingFeatures.valueByName().get("test 1").get(
+  EXPECT_TRUE(hostsUsingFeatures.valueByName().at("test 1").get(
       HostsUsingFeatures::Feature::ElementCreateShadowRoot));
-  EXPECT_FALSE(hostsUsingFeatures.valueByName().get("test 1").get(
+  EXPECT_FALSE(hostsUsingFeatures.valueByName().at("test 1").get(
       HostsUsingFeatures::Feature::DocumentRegisterElement));
-  EXPECT_TRUE(hostsUsingFeatures.valueByName().get("test 2").get(
+  EXPECT_TRUE(hostsUsingFeatures.valueByName().at("test 2").get(
       HostsUsingFeatures::Feature::EventPath));
-  EXPECT_FALSE(hostsUsingFeatures.valueByName().get("test 2").get(
+  EXPECT_FALSE(hostsUsingFeatures.valueByName().at("test 2").get(
       HostsUsingFeatures::Feature::ElementCreateShadowRoot));
-  EXPECT_FALSE(hostsUsingFeatures.valueByName().get("test 2").get(
+  EXPECT_FALSE(hostsUsingFeatures.valueByName().at("test 2").get(
       HostsUsingFeatures::Feature::DocumentRegisterElement));
 
   hostsUsingFeatures.clear();

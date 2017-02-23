@@ -121,7 +121,7 @@ inline Element* DocumentOrderedMap::get(const AtomicString& key,
   DCHECK(key);
   DCHECK(scope);
 
-  MapEntry* entry = m_map.get(key);
+  MapEntry* entry = m_map.at(key);
   if (!entry)
     return 0;
 

@@ -46,7 +46,7 @@ class RTCLegacyStatsReport final
   double timestamp() const { return m_timestamp; }
   String id() { return m_id; }
   String type() { return m_type; }
-  String stat(const String& name) { return m_stats.get(name); }
+  String stat(const String& name) { return m_stats.at(name); }
   Vector<String> names() const;
 
   void addStatistic(const String& name, const String& value);

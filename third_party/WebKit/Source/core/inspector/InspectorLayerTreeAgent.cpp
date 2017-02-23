@@ -280,7 +280,7 @@ void InspectorLayerTreeAgent::gatherGraphicsLayers(
   if (m_pageOverlayLayerIds.find(layerId) != WTF::kNotFound)
     return;
   layers->addItem(buildObjectForLayer(
-      root, layerIdToNodeIdMap.get(layerId),
+      root, layerIdToNodeIdMap.at(layerId),
       hasWheelEventHandlers && layerId == scrollingLayerId));
   for (size_t i = 0, size = root->children().size(); i < size; ++i)
     gatherGraphicsLayers(root->children()[i], layerIdToNodeIdMap, layers,

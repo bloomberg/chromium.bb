@@ -116,7 +116,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
   // Returns the root object for the entire document.
   AXObject* rootObject();
 
-  AXObject* objectFromAXID(AXID id) const { return m_objects.get(id); }
+  AXObject* objectFromAXID(AXID id) const { return m_objects.at(id); }
   AXObject* root();
 
   // used for objects without backing elements

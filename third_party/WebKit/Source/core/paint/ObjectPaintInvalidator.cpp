@@ -428,7 +428,7 @@ LayoutPoint ObjectPaintInvalidator::previousLocationInBacking() const {
   DCHECK(m_object.hasPreviousLocationInBacking() ==
          locationInBackingMap().contains(&m_object));
   return m_object.hasPreviousLocationInBacking()
-             ? locationInBackingMap().get(&m_object)
+             ? locationInBackingMap().at(&m_object)
              : m_object.previousVisualRect().location();
 }
 
@@ -550,7 +550,7 @@ void ObjectPaintInvalidatorWithContext::invalidateSelectionIfNeeded(
          selectionVisualRectMap().contains(&m_object));
   LayoutRect oldSelectionRect;
   if (m_object.hasPreviousSelectionVisualRect())
-    oldSelectionRect = selectionVisualRectMap().get(&m_object);
+    oldSelectionRect = selectionVisualRectMap().at(&m_object);
   LayoutRect newSelectionRect = m_object.localSelectionRect();
   if (!newSelectionRect.isEmpty()) {
     m_context.mapLocalRectToPaintInvalidationBacking(m_object,

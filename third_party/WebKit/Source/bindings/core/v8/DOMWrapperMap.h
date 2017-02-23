@@ -114,7 +114,7 @@ class DOMWrapperMap {
       return oldValue;
     }
     static v8::PersistentContainerValue Get(const Impl* impl, KeyType* key) {
-      return impl->get(key);
+      return impl->at(key);
     }
 
     static v8::PersistentContainerValue Remove(Impl* impl, KeyType* key) {

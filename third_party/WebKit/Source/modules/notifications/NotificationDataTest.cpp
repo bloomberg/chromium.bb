@@ -268,7 +268,7 @@ TEST_F(NotificationDataTest, DirectionValues) {
         getExecutionContext(), kNotificationTitle, options, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
 
-    EXPECT_EQ(mappings.get(direction), notificationData.direction);
+    EXPECT_EQ(mappings.at(direction), notificationData.direction);
   }
 }
 

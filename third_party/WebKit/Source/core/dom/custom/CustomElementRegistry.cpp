@@ -252,7 +252,7 @@ bool CustomElementRegistry::v0NameIsDefined(const AtomicString& name) {
 
 CustomElementDefinition* CustomElementRegistry::definitionForName(
     const AtomicString& name) const {
-  return m_definitions.get(name);
+  return m_definitions.at(name);
 }
 
 void CustomElementRegistry::addCandidate(Element* candidate) {
@@ -280,7 +280,7 @@ ScriptPromise CustomElementRegistry::whenDefined(
   CustomElementDefinition* definition = definitionForName(name);
   if (definition)
     return ScriptPromise::castUndefined(scriptState);
-  ScriptPromiseResolver* resolver = m_whenDefinedPromiseMap.get(name);
+  ScriptPromiseResolver* resolver = m_whenDefinedPromiseMap.at(name);
   if (resolver)
     return resolver->promise();
   ScriptPromiseResolver* newResolver =

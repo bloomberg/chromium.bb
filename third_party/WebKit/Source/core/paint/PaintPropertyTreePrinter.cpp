@@ -89,7 +89,7 @@ class PropertyTreePrinter {
     for (unsigned i = 0; i < indent; i++)
       stringBuilder.append(' ');
     if (m_nodeToDebugString.contains(node))
-      stringBuilder.append(m_nodeToDebugString.get(node));
+      stringBuilder.append(m_nodeToDebugString.at(node));
     stringBuilder.append(String::format(" %p ", node));
     stringBuilder.append(node->toString());
     stringBuilder.append("\n");

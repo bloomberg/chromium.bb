@@ -86,7 +86,7 @@ void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame) {
     return;
 
   String origin = frame->getSecurityOrigin().toString();
-  String script = m_injectedScriptForOrigin.get(origin);
+  String script = m_injectedScriptForOrigin.at(origin);
   if (script.isEmpty())
     return;
   static int s_lastScriptId = 0;

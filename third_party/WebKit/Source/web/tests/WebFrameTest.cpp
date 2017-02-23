@@ -10524,7 +10524,7 @@ class TestResourcePriorityWebFrameClient
   TestResourcePriorityWebFrameClient() {}
 
   void willSendRequest(WebLocalFrame*, WebURLRequest& request) override {
-    ExpectedRequest* expectedRequest = m_expectedRequests.get(request.url());
+    ExpectedRequest* expectedRequest = m_expectedRequests.at(request.url());
     DCHECK(expectedRequest);
     EXPECT_EQ(expectedRequest->priority, request.getPriority());
     expectedRequest->seen = true;
@@ -10571,7 +10571,7 @@ TEST_F(WebFrameTest, ChangeResourcePriority) {
                         ->document()
                         ->fetcher()
                         ->allResources()
-                        .get(toKURL("http://internal.test/image_slow.pl"));
+                        .at(toKURL("http://internal.test/image_slow.pl"));
   DCHECK(image);
   EXPECT_EQ(ResourceLoadPriorityHigh, image->resourceRequest().priority());
 

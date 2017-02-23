@@ -377,7 +377,7 @@ const ActiveStyleSheetVector StyleEngine::activeStyleSheetsForInspector() {
       documentStyleSheetCollection().activeAuthorStyleSheets());
   for (TreeScope* treeScope : m_activeTreeScopes) {
     if (TreeScopeStyleSheetCollection* collection =
-            m_styleSheetCollectionMap.get(treeScope))
+            m_styleSheetCollectionMap.at(treeScope))
       activeStyleSheets.appendVector(collection->activeAuthorStyleSheets());
   }
 

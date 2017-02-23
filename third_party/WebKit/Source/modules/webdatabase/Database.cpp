@@ -201,7 +201,7 @@ static DatabaseGuid guidForOriginAndName(const String& origin,
 
   typedef HashMap<String, int> IDGuidMap;
   DEFINE_STATIC_LOCAL_WITH_LOCK(IDGuidMap, stringIdentifierToGUIDMap, ());
-  DatabaseGuid guid = stringIdentifierToGUIDMap.get(stringID);
+  DatabaseGuid guid = stringIdentifierToGUIDMap.at(stringID);
   if (!guid) {
     static int currentNewGUID = 1;
     guid = currentNewGUID++;
@@ -669,7 +669,7 @@ void Database::setExpectedVersion(const String& version) {
 
 String Database::getCachedVersion() const {
   MutexLocker locker(guidMutex());
-  return guidToVersionMap().get(m_guid).isolatedCopy();
+  return guidToVersionMap().at(m_guid).isolatedCopy();
 }
 
 void Database::setCachedVersion(const String& actualVersion) {

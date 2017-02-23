@@ -918,7 +918,7 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(
       child.forceChildLayout();
       cacheChildMainSize(child);
     }
-    mainAxisExtent = m_intrinsicSizeAlongMainAxis.get(&child);
+    mainAxisExtent = m_intrinsicSizeAlongMainAxis.at(&child);
   } else {
     // We don't need to add scrollbarLogicalWidth here because the preferred
     // width includes the scrollbar, even for overflow: auto.

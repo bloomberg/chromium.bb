@@ -153,7 +153,7 @@ class Supplementable : public virtual GarbageCollectedMixin {
 #if DCHECK_IS_ON()
     DCHECK_EQ(m_attachedThreadId, currentThread());
 #endif
-    return this->m_supplements.get(key);
+    return this->m_supplements.at(key);
   }
 
   void reattachThread() {

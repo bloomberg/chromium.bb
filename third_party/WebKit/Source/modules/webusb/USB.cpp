@@ -147,7 +147,7 @@ void USB::contextDestroyed(ExecutionContext*) {
 }
 
 USBDevice* USB::getOrCreateDevice(usb::DeviceInfoPtr deviceInfo) {
-  USBDevice* device = m_deviceCache.get(deviceInfo->guid);
+  USBDevice* device = m_deviceCache.at(deviceInfo->guid);
   if (!device) {
     String guid = deviceInfo->guid;
     usb::DevicePtr pipe;
@@ -202,7 +202,7 @@ void USB::OnDeviceAdded(usb::DeviceInfoPtr deviceInfo) {
 
 void USB::OnDeviceRemoved(usb::DeviceInfoPtr deviceInfo) {
   String guid = deviceInfo->guid;
-  USBDevice* device = m_deviceCache.get(guid);
+  USBDevice* device = m_deviceCache.at(guid);
   if (!device)
     device = USBDevice::create(std::move(deviceInfo), nullptr,
                                getExecutionContext());

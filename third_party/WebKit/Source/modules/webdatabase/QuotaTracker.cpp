@@ -55,10 +55,10 @@ void QuotaTracker::getDatabaseSizeAndSpaceAvailableToOrigin(
     HashMap<String, SizeMap>::const_iterator it =
         m_databaseSizes.find(origin->toRawString());
     ASSERT(it->value.contains(databaseName));
-    *databaseSize = it->value.get(databaseName);
+    *databaseSize = it->value.at(databaseName);
 
     if (m_spaceAvailableToOrigins.contains(origin->toRawString())) {
-      *spaceAvailable = m_spaceAvailableToOrigins.get(origin->toRawString());
+      *spaceAvailable = m_spaceAvailableToOrigins.at(origin->toRawString());
       return;
     }
   }

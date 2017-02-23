@@ -64,7 +64,7 @@ LayoutSVGResourceContainer* SVGTreeScopeResources::resourceById(
     const AtomicString& id) const {
   if (id.isEmpty())
     return nullptr;
-  return m_resources.get(id);
+  return m_resources.at(id);
 }
 
 void SVGTreeScopeResources::addPendingResource(const AtomicString& id,
@@ -112,7 +112,7 @@ bool SVGTreeScopeResources::isElementPendingResource(
   DCHECK(element);
   if (!hasPendingResource(id))
     return false;
-  return m_pendingResources.get(id)->contains(element);
+  return m_pendingResources.at(id)->contains(element);
 }
 
 void SVGTreeScopeResources::clearHasPendingResourcesIfPossible(

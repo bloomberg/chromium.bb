@@ -396,7 +396,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(
       break;
 
     const SVGCharacterData data =
-        logicalTextNode->characterDataMap().get(m_logicalCharacterOffset + 1);
+        logicalTextNode->characterDataMap().at(m_logicalCharacterOffset + 1);
 
     // TODO(fs): Use the return value to eliminate the additional
     // hash-lookup below when determining if this text box should be tagged

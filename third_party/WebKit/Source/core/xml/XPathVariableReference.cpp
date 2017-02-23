@@ -40,7 +40,7 @@ Value VariableReference::evaluate(EvaluationContext& context) const {
     // referenced?
     return "";
   }
-  return bindings.get(m_name);
+  return bindings.at(m_name);
 }
 
 }  // namespace XPath

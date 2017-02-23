@@ -90,13 +90,13 @@ void HitRegionManager::removeAllHitRegions() {
 }
 
 HitRegion* HitRegionManager::getHitRegionById(const String& id) const {
-  return m_hitRegionIdMap.get(id);
+  return m_hitRegionIdMap.at(id);
 }
 
 HitRegion* HitRegionManager::getHitRegionByControl(
     const Element* control) const {
   if (control)
-    return m_hitRegionControlMap.get(control);
+    return m_hitRegionControlMap.at(control);
 
   return nullptr;
 }

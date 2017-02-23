@@ -330,7 +330,7 @@ void StyleSheetContents::parserAddNamespace(const AtomicString& prefix,
 
 const AtomicString& StyleSheetContents::namespaceURIFromPrefix(
     const AtomicString& prefix) {
-  return m_namespaces.get(prefix);
+  return m_namespaces.at(prefix);
 }
 
 void StyleSheetContents::parseAuthorStyleSheet(

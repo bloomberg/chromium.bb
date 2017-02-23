@@ -59,12 +59,12 @@ class CalculationValueHandleMap {
 
   CalculationValue& get(int index) {
     ASSERT(m_map.contains(index));
-    return *m_map.get(index);
+    return *m_map.at(index);
   }
 
   void decrementRef(int index) {
     ASSERT(m_map.contains(index));
-    CalculationValue* value = m_map.get(index);
+    CalculationValue* value = m_map.at(index);
     if (value->hasOneRef()) {
       // Force the CalculationValue destructor early to avoid a potential
       // recursive call inside HashMap remove().

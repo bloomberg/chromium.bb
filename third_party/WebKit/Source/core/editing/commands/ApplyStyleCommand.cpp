@@ -473,7 +473,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(
         copyStyleOrCreateEmpty(element->inlineStyle());
     float currentFontSize = computedFontSize(node);
     float desiredFontSize = max(
-        MinimumFontSize, startingFontSizes.get(node) + style->fontSizeDelta());
+        MinimumFontSize, startingFontSizes.at(node) + style->fontSizeDelta());
     const CSSValue* value =
         inlineStyle->getPropertyCSSValue(CSSPropertyFontSize);
     if (value) {

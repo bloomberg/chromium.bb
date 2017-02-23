@@ -35,7 +35,7 @@ DisplayItemClient::~DisplayItemClient() {
   if (displayItemClientsShouldKeepAlive) {
     for (const auto& item : *displayItemClientsShouldKeepAlive) {
       CHECK(!item.value.contains(this))
-          << "Short-lived DisplayItemClient: " << item.value.get(this)
+          << "Short-lived DisplayItemClient: " << item.value.at(this)
           << ". See crbug.com/609218.";
     }
   }

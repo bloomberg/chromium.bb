@@ -59,10 +59,10 @@ class LayoutScrollbar final : public Scrollbar {
   bool isOverlayScrollbar() const override { return false; }
 
   LayoutScrollbarPart* getPart(ScrollbarPart partType) {
-    return m_parts.get(partType);
+    return m_parts.at(partType);
   }
   const LayoutScrollbarPart* getPart(ScrollbarPart partType) const {
-    return m_parts.get(partType);
+    return m_parts.at(partType);
   }
 
   void invalidateDisplayItemClientsOfScrollbarParts();

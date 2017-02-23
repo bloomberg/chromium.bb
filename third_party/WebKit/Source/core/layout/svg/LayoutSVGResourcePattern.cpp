@@ -75,7 +75,7 @@ PatternData* LayoutSVGResourcePattern::patternForLayoutObject(
   // invalidation (painting animated images may trigger layout invals which
   // delete our map entry). Hopefully that will be addressed at some point, and
   // then we can optimize the lookup.
-  if (PatternData* currentData = m_patternMap.get(&object))
+  if (PatternData* currentData = m_patternMap.at(&object))
     return currentData;
 
   return m_patternMap.set(&object, buildPatternData(object))

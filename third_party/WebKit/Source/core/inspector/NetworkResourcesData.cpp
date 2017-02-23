@@ -315,7 +315,7 @@ NetworkResourcesData::ResourceData const* NetworkResourcesData::data(
 
 XHRReplayData* NetworkResourcesData::xhrReplayData(const String& requestId) {
   if (m_reusedXHRReplayDataRequestIds.contains(requestId))
-    return xhrReplayData(m_reusedXHRReplayDataRequestIds.get(requestId));
+    return xhrReplayData(m_reusedXHRReplayDataRequestIds.at(requestId));
 
   ResourceData* resourceData = resourceDataForRequestId(requestId);
   if (!resourceData)
@@ -406,7 +406,7 @@ NetworkResourcesData::ResourceData*
 NetworkResourcesData::resourceDataForRequestId(const String& requestId) {
   if (requestId.isNull())
     return 0;
-  return m_requestIdToResourceDataMap.get(requestId);
+  return m_requestIdToResourceDataMap.at(requestId);
 }
 
 void NetworkResourcesData::ensureNoDataForRequestId(const String& requestId) {

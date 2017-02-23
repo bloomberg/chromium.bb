@@ -266,7 +266,7 @@ void MHTMLArchive::addSubresource(ArchiveResource* resource) {
 }
 
 ArchiveResource* MHTMLArchive::subresourceForURL(const KURL& url) const {
-  return m_subresources.get(url.getString());
+  return m_subresources.at(url.getString());
 }
 
 DEFINE_TRACE(MHTMLArchive) {

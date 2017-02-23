@@ -242,7 +242,7 @@ const CSSValue* CSSVariableResolver::resolvePendingSubstitutions(
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>& propertyCache =
       state.parsedPropertiesForPendingSubstitutionCache(pendingValue);
 
-  const CSSValue* value = propertyCache.get(id);
+  const CSSValue* value = propertyCache.at(id);
   if (!value) {
     // TODO(timloh): We shouldn't retry this for all longhands if the shorthand
     // ends up invalid.
@@ -270,7 +270,7 @@ const CSSValue* CSSVariableResolver::resolvePendingSubstitutions(
         }
       }
     }
-    value = propertyCache.get(id);
+    value = propertyCache.at(id);
   }
 
   if (value)

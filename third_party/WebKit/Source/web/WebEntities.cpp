@@ -51,7 +51,7 @@ WebEntities::WebEntities(bool xmlEntities) {
 String WebEntities::entityNameByCode(int code) const {
   // FIXME: We should use find so we only do one hash lookup.
   if (m_entitiesMap.contains(code))
-    return m_entitiesMap.get(code);
+    return m_entitiesMap.at(code);
   return "";
 }
 
@@ -65,7 +65,7 @@ String WebEntities::convertEntitiesInString(const String& value) const {
     if (m_entitiesMap.contains(c)) {
       didConvertEntity = true;
       result.append('&');
-      result.append(m_entitiesMap.get(c));
+      result.append(m_entitiesMap.at(c));
       result.append(';');
     } else {
       result.append(c);

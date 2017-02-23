@@ -1318,12 +1318,11 @@ void LayoutBox::clearOverrideContainingBlockContentLogicalHeight() {
 }
 
 LayoutUnit LayoutBox::extraInlineOffset() const {
-  return gExtraInlineOffsetMap ? gExtraInlineOffsetMap->get(this)
-                               : LayoutUnit();
+  return gExtraInlineOffsetMap ? gExtraInlineOffsetMap->at(this) : LayoutUnit();
 }
 
 LayoutUnit LayoutBox::extraBlockOffset() const {
-  return gExtraBlockOffsetMap ? gExtraBlockOffsetMap->get(this) : LayoutUnit();
+  return gExtraBlockOffsetMap ? gExtraBlockOffsetMap->at(this) : LayoutUnit();
 }
 
 void LayoutBox::setExtraInlineOffset(LayoutUnit inlineOffest) {

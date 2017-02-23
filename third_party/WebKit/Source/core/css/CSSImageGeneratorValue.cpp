@@ -104,7 +104,7 @@ Image* CSSImageGeneratorValue::getImage(const LayoutObject* layoutObject,
     return nullptr;
 
   // Look up the image in our cache.
-  return m_images.get(size);
+  return m_images.at(size);
 }
 
 void CSSImageGeneratorValue::putImage(const IntSize& size,

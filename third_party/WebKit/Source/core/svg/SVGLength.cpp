@@ -207,7 +207,7 @@ SVGLengthMode SVGLength::lengthModeForAnimatedLengthAttribute(
   }
 
   if (s_lengthModeMap.contains(attrName))
-    return s_lengthModeMap.get(attrName);
+    return s_lengthModeMap.at(attrName);
 
   return SVGLengthMode::Other;
 }

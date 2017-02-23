@@ -127,7 +127,7 @@ MemoryCache::ResourceMap* MemoryCache::ensureResourceMap(
         m_resourceMaps.insert(cacheIdentifier, new ResourceMap);
     CHECK(result.isNewEntry);
   }
-  return m_resourceMaps.get(cacheIdentifier);
+  return m_resourceMaps.at(cacheIdentifier);
 }
 
 void MemoryCache::add(Resource* resource) {
@@ -168,7 +168,7 @@ void MemoryCache::remove(Resource* resource) {
   TRACE_EVENT1("blink", "MemoryCache::evict", "resource",
                resource->url().getString().utf8());
 
-  ResourceMap* resources = m_resourceMaps.get(resource->cacheIdentifier());
+  ResourceMap* resources = m_resourceMaps.at(resource->cacheIdentifier());
   if (!resources)
     return;
 
@@ -194,12 +194,11 @@ void MemoryCache::removeInternal(ResourceMap* resourceMap,
 bool MemoryCache::contains(const Resource* resource) const {
   if (!resource || resource->url().isEmpty())
     return false;
-  const ResourceMap* resources =
-      m_resourceMaps.get(resource->cacheIdentifier());
+  const ResourceMap* resources = m_resourceMaps.at(resource->cacheIdentifier());
   if (!resources)
     return false;
   KURL url = removeFragmentIdentifierIfNeeded(resource->url());
-  MemoryCacheEntry* entry = resources->get(url);
+  MemoryCacheEntry* entry = resources->at(url);
   return entry && resource == entry->resource();
 }
 
@@ -213,11 +212,11 @@ Resource* MemoryCache::resourceForURL(const KURL& resourceURL,
   if (!resourceURL.isValid() || resourceURL.isNull())
     return nullptr;
   DCHECK(!cacheIdentifier.isNull());
-  const ResourceMap* resources = m_resourceMaps.get(cacheIdentifier);
+  const ResourceMap* resources = m_resourceMaps.at(cacheIdentifier);
   if (!resources)
     return nullptr;
   MemoryCacheEntry* entry =
-      resources->get(removeFragmentIdentifierIfNeeded(resourceURL));
+      resources->at(removeFragmentIdentifierIfNeeded(resourceURL));
   if (!entry)
     return nullptr;
   return entry->resource();
@@ -229,7 +228,7 @@ HeapVector<Member<Resource>> MemoryCache::resourcesForURL(
   KURL url = removeFragmentIdentifierIfNeeded(resourceURL);
   HeapVector<Member<Resource>> results;
   for (const auto& resourceMapIter : m_resourceMaps) {
-    if (MemoryCacheEntry* entry = resourceMapIter.value->get(url)) {
+    if (MemoryCacheEntry* entry = resourceMapIter.value->at(url)) {
       Resource* resource = entry->resource();
       DCHECK(resource);
       results.push_back(resource);

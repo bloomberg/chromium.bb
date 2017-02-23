@@ -22,7 +22,7 @@ void PropertyRegistry::registerProperty(
 
 const PropertyRegistration* PropertyRegistry::registration(
     const AtomicString& name) const {
-  return m_registrations.get(name);
+  return m_registrations.at(name);
 }
 
 }  // namespace blink

@@ -408,7 +408,7 @@ WebScrollbarLayer* ScrollingCoordinator::getWebScrollbarLayer(
   ScrollbarMap& scrollbars = orientation == HorizontalScrollbar
                                  ? m_horizontalScrollbars
                                  : m_verticalScrollbars;
-  return scrollbars.get(scrollableArea);
+  return scrollbars.at(scrollableArea);
 }
 
 void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(

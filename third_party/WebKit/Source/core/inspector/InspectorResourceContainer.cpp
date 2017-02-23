@@ -34,7 +34,7 @@ bool InspectorResourceContainer::loadStyleSheetContent(const String& url,
                                                        String* content) {
   if (!m_styleSheetContents.contains(url))
     return false;
-  *content = m_styleSheetContents.get(url);
+  *content = m_styleSheetContents.at(url);
   return true;
 }
 
@@ -48,7 +48,7 @@ bool InspectorResourceContainer::loadStyleElementContent(int backendNodeId,
                                                          String* content) {
   if (!m_styleElementContents.contains(backendNodeId))
     return false;
-  *content = m_styleElementContents.get(backendNodeId);
+  *content = m_styleElementContents.at(backendNodeId);
   return true;
 }
 

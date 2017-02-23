@@ -179,7 +179,7 @@ class FrameSerializerTest : public ::testing::Test,
     StringBuilder uriBuilder;
     uriBuilder.append(m_rewriteFolder);
     uriBuilder.append('/');
-    uriBuilder.append(m_rewriteURLs.get(completeURL));
+    uriBuilder.append(m_rewriteURLs.at(completeURL));
     rewrittenLink = uriBuilder.toString();
     return true;
   }

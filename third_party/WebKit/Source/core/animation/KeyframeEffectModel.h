@@ -86,7 +86,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   const PropertySpecificKeyframeVector& getPropertySpecificKeyframes(
       const PropertyHandle& property) const {
     ensureKeyframeGroups();
-    return m_keyframeGroups->get(property)->keyframes();
+    return m_keyframeGroups->at(property)->keyframes();
   }
 
   using KeyframeGroupMap =

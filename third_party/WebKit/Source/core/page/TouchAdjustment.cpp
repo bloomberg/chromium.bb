@@ -282,7 +282,7 @@ void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes,
          visitedNode = visitedNode->parentOrShadowHostNode()) {
       // Check if we already have a result for a common ancestor from another
       // candidate.
-      respondingNode = responderMap.get(visitedNode);
+      respondingNode = responderMap.at(visitedNode);
       if (respondingNode)
         break;
       visitedNodes.push_back(visitedNode);
@@ -319,7 +319,7 @@ void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes,
     // preference to the inner-most event-handlers. So that a link is always
     // preferred even when contained in an element that monitors all
     // click-events.
-    Node* respondingNode = responderMap.get(candidate);
+    Node* respondingNode = responderMap.at(candidate);
     ASSERT(respondingNode);
     if (ancestorsToRespondersSet.contains(respondingNode))
       continue;

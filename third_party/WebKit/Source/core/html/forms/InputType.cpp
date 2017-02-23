@@ -121,7 +121,7 @@ static const InputTypeFactoryMap* factoryMap() {
 InputType* InputType::create(HTMLInputElement& element,
                              const AtomicString& typeName) {
   InputTypeFactoryFunction factory =
-      typeName.isEmpty() ? 0 : factoryMap()->get(typeName);
+      typeName.isEmpty() ? 0 : factoryMap()->at(typeName);
   if (!factory)
     factory = TextInputType::create;
   return factory(element);

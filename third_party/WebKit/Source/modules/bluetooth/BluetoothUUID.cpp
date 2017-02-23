@@ -304,7 +304,7 @@ String getUUIDForGATTAttribute(GATTAttribute attribute,
   }
 
   if (map->contains(nameStr))
-    return BluetoothUUID::canonicalUUID(map->get(nameStr));
+    return BluetoothUUID::canonicalUUID(map->at(nameStr));
 
   StringBuilder errorMessage;
   errorMessage.append("Invalid ");

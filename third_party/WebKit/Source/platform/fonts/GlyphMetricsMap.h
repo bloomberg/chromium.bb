@@ -116,7 +116,7 @@ GlyphMetricsMap<T>::locatePageSlowCase(unsigned pageNumber) {
     m_filledPrimaryPage = true;
   } else {
     if (m_pages) {
-      page = m_pages->get(pageNumber);
+      page = m_pages->at(pageNumber);
       if (page)
         return page;
     } else {

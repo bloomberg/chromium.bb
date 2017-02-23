@@ -114,14 +114,14 @@ void StyleResolverState::setCustomPropertySetForApplyAtRule(
 
 StylePropertySet* StyleResolverState::customPropertySetForApplyAtRule(
     const String& string) {
-  return m_customPropertySetsForApplyAtRule.get(string);
+  return m_customPropertySetsForApplyAtRule.at(string);
 }
 
 HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
 StyleResolverState::parsedPropertiesForPendingSubstitutionCache(
     const CSSPendingSubstitutionValue& value) const {
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>* map =
-      m_parsedPropertiesForPendingSubstitutionCache.get(&value);
+      m_parsedPropertiesForPendingSubstitutionCache.at(&value);
   if (!map) {
     map = new HeapHashMap<CSSPropertyID, Member<const CSSValue>>;
     m_parsedPropertiesForPendingSubstitutionCache.set(&value, map);

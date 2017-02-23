@@ -817,7 +817,7 @@ bool MediaQueryEvaluator::eval(const MediaQueryExp* expr) const {
 
   // Call the media feature evaluation function. Assume no prefix and let
   // trampoline functions override the prefix if prefix is used.
-  EvalFunc func = gFunctionMap->get(expr->mediaFeature().impl());
+  EvalFunc func = gFunctionMap->at(expr->mediaFeature().impl());
   if (func)
     return func(expr->expValue(), NoPrefix, *m_mediaValues);
 

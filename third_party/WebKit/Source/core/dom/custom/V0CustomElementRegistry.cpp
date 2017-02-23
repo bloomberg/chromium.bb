@@ -114,7 +114,7 @@ V0CustomElementDefinition* V0CustomElementRegistry::registerElement(
 
 V0CustomElementDefinition* V0CustomElementRegistry::find(
     const V0CustomElementDescriptor& descriptor) const {
-  return m_definitions.get(descriptor);
+  return m_definitions.at(descriptor);
 }
 
 bool V0CustomElementRegistry::nameIsDefined(const AtomicString& name) const {

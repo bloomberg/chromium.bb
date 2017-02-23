@@ -1681,7 +1681,7 @@ void LayoutText::secureText(UChar mask) {
   int lastTypedCharacterOffsetToReveal = -1;
   UChar revealedText;
   SecureTextTimer* secureTextTimer =
-      gSecureTextTimers ? gSecureTextTimers->get(this) : 0;
+      gSecureTextTimers ? gSecureTextTimers->at(this) : 0;
   if (secureTextTimer && secureTextTimer->isActive()) {
     lastTypedCharacterOffsetToReveal =
         secureTextTimer->lastTypedCharacterOffset();
@@ -1993,7 +1993,7 @@ void LayoutText::momentarilyRevealLastTypedCharacter(
   if (!gSecureTextTimers)
     gSecureTextTimers = new SecureTextTimerMap;
 
-  SecureTextTimer* secureTextTimer = gSecureTextTimers->get(this);
+  SecureTextTimer* secureTextTimer = gSecureTextTimers->at(this);
   if (!secureTextTimer) {
     secureTextTimer = new SecureTextTimer(this);
     gSecureTextTimers->insert(this, secureTextTimer);

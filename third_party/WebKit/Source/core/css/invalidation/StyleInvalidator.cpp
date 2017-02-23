@@ -138,7 +138,7 @@ void StyleInvalidator::rescheduleSiblingInvalidationsAsDescendants(
     Element& element) {
   DCHECK(element.parentNode());
   PendingInvalidations* pendingInvalidations =
-      m_pendingInvalidationMap.get(&element);
+      m_pendingInvalidationMap.at(&element);
   if (!pendingInvalidations || pendingInvalidations->siblings().isEmpty())
     return;
 
@@ -283,7 +283,7 @@ void StyleInvalidator::pushInvalidationSetsForContainerNode(
     RecursionData& recursionData,
     SiblingData& siblingData) {
   PendingInvalidations* pendingInvalidations =
-      m_pendingInvalidationMap.get(&node);
+      m_pendingInvalidationMap.at(&node);
   DCHECK(pendingInvalidations);
 
   for (const auto& invalidationSet : pendingInvalidations->siblings()) {

@@ -592,7 +592,7 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type) {
 String CSSPrimitiveValue::customCSSText() const {
   if (m_hasCachedCSSText) {
     ASSERT(cssTextCache().contains(this));
-    return cssTextCache().get(this);
+    return cssTextCache().at(this);
   }
 
   String text;

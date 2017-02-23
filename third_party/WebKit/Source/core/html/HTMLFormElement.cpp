@@ -706,7 +706,7 @@ Element* HTMLFormElement::elementFromPastNamesMap(
     const AtomicString& pastName) {
   if (pastName.isEmpty() || !m_pastNamesMap)
     return 0;
-  Element* element = m_pastNamesMap->get(pastName);
+  Element* element = m_pastNamesMap->at(pastName);
 #if DCHECK_IS_ON()
   if (!element)
     return 0;

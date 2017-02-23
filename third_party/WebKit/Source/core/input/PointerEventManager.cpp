@@ -150,7 +150,7 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
   if ((eventType == EventTypeNames::pointerout ||
        eventType == EventTypeNames::pointerover) &&
       m_nodeUnderPointer.contains(pointerId)) {
-    EventTarget* targetUnderPointer = m_nodeUnderPointer.get(pointerId).target;
+    EventTarget* targetUnderPointer = m_nodeUnderPointer.at(pointerId).target;
     if (targetUnderPointer == target) {
       m_nodeUnderPointer.set(
           pointerId,
@@ -219,11 +219,11 @@ void PointerEventManager::setNodeUnderPointer(PointerEvent* pointerEvent,
                                               EventTarget* target) {
   if (m_nodeUnderPointer.contains(pointerEvent->pointerId())) {
     EventTargetAttributes node =
-        m_nodeUnderPointer.get(pointerEvent->pointerId());
+        m_nodeUnderPointer.at(pointerEvent->pointerId());
     if (!target) {
       m_nodeUnderPointer.erase(pointerEvent->pointerId());
     } else if (target !=
-               m_nodeUnderPointer.get(pointerEvent->pointerId()).target) {
+               m_nodeUnderPointer.at(pointerEvent->pointerId()).target) {
       m_nodeUnderPointer.set(pointerEvent->pointerId(),
                              EventTargetAttributes(target, false));
     }
@@ -248,7 +248,7 @@ void PointerEventManager::blockTouchPointers() {
         pointerId, WebPointerProperties::PointerType::Touch);
 
     DCHECK(m_nodeUnderPointer.contains(pointerId));
-    EventTarget* target = m_nodeUnderPointer.get(pointerId).target;
+    EventTarget* target = m_nodeUnderPointer.at(pointerId).target;
 
     processCaptureAndPositionOfPointerEvent(pointerEvent, target);
 
@@ -367,7 +367,7 @@ void PointerEventManager::computeTouchTargets(
       // pointer is captured otherwise it would have gone to the if block
       // and perform a hit-test.
       touchInfo.touchNode =
-          m_pendingPointerCaptureTarget.get(pointerId)->toNode();
+          m_pendingPointerCaptureTarget.at(pointerId)->toNode();
       touchInfo.targetFrame = touchInfo.touchNode->document().frame();
     }
 
@@ -613,7 +613,7 @@ void PointerEventManager::removeTargetFromPointerCapturingMapping(
 
 EventTarget* PointerEventManager::getCapturingNode(int pointerId) {
   if (m_pointerCaptureTarget.contains(pointerId))
-    return m_pointerCaptureTarget.get(pointerId);
+    return m_pointerCaptureTarget.at(pointerId);
   return nullptr;
 }
 
@@ -652,19 +652,19 @@ void PointerEventManager::releasePointerCapture(int pointerId,
   // but |m_pendingPointerCaptureTarget| indicated the element that gets the
   // very next pointer event. They will be the same if there was no change in
   // capturing of a particular |pointerId|. See crbug.com/614481.
-  if (m_pendingPointerCaptureTarget.get(pointerId) == target)
+  if (m_pendingPointerCaptureTarget.at(pointerId) == target)
     releasePointerCapture(pointerId);
 }
 
 bool PointerEventManager::hasPointerCapture(int pointerId,
                                             const EventTarget* target) const {
-  return m_pendingPointerCaptureTarget.get(pointerId) == target;
+  return m_pendingPointerCaptureTarget.at(pointerId) == target;
 }
 
 bool PointerEventManager::hasProcessedPointerCapture(
     int pointerId,
     const EventTarget* target) const {
-  return m_pointerCaptureTarget.get(pointerId) == target;
+  return m_pointerCaptureTarget.at(pointerId) == target;
 }
 
 void PointerEventManager::releasePointerCapture(int pointerId) {
@@ -687,7 +687,7 @@ bool PointerEventManager::isTouchPointerIdActiveOnFrame(
     return false;
   Node* lastNodeReceivingEvent =
       m_nodeUnderPointer.contains(pointerId)
-          ? m_nodeUnderPointer.get(pointerId).target->toNode()
+          ? m_nodeUnderPointer.at(pointerId).target->toNode()
           : nullptr;
   return lastNodeReceivingEvent &&
          lastNodeReceivingEvent->document().frame() == frame;
