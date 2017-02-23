@@ -42,7 +42,7 @@ UpdateContext::UpdateContext(
       update_checker_factory(update_checker_factory),
       crx_downloader_factory(crx_downloader_factory),
       ping_manager(ping_manager),
-      retry_after_sec_(0) {}
+      retry_after_sec(0) {}
 
 UpdateContext::~UpdateContext() {}
 
@@ -95,7 +95,6 @@ void UpdateEngine::Update(
       notify_observers_callback_, callback, update_checker_factory_,
       crx_downloader_factory_, ping_manager_));
 
-  CrxUpdateItem update_item;
   std::unique_ptr<ActionUpdateCheck> update_check_action(new ActionUpdateCheck(
       (*update_context->update_checker_factory)(config_, metadata_.get()),
       config_->GetBrowserVersion(), config_->ExtraRequestParams()));
@@ -115,7 +114,7 @@ void UpdateEngine::UpdateComplete(UpdateContext* update_context, Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(update_contexts_.find(update_context) != update_contexts_.end());
 
-  const int throttle_sec(update_context->retry_after_sec_);
+  const int throttle_sec(update_context->retry_after_sec);
   DCHECK_LE(throttle_sec, 24 * 60 * 60);
 
   // Only positive values for throttle_sec are effective. 0 means that no

@@ -153,7 +153,7 @@ struct UpdateContext {
   std::queue<std::string> queue;
 
   // The time in seconds to wait until doing further update checks.
-  int retry_after_sec_;
+  int retry_after_sec;
 };
 
 }  // namespace update_client

@@ -102,7 +102,7 @@ void ActionUpdateCheck::UpdateCheckComplete(
     int retry_after_sec) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  update_context_->retry_after_sec_ = retry_after_sec;
+  update_context_->retry_after_sec = retry_after_sec;
 
   if (!error)
     OnUpdateCheckSucceeded(results);
