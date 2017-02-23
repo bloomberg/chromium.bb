@@ -42,6 +42,10 @@
 #include "ui/base/models/tree_node_iterator.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 
@@ -167,10 +171,10 @@ id<GREYMatcher> ActionSheet(Action action) {
       assertWithMatcher:grey_notNil()];
 
   // Add the bookmark from the UI.
-  [[self class] bookmarkCurrentTabWithTitle:bookmarkTitle];
+  [BookmarksTestCase bookmarkCurrentTabWithTitle:bookmarkTitle];
 
   // Verify the bookmark is set.
-  [[self class] assertBookmarksWithTitle:bookmarkTitle expectedCount:1];
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkTitle expectedCount:1];
 
   NSString* const kStarLitLabel =
       !IsCompact() ? l10n_util::GetNSString(IDS_TOOLTIP_STAR)
@@ -189,7 +193,7 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
 
   // Verify the bookmark is not in the BookmarkModel.
-  [[self class] assertBookmarksWithTitle:bookmarkTitle expectedCount:0];
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkTitle expectedCount:0];
 
   NSString* const kStarUnlitLabel =
       !IsCompact() ? l10n_util::GetNSString(IDS_TOOLTIP_STAR)
@@ -210,8 +214,8 @@ id<GREYMatcher> ActionSheet(Action action) {
   }
 
   // Close the opened tab.
-  base::scoped_nsobject<GenericChromeCommand> command(
-      [[GenericChromeCommand alloc] initWithTag:IDC_CLOSE_TAB]);
+  GenericChromeCommand* command =
+      [[GenericChromeCommand alloc] initWithTag:IDC_CLOSE_TAB];
   chrome_test_util::RunCommandWithActiveViewController(command);
 }
 
@@ -222,10 +226,10 @@ id<GREYMatcher> ActionSheet(Action action) {
   NSString* bookmarkTitle = @"smokeTapBookmark";
 
   // Load a bookmark into the bookmark model.
-  [[self class] addBookmark:bookmarkURL withTitle:bookmarkTitle];
+  [BookmarksTestCase addBookmark:bookmarkURL withTitle:bookmarkTitle];
 
   // Open the UI for Bookmarks.
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Verify bookmark is visible.
   [[EarlGrey
@@ -252,14 +256,14 @@ id<GREYMatcher> ActionSheet(Action action) {
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey loadURL:secondURL];
 
-  [[self class] bookmarkCurrentTabWithTitle:@"my bookmark"];
-  [[self class] assertBookmarksWithTitle:@"my bookmark" expectedCount:1];
+  [BookmarksTestCase bookmarkCurrentTabWithTitle:@"my bookmark"];
+  [BookmarksTestCase assertBookmarksWithTitle:@"my bookmark" expectedCount:1];
 }
 
 // Try navigating to the bookmark screen, and selecting a bookmark.
 - (void)testSelectBookmark {
-  [[self class] setupStandardBookmarks];
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Tap on one of the standard bookmark. Verify that it loads.
   [[EarlGrey selectElementWithMatcher:grey_text(@"Second URL")]
@@ -277,8 +281,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Try deleting a bookmark, then undoing that delete.
 - (void)testUndoDeleteBookmark {
-  [[self class] setupStandardBookmarks];
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Load the menu for a bookmark.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL Info")]
@@ -289,7 +293,7 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
 
   // Wait until it's gone.
-  [[self class] waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
 
   // Press undo
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
@@ -302,8 +306,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Try deleting a bookmark from the edit screen, then undoing that delete.
 - (void)testUndoDeleteBookmarkFromEditScreen {
-  [[self class] setupStandardBookmarks];
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Load the menu for a bookmark.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL Info")]
@@ -339,11 +343,11 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Try moving bookmarks, then undoing that move.
 - (void)testUndoMoveBookmark {
-  [[self class] setupStandardBookmarks];
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Verify that folder 2 only has 1 child.
-  [[self class] assertChildCount:1 ofFolderWithName:@"Folder 2"];
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
 
   // Load the menu for a bookmark.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL Info")]
@@ -372,7 +376,7 @@ id<GREYMatcher> ActionSheet(Action action) {
 
   // Verify that folder 2 has 3 children now, and that they are no longer
   // visible.
-  [[self class] assertChildCount:3 ofFolderWithName:@"Folder 2"];
+  [BookmarksTestCase assertChildCount:3 ofFolderWithName:@"Folder 2"];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       assertWithMatcher:grey_notVisible()];
 
@@ -387,12 +391,12 @@ id<GREYMatcher> ActionSheet(Action action) {
       assertWithMatcher:grey_notNil()];
 
   // Verify that folder 2 is back to one child.
-  [[self class] assertChildCount:1 ofFolderWithName:@"Folder 2"];
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
 }
 
 - (void)testLabelUpdatedUponMove {
-  [[self class] setupStandardBookmarks];
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Load the menu for a bookmark.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL Info")]
@@ -407,7 +411,7 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
 
   // Create a new folder with default name.
-  [[self class] addFolderWithName:nil];
+  [BookmarksTestCase addFolderWithName:nil];
 
   // Verify that the editor is present.
   [[EarlGrey
@@ -433,7 +437,7 @@ id<GREYMatcher> ActionSheet(Action action) {
                                           expectedURLContent)]
       assertWithMatcher:grey_notNil()];
 
-  [[self class] starCurrentTab];
+  [BookmarksTestCase starCurrentTab];
 
   // Verify the snackbar title.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Bookmarked")]
@@ -446,7 +450,7 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
 
   // Verify that the newly-created bookmark is in the BookmarkModel.
-  [[self class]
+  [BookmarksTestCase
       assertBookmarksWithTitle:base::SysUTF8ToNSString(expectedURLContent)
                  expectedCount:1];
 
@@ -455,21 +459,21 @@ id<GREYMatcher> ActionSheet(Action action) {
       selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
       assertWithMatcher:grey_notNil()];
 
-  [[self class] assertFolderName:@"Mobile Bookmarks"];
+  [BookmarksTestCase assertFolderName:@"Mobile Bookmarks"];
 
   // Tap the Folder button.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
       performAction:grey_tap()];
 
   // Create a new folder with default name.
-  [[self class] addFolderWithName:nil];
+  [BookmarksTestCase addFolderWithName:nil];
 
   // Verify that the editor is present.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
       assertWithMatcher:grey_notNil()];
 
-  [[self class] assertFolderExists:@"New Folder"];
+  [BookmarksTestCase assertFolderExists:@"New Folder"];
 }
 
 // Tests that changing a folder's title in edit mode works as expected.
@@ -477,11 +481,11 @@ id<GREYMatcher> ActionSheet(Action action) {
   NSString* existingFolderTitle = @"Folder 1";
   NSString* newFolderTitle = @"New Folder Title";
 
-  [[self class] setupStandardBookmarks];
-  [[self class] openMobileBookmarks];
-  [[self class] openEditBookmarkFolderWithFolderTitle:existingFolderTitle];
-  [[self class] renameBookmarkFolderWithFolderTitle:newFolderTitle];
-  [[self class] closeEditBookmarkFolder];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+  [BookmarksTestCase openEditBookmarkFolderWithFolderTitle:existingFolderTitle];
+  [BookmarksTestCase renameBookmarkFolderWithFolderTitle:newFolderTitle];
+  [BookmarksTestCase closeEditBookmarkFolder];
 
   if (IsCompact()) {
     // Exit from bookmarks modal. IPad shows bookmarks in tab.
@@ -490,7 +494,7 @@ id<GREYMatcher> ActionSheet(Action action) {
   }
 
   // Verify that the change has been made.
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(existingFolderTitle)]
       assertWithMatcher:grey_nil()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
@@ -500,8 +504,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that the default folder bookmarks are saved in is updated to the last
 // used folder.
 - (void)testStickyDefaultFolder {
-  [[self class] setupStandardBookmarks];
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Tap on the top-right button.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL Info")]
@@ -516,7 +520,7 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
 
   // Create a new folder.
-  [[self class] addFolderWithName:@"Sticky Folder"];
+  [BookmarksTestCase addFolderWithName:@"Sticky Folder"];
 
   // Verify that the editor is present.
   [[EarlGrey
@@ -544,7 +548,8 @@ id<GREYMatcher> ActionSheet(Action action) {
       "http://ios/testing/data/http_server_files/fullscreen.html");
   NSString* const bookmarkedURLString =
       base::SysUTF8ToNSString(bookmarkedURL.spec());
-  [[self class] assertBookmarksWithTitle:bookmarkedURLString expectedCount:0];
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkedURLString
+                                expectedCount:0];
   // Open the page.
   std::string expectedURLContent = bookmarkedURL.GetContent();
   [ChromeEarlGrey loadURL:bookmarkedURL];
@@ -553,10 +558,10 @@ id<GREYMatcher> ActionSheet(Action action) {
       assertWithMatcher:grey_notNil()];
 
   // Verify that the folder has only one element.
-  [[self class] assertChildCount:1 ofFolderWithName:@"Sticky Folder"];
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Sticky Folder"];
 
   // Bookmark the page.
-  [[self class] starCurrentTab];
+  [BookmarksTestCase starCurrentTab];
 
   // Verify the snackbar title.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
@@ -564,17 +569,18 @@ id<GREYMatcher> ActionSheet(Action action) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify that the newly-created bookmark is in the BookmarkModel.
-  [[self class] assertBookmarksWithTitle:bookmarkedURLString expectedCount:1];
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkedURLString
+                                expectedCount:1];
 
   // Verify that the folder has now two elements.
-  [[self class] assertChildCount:2 ofFolderWithName:@"Sticky Folder"];
+  [BookmarksTestCase assertChildCount:2 ofFolderWithName:@"Sticky Folder"];
 }
 
 // Tests that changes to the parent folder from the Single Bookmark Controller
 // are saved to the bookmark only when saving the results.
 - (void)testMoveDoesSaveOnSave {
-  [[self class] setupStandardBookmarks];
-  [[self class] openTopLevelBookmarksFolder];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openTopLevelBookmarksFolder];
 
   // Tap on the top-right button.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL Info")]
@@ -589,7 +595,7 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
 
   // Create a new folder.
-  [[self class] addFolderWithName:nil];
+  [BookmarksTestCase addFolderWithName:nil];
 
   // Verify that the editor is present.
   [[EarlGrey
@@ -597,7 +603,7 @@ id<GREYMatcher> ActionSheet(Action action) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Check that the new folder doesn't contain the bookmark.
-  [[self class] assertChildCount:0 ofFolderWithName:@"New Folder"];
+  [BookmarksTestCase assertChildCount:0 ofFolderWithName:@"New Folder"];
 
   // Tap the Done button.
   [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
@@ -607,7 +613,7 @@ id<GREYMatcher> ActionSheet(Action action) {
       assertWithMatcher:grey_notVisible()];
 
   // Check that the new folder contains the bookmark.
-  [[self class] assertChildCount:1 ofFolderWithName:@"New Folder"];
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"New Folder"];
 
   // Dismiss the bookmarks screen.
   if (IsCompact()) {
@@ -617,13 +623,13 @@ id<GREYMatcher> ActionSheet(Action action) {
   }
 
   // Check that the new folder still contains the bookmark.
-  [[self class] assertChildCount:1 ofFolderWithName:@"New Folder"];
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"New Folder"];
 }
 
 // Test thats editing a single bookmark correctly persists data.
 - (void)testSingleBookmarkEdit {
-  [[self class] setupStandardBookmarks];
-  [[self class] openTopLevelBookmarksFolder];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openTopLevelBookmarksFolder];
 
   // Load the menu for a bookmark.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL Info")]
@@ -665,14 +671,15 @@ id<GREYMatcher> ActionSheet(Action action) {
   // Verify that the bookmark was updated.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"n5")]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[self class] assertExistenceOfBookmarkWithURL:@"http://www.a.fr" name:@"n5"];
+  [BookmarksTestCase assertExistenceOfBookmarkWithURL:@"http://www.a.fr"
+                                                 name:@"n5"];
 }
 
 // Tests that cancelling editing a single bookmark correctly doesn't persist
 // data.
 - (void)testSingleBookmarkCancelEdit {
-  [[self class] setupStandardBookmarks];
-  [[self class] openTopLevelBookmarksFolder];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openTopLevelBookmarksFolder];
 
   // Load the menu for a bookmark.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL Info")]
@@ -714,14 +721,14 @@ id<GREYMatcher> ActionSheet(Action action) {
   // Verify that the bookmark was not updated.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"n5")]
       assertWithMatcher:grey_notVisible()];
-  [[self class] assertAbsenceOfBookmarkWithURL:@"http://www.a.fr"];
+  [BookmarksTestCase assertAbsenceOfBookmarkWithURL:@"http://www.a.fr"];
 }
 
 // Tests that long pressing a bookmark selects it and gives access to editing,
 // as does the Info menu.
 - (void)testLongPressBookmark {
-  [[self class] setupStandardBookmarks];
-  [[self class] openTopLevelBookmarksFolder];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openTopLevelBookmarksFolder];
 
   // Long press the top-right button.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL Info")]
@@ -750,8 +757,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests the editing of a folder.
 - (void)testEditFolder {
-  [[self class] setupStandardBookmarks];
-  [[self class] openBookmarkFolder:@"Folder 1"];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarkFolder:@"Folder 1"];
 
   // Tap the Edit button in the navigation bar.
   [[EarlGrey
@@ -772,8 +779,8 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
 
   // Check that Folder 1 still exists at this name, and Renamed Folder doesn't.
-  [[self class] assertFolderExistsWithTitle:@"Folder 1"];
-  [[self class] assertFolderDoesntExistWithTitle:@"Renamed Folder"];
+  [BookmarksTestCase assertFolderExistsWithTitle:@"Folder 1"];
+  [BookmarksTestCase assertFolderDoesntExistWithTitle:@"Renamed Folder"];
 
   // Tap the Edit button in the navigation bar.
   [[EarlGrey
@@ -794,56 +801,56 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
 
   // Check that Folder 1 doesn't exist and Renamed Folder does.
-  [[self class] assertFolderDoesntExistWithTitle:@"Folder 1"];
-  [[self class] assertFolderExistsWithTitle:@"Renamed Folder"];
+  [BookmarksTestCase assertFolderDoesntExistWithTitle:@"Folder 1"];
+  [BookmarksTestCase assertFolderExistsWithTitle:@"Renamed Folder"];
 }
 
 // Tests the deletion of a folder.
 - (void)testDeleteFolder {
-  [[self class] setupStandardBookmarks];
-  [[self class] openBookmarkFolder:@"Folder 1"];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarkFolder:@"Folder 1"];
 
   // Delete the folder.
-  [[self class] deleteSelectedFolder];
+  [BookmarksTestCase deleteSelectedFolder];
 
   // Check that the folder doesn't exist anymore.
-  [[self class] assertFolderDoesntExistWithTitle:@"Folder 1"];
+  [BookmarksTestCase assertFolderDoesntExistWithTitle:@"Folder 1"];
 }
 
 // Navigates to a deeply nested folder, deletes it and makes sure the UI is
 // consistent.
 - (void)testDeleteCurrentSubfolder {
-  [[self class] setupStandardBookmarks];
-  [[self class] openBookmarkFolder:@"Folder 1"];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarkFolder:@"Folder 1"];
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Folder 2")]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Folder 3")]
       performAction:grey_tap()];
 
   // Delete the folder.
-  [[self class] deleteSelectedFolder];
+  [BookmarksTestCase deleteSelectedFolder];
 
   // Folder 3 is now deleted, UI should have moved to Folder 2, and Folder 2
   // should be empty.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 2")]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[self class] assertChildCount:0 ofFolderWithName:@"Folder 2"];
-  [[self class] assertFolderDoesntExistWithTitle:@"Folder 3"];
-  [[self class] waitForDeletionOfBookmarkWithTitle:@"Folder 3"];
+  [BookmarksTestCase assertChildCount:0 ofFolderWithName:@"Folder 2"];
+  [BookmarksTestCase assertFolderDoesntExistWithTitle:@"Folder 3"];
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Folder 3"];
 }
 
 // Navigates to a deeply nested folder, delete its parent programatically.
 // Verifies that the UI is as expected.
 - (void)testDeleteParentFolder {
-  [[self class] setupStandardBookmarks];
-  [[self class] openBookmarkFolder:@"Folder 1"];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarkFolder:@"Folder 1"];
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Folder 2")]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Folder 3")]
       performAction:grey_tap()];
 
   // Remove the parent programmatically.
-  [[self class] removeBookmarkWithTitle:@"Folder 2"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 2"];
 
   // Folder 2 and 3 are now deleted, UI should have moved to Folder1, and
   // Folder 1 should be empty.
@@ -854,11 +861,11 @@ id<GREYMatcher> ActionSheet(Action action) {
                                    grey_descendant(grey_text(@"Folder 1")),
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[self class] assertChildCount:0 ofFolderWithName:@"Folder 1"];
+  [BookmarksTestCase assertChildCount:0 ofFolderWithName:@"Folder 1"];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 2")]
       assertWithMatcher:grey_notVisible()];
-  [[self class] assertFolderDoesntExistWithTitle:@"Folder 2"];
-  [[self class] assertFolderDoesntExistWithTitle:@"Folder 3"];
+  [BookmarksTestCase assertFolderDoesntExistWithTitle:@"Folder 2"];
+  [BookmarksTestCase assertFolderDoesntExistWithTitle:@"Folder 3"];
 
   // Check that the selected folder in the menu is Folder 1.
   if (IsCompact()) {
@@ -878,8 +885,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that the menu button changes to a back button as expected when browsing
 // nested folders.
 - (void)testBrowseNestedFolders {
-  [[self class] setupStandardBookmarks];
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Navigate down the nested folders.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
@@ -918,8 +925,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests moving a bookmark into a new folder created in the moving process.
 - (void)testCreateNewFolderWhileMovingBookmark {
-  [[self class] setupStandardBookmarks];
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Tap the info disclosure indicator for the bookmark we want to move.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL Info")]
@@ -935,7 +942,8 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
 
   // Enter custom new folder name.
-  [[self class] renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
+  [BookmarksTestCase
+      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
 
   // Verify current parent folder (Change Folder) is Bookmarks folder.
   [[EarlGrey
@@ -954,7 +962,7 @@ id<GREYMatcher> ActionSheet(Action action) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify Folder 2 only has one item.
-  [[self class] assertChildCount:1 ofFolderWithName:@"Folder 2"];
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
 
   // Select Folder 2 as new Change Folder.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
@@ -986,23 +994,24 @@ id<GREYMatcher> ActionSheet(Action action) {
       assertWithMatcher:grey_notVisible()];
 
   // Verify new folder has been created under Folder 2.
-  [[self class] assertChildCount:2 ofFolderWithName:@"Folder 2"];
+  [BookmarksTestCase assertChildCount:2 ofFolderWithName:@"Folder 2"];
 
   // Verify new folder has one bookmark.
-  [[self class] assertChildCount:1 ofFolderWithName:@"Title For New Folder"];
+  [BookmarksTestCase assertChildCount:1
+                     ofFolderWithName:@"Title For New Folder"];
 }
 
 // Navigates to a deeply nested folder, deletes its root ancestor and checks
 // that the UI is on the top level folder.
 - (void)testDeleteRootFolder {
-  [[self class] setupStandardBookmarks];
-  [[self class] openBookmarkFolder:@"Folder 1"];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarkFolder:@"Folder 1"];
   [[EarlGrey selectElementWithMatcher:grey_text(@"Folder 2")]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_text(@"Folder 3")]
       performAction:grey_tap()];
 
-  [[self class] removeBookmarkWithTitle:@"Folder 1"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 1"];
 
   NSString* rootFolderTitle = nil;
   rootFolderTitle = @"Mobile Bookmarks";
@@ -1049,7 +1058,7 @@ id<GREYMatcher> ActionSheet(Action action) {
 // new bookmark UI as it shows only a snackbar.
 - (void)testKeyboardCommandsRegistered_AddBookmark {
   // Add the bookmark.
-  [[self class] starCurrentTab];
+  [BookmarksTestCase starCurrentTab];
   GREYAssertTrue(chrome_test_util::GetRegisteredKeyCommandsCount() > 0,
                  @"Some keyboard commands are registered.");
 }
@@ -1057,8 +1066,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that keyboard commands are not registered when a bookmark is edited, as
 // the edit screen is presented modally.
 - (void)testKeyboardCommandsNotRegistered_EditBookmark {
-  [[self class] setupStandardBookmarks];
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Go to a bookmarked page. Tap on one of the standard bookmark.
   [[EarlGrey selectElementWithMatcher:grey_text(@"Second URL")]
@@ -1078,16 +1087,16 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that tapping No thanks on the promo make it disappear.
 - (void)testPromoNoThanksMakeItDisappear {
-  [[self class] setupStandardBookmarks];
-  [[self class] openTopLevelBookmarksFolder];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openTopLevelBookmarksFolder];
 
   // We are going to set the PromoAlreadySeen preference. Set a teardown handler
   // to reset it.
   [self setTearDownHandler:^{
-    [[self class] setPromoAlreadySeen:NO];
+    [BookmarksTestCase setPromoAlreadySeen:NO];
   }];
   // Check that promo is visible.
-  [[self class] verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"promo_view")]
       assertWithMatcher:grey_notNil()];
 
@@ -1101,14 +1110,14 @@ id<GREYMatcher> ActionSheet(Action action) {
       assertWithMatcher:grey_notVisible()];
 
   // Check that the promo already seen state is updated.
-  [[self class] verifyPromoAlreadySeen:YES];
+  [BookmarksTestCase verifyPromoAlreadySeen:YES];
 }
 
 // Tests that tapping Sign in on the promo make the Sign in sheet appear and
 // the promo still appears after dismissing the Sign in sheet.
 - (void)testUIPromoSignIn {
-  [[self class] setupStandardBookmarks];
-  [[self class] openTopLevelBookmarksFolder];
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openTopLevelBookmarksFolder];
   // Set up a fake identity.
   ChromeIdentity* identity =
       [FakeChromeIdentity identityWithEmail:@"fakefoo@egmail.com"
@@ -1118,7 +1127,7 @@ id<GREYMatcher> ActionSheet(Action action) {
       identity);
 
   // Check that promo is visible.
-  [[self class] verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"promo_view")]
       assertWithMatcher:grey_notNil()];
 
@@ -1137,12 +1146,12 @@ id<GREYMatcher> ActionSheet(Action action) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"promo_view")]
       assertWithMatcher:grey_notNil()];
 
-  [[self class] verifyPromoAlreadySeen:NO];
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
 }
 
 // Tests that all elements on the bookmarks landing page are accessible.
 - (void)testAccessibilityOnBookmarksLandingPage {
-  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+  [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
 
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   if (IsCompact()) {
@@ -1154,7 +1163,7 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that all elements on the bookmarks Edit page are accessible.
 - (void)testAccessibilityOnBookmarksEditPage {
-  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+  [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
 
   // Load the menu for a bookmark.
   [[EarlGrey selectElementWithMatcher:MoreMenuButton()]
@@ -1175,7 +1184,7 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that all elements on the bookmarks Move page are accessible.
 - (void)testAccessibilityOnBookmarksMovePage {
-  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+  [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
 
   // Load the menu for a bookmark.
   [[EarlGrey selectElementWithMatcher:MoreMenuButton()]
@@ -1197,7 +1206,7 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that all elements on the bookmarks Move to New Folder page are
 // accessible.
 - (void)testAccessibilityOnBookmarksMoveToNewFolderPage {
-  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+  [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
 
   // Load the menu for a bookmark.
   [[EarlGrey selectElementWithMatcher:MoreMenuButton()]
@@ -1222,7 +1231,7 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that all elements on bookmarks Delete and Undo are accessible.
 - (void)testAccessibilityOnBookmarksDeleteUndo {
-  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+  [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
 
   // Load the menu for a bookmark.
   [[EarlGrey selectElementWithMatcher:MoreMenuButton()]
@@ -1241,7 +1250,7 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that all elements on the bookmarks Select page are accessible.
 - (void)testAccessibilityOnBookmarksSelect {
-  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+  [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
 
   // Load the menu for a bookmark.
   [[EarlGrey selectElementWithMatcher:MoreMenuButton()]
@@ -1308,10 +1317,10 @@ id<GREYMatcher> ActionSheet(Action action) {
       "http://ios/testing/data/http_server_files/destination.html");
   NSString* bookmarkTitle = @"smokeTapBookmark";
   // Load a bookmark into the bookmark model.
-  [[self class] addBookmark:bookmarkURL withTitle:bookmarkTitle];
+  [BookmarksTestCase addBookmark:bookmarkURL withTitle:bookmarkTitle];
 
   // Open the UI for Bookmarks.
-  [[self class] openMobileBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
 
   // Verify bookmark is visible.
   [[EarlGrey
@@ -1356,9 +1365,9 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tap on the star to bookmark a page, then edit the bookmark to change the
 // title to |title|.
 + (void)bookmarkCurrentTabWithTitle:(NSString*)title {
-  [[self class] waitForBookmarkModelLoaded:YES];
+  [BookmarksTestCase waitForBookmarkModelLoaded:YES];
   // Add the bookmark from the UI.
-  [[self class] starCurrentTab];
+  [BookmarksTestCase starCurrentTab];
 
   // Set the bookmark name.
   [[EarlGrey selectElementWithMatcher:EditBookmarkButton()]
@@ -1473,7 +1482,7 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Adds a bookmark with the given |url| and |title| into the Mobile Bookmarks
 // folder.
 + (void)addBookmark:(const GURL)url withTitle:(NSString*)title {
-  [[self class] waitForBookmarkModelLoaded:YES];
+  [BookmarksTestCase waitForBookmarkModelLoaded:YES];
   bookmarks::BookmarkModel* bookmark_model =
       ios::BookmarkModelFactory::GetForBrowserState(
           chrome_test_util::GetOriginalBrowserState());
@@ -1517,7 +1526,7 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Loads a set of default bookmarks in the model for the tests to use.
 + (void)setupStandardBookmarks {
-  [[self class] waitForBookmarkModelLoaded:YES];
+  [BookmarksTestCase waitForBookmarkModelLoaded:YES];
 
   bookmarks::BookmarkModel* bookmark_model =
       ios::BookmarkModelFactory::GetForBrowserState(
@@ -1620,13 +1629,13 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Asserts that there is a bookmark folder with the given title.
 + (void)assertFolderExistsWithTitle:(NSString*)folderTitle {
-  GREYAssert([[self class] folderExistsWithTitle:folderTitle],
+  GREYAssert([BookmarksTestCase folderExistsWithTitle:folderTitle],
              @"There is no folder named %@", folderTitle);
 }
 
 // Asserts that there is no bookmark folder with the given title.
 + (void)assertFolderDoesntExistWithTitle:(NSString*)folderTitle {
-  GREYAssert(![[self class] folderExistsWithTitle:folderTitle],
+  GREYAssert(![BookmarksTestCase folderExistsWithTitle:folderTitle],
              @"There is a folder named %@", folderTitle);
 }
 
