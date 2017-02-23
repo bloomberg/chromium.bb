@@ -103,3 +103,23 @@ function(aom_check_source_compiles test_name test_source result_var)
     set(${result_var} 0 PARENT_SCOPE)
   endif ()
 endfunction ()
+
+# When inline support is detected for the current compiler the supported
+# inlining keyword is written to $result in caller scope.
+function (aom_get_inline result)
+  aom_check_source_compiles("inline_check_1"
+                            "static inline void function(void) {}"
+                            HAVE_INLINE_1)
+  if (HAVE_INLINE_1 EQUAL 1)
+    set(${result} "inline" PARENT_SCOPE)
+    return()
+  endif ()
+
+  # Check __inline.
+  aom_check_source_compiles("inline_check_2"
+                            "static __inline void function(void) {}"
+                            HAVE_INLINE_2)
+  if (HAVE_INLINE_2 EQUAL 1)
+    set(${result} "__inline" PARENT_SCOPE)
+  endif ()
+endfunction ()

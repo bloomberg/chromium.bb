@@ -105,11 +105,8 @@ else ()
 endif ()
 
 # Test compiler support.
-aom_check_source_compiles("inline_check" "static inline void function(void) {}"
-                          HAVE_INLINE)
-if (HAVE_INLINE EQUAL 1)
-  set(INLINE "inline")
-endif ()
+aom_get_inline("INLINE")
+
 # TODO(tomfinegan): aom_ports_check is legacy; HAVE_AOM_PORTS is not used
 # anywhere in the aom sources. To be removed after parity with the legacy
 # build system stops being important.
