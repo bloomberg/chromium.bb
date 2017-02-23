@@ -591,7 +591,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 #if CONFIG_ADAPT_SCAN
   av1_init_scan_order(cm);
 #endif
-  av1_convolve_init();
+  av1_convolve_init(cm);
   av1_initialize_rd_consts(cpi);
 
   // Tiling is ignored in the first pass.

@@ -14,9 +14,16 @@
 
 #include "./av1_rtcd.h"
 #include "av1/common/filter.h"
-#include "av1/common/x86/av1_highbd_convolve_filters_sse4.h"
 
-typedef const int16_t (*HbdSubpelFilterCoeffs)[8];
+#if CONFIG_DUAL_FILTER
+DECLARE_ALIGNED(16, static int16_t, subpel_filters_sharp[15][6][8]);
+#endif
+
+#if USE_TEMPORALFILTER_12TAP
+DECLARE_ALIGNED(16, static int16_t, subpel_temporalfilter[15][6][8]);
+#endif
+
+typedef int16_t (*HbdSubpelFilterCoeffs)[8];
 
 typedef void (*TransposeSave)(const int width, int pixelsNum, uint32_t *src,
                               int src_stride, uint16_t *dst, int dst_stride,
@@ -26,17 +33,58 @@ static INLINE HbdSubpelFilterCoeffs
 hbd_get_subpel_filter_ver_signal_dir(const InterpFilterParams p, int index) {
 #if CONFIG_DUAL_FILTER
   if (p.interp_filter == MULTITAP_SHARP) {
-    return &sub_pel_filters_12sharp_highbd_ver_signal_dir[index][0];
+    return &subpel_filters_sharp[index][0];
   }
 #endif
 #if USE_TEMPORALFILTER_12TAP
   if (p.interp_filter == TEMPORALFILTER_12TAP) {
-    return &sub_pel_filters_temporalfilter_12_highbd_ver_signal_dir[index][0];
+    return &subpel_temporalfilter[index][0];
   }
 #endif
   (void)p;
   (void)index;
   return NULL;
+}
+
+static void init_simd_filter(const int16_t *filter_ptr, int taps,
+                             int16_t (*simd_filter)[6][8]) {
+  int shift;
+  int offset = (12 - taps) / 2;
+  for (shift = 1; shift < SUBPEL_SHIFTS; ++shift) {
+    const int16_t *filter_row = filter_ptr + shift * taps;
+    int i, j;
+    for (i = 0; i < 12; ++i) {
+      for (j = 0; j < 4; ++j) {
+        int r = i / 2;
+        int c = j * 2 + (i % 2);
+        if (i - offset >= 0 && i - offset < taps)
+          simd_filter[shift - 1][r][c] = filter_row[i - offset];
+        else
+          simd_filter[shift - 1][r][c] = 0;
+      }
+    }
+  }
+}
+
+void av1_highbd_convolve_init_sse4_1(void) {
+#if USE_TEMPORALFILTER_12TAP
+  {
+    InterpFilterParams filter_params =
+        av1_get_interp_filter_params(TEMPORALFILTER_12TAP);
+    int taps = filter_params.taps;
+    const int16_t *filter_ptr = filter_params.filter_ptr;
+    init_simd_filter(filter_ptr, taps, subpel_temporalfilter);
+  }
+#endif
+#if CONFIG_DUAL_FILTER
+  {
+    InterpFilterParams filter_params =
+        av1_get_interp_filter_params(MULTITAP_SHARP);
+    int taps = filter_params.taps;
+    const int16_t *filter_ptr = filter_params.filter_ptr;
+    init_simd_filter(filter_ptr, taps, subpel_filters_sharp);
+  }
+#endif
 }
 
 // pixelsNum 0: write all 4 pixels

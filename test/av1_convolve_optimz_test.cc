@@ -43,7 +43,7 @@ typedef tuple<ConvInit, conv_filter_t, conv_filter_t, BlockDimension,
 // Test parameter list:
 //  <convolve_horiz_func, convolve_vert_func,
 //  <width, height>, filter_params, subpel_x_q4, avg, bit_dpeth>
-typedef tuple<hbd_conv_filter_t, hbd_conv_filter_t, BlockDimension,
+typedef tuple<ConvInit, hbd_conv_filter_t, hbd_conv_filter_t, BlockDimension,
               InterpFilter, int, int, int>
     HbdConvParams;
 #endif
@@ -228,7 +228,7 @@ const int kAvg[] = { 0, 1 };
 #if HAVE_SSSE3 && CONFIG_DUAL_FILTER
 INSTANTIATE_TEST_CASE_P(
     SSSE3, AV1ConvolveOptimzTest,
-    ::testing::Combine(::testing::Values(av1_convolve_init_ssse3),
+    ::testing::Combine(::testing::Values(av1_lowbd_convolve_init_ssse3),
                        ::testing::Values(av1_convolve_horiz_ssse3),
                        ::testing::Values(av1_convolve_vert_ssse3),
                        ::testing::ValuesIn(kBlockDim),
@@ -243,15 +243,17 @@ class AV1HbdConvolveOptimzTest : public TestWithHbdConvParams {
  public:
   virtual ~AV1HbdConvolveOptimzTest() {}
   virtual void SetUp() {
-    conv_horiz_ = GET_PARAM(0);
-    conv_vert_ = GET_PARAM(1);
-    BlockDimension block = GET_PARAM(2);
+    ConvInit conv_init = GET_PARAM(0);
+    conv_init();
+    conv_horiz_ = GET_PARAM(1);
+    conv_vert_ = GET_PARAM(2);
+    BlockDimension block = GET_PARAM(3);
     width_ = std::tr1::get<0>(block);
     height_ = std::tr1::get<1>(block);
-    filter_ = GET_PARAM(3);
-    subpel_ = GET_PARAM(4);
-    avg_ = GET_PARAM(5);
-    bit_depth_ = GET_PARAM(6);
+    filter_ = GET_PARAM(4);
+    subpel_ = GET_PARAM(5);
+    avg_ = GET_PARAM(6);
+    bit_depth_ = GET_PARAM(7);
 
     alloc_ = new uint16_t[maxBlockSize * 4];
     src_ = alloc_ + (vertiOffset * maxWidth);
@@ -390,7 +392,8 @@ const int kBitdepth[] = { 10, 12 };
 
 INSTANTIATE_TEST_CASE_P(
     SSE4_1, AV1HbdConvolveOptimzTest,
-    ::testing::Combine(::testing::Values(av1_highbd_convolve_horiz_sse4_1),
+    ::testing::Combine(::testing::Values(av1_highbd_convolve_init_sse4_1),
+                       ::testing::Values(av1_highbd_convolve_horiz_sse4_1),
                        ::testing::Values(av1_highbd_convolve_vert_sse4_1),
                        ::testing::ValuesIn(kBlockDim),
                        ::testing::ValuesIn(kFilter),

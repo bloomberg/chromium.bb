@@ -39,8 +39,8 @@ if ($opts{arch} eq "x86_64") {
 #
 # 10/12-tap convolution filters
 #
-add_proto qw/void av1_convolve_init/, "void";
-specialize qw/av1_convolve_init ssse3/;
+add_proto qw/void av1_lowbd_convolve_init/, "void";
+specialize qw/av1_lowbd_convolve_init ssse3/;
 
 add_proto qw/void av1_convolve_horiz/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, ConvolveParams *conv_params";
 specialize qw/av1_convolve_horiz ssse3/;
@@ -49,6 +49,8 @@ add_proto qw/void av1_convolve_vert/, "const uint8_t *src, int src_stride, uint8
 specialize qw/av1_convolve_vert ssse3/;
 
 if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
+  add_proto qw/void av1_highbd_convolve_init/, "void";
+  specialize qw/av1_highbd_convolve_init sse4_1/;
   add_proto qw/void av1_highbd_convolve_horiz/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, int avg, int bd";
   specialize qw/av1_highbd_convolve_horiz sse4_1/;
   add_proto qw/void av1_highbd_convolve_vert/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, int avg, int bd";

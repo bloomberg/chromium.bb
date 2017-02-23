@@ -997,7 +997,7 @@ SimdFilter temporal_simd_filter = {
 };
 #endif
 
-void av1_convolve_init_ssse3(void) {
+void av1_lowbd_convolve_init_ssse3(void) {
 #if USE_TEMPORALFILTER_12TAP
   {
     InterpFilterParams filter_params =

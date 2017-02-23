@@ -2010,7 +2010,7 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
 #if CONFIG_ADAPT_SCAN
   av1_init_scan_order(cm);
 #endif
-  av1_convolve_init();
+  av1_convolve_init(cm);
   cm->fc->initialized = 1;
 
   if (cm->frame_type == KEY_FRAME || cm->error_resilient_mode ||

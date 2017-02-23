@@ -16,6 +16,7 @@
 #include "./av1_rtcd.h"
 #include "av1/common/convolve.h"
 #include "av1/common/filter.h"
+#include "av1/common/onyxc_int.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/mem.h"
 
@@ -410,8 +411,26 @@ void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
   }
 }
 
-void av1_convolve_init_c(void) {
+void av1_lowbd_convolve_init_c(void) {
   // A placeholder for SIMD initialization
+  return;
+}
+
+void av1_highbd_convolve_init_c(void) {
+  // A placeholder for SIMD initialization
+  return;
+}
+
+void av1_convolve_init(AV1_COMMON *cm) {
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (cm->use_highbitdepth)
+    av1_highbd_convolve_init();
+  else
+    av1_lowbd_convolve_init();
+#else
+  (void)cm;
+  av1_lowbd_convolve_init();
+#endif
   return;
 }
 

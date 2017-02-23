@@ -42,7 +42,8 @@ static INLINE ConvolveParams get_conv_params(int ref, int plane) {
   conv_params.plane = plane;
   return conv_params;
 }
-
+struct AV1Common;
+void av1_convolve_init(struct AV1Common *cm);
 #if CONFIG_CONVOLVE_ROUND
 void av1_convolve_2d(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
                      int dst_stride, int w, int h,
