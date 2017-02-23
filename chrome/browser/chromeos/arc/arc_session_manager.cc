@@ -309,9 +309,18 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       return;
 
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
-    // Don't show Play Store app for ARC Kiosk because the only one UI in kiosk
-    // mode must be the kiosk app and device is not needed for opt-in.
-    if (!IsArcOptInVerificationDisabled() && !IsArcKioskMode()) {
+
+    // Launch Play Store app, except for the following cases:
+    // * When Opt-in verification is disabled (for tests);
+    // * In ARC Kiosk mode, because the only one UI in kiosk mode must be the
+    //   kiosk app and device is not needed for opt-in;
+    // * When ARC is managed and all OptIn preferences are managed too, because
+    //   the whole OptIn flow should happen as seamless as possible for the
+    //   user.
+    const bool suppress_play_store_app = IsArcOptInVerificationDisabled() ||
+                                         IsArcKioskMode() ||
+                                         AreArcAllOptInPreferencesManaged();
+    if (!suppress_play_store_app) {
       playstore_launcher_.reset(
           new ArcAppLauncher(profile_, kPlayStoreAppId, true));
     }
@@ -674,6 +683,10 @@ void ArcSessionManager::RequestEnable() {
   RequestEnableImpl();
 }
 
+bool ArcSessionManager::IsPlaystoreLaunchRequestedForTesting() const {
+  return playstore_launcher_.get();
+}
+
 void ArcSessionManager::RequestEnableImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
@@ -694,15 +707,11 @@ void ArcSessionManager::RequestEnableImpl() {
   if (IsArcKioskMode())
     prefs->SetBoolean(prefs::kArcTermsAccepted, true);
 
-  // Skip to show UI asking users to enable/disable their preference for
-  // backup-restore and location-service, if both are managed by the admin
-  // policy. Note that the ToS agreement is anyway not shown in the case of the
-  // managed ARC.
-  if (arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
-      prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled) &&
-      prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled)) {
+  // Skip to show UI asking users to set up ARC OptIn preferences, if all of
+  // them are managed by the admin policy. Note that the ToS agreement is anyway
+  // not shown in the case of the managed ARC.
+  if (AreArcAllOptInPreferencesManaged())
     prefs->SetBoolean(prefs::kArcTermsAccepted, true);
-  }
 
   // If it is marked that sign in has been successfully done, then directly
   // start ARC.
@@ -826,6 +835,14 @@ void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
       support_host_->ui_page() != ArcSupportHost::UIPage::NO_PAGE)
     support_host_->ShowArcLoading();
   StartArcAndroidManagementCheck();
+}
+
+bool ArcSessionManager::AreArcAllOptInPreferencesManaged() const {
+  return IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
+         profile_->GetPrefs()->IsManagedPreference(
+             prefs::kArcBackupRestoreEnabled) &&
+         profile_->GetPrefs()->IsManagedPreference(
+             prefs::kArcLocationServiceEnabled);
 }
 
 void ArcSessionManager::StartArcAndroidManagementCheck() {

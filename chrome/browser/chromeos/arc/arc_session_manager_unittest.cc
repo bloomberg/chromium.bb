@@ -386,6 +386,7 @@ TEST_F(ArcSessionManagerTest, SignInStatus) {
 
   EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   EXPECT_TRUE(arc_session_manager()->arc_start_time().is_null());
+  EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   prefs->SetBoolean(prefs::kArcEnabled, true);
@@ -401,11 +402,13 @@ TEST_F(ArcSessionManagerTest, SignInStatus) {
   EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
+  EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
   arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
   EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 
   // Second start, no fetching code is expected.
   arc_session_manager()->Shutdown();
@@ -596,21 +599,33 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
 
-  // Terms of Service should be skipped if both ArcBackupRestoreEnabled and
+  // Terms of Service are skipped if both ArcBackupRestoreEnabled and
   // ArcLocationServiceEnabled are managed.
-  const ArcSessionManager::State expected_state =
-      backup_restore_pref_value().is_bool() &&
-              location_service_pref_value().is_bool()
-          ? ArcSessionManager::State::ACTIVE
-          : ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE;
-  EXPECT_EQ(expected_state, arc_session_manager()->state());
+  const bool expected_terms_skipping = backup_restore_pref_value().is_bool() &&
+                                       location_service_pref_value().is_bool();
+  EXPECT_EQ(expected_terms_skipping
+                ? ArcSessionManager::State::ACTIVE
+                : ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+
+  // Complete provisioning if it's not done yet.
+  if (!expected_terms_skipping) {
+    arc_session_manager()->StartArc();
+    arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  }
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  // Play Store app is launched unless the Terms screen was suppressed by the
+  // policy.
+  EXPECT_NE(expected_terms_skipping,
+            arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 
   // Managed values for the prefs are unset.
   prefs->RemoveManagedPref(prefs::kArcBackupRestoreEnabled);
   prefs->RemoveManagedPref(prefs::kArcLocationServiceEnabled);
 
   // The ARC state is preserved. The prefs return to the default false values.
-  EXPECT_EQ(expected_state, arc_session_manager()->state());
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcLocationServiceEnabled));
 

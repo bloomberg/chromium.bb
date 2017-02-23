@@ -217,6 +217,10 @@ class ArcSessionManager : public ArcSessionObserver,
       std::unique_ptr<ArcSessionRunner> arc_session_runner);
   void SetAttemptUserExitCallbackForTesting(const base::Closure& callback);
 
+  // Returns whether the Play Store app is requested to be launched by this
+  // class. Should be used only for tests.
+  bool IsPlaystoreLaunchRequestedForTesting() const;
+
  private:
   // RequestEnable() has a check in order not to trigger starting procedure
   // twice. This method can be called to bypass that check when restarting.
@@ -225,6 +229,10 @@ class ArcSessionManager : public ArcSessionObserver,
   // Negotiates the terms of service to user.
   void StartTermsOfServiceNegotiation();
   void OnTermsOfServiceNegotiated(bool accepted);
+
+  // Returns whether ARC is managed and all ARC related OptIn preferences are
+  // managed too.
+  bool AreArcAllOptInPreferencesManaged() const;
 
   void SetState(State state);
   void ShutdownSession();
