@@ -710,6 +710,12 @@ void WebContentsAndroid::SetHasPersistentVideo(
   web_contents_->SetHasPersistentVideo(value);
 }
 
+bool WebContentsAndroid::HasActiveEffectivelyFullscreenVideo(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return web_contents_->HasActiveEffectivelyFullscreenVideo();
+}
+
 void WebContentsAndroid::OnFinishGetContentBitmap(
     const JavaRef<jobject>& obj,
     const JavaRef<jobject>& callback,

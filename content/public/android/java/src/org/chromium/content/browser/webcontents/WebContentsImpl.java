@@ -522,6 +522,11 @@ import java.util.UUID;
         nativeSetHasPersistentVideo(mNativeWebContentsAndroid, value);
     }
 
+    @Override
+    public boolean hasActiveEffectivelyFullscreenVideo() {
+        return nativeHasActiveEffectivelyFullscreenVideo(mNativeWebContentsAndroid);
+    }
+
     @CalledByNative
     private final void setMediaSession(MediaSessionImpl mediaSession) {
         mMediaSession = mediaSession;
@@ -610,4 +615,5 @@ import java.util.UUID;
             boolean bypassCache, ImageDownloadCallback callback);
     private native void nativeDismissTextHandles(long nativeWebContentsAndroid);
     private native void nativeSetHasPersistentVideo(long nativeWebContentsAndroid, boolean value);
+    private native boolean nativeHasActiveEffectivelyFullscreenVideo(long nativeWebContentsAndroid);
 }

@@ -168,6 +168,13 @@ bool RendererWebMediaPlayerDelegate::IsStale(int player_id) {
   return stale_players_.count(player_id);
 }
 
+void RendererWebMediaPlayerDelegate::SetIsEffectivelyFullscreen(
+    int player_id,
+    bool is_fullscreen) {
+  Send(new MediaPlayerDelegateHostMsg_OnMediaEffectivelyFullscreenChange(
+      routing_id(), player_id, is_fullscreen));
+}
+
 void RendererWebMediaPlayerDelegate::WasHidden() {
   RecordAction(base::UserMetricsAction("Media.Hidden"));
 

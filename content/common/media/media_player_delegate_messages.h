@@ -51,3 +51,8 @@ IPC_MESSAGE_ROUTED5(MediaPlayerDelegateHostMsg_OnMediaPlaying,
                     bool /* has_audio */,
                     bool /* is_remote */,
                     media::MediaContentType /* media_content_type */)
+
+IPC_MESSAGE_ROUTED2(
+    MediaPlayerDelegateHostMsg_OnMediaEffectivelyFullscreenChange,
+    int /* delegate_id */,
+    bool /* is_fullscreen */)

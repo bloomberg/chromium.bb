@@ -146,6 +146,10 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
     return is_stale_;
   }
 
+  void SetIsEffectivelyFullscreen(int player_id, bool value) override {
+    DCHECK_EQ(player_id_, player_id);
+  }
+
   bool IsFrameHidden() override { return is_hidden_; }
 
   bool IsFrameClosed() override { return is_closed_; }

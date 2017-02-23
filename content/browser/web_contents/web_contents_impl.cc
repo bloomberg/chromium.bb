@@ -4255,6 +4255,10 @@ bool WebContentsImpl::HasPersistentVideo() const {
   return has_persistent_video_;
 }
 
+bool WebContentsImpl::HasActiveEffectivelyFullscreenVideo() const {
+  return media_web_contents_observer_->HasActiveEffectivelyFullscreenVideo();
+}
+
 bool WebContentsImpl::IsFocusedElementEditable() {
   RenderFrameHostImpl* frame = GetFocusedFrame();
   return frame && frame->has_focused_editable_element();

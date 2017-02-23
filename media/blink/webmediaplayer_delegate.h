@@ -116,6 +116,11 @@ class WebMediaPlayerDelegate {
   // called and returned |true|.
   virtual bool IsStale(int player_id) = 0;
 
+  // Notifies the delegate that the player has entered fullscreen. This does not
+  // differentiate native controls fullscreen and custom controls fullscreen.
+  virtual void SetIsEffectivelyFullscreen(int player_id,
+                                          bool is_fullscreen) = 0;
+
  protected:
   WebMediaPlayerDelegate() = default;
   virtual ~WebMediaPlayerDelegate() = default;

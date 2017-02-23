@@ -42,6 +42,13 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // Called by WebContentsImpl when the audible state may have changed.
   void MaybeUpdateAudibleState();
 
+  // Called by WebContentsImpl to know if an active player is effectively
+  // fullscreen. That means that the video is either fullscreen or it is the
+  // content of a fullscreen page (in other words, a fullscreen video with
+  // custom controls).
+  // It should only be called while the WebContents is fullscreen.
+  bool HasActiveEffectivelyFullscreenVideo() const;
+
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
@@ -74,6 +81,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
                       bool has_audio,
                       bool is_remote,
                       media::MediaContentType media_content_type);
+  void OnMediaEffectivelyFullscreenChange(RenderFrameHost* render_frame_host,
+                                          int delegate_id,
+                                          bool is_fullscreen);
 
   // Clear |render_frame_host|'s tracking entry for its power save blockers.
   void ClearPowerSaveBlockers(RenderFrameHost* render_frame_host);
@@ -106,6 +116,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   ActiveMediaPlayerMap active_video_players_;
   std::unique_ptr<device::PowerSaveBlocker> audio_power_save_blocker_;
   std::unique_ptr<device::PowerSaveBlocker> video_power_save_blocker_;
+  base::Optional<MediaPlayerId> fullscreen_player_;
 
   MediaSessionControllersManager session_controllers_manager_;
 

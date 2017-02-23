@@ -31,7 +31,7 @@ MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       session_controllers_manager_(this) {}
 
-MediaWebContentsObserver::~MediaWebContentsObserver() {}
+MediaWebContentsObserver::~MediaWebContentsObserver() = default;
 
 void MediaWebContentsObserver::WebContentsDestroyed() {
   GetAudibleMetrics()->UpdateAudibleWebContentsState(web_contents(), false);
@@ -41,6 +41,9 @@ void MediaWebContentsObserver::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   ClearPowerSaveBlockers(render_frame_host);
   session_controllers_manager_.RenderFrameDeleted(render_frame_host);
+
+  if (fullscreen_player_ && fullscreen_player_->first == render_frame_host)
+    fullscreen_player_.reset();
 }
 
 void MediaWebContentsObserver::MaybeUpdateAudibleState() {
@@ -58,11 +61,26 @@ void MediaWebContentsObserver::MaybeUpdateAudibleState() {
       web_contents(), audio_stream_monitor->IsCurrentlyAudible());
 }
 
+bool MediaWebContentsObserver::HasActiveEffectivelyFullscreenVideo() const {
+  DCHECK(web_contents()->IsFullscreen());
+
+  if (!fullscreen_player_)
+    return false;
+
+  // Check that the player is active.
+  const auto& players = active_video_players_.find(fullscreen_player_->first);
+  if (players == active_video_players_.end())
+    return false;
+  if (players->second.find(fullscreen_player_->second) == players->second.end())
+    return false;
+
+  return true;
+}
+
 bool MediaWebContentsObserver::OnMessageReceived(
     const IPC::Message& msg,
     RenderFrameHost* render_frame_host) {
   bool handled = true;
-  // TODO(dalecurtis): These should no longer be FrameHostMsg.
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(MediaWebContentsObserver, msg,
                                    render_frame_host)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaDestroyed,
@@ -70,6 +88,9 @@ bool MediaWebContentsObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaPaused, OnMediaPaused)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaPlaying,
                         OnMediaPlaying)
+    IPC_MESSAGE_HANDLER(
+        MediaPlayerDelegateHostMsg_OnMediaEffectivelyFullscreenChange,
+        OnMediaEffectivelyFullscreenChange)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -154,6 +175,21 @@ void MediaWebContentsObserver::OnMediaPlaying(
   static_cast<WebContentsImpl*>(web_contents())
       ->MediaStartedPlaying(WebContentsObserver::MediaPlayerInfo(has_video),
                             id);
+}
+
+void MediaWebContentsObserver::OnMediaEffectivelyFullscreenChange(
+    RenderFrameHost* render_frame_host,
+    int delegate_id,
+    bool is_fullscreen) {
+  const MediaPlayerId id(render_frame_host, delegate_id);
+
+  if (!is_fullscreen) {
+    if (fullscreen_player_ && *fullscreen_player_ == id)
+      fullscreen_player_.reset();
+    return;
+  }
+
+  fullscreen_player_ = id;
 }
 
 void MediaWebContentsObserver::ClearPowerSaveBlockers(

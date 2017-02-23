@@ -793,6 +793,13 @@ class CONTENT_EXPORT WebContentsImpl
   // Called when the WebContents gains or loses a persistent video.
   void SetHasPersistentVideo(bool value);
 
+  // Whether the WebContents has an active player is effectively fullscreen.
+  // That means that the video is either fullscreen or it is the content of
+  // a fullscreen page (in other words, a fullscreen video with custom
+  // controls).
+  // |IsFullscreen| must return |true| when this method is called.
+  bool HasActiveEffectivelyFullscreenVideo() const;
+
 #if defined(OS_ANDROID)
   // Called by FindRequestManager when all of the find match rects are in.
   void NotifyFindMatchRectsReply(int version,

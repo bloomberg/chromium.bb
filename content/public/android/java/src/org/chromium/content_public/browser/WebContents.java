@@ -366,6 +366,12 @@ public interface WebContents extends Parcelable {
             boolean bypassCache, ImageDownloadCallback callback);
 
     /**
+     * Whether the WebContents has an active fullscreen video with native or custom controls.
+     * The WebContents must be fullscreen when this method is called.
+     */
+    public boolean hasActiveEffectivelyFullscreenVideo();
+
+    /**
      * Issues a fake notification about the renderer being killed.
      *
      * @param wasOomProtected True if the renderer was protected from the OS out-of-memory killer
