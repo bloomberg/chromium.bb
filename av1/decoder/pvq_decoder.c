@@ -26,6 +26,7 @@
 #include "av1/common/pvq_state.h"
 #include "av1/decoder/decint.h"
 #include "av1/decoder/pvq_decoder.h"
+#include "aom_ports/system_state.h"
 
 static void aom_decode_pvq_codeword(aom_reader *r, od_pvq_codeword_ctx *ctx,
  od_coeff *y, int n, int k) {
@@ -318,6 +319,8 @@ void od_pvq_decode(daala_dec_ctx *dec,
   cfl_ctx cfl;
   const unsigned char *pvq_qm;
   int use_masking;
+
+  aom_clear_system_state();
 
   /*Default to skip=1 and noref=0 for all bands.*/
   for (i = 0; i < PVQ_MAX_PARTITIONS; i++) {

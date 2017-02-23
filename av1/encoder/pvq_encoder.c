@@ -26,6 +26,7 @@
 #include "av1/common/pvq_state.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/pvq_encoder.h"
+#include "aom_ports/system_state.h"
 
 #define OD_PVQ_RATE_APPROX (0)
 /*Shift to ensure that the upper bound (i.e. for the max blocksize) of the
@@ -824,6 +825,8 @@ PVQ_SKIP_TYPE od_pvq_encode(daala_enc_ctx *enc,
   OD_UNUSED(bx);
   OD_UNUSED(by);
 #endif
+
+  aom_clear_system_state();
 
   use_masking = enc->use_activity_masking;
 
