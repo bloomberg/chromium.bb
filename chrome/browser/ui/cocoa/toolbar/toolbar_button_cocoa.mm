@@ -224,7 +224,11 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 }
 
 - (SkColor)vectorIconColor:(BOOL)themeIsDark {
-  return themeIsDark ? SK_ColorWHITE : SkColorSetRGB(0x5A, 0x5A, 0x5A);
+  const ui::ThemeProvider* provider = [[self window] themeProvider];
+  return themeIsDark ? SK_ColorWHITE
+                     : (provider && provider->ShouldIncreaseContrast()
+                            ? SK_ColorBLACK
+                            : SkColorSetRGB(0x5A, 0x5A, 0x5A));
 }
 
 - (NSImage*)browserToolsIconForFillColor:(SkColor)fillColor {

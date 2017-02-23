@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
 
 @interface AppToolbarButton ()
@@ -50,9 +51,13 @@
 }
 
 - (SkColor)vectorIconColor:(BOOL)themeIsDark {
+  const ui::ThemeProvider* provider = [[self window] themeProvider];
   switch (severity_) {
     case AppMenuIconController::Severity::NONE:
-      return themeIsDark ? SK_ColorWHITE : gfx::kChromeIconGrey;
+      return themeIsDark ? SK_ColorWHITE
+                         : (provider && provider->ShouldIncreaseContrast()
+                                ? SK_ColorBLACK
+                                : gfx::kChromeIconGrey);
       break;
 
     case AppMenuIconController::Severity::LOW:
