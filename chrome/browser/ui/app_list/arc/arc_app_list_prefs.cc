@@ -263,8 +263,14 @@ void ArcAppListPrefs::StartPrefs() {
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
   CHECK(arc_session_manager);
 
-  if (arc_session_manager->profile())
+  if (arc_session_manager->profile()) {
+    // Note: If ArcSessionManager has profile, it should be as same as the one
+    // this instance has, because ArcAppListPrefsFactory creates an instance
+    // only if the given Profile meets ARC's requirement.
+    // Anyway, just in case, check it here.
+    DCHECK_EQ(profile_, arc_session_manager->profile());
     OnArcPlayStoreEnabledChanged(arc_session_manager->IsArcPlayStoreEnabled());
+  }
   arc_session_manager->AddObserver(this);
 
   app_instance_holder_->AddObserver(this);
