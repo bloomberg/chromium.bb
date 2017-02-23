@@ -26,10 +26,6 @@ namespace cc {
 class FilterOperations;
 }
 
-namespace gfx {
-class ColorSpace;
-}
-
 namespace blink {
 
 // An ordered list of items representing content to be rendered (stored in
@@ -71,12 +67,6 @@ class WebDisplayItemList {
   virtual void appendEndScrollItem() {}
 
   virtual void setIsSuitableForGpuRasterization(bool isSuitable) {}
-
-  // Specifies the color space that the inputs of this display list were
-  // pre-converted into. If this is specified, then rasterization must not
-  // perform any color correction, and the result must be interpreted as being
-  // in this color space.
-  virtual void setImpliedColorSpace(const gfx::ColorSpace&) {}
 };
 
 }  // namespace blink

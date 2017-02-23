@@ -856,12 +856,10 @@ void TileManager::ScheduleTasks(
     DCHECK(tile->draw_info().requires_resource());
     DCHECK(!tile->draw_info().resource());
 
-    if (!tile->raster_task_)
-      tile->raster_task_ = CreateRasterTask(
-          prioritized_tile,
-          prioritized_tile.raster_source()->HasImpliedColorSpace()
-              ? prioritized_tile.raster_source()->GetImpliedColorSpace()
-              : target_color_space);
+    if (!tile->raster_task_) {
+      tile->raster_task_ =
+          CreateRasterTask(prioritized_tile, target_color_space);
+    }
 
     TileTask* task = tile->raster_task_.get();
 

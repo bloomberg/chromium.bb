@@ -68,8 +68,6 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
 
   void setIsSuitableForGpuRasterization(bool isSuitable) override;
 
-  void setImpliedColorSpace(const gfx::ColorSpace& color_space) override;
-
  private:
   scoped_refptr<cc::DisplayItemList> display_item_list_;
 

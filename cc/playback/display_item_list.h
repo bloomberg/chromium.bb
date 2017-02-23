@@ -126,17 +126,6 @@ class CC_EXPORT DisplayItemList
   }
   bool IsSuitableForGpuRasterization() const;
 
-  void SetImpliedColorSpace(const gfx::ColorSpace& implied_color_space) {
-    inputs_.implied_color_space_specified = true;
-    inputs_.implied_color_space = implied_color_space;
-  }
-  bool HasImpliedColorSpace() const {
-    return inputs_.implied_color_space_specified;
-  }
-  const gfx::ColorSpace& GetImpliedColorSpace() const {
-    return inputs_.implied_color_space;
-  }
-
   int ApproximateOpCount() const;
   size_t ApproximateMemoryUsage() const;
   bool ShouldBeAnalyzedForSolidColor() const;
@@ -207,8 +196,6 @@ class CC_EXPORT DisplayItemList
     std::vector<gfx::Rect> visual_rects;
     std::vector<size_t> begin_item_indices;
     bool all_items_are_suitable_for_gpu_rasterization = true;
-    bool implied_color_space_specified = false;
-    gfx::ColorSpace implied_color_space;
   };
 
   Inputs inputs_;
