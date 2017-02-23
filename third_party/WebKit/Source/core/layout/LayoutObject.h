@@ -1743,9 +1743,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void setHasPreviousSelectionVisualRect(bool b) {
       m_layoutObject.m_bitfields.setHasPreviousSelectionVisualRect(b);
     }
-    void setHasPreviousBoxGeometries(bool b) {
-      m_layoutObject.m_bitfields.setHasPreviousBoxGeometries(b);
-    }
     void setPreviousBackgroundObscured(bool b) {
       m_layoutObject.setPreviousBackgroundObscured(b);
     }
@@ -1864,9 +1861,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool hasPreviousSelectionVisualRect() const {
     return m_bitfields.hasPreviousSelectionVisualRect();
-  }
-  bool hasPreviousBoxGeometries() const {
-    return m_bitfields.hasPreviousBoxGeometries();
   }
 
   bool backgroundChangedSinceLastPaintInvalidation() const {
@@ -2231,7 +2225,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_hasBoxDecorationBackground(false),
           m_hasPreviousLocationInBacking(false),
           m_hasPreviousSelectionVisualRect(false),
-          m_hasPreviousBoxGeometries(false),
           m_needsPaintPropertyUpdate(true),
           m_subtreeNeedsPaintPropertyUpdate(true),
           m_descendantNeedsPaintPropertyUpdate(true),
@@ -2404,7 +2397,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                          HasPreviousLocationInBacking);
     ADD_BOOLEAN_BITFIELD(hasPreviousSelectionVisualRect,
                          HasPreviousSelectionVisualRect);
-    ADD_BOOLEAN_BITFIELD(hasPreviousBoxGeometries, HasPreviousBoxGeometries);
 
     // Whether the paint properties need to be updated. For more details, see
     // LayoutObject::needsPaintPropertyUpdate().
@@ -2431,7 +2423,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
    protected:
     // Use protected to avoid warning about unused variable.
-    unsigned m_unusedBits : 4;
+    unsigned m_unusedBits : 5;
 
    private:
     // This is the cached 'position' value of this object

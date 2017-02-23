@@ -134,8 +134,6 @@ void LayoutBox::willBeDestroyed() {
 
   ShapeOutsideInfo::removeInfo(*this);
 
-  BoxPaintInvalidator::boxWillBeDestroyed(*this);
-
   LayoutBoxModelObject::willBeDestroyed();
 }
 
@@ -5719,6 +5717,14 @@ LayoutRect LayoutBox::debugRect() const {
 
 bool LayoutBox::shouldClipOverflow() const {
   return hasOverflowClip() || styleRef().containsPaint() || hasControlClip();
+}
+
+void LayoutBox::MutableForPainting::
+    savePreviousContentBoxSizeAndLayoutOverflowRect() {
+  auto& rareData = layoutBox().ensureRareData();
+  rareData.m_hasPreviousContentBoxSizeAndLayoutOverflowRect = true;
+  rareData.m_previousContentBoxSize = layoutBox().contentBoxRect().size();
+  rareData.m_previousLayoutOverflowRect = layoutBox().layoutOverflowRect();
 }
 
 }  // namespace blink

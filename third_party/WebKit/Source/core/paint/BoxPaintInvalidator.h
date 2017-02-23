@@ -40,10 +40,8 @@ class BoxPaintInvalidator {
                                     const LayoutRect& oldRect,
                                     const LayoutRect& newRect);
 
-  bool needsToSavePreviousBoxGeometries();
+  bool needsToSavePreviousContentBoxSizeOrLayoutOverflowRect();
   void savePreviousBoxGeometriesIfNeeded();
-  LayoutRect previousContentBoxRect();
-  LayoutRect previousLayoutOverflowRect();
 
   const LayoutBox& m_box;
   const PaintInvalidatorContext& m_context;

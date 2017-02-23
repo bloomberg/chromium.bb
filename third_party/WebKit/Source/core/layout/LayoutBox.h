@@ -65,6 +65,7 @@ struct LayoutBoxRareData {
         m_overrideLogicalContentHeight(-1),
         m_hasOverrideContainingBlockContentLogicalWidth(false),
         m_hasOverrideContainingBlockContentLogicalHeight(false),
+        m_hasPreviousContentBoxSizeAndLayoutOverflowRect(false),
         m_percentHeightContainer(nullptr),
         m_snapContainer(nullptr),
         m_snapAreas(nullptr) {}
@@ -76,8 +77,10 @@ struct LayoutBoxRareData {
   LayoutUnit m_overrideLogicalContentWidth;
   LayoutUnit m_overrideLogicalContentHeight;
 
-  bool m_hasOverrideContainingBlockContentLogicalWidth;
-  bool m_hasOverrideContainingBlockContentLogicalHeight;
+  bool m_hasOverrideContainingBlockContentLogicalWidth : 1;
+  bool m_hasOverrideContainingBlockContentLogicalHeight : 1;
+  bool m_hasPreviousContentBoxSizeAndLayoutOverflowRect : 1;
+
   LayoutUnit m_overrideContainingBlockContentLogicalWidth;
   LayoutUnit m_overrideContainingBlockContentLogicalHeight;
 
@@ -98,6 +101,12 @@ struct LayoutBoxRareData {
 
     return *m_snapAreas;
   }
+
+  // Used by BoxPaintInvalidator. Stores the previous content box size and
+  // layout overflow rect after the last paint invalidation. They are valid if
+  // m_hasPreviousContentBoxSizeAndLayoutOverflowRect is true.
+  LayoutSize m_previousContentBoxSize;
+  LayoutRect m_previousLayoutOverflowRect;
 };
 
 // LayoutBox implements the full CSS box model.
@@ -318,7 +327,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return LayoutSize(m_frameRect.x(), m_frameRect.y());
   }
   LayoutSize size() const { return m_frameRect.size(); }
-  LayoutSize previousSize() const { return m_previousSize; }
   IntSize pixelSnappedSize() const { return m_frameRect.pixelSnappedSize(); }
 
   void setLocation(const LayoutPoint& location) {
@@ -1311,17 +1319,38 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   class MutableForPainting : public LayoutObject::MutableForPainting {
    public:
-    void setPreviousSize(const LayoutSize& size) {
-      static_cast<LayoutBox&>(m_layoutObject).m_previousSize = size;
+    void savePreviousSize() { layoutBox().m_previousSize = layoutBox().size(); }
+    void savePreviousContentBoxSizeAndLayoutOverflowRect();
+    void clearPreviousContentBoxSizeAndLayoutOverflowRect() {
+      if (!layoutBox().m_rareData)
+        return;
+      layoutBox().m_rareData->m_hasPreviousContentBoxSizeAndLayoutOverflowRect =
+          false;
     }
 
    protected:
     friend class LayoutBox;
     MutableForPainting(const LayoutBox& box)
         : LayoutObject::MutableForPainting(box) {}
+    LayoutBox& layoutBox() { return static_cast<LayoutBox&>(m_layoutObject); }
   };
+
   MutableForPainting getMutableForPainting() const {
     return MutableForPainting(*this);
+  }
+
+  LayoutSize previousSize() const { return m_previousSize; }
+  LayoutSize previousContentBoxSize() const {
+    return m_rareData &&
+                   m_rareData->m_hasPreviousContentBoxSizeAndLayoutOverflowRect
+               ? m_rareData->m_previousContentBoxSize
+               : previousSize();
+  }
+  LayoutRect previousLayoutOverflowRect() const {
+    return m_rareData &&
+                   m_rareData->m_hasPreviousContentBoxSizeAndLayoutOverflowRect
+               ? m_rareData->m_previousLayoutOverflowRect
+               : LayoutRect(LayoutPoint(), previousSize());
   }
 
  protected:

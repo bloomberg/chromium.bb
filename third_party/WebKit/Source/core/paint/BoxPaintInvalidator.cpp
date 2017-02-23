@@ -15,25 +15,6 @@
 
 namespace blink {
 
-struct PreviousBoxGeometries {
-  LayoutRect contentBoxRect;
-  LayoutRect layoutOverflowRect;
-};
-
-typedef HashMap<const LayoutBox*, PreviousBoxGeometries>
-    PreviousBoxGeometriesMap;
-static PreviousBoxGeometriesMap& previousBoxGeometriesMap() {
-  DEFINE_STATIC_LOCAL(PreviousBoxGeometriesMap, map, ());
-  return map;
-}
-
-void BoxPaintInvalidator::boxWillBeDestroyed(const LayoutBox& box) {
-  DCHECK(box.hasPreviousBoxGeometries() ==
-         previousBoxGeometriesMap().contains(&box));
-  if (box.hasPreviousBoxGeometries())
-    previousBoxGeometriesMap().erase(&box);
-}
-
 static LayoutRect computeRightDelta(const LayoutPoint& location,
                                     const LayoutSize& oldSize,
                                     const LayoutSize& newSize,
@@ -118,7 +99,7 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
 
   if ((style.backgroundLayers().thisOrNextLayersUseContentBox() ||
        style.maskLayers().thisOrNextLayersUseContentBox()) &&
-      previousContentBoxRect() != m_box.contentBoxRect())
+      m_box.previousContentBoxSize() != m_box.contentBoxRect().size())
     return PaintInvalidationContentBoxChange;
 
   LayoutSize oldBorderBoxSize = m_box.previousSize();
@@ -217,7 +198,7 @@ void BoxPaintInvalidator::invalidateScrollingContentsBackgroundIfNeeded() {
       !backgroundGeometryDependsOnLayoutOverflowRect())
     return;
 
-  const LayoutRect& oldLayoutOverflow = previousLayoutOverflowRect();
+  const LayoutRect& oldLayoutOverflow = m_box.previousLayoutOverflowRect();
   LayoutRect newLayoutOverflow = m_box.layoutOverflowRect();
 
   bool shouldFullyInvalidateOnScrollingContentsLayer = false;
@@ -307,7 +288,8 @@ PaintInvalidationReason BoxPaintInvalidator::invalidatePaintIfNeeded() {
   return reason;
 }
 
-bool BoxPaintInvalidator::needsToSavePreviousBoxGeometries() {
+bool BoxPaintInvalidator::
+    needsToSavePreviousContentBoxSizeOrLayoutOverflowRect() {
   // Don't save old box geometries if the paint rect is empty because we'll
   // fully invalidate once the paint rect becomes non-empty.
   if (m_context.newVisualRect.isEmpty())
@@ -320,48 +302,28 @@ bool BoxPaintInvalidator::needsToSavePreviousBoxGeometries() {
 
   // Background and mask layers can depend on other boxes than border box. See
   // crbug.com/490533
-  if (style.backgroundLayers().thisOrNextLayersUseContentBox() ||
-      style.maskLayers().thisOrNextLayersUseContentBox() ||
-      backgroundGeometryDependsOnLayoutOverflowRect() ||
-      backgroundPaintsOntoScrollingContentsLayer())
+  if ((style.backgroundLayers().thisOrNextLayersUseContentBox() ||
+       style.maskLayers().thisOrNextLayersUseContentBox()) &&
+      m_box.contentBoxRect().size() != m_box.size())
+    return true;
+  if ((backgroundGeometryDependsOnLayoutOverflowRect() ||
+       backgroundPaintsOntoScrollingContentsLayer()) &&
+      m_box.layoutOverflowRect() != m_box.borderBoxRect())
     return true;
 
   return false;
 }
 
 void BoxPaintInvalidator::savePreviousBoxGeometriesIfNeeded() {
-  m_box.getMutableForPainting().setPreviousSize(m_box.size());
+  m_box.getMutableForPainting().savePreviousSize();
 
-  DCHECK(m_box.hasPreviousBoxGeometries() ==
-         previousBoxGeometriesMap().contains(&m_box));
-  if (!needsToSavePreviousBoxGeometries()) {
-    if (m_box.hasPreviousBoxGeometries()) {
-      previousBoxGeometriesMap().erase(&m_box);
-      m_box.getMutableForPainting().setHasPreviousBoxGeometries(false);
-    }
-    return;
+  if (needsToSavePreviousContentBoxSizeOrLayoutOverflowRect()) {
+    m_box.getMutableForPainting()
+        .savePreviousContentBoxSizeAndLayoutOverflowRect();
+  } else {
+    m_box.getMutableForPainting()
+        .clearPreviousContentBoxSizeAndLayoutOverflowRect();
   }
-
-  PreviousBoxGeometries geometries = {m_box.contentBoxRect(),
-                                      m_box.layoutOverflowRect()};
-  previousBoxGeometriesMap().set(&m_box, geometries);
-  m_box.getMutableForPainting().setHasPreviousBoxGeometries(true);
-}
-
-LayoutRect BoxPaintInvalidator::previousContentBoxRect() {
-  DCHECK(m_box.hasPreviousBoxGeometries() ==
-         previousBoxGeometriesMap().contains(&m_box));
-  return m_box.hasPreviousBoxGeometries()
-             ? previousBoxGeometriesMap().get(&m_box).contentBoxRect
-             : LayoutRect(LayoutPoint(), m_box.previousSize());
-}
-
-LayoutRect BoxPaintInvalidator::previousLayoutOverflowRect() {
-  DCHECK(m_box.hasPreviousBoxGeometries() ==
-         previousBoxGeometriesMap().contains(&m_box));
-  return m_box.hasPreviousBoxGeometries()
-             ? previousBoxGeometriesMap().get(&m_box).layoutOverflowRect
-             : LayoutRect(LayoutPoint(), m_box.previousSize());
 }
 
 }  // namespace blink
