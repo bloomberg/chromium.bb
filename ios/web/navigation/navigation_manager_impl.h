@@ -12,6 +12,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#import "ios/web/public/navigation_item_list.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -120,7 +121,7 @@ class NavigationManagerImpl : public NavigationManager {
   // Temporary method. Returns a vector of NavigationItems corresponding to
   // the SessionEntries of the uderlying CRWSessionController.
   // TODO(crbug.com/546365): Remove this method.
-  std::vector<NavigationItem*> GetItems();
+  NavigationItemList GetItems() const;
 
   // NavigationManager:
   BrowserState* GetBrowserState() const override;

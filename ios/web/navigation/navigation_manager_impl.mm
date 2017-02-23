@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #include "ios/web/navigation/navigation_manager_facade_delegate.h"
@@ -146,9 +145,8 @@ void NavigationManagerImpl::OnNavigationItemCommitted() {
   DCHECK(details.item);
   details.previous_item_index = [session_controller_ previousNavigationIndex];
   if (details.previous_item_index >= 0) {
-    DCHECK([session_controller_ previousEntry]);
-    details.previous_url =
-        [session_controller_ previousEntry].navigationItem->GetURL();
+    DCHECK(GetPreviousItem());
+    details.previous_url = GetPreviousItem()->GetURL();
     details.is_in_page =
         AreURLsInPageNavigation(details.previous_url, details.item->GetURL());
   } else {
@@ -198,23 +196,15 @@ void NavigationManagerImpl::AddPendingItem(
 }
 
 NavigationItem* NavigationManagerImpl::GetLastUserItem() const {
-  CRWSessionEntry* entry = [session_controller_ lastUserEntry];
-  return [entry navigationItem];
+  return [session_controller_ lastUserItem];
 }
 
 NavigationItem* NavigationManagerImpl::GetPreviousItem() const {
-  CRWSessionEntry* entry = [session_controller_ previousEntry];
-  return [entry navigationItem];
+  return [session_controller_ previousItem];
 }
 
-std::vector<NavigationItem*> NavigationManagerImpl::GetItems() {
-  std::vector<NavigationItem*> items;
-  size_t i = 0;
-  items.resize([session_controller_ entries].count);
-  for (CRWSessionEntry* entry in [session_controller_ entries]) {
-    items[i++] = entry.navigationItem;
-  }
-  return items;
+NavigationItemList NavigationManagerImpl::GetItems() const {
+  return [session_controller_ items];
 }
 
 BrowserState* NavigationManagerImpl::GetBrowserState() const {
@@ -226,21 +216,19 @@ WebState* NavigationManagerImpl::GetWebState() const {
 }
 
 NavigationItem* NavigationManagerImpl::GetVisibleItem() const {
-  CRWSessionEntry* entry = [session_controller_ visibleEntry];
-  return [entry navigationItem];
+  return [session_controller_ visibleItem];
 }
 
 NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
-  CRWSessionEntry* entry = [session_controller_ lastCommittedEntry];
-  return [entry navigationItem];
+  return [session_controller_ lastCommittedItem];
 }
 
 NavigationItem* NavigationManagerImpl::GetPendingItem() const {
-  return [[session_controller_ pendingEntry] navigationItem];
+  return [session_controller_ pendingItem];
 }
 
 NavigationItem* NavigationManagerImpl::GetTransientItem() const {
-  return [[session_controller_ transientEntry] navigationItem];
+  return [session_controller_ transientItem];
 }
 
 void NavigationManagerImpl::DiscardNonCommittedItems() {
@@ -267,12 +255,12 @@ void NavigationManagerImpl::AddTransientURLRewriter(
 }
 
 int NavigationManagerImpl::GetItemCount() const {
-  return [[session_controller_ entries] count];
+  return GetItems().size();
 }
 
 NavigationItem* NavigationManagerImpl::GetItemAtIndex(size_t index) const {
-  NSArray* entries = [session_controller_ entries];
-  return index < entries.count ? [entries[index] navigationItem] : nullptr;
+  NavigationItemList items = GetItems();
+  return index < items.size() ? items[index] : nullptr;
 }
 
 int NavigationManagerImpl::GetCurrentItemIndex() const {
@@ -280,7 +268,7 @@ int NavigationManagerImpl::GetCurrentItemIndex() const {
 }
 
 int NavigationManagerImpl::GetPendingItemIndex() const {
-  if ([session_controller_ pendingEntry]) {
+  if (GetPendingItem()) {
     if ([session_controller_ pendingItemIndex] != -1) {
       return [session_controller_ pendingItemIndex];
     }
@@ -292,7 +280,7 @@ int NavigationManagerImpl::GetPendingItemIndex() const {
 }
 
 int NavigationManagerImpl::GetLastCommittedItemIndex() const {
-  if (![[session_controller_ entries] count])
+  if (GetItems().empty())
     return -1;
   return [session_controller_ currentNavigationIndex];
 }
@@ -301,9 +289,8 @@ bool NavigationManagerImpl::RemoveItemAtIndex(int index) {
   if (index == GetLastCommittedItemIndex() || index == GetPendingItemIndex())
     return false;
 
-  NSUInteger idx = static_cast<NSUInteger>(index);
-  NSArray* entries = [session_controller_ entries];
-  if (idx >= entries.count)
+  size_t idx = static_cast<size_t>(index);
+  if (idx >= GetItems().size())
     return false;
 
   [session_controller_ removeItemAtIndex:index];
