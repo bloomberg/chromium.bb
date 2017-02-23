@@ -838,11 +838,24 @@ TEST_F(TabModelTest, PersistSelectionChange) {
                browserState:chrome_browser_state.get()]);
 
   [model addTabWithURL:kURL referrer:kReferrer windowName:@"window 1"];
-  [model addTabWithURL:kURL referrer:kReferrer windowName:@"window 2"];
-  [model addTabWithURL:kURL referrer:kReferrer windowName:@"window 3"];
+  [model insertTabWithURL:kURL
+                 referrer:kReferrer
+               windowName:@"window 3"
+                   opener:[model tabAtIndex:0]
+                  atIndex:[model count]];
+  [model insertTabWithURL:kURL
+                 referrer:kReferrer
+               windowName:@"window 3"
+                   opener:[model tabAtIndex:1]
+                  atIndex:0];
 
   ASSERT_EQ(3U, [model count]);
-  model.get().currentTab = [model tabAtIndex:1];
+  [model setCurrentTab:[model tabAtIndex:1]];
+
+  EXPECT_EQ(nil, [model openerOfTab:[model tabAtIndex:1]]);
+  EXPECT_EQ([model tabAtIndex:1], [model openerOfTab:[model tabAtIndex:2]]);
+  EXPECT_EQ([model tabAtIndex:2], [model openerOfTab:[model tabAtIndex:0]]);
+
   // Force state to flush to disk on the main thread so it can be immediately
   // tested below.
   SessionWindowIOS* window = [model windowForSavingSession];
@@ -866,7 +879,13 @@ TEST_F(TabModelTest, PersistSelectionChange) {
       initWithSessionWindow:sessionWindow
              sessionService:test_service
                browserState:chrome_browser_state.get()]);
-  EXPECT_EQ(model.get().currentTab, [model tabAtIndex:1]);
+  ASSERT_EQ(3u, [model count]);
+
+  EXPECT_EQ([model tabAtIndex:1], [model currentTab]);
+  EXPECT_EQ(nil, [model openerOfTab:[model tabAtIndex:1]]);
+  EXPECT_EQ([model tabAtIndex:1], [model openerOfTab:[model tabAtIndex:2]]);
+  EXPECT_EQ([model tabAtIndex:2], [model openerOfTab:[model tabAtIndex:0]]);
+
   [model browserStateDestroyed];
   model.reset();
 

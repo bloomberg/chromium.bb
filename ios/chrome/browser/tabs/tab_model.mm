@@ -117,6 +117,23 @@ void CleanCertificatePolicyCache(
                  base::Unretained(web_state_list)));
 }
 
+// Internal helper function returning the opener for a given Tab by
+// checking the associated Tab tabId (should be removed once the opener
+// is passed to the insertTab:atIndex: and replaceTab:withTab: methods).
+Tab* GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
+  NSString* opener_id =
+      [tab navigationManager]->GetSessionController().openerId;
+  if (!opener_id)
+    return nullptr;
+
+  for (Tab* currentTab in tabs) {
+    if ([opener_id isEqualToString:currentTab.tabId])
+      return currentTab;
+  }
+
+  return nullptr;
+}
+
 }  // anonymous namespace
 
 @interface TabModelWebStateProxyFactory : NSObject<WebStateProxyFactory>
@@ -216,6 +233,12 @@ void CleanCertificatePolicyCache(
 // method and restoring session in the initialiser.
 - (BOOL)restoreSessionWindow:(SessionWindowIOS*)window
                 persistState:(BOOL)persistState;
+
+// Helper method to insert |tab| at the given |index| recording |parentTab| as
+// the opener. Broadcasts the proper notifications about the change. The
+// receiver should be set as the parentTabModel for |tab|; this method doesn't
+// check that.
+- (void)insertTab:(Tab*)tab atIndex:(NSUInteger)index opener:(Tab*)parentTab;
 
 @end
 
@@ -405,68 +428,43 @@ void CleanCertificatePolicyCache(
 }
 
 - (Tab*)nextTabWithOpener:(Tab*)tab afterTab:(Tab*)afterTab {
-  NSUInteger startIndex = NSNotFound;
-  // Start looking after |afterTab|. If it's not found, start looking after
-  // |tab|. If it's not found either, bail.
+  int startIndex = WebStateList::kInvalidIndex;
   if (afterTab)
-    startIndex = [self indexOfTab:afterTab];
-  if (startIndex == NSNotFound)
-    startIndex = [self indexOfTab:tab];
-  if (startIndex == NSNotFound)
+    startIndex = _webStateList.GetIndexOfWebState(afterTab.webState);
+
+  if (startIndex == WebStateList::kInvalidIndex)
+    startIndex = _webStateList.GetIndexOfWebState(tab.webState);
+
+  const int index = _webStateList.GetIndexOfNextWebStateOpenedBy(
+      tab.webState, startIndex, false);
+  if (index == WebStateList::kInvalidIndex)
     return nil;
-  NSString* parentID = tab.tabId;
-  for (NSUInteger i = startIndex + 1; i < self.count; ++i) {
-    Tab* current = [self tabAtIndex:i];
-    DCHECK([current navigationManager]);
-    CRWSessionController* sessionController =
-        [current navigationManager]->GetSessionController();
-    if ([sessionController.openerId isEqualToString:parentID])
-      return current;
-  }
-  return nil;
+
+  DCHECK_GE(index, 0);
+  return [self tabAtIndex:static_cast<NSUInteger>(index)];
 }
 
 - (Tab*)lastTabWithOpener:(Tab*)tab {
-  NSUInteger startIndex = [self indexOfTab:tab];
-  if (startIndex == NSNotFound)
+  int startIndex = _webStateList.GetIndexOfWebState(tab.webState);
+  if (startIndex == WebStateList::kInvalidIndex)
     return nil;
-  // There is at least one tab in the model, because otherwise the above check
-  // would have returned.
-  NSString* parentID = tab.tabId;
-  DCHECK([tab navigationManager]);
-  NSInteger parentNavIndex = [tab navigationManager]->GetCurrentItemIndex();
 
-  Tab* match = nil;
-  // Find the last tab in the first matching 'group'.  A 'group' is a set of
-  // tabs whose opener's id and opener's navigation index match. The navigation
-  // index is used in addition to the session id to detect navigations changes
-  // within the same session.
-  for (NSUInteger i = startIndex + 1; i < self.count; ++i) {
-    Tab* tabToCheck = [self tabAtIndex:i];
-    DCHECK([tabToCheck navigationManager]);
-    CRWSessionController* sessionController =
-        [tabToCheck navigationManager]->GetSessionController();
-    if ([sessionController.openerId isEqualToString:parentID] &&
-        sessionController.openerNavigationIndex == parentNavIndex) {
-      match = tabToCheck;
-    } else if (match) {
-      break;
-    }
-  }
-  return match;
+  const int index = _webStateList.GetIndexOfLastWebStateOpenedBy(
+      tab.webState, startIndex, true);
+  if (index == WebStateList::kInvalidIndex)
+    return nil;
+
+  DCHECK_GE(index, 0);
+  return [self tabAtIndex:static_cast<NSUInteger>(index)];
 }
 
 - (Tab*)openerOfTab:(Tab*)tab {
-  if (![tab navigationManager])
+  int index = _webStateList.GetIndexOfWebState(tab.webState);
+  if (index == WebStateList::kInvalidIndex)
     return nil;
-  NSString* openerId = [tab navigationManager]->GetSessionController().openerId;
-  if (!openerId.length)  // Short-circuit if opener is empty.
-    return nil;
-  for (Tab* iteratedTab in self) {
-    if ([iteratedTab.tabId isEqualToString:openerId])
-      return iteratedTab;
-  }
-  return nil;
+
+  web::WebState* opener = _webStateList.GetOpenerOfWebStateAt(index);
+  return opener ? LegacyTabHelper::GetTabForWebState(opener) : nil;
 }
 
 - (Tab*)insertOrUpdateTabWithURL:(const GURL&)URL
@@ -553,13 +551,14 @@ void CleanCertificatePolicyCache(
   return tab;
 }
 
-- (void)insertTab:(Tab*)tab atIndex:(NSUInteger)index {
+- (void)insertTab:(Tab*)tab atIndex:(NSUInteger)index opener:(Tab*)parentTab {
   DCHECK(tab);
   DCHECK(![_tabRetainer containsObject:tab]);
   DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
 
   [_tabRetainer addObject:tab];
-  _webStateList.InsertWebState(static_cast<int>(index), tab.webState);
+  _webStateList.InsertWebState(static_cast<int>(index), tab.webState,
+                               parentTab.webState);
 
   // Persist the session due to a new tab being inserted. If this is a
   // background tab (will not become active), saving now will capture the
@@ -568,6 +567,10 @@ void CleanCertificatePolicyCache(
   [self saveSessionImmediately:NO];
 
   ++_newTabCount;
+}
+
+- (void)insertTab:(Tab*)tab atIndex:(NSUInteger)index {
+  [self insertTab:tab atIndex:index opener:GetOpenerForTab(self, tab)];
 }
 
 - (void)moveTab:(Tab*)tab toIndex:(NSUInteger)toIndex {
@@ -590,7 +593,8 @@ void CleanCertificatePolicyCache(
   [_tabRetainer addObject:newTab];
   [newTab setParentTabModel:self];
 
-  _webStateList.ReplaceWebStateAt(index, newTab.webState);
+  _webStateList.ReplaceWebStateAt(index, newTab.webState,
+                                  GetOpenerForTab(self, newTab).webState);
 
   if (self.currentTab == oldTab)
     [self changeSelectedTabFrom:nil to:newTab persistState:NO];
@@ -889,7 +893,7 @@ void CleanCertificatePolicyCache(
     // TODO(crbug.com/661988): Make this work.
   }
 
-  [self insertTab:tab atIndex:index];
+  [self insertTab:tab atIndex:index opener:parentTab];
 
   if (!inBackground && _tabUsageRecorder)
     _tabUsageRecorder->TabCreatedForSelection(tab);
@@ -986,19 +990,42 @@ void CleanCertificatePolicyCache(
   scoped_refptr<web::CertificatePolicyCache> policyCache =
       web::BrowserState::GetCertificatePolicyCache(_browserState);
 
+  base::scoped_nsobject<NSMutableArray<Tab*>> restoredTabs(
+      [[NSMutableArray alloc] initWithCapacity:sessions.count]);
+
+  // Recreate all the restored Tabs and add them to the WebStateList without
+  // any opener-opened relationship (as the n-th restored Tab opener may be
+  // at an index larger than n). Then in a second pass fix the openers.
   for (CRWSessionStorage* session in sessions) {
     std::unique_ptr<web::WebState> webState =
         web::WebState::Create(params, session);
-    DCHECK_EQ(webState->GetBrowserState(), _browserState);
-    Tab* tab =
-        [self insertTabWithWebState:std::move(webState) atIndex:self.count];
-    tab.webController.usePlaceholderOverlay = YES;
+    base::scoped_nsobject<Tab> tab(
+        [[Tab alloc] initWithWebState:std::move(webState) model:self]);
+    [tab webController].webUsageEnabled = webUsageEnabled_;
+    [tab webController].usePlaceholderOverlay = YES;
 
     // Restore the CertificatePolicyCache (note that webState is invalid after
     // passing it via move semantic to -insertTabWithWebState:atIndex:).
-    UpdateCertificatePolicyCacheFromWebState(policyCache, tab.webState);
+    UpdateCertificatePolicyCacheFromWebState(policyCache, [tab webState]);
+    [self insertTab:tab atIndex:self.count opener:nil];
+    [restoredTabs addObject:tab.get()];
   }
+
+  DCHECK_EQ(sessions.count, [restoredTabs count]);
   DCHECK_GT(_webStateList.count(), oldCount);
+
+  // Fix openers now that all Tabs have been restored. Only look for an opener
+  // Tab in the newly restored Tabs and not in the already open Tabs.
+  for (int index = oldCount; index < _webStateList.count(); ++index) {
+    DCHECK_GE(index, oldCount);
+    NSUInteger tabIndex = static_cast<NSUInteger>(index - oldCount);
+    Tab* tab = [restoredTabs objectAtIndex:tabIndex];
+    Tab* opener = GetOpenerForTab(restoredTabs.get(), tab);
+    if (opener) {
+      DCHECK(opener.webState);
+      _webStateList.SetOpenerOfWebStateAt(index, opener.webState);
+    }
+  }
 
   // Update the selected tab if there was a selected Tab in the saved session.
   if (window.selectedIndex != NSNotFound) {
@@ -1107,7 +1134,7 @@ void CleanCertificatePolicyCache(
   params.transition_type = ui::PAGE_TRANSITION_TYPED;
   [[tab webController] loadWithParams:params];
   [tab webController].webUsageEnabled = webUsageEnabled_;
-  [self insertTab:tab atIndex:index];
+  [self insertTab:tab atIndex:index opener:parentTab];
   return tab;
 }
 

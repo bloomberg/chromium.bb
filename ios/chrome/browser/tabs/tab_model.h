@@ -242,6 +242,7 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 
 // Notifies observers that the given |tab| was changed.
 - (void)notifyTabChanged:(Tab*)tab;
+
 // Notifies observers that the snapshot for the given |tab| changed was changed
 // to |image|.
 - (void)notifyTabSnapshotChanged:(Tab*)tab withImage:(UIImage*)image;

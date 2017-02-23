@@ -47,16 +47,45 @@ class WebStateList {
   // WebState is not in the model.
   int GetIndexOfWebState(const web::WebState* web_state) const;
 
-  // Inserts the specified WebState at the specified index.
-  void InsertWebState(int index, web::WebState* web_state);
+  // Returns the WebState that opened the WebState at the specified index or
+  // null if there is no opener on record.
+  web::WebState* GetOpenerOfWebStateAt(int index) const;
+
+  // Sets the opener for WebState at the specified index. The |opener| must be
+  // in the WebStateList.
+  void SetOpenerOfWebStateAt(int index, web::WebState* opener);
+
+  // Returns the index of the next WebState in the sequence of WebStates opened
+  // from the specified WebState after |start_index|, or kInvalidIndex if there
+  // are no such WebState. If |use_group| is true, the opener's navigation index
+  // is used to detect navigation changes within the same session.
+  int GetIndexOfNextWebStateOpenedBy(const web::WebState* opener,
+                                     int start_index,
+                                     bool use_group) const;
+
+  // Returns the index of the last WebState in the sequence of WebStates opened
+  // from the specified WebState after |start_index|, or kInvalidIndex if there
+  // are no such WebState. If |use_group| is true, the opener's navigation index
+  // is used to detect navigation changes within the same session.
+  int GetIndexOfLastWebStateOpenedBy(const web::WebState* opener,
+                                     int start_index,
+                                     bool use_group) const;
+
+  // Inserts the specified WebState at the specified index with an optional
+  // opener (null if there is no opener).
+  void InsertWebState(int index,
+                      web::WebState* web_state,
+                      web::WebState* opener);
 
   // Moves the WebState at the specified index to another index.
   void MoveWebStateAt(int from_index, int to_index);
 
   // Replaces the WebState at the specified index with new WebState. Returns
   // the old WebState at that index to the caller (abandon ownership of the
-  // returned WebState).
-  web::WebState* ReplaceWebStateAt(int index, web::WebState* web_state);
+  // returned WebState). An optional opener for the new WebState may be passed.
+  web::WebState* ReplaceWebStateAt(int index,
+                                   web::WebState* web_state,
+                                   web::WebState* opener);
 
   // Detaches the WebState at the specified index.
   void DetachWebStateAt(int index);
@@ -71,6 +100,20 @@ class WebStateList {
   static const int kInvalidIndex = -1;
 
  private:
+  // Sets the opener of any WebState that reference the WebState at the
+  // specified index to null.
+  void ClearOpenersReferencing(int index);
+
+  // Returns the index of the |n|-th WebState (with n > 0) in the sequence of
+  // WebStates opened from the specified WebState after |start_index|, or
+  // kInvalidIndex if there are no such WebState. If |use_group| is true, the
+  // opener's navigation index is used to detect navigation changes within the
+  // same session.
+  int GetIndexOfNthWebStateOpenedBy(const web::WebState* opener,
+                                    int start_index,
+                                    bool use_group,
+                                    int n) const;
+
   class WebStateWrapper;
   const WebStateOwnership web_state_ownership_;
   std::vector<std::unique_ptr<WebStateWrapper>> web_state_wrappers_;
