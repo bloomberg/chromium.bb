@@ -752,6 +752,7 @@ void LinuxDumper::SanitizeStackCopy(uint8_t* stack_copy, size_t stack_len,
   // bit, modulo the bitfield size, is not set then there does not
   // exist a mapping in mappings_ that would contain that pointer.
   for (size_t i = 0; i < mappings_.size(); ++i) {
+    if (!mappings_[i]->exec) continue;
     // For each mapping, work out the (unmodulo'ed) range of bits to
     // set.
     uintptr_t start = mappings_[i]->start_addr;
@@ -791,7 +792,8 @@ void LinuxDumper::SanitizeStackCopy(uint8_t* stack_copy, size_t stack_len,
     }
     uintptr_t test = addr >> shift;
     if (could_hit_mapping[(test >> 3) & array_mask] & (1 << (test & 7)) &&
-        (hit_mapping = FindMappingNoBias(addr)) != nullptr) {
+        (hit_mapping = FindMappingNoBias(addr)) != nullptr &&
+        hit_mapping->exec) {
       last_hit_mapping = hit_mapping;
       continue;
     }
