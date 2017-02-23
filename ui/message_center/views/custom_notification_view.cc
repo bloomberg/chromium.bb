@@ -149,7 +149,8 @@ bool CustomNotificationView::OnKeyPressed(const ui::KeyEvent& event) {
 void CustomNotificationView::ChildPreferredSizeChanged(View* child) {
   // Notify MessageCenterController when the custom content changes size,
   // as it may need to relayout.
-  controller()->UpdateNotificationSize(notification_id());
+  if (controller())
+    controller()->UpdateNotificationSize(notification_id());
 }
 
 }  // namespace message_center
