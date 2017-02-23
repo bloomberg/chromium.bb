@@ -100,7 +100,9 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
           &AXObjectCacheImpl::notificationPostTimerFired) {}
 
 AXObjectCacheImpl::~AXObjectCacheImpl() {
-  ASSERT(m_hasBeenDisposed);
+#if DCHECK_IS_ON()
+  DCHECK(m_hasBeenDisposed);
+#endif
 }
 
 void AXObjectCacheImpl::dispose() {
@@ -190,7 +192,7 @@ AXObject* AXObjectCacheImpl::get(LayoutObject* layoutObject) {
     return 0;
 
   AXID axID = m_layoutObjectMapping.at(layoutObject);
-  ASSERT(!HashTraits<AXID>::isDeletedValue(axID));
+  DCHECK(!HashTraits<AXID>::isDeletedValue(axID));
   if (!axID)
     return 0;
 
@@ -220,10 +222,10 @@ AXObject* AXObjectCacheImpl::get(Node* node) {
     layoutObject = nullptr;
 
   AXID layoutID = layoutObject ? m_layoutObjectMapping.at(layoutObject) : 0;
-  ASSERT(!HashTraits<AXID>::isDeletedValue(layoutID));
+  DCHECK(!HashTraits<AXID>::isDeletedValue(layoutID));
 
   AXID nodeID = m_nodeObjectMapping.at(node);
-  ASSERT(!HashTraits<AXID>::isDeletedValue(nodeID));
+  DCHECK(!HashTraits<AXID>::isDeletedValue(nodeID));
 
   if (layoutObject && nodeID && !layoutID) {
     // This can happen if an AXNodeObject is created for a node that's not
@@ -247,7 +249,7 @@ AXObject* AXObjectCacheImpl::get(AbstractInlineTextBox* inlineTextBox) {
     return 0;
 
   AXID axID = m_inlineTextBoxObjectMapping.at(inlineTextBox);
-  ASSERT(!HashTraits<AXID>::isDeletedValue(axID));
+  DCHECK(!HashTraits<AXID>::isDeletedValue(axID));
   if (!axID)
     return 0;
 
@@ -362,12 +364,11 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node) {
   AXObject* newObj = createFromNode(node);
 
   // Will crash later if we have two objects for the same node.
-  ASSERT(!get(node));
+  DCHECK(!get(node));
 
-  getAXID(newObj);
+  const AXID axID = getOrCreateAXID(newObj);
 
-  m_nodeObjectMapping.set(node, newObj->axObjectID());
-  m_objects.set(newObj->axObjectID(), newObj);
+  m_nodeObjectMapping.set(node, axID);
   newObj->init();
   newObj->setLastKnownIsIgnoredValue(newObj->accessibilityIsIgnored());
 
@@ -387,12 +388,11 @@ AXObject* AXObjectCacheImpl::getOrCreate(LayoutObject* layoutObject) {
   AXObject* newObj = createFromRenderer(layoutObject);
 
   // Will crash later if we have two objects for the same layoutObject.
-  ASSERT(!get(layoutObject));
+  DCHECK(!get(layoutObject));
 
-  getAXID(newObj);
+  const AXID axid = getOrCreateAXID(newObj);
 
-  m_layoutObjectMapping.set(layoutObject, newObj->axObjectID());
-  m_objects.set(newObj->axObjectID(), newObj);
+  m_layoutObjectMapping.set(layoutObject, axid);
   newObj->init();
   newObj->setLastKnownIsIgnoredValue(newObj->accessibilityIsIgnored());
 
@@ -409,23 +409,15 @@ AXObject* AXObjectCacheImpl::getOrCreate(AbstractInlineTextBox* inlineTextBox) {
   AXObject* newObj = createFromInlineTextBox(inlineTextBox);
 
   // Will crash later if we have two objects for the same inlineTextBox.
-  ASSERT(!get(inlineTextBox));
+  DCHECK(!get(inlineTextBox));
 
-  getAXID(newObj);
+  const AXID axid = getOrCreateAXID(newObj);
 
-  m_inlineTextBoxObjectMapping.set(inlineTextBox, newObj->axObjectID());
-  m_objects.set(newObj->axObjectID(), newObj);
+  m_inlineTextBoxObjectMapping.set(inlineTextBox, axid);
   newObj->init();
   newObj->setLastKnownIsIgnoredValue(newObj->accessibilityIsIgnored());
 
   return newObj;
-}
-
-AXObject* AXObjectCacheImpl::rootObject() {
-  if (!accessibilityEnabled())
-    return 0;
-
-  return getOrCreate(m_document);
 }
 
 AXObject* AXObjectCacheImpl::getOrCreate(AccessibilityRole role) {
@@ -455,12 +447,11 @@ AXObject* AXObjectCacheImpl::getOrCreate(AccessibilityRole role) {
       obj = nullptr;
   }
 
-  if (obj)
-    getAXID(obj);
-  else
+  if (!obj)
     return 0;
 
-  m_objects.set(obj->axObjectID(), obj);
+  getOrCreateAXID(obj);
+
   obj->init();
   return obj;
 }
@@ -481,7 +472,7 @@ void AXObjectCacheImpl::remove(AXID axID) {
   if (!m_objects.take(axID))
     return;
 
-  ASSERT(m_objects.size() >= m_idsInUse.size());
+  DCHECK(m_objects.size() >= m_idsInUse.size());
 }
 
 void AXObjectCacheImpl::remove(LayoutObject* layoutObject) {
@@ -517,7 +508,7 @@ void AXObjectCacheImpl::remove(AbstractInlineTextBox* inlineTextBox) {
   m_inlineTextBoxObjectMapping.erase(inlineTextBox);
 }
 
-AXID AXObjectCacheImpl::platformGenerateAXID() const {
+AXID AXObjectCacheImpl::generateAXID() const {
   static AXID lastUsedID = 0;
 
   // Generate a new ID.
@@ -532,20 +523,21 @@ AXID AXObjectCacheImpl::platformGenerateAXID() const {
   return objID;
 }
 
-AXID AXObjectCacheImpl::getAXID(AXObject* obj) {
+AXID AXObjectCacheImpl::getOrCreateAXID(AXObject* obj) {
   // check for already-assigned ID
-  AXID objID = obj->axObjectID();
-  if (objID) {
-    ASSERT(m_idsInUse.contains(objID));
-    return objID;
+  const AXID existingAXID = obj->axObjectID();
+  if (existingAXID) {
+    DCHECK(m_idsInUse.contains(existingAXID));
+    return existingAXID;
   }
 
-  objID = platformGenerateAXID();
+  const AXID newAXID = generateAXID();
 
-  m_idsInUse.insert(objID);
-  obj->setAXObjectID(objID);
+  m_idsInUse.insert(newAXID);
+  obj->setAXObjectID(newAXID);
+  m_objects.set(newAXID, obj);
 
-  return objID;
+  return newAXID;
 }
 
 void AXObjectCacheImpl::removeAXID(AXObject* object) {
@@ -555,8 +547,8 @@ void AXObjectCacheImpl::removeAXID(AXObject* object) {
   AXID objID = object->axObjectID();
   if (!objID)
     return;
-  ASSERT(!HashTraits<AXID>::isDeletedValue(objID));
-  ASSERT(m_idsInUse.contains(objID));
+  DCHECK(!HashTraits<AXID>::isDeletedValue(objID));
+  DCHECK(m_idsInUse.contains(objID));
   object->setAXObjectID(0);
   m_idsInUse.erase(objID);
 
@@ -646,7 +638,7 @@ void AXObjectCacheImpl::notificationPostTimerFired(TimerBase*) {
       AXLayoutObject* layoutObj = toAXLayoutObject(obj);
       LayoutObject* layoutObject = layoutObj->getLayoutObject();
       if (layoutObject && layoutObject->view())
-        ASSERT(!layoutObject->view()->layoutState());
+        DCHECK(!layoutObject->view()->layoutState());
     }
 #endif
 
@@ -867,7 +859,7 @@ void AXObjectCacheImpl::updateTreeIfElementIdIsAriaOwned(Element* element) {
   // still an owner.
   if (isAriaOwned(axElement)) {
     AXObject* ownedParent = getAriaOwnedParent(axElement);
-    ASSERT(ownedParent);
+    DCHECK(ownedParent);
     childrenChanged(ownedParent);
     return;
   }

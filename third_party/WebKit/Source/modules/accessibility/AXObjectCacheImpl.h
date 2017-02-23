@@ -146,7 +146,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
 
   void removeAXID(AXObject*);
 
-  AXID platformGenerateAXID() const;
+  AXID generateAXID() const;
 
   // Counts the number of times the document has been modified. Some attribute
   // values are cached as long as the modification count hasn't changed.
@@ -247,7 +247,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
 
   AXObject* focusedImageMapUIElement(HTMLAreaElement*);
 
-  AXID getAXID(AXObject*);
+  AXID getOrCreateAXID(AXObject*);
 
   void textChanged(Node*);
   bool nodeIsTextControl(const Node*);
