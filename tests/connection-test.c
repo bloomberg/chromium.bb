@@ -142,7 +142,7 @@ va_list_wrapper(const char *signature, union wl_argument *args, int count, ...)
 TEST(argument_from_va_list)
 {
 	union wl_argument args[WL_CLOSURE_MAX_ARGS];
-	struct wl_object fake_object;
+	struct wl_object fake_object, fake_new_object;
 	struct wl_array fake_array;
 
 	va_list_wrapper("i", args, 1, 100);
@@ -154,13 +154,13 @@ TEST(argument_from_va_list)
 
 	va_list_wrapper("?iuf?sonah", args, 8,
 			102, 103, wl_fixed_from_int(104), "value",
-			&fake_object, 105, &fake_array, 106);
+			&fake_object, &fake_new_object, &fake_array, 106);
 	assert(args[0].i == 102);
 	assert(args[1].u == 103);
 	assert(args[2].f == wl_fixed_from_int(104));
 	assert(strcmp(args[3].s, "value") == 0);
 	assert(args[4].o == &fake_object);
-	assert(args[5].n == 105);
+	assert(args[5].o == &fake_new_object);
 	assert(args[6].a == &fake_array);
 	assert(args[7].h == 106);
 }
