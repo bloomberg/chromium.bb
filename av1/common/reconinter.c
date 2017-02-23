@@ -1143,32 +1143,6 @@ void av1_build_inter_predictors_sby(MACROBLOCKD *xd, int mi_row, int mi_col,
 #endif  // CONFIG_EXT_INTER
 }
 
-void av1_build_inter_predictors_sbp(MACROBLOCKD *xd, int mi_row, int mi_col,
-                                    BUFFER_SET *ctx, BLOCK_SIZE bsize,
-                                    int plane) {
-  build_inter_predictors_for_planes(xd, bsize, mi_row, mi_col, plane, plane);
-#if CONFIG_EXT_INTER
-  if (is_interintra_pred(&xd->mi[0]->mbmi)) {
-    BUFFER_SET default_ctx = {
-      { xd->plane[0].dst.buf, xd->plane[1].dst.buf, xd->plane[2].dst.buf },
-      { xd->plane[0].dst.stride, xd->plane[1].dst.stride,
-        xd->plane[2].dst.stride }
-    };
-    if (!ctx) ctx = &default_ctx;
-    if (plane == 0) {
-      av1_build_interintra_predictors_sby(xd, xd->plane[0].dst.buf,
-                                          xd->plane[0].dst.stride, ctx, bsize);
-    } else {
-      av1_build_interintra_predictors_sbc(xd, xd->plane[plane].dst.buf,
-                                          xd->plane[plane].dst.stride, ctx,
-                                          plane, bsize);
-    }
-  }
-#else
-  (void)ctx;
-#endif  // CONFIG_EXT_INTER
-}
-
 void av1_build_inter_predictors_sbuv(MACROBLOCKD *xd, int mi_row, int mi_col,
                                      BUFFER_SET *ctx, BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(xd, bsize, mi_row, mi_col, 1,

@@ -388,10 +388,6 @@ void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i, int ir,
 void av1_build_inter_predictors_sby(MACROBLOCKD *xd, int mi_row, int mi_col,
                                     BUFFER_SET *ctx, BLOCK_SIZE bsize);
 
-void av1_build_inter_predictors_sbp(MACROBLOCKD *xd, int mi_row, int mi_col,
-                                    BUFFER_SET *ctx, BLOCK_SIZE bsize,
-                                    int plane);
-
 void av1_build_inter_predictors_sbuv(MACROBLOCKD *xd, int mi_row, int mi_col,
                                      BUFFER_SET *ctx, BLOCK_SIZE bsize);
 
