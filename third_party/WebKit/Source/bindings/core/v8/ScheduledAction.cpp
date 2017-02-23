@@ -52,7 +52,7 @@ ScheduledAction* ScheduledAction::create(ScriptState* scriptState,
                                          const Vector<ScriptValue>& arguments) {
   ASSERT(handler.isFunction());
   if (!scriptState->world().isWorkerWorld()) {
-    CHECK(BindingSecurity::shouldAllowAccessToFrame(
+    DCHECK(BindingSecurity::shouldAllowAccessToFrame(
         enteredDOMWindow(scriptState->isolate()), toDocument(target)->frame(),
         BindingSecurity::ErrorReportOption::DoNotReport));
   }
@@ -63,7 +63,7 @@ ScheduledAction* ScheduledAction::create(ScriptState* scriptState,
                                          ExecutionContext* target,
                                          const String& handler) {
   if (!scriptState->world().isWorkerWorld()) {
-    CHECK(BindingSecurity::shouldAllowAccessToFrame(
+    DCHECK(BindingSecurity::shouldAllowAccessToFrame(
         enteredDOMWindow(scriptState->isolate()), toDocument(target)->frame(),
         BindingSecurity::ErrorReportOption::DoNotReport));
   }
