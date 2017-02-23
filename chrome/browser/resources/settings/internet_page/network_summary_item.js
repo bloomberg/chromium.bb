@@ -13,7 +13,7 @@ var DeviceStateProperties;
 Polymer({
   is: 'network-summary-item',
 
-  behaviors: [Polymer.IronA11yKeysBehavior],
+  behaviors: [Polymer.IronA11yKeysBehavior, I18nBehavior],
 
   properties: {
     /**
@@ -30,9 +30,6 @@ Polymer({
      * @type {!CrOnc.NetworkStateProperties|undefined}
      */
     activeNetworkState: Object,
-
-    /** String for a11y purposes. */
-    itemName: String,
 
     /**
      * List of all network state data for the network type.
@@ -235,6 +232,26 @@ Polymer({
   enableToggleIsEnabled_: function(deviceState) {
     return deviceState.State !=
         chrome.networkingPrivate.DeviceStateType.PROHIBITED;
+  },
+
+  /**
+   * @param {!DeviceStateProperties} deviceState
+   * @return {string}
+   * @private
+   */
+  getToggleA11yString_: function(deviceState) {
+    if (!this.enableToggleIsVisible_(deviceState))
+      return '';
+    switch (deviceState.Type) {
+      case CrOnc.Type.CELLULAR:
+        return this.i18n('internetToggleMobileA11yLabel');
+      case CrOnc.Type.WI_FI:
+        return this.i18n('internetToggleWiFiA11yLabel');
+      case CrOnc.Type.WI_MAX:
+        return this.i18n('internetToggleWiMAXA11yLabel');
+    }
+    assertNotReached();
+    return '';
   },
 
   /**

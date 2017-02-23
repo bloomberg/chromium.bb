@@ -1273,6 +1273,15 @@
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MENU_FORGET" desc="Settings > Internet > Known networks > Dropdown menu item to forget a known network.">
       Forget
     </message>
+    <message name="IDS_SETTINGS_INTERNET_TOGGLE_MOBILE_ACCESSIBILITY_LABEL" desc="Accessibility only label for mobile data enable/disable toggle .">
+      Mobile data enable
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TOGGLE_WIFI_ACCESSIBILITY_LABEL" desc="Accessibility only label for WiFi enable/disable toggle .">
+      Wi-Fi enable
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TOGGLE_WIMAX_ACCESSIBILITY_LABEL" desc="Accessibility only label for WiMAX enable/disable toggle .">
+      WiMAX enable
+    </message>
 
      <!-- Strings translating ONC (Open Network Configuration) properties -->
      <!-- and translatable values. See onc_spec.html for more information. -->
