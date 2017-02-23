@@ -169,6 +169,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
             @Override
             public void run() {
                 ThreadUtils.assertOnUiThread();
+                if (mInstrumentsCallback == null) return;
                 List<PaymentInstrument> instruments = null;
                 if (instrument != null) {
                     instruments = new ArrayList<>();
