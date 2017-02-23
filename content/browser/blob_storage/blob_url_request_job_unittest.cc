@@ -603,4 +603,10 @@ TEST_F(BlobURLRequestJobTest, TestZeroSizeSideData) {
   EXPECT_FALSE(url_request_delegate_.metadata());
 }
 
+TEST_F(BlobURLRequestJobTest, BrokenBlob) {
+  blob_handle_ = blob_context_.AddBrokenBlob(
+      "uuid", "", "", storage::BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
+  TestErrorRequest(500);
+}
+
 }  // namespace content

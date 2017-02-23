@@ -75,8 +75,12 @@ BlobReader::BlobReader(
       file_task_runner_(file_task_runner),
       net_error_(net::OK),
       weak_factory_(this) {
-  if (blob_handle && !blob_handle->IsBroken()) {
-    blob_handle_.reset(new BlobDataHandle(*blob_handle));
+  if (blob_handle) {
+    if (blob_handle->IsBroken()) {
+      net_error_ = ConvertBlobErrorToNetError(blob_handle->GetBlobStatus());
+    } else {
+      blob_handle_.reset(new BlobDataHandle(*blob_handle));
+    }
   }
 }
 

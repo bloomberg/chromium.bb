@@ -162,6 +162,10 @@ void BlobURLRequestJob::DidStart() {
     NotifyFailure(net::ERR_FILE_NOT_FOUND);
     return;
   }
+  if (blob_reader_->net_error()) {
+    NotifyFailure(blob_reader_->net_error());
+    return;
+  }
 
   TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::CountSize", this, "uuid",
                            blob_handle_->uuid());
