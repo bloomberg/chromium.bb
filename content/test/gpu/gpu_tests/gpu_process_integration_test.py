@@ -114,8 +114,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('GpuProcess_identify_active_gpu1', 'chrome:gpu'),
              ('GpuProcess_identify_active_gpu2', 'chrome:gpu'),
              ('GpuProcess_identify_active_gpu3', 'chrome:gpu'),
-             ('GpuProcess_identify_active_gpu4', 'chrome:gpu'),
-             ('GpuProcess_software_gpu_process', 'about:blank'))
+             ('GpuProcess_identify_active_gpu4', 'chrome:gpu'))
 
     # The earlier has_transparent_visuals_gpu_process and
     # no_transparent_visuals_gpu_process tests became no-ops in
@@ -506,17 +505,6 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._VerifyActiveAndInactiveGPUs(
       ['VENDOR = 0x10de, DEVICE= 0x0de1 *ACTIVE*'],
       [])
-
-  def _GpuProcess_software_gpu_process(self, test_path):
-    # Hit exception from id 50 from kSoftwareRenderingListJson.
-    self.RestartBrowserIfNecessaryWithArgs([
-      '--gpu-testing-vendor-id=0x10de',
-      '--gpu-testing-device-id=0x0de1',
-      '--gpu-testing-gl-vendor=VMware',
-      '--gpu-testing-gl-renderer=SVGA3D',
-      '--gpu-testing-gl-version=2.1 Mesa 10.1'])
-    self._Navigate(test_path)
-    self._VerifyGpuProcessPresent()
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

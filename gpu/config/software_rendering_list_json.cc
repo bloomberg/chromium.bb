@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.14",
+  "version": "12.15",
   "entries": [
     {
       "id": 1,
@@ -227,26 +227,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 23,
-      "description": "Mesa drivers in linux older than 7.11 are assumed to be buggy",
-      "os": {
-        "type": "linux"
-      },
-      "driver_vendor": "Mesa",
-      "driver_version": {
-        "op": "<",
-        "value": "7.11"
-      },
-      "exceptions": [
-        {
-          "driver_vendor": "osmesa"
-        }
-      ],
-      "features": [
-        "all"
-      ]
-    },
-    {
       "id": 27,
       "description": "ATI/AMD cards with older drivers in Linux are crash-prone",
       "cr_bugs": [95934, 94973, 136240, 357314],
@@ -428,7 +408,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     {
       "id": 50,
       "description": "Disable VMware software renderer on older Mesa",
-      "cr_bugs": [145531, 332596, 571899],
+      "cr_bugs": [145531, 332596, 571899, 629434],
       "os": {
         "type": "linux"
       },
@@ -1480,6 +1460,30 @@ LONG_STRING_CONST(
       "gl_renderer": ".*VideoCore IV.*",
       "features": [
         "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 134,
+      "description": "Mesa driver 10.1.3 renders incorrectly and crashes on multiple vendors",
+      "cr_bugs": [629434],
+      "os": {
+        "type": "linux"
+      },
+      "driver_vendor": "Mesa",
+      "driver_version": {
+        "op": "<=",
+        "value": "10.1.3"
+      },
+      "exceptions": [
+        {
+          "gl_renderer": ".*SVGA3D.*"
+        },
+        {
+          "gl_renderer": ".*Gallium.*llvmpipe.*"
+        }
+      ],
+      "features": [
+        "all"
       ]
     }
   ]
