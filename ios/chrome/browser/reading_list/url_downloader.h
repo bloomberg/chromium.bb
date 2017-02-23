@@ -68,6 +68,7 @@ class URLDownloader : public net::URLFetcherDelegate,
                                                  const GURL&,
                                                  SuccessState,
                                                  const base::FilePath&,
+                                                 int64_t size,
                                                  const std::string&)>;
 
   // Create a URL downloader with completion callbacks for downloads and
@@ -181,6 +182,7 @@ class URLDownloader : public net::URLFetcherDelegate,
   base::FilePath base_directory_;
   GURL original_url_;
   GURL distilled_url_;
+  int64_t saved_size_;
   std::string mime_type_;
   // Fetcher used to redownload the document and save it in the sandbox.
   std::unique_ptr<net::URLFetcher> fetcher_;

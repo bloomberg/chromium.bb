@@ -383,8 +383,10 @@ TEST_F(ReadingListModelTest, SyncMergeEntry) {
                    reading_list::ADDED_VIA_CURRENT_APP);
   const base::FilePath distilled_path("distilled/page.html");
   const GURL distilled_url("http://example.com/distilled");
+  int64_t size = 50;
+  int64_t time = 100;
   model_->SetEntryDistilledInfo(GURL("http://example.com"), distilled_path,
-                                distilled_url);
+                                distilled_url, size, time);
   const ReadingListEntry* local_entry =
       model_->GetEntryByURL(GURL("http://example.com"));
   int64_t local_update_time = local_entry->UpdateTime();
@@ -408,6 +410,8 @@ TEST_F(ReadingListModelTest, SyncMergeEntry) {
   EXPECT_EQ(merged_entry->DistilledPath(),
             base::FilePath("distilled/page.html"));
   EXPECT_EQ(merged_entry->UpdateTime(), sync_update_time);
+  EXPECT_EQ(size, merged_entry->DistillationSize());
+  EXPECT_EQ(time, merged_entry->DistillationTime());
 }
 
 // Tests deleting entry.
@@ -624,12 +628,16 @@ TEST_F(ReadingListModelTest, UpdateDistilledInfo) {
 
   const base::FilePath distilled_path("distilled/page.html");
   const GURL distilled_url("http://example.com/distilled");
+  int64_t size = 50;
+  int64_t time = 100;
   model_->SetEntryDistilledInfo(GURL("http://example.com"), distilled_path,
-                                distilled_url);
+                                distilled_url, size, time);
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 1);
   EXPECT_EQ(ReadingListEntry::PROCESSED, entry.DistilledState());
   EXPECT_EQ(distilled_path, entry.DistilledPath());
   EXPECT_EQ(distilled_url, entry.DistilledURL());
+  EXPECT_EQ(size, entry.DistillationSize());
+  EXPECT_EQ(time, entry.DistillationTime());
 }
 
 // Tests setting title on read entry.
@@ -668,12 +676,16 @@ TEST_F(ReadingListModelTest, UpdateReadDistilledInfo) {
 
   const base::FilePath distilled_path("distilled/page.html");
   const GURL distilled_url("http://example.com/distilled");
+  int64_t size = 50;
+  int64_t time = 100;
   model_->SetEntryDistilledInfo(GURL("http://example.com"), distilled_path,
-                                distilled_url);
+                                distilled_url, size, time);
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 1);
   EXPECT_EQ(ReadingListEntry::PROCESSED, entry->DistilledState());
   EXPECT_EQ(distilled_path, entry->DistilledPath());
   EXPECT_EQ(distilled_url, entry->DistilledURL());
+  EXPECT_EQ(size, entry->DistillationSize());
+  EXPECT_EQ(time, entry->DistillationTime());
 }
 
 // Tests that ReadingListModel calls CallbackModelBeingDeleted when destroyed.

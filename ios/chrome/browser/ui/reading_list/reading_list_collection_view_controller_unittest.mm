@@ -188,8 +188,9 @@ TEST_F(ReadingListCollectionViewControllerTest,
   base::FilePath distilled_path("/distilled/path");
   reading_list_model_->AddEntry(url, title,
                                 reading_list::ADDED_VIA_CURRENT_APP);
-  reading_list_model_->SetEntryDistilledInfo(url, distilled_path,
-                                             distilled_url);
+  int64_t size = 50;
+  reading_list_model_->SetEntryDistilledInfo(url, distilled_path, distilled_url,
+                                             size, 100);
   // Load view.
   [reading_list_view_controller_ view];
   DCHECK([reading_list_view_controller_.get().collectionView

@@ -90,6 +90,7 @@ class ReadingListDownloadService
                      const GURL& distilled_url,
                      URLDownloader::SuccessState success,
                      const base::FilePath& distilled_path,
+                     int64_t size,
                      const std::string& title);
 
   // Callback for entry deletion.

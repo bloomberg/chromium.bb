@@ -116,11 +116,15 @@ class ReadingListModel : public base::NonThreadSafe {
 
   // Sets the Distilled info for the entry |url|. This method sets the
   // DistillationState of the entry to PROCESSED and sets the |distilled_path|
-  // (path of the file on disk) and the |distilled_url| (url of the page that
-  // was distilled.
+  // (path of the file on disk), the |distilled_url| (url of the page that
+  // was distilled, the |distillation_size| (the size of the offline data) and
+  // the |distillation_date| (date of distillation in microseconds since Jan 1st
+  // 1970.
   virtual void SetEntryDistilledInfo(const GURL& url,
                                      const base::FilePath& distilled_path,
-                                     const GURL& distilled_url) = 0;
+                                     const GURL& distilled_url,
+                                     int64_t distilation_size,
+                                     int64_t distilation_time) = 0;
 
   // Observer registration methods. The model will remove all observers upon
   // destruction automatically.

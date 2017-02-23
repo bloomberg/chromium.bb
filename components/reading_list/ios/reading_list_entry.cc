@@ -56,6 +56,8 @@ ReadingListEntry::ReadingListEntry(const GURL& url,
                        base::FilePath(),
                        GURL(),
                        0,
+                       0,
+                       0,
                        std::move(backoff)) {}
 
 ReadingListEntry::ReadingListEntry(
@@ -69,6 +71,8 @@ ReadingListEntry::ReadingListEntry(
     ReadingListEntry::DistillationState distilled_state,
     const base::FilePath& distilled_path,
     const GURL& distilled_url,
+    int64_t distillation_time,
+    int64_t distillation_size,
     int failed_download_counter,
     std::unique_ptr<net::BackoffEntry> backoff)
     : url_(url),
@@ -81,7 +85,9 @@ ReadingListEntry::ReadingListEntry(
       creation_time_us_(creation_time),
       first_read_time_us_(first_read_time),
       update_time_us_(update_time),
-      update_title_time_us_(update_title_time) {
+      update_title_time_us_(update_title_time),
+      distillation_time_us_(distillation_time),
+      distillation_size_(distillation_size) {
   if (backoff) {
     backoff_ = std::move(backoff);
   } else {
@@ -111,7 +117,9 @@ ReadingListEntry::ReadingListEntry(ReadingListEntry&& entry)
       creation_time_us_(std::move(entry.creation_time_us_)),
       first_read_time_us_(std::move(entry.first_read_time_us_)),
       update_time_us_(std::move(entry.update_time_us_)),
-      update_title_time_us_(std::move(entry.update_title_time_us_)) {}
+      update_title_time_us_(std::move(entry.update_title_time_us_)),
+      distillation_time_us_(std::move(entry.distillation_time_us_)),
+      distillation_size_(std::move(entry.distillation_size_)) {}
 
 ReadingListEntry::~ReadingListEntry() {}
 
@@ -135,6 +143,14 @@ const GURL& ReadingListEntry::DistilledURL() const {
   return distilled_url_;
 }
 
+int64_t ReadingListEntry::DistillationTime() const {
+  return distillation_time_us_;
+}
+
+int64_t ReadingListEntry::DistillationSize() const {
+  return distillation_size_;
+}
+
 base::TimeDelta ReadingListEntry::TimeUntilNextTry() const {
   return backoff_->GetTimeUntilRelease();
 }
@@ -156,6 +172,8 @@ ReadingListEntry& ReadingListEntry::operator=(ReadingListEntry&& other) {
   first_read_time_us_ = std::move(other.first_read_time_us_);
   update_time_us_ = std::move(other.update_time_us_);
   update_title_time_us_ = std::move(other.update_title_time_us_);
+  distillation_time_us_ = std::move(other.distillation_time_us_);
+  distillation_size_ = std::move(other.distillation_size_);
   return *this;
 }
 
@@ -195,12 +213,17 @@ bool ReadingListEntry::HasBeenSeen() const {
 }
 
 void ReadingListEntry::SetDistilledInfo(const base::FilePath& path,
-                                        const GURL& distilled_url) {
+                                        const GURL& distilled_url,
+                                        int64_t distilation_size,
+                                        int64_t distilation_time) {
   DCHECK(!path.empty());
   DCHECK(distilled_url.is_valid());
   distilled_path_ = path;
   distilled_state_ = PROCESSED;
   distilled_url_ = distilled_url;
+  distillation_time_us_ = distilation_time;
+  ;
+  distillation_size_ = distilation_size;
   backoff_->Reset();
   failed_download_counter_ = 0;
 }
@@ -324,6 +347,16 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
     distilled_url = GURL(pb_entry.distilled_url());
   }
 
+  int64_t distillation_time_us = 0;
+  if (pb_entry.has_distillation_time_us()) {
+    distillation_time_us = pb_entry.distillation_time_us();
+  }
+
+  int64_t distillation_size = 0;
+  if (pb_entry.has_distillation_size()) {
+    distillation_size = pb_entry.distillation_size();
+  }
+
   int64_t failed_download_counter = 0;
   if (pb_entry.has_failed_download_counter()) {
     failed_download_counter = pb_entry.failed_download_counter();
@@ -343,7 +376,8 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
   return base::WrapUnique<ReadingListEntry>(new ReadingListEntry(
       url, title, state, creation_time_us, first_read_time_us, update_time_us,
       update_title_time_us, distillation_state, distilled_path, distilled_url,
-      failed_download_counter, std::move(backoff)));
+      distillation_time_us, distillation_size, failed_download_counter,
+      std::move(backoff)));
 }
 
 // static
@@ -398,7 +432,8 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
 
   return base::WrapUnique<ReadingListEntry>(new ReadingListEntry(
       url, title, state, creation_time_us, first_read_time_us, update_time_us,
-      update_title_time_us, WAITING, base::FilePath(), GURL(), 0, nullptr));
+      update_title_time_us, WAITING, base::FilePath(), GURL(), 0, 0, 0,
+      nullptr));
 }
 
 void ReadingListEntry::MergeWithEntry(const ReadingListEntry& other) {
@@ -505,6 +540,13 @@ ReadingListEntry::AsReadingListLocal() const {
   if (DistilledURL().is_valid()) {
     pb_entry->set_distilled_url(DistilledURL().spec());
   }
+  if (DistillationTime()) {
+    pb_entry->set_distillation_time_us(DistillationTime());
+  }
+  if (DistillationSize()) {
+    pb_entry->set_distillation_size(DistillationSize());
+  }
+
   pb_entry->set_failed_download_counter(failed_download_counter_);
 
   if (backoff_) {

@@ -104,7 +104,8 @@ void URLDownloader::DownloadCompletionHandler(
       [](URLDownloader* _this, const GURL& url, const std::string& title,
          const base::FilePath& offline_path, SuccessState success) {
         _this->download_completion_.Run(url, _this->distilled_url_, success,
-                                        offline_path, title);
+                                        offline_path, _this->saved_size_,
+                                        title);
         _this->distiller_.reset();
         _this->working_ = false;
         _this->HandleNextTask();
@@ -169,6 +170,7 @@ void URLDownloader::DownloadURL(const GURL& url, bool offline_url_exists) {
 
   original_url_ = url;
   distilled_url_ = url;
+  saved_size_ = 0;
   std::unique_ptr<reading_list::ReadingListDistillerPage>
       reading_list_distiller_page =
           distiller_page_factory_->CreateReadingListDistillerPage(this);
@@ -238,6 +240,9 @@ URLDownloader::SuccessState URLDownloader::SavePDFFile(
                                                              path);
 
     if (base::Move(temporary_path, absolute_path)) {
+      int64_t pdf_file_size;
+      base::GetFileSize(absolute_path, &pdf_file_size);
+      saved_size_ += pdf_file_size;
       return DOWNLOAD_SUCCESS;
     } else {
       return ERROR;
@@ -311,7 +316,12 @@ bool URLDownloader::SaveImage(const GURL& url,
       reading_list::OfflineURLDirectoryAbsolutePath(base_directory_, url);
   base::FilePath path = directory_path.Append(image_hash);
   if (!base::PathExists(path)) {
-    return base::WriteFile(path, data.c_str(), data.length()) > 0;
+    int written = base::WriteFile(path, data.c_str(), data.length());
+    if (written <= 0) {
+      return false;
+    }
+    saved_size_ += written;
+    return true;
   }
   return true;
 }
@@ -362,5 +372,10 @@ bool URLDownloader::SaveHTMLForURL(std::string html, const GURL& url) {
   base::FilePath path = reading_list::OfflineURLAbsolutePathFromRelativePath(
       base_directory_,
       reading_list::OfflinePagePath(url, reading_list::OFFLINE_TYPE_HTML));
-  return base::WriteFile(path, html.c_str(), html.length()) > 0;
+  int written = base::WriteFile(path, html.c_str(), html.length());
+  if (written <= 0) {
+    return false;
+  }
+  saved_size_ += written;
+  return true;
 }

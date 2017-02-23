@@ -391,7 +391,9 @@ void ReadingListModelImpl::SetEntryTitle(const GURL& url,
 void ReadingListModelImpl::SetEntryDistilledInfo(
     const GURL& url,
     const base::FilePath& distilled_path,
-    const GURL& distilled_url) {
+    const GURL& distilled_url,
+    int64_t distillation_size,
+    int64_t distillation_date) {
   DCHECK(CalledOnValidThread());
   DCHECK(loaded());
   auto iterator = entries_->find(url);
@@ -407,7 +409,8 @@ void ReadingListModelImpl::SetEntryDistilledInfo(
   for (ReadingListModelObserver& observer : observers_) {
     observer.ReadingListWillUpdateEntry(this, url);
   }
-  entry.SetDistilledInfo(distilled_path, distilled_url);
+  entry.SetDistilledInfo(distilled_path, distilled_url, distillation_size,
+                         distillation_date);
   if (storage_layer_) {
     storage_layer_->SaveEntry(entry);
   }

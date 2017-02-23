@@ -233,6 +233,7 @@ void ReadingListDownloadService::OnDownloadEnd(
     const GURL& distilled_url,
     URLDownloader::SuccessState success,
     const base::FilePath& distilled_path,
+    int64_t size,
     const std::string& title) {
   DCHECK(reading_list_model_->loaded());
   URLDownloader::SuccessState real_success_value = success;
@@ -242,8 +243,10 @@ void ReadingListDownloadService::OnDownloadEnd(
   switch (real_success_value) {
     case URLDownloader::DOWNLOAD_SUCCESS:
     case URLDownloader::DOWNLOAD_EXISTS: {
+      int64_t now =
+          (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
       reading_list_model_->SetEntryDistilledInfo(url, distilled_path,
-                                                 distilled_url);
+                                                 distilled_url, size, now);
 
       std::string trimmed_title = base::CollapseWhitespaceASCII(title, false);
       if (!trimmed_title.empty())
