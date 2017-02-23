@@ -4,7 +4,6 @@
 
 #include "core/loader/ThreadableLoader.h"
 
-#include "core/dom/ExecutionContextTask.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/WorkerThreadableLoader.h"
@@ -325,16 +324,13 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   }
 
   // WorkerLoaderProxyProvider methods.
-  void postTaskToLoader(const WebTraceLocation& location,
-                        std::unique_ptr<ExecutionContextTask> task) override {
+  void postTaskToLoader(
+      const WebTraceLocation& location,
+      std::unique_ptr<WTF::CrossThreadClosure> task) override {
     DCHECK(m_workerThread);
     DCHECK(m_workerThread->isCurrentThread());
     m_parentFrameTaskRunners->get(TaskType::Networking)
-        ->postTask(
-            BLINK_FROM_HERE,
-            crossThreadBind(&ExecutionContextTask::performTaskIfContextIsValid,
-                            WTF::passed(std::move(task)),
-                            wrapCrossThreadWeakPersistent(&document())));
+        ->postTask(BLINK_FROM_HERE, std::move(task));
   }
 
   void postTaskToWorkerGlobalScope(
@@ -343,6 +339,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
     DCHECK(m_workerThread);
     m_workerThread->postTask(location, std::move(task));
   }
+
+  ExecutionContext* getLoaderExecutionContext() override { return &document(); }
 
   RefPtr<SecurityOrigin> m_securityOrigin;
   std::unique_ptr<MockWorkerReportingProxy> m_mockWorkerReportingProxy;

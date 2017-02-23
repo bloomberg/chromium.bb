@@ -102,10 +102,11 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
 
   // WorkerLoaderProxyProvider
   void postTaskToLoader(const WebTraceLocation&,
-                        std::unique_ptr<ExecutionContextTask>) override;
+                        std::unique_ptr<WTF::CrossThreadClosure>) override;
   void postTaskToWorkerGlobalScope(
       const WebTraceLocation&,
       std::unique_ptr<WTF::CrossThreadClosure>) override;
+  ExecutionContext* getLoaderExecutionContext() override;
 
   WebEmbeddedWorkerStartData m_workerStartData;
 
@@ -137,10 +138,7 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
   // are guaranteed to exist while this object is around.
   WebView* m_webView;
 
-  // Accessed cross-thread when worker thread posts tasks to the parent.
-  //
-  // TODO: avoid reaching into the local frame object when posting.
-  CrossThreadPersistent<WebLocalFrameImpl> m_mainFrame;
+  Persistent<WebLocalFrameImpl> m_mainFrame;
 
   bool m_loadingShadowPage;
   bool m_askedToTerminate;

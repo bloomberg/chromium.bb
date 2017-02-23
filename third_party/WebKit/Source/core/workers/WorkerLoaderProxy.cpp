@@ -4,7 +4,7 @@
 
 #include "core/workers/WorkerLoaderProxy.h"
 
-#include "core/dom/ExecutionContextTask.h"
+#include "core/dom/ExecutionContext.h"
 
 namespace blink {
 
@@ -26,7 +26,7 @@ void WorkerLoaderProxy::detachProvider(
 
 void WorkerLoaderProxy::postTaskToLoader(
     const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task) {
+    std::unique_ptr<WTF::CrossThreadClosure> task) {
   MutexLocker locker(m_lock);
   DCHECK(!isMainThread());
   if (!m_loaderProxyProvider)
@@ -37,11 +37,20 @@ void WorkerLoaderProxy::postTaskToLoader(
 void WorkerLoaderProxy::postTaskToWorkerGlobalScope(
     const WebTraceLocation& location,
     std::unique_ptr<WTF::CrossThreadClosure> task) {
-  MutexLocker locker(m_lock);
   DCHECK(isMainThread());
+  // Note: No locking needed for the access from the main thread.
   if (!m_loaderProxyProvider)
     return;
   m_loaderProxyProvider->postTaskToWorkerGlobalScope(location, std::move(task));
+}
+
+ExecutionContext* WorkerLoaderProxy::getLoaderExecutionContext() {
+  DCHECK(isMainThread());
+  // Note: No locking needed for the access from the main thread.
+  if (!m_loaderProxyProvider)
+    return nullptr;
+  DCHECK(m_loaderProxyProvider->getLoaderExecutionContext()->isContextThread());
+  return m_loaderProxyProvider->getLoaderExecutionContext();
 }
 
 }  // namespace blink

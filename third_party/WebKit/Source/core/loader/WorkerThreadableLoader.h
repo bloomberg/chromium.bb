@@ -145,8 +145,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
                                std::unique_ptr<CrossThreadResourceRequestData>,
                                const ThreadableLoaderOptions&,
                                const ResourceLoaderOptions&,
-                               PassRefPtr<WaitableEventWithTasks>,
-                               ExecutionContext*);
+                               PassRefPtr<WaitableEventWithTasks>);
     ~MainThreadLoaderHolder() override;
 
     void overrideTimeout(unsigned long timeoutMillisecond);

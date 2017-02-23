@@ -44,7 +44,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   // 'virtual' for testing.
   virtual void workerThreadTerminated();
 
-  // Accessed from both the parent thread and the worker.
+  // Accessed only from the parent thread.
   ExecutionContext* getExecutionContext() const {
     return m_executionContext.get();
   }
@@ -81,10 +81,11 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   // These methods are called on different threads to schedule loading
   // requests and to send callbacks back to WorkerGlobalScope.
   void postTaskToLoader(const WebTraceLocation&,
-                        std::unique_ptr<ExecutionContextTask>) override;
+                        std::unique_ptr<WTF::CrossThreadClosure>) override;
   void postTaskToWorkerGlobalScope(
       const WebTraceLocation&,
       std::unique_ptr<WTF::CrossThreadClosure>) override;
+  ExecutionContext* getLoaderExecutionContext() override;
 
  private:
   friend class InProcessWorkerMessagingProxyForTest;
@@ -92,11 +93,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
 
   void parentObjectDestroyedInternal();
 
-  // Accessed cross-thread when worker thread posts tasks to the parent;
-  // it is not ideal to have ExecutionContext be cross-thread accessible.
-  //
-  // TODO: try to drop the need for the CrossThreadPersistent<>.
-  CrossThreadPersistent<ExecutionContext> m_executionContext;
+  Persistent<ExecutionContext> m_executionContext;
   Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
   // Accessed cross-thread when worker thread posts tasks to the parent.
   CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;

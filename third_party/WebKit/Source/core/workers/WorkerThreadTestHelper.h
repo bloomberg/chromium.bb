@@ -41,7 +41,7 @@ class MockWorkerLoaderProxyProvider : public WorkerLoaderProxyProvider {
   ~MockWorkerLoaderProxyProvider() override {}
 
   void postTaskToLoader(const WebTraceLocation&,
-                        std::unique_ptr<ExecutionContextTask>) override {
+                        std::unique_ptr<WTF::CrossThreadClosure>) override {
     NOTIMPLEMENTED();
   }
 
@@ -49,6 +49,11 @@ class MockWorkerLoaderProxyProvider : public WorkerLoaderProxyProvider {
       const WebTraceLocation&,
       std::unique_ptr<WTF::CrossThreadClosure>) override {
     NOTIMPLEMENTED();
+  }
+
+  ExecutionContext* getLoaderExecutionContext() override {
+    NOTIMPLEMENTED();
+    return nullptr;
   }
 };
 

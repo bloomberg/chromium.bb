@@ -160,11 +160,11 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     void disconnect();
 
     void connectOnMainThread(std::unique_ptr<SourceLocation>,
+                             RefPtr<WorkerLoaderProxy>,
                              WorkerThreadLifecycleContext*,
                              const KURL&,
                              const String& protocol,
-                             WebSocketChannelSyncHelper*,
-                             ExecutionContext*);
+                             WebSocketChannelSyncHelper*);
 
     // Returns null when |disconnect| has already been called.
     WebSocketChannelClient* client() { return m_client; }

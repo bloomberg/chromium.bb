@@ -262,16 +262,9 @@ void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message) {
 
 void WebEmbeddedWorkerImpl::postTaskToLoader(
     const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task) {
-  // This cross-thread operation is brittle wrt per-thread heaps,
-  // posting a task to main-thread owned objects.
+    std::unique_ptr<WTF::CrossThreadClosure> task) {
   m_mainThreadTaskRunners->get(TaskType::Networking)
-      ->postTask(
-          BLINK_FROM_HERE,
-          crossThreadBind(
-              &ExecutionContextTask::performTaskIfContextIsValid,
-              WTF::passed(std::move(task)),
-              wrapCrossThreadWeakPersistent(m_mainFrame->frame()->document())));
+      ->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
 void WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(
@@ -280,6 +273,10 @@ void WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(
   if (m_askedToTerminate || !m_workerThread)
     return;
   m_workerThread->postTask(location, std::move(task));
+}
+
+ExecutionContext* WebEmbeddedWorkerImpl::getLoaderExecutionContext() {
+  return m_mainFrame->frame()->document();
 }
 
 void WebEmbeddedWorkerImpl::prepareShadowPageForLoader() {

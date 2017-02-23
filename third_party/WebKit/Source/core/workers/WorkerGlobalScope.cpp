@@ -33,7 +33,6 @@
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/Event.h"
@@ -50,6 +49,7 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/InstanceCounters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
@@ -350,9 +350,10 @@ void WorkerGlobalScope::exceptionThrown(ErrorEvent* event) {
 }
 
 void WorkerGlobalScope::removeURLFromMemoryCache(const KURL& url) {
-  m_thread->workerLoaderProxy()->postTaskToLoader(
-      BLINK_FROM_HERE,
-      createCrossThreadTask(&removeURLFromMemoryCacheInternal, url));
+  m_thread->getParentFrameTaskRunners()
+      ->get(TaskType::Networking)
+      ->postTask(BLINK_FROM_HERE,
+                 crossThreadBind(&removeURLFromMemoryCacheInternal, url));
 }
 
 KURL WorkerGlobalScope::virtualCompleteURL(const String& url) const {

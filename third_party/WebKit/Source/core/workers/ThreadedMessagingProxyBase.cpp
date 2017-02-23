@@ -72,15 +72,14 @@ void ThreadedMessagingProxyBase::postTaskToWorkerGlobalScope(
 
 void ThreadedMessagingProxyBase::postTaskToLoader(
     const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task) {
-  DCHECK(getExecutionContext()->isDocument());
-  getParentFrameTaskRunners()
-      ->get(TaskType::Networking)
-      ->postTask(BLINK_FROM_HERE,
-                 crossThreadBind(
-                     &ExecutionContextTask::performTaskIfContextIsValid,
-                     WTF::passed(std::move(task)),
-                     wrapCrossThreadWeakPersistent(getExecutionContext())));
+    std::unique_ptr<WTF::CrossThreadClosure> task) {
+  m_parentFrameTaskRunners->get(TaskType::Networking)
+      ->postTask(BLINK_FROM_HERE, std::move(task));
+}
+
+ExecutionContext* ThreadedMessagingProxyBase::getLoaderExecutionContext() {
+  DCHECK(isParentContextThread());
+  return getExecutionContext();
 }
 
 void ThreadedMessagingProxyBase::countFeature(UseCounter::Feature feature) {
@@ -168,7 +167,7 @@ void ThreadedMessagingProxyBase::postMessageToPageInspector(
 bool ThreadedMessagingProxyBase::isParentContextThread() const {
   // TODO(nhiroki): Nested worker is not supported yet, so the parent context
   // thread should be equal to the main thread (http://crbug.com/31666).
-  DCHECK(getExecutionContext()->isDocument());
+  DCHECK(m_executionContext->isDocument());
   return isMainThread();
 }
 

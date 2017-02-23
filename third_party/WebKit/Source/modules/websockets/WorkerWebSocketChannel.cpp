@@ -30,15 +30,16 @@
 
 #include "modules/websockets/WorkerWebSocketChannel.h"
 
+#include <memory>
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/fileapi/Blob.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
 #include "public/platform/Platform.h"
@@ -47,7 +48,6 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -364,15 +364,18 @@ Bridge::~Bridge() {
 
 void Bridge::connectOnMainThread(
     std::unique_ptr<SourceLocation> location,
+    RefPtr<WorkerLoaderProxy> loaderProxy,
     WorkerThreadLifecycleContext* workerThreadLifecycleContext,
     const KURL& url,
     const String& protocol,
-    WebSocketChannelSyncHelper* syncHelper,
-    ExecutionContext* context) {
+    WebSocketChannelSyncHelper* syncHelper) {
   DCHECK(isMainThread());
   DCHECK(!m_peer);
+  ExecutionContext* loaderContext = loaderProxy->getLoaderExecutionContext();
+  if (!loaderContext)
+    return;
   Peer* peer = new Peer(this, m_loaderProxy, workerThreadLifecycleContext);
-  if (peer->initialize(std::move(location), context)) {
+  if (peer->initialize(std::move(location), loaderContext)) {
     m_peer = peer;
     syncHelper->setConnectRequestResult(m_peer->connect(url, protocol));
   }
@@ -387,9 +390,9 @@ bool Bridge::connect(std::unique_ptr<SourceLocation> location,
   WebSocketChannelSyncHelper syncHelper;
   m_loaderProxy->postTaskToLoader(
       BLINK_FROM_HERE,
-      createCrossThreadTask(
+      crossThreadBind(
           &Bridge::connectOnMainThread, wrapCrossThreadPersistent(this),
-          WTF::passed(location->clone()),
+          WTF::passed(location->clone()), m_loaderProxy,
           wrapCrossThreadPersistent(
               m_workerGlobalScope->thread()->getWorkerThreadLifecycleContext()),
           url, protocol, crossThreadUnretained(&syncHelper)));
@@ -407,8 +410,8 @@ void Bridge::send(const CString& message) {
 
   m_loaderProxy->postTaskToLoader(
       BLINK_FROM_HERE,
-      createCrossThreadTask(&Peer::sendTextAsCharVector, m_peer,
-                            WTF::passed(std::move(data))));
+      crossThreadBind(&Peer::sendTextAsCharVector, m_peer,
+                      WTF::passed(std::move(data))));
 }
 
 void Bridge::send(const DOMArrayBuffer& binaryData,
@@ -426,22 +429,21 @@ void Bridge::send(const DOMArrayBuffer& binaryData,
 
   m_loaderProxy->postTaskToLoader(
       BLINK_FROM_HERE,
-      createCrossThreadTask(&Peer::sendBinaryAsCharVector, m_peer,
-                            WTF::passed(std::move(data))));
+      crossThreadBind(&Peer::sendBinaryAsCharVector, m_peer,
+                      WTF::passed(std::move(data))));
 }
 
 void Bridge::send(PassRefPtr<BlobDataHandle> data) {
   DCHECK(m_peer);
   m_loaderProxy->postTaskToLoader(
       BLINK_FROM_HERE,
-      createCrossThreadTask(&Peer::sendBlob, m_peer, std::move(data)));
+      crossThreadBind(&Peer::sendBlob, m_peer, std::move(data)));
 }
 
 void Bridge::close(int code, const String& reason) {
   DCHECK(m_peer);
   m_loaderProxy->postTaskToLoader(
-      BLINK_FROM_HERE,
-      createCrossThreadTask(&Peer::close, m_peer, code, reason));
+      BLINK_FROM_HERE, crossThreadBind(&Peer::close, m_peer, code, reason));
 }
 
 void Bridge::fail(const String& reason,
@@ -449,16 +451,17 @@ void Bridge::fail(const String& reason,
                   std::unique_ptr<SourceLocation> location) {
   DCHECK(m_peer);
   m_loaderProxy->postTaskToLoader(
-      BLINK_FROM_HERE, createCrossThreadTask(&Peer::fail, m_peer, reason, level,
-                                             WTF::passed(location->clone())));
+      BLINK_FROM_HERE,
+      crossThreadBind(&Peer::fail, m_peer, reason, level,
+                      WTF::passed(location->clone())));
 }
 
 void Bridge::disconnect() {
   if (!m_peer)
     return;
 
-  m_loaderProxy->postTaskToLoader(
-      BLINK_FROM_HERE, createCrossThreadTask(&Peer::disconnect, m_peer));
+  m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE,
+                                  crossThreadBind(&Peer::disconnect, m_peer));
 
   m_client = nullptr;
   m_peer = nullptr;

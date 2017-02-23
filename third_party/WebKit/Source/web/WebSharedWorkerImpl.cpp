@@ -31,7 +31,6 @@
 #include "web/WebSharedWorkerImpl.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/events/MessageEvent.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -303,19 +302,19 @@ void WebSharedWorkerImpl::didTerminateWorkerThreadOnMainThread() {
 
 void WebSharedWorkerImpl::postTaskToLoader(
     const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task) {
+    std::unique_ptr<WTF::CrossThreadClosure> task) {
   m_parentFrameTaskRunners->get(TaskType::Networking)
-      ->postTask(FROM_HERE,
-                 crossThreadBind(
-                     &ExecutionContextTask::performTaskIfContextIsValid,
-                     WTF::passed(std::move(task)),
-                     wrapCrossThreadWeakPersistent(m_loadingDocument.get())));
+      ->postTask(FROM_HERE, std::move(task));
 }
 
 void WebSharedWorkerImpl::postTaskToWorkerGlobalScope(
     const WebTraceLocation& location,
     std::unique_ptr<WTF::CrossThreadClosure> task) {
   m_workerThread->postTask(location, std::move(task));
+}
+
+ExecutionContext* WebSharedWorkerImpl::getLoaderExecutionContext() {
+  return m_loadingDocument.get();
 }
 
 void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel) {
