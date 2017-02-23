@@ -74,10 +74,6 @@
   // interval since 1970.
   NSTimeInterval _lastVisitedTimestamp;
 
-  // If |YES|, override |currentEntry.useDesktopUserAgent| and create the
-  // pending entry using the desktop user agent.
-  BOOL _useDesktopUserAgentForNextPendingItem;
-
   // The browser state associated with this CRWSessionController;
   web::BrowserState* _browserState;  // weak
 
@@ -496,11 +492,14 @@
                 transition:(ui::PageTransition)transition {
   DCHECK(![self pendingEntry]);
   DCHECK([self currentEntry]);
-  web::NavigationItem* currentItem = [self currentEntry].navigationItem;
-  CHECK(web::history_state_util::IsHistoryStateChangeValid(
-      currentItem->GetURL(), URL));
-  web::Referrer referrer(currentItem->GetURL(), web::ReferrerPolicyDefault);
 
+  web::NavigationItem* lastCommittedItem =
+      self.lastCommittedEntry.navigationItem;
+  CHECK(web::history_state_util::IsHistoryStateChangeValid(
+      lastCommittedItem->GetURL(), URL));
+
+  web::Referrer referrer(lastCommittedItem->GetURL(),
+                         web::ReferrerPolicyDefault);
   base::scoped_nsobject<CRWSessionEntry> pushedEntry([self
       sessionEntryWithURL:URL
                  referrer:referrer
@@ -508,11 +507,11 @@
            initiationType:web::NavigationInitiationType::USER_INITIATED]);
 
   web::NavigationItemImpl* pushedItem = [pushedEntry navigationItemImpl];
-  pushedItem->SetIsOverridingUserAgent(currentItem->IsOverridingUserAgent());
+  pushedItem->SetIsOverridingUserAgent(
+      lastCommittedItem->IsOverridingUserAgent());
   pushedItem->SetSerializedStateObject(stateObject);
   pushedItem->SetIsCreatedFromPushState(true);
-  web::SSLStatus& sslStatus = [self currentEntry].navigationItem->GetSSL();
-  pushedEntry.get().navigationItem->GetSSL() = sslStatus;
+  pushedItem->GetSSL() = lastCommittedItem->GetSSL();
 
   [self clearForwardItems];
   // Add the new entry at the end.

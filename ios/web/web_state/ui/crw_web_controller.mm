@@ -458,9 +458,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
 // Returns YES if the user interacted with the page recently.
 @property(nonatomic, readonly) BOOL userClickedRecently;
-// Returns whether the desktop user agent should be used when setting the user
-// agent.
-@property(nonatomic, readonly) BOOL useDesktopUserAgent;
+
+// Whether or not desktop user agent is used for the visibleItem.
+@property(nonatomic, readonly) BOOL usesDesktopUserAgent;
 
 // Facade for Mojo API.
 @property(nonatomic, readonly) web::MojoFacade* mojoFacade;
@@ -2344,9 +2344,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return rendererInitiatedWithoutInteraction || noNavigationItems;
 }
 
-- (BOOL)useDesktopUserAgent {
-  web::NavigationItem* item = [self currentNavItem];
-  return item && item->IsOverridingUserAgent();
+- (BOOL)usesDesktopUserAgent {
+  if (!self.navigationManagerImpl)
+    return NO;
+
+  web::NavigationItem* visibleItem =
+      self.navigationManagerImpl->GetVisibleItem();
+  return visibleItem && visibleItem->IsOverridingUserAgent();
 }
 
 - (web::MojoFacade*)mojoFacade {
@@ -4219,7 +4223,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // delegate must be specified.
   return web::BuildWKWebView(CGRectZero, config,
                              self.webStateImpl->GetBrowserState(),
-                             [self useDesktopUserAgent]);
+                             self.usesDesktopUserAgent);
 }
 
 - (void)setWebView:(WKWebView*)webView {
