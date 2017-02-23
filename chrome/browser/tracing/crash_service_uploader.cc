@@ -21,6 +21,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/base/network_delegate.h"
 #include "net/proxy/proxy_config.h"
@@ -313,6 +314,8 @@ void TraceCrashServiceUploader::CreateAndStartURLFetcher(
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(),
       data_use_measurement::DataUseUserData::TRACING_UPLOADER);
+  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                             net::LOAD_DO_NOT_SEND_COOKIES);
   url_fetcher_->SetRequestContext(request_context_);
   url_fetcher_->SetUploadData(content_type, post_data);
   url_fetcher_->Start();
