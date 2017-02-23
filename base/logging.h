@@ -298,22 +298,26 @@ BASE_EXPORT LogMessageHandlerFunction GetLogMessageHandler();
 
 inline void AnalyzerNoReturn() __attribute__((analyzer_noreturn)) {}
 
+// |arg| is a universal reference for compatibility with lvalue and rvalue
+// arguments.
 template <typename TVal>
-inline constexpr TVal AnalysisAssumeTrue(TVal arg) {
+inline constexpr TVal&& AnalysisAssumeTrue(TVal&& arg) {
   if (!arg) {
     AnalyzerNoReturn();
   }
-  return arg;
+  return std::forward<TVal>(arg);
 }
 
 #define ANALYZER_ASSUME_TRUE(val) ::logging::AnalysisAssumeTrue(val)
 
 #elif defined(_PREFAST_) && defined(OS_WIN)
 
+// |arg| is a universal reference for compatibility with lvalue and rvalue
+// arguments.
 template <typename TVal>
-inline constexpr TVal AnalysisAssumeTrue(TVal arg) {
+inline constexpr TVal&& AnalysisAssumeTrue(TVal&& arg) {
   __analysis_assume(!!arg);
-  return arg;
+  return std::forward<TVal>(arg);
 }
 
 #define ANALYZER_ASSUME_TRUE(val) ::logging::AnalysisAssumeTrue(val)
