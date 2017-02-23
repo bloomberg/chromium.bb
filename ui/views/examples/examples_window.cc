@@ -23,6 +23,7 @@
 #include "ui/views/examples/button_sticker_sheet.h"
 #include "ui/views/examples/checkbox_example.h"
 #include "ui/views/examples/combobox_example.h"
+#include "ui/views/examples/dialog_example.h"
 #include "ui/views/examples/label_example.h"
 #include "ui/views/examples/link_example.h"
 #include "ui/views/examples/menu_example.h"
@@ -61,6 +62,7 @@ ExampleVector CreateExamples() {
   examples.push_back(base::MakeUnique<ButtonStickerSheet>());
   examples.push_back(base::MakeUnique<CheckboxExample>());
   examples.push_back(base::MakeUnique<ComboboxExample>());
+  examples.push_back(base::MakeUnique<DialogExample>());
   examples.push_back(base::MakeUnique<LabelExample>());
   examples.push_back(base::MakeUnique<LinkExample>());
   examples.push_back(base::MakeUnique<MenuExample>());
