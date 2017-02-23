@@ -10,6 +10,7 @@ import android.os.Build;
 
 import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.ContextUtils;
+import org.chromium.components.minidump_uploader.MinidumpUploader;
 
 /**
  * Class that interacts with the Android JobScheduler to upload Minidumps at appropriate times.

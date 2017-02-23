@@ -13,7 +13,6 @@ import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.PlatformServiceBridge;
 import org.chromium.android_webview.crash.CrashReceiverService;
-import org.chromium.android_webview.crash.MinidumpUploader;
 import org.chromium.android_webview.crash.MinidumpUploaderImpl;
 import org.chromium.base.FileUtils;
 import org.chromium.base.ThreadUtils;
@@ -21,6 +20,7 @@ import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.CrashTestCase;
 import org.chromium.components.minidump_uploader.MinidumpUploadCallable;
 import org.chromium.components.minidump_uploader.MinidumpUploadCallableTest;
+import org.chromium.components.minidump_uploader.MinidumpUploader;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactory;
 

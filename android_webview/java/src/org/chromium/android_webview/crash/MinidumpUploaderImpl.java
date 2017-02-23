@@ -17,6 +17,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.MinidumpUploadCallable;
+import org.chromium.components.minidump_uploader.MinidumpUploader;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 
 import java.io.File;
