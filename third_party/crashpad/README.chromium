@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: cd284713834e4d9c184dd06643b0a87f73d9b062
+Revision: 4a2043ea65e2641ef1a921801c0aaa15ada02fc7
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -35,4 +35,4 @@ $ cd "${CRASHPAD_DIR}"
 $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
-Update mig.py to take an sdk argument.
+None.
