@@ -1028,9 +1028,17 @@ class CORE_EXPORT FrameView final
 
   void updateViewportIntersectionsForSubtree(
       DocumentLifecycle::LifecycleState targetState);
-  void updateRenderThrottlingStatus(bool hidden,
-                                    bool subtreeThrottled,
-                                    bool forceThrottlingInvalidation = false);
+
+  enum ForceThrottlingInvalidationBehavior {
+    DontForceThrottlingInvalidation,
+    ForceThrottlingInvalidation
+  };
+  enum NotifyChildrenBehavior { DontNotifyChildren, NotifyChildren };
+  void updateRenderThrottlingStatus(
+      bool hidden,
+      bool subtreeThrottled,
+      ForceThrottlingInvalidationBehavior = DontForceThrottlingInvalidation,
+      NotifyChildrenBehavior = NotifyChildren);
   void notifyResizeObservers();
 
   // PaintInvalidationCapableScrollableArea

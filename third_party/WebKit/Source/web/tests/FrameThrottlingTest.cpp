@@ -1051,4 +1051,36 @@ TEST_P(FrameThrottlingTest, DisplayNoneNotThrottled) {
   EXPECT_FALSE(frameDocument->view()->canThrottleRendering());
 }
 
+TEST_P(FrameThrottlingTest, DisplayNoneChildrenRemainThrottled) {
+  // Create two nested frames which are throttled.
+  SimRequest mainResource("https://example.com/", "text/html");
+  SimRequest frameResource("https://example.com/iframe.html", "text/html");
+  SimRequest childFrameResource("https://example.com/child-iframe.html",
+                                "text/html");
+
+  loadURL("https://example.com/");
+  mainResource.complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+  frameResource.complete(
+      "<iframe id=child-frame sandbox src=child-iframe.html></iframe>");
+  childFrameResource.complete("");
+
+  // Move both frames offscreen to make them throttled.
+  auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+  auto* childFrameElement = toHTMLIFrameElement(
+      frameElement->contentDocument()->getElementById("child-frame"));
+  frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+  compositeFrame();
+  EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+  EXPECT_TRUE(
+      childFrameElement->contentDocument()->view()->canThrottleRendering());
+
+  // Setting display:none for the parent frame unthrottles the parent but not
+  // the child. This behavior matches Safari.
+  frameElement->setAttribute(styleAttr, "display: none");
+  compositeFrame();
+  EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+  EXPECT_TRUE(
+      childFrameElement->contentDocument()->view()->canThrottleRendering());
+}
+
 }  // namespace blink
