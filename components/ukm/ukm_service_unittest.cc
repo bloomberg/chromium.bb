@@ -49,8 +49,8 @@ class UkmServiceTest : public testing::Test {
         1000,  // byte limit
         0);
 
-    result_persisted_logs.DeserializeLogs();
-    result_persisted_logs.StageLog();
+    result_persisted_logs.LoadPersistedUnsentLogs();
+    result_persisted_logs.StageNextLog();
 
     std::string uncompressed_log_data;
     EXPECT_TRUE(compression::GzipUncompress(result_persisted_logs.staged_log(),

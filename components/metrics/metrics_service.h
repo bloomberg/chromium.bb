@@ -31,6 +31,7 @@
 #include "components/metrics/execution_phase.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
+#include "components/metrics/metrics_log_store.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/variations/synthetic_trials.h"
@@ -200,6 +201,7 @@ class MetricsService : public base::HistogramFlattener {
  protected:
   // Exposed for testing.
   MetricsLogManager* log_manager() { return &log_manager_; }
+  MetricsLogStore* log_store() { return &log_store_; }
 
  private:
   friend class MetricsServiceAccessor;
@@ -363,6 +365,9 @@ class MetricsService : public base::HistogramFlattener {
 
   // Manager for the various in-flight logs.
   MetricsLogManager log_manager_;
+
+  // Store of logs ready to be uploaded.
+  MetricsLogStore log_store_;
 
   // |histogram_snapshot_manager_| prepares histogram deltas for transmission.
   base::HistogramSnapshotManager histogram_snapshot_manager_;

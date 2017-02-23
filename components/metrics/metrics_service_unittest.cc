@@ -53,6 +53,7 @@ class TestMetricsService : public MetricsService {
   ~TestMetricsService() override {}
 
   using MetricsService::log_manager;
+  using MetricsService::log_store;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMetricsService);
@@ -188,8 +189,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
   service.InitializeMetricsRecordingState();
 
   // No initial stability log should be generated.
-  EXPECT_FALSE(service.log_manager()->has_unsent_logs());
-  EXPECT_FALSE(service.log_manager()->has_staged_log());
+  EXPECT_FALSE(service.log_store()->has_unsent_logs());
+  EXPECT_FALSE(service.log_store()->has_staged_log());
 
   // Ensure that HasInitialStabilityMetrics() is always called on providers,
   // for consistency, even if other conditions already indicate their presence.
@@ -232,9 +233,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   service.InitializeMetricsRecordingState();
 
   // The initial stability log should be generated and persisted in unsent logs.
-  MetricsLogManager* log_manager = service.log_manager();
-  EXPECT_TRUE(log_manager->has_unsent_logs());
-  EXPECT_FALSE(log_manager->has_staged_log());
+  MetricsLogStore* log_store = service.log_store();
+  EXPECT_TRUE(log_store->has_unsent_logs());
+  EXPECT_FALSE(log_store->has_staged_log());
 
   // Ensure that HasInitialStabilityMetrics() is always called on providers,
   // for consistency, even if other conditions already indicate their presence.
@@ -246,12 +247,12 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   EXPECT_TRUE(test_provider->provide_stability_metrics_called());
 
   // Stage the log and retrieve it.
-  log_manager->StageNextLogForUpload();
-  EXPECT_TRUE(log_manager->has_staged_log());
+  log_store->StageNextLog();
+  EXPECT_TRUE(log_store->has_staged_log());
 
   std::string uncompressed_log;
-  EXPECT_TRUE(compression::GzipUncompress(log_manager->staged_log(),
-                                          &uncompressed_log));
+  EXPECT_TRUE(
+      compression::GzipUncompress(log_store->staged_log(), &uncompressed_log));
 
   ChromeUserMetricsExtension uma_log;
   EXPECT_TRUE(uma_log.ParseFromString(uncompressed_log));
@@ -299,9 +300,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   service.InitializeMetricsRecordingState();
 
   // The initial stability log should be generated and persisted in unsent logs.
-  MetricsLogManager* log_manager = service.log_manager();
-  EXPECT_TRUE(log_manager->has_unsent_logs());
-  EXPECT_FALSE(log_manager->has_staged_log());
+  MetricsLogStore* log_store = service.log_store();
+  EXPECT_TRUE(log_store->has_unsent_logs());
+  EXPECT_FALSE(log_store->has_staged_log());
 
   // Ensure that HasInitialStabilityMetrics() is always called on providers,
   // for consistency, even if other conditions already indicate their presence.
@@ -313,12 +314,12 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EXPECT_TRUE(test_provider->provide_stability_metrics_called());
 
   // Stage the log and retrieve it.
-  log_manager->StageNextLogForUpload();
-  EXPECT_TRUE(log_manager->has_staged_log());
+  log_store->StageNextLog();
+  EXPECT_TRUE(log_store->has_staged_log());
 
   std::string uncompressed_log;
-  EXPECT_TRUE(compression::GzipUncompress(log_manager->staged_log(),
-                                          &uncompressed_log));
+  EXPECT_TRUE(
+      compression::GzipUncompress(log_store->staged_log(), &uncompressed_log));
 
   ChromeUserMetricsExtension uma_log;
   EXPECT_TRUE(uma_log.ParseFromString(uncompressed_log));
@@ -388,7 +389,7 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   WaitUntilTimeChanges(base::TimeTicks::Now());
 
   // Start a new log and ensure all three trials appear in it.
-  service.log_manager_.FinishCurrentLog();
+  service.log_manager_.FinishCurrentLog(service.log_store());
   service.log_manager_.BeginLoggingWithLog(
       std::unique_ptr<MetricsLog>(new MetricsLog(
           "clientID", 1, MetricsLog::ONGOING_LOG, &client, GetLocalState())));
@@ -398,7 +399,7 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group2"));
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial3", "Group3"));
-  service.log_manager_.FinishCurrentLog();
+  service.log_manager_.FinishCurrentLog(service.log_store());
 }
 
 TEST_F(MetricsServiceTest, RegisterSyntheticMultiGroupFieldTrial) {
@@ -445,7 +446,7 @@ TEST_F(MetricsServiceTest, RegisterSyntheticMultiGroupFieldTrial) {
 
   service.GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(),
                                            &synthetic_trials);
-  service.log_manager_.FinishCurrentLog();
+  service.log_manager_.FinishCurrentLog(service.log_store());
 }
 
 TEST_F(MetricsServiceTest,

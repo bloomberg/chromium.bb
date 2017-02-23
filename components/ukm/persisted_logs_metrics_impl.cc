@@ -12,12 +12,10 @@ PersistedLogsMetricsImpl::PersistedLogsMetricsImpl() = default;
 
 PersistedLogsMetricsImpl::~PersistedLogsMetricsImpl() = default;
 
-metrics::PersistedLogs::LogReadStatus
-PersistedLogsMetricsImpl::RecordLogReadStatus(
-    metrics::PersistedLogs::LogReadStatus status) {
+void PersistedLogsMetricsImpl::RecordLogReadStatus(
+    metrics::PersistedLogsMetrics::LogReadStatus status) {
   UMA_HISTOGRAM_ENUMERATION("UKM.PersistentLogRecall.Status", status,
-                            metrics::PersistedLogs::END_RECALL_STATUS);
-  return status;
+                            metrics::PersistedLogsMetrics::END_RECALL_STATUS);
 }
 
 void PersistedLogsMetricsImpl::RecordCompressionRatio(size_t compressed_size,

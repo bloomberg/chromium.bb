@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
+#include "components/metrics/log_store.h"
 
 class PrefService;
 
@@ -22,26 +23,8 @@ namespace metrics {
 class PersistedLogsMetrics;
 
 // Maintains a list of unsent logs that are written and restored from disk.
-class PersistedLogs {
+class PersistedLogs : public LogStore {
  public:
-  // Used to produce a histogram that keeps track of the status of recalling
-  // persisted per logs.
-  enum LogReadStatus {
-    RECALL_SUCCESS,         // We were able to correctly recall a persisted log.
-    LIST_EMPTY,             // Attempting to recall from an empty list.
-    LIST_SIZE_MISSING,      // Failed to recover list size using GetAsInteger().
-    LIST_SIZE_TOO_SMALL,    // Too few elements in the list (less than 3).
-    LIST_SIZE_CORRUPTION,   // List size is not as expected.
-    LOG_STRING_CORRUPTION,  // Failed to recover log string using GetAsString().
-    CHECKSUM_CORRUPTION,    // Failed to verify checksum.
-    CHECKSUM_STRING_CORRUPTION,  // Failed to recover checksum string using
-                                 // GetAsString().
-    DECODE_FAIL,            // Failed to decode log.
-    DEPRECATED_XML_PROTO_MISMATCH,  // The XML and protobuf logs have
-                                    // inconsistent data.
-    END_RECALL_STATUS       // Number of bins to use to create the histogram.
-  };
-
   // Constructs a PersistedLogs that stores data in |local_state| under the
   // preference |pref_name|.
   // Calling code is responsible for ensuring that the lifetime of |local_state|
@@ -60,58 +43,34 @@ class PersistedLogs {
                 size_t max_log_size);
   ~PersistedLogs();
 
-  // Write list to storage.
-  void SerializeLogs() const;
-
-  // Reads the list from the preference.
-  LogReadStatus DeserializeLogs();
+  // LogStore:
+  bool has_unsent_logs() const override;
+  bool has_staged_log() const override;
+  const std::string& staged_log() const override;
+  const std::string& staged_log_hash() const override;
+  void StageNextLog() override;
+  void DiscardStagedLog() override;
+  void PersistUnsentLogs() const override;
+  void LoadPersistedUnsentLogs() override;
 
   // Adds a log to the list.
   void StoreLog(const std::string& log_data);
 
-  // Stages the most recent log.  The staged_log will remain the same even if
-  // additional logs are added.
-  void StageLog();
-
-  // Remove the staged log.
-  void DiscardStagedLog();
-
   // Delete all logs, in memory and on disk.
   void Purge();
 
-  // True if a log has been staged.
-  bool has_staged_log() const { return staged_log_index_ != -1; }
-
-  // Returns the element in the front of the list.
-  const std::string& staged_log() const {
-    DCHECK(has_staged_log());
-    return list_[staged_log_index_].compressed_log_data;
-  }
-
-  // Returns the element in the front of the list.
-  const std::string& staged_log_hash() const {
-    DCHECK(has_staged_log());
-    return list_[staged_log_index_].hash;
-  }
-
   // Returns the timestamp of the element in the front of the list.
-  const std::string& staged_log_timestamp() const {
-    DCHECK(has_staged_log());
-    return list_[staged_log_index_].timestamp;
-  }
+  const std::string& staged_log_timestamp() const;
 
   // The number of elements currently stored.
   size_t size() const { return list_.size(); }
-
-  // True if there are no stored logs.
-  bool empty() const { return list_.empty(); }
 
  private:
   // Writes the list to the ListValue.
   void WriteLogsToPrefList(base::ListValue* list) const;
 
   // Reads the list from the ListValue.
-  LogReadStatus ReadLogsFromPrefList(const base::ListValue& list);
+  void ReadLogsFromPrefList(const base::ListValue& list);
 
   // An object for recording UMA metrics.
   std::unique_ptr<PersistedLogsMetrics> metrics_;

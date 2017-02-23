@@ -16,14 +16,11 @@ class PersistedLogsMetricsImpl : public PersistedLogsMetrics {
   PersistedLogsMetricsImpl() {}
   ~PersistedLogsMetricsImpl() override {}
 
-  PersistedLogs::LogReadStatus RecordLogReadStatus(
-      PersistedLogs::LogReadStatus status) override;
-
+  // PersistedLogsMetrics:
+  void RecordLogReadStatus(PersistedLogsMetrics::LogReadStatus status) override;
   void RecordCompressionRatio(
     size_t compressed_size, size_t original_size) override;
-
   void RecordDroppedLogSize(size_t size) override;
-
   void RecordDroppedLogsNum(int dropped_logs_num) override;
 
  private:

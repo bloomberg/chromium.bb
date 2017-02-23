@@ -77,23 +77,34 @@ PersistedLogs::PersistedLogs(std::unique_ptr<PersistedLogsMetrics> metrics,
 
 PersistedLogs::~PersistedLogs() {}
 
-void PersistedLogs::SerializeLogs() const {
-  ListPrefUpdate update(local_state_, pref_name_);
-  WriteLogsToPrefList(update.Get());
+bool PersistedLogs::has_unsent_logs() const {
+  return !!size();
 }
 
-PersistedLogs::LogReadStatus PersistedLogs::DeserializeLogs() {
-  return ReadLogsFromPrefList(*local_state_->GetList(pref_name_));
+// True if a log has been staged.
+bool PersistedLogs::has_staged_log() const {
+  return staged_log_index_ != -1;
 }
 
-void PersistedLogs::StoreLog(const std::string& log_data) {
-  list_.push_back(LogInfo());
-  list_.back().Init(metrics_.get(),
-                    log_data,
-                    base::Int64ToString(base::Time::Now().ToTimeT()));
+// Returns the element in the front of the list.
+const std::string& PersistedLogs::staged_log() const {
+  DCHECK(has_staged_log());
+  return list_[staged_log_index_].compressed_log_data;
 }
 
-void PersistedLogs::StageLog() {
+// Returns the element in the front of the list.
+const std::string& PersistedLogs::staged_log_hash() const {
+  DCHECK(has_staged_log());
+  return list_[staged_log_index_].hash;
+}
+
+// Returns the timestamp of the element in the front of the list.
+const std::string& PersistedLogs::staged_log_timestamp() const {
+  DCHECK(has_staged_log());
+  return list_[staged_log_index_].timestamp;
+}
+
+void PersistedLogs::StageNextLog() {
   // CHECK, rather than DCHECK, because swap()ing with an empty list causes
   // hard-to-identify crashes much later.
   CHECK(!list_.empty());
@@ -109,6 +120,21 @@ void PersistedLogs::DiscardStagedLog() {
   staged_log_index_ = -1;
 }
 
+void PersistedLogs::PersistUnsentLogs() const {
+  ListPrefUpdate update(local_state_, pref_name_);
+  WriteLogsToPrefList(update.Get());
+}
+
+void PersistedLogs::LoadPersistedUnsentLogs() {
+  ReadLogsFromPrefList(*local_state_->GetList(pref_name_));
+}
+
+void PersistedLogs::StoreLog(const std::string& log_data) {
+  list_.push_back(LogInfo());
+  list_.back().Init(metrics_.get(), log_data,
+                    base::Int64ToString(base::Time::Now().ToTimeT()));
+}
+
 void PersistedLogs::Purge() {
   if (has_staged_log()) {
     DiscardStagedLog();
@@ -117,10 +143,11 @@ void PersistedLogs::Purge() {
   local_state_->ClearPref(pref_name_);
 }
 
-PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromPrefList(
-    const base::ListValue& list_value) {
-  if (list_value.empty())
-    return metrics_->RecordLogReadStatus(LIST_EMPTY);
+void PersistedLogs::ReadLogsFromPrefList(const base::ListValue& list_value) {
+  if (list_value.empty()) {
+    metrics_->RecordLogReadStatus(PersistedLogsMetrics::LIST_EMPTY);
+    return;
+  }
 
   const size_t log_count = list_value.GetSize();
 
@@ -133,7 +160,9 @@ PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromPrefList(
         !dict->GetString(kLogDataKey, &list_[i].compressed_log_data) ||
         !dict->GetString(kLogHashKey, &list_[i].hash)) {
       list_.clear();
-      return metrics_->RecordLogReadStatus(LOG_STRING_CORRUPTION);
+      metrics_->RecordLogReadStatus(
+          PersistedLogsMetrics::LOG_STRING_CORRUPTION);
+      return;
     }
 
     list_[i].compressed_log_data =
@@ -146,7 +175,7 @@ PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromPrefList(
     dict->GetString(kLogTimestampKey, &list_[i].timestamp);
   }
 
-  return metrics_->RecordLogReadStatus(RECALL_SUCCESS);
+  metrics_->RecordLogReadStatus(PersistedLogsMetrics::RECALL_SUCCESS);
 }
 
 void PersistedLogs::WriteLogsToPrefList(base::ListValue* list_value) const {

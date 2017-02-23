@@ -258,7 +258,7 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
 MetricsService::MetricsService(MetricsStateManager* state_manager,
                                MetricsServiceClient* client,
                                PrefService* local_state)
-    : log_manager_(local_state, kUploadLogAvoidRetransmitSize),
+    : log_store_(local_state, kUploadLogAvoidRetransmitSize),
       histogram_snapshot_manager_(this),
       state_manager_(state_manager),
       client_(client),
@@ -520,7 +520,7 @@ void MetricsService::ClearSavedStabilityMetrics() {
 }
 
 void MetricsService::PushExternalLog(const std::string& log) {
-  log_manager_.StoreLog(log, MetricsLog::ONGOING_LOG);
+  log_store_.StoreLog(log, MetricsLog::ONGOING_LOG);
 }
 
 void MetricsService::UpdateMetricsUsagePrefs(const std::string& service_name,
@@ -555,7 +555,7 @@ void MetricsService::InitializeMetricsState() {
     version_changed = true;
   }
 
-  log_manager_.LoadPersistedUnsentLogs();
+  log_store_.LoadPersistedUnsentLogs();
 
   session_id_ = local_state_->GetInteger(prefs::kMetricsSessionID);
 
@@ -742,7 +742,7 @@ void MetricsService::CloseCurrentLog() {
   current_log->RecordGeneralMetrics(metrics_providers_);
   RecordCurrentHistograms();
   DVLOG(1) << "Generated an ongoing log.";
-  log_manager_.FinishCurrentLog();
+  log_manager_.FinishCurrentLog(&log_store_);
 }
 
 void MetricsService::PushPendingLogsToPersistentStorage() {
@@ -750,7 +750,7 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
     return;  // We didn't and still don't have time to get plugin list etc.
 
   CloseCurrentLog();
-  log_manager_.PersistUnsentLogs();
+  log_store_.PersistUnsentLogs();
 }
 
 //------------------------------------------------------------------------------
@@ -801,7 +801,7 @@ void MetricsService::StartScheduledUpload() {
 
   // If there are unsent logs, send the next one. If not, start the asynchronous
   // process of finalizing the current log for upload.
-  if (state_ == SENDING_LOGS && log_manager_.has_unsent_logs()) {
+  if (state_ == SENDING_LOGS && log_store_.has_unsent_logs()) {
     if (upload_scheduler_) {
       upload_scheduler_->Start();
       rotation_scheduler_->RotationFinished();
@@ -868,7 +868,7 @@ void MetricsService::SendNextLog() {
     }
     return;
   }
-  if (!log_manager_.has_unsent_logs()) {
+  if (!log_store_.has_unsent_logs()) {
     // Should only get here if serializing the log failed somehow.
     if (upload_scheduler_) {
       upload_scheduler_->Stop();
@@ -877,12 +877,12 @@ void MetricsService::SendNextLog() {
     } else {
       // Just tell the scheduler it was uploaded and wait for the next log
       // interval.
-      scheduler_->UploadFinished(true, log_manager_.has_unsent_logs());
+      scheduler_->UploadFinished(true, log_store_.has_unsent_logs());
     }
     return;
   }
-  if (!log_manager_.has_staged_log())
-    log_manager_.StageNextLogForUpload();
+  if (!log_store_.has_staged_log())
+    log_store_.StageNextLog();
 
   // Proceed to stage the log for upload if log size satisfies cellular log
   // upload constrains.
@@ -890,7 +890,7 @@ void MetricsService::SendNextLog() {
   bool is_cellular_logic = client_->IsUMACellularUploadLogicEnabled();
   if (is_cellular_logic && data_use_tracker_ &&
       !data_use_tracker_->ShouldUploadLogOnCellular(
-          log_manager_.staged_log_hash().size())) {
+          log_store_.staged_log_hash().size())) {
     if (upload_scheduler_) {
       upload_scheduler_->UploadOverDataUsageCap();
     } else {
@@ -948,12 +948,12 @@ bool MetricsService::PrepareInitialStabilityLog(
   //       stability stats from a previous session only.
 
   DVLOG(1) << "Generated an stability log.";
-  log_manager_.FinishCurrentLog();
+  log_manager_.FinishCurrentLog(&log_store_);
   log_manager_.ResumePausedLog();
 
   // Store unsent logs, including the stability log that was just saved, so
   // that they're not lost in case of a crash before upload time.
-  log_manager_.PersistUnsentLogs();
+  log_store_.PersistUnsentLogs();
 
   return true;
 }
@@ -980,19 +980,19 @@ void MetricsService::PrepareInitialMetricsLog() {
   RecordCurrentHistograms();
 
   DVLOG(1) << "Generated an initial log.";
-  log_manager_.FinishCurrentLog();
+  log_manager_.FinishCurrentLog(&log_store_);
   log_manager_.ResumePausedLog();
 
   // Store unsent logs, including the initial log that was just saved, so
   // that they're not lost in case of a crash before upload time.
-  log_manager_.PersistUnsentLogs();
+  log_store_.PersistUnsentLogs();
 
   state_ = SENDING_LOGS;
 }
 
 void MetricsService::SendStagedLog() {
-  DCHECK(log_manager_.has_staged_log());
-  if (!log_manager_.has_staged_log())
+  DCHECK(log_store_.has_staged_log());
+  if (!log_store_.has_staged_log())
     return;
 
   DCHECK(!log_upload_in_progress_);
@@ -1005,10 +1005,9 @@ void MetricsService::SendStagedLog() {
         base::Bind(&MetricsService::OnLogUploadComplete,
                    self_ptr_factory_.GetWeakPtr()));
   }
-  const std::string hash =
-      base::HexEncode(log_manager_.staged_log_hash().data(),
-                      log_manager_.staged_log_hash().size());
-  log_uploader_->UploadLog(log_manager_.staged_log(), hash);
+  const std::string hash = base::HexEncode(log_store_.staged_log_hash().data(),
+                                           log_store_.staged_log_hash().size());
+  log_uploader_->UploadLog(log_store_.staged_log(), hash);
 
   if (!upload_scheduler_)
     HandleIdleSinceLastTransmission(true);
@@ -1031,7 +1030,7 @@ void MetricsService::OnLogUploadComplete(int response_code) {
 
   // Provide boolean for error recovery (allow us to ignore response_code).
   bool discard_log = false;
-  const size_t log_size = log_manager_.staged_log().length();
+  const size_t log_size = log_store_.staged_log().length();
   if (upload_succeeded) {
     UMA_HISTOGRAM_COUNTS_10000("UMA.LogSize.OnSuccess", log_size / 1024);
   } else if (log_size > kUploadLogAvoidRetransmitSize) {
@@ -1044,23 +1043,22 @@ void MetricsService::OnLogUploadComplete(int response_code) {
   }
 
   if (upload_succeeded || discard_log) {
-    log_manager_.DiscardStagedLog();
+    log_store_.DiscardStagedLog();
     // Store the updated list to disk now that the removed log is uploaded.
-    log_manager_.PersistUnsentLogs();
+    log_store_.PersistUnsentLogs();
   }
 
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
   bool server_is_healthy = upload_succeeded || response_code == 400;
   if (upload_scheduler_) {
-    if (!log_manager_.has_unsent_logs()) {
+    if (!log_store_.has_unsent_logs()) {
       DVLOG(1) << "Stopping upload_scheduler_";
       upload_scheduler_->Stop();
     }
     upload_scheduler_->UploadFinished(server_is_healthy);
   } else {
-    scheduler_->UploadFinished(server_is_healthy,
-                               log_manager_.has_unsent_logs());
+    scheduler_->UploadFinished(server_is_healthy, log_store_.has_unsent_logs());
   }
 }
 

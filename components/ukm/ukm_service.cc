@@ -122,7 +122,7 @@ UkmService::UkmService(PrefService* pref_service,
   DCHECK(client_);
   DVLOG(1) << "UkmService::Constructor";
 
-  persisted_logs_.DeserializeLogs();
+  persisted_logs_.LoadPersistedUnsentLogs();
 
   base::Closure rotate_callback =
       base::Bind(&UkmService::RotateLog, self_ptr_factory_.GetWeakPtr());
@@ -187,7 +187,7 @@ void UkmService::DisableReporting() {
 void UkmService::Flush() {
   if (initialize_complete_)
     BuildAndStoreLog();
-  persisted_logs_.SerializeLogs();
+  persisted_logs_.PersistUnsentLogs();
 }
 
 void UkmService::Purge() {
@@ -230,9 +230,8 @@ void UkmService::RotateLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!log_upload_in_progress_);
   DVLOG(1) << "UkmService::RotateLog";
-  if (persisted_logs_.empty()) {
+  if (!persisted_logs_.has_unsent_logs())
     BuildAndStoreLog();
-  }
   StartScheduledUpload();
 }
 
@@ -268,13 +267,13 @@ void UkmService::BuildAndStoreLog() {
 void UkmService::StartScheduledUpload() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!log_upload_in_progress_);
-  if (persisted_logs_.empty()) {
+  if (!persisted_logs_.has_unsent_logs()) {
     // No logs to send, so early out and schedule the next rotation.
     scheduler_->UploadFinished(true, /* has_unsent_logs */ false);
     return;
   }
   if (!persisted_logs_.has_staged_log())
-    persisted_logs_.StageLog();
+    persisted_logs_.StageNextLog();
   // TODO(holte): Handle data usage on cellular, etc.
   if (!log_uploader_) {
     log_uploader_ = client_->CreateUploader(
@@ -312,13 +311,14 @@ void UkmService::OnLogUploadComplete(int response_code) {
   if (upload_succeeded || discard_log) {
     persisted_logs_.DiscardStagedLog();
     // Store the updated list to disk now that the removed log is uploaded.
-    persisted_logs_.SerializeLogs();
+    persisted_logs_.PersistUnsentLogs();
   }
 
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
   bool server_is_healthy = upload_succeeded || response_code == 400;
-  scheduler_->UploadFinished(server_is_healthy, !persisted_logs_.empty());
+  scheduler_->UploadFinished(server_is_healthy,
+                             persisted_logs_.has_unsent_logs());
 }
 
 void UkmService::RecordSource(std::unique_ptr<UkmSource> source) {

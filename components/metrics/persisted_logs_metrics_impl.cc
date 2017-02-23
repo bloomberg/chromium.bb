@@ -8,12 +8,10 @@
 
 namespace metrics {
 
-PersistedLogs::LogReadStatus
-PersistedLogsMetricsImpl::RecordLogReadStatus(
-    PersistedLogs::LogReadStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogRecallProtobufs",
-                            status, PersistedLogs::END_RECALL_STATUS);
-  return status;
+void PersistedLogsMetricsImpl::RecordLogReadStatus(
+    PersistedLogsMetrics::LogReadStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogRecallProtobufs", status,
+                            PersistedLogsMetrics::END_RECALL_STATUS);
 }
 
 void PersistedLogsMetricsImpl::RecordCompressionRatio(
