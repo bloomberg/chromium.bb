@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
 }
 
 // Test for crbug.com/489366. In FLOATING mode, switch to a new IME in a
-// different extension should exist FLOATIN mode and position the new IME in
+// different extension should exit FLOATING mode and position the new IME in
 // FULL_WIDTH mode.
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
                        IMEInDifferentExtensionNotCentered) {
