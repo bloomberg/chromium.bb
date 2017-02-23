@@ -164,7 +164,9 @@ String ParsedContentType::charset() const {
 }
 
 String ParsedContentType::parameterValueForName(const String& name) const {
-  return m_parameters.get(name);
+  if (!name.containsOnlyASCII())
+    return String();
+  return m_parameters.get(name.lower());
 }
 
 size_t ParsedContentType::parameterCount() const {
@@ -262,7 +264,11 @@ bool ParsedContentType::parse(const String& contentType) {
                << ", for '" << key.toString() << "').";
       return false;
     }
-    map.set(key.toString(), value);
+    String keyString = key.toString();
+    // As |key| is parsed as a token, it consists of ascii characters
+    // and hence we don't need to care about non-ascii lowercasing.
+    DCHECK(keyString.containsOnlyASCII());
+    map.set(keyString.lower(), value);
   }
   m_parameters = std::move(map);
   return true;

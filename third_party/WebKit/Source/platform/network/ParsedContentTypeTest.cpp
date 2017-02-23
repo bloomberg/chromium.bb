@@ -56,6 +56,14 @@ TEST(ParsedContentTypeTest, InvalidMimeTypeWithCharset) {
   EXPECT_EQ(String(), t.charset());
 }
 
+TEST(ParsedContentTypeTest, CaseInsensitiveCharset) {
+  ParsedContentType t("text/plain; cHaRsEt=utf-8");
+
+  EXPECT_TRUE(t.isValid());
+  EXPECT_EQ("text/plain", t.mimeType());
+  EXPECT_EQ("utf-8", t.charset());
+}
+
 TEST(ParsedContentTypeTest, Validity) {
   EXPECT_TRUE(isValid("text/plain"));
   EXPECT_TRUE(isValid("text/plain; charset=utf-8"));
@@ -95,21 +103,23 @@ TEST(ParsedContentTypeTest, Validity) {
 }
 
 TEST(ParsedContentTypeTest, ParameterName) {
-  String input = "x/t; y=z  ; y= u ;  t=r;s= \"t \\u\\\"x\" ;Q=U;T=S";
+  String input = "x/t; y=z  ; y= u ;  t=r;k= \"t \\u\\\"x\" ;Q=U;T=S";
 
   ParsedContentType t(input);
 
   EXPECT_TRUE(t.isValid());
-  EXPECT_EQ(5u, t.parameterCount());
+  EXPECT_EQ(4u, t.parameterCount());
   EXPECT_EQ(String(), t.parameterValueForName("a"));
   EXPECT_EQ(String(), t.parameterValueForName("x"));
   EXPECT_EQ("u", t.parameterValueForName("y"));
-  EXPECT_EQ("r", t.parameterValueForName("t"));
-  EXPECT_EQ("t u\"x", t.parameterValueForName("s"));
+  EXPECT_EQ("S", t.parameterValueForName("t"));
+  EXPECT_EQ("t u\"x", t.parameterValueForName("k"));
   EXPECT_EQ("U", t.parameterValueForName("Q"));
   EXPECT_EQ("S", t.parameterValueForName("T"));
 
-  // TODO(yhirano): Case-sensitivity is mis-implemented.
+  String kelvin = String::fromUTF8("\xe2\x84\xaa");
+  DCHECK_EQ(kelvin.lower(), "k");
+  EXPECT_EQ(String(), t.parameterValueForName(kelvin));
 }
 
 TEST(ParsedContentTypeTest, RelaxedParameterName) {
