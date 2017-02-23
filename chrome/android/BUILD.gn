@@ -462,9 +462,11 @@ android_library("chrome_test_vr_java") {
   testonly = true
 
   java_files = [
-    "javatests/src/org/chromium/chrome/browser/vr_shell/VrUtils.java",
+    "javatests/src/org/chromium/chrome/browser/media/RouterTestUtils.java",
     "javatests/src/org/chromium/chrome/browser/vr_shell/MockVrDaydreamApi.java",
     "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTest.java",
+    "javatests/src/org/chromium/chrome/browser/vr_shell/VrUtils.java",
+    "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTest.java",
   ]
 
   deps = [
@@ -484,6 +486,7 @@ android_library("chrome_test_vr_java") {
 
   data = [
     "//chrome/test/data/android",
+    "//third_party/WebKit/LayoutTests/resources/testharness.js",
   ]
 }
 
