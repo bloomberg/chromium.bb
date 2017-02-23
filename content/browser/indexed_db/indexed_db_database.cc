@@ -1679,10 +1679,9 @@ leveldb::Status IndexedDBDatabase::DeleteRangeOperation(
     IndexedDBTransaction* transaction) {
   IDB_TRACE1("IndexedDBDatabase::DeleteRangeOperation", "txn.id",
              transaction->id());
-  size_t delete_count = 0;
   leveldb::Status s =
       backing_store_->DeleteRange(transaction->BackingStoreTransaction(), id(),
-                                  object_store_id, *key_range, &delete_count);
+                                  object_store_id, *key_range);
   if (!s.ok())
     return s;
   callbacks->OnSuccess();

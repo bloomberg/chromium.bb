@@ -30,6 +30,11 @@ class CONTENT_EXPORT LevelDBTransaction
   // Returns true if this operation performs a change, where the value wasn't
   // already deleted.
   bool Remove(const base::StringPiece& key);
+
+  leveldb::Status RemoveRange(const base::StringPiece& begin,
+                              const base::StringPiece& end,
+                              bool upper_open);
+
   virtual leveldb::Status Get(const base::StringPiece& key,
                               std::string* value,
                               bool* found);
@@ -45,16 +50,22 @@ class CONTENT_EXPORT LevelDBTransaction
 
  private:
   friend class base::RefCounted<LevelDBTransaction>;
-  FRIEND_TEST_ALL_PREFIXES(LevelDBDatabaseTest, Transaction);
-  FRIEND_TEST_ALL_PREFIXES(LevelDBDatabaseTest, TransactionCommitTest);
-  FRIEND_TEST_ALL_PREFIXES(LevelDBDatabaseTest, TransactionIterator);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest, GetAndPut);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest, Commit);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest, Iterator);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest, RemoveRangeBackingData);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest,
+                           RemoveRangeBackingDataUpperOpen);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest, RemoveRangeMemoryData);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBTransactionTest,
+                           RemoveRangeMemoryDataUpperOpen);
 
   struct Record {
     Record();
     ~Record();
     std::string key;
     std::string value;
-    bool deleted;
+    bool deleted = false;
   };
 
   class Comparator {

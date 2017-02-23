@@ -25,7 +25,7 @@ LevelDBTransaction::LevelDBTransaction(LevelDBDatabase* db)
       data_(data_comparator_),
       finished_(false) {}
 
-LevelDBTransaction::Record::Record() : deleted(false) {}
+LevelDBTransaction::Record::Record() {}
 LevelDBTransaction::Record::~Record() {}
 
 LevelDBTransaction::~LevelDBTransaction() {}
@@ -58,6 +58,29 @@ void LevelDBTransaction::Put(const StringPiece& key, std::string* value) {
 bool LevelDBTransaction::Remove(const StringPiece& key) {
   std::string empty;
   return !Set(key, &empty, true);
+}
+
+leveldb::Status LevelDBTransaction::RemoveRange(const StringPiece& begin,
+                                                const StringPiece& end,
+                                                bool upper_open) {
+  IDB_TRACE("LevelDBTransaction::RemoveRange");
+  data_.erase(data_.lower_bound(begin), data_.lower_bound(end));
+  if (!upper_open)
+    data_.erase(end);
+  std::unique_ptr<LevelDBIterator> it = CreateIterator();
+  leveldb::Status s;
+  for (s = it->Seek(begin);
+       s.ok() && it->IsValid() &&
+       (upper_open ? comparator_->Compare(it->Key(), end) < 0
+                   : comparator_->Compare(it->Key(), end) <= 0);
+       s = it->Next()) {
+    std::unique_ptr<Record> record = base::MakeUnique<Record>();
+    record->key = it->Key().as_string();
+    record->deleted = true;
+    data_[record->key] = std::move(record);
+  }
+  NotifyIterators();
+  return s;
 }
 
 leveldb::Status LevelDBTransaction::Get(const StringPiece& key,
