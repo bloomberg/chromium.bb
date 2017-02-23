@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/mac/tweak_info_plist.gni")
+import("//build/config/ios/ios_sdk.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//ios/third_party/earl_grey/ios_eg_test.gni")
@@ -130,7 +131,6 @@ template("chrome_ios_eg_test") {
       extra_substitutions = []
     }
     extra_substitutions += [
-      "CHROMIUM_BUNDLE_ID=gtest.$target_name",
       "CHROMIUM_HANDOFF_ID=$chromium_handoff_id",
       "CHROMIUM_SHORT_NAME=$target_name",
       "CHROMIUM_URL_SCHEME_1=$url_unsecure_scheme",
@@ -140,5 +140,13 @@ template("chrome_ios_eg_test") {
       "EG_MAIN_APPLICATION_DELEGATE=$_eg_main_application_delegate",
       "SSOAUTH_URL_SCHEME=$url_ssoauth_scheme",
     ]
+    if (ios_automatically_manage_certs) {
+      # Use the same bundle identifier for EarlGrey tests as for unit tests
+      # when managing certificates as the number of free certs is limited.
+      extra_substitutions +=
+          [ "CHROMIUM_BUNDLE_ID=gtest.${ios_generic_test_bundle_id_suffix}" ]
+    } else {
+      extra_substitutions += [ "CHROMIUM_BUNDLE_ID=gtest.$target_name" ]
+    }
   }
 }
