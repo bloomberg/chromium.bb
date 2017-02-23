@@ -696,7 +696,7 @@ InspectorTest.takeAndOpenSnapshot = function(generator, callback)
         }
         snapshot.snapshot.typeId = "HEAP";
         profileType._addHeapSnapshotChunk({data: JSON.stringify(snapshot)});
-        setTimeout(callback2, 0);
+        return Promise.resolve(callback2(null));
     }
     InspectorTest.override(InspectorTest.HeapProfilerAgent, "takeHeapSnapshot", pushGeneratedSnapshot);
     InspectorTest._takeAndOpenSnapshotCallback = callback;
