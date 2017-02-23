@@ -2,15 +2,19 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+:root {
+  --oobe-dialog-list-item-border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
 /************* Language Screen **************/
 #languageScreen .language-selection-entry {
-  border-top: 1px solid lightgrey;
+  border-top: var(--oobe-dialog-list-item-border);
   height: 44px;
   padding: 0 10px;
 }
 
 #languageScreen .language-selection-entry:last-of-type {
-  border-bottom: 1px solid lightgrey;
+  border-bottom: var(--oobe-dialog-list-item-border);
 }
 
 #languageScreen .language-selection-title {
@@ -24,12 +28,12 @@
 
 /************* Accessibility Screen **************/
 #accessibilityScreen oobe-a11y-option {
-  border-top: 1px solid lightgrey;
+  border-top: var(--oobe-dialog-list-item-border);
   min-height: 56px;
 }
 
 #accessibilityScreen oobe-a11y-option:last-of-type {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.14);
+  border-bottom: var(--oobe-dialog-list-item-border);
 }
 
 #accessibilityScreen .bottom-buttons {
@@ -47,13 +51,13 @@
 
 /************* Timezone Screen **************/
 #timezoneScreen .timezone-selection-entry {
-  border-top: 1px solid lightgrey;
+  border-top: var(--oobe-dialog-list-item-border);
   height: 44px;
   padding: 0 20px;
 }
 
 #timezoneScreen .timezone-selection-entry:last-of-type {
-  border-bottom: 1px solid lightgrey;
+  border-bottom: var(--oobe-dialog-list-item-border);
 }
 
 #timezoneScreen .timezone-selection-title {
