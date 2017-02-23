@@ -701,11 +701,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image/' +
         'tex-3d-rg8ui-rg_integer-unsigned_byte.html',
         ['linux', ('nvidia', 0xf02)], bug=680282)
-    self.Fail('conformance2/textures/image_data/tex-2d-rg16f-rg-half_float.html',
-        ['linux', 'nvidia'], bug=684399)
-    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
-        'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['linux', 'nvidia'], bug=684399)
     self.Flaky('conformance2/textures/image_bitmap_from_image_data/' +
         'tex-2d-srgb8-rgb-unsigned_byte.html',
         ['linux', 'nvidia'], bug=694354)
