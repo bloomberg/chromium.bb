@@ -1176,7 +1176,8 @@ TEST_F('BackgroundTest', 'HeadingLevels', function() {
   });
 });
 
-TEST_F('BackgroundTest', 'EditableNavigation', function() {
+// Flaky, see crbug.com/693928.
+TEST_F('BackgroundTest', 'DISABLED_EditableNavigation', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <div contenteditable>this is a test</div>
