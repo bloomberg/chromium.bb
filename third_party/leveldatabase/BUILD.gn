@@ -339,4 +339,17 @@ if (!is_android) {
       ":leveldb_testutil",
     ]
   }
+
+  test("leveldb_bench") {
+    sources = [
+      "src/db/db_bench.cc",
+    ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 }
