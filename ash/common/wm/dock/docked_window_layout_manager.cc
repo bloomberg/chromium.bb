@@ -21,7 +21,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_util.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
@@ -31,6 +30,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/background.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
@@ -333,8 +333,8 @@ class DockedWindowLayoutManager::ShelfWindowObserver
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override {
-    shelf_bounds_in_screen_ =
-        ScreenUtil::ConvertRectToScreen(window->parent(), new_bounds);
+    shelf_bounds_in_screen_ = new_bounds;
+    ::wm::ConvertRectToScreen(window->parent(), &shelf_bounds_in_screen_);
 
     // When the shelf is auto-hidden, it has an invisible height of 3px used
     // as a hit region which is specific to Chrome OS MD (for non-MD, the 3

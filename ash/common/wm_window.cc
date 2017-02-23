@@ -15,7 +15,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/resize_shadow_controller.h"
@@ -244,11 +243,15 @@ gfx::Point WmWindow::ConvertPointFromScreen(const gfx::Point& point) const {
 }
 
 gfx::Rect WmWindow::ConvertRectToScreen(const gfx::Rect& rect) const {
-  return ScreenUtil::ConvertRectToScreen(window_, rect);
+  gfx::Rect result(rect);
+  ::wm::ConvertRectToScreen(window_, &result);
+  return result;
 }
 
 gfx::Rect WmWindow::ConvertRectFromScreen(const gfx::Rect& rect) const {
-  return ScreenUtil::ConvertRectFromScreen(window_, rect);
+  gfx::Rect result(rect);
+  ::wm::ConvertRectFromScreen(window_, &result);
+  return result;
 }
 
 gfx::Size WmWindow::GetMinimumSize() const {

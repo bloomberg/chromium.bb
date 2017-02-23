@@ -15,7 +15,6 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
@@ -440,8 +439,8 @@ void MagnificationControllerImpl::HandleFocusedNodeChanged(
   if (node_bounds_in_screen.IsEmpty())
     return;
 
-  gfx::Rect node_bounds_in_root =
-      ScreenUtil::ConvertRectFromScreen(root_window_, node_bounds_in_screen);
+  gfx::Rect node_bounds_in_root = node_bounds_in_screen;
+  ::wm::ConvertRectFromScreen(root_window_, &node_bounds_in_root);
   if (GetViewportRect().Contains(node_bounds_in_root))
     return;
 

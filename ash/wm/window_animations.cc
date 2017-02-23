@@ -13,7 +13,6 @@
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_window.h"
-#include "ash/screen_util.h"
 #include "ash/wm/window_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -35,6 +34,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/transform.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -93,8 +93,7 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   // moved while the window was minimized.
   gfx::Rect bounds = window->bounds();
   gfx::Rect target_bounds = GetMinimizeAnimationTargetBoundsInScreen(window);
-  target_bounds =
-      ScreenUtil::ConvertRectFromScreen(window->parent(), target_bounds);
+  ::wm::ConvertRectFromScreen(window->parent(), &target_bounds);
 
   float scale_x = static_cast<float>(target_bounds.width()) / bounds.width();
   float scale_y = static_cast<float>(target_bounds.height()) / bounds.height();

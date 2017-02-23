@@ -1046,6 +1046,7 @@ static_library("ash_shell_lib") {
     "//ui/views",
     "//ui/views:test_support",
     "//ui/views/examples:views_examples_lib",
+    "//ui/wm",
   ]
 }
 

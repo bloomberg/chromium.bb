@@ -31,7 +31,6 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
@@ -71,6 +70,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_delegate.h"
 
@@ -199,8 +199,9 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   gfx::Rect GetTransformedBounds(aura::Window* window) {
-    gfx::RectF bounds(ScreenUtil::ConvertRectToScreen(
-        window->parent(), window->layer()->bounds()));
+    gfx::Rect bounds_in_screen = window->layer()->bounds();
+    ::wm::ConvertRectToScreen(window->parent(), &bounds_in_screen);
+    gfx::RectF bounds(bounds_in_screen);
     gfx::Transform transform(gfx::TransformAboutPivot(
         gfx::ToFlooredPoint(bounds.origin()), window->layer()->transform()));
     transform.TransformRect(&bounds);
@@ -208,8 +209,9 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   gfx::Rect GetTransformedTargetBounds(aura::Window* window) {
-    gfx::RectF bounds(ScreenUtil::ConvertRectToScreen(
-        window->parent(), window->layer()->GetTargetBounds()));
+    gfx::Rect bounds_in_screen = window->layer()->GetTargetBounds();
+    ::wm::ConvertRectToScreen(window->parent(), &bounds_in_screen);
+    gfx::RectF bounds(bounds_in_screen);
     gfx::Transform transform(
         gfx::TransformAboutPivot(gfx::ToFlooredPoint(bounds.origin()),
                                  window->layer()->GetTargetTransform()));

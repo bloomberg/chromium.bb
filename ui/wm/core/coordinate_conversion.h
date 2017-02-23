@@ -13,6 +13,7 @@ class Window;
 
 namespace gfx {
 class Point;
+class Rect;
 }  // namespace gfx
 
 namespace wm {
@@ -26,6 +27,15 @@ WM_EXPORT void ConvertPointToScreen(const aura::Window* window,
 // coordinates.
 WM_EXPORT void ConvertPointFromScreen(const aura::Window* window,
                                       gfx::Point* point_in_screen);
+
+// Converts |rect| from |window|'s coordinates to the virtual screen
+// coordinates.
+WM_EXPORT void ConvertRectToScreen(const aura::Window* window, gfx::Rect* rect);
+
+// Converts |rect| from virtual screen coordinates to the |window|'s
+// coordinates.
+WM_EXPORT void ConvertRectFromScreen(const aura::Window* window,
+                                     gfx::Rect* rect_in_screen);
 
 }  // namespace wm
 

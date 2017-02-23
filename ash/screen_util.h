@@ -30,16 +30,6 @@ class ASH_EXPORT ScreenUtil {
   // Returns the display's work area bounds in parent coordinates.
   static gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window);
 
-  // TODO(oshima): Move following two to wm/coordinate_conversion.h
-  // Converts |rect| from |window|'s coordinates to the virtual screen
-  // coordinates.
-  static gfx::Rect ConvertRectToScreen(aura::Window* window,
-                                       const gfx::Rect& rect);
-
-  // Converts |rect| from virtual screen coordinates to the |window|'s
-  // coordinates.
-  static gfx::Rect ConvertRectFromScreen(aura::Window* window,
-                                         const gfx::Rect& rect);
  private:
   ScreenUtil() {}
   ~ScreenUtil() {}

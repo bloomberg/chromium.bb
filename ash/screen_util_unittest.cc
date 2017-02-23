@@ -16,6 +16,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace test {
@@ -86,23 +87,21 @@ TEST_F(ScreenUtilTest, ConvertRect) {
       NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
   secondary->Show();
 
-  EXPECT_EQ("0,0 100x100",
-            ScreenUtil::ConvertRectFromScreen(primary->GetNativeView(),
-                                              gfx::Rect(10, 10, 100, 100))
-                .ToString());
-  EXPECT_EQ("10,10 100x100",
-            ScreenUtil::ConvertRectFromScreen(secondary->GetNativeView(),
-                                              gfx::Rect(620, 20, 100, 100))
-                .ToString());
+  gfx::Rect r1(10, 10, 100, 100);
+  ::wm::ConvertRectFromScreen(primary->GetNativeView(), &r1);
+  EXPECT_EQ("0,0 100x100", r1.ToString());
 
-  EXPECT_EQ("40,40 100x100",
-            ScreenUtil::ConvertRectToScreen(primary->GetNativeView(),
-                                            gfx::Rect(30, 30, 100, 100))
-                .ToString());
-  EXPECT_EQ("650,50 100x100",
-            ScreenUtil::ConvertRectToScreen(secondary->GetNativeView(),
-                                            gfx::Rect(40, 40, 100, 100))
-                .ToString());
+  gfx::Rect r2(620, 20, 100, 100);
+  ::wm::ConvertRectFromScreen(secondary->GetNativeView(), &r2);
+  EXPECT_EQ("10,10 100x100", r2.ToString());
+
+  gfx::Rect r3(30, 30, 100, 100);
+  ::wm::ConvertRectToScreen(primary->GetNativeView(), &r3);
+  EXPECT_EQ("40,40 100x100", r3.ToString());
+
+  gfx::Rect r4(40, 40, 100, 100);
+  ::wm::ConvertRectToScreen(secondary->GetNativeView(), &r4);
+  EXPECT_EQ("650,50 100x100", r4.ToString());
 }
 
 TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {

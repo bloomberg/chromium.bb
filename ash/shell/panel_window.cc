@@ -6,12 +6,12 @@
 
 #include "ash/common/wm/panels/panel_frame_view.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace {
 const int kMinWidth = 100;
@@ -44,8 +44,7 @@ views::Widget* PanelWindow::CreateWidget() {
     params().bounds.set_width(kDefaultWidth);
   if (params().bounds.height() == 0)
     params().bounds.set_height(kDefaultHeight);
-  params().bounds = ScreenUtil::ConvertRectToScreen(
-      Shell::GetTargetRootWindow(), params().bounds);
+  ::wm::ConvertRectToScreen(Shell::GetTargetRootWindow(), &params().bounds);
 
   widget->Init(params());
   widget->GetNativeView()->SetName(name_);

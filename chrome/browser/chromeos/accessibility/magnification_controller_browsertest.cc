@@ -5,7 +5,6 @@
 #include <string>
 
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace chromeos {
 
@@ -151,9 +151,8 @@ class MagnificationControllerTest : public InProcessBrowserTest {
     origin.Offset(view_bounds_in_screen.x(), view_bounds_in_screen.y());
     gfx::Rect rect_in_screen(origin.x(), origin.y(), rect.width(),
                              rect.height());
-
-    return ash::ScreenUtil::ConvertRectFromScreen(GetRootWindow(),
-                                                  rect_in_screen);
+    ::wm::ConvertRectFromScreen(GetRootWindow(), &rect_in_screen);
+    return rect_in_screen;
   }
 
   void SetFocusOnElement(const std::string& element_id) {

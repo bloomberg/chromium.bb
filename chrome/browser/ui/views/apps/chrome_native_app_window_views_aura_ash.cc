@@ -16,7 +16,6 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/screen_util.h"
 #include "ash/shared/app_types.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
@@ -40,6 +39,7 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 using extensions::AppWindow;
 
@@ -200,8 +200,9 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(
   } else if (ash::Shell::HasInstance() && use_default_bounds) {
     // Open a new panel on the target root.
     init_params->context = ash::Shell::GetTargetRootWindow();
-    init_params->bounds = ash::ScreenUtil::ConvertRectToScreen(
-        ash::Shell::GetTargetRootWindow(), gfx::Rect(GetPreferredSize()));
+    init_params->bounds = gfx::Rect(GetPreferredSize());
+    wm::ConvertRectToScreen(ash::Shell::GetTargetRootWindow(),
+                            &init_params->bounds);
   }
 }
 
