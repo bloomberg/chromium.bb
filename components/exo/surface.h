@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "components/exo/compositor_frame_sink.h"
 #include "components/exo/compositor_frame_sink_holder.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
@@ -35,7 +35,7 @@ class TracedValue;
 }
 
 namespace cc {
-class SurfaceIdAllocator;
+class LocalSurfaceIdAllocator;
 }
 
 namespace gfx {
@@ -313,7 +313,7 @@ class Surface : public ui::ContextFactoryObserver,
 
   scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder_;
 
-  cc::SurfaceIdAllocator id_allocator_;
+  cc::LocalSurfaceIdAllocator id_allocator_;
 
   // The next resource id the buffer will be attached to.
   int next_resource_id_ = 1;

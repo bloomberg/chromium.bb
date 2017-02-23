@@ -6,11 +6,11 @@
 #include "cc/quads/render_pass.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test.h"
@@ -40,7 +40,7 @@ class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {
 
  protected:
   SurfaceManager manager_;
-  SurfaceIdAllocator allocator_;
+  LocalSurfaceIdAllocator allocator_;
   EmptySurfaceFactoryClient client_;
   SurfaceFactory factory_;
 };

@@ -10,7 +10,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "content/common/content_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/events/latency_info.h"

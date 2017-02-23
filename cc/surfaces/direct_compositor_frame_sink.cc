@@ -9,8 +9,8 @@
 #include "cc/output/compositor_frame_sink_client.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 
 namespace cc {
@@ -96,7 +96,7 @@ void DirectCompositorFrameSink::DetachFromClient() {
 void DirectCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
   if (frame_size.IsEmpty() || frame_size != last_swap_frame_size_) {
-    delegated_local_surface_id_ = surface_id_allocator_.GenerateId();
+    delegated_local_surface_id_ = local_surface_id_allocator_.GenerateId();
     last_swap_frame_size_ = frame_size;
   }
   display_->SetLocalSurfaceId(delegated_local_surface_id_,

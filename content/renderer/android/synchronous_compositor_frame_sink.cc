@@ -25,7 +25,7 @@
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/display.h"
-#include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/common/android/sync_compositor_messages.h"
 #include "content/renderer/android/synchronous_compositor_filter.h"
@@ -125,7 +125,7 @@ SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
       memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue),
       surface_manager_(new cc::SurfaceManager),
-      surface_id_allocator_(new cc::SurfaceIdAllocator()),
+      local_surface_id_allocator_(new cc::LocalSurfaceIdAllocator()),
       begin_frame_source_(std::move(begin_frame_source)) {
   DCHECK(registry_);
   DCHECK(sender_);
@@ -215,7 +215,7 @@ void SynchronousCompositorFrameSink::DetachFromClient() {
   child_support_.reset();
   software_output_surface_ = nullptr;
   display_ = nullptr;
-  surface_id_allocator_ = nullptr;
+  local_surface_id_allocator_ = nullptr;
   surface_manager_ = nullptr;
   cc::CompositorFrameSink::DetachFromClient();
   CancelFallbackTick();
@@ -242,8 +242,8 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
     submit_frame.metadata = frame.metadata.Clone();
 
     if (!root_local_surface_id_.is_valid()) {
-      root_local_surface_id_ = surface_id_allocator_->GenerateId();
-      child_local_surface_id_ = surface_id_allocator_->GenerateId();
+      root_local_surface_id_ = local_surface_id_allocator_->GenerateId();
+      child_local_surface_id_ = local_surface_id_allocator_->GenerateId();
     }
 
     display_->SetLocalSurfaceId(root_local_surface_id_,

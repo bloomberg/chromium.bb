@@ -19,7 +19,7 @@ struct AwDrawGLInfo;
 
 namespace cc {
 class SurfaceFactory;
-class SurfaceIdAllocator;
+class LocalSurfaceIdAllocator;
 }
 
 namespace android_webview {
@@ -81,7 +81,8 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
 
   const scoped_refptr<SurfacesInstance> surfaces_;
   cc::FrameSinkId frame_sink_id_;
-  const std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  const std::unique_ptr<cc::LocalSurfaceIdAllocator>
+      local_surface_id_allocator_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   cc::LocalSurfaceId child_id_;
   CompositorID compositor_id_;

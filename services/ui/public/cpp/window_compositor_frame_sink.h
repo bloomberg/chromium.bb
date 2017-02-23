@@ -10,8 +10,8 @@
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/output/context_provider.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_id.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace ui {
@@ -59,7 +59,7 @@ class WindowCompositorFrameSink
 
   gfx::Size last_submitted_frame_size_;
   cc::LocalSurfaceId local_surface_id_;
-  cc::SurfaceIdAllocator id_allocator_;
+  cc::LocalSurfaceIdAllocator id_allocator_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
   cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info_;
   cc::mojom::MojoCompositorFrameSinkClientRequest client_request_;

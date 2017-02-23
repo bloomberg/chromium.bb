@@ -18,6 +18,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_hittest.h"
@@ -56,7 +57,7 @@ DelegatedFrameHost::DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
       delegated_frame_evictor_(new DelegatedFrameEvictor(this)) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
-  id_allocator_.reset(new cc::SurfaceIdAllocator());
+  id_allocator_.reset(new cc::LocalSurfaceIdAllocator());
   factory->GetContextFactoryPrivate()->GetSurfaceManager()->RegisterFrameSinkId(
       frame_sink_id_);
   factory->GetContextFactoryPrivate()

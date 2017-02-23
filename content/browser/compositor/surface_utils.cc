@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "components/display_compositor/gl_helper.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"

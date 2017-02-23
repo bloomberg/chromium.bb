@@ -68,7 +68,6 @@ class SurfaceId {
  private:
   friend struct mojo::StructTraits<mojom::SurfaceIdDataView, SurfaceId>;
 
-  // See SurfaceIdAllocator::GenerateId.
   FrameSinkId frame_sink_id_;
   LocalSurfaceId local_surface_id_;
 };

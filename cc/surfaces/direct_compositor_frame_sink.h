@@ -12,14 +12,14 @@
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/display_client.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surfaces_export.h"
 
 namespace cc {
 class Display;
-class SurfaceIdAllocator;
+class LocalSurfaceIdAllocator;
 class SurfaceManager;
 
 // This class submits compositor frames to an in-process Display, with the
@@ -30,8 +30,8 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
       public ExternalBeginFrameSourceClient,
       public NON_EXPORTED_BASE(DisplayClient) {
  public:
-  // The underlying Display, SurfaceManager, and SurfaceIdAllocator must outlive
-  // this class.
+  // The underlying Display, SurfaceManager, and LocalSurfaceIdAllocator must
+  // outlive this class.
   DirectCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
       SurfaceManager* surface_manager,
@@ -77,7 +77,7 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   const FrameSinkId frame_sink_id_;
   LocalSurfaceId delegated_local_surface_id_;
   SurfaceManager* surface_manager_;
-  SurfaceIdAllocator surface_id_allocator_;
+  LocalSurfaceIdAllocator local_surface_id_allocator_;
   Display* display_;
   gfx::Size last_swap_frame_size_;
   bool is_lost_ = false;

@@ -12,9 +12,9 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_client.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 
 namespace base {
@@ -99,7 +99,7 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   // TODO(danakj): These don't need to be stored in unique_ptrs when
   // CompositorFrameSink is owned/destroyed on the compositor thread.
   std::unique_ptr<SurfaceManager> surface_manager_;
-  std::unique_ptr<SurfaceIdAllocator> surface_id_allocator_;
+  std::unique_ptr<LocalSurfaceIdAllocator> local_surface_id_allocator_;
   LocalSurfaceId delegated_local_surface_id_;
 
   // Uses surface_manager_.

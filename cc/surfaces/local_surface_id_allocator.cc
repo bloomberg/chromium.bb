@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 
 #include <stdint.h>
 
@@ -11,12 +11,11 @@
 
 namespace cc {
 
-SurfaceIdAllocator::SurfaceIdAllocator() : next_id_(1u) {}
+LocalSurfaceIdAllocator::LocalSurfaceIdAllocator() : next_id_(1u) {}
 
-SurfaceIdAllocator::~SurfaceIdAllocator() {
-}
+LocalSurfaceIdAllocator::~LocalSurfaceIdAllocator() {}
 
-LocalSurfaceId SurfaceIdAllocator::GenerateId() {
+LocalSurfaceId LocalSurfaceIdAllocator::GenerateId() {
   LocalSurfaceId id(next_id_, base::UnguessableToken::Create());
   next_id_++;
   return id;

@@ -31,6 +31,7 @@ class TickClock;
 }
 
 namespace cc {
+class LocalSurfaceIdAllocator;
 class SurfaceFactory;
 }
 
@@ -287,7 +288,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   SkColor background_color_;
 
   // State for rendering into a Surface.
-  std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
+  std::unique_ptr<cc::LocalSurfaceIdAllocator> id_allocator_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   gfx::Size current_surface_size_;
   float current_scale_factor_;

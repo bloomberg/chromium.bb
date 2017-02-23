@@ -60,7 +60,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       frame_connector_(nullptr),
       begin_frame_source_(nullptr),
       weak_factory_(this) {
-  id_allocator_.reset(new cc::SurfaceIdAllocator());
+  id_allocator_.reset(new cc::LocalSurfaceIdAllocator());
   auto* manager = GetSurfaceManager();
   manager->RegisterFrameSinkId(frame_sink_id_);
   surface_factory_ =

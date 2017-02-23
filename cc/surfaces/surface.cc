@@ -12,9 +12,9 @@
 #include "cc/base/container_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/pending_frame_observer.h"
 #include "cc/surfaces/surface_factory.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 
 namespace cc {

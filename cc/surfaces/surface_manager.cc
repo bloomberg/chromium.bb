@@ -12,9 +12,9 @@
 
 #include "base/logging.h"
 #include "cc/surfaces/direct_surface_reference_factory.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory_client.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_info.h"
 
 #if DCHECK_IS_ON()

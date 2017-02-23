@@ -20,7 +20,7 @@ class CompositorFrame;
 class Layer;
 class SurfaceManager;
 class SurfaceLayer;
-class SurfaceIdAllocator;
+class LocalSurfaceIdAllocator;
 enum class SurfaceDrawStatus;
 
 }  // namespace cc
@@ -84,7 +84,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   ViewAndroid* view_;
 
   cc::SurfaceManager* surface_manager_;
-  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  std::unique_ptr<cc::LocalSurfaceIdAllocator> local_surface_id_allocator_;
   WindowAndroidCompositor* registered_parent_compositor_ = nullptr;
   Client* client_;
 

@@ -4,10 +4,10 @@
 
 #include "cc/surfaces/surface.h"
 #include "base/memory/ptr_util.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_dependency_tracker.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
@@ -54,7 +54,7 @@ TEST(SurfaceTest, SurfaceLifetime) {
 
 TEST(SurfaceTest, SurfaceIds) {
   for (size_t i = 0; i < 3; ++i) {
-    SurfaceIdAllocator allocator;
+    LocalSurfaceIdAllocator allocator;
     LocalSurfaceId id1 = allocator.GenerateId();
     LocalSurfaceId id2 = allocator.GenerateId();
     EXPECT_NE(id1, id2);

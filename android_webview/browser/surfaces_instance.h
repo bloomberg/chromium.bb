@@ -19,7 +19,7 @@ namespace cc {
 class BeginFrameSource;
 class CompositorFrameSinkSupport;
 class Display;
-class SurfaceIdAllocator;
+class LocalSurfaceIdAllocator;
 class SurfaceManager;
 }
 
@@ -80,7 +80,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<cc::Display> display_;
-  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  std::unique_ptr<cc::LocalSurfaceIdAllocator> local_surface_id_allocator_;
   std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
 
   cc::LocalSurfaceId root_id_;

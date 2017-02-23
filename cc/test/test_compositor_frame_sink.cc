@@ -37,7 +37,7 @@ TestCompositorFrameSink::TestCompositorFrameSink(
       task_runner_(std::move(task_runner)),
       frame_sink_id_(kCompositorFrameSinkId),
       surface_manager_(new SurfaceManager),
-      surface_id_allocator_(new SurfaceIdAllocator()),
+      local_surface_id_allocator_(new LocalSurfaceIdAllocator()),
       surface_factory_(
           new SurfaceFactory(frame_sink_id_, surface_manager_.get(), this)),
       weak_ptr_factory_(this) {
@@ -118,7 +118,7 @@ void TestCompositorFrameSink::DetachFromClient() {
     bound_ = false;
   }
   surface_factory_ = nullptr;
-  surface_id_allocator_ = nullptr;
+  local_surface_id_allocator_ = nullptr;
   surface_manager_ = nullptr;
   test_client_ = nullptr;
   CompositorFrameSink::DetachFromClient();
@@ -128,7 +128,7 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   test_client_->DisplayReceivedCompositorFrame(frame);
 
   if (!delegated_local_surface_id_.is_valid()) {
-    delegated_local_surface_id_ = surface_id_allocator_->GenerateId();
+    delegated_local_surface_id_ = local_surface_id_allocator_->GenerateId();
   }
   display_->SetLocalSurfaceId(delegated_local_surface_id_,
                               frame.metadata.device_scale_factor);

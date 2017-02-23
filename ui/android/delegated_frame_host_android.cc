@@ -11,9 +11,9 @@
 #include "cc/layers/surface_layer.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_id.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "ui/android/context_provider_factory.h"
 #include "ui/android/view_android.h"
@@ -65,7 +65,7 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
 
   surface_manager_ =
       ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
-  surface_id_allocator_.reset(new cc::SurfaceIdAllocator());
+  local_surface_id_allocator_.reset(new cc::LocalSurfaceIdAllocator());
   surface_manager_->RegisterFrameSinkId(frame_sink_id_);
   surface_factory_ = base::WrapUnique(
       new cc::SurfaceFactory(frame_sink_id_, surface_manager_, this));
@@ -110,7 +110,8 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     DCHECK(!current_frame_);
 
     current_frame_ = base::MakeUnique<FrameData>();
-    current_frame_->local_surface_id = surface_id_allocator_->GenerateId();
+    current_frame_->local_surface_id =
+        local_surface_id_allocator_->GenerateId();
     current_frame_->surface_size = surface_size;
     current_frame_->top_controls_height = frame.metadata.top_controls_height;
     current_frame_->top_controls_shown_ratio =

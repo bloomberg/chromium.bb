@@ -19,7 +19,7 @@
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -54,7 +54,7 @@ SurfacesInstance::SurfacesInstance()
   settings.should_clear_root_render_pass = false;
 
   surface_manager_.reset(new cc::SurfaceManager);
-  surface_id_allocator_.reset(new cc::SurfaceIdAllocator());
+  local_surface_id_allocator_.reset(new cc::LocalSurfaceIdAllocator());
 
   constexpr bool is_root = true;
   constexpr bool handles_frame_sink_id_invalidation = true;
@@ -138,7 +138,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   frame.metadata.referenced_surfaces = child_ids_;
 
   if (!root_id_.is_valid()) {
-    root_id_ = surface_id_allocator_->GenerateId();
+    root_id_ = local_surface_id_allocator_->GenerateId();
     display_->SetLocalSurfaceId(root_id_, 1.f);
   }
   support_->SubmitCompositorFrame(root_id_, std::move(frame));

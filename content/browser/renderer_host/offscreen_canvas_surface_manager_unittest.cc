@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
 #include "content/browser/renderer_host/offscreen_canvas_surface_manager.h"
@@ -72,9 +73,9 @@ TEST_F(OffscreenCanvasSurfaceManagerTest,
        SingleHTMLCanvasElementTransferToOffscreen) {
   cc::mojom::DisplayCompositorClientPtr client;
   cc::FrameSinkId frame_sink_id(3, 3);
-  cc::SurfaceIdAllocator surface_id_allocator;
+  cc::LocalSurfaceIdAllocator local_surface_id_allocator;
   cc::LocalSurfaceId current_local_surface_id(
-      surface_id_allocator.GenerateId());
+      local_surface_id_allocator.GenerateId());
 
   auto surface_impl = base::WrapUnique(new OffscreenCanvasSurfaceImpl(
       cc::FrameSinkId(), frame_sink_id, std::move(client)));
@@ -96,7 +97,6 @@ TEST_F(OffscreenCanvasSurfaceManagerTest,
   cc::mojom::DisplayCompositorClientPtr client_a;
   cc::FrameSinkId dummy_parent_frame_sink_id(0, 0);
   cc::FrameSinkId frame_sink_id_a(3, 3);
-  cc::SurfaceIdAllocator surface_id_allocator;
   auto surface_impl_a = base::WrapUnique(new OffscreenCanvasSurfaceImpl(
       dummy_parent_frame_sink_id, frame_sink_id_a, std::move(client_a)));
 

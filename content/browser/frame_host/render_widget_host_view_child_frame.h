@@ -17,8 +17,8 @@
 #include "build/build_config.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_factory_client.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -226,7 +226,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   cc::FrameSinkId frame_sink_id_;
 
   // Surface-related state.
-  std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
+  std::unique_ptr<cc::LocalSurfaceIdAllocator> id_allocator_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   cc::LocalSurfaceId local_surface_id_;
   uint32_t next_surface_sequence_;

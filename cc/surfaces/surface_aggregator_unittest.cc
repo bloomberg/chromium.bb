@@ -18,10 +18,10 @@
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/shared_bitmap_manager.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/render_pass_test_utils.h"
@@ -176,10 +176,10 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
  protected:
   LocalSurfaceId root_local_surface_id_;
   Surface* root_surface_;
-  SurfaceIdAllocator allocator_;
+  LocalSurfaceIdAllocator allocator_;
   EmptySurfaceFactoryClient empty_child_client_;
   SurfaceFactory child_factory_;
-  SurfaceIdAllocator child_allocator_;
+  LocalSurfaceIdAllocator child_allocator_;
 };
 
 // Tests that a very simple frame containing only two solid color quads makes it

@@ -11,8 +11,8 @@
 #include "base/timer/timer.h"
 #include "cc/ipc/display_compositor.mojom.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_id.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_reference.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws/ids.h"
@@ -74,7 +74,7 @@ class FrameGenerator : public cc::mojom::MojoCompositorFrameSinkClient {
 
   gfx::Size last_submitted_frame_size_;
   cc::LocalSurfaceId local_surface_id_;
-  cc::SurfaceIdAllocator id_allocator_;
+  cc::LocalSurfaceIdAllocator id_allocator_;
   cc::mojom::MojoCompositorFrameSinkAssociatedPtr compositor_frame_sink_;
   cc::mojom::DisplayPrivateAssociatedPtr display_private_;
 

@@ -15,8 +15,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_factory.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
@@ -28,7 +28,8 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       last_egl_context_(eglGetCurrentContext()),
       surfaces_(SurfacesInstance::GetOrCreateInstance()),
       frame_sink_id_(surfaces_->AllocateFrameSinkId()),
-      surface_id_allocator_(base::MakeUnique<cc::SurfaceIdAllocator>()),
+      local_surface_id_allocator_(
+          base::MakeUnique<cc::LocalSurfaceIdAllocator>()),
       surface_factory_(new cc::SurfaceFactory(frame_sink_id_,
                                               surfaces_->GetSurfaceManager(),
                                               this)),
@@ -166,7 +167,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
 
 void HardwareRenderer::AllocateSurface() {
   DCHECK(!child_id_.is_valid());
-  child_id_ = surface_id_allocator_->GenerateId();
+  child_id_ = local_surface_id_allocator_->GenerateId();
   surfaces_->AddChildId(cc::SurfaceId(frame_sink_id_, child_id_));
 }
 

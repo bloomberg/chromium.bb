@@ -7,9 +7,7 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
-
 #include "cc/quads/surface_draw_quad.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
