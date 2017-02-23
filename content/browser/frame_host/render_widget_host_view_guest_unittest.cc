@@ -114,7 +114,13 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(RenderWidgetHostViewGuestTest, VisibilityTest) {
+// Fails on Windows, crbug.com/695375.
+#if defined(OS_WIN)
+#define MAYBE_VisibilityTest DISABLED_VisibilityTest
+#else
+#define MAYBE_VisibilityTest VisibilityTest
+#endif
+TEST_F(RenderWidgetHostViewGuestTest, MAYBE_VisibilityTest) {
   view_->Show();
   ASSERT_TRUE(view_->IsShowing());
 
