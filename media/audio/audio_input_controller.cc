@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
 
 namespace media {
@@ -142,8 +144,8 @@ class AudioInputController::AudioCallback
     // that get returned to us somehow.
     // We should also avoid calling PostTask here since the implementation
     // of the debug writer will basically do a PostTask straight away anyway.
-    // Might require some modifications to AudioFileWriter though since
-    // there are some threading concerns there and AudioFileWriter's
+    // Might require some modifications to AudioDebugFileWriter though since
+    // there are some threading concerns there and AudioDebugFileWriter's
     // lifetime guarantees need to be longer than that of associated active
     // audio streams.
     std::unique_ptr<AudioBus> source_copy =
@@ -195,9 +197,10 @@ AudioInputController::AudioInputController(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     EventHandler* handler,
     SyncWriter* sync_writer,
-    std::unique_ptr<AudioFileWriter> debug_writer,
     UserInputMonitor* user_input_monitor,
-    StreamType type)
+    const AudioParameters& params,
+    StreamType type,
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : creator_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       task_runner_(std::move(task_runner)),
       handler_(handler),
@@ -205,7 +208,11 @@ AudioInputController::AudioInputController(
       sync_writer_(sync_writer),
       type_(type),
       user_input_monitor_(user_input_monitor),
-      debug_writer_(std::move(debug_writer)),
+#if BUILDFLAG(ENABLE_WEBRTC)
+      debug_writer_(
+          base::MakeUnique<AudioDebugFileWriter>(params,
+                                                 std::move(file_task_runner))),
+#endif
       weak_ptr_factory_(this) {
   DCHECK(creator_task_runner_.get());
   DCHECK(handler_);
@@ -223,10 +230,10 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
     EventHandler* event_handler,
     SyncWriter* sync_writer,
     UserInputMonitor* user_input_monitor,
-    std::unique_ptr<AudioFileWriter> debug_writer,
     const AudioParameters& params,
     const std::string& device_id,
-    bool enable_agc) {
+    bool enable_agc,
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
   DCHECK(audio_manager);
   DCHECK(sync_writer);
   DCHECK(event_handler);
@@ -244,7 +251,8 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
   // the audio-manager thread.
   scoped_refptr<AudioInputController> controller(new AudioInputController(
       audio_manager->GetTaskRunner(), event_handler, sync_writer,
-      std::move(debug_writer), user_input_monitor, ParamsToStreamType(params)));
+      user_input_monitor, params, ParamsToStreamType(params),
+      std::move(file_task_runner)));
 
   // Create and open a new audio input stream from the existing
   // audio-device thread. Use the provided audio-input device.
@@ -264,8 +272,9 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
     EventHandler* event_handler,
     AudioInputStream* stream,
     SyncWriter* sync_writer,
-    std::unique_ptr<AudioFileWriter> debug_writer,
-    UserInputMonitor* user_input_monitor) {
+    UserInputMonitor* user_input_monitor,
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    const AudioParameters& params) {
   DCHECK(sync_writer);
   DCHECK(stream);
   DCHECK(event_handler);
@@ -280,8 +289,8 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.
   scoped_refptr<AudioInputController> controller(new AudioInputController(
-      task_runner, event_handler, sync_writer, std::move(debug_writer),
-      user_input_monitor, VIRTUAL));
+      task_runner, event_handler, sync_writer, user_input_monitor, params,
+      VIRTUAL, std::move(file_task_runner)));
 
   if (!controller->task_runner_->PostTask(
           FROM_HERE, base::Bind(&AudioInputController::DoCreateForStream,

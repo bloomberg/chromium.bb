@@ -13,7 +13,7 @@
 
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
-#include "media/audio/audio_file_writer.h"
+#include "media/audio/audio_debug_file_writer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_bus.h"
@@ -160,31 +160,34 @@ class MEDIA_EXPORT AudioInputController
 
   // The audio device will be created on the audio thread, and when that is
   // done, the event handler will receive an OnCreated() call from that same
-  // thread. |user_input_monitor| is used for typing detection and can be NULL,
-  // and |debug_writer| can be null if debug recording is not required.
+  // thread. |user_input_monitor| is used for typing detection and can be NULL.
+  // |file_task_runner| is used for debug recordings.
+  // TODO(grunell): Move handling of debug recording to AudioManager.
   static scoped_refptr<AudioInputController> Create(
       AudioManager* audio_manager,
       EventHandler* event_handler,
       SyncWriter* sync_writer,
       UserInputMonitor* user_input_monitor,
-      std::unique_ptr<AudioFileWriter> debug_writer,
       const AudioParameters& params,
       const std::string& device_id,
       // External synchronous writer for audio controller.
-      bool agc_is_enabled);
+      bool agc_is_enabled,
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 
   // Factory method for creating an AudioInputController with an existing
   // |stream|. The stream will be opened on the audio thread, and when that is
   // done, the event  handler will receive an OnCreated() call from that same
   // thread. |user_input_monitor| is used for typing detection and can be NULL.
+  // |file_task_runner| and |params| are used for debug recordings.
   static scoped_refptr<AudioInputController> CreateForStream(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       EventHandler* event_handler,
       AudioInputStream* stream,
       // External synchronous writer for audio controller.
       SyncWriter* sync_writer,
-      std::unique_ptr<AudioFileWriter> debug_writer,
-      UserInputMonitor* user_input_monitor);
+      UserInputMonitor* user_input_monitor,
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+      const AudioParameters& params);
 
   // Starts recording using the created audio input stream.
   // This method is called on the creator thread.
@@ -253,12 +256,14 @@ class MEDIA_EXPORT AudioInputController
   };
 #endif
 
-  AudioInputController(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                       EventHandler* handler,
-                       SyncWriter* sync_writer,
-                       std::unique_ptr<AudioFileWriter> debug_writer,
-                       UserInputMonitor* user_input_monitor,
-                       StreamType type);
+  AudioInputController(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      EventHandler* handler,
+      SyncWriter* sync_writer,
+      UserInputMonitor* user_input_monitor,
+      const AudioParameters& params,
+      StreamType type,
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
   virtual ~AudioInputController();
 
   const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunnerForTesting()
@@ -367,7 +372,7 @@ class MEDIA_EXPORT AudioInputController
   base::TimeTicks stream_create_time_;
 
   // Used for audio debug recordings. Accessed on audio thread.
-  const std::unique_ptr<AudioFileWriter> debug_writer_;
+  const std::unique_ptr<AudioDebugFileWriter> debug_writer_;
 
   class AudioCallback;
   // Holds a pointer to the callback object that receives audio data from

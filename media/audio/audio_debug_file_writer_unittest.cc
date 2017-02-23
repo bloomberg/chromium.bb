@@ -4,18 +4,19 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_byteorder.h"
-#include "content/browser/renderer_host/media/audio_debug_file_writer.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "base/threading/thread.h"
+#include "media/audio/audio_debug_file_writer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace media {
 
 namespace {
 
@@ -36,15 +37,15 @@ uint32_t ReadLE4(const char* buf) {
 }  // namespace
 
 // <channel layout, sample rate, frames per buffer, number of buffer writes
-typedef std::tr1::tuple<media::ChannelLayout, int, int, int>
+typedef std::tr1::tuple<ChannelLayout, int, int, int>
     AudioDebugFileWriterTestData;
 
 class AudioDebugFileWriterTest
     : public testing::TestWithParam<AudioDebugFileWriterTestData> {
  public:
   AudioDebugFileWriterTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD),
-        params_(media::AudioParameters::Format::AUDIO_PCM_LINEAR,
+      : file_thread_("FileThread"),
+        params_(AudioParameters::Format::AUDIO_PCM_LINEAR,
                 std::tr1::get<0>(GetParam()),
                 std::tr1::get<1>(GetParam()),
                 kBytesPerSample * 8,
@@ -54,6 +55,7 @@ class AudioDebugFileWriterTest
                         writes_),
         source_interleaved_(source_samples_ ? new int16_t[source_samples_]
                                             : nullptr) {
+    file_thread_.StartAndWaitForTesting();
     InitSourceInterleaved(source_interleaved_.get(), source_samples_);
   }
 
@@ -71,8 +73,8 @@ class AudioDebugFileWriterTest
     }
   }
 
-  static void VerifyHeader(const char(&wav_header)[kWavHeaderSize],
-                           const media::AudioParameters& params,
+  static void VerifyHeader(const char (&wav_header)[kWavHeaderSize],
+                           const AudioParameters& params,
                            int writes,
                            int64_t file_length) {
     uint32_t block_align = params.channels() * kBytesPerSample;
@@ -154,33 +156,32 @@ class AudioDebugFileWriterTest
   }
 
   void TestDoneOnFileThread(const base::Closure& callback) {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    DCHECK(file_thread_.task_runner()->BelongsToCurrentThread());
 
     callback.Run();
   }
 
   void DoDebugRecording() {
-    // Write tasks are posted to BrowserThread::FILE.
+    // Write tasks are posted to |file_thread_|.
     for (int i = 0; i < writes_; ++i) {
-      std::unique_ptr<media::AudioBus> bus = media::AudioBus::Create(
-          params_.channels(), params_.frames_per_buffer());
+      std::unique_ptr<AudioBus> bus =
+          AudioBus::Create(params_.channels(), params_.frames_per_buffer());
 
       bus->FromInterleaved(
           source_interleaved_.get() +
               i * params_.channels() * params_.frames_per_buffer(),
           params_.frames_per_buffer(), kBytesPerSample);
 
-      input_debug_writer_->Write(std::move(bus));
+      debug_writer_->Write(std::move(bus));
     }
   }
 
   void WaitForRecordingCompletion() {
-    media::WaitableMessageLoopEvent event;
+    WaitableMessageLoopEvent event;
 
-    // Post a task to BrowserThread::FILE indicating that all the writes are
-    // done.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
+    // Post a task to the file thread indicating that all the writes are done.
+    file_thread_.task_runner()->PostTask(
+        FROM_HERE,
         base::Bind(&AudioDebugFileWriterTest::TestDoneOnFileThread,
                    base::Unretained(this), event.GetClosure()));
 
@@ -192,11 +193,11 @@ class AudioDebugFileWriterTest
     base::FilePath file_path;
     EXPECT_TRUE(base::CreateTemporaryFile(&file_path));
 
-    input_debug_writer_->Start(file_path);
+    debug_writer_->Start(file_path);
 
     DoDebugRecording();
 
-    input_debug_writer_->Stop();
+    debug_writer_->Stop();
 
     WaitForRecordingCompletion();
 
@@ -211,13 +212,19 @@ class AudioDebugFileWriterTest
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  // |file_thread_| must to be declared before |debug_writer_| so that it's
+  // destroyed after. This ensures all tasks posted in |debug_writer_| to the
+  // file thread are run before exiting the test.
+  base::Thread file_thread_;
+
+  // Message loop for the test main thread.
+  base::MessageLoop message_loop_;
 
   // Writer under test.
-  std::unique_ptr<AudioDebugFileWriter> input_debug_writer_;
+  std::unique_ptr<AudioDebugFileWriter> debug_writer_;
 
   // AudioBus parameters.
-  media::AudioParameters params_;
+  AudioParameters params_;
 
   // Number of times to write AudioBus to the file.
   int writes_;
@@ -235,14 +242,16 @@ class AudioDebugFileWriterTest
 class AudioDebugFileWriterBehavioralTest : public AudioDebugFileWriterTest {};
 
 TEST_P(AudioDebugFileWriterTest, WaveRecordingTest) {
-  input_debug_writer_.reset(new AudioDebugFileWriter(params_));
+  debug_writer_.reset(
+      new AudioDebugFileWriter(params_, file_thread_.task_runner()));
 
   RecordAndVerifyOnce();
 }
 
 TEST_P(AudioDebugFileWriterBehavioralTest,
        DeletedBeforeRecordingFinishedOnFileThread) {
-  input_debug_writer_.reset(new AudioDebugFileWriter(params_));
+  debug_writer_.reset(
+      new AudioDebugFileWriter(params_, file_thread_.task_runner()));
 
   base::FilePath file_path;
   EXPECT_TRUE(base::CreateTemporaryFile(&file_path));
@@ -251,15 +260,15 @@ TEST_P(AudioDebugFileWriterBehavioralTest,
       new base::WaitableEvent(base::WaitableEvent::ResetPolicy::MANUAL,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  file_thread_.task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(&base::WaitableEvent::Wait, base::Owned(wait_for_deletion)));
 
-  input_debug_writer_->Start(file_path);
+  debug_writer_->Start(file_path);
 
   DoDebugRecording();
 
-  input_debug_writer_.reset();
+  debug_writer_.reset();
   wait_for_deletion->Signal();
 
   WaitForRecordingCompletion();
@@ -275,29 +284,33 @@ TEST_P(AudioDebugFileWriterBehavioralTest,
 }
 
 TEST_P(AudioDebugFileWriterBehavioralTest, FileCreationError) {
-  input_debug_writer_.reset(new AudioDebugFileWriter(params_));
+  debug_writer_.reset(
+      new AudioDebugFileWriter(params_, file_thread_.task_runner()));
   base::FilePath file_path;  // Empty file name.
-  input_debug_writer_->Start(file_path);
+  debug_writer_->Start(file_path);
   DoDebugRecording();
 }
 
 TEST_P(AudioDebugFileWriterBehavioralTest, StartStopStartStop) {
-  input_debug_writer_.reset(new AudioDebugFileWriter(params_));
+  debug_writer_.reset(
+      new AudioDebugFileWriter(params_, file_thread_.task_runner()));
   RecordAndVerifyOnce();
   RecordAndVerifyOnce();
 }
 
 TEST_P(AudioDebugFileWriterBehavioralTest, DestroyNotStarted) {
-  input_debug_writer_.reset(new AudioDebugFileWriter(params_));
-  input_debug_writer_.reset();
+  debug_writer_.reset(
+      new AudioDebugFileWriter(params_, file_thread_.task_runner()));
+  debug_writer_.reset();
 }
 
 TEST_P(AudioDebugFileWriterBehavioralTest, DestroyStarted) {
-  input_debug_writer_.reset(new AudioDebugFileWriter(params_));
+  debug_writer_.reset(
+      new AudioDebugFileWriter(params_, file_thread_.task_runner()));
   base::FilePath file_path;
   EXPECT_TRUE(base::CreateTemporaryFile(&file_path));
-  input_debug_writer_->Start(file_path);
-  input_debug_writer_.reset();
+  debug_writer_->Start(file_path);
+  debug_writer_.reset();
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -306,32 +319,32 @@ INSTANTIATE_TEST_CASE_P(
     // Using 10ms frames per buffer everywhere.
     testing::Values(
         // No writes.
-        std::tr1::make_tuple(media::ChannelLayout::CHANNEL_LAYOUT_MONO,
+        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
                              44100,
                              44100 / 100,
                              0),
         // 1 write of mono.
-        std::tr1::make_tuple(media::ChannelLayout::CHANNEL_LAYOUT_MONO,
+        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
                              44100,
                              44100 / 100,
                              1),
         // 1 second of mono.
-        std::tr1::make_tuple(media::ChannelLayout::CHANNEL_LAYOUT_MONO,
+        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
                              44100,
                              44100 / 100,
                              100),
         // 1 second of mono, higher rate.
-        std::tr1::make_tuple(media::ChannelLayout::CHANNEL_LAYOUT_MONO,
+        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
                              48000,
                              48000 / 100,
                              100),
         // 1 second of stereo.
-        std::tr1::make_tuple(media::ChannelLayout::CHANNEL_LAYOUT_STEREO,
+        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_STEREO,
                              44100,
                              44100 / 100,
                              100),
         // 15 seconds of stereo, higher rate.
-        std::tr1::make_tuple(media::ChannelLayout::CHANNEL_LAYOUT_STEREO,
+        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_STEREO,
                              48000,
                              48000 / 100,
                              1500)));
@@ -342,9 +355,9 @@ INSTANTIATE_TEST_CASE_P(
     // Using 10ms frames per buffer everywhere.
     testing::Values(
         // No writes.
-        std::tr1::make_tuple(media::ChannelLayout::CHANNEL_LAYOUT_MONO,
+        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
                              44100,
                              44100 / 100,
                              100)));
 
-}  // namespace content
+}  // namespace media

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/audio_debug_file_writer.h"
+#include "media/audio/audio_debug_file_writer.h"
 
 #include <stdint.h>
 #include <array>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
-#include "content/public/browser/browser_thread.h"
 #include "media/base/audio_bus.h"
 
-namespace content {
+namespace media {
 
 namespace {
 
@@ -63,7 +63,9 @@ class CharBufferWriter {
     size_ += data_size;
   }
 
-  void Write(const char(&data)[4]) { Write(static_cast<const char*>(data), 4); }
+  void Write(const char (&data)[4]) {
+    Write(static_cast<const char*>(data), 4);
+  }
 
   void WriteLE16(uint16_t data) {
     uint16_t val = base::ByteSwapToLE16(data);
@@ -131,22 +133,30 @@ void WriteWavHeader(WavHeaderBuffer* buf,
 }  // namespace
 
 // Manages the debug recording file and writes to it. Can be created on any
-// thread. All the operations must be executed on FILE thread. Must be destroyed
-// on FILE thread.
+// thread. All the operations must be executed on |task_runner_|. Must be
+// destroyed on |task_runner_|.
 class AudioDebugFileWriter::AudioFileWriter {
  public:
-  static AudioFileWriterUniquePtr Create(const base::FilePath& file_name,
-                                         const media::AudioParameters& params);
+  static AudioFileWriterUniquePtr Create(
+      const base::FilePath& file_name,
+      const AudioParameters& params,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~AudioFileWriter();
 
   // Write data from |data| to file.
-  void Write(const media::AudioBus* data);
+  void Write(const AudioBus* data);
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+    return task_runner_;
+  }
 
  private:
-  AudioFileWriter(const media::AudioParameters& params);
+  AudioFileWriter(const AudioParameters& params,
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  // Write wave header to file. Called on the FILE thread twice: on construction
+  // Write wave header to file. Called on the |task_runner_| twice: on
+  // construction
   // of AudioFileWriter size of the wave data is unknown, so the header is
   // written with zero sizes; then on destruction it is re-written with the
   // actual size info accumulated throughout the object lifetime.
@@ -161,44 +171,77 @@ class AudioDebugFileWriter::AudioFileWriter {
   uint64_t samples_;
 
   // Input audio parameters required to build wave header.
-  const media::AudioParameters params_;
+  const AudioParameters params_;
 
   // Intermediate buffer to be written to file. Interleaved 16 bit audio data.
   std::unique_ptr<int16_t[]> interleaved_data_;
   int interleaved_data_size_;
+
+  // The task runner this class operates on.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
+
+AudioDebugFileWriter::OnThreadDeleter::OnThreadDeleter() {}
+
+AudioDebugFileWriter::OnThreadDeleter::OnThreadDeleter(
+    const OnThreadDeleter& other)
+    : task_runner_(other.task_runner_) {}
+
+AudioDebugFileWriter::OnThreadDeleter::OnThreadDeleter(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(task_runner) {}
+
+AudioDebugFileWriter::OnThreadDeleter::~OnThreadDeleter() {}
+
+// AudioFileWriter deleter. Inspired by
+// content::BrowserThread::DeleteOnFileThread.
+void AudioDebugFileWriter::OnThreadDeleter::operator()(
+    AudioDebugFileWriter::AudioFileWriter* ptr) const {
+  if (!task_runner_->DeleteSoon(FROM_HERE, ptr)) {
+#if defined(UNIT_TEST)
+    // Only logged under unit testing because leaks at shutdown
+    // are acceptable under normal circumstances.
+    LOG(ERROR) << "DeleteSoon failed for AudioDebugFileWriter::AudioFileWriter";
+#endif
+  }
+}
 
 // static
 AudioDebugFileWriter::AudioFileWriterUniquePtr
 AudioDebugFileWriter::AudioFileWriter::Create(
     const base::FilePath& file_name,
-    const media::AudioParameters& params) {
-  AudioFileWriterUniquePtr file_writer(new AudioFileWriter(params));
+    const AudioParameters& params,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  AudioFileWriterUniquePtr file_writer(new AudioFileWriter(params, task_runner),
+                                       OnThreadDeleter(task_runner));
 
-  // base::Unretained is safe, because destructor is called on FILE thread or on
-  // FILE message loop destruction.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  // base::Unretained is safe, because destructor is called on
+  // |task_runner|.
+  task_runner->PostTask(
+      FROM_HERE,
       base::Bind(&AudioFileWriter::CreateRecordingFile,
                  base::Unretained(file_writer.get()), file_name));
   return file_writer;
 }
 
 AudioDebugFileWriter::AudioFileWriter::AudioFileWriter(
-    const media::AudioParameters& params)
-    : samples_(0), params_(params), interleaved_data_size_(0) {
+    const AudioParameters& params,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : samples_(0),
+      params_(params),
+      interleaved_data_size_(0),
+      task_runner_(std::move(task_runner)) {
   DCHECK_EQ(params.bits_per_sample(), kBytesPerSample * 8);
 }
 
 AudioDebugFileWriter::AudioFileWriter::~AudioFileWriter() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(task_runner_->BelongsToCurrentThread());
   if (file_.IsValid())
     WriteHeader();
 }
 
-void AudioDebugFileWriter::AudioFileWriter::Write(
-    const media::AudioBus* data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+void AudioDebugFileWriter::AudioFileWriter::Write(const AudioBus* data) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   if (!file_.IsValid())
     return;
 
@@ -224,7 +267,7 @@ void AudioDebugFileWriter::AudioFileWriter::Write(
 }
 
 void AudioDebugFileWriter::AudioFileWriter::WriteHeader() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(task_runner_->BelongsToCurrentThread());
   if (!file_.IsValid())
     return;
   WavHeaderBuffer buf;
@@ -238,7 +281,7 @@ void AudioDebugFileWriter::AudioFileWriter::WriteHeader() {
 
 void AudioDebugFileWriter::AudioFileWriter::CreateRecordingFile(
     const base::FilePath& file_name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!file_.IsValid());
 
   file_ = base::File(file_name,
@@ -261,19 +304,20 @@ void AudioDebugFileWriter::AudioFileWriter::CreateRecordingFile(
 }
 
 AudioDebugFileWriter::AudioDebugFileWriter(
-    const media::AudioParameters& params)
-    : params_(params) {
+    const AudioParameters& params,
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
+    : params_(params), file_task_runner_(std::move(file_task_runner)) {
   client_sequence_checker_.DetachFromSequence();
 }
 
 AudioDebugFileWriter::~AudioDebugFileWriter() {
-  // |file_writer_| will be deleted on FILE thread.
+  // |file_writer_| will be deleted on |task_runner_|.
 }
 
 void AudioDebugFileWriter::Start(const base::FilePath& file_name) {
   DCHECK(client_sequence_checker_.CalledOnValidSequence());
   DCHECK(!file_writer_);
-  file_writer_ = AudioFileWriter::Create(file_name, params_);
+  file_writer_ = AudioFileWriter::Create(file_name, params_, file_task_runner_);
 }
 
 void AudioDebugFileWriter::Stop() {
@@ -283,14 +327,14 @@ void AudioDebugFileWriter::Stop() {
   client_sequence_checker_.DetachFromSequence();
 }
 
-void AudioDebugFileWriter::Write(std::unique_ptr<media::AudioBus> data) {
+void AudioDebugFileWriter::Write(std::unique_ptr<AudioBus> data) {
   DCHECK(client_sequence_checker_.CalledOnValidSequence());
   if (!file_writer_)
     return;
 
   // base::Unretained for |file_writer_| is safe, see the destructor.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  file_task_runner_->PostTask(
+      FROM_HERE,
       // Callback takes ownership of |data|:
       base::Bind(&AudioFileWriter::Write, base::Unretained(file_writer_.get()),
                  base::Owned(data.release())));
@@ -305,4 +349,4 @@ bool AudioDebugFileWriter::WillWrite() {
   return !!file_writer_;
 }
 
-}  // namspace content
+}  // namspace media

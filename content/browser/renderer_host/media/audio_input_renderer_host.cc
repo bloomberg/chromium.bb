@@ -22,7 +22,6 @@
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/browser/media/capture/web_contents_audio_input_stream.h"
 #include "content/browser/media/media_internals.h"
-#include "content/browser/renderer_host/media/audio_debug_file_writer.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -341,13 +340,6 @@ void AudioInputRendererHost::DoCreateStream(
     return;
   }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
-  std::unique_ptr<media::AudioFileWriter> debug_writer(
-      new AudioDebugFileWriter(audio_params));
-#else
-  std::unique_ptr<media::AudioFileWriter> debug_writer(nullptr);
-#endif
-
   // If we have successfully created the SyncWriter then assign it to the
   // entry and construct an AudioInputController.
   entry->writer.reset(writer.release());
@@ -363,15 +355,17 @@ void AudioInputRendererHost::DoCreateStream(
         WebContentsAudioInputStream::Create(
             device_id, audio_params, audio_manager_->GetWorkerTaskRunner(),
             audio_mirroring_manager_),
-        entry->writer.get(), std::move(debug_writer), user_input_monitor_);
+        entry->writer.get(), user_input_monitor_,
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
+        audio_params);
     // Only count for captures from desktop media picker dialog.
     if (entry->controller.get() && type == MEDIA_DESKTOP_AUDIO_CAPTURE)
       IncrementDesktopCaptureCounter(TAB_AUDIO_CAPTURER_CREATED);
   } else {
     entry->controller = media::AudioInputController::Create(
         audio_manager_, this, entry->writer.get(), user_input_monitor_,
-        std::move(debug_writer), audio_params, device_id,
-        config.automatic_gain_control);
+        audio_params, device_id, config.automatic_gain_control,
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
     oss << ", AGC=" << config.automatic_gain_control;
 
     // Only count for captures from desktop media picker dialog and system loop

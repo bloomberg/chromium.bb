@@ -24,7 +24,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/audio_file_writer.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/base/media_switches.h"
@@ -164,13 +163,16 @@ class MockAudioInputController : public AudioInputController {
       media::AudioManager* audio_manager,
       AudioInputController::EventHandler* event_handler,
       media::UserInputMonitor* user_input_monitor,
-      StreamType type)
+      const media::AudioParameters& params,
+      StreamType type,
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
       : AudioInputController(std::move(task_runner),
                              event_handler,
                              writer,
-                             /*debug_writer*/ nullptr,
                              user_input_monitor,
-                             type) {
+                             params,
+                             type,
+                             std::move(file_task_runner)) {
     GetTaskRunnerForTesting()->PostTask(
         FROM_HERE,
         base::Bind(&AudioInputController::EventHandler::OnCreated,
@@ -224,7 +226,7 @@ class MockControllerFactory : public AudioInputController::Factory {
     AudioInputController::set_factory_for_testing(nullptr);
   }
 
-  // AudioInputController::Factory implementaion:
+  // AudioInputController::Factory implementation:
   AudioInputController* Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       AudioInputController::SyncWriter* sync_writer,
@@ -234,9 +236,9 @@ class MockControllerFactory : public AudioInputController::Factory {
       media::UserInputMonitor* user_input_monitor,
       AudioInputController::StreamType type) override {
     ControllerCreated();
-    scoped_refptr<MockController> controller =
-        new MockController(std::move(task_runner), sync_writer, audio_manager,
-                           event_handler, user_input_monitor, type);
+    scoped_refptr<MockController> controller = new MockController(
+        task_runner, sync_writer, audio_manager, event_handler,
+        user_input_monitor, params, type, task_runner);
     controller_list_.push_back(controller);
     return controller.get();
   }

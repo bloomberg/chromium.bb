@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "media/audio/test_audio_input_controller_factory.h"
-#include "media/audio/audio_file_writer.h"
 #include "media/audio/audio_io.h"
 
 namespace media {
@@ -19,9 +18,10 @@ TestAudioInputController::TestAudioInputController(
     : AudioInputController(audio_manager->GetTaskRunner(),
                            event_handler,
                            sync_writer,
-                           nullptr,
                            user_input_monitor,
-                           type),
+                           audio_parameters,
+                           type,
+                           audio_manager->GetTaskRunner()),
       audio_parameters_(audio_parameters),
       factory_(factory),
       event_handler_(event_handler),

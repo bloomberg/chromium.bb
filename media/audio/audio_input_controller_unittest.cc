@@ -133,8 +133,8 @@ TEST_F(AudioInputControllerTest, CreateAndClose) {
 
   SuspendAudioThread();
   controller = AudioInputController::Create(
-      audio_manager_.get(), &event_handler, &sync_writer, nullptr, nullptr,
-      params, AudioDeviceDescription::kDefaultDeviceId, false);
+      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
+      AudioDeviceDescription::kDefaultDeviceId, false, audio_task_runner());
   ASSERT_TRUE(controller.get());
   EXPECT_CALL(event_handler, OnCreated(controller.get())).Times(Exactly(1));
   EXPECT_CALL(event_handler, OnLog(controller.get(), _));
@@ -170,8 +170,8 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
 
   // Creating the AudioInputController should render an OnCreated() call.
   scoped_refptr<AudioInputController> controller = AudioInputController::Create(
-      audio_manager_.get(), &event_handler, &sync_writer, nullptr, nullptr,
-      params, AudioDeviceDescription::kDefaultDeviceId, false);
+      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
+      AudioDeviceDescription::kDefaultDeviceId, false, audio_task_runner());
   ASSERT_TRUE(controller.get());
 
   controller->Record();
@@ -196,8 +196,8 @@ TEST_F(AudioInputControllerTest, SamplesPerPacketTooLarge) {
                          kBitsPerSample,
                          kSamplesPerPacket * 1000);
   scoped_refptr<AudioInputController> controller = AudioInputController::Create(
-      audio_manager_.get(), &event_handler, &sync_writer, nullptr, nullptr,
-      params, AudioDeviceDescription::kDefaultDeviceId, false);
+      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
+      AudioDeviceDescription::kDefaultDeviceId, false, audio_task_runner());
   ASSERT_FALSE(controller.get());
 }
 
@@ -218,8 +218,8 @@ TEST_F(AudioInputControllerTest, CloseTwice) {
                          kBitsPerSample,
                          kSamplesPerPacket);
   scoped_refptr<AudioInputController> controller = AudioInputController::Create(
-      audio_manager_.get(), &event_handler, &sync_writer, nullptr, nullptr,
-      params, AudioDeviceDescription::kDefaultDeviceId, false);
+      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
+      AudioDeviceDescription::kDefaultDeviceId, false, audio_task_runner());
   ASSERT_TRUE(controller.get());
 
   controller->Record();

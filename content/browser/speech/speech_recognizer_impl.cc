@@ -16,7 +16,6 @@
 #include "content/browser/media/media_internals.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
-#include "media/audio/audio_file_writer.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_system.h"
 #include "media/base/audio_converter.h"
@@ -634,9 +633,10 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
       new OnDataConverter(input_parameters, output_parameters));
 
   audio_controller_ = AudioInputController::Create(
-      GetAudioSystem()->GetAudioManager(), this, this, nullptr, nullptr,
+      GetAudioSystem()->GetAudioManager(), this, this, nullptr,
       input_parameters, device_id_,
-      /*agc_is_enabled*/ false);
+      /*agc_is_enabled*/ false,
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
 
   if (!audio_controller_.get()) {
     return Abort(
