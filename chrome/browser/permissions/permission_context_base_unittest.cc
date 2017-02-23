@@ -317,6 +317,9 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                 permission_context.GetContentSettingFromMap(url, url));
     }
 
+    histograms.ExpectUniqueSample(
+        "Permissions.AutoBlocker.EmbargoPromptSuppression",
+        PermissionEmbargoStatus::NOT_EMBARGOED, 1);
     histograms.ExpectUniqueSample("Permissions.AutoBlocker.EmbargoStatus",
                                   PermissionEmbargoStatus::NOT_EMBARGOED, 1);
   }
@@ -330,8 +333,6 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     // Dismiss |iterations| times. The final dismiss should change the decision
     // from dismiss to block, and hence change the persisted content setting.
     for (uint32_t i = 0; i < iterations; ++i) {
-      ContentSetting expected =
-          (i < 2) ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK;
       TestPermissionContext permission_context(profile(),
                                                content_settings_type);
       const PermissionRequestID id(
@@ -355,25 +356,45 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           "Permissions.Prompt.Dismissed.PriorDismissCount." +
               PermissionUtil::GetPermissionString(content_settings_type),
           i, 1);
+
+// On Android, repeatedly requesting and deciding permissions has the side
+// effect of overcounting any metrics recorded in the PermissionInfoBarDelegate
+// destructor. This is because we directly call
+// PermissionQueueController::OnPermissionSet without setting the action_taken
+// bit in PermissionInfoBarDelegate. When PermissionQueueController is deleted
+// all OS_ANDROID ifdefs in this test can be removed.
+#if !defined(OS_ANDROID)
       histograms.ExpectTotalCount("Permissions.AutoBlocker.EmbargoStatus",
                                   i + 1);
+#endif
+
+      PermissionResult result =
+          permission_context.GetPermissionStatus(url, url);
+
+      histograms.ExpectUniqueSample(
+          "Permissions.AutoBlocker.EmbargoPromptSuppression",
+          PermissionEmbargoStatus::NOT_EMBARGOED, i + 1);
       if (i < 2) {
+        EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+        EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+#if !defined(OS_ANDROID)
         histograms.ExpectUniqueSample("Permissions.AutoBlocker.EmbargoStatus",
                                       PermissionEmbargoStatus::NOT_EMBARGOED,
                                       i + 1);
+#endif
       } else {
+        EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+        EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+#if !defined(OS_ANDROID)
         histograms.ExpectBucketCount(
             "Permissions.AutoBlocker.EmbargoStatus",
             PermissionEmbargoStatus::REPEATED_DISMISSALS, 1);
+#endif
       }
 
       ASSERT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
-      PermissionResult result =
-          permission_context.GetPermissionStatus(url, url);
-      EXPECT_EQ(expected, result.content_setting);
-      EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
     }
 
     TestPermissionContext permission_context(profile(), content_settings_type);
@@ -393,7 +414,10 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     PermissionResult result = permission_context.GetPermissionStatus(url, url);
     EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-    EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+    EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+    histograms.ExpectBucketCount(
+        "Permissions.AutoBlocker.EmbargoPromptSuppression",
+        PermissionEmbargoStatus::REPEATED_DISMISSALS, 1);
   }
 
   void TestBlockOnSeveralDismissals_TestContent() {
@@ -423,9 +447,21 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           i + 1);
       histograms.ExpectBucketCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation", i, 1);
+      histograms.ExpectUniqueSample(
+          "Permissions.AutoBlocker.EmbargoPromptSuppression",
+          PermissionEmbargoStatus::NOT_EMBARGOED, i + 1);
+
+// On Android, repeatedly requesting and deciding permissions has the side
+// effect of overcounting any metrics recorded in the PermissionInfoBarDelegate
+// destructor. This is because we directly call
+// PermissionQueueController::OnPermissionSet without setting the action_taken
+// bit in PermissionInfoBarDelegate. When PermissionQueueController is deleted
+// all OS_ANDROID ifdefs in this test can be removed.
+#if !defined(OS_ANDROID)
       histograms.ExpectUniqueSample("Permissions.AutoBlocker.EmbargoStatus",
                                     PermissionEmbargoStatus::NOT_EMBARGOED,
                                     i + 1);
+#endif
 
       ASSERT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
@@ -491,8 +527,6 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       TestPermissionContext permission_context(
           profile(), CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
 
-      ContentSetting expected =
-          (i < 4) ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK;
       const PermissionRequestID id(
           web_contents()->GetRenderProcessHost()->GetID(),
           web_contents()->GetMainFrame()->GetRoutingID(), i);
@@ -510,24 +544,41 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       EXPECT_TRUE(permission_context.tab_context_updated());
       PermissionResult result =
           permission_context.GetPermissionStatus(url, url);
-      EXPECT_EQ(expected, result.content_setting);
-      EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
       histograms.ExpectTotalCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", i + 1);
       histograms.ExpectBucketCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", i, 1);
+      histograms.ExpectUniqueSample(
+          "Permissions.AutoBlocker.EmbargoPromptSuppression",
+          PermissionEmbargoStatus::NOT_EMBARGOED, i + 1);
 
+// On Android, repeatedly requesting and deciding permissions has the side
+// effect of overcounting any metrics recorded in the PermissionInfoBarDelegate
+// destructor. This is because we directly call
+// PermissionQueueController::OnPermissionSet without setting the action_taken
+// bit in PermissionInfoBarDelegate. When PermissionQueueController is deleted
+// all OS_ANDROID ifdefs in this test can be removed.
+#if !defined(OS_ANDROID)
       histograms.ExpectTotalCount("Permissions.AutoBlocker.EmbargoStatus",
                                   i + 1);
+#endif
       if (i < 4) {
+        EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+        EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+#if !defined(OS_ANDROID)
         histograms.ExpectUniqueSample("Permissions.AutoBlocker.EmbargoStatus",
                                       PermissionEmbargoStatus::NOT_EMBARGOED,
                                       i + 1);
+#endif
       } else {
+        EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+        EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+#if !defined(OS_ANDROID)
         histograms.ExpectBucketCount(
             "Permissions.AutoBlocker.EmbargoStatus",
             PermissionEmbargoStatus::REPEATED_DISMISSALS, 1);
+#endif
       }
     }
 
@@ -536,13 +587,13 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                                              CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
     PermissionResult result = permission_context.GetPermissionStatus(url, url);
     EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-    EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
-
+    EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
     variations::testing::ClearAllVariationParams();
   }
 
   void TestRequestPermissionInvalidUrl(
       ContentSettingsType content_settings_type) {
+    base::HistogramTester histograms;
     TestPermissionContext permission_context(profile(), content_settings_type);
     GURL url;
     ASSERT_FALSE(url.is_valid());
@@ -563,6 +614,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.tab_context_updated());
     EXPECT_EQ(CONTENT_SETTING_ASK,
               permission_context.GetContentSettingFromMap(url, url));
+    histograms.ExpectTotalCount(
+        "Permissions.AutoBlocker.EmbargoPromptSuppression", 0);
   }
 
   void TestGrantAndRevoke_TestContent(ContentSettingsType content_settings_type,
@@ -684,8 +737,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         web_contents()->GetMainFrame()->GetRoutingID(), -1);
 
     // A response only needs to be made to the permission request if we do not
-    // expect he permission to be blacklisted, therefore set the response
-    // callback.
+    // expect the permission to be blacklisted.
     if (expected_permission_status == CONTENT_SETTING_ALLOW) {
       permission_context.SetRespondPermissionCallback(
           base::Bind(&PermissionContextBaseTests::RespondToPermission,
@@ -699,12 +751,17 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                    base::Unretained(&permission_context)));
     PermissionResult result = permission_context.GetPermissionStatus(url, url);
     EXPECT_EQ(expected_permission_status, result.content_setting);
-    EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
     if (expected_permission_status == CONTENT_SETTING_ALLOW) {
       ASSERT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(expected_permission_status, permission_context.decisions()[0]);
+      EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+    } else {
+      EXPECT_EQ(PermissionStatusSource::SAFE_BROWSING_BLACKLIST, result.source);
     }
+    histograms.ExpectUniqueSample(
+        "Permissions.AutoBlocker.EmbargoPromptSuppression",
+        expected_embargo_reason, 1);
     histograms.ExpectUniqueSample("Permissions.AutoBlocker.EmbargoStatus",
                                   expected_embargo_reason, 1);
   }

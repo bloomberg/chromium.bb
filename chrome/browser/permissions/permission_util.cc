@@ -15,6 +15,12 @@
 
 using content::PermissionType;
 
+PermissionResult::PermissionResult(ContentSetting cs,
+                                   PermissionStatusSource pss)
+    : content_setting(cs), source(pss) {}
+
+PermissionResult::~PermissionResult() {}
+
 // The returned strings must match the RAPPOR metrics in rappor.xml,
 // and any Field Trial configs for the Permissions kill switch e.g.
 // Permissions.Action.Geolocation etc..

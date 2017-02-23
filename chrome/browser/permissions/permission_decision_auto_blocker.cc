@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_blacklist_client.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -270,7 +269,8 @@ void PermissionDecisionAutoBlocker::UpdateEmbargoedStatus(
     const GURL& request_origin,
     content::WebContents* web_contents,
     base::Callback<void(bool)> callback) {
-  DCHECK(!IsUnderEmbargo(permission, request_origin));
+  DCHECK_EQ(CONTENT_SETTING_ASK,
+            GetEmbargoResult(permission, request_origin).content_setting);
 
   if (base::FeatureList::IsEnabled(features::kPermissionsBlacklist) &&
       db_manager_) {
@@ -289,7 +289,7 @@ void PermissionDecisionAutoBlocker::UpdateEmbargoedStatus(
   callback.Run(false /* permission blocked */);
 }
 
-bool PermissionDecisionAutoBlocker::IsUnderEmbargo(
+PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
     ContentSettingsType permission,
     const GURL& request_origin) {
   HostContentSettingsMap* map =
@@ -299,8 +299,7 @@ bool PermissionDecisionAutoBlocker::IsUnderEmbargo(
   base::DictionaryValue* permission_dict = GetOrCreatePermissionDict(
       dict.get(), PermissionUtil::GetPermissionString(permission));
   double embargo_date = -1;
-  bool is_under_dismiss_embargo = false;
-  bool is_under_blacklist_embargo = false;
+
   base::Time current_time = clock_->Now();
   if (base::FeatureList::IsEnabled(features::kPermissionsBlacklist) &&
       permission_dict->GetDouble(kPermissionBlacklistEmbargoKey,
@@ -308,7 +307,8 @@ bool PermissionDecisionAutoBlocker::IsUnderEmbargo(
     if (current_time <
         base::Time::FromInternalValue(embargo_date) +
             base::TimeDelta::FromDays(g_blacklist_embargo_days)) {
-      is_under_blacklist_embargo = true;
+      return PermissionResult(CONTENT_SETTING_BLOCK,
+                              PermissionStatusSource::SAFE_BROWSING_BLACKLIST);
     }
   }
 
@@ -318,12 +318,13 @@ bool PermissionDecisionAutoBlocker::IsUnderEmbargo(
     if (current_time <
         base::Time::FromInternalValue(embargo_date) +
             base::TimeDelta::FromDays(g_dismissal_embargo_days)) {
-      is_under_dismiss_embargo = true;
+      return PermissionResult(CONTENT_SETTING_BLOCK,
+                              PermissionStatusSource::MULTIPLE_DISMISSALS);
     }
   }
 
-  // If either embargo is still in effect, return true.
-  return is_under_dismiss_embargo || is_under_blacklist_embargo;
+  return PermissionResult(CONTENT_SETTING_ASK,
+                          PermissionStatusSource::UNSPECIFIED);
 }
 
 void PermissionDecisionAutoBlocker::CheckSafeBrowsingResult(

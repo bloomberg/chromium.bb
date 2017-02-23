@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -28,32 +29,6 @@ class WebContents;
 }
 
 using BrowserPermissionCallback = base::Callback<void(ContentSetting)>;
-
-// Identifies the source or reason for a permission status being returned.
-// TODO(raymes): Add more reasons here and return them correctly.
-enum class PermissionStatusSource {
-  // The status is the result of being blocked due to the user dismissing a
-  // permission prompt multiple times.
-  MULTIPLE_DISMISSALS,
-
-  // The status is the resultof being blocked because the permission is on the
-  // safe browsing blacklist.
-  SAFE_BROWSING_BLACKLIST,
-
-  // The reason for the status is not specified. Avoid returning this value. It
-  // only exists until code has been added to correctly return a source in all
-  // cases.
-  UNSPECIFIED
-};
-
-struct PermissionResult {
-  PermissionResult(ContentSetting content_setting,
-                   PermissionStatusSource source);
-  ~PermissionResult();
-
-  ContentSetting content_setting;
-  PermissionStatusSource source;
-};
 
 // This base class contains common operations for granting permissions.
 // It offers the following functionality:

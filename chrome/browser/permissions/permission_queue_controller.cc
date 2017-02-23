@@ -221,22 +221,21 @@ void PermissionQueueController::OnPermissionSet(const PermissionRequestID& id,
       PermissionUtil::GetRequestType(content_settings_type_);
   PermissionRequestGestureType gesture_type =
       PermissionUtil::GetGestureType(user_gesture);
+  PermissionEmbargoStatus embargo_status =
+      PermissionEmbargoStatus::NOT_EMBARGOED;
+
   switch (decision) {
     case GRANTED:
       PermissionUmaUtil::PermissionGranted(content_settings_type_, gesture_type,
                                            requesting_frame, profile_);
       PermissionUmaUtil::RecordPermissionPromptAccepted(request_type,
                                                         gesture_type);
-      PermissionUmaUtil::RecordPermissionEmbargoStatus(
-          PermissionEmbargoStatus::NOT_EMBARGOED);
       break;
     case DENIED:
       PermissionUmaUtil::PermissionDenied(content_settings_type_, gesture_type,
                                           requesting_frame, profile_);
       PermissionUmaUtil::RecordPermissionPromptDenied(request_type,
                                                       gesture_type);
-      PermissionUmaUtil::RecordPermissionEmbargoStatus(
-          PermissionEmbargoStatus::NOT_EMBARGOED);
       break;
     case DISMISSED:
       PermissionUmaUtil::PermissionDismissed(
@@ -244,16 +243,13 @@ void PermissionQueueController::OnPermissionSet(const PermissionRequestID& id,
       if (PermissionDecisionAutoBlocker::GetForProfile(profile_)
               ->RecordDismissAndEmbargo(requesting_frame,
                                         content_settings_type_)) {
-        PermissionUmaUtil::RecordPermissionEmbargoStatus(
-            PermissionEmbargoStatus::REPEATED_DISMISSALS);
-      } else {
-        PermissionUmaUtil::RecordPermissionEmbargoStatus(
-            PermissionEmbargoStatus::NOT_EMBARGOED);
+        embargo_status = PermissionEmbargoStatus::REPEATED_DISMISSALS;
       }
       break;
     default:
       NOTREACHED();
   }
+  PermissionUmaUtil::RecordEmbargoStatus(embargo_status);
 
   // TODO(miguelg): move the permission persistence to
   // PermissionContextBase once all the types are moved there.

@@ -78,6 +78,9 @@ PermissionInfoBarDelegate::~PermissionInfoBarDelegate() {
         user_gesture_ ? PermissionRequestGestureType::GESTURE
                       : PermissionRequestGestureType::NO_GESTURE,
         requesting_origin_, profile_);
+
+    PermissionUmaUtil::RecordEmbargoStatus(
+        PermissionEmbargoStatus::NOT_EMBARGOED);
   }
 }
 

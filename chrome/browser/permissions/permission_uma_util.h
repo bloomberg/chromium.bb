@@ -48,6 +48,16 @@ enum SafeBrowsingResponse {
   RESPONSE_NUM,
 };
 
+// Any new values should be inserted immediately prior to STATUS_NUM.
+enum PermissionEmbargoStatus {
+  NOT_EMBARGOED = 0,
+  PERMISSIONS_BLACKLISTING = 1,
+  REPEATED_DISMISSALS = 2,
+
+  // Keep this at the end.
+  STATUS_NUM,
+};
+
 // A bundle for the information sent in a PermissionReport.
 struct PermissionReportInfo {
   PermissionReportInfo(
@@ -70,15 +80,6 @@ struct PermissionReportInfo {
   PermissionPersistDecision persist_decision;
   int num_prior_dismissals;
   int num_prior_ignores;
-};
-
-enum PermissionEmbargoStatus {
-  NOT_EMBARGOED = 0,
-  PERMISSIONS_BLACKLISTING = 1,
-  REPEATED_DISMISSALS = 2,
-
-  // Keep this at the end.
-  STATUS_NUM,
 };
 
 // Provides a convenient way of logging UMA for permission related operations.
@@ -131,8 +132,13 @@ class PermissionUmaUtil {
                                 const GURL& revoked_origin,
                                 Profile* profile);
 
-  static void RecordPermissionEmbargoStatus(
+  static void RecordEmbargoPromptSuppression(
       PermissionEmbargoStatus embargo_status);
+
+  static void RecordEmbargoPromptSuppressionFromSource(
+      PermissionStatusSource source);
+
+  static void RecordEmbargoStatus(PermissionEmbargoStatus embargo_status);
 
   static void RecordSafeBrowsingResponse(base::TimeDelta response_time,
                                          SafeBrowsingResponse response);

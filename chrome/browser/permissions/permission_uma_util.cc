@@ -363,7 +363,35 @@ void PermissionUmaUtil::PermissionRevoked(ContentSettingsType permission,
   }
 }
 
-void PermissionUmaUtil::RecordPermissionEmbargoStatus(
+void PermissionUmaUtil::RecordEmbargoPromptSuppression(
+    PermissionEmbargoStatus embargo_status) {
+  UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.EmbargoPromptSuppression",
+                            embargo_status,
+                            PermissionEmbargoStatus::STATUS_NUM);
+}
+
+void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
+    PermissionStatusSource source) {
+  // Explicitly switch to ensure that any new PermissionStatusSource values are
+  // dealt with appropriately.
+  switch (source) {
+    case PermissionStatusSource::MULTIPLE_DISMISSALS:
+      PermissionUmaUtil::RecordEmbargoPromptSuppression(
+          PermissionEmbargoStatus::REPEATED_DISMISSALS);
+      break;
+    case PermissionStatusSource::SAFE_BROWSING_BLACKLIST:
+      PermissionUmaUtil::RecordEmbargoPromptSuppression(
+          PermissionEmbargoStatus::PERMISSIONS_BLACKLISTING);
+      break;
+    case PermissionStatusSource::UNSPECIFIED:
+    case PermissionStatusSource::KILL_SWITCH:
+      // The permission wasn't under embargo, so don't record anything. We may
+      // embargo it later.
+      break;
+  }
+}
+
+void PermissionUmaUtil::RecordEmbargoStatus(
     PermissionEmbargoStatus embargo_status) {
   UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.EmbargoStatus",
                             embargo_status,

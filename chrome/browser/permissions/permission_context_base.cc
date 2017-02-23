@@ -23,7 +23,6 @@
 #include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_features.h"
@@ -48,12 +47,6 @@ const char PermissionContextBase::kPermissionsKillSwitchFieldStudy[] =
 // static
 const char PermissionContextBase::kPermissionsKillSwitchBlockedValue[] =
     "blocked";
-
-PermissionResult::PermissionResult(ContentSetting cs,
-                                   PermissionStatusSource pss)
-    : content_setting(cs), source(pss) {}
-
-PermissionResult::~PermissionResult() {}
 
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
@@ -80,20 +73,6 @@ void PermissionContextBase::RequestPermission(
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // First check if this permission has been disabled.
-  if (IsPermissionKillSwitchOn()) {
-    // Log to the developer console.
-    web_contents->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_INFO,
-        base::StringPrintf(
-            "%s permission has been blocked.",
-            PermissionUtil::GetPermissionString(content_settings_type_)
-                .c_str()));
-    // The kill switch is enabled for this permission; Block all requests.
-    callback.Run(CONTENT_SETTING_BLOCK);
-    return;
-  }
-
   GURL requesting_origin = requesting_frame.GetOrigin();
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
 
@@ -118,15 +97,28 @@ void PermissionContextBase::RequestPermission(
 
   if (result.content_setting == CONTENT_SETTING_ALLOW ||
       result.content_setting == CONTENT_SETTING_BLOCK) {
+    if (result.source == PermissionStatusSource::KILL_SWITCH) {
+      // Block the request and log to the developer console.
+      web_contents->GetMainFrame()->AddMessageToConsole(
+          content::CONSOLE_MESSAGE_LEVEL_INFO,
+          base::StringPrintf(
+              "%s permission has been blocked.",
+              PermissionUtil::GetPermissionString(content_settings_type_)
+                  .c_str()));
+      callback.Run(CONTENT_SETTING_BLOCK);
+      return;
+    }
+
+    // If we are under embargo, record the embargo reason for which we have
+    // suppressed the prompt.
+    PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(result.source);
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         false /* persist */, result.content_setting);
     return;
   }
 
   // Asynchronously check whether the origin should be blocked from making this
-  // permission request. It may be on the Safe Browsing API blacklist, or it may
-  // have been dismissed too many times in a row. If the origin is allowed to
-  // request, that request will be made to ContinueRequestPermission().
+  // permission request, e.g. it may be on the Safe Browsing API blacklist.
   PermissionDecisionAutoBlocker::GetForProfile(profile_)->UpdateEmbargoedStatus(
       content_settings_type_, requesting_origin, web_contents,
       base::Bind(&PermissionContextBase::ContinueRequestPermission,
@@ -150,15 +142,21 @@ void PermissionContextBase::ContinueRequestPermission(
             "%s permission has been auto-blocked.",
             PermissionUtil::GetPermissionString(content_settings_type_)
                 .c_str()));
-    // Permission has been automatically blocked.
-    PermissionUmaUtil::RecordPermissionEmbargoStatus(
+    // Permission has been automatically blocked. Record that the prompt was
+    // suppressed and that we hit the blacklist.
+    PermissionUmaUtil::RecordEmbargoPromptSuppression(
+        PermissionEmbargoStatus::PERMISSIONS_BLACKLISTING);
+    PermissionUmaUtil::RecordEmbargoStatus(
         PermissionEmbargoStatus::PERMISSIONS_BLACKLISTING);
     callback.Run(CONTENT_SETTING_BLOCK);
     return;
   }
 
+  // We are going to show a prompt now.
   PermissionUmaUtil::PermissionRequested(
       content_settings_type_, requesting_origin, embedding_origin, profile_);
+  PermissionUmaUtil::RecordEmbargoPromptSuppression(
+      PermissionEmbargoStatus::NOT_EMBARGOED);
 
   DecidePermission(web_contents, id, requesting_origin, embedding_origin,
                    user_gesture, callback);
@@ -167,13 +165,10 @@ void PermissionContextBase::ContinueRequestPermission(
 PermissionResult PermissionContextBase::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
-  // TODO(raymes): Ensure we return appropriate decision reasons in the
-  // PermissionResult. We should add these as each is needed.
-
   // If the permission has been disabled through Finch, block all requests.
   if (IsPermissionKillSwitchOn()) {
     return PermissionResult(CONTENT_SETTING_BLOCK,
-                            PermissionStatusSource::UNSPECIFIED);
+                            PermissionStatusSource::KILL_SWITCH);
   }
 
   if (IsRestrictedToSecureOrigins() &&
@@ -184,19 +179,20 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
 
   ContentSetting content_setting =
       GetPermissionStatusInternal(requesting_origin, embedding_origin);
-  if (content_setting == CONTENT_SETTING_ASK &&
-      PermissionDecisionAutoBlocker::GetForProfile(profile_)->IsUnderEmbargo(
-          content_settings_type_, requesting_origin)) {
-    return PermissionResult(CONTENT_SETTING_BLOCK,
-                            PermissionStatusSource::UNSPECIFIED);
+  if (content_setting == CONTENT_SETTING_ASK) {
+    PermissionResult result =
+        PermissionDecisionAutoBlocker::GetForProfile(profile_)
+            ->GetEmbargoResult(content_settings_type_, requesting_origin);
+    DCHECK(result.content_setting == CONTENT_SETTING_ASK ||
+           result.content_setting == CONTENT_SETTING_BLOCK);
+    return result;
   }
 
   return PermissionResult(content_setting, PermissionStatusSource::UNSPECIFIED);
 }
 
-void PermissionContextBase::ResetPermission(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
+void PermissionContextBase::ResetPermission(const GURL& requesting_origin,
+                                            const GURL& embedding_origin) {
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->SetContentSettingDefaultScope(requesting_origin, embedding_origin,
                                       content_settings_storage_type(),
@@ -324,7 +320,7 @@ void PermissionContextBase::PermissionDecided(
         embargo_status = PermissionEmbargoStatus::REPEATED_DISMISSALS;
       }
     }
-    PermissionUmaUtil::RecordPermissionEmbargoStatus(embargo_status);
+    PermissionUmaUtil::RecordEmbargoStatus(embargo_status);
   }
 
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,

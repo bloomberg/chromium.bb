@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -80,10 +81,8 @@ class PermissionDecisionAutoBlocker : public KeyedService {
   // Updates the threshold to start blocking prompts from the field trial.
   static void UpdateFromVariations();
 
-  // Checks if |request_origin| is under embargo for |permission|. Internally,
-  // this will make a call to IsUnderEmbargo to check the content setting first,
-  // but may also make a call to Safe Browsing to check the API blacklist, which
-  // is performed asynchronously.
+  // Updates whether |request_origin| should be under embargo for |permission|.
+  // Makes an asynchronous call to Safe Browsing to check the API blacklist.
   void UpdateEmbargoedStatus(ContentSettingsType permission,
                              const GURL& request_origin,
                              content::WebContents* web_contents,
@@ -92,8 +91,8 @@ class PermissionDecisionAutoBlocker : public KeyedService {
   // Checks the status of the content setting to determine if |request_origin|
   // is under embargo for |permission|. This checks both embargo for Permissions
   // Blacklisting and repeated dismissals.
-  bool IsUnderEmbargo(ContentSettingsType permission,
-                      const GURL& request_origin);
+  PermissionResult GetEmbargoResult(ContentSettingsType permission,
+                                    const GURL& request_origin);
 
  private:
   friend class PermissionContextBaseTests;
