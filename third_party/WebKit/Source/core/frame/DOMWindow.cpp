@@ -378,8 +378,7 @@ void DOMWindow::close(ExecutionContext* context) {
   if (!frame()->shouldClose())
     return;
 
-  InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-      context, "DOMWindow.close", true);
+  InspectorInstrumentation::breakIfNeeded(context, "DOMWindow.close");
 
   page->closeSoon();
 

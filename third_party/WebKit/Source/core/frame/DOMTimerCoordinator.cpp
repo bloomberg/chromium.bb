@@ -27,10 +27,6 @@ int DOMTimerCoordinator::installNewTimeout(ExecutionContext* context,
       timeoutID,
       DOMTimer::create(context, action, timeout, singleShot, timeoutID));
   ASSERT(result.isNewEntry);
-  DOMTimer* timer = result.storedValue->value.get();
-
-  timer->suspendIfNeeded();
-
   return timeoutID;
 }
 

@@ -29,6 +29,8 @@
 
 #include "core/loader/DocumentLoader.h"
 
+#include <memory>
+
 #include "core/dom/Document.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/events/Event.h"
@@ -42,6 +44,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/FrameFetchContext.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -74,7 +77,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/AutoReset.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -302,7 +304,7 @@ void DocumentLoader::notifyFinished(Resource* resource) {
 void DocumentLoader::finishedLoading(double finishTime) {
   DCHECK(m_frame->loader().stateMachine()->creatingInitialEmptyDocument() ||
          !m_frame->page()->suspended() ||
-         InspectorInstrumentation::isDebuggerPaused(m_frame));
+         MainThreadDebugger::instance()->isPaused());
 
   double responseEndTime = finishTime;
   if (!responseEndTime)
