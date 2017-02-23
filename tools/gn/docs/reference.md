@@ -1682,7 +1682,7 @@
   }
 
   If you want to override the (default disabled) Doom Melon:
-    gn --args="enable_doom_melon=true enable_teleporter=false"
+    gn --args="enable_doom_melon=true enable_teleporter=true"
   This also sets the teleporter, but it's already defaulted to on so it will
   have no effect.
 
