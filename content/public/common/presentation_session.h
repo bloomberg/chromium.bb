@@ -36,7 +36,7 @@ struct CONTENT_EXPORT PresentationSessionInfo {
                           const std::string& presentation_id);
   ~PresentationSessionInfo();
 
-  static constexpr size_t kMaxIdLength = 64;
+  static constexpr size_t kMaxIdLength = 256;
 
   GURL presentation_url;
   std::string presentation_id;
