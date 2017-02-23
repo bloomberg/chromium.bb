@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.vr_shell;
 import com.google.vr.ndk.base.Version;
 import com.google.vr.vrcore.base.api.VrCoreNotAvailableException;
 import com.google.vr.vrcore.base.api.VrCoreUtils;
-import com.google.vr.vrcore.base.api.VrCoreUtils.ConnectionResult;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -19,7 +18,7 @@ public class VrCoreVersionCheckerImpl implements VrCoreVersionChecker {
     private static final String TAG = "VrCoreVersionChecker";
 
     @Override
-    public boolean isVrCoreCompatible() {
+    public int getVrCoreCompatibility() {
         try {
             String vrCoreSdkLibraryVersionString = VrCoreUtils.getVrCoreSdkLibraryVersion(
                     ContextUtils.getApplicationContext());
@@ -27,12 +26,12 @@ public class VrCoreVersionCheckerImpl implements VrCoreVersionChecker {
             Version targetSdkLibraryVersion =
                     Version.parse(com.google.vr.ndk.base.BuildConstants.VERSION);
             if (!vrCoreSdkLibraryVersion.isAtLeast(targetSdkLibraryVersion)) {
-                throw new VrCoreNotAvailableException(ConnectionResult.SERVICE_OBSOLETE);
+                return VrCoreVersionChecker.VR_OUT_OF_DATE;
             }
-            return true;
+            return VrCoreVersionChecker.VR_READY;
         } catch (VrCoreNotAvailableException e) {
-            Log.i(TAG, "Unable to find a compatible VrCore.");
-            return false;
+            Log.i(TAG, "Unable to find VrCore.");
+            return VrCoreVersionChecker.VR_NOT_AVAILABLE;
         }
     }
 }

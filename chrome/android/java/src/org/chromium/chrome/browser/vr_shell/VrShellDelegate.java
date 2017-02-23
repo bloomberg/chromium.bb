@@ -27,7 +27,6 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Log;
-import org.chromium.base.PackageUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -86,7 +85,6 @@ public class VrShellDelegate {
             "org.chromium.chrome.browser.VRChromeTabbedActivity";
 
     private static final String VR_CORE_PACKAGE_ID = "com.google.vr.vrcore";
-    private static final int VR_CORE_MIN_VERSION = 160723800;
 
     private static final long REENTER_VR_TIMEOUT_MS = 1000;
 
@@ -154,48 +152,6 @@ public class VrShellDelegate {
                     mVrDaydreamApi.createVrIntent(new ComponentName(mActivity, VR_ACTIVITY_ALIAS));
         }
         mVrSupportLevel = mVrDaydreamApi.isDaydreamReadyDevice() ? VR_DAYDREAM : VR_CARDBOARD;
-    }
-
-    private boolean verifyOrUpdateVrServices(Tab tab) {
-        if (!LibraryLoader.isInitialized()) {
-            return false;
-        }
-        int vrCoreVersion = PackageUtils.getPackageVersion(mActivity, VR_CORE_PACKAGE_ID);
-        if (vrCoreVersion < VR_CORE_MIN_VERSION) {
-            // Assume upgrade as most common case.
-            String infobarText =
-                    mActivity.getString(R.string.vr_services_check_infobar_update_text);
-            String buttonText =
-                    mActivity.getString(R.string.vr_services_check_infobar_update_button);
-            if (vrCoreVersion == -1) {
-                // VrCore not installed, make sure it's supported before showing the user a prompt.
-                if (Build.VERSION.SDK_INT < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                                                    ChromeFeatureList.WEBVR_CARDBOARD_SUPPORT,
-                                                    MIN_SDK_VERSION_PARAM_NAME,
-                                                    Build.VERSION_CODES.KITKAT)) {
-                    return false;
-                }
-                // Supported, but not installed.  Ask user to install instead of upgrade.
-                infobarText = mActivity.getString(R.string.vr_services_check_infobar_install_text);
-                buttonText = mActivity.getString(R.string.vr_services_check_infobar_install_button);
-            }
-            SimpleConfirmInfoBarBuilder.create(tab,
-                    new SimpleConfirmInfoBarBuilder.Listener() {
-                        @Override
-                        public void onInfoBarDismissed() {}
-
-                        @Override
-                        public boolean onInfoBarButtonClicked(boolean isPrimary) {
-                            mActivity.startActivity(new Intent(Intent.ACTION_VIEW,
-                                    Uri.parse("market://details?id=" + VR_CORE_PACKAGE_ID)));
-                            return false;
-                        }
-                    },
-                    InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID, R.drawable.vr_services,
-                    infobarText, buttonText, null, true);
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -381,8 +337,8 @@ public class VrShellDelegate {
      */
     @EnterVRResult
     public int enterVRIfNecessary() {
-        // TODO(amp): Move the UpdateVrService check to where it can check after a WebVR API call.
-        if (!verifyOrUpdateVrServices(mActivity.getActivityTab())) return ENTER_VR_CANCELLED;
+        // Update VR support level as it can change at runtime
+        updateVrSupportLevel();
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return ENTER_VR_CANCELLED;
         if (mInVr) return ENTER_VR_NOT_NECESSARY;
         if (!canEnterVR(mActivity.getActivityTab())) return ENTER_VR_CANCELLED;
@@ -581,7 +537,55 @@ public class VrShellDelegate {
         if (mVrCoreVersionChecker == null) {
             mVrCoreVersionChecker = mVrClassesWrapper.createVrCoreVersionChecker();
         }
-        return mVrCoreVersionChecker.isVrCoreCompatible();
+
+        return verifyOrUpdateVrServices(
+                mVrCoreVersionChecker.getVrCoreCompatibility(), mActivity.getActivityTab());
+    }
+
+    private boolean verifyOrUpdateVrServices(int vrCoreCompatibility, Tab tab) {
+        if (vrCoreCompatibility == VrCoreVersionChecker.VR_READY) {
+            return true;
+        }
+        if (tab == null) {
+            return false;
+        }
+        // Make sure OS is supported before showing the user a prompt.
+        if (Build.VERSION.SDK_INT < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                                            ChromeFeatureList.WEBVR_CARDBOARD_SUPPORT,
+                                            MIN_SDK_VERSION_PARAM_NAME,
+                                            Build.VERSION_CODES.KITKAT)) {
+            return false;
+        }
+
+        String infobarText;
+        String buttonText;
+        if (vrCoreCompatibility == VrCoreVersionChecker.VR_NOT_AVAILABLE) {
+            // Supported, but not installed. Ask user to install instead of upgrade.
+            infobarText = mActivity.getString(R.string.vr_services_check_infobar_install_text);
+            buttonText = mActivity.getString(R.string.vr_services_check_infobar_install_button);
+        } else if (vrCoreCompatibility == VrCoreVersionChecker.VR_OUT_OF_DATE) {
+            infobarText = mActivity.getString(R.string.vr_services_check_infobar_update_text);
+            buttonText = mActivity.getString(R.string.vr_services_check_infobar_update_button);
+        } else {
+            Log.e(TAG, "Unknown VrCore compatibility: " + vrCoreCompatibility);
+            return false;
+        }
+
+        SimpleConfirmInfoBarBuilder.create(tab,
+                new SimpleConfirmInfoBarBuilder.Listener() {
+                    @Override
+                    public void onInfoBarDismissed() {}
+
+                    @Override
+                    public boolean onInfoBarButtonClicked(boolean isPrimary) {
+                        mActivity.startActivity(new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("market://details?id=" + VR_CORE_PACKAGE_ID)));
+                        return false;
+                    }
+                },
+                InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID, R.drawable.vr_services, infobarText,
+                buttonText, null, true);
+        return false;
     }
 
     private boolean createVrShell() {

@@ -4,13 +4,26 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import android.support.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Abstracts away the VrCoreVersionCheckerImpl class, which may or may not be present at runtime
  * depending on compile flags.
  */
 public interface VrCoreVersionChecker {
+    public static final int VR_NOT_AVAILABLE = 0;
+    public static final int VR_OUT_OF_DATE = 1;
+    public static final int VR_READY = 2;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({VR_NOT_AVAILABLE, VR_OUT_OF_DATE, VR_READY})
+    public @interface VrCoreCompatibility {}
+
     /**
-     * Test if VrCore version installed is compatible with Chromium.
+     * Check if VrCore is installed or if installed version is compatible with Chromium.
      */
-    boolean isVrCoreCompatible();
+    int getVrCoreCompatibility();
 }
