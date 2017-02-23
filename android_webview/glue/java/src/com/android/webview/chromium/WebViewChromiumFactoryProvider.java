@@ -592,7 +592,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         final String yahooMailPackageId = "com.yahoo.mobile.client.android.mail";
         if (appName.startsWith(yahooMailPackageId)) {
             if (appTargetSdkVersion > Build.VERSION_CODES.M) return false;
-            if (versionCode > 1315849) return false;
+            if (versionCode > 1315850) return false;
             shouldDisable = true;
         }
 
