@@ -1262,6 +1262,14 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
     if (extensions::chrome_manifest_urls::GetDevToolsPage(extension.get())
             .is_empty())
       continue;
+
+    // Each devtools extension will need to be able to run in the devtools
+    // process. Grant each specific extension's origin permission to load
+    // documents.
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantOrigin(
+        web_contents_->GetMainFrame()->GetProcess()->GetID(),
+        url::Origin(extension->url()));
+
     std::unique_ptr<base::DictionaryValue> extension_info(
         new base::DictionaryValue());
     extension_info->Set(
@@ -1274,14 +1282,6 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
                             extension->permissions_data()->HasAPIPermission(
                                 extensions::APIPermission::kExperimental)));
     results.Append(std::move(extension_info));
-  }
-  if (!results.empty()) {
-    // At least one devtools extension exists; it will need to run in the
-    // devtools process. Grant it permission to load documents with
-    // chrome-extension:// origins.
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-        web_contents_->GetMainFrame()->GetProcess()->GetID(),
-        extensions::kExtensionScheme);
   }
 
   CallClientFunction("DevToolsAPI.addExtensions",
