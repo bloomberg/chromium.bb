@@ -47,6 +47,24 @@ bool OverlayUserPrefStore::GetValue(const std::string& key,
   return underlay_->GetValue(GetUnderlayKey(key), result);
 }
 
+std::unique_ptr<base::DictionaryValue> OverlayUserPrefStore::GetValues() const {
+  auto values = underlay_->GetValues();
+  auto overlay_values = overlay_.AsDictionaryValue();
+  for (const auto& overlay_mapping : overlay_to_underlay_names_map_) {
+    const std::string& overlay_key = overlay_mapping.first;
+    const std::string& underlay_key = overlay_mapping.second;
+    std::unique_ptr<base::Value> out_value;
+    if (overlay_key != underlay_key) {
+      values->Remove(underlay_key, &out_value);
+    }
+    overlay_values->Remove(overlay_key, &out_value);
+    if (out_value) {
+      values->Set(overlay_key, std::move(out_value));
+    }
+  }
+  return values;
+}
+
 bool OverlayUserPrefStore::GetMutableValue(const std::string& key,
                                            base::Value** result) {
   if (!ShallBeStoredInOverlay(key))

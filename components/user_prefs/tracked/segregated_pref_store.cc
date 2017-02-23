@@ -83,6 +83,20 @@ bool SegregatedPrefStore::GetValue(const std::string& key,
   return StoreForKey(key)->GetValue(key, result);
 }
 
+std::unique_ptr<base::DictionaryValue> SegregatedPrefStore::GetValues() const {
+  auto values = default_pref_store_->GetValues();
+  auto selected_pref_store_values = selected_pref_store_->GetValues();
+  for (const auto& key : selected_preference_names_) {
+    const base::Value* value = nullptr;
+    if (selected_pref_store_values->Get(key, &value)) {
+      values->Set(key, value->CreateDeepCopy());
+    } else {
+      values->Remove(key, nullptr);
+    }
+  }
+  return values;
+}
+
 void SegregatedPrefStore::SetValue(const std::string& key,
                                    std::unique_ptr<base::Value> value,
                                    uint32_t flags) {

@@ -190,6 +190,10 @@ bool JsonPrefStore::GetValue(const std::string& key,
   return true;
 }
 
+std::unique_ptr<base::DictionaryValue> JsonPrefStore::GetValues() const {
+  return prefs_->CreateDeepCopy();
+}
+
 void JsonPrefStore::AddObserver(PrefStore::Observer* observer) {
   DCHECK(CalledOnValidThread());
 

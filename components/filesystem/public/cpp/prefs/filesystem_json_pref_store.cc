@@ -84,6 +84,11 @@ bool FilesystemJsonPrefStore::GetValue(const std::string& key,
   return true;
 }
 
+std::unique_ptr<base::DictionaryValue> FilesystemJsonPrefStore::GetValues()
+    const {
+  return prefs_->CreateDeepCopy();
+}
+
 void FilesystemJsonPrefStore::AddObserver(PrefStore::Observer* observer) {
   DCHECK(CalledOnValidThread());
 
