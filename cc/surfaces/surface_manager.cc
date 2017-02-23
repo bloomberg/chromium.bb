@@ -489,9 +489,6 @@ bool SurfaceManager::ChildContains(
 void SurfaceManager::RegisterFrameSinkHierarchy(
     const FrameSinkId& parent_frame_sink_id,
     const FrameSinkId& child_frame_sink_id) {
-  DCHECK_EQ(valid_frame_sink_ids_.count(parent_frame_sink_id), 1u);
-  DCHECK_EQ(valid_frame_sink_ids_.count(child_frame_sink_id), 1u);
-
   // If it's possible to reach the parent through the child's descendant chain,
   // then this will create an infinite loop.  Might as well just crash here.
   CHECK(!ChildContains(child_frame_sink_id, parent_frame_sink_id));
