@@ -449,23 +449,6 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
             0, triggerRow.querySelector('.secondary').textContent.length);
       }
     });
-
-    if (!cr.isMac) {
-      test('spellcheck edit dictionary page add word validation', function() {
-        assertFalse(!!languagesPage.$$('settings-edit-dictionary-page'));
-        var spellCheckCollapse = languagesPage.$.spellCheckCollapse;
-        MockInteractions.tap(
-            spellCheckCollapse.querySelector('.list-button'));
-        var editDictPage = languagesPage.$$('settings-edit-dictionary-page');
-        assertTrue(!!editDictPage);
-        var addWordButton = editDictPage.root.querySelector('paper-button');
-        editDictPage.$.newWord.value = '';
-        assertTrue(!!addWordButton);
-        assertTrue(addWordButton.disabled);
-        editDictPage.$.newWord.value = 'valid word';
-        assertFalse(addWordButton.disabled);
-      });
-    }
   }.bind(this));
 
   // TODO(michaelpg): Test more aspects of the languages UI.

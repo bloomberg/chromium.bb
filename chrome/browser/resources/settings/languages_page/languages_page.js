@@ -354,7 +354,6 @@ Polymer({
   onEditDictionaryTap_: function() {
     assert(!cr.isMac);
     settings.navigateTo(settings.Route.EDIT_DICTIONARY);
-    this.forceRenderList_('settings-edit-dictionary-page');
   },
 
   /**
@@ -457,16 +456,6 @@ Polymer({
           return inputMethod.id == id;
         });
     return inputMethod ? inputMethod.displayName : '';
-  },
-
-  /**
-   * HACK(michaelpg): This is necessary to show the list when navigating to
-   * the sub-page. Remove this function when PolymerElements/neon-animation#60
-   * is fixed.
-   * @param {string} tagName Name of the element containing the <iron-list>.
-   */
-  forceRenderList_: function(tagName) {
-    this.$$(tagName).$$('iron-list').fire('iron-resize');
   },
 
   /**

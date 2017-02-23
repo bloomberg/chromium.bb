@@ -5,6 +5,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="../prefs/prefs.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-edit-dictionary-page">
@@ -43,23 +45,30 @@
             label="$i18n{addDictionaryWordLabel}"></paper-input>
       </div>
       <paper-button class="secondary-button" on-tap="onAddWordTap_"
-          disabled="[[!validateWord_(newWordValue_)]]">
+          disabled="[[!validateWord_(newWordValue_)]]" id="addWord">
         $i18n{addDictionaryWordButton}
       </paper-button>
     </div>
     <div class="settings-box continuation block">
       <h2>$i18n{customDictionaryWords}</h2>
       <div class="list-frame">
-        <iron-list id="list" items="{{words_}}">
-          <template>
-            <div class="list-item">
-              <div class="word text-elide">[[item]]</div>
-              <paper-icon-button icon="cr:clear" on-tap="onRemoveWordTap_"
-                  tabindex$="[[tabIndex]]">
-              </paper-icon-button>
-            </div>
-          </template>
-        </iron-list>
+        <template is="dom-if" if="[[hasWords_(words_.length)]]">
+          <iron-list id="list" items="{{words_}}">
+            <template>
+              <div class="list-item">
+                <div class="word text-elide">[[item]]</div>
+                <paper-icon-button icon="cr:clear" on-tap="onRemoveWordTap_"
+                    tabindex$="[[tabIndex]]">
+                </paper-icon-button>
+              </div>
+            </template>
+          </iron-list>
+        </template>
+        <template is="dom-if" if="[[!hasWords_(words_.length)]]">
+          <div id="noWordsLabel" class="list-item">
+            $i18n{noCustomDictionaryWordsFound}
+          </div>
+        </template>
       </div>
     </div>
   </template>

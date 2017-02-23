@@ -958,6 +958,35 @@ TEST_F('CrSettingsStartupUrlsPageTest', 'StartupUrlsPage', function() {
   mocha.run();
 });
 
+GEN('#if !defined(OS_MACOSX)');
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsEditDictionaryPageTest() {}
+
+CrSettingsEditDictionaryPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://md-settings/languages_page/edit_dictionary_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../fake_chrome_event.js',
+    'fake_settings_private.js',
+    'test_browser_proxy.js',
+    'fake_language_settings_private.js',
+    'edit_dictionary_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsEditDictionaryPageTest', 'EditDictionaryPage', function() {
+  mocha.run();
+});
+GEN('#endif');
+
 /**
  * @constructor
  * @extends {CrSettingsBrowserTest}
@@ -973,6 +1002,7 @@ CrSettingsLanguagesTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../fake_chrome_event.js',
+    'test_browser_proxy.js',
     'fake_language_settings_private.js',
     'fake_settings_private.js',
     'languages_tests.js',

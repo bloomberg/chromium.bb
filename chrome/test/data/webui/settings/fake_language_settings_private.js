@@ -22,9 +22,15 @@ cr.define('settings', function() {
   /**
    * Fake of the chrome.languageSettingsPrivate API.
    * @constructor
+   * @extends {TestBrowserProxy}
    * @implements {LanguageSettingsPrivate}
    */
   function FakeLanguageSettingsPrivate() {
+    // List of method names expected to be tested with whenCalled()
+    settings.TestBrowserProxy.call(this, [
+      'getSpellcheckWords',
+    ]);
+
     /** @type {!Array<!chrome.languageSettingsPrivate.Language>} */
     this.languages = [{
       // English and some variants.
@@ -99,6 +105,7 @@ cr.define('settings', function() {
   }
 
   FakeLanguageSettingsPrivate.prototype = {
+    __proto__: settings.TestBrowserProxy.prototype,
     // Methods for use in testing.
 
     /** @param {SettingsPrefsElement} */
@@ -172,13 +179,18 @@ cr.define('settings', function() {
      * Gets the custom spell check words, in sorted order.
      * @param {function(!Array<string>):void} callback
      */
-    getSpellcheckWords: wrapAssertNotReached('getSpellcheckWords'),
+    getSpellcheckWords: function(callback) {
+      callback([]);
+      this.methodCalled('getSpellcheckWords');
+    },
 
     /**
      * Adds a word to the custom dictionary.
      * @param {string} word
      */
-    addSpellcheckWord: wrapAssertNotReached('addSpellcheckWord'),
+    addSpellcheckWord: function(word) {
+      // Current tests don't actually care about this implementation.
+    },
 
     /**
      * Removes a word from the custom dictionary.
