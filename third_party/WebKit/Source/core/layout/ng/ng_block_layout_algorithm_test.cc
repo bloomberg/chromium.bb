@@ -63,10 +63,10 @@ class NGBlockLayoutAlgorithmTest
     NGBlockNode* node = new NGBlockNode(style_.get());
     node->SetFirstChild(first_child);
 
-    RefPtr<NGPhysicalFragment> fragment =
+    RefPtr<NGLayoutResult> result =
         NGBlockLayoutAlgorithm(node, space).Layout();
 
-    return toNGPhysicalBoxFragment(fragment.get());
+    return toNGPhysicalBoxFragment(result->PhysicalFragment().get());
   }
 
   std::pair<RefPtr<NGPhysicalBoxFragment>, NGConstraintSpace*>
@@ -77,9 +77,10 @@ class NGBlockLayoutAlgorithmTest
     NGConstraintSpace* space =
         NGConstraintSpace::CreateFromLayoutObject(*block_flow);
 
-    RefPtr<NGPhysicalFragment> fragment =
+    RefPtr<NGLayoutResult> result =
         NGBlockLayoutAlgorithm(node, space).Layout();
-    return std::make_pair(toNGPhysicalBoxFragment(fragment.get()), space);
+    return std::make_pair(
+        toNGPhysicalBoxFragment(result->PhysicalFragment().get()), space);
   }
 
   MinAndMaxContentSizes RunComputeMinAndMax(NGBlockNode* first_child) {

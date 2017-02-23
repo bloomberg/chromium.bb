@@ -16,27 +16,14 @@ namespace blink {
 
 class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
  public:
-  NGPhysicalTextFragment(
-      LayoutObject* layout_object,
-      const NGInlineNode* node,
-      unsigned item_index,
-      unsigned start_offset,
-      unsigned end_offset,
-      NGPhysicalSize size,
-      NGPhysicalSize overflow,
-      PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>&
-          out_of_flow_descendants,
-      Vector<NGStaticPosition> out_of_flow_positions,
-      Vector<Persistent<NGFloatingObject>>& unpositioned_floats,
-      Vector<Persistent<NGFloatingObject>>& positioned_floats)
-      : NGPhysicalFragment(layout_object,
-                           size,
-                           overflow,
-                           kFragmentText,
-                           out_of_flow_descendants,
-                           out_of_flow_positions,
-                           unpositioned_floats,
-                           positioned_floats),
+  NGPhysicalTextFragment(LayoutObject* layout_object,
+                         const NGInlineNode* node,
+                         unsigned item_index,
+                         unsigned start_offset,
+                         unsigned end_offset,
+                         NGPhysicalSize size,
+                         NGPhysicalSize overflow)
+      : NGPhysicalFragment(layout_object, size, overflow, kFragmentText),
         node_(node),
         item_index_(item_index),
         start_offset_(start_offset),

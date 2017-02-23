@@ -67,8 +67,8 @@ TEST_F(NGOutOfFlowLayoutPartTest, FixedInsideAbs) {
   NGConstraintSpace* space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   NGBlockNode* node = new NGBlockNode(block_flow);
-  RefPtr<NGPhysicalFragment> fragment = node->Layout(space);
-  EXPECT_EQ(fragment->OutOfFlowDescendants().size(), (size_t)2);
+  RefPtr<NGLayoutResult> result = node->Layout(space);
+  EXPECT_EQ(result->OutOfFlowDescendants().size(), (size_t)2);
 
   // Test the final result.
   Element* fixed_1 = document().getElementById("fixed1");

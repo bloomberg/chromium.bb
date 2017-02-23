@@ -4,6 +4,8 @@
 
 #include "core/layout/ng/ng_physical_box_fragment.h"
 
+#include "core/layout/ng/ng_floating_object.h"
+
 namespace blink {
 
 NGPhysicalBoxFragment::NGPhysicalBoxFragment(
@@ -11,10 +13,6 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     NGPhysicalSize size,
     NGPhysicalSize overflow,
     Vector<RefPtr<NGPhysicalFragment>>& children,
-    PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>&
-        out_of_flow_descendants,
-    Vector<NGStaticPosition>& out_of_flow_positions,
-    Vector<Persistent<NGFloatingObject>>& unpositioned_floats,
     Vector<Persistent<NGFloatingObject>>& positioned_floats,
     const WTF::Optional<NGLogicalOffset>& bfc_offset,
     const NGMarginStrut& end_margin_strut,
@@ -23,11 +21,8 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
                          size,
                          overflow,
                          kFragmentBox,
-                         out_of_flow_descendants,
-                         out_of_flow_positions,
-                         unpositioned_floats,
-                         positioned_floats,
                          break_token),
+      positioned_floats_(positioned_floats),
       bfc_offset_(bfc_offset),
       end_margin_strut_(end_margin_strut) {
   children_.swap(children);

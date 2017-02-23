@@ -10,28 +10,17 @@
 
 namespace blink {
 
-NGPhysicalFragment::NGPhysicalFragment(
-    LayoutObject* layout_object,
-    NGPhysicalSize size,
-    NGPhysicalSize overflow,
-    NGFragmentType type,
-    PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>&
-        out_of_flow_descendants,
-    Vector<NGStaticPosition> out_of_flow_positions,
-    Vector<Persistent<NGFloatingObject>>& unpositioned_floats,
-    Vector<Persistent<NGFloatingObject>>& positioned_floats,
-    NGBreakToken* break_token)
+NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
+                                       NGPhysicalSize size,
+                                       NGPhysicalSize overflow,
+                                       NGFragmentType type,
+                                       NGBreakToken* break_token)
     : layout_object_(layout_object),
       size_(size),
       overflow_(overflow),
       break_token_(break_token),
       type_(type),
-      is_placed_(false) {
-  out_of_flow_descendants_.swap(out_of_flow_descendants);
-  out_of_flow_positions_.swap(out_of_flow_positions);
-  unpositioned_floats_.swap(unpositioned_floats);
-  positioned_floats_.swap(positioned_floats);
-}
+      is_placed_(false) {}
 
 void NGPhysicalFragment::destroy() const {
   if (Type() == kFragmentText)

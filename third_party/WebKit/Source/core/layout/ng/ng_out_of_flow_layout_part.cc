@@ -78,10 +78,10 @@ void NGOutOfFlowLayoutPart::Run() {
       if (IsContainingBlockForAbsoluteDescendant(container_style_,
                                                  descendant->Style())) {
         NGLogicalOffset offset;
-        RefPtr<NGPhysicalFragment> physical_fragment =
+        RefPtr<NGLayoutResult> result =
             LayoutDescendant(*descendant, static_position, &offset);
         // TODO(atotic) Need to adjust size of overflow rect per spec.
-        container_builder_->AddChild(std::move(physical_fragment), offset);
+        container_builder_->AddChild(std::move(result), offset);
       } else {
         container_builder_->AddOutOfFlowDescendant(descendant, static_position);
       }
@@ -95,7 +95,7 @@ void NGOutOfFlowLayoutPart::Run() {
   }
 }
 
-RefPtr<NGPhysicalFragment> NGOutOfFlowLayoutPart::LayoutDescendant(
+RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
     NGBlockNode& descendant,
     NGStaticPosition static_position,
     NGLogicalOffset* offset) {
@@ -104,7 +104,7 @@ RefPtr<NGPhysicalFragment> NGOutOfFlowLayoutPart::LayoutDescendant(
   // relative to the container's padding box.
   static_position.offset -= container_border_physical_offset_;
 
-  RefPtr<NGPhysicalFragment> physical_fragment = nullptr;
+  RefPtr<NGLayoutResult> layout_result = nullptr;
   Optional<MinAndMaxContentSizes> inline_estimate;
   Optional<LayoutUnit> block_estimate;
 
@@ -118,12 +118,12 @@ RefPtr<NGPhysicalFragment> NGOutOfFlowLayoutPart::LayoutDescendant(
           inline_estimate);
 
   if (AbsoluteNeedsChildBlockSize(descendant.Style())) {
-    physical_fragment =
-        GenerateFragment(descendant, block_estimate, node_position);
+    layout_result = GenerateFragment(descendant, block_estimate, node_position);
 
     // TODO(ikilpatrick): the writing mode switching here looks wrong.
-    NGBoxFragment fragment(container_space_->WritingMode(),
-                           toNGPhysicalBoxFragment(physical_fragment.get()));
+    NGBoxFragment fragment(
+        container_space_->WritingMode(),
+        toNGPhysicalBoxFragment(layout_result->PhysicalFragment().get()));
 
     block_estimate = fragment.BlockSize();
   }
@@ -133,12 +133,11 @@ RefPtr<NGPhysicalFragment> NGOutOfFlowLayoutPart::LayoutDescendant(
                                         &node_position);
 
   // Skip this step if we produced a fragment when estimating the block size.
-  if (!physical_fragment) {
+  if (!layout_result) {
     block_estimate =
         node_position.size.ConvertToLogical(container_space_->WritingMode())
             .block_size;
-    physical_fragment =
-        GenerateFragment(descendant, block_estimate, node_position);
+    layout_result = GenerateFragment(descendant, block_estimate, node_position);
   }
 
   // Compute logical offset, NGAbsolutePhysicalPosition is calculated relative
@@ -150,10 +149,10 @@ RefPtr<NGPhysicalFragment> NGOutOfFlowLayoutPart::LayoutDescendant(
   offset->block_offset =
       inset.block_start + container_border_offset_.block_offset;
 
-  return physical_fragment;
+  return layout_result;
 }
 
-RefPtr<NGPhysicalFragment> NGOutOfFlowLayoutPart::GenerateFragment(
+RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
     NGBlockNode& descendant,
     const Optional<LayoutUnit>& block_estimate,
     const NGAbsolutePhysicalPosition node_position) {

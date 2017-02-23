@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/ng/ng_layout_input_node.h"
+#include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "platform/heap/Handle.h"
 
@@ -17,8 +18,8 @@ class ComputedStyle;
 class LayoutObject;
 class NGBreakToken;
 class NGConstraintSpace;
+class NGLayoutResult;
 struct NGLogicalOffset;
-class NGPhysicalFragment;
 struct MinAndMaxContentSizes;
 
 // Represents a node to be laid out.
@@ -33,8 +34,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   ~NGBlockNode() override;
 
-  RefPtr<NGPhysicalFragment> Layout(
-      NGConstraintSpace* constraint_space) override;
+  RefPtr<NGLayoutResult> Layout(NGConstraintSpace* constraint_space) override;
   NGLayoutInputNode* NextSibling() override;
   LayoutObject* GetLayoutObject() override;
 
@@ -53,17 +53,16 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void SetNextSibling(NGLayoutInputNode*);
   void SetFirstChild(NGLayoutInputNode*);
 
-  void SetFragment(NGPhysicalBoxFragment* fragment) { fragment_ = fragment; }
   NGBreakToken* CurrentBreakToken() const;
   bool IsLayoutFinished() const {
-    return fragment_ && !fragment_->BreakToken();
+    return layout_result_ && !layout_result_->PhysicalFragment()->BreakToken();
   }
 
   DECLARE_VIRTUAL_TRACE();
 
   // Runs layout on layout_box_ and creates a fragment for the resulting
   // geometry.
-  RefPtr<NGPhysicalBoxFragment> RunOldLayout(const NGConstraintSpace&);
+  RefPtr<NGLayoutResult> RunOldLayout(const NGConstraintSpace&);
 
   // Called if this is an out-of-flow block which needs to be
   // positioned with legacy layout.
@@ -87,9 +86,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   Member<NGLayoutInputNode> next_sibling_;
   Member<NGLayoutInputNode> first_child_;
   // TODO(mstensho): An input node may produce multiple fragments, so this
-  // should probably be renamed to last_fragment_ or something like that, since
+  // should probably be renamed to last_result_ or something like that, since
   // the last fragment is all we care about when resuming layout.
-  RefPtr<NGPhysicalBoxFragment> fragment_;
+  RefPtr<NGLayoutResult> layout_result_;
 };
 
 DEFINE_TYPE_CASTS(NGBlockNode,

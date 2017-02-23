@@ -75,8 +75,10 @@ class NGInlineNodeTest : public ::testing::Test {
 
     NGFragmentBuilder fragment_builder(NGPhysicalFragment::kFragmentBox, node);
     line_builder.CreateFragments(&fragment_builder);
-    RefPtr<NGPhysicalBoxFragment> fragment = fragment_builder.ToBoxFragment();
-    for (const auto& child : fragment->Children()) {
+    RefPtr<NGLayoutResult> result = fragment_builder.ToBoxFragment();
+    for (const auto& child :
+         toNGPhysicalBoxFragment(result->PhysicalFragment().get())
+             ->Children()) {
       fragments_out->push_back(toNGPhysicalTextFragment(child.get()));
     }
   }

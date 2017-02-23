@@ -356,7 +356,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
   return {inline_offset, block_offset};
 }
 
-RefPtr<NGPhysicalFragment> NGBlockLayoutAlgorithm::Layout() {
+RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   WTF::Optional<MinAndMaxContentSizes> sizes;
   if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style()))
     sizes = ComputeMinAndMaxContentSizes();
@@ -453,12 +453,13 @@ RefPtr<NGPhysicalFragment> NGBlockLayoutAlgorithm::Layout() {
       continue;
     }
 
-    RefPtr<NGPhysicalFragment> physical_fragment =
+    RefPtr<NGLayoutResult> layout_result =
         current_child_->Layout(space_for_current_child_);
 
-    FinishCurrentChildLayout(toNGPhysicalBoxFragment(physical_fragment.get()));
+    FinishCurrentChildLayout(layout_result);
 
-    if (!ProceedToNextUnfinishedSibling(physical_fragment.get()))
+    if (!ProceedToNextUnfinishedSibling(
+            layout_result->PhysicalFragment().get()))
       break;
   }
 
@@ -516,30 +517,31 @@ void NGBlockLayoutAlgorithm::LayoutInlineChildren(NGInlineNode* current_child) {
   NGFragmentBuilder wrapper_fragment_builder(NGPhysicalFragment::kFragmentBox,
                                              current_child);
   line_builder.CreateFragments(&wrapper_fragment_builder);
-  RefPtr<NGPhysicalBoxFragment> child_fragment =
+  RefPtr<NGLayoutResult> child_result =
       wrapper_fragment_builder.ToBoxFragment();
   line_builder.CopyFragmentDataToLayoutBlockFlow();
-  FinishCurrentChildLayout(child_fragment.get());
+  FinishCurrentChildLayout(child_result);
   current_child_ = nullptr;
 }
 
 void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
-    RefPtr<NGPhysicalBoxFragment> physical_fragment) {
-  NGBoxFragment fragment(ConstraintSpace().WritingMode(),
-                         physical_fragment.get());
+    RefPtr<NGLayoutResult> layout_result) {
+  NGBoxFragment fragment(
+      ConstraintSpace().WritingMode(),
+      toNGPhysicalBoxFragment(layout_result->PhysicalFragment().get()));
 
   // Pull out unpositioned floats to the current fragment. This may needed if
   // for example the child fragment could not position its floats because it's
   // empty and therefore couldn't determine its position in space.
   builder_->MutableUnpositionedFloats().appendVector(
-      physical_fragment->UnpositionedFloats());
+      layout_result->UnpositionedFloats());
 
   if (current_child_->Type() == NGLayoutInputNode::kLegacyBlock &&
       CurrentChildStyle().isFloating()) {
-    NGFloatingObject* floating_object =
-        new NGFloatingObject(physical_fragment.get(), space_for_current_child_,
-                             constraint_space_, toNGBlockNode(current_child_),
-                             CurrentChildStyle(), curr_child_margins_);
+    NGFloatingObject* floating_object = new NGFloatingObject(
+        layout_result->PhysicalFragment().get(), space_for_current_child_,
+        constraint_space_, toNGBlockNode(current_child_), CurrentChildStyle(),
+        curr_child_margins_);
     builder_->AddUnpositionedFloat(floating_object);
     // No need to postpone the positioning if we know the correct offset.
     if (builder_->BfcOffset()) {
@@ -604,7 +606,7 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
                                      curr_child_margins_.InlineSum() +
                                      border_and_padding_.InlineSum());
 
-  builder_->AddChild(std::move(physical_fragment), logical_offset);
+  builder_->AddChild(layout_result, logical_offset);
 }
 
 bool NGBlockLayoutAlgorithm::ProceedToNextUnfinishedSibling(

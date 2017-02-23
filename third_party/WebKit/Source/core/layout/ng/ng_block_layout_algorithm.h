@@ -21,6 +21,7 @@ class NGBlockBreakToken;
 class NGConstraintSpace;
 class NGConstraintSpaceBuilder;
 class NGInlineNode;
+class NGLayoutResult;
 class NGPhysicalFragment;
 
 // A class for general block layout (e.g. a <div> with no special style).
@@ -37,7 +38,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                          NGBreakToken* break_token = nullptr);
 
   Optional<MinAndMaxContentSizes> ComputeMinAndMaxContentSizes() const override;
-  RefPtr<NGPhysicalFragment> Layout() override;
+  RefPtr<NGLayoutResult> Layout() override;
 
  private:
   NGBoxStrut CalculateMargins(const NGConstraintSpace& space,
@@ -45,7 +46,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   // Creates a new constraint space for the current child.
   NGConstraintSpace* CreateConstraintSpaceForCurrentChild();
-  void FinishCurrentChildLayout(RefPtr<NGPhysicalBoxFragment>);
+  void FinishCurrentChildLayout(RefPtr<NGLayoutResult>);
 
   // Layout inline children.
   void LayoutInlineChildren(NGInlineNode*);

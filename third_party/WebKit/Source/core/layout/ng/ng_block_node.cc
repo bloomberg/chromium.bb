@@ -14,6 +14,7 @@
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_inline_node.h"
+#include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "core/paint/PaintLayer.h"
@@ -24,15 +25,15 @@ namespace blink {
 namespace {
 
 // Copies data back to the legacy layout tree for a given child fragment.
-void FragmentPositionUpdated(const NGPhysicalBoxFragment& box_fragment) {
-  LayoutBox* layout_box = toLayoutBox(box_fragment.GetLayoutObject());
+void FragmentPositionUpdated(const NGPhysicalFragment& fragment) {
+  LayoutBox* layout_box = toLayoutBox(fragment.GetLayoutObject());
   if (!layout_box)
     return;
 
   DCHECK(layout_box->parent()) << "Should be called on children only.";
 
-  layout_box->setX(box_fragment.LeftOffset());
-  layout_box->setY(box_fragment.TopOffset());
+  layout_box->setX(fragment.LeftOffset());
+  layout_box->setY(fragment.TopOffset());
 }
 
 // Similar to FragmentPositionUpdated but for floats.
@@ -76,22 +77,21 @@ NGBlockNode::NGBlockNode(ComputedStyle* style)
 // included from a compilation unit that lacks the ComputedStyle definition.
 NGBlockNode::~NGBlockNode() {}
 
-RefPtr<NGPhysicalFragment> NGBlockNode::Layout(
+RefPtr<NGLayoutResult> NGBlockNode::Layout(
     NGConstraintSpace* constraint_space) {
   // Use the old layout code and synthesize a fragment.
   if (!CanUseNewLayout()) {
     DCHECK(layout_box_);
-    fragment_ = RunOldLayout(*constraint_space);
-    return fragment_;
+    layout_result_ = RunOldLayout(*constraint_space);
+    return layout_result_;
   }
 
-  RefPtr<NGPhysicalFragment> fragment =
+  layout_result_ =
       NGBlockLayoutAlgorithm(this, constraint_space, CurrentBreakToken())
           .Layout();
 
-  fragment_ = toNGPhysicalBoxFragment(fragment.get());
   CopyFragmentDataToLayoutBox(*constraint_space);
-  return fragment_;
+  return layout_result_;
 }
 
 MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
@@ -127,9 +127,11 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
     return *maybe_sizes;
 
   // Have to synthesize this value.
-  RefPtr<NGPhysicalFragment> physical_fragment = Layout(constraint_space);
+  RefPtr<NGLayoutResult> layout_result = Layout(constraint_space);
+  NGPhysicalFragment* physical_fragment =
+      layout_result->PhysicalFragment().get();
   NGBoxFragment min_fragment(FromPlatformWritingMode(Style().getWritingMode()),
-                             toNGPhysicalBoxFragment(physical_fragment.get()));
+                             toNGPhysicalBoxFragment(physical_fragment));
   sizes.min_content = min_fragment.InlineOverflow();
 
   // Now, redo with infinite space for max_content
@@ -141,9 +143,10 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .ToConstraintSpace(FromPlatformWritingMode(Style().getWritingMode()));
 
-  physical_fragment = Layout(constraint_space);
+  layout_result = Layout(constraint_space);
+  physical_fragment = layout_result->PhysicalFragment().get();
   NGBoxFragment max_fragment(FromPlatformWritingMode(Style().getWritingMode()),
-                             toNGPhysicalBoxFragment(physical_fragment.get()));
+                             toNGPhysicalBoxFragment(physical_fragment));
   sizes.max_content = max_fragment.InlineOverflow();
   return sizes;
 }
@@ -196,7 +199,8 @@ void NGBlockNode::SetFirstChild(NGLayoutInputNode* child) {
 }
 
 NGBreakToken* NGBlockNode::CurrentBreakToken() const {
-  return fragment_ ? fragment_->BreakToken() : nullptr;
+  return layout_result_ ? layout_result_->PhysicalFragment()->BreakToken()
+                        : nullptr;
 }
 
 DEFINE_TRACE(NGBlockNode) {
@@ -237,20 +241,23 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   if (!layout_box_)
     return;
 
-  layout_box_->setWidth(fragment_->Width());
-  layout_box_->setHeight(fragment_->Height());
+  NGPhysicalBoxFragment* fragment =
+      toNGPhysicalBoxFragment(layout_result_->PhysicalFragment().get());
+
+  layout_box_->setWidth(fragment->Width());
+  layout_box_->setHeight(fragment->Height());
   NGBoxStrut border_and_padding =
       ComputeBorders(Style()) + ComputePadding(constraint_space, Style());
   LayoutUnit intrinsic_logical_height =
       layout_box_->style()->isHorizontalWritingMode()
-          ? fragment_->HeightOverflow()
-          : fragment_->WidthOverflow();
+          ? fragment->HeightOverflow()
+          : fragment->WidthOverflow();
   intrinsic_logical_height -= border_and_padding.BlockSum();
   layout_box_->setIntrinsicContentLogicalHeight(intrinsic_logical_height);
 
   // We may still have unpositioned floats when we reach the root box.
   if (!layout_box_->parent()) {
-    for (const auto& floating_object : fragment_->PositionedFloats()) {
+    for (const auto& floating_object : fragment->PositionedFloats()) {
       FloatingObjectPositionedUpdated(floating_object, layout_box_);
     }
   }
@@ -269,11 +276,12 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     // Ensure the position of the children are copied across to the
     // LayoutObject tree.
   } else {
-    for (const auto& child_fragment : fragment_->Children()) {
+    for (const auto& child_fragment : fragment->Children()) {
       if (child_fragment->IsPlaced())
         FragmentPositionUpdated(toNGPhysicalBoxFragment(*child_fragment));
 
-      for (const auto& floating_object : child_fragment->PositionedFloats()) {
+      for (const auto& floating_object :
+           toNGPhysicalBoxFragment(child_fragment.get())->PositionedFloats()) {
         FloatingObjectPositionedUpdated(
             floating_object, toLayoutBox(child_fragment->GetLayoutObject()));
       }
@@ -288,7 +296,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   }
 }
 
-RefPtr<NGPhysicalBoxFragment> NGBlockNode::RunOldLayout(
+RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
   NGLogicalSize available_size = constraint_space.PercentageResolutionSize();
   LayoutObject* containing_block = layout_box_->containingBlock();

@@ -26,7 +26,7 @@ NGTextLayoutAlgorithm::NGTextLayoutAlgorithm(
   DCHECK(inline_box_);
 }
 
-RefPtr<NGPhysicalFragment> NGTextLayoutAlgorithm::Layout() {
+RefPtr<NGLayoutResult> NGTextLayoutAlgorithm::Layout() {
   ASSERT_NOT_REACHED();
   return nullptr;
 }

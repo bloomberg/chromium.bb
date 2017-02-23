@@ -48,9 +48,9 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   NGConstraintSpace* constraintSpace = constraintSpaceForElement(blockFlow);
   NGBlockNode* node = new NGBlockNode(blockFlow);
 
-  RefPtr<NGPhysicalFragment> fragment =
+  RefPtr<NGLayoutResult> result =
       NGBlockLayoutAlgorithm(node, constraintSpace).Layout();
-  EXPECT_TRUE(fragment);
+  EXPECT_TRUE(result);
 
   String expectedText("Hello World!");
   EXPECT_EQ(expectedText, toNGInlineNode(node->FirstChild())->Text(0, 12));
@@ -72,9 +72,9 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   NGConstraintSpace* constraintSpace = constraintSpaceForElement(blockFlow);
   NGBlockNode* node = new NGBlockNode(blockFlow);
 
-  RefPtr<NGPhysicalFragment> fragment =
+  RefPtr<NGLayoutResult> result =
       NGBlockLayoutAlgorithm(node, constraintSpace).Layout();
-  EXPECT_TRUE(fragment);
+  EXPECT_TRUE(result);
 
   String expectedText("Hello ");
   expectedText.append(objectReplacementCharacter);

@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class NGPhysicalBoxFragment;
+class NGLayoutResult;
 class NGPhysicalTextFragment;
 
 class CORE_EXPORT NGFragmentBuilder final {
@@ -32,6 +32,7 @@ class CORE_EXPORT NGFragmentBuilder final {
   NGFragmentBuilder& SetInlineOverflow(LayoutUnit);
   NGFragmentBuilder& SetBlockOverflow(LayoutUnit);
 
+  NGFragmentBuilder& AddChild(RefPtr<NGLayoutResult>, const NGLogicalOffset&);
   NGFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
                               const NGLogicalOffset&);
   NGFragmentBuilder& AddFloatingObject(NGFloatingObject*,
@@ -89,7 +90,7 @@ class CORE_EXPORT NGFragmentBuilder final {
   // do not provide a setter here.
 
   // Creates the fragment. Can only be called once.
-  RefPtr<NGPhysicalBoxFragment> ToBoxFragment();
+  RefPtr<NGLayoutResult> ToBoxFragment();
   RefPtr<NGPhysicalTextFragment> ToTextFragment(unsigned index,
                                                 unsigned start_offset,
                                                 unsigned end_offset);

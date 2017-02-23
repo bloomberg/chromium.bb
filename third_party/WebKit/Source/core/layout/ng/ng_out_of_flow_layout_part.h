@@ -20,6 +20,7 @@ class ComputedStyle;
 class NGBlockNode;
 class NGFragmentBuilder;
 class NGConstraintSpace;
+class NGLayoutResult;
 
 // Helper class for positioning of out-of-flow blocks.
 // It should be used together with NGFragmentBuilder.
@@ -34,11 +35,11 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   void Run();
 
  private:
-  RefPtr<NGPhysicalFragment> LayoutDescendant(NGBlockNode& descendant,
-                                              NGStaticPosition static_position,
-                                              NGLogicalOffset* offset);
+  RefPtr<NGLayoutResult> LayoutDescendant(NGBlockNode& descendant,
+                                          NGStaticPosition static_position,
+                                          NGLogicalOffset* offset);
 
-  RefPtr<NGPhysicalFragment> GenerateFragment(
+  RefPtr<NGLayoutResult> GenerateFragment(
       NGBlockNode& node,
       const Optional<LayoutUnit>& block_estimate,
       const NGAbsolutePhysicalPosition node_position);

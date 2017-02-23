@@ -52,7 +52,7 @@ NGFragmentBuilder& NGFragmentBuilder::SetBlockOverflow(LayoutUnit size) {
 }
 
 NGFragmentBuilder& NGFragmentBuilder::AddChild(
-    RefPtr<NGPhysicalFragment> child,
+    RefPtr<NGLayoutResult> child,
     const NGLogicalOffset& child_offset) {
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox)
       << "Only box fragments can have children";
@@ -66,6 +66,15 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
     out_of_flow_candidate_placements_.push_back(
         OutOfFlowPlacement{child_offset, oof_position});
   }
+
+  return AddChild(child->PhysicalFragment(), child_offset);
+}
+
+NGFragmentBuilder& NGFragmentBuilder::AddChild(
+    RefPtr<NGPhysicalFragment> child,
+    const NGLogicalOffset& child_offset) {
+  DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox)
+      << "Only box fragments can have children";
 
   children_.push_back(std::move(child));
   offsets_.push_back(child_offset);
@@ -143,7 +152,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowDescendant(
   return *this;
 }
 
-RefPtr<NGPhysicalBoxFragment> NGFragmentBuilder::ToBoxFragment() {
+RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   // TODO(layout-ng): Support text fragments
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox);
   DCHECK_EQ(offsets_.size(), children_.size());
@@ -170,11 +179,14 @@ RefPtr<NGPhysicalBoxFragment> NGFragmentBuilder::ToBoxFragment() {
     positioned_floats.push_back(floating_object);
   }
 
-  return adoptRef(new NGPhysicalBoxFragment(
+  RefPtr<NGPhysicalBoxFragment> fragment = adoptRef(new NGPhysicalBoxFragment(
       node_->GetLayoutObject(), physical_size,
-      overflow_.ConvertToPhysical(writing_mode_), children_,
-      out_of_flow_descendants_, out_of_flow_positions_, unpositioned_floats_,
-      positioned_floats_, bfc_offset_, end_margin_strut_, break_token));
+      overflow_.ConvertToPhysical(writing_mode_), children_, positioned_floats_,
+      bfc_offset_, end_margin_strut_, break_token));
+
+  return adoptRef(
+      new NGLayoutResult(std::move(fragment), out_of_flow_descendants_,
+                         out_of_flow_positions_, unpositioned_floats_));
 }
 
 RefPtr<NGPhysicalTextFragment> NGFragmentBuilder::ToTextFragment(
@@ -191,9 +203,7 @@ RefPtr<NGPhysicalTextFragment> NGFragmentBuilder::ToTextFragment(
   return adoptRef(new NGPhysicalTextFragment(
       node_->GetLayoutObject(), toNGInlineNode(node_), index, start_offset,
       end_offset, size_.ConvertToPhysical(writing_mode_),
-      overflow_.ConvertToPhysical(writing_mode_), out_of_flow_descendants_,
-      out_of_flow_positions_, empty_unpositioned_floats,
-      empty_positioned_floats));
+      overflow_.ConvertToPhysical(writing_mode_)));
 }
 
 }  // namespace blink

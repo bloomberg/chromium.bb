@@ -14,7 +14,7 @@
 namespace blink {
 
 struct MinAndMaxContentSizes;
-class NGPhysicalFragment;
+class NGLayoutResult;
 
 // Base class for all LayoutNG algorithms.
 class CORE_EXPORT NGLayoutAlgorithm {
@@ -24,10 +24,10 @@ class CORE_EXPORT NGLayoutAlgorithm {
   virtual ~NGLayoutAlgorithm() {}
 
   // Actual layout function. Lays out the children and descendents within the
-  // constraints given by the NGConstraintSpace. Returns a fragment with the
-  // resulting layout information.
+  // constraints given by the NGConstraintSpace. Returns a layout result with
+  // the resulting layout information.
   // TODO(layout-dev): attempt to make this function const.
-  virtual RefPtr<NGPhysicalFragment> Layout() = 0;
+  virtual RefPtr<NGLayoutResult> Layout() = 0;
 
   // Computes the min-content and max-content intrinsic sizes for the given box.
   // The result will not take any min-width, max-width or width properties into
