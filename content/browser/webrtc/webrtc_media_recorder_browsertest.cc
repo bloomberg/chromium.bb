@@ -150,9 +150,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
 // Parametrizations 1/2 (VP8/VP9+disabled) time out under Android ASAN:
 // https://crbug.com/693565.
 #define MAYBE_PeerConnection DISABLED_PeerConnection
-#elif defined(OS_LINUX) && defined(THREAD_SANITIZER)
-// Flaky on Linux TSan, https://crbug.com/694373.
-#define MAYBE_PeerConnection DISABLED_PeerConnection
 #else
 #define MAYBE_PeerConnection PeerConnection
 #endif
