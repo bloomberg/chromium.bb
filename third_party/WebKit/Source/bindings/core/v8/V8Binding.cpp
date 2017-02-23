@@ -843,14 +843,6 @@ v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame* frame,
   return frame->windowProxy(world)->contextIfInitialized();
 }
 
-void crashIfIsolateIsDead(v8::Isolate* isolate) {
-  if (isolate->IsDead()) {
-    // FIXME: We temporarily deal with V8 internal error situations
-    // such as out-of-memory by crashing the renderer.
-    CRASH();
-  }
-}
-
 bool isValidEnum(const String& value,
                  const char** validValues,
                  size_t length,

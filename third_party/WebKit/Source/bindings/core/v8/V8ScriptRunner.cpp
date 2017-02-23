@@ -548,7 +548,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(
     PerformanceMonitor::didExecuteScript(context);
   }
 
-  crashIfIsolateIsDead(isolate);
+  CHECK(!isolate->IsDead());
   return result;
 }
 
@@ -568,7 +568,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::compileAndRunInternalScript(
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
-  crashIfIsolateIsDead(isolate);
+  CHECK(!isolate->IsDead());
   return result;
 }
 
@@ -579,7 +579,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledInternalScript(
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
-  crashIfIsolateIsDead(isolate);
+  CHECK(!isolate->IsDead());
   return result;
 }
 
@@ -618,7 +618,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callAsConstructor(
   ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
   v8::MaybeLocal<v8::Value> result =
       constructor->CallAsConstructor(isolate->GetCurrentContext(), argc, argv);
-  crashIfIsolateIsDead(isolate);
+  CHECK(!isolate->IsDead());
   ThreadDebugger::didExecuteScript(isolate);
   if (!depth)
     TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
@@ -663,7 +663,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
   ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
   v8::MaybeLocal<v8::Value> result =
       function->Call(isolate->GetCurrentContext(), receiver, argc, args);
-  crashIfIsolateIsDead(isolate);
+  CHECK(!isolate->IsDead());
   ThreadDebugger::didExecuteScript(isolate);
   PerformanceMonitor::didCallFunction(context, function);
   if (!depth)
@@ -683,7 +683,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callInternalFunction(
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Value> result =
       function->Call(isolate->GetCurrentContext(), receiver, argc, args);
-  crashIfIsolateIsDead(isolate);
+  CHECK(!isolate->IsDead());
   return result;
 }
 
@@ -706,7 +706,7 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Object> result =
       objectTemplate->NewInstance(isolate->GetCurrentContext());
-  crashIfIsolateIsDead(isolate);
+  CHECK(!isolate->IsDead());
   return result;
 }
 
@@ -721,7 +721,7 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Object> result =
       function->NewInstance(isolate->GetCurrentContext(), argc, argv);
-  crashIfIsolateIsDead(isolate);
+  CHECK(!isolate->IsDead());
   return result;
 }
 
@@ -740,7 +740,7 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObjectInDocument(
                                       v8::MicrotasksScope::kRunMicrotasks);
   v8::MaybeLocal<v8::Object> result =
       function->NewInstance(isolate->GetCurrentContext(), argc, argv);
-  crashIfIsolateIsDead(isolate);
+  CHECK(!isolate->IsDead());
   return result;
 }
 
