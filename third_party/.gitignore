@@ -69,6 +69,8 @@
 /gvr-android-sdk/libgvr_shim_static_arm.a
 /gvr-android-sdk/libgvr_shim_static_arm64.a
 /gvr-android-sdk/src
+/gvr-android-sdk/test-apks/daydream_home/*.apk
+/gvr-android-sdk/test-apks/vr_services/*.apk
 /gperf
 /guava/lib/*.jar
 /hamcrest/lib/*.jar
