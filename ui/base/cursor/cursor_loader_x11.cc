@@ -28,16 +28,23 @@ namespace {
 const char* CursorCssNameFromId(int id) {
   switch (id) {
     case ui::kCursorMiddlePanning:
+      return "all-scroll";
     case ui::kCursorEastPanning:
+      return "e-resize";
     case ui::kCursorNorthPanning:
+      return "n-resize";
     case ui::kCursorNorthEastPanning:
+      return "ne-resize";
     case ui::kCursorNorthWestPanning:
+      return "nw-resize";
     case ui::kCursorSouthPanning:
+      return "s-resize";
     case ui::kCursorSouthEastPanning:
+      return "se-resize";
     case ui::kCursorSouthWestPanning:
+      return "sw-resize";
     case ui::kCursorWestPanning:
-      NOTREACHED() << "There's no middle-click panning on Linux or ChromeOS";
-      return "left_ptr";
+      return "w-resize";
     case ui::kCursorNone:
       return "none";
     case ui::kCursorGrab:
