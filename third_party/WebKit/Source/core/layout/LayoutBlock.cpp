@@ -239,6 +239,8 @@ void LayoutBlock::styleDidChange(StyleDifference diff,
     textAutosizer->record(this);
 
   propagateStyleToAnonymousChildren();
+  setCanContainFixedPositionObjects(isLayoutView() || isSVGForeignObject() ||
+                                    newStyle.canContainFixedPositionObjects());
 
   // It's possible for our border/padding to change, but for the overall logical
   // width or height of the block to end up being the same. We keep track of

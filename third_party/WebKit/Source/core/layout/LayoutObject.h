@@ -1048,6 +1048,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void setHasReflection(bool hasReflection) {
     m_bitfields.setHasReflection(hasReflection);
   }
+  void setCanContainFixedPositionObjects(bool canContainFixedPosition) {
+    m_bitfields.setCanContainFixedPositionObjects(canContainFixedPosition);
+  }
 
   // paintOffset is the offset from the origin of the GraphicsContext at which
   // to paint the current object.
@@ -1173,8 +1176,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            canContainFixedPositionObjects();
   }
   bool canContainFixedPositionObjects() const {
-    return isLayoutView() || isSVGForeignObject() ||
-           (isLayoutBlock() && m_style->canContainFixedPositionObjects());
+    return m_bitfields.canContainFixedPositionObjects();
   }
 
   // Convert the given local point to absolute coordinates
@@ -2208,6 +2210,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_hasOverflowClip(false),
           m_hasTransformRelatedProperty(false),
           m_hasReflection(false),
+          m_canContainFixedPositionObjects(false),
           m_hasCounterNodeMap(false),
           m_everHadLayout(false),
           m_ancestorLineBoxDirty(false),
@@ -2347,6 +2350,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                          HasTransformRelatedProperty);
     ADD_BOOLEAN_BITFIELD(hasReflection, HasReflection);
 
+    // This boolean is used to know if this LayoutObject is a container for
+    // fixed position descendants.
+    ADD_BOOLEAN_BITFIELD(canContainFixedPositionObjects,
+                         CanContainFixedPositionObjects);
+
     // This boolean is used to know if this LayoutObject has one (or more)
     // associated CounterNode(s).
     // See class comment in LayoutCounter.h for more detail.
@@ -2423,7 +2431,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
    protected:
     // Use protected to avoid warning about unused variable.
-    unsigned m_unusedBits : 5;
+    unsigned m_unusedBits : 4;
 
    private:
     // This is the cached 'position' value of this object
