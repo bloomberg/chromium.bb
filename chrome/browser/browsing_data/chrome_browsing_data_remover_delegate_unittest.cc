@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 #include "chrome/browser/translate/language_model_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -570,9 +572,16 @@ class RemovePermissionPromptCountsTest {
     return autoblocker_->RecordIgnore(url, permission);
   }
 
-  bool ShouldChangeDismissalToBlock(const GURL& url,
-                                    ContentSettingsType permission) {
+  bool RecordDismissAndEmbargo(const GURL& url,
+                               ContentSettingsType permission) {
     return autoblocker_->RecordDismissAndEmbargo(url, permission);
+  }
+
+  void CheckEmbargo(const GURL& url,
+                    ContentSettingsType permission,
+                    ContentSetting expected_setting) {
+    EXPECT_EQ(expected_setting,
+              autoblocker_->GetEmbargoResult(permission, url).content_setting);
   }
 
  private:
@@ -1571,6 +1580,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_2(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
   filter_builder_2->AddRegisterableDomain(kTestRegisterableDomain1);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({features::kBlockPromptsIfDismissedOften}, {});
 
   {
     // Test REMOVE_HISTORY.
@@ -1580,12 +1591,20 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
                                      CONTENT_SETTINGS_TYPE_GEOLOCATION));
     EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
-    tester.ShouldChangeDismissalToBlock(kOrigin1,
-                                        CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+    EXPECT_FALSE(tester.RecordDismissAndEmbargo(
+        kOrigin1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
     EXPECT_EQ(1, tester.RecordIgnore(kOrigin2,
                                      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
-    tester.ShouldChangeDismissalToBlock(kOrigin2,
-                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    tester.CheckEmbargo(kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                        CONTENT_SETTING_ASK);
+    EXPECT_FALSE(tester.RecordDismissAndEmbargo(
+        kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+    EXPECT_FALSE(tester.RecordDismissAndEmbargo(
+        kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+    EXPECT_TRUE(tester.RecordDismissAndEmbargo(
+        kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+    tester.CheckEmbargo(kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                        CONTENT_SETTING_BLOCK);
 
     BlockUntilOriginDataRemoved(AnHourAgo(), base::Time::Max(),
                                 BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
@@ -1600,8 +1619,10 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
                                         CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
     EXPECT_EQ(1, tester.GetIgnoreCount(
                      kOrigin2, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
-    EXPECT_EQ(1, tester.GetDismissCount(
-                     kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+    EXPECT_EQ(3, tester.GetDismissCount(kOrigin2,
+                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+    tester.CheckEmbargo(kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                        CONTENT_SETTING_BLOCK);
 
     BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
                                   BrowsingDataRemover::REMOVE_HISTORY, false);
@@ -1617,6 +1638,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
                      kOrigin2, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
     EXPECT_EQ(0, tester.GetDismissCount(
                      kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+    tester.CheckEmbargo(kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                        CONTENT_SETTING_ASK);
   }
   {
     // Test REMOVE_SITE_DATA.
@@ -1626,12 +1649,14 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
                                      CONTENT_SETTINGS_TYPE_GEOLOCATION));
     EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
-    tester.ShouldChangeDismissalToBlock(kOrigin1,
-                                        CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+    EXPECT_FALSE(tester.RecordDismissAndEmbargo(
+        kOrigin1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+    tester.CheckEmbargo(kOrigin1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                        CONTENT_SETTING_ASK);
     EXPECT_EQ(1, tester.RecordIgnore(kOrigin2,
                                      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
-    tester.ShouldChangeDismissalToBlock(kOrigin2,
-                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    EXPECT_FALSE(tester.RecordDismissAndEmbargo(
+        kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 
     BlockUntilOriginDataRemoved(AnHourAgo(), base::Time::Max(),
                                 BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
@@ -1649,6 +1674,15 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
     EXPECT_EQ(0, tester.GetDismissCount(
                      kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 
+    EXPECT_FALSE(tester.RecordDismissAndEmbargo(
+        kOrigin1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+    EXPECT_TRUE(tester.RecordDismissAndEmbargo(
+        kOrigin1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+    EXPECT_EQ(
+        3, tester.GetDismissCount(kOrigin1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+    tester.CheckEmbargo(kOrigin1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                        CONTENT_SETTING_BLOCK);
+
     BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
                                   BrowsingDataRemover::REMOVE_SITE_USAGE_DATA,
                                   false);
@@ -1664,6 +1698,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
                      kOrigin2, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
     EXPECT_EQ(0, tester.GetDismissCount(
                      kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+    tester.CheckEmbargo(kOrigin1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                        CONTENT_SETTING_ASK);
   }
 }
 
