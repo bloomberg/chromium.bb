@@ -90,18 +90,18 @@ base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   // Check to see if the image is already in the cache.
-  {
-    base::AutoLock lock(*images_and_fonts_lock_);
-    if (images_.count(resource_id)) {
-      if (!images_[resource_id].HasRepresentation(gfx::Image::kImageRepCocoa)) {
-        DLOG(WARNING) << "ResourceBundle::GetNativeImageNamed() is returning a"
+  auto found = images_.find(resource_id);
+  if (found != images_.end()) {
+    if (!found->second.HasRepresentation(gfx::Image::kImageRepCocoa)) {
+      DLOG(WARNING)
+          << "ResourceBundle::GetNativeImageNamed() is returning a"
           << " cached gfx::Image that isn't backed by an NSImage. The image"
           << " will be converted, rather than going through the NSImage loader."
           << " resource_id = " << resource_id;
-      }
-      return images_[resource_id];
     }
+    return found->second;
   }
 
   gfx::Image image;
@@ -160,7 +160,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
     image = gfx::Image(ns_image.release());
   }
 
-  base::AutoLock lock(*images_and_fonts_lock_);
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   // Another thread raced the load and has already cached the image.
   if (images_.count(resource_id))

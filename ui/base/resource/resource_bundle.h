@@ -17,6 +17,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -393,9 +394,6 @@ class UI_BASE_EXPORT ResourceBundle {
   // be NULL.
   Delegate* delegate_;
 
-  // Protects |images_| and font-related members.
-  std::unique_ptr<base::Lock> images_and_fonts_lock_;
-
   // Protects |locale_resources_data_|.
   std::unique_ptr<base::Lock> locale_resources_data_lock_;
 
@@ -416,7 +414,7 @@ class UI_BASE_EXPORT ResourceBundle {
   // The various font lists used, as a map from a signed size delta from the
   // platform base font size, plus style, to the FontList. Cached to avoid
   // repeated GDI creation/destruction and font derivation.
-  // Must be accessed only while holding |images_and_fonts_lock_|.
+  // Must be accessed only from UI thread.
   std::map<FontKey, gfx::FontList> font_cache_;
 
   base::FilePath overridden_pak_path_;
@@ -424,6 +422,8 @@ class UI_BASE_EXPORT ResourceBundle {
   IdToStringMap overridden_locale_strings_;
 
   bool is_test_resources_ = false;
+
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundle);
 };

@@ -402,17 +402,18 @@ std::string ResourceBundle::ReloadLocaleResources(
 }
 
 gfx::ImageSkia* ResourceBundle::GetImageSkiaNamed(int resource_id) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+
   const gfx::ImageSkia* image = GetImageNamed(resource_id).ToImageSkia();
   return const_cast<gfx::ImageSkia*>(image);
 }
 
 gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+
   // Check to see if the image is already in the cache.
-  {
-    base::AutoLock lock_scope(*images_and_fonts_lock_);
-    if (images_.count(resource_id))
-      return images_[resource_id];
-  }
+  if (images_.count(resource_id))
+    return images_[resource_id];
 
   gfx::Image image;
   if (delegate_)
@@ -450,12 +451,6 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   }
 
   // The load was successful, so cache the image.
-  base::AutoLock lock_scope(*images_and_fonts_lock_);
-
-  // Another thread raced the load and has already cached the image.
-  if (images_.count(resource_id))
-    return images_[resource_id];
-
   images_[resource_id] = image;
   return images_[resource_id];
 }
@@ -586,7 +581,7 @@ const gfx::FontList& ResourceBundle::GetFontListWithDelta(
     int size_delta,
     gfx::Font::FontStyle style,
     gfx::Font::Weight weight) {
-  base::AutoLock lock_scope(*images_and_fonts_lock_);
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   const FontKey styled_key(size_delta, style, weight);
 
@@ -622,10 +617,12 @@ const gfx::FontList& ResourceBundle::GetFontListWithDelta(
 const gfx::Font& ResourceBundle::GetFontWithDelta(int size_delta,
                                                   gfx::Font::FontStyle style,
                                                   gfx::Font::Weight weight) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return GetFontListWithDelta(size_delta, style, weight).GetPrimaryFont();
 }
 
 const gfx::FontList& ResourceBundle::GetFontList(FontStyle legacy_style) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
   if (legacy_style == BoldFont || legacy_style == MediumBoldFont)
     font_weight = gfx::Font::Weight::BOLD;
@@ -651,11 +648,12 @@ const gfx::FontList& ResourceBundle::GetFontList(FontStyle legacy_style) {
 }
 
 const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return GetFontList(style).GetPrimaryFont();
 }
 
 void ResourceBundle::ReloadFonts() {
-  base::AutoLock lock_scope(*images_and_fonts_lock_);
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   InitDefaultFontList();
   font_cache_.clear();
 }
@@ -678,7 +676,6 @@ bool ResourceBundle::IsScaleFactorSupported(ScaleFactor scale_factor) {
 
 ResourceBundle::ResourceBundle(Delegate* delegate)
     : delegate_(delegate),
-      images_and_fonts_lock_(new base::Lock),
       locale_resources_data_lock_(new base::Lock),
       max_scale_factor_(SCALE_FACTOR_100P) {
 }
@@ -862,7 +859,7 @@ bool ResourceBundle::LoadBitmap(int resource_id,
 }
 
 gfx::Image& ResourceBundle::GetEmptyImage() {
-  base::AutoLock lock(*images_and_fonts_lock_);
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   if (empty_image_.IsEmpty()) {
     // The placeholder bitmap is bright red so people notice the problem.
