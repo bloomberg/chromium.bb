@@ -581,7 +581,7 @@ class RemovePermissionPromptCountsTest {
                     ContentSettingsType permission,
                     ContentSetting expected_setting) {
     EXPECT_EQ(expected_setting,
-              autoblocker_->GetEmbargoResult(permission, url).content_setting);
+              autoblocker_->GetEmbargoResult(url, permission).content_setting);
   }
 
  private:

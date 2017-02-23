@@ -37,10 +37,10 @@ class PermissionBlacklistClient
   // callback is run, the profile associated with |web_contents| is guaranteed
   // to be alive.
   static void CheckSafeBrowsingBlacklist(
-      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
-      ContentSettingsType content_settings_type,
-      const GURL& request_origin,
       content::WebContents* web_contents,
+      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
+      const GURL& request_origin,
+      ContentSettingsType content_settings_type,
       int timeout,
       base::Callback<void(bool)> callback);
 
@@ -48,10 +48,10 @@ class PermissionBlacklistClient
   friend class base::RefCountedThreadSafe<PermissionBlacklistClient>;
 
   PermissionBlacklistClient(
-      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
-      ContentSettingsType content_settings_type,
-      const GURL& request_origin,
       content::WebContents* web_contents,
+      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
+      const GURL& request_origin,
+      ContentSettingsType content_settings_type,
       int timeout,
       base::Callback<void(bool)> callback);
 

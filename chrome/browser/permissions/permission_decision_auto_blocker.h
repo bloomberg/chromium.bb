@@ -58,8 +58,22 @@ class PermissionDecisionAutoBlocker : public KeyedService {
 
   static PermissionDecisionAutoBlocker* GetForProfile(Profile* profile);
 
-  // Removes any recorded counts for urls which match |filter|.
-  void RemoveCountsByUrl(base::Callback<bool(const GURL& url)> filter);
+  // Updates the threshold to start blocking prompts from the field trial.
+  static void UpdateFromVariations();
+
+  // Makes an asynchronous call to Safe Browsing to check the API blacklist.
+  // Places the (|request_origin|, |permission|) pair under embargo if they are
+  // on the blacklist.
+  void CheckSafeBrowsingBlacklist(content::WebContents* web_contents,
+                                  const GURL& request_origin,
+                                  ContentSettingsType permission,
+                                  base::Callback<void(bool)> callback);
+
+  // Checks the status of the content setting to determine if |request_origin|
+  // is under embargo for |permission|. This checks both embargo for Permissions
+  // Blacklisting and repeated dismissals.
+  PermissionResult GetEmbargoResult(const GURL& request_origin,
+                                    ContentSettingsType permission);
 
   // Returns the current number of dismisses recorded for |permission| type at
   // |url|.
@@ -78,21 +92,8 @@ class PermissionDecisionAutoBlocker : public KeyedService {
   // Records that an ignore of a prompt for |permission| was made.
   int RecordIgnore(const GURL& url, ContentSettingsType permission);
 
-  // Updates the threshold to start blocking prompts from the field trial.
-  static void UpdateFromVariations();
-
-  // Updates whether |request_origin| should be under embargo for |permission|.
-  // Makes an asynchronous call to Safe Browsing to check the API blacklist.
-  void UpdateEmbargoedStatus(ContentSettingsType permission,
-                             const GURL& request_origin,
-                             content::WebContents* web_contents,
-                             base::Callback<void(bool)> callback);
-
-  // Checks the status of the content setting to determine if |request_origin|
-  // is under embargo for |permission|. This checks both embargo for Permissions
-  // Blacklisting and repeated dismissals.
-  PermissionResult GetEmbargoResult(ContentSettingsType permission,
-                                    const GURL& request_origin);
+  // Removes any recorded counts for urls which match |filter|.
+  void RemoveCountsByUrl(base::Callback<bool(const GURL& url)> filter);
 
  private:
   friend class PermissionContextBaseTests;
@@ -103,13 +104,13 @@ class PermissionDecisionAutoBlocker : public KeyedService {
 
   // Get the result of the Safe Browsing check, if |should_be_embargoed| is true
   // then |request_origin| will be placed under embargo for that |permission|.
-  void CheckSafeBrowsingResult(ContentSettingsType permission,
-                               const GURL& request_origin,
+  void CheckSafeBrowsingResult(const GURL& request_origin,
+                               ContentSettingsType permission,
                                base::Callback<void(bool)> callback,
                                bool should_be_embargoed);
 
-  void PlaceUnderEmbargo(ContentSettingsType permission,
-                         const GURL& request_origin,
+  void PlaceUnderEmbargo(const GURL& request_origin,
+                         ContentSettingsType permission,
                          const char* key);
 
   void SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(

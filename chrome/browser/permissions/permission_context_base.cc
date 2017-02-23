@@ -119,11 +119,13 @@ void PermissionContextBase::RequestPermission(
 
   // Asynchronously check whether the origin should be blocked from making this
   // permission request, e.g. it may be on the Safe Browsing API blacklist.
-  PermissionDecisionAutoBlocker::GetForProfile(profile_)->UpdateEmbargoedStatus(
-      content_settings_type_, requesting_origin, web_contents,
-      base::Bind(&PermissionContextBase::ContinueRequestPermission,
-                 weak_factory_.GetWeakPtr(), web_contents, id,
-                 requesting_origin, embedding_origin, user_gesture, callback));
+  PermissionDecisionAutoBlocker::GetForProfile(profile_)
+      ->CheckSafeBrowsingBlacklist(
+          web_contents, requesting_origin, content_settings_type_,
+          base::Bind(&PermissionContextBase::ContinueRequestPermission,
+                     weak_factory_.GetWeakPtr(), web_contents, id,
+                     requesting_origin, embedding_origin, user_gesture,
+                     callback));
 }
 
 void PermissionContextBase::ContinueRequestPermission(
@@ -182,7 +184,7 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
   if (content_setting == CONTENT_SETTING_ASK) {
     PermissionResult result =
         PermissionDecisionAutoBlocker::GetForProfile(profile_)
-            ->GetEmbargoResult(content_settings_type_, requesting_origin);
+            ->GetEmbargoResult(requesting_origin, content_settings_type_);
     DCHECK(result.content_setting == CONTENT_SETTING_ASK ||
            result.content_setting == CONTENT_SETTING_BLOCK);
     return result;

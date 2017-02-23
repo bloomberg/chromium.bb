@@ -19,24 +19,23 @@
 
 // static
 void PermissionBlacklistClient::CheckSafeBrowsingBlacklist(
-    scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
-    ContentSettingsType content_settings_type,
-    const GURL& request_origin,
     content::WebContents* web_contents,
+    scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
+    const GURL& request_origin,
+    ContentSettingsType content_settings_type,
     int timeout,
     base::Callback<void(bool)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  new PermissionBlacklistClient(db_manager, content_settings_type,
-                                request_origin, web_contents, timeout,
-                                callback);
+  new PermissionBlacklistClient(web_contents, db_manager, request_origin,
+                                content_settings_type, timeout, callback);
 }
 
 PermissionBlacklistClient::PermissionBlacklistClient(
-    scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
-    ContentSettingsType content_settings_type,
-    const GURL& request_origin,
     content::WebContents* web_contents,
+    scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
+    const GURL& request_origin,
+    ContentSettingsType content_settings_type,
     int timeout,
     base::Callback<void(bool)> callback)
     : content::WebContentsObserver(web_contents),
