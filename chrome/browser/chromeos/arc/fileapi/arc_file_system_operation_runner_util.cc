@@ -34,7 +34,10 @@ void GetFileSizeOnUIThread(const GURL& url,
   auto* runner =
       ArcServiceManager::GetGlobalService<ArcFileSystemOperationRunner>();
   if (!runner) {
+    LOG(ERROR) << "ArcFileSystemOperationRunner unavailable. "
+               << "File system operations are dropped.";
     callback.Run(-1);
+    return;
   }
   runner->GetFileSize(url, callback);
 }
@@ -45,6 +48,8 @@ void OpenFileToReadOnUIThread(const GURL& url,
   auto* runner =
       ArcServiceManager::GetGlobalService<ArcFileSystemOperationRunner>();
   if (!runner) {
+    LOG(ERROR) << "ArcFileSystemOperationRunner unavailable. "
+               << "File system operations are dropped.";
     callback.Run(mojo::ScopedHandle());
     return;
   }
@@ -58,6 +63,8 @@ void GetDocumentOnUIThread(const std::string& authority,
   auto* runner =
       ArcServiceManager::GetGlobalService<ArcFileSystemOperationRunner>();
   if (!runner) {
+    LOG(ERROR) << "ArcFileSystemOperationRunner unavailable. "
+               << "File system operations are dropped.";
     callback.Run(mojom::DocumentPtr());
     return;
   }
@@ -71,6 +78,8 @@ void GetChildDocumentsOnUIThread(const std::string& authority,
   auto* runner =
       ArcServiceManager::GetGlobalService<ArcFileSystemOperationRunner>();
   if (!runner) {
+    LOG(ERROR) << "ArcFileSystemOperationRunner unavailable. "
+               << "File system operations are dropped.";
     callback.Run(base::nullopt);
     return;
   }

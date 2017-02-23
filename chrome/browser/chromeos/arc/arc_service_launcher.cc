@@ -104,8 +104,6 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(base::MakeUnique<ArcCrashCollectorBridge>(
       arc_bridge_service, arc_service_manager_->blocking_task_runner()));
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcFileSystemOperationRunner>(arc_bridge_service));
-  arc_service_manager_->AddService(
       base::MakeUnique<ArcDownloadsWatcherService>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcEnterpriseReportingService>(arc_bridge_service));
@@ -147,6 +145,9 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   arc_service_manager_->AddService(base::MakeUnique<ArcBootPhaseMonitorBridge>(
       arc_service_manager_->arc_bridge_service(),
       multi_user_util::GetAccountIdFromProfile(profile)));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcFileSystemOperationRunner>(
+          arc_service_manager_->arc_bridge_service(), profile));
   arc_service_manager_->AddService(base::MakeUnique<ArcNotificationManager>(
       arc_service_manager_->arc_bridge_service(),
       multi_user_util::GetAccountIdFromProfile(profile)));

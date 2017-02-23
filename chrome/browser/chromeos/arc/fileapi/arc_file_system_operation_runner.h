@@ -66,7 +66,8 @@ class ArcFileSystemOperationRunner
 
   // The standard constructor. A production instance should be created by
   // this constructor.
-  explicit ArcFileSystemOperationRunner(ArcBridgeService* bridge_service);
+  ArcFileSystemOperationRunner(ArcBridgeService* bridge_service,
+                               const Profile* profile);
   ~ArcFileSystemOperationRunner() override;
 
   // Runs file system operations. See file_system.mojom for documentation.
@@ -90,6 +91,7 @@ class ArcFileSystemOperationRunner
   friend class ArcFileSystemOperationRunnerTest;
 
   ArcFileSystemOperationRunner(ArcBridgeService* bridge_service,
+                               const Profile* profile,
                                bool observe_events);
 
   // Called whenever ARC states related to |should_defer_| are changed.
@@ -100,9 +102,13 @@ class ArcFileSystemOperationRunner
   // deferring.
   void SetShouldDefer(bool should_defer);
 
+  // Profile this runner is associated with. This can be nullptr in
+  // unit tests.
+  const Profile* const profile_;
+
   // Indicates if this instance should register observers to receive events.
   // Usually true, but set to false in unit tests.
-  bool observe_events_;
+  const bool observe_events_;
 
   // Set to true if operations should be deferred at this moment.
   // The default is set to false so that operations are not deferred in

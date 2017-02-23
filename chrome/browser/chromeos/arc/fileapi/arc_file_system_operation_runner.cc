@@ -29,17 +29,22 @@ ArcFileSystemOperationRunner::CreateForTesting(
   // We can't use base::MakeUnique() here because we are calling a private
   // constructor.
   return base::WrapUnique<ArcFileSystemOperationRunner>(
-      new ArcFileSystemOperationRunner(bridge_service, false));
+      new ArcFileSystemOperationRunner(bridge_service, nullptr, false));
 }
 
 ArcFileSystemOperationRunner::ArcFileSystemOperationRunner(
-    ArcBridgeService* bridge_service)
-    : ArcFileSystemOperationRunner(bridge_service, true) {}
+    ArcBridgeService* bridge_service,
+    const Profile* profile)
+    : ArcFileSystemOperationRunner(bridge_service, profile, true) {
+  DCHECK(profile);
+}
 
 ArcFileSystemOperationRunner::ArcFileSystemOperationRunner(
     ArcBridgeService* bridge_service,
+    const Profile* profile,
     bool observe_events)
     : ArcService(bridge_service),
+      profile_(profile),
       observe_events_(observe_events),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -162,11 +167,8 @@ void ArcFileSystemOperationRunner::OnInstanceClosed() {
 
 void ArcFileSystemOperationRunner::OnStateChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(hidehiko): Revisit the condition, when ARC is running without
-  // profile.
-  SetShouldDefer(
-      IsArcPlayStoreEnabledForProfile(ArcSessionManager::Get()->profile()) &&
-      !arc_bridge_service()->file_system()->has_instance());
+  SetShouldDefer(IsArcPlayStoreEnabledForProfile(profile_) &&
+                 !arc_bridge_service()->file_system()->has_instance());
 }
 
 void ArcFileSystemOperationRunner::SetShouldDefer(bool should_defer) {
