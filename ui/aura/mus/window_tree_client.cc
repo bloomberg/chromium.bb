@@ -189,6 +189,7 @@ WindowTreeClient::WindowTreeClient(
     gpu_ = ui::Gpu::Create(connector, std::move(io_task_runner));
     compositor_context_factory_ =
         base::MakeUnique<MusContextFactory>(gpu_.get());
+    initial_context_factory_ = Env::GetInstance()->context_factory();
     Env::GetInstance()->set_context_factory(compositor_context_factory_.get());
   }
 }
@@ -205,6 +206,12 @@ WindowTreeClient::~WindowTreeClient() {
   capture_synchronizer_.reset();
 
   client::GetTransientWindowClient()->RemoveObserver(this);
+
+  Env* env = Env::GetInstance();
+  if (compositor_context_factory_ &&
+      env->context_factory() == compositor_context_factory_.get()) {
+    env->set_context_factory(initial_context_factory_);
+  }
 }
 
 void WindowTreeClient::ConnectViaWindowTreeFactory() {

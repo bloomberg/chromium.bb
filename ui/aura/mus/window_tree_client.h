@@ -38,16 +38,14 @@ namespace gfx {
 class Insets;
 }
 
-namespace ui {
-struct PropertyData;
-}
-
 namespace service_manager {
 class Connector;
 }
 
 namespace ui {
+class ContextFactory;
 class Gpu;
+struct PropertyData;
 }
 
 namespace aura {
@@ -542,6 +540,10 @@ class AURA_EXPORT WindowTreeClient
 
   std::unique_ptr<ui::Gpu> gpu_;
   std::unique_ptr<MusContextFactory> compositor_context_factory_;
+
+  // If |compositor_context_factory_| is installed on Env, then this is the
+  // ContextFactory that was set on Env originally.
+  ui::ContextFactory* initial_context_factory_ = nullptr;
   base::WeakPtrFactory<WindowTreeClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClient);
