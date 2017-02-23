@@ -15,6 +15,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace crypto {
 class RSAPrivateKey;
@@ -106,6 +107,9 @@ class NET_EXPORT_PRIVATE ClientCertSorter {
  private:
   base::Time now_;
 };
+
+// Returns a CRYPTO_BUFFER_POOL for deduplicating certificates.
+NET_EXPORT CRYPTO_BUFFER_POOL* GetBufferPool();
 
 } // namespace x509_util
 
