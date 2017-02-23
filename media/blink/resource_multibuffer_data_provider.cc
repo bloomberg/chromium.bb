@@ -85,10 +85,11 @@ void ResourceMultiBufferDataProvider::Start() {
       WebString::fromUTF8(
           net::HttpByteRange::RightUnbounded(byte_pos()).GetHeaderValue()));
 
-  if (!url_data_->etag().empty()) {
-    request.setHTTPHeaderField(WebString::fromUTF8("If-Match"),
-                               WebString::fromUTF8(url_data_->etag()));
-  }
+  // We would like to send an if-match header with the request to
+  // tell the remote server that we really can't handle files other
+  // than the one we already started playing. Unfortunately, doing
+  // so will disable the http cache, and possibly other proxies
+  // along the way. See crbug/504194 and crbug/689989 for more information.
 
   url_data_->frame()->setReferrerForRequest(request, blink::WebURL());
 

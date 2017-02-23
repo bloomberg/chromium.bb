@@ -55,11 +55,7 @@ const int kHttpPartialContent = 206;
 enum NetworkState { NONE, LOADED, LOADING };
 
 // Predicate that tests that request disallows compressed data.
-static bool CorrectAcceptEncodingAndEtag(const blink::WebURLRequest& request) {
-  std::string etag =
-      request.httpHeaderField(WebString::fromUTF8("If-Match")).utf8();
-  EXPECT_EQ(etag, kEtag);
-
+static bool CorrectAcceptEncoding(const blink::WebURLRequest& request) {
   std::string value =
       request.httpHeaderField(
                  WebString::fromUTF8(net::HttpRequestHeaders::kAcceptEncoding))
@@ -111,9 +107,8 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
   void Start() {
     InSequence s;
-    EXPECT_CALL(
-        *url_loader_,
-        loadAsynchronously(Truly(CorrectAcceptEncodingAndEtag), loader_));
+    EXPECT_CALL(*url_loader_,
+                loadAsynchronously(Truly(CorrectAcceptEncoding), loader_));
 
     loader_->Start();
   }
