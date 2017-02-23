@@ -1,3 +1,2 @@
-This directory contains expectations to keep the sendBeacon tested both for
-the experimental web platform features flag turned on and off until
-http://crbug.com/490015 is resolved.
+This directory contains expectations to keep the navigation logic tested both
+when the --site-per-proces flag turned on and off. See http://crbug.com/619662.

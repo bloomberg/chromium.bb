@@ -1,0 +1,11 @@
+CONSOLE ERROR: line 1: Mixed Content: The page at 'https://127.0.0.1:8443/sendbeacon/beacon-cross-origin.https.html' was loaded over HTTPS, but requested an insecure Beacon endpoint 'http://example.test:8000/sendbeacon/resources/save-beacon.php?name=cross-origin'. This request has been blocked; the content must be served over HTTPS.
+Verify navigator.sendBeacon() mixed content checking.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS navigator.sendBeacon("http://example.test:8000/sendbeacon/resources/save-beacon.php?name=cross-origin", "CrossOrigin"); is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

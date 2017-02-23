@@ -1839,13 +1839,13 @@ crbug.com/638618 inspector/editor/text-editor-search-switch-editor.html [ Skip ]
 
 # This test breaks when the feature introduced in the bug is enabled. We keep
 # this tested without the feature by using the virtual test. See
-# virtual/stable/http/tests/navigation/beacon-cross-origin-redirect-blob-expected.txt
-crbug.com/490015 http/tests/navigation/beacon-cross-origin-redirect-blob.html [ Skip ]
-crbug.com/490015 virtual/mojo-loading/http/tests/navigation/beacon-cross-origin-redirect-blob.html [ Skip ]
+# virtual/stable/http/tests/sendbeacon/beacon-cross-origin-redirect-blob-expected.txt
+crbug.com/490015 http/tests/sendbeacon/beacon-cross-origin-redirect-blob.html [ Skip ]
+crbug.com/490015 virtual/mojo-loading/http/tests/sendbeacon/beacon-cross-origin-redirect-blob.html [ Skip ]
 # This test doesn't need to be run with the stable release mode.
-crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simple-type.html [ Skip ]
+crbug.com/490015 virtual/stable/http/tests/sendbeacon/beacon-blob-with-non-simple-type.html [ Skip ]
 # This test fails with the stable release mode.
-crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
+crbug.com/694958 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # These tests have console error messages whose order is not deterministic.
 crbug.com/685778 http/tests/dom/promise-rejection-events.html [ Pass Failure ]
