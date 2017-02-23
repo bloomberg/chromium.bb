@@ -3,7 +3,7 @@ include_rules = [
   # "-chrome" rule in a parent dir.
   "+chrome/grit/chromium_strings.h",
 
-  "+chrome/install_static/install_util.h",
+  "+chrome/install_static",
 
   "+components/base32",
   "+components/metrics",

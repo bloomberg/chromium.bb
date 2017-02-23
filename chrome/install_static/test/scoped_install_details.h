@@ -20,6 +20,7 @@ class ScopedInstallDetails {
   // Installs an InstallDetails instance that will report the install as being
   // at |system_level| and of mode |install_mode_index| (an InstallConstantIndex
   // value) of the current brand; see ../install_modes.h for details.
+  // TODO(grt): replace bool and int with more obvious types (e.g., enum).
   explicit ScopedInstallDetails(bool system_level = false,
                                 int install_mode_index = 0);
   ~ScopedInstallDetails();

@@ -4,15 +4,20 @@
 
 #include "chrome/installer/util/beacons.h"
 
-#include "base/base_paths.h"
+#include <memory>
+#include <tuple>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
-#include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
+#include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/test_app_registration_data.h"
@@ -139,46 +144,27 @@ INSTANTIATE_TEST_CASE_P(BeaconTest,
                                        BeaconScope::PER_INSTALL),
                                 Bool()));
 
-enum class DistributionVariant {
-  SYSTEM_LEVEL,
-  USER_LEVEL,
-  SXS,
-};
-
 class DefaultBrowserBeaconTest
-    : public ::testing::TestWithParam<DistributionVariant> {
+    : public ::testing::TestWithParam<
+          std::tuple<install_static::InstallConstantIndex, const char*>> {
  protected:
-  using Super = ::testing::TestWithParam<DistributionVariant>;
-
-  DefaultBrowserBeaconTest()
-      : system_install_(GetParam() == DistributionVariant::SYSTEM_LEVEL),
-        chrome_sxs_(GetParam() == DistributionVariant::SXS),
-        chrome_exe_(GetChromePathForParams()),
-        distribution_(nullptr) {}
+  using Super = ::testing::TestWithParam<
+      std::tuple<install_static::InstallConstantIndex, const char*>>;
 
   void SetUp() override {
     Super::SetUp();
 
-    // Override FILE_EXE so that various InstallUtil functions will consider
-    // this to be a user/system Chrome or Chrome SxS.
-    path_overrides_.push_back(new base::ScopedPathOverride(
-        base::FILE_EXE, chrome_exe_, true /* is_absolute */,
-        false /* !create */));
+    install_static::InstallConstantIndex mode_index;
+    const char* level;
+    std::tie(mode_index, level) = GetParam();
 
-    // Override these paths with their own values so that they can be found
-    // after the registry override manager is in place. Getting them would
-    // otherwise fail since the underlying calls to the OS need to see the real
-    // contents of the registry.
-    static const int kPathKeys[] = {
-        base::DIR_PROGRAM_FILES,
-        base::DIR_PROGRAM_FILESX86,
-        base::DIR_LOCAL_APP_DATA,
-    };
-    for (int key : kPathKeys) {
-      base::FilePath temp;
-      PathService::Get(key, &temp);
-      path_overrides_.push_back(new base::ScopedPathOverride(key, temp));
-    }
+    system_install_ = (std::string(level) != "user");
+
+    // Configure InstallDetails for the test.
+    scoped_install_details_ =
+        base::MakeUnique<install_static::ScopedInstallDetails>(system_install_,
+                                                               mode_index);
+    chrome_exe_ = GetChromePath();
 
     // Override the registry so that tests can freely push state to it.
     ASSERT_NO_FATAL_FAILURE(
@@ -192,13 +178,12 @@ class DefaultBrowserBeaconTest
     distribution_ = BrowserDistribution::GetDistribution();
   }
 
-  bool system_install_;
-  bool chrome_sxs_;
+  bool system_install_ = false;
   base::FilePath chrome_exe_;
-  BrowserDistribution* distribution_;
+  BrowserDistribution* distribution_ = nullptr;
 
  private:
-  base::FilePath GetChromePathForParams() const {
+  base::FilePath GetChromePath() const {
     base::FilePath chrome_exe;
     int dir_key = base::DIR_LOCAL_APP_DATA;
 
@@ -211,23 +196,16 @@ class DefaultBrowserBeaconTest
       dir_key = kSystemKey;
     }
     PathService::Get(dir_key, &chrome_exe);
-#if defined(GOOGLE_CHROME_BUILD)
-    chrome_exe = chrome_exe.Append(installer::kGoogleChromeInstallSubDir1);
-    if (chrome_sxs_) {
-      chrome_exe = chrome_exe.Append(
-          base::string16(installer::kGoogleChromeInstallSubDir2) +
-          installer::kSxSSuffix);
-    } else {
-      chrome_exe = chrome_exe.Append(installer::kGoogleChromeInstallSubDir2);
-    }
-#else
-    chrome_exe = chrome_exe.AppendASCII("Chromium");
-#endif
+    if (*install_static::kCompanyPathName)
+      chrome_exe = chrome_exe.Append(install_static::kCompanyPathName);
+    chrome_exe = chrome_exe.Append(
+        base::string16(install_static::kProductPathName)
+            .append(install_static::InstallDetails::Get().install_suffix()));
     chrome_exe = chrome_exe.Append(installer::kInstallBinaryDir);
     return chrome_exe.Append(installer::kChromeExe);
   }
 
-  ScopedVector<base::ScopedPathOverride> path_overrides_;
+  std::unique_ptr<install_static::ScopedInstallDetails> scoped_install_details_;
   registry_util::RegistryOverrideManager registry_override_manager_;
 };
 
@@ -272,16 +250,26 @@ TEST_P(DefaultBrowserBeaconTest, All) {
   ASSERT_FALSE(first_not_default->Get().is_null());
 }
 
-INSTANTIATE_TEST_CASE_P(SystemLevelChrome,
-                        DefaultBrowserBeaconTest,
-                        Values(DistributionVariant::SYSTEM_LEVEL));
-INSTANTIATE_TEST_CASE_P(UserLevelChrome,
-                        DefaultBrowserBeaconTest,
-                        Values(DistributionVariant::USER_LEVEL));
-#if 0 && defined(GOOGLE_CHROME_BUILD)
-// Disabled for now since InstallUtil::IsChromeSxSProcess makes this impossible.
-INSTANTIATE_TEST_CASE_P(ChromeSxS, DefaultBrowserBeaconTest,
-                        Values(DistributionVariant::SXS));
-#endif
+#if defined(GOOGLE_CHROME_BUILD)
+// Stable supports user and system levels.
+INSTANTIATE_TEST_CASE_P(
+    Stable,
+    DefaultBrowserBeaconTest,
+    testing::Combine(testing::Values(install_static::STABLE_INDEX),
+                     testing::Values("user", "system")));
+// Canary is only at user level.
+INSTANTIATE_TEST_CASE_P(
+    Canary,
+    DefaultBrowserBeaconTest,
+    testing::Combine(testing::Values(install_static::CANARY_INDEX),
+                     testing::Values("user")));
+#else   // GOOGLE_CHROME_BUILD
+// Chromium supports user and system levels.
+INSTANTIATE_TEST_CASE_P(
+    Chromium,
+    DefaultBrowserBeaconTest,
+    testing::Combine(testing::Values(install_static::CHROMIUM_INDEX),
+                     testing::Values("user", "system")));
+#endif  // GOOGLE_CHROME_BUILD
 
 }  // namespace installer_util

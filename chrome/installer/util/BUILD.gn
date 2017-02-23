@@ -332,6 +332,7 @@ if (is_win) {
       "//base/test:test_support",
       "//chrome:other_version",
       "//chrome/install_static:install_static_util",
+      "//chrome/install_static/test:test_support",
       "//chrome/installer/setup:lib",
       "//chrome/installer/test:alternate_version_generator_lib",
       "//components/variations",

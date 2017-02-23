@@ -11,16 +11,10 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "base/command_line.h"
-#include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
@@ -32,6 +26,8 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_modes.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
@@ -44,7 +40,6 @@ using installer::ProductState;
 
 namespace {
 
-const char kEnvProgramFilesPath[] = "CHROME_PROBED_PROGRAM_FILES_PATH";
 const wchar_t kRegDowngradeVersion[] = L"DowngradeVersion";
 
 // Creates a zero-sized non-decorated foreground window that doesn't appear
@@ -276,87 +271,17 @@ void InstallUtil::AddInstallerResultItems(
   }
 }
 
-bool InstallUtil::IsPerUserInstall(const base::FilePath& exe_path) {
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  std::string env_program_files_path;
-  // Check environment variable to find program files path.
-  base::FilePath program_files_path;
-  if (env->GetVar(kEnvProgramFilesPath, &env_program_files_path) &&
-      !env_program_files_path.empty()) {
-    program_files_path =
-        base::FilePath(base::UTF8ToWide(env_program_files_path));
-  } else {
-    const int kProgramFilesKey =
-#if defined(_WIN64)
-        // TODO(wfh): Revise this when Chrome is/can be installed in the 64-bit
-        // program files directory.
-        base::DIR_PROGRAM_FILESX86;
-#else
-        base::DIR_PROGRAM_FILES;
-#endif
-    if (!PathService::Get(kProgramFilesKey, &program_files_path)) {
-      NOTREACHED();
-      return true;
-    }
-    env->SetVar(kEnvProgramFilesPath,
-                base::WideToUTF8(program_files_path.value()));
-  }
-
-  // Return true if the program files path is not a case-insensitive prefix of
-  // the exe path.
-  if (exe_path.value().size() < program_files_path.value().size())
-    return true;
-  DWORD prefix_len =
-      base::saturated_cast<DWORD>(program_files_path.value().size());
-  return ::CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE,
-                         exe_path.value().data(), prefix_len,
-                         program_files_path.value().data(), prefix_len) !=
-      CSTR_EQUAL;
-}
-
-void InstallUtil::ResetIsPerUserInstallForTest() {
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  env->UnSetVar(kEnvProgramFilesPath);
-}
-
-bool CheckIsChromeSxSProcess() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  CHECK(command_line);
-
-  if (command_line->HasSwitch(installer::switches::kChromeSxS))
-    return true;
-
-  // Also return true if we are running from Chrome SxS installed path.
-  base::FilePath exe_dir;
-  PathService::Get(base::DIR_EXE, &exe_dir);
-  base::string16 chrome_sxs_dir(installer::kGoogleChromeInstallSubDir2);
-  chrome_sxs_dir.append(installer::kSxSSuffix);
-
-  // This is SxS if current EXE is in or under (possibly multiple levels under)
-  // |chrome_sxs_dir|\|installer::kInstallBinaryDir|
-  std::vector<base::FilePath::StringType> components;
-  exe_dir.GetComponents(&components);
-  // We need at least 1 element in the array for the behavior of the following
-  // loop to be defined.  This should always be true, since we're splitting the
-  // path to our executable and one of the components will be the drive letter.
-  DCHECK(!components.empty());
-  typedef std::vector<base::FilePath::StringType>::const_reverse_iterator
-      ComponentsIterator;
-  for (ComponentsIterator current = components.rbegin(), parent = current + 1;
-       parent != components.rend(); current = parent++) {
-    if (base::FilePath::CompareEqualIgnoreCase(
-            *current, installer::kInstallBinaryDir) &&
-        base::FilePath::CompareEqualIgnoreCase(*parent, chrome_sxs_dir)) {
-      return true;
-    }
-  }
-
-  return false;
+bool InstallUtil::IsPerUserInstall(const base::FilePath& /* exe_path */) {
+  return !install_static::InstallDetails::Get().system_level();
 }
 
 bool InstallUtil::IsChromeSxSProcess() {
-  static bool sxs = CheckIsChromeSxSProcess();
-  return sxs;
+#if defined(GOOGLE_CHROME_BUILD)
+  return install_static::InstallDetails::Get().install_mode_index() ==
+         install_static::CANARY_INDEX;
+#else
+  return false;
+#endif
 }
 
 // static

@@ -37,12 +37,6 @@ class ChannelInfo {
     return value_ == other.value_;
   }
 
-  // Determines the update channel for the value.  Possible |channel_name|
-  // results are the empty string (stable channel), "beta", and "dev".  Returns
-  // false (without modifying |channel_name|) if the channel could not be
-  // determined.
-  bool GetChannelName(base::string16* channel_name) const;
-
   // Returns true if the -chrome modifier is present in the value.
   bool IsChrome() const;
 

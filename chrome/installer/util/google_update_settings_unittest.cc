@@ -12,6 +12,7 @@
 
 #include "base/base_paths.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
@@ -19,6 +20,7 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
@@ -61,76 +63,12 @@ class GoogleUpdateSettingsTest : public testing::Test {
         registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER));
   }
 
-  void SetApField(SystemUserInstall is_system, const wchar_t* value) {
-    HKEY root = is_system == SYSTEM_INSTALL ?
-        HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-
-    RegKey update_key;
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    base::string16 path = dist->GetStateKey();
-    ASSERT_EQ(ERROR_SUCCESS, update_key.Create(root, path.c_str(), KEY_WRITE));
-    ASSERT_EQ(ERROR_SUCCESS, update_key.WriteValue(L"ap", value));
-  }
-
-  // Tests setting the ap= value to various combinations of values with
-  // suffixes, while asserting on the correct channel value.
-  // Note that ap= value has to match "^2.0-d.*" or ".*x64-dev.*" and "^1.1-.*"
-  // or ".*x64-beta.*" for dev and beta channels respectively.
-  void TestCurrentChromeChannelWithVariousApValues(SystemUserInstall install) {
-    static struct Expectation {
-      const wchar_t* ap_value;
-      const wchar_t* channel;
-      bool supports_prefixes;
-    } expectations[] = {
-      { L"2.0-dev", installer::kChromeChannelDev, false},
-      { L"1.1-beta", installer::kChromeChannelBeta, false},
-      { L"x64-dev", installer::kChromeChannelDev, true},
-      { L"x64-beta", installer::kChromeChannelBeta, true},
-      { L"x64-stable", installer::kChromeChannelStable, true},
-    };
-    bool is_system = install == SYSTEM_INSTALL;
-    const wchar_t* prefixes[] = {
-      L"",
-      L"prefix",
-      L"prefix-with-dash",
-    };
-    const wchar_t* suffixes[] = {
-      L"",
-      L"suffix",
-      L"suffix-with-dash",
-    };
-
-    for (const wchar_t* prefix : prefixes) {
-      for (const Expectation& expectation : expectations) {
-        for (const wchar_t* suffix : suffixes) {
-          base::string16 ap = prefix;
-          ap += expectation.ap_value;
-          ap += suffix;
-          const wchar_t* channel = expectation.channel;
-
-          SetApField(install, ap.c_str());
-          const base::string16 ret_channel =
-              GoogleUpdateSettings::GetChromeChannel(is_system);
-
-          // If prefixes are not supported for a channel, we expect the channel
-          // to be "unknown" if a non-empty prefix is present in ap_value.
-          if (!expectation.supports_prefixes && wcslen(prefix) > 0) {
-            EXPECT_STREQ(installer::kChromeChannelUnknown, ret_channel.c_str())
-                << "Expecting channel \"" << installer::kChromeChannelUnknown
-                << "\" for ap=\"" << ap << "\"";
-          } else {
-            EXPECT_STREQ(channel, ret_channel.c_str())
-                << "Expecting channel \"" << channel
-                << "\" for ap=\"" << ap << "\"";
-          }
-        }
-      }
-    }
-  }
-
   // Test the writing and deleting functionality of the experiments label
   // helper.
   void TestExperimentsLabelHelper(SystemUserInstall install) {
+    // Install a basic InstallDetails instance.
+    install_static::ScopedInstallDetails details(install == SYSTEM_INSTALL);
+
     BrowserDistribution* chrome = BrowserDistribution::GetDistribution();
     base::string16 value;
 #if defined(GOOGLE_CHROME_BUILD)
@@ -296,51 +234,6 @@ class GoogleUpdateSettingsTest : public testing::Test {
 };
 
 }  // namespace
-
-// Verify that we return success on no registration (which means stable),
-// whether per-system or per-user install.
-TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelAbsent) {
-  // Per-system first.
-  base::string16 channel;
-  channel = GoogleUpdateSettings::GetChromeChannel(true);
-  EXPECT_STREQ(L"", channel.c_str());
-
-  // Then per-user.
-  channel = GoogleUpdateSettings::GetChromeChannel(false);
-  EXPECT_STREQ(L"", channel.c_str());
-}
-
-// Test an empty Ap key for system and user.
-TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptySystem) {
-  SetApField(SYSTEM_INSTALL, L"");
-  base::string16 channel;
-  channel = GoogleUpdateSettings::GetChromeChannel(true);
-  EXPECT_STREQ(L"", channel.c_str());
-
-  // Per-user lookups still succeed and return empty string.
-  channel = GoogleUpdateSettings::GetChromeChannel(false);
-  EXPECT_STREQ(L"", channel.c_str());
-}
-
-TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptyUser) {
-  SetApField(USER_INSTALL, L"");
-  // Per-system lookups still succeed and return empty string.
-  base::string16 channel;
-  channel = GoogleUpdateSettings::GetChromeChannel(true);
-  EXPECT_STREQ(L"", channel.c_str());
-
-  // Per-user lookup should succeed.
-  channel = GoogleUpdateSettings::GetChromeChannel(false);
-  EXPECT_STREQ(L"", channel.c_str());
-}
-
-TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelVariousApValuesSystem) {
-  TestCurrentChromeChannelWithVariousApValues(SYSTEM_INSTALL);
-}
-
-TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelVariousApValuesUser) {
-  TestCurrentChromeChannelWithVariousApValues(USER_INSTALL);
-}
 
 // Run through all combinations of diff vs. full install, success and failure
 // results, and a fistful of initial "ap" values checking that the expected
@@ -579,18 +472,8 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyNoOverride) {
 }
 
 TEST_F(GoogleUpdateSettingsTest, UpdateProfileCountsSystemInstall) {
-  // Override FILE_MODULE and FILE_EXE with a path somewhere in the default
-  // system-level install location so that
-  // GoogleUpdateSettings::IsSystemInstall() returns true.
-  base::FilePath file_exe;
-  ASSERT_TRUE(PathService::Get(base::FILE_EXE, &file_exe));
-  base::FilePath install_dir(installer::GetChromeInstallPath(
-      true /* system_install */, BrowserDistribution::GetDistribution()));
-  file_exe = install_dir.Append(file_exe.BaseName());
-  base::ScopedPathOverride file_module_override(
-      base::FILE_MODULE, file_exe, true /* is_absolute */, false /* create */);
-  base::ScopedPathOverride file_exe_override(
-      base::FILE_EXE, file_exe, true /* is_absolute */, false /* create */);
+  // Set up a basic system-level InstallDetails.
+  install_static::ScopedInstallDetails details(true /* system_level */);
 
   // No profile count keys present yet.
   const base::string16& state_key = BrowserDistribution::GetDistribution()->
@@ -1171,38 +1054,20 @@ const StatsState::SystemLevelState StatsState::kSystemLevel = {};
 
 // A value parameterized test for testing the stats collection consent setting.
 class CollectStatsConsent : public ::testing::TestWithParam<StatsState> {
- public:
-  static void SetUpTestCase();
-  static void TearDownTestCase();
  protected:
+  CollectStatsConsent();
   void SetUp() override;
-  static void ApplySetting(StatsState::StateSetting setting,
-                           HKEY root_key,
-                           const base::string16& reg_key);
+  void ApplySetting(StatsState::StateSetting setting,
+                    HKEY root_key,
+                    const base::string16& reg_key);
 
-  // TODO(grt): Get rid of these statics and SetUpTestCase.
-  static base::string16* chrome_version_key_;
-  static base::string16* chrome_state_key_;
-  static base::string16* chrome_state_medium_key_;
+  BrowserDistribution* const dist_;
   registry_util::RegistryOverrideManager override_manager_;
+  std::unique_ptr<install_static::ScopedInstallDetails> scoped_install_details_;
 };
 
-base::string16* CollectStatsConsent::chrome_version_key_;
-base::string16* CollectStatsConsent::chrome_state_key_;
-base::string16* CollectStatsConsent::chrome_state_medium_key_;
-
-void CollectStatsConsent::SetUpTestCase() {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  chrome_version_key_ = new base::string16(dist->GetVersionKey());
-  chrome_state_key_ = new base::string16(dist->GetStateKey());
-  chrome_state_medium_key_ = new base::string16(dist->GetStateMediumKey());
-}
-
-void CollectStatsConsent::TearDownTestCase() {
-  delete chrome_version_key_;
-  delete chrome_state_key_;
-  delete chrome_state_medium_key_;
-}
+CollectStatsConsent::CollectStatsConsent()
+    : dist_(BrowserDistribution::GetDistribution()) {}
 
 // Install the registry override and apply the settings to the registry.
 void CollectStatsConsent::SetUp() {
@@ -1213,10 +1078,14 @@ void CollectStatsConsent::SetUp() {
       override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
   const StatsState& stats_state = GetParam();
+  scoped_install_details_ =
+      base::MakeUnique<install_static::ScopedInstallDetails>(
+          stats_state.system_level(), 0 /* install_mode_index */);
   const HKEY root_key = stats_state.root_key();
-  ApplySetting(stats_state.state_value(), root_key, *chrome_state_key_);
-  ApplySetting(stats_state.state_medium_value(), root_key,
-               *chrome_state_medium_key_);
+  ASSERT_NO_FATAL_FAILURE(
+      ApplySetting(stats_state.state_value(), root_key, dist_->GetStateKey()));
+  ASSERT_NO_FATAL_FAILURE(ApplySetting(stats_state.state_medium_value(),
+                                       root_key, dist_->GetStateMediumKey()));
 }
 
 // Write the correct value to represent |setting| in the registry.
@@ -1261,9 +1130,9 @@ TEST_P(CollectStatsConsent, SetCollectStatsConsentAtLevel) {
                   GetParam().system_level(),
                   !GetParam().is_consent_granted()));
 
-  const base::string16& reg_key = GetParam().system_level()
-                                      ? *chrome_state_medium_key_
-                                      : *chrome_state_key_;
+  const base::string16 reg_key = GetParam().system_level()
+                                     ? dist_->GetStateMediumKey()
+                                     : dist_->GetStateKey();
   DWORD value = 0;
   EXPECT_EQ(
       ERROR_SUCCESS,

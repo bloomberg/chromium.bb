@@ -22,6 +22,7 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
@@ -165,24 +166,6 @@ bool InitChannelInfo(bool system_install,
   return channel_info->Initialize(key);
 }
 
-bool GetChromeChannelInternal(bool system_install,
-                              base::string16* channel) {
-  // Shortcut in case this distribution knows what channel it is (canary).
-  if (BrowserDistribution::GetDistribution()->GetChromeChannel(channel))
-    return true;
-
-  installer::ChannelInfo channel_info;
-  if (!InitChannelInfo(system_install, &channel_info)) {
-    channel->assign(installer::kChromeChannelUnknown);
-    return false;
-  }
-
-  if (!channel_info.GetChannelName(channel))
-    channel->assign(installer::kChromeChannelUnknown);
-
-  return true;
-}
-
 #if defined(GOOGLE_CHROME_BUILD)
 // Populates |update_policy| with the UpdatePolicy enum value corresponding to a
 // DWORD read from the registry and returns true if |value| is within range.
@@ -207,15 +190,9 @@ bool GetUpdatePolicyFromDword(
 }  // namespace
 
 bool GoogleUpdateSettings::IsSystemInstall() {
-  bool system_install = false;
-  base::FilePath module_dir;
-  if (!PathService::Get(base::DIR_MODULE, &module_dir)) {
-    LOG(WARNING)
-        << "Failed to get directory of module; assuming per-user install.";
-  } else {
-    system_install = !InstallUtil::IsPerUserInstall(module_dir);
-  }
-  return system_install;
+  // TODO(grt): Remove this unused argument.
+  base::FilePath unused;
+  return !InstallUtil::IsPerUserInstall(unused);
 }
 
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
@@ -430,9 +407,7 @@ bool GoogleUpdateSettings::UpdateDidRunState(bool did_run) {
 }
 
 base::string16 GoogleUpdateSettings::GetChromeChannel(bool system_install) {
-  base::string16 channel;
-  GetChromeChannelInternal(system_install, &channel);
-  return channel;
+  return install_static::GetChromeChannelName();
 }
 
 void GoogleUpdateSettings::UpdateInstallStatus(bool system_install,

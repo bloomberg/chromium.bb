@@ -5114,6 +5114,12 @@ static_library("test_support_unit") {
     "//chrome/common",
     "//mojo/edk/test:test_support",
   ]
+
+  if (is_win) {
+    deps = [
+      "//chrome/install_static/test:test_support",
+    ]
+  }
 }
 
 if (is_android) {

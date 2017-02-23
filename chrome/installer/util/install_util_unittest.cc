@@ -369,39 +369,6 @@ TEST_F(InstallUtilTest, ProgramCompare) {
       L"\"" + short_expect + L"\""));
 }
 
-// Win64 Chrome is always installed in the 32-bit Program Files directory. Test
-// that IsPerUserInstall returns false for an arbitrary path with
-// DIR_PROGRAM_FILESX86 as a suffix but not DIR_PROGRAM_FILES when the two are
-// unrelated.
-TEST_F(InstallUtilTest, IsPerUserInstall) {
-  InstallUtil::ResetIsPerUserInstallForTest();
-
-#if defined(_WIN64)
-  const int kChromeProgramFilesKey = base::DIR_PROGRAM_FILESX86;
-#else
-  const int kChromeProgramFilesKey = base::DIR_PROGRAM_FILES;
-#endif
-  base::ScopedPathOverride program_files_override(kChromeProgramFilesKey);
-  base::FilePath some_exe;
-  ASSERT_TRUE(PathService::Get(kChromeProgramFilesKey, &some_exe));
-  some_exe = some_exe.AppendASCII("Company")
-      .AppendASCII("Product")
-      .AppendASCII("product.exe");
-  EXPECT_FALSE(InstallUtil::IsPerUserInstall(some_exe));
-  InstallUtil::ResetIsPerUserInstallForTest();
-
-#if defined(_WIN64)
-  const int kOtherProgramFilesKey = base::DIR_PROGRAM_FILES;
-  base::ScopedPathOverride other_program_files_override(kOtherProgramFilesKey);
-  ASSERT_TRUE(PathService::Get(kOtherProgramFilesKey, &some_exe));
-  some_exe = some_exe.AppendASCII("Company")
-      .AppendASCII("Product")
-      .AppendASCII("product.exe");
-  EXPECT_TRUE(InstallUtil::IsPerUserInstall(some_exe));
-  InstallUtil::ResetIsPerUserInstallForTest();
-#endif  // defined(_WIN64)
-}
-
 TEST_F(InstallUtilTest, AddDowngradeVersion) {
   TestBrowserDistribution dist;
   bool system_install = true;
