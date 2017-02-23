@@ -5,10 +5,8 @@
 #include "chrome/browser/ui/views/elevation_icon_setter.h"
 
 #include "base/callback.h"
-#include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/views/controls/button/label_button.h"
 
 #if defined(OS_WIN)
@@ -63,13 +61,12 @@ ElevationIconSetter::ElevationIconSetter(views::LabelButton* button,
                                          const base::Closure& callback)
     : button_(button),
       weak_factory_(this) {
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::USER_BLOCKING),
       base::Bind(&GetElevationIcon),
       base::Bind(&ElevationIconSetter::SetButtonIcon,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 ElevationIconSetter::~ElevationIconSetter() {
