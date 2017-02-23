@@ -622,7 +622,10 @@ TEST_P(ConnectionTest, VideoStats) {
   EXPECT_LE(stats.client_stats.time_rendered, finish_time);
 }
 
-// Disabling due to failures after WebRTC roll http://crbug.com/685910
+// Flaky on Linux/ChromeOS, crbug.com/685910.
+// Note: Apparently it's not possible to use the common MAYBE_ prefix with
+// TEST_P, so ifdef it out completely.
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 TEST_P(ConnectionTest, Audio) {
   Connect();
 
@@ -633,6 +636,7 @@ TEST_P(ConnectionTest, Audio) {
   client_audio_player_.WaitForSamples(kAudioSampleRate * 2);
   client_audio_player_.Verify();
 }
+#endif
 
 TEST_P(ConnectionTest, FirstCaptureFailed) {
   Connect();
