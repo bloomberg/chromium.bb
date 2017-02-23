@@ -303,7 +303,6 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   base::Time job_start_time_;
   base::Time spooling_start_time_;
-  base::Time last_caps_update_time_;
 
   base::WeakPtrFactory<PrinterJobHandler> weak_ptr_factory_;
 

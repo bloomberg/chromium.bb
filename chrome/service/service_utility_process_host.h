@@ -150,9 +150,6 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   bool waiting_for_reply_;
   mojo::edk::PendingProcessConnection process_connection_;
 
-  // Start time of operation.
-  base::Time start_time_;
-
   class PdfToEmfState;
   std::unique_ptr<PdfToEmfState> pdf_to_emf_state_;
 

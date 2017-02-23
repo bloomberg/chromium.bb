@@ -720,15 +720,6 @@ void PrinterJobHandler::OnReceivePrinterCaps(
     cp_tag_wildcard += ".*";
     net::AddMultipartValueForUpload(kPrinterRemoveTagValue,
         cp_tag_wildcard, mime_boundary, std::string(), &post_data);
-
-    if (!last_caps_update_time_.is_null()) {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "CloudPrint.CapsUpdateInterval",
-          base::Time::Now() - last_caps_update_time_,
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromDays(7), 50);
-    }
-    last_caps_update_time_ = base::Time::Now();
   }
 
   if (printer_info.printer_name != printer_info_.printer_name) {
