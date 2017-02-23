@@ -44,7 +44,6 @@ blink_core_sources("inspector") {
     "InspectorInputAgent.h",
     "InspectorInstrumentation.cpp",
     "InspectorInstrumentation.h",
-    "InspectorInstrumentationCustomInl.h",
     "InspectorLayerTreeAgent.cpp",
     "InspectorLayerTreeAgent.h",
     "InspectorLogAgent.cpp",
