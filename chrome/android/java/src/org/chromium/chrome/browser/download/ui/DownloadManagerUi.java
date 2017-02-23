@@ -426,8 +426,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
         mHistoryAdapter.markItemsForDeletion(itemsToDelete);
 
-        dismissUndoDeletionSnackbars();
-
         boolean singleItemDeleted = selectedItems.size() == 1;
         String snackbarText = singleItemDeleted ? selectedItems.get(0).getDisplayFileName() :
                 String.format(Locale.getDefault(), "%d", selectedItems.size());
