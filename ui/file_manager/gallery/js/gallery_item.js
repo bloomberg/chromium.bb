@@ -60,6 +60,14 @@ function GalleryItem(
 };
 
 /**
+ * Types of metadata Gallery uses (to query the metadata cache).
+ * @const
+ * @type {!Array<string>}
+ */
+GalleryItem.PREFETCH_PROPERTY_NAMES =
+    ['imageWidth', 'imageHeight', 'imageRotation', 'size', 'present'];
+
+/**
  * @return {!FileEntry} Image entry.
  */
 GalleryItem.prototype.getEntry = function() { return this.entry_; };
@@ -261,7 +269,7 @@ GalleryItem.prototype.getCopyName = function(dirEntry) {
  */
 GalleryItem.prototype.saveToFile = function(
     volumeManager, metadataModel, fallbackDir, canvas, overwrite, callback) {
-  ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
+  metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
   var saveResultRecorded = false;
 
   Promise.all([this.getEntryToWrite_(overwrite, fallbackDir, volumeManager),
@@ -304,9 +312,9 @@ GalleryItem.prototype.saveToFile = function(
         locationInfo = this.locationInfo_;
       }
 
-      ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 1, 2);
+      metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 1, 2);
       saveResultRecorded = true;
-      ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('SaveTime'));
+      metrics.recordInterval(ImageUtil.getMetricName('SaveTime'));
 
       this.entry_ = fileEntry;
       this.locationInfo_ = locationInfo;
@@ -314,7 +322,7 @@ GalleryItem.prototype.saveToFile = function(
       // Updates the metadata.
       metadataModel.notifyEntriesChanged([this.entry_]);
       Promise.all([
-        metadataModel.get([this.entry_], Gallery.PREFETCH_PROPERTY_NAMES),
+        metadataModel.get([this.entry_], GalleryItem.PREFETCH_PROPERTY_NAMES),
         new ThumbnailModel(metadataModel).get([this.entry_])
       ]).then(function(metadataLists) {
         this.metadataItem_ = metadataLists[0][0];
@@ -328,7 +336,7 @@ GalleryItem.prototype.saveToFile = function(
     console.error('Error saving from gallery', this.entry_.name, error);
 
     if (!saveResultRecorded)
-      ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 0, 2);
+      metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 0, 2);
 
     callback(false);
   }.bind(this));

@@ -84,7 +84,7 @@ GalleryDataModel.prototype.saveItem = function(
           if (!util.isSameEntry(oldEntry, item.getEntry())) {
             Promise.all([
               this.metadataModel_.get(
-                  [oldEntry], Gallery.PREFETCH_PROPERTY_NAMES),
+                  [oldEntry], GalleryItem.PREFETCH_PROPERTY_NAMES),
               new ThumbnailModel(this.metadataModel_).get([oldEntry])
             ]).then(function(itemLists) {
               // New entry is added and the item now tracks it.

@@ -65,6 +65,7 @@
 // <include src="image_editor/image_util.js">
 // <include src="image_editor/viewport.js">
 // <include src="image_editor/image_buffer.js">
+// <include src="image_editor/image_loader.js">
 // <include src="image_editor/image_view.js">
 // <include src="image_editor/commands.js">
 // <include src="image_editor/image_editor.js">
@@ -88,7 +89,7 @@
 
 // Exports
 window.ImageUtil = ImageUtil;
-window.ImageUtil.metrics = metrics;
+window.metrics = metrics;
 window.Gallery = Gallery;
 
 window.reload = reload;  // will be called by the background.

@@ -183,10 +183,16 @@
 #      'target_name': 'task_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'thumbnail_loader',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'thumbnail_loader',
+      'dependencies': [
+        '../../../image_loader/compiled_resources2.gyp:image_loader_client',
+        '../../common/js/compiled_resources2.gyp:file_type',
+        '../../common/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'toolbar_controller',
 #      'includes': ['../../../compile_js2.gypi'],

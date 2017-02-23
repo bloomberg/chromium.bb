@@ -124,6 +124,7 @@
           '../../file_manager/foreground/js/volume_manager_wrapper.js',
           '../../image_loader/image_loader_client.js',
           './image_editor/image_util.js',
+          './image_editor/image_loader.js',
           './image_editor/viewport.js',
           './image_editor/image_buffer.js',
           './image_editor/image_view.js',

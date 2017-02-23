@@ -182,7 +182,7 @@ ImageEditor.prototype.lockUI = function(on) {
  * @param {string} name Action name.
  */
 ImageEditor.prototype.recordToolUse = function(name) {
-  ImageUtil.metrics.recordEnum(
+  metrics.recordEnum(
       ImageUtil.getMetricName('Tool'), name, this.actionNames_);
 };
 

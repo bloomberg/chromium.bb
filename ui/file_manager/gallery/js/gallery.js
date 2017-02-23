@@ -228,13 +228,6 @@ function Gallery(volumeManager) {
 }
 
 /**
- * Tools fade-out timeout in milliseconds.
- * @const
- * @type {number}
- */
-Gallery.FADE_TIMEOUT = 2000;
-
-/**
  * First time tools fade-out timeout in milliseconds.
  * @const
  * @type {number}
@@ -248,14 +241,6 @@ Gallery.FIRST_FADE_TIMEOUT = 1000;
  * @type {number}
  */
 Gallery.MOSAIC_BACKGROUND_INIT_DELAY = 1000;
-
-/**
- * Types of metadata Gallery uses (to query the metadata cache).
- * @const
- * @type {!Array<string>}
- */
-Gallery.PREFETCH_PROPERTY_NAMES =
-    ['imageWidth', 'imageHeight', 'imageRotation', 'size', 'present'];
 
 /**
  * Modes in Gallery.
@@ -395,7 +380,7 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
     var item = items[index];
     var entry = item.getEntry();
     var metadataPromise = self.metadataModel_.get([entry],
-        Gallery.PREFETCH_PROPERTY_NAMES);
+        GalleryItem.PREFETCH_PROPERTY_NAMES);
     var thumbnailPromise = thumbnailModel.get([entry]);
     return Promise.all([metadataPromise, thumbnailPromise]).then(
         function(metadataLists) {

@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 /**
- * Mock of ImageUtil.
+ * Mock of ImageUtil and metrics.
  */
 var ImageUtil = {
   getMetricName: function() {},
-  metrics: {
-    recordEnum: function() {},
-    recordInterval: function() {},
-    startInterval: function() {}
-  }
+};
+var metrics = {
+  recordEnum: function() {},
+  recordInterval: function() {},
+  startInterval: function() {}
 };
 
 /**

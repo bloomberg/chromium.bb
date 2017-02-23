@@ -360,7 +360,7 @@ ImageView.prototype.load =
     this.lastLoadTime_ = time;
   }
 
-  ImageUtil.metrics.startInterval(ImageUtil.getMetricName('DisplayTime'));
+  metrics.startInterval(ImageUtil.getMetricName('DisplayTime'));
 
   var self = this;
 
@@ -469,9 +469,9 @@ ImageView.prototype.load =
 
     if (loadType !== ImageView.LoadType.ERROR &&
         loadType !== ImageView.LoadType.CACHED_SCREEN) {
-      ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
+      metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
     }
-    ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('LoadMode'),
+    metrics.recordEnum(ImageUtil.getMetricName('LoadMode'),
         loadType, Object.keys(ImageView.LoadType).length);
 
     if (loadType === ImageView.LoadType.ERROR &&

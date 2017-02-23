@@ -84,6 +84,10 @@
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
+      'target_name': 'gallery_event',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'gallery_foreground',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
