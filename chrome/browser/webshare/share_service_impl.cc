@@ -29,23 +29,6 @@ bool IsIdentifier(char c) {
   return base::IsAsciiAlpha(c) || base::IsAsciiDigit(c) || c == '-' || c == '_';
 }
 
-// Joins a std::vector<base::StringPiece> into a single std::string.
-// TODO(constantina): Implement a base::JoinString() that takes StringPieces.
-// i.e. move this to base/strings/string_util.h, and thoroughly test.
-std::string JoinString(const std::vector<base::StringPiece>& pieces) {
-  size_t total_size = 0;
-  for (const auto& piece : pieces) {
-    total_size += piece.size();
-  }
-  std::string joined_pieces;
-  joined_pieces.reserve(total_size);
-
-  for (const auto& piece : pieces) {
-    piece.AppendToString(&joined_pieces);
-  }
-  return joined_pieces;
-}
-
 }  // namespace
 
 ShareServiceImpl::ShareServiceImpl() : weak_factory_(this) {}
@@ -115,7 +98,7 @@ bool ShareServiceImpl::ReplacePlaceholders(base::StringPiece url_template,
   split_template.push_back(url_template.substr(
       start_index_to_copy, url_template.size() - start_index_to_copy));
 
-  *url_template_filled = JoinString(split_template);
+  *url_template_filled = base::JoinString(split_template, base::StringPiece());
   return true;
 }
 
