@@ -883,5 +883,30 @@ TEST_F(ExternalBeginFrameSourceTest, CallsOnDidFinishFrameWhenObserverRemoved) {
   source_->RemoveObserver(obs_.get());
 }
 
+// https://crbug.com/690127: Duplicate BeginFrame caused DCHECK crash.
+TEST_F(ExternalBeginFrameSourceTest, OnBeginFrameChecksBeginFrameContinuity) {
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
+  EXPECT_CALL((*client_), OnNeedsBeginFrames(true)).Times(1);
+  source_->AddObserver(obs_.get());
+
+  BeginFrameArgs args = CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, 0, 2, base::TimeTicks::FromInternalValue(10000));
+  EXPECT_BEGIN_FRAME_ARGS_USED(*obs_, args);
+  source_->OnBeginFrame(args);
+
+  // Providing same args again to OnBeginFrame() should not notify observer.
+  EXPECT_CALL((*client_), OnDidFinishFrame(BeginFrameAck(0, 2, 0, 0, false)))
+      .Times(1);
+  source_->OnBeginFrame(args);
+
+  // Providing same args through a different ExternalBeginFrameSource also does
+  // not notify observer.
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
+  EXPECT_CALL((*client_), OnNeedsBeginFrames(true)).Times(1);
+  ExternalBeginFrameSource source2(client_.get());
+  source2.AddObserver(obs_.get());
+  source2.OnBeginFrame(args);
+}
+
 }  // namespace
 }  // namespace cc
