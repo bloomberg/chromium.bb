@@ -244,10 +244,13 @@ SearchBox::SearchBox(content::RenderFrame* render_frame)
       most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
       query_(),
       binding_(this) {
-  render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
-      &instant_service_);
-  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
-      base::Bind(&SearchBox::Bind, base::Unretained(this)));
+  // Connect to the embedded search interface in the browser.
+  chrome::mojom::EmbeddedSearchConnectorAssociatedPtr connector;
+  render_frame->GetRemoteAssociatedInterfaces()->GetInterface(&connector);
+  chrome::mojom::SearchBoxAssociatedPtrInfo search_box;
+  binding_.Bind(&search_box);
+  connector->Connect(mojo::MakeRequest(&instant_service_),
+                     std::move(search_box));
 }
 
 SearchBox::~SearchBox() {

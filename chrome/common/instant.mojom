@@ -17,6 +17,21 @@ enum OmniboxFocusState;
 [Native]
 enum NTPTileSource;
 
+// Interface used to connect to the embedded search interface. This is a
+// separate interface such that a reverse connection (|client| below) can be
+// passed when connecting.
+interface EmbeddedSearchConnector {
+  // Connect to the interface. |instant| is the connection which the client will
+  // use to query the embedded search interface. |client| is the connection used
+  // by the embedded search interface implementation to push browser state
+  // updates to the client.
+  Connect(associated Instant& instant, associated SearchBox client);
+};
+
+// TODO(tibell): Rename this to EmbeddedSearch.
+//
+// Browser interface to support embedded search. Render frames connect to this
+// interface to query browser data, such as the most visited pages.
 interface Instant {
   // Tells InstantExtended whether the embedded search API is supported.
   // See http://dev.chromium.org/embeddedsearch
@@ -77,6 +92,10 @@ struct EmbeddedSearchRequestParams;
 [Native]
 struct ThemeBackgroundInfo;
 
+// TODO(tibell): Rename this to EmbeddedSearchClient.
+//
+// Renderer interface used by the browser to push updates to the client. For
+// example, the browser will tell the frame if the omnibox got focus.
 interface SearchBox {
   SetPageSequenceNumber(int32 page_seq_no);
 
@@ -96,6 +115,8 @@ interface SearchBox {
 
   ThemeChanged(ThemeBackgroundInfo value);
 
+  // TODO(treib): Remove the *Result methods and instead add return values to
+  // the correspnding methods in the Instant interface above.
   HistorySyncCheckResult(bool sync_history);
 
   ChromeIdentityCheckResult(mojo.common.mojom.String16 identity,

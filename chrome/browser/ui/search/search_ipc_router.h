@@ -237,7 +237,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Set to true, when the tab corresponding to |this| instance is active.
   bool is_active_tab_;
 
-  content::WebContentsFrameBindingSet<chrome::mojom::Instant> bindings_;
+  // Binding for the connected main frame. We only allow one frame to connect at
+  // the moment, but this could be extended to a map of connected frames, if
+  // desired.
+  mojo::AssociatedBinding<chrome::mojom::Instant> binding_;
 
   std::unique_ptr<SearchBoxClientFactory> search_box_client_factory_;
 

@@ -183,21 +183,6 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
   MockSearchBox mock_search_box_;
 };
 
-TEST_F(SearchIPCRouterTest, IgnoreMessagesFromNonInstantRenderers) {
-  NavigateAndCommitActiveTab(GURL("file://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  EXPECT_CALL(*mock_delegate(), FocusOmnibox(OMNIBOX_FOCUS_VISIBLE)).Times(0);
-  content::WebContents* contents = web_contents();
-  bool is_active_tab = IsActiveTab(contents);
-  EXPECT_TRUE(is_active_tab);
-
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldProcessFocusOmnibox(is_active_tab)).Times(0);
-
-  GetSearchIPCRouter().FocusOmnibox(GetSearchIPCRouterSeqNo(),
-                                    OMNIBOX_FOCUS_VISIBLE);
-}
-
 TEST_F(SearchIPCRouterTest, ProcessFocusOmniboxMsg) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetupMockDelegateAndPolicy();
@@ -432,47 +417,6 @@ TEST_F(SearchIPCRouterTest, IgnoreUndoAllMostVisitedDeletionsMsg) {
       .WillOnce(testing::Return(false));
 
   GetSearchIPCRouter().UndoAllMostVisitedDeletions(GetSearchIPCRouterSeqNo());
-}
-
-TEST_F(SearchIPCRouterTest, IgnoreMessageIfThePageIsNotActive) {
-  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  int page_seq_no = GetSearchIPCRouterSeqNo();
-
-  content::WebContents* contents = web_contents();
-  bool is_active_tab = IsActiveTab(contents);
-  GURL item_url("www.foo.com");
-
-  // Navigate away from the NTP. Afterwards, all messages should be ignored.
-  NavigateAndCommitActiveTab(item_url);
-
-  EXPECT_CALL(*mock_delegate(), OnDeleteMostVisitedItem(item_url)).Times(0);
-  EXPECT_CALL(*policy, ShouldProcessDeleteMostVisitedItem()).Times(0);
-  GetSearchIPCRouter().DeleteMostVisitedItem(page_seq_no, item_url);
-
-  EXPECT_CALL(*mock_delegate(), OnUndoMostVisitedDeletion(item_url)).Times(0);
-  EXPECT_CALL(*policy, ShouldProcessUndoMostVisitedDeletion()).Times(0);
-  GetSearchIPCRouter().UndoMostVisitedDeletion(page_seq_no, item_url);
-
-  EXPECT_CALL(*mock_delegate(), OnUndoAllMostVisitedDeletions()).Times(0);
-  EXPECT_CALL(*policy, ShouldProcessUndoAllMostVisitedDeletions()).Times(0);
-  GetSearchIPCRouter().UndoAllMostVisitedDeletions(page_seq_no);
-
-  EXPECT_CALL(*mock_delegate(), FocusOmnibox(OMNIBOX_FOCUS_VISIBLE)).Times(0);
-  EXPECT_CALL(*policy, ShouldProcessFocusOmnibox(is_active_tab)).Times(0);
-  GetSearchIPCRouter().FocusOmnibox(page_seq_no, OMNIBOX_FOCUS_VISIBLE);
-
-  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(123);
-  EXPECT_CALL(*mock_delegate(), OnLogEvent(NTP_ALL_TILES_LOADED, delta))
-      .Times(0);
-  EXPECT_CALL(*policy, ShouldProcessLogEvent()).Times(0);
-  GetSearchIPCRouter().LogEvent(page_seq_no, NTP_ALL_TILES_LOADED, delta);
-
-  base::string16 text;
-  EXPECT_CALL(*mock_delegate(), PasteIntoOmnibox(text)).Times(0);
-  EXPECT_CALL(*policy, ShouldProcessPasteIntoOmnibox(is_active_tab)).Times(0);
-  GetSearchIPCRouter().PasteAndOpenDropdown(page_seq_no, text);
 }
 
 TEST_F(SearchIPCRouterTest, ProcessPasteAndOpenDropdownMsg) {
