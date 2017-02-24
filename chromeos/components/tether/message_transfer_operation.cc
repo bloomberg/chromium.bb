@@ -52,8 +52,8 @@ void MessageTransferOperation::Initialize() {
                                               message_type_for_connection);
 
     cryptauth::SecureChannel::Status status;
-    DCHECK(connection_manager_->GetStatusForDevice(remote_device, &status));
-    if (status == cryptauth::SecureChannel::Status::AUTHENTICATED) {
+    if (connection_manager_->GetStatusForDevice(remote_device, &status) &&
+        status == cryptauth::SecureChannel::Status::AUTHENTICATED) {
       OnDeviceAuthenticated(remote_device);
     }
   }
