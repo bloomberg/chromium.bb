@@ -12,6 +12,7 @@
 #include "base/process/process.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/channel_info.h"
@@ -31,7 +32,6 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -151,7 +151,7 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  gfx::VectorIconId GetVectorIconId() const override;
+  const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -196,8 +196,8 @@ HungPluginInfoBarDelegate::GetIdentifier() const {
   return HUNG_PLUGIN_INFOBAR_DELEGATE;
 }
 
-gfx::VectorIconId HungPluginInfoBarDelegate::GetVectorIconId() const {
-  return gfx::VectorIconId::EXTENSION_CRASHED;
+const gfx::VectorIcon& HungPluginInfoBarDelegate::GetVectorIcon() const {
+  return kExtensionCrashedIcon;
 }
 
 base::string16 HungPluginInfoBarDelegate::GetMessageText() const {

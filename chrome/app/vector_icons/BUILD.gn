@@ -9,6 +9,7 @@ aggregate_vector_icons("chrome_vector_icons") {
   icon_directory = "."
 
   icons = [
+    "apps.icon",
     "autologin.icon",
     "bluetooth_connected.icon",
     "browser_tools.icon",
@@ -18,9 +19,12 @@ aggregate_vector_icons("chrome_vector_icons") {
     "caret_down.icon",
     "caret_up.1x.icon",
     "caret_up.icon",
+    "cookie.icon",
     "crashed_tab.icon",
     "credit_card.1x.icon",
     "credit_card.icon",
+    "extension.icon",
+    "extension_crashed.icon",
     "file_download.icon",
     "file_download_incognito.1x.icon",
     "file_download_incognito.icon",
@@ -31,6 +35,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "folder_managed.icon",
     "folder_supervised.1x.icon",
     "folder_supervised.icon",
+    "globe.icon",
     "incognito.1x.icon",
     "incognito.icon",
     "laptop.icon",
@@ -42,6 +47,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "navigate_stop.icon",
     "overflow_chevron.1x.icon",
     "overflow_chevron.icon",
+    "paintbrush.icon",
+    "sad_tab.icon",
     "smartphone.icon",
     "tab.icon",
     "tab_audio.1x.icon",

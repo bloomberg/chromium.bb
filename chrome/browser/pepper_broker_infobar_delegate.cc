@@ -4,6 +4,7 @@
 
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -22,7 +23,6 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/webplugininfo.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 // static
 void PepperBrokerInfoBarDelegate::Create(
@@ -92,8 +92,8 @@ PepperBrokerInfoBarDelegate::GetIdentifier() const {
   return PEPPER_BROKER_INFOBAR_DELEGATE;
 }
 
-gfx::VectorIconId PepperBrokerInfoBarDelegate::GetVectorIconId() const {
-  return gfx::VectorIconId::EXTENSION;
+const gfx::VectorIcon& PepperBrokerInfoBarDelegate::GetVectorIcon() const {
+  return kExtensionIcon;
 }
 
 base::string16 PepperBrokerInfoBarDelegate::GetMessageText() const {

@@ -10,6 +10,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -25,7 +26,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 // static
 void ThemeInstalledInfoBarDelegate::Create(
@@ -116,8 +116,8 @@ ThemeInstalledInfoBarDelegate::GetIdentifier() const {
   return THEME_INSTALLED_INFOBAR_DELEGATE;
 }
 
-gfx::VectorIconId ThemeInstalledInfoBarDelegate::GetVectorIconId() const {
-  return gfx::VectorIconId::PAINTBRUSH;
+const gfx::VectorIcon& ThemeInstalledInfoBarDelegate::GetVectorIcon() const {
+  return kPaintbrushIcon;
 }
 
 ThemeInstalledInfoBarDelegate*

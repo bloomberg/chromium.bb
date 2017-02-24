@@ -76,10 +76,10 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return ui::kMidiIcon;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
-      return ui::kExtensionIcon;
+      return kExtensionIcon;
     default:
       NOTREACHED();
-      return ui::kExtensionIcon;
+      return kExtensionIcon;
   }
 #endif
 }

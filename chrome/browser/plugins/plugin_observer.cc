@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -40,7 +41,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/webplugininfo.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 #if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugins/plugin_installer.h"
@@ -136,7 +136,7 @@ class ReloadPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfobarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  gfx::VectorIconId GetVectorIconId() const override;
+  const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -169,8 +169,8 @@ ReloadPluginInfoBarDelegate::GetIdentifier() const {
   return RELOAD_PLUGIN_INFOBAR_DELEGATE;
 }
 
-gfx::VectorIconId ReloadPluginInfoBarDelegate::GetVectorIconId() const {
-  return gfx::VectorIconId::EXTENSION_CRASHED;
+const gfx::VectorIcon& ReloadPluginInfoBarDelegate::GetVectorIcon() const {
+  return kExtensionCrashedIcon;
 }
 
 base::string16 ReloadPluginInfoBarDelegate::GetMessageText() const {
@@ -437,8 +437,7 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
   SimpleAlertInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),
-      infobars::InfoBarDelegate::PLUGIN_OBSERVER, 0,
-      gfx::VectorIconId::EXTENSION_CRASHED,
+      infobars::InfoBarDelegate::PLUGIN_OBSERVER, &kExtensionCrashedIcon,
       l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
                                  plugin_name),
       true);

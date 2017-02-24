@@ -14,25 +14,22 @@
 void SimpleAlertInfoBarDelegate::Create(
     infobars::InfoBarManager* infobar_manager,
     infobars::InfoBarDelegate::InfoBarIdentifier infobar_identifier,
-    int icon_id,
-    gfx::VectorIconId vector_icon_id,
+    const gfx::VectorIcon* vector_icon,
     const base::string16& message,
     bool auto_expire) {
   infobar_manager->AddInfoBar(infobar_manager->CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate>(new SimpleAlertInfoBarDelegate(
-          infobar_identifier, icon_id, vector_icon_id, message, auto_expire))));
+          infobar_identifier, vector_icon, message, auto_expire))));
 }
 
 SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
     infobars::InfoBarDelegate::InfoBarIdentifier infobar_identifier,
-    int icon_id,
-    gfx::VectorIconId vector_icon_id,
+    const gfx::VectorIcon* vector_icon,
     const base::string16& message,
     bool auto_expire)
     : ConfirmInfoBarDelegate(),
       infobar_identifier_(infobar_identifier),
-      icon_id_(icon_id),
-      vector_icon_id_(vector_icon_id),
+      vector_icon_(vector_icon),
       message_(message),
       auto_expire_(auto_expire) {}
 
@@ -44,12 +41,8 @@ SimpleAlertInfoBarDelegate::GetIdentifier() const {
   return infobar_identifier_;
 }
 
-int SimpleAlertInfoBarDelegate::GetIconId() const {
-  return icon_id_;
-}
-
-gfx::VectorIconId SimpleAlertInfoBarDelegate::GetVectorIconId() const {
-  return vector_icon_id_;
+const gfx::VectorIcon& SimpleAlertInfoBarDelegate::GetVectorIcon() const {
+  return vector_icon_ ? *vector_icon_ : InfoBarDelegate::GetVectorIcon();
 }
 
 bool SimpleAlertInfoBarDelegate::ShouldExpire(

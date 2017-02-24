@@ -52,8 +52,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(infoBarManager);
   SimpleAlertInfoBarDelegate::Create(
       infoBarManager,
-      infobars::InfoBarDelegate::SHOW_PASSKIT_INFOBAR_ERROR_DELEGATE,
-      infobars::InfoBarDelegate::kNoIconID, gfx::VectorIconId::VECTOR_ICON_NONE,
+      infobars::InfoBarDelegate::SHOW_PASSKIT_INFOBAR_ERROR_DELEGATE, nullptr,
       l10n_util::GetStringUTF16(IDS_IOS_GENERIC_PASSKIT_ERROR), true);
 }
 

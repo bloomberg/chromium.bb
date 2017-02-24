@@ -250,8 +250,8 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     SimpleAlertInfoBarDelegate::Create(
         InfoBarService::FromWebContents(
             browser->tab_strip_model()->GetActiveWebContents()),
-        infobars::InfoBarDelegate::TEST_INFOBAR,
-        0, gfx::VectorIconId::VECTOR_ICON_NONE, base::string16(), false);
+        infobars::InfoBarDelegate::TEST_INFOBAR, nullptr, base::string16(),
+        false);
   }
 
   NSView* GetViewWithID(ViewID view_id) const {

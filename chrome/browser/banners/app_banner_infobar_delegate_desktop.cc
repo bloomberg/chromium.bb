@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
@@ -17,7 +18,6 @@
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 namespace banners {
 
@@ -64,8 +64,8 @@ AppBannerInfoBarDelegateDesktop::GetIdentifier() const {
   return APP_BANNER_INFOBAR_DELEGATE_DESKTOP;
 }
 
-gfx::VectorIconId AppBannerInfoBarDelegateDesktop::GetVectorIconId() const {
-  return gfx::VectorIconId::APPS;
+const gfx::VectorIcon& AppBannerInfoBarDelegateDesktop::GetVectorIcon() const {
+  return kAppsIcon;
 }
 
 void AppBannerInfoBarDelegateDesktop::InfoBarDismissed() {

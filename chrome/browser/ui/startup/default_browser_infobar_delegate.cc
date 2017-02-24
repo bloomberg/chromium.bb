@@ -8,13 +8,13 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -78,8 +78,8 @@ DefaultBrowserInfoBarDelegate::GetIdentifier() const {
   return DEFAULT_BROWSER_INFOBAR_DELEGATE;
 }
 
-gfx::VectorIconId DefaultBrowserInfoBarDelegate::GetVectorIconId() const {
-  return gfx::VectorIconId::PRODUCT;
+const gfx::VectorIcon& DefaultBrowserInfoBarDelegate::GetVectorIcon() const {
+  return kProductIcon;
 }
 
 bool DefaultBrowserInfoBarDelegate::ShouldExpire(

@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -31,7 +32,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public.h"
 
 #if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugins/plugin_installer.h"
@@ -110,8 +110,8 @@ void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
 }
 
-gfx::VectorIconId OutdatedPluginInfoBarDelegate::GetVectorIconId() const {
-  return gfx::VectorIconId::EXTENSION;
+const gfx::VectorIcon& OutdatedPluginInfoBarDelegate::GetVectorIcon() const {
+  return kExtensionIcon;
 }
 
 base::string16 OutdatedPluginInfoBarDelegate::GetMessageText() const {

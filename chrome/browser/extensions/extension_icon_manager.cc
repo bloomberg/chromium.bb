@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -23,7 +24,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 
@@ -90,6 +90,6 @@ void ExtensionIconManager::OnImageLoaded(const std::string& extension_id,
 void ExtensionIconManager::EnsureDefaultIcon() {
   if (default_icon_.IsEmpty()) {
     default_icon_ = gfx::Image(gfx::CreateVectorIcon(
-        gfx::VectorIconId::EXTENSION, gfx::kFaviconSize, gfx::kChromeIconGrey));
+        kExtensionIcon, gfx::kFaviconSize, gfx::kChromeIconGrey));
   }
 }

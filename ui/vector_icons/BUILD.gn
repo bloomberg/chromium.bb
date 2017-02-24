@@ -14,7 +14,6 @@ aggregate_vector_icons("ui_vector_icons") {
     "close.1x.icon",
     "close.icon",
     "error_circle.icon",
-    "extension.icon",
     "forward_arrow.1x.icon",
     "forward_arrow.icon",
     "location_on.icon",
