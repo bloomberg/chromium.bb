@@ -282,6 +282,52 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   DISALLOW_COPY_AND_ASSIGN(TestV2AppLauncherItemController);
 };
 
+// Proxies to ShelfDelegate invocation to the given
+// ChromeLauncherControllerImpl instance. Because of ownership management,
+// ChromeLauncherControllerImpl instance cannot be injected to WmShell.
+// This wraps the instance, so that it can be injected.
+class ProxyShelfDelegate : public ash::ShelfDelegate {
+ public:
+  explicit ProxyShelfDelegate(ChromeLauncherControllerImpl* controller)
+      : controller_(controller) {}
+  ~ProxyShelfDelegate() override = default;
+
+  ash::ShelfID GetShelfIDForAppID(const std::string& app_id) override {
+    return controller_->GetShelfIDForAppID(app_id);
+  };
+
+  ash::ShelfID GetShelfIDForAppIDAndLaunchID(
+      const std::string& app_id,
+      const std::string& launch_id) override {
+    return controller_->GetShelfIDForAppIDAndLaunchID(app_id, launch_id);
+  }
+
+  bool HasShelfIDToAppIDMapping(ash::ShelfID id) const override {
+    return controller_->HasShelfIDToAppIDMapping(id);
+  }
+
+  const std::string& GetAppIDForShelfID(ash::ShelfID id) override {
+    return controller_->GetAppIDForShelfID(id);
+  }
+
+  void PinAppWithID(const std::string& app_id) override {
+    return controller_->PinAppWithID(app_id);
+  }
+
+  bool IsAppPinned(const std::string& app_id) override {
+    return controller_->IsAppPinned(app_id);
+  }
+
+  void UnpinAppWithID(const std::string& app_id) override {
+    return controller_->UnpinAppWithID(app_id);
+  }
+
+ private:
+  ChromeLauncherControllerImpl* const controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyShelfDelegate);
+};
+
 }  // namespace
 
 class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
@@ -506,6 +552,13 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     launcher_controller_ =
         base::MakeUnique<ChromeLauncherControllerImpl>(profile(), model_);
     launcher_controller_->Init();
+  }
+
+  // This needs to be called after InitLaunchController(), or its family.
+  // It is not supported to recreate the instance.
+  void SetShelfDelegate() {
+    ash::WmShell::Get()->SetShelfDelegateForTesting(
+        base::MakeUnique<ProxyShelfDelegate>(launcher_controller_.get()));
   }
 
   void StartAppSyncService(const syncer::SyncDataList& init_sync_list) {
@@ -3586,8 +3639,9 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
   // Initially pins are imported from legacy pref based model.
   StartPrefSyncService(syncer::SyncDataList());
 
-  arc::ArcSessionManager::SetShelfDelegateForTesting(
-      launcher_controller_.get());
+  // Inject |launcher_controller_| as ShelfDelegate to verify the behavior
+  // of removing pinned icon in ArcSessionManager::OnOptInPreferenceChanged().
+  SetShelfDelegate();
 
   // Initial run, ARC is not managed and disabled, Play Store pin should be
   // available.
@@ -3737,8 +3791,6 @@ TEST_F(ChromeLauncherControllerOrientationTest,
   EnableArc(true);
 
   InitLauncherController();
-  arc::ArcSessionManager::SetShelfDelegateForTesting(
-      launcher_controller_.get());
 
   ash::ScreenOrientationController* controller =
       ash::Shell::GetInstance()->screen_orientation_controller();
@@ -3789,8 +3841,6 @@ TEST_F(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
   EnableTabletMode(true);
 
   InitLauncherController();
-  arc::ArcSessionManager::SetShelfDelegateForTesting(
-      launcher_controller_.get());
 
   InitApps();
   ash::ScreenOrientationController* controller =
@@ -3888,8 +3938,6 @@ TEST_F(ChromeLauncherControllerOrientationTest, CurrentWithLandscapeDisplay) {
   EnableTabletMode(true);
 
   InitLauncherController();
-  arc::ArcSessionManager::SetShelfDelegateForTesting(
-      launcher_controller_.get());
 
   InitApps();
   ash::ScreenOrientationController* controller =
@@ -3947,8 +3995,6 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
   InitLauncherController();
   ChromeLauncherController::set_instance_for_test(launcher_controller_.get());
-  arc::ArcSessionManager::SetShelfDelegateForTesting(
-      launcher_controller_.get());
 
   ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
   EnableArc(false);

@@ -22,10 +22,6 @@
 class ArcAppLauncher;
 class Profile;
 
-namespace ash {
-class ShelfDelegate;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -118,7 +114,6 @@ class ArcSessionManager : public ArcSessionObserver,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static void DisableUIForTesting();
-  static void SetShelfDelegateForTesting(ash::ShelfDelegate* shelf_delegate);
   static void EnableCheckAndroidManagementForTesting();
 
   // Returns true if ARC is allowed to run for the current session.

@@ -60,9 +60,6 @@ ArcSessionManager* g_arc_session_manager = nullptr;
 // Skip creating UI in unit tests
 bool g_disable_ui_for_testing = false;
 
-// Use specified ash::ShelfDelegate for unit tests.
-ash::ShelfDelegate* g_shelf_delegate_for_testing = nullptr;
-
 // The Android management check is disabled by default, it's used only for
 // testing.
 bool g_enable_check_android_management_for_testing = false;
@@ -71,14 +68,6 @@ bool g_enable_check_android_management_for_testing = false;
 // timeout expires, keep ARC running in case the user wants to file feedback,
 // but present the UI to try again.
 constexpr base::TimeDelta kArcSignInTimeout = base::TimeDelta::FromMinutes(5);
-
-ash::ShelfDelegate* GetShelfDelegate() {
-  if (g_shelf_delegate_for_testing)
-    return g_shelf_delegate_for_testing;
-  if (ash::WmShell::HasInstance())
-    return ash::WmShell::Get()->shelf_delegate();
-  return nullptr;
-}
 
 }  // namespace
 
@@ -146,12 +135,6 @@ void ArcSessionManager::DisableUIForTesting() {
   // TODO(hidehiko): When the dependency to ArcAuthNotification from this
   // class is removed, we should remove this as well.
   ArcAuthNotification::DisableForTesting();
-}
-
-// static
-void ArcSessionManager::SetShelfDelegateForTesting(
-    ash::ShelfDelegate* shelf_delegate) {
-  g_shelf_delegate_for_testing = shelf_delegate;
 }
 
 // static
@@ -536,7 +519,9 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
       // Remove the pinned Play Store icon launcher in Shelf.
       // This is only for non-Managed cases. In managed cases, it is expected
       // to be "disabled" rather than "removed", so keep it here.
-      ash::ShelfDelegate* shelf_delegate = GetShelfDelegate();
+      auto* shelf_delegate = ash::WmShell::HasInstance()
+                                 ? ash::WmShell::Get()->shelf_delegate()
+                                 : nullptr;
       if (shelf_delegate)
         shelf_delegate->UnpinAppWithID(ArcSupportHost::kHostAppId);
     }
