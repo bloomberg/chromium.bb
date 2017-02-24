@@ -136,7 +136,8 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   void OnVSync(device::mojom::blink::VRPosePtr,
                mojo::common::mojom::blink::TimeDeltaPtr,
-               int16_t frameId);
+               int16_t frameId,
+               device::mojom::blink::VRVSyncProvider::Status);
   void ConnectVSyncProvider();
 
   ScriptedAnimationController& ensureScriptedAnimationController(Document*);
@@ -171,6 +172,7 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   Member<ScriptedAnimationController> m_scriptedAnimationController;
   bool m_pendingRaf = false;
+  bool m_pendingVsync = false;
   bool m_inAnimationFrame = false;
   bool m_displayBlurred = false;
   bool m_reenteredFullscreen = false;

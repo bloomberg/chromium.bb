@@ -176,7 +176,13 @@ VrShellGl::VrShellGl(
 VrShellGl::~VrShellGl() {
   vsync_task_.Cancel();
   if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(nullptr, base::TimeDelta(), -1);
+    // When this VSync provider is going away we have to respond to pending
+    // callbacks, so instead of providing a VSync, tell the requester to try
+    // again. A VSyncProvider is guaranteed to exist, so the request in response
+    // to this message will go through some other VSyncProvider.
+    base::ResetAndReturn(&callback_)
+        .Run(nullptr, base::TimeDelta(), -1,
+             device::mojom::VRVSyncProvider::Status::RETRY);
   }
   if (binding_.is_bound()) {
     main_thread_task_runner_->PostTask(
@@ -1093,8 +1099,8 @@ void VrShellGl::GetVSync(const GetVSyncCallback& callback) {
   if (!pending_vsync_) {
     if (!callback_.is_null()) {
       mojo::ReportBadMessage(
-          "Requested VSync before waiting for response to "
-          "previous request.");
+          "Requested VSync before waiting for response to previous request.");
+      binding_.Close();
       return;
     }
     callback_ = callback;
@@ -1137,7 +1143,8 @@ void VrShellGl::SendVSync(base::TimeDelta time,
 
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
 
-  callback.Run(VrShell::VRPosePtrFromGvrPose(head_mat), time, frame_index);
+  callback.Run(VrShell::VRPosePtrFromGvrPose(head_mat), time, frame_index,
+               device::mojom::VRVSyncProvider::Status::SUCCESS);
 }
 
 void VrShellGl::ResetPose() {

@@ -161,7 +161,8 @@ int VRDisplay::requestAnimationFrame(FrameRequestCallback* callback) {
   m_pendingRaf = true;
   if (!m_vrVSyncProvider.is_bound()) {
     ConnectVSyncProvider();
-  } else if (!m_displayBlurred) {
+  } else if (!m_displayBlurred && !m_pendingVsync) {
+    m_pendingVsync = true;
     m_vrVSyncProvider->GetVSync(convertToBaseCallback(
         WTF::bind(&VRDisplay::OnVSync, wrapWeakPersistent(this))));
   }
@@ -648,18 +649,17 @@ void VRDisplay::OnDeactivate(
 
 void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
                         mojo::common::mojom::blink::TimeDeltaPtr time,
-                        int16_t frameId) {
-  WTF::TimeDelta timeDelta =
-      WTF::TimeDelta::FromMicroseconds(time->microseconds);
-  // The VSync provider cannot shut down before replying to pending callbacks,
-  // so it will send a null pose with no timestamp to be ignored.
-  if (pose.is_null() && timeDelta.is_zero()) {
-    // We need to keep the VSync loop going because we haven't responded to the
-    // previous rAF yet.
-    m_vrVSyncProvider->GetVSync(convertToBaseCallback(
-        WTF::bind(&VRDisplay::OnVSync, wrapWeakPersistent(this))));
-    return;
+                        int16_t frameId,
+                        device::mojom::blink::VRVSyncProvider::Status error) {
+  switch (error) {
+    case device::mojom::blink::VRVSyncProvider::Status::SUCCESS:
+      break;
+    case device::mojom::blink::VRVSyncProvider::Status::RETRY:
+      m_vrVSyncProvider->GetVSync(convertToBaseCallback(
+          WTF::bind(&VRDisplay::OnVSync, wrapWeakPersistent(this))));
+      return;
   }
+  m_pendingVsync = false;
   if (m_displayBlurred)
     return;
   if (!m_scriptedAnimationController)
@@ -668,6 +668,8 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
   if (!doc)
     return;
 
+  WTF::TimeDelta timeDelta =
+      WTF::TimeDelta::FromMicroseconds(time->microseconds);
   // Ensure a consistent timebase with document rAF.
   if (m_timebase < 0) {
     m_timebase = WTF::monotonicallyIncreasingTime() - timeDelta.InSecondsF();
@@ -682,10 +684,11 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
 }
 
 void VRDisplay::ConnectVSyncProvider() {
-  if (!m_navigatorVR->isFocused())
+  if (!m_navigatorVR->isFocused() || m_vrVSyncProvider.is_bound())
     return;
   m_display->GetVRVSyncProvider(mojo::MakeRequest(&m_vrVSyncProvider));
   if (m_pendingRaf && !m_displayBlurred) {
+    m_pendingVsync = true;
     m_vrVSyncProvider->GetVSync(convertToBaseCallback(
         WTF::bind(&VRDisplay::OnVSync, wrapWeakPersistent(this))));
   }

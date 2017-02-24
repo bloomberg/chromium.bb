@@ -61,7 +61,9 @@ NonPresentingGvrDelegate::OnSwitchToPresentingDelegate() {
 void NonPresentingGvrDelegate::StopVSyncLoop() {
   vsync_task_.Cancel();
   if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(nullptr, base::TimeDelta(), -1);
+    base::ResetAndReturn(&callback_)
+        .Run(nullptr, base::TimeDelta(), -1,
+             device::mojom::VRVSyncProvider::Status::RETRY);
   }
   gvr_api_->PauseTracking();
   // If the loop is stopped, it's not considered to be paused.
@@ -111,6 +113,7 @@ void NonPresentingGvrDelegate::GetVSync(const GetVSyncCallback& callback) {
       mojo::ReportBadMessage(
           "Requested VSync before waiting for response to "
           "previous request.");
+      binding_.Close();
       return;
     }
     callback_ = callback;
@@ -135,7 +138,8 @@ void NonPresentingGvrDelegate::SendVSync(base::TimeDelta time,
 
   gvr::Mat4f head_mat = gvr_api_->ApplyNeckModel(
       gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
-  callback.Run(VrShell::VRPosePtrFromGvrPose(head_mat), time, -1);
+  callback.Run(VrShell::VRPosePtrFromGvrPose(head_mat), time, -1,
+               device::mojom::VRVSyncProvider::Status::SUCCESS);
 }
 
 bool NonPresentingGvrDelegate::SupportsPresentation() {

@@ -97,10 +97,13 @@ interface VRDisplay {
 };
 
 interface VRVSyncProvider {
+  enum Status { SUCCESS, RETRY };
+
   // The frameId maps a VSync to a frame arriving from the compositor. IDs will
   // be reused after the frame arrives from the compositor. Negative IDs imply
   // no mapping.
-  GetVSync() => (VRPose? pose, mojo.common.mojom.TimeDelta time, int16 frameId);
+  GetVSync() => (VRPose? pose, mojo.common.mojom.TimeDelta time, int16 frameId,
+                 Status status);
 };
 
 interface VRDisplayClient {

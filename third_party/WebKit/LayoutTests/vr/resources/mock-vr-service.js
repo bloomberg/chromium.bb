@@ -76,6 +76,8 @@ let mockVRService = loadMojoModules(
         time: {
           microseconds: this.timeDelta_,
         },
+        frameId: 0,
+        error: vr_service.VRVSyncProvider.Status.SUCCESS,
       });
 
       this.timeDelta_ += 1000.0 / 60.0;
