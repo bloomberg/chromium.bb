@@ -456,7 +456,7 @@
     },
     {
       name: "IndexedDBExperimental",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "InertTopControls",

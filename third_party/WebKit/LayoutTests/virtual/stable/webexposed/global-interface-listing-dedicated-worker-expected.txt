@@ -264,6 +264,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method advance
 [Worker]     method constructor
 [Worker]     method continue
+[Worker]     method continuePrimaryKey
 [Worker]     method delete
 [Worker]     method update
 [Worker] interface IDBCursorWithValue : IDBCursor
@@ -340,6 +341,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method get
 [Worker]     method getAll
 [Worker]     method getAllKeys
+[Worker]     method getKey
 [Worker]     method index
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
