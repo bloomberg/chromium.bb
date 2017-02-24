@@ -270,7 +270,7 @@
       'Linux Builder Trusty (dbg)': 'debug_bot',
       'Linux Builder Trusty (dbg)(32)': 'debug_bot_x86',
       'Linux Builder Trusty': 'release_bot',
-      'Linux Deterministic': 'release_bot',
+      'Deterministic Linux': 'release_bot',
     },
 
     'chromium.lkgr': {
