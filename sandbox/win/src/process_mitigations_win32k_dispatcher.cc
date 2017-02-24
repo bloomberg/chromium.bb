@@ -193,7 +193,7 @@ bool ProcessMitigationsWin32KDispatcher::SetupService(
                          GETCERTIFICATE_ID, 20)) {
         return false;
       }
-      if (base::win::GetVersion() < base::win::VERSION_WIN10)
+      if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
         return true;
       if (!INTERCEPT_EAT(manager, L"gdi32.dll", GetCertificateByHandle,
                          GETCERTIFICATEBYHANDLE_ID, 20)) {
@@ -206,7 +206,7 @@ bool ProcessMitigationsWin32KDispatcher::SetupService(
                          GETCERTIFICATESIZE_ID, 16)) {
         return false;
       }
-      if (base::win::GetVersion() < base::win::VERSION_WIN10)
+      if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
         return true;
       if (!INTERCEPT_EAT(manager, L"gdi32.dll", GetCertificateSizeByHandle,
                          GETCERTIFICATESIZEBYHANDLE_ID, 16)) {
