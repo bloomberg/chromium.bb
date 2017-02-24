@@ -173,10 +173,6 @@ namespace {
 const base::Feature kUMAThrottleEvents{"UMAThrottleEvents",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-bool HasUploadScheduler() {
-  return base::FeatureList::IsEnabled(kUploadSchedulerFeature);
-}
-
 // The delay, in seconds, after starting recording before doing expensive
 // initialization work.
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -298,24 +294,15 @@ void MetricsService::InitializeMetricsRecordingState() {
       base::Bind(&MetricsService::StartScheduledUpload,
                  self_ptr_factory_.GetWeakPtr());
 
-  if (HasUploadScheduler()) {
-    rotation_scheduler_.reset(new MetricsRotationScheduler(
-        upload_callback,
-        // MetricsServiceClient outlives MetricsService, and
-        // MetricsRotationScheduler is tied to the lifetime of |this|.
-        base::Bind(&MetricsServiceClient::GetStandardUploadInterval,
-                   base::Unretained(client_))));
-    base::Closure send_next_log_callback = base::Bind(
-        &MetricsService::SendNextLog, self_ptr_factory_.GetWeakPtr());
-    upload_scheduler_.reset(new MetricsUploadScheduler(send_next_log_callback));
-  } else {
-    scheduler_.reset(new MetricsReportingScheduler(
-        upload_callback,
-        // MetricsServiceClient outlives MetricsService, and
-        // MetricsReportingScheduler is tied to the lifetime of |this|.
-        base::Bind(&MetricsServiceClient::GetStandardUploadInterval,
-                   base::Unretained(client_))));
-  }
+  rotation_scheduler_.reset(new MetricsRotationScheduler(
+      upload_callback,
+      // MetricsServiceClient outlives MetricsService, and
+      // MetricsRotationScheduler is tied to the lifetime of |this|.
+      base::Bind(&MetricsServiceClient::GetStandardUploadInterval,
+                 base::Unretained(client_))));
+  base::Closure send_next_log_callback =
+      base::Bind(&MetricsService::SendNextLog, self_ptr_factory_.GetWeakPtr());
+  upload_scheduler_.reset(new MetricsUploadScheduler(send_next_log_callback));
 
   for (auto& provider : metrics_providers_)
     provider->Init();
@@ -459,12 +446,8 @@ void MetricsService::RecordCompletedSessionEnd() {
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 void MetricsService::OnAppEnterBackground() {
-  if (upload_scheduler_) {
-    rotation_scheduler_->Stop();
-    upload_scheduler_->Stop();
-  } else {
-    scheduler_->Stop();
-  }
+  rotation_scheduler_->Stop();
+  upload_scheduler_->Stop();
 
   MarkAppCleanShutdownAndCommit(&clean_exit_beacon_, local_state_);
 
@@ -644,11 +627,7 @@ void MetricsService::FinishedInitTask() {
     NotifyOnDidCreateMetricsLog();
   }
 
-  if (upload_scheduler_) {
-    rotation_scheduler_->InitTaskComplete();
-  } else {
-    scheduler_->InitTaskComplete();
-  }
+  rotation_scheduler_->InitTaskComplete();
 }
 
 void MetricsService::GetUptimes(PrefService* pref,
@@ -766,12 +745,8 @@ void MetricsService::StartSchedulerIfNecessary() {
   // persisted on shutdown or backgrounding.
   if (recording_active() &&
       (reporting_active() || state_ < SENDING_LOGS)) {
-    if (upload_scheduler_) {
-      rotation_scheduler_->Start();
-      upload_scheduler_->Start();
-    } else {
-      scheduler_->Start();
-    }
+    rotation_scheduler_->Start();
+    upload_scheduler_->Start();
   }
 }
 
@@ -789,25 +764,16 @@ void MetricsService::StartScheduledUpload() {
   if (idle_since_last_transmission_ ||
       !recording_active() ||
       (!reporting_active() && state_ >= SENDING_LOGS)) {
-    if (upload_scheduler_) {
-      rotation_scheduler_->Stop();
-      rotation_scheduler_->RotationFinished();
-    } else {
-      scheduler_->Stop();
-      scheduler_->UploadCancelled();
-    }
+    rotation_scheduler_->Stop();
+    rotation_scheduler_->RotationFinished();
     return;
   }
 
   // If there are unsent logs, send the next one. If not, start the asynchronous
   // process of finalizing the current log for upload.
   if (state_ == SENDING_LOGS && log_store_.has_unsent_logs()) {
-    if (upload_scheduler_) {
-      upload_scheduler_->Start();
-      rotation_scheduler_->RotationFinished();
-    } else {
-      SendNextLog();
-    }
+    upload_scheduler_->Start();
+    rotation_scheduler_->RotationFinished();
   } else {
     // There are no logs left to send, so start creating a new one.
     client_->CollectFinalMetricsForLog(
@@ -818,24 +784,10 @@ void MetricsService::StartScheduledUpload() {
 
 void MetricsService::OnFinalLogInfoCollectionDone() {
   DVLOG(1) << "OnFinalLogInfoCollectionDone";
-  if (!upload_scheduler_) {
-    // If somehow there is a log upload in progress, we return and hope things
-    // work out. The scheduler isn't informed since if this happens, the
-    // scheduler will get a response from the upload.
-    DCHECK(!log_upload_in_progress_);
-    if (log_upload_in_progress_)
-      return;
-  }
-
   // Abort if metrics were turned off during the final info gathering.
   if (!recording_active()) {
-    if (upload_scheduler_) {
-      rotation_scheduler_->Stop();
-      rotation_scheduler_->RotationFinished();
-    } else {
-      scheduler_->Stop();
-      scheduler_->UploadCancelled();
-    }
+    rotation_scheduler_->Stop();
+    rotation_scheduler_->RotationFinished();
     return;
   }
 
@@ -846,39 +798,22 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
     CloseCurrentLog();
     OpenNewLog();
   }
-  if (upload_scheduler_) {
-    HandleIdleSinceLastTransmission(true);
-    upload_scheduler_->Start();
-    rotation_scheduler_->RotationFinished();
-  } else {
-    SendNextLog();
-  }
+  HandleIdleSinceLastTransmission(true);
+  upload_scheduler_->Start();
+  rotation_scheduler_->RotationFinished();
 }
 
 void MetricsService::SendNextLog() {
   DVLOG(1) << "SendNextLog";
-  if (!upload_scheduler_)
-    DCHECK_EQ(SENDING_LOGS, state_);
   if (!reporting_active()) {
-    if (upload_scheduler_) {
-      upload_scheduler_->StopAndUploadCancelled();
-    } else {
-      scheduler_->Stop();
-      scheduler_->UploadCancelled();
-    }
+    upload_scheduler_->StopAndUploadCancelled();
     return;
   }
   if (!log_store_.has_unsent_logs()) {
     // Should only get here if serializing the log failed somehow.
-    if (upload_scheduler_) {
-      upload_scheduler_->Stop();
-      // Reset backoff interval
-      upload_scheduler_->UploadFinished(true);
-    } else {
-      // Just tell the scheduler it was uploaded and wait for the next log
-      // interval.
-      scheduler_->UploadFinished(true, log_store_.has_unsent_logs());
-    }
+    upload_scheduler_->Stop();
+    // Reset backoff interval
+    upload_scheduler_->UploadFinished(true);
     return;
   }
   if (!log_store_.has_staged_log())
@@ -891,11 +826,7 @@ void MetricsService::SendNextLog() {
   if (is_cellular_logic && data_use_tracker_ &&
       !data_use_tracker_->ShouldUploadLogOnCellular(
           log_store_.staged_log_hash().size())) {
-    if (upload_scheduler_) {
-      upload_scheduler_->UploadOverDataUsageCap();
-    } else {
-      scheduler_->UploadCancelled();
-    }
+    upload_scheduler_->UploadOverDataUsageCap();
     upload_canceled = true;
   } else {
     SendStagedLog();
@@ -1008,16 +939,11 @@ void MetricsService::SendStagedLog() {
   const std::string hash = base::HexEncode(log_store_.staged_log_hash().data(),
                                            log_store_.staged_log_hash().size());
   log_uploader_->UploadLog(log_store_.staged_log(), hash);
-
-  if (!upload_scheduler_)
-    HandleIdleSinceLastTransmission(true);
 }
 
 
 void MetricsService::OnLogUploadComplete(int response_code) {
   DVLOG(1) << "OnLogUploadComplete:" << response_code;
-  if (!upload_scheduler_)
-    DCHECK_EQ(SENDING_LOGS, state_);
   DCHECK(log_upload_in_progress_);
   log_upload_in_progress_ = false;
 
@@ -1051,15 +977,11 @@ void MetricsService::OnLogUploadComplete(int response_code) {
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
   bool server_is_healthy = upload_succeeded || response_code == 400;
-  if (upload_scheduler_) {
-    if (!log_store_.has_unsent_logs()) {
-      DVLOG(1) << "Stopping upload_scheduler_";
-      upload_scheduler_->Stop();
-    }
-    upload_scheduler_->UploadFinished(server_is_healthy);
-  } else {
-    scheduler_->UploadFinished(server_is_healthy, log_store_.has_unsent_logs());
+  if (!log_store_.has_unsent_logs()) {
+    DVLOG(1) << "Stopping upload_scheduler_";
+    upload_scheduler_->Stop();
   }
+  upload_scheduler_->UploadFinished(server_is_healthy);
 }
 
 void MetricsService::IncrementLongPrefsValue(const char* path) {

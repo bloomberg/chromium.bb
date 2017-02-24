@@ -479,33 +479,7 @@ TEST_F(MetricsServiceTest, MetricsProvidersInitialized) {
   EXPECT_TRUE(test_provider->init_called());
 }
 
-TEST_F(MetricsServiceTest, BasicRotation) {
-  feature_list_.InitAndDisableFeature(kUploadSchedulerFeature);
-  TestMetricsServiceClient client;
-  TestMetricsService service(GetMetricsStateManager(), &client,
-                             GetLocalState());
-  service.InitializeMetricsRecordingState();
-  service.Start();
-  // Should rotate, mark state idle, and start upload.
-  task_runner_->RunPendingTasks();
-  EXPECT_TRUE(client.uploader()->is_uploading());
-  EXPECT_EQ(0U, task_runner_->NumPendingTasks());
-  // Should schedule next rotation on upload completion.
-  client.uploader()->CompleteUpload(200);
-  EXPECT_FALSE(client.uploader()->is_uploading());
-  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
-  // Should cancel rotation due to being idle.
-  task_runner_->RunPendingTasks();
-  EXPECT_FALSE(client.uploader()->is_uploading());
-  EXPECT_EQ(0U, task_runner_->NumPendingTasks());
-  // Should resume rotation on non-idle.
-  service.OnApplicationNotIdle();
-  EXPECT_FALSE(client.uploader()->is_uploading());
-  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
-}
-
 TEST_F(MetricsServiceTest, SplitRotation) {
-  feature_list_.InitAndEnableFeature(kUploadSchedulerFeature);
   TestMetricsServiceClient client;
   TestMetricsService service(GetMetricsStateManager(), &client,
                              GetLocalState());
