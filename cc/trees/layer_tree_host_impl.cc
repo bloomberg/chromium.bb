@@ -2600,11 +2600,9 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
   // notifications. We use the viewport's main scroll layer to represent the
   // viewport in scrolling code.
   bool scrolls_inner_viewport =
-      impl_scroll_node && InnerViewportScrollLayer() &&
-      InnerViewportScrollLayer()->scroll_tree_index() == impl_scroll_node->id;
+      impl_scroll_node && impl_scroll_node->scrolls_inner_viewport;
   bool scrolls_outer_viewport =
-      impl_scroll_node && OuterViewportScrollLayer() &&
-      OuterViewportScrollLayer()->scroll_tree_index() == impl_scroll_node->id;
+      impl_scroll_node && impl_scroll_node->scrolls_outer_viewport;
   if (!impl_scroll_node || scrolls_inner_viewport || scrolls_outer_viewport) {
     if (auto* mainScrollLayer = viewport()->MainScrollLayer())
       impl_scroll_node = scroll_tree.Node(mainScrollLayer->scroll_tree_index());
@@ -3048,11 +3046,9 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   // element that's not a descendant of the document.rootScroller. In that case
   // we want to scroll the inner viewport -- to allow panning while zoomed --
   // but also move browser controls if needed.
-  bool scrolls_inner_viewport_layer =
-      InnerViewportScrollLayer() &&
-      InnerViewportScrollLayer()->scroll_tree_index() == scroll_node->id;
+  bool scrolls_inner_viewport = scroll_node->scrolls_inner_viewport;
 
-  if (scrolls_main_viewport_scroll_layer || scrolls_inner_viewport_layer) {
+  if (scrolls_main_viewport_scroll_layer || scrolls_inner_viewport) {
     Viewport::ScrollResult result = viewport()->ScrollBy(
         delta, viewport_point, scroll_state->is_direct_manipulation(),
         !wheel_scrolling_, scrolls_main_viewport_scroll_layer);
@@ -3078,7 +3074,7 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
     return;
   }
 
-  if (!scrolls_main_viewport_scroll_layer && !scrolls_inner_viewport_layer) {
+  if (!scrolls_main_viewport_scroll_layer && !scrolls_inner_viewport) {
     // If the applied delta is within 45 degrees of the input
     // delta, bail out to make it easier to scroll just one layer
     // in one direction without affecting any of its parents.

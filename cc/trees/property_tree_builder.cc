@@ -751,10 +751,10 @@ bool AddTransformNodeIfNeeded(
       // need to have their local transform updated when the inner / outer
       // viewport bounds change, but do not unconditionally move by that delta
       // like fixed position nodes.
-      if (scroll_ancestor->is_inner_viewport_scroll_layer) {
+      if (scroll_ancestor->scrolls_inner_viewport) {
         data_for_children->property_trees->transform_tree
             .AddNodeAffectedByInnerViewportBoundsDelta(node->id);
-      } else if (scroll_ancestor->is_outer_viewport_scroll_layer) {
+      } else if (scroll_ancestor->scrolls_outer_viewport) {
         data_for_children->property_trees->transform_tree
             .AddNodeAffectedByOuterViewportBoundsDelta(node->id);
       }
@@ -1178,9 +1178,9 @@ void AddScrollNodeIfNeeded(
     }
 
     node.scroll_clip_layer_bounds = clip_bounds;
-    node.is_inner_viewport_scroll_layer =
+    node.scrolls_inner_viewport =
         layer == data_from_ancestor.inner_viewport_scroll_layer;
-    node.is_outer_viewport_scroll_layer =
+    node.scrolls_outer_viewport =
         layer == data_from_ancestor.outer_viewport_scroll_layer;
 
     node.bounds = layer->bounds();

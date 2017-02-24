@@ -1209,7 +1209,7 @@ gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
   gfx::SizeF scroll_bounds =
       gfx::SizeF(scroll_node->bounds.width(), scroll_node->bounds.height());
 
-  if (scroll_node->is_inner_viewport_scroll_layer) {
+  if (scroll_node->scrolls_inner_viewport) {
     scroll_bounds.Enlarge(
         property_trees()->inner_viewport_scroll_bounds_delta().x(),
         property_trees()->inner_viewport_scroll_bounds_delta().y());
@@ -1259,10 +1259,10 @@ gfx::Size ScrollTree::scroll_clip_layer_bounds(int scroll_node_id) const {
   gfx::Size scroll_clip_layer_bounds = scroll_node->scroll_clip_layer_bounds;
 
   gfx::Vector2dF scroll_clip_layer_bounds_delta;
-  if (scroll_node->is_inner_viewport_scroll_layer) {
+  if (scroll_node->scrolls_inner_viewport) {
     scroll_clip_layer_bounds_delta.Add(
         property_trees()->inner_viewport_container_bounds_delta());
-  } else if (scroll_node->is_outer_viewport_scroll_layer) {
+  } else if (scroll_node->scrolls_outer_viewport) {
     scroll_clip_layer_bounds_delta.Add(
         property_trees()->outer_viewport_container_bounds_delta());
   }

@@ -10687,7 +10687,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_parent2.scroll_clip_layer_bounds = root1->bounds();
   scroll_parent2.bounds = parent2->bounds();
   scroll_parent2.max_scroll_offset_affected_by_page_scale = true;
-  scroll_parent2.is_inner_viewport_scroll_layer = true;
+  scroll_parent2.scrolls_inner_viewport = true;
   scroll_parent2.user_scrollable_horizontal = true;
   scroll_parent2.user_scrollable_vertical = true;
   scroll_parent2.transform_id = parent2->transform_tree_index();

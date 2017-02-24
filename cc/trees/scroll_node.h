@@ -47,8 +47,8 @@ struct CC_EXPORT ScrollNode {
   gfx::Size bounds;
 
   bool max_scroll_offset_affected_by_page_scale;
-  bool is_inner_viewport_scroll_layer;
-  bool is_outer_viewport_scroll_layer;
+  bool scrolls_inner_viewport;
+  bool scrolls_outer_viewport;
 
   // This offset is used when |scrollable| is false and there isn't a transform
   // node already present that covers this offset.
