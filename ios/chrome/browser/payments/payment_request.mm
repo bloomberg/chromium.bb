@@ -15,6 +15,10 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/web/public/payments/payment_request.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 PaymentRequest::PaymentRequest(
     std::unique_ptr<web::PaymentRequest> web_payment_request,
     autofill::PersonalDataManager* personal_data_manager)

@@ -73,7 +73,7 @@ class ChromeBrowserState;
 
 // The favicon of the page invoking the PaymentRequest API. Should be set before
 // calling |start|.
-@property(nonatomic, retain) UIImage* pageFavicon;
+@property(nonatomic, strong) UIImage* pageFavicon;
 
 // The title of the page invoking the Payment Request API. Should be set before
 // calling |start|.

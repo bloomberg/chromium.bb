@@ -4,9 +4,7 @@
 
 #import "ios/chrome/browser/payments/payment_items_display_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -22,6 +20,10 @@
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 NSString* const kPaymentItemsDisplayCollectionViewId =
     @"kPaymentItemsDisplayCollectionViewId";
@@ -44,8 +46,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @interface PaymentItemsDisplayViewController () {
-  base::WeakNSProtocol<id<PaymentItemsDisplayViewControllerDelegate>> _delegate;
-  base::scoped_nsobject<MDCFlatButton> _payButton;
+  MDCFlatButton* _payButton;
 
   // The PaymentRequest object owning an instance of web::PaymentRequest as
   // provided by the page invoking the Payment Request API. This is a weak
@@ -62,6 +63,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @end
 
 @implementation PaymentItemsDisplayViewController
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
                       payButtonEnabled:(BOOL)payButtonEnabled {
@@ -80,7 +82,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self navigationItem].leftBarButtonItem = returnButton;
 
     // Set up right (pay) button.
-    _payButton.reset([[MDCFlatButton alloc] init]);
+    _payButton = [[MDCFlatButton alloc] init];
     [_payButton
         setTitle:l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_PAY_BUTTON)
         forState:UIControlStateNormal];
@@ -102,8 +104,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // height of the bar. We don't want that for the button so we use a UIView
     // here to contain the button instead and the button is vertically centered
     // inside the full bar height.
-    UIView* buttonView =
-        [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+    UIView* buttonView = [[UIView alloc] initWithFrame:CGRectZero];
     [buttonView addSubview:_payButton];
     // Navigation bar button items are aligned with the trailing edge of the
     // screen. Make the enclosing view larger here. The pay button will be
@@ -115,20 +116,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
     buttonView.bounds = buttonViewBounds;
 
     UIBarButtonItem* payButtonItem =
-        [[[UIBarButtonItem alloc] initWithCustomView:buttonView] autorelease];
+        [[UIBarButtonItem alloc] initWithCustomView:buttonView];
     [self navigationItem].rightBarButtonItem = payButtonItem;
 
     _paymentRequest = paymentRequest;
   }
   return self;
-}
-
-- (id<PaymentItemsDisplayViewControllerDelegate>)delegate {
-  return _delegate.get();
-}
-
-- (void)setDelegate:(id<PaymentItemsDisplayViewControllerDelegate>)delegate {
-  _delegate.reset(delegate);
 }
 
 - (void)onReturn {
@@ -150,7 +143,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Add the total entry.
   PriceItem* totalItem =
-      [[[PriceItem alloc] initWithType:ItemTypePaymentItemTotal] autorelease];
+      [[PriceItem alloc] initWithType:ItemTypePaymentItemTotal];
   totalItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;
   totalItem.item =
       base::SysUTF16ToNSString(_paymentRequest->payment_details().total.label);
@@ -168,7 +161,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   for (const auto& paymentItem :
        _paymentRequest->payment_details().display_items) {
     PriceItem* paymentItemItem =
-        [[[PriceItem alloc] initWithType:ItemTypePaymentItem] autorelease];
+        [[PriceItem alloc] initWithType:ItemTypePaymentItem];
     paymentItemItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;
     paymentItemItem.item = base::SysUTF16ToNSString(paymentItem.label);
     payments::CurrencyFormatter* currencyFormatter =

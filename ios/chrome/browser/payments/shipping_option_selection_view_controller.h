@@ -38,7 +38,7 @@
 @property(nonatomic, assign) BOOL isLoading;
 
 // The error message to display, if any.
-@property(nonatomic, assign) NSString* errorMessage;
+@property(nonatomic, copy) NSString* errorMessage;
 
 // The delegate to be notified when the user selects a shipping option or
 // returns without selecting one.

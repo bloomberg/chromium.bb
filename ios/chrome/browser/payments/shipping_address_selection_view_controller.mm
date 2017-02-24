@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/payments/shipping_address_selection_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -24,6 +23,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using payment_request_util::NameLabelFromAutofillProfile;
 using payment_request_util::AddressLabelFromAutofillProfile;
@@ -50,16 +53,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @interface ShippingAddressSelectionViewController () {
-  base::WeakNSProtocol<id<ShippingAddressSelectionViewControllerDelegate>>
-      _delegate;
-
   // The PaymentRequest object owning an instance of web::PaymentRequest as
   // provided by the page invoking the Payment Request API. This is a weak
   // pointer and should outlive this class.
   PaymentRequest* _paymentRequest;
 
   // The currently selected item. May be nil.
-  ShippingAddressItem* _selectedItem;
+  __weak ShippingAddressItem* _selectedItem;
 }
 
 // Called when the user presses the return button.
@@ -71,6 +71,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @synthesize isLoading = _isLoading;
 @synthesize errorMessage = _errorMessage;
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
@@ -90,15 +91,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
-- (id<ShippingAddressSelectionViewControllerDelegate>)delegate {
-  return _delegate.get();
-}
-
-- (void)setDelegate:
-    (id<ShippingAddressSelectionViewControllerDelegate>)delegate {
-  _delegate.reset(delegate);
-}
-
 - (void)onReturn {
   [_delegate shippingAddressSelectionViewControllerDidReturn:self];
 }
@@ -113,8 +105,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierShippingAddress];
 
   if (_isLoading) {
-    StatusItem* statusItem =
-        [[[StatusItem alloc] initWithType:ItemTypeSpinner] autorelease];
+    StatusItem* statusItem = [[StatusItem alloc] initWithType:ItemTypeSpinner];
     statusItem.text =
         l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_CHECKING_LABEL);
     [model addItem:statusItem
@@ -123,7 +114,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   PaymentsTextItem* messageItem =
-      [[[PaymentsTextItem alloc] initWithType:ItemTypeMessage] autorelease];
+      [[PaymentsTextItem alloc] initWithType:ItemTypeMessage];
   if (_errorMessage) {
     messageItem.text = _errorMessage;
     messageItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
@@ -136,8 +127,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierShippingAddress];
 
   for (const auto& shippingAddress : _paymentRequest->shipping_profiles()) {
-    ShippingAddressItem* item = [[[ShippingAddressItem alloc]
-        initWithType:ItemTypeShippingAddress] autorelease];
+    ShippingAddressItem* item =
+        [[ShippingAddressItem alloc] initWithType:ItemTypeShippingAddress];
     item.accessibilityTraits |= UIAccessibilityTraitButton;
     item.name = NameLabelFromAutofillProfile(shippingAddress);
     item.address = AddressLabelFromAutofillProfile(shippingAddress);
@@ -150,8 +141,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         toSectionWithIdentifier:SectionIdentifierShippingAddress];
   }
 
-  PaymentsTextItem* addShippingAddress = [[[PaymentsTextItem alloc]
-      initWithType:ItemTypeAddShippingAddress] autorelease];
+  PaymentsTextItem* addShippingAddress =
+      [[PaymentsTextItem alloc] initWithType:ItemTypeAddShippingAddress];
   addShippingAddress.text = l10n_util::GetNSString(
       IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_ADD_BUTTON);
   addShippingAddress.image = NativeImage(IDR_IOS_PAYMENTS_ADD);

@@ -13,6 +13,10 @@
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace payment_request_util {
 
 NSString* NameLabelFromAutofillProfile(autofill::AutofillProfile* profile) {

@@ -4,9 +4,7 @@
 
 #import "ios/chrome/browser/payments/payment_method_selection_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -27,6 +25,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kPaymentMethodSelectionCollectionViewId =
     @"kPaymentMethodSelectionCollectionViewId";
 
@@ -46,16 +48,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @interface PaymentMethodSelectionViewController () {
-  base::WeakNSProtocol<id<PaymentMethodSelectionViewControllerDelegate>>
-      _delegate;
-
   // The PaymentRequest object owning an instance of web::PaymentRequest as
   // provided by the page invoking the Payment Request API. This is a weak
   // pointer and should outlive this class.
   PaymentRequest* _paymentRequest;
 
   // The currently selected item. May be nil.
-  PaymentMethodItem* _selectedItem;
+  __weak PaymentMethodItem* _selectedItem;
 }
 
 // Called when the user presses the return button.
@@ -64,6 +63,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @end
 
 @implementation PaymentMethodSelectionViewController
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
@@ -83,14 +83,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
-- (id<PaymentMethodSelectionViewControllerDelegate>)delegate {
-  return _delegate.get();
-}
-
-- (void)setDelegate:(id<PaymentMethodSelectionViewControllerDelegate>)delegate {
-  _delegate.reset(delegate);
-}
-
 - (void)onReturn {
   [_delegate paymentMethodSelectionViewControllerDidReturn:self];
 }
@@ -105,8 +97,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierPayment];
 
   for (const auto& paymentMethod : _paymentRequest->credit_cards()) {
-    PaymentMethodItem* paymentMethodItem = [[[PaymentMethodItem alloc]
-        initWithType:ItemTypePaymentMethod] autorelease];
+    PaymentMethodItem* paymentMethodItem =
+        [[PaymentMethodItem alloc] initWithType:ItemTypePaymentMethod];
     paymentMethodItem.accessibilityTraits |= UIAccessibilityTraitButton;
     paymentMethodItem.methodID =
         base::SysUTF16ToNSString(paymentMethod->TypeAndLastFourDigits());
@@ -126,7 +118,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   PaymentsTextItem* addPaymentMethod =
-      [[[PaymentsTextItem alloc] initWithType:ItemTypeAddMethod] autorelease];
+      [[PaymentsTextItem alloc] initWithType:ItemTypeAddMethod];
   addPaymentMethod.text =
       l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_ADD_METHOD_BUTTON);
   addPaymentMethod.image = NativeImage(IDR_IOS_PAYMENTS_ADD);

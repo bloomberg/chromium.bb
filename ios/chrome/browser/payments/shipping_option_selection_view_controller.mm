@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/payments/shipping_option_selection_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,6 +25,10 @@
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kShippingOptionSelectionCollectionViewId =
     @"kShippingOptionSelectionCollectionViewId";
 
@@ -46,8 +49,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @interface ShippingOptionSelectionViewController () {
-  base::WeakNSProtocol<id<ShippingOptionSelectionViewControllerDelegate>>
-      _delegate;
+  __weak id<ShippingOptionSelectionViewControllerDelegate> _delegate;
 
   // The PaymentRequest object owning an instance of web::PaymentRequest as
   // provided by the page invoking the Payment Request API. This is a weak
@@ -87,12 +89,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (id<ShippingOptionSelectionViewControllerDelegate>)delegate {
-  return _delegate.get();
+  return _delegate;
 }
 
 - (void)setDelegate:
     (id<ShippingOptionSelectionViewControllerDelegate>)delegate {
-  _delegate.reset(delegate);
+  _delegate = delegate;
 }
 
 - (void)onReturn {
@@ -109,8 +111,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierShippingOption];
 
   if (self.isLoading) {
-    StatusItem* statusItem =
-        [[[StatusItem alloc] initWithType:ItemTypeSpinner] autorelease];
+    StatusItem* statusItem = [[StatusItem alloc] initWithType:ItemTypeSpinner];
     statusItem.text =
         l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_CHECKING_LABEL);
     [model addItem:statusItem
@@ -120,7 +121,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   if (_errorMessage) {
     PaymentsTextItem* messageItem =
-        [[[PaymentsTextItem alloc] initWithType:ItemTypeMessage] autorelease];
+        [[PaymentsTextItem alloc] initWithType:ItemTypeMessage];
     messageItem.text = _errorMessage;
     messageItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
     [model addItem:messageItem
@@ -128,8 +129,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   for (const auto& shippingOption : _paymentRequest->shipping_options()) {
-    CollectionViewTextItem* item = [[[CollectionViewTextItem alloc]
-        initWithType:ItemTypeShippingOption] autorelease];
+    CollectionViewTextItem* item =
+        [[CollectionViewTextItem alloc] initWithType:ItemTypeShippingOption];
     item.text = base::SysUTF16ToNSString(shippingOption->label);
     payments::CurrencyFormatter* currencyFormatter =
         _paymentRequest->GetOrCreateCurrencyFormatter();

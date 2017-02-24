@@ -5,10 +5,8 @@
 #import "ios/chrome/browser/payments/payment_request_manager.h"
 
 #include "base/ios/ios_util.h"
-#import "base/ios/weak_nsobject.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/values.h"
@@ -32,6 +30,10 @@
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Command prefix for injected JavaScript.
 const std::string kCommandPrefix = "paymentRequest";
@@ -48,7 +50,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 @interface PaymentRequestManager ()<CRWWebStateObserver,
                                     PaymentRequestCoordinatorDelegate> {
   // View controller used to present the PaymentRequest view controller.
-  base::WeakNSObject<UIViewController> _baseViewController;
+  __weak UIViewController* _baseViewController;
 
   // PersonalDataManager used to manage user credit cards and addresses.
   autofill::PersonalDataManager* _personalDataManager;
@@ -66,7 +68,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 
   // Object that manages JavaScript injection into the web view.
-  base::WeakNSObject<JSPaymentRequestManager> _paymentRequestJsManager;
+  __weak JSPaymentRequestManager* _paymentRequestJsManager;
 
   // Boolean to track if the current WebState is enabled (JS callback is set
   // up).
@@ -81,14 +83,14 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   BOOL _closed;
 
   // Coordinator used to create and present the PaymentRequest view controller.
-  base::scoped_nsobject<PaymentRequestCoordinator> _paymentRequestCoordinator;
+  PaymentRequestCoordinator* _paymentRequestCoordinator;
 
   // Timer used to periodically unblock the webview's JS event queue.
-  base::scoped_nsobject<NSTimer> _unblockEventQueueTimer;
+  NSTimer* _unblockEventQueueTimer;
 
   // Timer used to close the UI if the page does not call
   // PaymentResponse.complete() in a timely fashion.
-  base::scoped_nsobject<NSTimer> _paymentResponseTimeoutTimer;
+  NSTimer* _paymentResponseTimeoutTimer;
 }
 
 // Synchronous method executed by -asynchronouslyEnablePaymentRequest:
@@ -136,7 +138,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
                               browserState:
                                   (ios::ChromeBrowserState*)browserState {
   if ((self = [super init])) {
-    _baseViewController.reset(viewController);
+    _baseViewController = viewController;
 
     _browserState = browserState;
 
@@ -155,10 +157,10 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 - (void)setWebState:(web::WebState*)webState {
   [self disconnectWebState];
   if (webState) {
-    _paymentRequestJsManager.reset(
+    _paymentRequestJsManager =
         base::mac::ObjCCastStrict<JSPaymentRequestManager>(
             [webState->GetJSInjectionReceiver()
-                instanceOfClass:[JSPaymentRequestManager class]]));
+                instanceOfClass:[JSPaymentRequestManager class]]);
     _webState = webState;
     _webStateObserver.reset(new web::WebStateObserverBridge(webState, self));
     [self enableCurrentWebState];
@@ -171,7 +173,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   // Asynchronously enables PaymentRequest, so that some preferences
   // (UIAccessibilityIsVoiceOverRunning(), for example) have time to synchronize
   // with their own notifications.
-  base::WeakNSObject<PaymentRequestManager> weakSelf(self);
+  __weak PaymentRequestManager* weakSelf = self;
   dispatch_async(dispatch_get_main_queue(), ^{
     [weakSelf doEnablePaymentRequest:enabled];
   });
@@ -215,14 +217,12 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 
   if (_enabled) {
     if (!_webStateEnabled) {
-      base::WeakNSObject<PaymentRequestManager> weakSelf(self);
-      auto callback =
-          base::BindBlock(^bool(const base::DictionaryValue& JSON,
-                                const GURL& originURL, bool userIsInteracting) {
-            base::scoped_nsobject<PaymentRequestManager> strongSelf(
-                [weakSelf retain]);
+      __weak PaymentRequestManager* weakSelf = self;
+      auto callback = base::BindBlockArc(
+          ^bool(const base::DictionaryValue& JSON, const GURL& originURL,
+                bool userIsInteracting) {
             // |originURL| and |userIsInteracting| aren't used.
-            return [strongSelf handleScriptCommand:JSON];
+            return [weakSelf handleScriptCommand:JSON];
           });
       [self webState]->AddScriptCommandCallback(callback, kCommandPrefix);
 
@@ -242,7 +242,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 
 - (void)disconnectWebState {
   if (_webState) {
-    _paymentRequestJsManager.reset();
+    _paymentRequestJsManager = nil;
     _webStateObserver.reset();
     [self disableCurrentWebState];
   }
@@ -314,8 +314,8 @@ const NSTimeInterval kTimeoutInterval = 60.0;
       base::SysUTF8ToNSString([self webState]->GetLastCommittedURL().host());
   autofill::AutofillManager* autofillManager =
       autofill::AutofillDriverIOS::FromWebState(_webState)->autofill_manager();
-  _paymentRequestCoordinator.reset([[PaymentRequestCoordinator alloc]
-      initWithBaseViewController:_baseViewController]);
+  _paymentRequestCoordinator = [[PaymentRequestCoordinator alloc]
+      initWithBaseViewController:_baseViewController];
   [_paymentRequestCoordinator setPaymentRequest:_paymentRequest.get()];
   [_paymentRequestCoordinator setAutofillManager:autofillManager];
   [_paymentRequestCoordinator setBrowserState:_browserState];
@@ -376,26 +376,26 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 }
 
 - (void)setUnblockEventQueueTimer {
-  _unblockEventQueueTimer.reset(
-      [[NSTimer scheduledTimerWithTimeInterval:kNoopInterval
-                                        target:_paymentRequestJsManager
-                                      selector:@selector(executeNoop)
-                                      userInfo:nil
-                                       repeats:YES] retain]);
+  _unblockEventQueueTimer =
+      [NSTimer scheduledTimerWithTimeInterval:kNoopInterval
+                                       target:_paymentRequestJsManager
+                                     selector:@selector(executeNoop)
+                                     userInfo:nil
+                                      repeats:YES];
 }
 
 - (void)setPaymentResponseTimeoutTimer {
-  _paymentResponseTimeoutTimer.reset(
-      [[NSTimer scheduledTimerWithTimeInterval:kTimeoutInterval
-                                        target:self
-                                      selector:@selector(handleResponseComplete)
-                                      userInfo:nil
-                                       repeats:NO] retain]);
+  _paymentResponseTimeoutTimer =
+      [NSTimer scheduledTimerWithTimeInterval:kTimeoutInterval
+                                       target:self
+                                     selector:@selector(handleResponseComplete)
+                                     userInfo:nil
+                                      repeats:NO];
 }
 
 - (void)dismissUI {
   [_paymentRequestCoordinator stop];
-  _paymentRequestCoordinator.reset();
+  _paymentRequestCoordinator = nil;
 }
 
 - (BOOL)webStateContentIsSecureHTML {

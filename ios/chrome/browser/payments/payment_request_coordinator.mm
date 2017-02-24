@@ -7,9 +7,6 @@
 #include <unordered_set>
 #include <vector>
 
-#import "base/ios/weak_nsobject.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
@@ -28,6 +25,10 @@
 #include "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // The unmask prompt UI for Payment Request.
 class PRCardUnmaskPromptViewBridge
     : public autofill::CardUnmaskPromptViewBridge {
@@ -36,7 +37,7 @@ class PRCardUnmaskPromptViewBridge
       autofill::CardUnmaskPromptController* controller,
       UIViewController* base_view_controller)
       : autofill::CardUnmaskPromptViewBridge(controller),
-        base_view_controller_(base_view_controller){};
+        base_view_controller_(base_view_controller) {}
 
   // autofill::CardUnmaskPromptView:
   void Show() override {
@@ -48,7 +49,7 @@ class PRCardUnmaskPromptViewBridge
   };
 
  private:
-  UIViewController* base_view_controller_;  // Weak.
+  __weak UIViewController* base_view_controller_;
   DISALLOW_COPY_AND_ASSIGN(PRCardUnmaskPromptViewBridge);
 };
 
@@ -108,36 +109,25 @@ class FullCardRequester
   }
 
  private:
-  PaymentRequestCoordinator* owner_;        // Weak. Owns this instance.
-  UIViewController* base_view_controller_;  // Weak.
+  __weak PaymentRequestCoordinator* owner_;
+  __weak UIViewController* base_view_controller_;
   autofill::CardUnmaskPromptControllerImpl unmask_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(FullCardRequester);
 };
 
-@interface PaymentRequestCoordinator () {
-  base::WeakNSProtocol<id<PaymentRequestCoordinatorDelegate>> _delegate;
-  base::scoped_nsobject<UINavigationController> _navigationController;
-  base::scoped_nsobject<PaymentRequestViewController> _viewController;
-  base::scoped_nsobject<PaymentItemsDisplayCoordinator>
-      _itemsDisplayCoordinator;
-  base::scoped_nsobject<ShippingAddressSelectionCoordinator>
-      _shippingAddressSelectionCoordinator;
-  base::scoped_nsobject<ShippingOptionSelectionCoordinator>
-      _shippingOptionSelectionCoordinator;
-  base::scoped_nsobject<PaymentMethodSelectionCoordinator>
-      _methodSelectionCoordinator;
+@implementation PaymentRequestCoordinator {
+  UINavigationController* _navigationController;
+  PaymentRequestViewController* _viewController;
+  PaymentItemsDisplayCoordinator* _itemsDisplayCoordinator;
+  ShippingAddressSelectionCoordinator* _shippingAddressSelectionCoordinator;
+  ShippingOptionSelectionCoordinator* _shippingOptionSelectionCoordinator;
+  PaymentMethodSelectionCoordinator* _methodSelectionCoordinator;
 
   // Receiver of the full credit card details. Also displays the unmask prompt
   // UI.
   std::unique_ptr<FullCardRequester> _fullCardRequester;
 
-  base::mac::ObjCPropertyReleaser _propertyReleaser_PaymentRequestCoordinator;
-}
-
-@end
-
-@implementation PaymentRequestCoordinator {
   // The selected shipping address, pending approval from the page.
   autofill::AutofillProfile* _pendingShippingAddress;
 }
@@ -148,35 +138,23 @@ class FullCardRequester
 @synthesize pageFavicon = _pageFavicon;
 @synthesize pageTitle = _pageTitle;
 @synthesize pageHost = _pageHost;
+@synthesize delegate = _delegate;
 
-- (instancetype)initWithBaseViewController:
-    (UIViewController*)baseViewController {
-  if ((self = [super initWithBaseViewController:baseViewController])) {
-    _propertyReleaser_PaymentRequestCoordinator.Init(
-        self, [PaymentRequestCoordinator class]);
-  }
-  return self;
-}
-
-- (id<PaymentRequestCoordinatorDelegate>)delegate {
-  return _delegate.get();
-}
-
-- (void)setDelegate:(id<PaymentRequestCoordinatorDelegate>)delegate {
-  _delegate.reset(delegate);
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController {
+  return [super initWithBaseViewController:viewController];
 }
 
 - (void)start {
-  _viewController.reset([[PaymentRequestViewController alloc]
-      initWithPaymentRequest:_paymentRequest]);
+  _viewController = [[PaymentRequestViewController alloc]
+      initWithPaymentRequest:_paymentRequest];
   [_viewController setPageFavicon:_pageFavicon];
   [_viewController setPageTitle:_pageTitle];
   [_viewController setPageHost:_pageHost];
   [_viewController setDelegate:self];
   [_viewController loadModel];
 
-  _navigationController.reset([[UINavigationController alloc]
-      initWithRootViewController:_viewController]);
+  _navigationController = [[UINavigationController alloc]
+      initWithRootViewController:_viewController];
   [_navigationController setNavigationBarHidden:YES];
 
   [[self baseViewController] presentViewController:_navigationController
@@ -188,12 +166,12 @@ class FullCardRequester
   [[_navigationController presentingViewController]
       dismissViewControllerAnimated:YES
                          completion:nil];
-  _itemsDisplayCoordinator.reset();
-  _shippingAddressSelectionCoordinator.reset();
-  _shippingOptionSelectionCoordinator.reset();
-  _methodSelectionCoordinator.reset();
-  _navigationController.reset();
-  _viewController.reset();
+  _itemsDisplayCoordinator = nil;
+  _shippingAddressSelectionCoordinator = nil;
+  _shippingOptionSelectionCoordinator = nil;
+  _methodSelectionCoordinator = nil;
+  _navigationController = nil;
+  _viewController = nil;
 }
 
 - (void)sendPaymentResponse {
@@ -260,7 +238,7 @@ class FullCardRequester
 
       // Dismiss the shipping address selection view.
       [_shippingAddressSelectionCoordinator stop];
-      _shippingAddressSelectionCoordinator.reset();
+      _shippingAddressSelectionCoordinator = nil;
     } else if (_shippingOptionSelectionCoordinator) {
       // Update the selected shipping option in the payment request summary
       // view. The updated selection is already reflected in |_paymentRequest|.
@@ -268,7 +246,7 @@ class FullCardRequester
 
       // Dismiss the shipping option selection view.
       [_shippingOptionSelectionCoordinator stop];
-      _shippingOptionSelectionCoordinator.reset();
+      _shippingOptionSelectionCoordinator = nil;
     }
   }
 }
@@ -287,8 +265,8 @@ class FullCardRequester
 
 - (void)paymentRequestViewControllerDidSelectPaymentSummaryItem:
     (PaymentRequestViewController*)controller {
-  _itemsDisplayCoordinator.reset([[PaymentItemsDisplayCoordinator alloc]
-      initWithBaseViewController:_viewController]);
+  _itemsDisplayCoordinator = [[PaymentItemsDisplayCoordinator alloc]
+      initWithBaseViewController:_viewController];
   [_itemsDisplayCoordinator setPaymentRequest:_paymentRequest];
   [_itemsDisplayCoordinator setDelegate:self];
 
@@ -297,9 +275,9 @@ class FullCardRequester
 
 - (void)paymentRequestViewControllerDidSelectShippingAddressItem:
     (PaymentRequestViewController*)controller {
-  _shippingAddressSelectionCoordinator.reset(
+  _shippingAddressSelectionCoordinator =
       [[ShippingAddressSelectionCoordinator alloc]
-          initWithBaseViewController:_viewController]);
+          initWithBaseViewController:_viewController];
   [_shippingAddressSelectionCoordinator setPaymentRequest:_paymentRequest];
   [_shippingAddressSelectionCoordinator setDelegate:self];
 
@@ -308,9 +286,9 @@ class FullCardRequester
 
 - (void)paymentRequestViewControllerDidSelectShippingOptionItem:
     (PaymentRequestViewController*)controller {
-  _shippingOptionSelectionCoordinator.reset(
+  _shippingOptionSelectionCoordinator =
       [[ShippingOptionSelectionCoordinator alloc]
-          initWithBaseViewController:_viewController]);
+          initWithBaseViewController:_viewController];
   [_shippingOptionSelectionCoordinator setPaymentRequest:_paymentRequest];
   [_shippingOptionSelectionCoordinator setDelegate:self];
 
@@ -319,8 +297,8 @@ class FullCardRequester
 
 - (void)paymentRequestViewControllerDidSelectPaymentMethodItem:
     (PaymentRequestViewController*)controller {
-  _methodSelectionCoordinator.reset([[PaymentMethodSelectionCoordinator alloc]
-      initWithBaseViewController:_viewController]);
+  _methodSelectionCoordinator = [[PaymentMethodSelectionCoordinator alloc]
+      initWithBaseViewController:_viewController];
   [_methodSelectionCoordinator setPaymentRequest:_paymentRequest];
   [_methodSelectionCoordinator setDelegate:self];
 
@@ -335,7 +313,7 @@ class FullCardRequester
   [_viewController updatePaymentSummaryWithTotalValueChanged:NO];
 
   [_itemsDisplayCoordinator stop];
-  _itemsDisplayCoordinator.reset();
+  _itemsDisplayCoordinator = nil;
 }
 
 - (void)paymentItemsDisplayCoordinatorDidConfirm:
@@ -362,7 +340,7 @@ class FullCardRequester
   [_viewController updatePaymentSummaryWithTotalValueChanged:NO];
 
   [_shippingAddressSelectionCoordinator stop];
-  _shippingAddressSelectionCoordinator.reset();
+  _shippingAddressSelectionCoordinator = nil;
 }
 
 #pragma mark - ShippingOptionSelectionCoordinatorDelegate
@@ -381,7 +359,7 @@ class FullCardRequester
   [_viewController updatePaymentSummaryWithTotalValueChanged:NO];
 
   [_shippingOptionSelectionCoordinator stop];
-  _shippingOptionSelectionCoordinator.reset();
+  _shippingOptionSelectionCoordinator = nil;
 }
 
 #pragma mark - PaymentMethodSelectionCoordinatorDelegate
@@ -397,7 +375,7 @@ class FullCardRequester
   [_viewController updatePaymentSummaryWithTotalValueChanged:NO];
 
   [_methodSelectionCoordinator stop];
-  _methodSelectionCoordinator.reset();
+  _methodSelectionCoordinator = nil;
 }
 
 - (void)paymentMethodSelectionCoordinatorDidReturn:
@@ -406,7 +384,7 @@ class FullCardRequester
   [_viewController updatePaymentSummaryWithTotalValueChanged:NO];
 
   [_methodSelectionCoordinator stop];
-  _methodSelectionCoordinator.reset();
+  _methodSelectionCoordinator = nil;
 }
 
 @end

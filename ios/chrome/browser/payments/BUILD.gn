@@ -11,6 +11,7 @@ js_compile_checked("injected_js") {
 }
 
 source_set("payments") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "js_payment_request_manager.h",
     "js_payment_request_manager.mm",

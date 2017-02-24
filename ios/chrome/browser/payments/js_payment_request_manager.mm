@@ -10,6 +10,10 @@
 #include "base/values.h"
 #include "ios/web/public/payments/payment_request.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Sanitizes |JSON| and wraps it in quotes so it can be injected safely in

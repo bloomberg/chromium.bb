@@ -49,7 +49,7 @@ extern NSString* const kPaymentRequestCollectionViewId;
 @interface PaymentRequestViewController : CollectionViewController
 
 // The favicon of the page invoking the Payment Request API.
-@property(nonatomic, retain) UIImage* pageFavicon;
+@property(nonatomic, strong) UIImage* pageFavicon;
 
 // The title of the page invoking the Payment Request API.
 @property(nonatomic, copy) NSString* pageTitle;
