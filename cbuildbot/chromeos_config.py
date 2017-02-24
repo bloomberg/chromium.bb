@@ -690,9 +690,10 @@ _waterfall_config_map = {
         'peach_pi-paladin',
         'poppy-paladin',
         'squawks-paladin',
+        'terra-paladin',
         'veyron_jaq-paladin',
         'veyron_mickey-paladin',
-        'terra-paladin',
+        'whirlwind-paladin',
 
         # Firmware Builders.
         'link-depthcharge-full-firmware',
@@ -2168,7 +2169,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_pinky',
       'veyron_rialto',
       'veyron_speedy',
-      'whirlwind',
       'winky',
       'wolf',
       'x86-alex',
