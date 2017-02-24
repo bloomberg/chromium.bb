@@ -78,14 +78,14 @@ class MEDIA_EXPORT Pipeline {
                      Client* client,
                      const PipelineStatusCB& seek_cb) = 0;
 
-  // |enabledTrackIds| contains track ids of enabled audio tracks.
+  // |enabled_track_ids| contains track ids of enabled audio tracks.
   virtual void OnEnabledAudioTracksChanged(
-      const std::vector<MediaTrack::Id>& enabledTrackIds) = 0;
+      const std::vector<MediaTrack::Id>& enabled_track_ids) = 0;
 
-  // |trackId| either empty, which means no video track is selected, or contain
-  // one element - the selected video track id.
+  // |selected_track_id| is either empty, which means no video track is
+  // selected, or contains the selected video track id.
   virtual void OnSelectedVideoTrackChanged(
-      const std::vector<MediaTrack::Id>& selectedTrackId) = 0;
+      base::Optional<MediaTrack::Id> selected_track_id) = 0;
 
   // Stops the pipeline. This is a blocking function.
   // If the pipeline is started, it must be stopped before destroying it.

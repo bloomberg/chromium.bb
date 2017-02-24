@@ -95,14 +95,14 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) override;
 
-  // |enabledTrackIds| contains track ids of enabled audio tracks.
+  // |enabled_track_ids| contains track ids of enabled audio tracks.
   void OnEnabledAudioTracksChanged(
-      const std::vector<MediaTrack::Id>& enabledTrackIds) override;
+      const std::vector<MediaTrack::Id>& enabled_track_ids) override;
 
-  // |trackId| either empty, which means no video track is selected, or contain
-  // one element - the selected video track id.
+  // |selected_track_id| is either empty, which means no video track is
+  // selected, or contains the selected video track id.
   void OnSelectedVideoTrackChanged(
-      const std::vector<MediaTrack::Id>& selectedTrackId) override;
+      base::Optional<MediaTrack::Id> selected_track_id) override;
 
  private:
   friend class MediaLog;

@@ -58,9 +58,10 @@ class MEDIA_EXPORT MediaUrlDemuxer : public Demuxer {
   base::Time GetTimelineOffset() const override;
   int64_t GetMemoryUsage() const override;
   void OnEnabledAudioTracksChanged(const std::vector<MediaTrack::Id>& track_ids,
-                                   base::TimeDelta currTime) override;
-  void OnSelectedVideoTrackChanged(const std::vector<MediaTrack::Id>& track_ids,
-                                   base::TimeDelta currTime) override;
+                                   base::TimeDelta curr_time) override;
+  void OnSelectedVideoTrackChanged(
+      base::Optional<MediaTrack::Id> selected_track_id,
+      base::TimeDelta curr_time) override;
 
  private:
   MediaUrlParams params_;

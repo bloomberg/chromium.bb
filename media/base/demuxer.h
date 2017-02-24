@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "media/base/data_source.h"
 #include "media/base/demuxer_stream.h"
@@ -143,12 +144,13 @@ class MEDIA_EXPORT Demuxer : public MediaResource {
 
   virtual void OnEnabledAudioTracksChanged(
       const std::vector<MediaTrack::Id>& track_ids,
-      base::TimeDelta currTime) = 0;
+      base::TimeDelta curr_time) = 0;
 
-  // |track_ids| is either empty or contains a single video track id.
+  // |track_id| either contains the selected video track id or is null,
+  // indicating that all video tracks are deselected/disabled.
   virtual void OnSelectedVideoTrackChanged(
-      const std::vector<MediaTrack::Id>& track_ids,
-      base::TimeDelta currTime) = 0;
+      base::Optional<MediaTrack::Id> track_id,
+      base::TimeDelta curr_time) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Demuxer);

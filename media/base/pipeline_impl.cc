@@ -67,14 +67,14 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   PipelineStatistics GetStatistics() const;
   void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
 
-  // |enabledTrackIds| contains track ids of enabled audio tracks.
+  // |enabled_track_ids| contains track ids of enabled audio tracks.
   void OnEnabledAudioTracksChanged(
-      const std::vector<MediaTrack::Id>& enabledTrackIds);
+      const std::vector<MediaTrack::Id>& enabled_track_ids);
 
-  // |trackId| either empty, which means no video track is selected, or contain
-  // one element - the selected video track id.
+  // |selected_track_id| is either empty, which means no video track is
+  // selected, or contains the selected video track id.
   void OnSelectedVideoTrackChanged(
-      const std::vector<MediaTrack::Id>& selectedTrackId);
+      base::Optional<MediaTrack::Id> selected_track_id);
 
  private:
   // Contains state shared between main and media thread.
@@ -560,25 +560,25 @@ void PipelineImpl::RendererWrapper::OnEnded() {
 }
 
 void PipelineImpl::OnEnabledAudioTracksChanged(
-    const std::vector<MediaTrack::Id>& enabledTrackIds) {
+    const std::vector<MediaTrack::Id>& enabled_track_ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RendererWrapper::OnEnabledAudioTracksChanged,
-                 base::Unretained(renderer_wrapper_.get()), enabledTrackIds));
+                 base::Unretained(renderer_wrapper_.get()), enabled_track_ids));
 }
 
 void PipelineImpl::OnSelectedVideoTrackChanged(
-    const std::vector<MediaTrack::Id>& selectedTrackId) {
+    base::Optional<MediaTrack::Id> selected_track_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RendererWrapper::OnSelectedVideoTrackChanged,
-                 base::Unretained(renderer_wrapper_.get()), selectedTrackId));
+                 base::Unretained(renderer_wrapper_.get()), selected_track_id));
 }
 
 void PipelineImpl::RendererWrapper::OnEnabledAudioTracksChanged(
-    const std::vector<MediaTrack::Id>& enabledTrackIds) {
+    const std::vector<MediaTrack::Id>& enabled_track_ids) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   // If the pipeline has been created, but not started yet, we may still receive
@@ -600,14 +600,14 @@ void PipelineImpl::RendererWrapper::OnEnabledAudioTracksChanged(
   DCHECK(demuxer_);
   DCHECK(shared_state_.renderer || (state_ != kPlaying));
 
-  base::TimeDelta currTime = (state_ == kPlaying)
-                                 ? shared_state_.renderer->GetMediaTime()
-                                 : demuxer_->GetStartTime();
-  demuxer_->OnEnabledAudioTracksChanged(enabledTrackIds, currTime);
+  base::TimeDelta curr_time = (state_ == kPlaying)
+                                  ? shared_state_.renderer->GetMediaTime()
+                                  : demuxer_->GetStartTime();
+  demuxer_->OnEnabledAudioTracksChanged(enabled_track_ids, curr_time);
 }
 
 void PipelineImpl::RendererWrapper::OnSelectedVideoTrackChanged(
-    const std::vector<MediaTrack::Id>& selectedTrackId) {
+    base::Optional<MediaTrack::Id> selected_track_id) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   // If the pipeline has been created, but not started yet, we may still receive
@@ -629,10 +629,10 @@ void PipelineImpl::RendererWrapper::OnSelectedVideoTrackChanged(
   DCHECK(demuxer_);
   DCHECK(shared_state_.renderer || (state_ != kPlaying));
 
-  base::TimeDelta currTime = (state_ == kPlaying)
-                                 ? shared_state_.renderer->GetMediaTime()
-                                 : demuxer_->GetStartTime();
-  demuxer_->OnSelectedVideoTrackChanged(selectedTrackId, currTime);
+  base::TimeDelta curr_time = (state_ == kPlaying)
+                                  ? shared_state_.renderer->GetMediaTime()
+                                  : demuxer_->GetStartTime();
+  demuxer_->OnSelectedVideoTrackChanged(selected_track_id, curr_time);
 }
 
 void PipelineImpl::RendererWrapper::OnStatisticsUpdate(

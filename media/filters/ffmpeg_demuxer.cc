@@ -1634,7 +1634,7 @@ void FFmpegDemuxer::OnSeekFrameDone(int result) {
 
 void FFmpegDemuxer::OnEnabledAudioTracksChanged(
     const std::vector<MediaTrack::Id>& track_ids,
-    base::TimeDelta currTime) {
+    base::TimeDelta curr_time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   std::set<FFmpegDemuxerStream*> enabled_streams;
@@ -1651,25 +1651,24 @@ void FFmpegDemuxer::OnEnabledAudioTracksChanged(
     if (stream && stream->type() == DemuxerStream::AUDIO &&
         enabled_streams.find(stream.get()) == enabled_streams.end()) {
       DVLOG(1) << __func__ << ": disabling stream " << stream.get();
-      stream->set_enabled(false, currTime);
+      stream->set_enabled(false, curr_time);
     }
   }
   for (auto* stream : enabled_streams) {
     DCHECK(stream);
     DVLOG(1) << __func__ << ": enabling stream " << stream;
-    stream->set_enabled(true, currTime);
+    stream->set_enabled(true, curr_time);
   }
 }
 
 void FFmpegDemuxer::OnSelectedVideoTrackChanged(
-    const std::vector<MediaTrack::Id>& track_ids,
-    base::TimeDelta currTime) {
+    base::Optional<MediaTrack::Id> track_id,
+    base::TimeDelta curr_time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_LE(track_ids.size(), 1u);
 
   FFmpegDemuxerStream* selected_stream = nullptr;
-  if (!track_ids.empty()) {
-    selected_stream = track_id_to_demux_stream_map_[track_ids[0]];
+  if (track_id) {
+    selected_stream = track_id_to_demux_stream_map_[*track_id];
     DCHECK(selected_stream);
     DCHECK_EQ(DemuxerStream::VIDEO, selected_stream->type());
   }
@@ -1680,12 +1679,12 @@ void FFmpegDemuxer::OnSelectedVideoTrackChanged(
     if (stream && stream->type() == DemuxerStream::VIDEO &&
         stream.get() != selected_stream) {
       DVLOG(1) << __func__ << ": disabling stream " << stream.get();
-      stream->set_enabled(false, currTime);
+      stream->set_enabled(false, curr_time);
     }
   }
   if (selected_stream) {
     DVLOG(1) << __func__ << ": enabling stream " << selected_stream;
-    selected_stream->set_enabled(true, currTime);
+    selected_stream->set_enabled(true, curr_time);
   }
 }
 

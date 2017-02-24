@@ -680,15 +680,12 @@ void WebMediaPlayerImpl::selectedVideoTrackChanged(
     blink::WebMediaPlayer::TrackId* selectedTrackId) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  std::ostringstream logstr;
-  std::vector<MediaTrack::Id> selectedVideoMediaTrackId;
-  if (selectedTrackId && !video_track_disabled_) {
-    selectedVideoMediaTrackId.push_back(selectedTrackId->utf8().data());
-    logstr << selectedVideoMediaTrackId[0];
-  }
-  MEDIA_LOG(INFO, media_log_) << "Selected video track: [" << logstr.str()
-                              << "]";
-  pipeline_.OnSelectedVideoTrackChanged(selectedVideoMediaTrackId);
+  base::Optional<MediaTrack::Id> selected_video_track_id;
+  if (selectedTrackId && !video_track_disabled_)
+    selected_video_track_id = MediaTrack::Id(selectedTrackId->utf8().data());
+  MEDIA_LOG(INFO, media_log_) << "Selected video track: ["
+                              << selected_video_track_id.value_or("") << "]";
+  pipeline_.OnSelectedVideoTrackChanged(selected_video_track_id);
 }
 
 blink::WebSize WebMediaPlayerImpl::naturalSize() const {

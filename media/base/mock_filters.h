@@ -85,7 +85,7 @@ class MockPipeline : public Pipeline {
   MOCK_METHOD1(OnEnabledAudioTracksChanged,
                void(const std::vector<MediaTrack::Id>&));
   MOCK_METHOD1(OnSelectedVideoTrackChanged,
-               void(const std::vector<MediaTrack::Id>&));
+               void(base::Optional<MediaTrack::Id>));
 
   // TODO(sandersd): This should automatically return true between Start() and
   // Stop(). (Or better, remove it from the interface entirely.)
@@ -142,7 +142,7 @@ class MockDemuxer : public Demuxer {
   MOCK_METHOD2(OnEnabledAudioTracksChanged,
                void(const std::vector<MediaTrack::Id>&, base::TimeDelta));
   MOCK_METHOD2(OnSelectedVideoTrackChanged,
-               void(const std::vector<MediaTrack::Id>&, base::TimeDelta));
+               void(base::Optional<MediaTrack::Id>, base::TimeDelta));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDemuxer);
