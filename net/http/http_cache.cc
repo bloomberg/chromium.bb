@@ -116,6 +116,10 @@ size_t HttpCache::ActiveEntry::EstimateMemoryUsage() const {
   return 0;
 }
 
+bool HttpCache::ActiveEntry::HasNoTransactions() {
+  return !writer && readers.empty() && pending_queue.empty();
+}
+
 //-----------------------------------------------------------------------------
 
 // This structure keeps track of work items that are attempting to create or
@@ -671,9 +675,7 @@ void HttpCache::DoomMainEntryForUrl(const GURL& url) {
 
 void HttpCache::FinalizeDoomedEntry(ActiveEntry* entry) {
   DCHECK(entry->doomed);
-  DCHECK(!entry->writer);
-  DCHECK(entry->readers.empty());
-  DCHECK(entry->pending_queue.empty());
+  DCHECK(entry->HasNoTransactions());
 
   auto it = doomed_entries_.find(entry);
   DCHECK(it != doomed_entries_.end());
@@ -696,10 +698,8 @@ HttpCache::ActiveEntry* HttpCache::ActivateEntry(
 void HttpCache::DeactivateEntry(ActiveEntry* entry) {
   DCHECK(!entry->will_process_pending_queue);
   DCHECK(!entry->doomed);
-  DCHECK(!entry->writer);
   DCHECK(entry->disk_entry);
-  DCHECK(entry->readers.empty());
-  DCHECK(entry->pending_queue.empty());
+  DCHECK(entry->HasNoTransactions());
 
   std::string key = entry->disk_entry->GetKey();
   if (key.empty())
@@ -1037,11 +1037,13 @@ void HttpCache::OnProcessPendingQueue(ActiveEntry* entry) {
   DCHECK(!entry->writer);
 
   // If no one is interested in this entry, then we can deactivate it.
-  if (entry->pending_queue.empty()) {
-    if (entry->readers.empty())
-      DestroyEntry(entry);
+  if (entry->HasNoTransactions()) {
+    DestroyEntry(entry);
     return;
   }
+
+  if (entry->pending_queue.empty())
+    return;
 
   // Promote next transaction from the pending queue.
   Transaction* next = entry->pending_queue.front();

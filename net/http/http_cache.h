@@ -252,6 +252,9 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
     ~ActiveEntry();
     size_t EstimateMemoryUsage() const;
 
+    // Returns true if no transactions are associated with this entry.
+    bool HasNoTransactions();
+
     disk_cache::Entry* disk_entry;
     Transaction*       writer;
     TransactionList    readers;
