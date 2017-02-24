@@ -35,6 +35,7 @@ using params::ntp_snippets::kNotificationsDefaultDailyLimit;
 using params::ntp_snippets::kNotificationsFeature;
 using params::ntp_snippets::kNotificationsKeepWhenFrontmostParam;
 using params::ntp_snippets::kNotificationsUseSnippetAsTextParam;
+using params::ntp_snippets::kNotificationsOpenToNTPParam;
 
 namespace {
 
@@ -131,11 +132,14 @@ class ContentSuggestionsNotifierService::NotifyingObserver
                                 : base::Time::Max();
     bool use_snippet = variations::GetVariationParamByFeatureAsBool(
         kNotificationsFeature, kNotificationsUseSnippetAsTextParam, false);
+    bool open_to_ntp = variations::GetVariationParamByFeatureAsBool(
+        kNotificationsFeature, kNotificationsOpenToNTPParam, false);
     service_->FetchSuggestionImage(
         suggestion->id(),
         base::Bind(&NotifyingObserver::ImageFetched,
                    weak_ptr_factory_.GetWeakPtr(), suggestion->id(),
-                   suggestion->url(), suggestion->title(),
+                   open_to_ntp ? GURL("chrome://newtab") : suggestion->url(),
+                   suggestion->title(),
                    use_snippet ? suggestion->snippet_text()
                                : suggestion->publisher_name(),
                    timeout_at));

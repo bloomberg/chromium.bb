@@ -14,6 +14,7 @@ const char kNotificationsAlwaysNotifyParam[] = "always_notify";
 const char kNotificationsUseSnippetAsTextParam[] = "use_snippet_as_text";
 const char kNotificationsKeepWhenFrontmostParam[] =
     "keep_notification_when_frontmost";
+const char kNotificationsOpenToNTPParam[] = "open_to_ntp";
 const char kNotificationsDailyLimit[] = "daily_limit";
 const char kNotificationsIgnoredLimitParam[] = "ignored_limit";
 

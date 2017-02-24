@@ -25,6 +25,10 @@ extern const char kNotificationsUseSnippetAsTextParam[];
 // "false": automatically dismiss notification when Chrome becomes frontmost.
 extern const char kNotificationsKeepWhenFrontmostParam[];
 
+// "true": notifications link to chrome://newtab, with appropriate text.
+// "false": notifications link to URL of notifying article.
+extern const char kNotificationsOpenToNTPParam[];
+
 // An integer. The maximum number of notifications that will be shown in 1 day.
 extern const char kNotificationsDailyLimit[];
 constexpr int kNotificationsDefaultDailyLimit = 1;
