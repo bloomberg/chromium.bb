@@ -8,14 +8,25 @@
 #      'target_name': 'background',
 #      'includes': ['../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'dimmable_ui_controller',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'entry_list_watcher',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'dimmable_ui_controller',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(EXTERNS_GYP):chrome_extensions',
+        'gallery_constants',
+      ],
+      'includes': ['../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'entry_list_watcher',
+      'dependencies': [
+        '../../externs/compiled_resources2.gyp:platform',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:array_data_model',
+        '<(EXTERNS_GYP):file_manager_private',
+      ],
+      'includes': ['../../compile_js2.gypi'],
+    },
     {
       'target_name': 'error_banner',
       'dependencies': [
@@ -27,6 +38,10 @@
 #      'target_name': 'gallery',
 #      'includes': ['../../compile_js2.gypi'],
 #    },
+    {
+      'target_name': 'gallery_constants',
+      'includes': ['../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'gallery_data_model',
 #      'dependencies': [

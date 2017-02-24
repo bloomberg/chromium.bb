@@ -79,6 +79,7 @@
 // <include src="dimmable_ui_controller.js">
 // <include src="entry_list_watcher.js">
 // <include src="error_banner.js">
+// <include src="gallery_constants.js">
 // <include src="gallery_data_model.js">
 // <include src="gallery_item.js">
 // <include src="gallery_util.js">

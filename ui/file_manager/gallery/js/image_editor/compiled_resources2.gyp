@@ -7,6 +7,9 @@
 #    {
 #      'target_name': 'commands',
 #      'dependencies': [
+#        'filter',
+#        'image_view',
+#        'viewport',
 #        'image_util',
 #        '../../../file_manager/foreground/elements/compiled_resources2.gyp:files_toast',
 #        'image_editor',
@@ -83,6 +86,12 @@
     },
 #    {
 #      'target_name': 'image_transform',
+#      'dependencies': [
+#        'commands',
+#        'viewport',
+#        'image_buffer',
+#        'image_util',
+#      ],
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
     {
@@ -106,10 +115,10 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'test_util',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'test_util',
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'viewport',
       'dependencies': [

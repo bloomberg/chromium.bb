@@ -31,12 +31,12 @@ function DimmableUIController(container) {
   this.isCursorInTools_ = false;
 
   /**
-   * @private {Gallery.Mode|undefined}
+   * @private {GalleryMode|undefined}
    */
   this.mode_ = undefined;
 
   /**
-   * @private {Gallery.SubMode|undefined}
+   * @private {GallerySubMode|undefined}
    */
   this.subMode_ = undefined;
 
@@ -98,8 +98,8 @@ DimmableUIController.MIN_OPERATION_INTERVAL = 500; // ms
 
 /**
  * Returns true if this controller should be disabled.
- * @param {Gallery.Mode|undefined} mode
- * @param {Gallery.SubMode|undefined} subMode
+ * @param {GalleryMode|undefined} mode
+ * @param {GallerySubMode|undefined} subMode
  * @param {boolean} loading
  * @param {boolean} spokenFeedbackEnabled
  * @param {boolean} renaming
@@ -107,19 +107,17 @@ DimmableUIController.MIN_OPERATION_INTERVAL = 500; // ms
  */
 DimmableUIController.shouldBeDisabled = function(
     mode, subMode, loading, spokenFeedbackEnabled, renaming) {
-  return spokenFeedbackEnabled ||
-      mode === undefined ||
-      subMode === undefined ||
-      mode === Gallery.Mode.THUMBNAIL ||
-      (mode === Gallery.Mode.SLIDE && subMode === Gallery.SubMode.EDIT) ||
-      (mode === Gallery.Mode.SLIDE && subMode === Gallery.SubMode.BROWSE &&
+  return spokenFeedbackEnabled || mode === undefined || subMode === undefined ||
+      mode === GalleryMode.THUMBNAIL ||
+      (mode === GalleryMode.SLIDE && subMode === GallerySubMode.EDIT) ||
+      (mode === GalleryMode.SLIDE && subMode === GallerySubMode.BROWSE &&
        (loading || renaming));
 };
 
 /**
  * Sets current mode of Gallery.
- * @param {Gallery.Mode} mode
- * @param {Gallery.SubMode} subMode
+ * @param {GalleryMode} mode
+ * @param {GallerySubMode} subMode
  */
 DimmableUIController.prototype.setCurrentMode = function(mode, subMode) {
   if (this.mode_ === mode && this.subMode_ === subMode)

@@ -60,10 +60,10 @@ ThumbnailMode.prototype.getTitle = function() { return 'GALLERY_THUMBNAIL'; };
 
 /**
  * Returns current sub mode.
- * @return {Gallery.SubMode}
+ * @return {GallerySubMode}
  */
 ThumbnailMode.prototype.getSubMode = function() {
-  return Gallery.SubMode.BROWSE;
+  return GallerySubMode.BROWSE;
 };
 
 /**

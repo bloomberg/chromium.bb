@@ -187,9 +187,9 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
   this.active_ = false;
 
   /**
-   * @private {Gallery.SubMode}
+   * @private {GallerySubMode}
    */
-  this.subMode_ = Gallery.SubMode.BROWSE;
+  this.subMode_ = GallerySubMode.BROWSE;
 
   /**
    * @type {boolean}
@@ -1466,7 +1466,7 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
 
   this.resumeSlideshow_(opt_interval);
 
-  this.setSubMode_(Gallery.SubMode.SLIDESHOW);
+  this.setSubMode_(GallerySubMode.SLIDESHOW);
 };
 
 /**
@@ -1499,7 +1499,7 @@ SlideMode.prototype.stopSlideshow_ = function(opt_event) {
   // Re-enable touch operation.
   this.touchHandlers_.enabled = true;
 
-  this.setSubMode_(Gallery.SubMode.BROWSE);
+  this.setSubMode_(GallerySubMode.BROWSE);
 };
 
 /**
@@ -1579,7 +1579,7 @@ SlideMode.prototype.stopEditing_ = function() {
 
 /**
  * Sets current sub mode.
- * @param {Gallery.SubMode} subMode
+ * @param {GallerySubMode} subMode
  * @private
  */
 SlideMode.prototype.setSubMode_ = function(subMode) {
@@ -1595,7 +1595,7 @@ SlideMode.prototype.setSubMode_ = function(subMode) {
 
 /**
  * Returns current sub mode.
- * @return {Gallery.SubMode}
+ * @return {GallerySubMode}
  */
 SlideMode.prototype.getSubMode = function() {
   return this.subMode_;
@@ -1652,7 +1652,7 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
       this.bubble_.hidden = false;
     }.bind(this));
 
-    this.setSubMode_(Gallery.SubMode.EDIT);
+    this.setSubMode_(GallerySubMode.EDIT);
     this.editor_.onStartEditing();
   } else {
     this.editor_.getPrompt().hide();
@@ -1666,7 +1666,7 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
 
     this.touchHandlers_.enabled = true;
 
-    this.setSubMode_(Gallery.SubMode.BROWSE);
+    this.setSubMode_(GallerySubMode.BROWSE);
   }
 };
 

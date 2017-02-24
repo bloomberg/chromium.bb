@@ -136,6 +136,7 @@
           './image_editor/filter.js',
           './image_editor/image_encoder.js',
           './image_editor/exif_encoder.js',
+          './gallery_constants.js',
           './dimmable_ui_controller.js',
           './entry_list_watcher.js',
           './error_banner.js',

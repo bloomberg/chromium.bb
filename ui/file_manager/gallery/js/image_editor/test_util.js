@@ -8,7 +8,8 @@
  * @return {HTMLCanvasElement}
  */
 function getSampleCanvas() {
-  var canvas = document.createElement('canvas');
+  var canvas =
+      /** @type {HTMLCanvasElement} */ (document.createElement('canvas'));
   canvas.width = 1920;
   canvas.height = 1080;
 
