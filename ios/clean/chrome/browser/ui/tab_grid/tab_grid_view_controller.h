@@ -29,9 +29,6 @@
 // Title for the tab at |index| in the grid.
 - (NSString*)titleAtIndex:(NSInteger)index;
 
-// Index for the active tab.
-- (NSInteger)indexOfActiveTab;
-
 @end
 
 // Controller for a scrolling view displaying square cells that represent

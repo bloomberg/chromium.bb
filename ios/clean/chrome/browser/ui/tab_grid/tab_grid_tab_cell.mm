@@ -13,22 +13,38 @@
 #endif
 
 namespace {
-const CGFloat kSelectedBorderCornerRadius = 8.0f;
-const CGFloat kSelectedBorderWidth = 4.0f;
+const CGFloat kCornerRadius = 4.0;
+const CGFloat kSelectedBorderWidth = 2.0;
 }
 
 @implementation TabGridTabCell
 
+@synthesize label = _label;
+
 - (instancetype)initWithFrame:(CGRect)frame {
   if ((self = [super initWithFrame:frame])) {
-    self.selectedBackgroundView = [[UIView alloc] init];
-    self.selectedBackgroundView.backgroundColor = [UIColor blackColor];
-    self.selectedBackgroundView.layer.cornerRadius =
-        kSelectedBorderCornerRadius;
+    self.contentView.layer.cornerRadius = kCornerRadius;
+    self.selectedBackgroundView.layer.cornerRadius = kCornerRadius;
     self.selectedBackgroundView.layer.borderWidth = kSelectedBorderWidth;
-    self.selectedBackgroundView.layer.borderColor = self.tintColor.CGColor;
+    self.selectedBackgroundView.layer.borderColor = [UIColor blueColor].CGColor;
     self.selectedBackgroundView.transform = CGAffineTransformScale(
-        self.selectedBackgroundView.transform, 1.08, 1.08);
+        self.selectedBackgroundView.transform, 1.05, 1.05);
+
+    _label = [[UILabel alloc] initWithFrame:CGRectZero];
+    _label.translatesAutoresizingMaskIntoConstraints = NO;
+    _label.numberOfLines = 1;
+    _label.textAlignment = NSTextAlignmentCenter;
+    [self.contentView addSubview:_label];
+    [NSLayoutConstraint activateConstraints:@[
+      [_label.centerYAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor],
+      [_label.leadingAnchor
+          constraintEqualToAnchor:self.contentView.layoutMarginsGuide
+                                      .leadingAnchor],
+      [_label.trailingAnchor
+          constraintEqualToAnchor:self.contentView.layoutMarginsGuide
+                                      .trailingAnchor],
+    ]];
   }
   return self;
 }

@@ -48,8 +48,4 @@
   return [NSString stringWithFormat:@"Tab %" PRIdNS, index];
 }
 
-- (NSInteger)indexOfActiveTab {
-  return 0;
-}
-
 @end
