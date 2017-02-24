@@ -136,7 +136,6 @@ QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
       error_(QUIC_NO_ERROR),
       last_packet_number_(0),
       largest_packet_number_(0),
-      last_path_id_(kInvalidPathId),
       last_serialized_connection_id_(0),
       last_version_tag_(0),
       supported_versions_(supported_versions),
@@ -746,44 +745,10 @@ const QuicTime::Delta QuicFramer::CalculateTimestampFromWire(
   return QuicTime::Delta::FromMicroseconds(time);
 }
 
-bool QuicFramer::IsValidPath(QuicPathId path_id,
-                             QuicPacketNumber* base_packet_number) {
-  if (QuicContainsKey(closed_paths_, path_id)) {
-    // Path is closed.
-    return false;
-  }
-
-  if (path_id == last_path_id_) {
-    *base_packet_number = largest_packet_number_;
-    return true;
-  }
-
-  if (QuicContainsKey(largest_packet_numbers_, path_id)) {
-    *base_packet_number = largest_packet_numbers_[path_id];
-  } else {
-    *base_packet_number = 0;
-  }
-
-  return true;
-}
-
 void QuicFramer::SetLastPacketNumber(const QuicPacketHeader& header) {
-  if (header.public_header.multipath_flag && header.path_id != last_path_id_) {
-    if (last_path_id_ != kInvalidPathId) {
-      // Save current last packet number before changing path.
-      largest_packet_numbers_[last_path_id_] = largest_packet_number_;
-    }
-    // Change path.
-    last_path_id_ = header.path_id;
-  }
   last_packet_number_ = header.packet_number;
   largest_packet_number_ =
       std::max(header.packet_number, largest_packet_number_);
-}
-
-void QuicFramer::OnPathClosed(QuicPathId path_id) {
-  closed_paths_.insert(path_id);
-  largest_packet_numbers_.erase(path_id);
 }
 
 QuicPacketNumber QuicFramer::CalculatePacketNumberFromWire(
@@ -967,12 +932,6 @@ bool QuicFramer::ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
   }
 
   QuicPacketNumber base_packet_number = largest_packet_number_;
-  if (header->public_header.multipath_flag &&
-      !IsValidPath(header->path_id, &base_packet_number)) {
-    // Stop processing because path is closed.
-    set_detailed_error("Path is closed.");
-    return false;
-  }
 
   if (!ProcessPacketSequenceNumber(
           encrypted_reader, header->public_header.packet_number_length,

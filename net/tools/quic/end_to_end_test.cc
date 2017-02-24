@@ -2549,6 +2549,13 @@ TEST_P(EndToEndTest, LargePostEarlyResponse) {
   set_server_initial_session_flow_control_receive_window(kWindowSize);
 
   ASSERT_TRUE(Initialize());
+  if (FLAGS_quic_reloadable_flag_quic_always_enable_bidi_streaming) {
+    // This test is testing the same behavior as
+    // EarlyResponseWithQuicStreamNoError, except for the additional final check
+    // that the stream is reset on early response. Once this flag is deprecated
+    // the tests will be the same and this one can be removed.
+    return;
+  }
 
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
