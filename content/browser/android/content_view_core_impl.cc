@@ -418,8 +418,6 @@ void ContentViewCoreImpl::UpdateFrameInfo(
     const gfx::SizeF& viewport_size,
     const float top_controls_height,
     const float top_controls_shown_ratio,
-    const float bottom_controls_height,
-    const float bottom_controls_shown_ratio,
     bool is_mobile_optimized_hint,
     const gfx::SelectionBound& selection_start) {
   JNIEnv* env = AttachCurrentThread();
@@ -449,18 +447,9 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       page_scale_factor_limits.x(), page_scale_factor_limits.y(),
       content_size.width(), content_size.height(), viewport_size.width(),
       viewport_size.height(), top_controls_height, top_controls_shown_ratio,
-      bottom_controls_height, bottom_controls_shown_ratio,
       is_mobile_optimized_hint, has_insertion_marker,
       is_insertion_marker_visible, insertion_marker_horizontal,
       insertion_marker_top, insertion_marker_bottom);
-}
-
-void ContentViewCoreImpl::OnBackgroundColorChanged(SkColor color) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_ContentViewCore_onBackgroundColorChanged(env, obj, color);
 }
 
 void ContentViewCoreImpl::ShowSelectPopupMenu(
@@ -650,18 +639,6 @@ void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
     return;
   Java_ContentViewCore_showPastePopup(env, obj, x_dip,
                                       y_dip);
-}
-
-void ContentViewCoreImpl::StartContentIntent(const GURL& content_url,
-                                             bool is_main_frame) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return;
-  ScopedJavaLocalRef<jstring> jcontent_url =
-      ConvertUTF8ToJavaString(env, content_url.spec());
-  Java_ContentViewCore_startContentIntent(env, j_obj, jcontent_url,
-                                          is_main_frame);
 }
 
 void ContentViewCoreImpl::ShowDisambiguationPopup(

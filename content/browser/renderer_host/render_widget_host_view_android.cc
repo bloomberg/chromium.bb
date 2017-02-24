@@ -399,6 +399,10 @@ void PrepareTextureCopyOutputResult(
       display_compositor::GLHelper::SCALER_QUALITY_GOOD);
 }
 
+bool FloatEquals(float a, float b) {
+  return std::abs(a - b) < FLT_EPSILON;
+}
+
 }  // namespace
 
 void RenderWidgetHostViewAndroid::OnContextLost() {
@@ -434,6 +438,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       synchronous_compositor_client_(nullptr),
       frame_evictor_(new DelegatedFrameEvictor(this)),
       observing_root_window_(false),
+      prev_top_shown_pix_(0.f),
+      prev_bottom_shown_pix_(0.f),
       weak_ptr_factory_(this) {
   // Set the layer which will hold the content layer for this view. The content
   // layer is managed by the DelegatedFrameHost.
@@ -784,8 +790,7 @@ void RenderWidgetHostViewAndroid::UpdateBackgroundColor(SkColor color) {
   if (delegated_frame_host_)
     delegated_frame_host_->UpdateBackgroundColor(color);
 
-  if (content_view_core_)
-    content_view_core_->OnBackgroundColorChanged(color);
+  view_.OnBackgroundColorChanged(color);
 }
 
 void RenderWidgetHostViewAndroid::SetNeedsBeginFrames(bool needs_begin_frames) {
@@ -799,8 +804,7 @@ void RenderWidgetHostViewAndroid::SetNeedsBeginFrames(bool needs_begin_frames) {
 
 void RenderWidgetHostViewAndroid::OnStartContentIntent(
     const GURL& content_url, bool is_main_frame) {
-  if (content_view_core_)
-    content_view_core_->StartContentIntent(content_url, is_main_frame);
+  view_.StartContentIntent(content_url, is_main_frame);
 }
 
 bool RenderWidgetHostViewAndroid::OnTouchEvent(
@@ -1268,6 +1272,28 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       frame_metadata.top_controls_height *
           frame_metadata.top_controls_shown_ratio));
 
+  float dip_scale = ui::GetScaleFactorForNativeView(GetNativeView());
+  float top_controls_pix = frame_metadata.top_controls_height * dip_scale;
+  float top_shown_pix =
+      top_controls_pix * frame_metadata.top_controls_shown_ratio;
+  bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
+
+  float bottom_controls_pix = frame_metadata.bottom_controls_height * dip_scale;
+  float bottom_shown_pix =
+      bottom_controls_pix * frame_metadata.bottom_controls_shown_ratio;
+  bool bottom_changed = !FloatEquals(bottom_shown_pix, prev_bottom_shown_pix_);
+
+  if (top_changed) {
+    float translate = top_shown_pix - top_controls_pix;
+    view_.OnTopControlsChanged(translate, top_shown_pix);
+    prev_top_shown_pix_ = top_shown_pix;
+  }
+  if (bottom_changed) {
+    float translate = bottom_controls_pix - bottom_shown_pix;
+    view_.OnBottomControlsChanged(translate, bottom_shown_pix);
+    prev_bottom_shown_pix_ = bottom_shown_pix;
+  }
+
   // All offsets and sizes are in CSS pixels.
   content_view_core_->UpdateFrameInfo(
       frame_metadata.root_scroll_offset,
@@ -1278,8 +1304,6 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       frame_metadata.scrollable_viewport_size,
       frame_metadata.top_controls_height,
       frame_metadata.top_controls_shown_ratio,
-      frame_metadata.bottom_controls_height,
-      frame_metadata.bottom_controls_shown_ratio,
       is_mobile_optimized,
       frame_metadata.selection.start);
 }

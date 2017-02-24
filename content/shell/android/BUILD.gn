@@ -55,6 +55,7 @@ android_library("content_shell_java") {
     "java/src/org/chromium/content_shell/Shell.java",
     "java/src/org/chromium/content_shell/ShellLayoutTestUtils.java",
     "java/src/org/chromium/content_shell/ShellManager.java",
+    "java/src/org/chromium/content_shell/ShellViewAndroidDelegate.java",
   ]
 }
 

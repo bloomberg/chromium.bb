@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -21,6 +22,9 @@ import java.util.Map.Entry;
  * Implementation of the abstract class {@link ViewAndroidDelegate} for WebView.
  */
 public class AwViewAndroidDelegate extends ViewAndroidDelegate {
+    /** Used for logging. */
+    private static final String TAG = "AwVAD";
+
     /**
      * The current container view. This view can be updated with
      * {@link #updateCurrentContainerView()}.
@@ -33,6 +37,7 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
      */
     private final Map<View, Position> mAnchorViews = new LinkedHashMap<>();
 
+    private final AwContentsClient mContentsClient;
     private final RenderCoordinates mRenderCoordinates;
 
     /**
@@ -59,8 +64,10 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
     }
 
     @VisibleForTesting
-    public AwViewAndroidDelegate(ViewGroup containerView, RenderCoordinates renderCoordinates) {
+    public AwViewAndroidDelegate(ViewGroup containerView, AwContentsClient contentsClient,
+            RenderCoordinates renderCoordinates) {
         mContainerView = containerView;
+        mContentsClient = contentsClient;
         mRenderCoordinates = renderCoordinates;
     }
 
@@ -134,6 +141,24 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
                 new android.widget.AbsoluteLayout.LayoutParams(
                     scaledWidth, scaledHeight, leftMargin, topMargin);
         anchorView.setLayoutParams(lp);
+    }
+
+    @Override
+    public void onBackgroundColorChanged(int color) {
+        mContentsClient.onBackgroundColorChanged(color);
+    }
+
+    @Override
+    public void startContentIntent(Intent intent, String contentUrl, boolean isMainFrame) {
+        // Make sure that this URL is a valid scheme for this callback if interpreted as an intent,
+        // even though we don't dispatch it as an intent here, because many WebView apps will once
+        // it reaches them.
+        assert intent != null;
+
+        // Comes from WebViewImpl::detectContentOnTouch in Blink, so must be user-initiated, and
+        // isn't a redirect.
+        mContentsClient.shouldIgnoreNavigation(
+                mContainerView.getContext(), contentUrl, isMainFrame, true, false);
     }
 
     @Override

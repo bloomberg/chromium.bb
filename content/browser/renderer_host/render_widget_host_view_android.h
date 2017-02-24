@@ -378,6 +378,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;
 
+  float prev_top_shown_pix_;
+  float prev_bottom_shown_pix_;
+
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);

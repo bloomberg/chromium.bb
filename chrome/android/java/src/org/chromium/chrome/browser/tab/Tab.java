@@ -106,7 +106,6 @@ import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -376,26 +375,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     private class TabContentViewClient extends ContentViewClient {
         @Override
-        public void onBackgroundColorChanged(int color) {
-            Tab.this.onBackgroundColorChanged(color);
-        }
-
-        @Override
-        public void onTopControlsChanged(float topControlsOffsetY, float topContentOffsetY) {
-            super.onTopControlsChanged(topControlsOffsetY, topContentOffsetY);
-            onOffsetsChanged(topControlsOffsetY, mPreviousBottomControlsOffsetY,
-                    topContentOffsetY, isShowingSadTab());
-        }
-
-        @Override
-        public void onBottomControlsChanged(float bottomControlsOffsetY,
-                float bottomContentOffsetY) {
-            super.onBottomControlsChanged(bottomControlsOffsetY, bottomContentOffsetY);
-            onOffsetsChanged(mPreviousTopControlsOffsetY, bottomControlsOffsetY,
-                    mPreviousContentOffsetY, isShowingSadTab());
-        }
-
-        @Override
         public void onImeEvent() {
             // Some text was set in the page. Don't reuse it if a tab is
             // open from the same external application, we might lose some
@@ -407,33 +386,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         public void onFocusedNodeEditabilityChanged(boolean editable) {
             if (getFullscreenManager() == null) return;
             updateFullscreenEnabledState();
-        }
-
-        @Override
-        public int getSystemWindowInsetLeft() {
-            ChromeActivity activity = getActivity();
-            if (activity != null && activity.getInsetObserverView() != null) {
-                return activity.getInsetObserverView().getSystemWindowInsetsLeft();
-            }
-            return 0;
-        }
-
-        @Override
-        public int getSystemWindowInsetTop() {
-            ChromeActivity activity = getActivity();
-            if (activity != null && activity.getInsetObserverView() != null) {
-                return activity.getInsetObserverView().getSystemWindowInsetsTop();
-            }
-            return 0;
-        }
-
-        @Override
-        public int getSystemWindowInsetRight() {
-            ChromeActivity activity = getActivity();
-            if (activity != null && activity.getInsetObserverView() != null) {
-                return activity.getInsetObserverView().getSystemWindowInsetsRight();
-            }
-            return 0;
         }
 
         @Override
@@ -1632,8 +1584,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         ContentView cv = ContentView.createContentView(mThemedApplicationContext, cvc);
         cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                 R.string.accessibility_content_view));
-        cvc.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv, webContents,
-                getWindowAndroid());
+        cvc.initialize(new TabViewAndroidDelegate(this, cv), cv, webContents, getWindowAndroid());
         ChromeActionModeCallback actionModeCallback = new ChromeActionModeCallback(
                 mThemedApplicationContext, this, cvc.getActionModeCallbackHelper());
         cvc.setActionModeCallback(actionModeCallback);
@@ -2214,7 +2165,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Called when the background color for the content changes.
      * @param color The current for the background.
      */
-    protected void onBackgroundColorChanged(int color) {
+    void onBackgroundColorChanged(int color) {
         for (TabObserver observer : mObservers) observer.onBackgroundColorChanged(this, color);
     }
 
@@ -2514,23 +2465,25 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Called when offset values related with fullscreen functionality has been changed by the
      * compositor.
      * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
+     *    {@code Float.NaN} if the value is invalid and the cached value should be used.
      * @param bottomControlsOffsetY The Y offset of the bottom controls in physical pixels.
+     *    {@code Float.NaN} if the value is invalid and the cached value should be used.
      * @param contentOffsetY The Y offset of the content in physical pixels.
-     * @param isNonFullscreenPage Whether a current page is non-fullscreen page or not.
      */
-    private void onOffsetsChanged(
-            float topControlsOffsetY, float bottomControlsOffsetY, float contentOffsetY,
-            boolean isNonFullscreenPage) {
-        mPreviousTopControlsOffsetY = topControlsOffsetY;
-        mPreviousBottomControlsOffsetY = bottomControlsOffsetY;
-        mPreviousContentOffsetY = contentOffsetY;
+    void onOffsetsChanged(
+            float topControlsOffsetY, float bottomControlsOffsetY, float contentOffsetY) {
+        if (!Float.isNaN(topControlsOffsetY)) mPreviousTopControlsOffsetY = topControlsOffsetY;
+        if (!Float.isNaN(bottomControlsOffsetY)) {
+            mPreviousBottomControlsOffsetY = bottomControlsOffsetY;
+        }
+        if (!Float.isNaN(contentOffsetY)) mPreviousContentOffsetY = contentOffsetY;
 
         if (mFullscreenManager == null) return;
-        if (isNonFullscreenPage || isNativePage()) {
+        if (isShowingSadTab() || isNativePage()) {
             mFullscreenManager.setPositionsForTabToNonFullscreen();
         } else {
-            mFullscreenManager.setPositionsForTab(topControlsOffsetY, bottomControlsOffsetY,
-                    contentOffsetY);
+            mFullscreenManager.setPositionsForTab(mPreviousTopControlsOffsetY,
+                    mPreviousBottomControlsOffsetY, mPreviousContentOffsetY);
         }
         TabModelImpl.setActualTabSwitchLatencyMetricRequired();
     }
