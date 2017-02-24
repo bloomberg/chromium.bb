@@ -30,12 +30,13 @@ const CSSValue* styleValueToCSSValue(CSSPropertyID propertyID,
 
 const CSSValue* singleStyleValueAsCSSValue(CSSPropertyID propertyID,
                                            const CSSStyleValue& styleValue) {
-  if (!CSSPropertyMetadata::propertyIsRepeated(propertyID))
-    return styleValueToCSSValue(propertyID, styleValue);
-
   const CSSValue* cssValue = styleValueToCSSValue(propertyID, styleValue);
   if (!cssValue)
     return nullptr;
+
+  if (!CSSPropertyMetadata::propertyIsRepeated(propertyID) ||
+      cssValue->isCSSWideKeyword())
+    return cssValue;
 
   // TODO(meade): Determine the correct separator for each property.
   CSSValueList* valueList = CSSValueList::createSpaceSeparated();
