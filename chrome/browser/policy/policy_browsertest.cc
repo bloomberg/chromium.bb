@@ -230,6 +230,7 @@
 #if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #endif  // defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
 
 using content::BrowserThread;
@@ -3613,8 +3614,10 @@ class MediaRouterActionPolicyTest : public PolicyTest {
  protected:
   bool HasMediaRouterActionAtInit() const {
     const std::set<std::string>& component_ids =
-        ComponentToolbarActionsFactory::GetInstance()->GetInitialComponentIds(
-            browser()->profile());
+        ToolbarActionsModel::Get(browser()->profile())
+            ->component_actions_factory()
+            ->GetInitialComponentIds();
+
     return base::ContainsKey(
         component_ids, ComponentToolbarActionsFactory::kMediaRouterActionId);
   }

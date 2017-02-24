@@ -20,22 +20,20 @@ class ComponentToolbarActionsBrowserTest : public InProcessBrowserTest {
   ComponentToolbarActionsBrowserTest() {}
   ~ComponentToolbarActionsBrowserTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-        extensions::FeatureSwitch::extension_action_redesign(), true));
-    mock_actions_factory_.reset(new MockComponentToolbarActionsFactory(
-        browser()));
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    // Replace the actions factory with a mock one.
+    toolbar_model_ = ToolbarActionsModel::Get(browser()->profile());
+    toolbar_model_->SetMockActionsFactoryForTest(
+        base::MakeUnique<MockComponentToolbarActionsFactory>(
+            browser()->profile()));
   }
 
-  MockComponentToolbarActionsFactory* mock_factory() {
-    return mock_actions_factory_.get();
-  }
+ protected:
+  ToolbarActionsModel* toolbar_model_ = nullptr;
 
  private:
-  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
-  std::unique_ptr<MockComponentToolbarActionsFactory> mock_actions_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ComponentToolbarActionsBrowserTest);
 };
 
@@ -44,6 +42,8 @@ class ComponentToolbarActionsBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ComponentToolbarActionsBrowserTest,
                        ComponentToolbarActionsShowUpAndRespondToClicks) {
   BrowserActionTestUtil browser_actions_bar(browser());
+  toolbar_model_->AddComponentAction(
+      MockComponentToolbarActionsFactory::kActionIdForTesting);
 
   // There should be only one component action view.
   ASSERT_EQ(1, browser_actions_bar.NumberOfBrowserActions());
@@ -52,11 +52,6 @@ IN_PROC_BROWSER_TEST_F(ComponentToolbarActionsBrowserTest,
   // for the action.
   EXPECT_EQ(MockComponentToolbarActionsFactory::kActionIdForTesting,
             browser_actions_bar.GetExtensionId(0));
-
-  // There should only have been one created component action.
-  EXPECT_EQ(1u, ComponentToolbarActionsFactory::GetInstance()
-                    ->GetInitialComponentIds(browser()->profile())
-                    .size());
 
   const std::vector<ToolbarActionViewController*>& actions =
       browser_actions_bar.GetToolbarActionsBar()->GetActions();

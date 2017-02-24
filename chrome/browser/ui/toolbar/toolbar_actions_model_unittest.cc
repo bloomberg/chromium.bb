@@ -123,9 +123,12 @@ class ToolbarActionsModelUnitTest
   ~ToolbarActionsModelUnitTest() override {}
 
  protected:
-  // Initialize the ExtensionService, ToolbarActionsModel, and
-  // ExtensionSystem.
+  // Initialize the ExtensionService, ToolbarActionsModel, and ExtensionSystem.
   void Init();
+
+  // Initializes the ExtensionService, ToolbarActionsModel, and ExtensionSystem,
+  // making ToolbarActionsModel use a MockComponentToolbarActionsFactory.
+  void InitWithMockActionsFactory();
 
   void TearDown() override;
 
@@ -154,8 +157,6 @@ class ToolbarActionsModelUnitTest
 
   // Returns true if the |toobar_model_| has an action with the given |id|.
   bool ModelHasActionForId(const std::string& id) const;
-
-  void SetMockActionsFactory(MockComponentToolbarActionsFactory* factory);
 
   ToolbarActionsModel* toolbar_model() { return toolbar_model_; }
 
@@ -211,8 +212,6 @@ class ToolbarActionsModelUnitTest
   scoped_refptr<const extensions::Extension> page_action_extension_;
   scoped_refptr<const extensions::Extension> no_action_extension_;
 
-  std::unique_ptr<MockComponentToolbarActionsFactory> mock_actions_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsModelUnitTest);
 };
 
@@ -221,7 +220,26 @@ void ToolbarActionsModelUnitTest::Init() {
   toolbar_model_ =
       extensions::extension_action_test_util::CreateToolbarModelForProfile(
           profile());
-  model_observer_.reset(new ToolbarActionsModelTestObserver(toolbar_model_));
+  model_observer_ =
+      base::MakeUnique<ToolbarActionsModelTestObserver>(toolbar_model_);
+}
+
+void ToolbarActionsModelUnitTest::InitWithMockActionsFactory() {
+  InitializeEmptyExtensionService();
+  toolbar_model_ = extensions::extension_action_test_util::
+      CreateToolbarModelForProfileWithoutWaitingForReady(profile());
+  toolbar_model_->SetMockActionsFactoryForTest(
+      base::MakeUnique<MockComponentToolbarActionsFactory>(profile()));
+
+  // Trigger ToolbarActionsModel::OnReady() after the actions factory has been
+  // swapped out for a mock one.
+  static_cast<extensions::TestExtensionSystem*>(
+      extensions::ExtensionSystem::Get(profile()))
+      ->SetReady();
+  base::RunLoop().RunUntilIdle();
+
+  model_observer_ =
+      base::MakeUnique<ToolbarActionsModelTestObserver>(toolbar_model_);
 }
 
 void ToolbarActionsModelUnitTest::TearDown() {
@@ -333,11 +351,6 @@ testing::AssertionResult ToolbarActionsModelUnitTest::AddAndVerifyExtensions(
     }
   }
   return testing::AssertionSuccess();
-}
-
-void ToolbarActionsModelUnitTest::SetMockActionsFactory(
-    MockComponentToolbarActionsFactory* factory) {
-  mock_actions_factory_.reset(factory);
 }
 
 // A basic test for component actions and extensions with browser actions
@@ -1238,8 +1251,7 @@ TEST_F(ToolbarActionsModelUnitTest,
        ActionsToolbarReorderAndReinsertWithSwitchAndComponentActions) {
   extensions::FeatureSwitch::ScopedOverride enable_redesign(
       extensions::FeatureSwitch::extension_action_redesign(), true);
-  SetMockActionsFactory(new MockComponentToolbarActionsFactory(nullptr));
-  Init();
+  InitWithMockActionsFactory();
 
   // One component action was added when the model was initialized.
   EXPECT_EQ(1u, num_toolbar_items());

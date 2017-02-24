@@ -27,6 +27,7 @@
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser)
     : MediaRouterContextualMenu(

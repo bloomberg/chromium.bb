@@ -17,11 +17,11 @@ class MockComponentToolbarActionsFactory
  public:
   static const char kActionIdForTesting[];
 
-  explicit MockComponentToolbarActionsFactory(Browser* browser);
+  explicit MockComponentToolbarActionsFactory(Profile* profile);
   ~MockComponentToolbarActionsFactory() override;
 
   // ComponentToolbarActionsFactory:
-  std::set<std::string> GetInitialComponentIds(Profile* profile) override;
+  std::set<std::string> GetInitialComponentIds() override;
   std::unique_ptr<ToolbarActionViewController> GetComponentToolbarActionForId(
       const std::string& id,
       Browser* browser,

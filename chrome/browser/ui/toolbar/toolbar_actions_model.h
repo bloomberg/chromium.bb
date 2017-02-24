@@ -21,6 +21,7 @@
 #include "extensions/common/extension.h"
 
 class Browser;
+class ComponentToolbarActionsFactory;
 class PrefService;
 class Profile;
 class ToolbarActionsBar;
@@ -170,6 +171,10 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
     has_active_bubble_ = has_active_bubble;
   }
 
+  ComponentToolbarActionsFactory* component_actions_factory() {
+    return component_actions_factory_.get();
+  }
+
   void SetActionVisibility(const std::string& action_id, bool visible);
 
   // ComponentActionDelegate:
@@ -196,6 +201,10 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   // profile, if any.
   std::unique_ptr<extensions::ExtensionMessageBubbleController>
   GetExtensionMessageBubbleController(Browser* browser);
+
+  // Sets the component action factory for this object. Used in tests.
+  void SetMockActionsFactoryForTest(
+      std::unique_ptr<ComponentToolbarActionsFactory> mock_factory);
 
  private:
   // Callback when actions are ready.
@@ -285,6 +294,8 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
 
   // The ExtensionActionManager, cached for convenience.
   extensions::ExtensionActionManager* extension_action_manager_;
+
+  std::unique_ptr<ComponentToolbarActionsFactory> component_actions_factory_;
 
   // True if we've handled the initial EXTENSIONS_READY notification.
   bool actions_initialized_;
