@@ -933,12 +933,10 @@ static INLINE TX_SIZE get_uv_tx_size(const MB_MODE_INFO *mbmi,
   return uv_txsize;
 }
 
-static INLINE TX_SIZE get_tx_size(int plane, const MACROBLOCKD *xd,
-                                  int block_idx) {
+static INLINE TX_SIZE get_tx_size(int plane, const MACROBLOCKD *xd) {
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const MACROBLOCKD_PLANE *pd = &xd->plane[plane];
   const TX_SIZE tx_size = plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
-  (void)block_idx;
   return tx_size;
 }
 

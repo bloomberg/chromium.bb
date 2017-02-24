@@ -36,7 +36,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   aom_prob *eob_flag;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const PLANE_TYPE plane_type = get_plane_type(plane);
-  const TX_SIZE tx_size = get_tx_size(plane, xd, block);
+  const TX_SIZE tx_size = get_tx_size(plane, xd);
   const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *const scan_order =
       get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));

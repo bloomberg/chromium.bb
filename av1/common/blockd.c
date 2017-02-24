@@ -126,11 +126,10 @@ void av1_foreach_transformed_block_in_plane(
     const MACROBLOCKD *const xd, BLOCK_SIZE bsize, int plane,
     foreach_transformed_block_visitor visit, void *arg) {
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   // block and transform sizes, in number of 4x4 blocks log 2 ("*_b")
   // 4x4=0, 8x8=2, 16x16=4, 32x32=6, 64x64=8
   // transform size varies per plane, look it up in a common way.
-  const TX_SIZE tx_size = plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
+  const TX_SIZE tx_size = get_tx_size(plane, xd);
 #if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
@@ -165,11 +164,10 @@ void av1_foreach_8x8_transformed_block_in_plane(
     foreach_transformed_block_visitor visit,
     foreach_transformed_block_visitor mi_visit, void *arg) {
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   // block and transform sizes, in number of 4x4 blocks log 2 ("*_b")
   // 4x4=0, 8x8=2, 16x16=4, 32x32=6, 64x64=8
   // transform size varies per plane, look it up in a common way.
-  const TX_SIZE tx_size = plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
+  const TX_SIZE tx_size = get_tx_size(plane, xd);
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
   const uint8_t txw_unit = tx_size_wide_unit[tx_size];
   const uint8_t txh_unit = tx_size_high_unit[tx_size];

@@ -37,7 +37,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                             aom_reader *r, int block, int plane,
                             tran_low_t *tcoeffs, TXB_CTX *txb_ctx) {
   FRAME_COUNTS *counts = xd->counts;
-  TX_SIZE tx_size = get_tx_size(plane, xd, block);
+  TX_SIZE tx_size = get_tx_size(plane, xd);
   PLANE_TYPE plane_type = get_plane_type(plane);
   aom_prob *nz_map = cm->fc->nz_map[tx_size][plane_type];
   aom_prob *eob_flag = cm->fc->eob_flag[tx_size][plane_type];

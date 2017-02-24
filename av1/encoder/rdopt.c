@@ -1126,8 +1126,7 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
 #if !CONFIG_VAR_TX && !CONFIG_SUPERTX
   // Check for consistency of tx_size with mode info
-  assert(type == PLANE_TYPE_Y ? mbmi->tx_size == tx_size
-                              : get_uv_tx_size(mbmi, pd) == tx_size);
+  assert(tx_size == get_tx_size(plane, xd));
 #endif  // !CONFIG_VAR_TX && !CONFIG_SUPERTX
   (void)cm;
 
