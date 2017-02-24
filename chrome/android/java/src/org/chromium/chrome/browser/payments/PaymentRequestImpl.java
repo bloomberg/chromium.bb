@@ -236,8 +236,9 @@ public class PaymentRequestImpl
 
     private final Handler mHandler = new Handler();
     private final WebContents mWebContents;
+    private final String mSchemelessOriginForPaymentApp;
+    private final String mOriginForDisplay;
     private final String mMerchantName;
-    private final String mOrigin;
     private final byte[][] mCertificateChain;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
@@ -334,9 +335,13 @@ public class PaymentRequestImpl
 
         mWebContents = webContents;
 
+        mSchemelessOriginForPaymentApp = UrlFormatter.formatUrlForSecurityDisplay(
+                mWebContents.getLastCommittedUrl(), false /* omit scheme for payment apps. */);
+
+        mOriginForDisplay = UrlFormatter.formatUrlForSecurityDisplay(
+                mWebContents.getLastCommittedUrl(), true /* include scheme in display */);
+
         mMerchantName = webContents.getTitle();
-        mOrigin =
-                UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl(), true);
         mCertificateChain = CertificateChainHelper.getCertificateChain(mWebContents);
 
         mApps = new ArrayList<>();
@@ -433,7 +438,7 @@ public class PaymentRequestImpl
         mUI = new PaymentRequestUI(activity, this, mRequestShipping,
                 mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail,
                 mMerchantSupportsAutofillPaymentInstruments,
-                !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mOrigin,
+                !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mOriginForDisplay,
                 new ShippingStrings(mShippingType));
 
         final FaviconHelper faviconHelper = new FaviconHelper();
@@ -615,7 +620,8 @@ public class PaymentRequestImpl
         // so a fast response from a non-autofill payment app at the front of the app list does not
         // cause NOT_SUPPORTED payment rejection.
         for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
-            q.getKey().getInstruments(q.getValue(), mOrigin, mCertificateChain, this);
+            q.getKey().getInstruments(
+                    q.getValue(), mSchemelessOriginForPaymentApp, mCertificateChain, this);
         }
     }
 
@@ -1133,9 +1139,9 @@ public class PaymentRequestImpl
             }
         }
 
-        instrument.invokePaymentApp(mMerchantName, mOrigin, mCertificateChain,
-                Collections.unmodifiableMap(methodData), mRawTotal, mRawLineItems,
-                Collections.unmodifiableMap(modifiers), this);
+        instrument.invokePaymentApp(mMerchantName, mSchemelessOriginForPaymentApp,
+                mCertificateChain, Collections.unmodifiableMap(methodData), mRawTotal,
+                mRawLineItems, Collections.unmodifiableMap(modifiers), this);
 
         recordSuccessFunnelHistograms("PayClicked");
         return !(instrument instanceof AutofillPaymentInstrument);
@@ -1221,14 +1227,14 @@ public class PaymentRequestImpl
     public void canMakePayment() {
         if (mClient == null) return;
 
-        CanMakePaymentQuery query = sCanMakePaymentQueries.get(mOrigin);
+        CanMakePaymentQuery query = sCanMakePaymentQueries.get(mSchemelessOriginForPaymentApp);
         if (query == null) {
             query = new CanMakePaymentQuery(mMethodData.keySet());
-            sCanMakePaymentQueries.put(mOrigin, query);
+            sCanMakePaymentQueries.put(mSchemelessOriginForPaymentApp, query);
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    sCanMakePaymentQueries.remove(mOrigin);
+                    sCanMakePaymentQueries.remove(mSchemelessOriginForPaymentApp);
                 }
             }, CAN_MAKE_PAYMENT_QUERY_PERIOD_MS);
         }
@@ -1369,7 +1375,7 @@ public class PaymentRequestImpl
             }
         }
 
-        CanMakePaymentQuery query = sCanMakePaymentQueries.get(mOrigin);
+        CanMakePaymentQuery query = sCanMakePaymentQueries.get(mSchemelessOriginForPaymentApp);
         if (query != null) query.setResponse(mCanMakePayment);
 
         // The list of payment instruments is ready to display.
