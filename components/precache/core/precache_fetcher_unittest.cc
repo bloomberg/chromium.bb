@@ -576,7 +576,28 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
   histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
 }
 
-TEST_F(PrecacheFetcherTest, PrecacheResourceSelection) {
+class PrecacheFetcherResourceSelectionTest
+    : public PrecacheFetcherTest,
+      public testing::WithParamInterface<PrecacheResourceSelection> {
+ public:
+  // These bitsets are asymmetric and multibyte, in order to test the orderings.
+
+  // Set bits for kGoodResourceURL, kGoodResourceURLC and kGoodResourceURLD.
+  static PrecacheResourceSelection DeprecatedBitset() {
+    PrecacheResourceSelection ret;
+    ret.set_deprecated_bitset(0b110000000001);
+    return ret;
+  }
+
+  // Set bits for kGoodResourceURL, kGoodResourceURLC and kGoodResourceURLD.
+  static PrecacheResourceSelection Bitset() {
+    PrecacheResourceSelection ret;
+    ret.set_bitset("\x01\x0c");
+    return ret;
+  }
+};
+
+TEST_P(PrecacheFetcherResourceSelectionTest, Basic) {
   SetDefaultFlags();
 
   std::unique_ptr<PrecacheUnfinishedWork> unfinished_work(
@@ -590,15 +611,13 @@ TEST_F(PrecacheFetcherTest, PrecacheResourceSelection) {
   PrecacheResourceSelection resource_selection;
   good_manifest.add_resource()->set_url(kGoodResourceURL);
   good_manifest.add_resource()->set_url(kGoodResourceURLA);
-  good_manifest.add_resource()->set_url(kGoodResourceURLB);
+  for (int i = 0; i < 8; ++i)
+    good_manifest.add_resource()->set_url(kGoodResourceURLB);
   good_manifest.add_resource()->set_url(kGoodResourceURLC);
   good_manifest.add_resource()->set_url(kGoodResourceURLD);
 
-  // Set bits for kGoodResourceURL, kGoodResourceURLB and kGoodResourceURLD.
-  resource_selection.set_bitset(0b10101);
   (*good_manifest.mutable_experiments()
-        ->mutable_resources_by_experiment_group())[kExperimentID] =
-      resource_selection;
+        ->mutable_resources_by_experiment_group())[kExperimentID] = GetParam();
 
   factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(),
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
@@ -607,7 +626,7 @@ TEST_F(PrecacheFetcherTest, PrecacheResourceSelection) {
                            net::URLRequestStatus::SUCCESS);
   factory_.SetFakeResponse(GURL(kGoodResourceURL), "good", net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
-  factory_.SetFakeResponse(GURL(kGoodResourceURLB), "good URL B", net::HTTP_OK,
+  factory_.SetFakeResponse(GURL(kGoodResourceURLC), "good URL B", net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
   factory_.SetFakeResponse(GURL(kGoodResourceURLD), "good URL D", net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
@@ -630,7 +649,7 @@ TEST_F(PrecacheFetcherTest, PrecacheResourceSelection) {
   expected_requested_urls.emplace_back(kConfigURL);
   expected_requested_urls.emplace_back(kGoodManifestURL);
   expected_requested_urls.emplace_back(kGoodResourceURL);
-  expected_requested_urls.emplace_back(kGoodResourceURLB);
+  expected_requested_urls.emplace_back(kGoodResourceURLC);
   expected_requested_urls.emplace_back(kGoodResourceURLD);
 
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
@@ -643,7 +662,7 @@ TEST_F(PrecacheFetcherTest, PrecacheResourceSelection) {
   histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
 }
 
-TEST_F(PrecacheFetcherTest, PrecacheResourceSelectionMissingBitset) {
+TEST_P(PrecacheFetcherResourceSelectionTest, MissingBitset) {
   SetDefaultFlags();
 
   std::unique_ptr<PrecacheUnfinishedWork> unfinished_work(
@@ -662,10 +681,9 @@ TEST_F(PrecacheFetcherTest, PrecacheResourceSelectionMissingBitset) {
   good_manifest.add_resource()->set_url(kGoodResourceURLD);
 
   // Set bits for a different experiment group.
-  resource_selection.set_bitset(0b1);
   (*good_manifest.mutable_experiments()
         ->mutable_resources_by_experiment_group())[kExperimentID + 1] =
-      resource_selection;
+      GetParam();
 
   // Resource selection bitset for the experiment group will be missing and all
   // resources will be fetched.
@@ -717,6 +735,12 @@ TEST_F(PrecacheFetcherTest, PrecacheResourceSelectionMissingBitset) {
                                url_callback_.total_response_bytes(), 1);
   histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
 }
+
+INSTANTIATE_TEST_CASE_P(
+    PrecacheFetcherResourceSelectionTest,
+    PrecacheFetcherResourceSelectionTest,
+    testing::Values(PrecacheFetcherResourceSelectionTest::DeprecatedBitset(),
+                    PrecacheFetcherResourceSelectionTest::Bitset()));
 
 TEST_F(PrecacheFetcherTest, PrecachePauseResume) {
   SetDefaultFlags();

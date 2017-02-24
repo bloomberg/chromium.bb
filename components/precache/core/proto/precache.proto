@@ -45,17 +45,29 @@ message PrecacheExperiments {
   map<fixed32, PrecacheResourceSelection> resources_by_experiment_group = 1;
 };
 
+// Determines which of the resources in the manifest should be selected.
 message PrecacheResourceSelection {
-  // Select the resources as a std::bitset over the resources listed in the
-  // manifest.
+  // A bitset over the resources listed in the manifest. Bits correspond to
+  // resource position in LSB-to-MSB order, as in:
   //
-  // The bitset should be loaded as:
-  //   std::bitset selection(resource_selection.bitset());
-  // Then manifest.resource(i) is selected for the experiment iff
-  // selection.test(i).
+  //   if ((0x1ULL << i) && DEPRECATED_bitset) IncludeResource(i);
   //
-  // A missing bitset means that the experiment applies to all the resources.
-  optional fixed64 bitset = 1 [default = 0xFFFFFFFFFFFFFFFF];
+  // Deprecated because it only supports up to 64 resources.
+  optional fixed64 DEPRECATED_bitset = 1
+      [default = 0xFFFFFFFFFFFFFFFF, deprecated = true];
+
+  // A bitset over the resources listed in the manifest. Bits correspond to
+  // resource position. Bytes are ordered little-endian, and bits within each
+  // byte are ordered LSB-to-MSB. The resulting bitstream is of mixed order,
+  // but easy to test:
+  //
+  //   if ((1 << (i % 8)) & bitset[i / 8]) IncludeResource(i);
+  //
+  // Takes precedence over DEPRECATED_bitset, if both are present.
+  optional bytes bitset = 2;
+
+  // A PrecacheResourceSelection without DEPRECATED_bitset or bitset means that
+  // all resources should be selected.
 };
 
 message PrecacheConfigurationSettings {

@@ -22,6 +22,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "base/task_runner_util.h"
@@ -125,18 +126,38 @@ bool ParseProtoFromFetchResponse(const net::URLFetcher& source,
 }
 
 // Returns the resource selection bitset from the |manifest| for the given
-// |experiment_id|. By default all resource will be selected if the experiment
-// group is not found.
-uint64_t GetResourceBitset(const PrecacheManifest& manifest,
-                           uint32_t experiment_id) {
+// |experiment_id|. If the experiment group is not found, then this returns
+// nullopt, in which case all resources should be selected.
+base::Optional<std::vector<bool>> GetResourceBitset(
+    const PrecacheManifest& manifest,
+    uint32_t experiment_id) {
+  base::Optional<std::vector<bool>> ret;
   if (manifest.has_experiments()) {
     const auto& resource_bitset_map =
         manifest.experiments().resources_by_experiment_group();
-    const auto& resource_bitset_it = resource_bitset_map.find(experiment_id);
-    if (resource_bitset_it != resource_bitset_map.end())
-      return resource_bitset_it->second.bitset();
+    const auto& it = resource_bitset_map.find(experiment_id);
+    if (it != resource_bitset_map.end()) {
+      if (it->second.has_bitset()) {
+        const std::string& bitset = it->second.bitset();
+        ret.emplace(bitset.size() * 8);
+        for (size_t i = 0; i < bitset.size(); ++i) {
+          for (size_t j = 0; j < 8; ++j) {
+            if ((1 << j) & bitset[i])
+              ret.value()[i * 8 + j] = true;
+          }
+        }
+      } else if (it->second.has_deprecated_bitset()) {
+        uint64_t bitset = it->second.deprecated_bitset();
+        ret.emplace(64);
+        for (int i = 0; i < 64; ++i) {
+          if ((0x1ULL << i) & bitset)
+            ret.value()[i] = true;
+        }
+      }
+    }
   }
-  return ~0ULL;
+  // Only return one variable to ensure RVO triggers.
+  return ret;
 }
 
 // URLFetcherResponseWriter that ignores the response body, in order to avoid
@@ -746,10 +767,10 @@ void PrecacheFetcher::OnManifestFetchComplete(int64_t host_visits,
       const int32_t len =
           std::min(manifest.resource_size(),
                    unfinished_work_->config_settings().top_resources_count());
-      const uint64_t resource_bitset =
+      const base::Optional<std::vector<bool>> resource_bitset =
           GetResourceBitset(manifest, experiment_id_);
       for (int i = 0; i < len; ++i) {
-        if (((0x1ULL << i) & resource_bitset) &&
+        if ((!resource_bitset.has_value() || resource_bitset.value()[i]) &&
             manifest.resource(i).has_url()) {
           GURL url(manifest.resource(i).url());
           if (url.is_valid()) {
