@@ -85,9 +85,7 @@ class MockPrinter {
   void UpdateSettings(int cookie,
                       PrintMsg_PrintPages_Params* params,
                       const std::vector<int>& page_range_array,
-                      int margins_type,
-                      const gfx::Size& page_size,
-                      int scale_factor);
+                      int margins_type);
   void SetPrintedPagesCount(int cookie, int number_pages);
   void PrintPage(const PrintHostMsg_DidPrintPage_Params& params);
 
