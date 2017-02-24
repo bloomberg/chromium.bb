@@ -48,6 +48,9 @@ void SendRequestNatives::StartRequest(
   // we shouldn't really be doing it (e.g. for the sake of the storage API).
   converter->SetFunctionAllowed(true);
 
+  // See http://crbug.com/694248.
+  converter->SetConvertNegativeZeroToInt(true);
+
   if (!preserve_null_in_objects)
     converter->SetStripNullFromObjects(true);
 

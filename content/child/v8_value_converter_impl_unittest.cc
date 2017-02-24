@@ -952,6 +952,37 @@ TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
   EXPECT_TRUE(base::Value::Equals(&empty, current)) << *current;
 }
 
+TEST_F(V8ValueConverterImplTest, NegativeZero) {
+  v8::HandleScope handle_scope(isolate_);
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate_, context_);
+  v8::MicrotasksScope microtasks(isolate_,
+                                 v8::MicrotasksScope::kDoNotRunMicrotasks);
+
+  v8::Context::Scope context_scope(context);
+  const char* source = "(function() { return -0; })();";
+
+  v8::Local<v8::Script> script(
+      v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
+  v8::Local<v8::Value> value = script->Run();
+  ASSERT_FALSE(value.IsEmpty());
+
+  {
+    V8ValueConverterImpl converter;
+    std::unique_ptr<base::Value> result = converter.FromV8Value(value, context);
+    ASSERT_TRUE(result->is_double())
+        << base::Value::GetTypeName(result->type());
+    EXPECT_EQ(0, result->GetDouble());
+  }
+  {
+    V8ValueConverterImpl converter;
+    converter.SetConvertNegativeZeroToInt(true);
+    std::unique_ptr<base::Value> result = converter.FromV8Value(value, context);
+    ASSERT_TRUE(result->is_int()) << base::Value::GetTypeName(result->type());
+    EXPECT_EQ(0, result->GetInt());
+  }
+}
+
 class V8ValueConverterOverridingStrategyForTesting
     : public V8ValueConverter::Strategy {
  public:

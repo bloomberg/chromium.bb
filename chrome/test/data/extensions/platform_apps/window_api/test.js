@@ -399,6 +399,25 @@ function testInitialBounds() {
       }));
     },
 
+    // Regression for crbug.com/694248.
+    function testInnerBoundsNegativeZero() {
+      var innerBounds = {
+        left: -0,
+        top: 100,
+        width: 400,
+        height: 300,
+      };
+      chrome.app.window.create('test.html', {
+        innerBounds: innerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        assertBoundsEq(innerBounds, win.innerBounds);
+        assertBoundsConsistent(win);
+        assertConstraintsUnspecified(win);
+        win.close();
+      }));
+    },
+
     function testOuterBoundsOnly() {
       var outerBounds = {
         left: 150,

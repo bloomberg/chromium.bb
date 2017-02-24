@@ -100,6 +100,9 @@ class CONTENT_EXPORT V8ValueConverter {
   // converting arguments to extension APIs.
   virtual void SetStripNullFromObjects(bool val) = 0;
 
+  // If true, treats -0 as an integer. Otherwise, -0 is converted to a double.
+  virtual void SetConvertNegativeZeroToInt(bool val) = 0;
+
   // Extend default behavior of V8ValueConverter.
   virtual void SetStrategy(Strategy* strategy) = 0;
 

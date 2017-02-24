@@ -117,9 +117,6 @@ function normalizeArgumentsAndValidate(args, funDef) {
   var normalizedArgs = [];
   var ai = 0;
   for (var si = 0; si < definedSignature.length; ++si) {
-    // Handle integer -0 as 0.
-    if (JSONSchemaValidator.getType(args[ai]) === 'integer' && args[ai] === 0)
-      args[ai] = 0;
     if (definedSignature[si] === resolvedSignature[ai])
       $Array.push(normalizedArgs, args[ai++]);
     else

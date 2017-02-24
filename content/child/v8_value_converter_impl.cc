@@ -184,6 +184,7 @@ V8ValueConverterImpl::V8ValueConverterImpl()
       reg_exp_allowed_(false),
       function_allowed_(false),
       strip_null_from_objects_(false),
+      convert_negative_zero_to_int_(false),
       avoid_identity_hash_for_testing_(false),
       strategy_(NULL) {}
 
@@ -201,6 +202,10 @@ void V8ValueConverterImpl::SetFunctionAllowed(bool val) {
 
 void V8ValueConverterImpl::SetStripNullFromObjects(bool val) {
   strip_null_from_objects_ = val;
+}
+
+void V8ValueConverterImpl::SetConvertNegativeZeroToInt(bool val) {
+  convert_negative_zero_to_int_ = val;
 }
 
 void V8ValueConverterImpl::SetStrategy(Strategy* strategy) {
@@ -373,6 +378,11 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ValueImpl(
     double val_as_double = val.As<v8::Number>()->Value();
     if (!std::isfinite(val_as_double))
       return nullptr;
+    // Normally, this would be an integer, and fall into IsInt32(). But if the
+    // value is -0, it's treated internally as a double. Consumers are allowed
+    // to ignore this esoterica and treat it as an integer.
+    if (convert_negative_zero_to_int_ && val_as_double == 0.0)
+      return base::MakeUnique<base::FundamentalValue>(0);
     return base::MakeUnique<base::FundamentalValue>(val_as_double);
   }
 

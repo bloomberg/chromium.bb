@@ -30,6 +30,7 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   void SetRegExpAllowed(bool val) override;
   void SetFunctionAllowed(bool val) override;
   void SetStripNullFromObjects(bool val) override;
+  void SetConvertNegativeZeroToInt(bool val) override;
   void SetStrategy(Strategy* strategy) override;
   v8::Local<v8::Value> ToV8Value(
       const base::Value* value,
@@ -86,6 +87,9 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   // If true, undefined and null values are ignored when converting v8 objects
   // into Values.
   bool strip_null_from_objects_;
+
+  // If true, convert -0 to an integer value (instead of a double).
+  bool convert_negative_zero_to_int_;
 
   bool avoid_identity_hash_for_testing_;
 
