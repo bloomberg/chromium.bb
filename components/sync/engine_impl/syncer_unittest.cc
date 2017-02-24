@@ -251,10 +251,13 @@ class SyncerTest : public testing::Test,
   }
 
   bool SyncShareConfigure() {
+    return SyncShareConfigureTypes(context_->GetEnabledTypes());
+  }
+
+  bool SyncShareConfigureTypes(ModelTypeSet types) {
     ResetCycle();
     return syncer_->ConfigureSyncShare(
-        context_->GetEnabledTypes(),
-        sync_pb::GetUpdatesCallerInfo::RECONFIGURATION, cycle_.get());
+        types, sync_pb::GetUpdatesCallerInfo::RECONFIGURATION, cycle_.get());
   }
 
   void SetUp() override {
@@ -5017,6 +5020,19 @@ TEST_F(SyncerTest, ConfigureFailsDontApplyUpdates) {
 
   // One update remains undownloaded.
   mock_server_->ClearUpdatesQueue();
+}
+
+// Tests that, after shutdown initiated, if set of types to download includes
+// unregistered type, DCHECK doesn't get triggered.
+TEST_F(SyncerTest, ConfigureUnregisteredTypesDuringShutdown) {
+  // Signal that shutdown is initiated.
+  cancelation_signal_.Signal();
+
+  // Simulate type being unregistered before configuration by including type
+  // that isn't registered with ModelTypeRegistry.
+  SyncShareConfigureTypes(ModelTypeSet(APPS));
+
+  // No explicit verification, DCHECK shouldn't have been triggered.
 }
 
 TEST_F(SyncerTest, GetKeySuccess) {
