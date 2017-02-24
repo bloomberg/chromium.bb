@@ -71,69 +71,68 @@ GLXContext CreateContextAttribs(Display* display,
 GLXContext CreateHighestVersionContext(Display* display,
                                        GLXFBConfig config,
                                        GLXContext share) {
-  // It is commonly assumed that glXCreateContextAttrib will create a context
-  // of the highest version possible but it is not specified in the spec and
-  // is not true on the Mesa drivers. On Mesa, Instead we try to create a
-  // context per GL version until we succeed, starting from newer version.
-  // On both Mesa and other drivers we try to create a desktop context and fall
-  // back to ES context.
-  // The code could be simpler if the Mesa code path was used for all drivers,
-  // however the cost of failing a context creation can be high (3 milliseconds
-  // for the NVIDIA driver). The good thing is that failed context creation only
-  // takes 0.1 milliseconds on Mesa.
+  // The only way to get a core profile context of the highest version using
+  // glXCreateContextAttrib is to try creationg contexts in decreasing version
+  // numbers. It might look that asking for a core context of version (0, 0)
+  // works on some driver but it create a _compatibility_ context of the highest
+  // version instead. The cost of failing a context creation is small (< 0.1 ms)
+  // on Mesa but is unfortunately a bit expensive on the Nvidia driver (~3ms).
 
-  struct ContextCreationInfo {
-    int profileFlag;
-    GLVersion version;
-  };
-
-  // clang-format off
-  // For regular drivers we try to create a compatibility, core, then ES
-  // context. Without requiring any specific version.
-  const ContextCreationInfo contexts_to_try[] = {
-      { 0, GLVersion(0, 0) },
-      { GLX_CONTEXT_CORE_PROFILE_BIT_ARB, GLVersion(0, 0) },
-      { GLX_CONTEXT_ES2_PROFILE_BIT_EXT, GLVersion(0, 0) },
-  };
-
-  // On Mesa we try to create a core context, except for versions below 3.2
-  // where it is not applicable. (and fallback to ES as well)
-  const ContextCreationInfo mesa_contexts_to_try[] = {
-      { GLX_CONTEXT_CORE_PROFILE_BIT_ARB, { GLVersion(4, 5) } },
-      { GLX_CONTEXT_CORE_PROFILE_BIT_ARB, { GLVersion(4, 4) } },
-      { GLX_CONTEXT_CORE_PROFILE_BIT_ARB, { GLVersion(4, 3) } },
-      { GLX_CONTEXT_CORE_PROFILE_BIT_ARB, { GLVersion(4, 2) } },
-      { GLX_CONTEXT_CORE_PROFILE_BIT_ARB, { GLVersion(4, 1) } },
-      { GLX_CONTEXT_CORE_PROFILE_BIT_ARB, { GLVersion(4, 0) } },
-      { GLX_CONTEXT_CORE_PROFILE_BIT_ARB, { GLVersion(3, 3) } },
-      // Do not try to create OpenGL context versions between 3.0 and
-      // 3.2 because of compatibility problems. crbug.com/659030
-      { 0, { GLVersion(2, 0) } },
-      { 0, { GLVersion(1, 5) } },
-      { 0, { GLVersion(1, 4) } },
-      { 0, { GLVersion(1, 3) } },
-      { 0, { GLVersion(1, 2) } },
-      { 0, { GLVersion(1, 1) } },
-      { 0, { GLVersion(1, 0) } },
-      { GLX_CONTEXT_ES2_PROFILE_BIT_EXT, { GLVersion(3, 2) } },
-      { GLX_CONTEXT_ES2_PROFILE_BIT_EXT, { GLVersion(3, 1) } },
-      { GLX_CONTEXT_ES2_PROFILE_BIT_EXT, { GLVersion(3, 0) } },
-      { GLX_CONTEXT_ES2_PROFILE_BIT_EXT, { GLVersion(2, 0) } },
-  };
-  // clang-format on
+  // Also try to get any Desktop GL context, but if that fails fallback to
+  // asking for OpenGL ES contexts.
 
   std::string client_vendor = glXGetClientString(display, GLX_VENDOR);
   bool is_mesa = client_vendor.find("Mesa") != std::string::npos;
 
-  const ContextCreationInfo* to_try = contexts_to_try;
-  size_t to_try_length = arraysize(contexts_to_try);
-  if (is_mesa) {
-    to_try = mesa_contexts_to_try;
-    to_try_length = arraysize(mesa_contexts_to_try);
+  struct ContextCreationInfo {
+    ContextCreationInfo(int profileFlag, GLVersion version)
+        : profileFlag(profileFlag), version(version) {}
+    int profileFlag;
+    GLVersion version;
+  };
+
+  std::vector<ContextCreationInfo> contexts_to_try;
+  contexts_to_try.emplace_back(GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+                               GLVersion(4, 5));
+  contexts_to_try.emplace_back(GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+                               GLVersion(4, 4));
+  contexts_to_try.emplace_back(GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+                               GLVersion(4, 3));
+  contexts_to_try.emplace_back(GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+                               GLVersion(4, 2));
+  contexts_to_try.emplace_back(GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+                               GLVersion(4, 1));
+  contexts_to_try.emplace_back(GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+                               GLVersion(4, 0));
+  contexts_to_try.emplace_back(GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+                               GLVersion(3, 3));
+
+  // On Mesa, do not try to create OpenGL context versions between 3.0 and
+  // 3.2 because of compatibility problems. See crbug.com/659030
+  if (!is_mesa) {
+    contexts_to_try.emplace_back(0, GLVersion(3, 2));
+    contexts_to_try.emplace_back(0, GLVersion(3, 1));
+    contexts_to_try.emplace_back(0, GLVersion(3, 0));
   }
 
-  for (size_t i = 0; i < to_try_length; ++i) {
-    const ContextCreationInfo& info = to_try[i];
+  contexts_to_try.emplace_back(0, GLVersion(2, 1));
+  contexts_to_try.emplace_back(0, GLVersion(2, 0));
+  contexts_to_try.emplace_back(0, GLVersion(1, 5));
+  contexts_to_try.emplace_back(0, GLVersion(1, 4));
+  contexts_to_try.emplace_back(0, GLVersion(1, 3));
+  contexts_to_try.emplace_back(0, GLVersion(1, 2));
+  contexts_to_try.emplace_back(0, GLVersion(1, 1));
+  contexts_to_try.emplace_back(0, GLVersion(1, 0));
+  contexts_to_try.emplace_back(GLX_CONTEXT_ES2_PROFILE_BIT_EXT,
+                               GLVersion(3, 2));
+  contexts_to_try.emplace_back(GLX_CONTEXT_ES2_PROFILE_BIT_EXT,
+                               GLVersion(3, 1));
+  contexts_to_try.emplace_back(GLX_CONTEXT_ES2_PROFILE_BIT_EXT,
+                               GLVersion(3, 0));
+  contexts_to_try.emplace_back(GLX_CONTEXT_ES2_PROFILE_BIT_EXT,
+                               GLVersion(2, 0));
+
+  for (const auto& info : contexts_to_try) {
     if (!GLSurfaceGLX::IsCreateContextES2ProfileSupported() &&
         info.profileFlag == GLX_CONTEXT_ES2_PROFILE_BIT_EXT) {
       continue;
