@@ -6991,6 +6991,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NEW_OMNIBOX_ANSWER_TYPES_DESCRIPTION" desc="Description of the flag to enable the new answers in suggest types in the omnibox.">
         Enables new types of answers in the omnibox suggest drop-down: currency conversions, dictionary definitions, sports scores, translations, and when is.
       </message>
+      <message name="IDS_FLAGS_ENABLE_ZERO_SUGGEST_REDIRECT_TO_CHROME_NAME" desc="Name of the flag option to enable the redirect of omnibox zero suggest requests to a backend maintained by Chrome.">
+        Experimental contextual omnibox suggestion
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ZERO_SUGGEST_REDIRECT_TO_CHROME_DESCRIPTION" desc="Description of the flag option to enable the redirect of omnibox zero suggest requests to a backend maintained by Chrome.">
+        Change omnibox contextual suggestions to an experimental source. Note that this is not an on/off switch for contextual omnibox and it only applies to suggestions provided before the user starts typing a URL or a search query (i.e. zero suggest).
+      </message>
 
       <!--Tooltip strings-->
       <message name="IDS_TOOLTIP_BACK" desc="The tooltip for back button">

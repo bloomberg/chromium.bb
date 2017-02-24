@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/browser/features.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/omnibox/browser/url_index_private_data.h"
 #include "components/search/search.h"
@@ -45,10 +46,6 @@ typedef HUPScoringParams::ScoreBuckets ScoreBuckets;
 
 // Field trial names.
 const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
-
-// Feature used for the Zero Suggest Redirect to Chrome Field Trial.
-const base::Feature kZeroSuggestRedirectToChrome{
-    "ZeroSuggestRedirectToChrome", base::FEATURE_DISABLED_BY_DEFAULT};
 
 void InitializeBucketsFromString(const std::string& bucket_string,
                                  ScoreBuckets* score_buckets) {
@@ -592,20 +589,20 @@ int OmniboxFieldTrial::GetPhysicalWebAfterTypingBaseRelevance() {
 
 // static
 bool OmniboxFieldTrial::InZeroSuggestRedirectToChromeFieldTrial() {
-  return base::FeatureList::IsEnabled(kZeroSuggestRedirectToChrome);
+  return base::FeatureList::IsEnabled(features::kZeroSuggestRedirectToChrome);
 }
 
 // static
 std::string OmniboxFieldTrial::ZeroSuggestRedirectToChromeServerAddress() {
   return base::GetFieldTrialParamValueByFeature(
-      kZeroSuggestRedirectToChrome,
+      features::kZeroSuggestRedirectToChrome,
       kZeroSuggestRedirectToChromeServerAddressParam);
 }
 
 // static
 std::string OmniboxFieldTrial::ZeroSuggestRedirectToChromeAdditionalFields() {
   return base::GetFieldTrialParamValueByFeature(
-      kZeroSuggestRedirectToChrome,
+      features::kZeroSuggestRedirectToChrome,
       kZeroSuggestRedirectToChromeAdditionalFieldsParam);
 }
 
