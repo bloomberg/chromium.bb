@@ -607,6 +607,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void ClearFocusedElement();
 
+  // Returns whether the given URL is allowed to commit in the current process.
+  // This is a more conservative check than RenderProcessHost::FilterURL, since
+  // it will be used to kill processes that commit unauthorized URLs.
+  bool CanCommitURL(const GURL& url);
+
   // PlzNavigate: returns the PreviewsState of the last successful navigation
   // that made a network request. The PreviewsState is a bitmask of potentially
   // several Previews optimizations.
@@ -776,11 +781,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Resets any waiting state of this RenderFrameHost that is no longer
   // relevant.
   void ResetWaitingState();
-
-  // Returns whether the given URL is allowed to commit in the current process.
-  // This is a more conservative check than RenderProcessHost::FilterURL, since
-  // it will be used to kill processes that commit unauthorized URLs.
-  bool CanCommitURL(const GURL& url);
 
   // Returns whether the given origin is allowed to commit in the current
   // RenderFrameHost. The |url| is used to ensure it matches the origin in cases

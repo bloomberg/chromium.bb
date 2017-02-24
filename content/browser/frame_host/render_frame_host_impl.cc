@@ -2403,15 +2403,6 @@ void RenderFrameHostImpl::ResetWaitingState() {
   render_view_host_->is_waiting_for_close_ack_ = false;
 }
 
-bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
-  // TODO(creis): We should also check for WebUI pages here.  Also, when the
-  // out-of-process iframes implementation is ready, we should check for
-  // cross-site URLs that are not allowed to commit in this process.
-
-  // Give the client a chance to disallow URLs from committing.
-  return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
-}
-
 bool RenderFrameHostImpl::CanCommitOrigin(
     const url::Origin& origin,
     const GURL& url) {
@@ -2910,6 +2901,15 @@ void RenderFrameHostImpl::SetHasReceivedUserGesture() {
 void RenderFrameHostImpl::ClearFocusedElement() {
   has_focused_editable_element_ = false;
   Send(new FrameMsg_ClearFocusedElement(GetRoutingID()));
+}
+
+bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
+  // TODO(creis): We should also check for WebUI pages here.  Also, when the
+  // out-of-process iframes implementation is ready, we should check for
+  // cross-site URLs that are not allowed to commit in this process.
+
+  // Give the client a chance to disallow URLs from committing.
+  return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
 }
 
 bool RenderFrameHostImpl::IsSameSiteInstance(

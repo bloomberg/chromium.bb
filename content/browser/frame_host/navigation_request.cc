@@ -572,6 +572,11 @@ void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
   // Select an appropriate renderer to show the error page.
   RenderFrameHostImpl* render_frame_host =
       frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+
+  // Don't ask the renderer to commit an URL if the browser will kill it when
+  // it does.
+  DCHECK(render_frame_host->CanCommitURL(common_params_.url));
+
   NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host,
                                                            common_params_.url);
 
