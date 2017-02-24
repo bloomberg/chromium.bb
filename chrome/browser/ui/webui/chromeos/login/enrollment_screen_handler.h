@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -27,7 +27,7 @@ class HelpAppLauncher;
 // page, such as the user pressing the signin button.
 class EnrollmentScreenHandler
     : public BaseScreenHandler,
-      public EnrollmentScreenActor,
+      public EnrollmentScreenView,
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
   EnrollmentScreenHandler(
@@ -38,7 +38,7 @@ class EnrollmentScreenHandler
   // Implements WebUIMessageHandler:
   void RegisterMessages() override;
 
-  // Implements EnrollmentScreenActor:
+  // Implements EnrollmentScreenView:
   void SetParameters(Controller* controller,
                      const policy::EnrollmentConfig& config) override;
   void Show() override;
@@ -119,7 +119,7 @@ class EnrollmentScreenHandler
                           const std::string& user_name,
                           authpolicy::ErrorType code);
 
-  // Keeps the controller for this actor.
+  // Keeps the controller for this view.
   Controller* controller_ = nullptr;
 
   bool show_on_init_ = false;

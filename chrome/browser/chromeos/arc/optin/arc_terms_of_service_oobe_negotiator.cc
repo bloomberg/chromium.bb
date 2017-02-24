@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
@@ -13,44 +13,44 @@ namespace arc {
 
 namespace {
 
-chromeos::ArcTermsOfServiceScreenActor* g_actor_for_testing = nullptr;
+chromeos::ArcTermsOfServiceScreenView* g_view_for_testing = nullptr;
 
-chromeos::ArcTermsOfServiceScreenActor* GetScreenActor() {
+chromeos::ArcTermsOfServiceScreenView* GetScreenView() {
   // Inject testing instance.
-  if (g_actor_for_testing)
-    return g_actor_for_testing;
+  if (g_view_for_testing)
+    return g_view_for_testing;
 
   chromeos::LoginDisplayHost* host = chromeos::LoginDisplayHost::default_host();
   DCHECK(host);
   DCHECK(host->GetOobeUI());
-  return host->GetOobeUI()->GetArcTermsOfServiceScreenActor();
+  return host->GetOobeUI()->GetArcTermsOfServiceScreenView();
 }
 
 }  // namespace
 
 // static
-void ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenActorForTesting(
-    chromeos::ArcTermsOfServiceScreenActor* actor) {
-  g_actor_for_testing = actor;
+void ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenViewForTesting(
+    chromeos::ArcTermsOfServiceScreenView* view) {
+  g_view_for_testing = view;
 }
 
 ArcTermsOfServiceOobeNegotiator::ArcTermsOfServiceOobeNegotiator() = default;
 
 ArcTermsOfServiceOobeNegotiator::~ArcTermsOfServiceOobeNegotiator() {
-  DCHECK(!screen_actor_);
+  DCHECK(!screen_view_);
 }
 
 void ArcTermsOfServiceOobeNegotiator::StartNegotiationImpl() {
-  DCHECK(!screen_actor_);
-  screen_actor_ = GetScreenActor();
-  DCHECK(screen_actor_);
-  screen_actor_->AddObserver(this);
+  DCHECK(!screen_view_);
+  screen_view_ = GetScreenView();
+  DCHECK(screen_view_);
+  screen_view_->AddObserver(this);
 }
 
 void ArcTermsOfServiceOobeNegotiator::HandleTermsAccepted(bool accepted) {
-  DCHECK(screen_actor_);
-  screen_actor_->RemoveObserver(this);
-  screen_actor_ = nullptr;
+  DCHECK(screen_view_);
+  screen_view_->RemoveObserver(this);
+  screen_view_ = nullptr;
   ReportResult(accepted);
 }
 
@@ -62,9 +62,9 @@ void ArcTermsOfServiceOobeNegotiator::OnAccept() {
   HandleTermsAccepted(true);
 }
 
-void ArcTermsOfServiceOobeNegotiator::OnActorDestroyed(
-    chromeos::ArcTermsOfServiceScreenActor* actor) {
-  DCHECK_EQ(actor, screen_actor_);
+void ArcTermsOfServiceOobeNegotiator::OnViewDestroyed(
+    chromeos::ArcTermsOfServiceScreenView* view) {
+  DCHECK_EQ(view, screen_view_);
   HandleTermsAccepted(false);
 }
 

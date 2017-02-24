@@ -18,22 +18,22 @@ namespace chromeos {
 ControllerPairingScreen::ControllerPairingScreen(
     BaseScreenDelegate* base_screen_delegate,
     Delegate* delegate,
-    ControllerPairingScreenActor* actor,
+    ControllerPairingScreenView* view,
     ControllerPairingController* shark_controller)
     : BaseScreen(base_screen_delegate,
                  OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING),
       delegate_(delegate),
-      actor_(actor),
+      view_(view),
       shark_controller_(shark_controller),
       current_stage_(ControllerPairingController::STAGE_NONE),
       device_preselected_(false) {
-  actor_->SetDelegate(this);
+  view_->SetDelegate(this);
   shark_controller_->AddObserver(this);
 }
 
 ControllerPairingScreen::~ControllerPairingScreen() {
-  if (actor_)
-    actor_->SetDelegate(NULL);
+  if (view_)
+    view_->SetDelegate(nullptr);
   shark_controller_->RemoveObserver(this);
 }
 
@@ -42,8 +42,8 @@ void ControllerPairingScreen::CommitContextChanges() {
     return;
   base::DictionaryValue diff;
   context_.GetChangesAndReset(&diff);
-  if (actor_)
-    actor_->OnContextChanged(diff);
+  if (view_)
+    view_->OnContextChanged(diff);
 }
 
 bool ControllerPairingScreen::ExpectStageIs(Stage stage) const {
@@ -55,14 +55,14 @@ bool ControllerPairingScreen::ExpectStageIs(Stage stage) const {
 }
 
 void ControllerPairingScreen::Show() {
-  if (actor_)
-    actor_->Show();
+  if (view_)
+    view_->Show();
   shark_controller_->StartPairing();
 }
 
 void ControllerPairingScreen::Hide() {
-  if (actor_)
-    actor_->Hide();
+  if (view_)
+    view_->Hide();
 }
 
 void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
@@ -160,10 +160,10 @@ void ControllerPairingScreen::DiscoveredDevicesListChanged() {
   CommitContextChanges();
 }
 
-void ControllerPairingScreen::OnActorDestroyed(
-    ControllerPairingScreenActor* actor) {
-  if (actor_ == actor)
-    actor_ = NULL;
+void ControllerPairingScreen::OnViewDestroyed(
+    ControllerPairingScreenView* view) {
+  if (view_ == view)
+    view_ = nullptr;
 }
 
 // Overridden from ControllerPairingView::Delegate:

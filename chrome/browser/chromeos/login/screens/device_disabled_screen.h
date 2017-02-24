@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/device_disabled_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/device_disabled_screen_view.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 
 namespace chromeos {
@@ -20,19 +20,19 @@ class BaseScreenDelegate;
 
 // Screen informing the user that the device has been disabled by its owner.
 class DeviceDisabledScreen : public BaseScreen,
-                             public DeviceDisabledScreenActor::Delegate,
+                             public DeviceDisabledScreenView::Delegate,
                              public system::DeviceDisablingManager::Observer {
  public:
   DeviceDisabledScreen(BaseScreenDelegate* base_screen_delegate,
-                       DeviceDisabledScreenActor* actor);
+                       DeviceDisabledScreenView* view);
   ~DeviceDisabledScreen() override;
 
   // BaseScreen:
   void Show() override;
   void Hide() override;
 
-  // DeviceDisabledScreenActor::Delegate:
-  void OnActorDestroyed(DeviceDisabledScreenActor* actor) override;
+  // DeviceDisabledScreenView::Delegate:
+  void OnViewDestroyed(DeviceDisabledScreenView* view) override;
   const std::string& GetEnrollmentDomain() const override;
   const std::string& GetMessage() const override;
 
@@ -40,7 +40,7 @@ class DeviceDisabledScreen : public BaseScreen,
   void OnDisabledMessageChanged(const std::string& disabled_message) override;
 
  private:
-  DeviceDisabledScreenActor* actor_;
+  DeviceDisabledScreenView* view_;
   system::DeviceDisablingManager* device_disabling_manager_;
 
   // Whether the screen is currently showing.

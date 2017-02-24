@@ -41,7 +41,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
+#include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
@@ -1024,11 +1024,11 @@ void LoginDisplayHostImpl::OnKeyboardBoundsChanging(
   if (new_bounds.IsEmpty()) {
     // Keyboard has been hidden.
     if (GetOobeUI())
-      GetOobeUI()->GetCoreOobeActor()->ShowControlBar(true);
+      GetOobeUI()->GetCoreOobeView()->ShowControlBar(true);
   } else if (!new_bounds.IsEmpty()) {
     // Keyboard has been shown.
     if (GetOobeUI())
-      GetOobeUI()->GetCoreOobeActor()->ShowControlBar(false);
+      GetOobeUI()->GetCoreOobeView()->ShowControlBar(false);
   }
 }
 
@@ -1055,8 +1055,8 @@ void LoginDisplayHostImpl::OnDisplayMetricsChanged(
 
   if (GetOobeUI()) {
     const gfx::Size& size = primary_display.size();
-    GetOobeUI()->GetCoreOobeActor()->SetClientAreaSize(size.width(),
-                                                       size.height());
+    GetOobeUI()->GetCoreOobeView()->SetClientAreaSize(size.width(),
+                                                      size.height());
   }
 }
 
@@ -1329,7 +1329,7 @@ void LoginDisplayHostImpl::OnLoginPromptVisible() {
 void LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest() {
   static_cast<chromeos::LoginDisplayHostImpl*>(default_host())
       ->GetOobeUI()
-      ->GetGaiaScreenActor()
+      ->GetGaiaScreenView()
       ->DisableRestrictiveProxyCheckForTest();
 }
 

@@ -6,7 +6,7 @@
 
 #include "base/i18n/timezone.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
-#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_actor_observer.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -33,7 +33,7 @@ ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler() {
 ArcTermsOfServiceScreenHandler::~ArcTermsOfServiceScreenHandler() {
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   for (auto& observer : observer_list_)
-    observer.OnActorDestroyed(this);
+    observer.OnViewDestroyed(this);
 }
 
 void ArcTermsOfServiceScreenHandler::RegisterMessages() {
@@ -116,12 +116,12 @@ void ArcTermsOfServiceScreenHandler::OnLocationServicesModeChanged(
 }
 
 void ArcTermsOfServiceScreenHandler::AddObserver(
-    ArcTermsOfServiceScreenActorObserver* observer) {
+    ArcTermsOfServiceScreenViewObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
 void ArcTermsOfServiceScreenHandler::RemoveObserver(
-    ArcTermsOfServiceScreenActorObserver* observer) {
+    ArcTermsOfServiceScreenViewObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 

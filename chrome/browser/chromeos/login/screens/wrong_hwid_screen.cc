@@ -10,36 +10,36 @@
 namespace chromeos {
 
 WrongHWIDScreen::WrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
-                                 WrongHWIDScreenActor* actor)
+                                 WrongHWIDScreenView* view)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_WRONG_HWID),
-      actor_(actor) {
-  DCHECK(actor_);
-  if (actor_)
-    actor_->SetDelegate(this);
+      view_(view) {
+  DCHECK(view_);
+  if (view_)
+    view_->SetDelegate(this);
 }
 
 WrongHWIDScreen::~WrongHWIDScreen() {
-  if (actor_)
-    actor_->SetDelegate(NULL);
+  if (view_)
+    view_->SetDelegate(nullptr);
 }
 
 void WrongHWIDScreen::Show() {
-  if (actor_)
-    actor_->Show();
+  if (view_)
+    view_->Show();
 }
 
 void WrongHWIDScreen::Hide() {
-  if (actor_)
-    actor_->Hide();
+  if (view_)
+    view_->Hide();
 }
 
 void WrongHWIDScreen::OnExit() {
   Finish(BaseScreenDelegate::WRONG_HWID_WARNING_SKIPPED);
 }
 
-void WrongHWIDScreen::OnActorDestroyed(WrongHWIDScreenActor* actor) {
-  if (actor_ == actor)
-    actor_ = NULL;
+void WrongHWIDScreen::OnViewDestroyed(WrongHWIDScreenView* view) {
+  if (view_ == view)
+    view_ = nullptr;
 }
 
 }  // namespace chromeos

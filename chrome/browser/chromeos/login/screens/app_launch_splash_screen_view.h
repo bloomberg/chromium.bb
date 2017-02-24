@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_APP_LAUNCH_SPLASH_SCREEN_ACTOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_APP_LAUNCH_SPLASH_SCREEN_ACTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_APP_LAUNCH_SPLASH_SCREEN_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_APP_LAUNCH_SPLASH_SCREEN_VIEW_H_
 
 #include "base/strings/string16.h"
 
 namespace chromeos {
 
 // Interface for UI implemenations of the ApplaunchSplashScreen.
-class AppLaunchSplashScreenActor {
+class AppLaunchSplashScreenView {
  public:
   enum AppLaunchState {
     APP_LAUNCH_STATE_LOADING_AUTH_FILE,
@@ -41,9 +41,9 @@ class AppLaunchSplashScreenActor {
     virtual ~Delegate() {}
   };
 
-  virtual ~AppLaunchSplashScreenActor() {}
+  virtual ~AppLaunchSplashScreenView() {}
 
-  // Sets screen this actor belongs to.
+  // Sets screen this view belongs to.
   virtual void SetDelegate(Delegate* screen) = 0;
 
   // Shows the contents of the screen.
@@ -67,4 +67,4 @@ class AppLaunchSplashScreenActor {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_APP_LAUNCH_SPLASH_SCREEN_ACTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_APP_LAUNCH_SPLASH_SCREEN_VIEW_H_

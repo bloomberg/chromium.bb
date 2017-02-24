@@ -118,13 +118,9 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
 
 // NetworkDropdown -------------------------------------------------------------
 
-NetworkDropdown::NetworkDropdown(Actor* actor,
-                                 content::WebUI* web_ui,
-                                 bool oobe)
-    : actor_(actor),
-      web_ui_(web_ui),
-      oobe_(oobe) {
-  DCHECK(actor_);
+NetworkDropdown::NetworkDropdown(View* view, content::WebUI* web_ui, bool oobe)
+    : view_(view), web_ui_(web_ui), oobe_(oobe) {
+  DCHECK(view_);
   network_menu_.reset(new NetworkMenuWebUI(this, web_ui));
   DCHECK(NetworkHandler::IsInitialized());
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
@@ -162,7 +158,7 @@ bool NetworkDropdown::ShouldOpenButtonOptions() const {
 }
 
 void NetworkDropdown::OnConnectToNetworkRequested() {
-  actor_->OnConnectToNetworkRequested();
+  view_->OnConnectToNetworkRequested();
 }
 
 void NetworkDropdown::DefaultNetworkChanged(const NetworkState* network) {

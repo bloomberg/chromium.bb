@@ -26,10 +26,9 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
    public:
     virtual ~Delegate() {}
 
-    // This method is called, when actor is being destroyed. Note, if Delegate
-    // is destroyed earlier then it has to call SetDelegate(NULL).
-    virtual void OnActorDestroyed(
-        SupervisedUserCreationScreenHandler* actor) = 0;
+    // This method is called, when view is being destroyed. Note, if Delegate
+    // is destroyed earlier then it has to call SetDelegate(nullptr).
+    virtual void OnViewDestroyed(SupervisedUserCreationScreenHandler* view) = 0;
 
     // Starts supervised user creation flow, with manager identified by
     // |manager_id| and |manager_password|.

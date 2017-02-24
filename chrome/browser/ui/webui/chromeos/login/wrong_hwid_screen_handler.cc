@@ -22,7 +22,7 @@ WrongHWIDScreenHandler::WrongHWIDScreenHandler() {
 
 WrongHWIDScreenHandler::~WrongHWIDScreenHandler() {
   if (delegate_)
-    delegate_->OnActorDestroyed(this);
+    delegate_->OnViewDestroyed(this);
 }
 
 void WrongHWIDScreenHandler::Show() {

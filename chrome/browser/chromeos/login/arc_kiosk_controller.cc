@@ -26,11 +26,11 @@ constexpr base::TimeDelta kArcKioskSplashScreenMinTime =
 
 ArcKioskController::ArcKioskController(LoginDisplayHost* host, OobeUI* oobe_ui)
     : host_(host),
-      arc_kiosk_splash_screen_actor_(oobe_ui->GetArcKioskSplashScreenActor()),
+      arc_kiosk_splash_screen_view_(oobe_ui->GetArcKioskSplashScreenView()),
       weak_ptr_factory_(this) {}
 
 ArcKioskController::~ArcKioskController() {
-  arc_kiosk_splash_screen_actor_->SetDelegate(nullptr);
+  arc_kiosk_splash_screen_view_->SetDelegate(nullptr);
 }
 
 void ArcKioskController::StartArcKiosk(const AccountId& account_id) {
@@ -38,8 +38,8 @@ void ArcKioskController::StartArcKiosk(const AccountId& account_id) {
 
   host_->GetWebUILoginView()->SetUIEnabled(true);
 
-  arc_kiosk_splash_screen_actor_->SetDelegate(this);
-  arc_kiosk_splash_screen_actor_->Show();
+  arc_kiosk_splash_screen_view_->SetDelegate(this);
+  arc_kiosk_splash_screen_view_->Show();
   splash_wait_timer_.Start(FROM_HERE, kArcKioskSplashScreenMinTime,
                            base::Bind(&ArcKioskController::CloseSplashScreen,
                                       weak_ptr_factory_.GetWeakPtr()));
@@ -107,14 +107,14 @@ void ArcKioskController::OnProfilePrepared(Profile* profile,
   // a profile load, so invalidate the delegate now.
   UserSessionManager::GetInstance()->DelegateDeleted(this);
   ArcKioskAppService::Get(profile_)->SetDelegate(this);
-  arc_kiosk_splash_screen_actor_->UpdateArcKioskState(
-      ArcKioskSplashScreenActor::ArcKioskState::WAITING_APP_LAUNCH);
+  arc_kiosk_splash_screen_view_->UpdateArcKioskState(
+      ArcKioskSplashScreenView::ArcKioskState::WAITING_APP_LAUNCH);
 }
 
 void ArcKioskController::OnAppStarted() {
   DVLOG(1) << "ARC Kiosk launch succeeded, wait for app window.";
-  arc_kiosk_splash_screen_actor_->UpdateArcKioskState(
-      ArcKioskSplashScreenActor::ArcKioskState::WAITING_APP_WINDOW);
+  arc_kiosk_splash_screen_view_->UpdateArcKioskState(
+      ArcKioskSplashScreenView::ArcKioskState::WAITING_APP_WINDOW);
 }
 
 void ArcKioskController::OnAppWindowLaunched() {

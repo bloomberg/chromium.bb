@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
+#include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
@@ -29,8 +29,8 @@ const char kJsScreenPath[] = "login.HIDDetectionScreen";
 namespace chromeos {
 
 HIDDetectionScreenHandler::HIDDetectionScreenHandler(
-    CoreOobeActor* core_oobe_actor)
-    : core_oobe_actor_(core_oobe_actor) {
+    CoreOobeView* core_oobe_view)
+    : core_oobe_view_(core_oobe_view) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -44,7 +44,7 @@ void HIDDetectionScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  core_oobe_actor_->InitDemoModeDetection();
+  core_oobe_view_->InitDemoModeDetection();
 
   PrefService* local_state = g_browser_process->local_state();
   int num_of_times_dialog_was_shown = local_state->GetInteger(
@@ -109,7 +109,7 @@ void HIDDetectionScreenHandler::Initialize() {
 
 void HIDDetectionScreenHandler::HandleOnContinue() {
   // Continue button pressed.
-  core_oobe_actor_->StopDemoModeDetection();
+  core_oobe_view_->StopDemoModeDetection();
   if (screen_)
     screen_->OnContinueButtonClicked();
 }

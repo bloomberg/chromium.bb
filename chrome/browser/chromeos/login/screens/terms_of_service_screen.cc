@@ -28,38 +28,38 @@ namespace chromeos {
 
 TermsOfServiceScreen::TermsOfServiceScreen(
     BaseScreenDelegate* base_screen_delegate,
-    TermsOfServiceScreenActor* actor)
+    TermsOfServiceScreenView* view)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_TERMS_OF_SERVICE),
-      actor_(actor) {
-  DCHECK(actor_);
-  if (actor_)
-    actor_->SetDelegate(this);
+      view_(view) {
+  DCHECK(view_);
+  if (view_)
+    view_->SetDelegate(this);
 }
 
 TermsOfServiceScreen::~TermsOfServiceScreen() {
-  if (actor_)
-    actor_->SetDelegate(NULL);
+  if (view_)
+    view_->SetDelegate(NULL);
 }
 
 void TermsOfServiceScreen::Show() {
-  if (!actor_)
+  if (!view_)
     return;
 
   // Set the domain name whose Terms of Service are being shown.
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  actor_->SetDomain(connector->GetEnterpriseDomain());
+  view_->SetDomain(connector->GetEnterpriseDomain());
 
   // Show the screen.
-  actor_->Show();
+  view_->Show();
 
   // Start downloading the Terms of Service.
   StartDownload();
 }
 
 void TermsOfServiceScreen::Hide() {
-  if (actor_)
-    actor_->Hide();
+  if (view_)
+    view_->Hide();
 }
 
 void TermsOfServiceScreen::OnDecline() {
@@ -70,9 +70,9 @@ void TermsOfServiceScreen::OnAccept() {
   Finish(BaseScreenDelegate::TERMS_OF_SERVICE_ACCEPTED);
 }
 
-void TermsOfServiceScreen::OnActorDestroyed(TermsOfServiceScreenActor* actor) {
-  if (actor_ == actor)
-    actor_ = NULL;
+void TermsOfServiceScreen::OnViewDestroyed(TermsOfServiceScreenView* view) {
+  if (view_ == view)
+    view_ = NULL;
 }
 
 void TermsOfServiceScreen::StartDownload() {
@@ -82,8 +82,8 @@ void TermsOfServiceScreen::StartDownload() {
   std::string terms_of_service_url =
       prefs->GetString(prefs::kTermsOfServiceURL);
   if (terms_of_service_url.empty()) {
-    if (actor_)
-      actor_->OnLoadError();
+    if (view_)
+      view_->OnLoadError();
     return;
   }
 
@@ -110,8 +110,8 @@ void TermsOfServiceScreen::OnDownloadTimeout() {
   terms_of_service_fetcher_.reset();
 
   // Show an error message to the user.
-  if (actor_)
-    actor_->OnLoadError();
+  if (view_)
+    view_->OnLoadError();
 }
 
 void TermsOfServiceScreen::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -125,7 +125,7 @@ void TermsOfServiceScreen::OnURLFetchComplete(const net::URLFetcher* source) {
   // Destroy the fetcher when this method returns.
   std::unique_ptr<net::URLFetcher> fetcher(
       std::move(terms_of_service_fetcher_));
-  if (!actor_)
+  if (!view_)
     return;
 
   std::string terms_of_service;
@@ -136,11 +136,11 @@ void TermsOfServiceScreen::OnURLFetchComplete(const net::URLFetcher* source) {
       !source->GetResponseHeaders()->GetMimeType(&mime_type) ||
       mime_type != "text/plain" ||
       !source->GetResponseAsString(&terms_of_service)) {
-    actor_->OnLoadError();
+    view_->OnLoadError();
   } else {
     // If the Terms of Service were downloaded successfully, show them to the
     // user.
-    actor_->OnLoadSuccess(terms_of_service);
+    view_->OnLoadSuccess(terms_of_service);
   }
 }
 

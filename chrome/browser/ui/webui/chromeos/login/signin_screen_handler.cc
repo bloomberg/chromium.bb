@@ -43,7 +43,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
-#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
+#include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -291,11 +291,11 @@ void LoginScreenContext::Init() {
 SigninScreenHandler::SigninScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ErrorScreen* error_screen,
-    CoreOobeActor* core_oobe_actor,
+    CoreOobeView* core_oobe_view,
     GaiaScreenHandler* gaia_screen_handler)
     : network_state_informer_(network_state_informer),
       error_screen_(error_screen),
-      core_oobe_actor_(core_oobe_actor),
+      core_oobe_view_(core_oobe_view),
       caps_lock_enabled_(chromeos::input_method::InputMethodManager::Get()
                              ->GetImeKeyboard()
                              ->CapsLockIsEnabled()),
@@ -306,7 +306,7 @@ SigninScreenHandler::SigninScreenHandler(
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
-  DCHECK(core_oobe_actor_);
+  DCHECK(core_oobe_view_);
   gaia_screen_handler_->set_signin_screen_handler(this);
   network_state_informer_->AddObserver(this);
 
@@ -992,15 +992,15 @@ void SigninScreenHandler::OnCurrentScreenChanged(OobeScreen current_screen,
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
-  core_oobe_actor_->ResetSignInUI(false);
+  core_oobe_view_->ResetSignInUI(false);
 }
 
 void SigninScreenHandler::ClearUserPodPassword() {
-  core_oobe_actor_->ClearUserPodPassword();
+  core_oobe_view_->ClearUserPodPassword();
 }
 
 void SigninScreenHandler::RefocusCurrentPod() {
-  core_oobe_actor_->RefocusCurrentPod();
+  core_oobe_view_->RefocusCurrentPod();
 }
 
 void SigninScreenHandler::HidePinKeyboardIfNeeded(const AccountId& account_id) {
@@ -1063,14 +1063,14 @@ void SigninScreenHandler::ShowError(int login_attempts,
                                     const std::string& error_text,
                                     const std::string& help_link_text,
                                     HelpAppLauncher::HelpTopic help_topic_id) {
-  core_oobe_actor_->ShowSignInError(login_attempts, error_text, help_link_text,
-                                    help_topic_id);
+  core_oobe_view_->ShowSignInError(login_attempts, error_text, help_link_text,
+                                   help_topic_id);
 }
 
 void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
   switch (error_id) {
     case LoginDisplay::TPM_ERROR:
-      core_oobe_actor_->ShowTpmError();
+      core_oobe_view_->ShowTpmError();
       break;
     default:
       NOTREACHED() << "Unknown sign in error";
@@ -1079,12 +1079,12 @@ void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
 }
 
 void SigninScreenHandler::ShowSigninUI(const std::string& email) {
-  core_oobe_actor_->ShowSignInUI(email);
+  core_oobe_view_->ShowSignInUI(email);
 }
 
 void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error,
                                                     const std::string& email) {
-  core_oobe_actor_->ShowPasswordChangedScreen(show_password_error, email);
+  core_oobe_view_->ShowPasswordChangedScreen(show_password_error, email);
 }
 
 void SigninScreenHandler::ShowSigninScreenForCreds(
@@ -1316,13 +1316,13 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
-    if (core_oobe_actor_)
-      core_oobe_actor_->ShowDeviceResetScreen();
+    if (core_oobe_view_)
+      core_oobe_view_->ShowDeviceResetScreen();
 
     return;
   } else if (prefs->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
-    if (core_oobe_actor_)
-      core_oobe_actor_->ShowEnableDebuggingScreen();
+    if (core_oobe_view_)
+      core_oobe_view_->ShowEnableDebuggingScreen();
 
     return;
   }

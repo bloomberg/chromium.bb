@@ -13,22 +13,22 @@ namespace chromeos {
 
 KioskAutolaunchScreen::KioskAutolaunchScreen(
     BaseScreenDelegate* base_screen_delegate,
-    KioskAutolaunchScreenActor* actor)
+    KioskAutolaunchScreenView* view)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_KIOSK_AUTOLAUNCH),
-      actor_(actor) {
-  DCHECK(actor_);
-  if (actor_)
-    actor_->SetDelegate(this);
+      view_(view) {
+  DCHECK(view_);
+  if (view_)
+    view_->SetDelegate(this);
 }
 
 KioskAutolaunchScreen::~KioskAutolaunchScreen() {
-  if (actor_)
-    actor_->SetDelegate(NULL);
+  if (view_)
+    view_->SetDelegate(NULL);
 }
 
 void KioskAutolaunchScreen::Show() {
-  if (actor_)
-    actor_->Show();
+  if (view_)
+    view_->Show();
 }
 
 void KioskAutolaunchScreen::OnExit(bool confirmed) {
@@ -36,10 +36,9 @@ void KioskAutolaunchScreen::OnExit(bool confirmed) {
                    : BaseScreenDelegate::KIOSK_AUTOLAUNCH_CANCELED);
 }
 
-void KioskAutolaunchScreen::OnActorDestroyed(
-    KioskAutolaunchScreenActor* actor) {
-  if (actor_ == actor)
-    actor_ = NULL;
+void KioskAutolaunchScreen::OnViewDestroyed(KioskAutolaunchScreenView* view) {
+  if (view_ == view)
+    view_ = NULL;
 }
 
 }  // namespace chromeos

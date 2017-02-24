@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/terms_of_service_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/terms_of_service_screen_view.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
@@ -27,11 +27,11 @@ class BaseScreenDelegate;
 // Terms of Service before proceeding. Currently, Terms of Service are available
 // for public sessions only.
 class TermsOfServiceScreen : public BaseScreen,
-                             public TermsOfServiceScreenActor::Delegate,
+                             public TermsOfServiceScreenView::Delegate,
                              public net::URLFetcherDelegate {
  public:
   TermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
-                       TermsOfServiceScreenActor* actor);
+                       TermsOfServiceScreenView* view);
   ~TermsOfServiceScreen() override;
 
   // BaseScreen:
@@ -41,7 +41,7 @@ class TermsOfServiceScreen : public BaseScreen,
   // TermsOfServiceScreenActor::Delegate:
   void OnDecline() override;
   void OnAccept() override;
-  void OnActorDestroyed(TermsOfServiceScreenActor* actor) override;
+  void OnViewDestroyed(TermsOfServiceScreenView* view) override;
 
  private:
   // Start downloading the Terms of Service.
@@ -53,7 +53,7 @@ class TermsOfServiceScreen : public BaseScreen,
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  TermsOfServiceScreenActor* actor_;
+  TermsOfServiceScreenView* view_;
 
   std::unique_ptr<net::URLFetcher> terms_of_service_fetcher_;
 

@@ -11,24 +11,22 @@ namespace chromeos {
 
 MockAutoEnrollmentCheckScreen::MockAutoEnrollmentCheckScreen(
     BaseScreenDelegate* base_screen_delegate,
-    AutoEnrollmentCheckScreenActor* actor)
-    : AutoEnrollmentCheckScreen(base_screen_delegate, actor) {
-}
+    AutoEnrollmentCheckScreenView* view)
+    : AutoEnrollmentCheckScreen(base_screen_delegate, view) {}
 
 MockAutoEnrollmentCheckScreen::~MockAutoEnrollmentCheckScreen() { }
 
-MockAutoEnrollmentCheckScreenActor::MockAutoEnrollmentCheckScreenActor()
+MockAutoEnrollmentCheckScreenView::MockAutoEnrollmentCheckScreenView()
     : screen_(NULL) {
   EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
 }
 
-
-MockAutoEnrollmentCheckScreenActor::~MockAutoEnrollmentCheckScreenActor() {
+MockAutoEnrollmentCheckScreenView::~MockAutoEnrollmentCheckScreenView() {
   if (screen_)
-    screen_->OnActorDestroyed(this);
+    screen_->OnViewDestroyed(this);
 }
 
-void MockAutoEnrollmentCheckScreenActor::SetDelegate(Delegate* screen) {
+void MockAutoEnrollmentCheckScreenView::SetDelegate(Delegate* screen) {
   screen_ = screen;
   MockSetDelegate(screen);
 }

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h"
-#include "chrome/browser/chromeos/login/screens/arc_kiosk_splash_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/arc_kiosk_splash_screen_view.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chromeos/login/auth/login_performer.h"
 
@@ -31,7 +31,7 @@ class UserContext;
 class ArcKioskController : public LoginPerformer::Delegate,
                            public UserSessionManagerDelegate,
                            public ArcKioskAppService::Delegate,
-                           public ArcKioskSplashScreenActor::Delegate {
+                           public ArcKioskSplashScreenView::Delegate {
  public:
   ArcKioskController(LoginDisplayHost* host, OobeUI* oobe_ui);
 
@@ -58,13 +58,13 @@ class ArcKioskController : public LoginPerformer::Delegate,
   void OnAppStarted() override;
   void OnAppWindowLaunched() override;
 
-  // ArcKioskSplashScreenActor::Delegate implementation:
+  // ArcKioskSplashScreenView::Delegate implementation:
   void OnCancelArcKioskLaunch() override;
 
   // LoginDisplayHost owns itself.
   LoginDisplayHost* const host_;
   // Owned by OobeUI.
-  ArcKioskSplashScreenActor* const arc_kiosk_splash_screen_actor_;
+  ArcKioskSplashScreenView* const arc_kiosk_splash_screen_view_;
   // Not owning here.
   Profile* profile_ = nullptr;
 

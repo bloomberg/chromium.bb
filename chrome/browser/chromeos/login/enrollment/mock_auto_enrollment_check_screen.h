@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_MOCK_AUTO_ENROLLMENT_CHECK_SCREEN_H_
 
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
-#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -14,15 +14,14 @@ namespace chromeos {
 class MockAutoEnrollmentCheckScreen : public AutoEnrollmentCheckScreen {
  public:
   MockAutoEnrollmentCheckScreen(BaseScreenDelegate* base_screen_delegate,
-                                AutoEnrollmentCheckScreenActor* actor);
+                                AutoEnrollmentCheckScreenView* view);
   ~MockAutoEnrollmentCheckScreen() override;
 };
 
-class MockAutoEnrollmentCheckScreenActor
-    : public AutoEnrollmentCheckScreenActor {
+class MockAutoEnrollmentCheckScreenView : public AutoEnrollmentCheckScreenView {
  public:
-  MockAutoEnrollmentCheckScreenActor();
-  ~MockAutoEnrollmentCheckScreenActor() override;
+  MockAutoEnrollmentCheckScreenView();
+  ~MockAutoEnrollmentCheckScreenView() override;
 
   void SetDelegate(Delegate* screen) override;
 

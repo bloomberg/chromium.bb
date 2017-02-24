@@ -19,13 +19,13 @@
 
 namespace chromeos {
 
-class CoreOobeActor;
+class CoreOobeView;
 
-// WebUI implementation of NetworkScreenActor. It is used to interact with
+// WebUI implementation of NetworkScreenView. It is used to interact with
 // the welcome screen (part of the page) of the OOBE.
 class NetworkScreenHandler : public NetworkView, public BaseScreenHandler {
  public:
-  explicit NetworkScreenHandler(CoreOobeActor* core_oobe_actor);
+  explicit NetworkScreenHandler(CoreOobeView* core_oobe_view);
   ~NetworkScreenHandler() override;
 
  private:
@@ -50,7 +50,7 @@ class NetworkScreenHandler : public NetworkView, public BaseScreenHandler {
   // Returns available timezones. Caller gets the ownership.
   static base::ListValue* GetTimezoneList();
 
-  CoreOobeActor* core_oobe_actor_ = nullptr;
+  CoreOobeView* core_oobe_view_ = nullptr;
   NetworkScreen* screen_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.

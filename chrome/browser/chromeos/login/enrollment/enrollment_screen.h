@@ -14,7 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/policy/active_directory_join_delegate.h"
@@ -41,11 +41,11 @@ class ScreenManager;
 class EnrollmentScreen
     : public BaseScreen,
       public EnterpriseEnrollmentHelper::EnrollmentStatusConsumer,
-      public EnrollmentScreenActor::Controller,
+      public EnrollmentScreenView::Controller,
       public ActiveDirectoryJoinDelegate {
  public:
   EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
-                   EnrollmentScreenActor* actor);
+                   EnrollmentScreenView* view);
   ~EnrollmentScreen() override;
 
   static EnrollmentScreen* Get(ScreenManager* manager);
@@ -61,7 +61,7 @@ class EnrollmentScreen
   void Show() override;
   void Hide() override;
 
-  // EnrollmentScreenActor::Controller implementation:
+  // EnrollmentScreenView::Controller implementation:
   void OnLoginDone(const std::string& user,
                    const std::string& auth_code) override;
   void OnRetry() override;
@@ -83,9 +83,7 @@ class EnrollmentScreen
   void JoinDomain(OnDomainJoinedCallback on_joined_callback) override;
 
   // Used for testing.
-  EnrollmentScreenActor* GetActor() {
-    return actor_;
-  }
+  EnrollmentScreenView* GetView() { return view_; }
 
  private:
   friend class EnrollmentScreenUnitTest;
@@ -166,7 +164,7 @@ class EnrollmentScreen
 
   pairing_chromeos::ControllerPairingController* shark_controller_ = nullptr;
 
-  EnrollmentScreenActor* actor_;
+  EnrollmentScreenView* view_;
   policy::EnrollmentConfig config_;
   policy::EnrollmentConfig enrollment_config_;
   Auth current_auth_ = AUTH_OAUTH;

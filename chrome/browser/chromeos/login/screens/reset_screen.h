@@ -28,7 +28,7 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
               ResetView* view);
   ~ResetScreen() override;
 
-  // Called when actor is destroyed so there's no dead reference to it.
+  // Called when view is destroyed so there's no dead reference to it.
   void OnViewDestroyed(ResetView* view);
 
  private:

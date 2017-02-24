@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/arc_kiosk_splash_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/arc_kiosk_splash_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace base {
@@ -19,7 +19,7 @@ namespace chromeos {
 
 // A class that handles the WebUI hooks for the ARC kiosk splash screen.
 class ArcKioskSplashScreenHandler : public BaseScreenHandler,
-                                    public ArcKioskSplashScreenActor {
+                                    public ArcKioskSplashScreenView {
  public:
   ArcKioskSplashScreenHandler();
   ~ArcKioskSplashScreenHandler() override;
@@ -33,7 +33,7 @@ class ArcKioskSplashScreenHandler : public BaseScreenHandler,
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;
 
-  // ArcKioskSplashScreenActor implementation:
+  // ArcKioskSplashScreenView implementation:
   void Show() override;
   void UpdateArcKioskState(ArcKioskState state) override;
   void SetDelegate(ArcKioskSplashScreenHandler::Delegate* delegate) override;

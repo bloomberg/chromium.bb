@@ -136,25 +136,25 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, EnrollmentSpinner) {
   EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(wcontroller);
   ASSERT_TRUE(enrollment_screen);
 
-  EnrollmentScreenActor* actor = enrollment_screen->GetActor();
-  ASSERT_TRUE(actor);
+  EnrollmentScreenView* view = enrollment_screen->GetView();
+  ASSERT_TRUE(view);
 
   test::JSChecker checker(
       LoginDisplayHost::default_host()->GetWebUILoginView()->GetWebContents());
 
   // Run through the flow
-  actor->Show();
+  view->Show();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
   checker.ExpectTrue(
       "window.getComputedStyle(document.getElementById('oauth-enroll-step-"
       "signin')).display !== 'none'");
 
-  actor->ShowEnrollmentSpinnerScreen();
+  view->ShowEnrollmentSpinnerScreen();
   checker.ExpectTrue(
       "window.getComputedStyle(document.getElementById('oauth-enroll-step-"
       "working')).display !== 'none'");
 
-  actor->ShowAttestationBasedEnrollmentSuccessScreen("fake domain");
+  view->ShowAttestationBasedEnrollmentSuccessScreen("fake domain");
   checker.ExpectTrue(
       "window.getComputedStyle(document.getElementById('oauth-enroll-step-abe-"
       "success')).display !== 'none'");

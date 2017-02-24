@@ -46,7 +46,7 @@ class ListValue;
 
 namespace chromeos {
 
-class CoreOobeActor;
+class CoreOobeView;
 class ErrorScreensHistogramHelper;
 class GaiaScreenHandler;
 class LoginFeedback;
@@ -230,7 +230,7 @@ class SigninScreenHandler
   SigninScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreen* error_screen,
-      CoreOobeActor* core_oobe_actor,
+      CoreOobeView* core_oobe_view,
       GaiaScreenHandler* gaia_screen_handler);
   ~SigninScreenHandler() override;
 
@@ -474,7 +474,7 @@ class SigninScreenHandler
   bool preferences_changed_delayed_ = false;
 
   ErrorScreen* error_screen_ = nullptr;
-  CoreOobeActor* core_oobe_actor_ = nullptr;
+  CoreOobeView* core_oobe_view_ = nullptr;
 
   NetworkStateInformer::State last_network_state_ =
       NetworkStateInformer::UNKNOWN;

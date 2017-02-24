@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/screens/mock_device_disabled_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/mock_device_disabled_screen_view.h"
 
 using ::testing::AtLeast;
 using ::testing::AtMost;
@@ -10,18 +10,18 @@ using ::testing::NotNull;
 
 namespace chromeos {
 
-MockDeviceDisabledScreenActor::MockDeviceDisabledScreenActor()
+MockDeviceDisabledScreenView::MockDeviceDisabledScreenView()
     : delegate_(nullptr) {
   EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
   EXPECT_CALL(*this, MockSetDelegate(nullptr)).Times(AtMost(1));
 }
 
-MockDeviceDisabledScreenActor::~MockDeviceDisabledScreenActor() {
+MockDeviceDisabledScreenView::~MockDeviceDisabledScreenView() {
   if (delegate_)
-    delegate_->OnActorDestroyed(this);
+    delegate_->OnViewDestroyed(this);
 }
 
-void MockDeviceDisabledScreenActor::SetDelegate(Delegate* delegate) {
+void MockDeviceDisabledScreenView::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
   MockSetDelegate(delegate);
 }

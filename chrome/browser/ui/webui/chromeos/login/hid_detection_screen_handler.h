@@ -17,15 +17,14 @@
 
 namespace chromeos {
 
-class CoreOobeActor;
+class CoreOobeView;
 
 // WebUI implementation of HIDDetectionScreenView.
 class HIDDetectionScreenHandler
     : public HIDDetectionView,
       public BaseScreenHandler {
  public:
-
-  explicit HIDDetectionScreenHandler(CoreOobeActor* core_oobe_actor);
+  explicit HIDDetectionScreenHandler(CoreOobeView* core_oobe_view);
   ~HIDDetectionScreenHandler() override;
 
   // HIDDetectionView implementation:
@@ -51,7 +50,7 @@ class HIDDetectionScreenHandler
 
   HIDDetectionScreen* screen_ = nullptr;
 
-  CoreOobeActor* core_oobe_actor_ = nullptr;
+  CoreOobeView* core_oobe_view_ = nullptr;
 
   // If true, Initialize() will call Show().
   bool show_on_init_ = false;

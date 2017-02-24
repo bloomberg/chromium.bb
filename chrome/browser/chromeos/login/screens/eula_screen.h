@@ -41,7 +41,7 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   // locale and manifest. Returns empty URL otherwise.
   GURL GetOemEulaUrl() const;
 
-  // Initiate TPM password fetch. Will call actor's OnPasswordFetched() when
+  // Initiate TPM password fetch. Will call view's OnPasswordFetched() when
   // done.
   void InitiatePasswordFetch();
 

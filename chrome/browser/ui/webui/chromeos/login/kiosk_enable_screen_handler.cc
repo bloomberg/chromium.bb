@@ -30,7 +30,7 @@ KioskEnableScreenHandler::KioskEnableScreenHandler() : weak_ptr_factory_(this) {
 
 KioskEnableScreenHandler::~KioskEnableScreenHandler() {
   if (delegate_)
-    delegate_->OnActorDestroyed(this);
+    delegate_->OnViewDestroyed(this);
 }
 
 void KioskEnableScreenHandler::Show() {

@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_DEVICE_DISABLED_SCREEN_HANDLER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/device_disabled_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/device_disabled_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
 
 // WebUI implementation of DeviceDisabledScreenActor.
-class DeviceDisabledScreenHandler : public DeviceDisabledScreenActor,
+class DeviceDisabledScreenHandler : public DeviceDisabledScreenView,
                                     public BaseScreenHandler {
  public:
   DeviceDisabledScreenHandler();

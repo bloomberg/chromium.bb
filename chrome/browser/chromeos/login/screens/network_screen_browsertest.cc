@@ -121,39 +121,39 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, CanConnect) {
   EXPECT_CALL(*mock_network_state_helper_, IsConnecting())
       .WillOnce((Return(true)));
-  // EXPECT_FALSE(actor_->IsContinueEnabled());
+  // EXPECT_FALSE(view_->IsContinueEnabled());
   network_screen_->UpdateStatus();
 
   EXPECT_CALL(*mock_network_state_helper_, IsConnected())
       .Times(2)
       .WillRepeatedly(Return(true));
-  // TODO(nkostylev): Add integration with WebUI actor http://crosbug.com/22570
-  // EXPECT_FALSE(actor_->IsContinueEnabled());
-  // EXPECT_FALSE(actor_->IsConnecting());
+  // TODO(nkostylev): Add integration with WebUI view http://crosbug.com/22570
+  // EXPECT_FALSE(view_->IsContinueEnabled());
+  // EXPECT_FALSE(view_->IsConnecting());
   network_screen_->UpdateStatus();
 
-  // EXPECT_TRUE(actor_->IsContinueEnabled());
+  // EXPECT_TRUE(view_->IsContinueEnabled());
   EmulateContinueButtonExit(network_screen_);
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   EXPECT_CALL(*mock_network_state_helper_, IsConnecting())
       .WillOnce((Return(true)));
-  // EXPECT_FALSE(actor_->IsContinueEnabled());
+  // EXPECT_FALSE(view_->IsContinueEnabled());
   network_screen_->UpdateStatus();
 
   EXPECT_CALL(*mock_network_state_helper_, IsConnected())
       .Times(2)
       .WillRepeatedly(Return(false));
-  // TODO(nkostylev): Add integration with WebUI actor http://crosbug.com/22570
-  // EXPECT_FALSE(actor_->IsContinueEnabled());
-  // EXPECT_FALSE(actor_->IsConnecting());
+  // TODO(nkostylev): Add integration with WebUI view http://crosbug.com/22570
+  // EXPECT_FALSE(view_->IsContinueEnabled());
+  // EXPECT_FALSE(view_->IsConnecting());
   network_screen_->OnConnectionTimeout();
 
   // Close infobubble with error message - it makes the test stable.
-  // EXPECT_FALSE(actor_->IsContinueEnabled());
-  // EXPECT_FALSE(actor_->IsConnecting());
-  // actor_->ClearErrors();
+  // EXPECT_FALSE(view_->IsContinueEnabled());
+  // EXPECT_FALSE(view_->IsConnecting());
+  // view_->ClearErrors();
 }
 
 class HandsOffNetworkScreenTest : public NetworkScreenTest {

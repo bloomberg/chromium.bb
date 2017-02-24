@@ -10,17 +10,17 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/kiosk_enable_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/kiosk_enable_screen_view.h"
 
 namespace chromeos {
 
 // Representation independent class that controls screen for enabling
 // consumer kiosk mode.
 class KioskEnableScreen : public BaseScreen,
-                          public KioskEnableScreenActor::Delegate {
+                          public KioskEnableScreenView::Delegate {
  public:
   KioskEnableScreen(BaseScreenDelegate* base_screen_delegate,
-                    KioskEnableScreenActor* actor);
+                    KioskEnableScreenView* view);
   ~KioskEnableScreen() override;
 
   // BaseScreen implementation:
@@ -29,10 +29,10 @@ class KioskEnableScreen : public BaseScreen,
 
   // KioskEnableScreenActor::Delegate implementation:
   void OnExit() override;
-  void OnActorDestroyed(KioskEnableScreenActor* actor) override;
+  void OnViewDestroyed(KioskEnableScreenView* view) override;
 
  private:
-  KioskEnableScreenActor* actor_;
+  KioskEnableScreenView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskEnableScreen);
 };

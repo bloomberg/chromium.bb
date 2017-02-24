@@ -23,8 +23,8 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
-#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_actor_observer.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -674,7 +674,7 @@ TEST_F(ArcSessionOobeOptInTest, OobeOptInActive) {
 
 class ArcSessionOobeOptInNegotiatorTest
     : public ArcSessionOobeOptInTest,
-      public chromeos::ArcTermsOfServiceScreenActor,
+      public chromeos::ArcTermsOfServiceScreenView,
       public testing::WithParamInterface<bool> {
  public:
   ArcSessionOobeOptInNegotiatorTest() = default;
@@ -684,7 +684,7 @@ class ArcSessionOobeOptInNegotiatorTest
 
     AppendEnableArcOOBEOptInSwitch();
 
-    ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenActorForTesting(
+    ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenViewForTesting(
         this);
 
     GetFakeUserManager()->set_current_user_new(true);
@@ -708,7 +708,7 @@ class ArcSessionOobeOptInNegotiatorTest
     // Correctly stop service.
     arc_session_manager()->Shutdown();
 
-    ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenActorForTesting(
+    ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenViewForTesting(
         nullptr);
 
     ArcSessionOobeOptInTest::TearDown();
@@ -727,9 +727,9 @@ class ArcSessionOobeOptInNegotiatorTest
     base::RunLoop().RunUntilIdle();
   }
 
-  void ReportActorDestroyed() {
+  void ReportViewDestroyed() {
     for (auto& observer : observer_list_)
-      observer.OnActorDestroyed(this);
+      observer.OnViewDestroyed(this);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -745,17 +745,17 @@ class ArcSessionOobeOptInNegotiatorTest
     ArcDataRemovedWaiter().Wait();
   }
 
-  chromeos::ArcTermsOfServiceScreenActor* actor() { return this; }
+  chromeos::ArcTermsOfServiceScreenView* view() { return this; }
 
  private:
-  // ArcTermsOfServiceScreenActor:
+  // ArcTermsOfServiceScreenView:
   void AddObserver(
-      chromeos::ArcTermsOfServiceScreenActorObserver* observer) override {
+      chromeos::ArcTermsOfServiceScreenViewObserver* observer) override {
     observer_list_.AddObserver(observer);
   }
 
   void RemoveObserver(
-      chromeos::ArcTermsOfServiceScreenActorObserver* observer) override {
+      chromeos::ArcTermsOfServiceScreenViewObserver* observer) override {
     observer_list_.RemoveObserver(observer);
   }
 
@@ -767,7 +767,7 @@ class ArcSessionOobeOptInNegotiatorTest
 
   void Hide() override {}
 
-  base::ObserverList<chromeos::ArcTermsOfServiceScreenActorObserver>
+  base::ObserverList<chromeos::ArcTermsOfServiceScreenViewObserver>
       observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionOobeOptInNegotiatorTest);
@@ -778,7 +778,7 @@ INSTANTIATE_TEST_CASE_P(ArcSessionOobeOptInNegotiatorTestImpl,
                         ::testing::Values(true, false));
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsAccepted) {
-  actor()->Show();
+  view()->Show();
   MaybeWaitForDataRemoved();
   EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
@@ -788,7 +788,7 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsAccepted) {
 }
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
-  actor()->Show();
+  view()->Show();
   MaybeWaitForDataRemoved();
   EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
@@ -798,13 +798,13 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
     EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
 }
 
-TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsActorDestroyed) {
-  actor()->Show();
+TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsViewDestroyed) {
+  view()->Show();
   MaybeWaitForDataRemoved();
   EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
   CloseLoginDisplayHost();
-  ReportActorDestroyed();
+  ReportViewDestroyed();
   EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
   if (!IsManagedUser())
     EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));

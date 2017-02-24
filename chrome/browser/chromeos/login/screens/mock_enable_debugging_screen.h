@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_ENABLE_DEBUGGING_SCREEN_H_
 
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
-#include "chrome/browser/chromeos/login/screens/enable_debugging_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/enable_debugging_screen_view.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -15,21 +15,20 @@ namespace chromeos {
 class MockEnableDebuggingScreen : public EnableDebuggingScreen {
  public:
   MockEnableDebuggingScreen(BaseScreenDelegate* base_screen_delegate,
-                            EnableDebuggingScreenActor* actor);
+                            EnableDebuggingScreenView* view);
   ~MockEnableDebuggingScreen() override;
 };
 
-class MockEnableDebuggingScreenActor
-    : public EnableDebuggingScreenActor {
+class MockEnableDebuggingScreenView : public EnableDebuggingScreenView {
  public:
-  MockEnableDebuggingScreenActor();
-  ~MockEnableDebuggingScreenActor() override;
+  MockEnableDebuggingScreenView();
+  ~MockEnableDebuggingScreenView() override;
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD1(MockSetDelegate, void(Delegate* delegate));
 
-  void SetDelegate(EnableDebuggingScreenActor::Delegate* delegate) override;
+  void SetDelegate(EnableDebuggingScreenView::Delegate* delegate) override;
 
  private:
   Delegate* delegate_;

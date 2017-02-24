@@ -9,17 +9,17 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/enable_debugging_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/enable_debugging_screen_view.h"
 
 namespace chromeos {
 
 // Representation independent class that controls screen showing enable
 // debugging screen to users.
 class EnableDebuggingScreen : public BaseScreen,
-                              public EnableDebuggingScreenActor::Delegate {
+                              public EnableDebuggingScreenView::Delegate {
  public:
   EnableDebuggingScreen(BaseScreenDelegate* delegate,
-                        EnableDebuggingScreenActor* actor);
+                        EnableDebuggingScreenView* view);
   ~EnableDebuggingScreen() override;
 
   // BaseScreen implementation:
@@ -28,10 +28,10 @@ class EnableDebuggingScreen : public BaseScreen,
 
   // EnableDebuggingScreenActor::Delegate implementation:
   void OnExit(bool success) override;
-  void OnActorDestroyed(EnableDebuggingScreenActor* actor) override;
+  void OnViewDestroyed(EnableDebuggingScreenView* view) override;
 
  private:
-  EnableDebuggingScreenActor* actor_;
+  EnableDebuggingScreenView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(EnableDebuggingScreen);
 };

@@ -10,29 +10,29 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/wrong_hwid_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/wrong_hwid_screen_view.h"
 
 namespace chromeos {
 
 // Representation independent class that controls screen showing warning about
 // malformed HWID to users.
 class WrongHWIDScreen : public BaseScreen,
-                        public WrongHWIDScreenActor::Delegate {
+                        public WrongHWIDScreenView::Delegate {
  public:
   WrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
-                  WrongHWIDScreenActor* actor);
+                  WrongHWIDScreenView* view);
   ~WrongHWIDScreen() override;
 
   // BaseScreen implementation:
   void Show() override;
   void Hide() override;
 
-  // WrongHWIDScreenActor::Delegate implementation:
+  // WrongHWIDScreenView::Delegate implementation:
   void OnExit() override;
-  void OnActorDestroyed(WrongHWIDScreenActor* actor) override;
+  void OnViewDestroyed(WrongHWIDScreenView* view) override;
 
  private:
-  WrongHWIDScreenActor* actor_;
+  WrongHWIDScreenView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(WrongHWIDScreen);
 };

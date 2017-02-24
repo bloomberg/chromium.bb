@@ -46,24 +46,24 @@ AutoEnrollmentCheckScreen* AutoEnrollmentCheckScreen::Get(
 
 AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
     BaseScreenDelegate* base_screen_delegate,
-    AutoEnrollmentCheckScreenActor* actor)
+    AutoEnrollmentCheckScreenView* view)
     : BaseScreen(base_screen_delegate,
                  OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK),
-      actor_(actor),
+      view_(view),
       auto_enrollment_controller_(nullptr),
       captive_portal_status_(
           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN),
       auto_enrollment_state_(policy::AUTO_ENROLLMENT_STATE_IDLE),
       histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
       weak_ptr_factory_(this) {
-  if (actor_)
-    actor_->SetDelegate(this);
+  if (view_)
+    view_->SetDelegate(this);
 }
 
 AutoEnrollmentCheckScreen::~AutoEnrollmentCheckScreen() {
   network_portal_detector::GetInstance()->RemoveObserver(this);
-  if (actor_)
-    actor_->SetDelegate(NULL);
+  if (view_)
+    view_->SetDelegate(NULL);
 }
 
 void AutoEnrollmentCheckScreen::ClearState() {
@@ -90,7 +90,7 @@ void AutoEnrollmentCheckScreen::Show() {
   // Bring up the screen. It's important to do this before updating the UI,
   // because the latter may switch to the error screen, which needs to stay on
   // top.
-  actor_->Show();
+  view_->Show();
   histogram_helper_->OnScreenShow();
 
   // Set up state change observers.
@@ -121,10 +121,10 @@ void AutoEnrollmentCheckScreen::Show() {
 void AutoEnrollmentCheckScreen::Hide() {
 }
 
-void AutoEnrollmentCheckScreen::OnActorDestroyed(
-    AutoEnrollmentCheckScreenActor* actor) {
-  if (actor_ == actor)
-    actor_ = NULL;
+void AutoEnrollmentCheckScreen::OnViewDestroyed(
+    AutoEnrollmentCheckScreenView* view) {
+  if (view_ == view)
+    view_ = nullptr;
 }
 
 void AutoEnrollmentCheckScreen::OnPortalDetectionCompleted(

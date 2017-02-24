@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_DEVICE_DISABLED_SCREEN_ACTOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_DEVICE_DISABLED_SCREEN_ACTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_DEVICE_DISABLED_SCREEN_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_DEVICE_DISABLED_SCREEN_VIEW_H_
 
-#include "chrome/browser/chromeos/login/screens/device_disabled_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/device_disabled_screen_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 
-class MockDeviceDisabledScreenActor : public DeviceDisabledScreenActor {
+class MockDeviceDisabledScreenView : public DeviceDisabledScreenView {
  public:
-  MockDeviceDisabledScreenActor();
-  ~MockDeviceDisabledScreenActor() override;
+  MockDeviceDisabledScreenView();
+  ~MockDeviceDisabledScreenView() override;
 
   void SetDelegate(Delegate* delegate) override;
 
@@ -29,4 +29,4 @@ class MockDeviceDisabledScreenActor : public DeviceDisabledScreenActor {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_DEVICE_DISABLED_SCREEN_ACTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_DEVICE_DISABLED_SCREEN_VIEW_H_

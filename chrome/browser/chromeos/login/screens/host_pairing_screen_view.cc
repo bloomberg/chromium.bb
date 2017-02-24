@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/screens/host_pairing_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/host_pairing_screen_view.h"
 
 namespace chromeos {
 
@@ -30,10 +30,8 @@ const char kPagePairingDone[] = "pairing-done";
 
 }  // namespace host_pairing
 
-HostPairingScreenActor::HostPairingScreenActor() {
-}
+HostPairingScreenView::HostPairingScreenView() {}
 
-HostPairingScreenActor::~HostPairingScreenActor() {
-}
+HostPairingScreenView::~HostPairingScreenView() {}
 
 }  // namespace chromeos

@@ -7,14 +7,14 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
 
 namespace chromeos {
 
 // WebUI implementation of AutoEnrollmentCheckScreenActor.
-class AutoEnrollmentCheckScreenHandler : public AutoEnrollmentCheckScreenActor,
+class AutoEnrollmentCheckScreenHandler : public AutoEnrollmentCheckScreenView,
                                          public BaseScreenHandler {
  public:
   AutoEnrollmentCheckScreenHandler();

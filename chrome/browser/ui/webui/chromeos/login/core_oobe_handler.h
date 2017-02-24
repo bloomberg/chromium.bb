@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
-#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
+#include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "ui/events/event_source.h"
@@ -36,7 +36,7 @@ class OobeUI;
 // The core handler for Javascript messages related to the "oobe" view.
 class CoreOobeHandler : public BaseScreenHandler,
                         public VersionInfoUpdater::Delegate,
-                        public CoreOobeActor,
+                        public CoreOobeView,
                         public ui::EventSource {
  public:
   class Delegate {

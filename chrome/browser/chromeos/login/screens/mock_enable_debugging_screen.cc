@@ -11,24 +11,23 @@ namespace chromeos {
 
 MockEnableDebuggingScreen::MockEnableDebuggingScreen(
     BaseScreenDelegate* base_screen_delegate,
-    EnableDebuggingScreenActor* actor)
-    : EnableDebuggingScreen(base_screen_delegate, actor) {
-}
+    EnableDebuggingScreenView* view)
+    : EnableDebuggingScreen(base_screen_delegate, view) {}
 
 MockEnableDebuggingScreen::~MockEnableDebuggingScreen() {
 }
 
-MockEnableDebuggingScreenActor::MockEnableDebuggingScreenActor() {
+MockEnableDebuggingScreenView::MockEnableDebuggingScreenView() {
   EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
 }
 
-MockEnableDebuggingScreenActor::~MockEnableDebuggingScreenActor() {
+MockEnableDebuggingScreenView::~MockEnableDebuggingScreenView() {
   if (delegate_)
-    delegate_->OnActorDestroyed(this);
+    delegate_->OnViewDestroyed(this);
 }
 
-void MockEnableDebuggingScreenActor::SetDelegate(
-    EnableDebuggingScreenActor::Delegate* delegate) {
+void MockEnableDebuggingScreenView::SetDelegate(
+    EnableDebuggingScreenView::Delegate* delegate) {
   delegate_ = delegate;
   MockSetDelegate(delegate);
 }

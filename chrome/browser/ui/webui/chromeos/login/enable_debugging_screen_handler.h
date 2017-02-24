@@ -10,21 +10,21 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/login/screens/enable_debugging_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/enable_debugging_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 class PrefRegistrySimple;
 
 namespace chromeos {
 
-// WebUI implementation of EnableDebuggingScreenActor.
-class EnableDebuggingScreenHandler : public EnableDebuggingScreenActor,
+// WebUI implementation of EnableDebuggingScreenView.
+class EnableDebuggingScreenHandler : public EnableDebuggingScreenView,
                                      public BaseScreenHandler {
  public:
   EnableDebuggingScreenHandler();
   ~EnableDebuggingScreenHandler() override;
 
-  // EnableDebuggingScreenActor implementation:
+  // EnableDebuggingScreenView implementation:
   void Show() override;
   void Hide() override;
   void SetDelegate(Delegate* delegate) override;

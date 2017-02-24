@@ -15,30 +15,30 @@ namespace chromeos {
 
 DeviceDisabledScreen::DeviceDisabledScreen(
     BaseScreenDelegate* base_screen_delegate,
-    DeviceDisabledScreenActor* actor)
+    DeviceDisabledScreenView* view)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_DEVICE_DISABLED),
-      actor_(actor),
+      view_(view),
       device_disabling_manager_(
           g_browser_process->platform_part()->device_disabling_manager()),
       showing_(false) {
-  DCHECK(actor_);
-  if (actor_)
-    actor_->SetDelegate(this);
+  DCHECK(view_);
+  if (view_)
+    view_->SetDelegate(this);
   device_disabling_manager_->AddObserver(this);
 }
 
 DeviceDisabledScreen::~DeviceDisabledScreen() {
-  if (actor_)
-    actor_->SetDelegate(nullptr);
+  if (view_)
+    view_->SetDelegate(nullptr);
   device_disabling_manager_->RemoveObserver(this);
 }
 
 void DeviceDisabledScreen::Show() {
-  if (!actor_ || showing_)
+  if (!view_ || showing_)
     return;
 
   showing_ = true;
-  actor_->Show();
+  view_->Show();
 }
 
 void DeviceDisabledScreen::Hide() {
@@ -46,13 +46,13 @@ void DeviceDisabledScreen::Hide() {
     return;
   showing_ = false;
 
-  if (actor_)
-    actor_->Hide();
+  if (view_)
+    view_->Hide();
 }
 
-void DeviceDisabledScreen::OnActorDestroyed(DeviceDisabledScreenActor* actor) {
-  if (actor_ == actor)
-    actor_ = nullptr;
+void DeviceDisabledScreen::OnViewDestroyed(DeviceDisabledScreenView* view) {
+  if (view_ == view)
+    view_ = nullptr;
 }
 
 const std::string& DeviceDisabledScreen::GetEnrollmentDomain() const {
@@ -65,8 +65,8 @@ const std::string& DeviceDisabledScreen::GetMessage() const {
 
 void DeviceDisabledScreen::OnDisabledMessageChanged(
     const std::string& disabled_message) {
-  if (actor_)
-    actor_->UpdateMessage(disabled_message);
+  if (view_)
+    view_->UpdateMessage(disabled_message);
 }
 
 }  // namespace chromeos

@@ -8,32 +8,32 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_actor_observer.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
 namespace chromeos {
 
-class ArcTermsOfServiceScreenActor;
+class ArcTermsOfServiceScreenView;
 class BaseScreenDelegate;
 
 class ArcTermsOfServiceScreen : public BaseScreen,
-                                public ArcTermsOfServiceScreenActorObserver {
+                                public ArcTermsOfServiceScreenViewObserver {
  public:
   ArcTermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
-                          ArcTermsOfServiceScreenActor* actor);
+                          ArcTermsOfServiceScreenView* view);
   ~ArcTermsOfServiceScreen() override;
 
   // BaseScreen:
   void Show() override;
   void Hide() override;
 
-  // ArcTermsOfServiceScreenActorObserver:
+  // ArcTermsOfServiceScreenViewObserver:
   void OnSkip() override;
   void OnAccept() override;
-  void OnActorDestroyed(ArcTermsOfServiceScreenActor* actor) override;
+  void OnViewDestroyed(ArcTermsOfServiceScreenView* view) override;
 
  private:
-  ArcTermsOfServiceScreenActor* actor_;
+  ArcTermsOfServiceScreenView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTermsOfServiceScreen);
 };

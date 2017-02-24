@@ -36,7 +36,7 @@ ControllerPairingScreenHandler::ControllerPairingScreenHandler() {
 
 ControllerPairingScreenHandler::~ControllerPairingScreenHandler() {
   if (delegate_)
-    delegate_->OnActorDestroyed(this);
+    delegate_->OnViewDestroyed(this);
 }
 
 void ControllerPairingScreenHandler::HandleUserActed(

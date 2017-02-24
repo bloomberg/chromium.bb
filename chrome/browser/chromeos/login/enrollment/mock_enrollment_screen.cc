@@ -8,17 +8,14 @@ namespace chromeos {
 
 MockEnrollmentScreen::MockEnrollmentScreen(
     BaseScreenDelegate* base_screen_delegate,
-    EnrollmentScreenActor* actor)
-    : EnrollmentScreen(base_screen_delegate, actor) {
-}
+    EnrollmentScreenView* view)
+    : EnrollmentScreen(base_screen_delegate, view) {}
 
 MockEnrollmentScreen::~MockEnrollmentScreen() {
 }
 
-MockEnrollmentScreenActor::MockEnrollmentScreenActor() {
-}
+MockEnrollmentScreenView::MockEnrollmentScreenView() {}
 
-MockEnrollmentScreenActor::~MockEnrollmentScreenActor() {
-}
+MockEnrollmentScreenView::~MockEnrollmentScreenView() {}
 
 }  // namespace chromeos

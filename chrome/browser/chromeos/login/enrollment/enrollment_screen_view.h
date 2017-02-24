@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_ACTOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_ACTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_VIEW_H_
 
 #include <string>
 
@@ -18,8 +18,8 @@ class EnrollmentStatus;
 
 namespace chromeos {
 
-// Interface class for the enterprise enrollment screen actor.
-class EnrollmentScreenActor {
+// Interface class for the enterprise enrollment screen view.
+class EnrollmentScreenView {
  public:
   // This defines the interface for controllers which will be called back when
   // something happens on the UI.
@@ -37,9 +37,9 @@ class EnrollmentScreenActor {
                                            const std::string& location) = 0;
   };
 
-  virtual ~EnrollmentScreenActor() {}
+  virtual ~EnrollmentScreenView() {}
 
-  // Initializes the actor with parameters.
+  // Initializes the view with parameters.
   virtual void SetParameters(Controller* controller,
                              const policy::EnrollmentConfig& config) = 0;
 
@@ -78,4 +78,4 @@ class EnrollmentScreenActor {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_ACTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_VIEW_H_

@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/idle_detector.h"
-#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
+#include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -54,10 +54,10 @@ namespace chromeos {
 
 // NetworkScreenHandler, public: -----------------------------------------------
 
-NetworkScreenHandler::NetworkScreenHandler(CoreOobeActor* core_oobe_actor)
-    : core_oobe_actor_(core_oobe_actor) {
+NetworkScreenHandler::NetworkScreenHandler(CoreOobeView* core_oobe_view)
+    : core_oobe_view_(core_oobe_view) {
   set_call_js_prefix(kJsScreenPath);
-  DCHECK(core_oobe_actor_);
+  DCHECK(core_oobe_view_);
 }
 
 NetworkScreenHandler::~NetworkScreenHandler() {
@@ -65,7 +65,7 @@ NetworkScreenHandler::~NetworkScreenHandler() {
     screen_->OnViewDestroyed(this);
 }
 
-// NetworkScreenHandler, NetworkScreenActor implementation: --------------------
+// NetworkScreenHandler, NetworkScreenView implementation: ---------------------
 
 void NetworkScreenHandler::Show() {
   if (!page_is_ready()) {
@@ -75,13 +75,13 @@ void NetworkScreenHandler::Show() {
 
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
-    if (core_oobe_actor_)
-      core_oobe_actor_->ShowDeviceResetScreen();
+    if (core_oobe_view_)
+      core_oobe_view_->ShowDeviceResetScreen();
 
     return;
   } else if (prefs->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
-    if (core_oobe_actor_)
-      core_oobe_actor_->ShowEnableDebuggingScreen();
+    if (core_oobe_view_)
+      core_oobe_view_->ShowEnableDebuggingScreen();
 
     return;
   }
@@ -98,7 +98,7 @@ void NetworkScreenHandler::Show() {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kSystemDevMode));
   ShowScreenWithData(OobeScreen::SCREEN_OOBE_NETWORK, &network_screen_params);
-  core_oobe_actor_->InitDemoModeDetection();
+  core_oobe_view_->InitDemoModeDetection();
 }
 
 void NetworkScreenHandler::Hide() {
@@ -120,11 +120,11 @@ void NetworkScreenHandler::ShowError(const base::string16& message) {
 
 void NetworkScreenHandler::ClearErrors() {
   if (page_is_ready())
-    core_oobe_actor_->ClearErrors();
+    core_oobe_view_->ClearErrors();
 }
 
 void NetworkScreenHandler::StopDemoModeDetection() {
-  core_oobe_actor_->StopDemoModeDetection();
+  core_oobe_view_->StopDemoModeDetection();
 }
 
 void NetworkScreenHandler::ShowConnectingStatus(
@@ -135,7 +135,7 @@ void NetworkScreenHandler::ShowConnectingStatus(
 void NetworkScreenHandler::ReloadLocalizedContent() {
   base::DictionaryValue localized_strings;
   GetOobeUI()->GetLocalizedStrings(&localized_strings);
-  core_oobe_actor_->ReloadContent(localized_strings);
+  core_oobe_view_->ReloadContent(localized_strings);
 }
 
 // NetworkScreenHandler, BaseScreenHandler implementation: --------------------

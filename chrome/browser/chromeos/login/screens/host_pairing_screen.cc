@@ -20,20 +20,20 @@ using namespace pairing_chromeos;
 HostPairingScreen::HostPairingScreen(
     BaseScreenDelegate* base_screen_delegate,
     Delegate* delegate,
-    HostPairingScreenActor* actor,
+    HostPairingScreenView* view,
     pairing_chromeos::HostPairingController* remora_controller)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_HOST_PAIRING),
       delegate_(delegate),
-      actor_(actor),
+      view_(view),
       remora_controller_(remora_controller),
       weak_ptr_factory_(this) {
-  actor_->SetDelegate(this);
+  view_->SetDelegate(this);
   remora_controller_->AddObserver(this);
 }
 
 HostPairingScreen::~HostPairingScreen() {
-  if (actor_)
-    actor_->SetDelegate(NULL);
+  if (view_)
+    view_->SetDelegate(NULL);
   remora_controller_->RemoveObserver(this);
 }
 
@@ -42,19 +42,19 @@ void HostPairingScreen::CommitContextChanges() {
     return;
   base::DictionaryValue diff;
   context_.GetChangesAndReset(&diff);
-  if (actor_)
-    actor_->OnContextChanged(diff);
+  if (view_)
+    view_->OnContextChanged(diff);
 }
 
 void HostPairingScreen::Show() {
-  if (actor_)
-    actor_->Show();
+  if (view_)
+    view_->Show();
   PairingStageChanged(remora_controller_->GetCurrentStage());
 }
 
 void HostPairingScreen::Hide() {
-  if (actor_)
-    actor_->Hide();
+  if (view_)
+    view_->Hide();
 }
 
 void HostPairingScreen::PairingStageChanged(Stage new_stage) {
@@ -151,9 +151,9 @@ void HostPairingScreen::EnrollHostRequested(const std::string& auth_token) {
       HostPairingController::ENROLLMENT_STATUS_ENROLLING);
 }
 
-void HostPairingScreen::OnActorDestroyed(HostPairingScreenActor* actor) {
-  if (actor_ == actor)
-    actor_ = NULL;
+void HostPairingScreen::OnViewDestroyed(HostPairingScreenView* view) {
+  if (view_ == view)
+    view_ = NULL;
 }
 
 void HostPairingScreen::OnAuthError(const GoogleServiceAuthError& error) {

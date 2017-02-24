@@ -16,7 +16,7 @@
 namespace chromeos {
 
 class NetworkDropdownHandler : public BaseScreenHandler,
-                               public NetworkDropdown::Actor {
+                               public NetworkDropdown::View {
  public:
   class Observer {
    public:

@@ -10,18 +10,18 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
-#include "chrome/browser/chromeos/login/screens/terms_of_service_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/terms_of_service_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
 
-class CoreOobeActor;
+class CoreOobeView;
 
-// The sole implementation of the TermsOfServiceScreenActor, using WebUI.
+// The sole implementation of the TermsOfServiceScreenView, using WebUI.
 class TermsOfServiceScreenHandler : public BaseScreenHandler,
-                                    public TermsOfServiceScreenActor {
+                                    public TermsOfServiceScreenView {
  public:
-  explicit TermsOfServiceScreenHandler(CoreOobeActor* core_oobe_actor);
+  explicit TermsOfServiceScreenHandler(CoreOobeView* core_oobe_view);
   ~TermsOfServiceScreenHandler() override;
 
   // content::WebUIMessageHandler:
@@ -31,7 +31,7 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
 
-  // TermsOfServiceScreenActor:
+  // TermsOfServiceScreenView:
   void SetDelegate(Delegate* screen) override;
   void Show() override;
   void Hide() override;
@@ -70,7 +70,7 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
 
   TermsOfServiceScreenHandler::Delegate* screen_ = nullptr;
 
-  CoreOobeActor* core_oobe_actor_ = nullptr;
+  CoreOobeView* core_oobe_view_ = nullptr;
 
   // Whether the screen should be shown right after initialization.
   bool show_on_init_ = false;

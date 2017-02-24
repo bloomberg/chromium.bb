@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_HOST_PAIRING_SCREEN_ACTOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_HOST_PAIRING_SCREEN_ACTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_HOST_PAIRING_SCREEN_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_HOST_PAIRING_SCREEN_VIEW_H_
 
 #include "base/macros.h"
 
@@ -39,16 +39,16 @@ extern const char kPagePairingDone[];
 
 }  // namespace host_pairing
 
-class HostPairingScreenActor {
+class HostPairingScreenView {
  public:
   class Delegate {
    public:
     virtual ~Delegate() {}
-    virtual void OnActorDestroyed(HostPairingScreenActor* actor) = 0;
+    virtual void OnViewDestroyed(HostPairingScreenView* view) = 0;
   };
 
-  HostPairingScreenActor();
-  virtual ~HostPairingScreenActor();
+  HostPairingScreenView();
+  virtual ~HostPairingScreenView();
 
   virtual void Show() = 0;
   virtual void Hide() = 0;
@@ -56,9 +56,9 @@ class HostPairingScreenActor {
   virtual void OnContextChanged(const base::DictionaryValue& diff) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(HostPairingScreenActor);
+  DISALLOW_COPY_AND_ASSIGN(HostPairingScreenView);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_HOST_PAIRING_SCREEN_ACTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_HOST_PAIRING_SCREEN_VIEW_H_

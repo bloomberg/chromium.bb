@@ -431,14 +431,14 @@ void WebUIScreenLocker::OnKeyboardBoundsChanging(
   if (new_bounds.IsEmpty()) {
     // Keyboard has been hidden.
     if (GetOobeUI()) {
-      GetOobeUI()->GetCoreOobeActor()->ShowControlBar(true);
-      GetOobeUI()->GetCoreOobeActor()->ShowPinKeyboard(true);
+      GetOobeUI()->GetCoreOobeView()->ShowControlBar(true);
+      GetOobeUI()->GetCoreOobeView()->ShowPinKeyboard(true);
     }
   } else {
     // Keyboard has been shown.
     if (GetOobeUI()) {
-      GetOobeUI()->GetCoreOobeActor()->ShowControlBar(false);
-      GetOobeUI()->GetCoreOobeActor()->ShowPinKeyboard(false);
+      GetOobeUI()->GetCoreOobeView()->ShowControlBar(false);
+      GetOobeUI()->GetCoreOobeView()->ShowPinKeyboard(false);
     }
   }
 }
@@ -463,8 +463,8 @@ void WebUIScreenLocker::OnDisplayMetricsChanged(const display::Display& display,
 
   if (GetOobeUI()) {
     const gfx::Size& size = primary_display.size();
-    GetOobeUI()->GetCoreOobeActor()->SetClientAreaSize(size.width(),
-                                                       size.height());
+    GetOobeUI()->GetCoreOobeView()->SetClientAreaSize(size.width(),
+                                                      size.height());
   }
 }
 

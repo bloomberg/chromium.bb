@@ -226,10 +226,10 @@ struct GaiaScreenHandler::GaiaContext {
 GaiaScreenHandler::GaiaContext::GaiaContext() {}
 
 GaiaScreenHandler::GaiaScreenHandler(
-    CoreOobeActor* core_oobe_actor,
+    CoreOobeView* core_oobe_view,
     const scoped_refptr<NetworkStateInformer>& network_state_informer)
     : network_state_informer_(network_state_informer),
-      core_oobe_actor_(core_oobe_actor),
+      core_oobe_view_(core_oobe_view),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
   set_call_js_prefix(kJsScreenPath);
@@ -526,7 +526,7 @@ void GaiaScreenHandler::DoAdAuth(
       break;
     }
     case authpolicy::ERROR_PASSWORD_EXPIRED:
-      core_oobe_actor_->ShowActiveDirectoryPasswordChangeScreen(username);
+      core_oobe_view_->ShowActiveDirectoryPasswordChangeScreen(username);
       break;
     case authpolicy::ERROR_PARSE_UPN_FAILED:
     case authpolicy::ERROR_BAD_USER_NAME:
@@ -874,7 +874,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   LoadAuthExtension(!gaia_silent_load_ /* force */, false /* offline */);
   signin_screen_handler_->UpdateUIState(
       SigninScreenHandler::UI_STATE_GAIA_SIGNIN, nullptr);
-  core_oobe_actor_->UpdateKeyboardState();
+  core_oobe_view_->UpdateKeyboardState();
 
   if (gaia_silent_load_) {
     // The variable is assigned to false because silently loaded Gaia page was
@@ -883,12 +883,12 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   }
   UpdateState(NetworkError::ERROR_REASON_UPDATE);
 
-  if (core_oobe_actor_) {
+  if (core_oobe_view_) {
     PrefService* prefs = g_browser_process->local_state();
     if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
-      core_oobe_actor_->ShowDeviceResetScreen();
+      core_oobe_view_->ShowDeviceResetScreen();
     } else if (prefs->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
-      core_oobe_actor_->ShowEnableDebuggingScreen();
+      core_oobe_view_->ShowEnableDebuggingScreen();
     }
   }
 }

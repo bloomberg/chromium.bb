@@ -10,17 +10,17 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen_view.h"
 
 namespace chromeos {
 
 // Representation independent class that controls screen showing auto launch
 // warning to users.
 class KioskAutolaunchScreen : public BaseScreen,
-                              public KioskAutolaunchScreenActor::Delegate {
+                              public KioskAutolaunchScreenView::Delegate {
  public:
   KioskAutolaunchScreen(BaseScreenDelegate* base_screen_delegate,
-                        KioskAutolaunchScreenActor* actor);
+                        KioskAutolaunchScreenView* view);
   ~KioskAutolaunchScreen() override;
 
   // BaseScreen implementation:
@@ -29,10 +29,10 @@ class KioskAutolaunchScreen : public BaseScreen,
 
   // KioskAutolaunchScreenActor::Delegate implementation:
   void OnExit(bool confirmed) override;
-  void OnActorDestroyed(KioskAutolaunchScreenActor* actor) override;
+  void OnViewDestroyed(KioskAutolaunchScreenView* view) override;
 
  private:
-  KioskAutolaunchScreenActor* actor_;
+  KioskAutolaunchScreenView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAutolaunchScreen);
 };

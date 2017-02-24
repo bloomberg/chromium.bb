@@ -32,7 +32,7 @@ HostPairingScreenHandler::HostPairingScreenHandler() {
 
 HostPairingScreenHandler::~HostPairingScreenHandler() {
   if (delegate_)
-    delegate_->OnActorDestroyed(this);
+    delegate_->OnViewDestroyed(this);
 }
 
 void HostPairingScreenHandler::HandleContextReady() {

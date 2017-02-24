@@ -8,7 +8,7 @@
 #include "base/macros.h"
 
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/controller_pairing_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/controller_pairing_screen_view.h"
 #include "components/login/screens/screen_context.h"
 #include "components/pairing/controller_pairing_controller.h"
 
@@ -17,7 +17,7 @@ namespace chromeos {
 class ControllerPairingScreen
     : public BaseScreen,
       public pairing_chromeos::ControllerPairingController::Observer,
-      public ControllerPairingScreenActor::Delegate {
+      public ControllerPairingScreenView::Delegate {
  public:
   class Delegate {
    public:
@@ -33,7 +33,7 @@ class ControllerPairingScreen
   ControllerPairingScreen(
       BaseScreenDelegate* base_screen_delegate,
       Delegate* delegate,
-      ControllerPairingScreenActor* actor,
+      ControllerPairingScreenView* view,
       pairing_chromeos::ControllerPairingController* shark_controller);
   ~ControllerPairingScreen() override;
 
@@ -52,13 +52,13 @@ class ControllerPairingScreen
   void DiscoveredDevicesListChanged() override;
 
   // Overridden from ControllerPairingView::Delegate:
-  void OnActorDestroyed(ControllerPairingScreenActor* actor) override;
+  void OnViewDestroyed(ControllerPairingScreenView* view) override;
   void OnScreenContextChanged(const base::DictionaryValue& diff) override;
   void OnUserActed(const std::string& action) override;
 
   Delegate* delegate_;
 
-  ControllerPairingScreenActor* actor_;
+  ControllerPairingScreenView* view_;
 
   // Controller performing pairing. Owned by the wizard controller.
   pairing_chromeos::ControllerPairingController* shark_controller_;

@@ -48,7 +48,7 @@ SupervisedUserCreationScreenHandler::SupervisedUserCreationScreenHandler() {
 
 SupervisedUserCreationScreenHandler::~SupervisedUserCreationScreenHandler() {
   if (delegate_) {
-    delegate_->OnActorDestroyed(this);
+    delegate_->OnViewDestroyed(this);
   }
 }
 

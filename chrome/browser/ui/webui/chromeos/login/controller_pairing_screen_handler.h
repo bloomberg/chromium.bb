@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_CONTROLLER_PAIRING_SCREEN_HANDLER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/controller_pairing_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/controller_pairing_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
 
-class ControllerPairingScreenHandler : public ControllerPairingScreenActor,
+class ControllerPairingScreenHandler : public ControllerPairingScreenView,
                                        public BaseScreenHandler {
  public:
   ControllerPairingScreenHandler();
@@ -36,7 +36,7 @@ class ControllerPairingScreenHandler : public ControllerPairingScreenActor,
   void OnContextChanged(const base::DictionaryValue& diff) override;
   content::BrowserContext* GetBrowserContext() override;
 
-  ControllerPairingScreenActor::Delegate* delegate_ = nullptr;
+  ControllerPairingScreenView::Delegate* delegate_ = nullptr;
   bool show_on_init_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerPairingScreenHandler);

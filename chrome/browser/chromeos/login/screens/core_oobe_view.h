@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CORE_OOBE_ACTOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CORE_OOBE_ACTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CORE_OOBE_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CORE_OOBE_VIEW_H_
 
 #include <string>
 
@@ -15,9 +15,9 @@ class DictionaryValue;
 
 namespace chromeos {
 
-class CoreOobeActor {
+class CoreOobeView {
  public:
-  virtual ~CoreOobeActor() {}
+  virtual ~CoreOobeView() {}
 
   virtual void ShowSignInError(int login_attempts,
                                const std::string& error_text,
@@ -49,4 +49,4 @@ class CoreOobeActor {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CORE_OOBE_ACTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CORE_OOBE_VIEW_H_

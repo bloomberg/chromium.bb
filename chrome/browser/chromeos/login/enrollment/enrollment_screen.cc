@@ -74,9 +74,9 @@ EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
 }
 
 EnrollmentScreen::EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
-                                   EnrollmentScreenActor* actor)
+                                   EnrollmentScreenView* view)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_ENROLLMENT),
-      actor_(actor),
+      view_(view),
       weak_ptr_factory_(this) {
   retry_policy_.num_errors_to_ignore = 0;
   retry_policy_.initial_delay_ms = kInitialDelayMS;
@@ -126,7 +126,7 @@ void EnrollmentScreen::SetConfig() {
                        ? policy::EnrollmentConfig::MODE_ATTESTATION_FORCED
                        : policy::EnrollmentConfig::MODE_ATTESTATION;
   }
-  actor_->SetParameters(this, config_);
+  view_->SetParameters(this, config_);
   enrollment_helper_ = nullptr;
 }
 
@@ -182,14 +182,14 @@ void EnrollmentScreen::ShowInteractiveScreen() {
 }
 
 void EnrollmentScreen::Hide() {
-  actor_->Hide();
+  view_->Hide();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void EnrollmentScreen::AuthenticateUsingAttestation() {
   VLOG(1) << "Authenticating using attestation.";
   elapsed_timer_.reset(new base::ElapsedTimer());
-  actor_->Show();
+  view_->Show();
   CreateEnrollmentHelper();
   enrollment_helper_->EnrollUsingAttestation();
 }
@@ -202,7 +202,7 @@ void EnrollmentScreen::OnLoginDone(const std::string& user,
   UMA(enrollment_failed_once_ ? policy::kMetricEnrollmentRestarted
                               : policy::kMetricEnrollmentStarted);
 
-  actor_->ShowEnrollmentSpinnerScreen();
+  view_->ShowEnrollmentSpinnerScreen();
   CreateEnrollmentHelper();
   enrollment_helper_->EnrollUsingAuthCode(
       auth_code, shark_controller_ != nullptr /* fetch_additional_token */);
@@ -256,7 +256,7 @@ void EnrollmentScreen::OnAdJoined(const std::string& realm) {
 
 void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
   RecordEnrollmentErrorMetrics();
-  actor_->ShowAuthError(error);
+  view_->ShowAuthError(error);
 }
 
 void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
@@ -272,7 +272,7 @@ void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
       current_auth_ == AUTH_ATTESTATION && AdvanceToNextAuth()) {
     Show();
   } else {
-    actor_->ShowEnrollmentStatus(status);
+    view_->ShowEnrollmentStatus(status);
     if (UsingHandsOffEnrollment())
       AutomaticRetry();
   }
@@ -281,7 +281,7 @@ void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
 void EnrollmentScreen::OnOtherError(
     EnterpriseEnrollmentHelper::OtherError error) {
   RecordEnrollmentErrorMetrics();
-  actor_->ShowOtherError(error);
+  view_->ShowOtherError(error);
   if (UsingHandsOffEnrollment())
     AutomaticRetry();
 }
@@ -325,10 +325,10 @@ void EnrollmentScreen::OnDeviceAttributeUploadCompleted(bool success) {
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     connector->GetDeviceCloudPolicyManager()->core()->RefreshSoon();
-    actor_->ShowEnrollmentStatus(
+    view_->ShowEnrollmentStatus(
         policy::EnrollmentStatus::ForStatus(policy::EnrollmentStatus::SUCCESS));
   } else {
-    actor_->ShowEnrollmentStatus(policy::EnrollmentStatus::ForStatus(
+    view_->ShowEnrollmentStatus(policy::EnrollmentStatus::ForStatus(
         policy::EnrollmentStatus::ATTRIBUTE_UPDATE_FAILED));
   }
 }
@@ -345,7 +345,7 @@ void EnrollmentScreen::ShowAttributePromptScreen() {
 
   std::string asset_id = policy ? policy->annotated_asset_id() : std::string();
   std::string location = policy ? policy->annotated_location() : std::string();
-  actor_->ShowAttributePromptScreen(asset_id, location);
+  view_->ShowAttributePromptScreen(asset_id, location);
 }
 
 void EnrollmentScreen::SendEnrollmentAuthToken(const std::string& token) {
@@ -360,7 +360,7 @@ void EnrollmentScreen::ShowEnrollmentStatusOnSuccess() {
   if (UsingHandsOffEnrollment()) {
     OnConfirmationClosed();
   } else {
-    actor_->ShowEnrollmentStatus(
+    view_->ShowEnrollmentStatus(
         policy::EnrollmentStatus::ForStatus(policy::EnrollmentStatus::SUCCESS));
   }
 }
@@ -370,8 +370,8 @@ void EnrollmentScreen::UMA(policy::MetricEnrollment sample) {
 }
 
 void EnrollmentScreen::ShowSigninScreen() {
-  actor_->Show();
-  actor_->ShowSigninScreen();
+  view_->Show();
+  view_->ShowSigninScreen();
 }
 
 void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
@@ -383,7 +383,7 @@ void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
 
 void EnrollmentScreen::JoinDomain(OnDomainJoinedCallback on_joined_callback) {
   on_joined_callback_ = std::move(on_joined_callback);
-  actor_->ShowAdJoin();
+  view_->ShowAdJoin();
 }
 
 }  // namespace chromeos

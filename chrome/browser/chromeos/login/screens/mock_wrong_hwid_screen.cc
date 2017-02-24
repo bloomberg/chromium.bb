@@ -11,23 +11,22 @@ namespace chromeos {
 
 MockWrongHWIDScreen::MockWrongHWIDScreen(
     BaseScreenDelegate* base_screen_delegate,
-    WrongHWIDScreenActor* actor)
-    : WrongHWIDScreen(base_screen_delegate, actor) {
-}
+    WrongHWIDScreenView* view)
+    : WrongHWIDScreen(base_screen_delegate, view) {}
 
 MockWrongHWIDScreen::~MockWrongHWIDScreen() {
 }
 
-MockWrongHWIDScreenActor::MockWrongHWIDScreenActor() : delegate_(nullptr) {
+MockWrongHWIDScreenView::MockWrongHWIDScreenView() : delegate_(nullptr) {
   EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
 }
 
-MockWrongHWIDScreenActor::~MockWrongHWIDScreenActor() {
+MockWrongHWIDScreenView::~MockWrongHWIDScreenView() {
   if (delegate_)
-    delegate_->OnActorDestroyed(this);
+    delegate_->OnViewDestroyed(this);
 }
 
-void MockWrongHWIDScreenActor::SetDelegate(Delegate* delegate) {
+void MockWrongHWIDScreenView::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
   MockSetDelegate(delegate);
 }

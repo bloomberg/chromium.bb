@@ -9,13 +9,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/login/screens/kiosk_enable_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/kiosk_enable_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
 
 // WebUI implementation of KioskEnableScreenActor.
-class KioskEnableScreenHandler : public KioskEnableScreenActor,
+class KioskEnableScreenHandler : public KioskEnableScreenView,
                                  public BaseScreenHandler {
  public:
   KioskEnableScreenHandler();

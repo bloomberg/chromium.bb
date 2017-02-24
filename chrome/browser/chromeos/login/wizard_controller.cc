@@ -372,41 +372,41 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_OOBE_EULA) {
     return new EulaScreen(this, this, oobe_ui_->GetEulaView());
   } else if (screen == OobeScreen::SCREEN_OOBE_ENROLLMENT) {
-    return new EnrollmentScreen(this, oobe_ui_->GetEnrollmentScreenActor());
+    return new EnrollmentScreen(this, oobe_ui_->GetEnrollmentScreenView());
   } else if (screen == OobeScreen::SCREEN_OOBE_RESET) {
     return new chromeos::ResetScreen(this, oobe_ui_->GetResetView());
   } else if (screen == OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING) {
     return new EnableDebuggingScreen(this,
-                                     oobe_ui_->GetEnableDebuggingScreenActor());
+                                     oobe_ui_->GetEnableDebuggingScreenView());
   } else if (screen == OobeScreen::SCREEN_KIOSK_ENABLE) {
-    return new KioskEnableScreen(this, oobe_ui_->GetKioskEnableScreenActor());
+    return new KioskEnableScreen(this, oobe_ui_->GetKioskEnableScreenView());
   } else if (screen == OobeScreen::SCREEN_KIOSK_AUTOLAUNCH) {
     return new KioskAutolaunchScreen(this,
-                                     oobe_ui_->GetKioskAutolaunchScreenActor());
+                                     oobe_ui_->GetKioskAutolaunchScreenView());
   } else if (screen == OobeScreen::SCREEN_TERMS_OF_SERVICE) {
     return new TermsOfServiceScreen(this,
-                                    oobe_ui_->GetTermsOfServiceScreenActor());
+                                    oobe_ui_->GetTermsOfServiceScreenView());
   } else if (screen == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE) {
     return new ArcTermsOfServiceScreen(
-        this, oobe_ui_->GetArcTermsOfServiceScreenActor());
+        this, oobe_ui_->GetArcTermsOfServiceScreenView());
   } else if (screen == OobeScreen::SCREEN_WRONG_HWID) {
-    return new WrongHWIDScreen(this, oobe_ui_->GetWrongHWIDScreenActor());
+    return new WrongHWIDScreen(this, oobe_ui_->GetWrongHWIDScreenView());
   } else if (screen == OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW) {
     return new SupervisedUserCreationScreen(
-        this, oobe_ui_->GetSupervisedUserCreationScreenActor());
+        this, oobe_ui_->GetSupervisedUserCreationScreenView());
   } else if (screen == OobeScreen::SCREEN_OOBE_HID_DETECTION) {
     return new chromeos::HIDDetectionScreen(this,
                                             oobe_ui_->GetHIDDetectionView());
   } else if (screen == OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK) {
     return new AutoEnrollmentCheckScreen(
-        this, oobe_ui_->GetAutoEnrollmentCheckScreenActor());
+        this, oobe_ui_->GetAutoEnrollmentCheckScreenView());
   } else if (screen == OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING) {
     if (!shark_controller_) {
       shark_controller_.reset(
           new pairing_chromeos::BluetoothControllerPairingController());
     }
     return new ControllerPairingScreen(
-        this, this, oobe_ui_->GetControllerPairingScreenActor(),
+        this, this, oobe_ui_->GetControllerPairingScreenView(),
         shark_controller_.get());
   } else if (screen == OobeScreen::SCREEN_OOBE_HOST_PAIRING) {
     if (!remora_controller_) {
@@ -416,11 +416,11 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
       remora_controller_->StartPairing();
     }
     return new HostPairingScreen(this, this,
-                                 oobe_ui_->GetHostPairingScreenActor(),
+                                 oobe_ui_->GetHostPairingScreenView(),
                                  remora_controller_.get());
   } else if (screen == OobeScreen::SCREEN_DEVICE_DISABLED) {
     return new DeviceDisabledScreen(this,
-                                    oobe_ui_->GetDeviceDisabledScreenActor());
+                                    oobe_ui_->GetDeviceDisabledScreenView());
   }
 
   return nullptr;

@@ -150,11 +150,11 @@ AppLaunchController::AppLaunchController(const std::string& app_id,
       diagnostic_mode_(diagnostic_mode),
       host_(host),
       oobe_ui_(oobe_ui),
-      app_launch_splash_screen_actor_(
-          oobe_ui_->GetAppLaunchSplashScreenActor()) {}
+      app_launch_splash_screen_view_(oobe_ui_->GetAppLaunchSplashScreenView()) {
+}
 
 AppLaunchController::~AppLaunchController() {
-  app_launch_splash_screen_actor_->SetDelegate(NULL);
+  app_launch_splash_screen_view_->SetDelegate(NULL);
 }
 
 void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
@@ -173,8 +173,8 @@ void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
   launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
 
   // TODO(tengs): Add a loading profile app launch state.
-  app_launch_splash_screen_actor_->SetDelegate(this);
-  app_launch_splash_screen_actor_->Show(app_id_);
+  app_launch_splash_screen_view_->SetDelegate(this);
+  app_launch_splash_screen_view_->Show(app_id_);
 
   KioskAppManager::App app;
   CHECK(KioskAppManager::Get());
@@ -280,8 +280,8 @@ void AppLaunchController::OnNetworkConfigRequested(bool requested) {
   if (requested) {
     MaybeShowNetworkConfigureUI();
   } else {
-    app_launch_splash_screen_actor_->UpdateAppLaunchState(
-        AppLaunchSplashScreenActor::APP_LAUNCH_STATE_PREPARING_NETWORK);
+    app_launch_splash_screen_view_->UpdateAppLaunchState(
+        AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
     startup_app_launcher_->RestartLauncher();
   }
 }
@@ -381,28 +381,28 @@ void AppLaunchController::MaybeShowNetworkConfigureUI() {
       if (network_config_requested_)
         OnConfigureNetwork();
       else
-        app_launch_splash_screen_actor_->ToggleNetworkConfig(true);
+        app_launch_splash_screen_view_->ToggleNetworkConfig(true);
     } else {
       ShowNetworkConfigureUIWhenReady();
     }
   } else {
-    app_launch_splash_screen_actor_->UpdateAppLaunchState(
-        AppLaunchSplashScreenActor::APP_LAUNCH_STATE_NETWORK_WAIT_TIMEOUT);
+    app_launch_splash_screen_view_->UpdateAppLaunchState(
+        AppLaunchSplashScreenView::APP_LAUNCH_STATE_NETWORK_WAIT_TIMEOUT);
   }
 }
 
 void AppLaunchController::ShowNetworkConfigureUIWhenReady() {
   if (!profile_) {
     show_network_config_ui_after_profile_load_ = true;
-    app_launch_splash_screen_actor_->UpdateAppLaunchState(
-        AppLaunchSplashScreenActor::
+    app_launch_splash_screen_view_->UpdateAppLaunchState(
+        AppLaunchSplashScreenView::
             APP_LAUNCH_STATE_SHOWING_NETWORK_CONFIGURE_UI);
     return;
   }
 
   show_network_config_ui_after_profile_load_ = false;
   showing_network_dialog_ = true;
-  app_launch_splash_screen_actor_->ShowNetworkConfigureUI();
+  app_launch_splash_screen_view_->ShowNetworkConfigureUI();
 }
 
 void AppLaunchController::InitializeNetwork() {
@@ -414,12 +414,12 @@ void AppLaunchController::InitializeNetwork() {
       base::TimeDelta::FromSeconds(network_wait_time_),
       this, &AppLaunchController::OnNetworkWaitTimedout);
 
-  app_launch_splash_screen_actor_->UpdateAppLaunchState(
-      AppLaunchSplashScreenActor::APP_LAUNCH_STATE_PREPARING_NETWORK);
+  app_launch_splash_screen_view_->UpdateAppLaunchState(
+      AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
 }
 
 bool AppLaunchController::IsNetworkReady() {
-  return app_launch_splash_screen_actor_->IsNetworkReady();
+  return app_launch_splash_screen_view_->IsNetworkReady();
 }
 
 bool AppLaunchController::ShouldSkipAppInstallation() {
@@ -427,26 +427,26 @@ bool AppLaunchController::ShouldSkipAppInstallation() {
 }
 
 void AppLaunchController::OnLoadingOAuthFile() {
-  app_launch_splash_screen_actor_->UpdateAppLaunchState(
-      AppLaunchSplashScreenActor::APP_LAUNCH_STATE_LOADING_AUTH_FILE);
+  app_launch_splash_screen_view_->UpdateAppLaunchState(
+      AppLaunchSplashScreenView::APP_LAUNCH_STATE_LOADING_AUTH_FILE);
 }
 
 void AppLaunchController::OnInitializingTokenService() {
-  app_launch_splash_screen_actor_->UpdateAppLaunchState(
-      AppLaunchSplashScreenActor::APP_LAUNCH_STATE_LOADING_TOKEN_SERVICE);
+  app_launch_splash_screen_view_->UpdateAppLaunchState(
+      AppLaunchSplashScreenView::APP_LAUNCH_STATE_LOADING_TOKEN_SERVICE);
 }
 
 void AppLaunchController::OnInstallingApp() {
-  app_launch_splash_screen_actor_->UpdateAppLaunchState(
-      AppLaunchSplashScreenActor::APP_LAUNCH_STATE_INSTALLING_APPLICATION);
+  app_launch_splash_screen_view_->UpdateAppLaunchState(
+      AppLaunchSplashScreenView::APP_LAUNCH_STATE_INSTALLING_APPLICATION);
 
   ClearNetworkWaitTimer();
-  app_launch_splash_screen_actor_->ToggleNetworkConfig(false);
+  app_launch_splash_screen_view_->ToggleNetworkConfig(false);
 
   // We have connectivity at this point, so we can skip the network
   // configuration dialog if it is being shown.
   if (showing_network_dialog_) {
-    app_launch_splash_screen_actor_->Show(app_id_);
+    app_launch_splash_screen_view_->Show(app_id_);
     showing_network_dialog_ = false;
     launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
   }
@@ -488,8 +488,8 @@ void AppLaunchController::OnReadyToLaunch() {
 
 void AppLaunchController::OnLaunchSucceeded() {
   DVLOG(1) << "Kiosk launch succeeded, wait for app window.";
-  app_launch_splash_screen_actor_->UpdateAppLaunchState(
-      AppLaunchSplashScreenActor::APP_LAUNCH_STATE_WAITING_APP_WINDOW);
+  app_launch_splash_screen_view_->UpdateAppLaunchState(
+      AppLaunchSplashScreenView::APP_LAUNCH_STATE_WAITING_APP_WINDOW);
 
   DCHECK(!app_window_watcher_);
   app_window_watcher_.reset(new AppWindowWatcher(this, app_id_));

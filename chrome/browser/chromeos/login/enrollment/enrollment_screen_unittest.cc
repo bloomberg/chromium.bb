@@ -77,7 +77,7 @@ class EnrollmentScreenUnitTest : public testing::Test {
   // Creates the EnrollmentScreen and sets required parameters.
   void SetUpEnrollmentScreen() {
     enrollment_screen_.reset(
-        new EnrollmentScreen(&mock_delegate_, &mock_actor_));
+        new EnrollmentScreen(&mock_delegate_, &mock_view_));
     enrollment_screen_->SetParameters(enrollment_config_, &fake_controller_);
   }
 
@@ -116,7 +116,7 @@ class EnrollmentScreenUnitTest : public testing::Test {
   policy::EnrollmentConfig enrollment_config_;
   pairing_chromeos::FakeControllerPairingController fake_controller_;
   MockBaseScreenDelegate mock_delegate_;
-  MockEnrollmentScreenActor mock_actor_;
+  MockEnrollmentScreenView mock_view_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreenUnitTest);
 };

@@ -23,7 +23,7 @@ DeviceDisabledScreenHandler::DeviceDisabledScreenHandler() {
 
 DeviceDisabledScreenHandler::~DeviceDisabledScreenHandler() {
   if (delegate_)
-    delegate_->OnActorDestroyed(this);
+    delegate_->OnViewDestroyed(this);
 }
 
 void DeviceDisabledScreenHandler::Show() {

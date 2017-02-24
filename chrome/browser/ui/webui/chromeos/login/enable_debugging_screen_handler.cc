@@ -41,7 +41,7 @@ EnableDebuggingScreenHandler::EnableDebuggingScreenHandler()
 
 EnableDebuggingScreenHandler::~EnableDebuggingScreenHandler() {
   if (delegate_)
-    delegate_->OnActorDestroyed(this);
+    delegate_->OnViewDestroyed(this);
 }
 
 void EnableDebuggingScreenHandler::ShowWithParams() {

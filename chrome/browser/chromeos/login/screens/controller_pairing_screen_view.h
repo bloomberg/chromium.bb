@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CONTROLLER_PAIRING_SCREEN_ACTOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CONTROLLER_PAIRING_SCREEN_ACTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CONTROLLER_PAIRING_SCREEN_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CONTROLLER_PAIRING_SCREEN_VIEW_H_
 
 #include <string>
 
@@ -59,18 +59,18 @@ extern const char kActionStartSession[];
 
 }  // namespace controller_pairing
 
-class ControllerPairingScreenActor {
+class ControllerPairingScreenView {
  public:
   class Delegate {
    public:
     virtual ~Delegate() {}
-    virtual void OnActorDestroyed(ControllerPairingScreenActor* actor) = 0;
+    virtual void OnViewDestroyed(ControllerPairingScreenView* view) = 0;
     virtual void OnScreenContextChanged(const base::DictionaryValue& diff) = 0;
     virtual void OnUserActed(const std::string& action) = 0;
   };
 
-  ControllerPairingScreenActor();
-  virtual ~ControllerPairingScreenActor();
+  ControllerPairingScreenView();
+  virtual ~ControllerPairingScreenView();
 
   virtual void Show() = 0;
   virtual void Hide() = 0;
@@ -79,9 +79,9 @@ class ControllerPairingScreenActor {
   virtual content::BrowserContext* GetBrowserContext() = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ControllerPairingScreenActor);
+  DISALLOW_COPY_AND_ASSIGN(ControllerPairingScreenView);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CONTROLLER_PAIRING_SCREEN_ACTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_CONTROLLER_PAIRING_SCREEN_VIEW_H_

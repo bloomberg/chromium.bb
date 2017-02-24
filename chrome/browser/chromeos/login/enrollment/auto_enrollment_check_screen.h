@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
@@ -29,12 +29,12 @@ class ScreenManager;
 // the error screen upon failures. Similar to a screen controller, but it
 // doesn't actually drive a dedicated screen.
 class AutoEnrollmentCheckScreen
-    : public AutoEnrollmentCheckScreenActor::Delegate,
+    : public AutoEnrollmentCheckScreenView::Delegate,
       public BaseScreen,
       public NetworkPortalDetector::Observer {
  public:
   AutoEnrollmentCheckScreen(BaseScreenDelegate* base_screen_delegate,
-                            AutoEnrollmentCheckScreenActor* actor);
+                            AutoEnrollmentCheckScreenView* view);
   ~AutoEnrollmentCheckScreen() override;
 
   static AutoEnrollmentCheckScreen* Get(ScreenManager* manager);
@@ -51,8 +51,8 @@ class AutoEnrollmentCheckScreen
   void Show() override;
   void Hide() override;
 
-  // AutoEnrollmentCheckScreenActor::Delegate implementation:
-  void OnActorDestroyed(AutoEnrollmentCheckScreenActor* actor) override;
+  // AutoEnrollmentCheckScreenView::Delegate implementation:
+  void OnViewDestroyed(AutoEnrollmentCheckScreenView* view) override;
 
   // NetworkPortalDetector::Observer implementation:
   void OnPortalDetectionCompleted(
@@ -90,7 +90,7 @@ class AutoEnrollmentCheckScreen
   // The user requested a connection attempt to be performed.
   void OnConnectRequested();
 
-  AutoEnrollmentCheckScreenActor* actor_;
+  AutoEnrollmentCheckScreenView* view_;
   AutoEnrollmentController* auto_enrollment_controller_;
 
   std::unique_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>

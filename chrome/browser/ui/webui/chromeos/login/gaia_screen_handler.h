@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
+#include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -41,7 +41,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   };
 
   GaiaScreenHandler(
-      CoreOobeActor* core_oobe_actor,
+      CoreOobeView* core_oobe_view,
       const scoped_refptr<NetworkStateInformer>& network_state_informer);
   ~GaiaScreenHandler() override;
 
@@ -220,7 +220,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
-  CoreOobeActor* core_oobe_actor_ = nullptr;
+  CoreOobeView* core_oobe_view_ = nullptr;
 
   // Email to pre-populate with.
   std::string populated_email_;

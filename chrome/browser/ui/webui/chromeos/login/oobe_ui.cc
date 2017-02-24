@@ -17,8 +17,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
-#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_view.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -235,7 +235,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   auto debugging_screen_handler =
       base::MakeUnique<EnableDebuggingScreenHandler>();
-  debugging_screen_actor_ = debugging_screen_handler.get();
+  debugging_screen_view_ = debugging_screen_handler.get();
   AddScreenHandler(std::move(debugging_screen_handler));
 
   auto eula_screen_handler = base::MakeUnique<EulaScreenHandler>(core_handler_);
@@ -248,27 +248,27 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   auto autolaunch_screen_handler =
       base::MakeUnique<KioskAutolaunchScreenHandler>();
-  autolaunch_screen_actor_ = autolaunch_screen_handler.get();
+  autolaunch_screen_view_ = autolaunch_screen_handler.get();
   AddScreenHandler(std::move(autolaunch_screen_handler));
 
   auto kiosk_enable_screen_handler =
       base::MakeUnique<KioskEnableScreenHandler>();
-  kiosk_enable_screen_actor_ = kiosk_enable_screen_handler.get();
+  kiosk_enable_screen_view_ = kiosk_enable_screen_handler.get();
   AddScreenHandler(std::move(kiosk_enable_screen_handler));
 
   auto supervised_user_creation_screen_handler =
       base::MakeUnique<SupervisedUserCreationScreenHandler>();
-  supervised_user_creation_screen_actor_ =
+  supervised_user_creation_screen_view_ =
       supervised_user_creation_screen_handler.get();
   AddScreenHandler(std::move(supervised_user_creation_screen_handler));
 
   auto wrong_hwid_screen_handler = base::MakeUnique<WrongHWIDScreenHandler>();
-  wrong_hwid_screen_actor_ = wrong_hwid_screen_handler.get();
+  wrong_hwid_screen_view_ = wrong_hwid_screen_handler.get();
   AddScreenHandler(std::move(wrong_hwid_screen_handler));
 
   auto auto_enrollment_check_screen_handler =
       base::MakeUnique<AutoEnrollmentCheckScreenHandler>();
-  auto_enrollment_check_screen_actor_ =
+  auto_enrollment_check_screen_view_ =
       auto_enrollment_check_screen_handler.get();
   AddScreenHandler(std::move(auto_enrollment_check_screen_handler));
 
@@ -287,18 +287,17 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   auto enrollment_screen_handler = base::MakeUnique<EnrollmentScreenHandler>(
       network_state_informer_, error_screen);
-  enrollment_screen_actor_ = enrollment_screen_handler.get();
+  enrollment_screen_view_ = enrollment_screen_handler.get();
   AddScreenHandler(std::move(enrollment_screen_handler));
 
   auto terms_of_service_screen_handler =
       base::MakeUnique<TermsOfServiceScreenHandler>(core_handler_);
-  terms_of_service_screen_actor_ = terms_of_service_screen_handler.get();
+  terms_of_service_screen_view_ = terms_of_service_screen_handler.get();
   AddScreenHandler(std::move(terms_of_service_screen_handler));
 
   auto arc_terms_of_service_screen_handler =
       base::MakeUnique<ArcTermsOfServiceScreenHandler>();
-  arc_terms_of_service_screen_actor_ =
-      arc_terms_of_service_screen_handler.get();
+  arc_terms_of_service_screen_view_ = arc_terms_of_service_screen_handler.get();
   AddScreenHandler(std::move(arc_terms_of_service_screen_handler));
 
   auto user_image_screen_handler = base::MakeUnique<UserImageScreenHandler>();
@@ -323,28 +322,28 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   auto app_launch_splash_screen_handler =
       base::MakeUnique<AppLaunchSplashScreenHandler>(network_state_informer_,
                                                      error_screen);
-  app_launch_splash_screen_actor_ = app_launch_splash_screen_handler.get();
+  app_launch_splash_screen_view_ = app_launch_splash_screen_handler.get();
   AddScreenHandler(std::move(app_launch_splash_screen_handler));
 
   auto arc_kiosk_splash_screen_handler =
       base::MakeUnique<ArcKioskSplashScreenHandler>();
-  arc_kiosk_splash_screen_actor_ = arc_kiosk_splash_screen_handler.get();
+  arc_kiosk_splash_screen_view_ = arc_kiosk_splash_screen_handler.get();
   AddScreenHandler(std::move(arc_kiosk_splash_screen_handler));
 
   if (display_type_ == kOobeDisplay) {
     auto controller_pairing_handler =
         base::MakeUnique<ControllerPairingScreenHandler>();
-    controller_pairing_screen_actor_ = controller_pairing_handler.get();
+    controller_pairing_screen_view_ = controller_pairing_handler.get();
     AddScreenHandler(std::move(controller_pairing_handler));
 
     auto host_pairing_handler = base::MakeUnique<HostPairingScreenHandler>();
-    host_pairing_screen_actor_ = host_pairing_handler.get();
+    host_pairing_screen_view_ = host_pairing_handler.get();
     AddScreenHandler(std::move(host_pairing_handler));
   }
 
   auto device_disabled_screen_handler =
       base::MakeUnique<DeviceDisabledScreenHandler>();
-  device_disabled_screen_actor_ = device_disabled_screen_handler.get();
+  device_disabled_screen_view_ = device_disabled_screen_handler.get();
   AddScreenHandler(std::move(device_disabled_screen_handler));
 
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
@@ -392,7 +391,7 @@ OobeUI::~OobeUI() {
   }
 }
 
-CoreOobeActor* OobeUI::GetCoreOobeActor() {
+CoreOobeView* OobeUI::GetCoreOobeView() {
   return core_handler_;
 }
 
@@ -408,56 +407,56 @@ UpdateView* OobeUI::GetUpdateView() {
   return update_view_;
 }
 
-EnableDebuggingScreenActor* OobeUI::GetEnableDebuggingScreenActor() {
-  return debugging_screen_actor_;
+EnableDebuggingScreenView* OobeUI::GetEnableDebuggingScreenView() {
+  return debugging_screen_view_;
 }
 
-EnrollmentScreenActor* OobeUI::GetEnrollmentScreenActor() {
-  return enrollment_screen_actor_;
+EnrollmentScreenView* OobeUI::GetEnrollmentScreenView() {
+  return enrollment_screen_view_;
 }
 
 ResetView* OobeUI::GetResetView() {
   return reset_view_;
 }
 
-KioskAutolaunchScreenActor* OobeUI::GetKioskAutolaunchScreenActor() {
-  return autolaunch_screen_actor_;
+KioskAutolaunchScreenView* OobeUI::GetKioskAutolaunchScreenView() {
+  return autolaunch_screen_view_;
 }
 
-KioskEnableScreenActor* OobeUI::GetKioskEnableScreenActor() {
-  return kiosk_enable_screen_actor_;
+KioskEnableScreenView* OobeUI::GetKioskEnableScreenView() {
+  return kiosk_enable_screen_view_;
 }
 
-TermsOfServiceScreenActor* OobeUI::GetTermsOfServiceScreenActor() {
-  return terms_of_service_screen_actor_;
+TermsOfServiceScreenView* OobeUI::GetTermsOfServiceScreenView() {
+  return terms_of_service_screen_view_;
 }
 
-ArcTermsOfServiceScreenActor* OobeUI::GetArcTermsOfServiceScreenActor() {
-  return arc_terms_of_service_screen_actor_;
+ArcTermsOfServiceScreenView* OobeUI::GetArcTermsOfServiceScreenView() {
+  return arc_terms_of_service_screen_view_;
 }
 
-WrongHWIDScreenActor* OobeUI::GetWrongHWIDScreenActor() {
-  return wrong_hwid_screen_actor_;
+WrongHWIDScreenView* OobeUI::GetWrongHWIDScreenView() {
+  return wrong_hwid_screen_view_;
 }
 
-AutoEnrollmentCheckScreenActor* OobeUI::GetAutoEnrollmentCheckScreenActor() {
-  return auto_enrollment_check_screen_actor_;
+AutoEnrollmentCheckScreenView* OobeUI::GetAutoEnrollmentCheckScreenView() {
+  return auto_enrollment_check_screen_view_;
 }
 
 HIDDetectionView* OobeUI::GetHIDDetectionView() {
   return hid_detection_view_;
 }
 
-ControllerPairingScreenActor* OobeUI::GetControllerPairingScreenActor() {
-  return controller_pairing_screen_actor_;
+ControllerPairingScreenView* OobeUI::GetControllerPairingScreenView() {
+  return controller_pairing_screen_view_;
 }
 
-HostPairingScreenActor* OobeUI::GetHostPairingScreenActor() {
-  return host_pairing_screen_actor_;
+HostPairingScreenView* OobeUI::GetHostPairingScreenView() {
+  return host_pairing_screen_view_;
 }
 
-DeviceDisabledScreenActor* OobeUI::GetDeviceDisabledScreenActor() {
-  return device_disabled_screen_actor_;
+DeviceDisabledScreenView* OobeUI::GetDeviceDisabledScreenView() {
+  return device_disabled_screen_view_;
 }
 
 UserImageView* OobeUI::GetUserImageView() {
@@ -469,15 +468,15 @@ ErrorScreen* OobeUI::GetErrorScreen() {
 }
 
 SupervisedUserCreationScreenHandler*
-    OobeUI::GetSupervisedUserCreationScreenActor() {
-  return supervised_user_creation_screen_actor_;
+OobeUI::GetSupervisedUserCreationScreenView() {
+  return supervised_user_creation_screen_view_;
 }
 
-GaiaScreenHandler* OobeUI::GetGaiaScreenActor() {
+GaiaScreenHandler* OobeUI::GetGaiaScreenView() {
   return gaia_screen_handler_;
 }
 
-UserBoardView* OobeUI::GetUserBoardScreenActor() {
+UserBoardView* OobeUI::GetUserBoardView() {
   return user_board_screen_handler_;
 }
 
@@ -485,13 +484,12 @@ void OobeUI::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
   core_handler_->UpdateShutdownAndRebootVisibility(reboot_on_shutdown);
 }
 
-AppLaunchSplashScreenActor*
-      OobeUI::GetAppLaunchSplashScreenActor() {
-  return app_launch_splash_screen_actor_;
+AppLaunchSplashScreenView* OobeUI::GetAppLaunchSplashScreenView() {
+  return app_launch_splash_screen_view_;
 }
 
-ArcKioskSplashScreenActor* OobeUI::GetArcKioskSplashScreenActor() {
-  return arc_kiosk_splash_screen_actor_;
+ArcKioskSplashScreenView* OobeUI::GetArcKioskSplashScreenView() {
+  return arc_kiosk_splash_screen_view_;
 }
 
 void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
@@ -642,7 +640,7 @@ void OobeUI::UpdateLocalizedStringsIfNeeded() {
 
   base::DictionaryValue localized_strings;
   GetLocalizedStrings(&localized_strings);
-  static_cast<CoreOobeActor*>(core_handler_)->ReloadContent(localized_strings);
+  static_cast<CoreOobeView*>(core_handler_)->ReloadContent(localized_strings);
 }
 
 }  // namespace chromeos

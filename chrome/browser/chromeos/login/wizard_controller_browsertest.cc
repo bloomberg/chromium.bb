@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_device_disabled_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/mock_device_disabled_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/mock_enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_network_screen.h"
@@ -200,13 +200,12 @@ template <class T, class H>
 class MockOutShowHide : public T {
  public:
   template <class P> explicit  MockOutShowHide(P p) : T(p) {}
-  template <class P> MockOutShowHide(P p, H* actor)
-      : T(p, actor), actor_(actor) {}
+  template <class P>
+  MockOutShowHide(P p, H* view) : T(p, view), view_(view) {}
   template <class P, class Q>
-  MockOutShowHide(P p, Q q, H* actor)
-      : T(p, q, actor), actor_(actor) {}
+  MockOutShowHide(P p, Q q, H* view) : T(p, q, view), view_(view) {}
 
-  H* actor() const { return actor_.get(); }
+  H* view() const { return view_.get(); }
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
@@ -220,24 +219,24 @@ class MockOutShowHide : public T {
   }
 
  private:
-  std::unique_ptr<H> actor_;
+  std::unique_ptr<H> view_;
 };
 
-#define MOCK(mock_var, screen_name, mocked_class, actor_class)    \
-  mock_var = new MockOutShowHide<mocked_class, actor_class>(      \
-      WizardController::default_controller(), new actor_class);   \
+#define MOCK(mock_var, screen_name, mocked_class, view_class)     \
+  mock_var = new MockOutShowHide<mocked_class, view_class>(       \
+      WizardController::default_controller(), new view_class);    \
   WizardController::default_controller()->screens_[screen_name] = \
       make_linked_ptr(mock_var);                                  \
   EXPECT_CALL(*mock_var, Show()).Times(0);                        \
   EXPECT_CALL(*mock_var, Hide()).Times(0);
 
-#define MOCK_WITH_DELEGATE(mock_var, screen_name, mocked_class, actor_class) \
-  mock_var = new MockOutShowHide<mocked_class, actor_class>(                 \
-      WizardController::default_controller(),                                \
-      WizardController::default_controller(), new actor_class);              \
-  WizardController::default_controller()->screens_[screen_name] =            \
-      make_linked_ptr(mock_var);                                             \
-  EXPECT_CALL(*mock_var, Show()).Times(0);                                   \
+#define MOCK_WITH_DELEGATE(mock_var, screen_name, mocked_class, view_class) \
+  mock_var = new MockOutShowHide<mocked_class, view_class>(                 \
+      WizardController::default_controller(),                               \
+      WizardController::default_controller(), new view_class);              \
+  WizardController::default_controller()->screens_[screen_name] =           \
+      make_linked_ptr(mock_var);                                            \
+  EXPECT_CALL(*mock_var, Show()).Times(0);                                  \
   EXPECT_CALL(*mock_var, Hide()).Times(0);
 
 class WizardControllerTest : public WizardInProcessBrowserTest {
@@ -433,20 +432,20 @@ class WizardControllerFlowTest : public WizardControllerTest {
     MOCK_WITH_DELEGATE(mock_eula_screen_, OobeScreen::SCREEN_OOBE_EULA,
                        MockEulaScreen, MockEulaView);
     MOCK(mock_enrollment_screen_, OobeScreen::SCREEN_OOBE_ENROLLMENT,
-         MockEnrollmentScreen, MockEnrollmentScreenActor);
+         MockEnrollmentScreen, MockEnrollmentScreenView);
     MOCK(mock_auto_enrollment_check_screen_,
          OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
-         MockAutoEnrollmentCheckScreen, MockAutoEnrollmentCheckScreenActor);
+         MockAutoEnrollmentCheckScreen, MockAutoEnrollmentCheckScreenView);
     MOCK(mock_wrong_hwid_screen_, OobeScreen::SCREEN_WRONG_HWID,
-         MockWrongHWIDScreen, MockWrongHWIDScreenActor);
+         MockWrongHWIDScreen, MockWrongHWIDScreenView);
     MOCK(mock_enable_debugging_screen_,
          OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING, MockEnableDebuggingScreen,
-         MockEnableDebuggingScreenActor);
-    device_disabled_screen_actor_.reset(new MockDeviceDisabledScreenActor);
+         MockEnableDebuggingScreenView);
+    device_disabled_screen_view_.reset(new MockDeviceDisabledScreenView);
     wizard_controller->screens_[OobeScreen::SCREEN_DEVICE_DISABLED] =
         make_linked_ptr(new DeviceDisabledScreen(
-            wizard_controller, device_disabled_screen_actor_.get()));
-    EXPECT_CALL(*device_disabled_screen_actor_, Show()).Times(0);
+            wizard_controller, device_disabled_screen_view_.get()));
+    EXPECT_CALL(*device_disabled_screen_view_, Show()).Times(0);
 
     // Switch to the initial screen.
     EXPECT_EQ(NULL, wizard_controller->current_screen());
@@ -456,7 +455,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
 
   void TearDownOnMainThread() override {
     mock_network_screen_.reset();
-    device_disabled_screen_actor_.reset();
+    device_disabled_screen_view_.reset();
     WizardControllerTest::TearDownOnMainThread();
   }
 
@@ -520,15 +519,16 @@ class WizardControllerFlowTest : public WizardControllerTest {
   linked_ptr<MockNetworkScreen> mock_network_screen_;
   MockOutShowHide<MockUpdateScreen, MockUpdateView>* mock_update_screen_;
   MockOutShowHide<MockEulaScreen, MockEulaView>* mock_eula_screen_;
-  MockOutShowHide<MockEnrollmentScreen,
-      MockEnrollmentScreenActor>* mock_enrollment_screen_;
+  MockOutShowHide<MockEnrollmentScreen, MockEnrollmentScreenView>*
+      mock_enrollment_screen_;
   MockOutShowHide<MockAutoEnrollmentCheckScreen,
-      MockAutoEnrollmentCheckScreenActor>* mock_auto_enrollment_check_screen_;
-  MockOutShowHide<MockWrongHWIDScreen, MockWrongHWIDScreenActor>*
+                  MockAutoEnrollmentCheckScreenView>*
+      mock_auto_enrollment_check_screen_;
+  MockOutShowHide<MockWrongHWIDScreen, MockWrongHWIDScreenView>*
       mock_wrong_hwid_screen_;
-  MockOutShowHide<MockEnableDebuggingScreen,
-      MockEnableDebuggingScreenActor>* mock_enable_debugging_screen_;
-  std::unique_ptr<MockDeviceDisabledScreenActor> device_disabled_screen_actor_;
+  MockOutShowHide<MockEnableDebuggingScreen, MockEnableDebuggingScreenView>*
+      mock_enable_debugging_screen_;
+  std::unique_ptr<MockDeviceDisabledScreenView> device_disabled_screen_view_;
 
  private:
   NetworkPortalDetectorTestImpl* network_portal_detector_;
@@ -672,7 +672,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
   WizardController::default_controller()->SkipUpdateEnrollAfterEula();
-  EXPECT_CALL(*mock_enrollment_screen_->actor(),
+  EXPECT_CALL(*mock_enrollment_screen_->view(),
               SetParameters(
                   mock_enrollment_screen_,
                   EnrollmentModeMatches(policy::EnrollmentConfig::MODE_MANUAL)))
@@ -715,7 +715,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
                        ControlFlowEnrollmentCompleted) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
-  EXPECT_CALL(*mock_enrollment_screen_->actor(),
+  EXPECT_CALL(*mock_enrollment_screen_->view(),
               SetParameters(
                   mock_enrollment_screen_,
                   EnrollmentModeMatches(policy::EnrollmentConfig::MODE_MANUAL)))
@@ -877,7 +877,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);
   EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_enrollment_screen_->actor(),
+  EXPECT_CALL(*mock_enrollment_screen_->view(),
               SetParameters(mock_enrollment_screen_,
                             EnrollmentModeMatches(
                                 policy::EnrollmentConfig::MODE_SERVER_FORCED)))
@@ -966,9 +966,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   device_state.SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);
-  EXPECT_CALL(*device_disabled_screen_actor_,
-              UpdateMessage(kDisabledMessage)).Times(1);
-  EXPECT_CALL(*device_disabled_screen_actor_, Show()).Times(1);
+  EXPECT_CALL(*device_disabled_screen_view_, UpdateMessage(kDisabledMessage))
+      .Times(1);
+  EXPECT_CALL(*device_disabled_screen_view_, Show()).Times(1);
   OnExit(*mock_auto_enrollment_check_screen_,
          BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
 
@@ -1112,7 +1112,7 @@ class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
 
 IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
                        ControlFlowKioskForcedEnrollment) {
-  EXPECT_CALL(*mock_enrollment_screen_->actor(),
+  EXPECT_CALL(*mock_enrollment_screen_->view(),
               SetParameters(mock_enrollment_screen_,
                             EnrollmentModeMatches(
                                 policy::EnrollmentConfig::MODE_LOCAL_FORCED)))
@@ -1154,7 +1154,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
 
 IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
                        ControlFlowEnrollmentBack) {
-  EXPECT_CALL(*mock_enrollment_screen_->actor(),
+  EXPECT_CALL(*mock_enrollment_screen_->view(),
               SetParameters(mock_enrollment_screen_,
                             EnrollmentModeMatches(
                                 policy::EnrollmentConfig::MODE_LOCAL_FORCED)))
@@ -1256,7 +1256,7 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
     MOCK_WITH_DELEGATE(mock_network_screen_, OobeScreen::SCREEN_OOBE_NETWORK,
                        MockNetworkScreen, MockNetworkView);
     MOCK(mock_enrollment_screen_, OobeScreen::SCREEN_OOBE_ENROLLMENT,
-         MockEnrollmentScreen, MockEnrollmentScreenActor);
+         MockEnrollmentScreen, MockEnrollmentScreenView);
   }
 
   void OnExit(BaseScreen& screen, BaseScreenDelegate::ExitCodes exit_code) {
@@ -1269,8 +1269,8 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
   }
 
   MockOutShowHide<MockNetworkScreen, MockNetworkView>* mock_network_screen_;
-  MockOutShowHide<MockEnrollmentScreen,
-      MockEnrollmentScreenActor>* mock_enrollment_screen_;
+  MockOutShowHide<MockEnrollmentScreen, MockEnrollmentScreenView>*
+      mock_enrollment_screen_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeResumeTest);
@@ -1283,7 +1283,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
   WizardController::default_controller()->AdvanceToScreen(
       OobeScreen::SCREEN_OOBE_NETWORK);
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  EXPECT_CALL(*mock_enrollment_screen_->actor(),
+  EXPECT_CALL(*mock_enrollment_screen_->view(),
               SetParameters(
                   mock_enrollment_screen_,
                   EnrollmentModeMatches(policy::EnrollmentConfig::MODE_MANUAL)))
