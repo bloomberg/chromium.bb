@@ -85,6 +85,14 @@ class FindInPageTest : public InProcessBrowserTest {
     return details;
   }
 
+  FindNotificationDetails WaitForFinalFindResult() {
+    while (true) {
+      auto details = WaitForFindResult();
+      if (details.final_update())
+        return details;
+    }
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FindInPageTest);
 };
@@ -183,28 +191,28 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, ButtonsDoNotAlterFocus) {
 
   // Clicking the next and previous buttons should not alter the focused view.
   ClickOnView(next_button);
-  EXPECT_EQ(2, WaitForFindResult().active_match_ordinal());
+  EXPECT_EQ(2, WaitForFinalFindResult().active_match_ordinal());
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   ClickOnView(previous_button);
-  EXPECT_EQ(1, WaitForFindResult().active_match_ordinal());
+  EXPECT_EQ(1, WaitForFinalFindResult().active_match_ordinal());
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Tapping the next and previous buttons should not alter the focused view.
   TapOnView(next_button);
-  EXPECT_EQ(2, WaitForFindResult().active_match_ordinal());
+  EXPECT_EQ(2, WaitForFinalFindResult().active_match_ordinal());
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   TapOnView(previous_button);
-  EXPECT_EQ(1, WaitForFindResult().active_match_ordinal());
+  EXPECT_EQ(1, WaitForFinalFindResult().active_match_ordinal());
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // The same should be true even when the previous button is focused.
   previous_button->RequestFocus();
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON));
   ClickOnView(next_button);
-  EXPECT_EQ(2, WaitForFindResult().active_match_ordinal());
+  EXPECT_EQ(2, WaitForFinalFindResult().active_match_ordinal());
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON));
   TapOnView(next_button);
-  EXPECT_EQ(3, WaitForFindResult().active_match_ordinal());
+  EXPECT_EQ(3, WaitForFinalFindResult().active_match_ordinal());
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON));
 }
 

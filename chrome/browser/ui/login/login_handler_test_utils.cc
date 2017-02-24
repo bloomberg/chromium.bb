@@ -57,6 +57,10 @@ void LoginPromptBrowserTestObserver::Register(
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED, source);
 }
 
+void LoginPromptBrowserTestObserver::UnregisterAll() {
+  registrar_.RemoveAll();
+}
+
 WindowedLoadStopObserver::WindowedLoadStopObserver(
     content::NavigationController* controller,
     int notification_count)
