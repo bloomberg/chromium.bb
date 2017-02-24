@@ -223,6 +223,7 @@ suite('<history-list>', function() {
 
     return PolymerTest.flushTasks().then(function() {
       assertFalse(element.$['no-results'].hidden);
+      assertNotEquals('', element.$['no-results'].textContent.trim());
       assertTrue(element.$['infinite-list'].hidden);
 
       app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
