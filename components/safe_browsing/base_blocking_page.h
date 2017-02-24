@@ -12,13 +12,10 @@
 #include "base/macros.h"
 #include "components/safe_browsing/base_ui_manager.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
+#include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/safe_browsing_error_ui.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
-
-namespace history {
-class HistoryService;
-}
 
 namespace safe_browsing {
 
@@ -104,14 +101,21 @@ class BaseBlockingPage
 
   void set_proceeded(bool proceeded);
 
+  static security_interstitials::MetricsHelper::ReportDetails GetReportingInfo(
+      const UnsafeResourceList& unsafe_resources);
+
+  // Called after OnProceed(). Does nothing in this class, but can be overridden
+  // to handle malicious subresources.
+  virtual void HandleSubresourcesAfterProceed();
+
+  void SetThreatDetailsProceedDelayForTesting(int64_t delay);
+
  private:
   static std::unique_ptr<
       security_interstitials::SecurityInterstitialControllerClient>
   CreateControllerClient(content::WebContents* web_contents,
                          const UnsafeResourceList& unsafe_resources,
-                         history::HistoryService* history_service,
-                         const std::string& app_locale,
-                         const GURL& default_safe_page);
+                         BaseUIManager* ui_manager);
 
   // For reporting back user actions.
   BaseUIManager* ui_manager_;
@@ -131,6 +135,12 @@ class BaseBlockingPage
 
   // Indicate whether user has proceeded this blocking page.
   bool proceeded_;
+
+  // After a safe browsing interstitial where the user opted-in to the
+  // report but clicked "proceed anyway", we delay the call to
+  // ThreatDetails::FinishCollection() by this much time (in
+  // milliseconds), in order to get data from the blocked resource itself.
+  int64_t threat_details_proceed_delay_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseBlockingPage);
 };

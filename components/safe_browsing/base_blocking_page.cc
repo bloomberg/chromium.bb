@@ -27,6 +27,12 @@ namespace safe_browsing {
 
 namespace {
 
+// After a safe browsing interstitial where the user opted-in to the report
+// but clicked "proceed anyway", we delay the call to
+// ThreatDetails::FinishCollection() by this much time (in
+// milliseconds).
+const int64_t kThreatDetailsProceedDelayMilliSeconds = 3000;
+
 base::LazyInstance<BaseBlockingPage::UnsafeResourceMap>::Leaky
     g_unsafe_resource_map = LAZY_INSTANCE_INITIALIZER;
 
@@ -45,18 +51,21 @@ BaseBlockingPage::BaseBlockingPage(
       ui_manager_(ui_manager),
       main_frame_url_(main_frame_url),
       navigation_entry_index_to_remove_(
-          IsMainPageLoadBlocked(unsafe_resources) ?
-              -1 :
-              web_contents->GetController().GetLastCommittedEntryIndex()),
+          IsMainPageLoadBlocked(unsafe_resources)
+              ? -1
+              : web_contents->GetController().GetLastCommittedEntryIndex()),
       unsafe_resources_(unsafe_resources),
       sb_error_ui_(base::MakeUnique<SafeBrowsingErrorUI>(
-                       unsafe_resources_[0].url, main_frame_url_,
-                       GetInterstitialReason(unsafe_resources_),
-                       display_options,
-                       ui_manager->app_locale(),
-                       base::Time::NowFromSystemTime(),
-                       controller())),
-      proceeded_(false) {}
+          unsafe_resources_[0].url,
+          main_frame_url_,
+          GetInterstitialReason(unsafe_resources_),
+          display_options,
+          ui_manager->app_locale(),
+          base::Time::NowFromSystemTime(),
+          controller())),
+      proceeded_(false),
+      threat_details_proceed_delay_ms_(kThreatDetailsProceedDelayMilliSeconds) {
+}
 
 BaseBlockingPage::~BaseBlockingPage() {}
 
@@ -78,32 +87,25 @@ void BaseBlockingPage::ShowBlockingPage(
     const UnsafeResource& unsafe_resource) {
   WebContents* web_contents = unsafe_resource.web_contents_getter.Run();
 
-  if (!InterstitialPage::GetInterstitialPage(web_contents) ||
-      !unsafe_resource.is_subresource) {
+  if (InterstitialPage::GetInterstitialPage(web_contents) &&
+      unsafe_resource.is_subresource) {
+    // This is an interstitial for a page's resource, let's queue it.
+    UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
+    (*unsafe_resource_map)[web_contents].push_back(unsafe_resource);
+  } else {
     // There is no interstitial currently showing in that tab, or we are about
     // to display a new one for the main frame. If there is already an
     // interstitial, showing the new one will automatically hide the old one.
     content::NavigationEntry* entry =
         unsafe_resource.GetNavigationEntryForResource();
-    const UnsafeResourceList resources{unsafe_resource};
-    BaseBlockingPage* blocking_page =
-        new BaseBlockingPage(
-            ui_manager, web_contents,
-            entry ? entry->GetURL() : GURL(),
-            resources,
-            CreateControllerClient(
-                web_contents, resources,
-                ui_manager->history_service(web_contents),
-                ui_manager->app_locale(),
-                ui_manager->default_safe_page()),
-                CreateDefaultDisplayOptions());
+    const UnsafeResourceList unsafe_resources{unsafe_resource};
+    BaseBlockingPage* blocking_page = new BaseBlockingPage(
+        ui_manager, web_contents, entry ? entry->GetURL() : GURL(),
+        unsafe_resources,
+        CreateControllerClient(web_contents, unsafe_resources, ui_manager),
+        CreateDefaultDisplayOptions());
     blocking_page->Show();
-    return;
   }
-
-  // This is an interstitial for a page's resource, let's queue it.
-  UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
-  (*unsafe_resource_map)[web_contents].push_back(unsafe_resource);
 }
 
 // static
@@ -116,10 +118,25 @@ bool BaseBlockingPage::IsMainPageLoadBlocked(
 }
 
 void BaseBlockingPage::OnProceed() {
-  proceeded_ = true;
+  set_proceeded(true);
+  UpdateMetricsAfterSecurityInterstitial();
+
+  // Send the threat details, if we opted to.
+  FinishThreatDetails(
+      base::TimeDelta::FromMilliseconds(threat_details_proceed_delay_ms_),
+      true, /* did_proceed */
+      controller()->metrics_helper()->NumVisits());
 
   ui_manager_->OnBlockingPageDone(unsafe_resources_, true /* proceed */,
                                   web_contents(), main_frame_url_);
+
+  HandleSubresourcesAfterProceed();
+}
+
+void BaseBlockingPage::HandleSubresourcesAfterProceed() {}
+
+void BaseBlockingPage::SetThreatDetailsProceedDelayForTesting(int64_t delay) {
+  threat_details_proceed_delay_ms_ = delay;
 }
 
 void BaseBlockingPage::OnDontProceed() {
@@ -300,27 +317,35 @@ void BaseBlockingPage::set_proceeded(bool proceeded) {
 }
 
 // static
-std::unique_ptr<SecurityInterstitialControllerClient>
-BaseBlockingPage::CreateControllerClient(
-    content::WebContents* web_contents,
-    const UnsafeResourceList& unsafe_resources,
-    history::HistoryService* history_service,
-    const std::string& app_locale,
-    const GURL& default_safe_page) {
+security_interstitials::MetricsHelper::ReportDetails
+BaseBlockingPage::GetReportingInfo(const UnsafeResourceList& unsafe_resources) {
   SafeBrowsingErrorUI::SBInterstitialReason interstitial_reason =
       GetInterstitialReason(unsafe_resources);
+
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix =
       GetMetricPrefix(unsafe_resources, interstitial_reason);
   reporting_info.extra_suffix = GetExtraMetricsSuffix(unsafe_resources);
+  return reporting_info;
+}
+
+// static
+std::unique_ptr<SecurityInterstitialControllerClient>
+BaseBlockingPage::CreateControllerClient(
+    content::WebContents* web_contents,
+    const UnsafeResourceList& unsafe_resources,
+    BaseUIManager* ui_manager) {
+  history::HistoryService* history_service =
+      ui_manager->history_service(web_contents);
 
   std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper =
       base::MakeUnique<security_interstitials::MetricsHelper>(
-          unsafe_resources[0].url, reporting_info, history_service);
+          unsafe_resources[0].url, GetReportingInfo(unsafe_resources),
+          history_service);
 
   return base::MakeUnique<SecurityInterstitialControllerClient>(
-      web_contents, std::move(metrics_helper), nullptr, app_locale,
-      default_safe_page);
+      web_contents, std::move(metrics_helper), nullptr, /* prefs */
+      ui_manager->app_locale(), ui_manager->default_safe_page());
 }
 
 }  // namespace safe_browsing

@@ -55,7 +55,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
                                  unsafe_resources,
                                  display_options) {
     // Don't delay details at all for the unittest.
-    threat_details_proceed_delay_ms_ = 0;
+    SetThreatDetailsProceedDelayForTesting(0);
     DontCreateViewForTesting();
   }
 };

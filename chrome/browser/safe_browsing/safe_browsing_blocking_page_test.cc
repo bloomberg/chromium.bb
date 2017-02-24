@@ -243,7 +243,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
                                  display_options),
         wait_for_delete_(false) {
     // Don't wait the whole 3 seconds for the browser test.
-    threat_details_proceed_delay_ms_ = 100;
+    SetThreatDetailsProceedDelayForTesting(100);
   }
 
   ~TestSafeBrowsingBlockingPage() override {
