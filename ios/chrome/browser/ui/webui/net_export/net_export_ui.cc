@@ -139,7 +139,9 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
 
   net::NetLogCaptureMode capture_mode =
       net_log::NetLogFileWriter::CaptureModeFromString(capture_mode_string);
-  file_writer_->StartNetLog(base::FilePath(), capture_mode);
+  file_writer_->StartNetLog(
+      base::FilePath(), capture_mode,
+      {GetApplicationContext()->GetSystemURLRequestContext()});
 }
 
 void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {

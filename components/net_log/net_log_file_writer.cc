@@ -4,6 +4,7 @@
 
 #include "components/net_log/net_log_file_writer.h"
 
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -21,6 +22,10 @@
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
 #include "net/url_request/url_request_context_getter.h"
+
+namespace net {
+class URLRequestContext;
+}
 
 namespace net_log {
 
@@ -60,6 +65,19 @@ NetLogFileWriter::DefaultLogPathResults SetUpDefaultLogPath(
   results.log_exists = base::PathExists(results.default_log_path);
   results.default_log_path_success = true;
   return results;
+}
+
+// Generates net log entries for ongoing events from |context_getters| and
+// adds them to |observer|.
+void CreateNetLogEntriesForActiveObjects(
+    const NetLogFileWriter::URLRequestContextGetterList& context_getters,
+    net::NetLog::ThreadSafeObserver* observer) {
+  std::set<net::URLRequestContext*> contexts;
+  for (const auto& getter : context_getters) {
+    DCHECK(getter->GetNetworkTaskRunner()->BelongsToCurrentThread());
+    contexts.insert(getter->GetURLRequestContext());
+  }
+  net::CreateNetLogEntriesForActiveObjects(contexts, observer);
 }
 
 // Adds net info from net::GetNetInfo() to |polled_data|.
@@ -128,10 +146,10 @@ void NetLogFileWriter::Initialize(
   DCHECK(net_task_runner);
 
   if (file_task_runner_)
-    DCHECK_EQ(file_task_runner, file_task_runner_);
+    DCHECK_EQ(file_task_runner_, file_task_runner);
   file_task_runner_ = file_task_runner;
   if (net_task_runner_)
-    DCHECK_EQ(net_task_runner, net_task_runner_);
+    DCHECK_EQ(net_task_runner_, net_task_runner);
   net_task_runner_ = net_task_runner;
 
   if (state_ != STATE_UNINITIALIZED)
@@ -148,8 +166,10 @@ void NetLogFileWriter::Initialize(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NetLogFileWriter::StartNetLog(const base::FilePath& log_path,
-                                   net::NetLogCaptureMode capture_mode) {
+void NetLogFileWriter::StartNetLog(
+    const base::FilePath& log_path,
+    net::NetLogCaptureMode capture_mode,
+    const URLRequestContextGetterList& context_getters) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(file_task_runner_);
 
@@ -161,19 +181,38 @@ void NetLogFileWriter::StartNetLog(const base::FilePath& log_path,
 
   DCHECK(!log_path_.empty());
 
-  state_ = STATE_LOGGING;
-  log_exists_ = true;
-  log_capture_mode_known_ = true;
-  log_capture_mode_ = capture_mode;
+  state_ = STATE_STARTING_LOG;
 
   NotifyStateObserversAsync();
 
   std::unique_ptr<base::Value> constants(
       ChromeNetLog::GetConstants(command_line_string_, channel_string_));
-  file_net_log_observer_ =
-      base::MakeUnique<net::FileNetLogObserver>(file_task_runner_);
-  file_net_log_observer_->StartObservingUnbounded(
-      chrome_net_log_, capture_mode, log_path_, std::move(constants), nullptr);
+  // Instantiate a FileNetLogObserver in unbounded mode.
+  file_net_log_observer_ = net::FileNetLogObserver::CreateUnbounded(
+      file_task_runner_, log_path_, std::move(constants));
+
+  net_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&CreateNetLogEntriesForActiveObjects, context_getters,
+                 base::Unretained(file_net_log_observer_.get())),
+      base::Bind(
+          &NetLogFileWriter::StartNetLogAfterCreateEntriesForActiveObjects,
+          weak_ptr_factory_.GetWeakPtr(), capture_mode));
+}
+
+void NetLogFileWriter::StartNetLogAfterCreateEntriesForActiveObjects(
+    net::NetLogCaptureMode capture_mode) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(STATE_STARTING_LOG, state_);
+
+  state_ = STATE_LOGGING;
+  log_exists_ = true;
+  log_capture_mode_known_ = true;
+  log_capture_mode_ = capture_mode;
+
+  NotifyStateObservers();
+
+  file_net_log_observer_->StartObserving(chrome_net_log_, capture_mode);
 }
 
 void NetLogFileWriter::StopNetLog(
@@ -219,6 +258,9 @@ std::unique_ptr<base::DictionaryValue> NetLogFileWriter::GetState() const {
       break;
     case STATE_NOT_LOGGING:
       state_string = "NOT_LOGGING";
+      break;
+    case STATE_STARTING_LOG:
+      state_string = "STARTING_LOG";
       break;
     case STATE_LOGGING:
       state_string = "LOGGING";
@@ -305,7 +347,7 @@ void NetLogFileWriter::NotifyStateObserversAsync() {
 void NetLogFileWriter::SetStateAfterSetUpDefaultLogPath(
     const DefaultLogPathResults& set_up_default_log_path_results) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(state_, STATE_INITIALIZING);
+  DCHECK_EQ(STATE_INITIALIZING, state_);
 
   if (set_up_default_log_path_results.default_log_path_success) {
     state_ = STATE_NOT_LOGGING;
@@ -321,7 +363,7 @@ void NetLogFileWriter::SetStateAfterSetUpDefaultLogPath(
 void NetLogFileWriter::StopNetLogAfterAddNetInfo(
     std::unique_ptr<base::DictionaryValue> polled_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(state_, STATE_STOPPING_LOG);
+  DCHECK_EQ(STATE_STOPPING_LOG, state_);
 
   file_net_log_observer_->StopObserving(
       std::move(polled_data),

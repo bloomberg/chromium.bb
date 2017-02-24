@@ -10,6 +10,7 @@
 
 #include <limits>
 #include <map>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -1022,16 +1023,18 @@ void CronetURLRequestContextAdapter::StartNetLogToBoundedFileOnNetworkThread(
   base::FilePath file_path(dir_path);
   DCHECK(base::PathIsWritable(file_path));
 
-  bounded_file_observer_.reset(
-      new net::FileNetLogObserver(GetFileThread()->task_runner()));
+  bounded_file_observer_ = net::FileNetLogObserver::CreateBounded(
+      GetFileThread()->task_runner(), file_path, size, kNumNetLogEventFiles,
+      /*constants=*/nullptr);
+
+  CreateNetLogEntriesForActiveObjects({context_.get()},
+                                      bounded_file_observer_.get());
 
   net::NetLogCaptureMode capture_mode =
       include_socket_bytes ? net::NetLogCaptureMode::IncludeSocketBytes()
                            : net::NetLogCaptureMode::Default();
-
-  bounded_file_observer_->StartObservingBounded(
-      g_net_log.Get().net_log(), capture_mode, file_path,
-      /*constants=*/nullptr, context_.get(), size, kNumNetLogEventFiles);
+  bounded_file_observer_->StartObserving(g_net_log.Get().net_log(),
+                                         capture_mode);
 }
 
 void CronetURLRequestContextAdapter::StopBoundedFileNetLogOnNetworkThread() {

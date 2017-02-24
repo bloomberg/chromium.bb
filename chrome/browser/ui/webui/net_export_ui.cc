@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -17,6 +18,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/net_export_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -26,11 +28,13 @@
 #include "components/net_log/net_export_ui_constants.h"
 #include "components/net_log/net_log_file_writer.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "extensions/features/features.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -44,6 +48,29 @@ using content::WebContents;
 using content::WebUIMessageHandler;
 
 namespace {
+
+class ProxyScriptFetcherContextGetter : public net::URLRequestContextGetter {
+ public:
+  explicit ProxyScriptFetcherContextGetter(IOThread* io_thread)
+      : io_thread_(io_thread) {}
+
+  net::URLRequestContext* GetURLRequestContext() override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(io_thread_->globals()->proxy_script_fetcher_context.get());
+    return io_thread_->globals()->proxy_script_fetcher_context.get();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override {
+    return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+  }
+
+ protected:
+  ~ProxyScriptFetcherContextGetter() override {}
+
+ private:
+  IOThread* const io_thread_;  // Owned by BrowserProcess.
+};
 
 // May only be accessed on the UI thread
 base::LazyInstance<base::FilePath>::Leaky
@@ -98,6 +125,9 @@ class NetExportMessageHandler
   void OnNewState(const base::DictionaryValue& state) override;
 
  private:
+  using URLRequestContextGetterList =
+      std::vector<scoped_refptr<net::URLRequestContextGetter>>;
+
   // Send NetLog data via email.
   static void SendEmail(const base::FilePath& file_to_send);
 
@@ -120,6 +150,10 @@ class NetExportMessageHandler
   // Opens the SelectFileDialog UI with the default path to save a
   // NetLog file.
   void ShowSelectFileDialog(const base::FilePath& default_path);
+
+  // Returns a list of context getters used to retrieve ongoing events when
+  // logging starts so that net log entries can be added for those events.
+  URLRequestContextGetterList GetURLRequestContexts() const;
 
   // Cache of g_browser_process->net_log()->net_log_file_writer(). This
   // is owned by ChromeNetLog which is owned by BrowserProcessImpl.
@@ -202,7 +236,8 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
       net_log::NetLogFileWriter::CaptureModeFromString(capture_mode_string);
 
   if (UsingMobileUI()) {
-    file_writer_->StartNetLog(base::FilePath(), capture_mode_);
+    file_writer_->StartNetLog(base::FilePath(), capture_mode_,
+                              GetURLRequestContexts());
   } else {
     base::FilePath initial_dir = last_save_dir.Pointer()->empty() ?
         DownloadPrefs::FromBrowserContext(
@@ -254,7 +289,7 @@ void NetExportMessageHandler::FileSelected(const base::FilePath& path,
   select_file_dialog_ = nullptr;
   *last_save_dir.Pointer() = path.DirName();
 
-  file_writer_->StartNetLog(path, capture_mode_);
+  file_writer_->StartNetLog(path, capture_mode_, GetURLRequestContexts());
 }
 
 void NetExportMessageHandler::FileSelectionCanceled(void* params) {
@@ -320,6 +355,29 @@ void NetExportMessageHandler::ShowSelectFileDialog(
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(), default_path,
       &file_type_info, 0, base::FilePath::StringType(), owning_window, nullptr);
+}
+
+NetExportMessageHandler::URLRequestContextGetterList
+NetExportMessageHandler::GetURLRequestContexts() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  URLRequestContextGetterList context_getters;
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+
+  context_getters.push_back(profile->GetRequestContext());
+  context_getters.push_back(
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetMediaURLRequestContext());
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  context_getters.push_back(profile->GetRequestContextForExtensions());
+#endif
+  context_getters.push_back(
+      g_browser_process->io_thread()->system_url_request_context_getter());
+  context_getters.push_back(
+      new ProxyScriptFetcherContextGetter(g_browser_process->io_thread()));
+
+  return context_getters;
 }
 
 }  // namespace

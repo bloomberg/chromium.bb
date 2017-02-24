@@ -71,8 +71,9 @@ class NetLogFileWriter {
   };
 
   using FilePathCallback = base::Callback<void(const base::FilePath&)>;
-
   using DirectoryGetter = base::Callback<bool(base::FilePath*)>;
+  using URLRequestContextGetterList =
+      std::vector<scoped_refptr<net::URLRequestContextGetter>>;
 
   ~NetLogFileWriter();
 
@@ -97,8 +98,14 @@ class NetLogFileWriter {
   // Starts collecting NetLog data into the file at |log_path|. If |log_path| is
   // empty, the default log path is used. If NetLogFileWriter is already
   // logging, this is a no-op and |capture_mode| is ignored.
+  //
+  // |context_getters| is an optional list of URLRequestContextGetters used only
+  // to add log entries for ongoing events when logging starts. They are not
+  // used for retrieving polled data. All the contexts must be bound to the same
+  // thread.
   void StartNetLog(const base::FilePath& log_path,
-                   net::NetLogCaptureMode capture_mode);
+                   net::NetLogCaptureMode capture_mode,
+                   const URLRequestContextGetterList& context_getters);
 
   // Stops collecting NetLog data into the file. It is a no-op if
   // NetLogFileWriter is currently not logging.
@@ -108,6 +115,9 @@ class NetLogFileWriter {
   // If |context_getter| is not null, then  StopNetLog() will automatically
   // append net info (from net::GetNetInfo() retrieved using |context_getter|)
   // to |polled_data|.
+  // Note that StopNetLog() accepts (optionally) only one context getter for
+  // retrieving net polled data as opposed to StartNetLog() which accepts zero
+  // or more context getters for retrieving ongoing net events.
   void StopNetLog(std::unique_ptr<base::DictionaryValue> polled_data,
                   scoped_refptr<net::URLRequestContextGetter> context_getter);
 
@@ -154,6 +164,8 @@ class NetLogFileWriter {
     STATE_INITIALIZING,
     // Not currently logging to file.
     STATE_NOT_LOGGING,
+    // Currently in the process of starting the log.
+    STATE_STARTING_LOG,
     // Currently logging to file.
     STATE_LOGGING,
     // Currently in the process of stopping the log.
@@ -167,12 +179,19 @@ class NetLogFileWriter {
 
   // Called internally by Initialize(). Will initialize NetLogFileWriter's state
   // variables after the default log directory is set up and the default log
-  // path is determined.
+  // path is determined on the |file_task_runner_|.
   void SetStateAfterSetUpDefaultLogPath(
       const DefaultLogPathResults& set_up_default_log_path_results);
 
-  // Called internally by StopNetLog(). Does the actual work needed by
-  // StopNetLog() outside of retrieving the net info.
+  // Called internally by StartNetLog(). Contains tasks to be done to start
+  // logging after net log entries for ongoing events are added to the log from
+  // the |net_task_runner_|.
+  void StartNetLogAfterCreateEntriesForActiveObjects(
+      net::NetLogCaptureMode capture_mode);
+
+  // Called internally by StopNetLog(). Contains tasks to be done to stop
+  // logging after net-thread polled data is retrieved on the
+  // |net_task_runner_|.
   void StopNetLogAfterAddNetInfo(
       std::unique_ptr<base::DictionaryValue> polled_data);
 
