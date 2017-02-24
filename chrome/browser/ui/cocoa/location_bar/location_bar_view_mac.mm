@@ -864,7 +864,6 @@ bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
       IsLocationBarDark());
 }
 
-// TODO(spqchan): Add tests for the security state decoration.
 void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
   using SecurityLevel = security_state::SecurityLevel;
   SecurityLevel new_security_level = GetToolbarModel()->GetSecurityLevel(false);
@@ -879,18 +878,24 @@ void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
   if ((ShouldShowSecurityState() || ShouldShowExtensionBubble() ||
        ShouldShowChromeBubble()) &&
       is_width_available_for_security_verbose_) {
-    bool is_secure_to_secure = IsSecureConnection(new_security_level) &&
-                               IsSecureConnection(security_level_);
-    bool is_new_security_level =
-        security_level_ != new_security_level && !is_secure_to_secure;
-    if (!tab_changed && security_state_bubble_decoration_->HasAnimatedOut())
-      security_state_bubble_decoration_->AnimateIn(false);
-    else if (tab_changed || !CanAnimateSecurityLevel(new_security_level))
+    if (tab_changed) {
       security_state_bubble_decoration_->ShowWithoutAnimation();
-    else if (is_new_security_level)
-      security_state_bubble_decoration_->AnimateIn();
+    } else {
+      bool is_secure_to_secure = IsSecureConnection(new_security_level) &&
+                                 IsSecureConnection(security_level_);
+      bool is_new_security_level =
+          security_level_ != new_security_level && !is_secure_to_secure;
+      if (!is_new_security_level &&
+          security_state_bubble_decoration_->HasAnimatedOut()) {
+        security_state_bubble_decoration_->AnimateIn(false);
+      } else if (!CanAnimateSecurityLevel(new_security_level)) {
+        security_state_bubble_decoration_->ShowWithoutAnimation();
+      } else if (is_new_security_level) {
+        security_state_bubble_decoration_->AnimateIn();
+      }
+    }
   } else if (!is_width_available_for_security_verbose_ ||
-             CanAnimateSecurityLevel(security_level_)) {
+             (!tab_changed && CanAnimateSecurityLevel(security_level_))) {
     security_state_bubble_decoration_->AnimateOut();
   }
 
@@ -900,8 +905,8 @@ void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
 bool LocationBarViewMac::CanAnimateSecurityLevel(
     security_state::SecurityLevel level) const {
   return !GetOmniboxView()->IsEditingOrEmpty() &&
-         (security_level_ == security_state::SecurityLevel::DANGEROUS ||
-          security_level_ == security_state::SecurityLevel::HTTP_SHOW_WARNING);
+         (level == security_state::DANGEROUS ||
+          level == security_state::HTTP_SHOW_WARNING);
 }
 
 bool LocationBarViewMac::IsSecureConnection(

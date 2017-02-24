@@ -25,6 +25,10 @@ namespace {
 class SecurityStateBubbleDecorationTest;
 }
 
+namespace {
+class LocationBarViewMacTest;
+}
+
 class SecurityStateBubbleDecoration : public BubbleDecoration,
                                       public gfx::AnimationDelegate {
  public:
@@ -39,12 +43,12 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
   // Set the color of the label.
   void SetLabelColor(SkColor color);
 
-  // Methods that animate in and out the chip.
-  void AnimateIn(bool image_fade = true);
-  void AnimateOut();
+  // Methods that animate in and out the chip. Virtual for testing.
+  virtual void AnimateIn(bool image_fade = true);
+  virtual void AnimateOut();
 
-  // Shows the chip without animation.
-  void ShowWithoutAnimation();
+  // Shows the chip without animation. Virtual for testing.
+  virtual void ShowWithoutAnimation();
 
   // Returns true if the chip has fully animated in.
   bool HasAnimatedIn() const;
@@ -55,8 +59,8 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
   // Returns true if the chip is in the process of animating out.
   bool AnimatingOut() const;
 
-  // Resets the animation.
-  void ResetAnimation();
+  // Resets the animation. Virtual for testing.
+  virtual void ResetAnimation();
 
   // LocationBarDecoration:
   CGFloat GetWidthForSpace(CGFloat width) override;
@@ -81,6 +85,7 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
   NSColor* GetDarkModeTextColor() override;
 
  private:
+  friend class ::LocationBarViewMacTest;
   friend class ::SecurityStateBubbleDecorationTest;
 
   // Returns the animation progress. If not in MD, the animation progress

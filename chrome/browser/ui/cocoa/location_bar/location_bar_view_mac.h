@@ -39,6 +39,10 @@ class SecurityStateBubbleDecoration;
 class ZoomDecoration;
 class ZoomDecorationTest;
 
+namespace {
+class LocationBarViewMacTest;
+}
+
 // A C++ bridge class that represents the location bar UI element to
 // the portable code.  Wires up an OmniboxViewMac instance to
 // the location bar text field, which handles most of the work.
@@ -215,6 +219,7 @@ class LocationBarViewMac : public LocationBar,
   std::vector<NSView*> GetDecorationAccessibilityViews();
 
  private:
+  friend class LocationBarViewMacTest;
   friend ZoomDecorationTest;
 
   // Posts |notification| to the default notification center.
