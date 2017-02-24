@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/payments/cells/shipping_address_item.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
+#import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -61,6 +62,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSummaryPageInfo = kItemTypeEnumZero,
+  ItemTypeSpinner,
   ItemTypeSummaryTotal,
   ItemTypeShippingTitle,
   ItemTypeShippingAddress,
@@ -102,6 +104,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize pageFavicon = _pageFavicon;
 @synthesize pageTitle = _pageTitle;
 @synthesize pageHost = _pageHost;
+@synthesize pending = _pending;
 @synthesize delegate = _delegate;
 
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
@@ -190,6 +193,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   pageInfo.pageTitle = _pageTitle;
   pageInfo.pageHost = _pageHost;
   [model setHeader:pageInfo forSectionWithIdentifier:SectionIdentifierSummary];
+
+  if (_pending) {
+    [_payButton setEnabled:NO];
+    [_cancelButton setEnabled:NO];
+
+    StatusItem* statusItem = [[StatusItem alloc] initWithType:ItemTypeSpinner];
+    statusItem.text = l10n_util::GetNSString(IDS_PAYMENTS_PROCESSING_MESSAGE);
+    [model addItem:statusItem toSectionWithIdentifier:SectionIdentifierSummary];
+    return;
+  }
 
   _paymentSummaryItem = [[PriceItem alloc] initWithType:ItemTypeSummaryTotal];
   [self fillPaymentSummaryItem:_paymentSummaryItem
@@ -458,6 +471,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
+    case ItemTypeSpinner:
     case ItemTypeShippingAddress:
     case ItemTypePaymentMethod:
       return [MDCCollectionViewCell

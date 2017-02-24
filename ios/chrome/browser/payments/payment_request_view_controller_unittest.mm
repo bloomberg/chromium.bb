@@ -181,3 +181,21 @@ TEST_F(PaymentRequestViewControllerTest, TestModelNoSelectedPaymentMethod) {
   CollectionViewDetailItem* detail_item = item;
   EXPECT_EQ(MDCCollectionViewCellAccessoryNone, detail_item.accessoryType);
 }
+
+// Tests that the correct items are displayed after loading the model, when
+// the view is in pending state.
+TEST_F(PaymentRequestViewControllerTest, TestModelPendingState) {
+  CreateController();
+  CheckController();
+
+  [GetPaymentRequestViewController() setPending:YES];
+  [GetPaymentRequestViewController() loadModel];
+
+  ASSERT_EQ(1, NumberOfSections());
+  // There should be only one item.
+  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
+
+  // The item should be of type StatusItem.
+  id item = GetCollectionViewItem(0, 0);
+  EXPECT_TRUE([item isMemberOfClass:[StatusItem class]]);
+}

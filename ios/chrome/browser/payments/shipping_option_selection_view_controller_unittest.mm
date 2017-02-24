@@ -87,8 +87,8 @@ TEST_F(ShippingOptionSelectionViewControllerTest, TestModel) {
   item = GetCollectionViewItem(0, 0);
   EXPECT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
 
-  // Test the loading state.
-  [GetShippingOptionSelectionViewController() setIsLoading:YES];
+  // Test the pending state.
+  [GetShippingOptionSelectionViewController() setPending:YES];
   [GetShippingOptionSelectionViewController() loadModel];
 
   ASSERT_EQ(1, NumberOfSections());

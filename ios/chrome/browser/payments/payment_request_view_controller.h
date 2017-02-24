@@ -57,6 +57,9 @@ extern NSString* const kPaymentRequestCollectionViewId;
 // The host of the page invoking the Payment Request API.
 @property(nonatomic, copy) NSString* pageHost;
 
+// Whether or not the view is in a pending state.
+@property(nonatomic, assign, getter=isPending) BOOL pending;
+
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestViewControllerDelegate> delegate;
 

@@ -101,8 +101,8 @@ TEST_F(ShippingAddressSelectionViewControllerTest, TestModel) {
   // There should stil be 4 items in total.
   ASSERT_EQ(4U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
 
-  // Test the loading state.
-  [GetShippingAddressSelectionViewController() setIsLoading:YES];
+  // Test the pending state.
+  [GetShippingAddressSelectionViewController() setPending:YES];
   [GetShippingAddressSelectionViewController() loadModel];
 
   ASSERT_EQ(1, NumberOfSections());

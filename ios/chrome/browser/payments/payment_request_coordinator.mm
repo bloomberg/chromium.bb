@@ -204,6 +204,11 @@ class FullCardRequester
     }
   }
 
+  _viewController.view.userInteractionEnabled = NO;
+  [_viewController setPending:YES];
+  [_viewController loadModel];
+  [[_viewController collectionView] reloadData];
+
   [_delegate paymentRequestCoordinator:self
          didConfirmWithPaymentResponse:paymentResponse];
 }

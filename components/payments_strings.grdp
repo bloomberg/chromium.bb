@@ -70,6 +70,9 @@
   <message name="IDS_PAYMENTS_LOADING_MESSAGE" desc="The text that informs the user that payment information is being loaded up." formatter_data="android_java">
     Loading
   </message>
+  <message name="IDS_PAYMENTS_PROCESSING_MESSAGE" desc="The text that informs the user that payment is being processed." formatter_data="android_java">
+    Processing
+  </message>
   <message name="IDS_PAYMENTS_ERROR_MESSAGE" desc="The text that informs the user that there is error in verifying and charging the payment." formatter_data="android_java">
     There was an error processing your order.  Please check your account and try again.
   </message>

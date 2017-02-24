@@ -55,11 +55,10 @@
   // delayedNotifyDelegateOfSelection.
   _viewController.view.userInteractionEnabled = YES;
 
-  [_viewController setIsLoading:NO];
-  NSString* errorMessage =
-      payment_request_util::GetShippingAddressSelectorErrorMessage(
-          _paymentRequest);
-  [_viewController setErrorMessage:errorMessage];
+  [_viewController setPending:NO];
+  [_viewController setErrorMessage:payment_request_util::
+                                       GetShippingAddressSelectorErrorMessage(
+                                           _paymentRequest)];
   [_viewController loadModel];
   [[_viewController collectionView] reloadData];
 }
@@ -86,7 +85,11 @@
                                static_cast<int64_t>(0.2 * NSEC_PER_SEC)),
                  dispatch_get_main_queue(), ^{
                    ShippingAddressSelectionCoordinator* strongSelf = weakSelf;
-                   [strongSelf.viewController setIsLoading:YES];
+                   // Early return if the coordinator has been deallocated.
+                   if (!strongSelf)
+                     return;
+
+                   [strongSelf.viewController setPending:YES];
                    [strongSelf.viewController loadModel];
                    [[strongSelf.viewController collectionView] reloadData];
 

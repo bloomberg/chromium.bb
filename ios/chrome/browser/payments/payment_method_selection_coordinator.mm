@@ -67,6 +67,10 @@
                                static_cast<int64_t>(0.2 * NSEC_PER_SEC)),
                  dispatch_get_main_queue(), ^{
                    PaymentMethodSelectionCoordinator* strongSelf = weakSelf;
+                   // Early return if the coordinator has been deallocated.
+                   if (!strongSelf)
+                     return;
+
                    strongSelf.viewController.view.userInteractionEnabled = YES;
                    [strongSelf.delegate
                        paymentMethodSelectionCoordinator:strongSelf

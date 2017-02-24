@@ -34,8 +34,8 @@
 // delegate.
 @interface ShippingOptionSelectionViewController : CollectionViewController
 
-// Whether or not the view is in a loading state.
-@property(nonatomic, assign) BOOL isLoading;
+// Whether or not the view is in a pending state.
+@property(nonatomic, assign, getter=isPending) BOOL pending;
 
 // The error message to display, if any.
 @property(nonatomic, copy) NSString* errorMessage;

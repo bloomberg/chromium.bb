@@ -69,7 +69,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation ShippingAddressSelectionViewController
 
-@synthesize isLoading = _isLoading;
+@synthesize pending = _pending;
 @synthesize errorMessage = _errorMessage;
 @synthesize delegate = _delegate;
 
@@ -104,7 +104,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [model addSectionWithIdentifier:SectionIdentifierShippingAddress];
 
-  if (_isLoading) {
+  if (_pending) {
     StatusItem* statusItem = [[StatusItem alloc] initWithType:ItemTypeSpinner];
     statusItem.text =
         l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_CHECKING_LABEL);
