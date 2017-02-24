@@ -29,6 +29,7 @@ namespace chromecast {
 // equal or past the requested time, the alarm will fire.
 class AlarmManager {
  public:
+  class AlarmHandle : public base::SupportsWeakPtr<AlarmHandle> {};
   // Construct and start the alarm manager. The clock poller will run on the
   // caller's thread.
   AlarmManager();
@@ -41,17 +42,20 @@ class AlarmManager {
 
   // Add an alarm.
   // |task| will be executed at around |time|.
+  // Returns an AlarmHandle that must be kept alive. If the AlarmHandle is
+  // destroyed, the alarm will not fire.
   //
   // Any thread can add alarms. The alarm will be fired on the original
   // thread used to set the alarm.
   //
   // When an alarm is added to the alarm manager, the task is guaranteed to not
   // run before the clock passes the requested time. The task may not run even
-  // if
-  // it is past the requested time if the software is suspended. However, once
-  // woken up, the event will fire within 5 seconds if the target time has
+  // if it is past the requested time if the software is suspended. However,
+  // once woken up, the event will fire within 5 seconds if the target time has
   // passed.
-  void PostAlarmTask(const base::Closure& task, base::Time time);
+  std::unique_ptr<AlarmManager::AlarmHandle> PostAlarmTask(
+      const base::Closure& task,
+      base::Time time) WARN_UNUSED_RESULT;
 
  private:
   class AlarmInfo {

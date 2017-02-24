@@ -21,6 +21,14 @@ namespace chromecast {
 
 namespace {
 int kClockPollInterval = 5;
+
+void VerifyHandleCallback(const base::Closure& task,
+                          base::WeakPtr<AlarmManager::AlarmHandle> handle) {
+  if (!handle.get()) {
+    return;
+  }
+  task.Run();
+}
 }  // namespace
 
 AlarmManager::AlarmInfo::AlarmInfo(
@@ -51,8 +59,13 @@ AlarmManager::AlarmManager()
 
 AlarmManager::~AlarmManager() {}
 
-void AlarmManager::PostAlarmTask(const base::Closure& task, base::Time time) {
-  AddAlarm(task, time, base::ThreadTaskRunnerHandle::Get());
+std::unique_ptr<AlarmManager::AlarmHandle> AlarmManager::PostAlarmTask(
+    const base::Closure& task,
+    base::Time time) {
+  std::unique_ptr<AlarmHandle> handle = base::MakeUnique<AlarmHandle>();
+  AddAlarm(base::Bind(&VerifyHandleCallback, task, handle->AsWeakPtr()), time,
+           base::ThreadTaskRunnerHandle::Get());
+  return handle;
 }
 
 void AlarmManager::AddAlarm(
