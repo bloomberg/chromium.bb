@@ -21,7 +21,7 @@ ServerWindowCompositorFrameSinkManager::
     ~ServerWindowCompositorFrameSinkManager() {
 }
 
-void ServerWindowCompositorFrameSinkManager::CreateDisplayCompositorFrameSink(
+void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
     gfx::AcceleratedWidget widget,
     cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client,
@@ -44,7 +44,7 @@ void ServerWindowCompositorFrameSinkManager::CreateDisplayCompositorFrameSink(
   // TODO(fsamuel): AcceleratedWidget cannot be transported over IPC for Mac
   // or Android. We should instead use GpuSurfaceTracker here on those
   // platforms.
-  window_->delegate()->GetDisplayCompositor()->CreateDisplayCompositorFrameSink(
+  window_->delegate()->GetDisplayCompositor()->CreateRootCompositorFrameSink(
       frame_sink_id, widget, std::move(sink_request),
       std::move(private_request), std::move(client),
       std::move(display_request));
@@ -58,7 +58,7 @@ void ServerWindowCompositorFrameSinkManager::CreateDisplayCompositorFrameSink(
   }
 }
 
-void ServerWindowCompositorFrameSinkManager::CreateOffscreenCompositorFrameSink(
+void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   cc::FrameSinkId frame_sink_id(WindowIdToTransportId(window_->id()), 0);
@@ -76,11 +76,9 @@ void ServerWindowCompositorFrameSinkManager::CreateOffscreenCompositorFrameSink(
         mojo::MakeRequest(&frame_sink_data_->compositor_frame_sink);
   }
 
-  window_->delegate()
-      ->GetDisplayCompositor()
-      ->CreateOffscreenCompositorFrameSink(frame_sink_id, std::move(request),
-                                           std::move(private_request),
-                                           std::move(client));
+  window_->delegate()->GetDisplayCompositor()->CreateCompositorFrameSink(
+      frame_sink_id, std::move(request), std::move(private_request),
+      std::move(client));
 
   if (window_->parent()) {
     ServerWindow* root_window = window_->GetRoot();

@@ -69,7 +69,7 @@ class DisplayCompositor
                                bool destroy_compositor_frame_sink) override;
 
   // cc::mojom::DisplayCompositor implementation:
-  void CreateDisplayCompositorFrameSink(
+  void CreateRootCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       cc::mojom::MojoCompositorFrameSinkAssociatedRequest request,
@@ -77,7 +77,7 @@ class DisplayCompositor
       cc::mojom::MojoCompositorFrameSinkClientPtr client,
       cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
       override;
-  void CreateOffscreenCompositorFrameSink(
+  void CreateCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
@@ -120,10 +120,9 @@ class DisplayCompositor
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   gpu::ImageFactory* image_factory_;
 
-  std::unordered_map<
-      cc::FrameSinkId,
-      std::unique_ptr<display_compositor::GpuCompositorFrameSink>,
-      cc::FrameSinkIdHash>
+  std::unordered_map<cc::FrameSinkId,
+                     std::unique_ptr<cc::mojom::MojoCompositorFrameSink>,
+                     cc::FrameSinkIdHash>
       compositor_frame_sinks_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

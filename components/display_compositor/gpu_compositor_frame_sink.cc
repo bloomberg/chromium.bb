@@ -10,16 +10,27 @@ namespace display_compositor {
 
 GpuCompositorFrameSink::GpuCompositorFrameSink(
     GpuCompositorFrameSinkDelegate* delegate,
-    std::unique_ptr<cc::CompositorFrameSinkSupport> support,
+    cc::SurfaceManager* surface_manager,
+    const cc::FrameSinkId& frame_sink_id,
+    cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest
         compositor_frame_sink_private_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
     : delegate_(delegate),
-      support_(std::move(support)),
+      support_(base::MakeUnique<cc::CompositorFrameSinkSupport>(
+          this,
+          surface_manager,
+          frame_sink_id,
+          false /* is_root */,
+          true /* handles_frame_sink_id_invalidation */,
+          true /* needs_sync_points */)),
       client_(std::move(client)),
+      compositor_frame_sink_binding_(this, std::move(request)),
       compositor_frame_sink_private_binding_(
           this,
           std::move(compositor_frame_sink_private_request)) {
+  compositor_frame_sink_binding_.set_connection_error_handler(base::Bind(
+      &GpuCompositorFrameSink::OnClientConnectionLost, base::Unretained(this)));
   compositor_frame_sink_private_binding_.set_connection_error_handler(
       base::Bind(&GpuCompositorFrameSink::OnPrivateConnectionLost,
                  base::Unretained(this)));
@@ -65,6 +76,11 @@ void GpuCompositorFrameSink::RemoveChildFrameSink(
   support_->RemoveChildFrameSink(child_frame_sink_id);
 }
 
+void GpuCompositorFrameSink::RequestCopyOfSurface(
+    std::unique_ptr<cc::CopyOutputRequest> request) {
+  support_->RequestCopyOfSurface(std::move(request));
+}
+
 void GpuCompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {
   if (client_)
     client_->OnBeginFrame(args);
@@ -95,11 +111,6 @@ void GpuCompositorFrameSink::OnPrivateConnectionLost() {
   // Request destruction of |this| only if both connections are lost.
   delegate_->OnPrivateConnectionLost(support_->frame_sink_id(),
                                      client_connection_lost_);
-}
-
-void GpuCompositorFrameSink::RequestCopyOfSurface(
-    std::unique_ptr<cc::CopyOutputRequest> request) {
-  support_->RequestCopyOfSurface(std::move(request));
 }
 
 }  // namespace display_compositor

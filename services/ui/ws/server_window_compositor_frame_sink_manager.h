@@ -42,13 +42,13 @@ class ServerWindowCompositorFrameSinkManager {
 
   // Creates a new CompositorFrameSink of the specified type, replacing the
   // existing one of the specified type.
-  void CreateDisplayCompositorFrameSink(
+  void CreateRootCompositorFrameSink(
       gfx::AcceleratedWidget widget,
       cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client,
       cc::mojom::DisplayPrivateAssociatedRequest display_request);
 
-  void CreateOffscreenCompositorFrameSink(
+  void CreateCompositorFrameSink(
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 

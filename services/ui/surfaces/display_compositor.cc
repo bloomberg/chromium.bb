@@ -15,8 +15,8 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface.h"
-#include "components/display_compositor/gpu_display_compositor_frame_sink.h"
-#include "components/display_compositor/gpu_offscreen_compositor_frame_sink.h"
+#include "components/display_compositor/gpu_compositor_frame_sink.h"
+#include "components/display_compositor/gpu_root_compositor_frame_sink.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -69,7 +69,7 @@ void DisplayCompositor::OnPrivateConnectionLost(
     DestroyCompositorFrameSink(frame_sink_id);
 }
 
-void DisplayCompositor::CreateDisplayCompositorFrameSink(
+void DisplayCompositor::CreateRootCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
     cc::mojom::MojoCompositorFrameSinkAssociatedRequest request,
@@ -87,14 +87,14 @@ void DisplayCompositor::CreateDisplayCompositorFrameSink(
       CreateDisplay(frame_sink_id, surface_handle, begin_frame_source.get());
 
   compositor_frame_sinks_[frame_sink_id] =
-      base::MakeUnique<display_compositor::GpuDisplayCompositorFrameSink>(
+      base::MakeUnique<display_compositor::GpuRootCompositorFrameSink>(
           this, &manager_, frame_sink_id, std::move(display),
           std::move(begin_frame_source), std::move(request),
           std::move(private_request), std::move(client),
           std::move(display_private_request));
 }
 
-void DisplayCompositor::CreateOffscreenCompositorFrameSink(
+void DisplayCompositor::CreateCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
@@ -103,7 +103,7 @@ void DisplayCompositor::CreateOffscreenCompositorFrameSink(
   DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
 
   compositor_frame_sinks_[frame_sink_id] =
-      base::MakeUnique<display_compositor::GpuOffscreenCompositorFrameSink>(
+      base::MakeUnique<display_compositor::GpuCompositorFrameSink>(
           this, &manager_, frame_sink_id, std::move(request),
           std::move(private_request), std::move(client));
 }

@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_DISPLAY_COMPOSITOR_GPU_COMPOSITOR_FRAME_SINK_DELEGATE_H_
 #define COMPONENTS_DISPLAY_COMPOSITOR_GPU_COMPOSITOR_FRAME_SINK_DELEGATE_H_
 
+namespace cc {
+class FrameSinkId;
+}
+
 namespace display_compositor {
 
 class GpuCompositorFrameSinkDelegate {

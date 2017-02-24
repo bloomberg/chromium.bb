@@ -32,7 +32,7 @@ FrameGenerator::FrameGenerator(FrameGeneratorDelegate* delegate,
       mojo::MakeRequest(&compositor_frame_sink_);
   cc::mojom::DisplayPrivateAssociatedRequest display_request =
       mojo::MakeRequest(&display_private_);
-  root_window_->CreateDisplayCompositorFrameSink(
+  root_window_->CreateRootCompositorFrameSink(
       widget, std::move(sink_request), binding_.CreateInterfacePtrAndBind(),
       std::move(display_request));
 }

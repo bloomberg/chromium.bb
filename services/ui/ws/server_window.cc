@@ -84,20 +84,20 @@ bool ServerWindow::HasObserver(ServerWindowObserver* observer) {
   return observers_.HasObserver(observer);
 }
 
-void ServerWindow::CreateDisplayCompositorFrameSink(
+void ServerWindow::CreateRootCompositorFrameSink(
     gfx::AcceleratedWidget widget,
     cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_request) {
-  GetOrCreateCompositorFrameSinkManager()->CreateDisplayCompositorFrameSink(
+  GetOrCreateCompositorFrameSinkManager()->CreateRootCompositorFrameSink(
       widget, std::move(sink_request), std::move(client),
       std::move(display_request));
 }
 
-void ServerWindow::CreateOffscreenCompositorFrameSink(
+void ServerWindow::CreateCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
-  GetOrCreateCompositorFrameSinkManager()->CreateOffscreenCompositorFrameSink(
+  GetOrCreateCompositorFrameSinkManager()->CreateCompositorFrameSink(
       std::move(request), std::move(client));
 }
 
