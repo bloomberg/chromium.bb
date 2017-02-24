@@ -745,19 +745,36 @@ LayoutSize LayoutBoxModelObject::relativePositionOffset() const {
   // be resolved using the available width of the containing block. Therefore we
   // don't use containingBlockLogicalWidthForContent() here, but instead
   // explicitly call availableWidth on our containing block.
-  if (!style()->left().isAuto()) {
-    if (!style()->right().isAuto() &&
-        !containingBlock->style()->isLeftToRightDirection())
-      offset.setWidth(
-          -valueForLength(style()->right(), containingBlock->availableWidth()));
-    else
-      offset.expand(
-          valueForLength(style()->left(), containingBlock->availableWidth()),
-          LayoutUnit());
-  } else if (!style()->right().isAuto()) {
-    offset.expand(
-        -valueForLength(style()->right(), containingBlock->availableWidth()),
-        LayoutUnit());
+  // https://drafts.csswg.org/css-position-3/#rel-pos
+  Optional<LayoutUnit> left;
+  Optional<LayoutUnit> right;
+  if (!style()->left().isAuto())
+    left = valueForLength(style()->left(), containingBlock->availableWidth());
+  if (!style()->right().isAuto())
+    right = valueForLength(style()->right(), containingBlock->availableWidth());
+  if (!left && !right) {
+    left = LayoutUnit();
+    right = LayoutUnit();
+  }
+  if (!left)
+    left = -right.value();
+  if (!right)
+    right = -left.value();
+  bool isLtr = containingBlock->style()->isLeftToRightDirection();
+  WritingMode writingMode = containingBlock->style()->getWritingMode();
+  switch (writingMode) {
+    case WritingMode::kHorizontalTb:
+      if (isLtr)
+        offset.expand(left.value(), LayoutUnit());
+      else
+        offset.setWidth(-right.value());
+      break;
+    case WritingMode::kVerticalRl:
+      offset.setWidth(-right.value());
+      break;
+    case WritingMode::kVerticalLr:
+      offset.expand(left.value(), LayoutUnit());
+      break;
   }
 
   // If the containing block of a relatively positioned element does not specify
@@ -766,22 +783,47 @@ LayoutSize LayoutBoxModelObject::relativePositionOffset() const {
   // <html> and <body> assume the size of the viewport. In this case, calculate
   // the percent offset based on this height.
   // See <https://bugs.webkit.org/show_bug.cgi?id=26396>.
+
+  Optional<LayoutUnit> top;
+  Optional<LayoutUnit> bottom;
   if (!style()->top().isAuto() &&
       (!containingBlock->hasAutoHeightOrContainingBlockWithAutoHeight() ||
        !style()->top().isPercentOrCalc() ||
-       containingBlock->stretchesToViewport()))
-    offset.expand(
-        LayoutUnit(),
-        valueForLength(style()->top(), containingBlock->availableHeight()));
-
-  else if (!style()->bottom().isAuto() &&
-           (!containingBlock->hasAutoHeightOrContainingBlockWithAutoHeight() ||
-            !style()->bottom().isPercentOrCalc() ||
-            containingBlock->stretchesToViewport()))
-    offset.expand(
-        LayoutUnit(),
-        -valueForLength(style()->bottom(), containingBlock->availableHeight()));
-
+       containingBlock->stretchesToViewport())) {
+    top = valueForLength(style()->top(), containingBlock->availableHeight());
+  }
+  if (!style()->bottom().isAuto() &&
+      (!containingBlock->hasAutoHeightOrContainingBlockWithAutoHeight() ||
+       !style()->bottom().isPercentOrCalc() ||
+       containingBlock->stretchesToViewport())) {
+    bottom =
+        valueForLength(style()->bottom(), containingBlock->availableHeight());
+  }
+  if (!top && !bottom) {
+    top = LayoutUnit();
+    bottom = LayoutUnit();
+  }
+  if (!top)
+    top = -bottom.value();
+  if (!bottom)
+    bottom = -top.value();
+  switch (writingMode) {
+    case WritingMode::kHorizontalTb:
+      offset.expand(LayoutUnit(), top.value());
+      break;
+    case WritingMode::kVerticalRl:
+      if (isLtr)
+        offset.expand(LayoutUnit(), top.value());
+      else
+        offset.setHeight(-bottom.value());
+      break;
+    case WritingMode::kVerticalLr:
+      if (isLtr)
+        offset.expand(LayoutUnit(), top.value());
+      else
+        offset.setHeight(-bottom.value());
+      break;
+  }
   return offset;
 }
 
