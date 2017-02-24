@@ -30,11 +30,12 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
+#include "components/autofill/core/browser/webdata/autofill_table_encryptor.h"
+#include "components/autofill/core/browser/webdata/autofill_table_encryptor_factory.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/os_crypt/os_crypt.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
@@ -129,17 +130,19 @@ std::unique_ptr<AutofillProfile> AutofillProfileFromStatement(
 }
 
 void BindEncryptedCardToColumn(sql::Statement* s,
-                                 int column_index,
-                                 const base::string16& number) {
+                               int column_index,
+                               const base::string16& number,
+                               const AutofillTableEncryptor& encryptor) {
   std::string encrypted_data;
-  OSCrypt::EncryptString16(number, &encrypted_data);
+  encryptor.EncryptString16(number, &encrypted_data);
   s->BindBlob(column_index, encrypted_data.data(),
               static_cast<int>(encrypted_data.length()));
 }
 
 void BindCreditCardToStatement(const CreditCard& credit_card,
                                const Time& modification_date,
-                               sql::Statement* s) {
+                               sql::Statement* s,
+                               const AutofillTableEncryptor& encryptor) {
   DCHECK(base::IsValidGUID(credit_card.guid()));
   int index = 0;
   s->BindString(index++, credit_card.guid());
@@ -147,8 +150,8 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_NAME_FULL));
   s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_EXP_MONTH));
   s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_EXP_4_DIGIT_YEAR));
-  BindEncryptedCardToColumn(s, index++,
-                            credit_card.GetRawInfo(CREDIT_CARD_NUMBER));
+  BindEncryptedCardToColumn(
+      s, index++, credit_card.GetRawInfo(CREDIT_CARD_NUMBER), encryptor);
 
   s->BindInt64(index++, credit_card.use_count());
   s->BindInt64(index++, credit_card.use_date().ToTimeT());
@@ -157,8 +160,10 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   s->BindString(index++, credit_card.billing_address_id());
 }
 
-base::string16 UnencryptedCardFromColumn(const sql::Statement& s,
-                                         int column_index) {
+base::string16 UnencryptedCardFromColumn(
+    const sql::Statement& s,
+    int column_index,
+    const AutofillTableEncryptor& encryptor) {
   base::string16 credit_card_number;
   int encrypted_number_len = s.ColumnByteLength(column_index);
   if (encrypted_number_len) {
@@ -166,12 +171,14 @@ base::string16 UnencryptedCardFromColumn(const sql::Statement& s,
     encrypted_number.resize(encrypted_number_len);
     memcpy(&encrypted_number[0], s.ColumnBlob(column_index),
            encrypted_number_len);
-    OSCrypt::DecryptString16(encrypted_number, &credit_card_number);
+    encryptor.DecryptString16(encrypted_number, &credit_card_number);
   }
   return credit_card_number;
 }
 
-std::unique_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
+std::unique_ptr<CreditCard> CreditCardFromStatement(
+    const sql::Statement& s,
+    const AutofillTableEncryptor& encryptor) {
   std::unique_ptr<CreditCard> credit_card(new CreditCard);
 
   int index = 0;
@@ -183,7 +190,7 @@ std::unique_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
   credit_card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
                           s.ColumnString16(index++));
   credit_card->SetRawInfo(CREDIT_CARD_NUMBER,
-                          UnencryptedCardFromColumn(s, index++));
+                          UnencryptedCardFromColumn(s, index++, encryptor));
   credit_card->set_use_count(s.ColumnInt64(index++));
   credit_card->set_use_date(Time::FromTimeT(s.ColumnInt64(index++)));
   credit_card->set_modification_date(Time::FromTimeT(s.ColumnInt64(index++)));
@@ -399,7 +406,10 @@ base::string16 Substitute(const base::string16& s,
 // static
 const size_t AutofillTable::kMaxDataLength = 1024;
 
-AutofillTable::AutofillTable() {
+AutofillTable::AutofillTable()
+    : autofill_table_encryptor_(
+          AutofillTableEncryptorFactory::GetInstance()->Create()) {
+  DCHECK(autofill_table_encryptor_);
 }
 
 AutofillTable::~AutofillTable() {
@@ -1165,7 +1175,8 @@ bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
       " card_number_encrypted, use_count, use_date, date_modified, origin,"
       " billing_address_id)"
       "VALUES (?,?,?,?,?,?,?,?,?,?)"));
-  BindCreditCardToStatement(credit_card, AutofillClock::Now(), &s);
+  BindCreditCardToStatement(credit_card, AutofillClock::Now(), &s,
+                            *autofill_table_encryptor_);
 
   if (!s.Run())
     return false;
@@ -1188,7 +1199,7 @@ std::unique_ptr<CreditCard> AutofillTable::GetCreditCard(
   if (!s.Step())
     return std::unique_ptr<CreditCard>();
 
-  return CreditCardFromStatement(s);
+  return CreditCardFromStatement(s, *autofill_table_encryptor_);
 }
 
 bool AutofillTable::GetCreditCards(
@@ -1237,7 +1248,8 @@ bool AutofillTable::GetServerCreditCards(
 
     // If the card_number_encrypted field is nonempty, we can assume this card
     // is a full card, otherwise it's masked.
-    base::string16 full_card_number = UnencryptedCardFromColumn(s, index++);
+    base::string16 full_card_number =
+        UnencryptedCardFromColumn(s, index++, *autofill_table_encryptor_);
     base::string16 last_four = s.ColumnString16(index++);
     CreditCard::RecordType record_type = full_card_number.empty() ?
         CreditCard::MASKED_SERVER_CARD :
@@ -1344,7 +1356,7 @@ bool AutofillTable::UnmaskServerCreditCard(const CreditCard& masked,
   s.BindString(0, masked.server_id());
 
   std::string encrypted_data;
-  OSCrypt::EncryptString16(full_number, &encrypted_data);
+  autofill_table_encryptor_->EncryptString16(full_number, &encrypted_data);
   s.BindBlob(1, encrypted_data.data(),
              static_cast<int>(encrypted_data.length()));
   s.BindInt64(2, AutofillClock::Now().ToInternalValue());  // unmask_date
@@ -1478,7 +1490,7 @@ bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
                             update_modification_date
                                 ? AutofillClock::Now()
                                 : old_credit_card->modification_date(),
-                            &s);
+                            &s, *autofill_table_encryptor_);
 
   bool result = s.Run();
   DCHECK_GT(db_->GetLastChangeCount(), 0);

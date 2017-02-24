@@ -29,6 +29,7 @@ namespace autofill {
 class AutofillChange;
 class AutofillEntry;
 class AutofillProfile;
+class AutofillTableEncryptor;
 class AutofillTableTest;
 class CreditCard;
 
@@ -545,6 +546,8 @@ class AutofillTable : public WebDatabaseTable {
   bool InitServerAddressMetadataTable();
   bool InitAutofillSyncMetadataTable();
   bool InitModelTypeStateTable();
+
+  std::unique_ptr<AutofillTableEncryptor> autofill_table_encryptor_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillTable);
 };

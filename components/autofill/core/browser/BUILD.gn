@@ -139,6 +139,9 @@ static_library("browser") {
     "webdata/autofill_profile_syncable_service.h",
     "webdata/autofill_table.cc",
     "webdata/autofill_table.h",
+    "webdata/autofill_table_encryptor.h",
+    "webdata/autofill_table_encryptor_factory.cc",
+    "webdata/autofill_table_encryptor_factory.h",
     "webdata/autofill_wallet_metadata_syncable_service.cc",
     "webdata/autofill_wallet_metadata_syncable_service.h",
     "webdata/autofill_wallet_syncable_service.cc",
@@ -150,6 +153,8 @@ static_library("browser") {
     "webdata/autofill_webdata_service.cc",
     "webdata/autofill_webdata_service.h",
     "webdata/autofill_webdata_service_observer.h",
+    "webdata/system_encryptor.cc",
+    "webdata/system_encryptor.h",
     "webdata/web_data_model_type_controller.cc",
     "webdata/web_data_model_type_controller.h",
   ]
