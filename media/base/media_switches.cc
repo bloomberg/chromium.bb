@@ -144,7 +144,7 @@ const base::Feature kD3D11VideoDecoding{"D3D11VideoDecoding",
 
 // Enables H264 HW encode acceleration using Media Foundation for Windows.
 const base::Feature kMediaFoundationH264Encoding{
-    "MediaFoundationH264Encoding", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MediaFoundationH264Encoding", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
 // Use new audio rendering mixer.
