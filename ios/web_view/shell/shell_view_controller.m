@@ -4,7 +4,7 @@
 
 #import "ios/web_view/shell/shell_view_controller.h"
 
-#import "ios/web_view/public/criwv.h"
+#import "ios/web_view/public/cwv.h"
 #import "ios/web_view/public/cwv_web_view.h"
 #import "ios/web_view/shell/translate_controller.h"
 
@@ -19,7 +19,7 @@
 @property(nonatomic, strong) UITextField* field;
 // Toolbar containing navigation buttons and |field|.
 @property(nonatomic, strong) UIToolbar* toolbar;
-// CRIWV view which renders the web page.
+// CWV view which renders the web page.
 @property(nonatomic, strong) CWVWebView* webView;
 // Handles the translation of the content displayed in |webView|.
 @property(nonatomic, strong) TranslateController* translateController;
@@ -120,7 +120,7 @@
   [_toolbar addSubview:stop];
   [_toolbar addSubview:_field];
 
-  self.webView = [CRIWV webViewWithFrame:[_containerView bounds]];
+  self.webView = [CWV webViewWithFrame:[_containerView bounds]];
   [_webView setDelegate:self];
   [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                 UIViewAutoresizingFlexibleHeight];

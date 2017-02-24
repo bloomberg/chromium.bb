@@ -14,7 +14,7 @@
 namespace ios_web_view {
 class CRIWVWebClient;
 
-// CRIWV-specific implementation of WebMainDelegate.
+// CWV-specific implementation of WebMainDelegate.
 class CRIWVWebMainDelegate : public web::WebMainDelegate {
  public:
   explicit CRIWVWebMainDelegate(id<CWVDelegate> delegate);

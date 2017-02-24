@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/public/criwv.h"
+#import "ios/web_view/public/cwv.h"
 
 #include <memory>
 
@@ -22,10 +22,10 @@
 #endif
 
 namespace {
-CRIWV* g_criwv = nil;
+CWV* g_criwv = nil;
 }
 
-@interface CRIWV () {
+@interface CWV () {
   std::unique_ptr<ios_web_view::CRIWVWebMainDelegate> _webMainDelegate;
   std::unique_ptr<web::WebMain> _webMain;
 }
@@ -35,12 +35,12 @@ CRIWV* g_criwv = nil;
 - (instancetype)initWithDelegate:(id<CWVDelegate>)delegate;
 @end
 
-@implementation CRIWV
+@implementation CWV
 
 @synthesize delegate = _delegate;
 
 + (void)configureWithDelegate:(id<CWVDelegate>)delegate {
-  g_criwv = [[CRIWV alloc] initWithDelegate:delegate];
+  g_criwv = [[CWV alloc] initWithDelegate:delegate];
 }
 
 + (void)shutDown {

@@ -23,7 +23,7 @@ class URLRequestContextStorage;
 
 namespace ios_web_view {
 
-// CRIWV-specific implementation of URLRequestContextGetter.
+// CWV-specific implementation of URLRequestContextGetter.
 class CRIWVURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   CRIWVURLRequestContextGetter(

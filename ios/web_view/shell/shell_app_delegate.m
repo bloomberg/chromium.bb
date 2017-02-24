@@ -4,7 +4,7 @@
 
 #import "ios/web_view/shell/shell_app_delegate.h"
 
-#import "ios/web_view/public/criwv.h"
+#import "ios/web_view/public/cwv.h"
 #import "ios/web_view/shell/shell_delegate.h"
 #import "ios/web_view/shell/shell_view_controller.h"
 
@@ -27,7 +27,7 @@
   self.window.backgroundColor = [UIColor whiteColor];
 
   self.delegate = [[ShellDelegate alloc] init];
-  [CRIWV configureWithDelegate:_delegate];
+  [CWV configureWithDelegate:_delegate];
 
   [self.window makeKeyAndVisible];
 
@@ -50,7 +50,7 @@
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application {
-  [CRIWV shutDown];
+  [CWV shutDown];
 }
 
 @end

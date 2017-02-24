@@ -15,7 +15,7 @@ namespace ios_web_view {
 class CRIWVBrowserState;
 class CRIWVWebMainParts;
 
-// CRIWV-specific implementation of WebClient.  Delegates some functionality to
+// CWV-specific implementation of WebClient.  Delegates some functionality to
 // CWVDelegate.
 class CRIWVWebClient : public web::WebClient {
  public:

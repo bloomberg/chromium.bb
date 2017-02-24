@@ -14,7 +14,7 @@
 namespace ios_web_view {
 class CRIWVBrowserState;
 
-// CRIWV-specific implementation of WebMainParts.
+// CWV-specific implementation of WebMainParts.
 class CRIWVWebMainParts : public web::WebMainParts {
  public:
   explicit CRIWVWebMainParts(id<CWVDelegate> delegate);

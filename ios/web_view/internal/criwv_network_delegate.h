@@ -10,7 +10,7 @@
 
 namespace ios_web_view {
 
-// CRIWV-specific implementation of NetworkDelegate.
+// CWV-specific implementation of NetworkDelegate.
 class CRIWVNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   CRIWVNetworkDelegate();

@@ -15,7 +15,7 @@
 // In addition to WKWebView features, it allows Translate, Find In Page,
 // Customizable Context Menus, and maybe more.
 //
-// Concrete instances can be created through CRIWV.
+// Concrete instances can be created through CWV.
 @interface CWVWebView : UIView
 
 // The view used to display web content.

@@ -6,7 +6,7 @@
 
 @class NSString;
 
-// Delegate interface for the CRIWV library.  Embedders can implement the
+// Delegate interface for the CWV library.  Embedders can implement the
 // functions in order to customize library behavior.
 @protocol CWVDelegate
 

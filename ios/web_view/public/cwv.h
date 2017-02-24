@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_PUBLIC_CRIWV_H_
-#define IOS_WEB_VIEW_PUBLIC_CRIWV_H_
+#ifndef IOS_WEB_VIEW_PUBLIC_CWV_H_
+#define IOS_WEB_VIEW_PUBLIC_CWV_H_
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
@@ -11,15 +11,14 @@
 @protocol CWVDelegate;
 @class CWVWebView;
 
-// Main interface for the CRIWV library.
-__attribute__((visibility("default")))
-@interface CRIWV : NSObject
+// Main interface for the CWV library.
+__attribute__((visibility("default"))) @interface CWV : NSObject
 
-// Initializes the CRIWV library.  This function should be called from
+// Initializes the CWV library. This function should be called from
 // |application:didFinishLaunchingWithOptions:|.
 + (void)configureWithDelegate:(id<CWVDelegate>)delegate;
 
-// Shuts down the CRIWV library.  This function should be called from
+// Shuts down the CWV library.  This function should be called from
 // |applicationwillTerminate:|.
 + (void)shutDown;
 
@@ -28,4 +27,4 @@ __attribute__((visibility("default")))
 
 @end
 
-#endif  // IOS_WEB_VIEW_PUBLIC_CRIWV_H_
+#endif  // IOS_WEB_VIEW_PUBLIC_CWV_H_

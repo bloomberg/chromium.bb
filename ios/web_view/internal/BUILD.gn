@@ -9,7 +9,6 @@ source_set("internal") {
   ]
 
   sources = [
-    "criwv.mm",
     "criwv_browser_state.h",
     "criwv_browser_state.mm",
     "criwv_network_delegate.cc",
@@ -22,6 +21,7 @@ source_set("internal") {
     "criwv_web_main_delegate.mm",
     "criwv_web_main_parts.h",
     "criwv_web_main_parts.mm",
+    "cwv.mm",
     "cwv_web_view.mm",
     "cwv_web_view_configuration.mm",
     "cwv_website_data_store.mm",

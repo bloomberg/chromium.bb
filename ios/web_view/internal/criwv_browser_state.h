@@ -21,7 +21,7 @@ namespace ios_web_view {
 
 class CRIWVURLRequestContextGetter;
 
-// CRIWV implementation of BrowserState.  Can only be called from the UI thread.
+// CWV implementation of BrowserState.  Can only be called from the UI thread.
 class CRIWVBrowserState : public web::BrowserState {
  public:
   explicit CRIWVBrowserState(bool off_the_record);
