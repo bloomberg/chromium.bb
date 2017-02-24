@@ -4,6 +4,8 @@
 
 #include "chromecast/browser/cast_web_view.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
@@ -48,13 +50,6 @@ std::unique_ptr<content::WebContents> CreateWebContents(
   content::WebContents* web_contents =
       content::WebContents::Create(create_params);
 
-#if defined(USE_AURA)
-  // Resize window
-  aura::Window* content_window = web_contents->GetNativeView();
-  content_window->SetBounds(
-      gfx::Rect(display_size.width(), display_size.height()));
-#endif
-
 #if defined(OS_ANDROID)
   content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
   prefs->use_video_overlay_for_embedded_encrypted_video = true;
@@ -76,6 +71,7 @@ CastWebView::CastWebView(Delegate* delegate,
       transparent_(transparent),
       window_(shell::CastContentWindow::Create(delegate)),
       web_contents_(CreateWebContents(browser_context_, site_instance_)),
+      did_start_navigation_(false),
       weak_factory_(this) {
   DCHECK(delegate_);
   DCHECK(browser_context_);
@@ -234,6 +230,11 @@ void CastWebView::DidFirstVisuallyNonEmptyPaint() {
 
 void CastWebView::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (did_start_navigation_) {
+    return;
+  }
+  did_start_navigation_ = true;
+
 #if defined(USE_AURA)
   // Resize window
   gfx::Size display_size =
