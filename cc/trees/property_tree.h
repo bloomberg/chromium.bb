@@ -654,10 +654,6 @@ class CC_EXPORT PropertyTrees final {
       int transform_id,
       int effect_id) const;
 
-  bool ComputeTransformFromTarget(int transform_id,
-                                  int effect_id,
-                                  gfx::Transform* transform) const;
-
  private:
   gfx::Vector2dF inner_viewport_container_bounds_delta_;
   gfx::Vector2dF outer_viewport_container_bounds_delta_;

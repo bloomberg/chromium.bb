@@ -77,8 +77,9 @@ bool ComputeClipRectInTargetSpace(const LayerImpl* layer,
       return false;
     }
   } else {
-    if (property_trees->ComputeTransformFromTarget(
+    if (property_trees->GetFromTarget(
             target_node_id, clip_node->target_effect_id, &clip_to_target)) {
+      PostConcatSurfaceContentsScale(target_effect_node, &clip_to_target);
       *clip_rect_in_target_space =
           MathUtil::ProjectClippedRect(clip_to_target, clip_from_clip_node);
     } else {
@@ -99,15 +100,12 @@ static ConditionalClip ComputeTargetRectInLocalSpace(
     int target_transform_id,
     int local_transform_id,
     const int target_effect_id) {
-  const EffectTree& effect_tree = property_trees->effect_tree;
   gfx::Transform target_to_local;
-  bool success = property_trees->ComputeTransformFromTarget(
+  bool success = property_trees->GetFromTarget(
       local_transform_id, target_effect_id, &target_to_local);
   if (!success)
     // If transform is not invertible, cannot apply clip.
     return ConditionalClip{false, gfx::RectF()};
-  const EffectNode* target_effect_node = effect_tree.Node(target_effect_id);
-  ConcatInverseSurfaceContentsScale(target_effect_node, &target_to_local);
 
   if (target_transform_id > local_transform_id)
     return ConditionalClip{true,  // is_clipped.
@@ -543,23 +541,16 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
     }
 
     gfx::Transform target_to_layer;
-    if (transform_node->ancestors_are_invertible) {
-      property_trees->GetFromTarget(transform_node->id,
-                                    layer->render_target_effect_tree_index(),
-                                    &target_to_layer);
-    } else {
-      const EffectNode* target_effect_node =
-          ContentsTargetEffectNode(layer->effect_tree_index(), effect_tree);
-      bool success = property_trees->ComputeTransformFromTarget(
-          transform_node->id, target_effect_node->id, &target_to_layer);
-      if (!success) {
-        // An animated singular transform may become non-singular during the
-        // animation, so we still need to compute a visible rect. In this
-        // situation, we treat the entire layer as visible.
-        layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
-        continue;
-      }
-      ConcatInverseSurfaceContentsScale(target_effect_node, &target_to_layer);
+    const EffectNode* target_effect_node =
+        ContentsTargetEffectNode(layer->effect_tree_index(), effect_tree);
+    bool success = property_trees->GetFromTarget(
+        transform_node->id, target_effect_node->id, &target_to_layer);
+    if (!success) {
+      // An animated singular transform may become non-singular during the
+      // animation, so we still need to compute a visible rect. In this
+      // situation, we treat the entire layer as visible.
+      layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
+      continue;
     }
     gfx::Transform target_to_content;
     target_to_content.Translate(-layer->offset_to_transform_parent().x(),
@@ -827,16 +818,12 @@ void ComputeClips(PropertyTrees* property_trees,
     if (parent_target_transform_node &&
         parent_target_transform_node->id != clip_node->target_transform_id &&
         non_root_surfaces_enabled) {
-      success &= property_trees->ComputeTransformFromTarget(
+      success &= property_trees->GetFromTarget(
           clip_node->target_transform_id, parent_clip_node->target_effect_id,
           &parent_to_current);
       const EffectNode* target_effect_node =
           effect_tree.Node(clip_node->target_effect_id);
       PostConcatSurfaceContentsScale(target_effect_node, &parent_to_current);
-      const EffectNode* parent_target_effect_node =
-          effect_tree.Node(parent_clip_node->target_effect_id);
-      ConcatInverseSurfaceContentsScale(parent_target_effect_node,
-                                        &parent_to_current);
       // If we can't compute a transform, it's because we had to use the inverse
       // of a singular transform. We won't draw in this case, so there's no need
       // to compute clips.

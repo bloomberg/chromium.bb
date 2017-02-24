@@ -10137,6 +10137,9 @@ TEST_F(LayerTreeHostCommonTest, ClipParentDrawsIntoScaledRootSurface) {
   unclipped_desc_surface->test_properties()->force_render_surface = true;
   clip_child->SetBounds(gfx::Size(100, 100));
   clip_child->SetDrawsContent(true);
+  gfx::Transform translate;
+  translate.Translate(10, 10);
+  unclipped_desc_surface->test_properties()->transform = translate;
 
   clip_child->test_properties()->clip_parent = clip_parent;
   clip_parent->test_properties()->clip_children =
@@ -10145,13 +10148,13 @@ TEST_F(LayerTreeHostCommonTest, ClipParentDrawsIntoScaledRootSurface) {
 
   float device_scale_factor = 1.f;
   ExecuteCalculateDrawProperties(root, device_scale_factor);
-  EXPECT_EQ(gfx::Rect(20, 20), clip_child->clip_rect());
-  EXPECT_EQ(gfx::Rect(20, 20), clip_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(-10, -10, 20, 20), clip_child->clip_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), clip_child->visible_layer_rect());
 
   device_scale_factor = 2.f;
   ExecuteCalculateDrawProperties(root, device_scale_factor);
-  EXPECT_EQ(gfx::Rect(40, 40), clip_child->clip_rect());
-  EXPECT_EQ(gfx::Rect(20, 20), clip_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(-20, -20, 40, 40), clip_child->clip_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), clip_child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipChildVisibleRect) {

@@ -2120,20 +2120,4 @@ gfx::Transform PropertyTrees::ToScreenSpaceTransformWithoutSurfaceContentsScale(
   return screen_space_transform;
 }
 
-bool PropertyTrees::ComputeTransformFromTarget(
-    int transform_id,
-    int effect_id,
-    gfx::Transform* transform) const {
-  transform->MakeIdentity();
-  if (transform_id == TransformTree::kInvalidNodeId)
-    return true;
-
-  const EffectNode* effect_node = effect_tree.Node(effect_id);
-
-  bool success = GetFromTarget(transform_id, effect_id, transform);
-  transform->Scale(effect_node->surface_contents_scale.x(),
-                   effect_node->surface_contents_scale.y());
-  return success;
-}
-
 }  // namespace cc
