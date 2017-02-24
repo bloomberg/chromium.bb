@@ -217,7 +217,7 @@ DisplayItemList::AsValue(bool include_items) const {
     }
     state->EndArray();  // "items".
   }
-  state->SetValue("layer_rect", MathUtil::AsValue(rtree_.GetBounds()));
+  MathUtil::AddToTracedValue("layer_rect", rtree_.GetBounds(), state.get());
   state->EndDictionary();  // "params".
 
   SkPictureRecorder recorder;
