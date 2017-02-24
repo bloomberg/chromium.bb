@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/skia_color_space_util.h"
 
 namespace gfx {
 namespace {
@@ -78,6 +79,55 @@ TEST(ColorSpace, RGBToYUV) {
     }
   }
 }
+
+typedef std::tr1::tuple<ColorSpace::TransferID, size_t> TableTestData;
+
+class ColorSpaceTableTest : public testing::TestWithParam<TableTestData> {};
+
+TEST_P(ColorSpaceTableTest, ApproximateTransferFn) {
+  ColorSpace::TransferID transfer_id = std::tr1::get<0>(GetParam());
+  const size_t table_size = std::tr1::get<1>(GetParam());
+
+  gfx::ColorSpace color_space(ColorSpace::PrimaryID::BT709, transfer_id);
+  SkColorSpaceTransferFn tr_fn;
+  SkColorSpaceTransferFn tr_fn_inv;
+  bool result = color_space.GetTransferFunction(&tr_fn);
+  CHECK(result);
+  color_space.GetInverseTransferFunction(&tr_fn_inv);
+
+  std::vector<float> x;
+  std::vector<float> t;
+  for (float v = 0; v <= 1.f; v += 1.f / table_size) {
+    x.push_back(v);
+    t.push_back(SkTransferFnEval(tr_fn, v));
+  }
+
+  bool converged = false;
+  float error = 0;
+  SkColorSpaceTransferFn fn_approx;
+  SkApproximateTransferFn(x.data(), t.data(), x.size(), &fn_approx, &error,
+                          &converged);
+
+  for (size_t i = 0; i < x.size(); ++i) {
+    float fn_approx_of_x = SkTransferFnEval(fn_approx, x[i]);
+    EXPECT_NEAR(t[i], fn_approx_of_x, 2.f / 256.f);
+    if (std::abs(t[i] - fn_approx_of_x) > 2.f / 256.f)
+      break;
+  }
+}
+
+ColorSpace::TransferID all_transfers[] = {
+    ColorSpace::TransferID::GAMMA22,      ColorSpace::TransferID::GAMMA24,
+    ColorSpace::TransferID::GAMMA28,      ColorSpace::TransferID::BT709,
+    ColorSpace::TransferID::SMPTE240M,    ColorSpace::TransferID::IEC61966_2_1,
+    ColorSpace::TransferID::SMPTEST428_1, ColorSpace::TransferID::LINEAR};
+
+size_t all_table_sizes[] = {512, 256, 128, 64, 16, 11, 8, 7, 6, 5, 4};
+
+INSTANTIATE_TEST_CASE_P(A,
+                        ColorSpaceTableTest,
+                        testing::Combine(testing::ValuesIn(all_transfers),
+                                         testing::ValuesIn(all_table_sizes)));
 
 }  // namespace
 }  // namespace gfx
