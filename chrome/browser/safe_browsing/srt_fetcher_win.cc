@@ -27,7 +27,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/time/time.h"
+#include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -713,6 +716,10 @@ void MaybeFetchSRT(Browser* browser, const base::Version& reporter_version) {
   new SRTFetcher(profile);
 }
 
+base::Time Now() {
+  return g_testing_delegate_ ? g_testing_delegate_->Now() : base::Time::Now();
+}
+
 }  // namespace
 
 // This class tries to run a queue of reporters and react to their exit codes.
@@ -722,11 +729,8 @@ class ReporterRunner : public chrome::BrowserListObserver {
  public:
   // Registers |invocations| to run next time |TryToRun| is scheduled. (And if
   // it's not already scheduled, call it now.)
-  static void ScheduleInvocations(
-      const SwReporterQueue& invocations,
-      const base::Version& version,
-      scoped_refptr<base::TaskRunner> main_thread_task_runner,
-      scoped_refptr<base::TaskRunner> blocking_task_runner) {
+  static void ScheduleInvocations(const SwReporterQueue& invocations,
+                                  const base::Version& version) {
     if (!instance_) {
       instance_ = new ReporterRunner;
       ANNOTATE_LEAKING_OBJECT_PTR(instance_);
@@ -742,9 +746,6 @@ class ReporterRunner : public chrome::BrowserListObserver {
 
     instance_->pending_invocations_ = invocations;
     instance_->version_ = version;
-    instance_->main_thread_task_runner_ = std::move(main_thread_task_runner);
-    instance_->blocking_task_runner_ = std::move(blocking_task_runner);
-
     if (instance_->first_run_) {
       instance_->first_run_ = false;
       instance_->TryToRun();
@@ -771,20 +772,16 @@ class ReporterRunner : public chrome::BrowserListObserver {
     auto next_invocation = current_invocations_.front();
     current_invocations_.pop();
 
-    if (g_testing_delegate_)
-      g_testing_delegate_->NotifyLaunchReady();
-
     AppendInvocationSpecificSwitches(&next_invocation);
 
-    // It's OK to simply |PostTaskAndReplyWithResult| so that
-    // |LaunchAndWaitForExit| doesn't need to access |main_thread_task_runner_|
-    // since the callback is not delayed and the test task runner won't need to
-    // force it.
+    base::TaskRunner* task_runner =
+        g_testing_delegate_ ? g_testing_delegate_->BlockingTaskRunner()
+                            : blocking_task_runner_.get();
     base::PostTaskAndReplyWithResult(
-        blocking_task_runner_.get(), FROM_HERE,
+        task_runner, FROM_HERE,
         base::Bind(&LaunchAndWaitForExit, next_invocation),
-        base::Bind(&ReporterRunner::ReporterDone, base::Unretained(this),
-                   base::Time::Now(), version_, next_invocation));
+        base::Bind(&ReporterRunner::ReporterDone, base::Unretained(this), Now(),
+                   version_, next_invocation));
   }
 
   // This method is called on the UI thread when an invocation of the reporter
@@ -796,11 +793,8 @@ class ReporterRunner : public chrome::BrowserListObserver {
                     int exit_code) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (g_testing_delegate_)
-      g_testing_delegate_->NotifyReporterDone();
-
-    base::TimeDelta reporter_running_time =
-        base::Time::Now() - reporter_start_time;
+    base::Time now = Now();
+    base::TimeDelta reporter_running_time = now - reporter_start_time;
 
     // Don't continue the current queue of reporters if one failed to launch.
     if (exit_code == kReporterFailureExitCode)
@@ -811,7 +805,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     // retrying earlier, risking running too often if it always fails, since
     // not many users fail here.)
     if (current_invocations_.empty()) {
-      main_thread_task_runner_->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&ReporterRunner::TryToRun, base::Unretained(this)),
           base::TimeDelta::FromDays(days_between_reporter_runs_));
@@ -839,7 +833,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
         local_state->SetInteger(prefs::kSwReporterLastExitCode, exit_code);
       }
       local_state->SetInt64(prefs::kSwReporterLastTimeTriggered,
-                            base::Time::Now().ToInternalValue());
+                            now.ToInternalValue());
     }
     uma.ReportRuntime(reporter_running_time);
     uma.ReportScanTimes();
@@ -902,7 +896,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     } else {
       days_between_reporter_runs_ = kDaysBetweenSuccessfulSwReporterRuns;
     }
-    const base::Time now = base::Time::Now();
+    const base::Time now = Now();
     const base::Time last_time_triggered = base::Time::FromInternalValue(
         local_state->GetInt64(prefs::kSwReporterLastTimeTriggered));
     const base::Time next_trigger(
@@ -930,7 +924,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
       current_invocations_ = pending_invocations_;
       ScheduleNextInvocation();
     } else {
-      main_thread_task_runner_->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&ReporterRunner::TryToRun, base::Unretained(this)),
           next_trigger - now);
@@ -977,7 +971,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
       // state values after the reporter runs, we could send logs again too
       // quickly (for example, if Chrome stops before the reporter finishes).
       local_state->SetInt64(prefs::kSwReporterLastTimeSentReport,
-                            base::Time::Now().ToInternalValue());
+                            Now().ToInternalValue());
     }
 
     if (ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
@@ -1003,8 +997,17 @@ class ReporterRunner : public chrome::BrowserListObserver {
   SwReporterQueue pending_invocations_;
 
   base::Version version_;
-  scoped_refptr<base::TaskRunner> main_thread_task_runner_;
-  scoped_refptr<base::TaskRunner> blocking_task_runner_;
+
+  scoped_refptr<base::TaskRunner> blocking_task_runner_ =
+      base::CreateTaskRunnerWithTraits(
+          // LaunchAndWaitForExit() creates (MayBlock()) and joins
+          // (WithBaseSyncPrimitives()) a process.
+          base::TaskTraits()
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .MayBlock()
+              .WithBaseSyncPrimitives());
 
   // This value is used to identify how long to wait before starting a new run
   // of the reporter queue. It's initialized with the default value and may be
@@ -1054,14 +1057,10 @@ bool SwReporterInvocation::BehaviourIsSupported(
 }
 
 void RunSwReporters(const SwReporterQueue& invocations,
-                    const base::Version& version,
-                    scoped_refptr<base::TaskRunner> main_thread_task_runner,
-                    scoped_refptr<base::TaskRunner> blocking_task_runner) {
+                    const base::Version& version) {
   DCHECK(!invocations.empty());
   DCHECK(version.IsValid());
-  ReporterRunner::ScheduleInvocations(invocations, version,
-                                      std::move(main_thread_task_runner),
-                                      std::move(blocking_task_runner));
+  ReporterRunner::ScheduleInvocations(invocations, version);
 }
 
 bool ReporterFoundUws() {

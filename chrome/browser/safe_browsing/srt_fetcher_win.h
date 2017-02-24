@@ -11,15 +11,13 @@
 #include <queue>
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
-#include "base/memory/ref_counted.h"
-#include "base/version.h"
+#include "base/time/time.h"
 
 namespace base {
 class FilePath;
 class TaskRunner;
+class Version;
 }
 
 class Browser;
@@ -95,12 +93,9 @@ using SwReporterQueue = std::queue<SwReporterInvocation>;
 // queue of SwReporters to execute as a single "run". When a new try is
 // scheduled the entire queue is executed.
 //
-// |version| is the version of the tool that will run. The task runners are
-// provided to allow tests to provide their own.
+// |version| is the version of the tool that will run.
 void RunSwReporters(const SwReporterQueue& invocations,
-                    const base::Version& version,
-                    scoped_refptr<base::TaskRunner> main_thread_task_runner,
-                    scoped_refptr<base::TaskRunner> blocking_task_runner);
+                    const base::Version& version);
 
 // Returns true iff Local State is successfully accessed and indicates the most
 // recent Reporter run terminated with an exit code indicating the presence of
@@ -125,11 +120,11 @@ class SwReporterTestingDelegate {
   virtual void TriggerPrompt(Browser* browser,
                              const std::string& reporter_version) = 0;
 
-  // Callback to let the tests know the reporter is ready to launch.
-  virtual void NotifyLaunchReady() = 0;
+  // Returns the test's idea of the current time.
+  virtual base::Time Now() const = 0;
 
-  // Callback to let the tests know the reporter has finished running.
-  virtual void NotifyReporterDone() = 0;
+  // A task runner used to spawn the reporter process (which blocks).
+  virtual base::TaskRunner* BlockingTaskRunner() const = 0;
 };
 
 // Set a delegate for testing. The implementation will not take ownership of

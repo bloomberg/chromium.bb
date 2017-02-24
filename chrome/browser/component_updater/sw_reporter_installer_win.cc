@@ -29,7 +29,6 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
@@ -138,17 +137,7 @@ void RunSwReportersAfterStartup(
     const base::Version& version) {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&safe_browsing::RunSwReporters, invocations, version,
-                 base::ThreadTaskRunnerHandle::Get(),
-                 // Runs LaunchAndWaitForExit() which creates (MayBlock()) and
-                 // joins (WithBaseSyncPrimitives()) a process.
-                 base::CreateTaskRunnerWithTraits(
-                     base::TaskTraits()
-                         .WithShutdownBehavior(
-                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                         .WithPriority(base::TaskPriority::BACKGROUND)
-                         .MayBlock()
-                         .WithBaseSyncPrimitives())));
+      base::Bind(&safe_browsing::RunSwReporters, invocations, version));
 }
 
 // Ensures |str| contains only alphanumeric characters and characters from
