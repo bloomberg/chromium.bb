@@ -23,9 +23,6 @@ namespace base {
 
 // This is the preferred interface to post tasks to the TaskScheduler.
 //
-// TaskScheduler must have been registered for the current process via
-// TaskScheduler::SetInstance() before the functions below are valid.
-//
 // To post a simple one-off task with default traits:
 //     PostTask(FROM_HERE, Bind(...));
 //
@@ -62,6 +59,13 @@ namespace base {
 // registered TaskScheduler (i.e. not on the main thread). Tasks posted through
 // functions below with a delay may be coalesced (i.e. delays may be adjusted to
 // reduce the number of wakeups and hence power consumption).
+//
+// Prerequisite: A TaskScheduler must have been registered for the current
+// process via TaskScheduler::SetInstance() before the functions below are
+// valid. This is typically done during the initialization phase in each
+// process. If your code is not running in that phase, you most likely don't
+// have to worry about this. You will encounter DCHECKs or nullptr dereferences
+// if this is violated. For tests, prefer base::test::ScopedTaskScheduler.
 
 // Posts |task| to the TaskScheduler. Calling this is equivalent to calling
 // PostTaskWithTraits with plain TaskTraits.

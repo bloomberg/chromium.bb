@@ -127,7 +127,7 @@ class BASE_EXPORT TaskTraits {
   // removing usage of methods listed above in the labeled tasks would still
   // result in tasks that may block (per MayBlock()'s definition).
   //
-  // In doubt, consult with base/task_scheduler/OWNERS.
+  // In doubt, consult with //base/task_scheduler/OWNERS.
   TaskTraits& WithBaseSyncPrimitives();
 
   // Applies |priority| to tasks with these traits.
