@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/webusb/#idl-def-usbisochronousintransferpacket
+// https://wicg.github.io/webusb/#usbisochronousintransferpacket
 
 [
     OriginTrialEnabled=WebUSB,
+    Constructor(USBTransferStatus status, optional DataView? data)
 ] interface USBIsochronousInTransferPacket {
     readonly attribute USBTransferStatus status;
-    readonly attribute DataView data;
+    readonly attribute DataView? data;
 };

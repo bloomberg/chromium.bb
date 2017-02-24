@@ -18,6 +18,10 @@ class USBIsochronousInTransferPacket final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static USBIsochronousInTransferPacket* create(const String& status) {
+    return new USBIsochronousInTransferPacket(status, nullptr);
+  }
+
   static USBIsochronousInTransferPacket* create(const String& status,
                                                 DOMDataView* data) {
     return new USBIsochronousInTransferPacket(status, data);

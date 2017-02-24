@@ -17,6 +17,10 @@ class USBIsochronousOutTransferPacket final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static USBIsochronousOutTransferPacket* create(const String& status) {
+    return new USBIsochronousOutTransferPacket(status, 0);
+  }
+
   static USBIsochronousOutTransferPacket* create(const String& status,
                                                  unsigned bytesWritten) {
     return new USBIsochronousOutTransferPacket(status, bytesWritten);

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/webusb/#transfers
+// https://wicg.github.io/webusb/#usbintransferresult
 
 [
     OriginTrialEnabled=WebUSB,
+    Constructor(USBTransferStatus status, optional DataView? data)
 ] interface USBInTransferResult {
-    readonly attribute DataView data;
+    readonly attribute DataView? data;
     readonly attribute USBTransferStatus status;
 };

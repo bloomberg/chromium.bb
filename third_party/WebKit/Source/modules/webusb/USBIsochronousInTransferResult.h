@@ -23,16 +23,25 @@ class USBIsochronousInTransferResult final
   static USBIsochronousInTransferResult* create(
       DOMArrayBuffer* data,
       const HeapVector<Member<USBIsochronousInTransferPacket>>& packets) {
+    DOMDataView* dataView = DOMDataView::create(data, 0, data->byteLength());
+    return new USBIsochronousInTransferResult(dataView, packets);
+  }
+
+  static USBIsochronousInTransferResult* create(
+      const HeapVector<Member<USBIsochronousInTransferPacket>>& packets,
+      DOMDataView* data) {
     return new USBIsochronousInTransferResult(data, packets);
   }
 
-  USBIsochronousInTransferResult(
-      DOMArrayBuffer* data,
-      const HeapVector<Member<USBIsochronousInTransferPacket>>& packets)
-      : m_packets(packets) {
-    unsigned byteLength = data->byteLength();
-    m_data = DOMDataView::create(data, 0, byteLength);
+  static USBIsochronousInTransferResult* create(
+      const HeapVector<Member<USBIsochronousInTransferPacket>>& packets) {
+    return new USBIsochronousInTransferResult(nullptr, packets);
   }
+
+  USBIsochronousInTransferResult(
+      DOMDataView* data,
+      const HeapVector<Member<USBIsochronousInTransferPacket>>& packets)
+      : m_data(data), m_packets(packets) {}
 
   virtual ~USBIsochronousInTransferResult() {}
 

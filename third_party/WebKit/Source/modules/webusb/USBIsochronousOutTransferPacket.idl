@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/webusb/#idl-def-usbisochronousouttransferpacket
+// https://wicg.github.io/webusb/#usbisochronousouttransferpacket
 
 [
     OriginTrialEnabled=WebUSB,
+    Constructor(USBTransferStatus status, optional unsigned long bytesWritten = 0)
 ] interface USBIsochronousOutTransferPacket {
-    readonly attribute USBTransferStatus status;
     readonly attribute unsigned long bytesWritten;
+    readonly attribute USBTransferStatus status;
 };

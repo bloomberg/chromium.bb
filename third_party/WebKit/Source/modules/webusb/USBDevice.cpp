@@ -779,11 +779,12 @@ void USBDevice::asyncControlTransferIn(ScriptPromiseResolver* resolver,
     return;
 
   DOMException* error = convertFatalTransferStatus(status);
-  if (error)
+  if (error) {
     resolver->reject(error);
-  else
+  } else {
     resolver->resolve(
         USBInTransferResult::create(convertTransferStatus(status), data));
+  }
 }
 
 void USBDevice::asyncControlTransferOut(unsigned transferLength,
@@ -793,11 +794,12 @@ void USBDevice::asyncControlTransferOut(unsigned transferLength,
     return;
 
   DOMException* error = convertFatalTransferStatus(status);
-  if (error)
+  if (error) {
     resolver->reject(error);
-  else
+  } else {
     resolver->resolve(USBOutTransferResult::create(
         convertTransferStatus(status), transferLength));
+  }
 }
 
 void USBDevice::asyncClearHalt(ScriptPromiseResolver* resolver, bool success) {
@@ -818,11 +820,12 @@ void USBDevice::asyncTransferIn(ScriptPromiseResolver* resolver,
     return;
 
   DOMException* error = convertFatalTransferStatus(status);
-  if (error)
+  if (error) {
     resolver->reject(error);
-  else
+  } else {
     resolver->resolve(
         USBInTransferResult::create(convertTransferStatus(status), data));
+  }
 }
 
 void USBDevice::asyncTransferOut(unsigned transferLength,
@@ -832,11 +835,12 @@ void USBDevice::asyncTransferOut(unsigned transferLength,
     return;
 
   DOMException* error = convertFatalTransferStatus(status);
-  if (error)
+  if (error) {
     resolver->reject(error);
-  else
+  } else {
     resolver->resolve(USBOutTransferResult::create(
         convertTransferStatus(status), transferLength));
+  }
 }
 
 void USBDevice::asyncIsochronousTransferIn(
@@ -857,11 +861,13 @@ void USBDevice::asyncIsochronousTransferIn(
       resolver->reject(error);
       return;
     }
+    DOMDataView* dataView = nullptr;
+    if (buffer) {
+      dataView =
+          DOMDataView::create(buffer, byteOffset, packet->transferred_length);
+    }
     packets.push_back(USBIsochronousInTransferPacket::create(
-        convertTransferStatus(packet->status),
-        buffer ? DOMDataView::create(buffer, byteOffset,
-                                     packet->transferred_length)
-               : nullptr));
+        convertTransferStatus(packet->status), dataView));
     byteOffset += packet->length;
   }
   resolver->resolve(USBIsochronousInTransferResult::create(buffer, packets));

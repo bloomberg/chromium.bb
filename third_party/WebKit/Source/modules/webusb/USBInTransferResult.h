@@ -22,17 +22,24 @@ class USBInTransferResult final
  public:
   static USBInTransferResult* create(const String& status,
                                      const Optional<Vector<uint8_t>>& data) {
+    DOMDataView* dataView = nullptr;
+    if (data) {
+      dataView = DOMDataView::create(
+          DOMArrayBuffer::create(data->data(), data->size()), 0, data->size());
+    }
+    return new USBInTransferResult(status, dataView);
+  }
+
+  static USBInTransferResult* create(const String& status) {
+    return new USBInTransferResult(status, nullptr);
+  }
+
+  static USBInTransferResult* create(const String& status, DOMDataView* data) {
     return new USBInTransferResult(status, data);
   }
 
-  USBInTransferResult(const String& status,
-                      const Optional<Vector<uint8_t>>& data)
-      : m_status(status),
-        m_data(data ? DOMDataView::create(
-                          DOMArrayBuffer::create(data->data(), data->size()),
-                          0,
-                          data->size())
-                    : nullptr) {}
+  USBInTransferResult(const String& status, DOMDataView* data)
+      : m_status(status), m_data(data) {}
 
   virtual ~USBInTransferResult() {}
 

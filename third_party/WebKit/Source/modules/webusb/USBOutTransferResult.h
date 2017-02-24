@@ -17,6 +17,10 @@ class USBOutTransferResult final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static USBOutTransferResult* create(const String& status) {
+    return new USBOutTransferResult(status, 0);
+  }
+
   static USBOutTransferResult* create(const String& status,
                                       unsigned bytesWritten) {
     return new USBOutTransferResult(status, bytesWritten);
