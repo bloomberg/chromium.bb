@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/image_decoder.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -28,7 +29,9 @@ namespace chrome {
 class BitmapFetcher : public net::URLFetcherDelegate,
                       public ImageDecoder::ImageRequest {
  public:
-  BitmapFetcher(const GURL& url, BitmapFetcherDelegate* delegate);
+  BitmapFetcher(const GURL& url,
+                BitmapFetcherDelegate* delegate,
+                const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~BitmapFetcher() override;
 
   const GURL& url() const { return url_; }
@@ -74,6 +77,7 @@ class BitmapFetcher : public net::URLFetcherDelegate,
   std::unique_ptr<net::URLFetcher> url_fetcher_;
   const GURL url_;
   BitmapFetcherDelegate* const delegate_;
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapFetcher);
 };

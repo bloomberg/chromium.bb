@@ -11,10 +11,11 @@
 
 namespace chrome {
 
-BitmapFetcher::BitmapFetcher(const GURL& url, BitmapFetcherDelegate* delegate)
-    : url_(url),
-      delegate_(delegate) {
-}
+BitmapFetcher::BitmapFetcher(
+    const GURL& url,
+    BitmapFetcherDelegate* delegate,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
+    : url_(url), delegate_(delegate), traffic_annotation_(traffic_annotation) {}
 
 BitmapFetcher::~BitmapFetcher() {
 }
@@ -26,7 +27,8 @@ void BitmapFetcher::Init(net::URLRequestContextGetter* request_context,
   if (url_fetcher_ != NULL)
     return;
 
-  url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
+  url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this,
+                                         traffic_annotation_);
   url_fetcher_->SetRequestContext(request_context);
   url_fetcher_->SetReferrer(referrer);
   url_fetcher_->SetReferrerPolicy(referrer_policy);

@@ -11,6 +11,7 @@
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -48,8 +49,10 @@ class TestService : public BitmapFetcherService {
   // Create a fetcher, but don't start downloading. That allows side-stepping
   // the decode step, which requires a utility process.
   std::unique_ptr<chrome::BitmapFetcher> CreateFetcher(
-      const GURL& url) override {
-    return base::MakeUnique<chrome::BitmapFetcher>(url, this);
+      const GURL& url,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
+    return base::MakeUnique<chrome::BitmapFetcher>(url, this,
+                                                   traffic_annotation);
   }
 };
 
@@ -128,8 +131,8 @@ TEST_F(BitmapFetcherServiceTest, RequestInvalidUrl) {
   GURL invalid_url;
   ASSERT_FALSE(invalid_url.is_valid());
 
-  BitmapFetcherService::RequestId request_id =
-      service_->RequestImage(invalid_url, new TestObserver(this));
+  BitmapFetcherService::RequestId request_id = service_->RequestImage(
+      invalid_url, new TestObserver(this), TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(invalid_request_id, request_id);
 }
 
@@ -141,18 +144,24 @@ TEST_F(BitmapFetcherServiceTest, CancelInvalidRequest) {
 TEST_F(BitmapFetcherServiceTest, OnlyFirstRequestCreatesFetcher) {
   EXPECT_EQ(0U, active_fetchers().size());
 
-  service_->RequestImage(url1_, new TestObserver(this));
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(1U, active_fetchers().size());
 
-  service_->RequestImage(url1_, new TestObserver(this));
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(1U, active_fetchers().size());
 }
 
 TEST_F(BitmapFetcherServiceTest, CompletedFetchNotifiesAllObservers) {
-  service_->RequestImage(url1_, new TestObserver(this));
-  service_->RequestImage(url1_, new TestObserver(this));
-  service_->RequestImage(url1_, new TestObserver(this));
-  service_->RequestImage(url1_, new TestObserver(this));
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(1U, active_fetchers().size());
   EXPECT_EQ(4U, requests().size());
 
@@ -162,12 +171,16 @@ TEST_F(BitmapFetcherServiceTest, CompletedFetchNotifiesAllObservers) {
 }
 
 TEST_F(BitmapFetcherServiceTest, CancelRequest) {
-  service_->RequestImage(url1_, new TestObserver(this));
-  service_->RequestImage(url1_, new TestObserver(this));
-  BitmapFetcherService::RequestId requestId =
-      service_->RequestImage(url2_, new TestObserver(this));
-  service_->RequestImage(url1_, new TestObserver(this));
-  service_->RequestImage(url1_, new TestObserver(this));
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
+  BitmapFetcherService::RequestId requestId = service_->RequestImage(
+      url2_, new TestObserver(this), TRAFFIC_ANNOTATION_FOR_TESTS);
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(5U, requests().size());
 
   service_->CancelRequest(requestId);
@@ -181,8 +194,10 @@ TEST_F(BitmapFetcherServiceTest, CancelRequest) {
 }
 
 TEST_F(BitmapFetcherServiceTest, FailedNullRequestsAreHandled) {
-  service_->RequestImage(url1_, new TestObserver(this));
-  service_->RequestImage(url2_, new TestObserver(this));
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
+  service_->RequestImage(url2_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(0U, cache_size());
 
   CompleteFetch(url1_);
@@ -192,8 +207,10 @@ TEST_F(BitmapFetcherServiceTest, FailedNullRequestsAreHandled) {
   EXPECT_EQ(1U, cache_size());
 }
 TEST_F(BitmapFetcherServiceTest, FailedRequestsDontEnterCache) {
-  service_->RequestImage(url1_, new TestObserver(this));
-  service_->RequestImage(url2_, new TestObserver(this));
+  service_->RequestImage(url1_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
+  service_->RequestImage(url2_, new TestObserver(this),
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(0U, cache_size());
 
   CompleteFetch(url1_);

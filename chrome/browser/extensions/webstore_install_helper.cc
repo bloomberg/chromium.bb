@@ -10,6 +10,7 @@
 #include "components/safe_json/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
@@ -53,7 +54,36 @@ void WebstoreInstallHelper::Start() {
     // No existing |icon_fetcher_| to avoid unbalanced AddRef().
     CHECK(!icon_fetcher_.get());
     AddRef();  // Balanced in OnFetchComplete().
-    icon_fetcher_.reset(new chrome::BitmapFetcher(icon_url_, this));
+
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("webstore_install_helper", R"(
+          semantics {
+            sender: "Webstore Install Helper"
+            description:
+              "Fetches the bitmap corresponding to an extension icon."
+            trigger:
+              "This can happen in a few different circumstances: "
+              "1-User initiated an install from the Chrome Web Store."
+              "2-User initiated an inline installation from another website."
+              "3-Loading of kiosk app data on Chrome OS (provided that the "
+              "kiosk app is a Web Store app)."
+            data:
+              "The url of the icon for the extension, which includes the "
+              "extension id."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: false
+            setting:
+              "There's no direct Chromium's setting to disable this, but you "
+              "could uninstall all extensions and not install (or begin the "
+              "installation flow for) any more."
+            policy_exception_justification:
+              "Not implemented, considered not useful."
+          })");
+
+    icon_fetcher_.reset(
+        new chrome::BitmapFetcher(icon_url_, this, traffic_annotation));
     icon_fetcher_->Init(
         context_getter_, std::string(),
         net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,

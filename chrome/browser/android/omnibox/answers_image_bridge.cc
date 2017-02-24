@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "jni/AnswersImage_jni.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
@@ -75,7 +76,8 @@ static int RequestAnswersImage(JNIEnv* env,
   std::string url;
   base::android::ConvertJavaStringToUTF8(env, java_url, &url);
   return bitmap_fetcher_service->RequestImage(
-      GURL(url), new AnswersImageObserverAndroid(env, java_callback));
+      GURL(url), new AnswersImageObserverAndroid(env, java_callback),
+      NO_TRAFFIC_ANNOTATION_YET);
 }
 
 // static

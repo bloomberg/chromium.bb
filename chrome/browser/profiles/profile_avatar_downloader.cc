@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/gfx/image/image.h"
 
 namespace {
@@ -27,7 +28,28 @@ ProfileAvatarDownloader::ProfileAvatarDownloader(
   DCHECK(!callback_.is_null());
   GURL url(std::string(kHighResAvatarDownloadUrlPrefix) +
            profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index));
-  fetcher_.reset(new chrome::BitmapFetcher(url, this));
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("profile_avatar", R"(
+        semantics {
+          sender: "Profile Avatar Downloader"
+          description:
+            "The Chromium binary comes with a bundle of low-resolution "
+            "versions of avatar images. When the user selects an avatar in "
+            "chrome://settings, Chromium will download a high-resolution "
+            "version from Google's static content servers for use in the "
+            "people manager UI."
+          trigger:
+            "User selects a new avatar in chrome://settings for their profile"
+          data: "None, only the filename of the png to download."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          policy_exception_justification:
+            "No content is being uploaded or saved; this request merely "
+            "downloads a publicly available PNG file."
+        })");
+  fetcher_.reset(new chrome::BitmapFetcher(url, this, traffic_annotation));
 }
 
 ProfileAvatarDownloader::~ProfileAvatarDownloader() {

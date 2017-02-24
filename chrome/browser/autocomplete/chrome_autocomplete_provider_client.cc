@@ -34,6 +34,7 @@
 #include "components/sync/driver/sync_service_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/features/features.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
@@ -249,7 +250,47 @@ void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
   BitmapFetcherService* image_service =
       BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
   DCHECK(image_service);
-  image_service->Prefetch(url);
+
+  // TODO(jdonnelly, rhalavati): Create a helper function with Callback to
+  // create annotation and pass it to image_service, merging this annotation and
+  // chrome/browser/ui/omnibox/chrome_omnibox_client.cc
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("omnibox_prefetch_image", R"(
+        semantics {
+          sender: "Omnibox"
+          description:
+            "Chromium provides answers in the suggestion list for certain "
+            "queries that the user types in the omnibox. This request "
+            "retrieves a small image (for example, an icon illustrating the "
+            "current weather conditions) when this can add information to an "
+            "answer."
+          trigger:
+            "Change of results for the query typed by the user in the "
+            "omnibox."
+          data:
+            "The only data sent is the path to an image. No user data is "
+            "included, although some might be inferrable (e.g. whether the "
+            "weather is sunny or rainy in the user's current location) from "
+            "the name of the image in the path."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "You can enable or disable this feature via 'Use a prediction "
+            "service to help complete searches and URLs typed in the "
+            "address bar.' in Chromium's settings under Advanced. The "
+            "feature is enabled by default."
+          policy {
+            SearchSuggestEnabled {
+                policy_options {mode: MANDATORY}
+                value: false
+            }
+          }
+        })");
+
+  image_service->Prefetch(url, traffic_annotation);
 }
 
 void ChromeAutocompleteProviderClient::OnAutocompleteControllerResultReady(

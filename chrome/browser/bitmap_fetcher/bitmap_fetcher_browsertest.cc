@@ -12,6 +12,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -107,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, StartTest) {
   // Set up a delegate to wait for the callback.
   BitmapFetcherTestDelegate delegate(kAsyncCall);
 
-  BitmapFetcher fetcher(url, &delegate);
+  BitmapFetcher fetcher(url, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   url_fetcher_factory_->SetFakeResponse(
       url, image_string, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
@@ -141,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnImageDecodedTest) {
 
   BitmapFetcherTestDelegate delegate(kSyncCall);
 
-  BitmapFetcher fetcher(url, &delegate);
+  BitmapFetcher fetcher(url, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   fetcher.OnImageDecoded(image);
 
@@ -160,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnURLFetchFailureTest) {
   // Set up a delegate to wait for the callback.
   BitmapFetcherTestDelegate delegate(kAsyncCall);
 
-  BitmapFetcher fetcher(url, &delegate);
+  BitmapFetcher fetcher(url, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   url_fetcher_factory_->SetFakeResponse(url,
                                         std::string(),
@@ -183,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnURLFetchFailureTest) {
 IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, HandleImageFailedTest) {
   GURL url("http://example.com/this-should-be-a-decode-failure");
   BitmapFetcherTestDelegate delegate(kAsyncCall);
-  BitmapFetcher fetcher(url, &delegate);
+  BitmapFetcher fetcher(url, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
   url_fetcher_factory_->SetFakeResponse(url,
                                         std::string("Not a real bitmap"),
                                         net::HTTP_OK,

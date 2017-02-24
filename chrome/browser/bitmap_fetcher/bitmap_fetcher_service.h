@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
 class BrowserContext;
@@ -56,22 +57,30 @@ class BitmapFetcherService : public KeyedService,
   // downloaded one.
   // NOTE: The observer might be called back synchronously from RequestImage if
   // the image is already in the cache.
-  RequestId RequestImage(const GURL& url, Observer* observer);
+  RequestId RequestImage(
+      const GURL& url,
+      Observer* observer,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Start fetching the image at the given |url|.
-  void Prefetch(const GURL& url);
+  void Prefetch(const GURL& url,
+                const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
  protected:
   // Create a bitmap fetcher for the given |url| and start it. Virtual method
   // so tests can override this for different behavior.
-  virtual std::unique_ptr<chrome::BitmapFetcher> CreateFetcher(const GURL& url);
+  virtual std::unique_ptr<chrome::BitmapFetcher> CreateFetcher(
+      const GURL& url,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
  private:
   friend class BitmapFetcherServiceTest;
 
   // Gets the existing fetcher for |url| or constructs a new one if it doesn't
   // exist.
-  const chrome::BitmapFetcher* EnsureFetcherForUrl(const GURL& url);
+  const chrome::BitmapFetcher* EnsureFetcherForUrl(
+      const GURL& url,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Find a fetcher with a given |url|. Return NULL if none is found.
   const chrome::BitmapFetcher* FindFetcherForUrl(const GURL& url);

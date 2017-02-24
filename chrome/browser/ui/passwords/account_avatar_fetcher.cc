@@ -5,15 +5,49 @@
 #include "chrome/browser/ui/passwords/account_avatar_fetcher.h"
 
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
+namespace {
+
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("credenential_avatar", R"(
+        semantics {
+          sender: "Chrome Password Manager"
+          description:
+            "Every credential saved in Chromium via the Credential Management "
+            "API can have an avatar URL. The URL is essentially provided by "
+            "the site calling the API. The avatar is used in the account "
+            "chooser UI and auto signin toast which appear when a site calls "
+            "navigator.credentials.get(). The avatar is retrieved before "
+            "showing the UI."
+          trigger:
+            "User visits a site that calls navigator.credentials.get(). "
+            "Assuming there are matching credentials in the Chromium password "
+            "store, the avatars are retrieved."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "One can disable saving new credentials in the settings (see "
+            "'Passwords and forms'). There is no setting to disable the API."
+          policy {
+            PasswordManagerEnabled {
+                policy_options {mode: MANDATORY}
+                value: false
+            }
+          }
+        })");
+
+}  // namespace
+
 AccountAvatarFetcher::AccountAvatarFetcher(
     const GURL& url,
     const base::WeakPtr<AccountAvatarFetcherDelegate>& delegate)
-    : fetcher_(url, this), delegate_(delegate) {
-}
+    : fetcher_(url, this, kTrafficAnnotation), delegate_(delegate) {}
 
 AccountAvatarFetcher::~AccountAvatarFetcher() = default;
 

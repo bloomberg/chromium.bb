@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/ContextualSearchSceneLayer_jni.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/view_android.h"
@@ -232,7 +233,8 @@ void ContextualSearchSceneLayer::FetchThumbnail(jobject j_profile) {
 
   GURL gurl(thumbnail_url_);
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  fetcher_ = base::MakeUnique<chrome::BitmapFetcher>(gurl, this);
+  fetcher_ = base::MakeUnique<chrome::BitmapFetcher>(gurl, this,
+                                                     NO_TRAFFIC_ANNOTATION_YET);
   fetcher_->Init(
       profile->GetRequestContext(),
       std::string(),
