@@ -245,7 +245,7 @@ LocalFrame* FrameFetchContext::frame() const {
   return frame;
 }
 
-FrameLoaderClient* FrameFetchContext::frameLoaderClient() const {
+LocalFrameClient* FrameFetchContext::localFrameClient() const {
   return frame()->client();
 }
 
@@ -423,7 +423,7 @@ void FrameFetchContext::dispatchDidChangeResourcePriority(
 
 void FrameFetchContext::prepareRequest(ResourceRequest& request) {
   frame()->loader().applyUserAgent(request);
-  frameLoaderClient()->dispatchWillSendRequest(request);
+  localFrameClient()->dispatchWillSendRequest(request);
 }
 
 void FrameFetchContext::dispatchWillSendRequest(
@@ -527,7 +527,7 @@ void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(
   ResourceRequest request(resource->url());
   request.setFrameType(frameType);
   request.setRequestContext(requestContext);
-  frameLoaderClient()->dispatchDidLoadResourceFromMemoryCache(
+  localFrameClient()->dispatchDidLoadResourceFromMemoryCache(
       request, resource->response());
   dispatchWillSendRequest(identifier, request, ResourceResponse(),
                           resource->options().initiatorInfo);
@@ -623,7 +623,7 @@ void FrameFetchContext::addResourceTiming(const ResourceTimingInfo& info) {
 }
 
 bool FrameFetchContext::allowImage(bool imagesEnabled, const KURL& url) const {
-  return frameLoaderClient()->allowImage(imagesEnabled, url);
+  return localFrameClient()->allowImage(imagesEnabled, url);
 }
 
 void FrameFetchContext::printAccessDeniedMessage(const KURL& url) const {
@@ -765,17 +765,17 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
 
   if (type == Resource::Script || type == Resource::ImportResource) {
     DCHECK(frame());
-    if (!frameLoaderClient()->allowScriptFromSource(
+    if (!localFrameClient()->allowScriptFromSource(
             !frame()->settings() || frame()->settings()->getScriptEnabled(),
             url)) {
-      frameLoaderClient()->didNotAllowScript();
+      localFrameClient()->didNotAllowScript();
       // TODO(estark): Use a different ResourceRequestBlockedReason here, since
       // this check has nothing to do with CSP. https://crbug.com/600795
       return ResourceRequestBlockedReason::CSP;
     }
   } else if (type == Resource::Media || type == Resource::TextTrack) {
     DCHECK(frame());
-    if (!frameLoaderClient()->allowMedia(url))
+    if (!localFrameClient()->allowMedia(url))
       return ResourceRequestBlockedReason::Other;
   }
 
@@ -874,7 +874,7 @@ bool FrameFetchContext::isControlledByServiceWorker() const {
   // m_documentLoader is null while loading resources from an HTML import. In
   // such cases whether the request is controlled by ServiceWorker or not is
   // determined by the document loader of the frame.
-  return frameLoaderClient()->isControlledByServiceWorker(
+  return localFrameClient()->isControlledByServiceWorker(
       *frame()->loader().documentLoader());
 }
 
@@ -887,7 +887,7 @@ int64_t FrameFetchContext::serviceWorkerID() const {
   // m_documentLoader is null while loading resources from an HTML import.
   // In such cases a service worker ID could be retrieved from the document
   // loader of the frame.
-  return frameLoaderClient()->serviceWorkerID(
+  return localFrameClient()->serviceWorkerID(
       *frame()->loader().documentLoader());
 }
 
@@ -1101,7 +1101,7 @@ void FrameFetchContext::dispatchDidReceiveResponseInternal(
   }
 
   frame()->loader().progress().incrementProgress(identifier, response);
-  frameLoaderClient()->dispatchDidReceiveResponse(response);
+  localFrameClient()->dispatchDidReceiveResponse(response);
   DocumentLoader* documentLoader = masterDocumentLoader();
   InspectorInstrumentation::didReceiveResourceResponse(
       frame(), identifier, documentLoader, response, resource);

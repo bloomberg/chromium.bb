@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/FrameLoaderClientImpl.h"
+#include "web/LocalFrameClientImpl.h"
 
 #include "core/loader/FrameLoader.h"
 #include "platform/weborigin/KURL.h"
@@ -56,7 +56,7 @@ class MockWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
   MOCK_METHOD0(userAgentOverride, WebString());
 };
 
-class FrameLoaderClientImplTest : public ::testing::Test {
+class LocalFrameClientImplTest : public ::testing::Test {
  protected:
   void SetUp() override {
     ON_CALL(m_webFrameClient, userAgentOverride())
@@ -76,7 +76,7 @@ class FrameLoaderClientImplTest : public ::testing::Test {
 
   WebString userAgent() {
     // The test always returns the same user agent .
-    WTF::CString userAgent = frameLoaderClient().userAgent().utf8();
+    WTF::CString userAgent = localFrameClient().userAgent().utf8();
     return WebString::fromUTF8(userAgent.data(), userAgent.length());
   }
 
@@ -87,11 +87,11 @@ class FrameLoaderClientImplTest : public ::testing::Test {
     return *toWebLocalFrameImpl(m_mainFrame)->frame()->document();
   }
   MockWebFrameClient& webFrameClient() { return m_webFrameClient; }
-  FrameLoaderClient& frameLoaderClient() {
-    return *toFrameLoaderClientImpl(toWebLocalFrameImpl(m_webView->mainFrame())
-                                        ->frame()
-                                        ->loader()
-                                        .client());
+  LocalFrameClient& localFrameClient() {
+    return *toLocalFrameClientImpl(toWebLocalFrameImpl(m_webView->mainFrame())
+                                       ->frame()
+                                       ->loader()
+                                       .client());
   }
 
  private:
@@ -100,7 +100,7 @@ class FrameLoaderClientImplTest : public ::testing::Test {
   WebLocalFrame* m_mainFrame;
 };
 
-TEST_F(FrameLoaderClientImplTest, UserAgentOverride) {
+TEST_F(LocalFrameClientImplTest, UserAgentOverride) {
   const WebString defaultUserAgent = userAgent();
   const WebString overrideUserAgent = WebString::fromUTF8("dummy override");
 

@@ -50,6 +50,7 @@
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
+
 #include <memory>
 
 namespace blink {
@@ -57,7 +58,7 @@ namespace blink {
 class DocumentLoader;
 class HTMLFormElement;
 class Frame;
-class FrameLoaderClient;
+class LocalFrameClient;
 class ProgressTracker;
 class ResourceError;
 class SerializedScriptValue;
@@ -129,7 +130,7 @@ class CORE_EXPORT FrameLoader final {
   bool shouldTreatURLAsSameAsCurrent(const KURL&) const;
   bool shouldTreatURLAsSrcdocDocument(const KURL&) const;
 
-  FrameLoaderClient* client() const;
+  LocalFrameClient* client() const;
 
   void setDefersLoading(bool);
 

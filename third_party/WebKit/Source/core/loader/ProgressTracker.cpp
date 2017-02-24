@@ -99,13 +99,13 @@ void ProgressTracker::reset() {
   m_finishedParsing = false;
 }
 
-FrameLoaderClient* ProgressTracker::frameLoaderClient() const {
+LocalFrameClient* ProgressTracker::localFrameClient() const {
   return m_frame->client();
 }
 
 void ProgressTracker::progressStarted(FrameLoadType type) {
   if (!m_frame->isLoading())
-    frameLoaderClient()->didStartLoading(NavigationToDifferentDocument);
+    localFrameClient()->didStartLoading(NavigationToDifferentDocument);
   reset();
   m_progressValue = initialProgressValue;
   m_frame->setIsLoading(true);
@@ -117,7 +117,7 @@ void ProgressTracker::progressCompleted() {
   m_frame->setIsLoading(false);
   sendFinalProgress();
   reset();
-  frameLoaderClient()->didStopLoading();
+  localFrameClient()->didStopLoading();
   InspectorInstrumentation::frameStoppedLoading(m_frame);
 }
 
@@ -130,7 +130,7 @@ void ProgressTracker::sendFinalProgress() {
   if (m_progressValue == 1)
     return;
   m_progressValue = 1;
-  frameLoaderClient()->progressEstimateChanged(m_progressValue);
+  localFrameClient()->progressEstimateChanged(m_progressValue);
 }
 
 void ProgressTracker::willStartLoading(unsigned long identifier,
@@ -224,7 +224,7 @@ void ProgressTracker::maybeSendProgress() {
       m_progressValue - m_lastNotifiedProgressValue;
   if (notificationProgressDelta >= progressNotificationInterval ||
       notifiedProgressTimeDelta >= progressNotificationTimeInterval) {
-    frameLoaderClient()->progressEstimateChanged(m_progressValue);
+    localFrameClient()->progressEstimateChanged(m_progressValue);
     m_lastNotifiedProgressValue = m_progressValue;
     m_lastNotifiedProgressTime = now;
   }

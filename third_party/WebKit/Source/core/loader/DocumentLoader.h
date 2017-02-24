@@ -51,6 +51,7 @@
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
+
 #include <memory>
 
 namespace blink {
@@ -59,8 +60,8 @@ class ApplicationCacheHost;
 class ResourceFetcher;
 class DocumentInit;
 class LocalFrame;
+class LocalFrameClient;
 class FrameLoader;
-class FrameLoaderClient;
 class ResourceTimingInfo;
 class WebDocumentSubresourceFilter;
 struct ViewportDescriptionWrapper;
@@ -207,7 +208,7 @@ class CORE_EXPORT DocumentLoader
   // Use these method only where it's guaranteed that |m_frame| hasn't been
   // cleared.
   FrameLoader& frameLoader() const;
-  FrameLoaderClient& frameLoaderClient() const;
+  LocalFrameClient& localFrameClient() const;
 
   void commitIfReady();
   void commitData(const char* bytes, size_t length);

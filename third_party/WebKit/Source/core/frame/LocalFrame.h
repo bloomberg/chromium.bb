@@ -68,6 +68,7 @@ class IntSize;
 class LayoutView;
 class LayoutViewItem;
 class LocalDOMWindow;
+class LocalFrameClient;
 class NavigationScheduler;
 class Node;
 class NodeTraversal;
@@ -88,7 +89,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   friend class LocalFrameTest;
 
  public:
-  static LocalFrame* create(FrameLoaderClient*,
+  static LocalFrame* create(LocalFrameClient*,
                             FrameHost*,
                             FrameOwner*,
                             InterfaceProvider* = nullptr,
@@ -218,7 +219,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   InterfaceProvider* interfaceProvider() { return m_interfaceProvider; }
   InterfaceRegistry* interfaceRegistry() { return m_interfaceRegistry; }
 
-  FrameLoaderClient* client() const;
+  LocalFrameClient* client() const;
 
   PluginData* pluginData() const;
 
@@ -227,7 +228,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
  private:
   friend class FrameNavigationDisabler;
 
-  LocalFrame(FrameLoaderClient*,
+  LocalFrame(LocalFrameClient*,
              FrameHost*,
              FrameOwner*,
              InterfaceProvider*,

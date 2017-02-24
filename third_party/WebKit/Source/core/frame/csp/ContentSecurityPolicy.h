@@ -42,6 +42,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
+
 #include <memory>
 #include <utility>
 
@@ -57,7 +58,7 @@ class CSPDirectiveList;
 class CSPSource;
 class Document;
 class Element;
-class FrameLoaderClient;
+class LocalFrameClient;
 class KURL;
 class ResourceRequest;
 class SecurityOrigin;
@@ -126,7 +127,7 @@ class CORE_EXPORT ContentSecurityPolicy
   void addPolicyFromHeaderValue(const String&,
                                 ContentSecurityPolicyHeaderType,
                                 ContentSecurityPolicyHeaderSource);
-  void reportAccumulatedHeaders(FrameLoaderClient*) const;
+  void reportAccumulatedHeaders(LocalFrameClient*) const;
 
   std::unique_ptr<Vector<CSPHeaderAndType>> headers() const;
 

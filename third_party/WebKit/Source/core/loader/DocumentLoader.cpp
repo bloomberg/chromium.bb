@@ -38,6 +38,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -47,7 +48,6 @@
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/FrameFetchContext.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/loader/ProgressTracker.h"
@@ -131,9 +131,9 @@ FrameLoader& DocumentLoader::frameLoader() const {
   return m_frame->loader();
 }
 
-FrameLoaderClient& DocumentLoader::frameLoaderClient() const {
+LocalFrameClient& DocumentLoader::localFrameClient() const {
   DCHECK(m_frame);
-  FrameLoaderClient* client = m_frame->client();
+  LocalFrameClient* client = m_frame->client();
   // LocalFrame clears its |m_client| only after detaching all DocumentLoaders
   // (i.e. calls detachFromFrame() which clears |m_frame|) owned by the
   // LocalFrame's FrameLoader. So, if |m_frame| is non nullptr, |client| is
@@ -240,7 +240,7 @@ void DocumentLoader::dispatchLinkHeaderPreloads(
 
 void DocumentLoader::didChangePerformanceTiming() {
   if (m_frame && m_frame->isMainFrame() && m_state >= Committed) {
-    frameLoaderClient().didChangePerformanceTiming();
+    localFrameClient().didChangePerformanceTiming();
   }
 }
 
@@ -248,7 +248,7 @@ void DocumentLoader::didObserveLoadingBehavior(
     WebLoadingBehaviorFlag behavior) {
   if (m_frame && m_frame->isMainFrame()) {
     DCHECK_GE(m_state, Committed);
-    frameLoaderClient().didObserveLoadingBehavior(behavior);
+    localFrameClient().didObserveLoadingBehavior(behavior);
   }
 }
 
@@ -382,7 +382,7 @@ bool DocumentLoader::redirectReceived(
   // back/forward navigation only. In the other case, clearing it is a no-op.
   frameLoader().clearProvisionalHistoryItem();
 
-  frameLoaderClient().dispatchDidReceiveServerRedirectForProvisionalLoad();
+  localFrameClient().dispatchDidReceiveServerRedirectForProvisionalLoad();
 
   return true;
 }

@@ -1709,10 +1709,10 @@ WebLocalFrameImpl* WebLocalFrameImpl::fromFrame(LocalFrame* frame) {
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::fromFrame(LocalFrame& frame) {
-  FrameLoaderClient* client = frame.loader().client();
-  if (!client || !client->isFrameLoaderClientImpl())
+  LocalFrameClient* client = frame.loader().client();
+  if (!client || !client->isLocalFrameClientImpl())
     return nullptr;
-  return toFrameLoaderClientImpl(client)->webFrame();
+  return toLocalFrameClientImpl(client)->webFrame();
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::fromFrameOwnerElement(Element* element) {

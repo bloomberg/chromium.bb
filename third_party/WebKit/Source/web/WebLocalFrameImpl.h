@@ -45,6 +45,7 @@
 #include "web/WebInputMethodControllerImpl.h"
 #include "wtf/Compiler.h"
 #include "wtf/text/WTFString.h"
+
 #include <memory>
 
 namespace blink {
@@ -419,7 +420,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   DECLARE_TRACE();
 
  private:
-  friend class FrameLoaderClientImpl;
+  friend class LocalFrameClientImpl;
 
   WebLocalFrameImpl(WebTreeScopeType,
                     WebFrameClient*,
