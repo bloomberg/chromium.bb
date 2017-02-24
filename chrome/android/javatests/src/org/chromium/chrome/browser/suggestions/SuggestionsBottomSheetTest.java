@@ -11,6 +11,7 @@ import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.MotionEvent;
 
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.test.BottomSheetTestCaseBase;
@@ -42,6 +43,7 @@ public class SuggestionsBottomSheetTest extends BottomSheetTestCaseBase {
         super.tearDown();
     }
 
+    @RetryOnFailure
     @MediumTest
     public void testContextMenu() throws InterruptedException {
         NewTabPageRecyclerView recyclerView =
