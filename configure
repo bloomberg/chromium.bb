@@ -309,6 +309,7 @@ EXPERIMENT_LIST="
     tripred
     palette_throughput
     ref_adapt
+    lv_map
 "
 CONFIG_LIST="
     dependency_tracking
