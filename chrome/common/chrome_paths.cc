@@ -241,6 +241,13 @@ bool PathProvider(int key, base::FilePath* result) {
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("Diagnostics"));
       break;
+    case chrome::DIR_ROAMING_USER_DATA:
+      if (!GetDefaultRoamingUserDataDirectory(&cur)) {
+        NOTREACHED();
+        return false;
+      }
+      create_dir = true;
+      break;
 #endif
     case chrome::DIR_RESOURCES:
 #if defined(OS_MACOSX)

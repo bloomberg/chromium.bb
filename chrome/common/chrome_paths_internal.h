@@ -27,6 +27,12 @@ namespace chrome {
 // DIR_USER_DATA has been overridden by a command-line option.
 bool GetDefaultUserDataDirectory(base::FilePath* result);
 
+#if defined(OS_WIN)
+// Get the path to the roaming user's data directory, regardless of whether
+// DIR_ROAMING_USER_DATA has been overridden by a command-line option.
+bool GetDefaultRoamingUserDataDirectory(base::FilePath* result);
+#endif
+
 // Get the path to the user's cache directory.  This is normally the
 // same as the profile directory, but on Linux it can also be
 // $XDG_CACHE_HOME and on Mac it can be under ~/Library/Caches.

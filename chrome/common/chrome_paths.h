@@ -26,6 +26,8 @@ enum {
 #if defined(OS_WIN)
   DIR_WATCHER_DATA,             // Directory where the Chrome watcher stores
                                 // data.
+  DIR_ROAMING_USER_DATA,        // Directory where user data is stored that
+                                // needs to be roamed between computers.
 #endif
   DIR_RESOURCES,                // Directory containing separate file resources
                                 // used by Chrome at runtime.
