@@ -726,7 +726,7 @@
     },
     {
       name: "PresentationReceiver",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "PushMessaging",
