@@ -18,6 +18,7 @@ import org.chromium.content_public.browser.WebContents;
 public class PageLoadMetrics {
     public static final String FIRST_CONTENTFUL_PAINT = "firstContentfulPaint";
     public static final String NAVIGATION_START = "navigationStart";
+    public static final String LOAD_EVENT_START = "loadEventStart";
 
     /** Observer for page load metrics. */
     public interface Observer {
@@ -30,6 +31,16 @@ public class PageLoadMetrics {
          */
         public void onFirstContentfulPaint(
                 WebContents webContents, long navigationStartTick, long firstContentfulPaintMs);
+
+        /**
+         * Called when the load event start metric is available.
+         *
+         * @param webContents the WebContents this metrics is related to.
+         * @param navigationStartTick Absolute navigation start time, as TimeTicks.
+         * @param loadEventStartMs Time to load event start from navigation start.
+         */
+        public void onLoadEventStart(
+                WebContents webContents, long navigationStartTick, long loadEventStartMs);
     }
 
     private static ObserverList<Observer> sObservers;
@@ -56,6 +67,16 @@ public class PageLoadMetrics {
         for (Observer observer : sObservers) {
             observer.onFirstContentfulPaint(
                     webContents, navigationStartTick, firstContentfulPaintMs);
+        }
+    }
+
+    @CalledByNative
+    static void onLoadEventStart(
+            WebContents webContents, long navigationStartTick, long loadEventStartMs) {
+        ThreadUtils.assertOnUiThread();
+        if (sObservers == null) return;
+        for (Observer observer : sObservers) {
+            observer.onLoadEventStart(webContents, navigationStartTick, loadEventStartMs);
         }
     }
 

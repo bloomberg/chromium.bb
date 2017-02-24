@@ -989,13 +989,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     }
 
     /**
-     * Tests that Time To First Contentful Paint is sent.
+     * Tests that Time To First Contentful Paint and Load Event Start timings are sent.
      */
     @SmallTest
     @RetryOnFailure
     public void testPageLoadMetricIsSent() {
         final AtomicReference<Long> firstContentfulPaintMs = new AtomicReference<>(-1L);
         final AtomicReference<Long> activityStartTimeMs = new AtomicReference<>(-1L);
+        final AtomicReference<Long> loadEventStartMs = new AtomicReference<>(-1L);
 
         CustomTabsCallback cb = new CustomTabsCallback() {
             @Override
@@ -1009,9 +1010,16 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
                 long firstContentfulPaint =
                         args.getLong(PageLoadMetrics.FIRST_CONTENTFUL_PAINT, -1);
-                assertTrue(firstContentfulPaint > 0);
-                assertTrue(firstContentfulPaint <= (current - navigationStart));
-                firstContentfulPaintMs.set(firstContentfulPaint);
+                if (firstContentfulPaint > 0) {
+                    assertTrue(firstContentfulPaint <= (current - navigationStart));
+                    firstContentfulPaintMs.set(firstContentfulPaint);
+                }
+
+                long loadEventStart = args.getLong(PageLoadMetrics.LOAD_EVENT_START, -1);
+                if (loadEventStart > 0) {
+                    assertTrue(loadEventStart <= (current - navigationStart));
+                    loadEventStartMs.set(loadEventStart);
+                }
             }
         };
 
@@ -1029,6 +1037,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 @Override
                 public boolean isSatisfied() {
                     return firstContentfulPaintMs.get() > 0;
+                }
+            });
+            CriteriaHelper.pollInstrumentationThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return loadEventStartMs.get() > 0;
                 }
             });
         } catch (InterruptedException e) {

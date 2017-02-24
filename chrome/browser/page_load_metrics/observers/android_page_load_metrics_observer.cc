@@ -44,3 +44,18 @@ void AndroidPageLoadMetricsObserver::OnFirstContentfulPaint(
           (navigation_start_ - base::TimeTicks()).InMicroseconds()),
       static_cast<jlong>(first_contentful_paint_ms));
 }
+
+void AndroidPageLoadMetricsObserver::OnLoadEventStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  int64_t load_event_start_ms = timing.load_event_start->InMilliseconds();
+  base::android::ScopedJavaLocalRef<jobject> java_web_contents =
+      web_contents_->GetJavaWebContents();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_PageLoadMetrics_onLoadEventStart(
+      env, java_web_contents,
+      static_cast<jlong>(
+          (navigation_start_ - base::TimeTicks()).InMicroseconds()),
+      static_cast<jlong>(load_event_start_ms));
+}

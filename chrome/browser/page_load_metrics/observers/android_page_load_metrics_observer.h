@@ -29,6 +29,9 @@ class AndroidPageLoadMetricsObserver
   void OnFirstContentfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnLoadEventStart(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
   content::WebContents* web_contents_;

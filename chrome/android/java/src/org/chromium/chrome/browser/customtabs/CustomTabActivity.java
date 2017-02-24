@@ -143,6 +143,15 @@ public class CustomTabActivity extends ChromeActivity {
             mConnection.notifyPageLoadMetric(mSession, PageLoadMetrics.FIRST_CONTENTFUL_PAINT,
                     navigationStartTick, firstContentfulPaintMs);
         }
+
+        @Override
+        public void onLoadEventStart(
+                WebContents webContents, long navigationStartTick, long loadEventStartMs) {
+            if (webContents != mTab.getWebContents()) return;
+
+            mConnection.notifyPageLoadMetric(mSession, PageLoadMetrics.LOAD_EVENT_START,
+                    navigationStartTick, loadEventStartMs);
+        }
     }
 
     private static class CustomTabCreator extends ChromeTabCreator {
