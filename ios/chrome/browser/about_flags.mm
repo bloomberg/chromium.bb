@@ -28,11 +28,9 @@
 #include "components/ntp_tiles/switches.h"
 #include "components/reading_list/core/reading_list_switches.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/driver/sync_driver_switches.h"
-#include "google_apis/gaia/gaia_switches.h"
 #include "ios/chrome/browser/chrome_switches.h"
-#include "ios/chrome/browser/google_api_keys.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_view_creation_util.h"
 
@@ -74,29 +72,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
 // Add all switches from experimental flags to |command_line|.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-
-  // GAIA staging environment.
-  NSString* kGAIAEnvironment = @"GAIAEnvironment";
-  NSString* gaia_environment = [defaults stringForKey:kGAIAEnvironment];
-  if ([gaia_environment isEqualToString:@"Staging"]) {
-    command_line->AppendSwitchASCII(switches::kGoogleApisUrl,
-                                    BUILDFLAG(GOOGLE_STAGING_API_URL));
-    command_line->AppendSwitchASCII(switches::kLsoUrl,
-                                    BUILDFLAG(GOOGLE_STAGING_LSO_URL));
-  } else if ([gaia_environment isEqualToString:@"Test"]) {
-    command_line->AppendSwitchASCII(switches::kGaiaUrl,
-                                    BUILDFLAG(GOOGLE_TEST_OAUTH_URL));
-    command_line->AppendSwitchASCII(switches::kGoogleApisUrl,
-                                    BUILDFLAG(GOOGLE_TEST_API_URL));
-    command_line->AppendSwitchASCII(switches::kLsoUrl,
-                                    BUILDFLAG(GOOGLE_TEST_LSO_URL));
-    command_line->AppendSwitchASCII(switches::kSyncServiceURL,
-                                    BUILDFLAG(GOOGLE_TEST_SYNC_URL));
-    command_line->AppendSwitchASCII(switches::kOAuth2ClientID,
-                                    BUILDFLAG(GOOGLE_TEST_OAUTH_CLIENT_ID));
-    command_line->AppendSwitchASCII(switches::kOAuth2ClientSecret,
-                                    BUILDFLAG(GOOGLE_TEST_OAUTH_CLIENT_SECRET));
-  }
 
   // Populate command line flag for the tab strip auto scroll new tabs
   // experiment from the configuration plist.
@@ -255,6 +230,9 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     base::CommandLine temp_command_line(flags);
     command_line->AppendArguments(temp_command_line, false);
   }
+
+  ios::GetChromeBrowserProvider()->AppendSwitchesFromExperimentalSettings(
+      defaults, command_line);
 }
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
