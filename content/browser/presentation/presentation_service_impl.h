@@ -103,7 +103,6 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   using ConnectionMessagesCallback =
       base::Callback<void(std::vector<blink::mojom::ConnectionMessagePtr>)>;
-  using SendConnectionMessageCallback = base::Callback<void(bool)>;
 
   // Listener implementation owned by PresentationServiceImpl. An instance of
   // this is created when PresentationRequest.getAvailability() is resolved.
@@ -168,10 +167,6 @@ class CONTENT_EXPORT PresentationServiceImpl
   void JoinSession(const std::vector<GURL>& presentation_urls,
                    const base::Optional<std::string>& presentation_id,
                    const NewSessionCallback& callback) override;
-  void SendConnectionMessage(
-      const PresentationSessionInfo& session_info,
-      blink::mojom::ConnectionMessagePtr connection_message,
-      const SendConnectionMessageCallback& callback) override;
   void CloseConnection(const GURL& presentation_url,
                        const std::string& presentation_id) override;
   void Terminate(const GURL& presentation_url,
@@ -229,7 +224,6 @@ class CONTENT_EXPORT PresentationServiceImpl
   void OnJoinSessionError(
       int request_session_id,
       const PresentationError& error);
-  void OnSendMessageCallback(bool sent);
 
   // Calls to |delegate_| to start listening for state changes for |connection|.
   // State changes will be returned via |OnConnectionStateChanged|.
@@ -302,11 +296,6 @@ class CONTENT_EXPORT PresentationServiceImpl
   // RAII binding of |this| to an Presentation interface request.
   // The binding is removed when binding_ is cleared or goes out of scope.
   std::unique_ptr<mojo::Binding<blink::mojom::PresentationService>> binding_;
-
-  // There can be only one send message request at a time.
-  std::unique_ptr<SendConnectionMessageCallback> send_message_callback_;
-
-  std::unique_ptr<ConnectionMessagesCallback> on_connection_messages_callback_;
 
   // ID of the RenderFrameHost this object is associated with.
   int render_process_id_;

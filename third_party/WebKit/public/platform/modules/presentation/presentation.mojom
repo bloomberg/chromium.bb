@@ -115,14 +115,6 @@ interface PresentationService {
 
   //////////////////////////////////////////////////////////////////////////////
 
-  // Called when send() is called by the frame. The true in the
-  // result callback notifies that the service is ready for next message.
-  // The false in the result callback notifies the renderer to stop sending
-  // the send requests and invalidate all pending requests. This occurs
-  // for eg., when frame is deleted or navigated away.
-  SendConnectionMessage(PresentationSessionInfo sessionInfo,
-                     ConnectionMessage message_request) => (bool success);
-
   // Called when close() is called by the frame.
   CloseConnection(url.mojom.Url presentation_url, string presentation_id);
 

@@ -331,7 +331,6 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     EXPECT_EQ(
         service_impl_->screen_availability_listeners_.find(presentation_url1_),
         service_impl_->screen_availability_listeners_.end());
-    EXPECT_FALSE(service_impl_->on_connection_messages_callback_.get());
   }
 
   void ExpectNewSessionCallbackSuccess(
@@ -358,13 +357,6 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     EXPECT_EQ(expected_msgs.size(), actual_msgs.size());
     for (size_t i = 0; i < actual_msgs.size(); ++i)
       EXPECT_TRUE(expected_msgs[i].Equals(actual_msgs[i]));
-  }
-
-  void ExpectSendConnectionMessageCallback(bool success) {
-    EXPECT_TRUE(success);
-    EXPECT_FALSE(service_impl_->send_message_callback_);
-    if (!run_loop_quit_closure_.is_null())
-      run_loop_quit_closure_.Run();
   }
 
   void RunListenForConnectionMessages(const std::string& text_msg,
@@ -748,153 +740,6 @@ TEST_F(PresentationServiceImplTest, StartSessionInProgress) {
       presentation_urls_,
       base::Bind(&PresentationServiceImplTest::ExpectNewSessionCallbackError,
                  base::Unretained(this)));
-  SaveQuitClosureAndRunLoop();
-}
-
-TEST_F(PresentationServiceImplTest, SendStringMessage) {
-  std::string message("Test presentation session message");
-
-  content::PresentationSessionInfo session(presentation_url1_, kPresentationId);
-  blink::mojom::ConnectionMessagePtr message_request(
-      blink::mojom::ConnectionMessage::New());
-  message_request->type = blink::mojom::PresentationMessageType::TEXT;
-  message_request->message = message;
-  service_ptr_->SendConnectionMessage(
-      session, std::move(message_request),
-      base::Bind(
-          &PresentationServiceImplTest::ExpectSendConnectionMessageCallback,
-          base::Unretained(this)));
-
-  base::RunLoop run_loop;
-  base::Callback<void(bool)> send_message_cb;
-  PresentationConnectionMessage* test_message = nullptr;
-  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(_, _, _, _, _))
-      .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-                      SaveArg<3>(&test_message), SaveArg<4>(&send_message_cb)));
-  run_loop.Run();
-
-  // Make sure |test_message| gets deleted.
-  std::unique_ptr<PresentationConnectionMessage> scoped_test_message(
-      test_message);
-  EXPECT_TRUE(test_message);
-  EXPECT_FALSE(test_message->is_binary());
-  EXPECT_LE(test_message->message.size(),
-            kMaxPresentationConnectionMessageSize);
-  EXPECT_EQ(message, test_message->message);
-  ASSERT_FALSE(test_message->data);
-  send_message_cb.Run(true);
-  SaveQuitClosureAndRunLoop();
-}
-
-TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
-  // Test Array buffer data.
-  const uint8_t buffer[] = {0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48};
-  std::vector<uint8_t> data;
-  data.assign(buffer, buffer + sizeof(buffer));
-
-  content::PresentationSessionInfo session(presentation_url1_, kPresentationId);
-  blink::mojom::ConnectionMessagePtr message_request(
-      blink::mojom::ConnectionMessage::New());
-  message_request->type = blink::mojom::PresentationMessageType::BINARY;
-  message_request->data = data;
-  service_ptr_->SendConnectionMessage(
-      session, std::move(message_request),
-      base::Bind(
-          &PresentationServiceImplTest::ExpectSendConnectionMessageCallback,
-          base::Unretained(this)));
-
-  base::RunLoop run_loop;
-  base::Callback<void(bool)> send_message_cb;
-  PresentationConnectionMessage* test_message = nullptr;
-  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(_, _, _, _, _))
-      .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-                      SaveArg<3>(&test_message), SaveArg<4>(&send_message_cb)));
-  run_loop.Run();
-
-  // Make sure |test_message| gets deleted.
-  std::unique_ptr<PresentationConnectionMessage> scoped_test_message(
-      test_message);
-  EXPECT_TRUE(test_message);
-  EXPECT_TRUE(test_message->is_binary());
-  EXPECT_EQ(PresentationMessageType::BINARY, test_message->type);
-  EXPECT_TRUE(test_message->message.empty());
-  ASSERT_TRUE(test_message->data);
-  EXPECT_EQ(data.size(), test_message->data->size());
-  EXPECT_LE(test_message->data->size(), kMaxPresentationConnectionMessageSize);
-  EXPECT_EQ(0, memcmp(buffer, &(*test_message->data)[0], sizeof(buffer)));
-  send_message_cb.Run(true);
-  SaveQuitClosureAndRunLoop();
-}
-
-TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
-  // Create buffer with size exceeding the limit.
-  // Use same size as in content::kMaxPresentationConnectionMessageSize.
-  const size_t kMaxBufferSizeInBytes = 64 * 1024;  // 64 KB.
-  uint8_t buffer[kMaxBufferSizeInBytes + 1];
-  memset(buffer, 0, kMaxBufferSizeInBytes+1);
-  std::vector<uint8_t> data;
-  data.assign(buffer, buffer + sizeof(buffer));
-
-  content::PresentationSessionInfo session(presentation_url1_, kPresentationId);
-  blink::mojom::ConnectionMessagePtr message_request(
-      blink::mojom::ConnectionMessage::New());
-  message_request->type = blink::mojom::PresentationMessageType::BINARY;
-  message_request->data = data;
-  service_ptr_->SendConnectionMessage(
-      session, std::move(message_request),
-      base::Bind(
-          &PresentationServiceImplTest::ExpectSendConnectionMessageCallback,
-          base::Unretained(this)));
-
-  base::RunLoop run_loop;
-  base::Callback<void(bool)> send_message_cb;
-  PresentationConnectionMessage* test_message = nullptr;
-  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(_, _, _, _, _))
-      .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-                      SaveArg<3>(&test_message), SaveArg<4>(&send_message_cb)));
-  run_loop.Run();
-
-  EXPECT_FALSE(test_message);
-  send_message_cb.Run(true);
-  SaveQuitClosureAndRunLoop();
-}
-
-TEST_F(PresentationServiceImplTest, SendBlobData) {
-  const uint8_t buffer[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
-  std::vector<uint8_t> data;
-  data.assign(buffer, buffer + sizeof(buffer));
-
-  content::PresentationSessionInfo session(presentation_url1_, kPresentationId);
-  blink::mojom::ConnectionMessagePtr message_request(
-      blink::mojom::ConnectionMessage::New());
-  message_request->type = blink::mojom::PresentationMessageType::BINARY;
-  message_request->data = data;
-  service_ptr_->SendConnectionMessage(
-      session, std::move(message_request),
-      base::Bind(
-          &PresentationServiceImplTest::ExpectSendConnectionMessageCallback,
-          base::Unretained(this)));
-
-  base::RunLoop run_loop;
-  base::Callback<void(bool)> send_message_cb;
-  PresentationConnectionMessage* test_message = nullptr;
-  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(_, _, _, _, _))
-      .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-                      SaveArg<3>(&test_message), SaveArg<4>(&send_message_cb)));
-  run_loop.Run();
-
-  // Make sure |test_message| gets deleted.
-  std::unique_ptr<PresentationConnectionMessage> scoped_test_message(
-      test_message);
-  EXPECT_TRUE(test_message);
-  EXPECT_TRUE(test_message->is_binary());
-  EXPECT_EQ(PresentationMessageType::BINARY, test_message->type);
-  EXPECT_TRUE(test_message->message.empty());
-  ASSERT_TRUE(test_message->data);
-  EXPECT_EQ(data.size(), test_message->data->size());
-  EXPECT_LE(test_message->data->size(), kMaxPresentationConnectionMessageSize);
-  EXPECT_EQ(0, memcmp(buffer, &(*test_message->data)[0], sizeof(buffer)));
-  send_message_cb.Run(true);
   SaveQuitClosureAndRunLoop();
 }
 

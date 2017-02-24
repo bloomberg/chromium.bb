@@ -63,47 +63,6 @@ blink::mojom::ConnectionMessagePtr ToMojoConnectionMessage(
   return output;
 }
 
-std::unique_ptr<PresentationConnectionMessage> GetPresentationConnectionMessage(
-    blink::mojom::ConnectionMessagePtr input) {
-  std::unique_ptr<content::PresentationConnectionMessage> output;
-  if (input.is_null())
-    return output;
-
-  switch (input->type) {
-    case blink::mojom::PresentationMessageType::TEXT: {
-      // Return nullptr PresentationConnectionMessage if invalid (unset
-      // |message|,
-      // set |data|, or size too large).
-      if (input->data || !input->message ||
-          input->message->size() >
-              content::kMaxPresentationConnectionMessageSize)
-        return output;
-
-      output.reset(
-          new PresentationConnectionMessage(PresentationMessageType::TEXT));
-      output->message = std::move(input->message.value());
-      return output;
-    }
-    case blink::mojom::PresentationMessageType::BINARY: {
-      // Return nullptr PresentationConnectionMessage if invalid (unset |data|,
-      // set
-      // |message|, or size too large).
-      if (!input->data || input->message ||
-          input->data->size() > content::kMaxPresentationConnectionMessageSize)
-        return output;
-
-      output.reset(
-          new PresentationConnectionMessage(PresentationMessageType::BINARY));
-      output->data.reset(
-          new std::vector<uint8_t>(std::move(input->data.value())));
-      return output;
-    }
-  }
-
-  NOTREACHED() << "Invalid presentation message type " << input->type;
-  return output;
-}
-
 void InvokeNewSessionCallbackWithError(
     const PresentationServiceImpl::NewSessionCallback& callback) {
   callback.Run(base::nullopt,
@@ -374,36 +333,6 @@ void PresentationServiceImpl::SetDefaultPresentationUrls(
                  weak_factory_.GetWeakPtr()));
 }
 
-void PresentationServiceImpl::SendConnectionMessage(
-    const PresentationSessionInfo& session_info,
-    blink::mojom::ConnectionMessagePtr connection_message,
-    const SendConnectionMessageCallback& callback) {
-  DVLOG(2) << "SendConnectionMessage [id]: " << session_info.presentation_id;
-  DCHECK(!connection_message.is_null());
-  // send_message_callback_ should be null by now, otherwise resetting of
-  // send_message_callback_ with new callback will drop the old callback.
-  if (!controller_delegate_ || send_message_callback_) {
-    callback.Run(false);
-    return;
-  }
-
-  send_message_callback_.reset(new SendConnectionMessageCallback(callback));
-  controller_delegate_->SendMessage(
-      render_process_id_, render_frame_id_, session_info,
-      GetPresentationConnectionMessage(std::move(connection_message)),
-      base::Bind(&PresentationServiceImpl::OnSendMessageCallback,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void PresentationServiceImpl::OnSendMessageCallback(bool sent) {
-  // It is possible that Reset() is invoked before receiving this callback.
-  // So, always check send_message_callback_ for non-null.
-  if (send_message_callback_) {
-    send_message_callback_->Run(sent);
-    send_message_callback_.reset();
-  }
-}
-
 void PresentationServiceImpl::CloseConnection(
     const GURL& presentation_url,
     const std::string& presentation_id) {
@@ -565,19 +494,6 @@ void PresentationServiceImpl::Reset() {
   pending_start_session_cb_.reset();
 
   pending_join_session_cbs_.clear();
-
-  if (on_connection_messages_callback_.get()) {
-    on_connection_messages_callback_->Run(
-        std::vector<blink::mojom::ConnectionMessagePtr>());
-    on_connection_messages_callback_.reset();
-  }
-
-  if (send_message_callback_) {
-    // Run the callback with false, indicating the renderer to stop sending
-    // the requests and invalidate all pending requests.
-    send_message_callback_->Run(false);
-    send_message_callback_.reset();
-  }
 }
 
 void PresentationServiceImpl::OnDelegateDestroyed() {

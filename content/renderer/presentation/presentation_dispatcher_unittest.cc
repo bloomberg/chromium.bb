@@ -76,20 +76,6 @@ class MockPresentationService : public PresentationService {
                     const base::Optional<std::string>& presentation_id,
                     const JoinSessionCallback& callback));
 
-  // *Internal method is to work around lack of support for move-only types in
-  // GMock.
-  void SendConnectionMessage(
-      const PresentationSessionInfo& session_info,
-      ConnectionMessagePtr message_request,
-      const SendConnectionMessageCallback& callback) override {
-    SendConnectionMessageInternal(session_info, message_request.get(),
-                                  callback);
-  }
-  MOCK_METHOD3(SendConnectionMessageInternal,
-               void(const PresentationSessionInfo& session_info,
-                    ConnectionMessage* message_request,
-                    const SendConnectionMessageCallback& callback));
-
   MOCK_METHOD2(CloseConnection,
                void(const GURL& presentation_url,
                     const std::string& presentation_id));
