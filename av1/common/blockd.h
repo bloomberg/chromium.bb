@@ -933,6 +933,15 @@ static INLINE TX_SIZE get_uv_tx_size(const MB_MODE_INFO *mbmi,
   return uv_txsize;
 }
 
+static INLINE TX_SIZE get_tx_size(int plane, const MACROBLOCKD *xd,
+                                  int block_idx) {
+  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  const MACROBLOCKD_PLANE *pd = &xd->plane[plane];
+  const TX_SIZE tx_size = plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
+  (void)block_idx;
+  return tx_size;
+}
+
 static INLINE BLOCK_SIZE
 get_plane_block_size(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
   return ss_size_lookup[bsize][pd->subsampling_x][pd->subsampling_y];
