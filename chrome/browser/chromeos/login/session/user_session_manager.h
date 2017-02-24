@@ -506,8 +506,7 @@ class UserSessionManager
   // Child account status is necessary for InitializeStartUrls call.
   bool waiting_for_child_account_status_;
 
-  scoped_refptr<typename HatsNotificationController::HatsNotificationController>
-      hats_notification_controller_;
+  scoped_refptr<HatsNotificationController> hats_notification_controller_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_;
 

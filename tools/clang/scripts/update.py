@@ -27,14 +27,14 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '289944'
+CLANG_REVISION = '295793'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=2
+CLANG_SUB_REVISION=1
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
@@ -71,7 +71,7 @@ BINUTILS_BIN_DIR = os.path.join(BINUTILS_DIR, BINUTILS_DIR,
                                 'Linux_x64', 'Release', 'bin')
 BFD_PLUGINS_DIR = os.path.join(BINUTILS_DIR, 'Linux_x64', 'Release',
                                'lib', 'bfd-plugins')
-VERSION = '4.0.0'
+VERSION = '5.0.0'
 ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_tools', 'ndk')
 
@@ -866,11 +866,6 @@ def main():
     if re.search(r'\b(make_clang_dir)=', os.environ.get('GYP_DEFINES', '')):
       print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
       return 0
-
-  if use_head_revision:
-    # TODO(hans): Trunk was updated; remove after the next roll.
-    global VERSION
-    VERSION = '5.0.0'
 
   global CLANG_REVISION, PACKAGE_VERSION
   if args.print_revision:
