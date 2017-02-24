@@ -424,7 +424,7 @@ Node* ContainerNode::replaceChild(Node* newChild,
 
   // TODO(tkent): According to the specification, we should remove |newChild|
   // from its parent here, and create a separated mutation record for it.
-  // Refer to imported/wpt/dom/nodes/MutationObserver-childList.html.
+  // Refer to external/wpt/dom/nodes/MutationObserver-childList.html.
 
   // 12. If child’s parent is not null, run these substeps:
   //    1. Set removedNodes to a list solely containing child.

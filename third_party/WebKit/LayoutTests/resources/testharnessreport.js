@@ -80,7 +80,7 @@
         var path = location.pathname;
         if (location.hostname == 'web-platform.test' && path.endsWith('-manual.html'))
             return true;
-        return /\/imported\/wpt\/.*-manual\.html$/.test(path);
+        return /\/external\/wpt\/.*-manual\.html$/.test(path);
     }
 
     // Returns a directory part relative to WPT root and a basename part of the
@@ -93,7 +93,7 @@
             var matches = path.match(/^(\/.*)\.html$/);
             return matches ? matches[1] : null;
         }
-        var matches = path.match(/imported\/wpt(\/.*)\.html$/);
+        var matches = path.match(/external\/wpt(\/.*)\.html$/);
         return matches ? matches[1] : null;
     }
 
@@ -101,7 +101,7 @@
         var pathAndBase = pathAndBaseNameInWPT();
         if (!pathAndBase)
             return;
-        var automationPath = location.pathname.replace(/\/imported\/wpt\/.*$/, '/external/wpt_automation');
+        var automationPath = location.pathname.replace(/\/external\/wpt\/.*$/, '/external/wpt_automation');
         if (location.hostname == 'web-platform.test')
             automationPath = '/wpt_automation';
 
