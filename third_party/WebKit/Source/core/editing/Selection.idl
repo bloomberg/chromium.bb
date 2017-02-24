@@ -40,8 +40,7 @@
     [MeasureAs=SelectionType] readonly attribute DOMString type;
     [MeasureAs=SelectionGetRangeAt, RaisesException] Range getRangeAt(unsigned long index);
     [MeasureAs=SelectionAddRange] void addRange(Range range);
-    // TODO(yoichio): Implement removeRange. crbug.com/391673
-    //void removeRange(Range range);
+    void removeRange(Range range);
     [MeasureAs=SelectionRemoveAllRanges] void removeAllRanges();
     [MeasureAs=SelectionEmpty] void empty();
     [MeasureAs=SelectionCollapse, RaisesException] void collapse(Node? node, optional unsigned long offset = 0);

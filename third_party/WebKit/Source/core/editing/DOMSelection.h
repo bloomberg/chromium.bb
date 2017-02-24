@@ -90,6 +90,7 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
   void collapseToStart(ExceptionState&);
   void extend(Node*, unsigned offset, ExceptionState&);
   Range* getRangeAt(unsigned, ExceptionState&) const;
+  void removeRange(Range*);
   void removeAllRanges();
   void addRange(Range*);
   void deleteFromDocument();

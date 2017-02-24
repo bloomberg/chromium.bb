@@ -588,6 +588,14 @@ void DOMSelection::clearCachedRangeIfSelectionOfDocument() {
   frame()->selection().clearDocumentCachedRange();
 }
 
+void DOMSelection::removeRange(Range* range) {
+  DCHECK(range);
+  if (!isAvailable())
+    return;
+  if (range == primaryRangeOrNull())
+    frame()->selection().clear();
+}
+
 void DOMSelection::removeAllRanges() {
   if (!isAvailable())
     return;

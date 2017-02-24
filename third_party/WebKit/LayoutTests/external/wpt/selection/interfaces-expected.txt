@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 59 tests; 55 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 59 tests; 58 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Selection interface: existence and properties of interface object 
 PASS Selection interface object length 
 PASS Selection interface object name 
@@ -14,7 +14,7 @@ PASS Selection interface: attribute rangeCount
 PASS Selection interface: attribute type 
 PASS Selection interface: operation getRangeAt(unsigned long) 
 PASS Selection interface: operation addRange(Range) 
-FAIL Selection interface: operation removeRange(Range) assert_own_property: interface prototype object missing non-static operation expected property "removeRange" missing
+PASS Selection interface: operation removeRange(Range) 
 PASS Selection interface: operation removeAllRanges() 
 PASS Selection interface: operation empty() 
 PASS Selection interface: operation collapse(Node,unsigned long) 
@@ -40,8 +40,8 @@ PASS Selection interface: getSelection() must inherit property "getRangeAt" with
 PASS Selection interface: calling getRangeAt(unsigned long) on getSelection() with too few arguments must throw TypeError 
 PASS Selection interface: getSelection() must inherit property "addRange" with the proper type (8) 
 PASS Selection interface: calling addRange(Range) on getSelection() with too few arguments must throw TypeError 
-FAIL Selection interface: getSelection() must inherit property "removeRange" with the proper type (9) assert_inherits: property "removeRange" not found in prototype chain
-FAIL Selection interface: calling removeRange(Range) on getSelection() with too few arguments must throw TypeError assert_inherits: property "removeRange" not found in prototype chain
+PASS Selection interface: getSelection() must inherit property "removeRange" with the proper type (9) 
+PASS Selection interface: calling removeRange(Range) on getSelection() with too few arguments must throw TypeError 
 PASS Selection interface: getSelection() must inherit property "removeAllRanges" with the proper type (10) 
 PASS Selection interface: getSelection() must inherit property "empty" with the proper type (11) 
 PASS Selection interface: getSelection() must inherit property "collapse" with the proper type (12) 

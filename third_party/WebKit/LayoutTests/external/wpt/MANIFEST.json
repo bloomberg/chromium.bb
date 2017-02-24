@@ -49973,6 +49973,12 @@
      {}
     ]
    ],
+   "selection/removeRange.html": [
+    [
+     "/selection/removeRange.html",
+     {}
+    ]
+   ],
    "selection/selectAllChildren.html": [
     [
      "/selection/selectAllChildren.html",
@@ -83364,6 +83370,10 @@
   ],
   "selection/removeAllRanges.html": [
    "23385a72a586db288b282eb251f9384048532666",
+   "testharness"
+  ],
+  "selection/removeRange.html": [
+   "9a4f6531d510b781edd02acae9ffd2453bf48423",
    "testharness"
   ],
   "selection/selectAllChildren.html": [
