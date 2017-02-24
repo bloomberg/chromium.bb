@@ -128,24 +128,18 @@ class AnimationSetter {
  public:
   AnimationSetter(aura::Window* window, int animation_time_in_ms)
       : window_(window),
-        previous_animation_type_(
-            wm::GetWindowVisibilityAnimationType(window_)),
+        previous_animation_type_(wm::GetWindowVisibilityAnimationType(window_)),
         previous_animation_time_(
             wm::GetWindowVisibilityAnimationDuration(*window_)) {
     wm::SetWindowVisibilityAnimationType(
-        window_,
-        wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+        window_, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
     wm::SetWindowVisibilityAnimationDuration(
-        window_,
-        base::TimeDelta::FromMilliseconds(animation_time_in_ms));
+        window_, base::TimeDelta::FromMilliseconds(animation_time_in_ms));
   }
 
   ~AnimationSetter() {
-    wm::SetWindowVisibilityAnimationType(window_,
-                                                    previous_animation_type_);
-    wm::SetWindowVisibilityAnimationDuration(
-        window_,
-        previous_animation_time_);
+    wm::SetWindowVisibilityAnimationType(window_, previous_animation_type_);
+    wm::SetWindowVisibilityAnimationDuration(window_, previous_animation_time_);
   }
 
  private:
