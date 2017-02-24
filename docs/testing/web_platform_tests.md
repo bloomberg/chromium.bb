@@ -101,6 +101,11 @@ Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest --work \
     --tests-root=LayoutTests/external/wpt
 ```
 
+Note: the `--work` argument is important even if you have no local changes.
+Without it the `manifest` script will try to generate a manifest for all files
+in the Chromium tree and take a very long time.
+See [wpt-tools issue #171](https://github.com/w3c/wpt-tools/issues/171).
+
 Most tests are written using testharness.js, see
 [Writing Layout Tests](./writing_layout_tests.md) and
 [Layout Tests Tips](./layout_tests_tips.md) for general guidelines.
