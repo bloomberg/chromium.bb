@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_details.h"
@@ -48,6 +49,11 @@ InfoBarService::InfoBarService(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       ignore_next_reload_(false) {
   DCHECK(web_contents);
+  // Infobar animations cause viewport resizes. Disable them for automated
+  // tests, since they could lead to flakiness.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAutomation))
+    set_animations_enabled(false);
 }
 
 InfoBarService::~InfoBarService() {

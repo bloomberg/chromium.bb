@@ -93,6 +93,8 @@ class InfoBarManager {
   void AddObserver(Observer* obs);
   void RemoveObserver(Observer* obs);
 
+  bool animations_enabled() const { return animations_enabled_; }
+
   // Returns the active entry ID.
   virtual int GetActiveEntryID() = 0;
 
@@ -104,6 +106,10 @@ class InfoBarManager {
   virtual void OpenURL(const GURL& url, WindowOpenDisposition disposition) = 0;
 
  protected:
+  void set_animations_enabled(bool animations_enabled) {
+    animations_enabled_ = animations_enabled;
+  }
+
   // Notifies the observer in |observer_list_|.
   // TODO(droger): Absorb these methods back into their callers once virtual
   // overrides are removed (see http://crbug.com/354380).
@@ -121,7 +127,8 @@ class InfoBarManager {
   void RemoveInfoBarInternal(InfoBar* infobar, bool animate);
 
   InfoBars infobars_;
-  bool infobars_enabled_;
+  bool infobars_enabled_ = true;
+  bool animations_enabled_ = true;
 
   base::ObserverList<Observer, true> observer_list_;
 

@@ -123,7 +123,8 @@ void InfoBarContainer::OnInfoBarAdded(InfoBar* infobar) {
 }
 
 void InfoBarContainer::OnInfoBarRemoved(InfoBar* infobar, bool animate) {
-  infobar->Hide(animate);
+  DCHECK(infobar_manager_);
+  infobar->Hide(infobar_manager_->animations_enabled() && animate);
   UpdateInfoBarArrowTargetHeights();
 }
 
@@ -154,7 +155,8 @@ void InfoBarContainer::AddInfoBar(InfoBar* infobar,
   UpdateInfoBarArrowTargetHeights();
   PlatformSpecificAddInfoBar(infobar, position);
   infobar->set_container(this);
-  infobar->Show(animate);
+  DCHECK(infobar_manager_);
+  infobar->Show(infobar_manager_->animations_enabled() && animate);
 
   // Record the infobar being displayed.
   DCHECK_NE(InfoBarDelegate::INVALID, infobar->delegate()->GetIdentifier());

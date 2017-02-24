@@ -100,8 +100,7 @@ void InfoBarManager::RemoveObserver(Observer* obs) {
   observer_list_.RemoveObserver(obs);
 }
 
-InfoBarManager::InfoBarManager()
-    : infobars_enabled_(true) {
+InfoBarManager::InfoBarManager() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableInfoBars))
     infobars_enabled_ = false;
