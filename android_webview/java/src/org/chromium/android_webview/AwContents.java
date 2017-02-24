@@ -643,7 +643,7 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public void onScaleLimitsChanged(float minPageScaleFactor, float maxPageScaleFactor) {
-            mZoomControls.invokeZoomPicker();
+            mZoomControls.updateZoomControls();
         }
 
         @Override
