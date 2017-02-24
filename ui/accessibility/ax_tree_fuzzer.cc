@@ -43,8 +43,8 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   // Run with --v=1 to aid in debugging a specific crash.
   VLOG(1) << "Input accessibility tree:\n" << initial_state.ToString();
 
-  ui::AXTree tree;
   EmptyAXTreeDelegate delegate;
+  ui::AXTree tree;
   tree.SetDelegate(&delegate);
   tree.Unserialize(initial_state);
 
