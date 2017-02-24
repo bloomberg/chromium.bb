@@ -9,24 +9,17 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef ENCODETXB_H_
-#define ENCODETXB_H_
+#ifndef DECODETXB_H_
+#define DECODETXB_H_
 
 #include "./aom_config.h"
 #include "av1/common/blockd.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/txb_common.h"
-#include "aom_dsp/bitwriter.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "aom_dsp/bitreader.h"
 
-void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
-                          aom_writer *w, int block, int plane,
-                          const tran_low_t *tcoeff, uint16_t eob,
-                          TXB_CTX *txb_ctx);
-#ifdef __cplusplus
-}
-#endif
+uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
+                            aom_reader *r, int block, int plane,
+                            tran_low_t *tcoeffs, TXB_CTX *txb_ctx);
 
-#endif  // COEFFS_CODING_H_
+#endif  //  DECODETXB_H_

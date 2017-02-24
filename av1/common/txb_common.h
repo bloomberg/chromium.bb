@@ -95,6 +95,11 @@ static int16_t coeff_band_32x32[1024] = {
   22, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24,
 };
 
+typedef struct txb_ctx {
+  int txb_skip_ctx;
+  int dc_sign_ctx;
+} TXB_CTX;
+
 #define BASE_CONTEXT_POSITION_NUM 12
 static int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
   /* clang-format off*/
@@ -296,4 +301,10 @@ static INLINE int get_eob_ctx(const tran_low_t *tcoeffs,
   exit(0);
 }
 
+static INLINE void set_dc_sign(int *cul_level, tran_low_t v) {
+  if (v < 0)
+    *cul_level |= 1 << COEFF_CONTEXT_BITS;
+  else if (v > 0)
+    *cul_level += 2 << COEFF_CONTEXT_BITS;
+}
 #endif  // AV1_COMMON_TXB_COMMON_H_

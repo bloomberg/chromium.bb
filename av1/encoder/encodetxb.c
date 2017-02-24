@@ -10,7 +10,6 @@
  */
 
 #include "av1/common/scan.h"
-#include "av1/common/txb_common.h"
 #include "av1/encoder/encodetxb.h"
 
 static void write_golomb(aom_writer *w, int level) {
@@ -36,7 +35,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   aom_prob *nz_map;
   aom_prob *eob_flag;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  const PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
+  const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE tx_size = get_tx_size(plane, xd, block);
   const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *const scan_order =
