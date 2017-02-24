@@ -1911,7 +1911,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   // Trigger download by user gesture.
   TriggerDownloadViaHtml5FileApi(true /* has_user_gesture */);
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
-  auto* nav_list = navigation_event_list();
+  auto nav_list = navigation_event_list();
   ASSERT_TRUE(nav_list);
   ASSERT_EQ(1U, nav_list->Size());
   VerifyNavigationEvent(GURL(),       // source_url
@@ -1945,7 +1945,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   // Trigger download without user gesture.
   TriggerDownloadViaHtml5FileApi(false /* has_user_gesture */);
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
-  auto* nav_list = navigation_event_list();
+  auto nav_list = navigation_event_list();
   ASSERT_TRUE(nav_list);
   ASSERT_EQ(1U, nav_list->Size());
   VerifyNavigationEvent(GURL(),       // source_url

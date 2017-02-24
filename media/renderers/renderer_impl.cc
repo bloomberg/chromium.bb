@@ -353,7 +353,7 @@ bool RendererImpl::HasEncryptedStream() {
   std::vector<DemuxerStream*> demuxer_streams =
       media_resource_->GetAllStreams();
 
-  for (auto* stream : demuxer_streams) {
+  for (const auto& stream : demuxer_streams) {
     if (stream->type() == DemuxerStream::AUDIO &&
         stream->audio_decoder_config().is_encrypted())
       return true;

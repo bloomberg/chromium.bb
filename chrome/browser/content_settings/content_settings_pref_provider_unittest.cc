@@ -224,7 +224,7 @@ TEST_F(PrefProviderTest, DiscardObsoleteLastUsagePreferences) {
 
   // Check that last_used data has been deleted.
   EXPECT_TRUE(prefs->GetDictionary(kGeolocationPrefPath)->empty());
-  auto* mic_prefs = prefs->GetDictionary(kMicPrefPath);
+  auto mic_prefs = prefs->GetDictionary(kMicPrefPath);
   const base::DictionaryValue* mic_result_pattern_data;
   ASSERT_TRUE(mic_prefs->GetDictionaryWithoutPathExpansion(
       kPattern, &mic_result_pattern_data));

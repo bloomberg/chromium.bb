@@ -76,7 +76,7 @@ void MojoRenderer::InitializeRendererFromStreams(
   std::vector<DemuxerStream*> streams = media_resource_->GetAllStreams();
   std::vector<mojom::DemuxerStreamPtr> stream_proxies;
 
-  for (auto* stream : streams) {
+  for (const auto& stream : streams) {
     mojom::DemuxerStreamPtr stream_proxy;
     std::unique_ptr<MojoDemuxerStreamImpl> mojo_stream =
         base::MakeUnique<MojoDemuxerStreamImpl>(stream,

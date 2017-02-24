@@ -24,7 +24,7 @@ void FakeSecureChannel::ChangeStatus(const Status& new_status) {
 
   // Copy to prevent channel from being removed during handler.
   std::vector<Observer*> observers_copy = observers_;
-  for (auto* observer : observers_copy) {
+  for (auto observer : observers_copy) {
     observer->OnSecureChannelStatusChanged(this, old_status, status_);
   }
 }
@@ -33,7 +33,7 @@ void FakeSecureChannel::ReceiveMessage(const std::string& feature,
                                        const std::string& payload) {
   // Copy to prevent channel from being removed during handler.
   std::vector<Observer*> observers_copy = observers_;
-  for (auto* observer : observers_copy) {
+  for (auto observer : observers_copy) {
     observer->OnMessageReceived(this, feature, payload);
   }
 }
