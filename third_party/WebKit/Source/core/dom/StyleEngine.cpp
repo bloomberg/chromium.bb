@@ -461,13 +461,13 @@ void StyleEngine::didDetach() {
   m_viewportResolver = nullptr;
   m_mediaQueryEvaluator = nullptr;
   if (m_fontSelector)
-    m_fontSelector->fontFaceCache()->clearAll();
+    m_document->fontFaceCache()->clearAll();
   m_fontSelector = nullptr;
 }
 
 void StyleEngine::clearFontCache() {
   if (m_fontSelector)
-    m_fontSelector->fontFaceCache()->clearCSSConnected();
+    m_document->fontFaceCache()->clearCSSConnected();
   if (m_resolver)
     m_resolver->invalidateMatchedPropertiesCache();
 }
@@ -491,7 +491,7 @@ void StyleEngine::removeFontFaceRules(
   if (!m_fontSelector)
     return;
 
-  FontFaceCache* cache = m_fontSelector->fontFaceCache();
+  FontFaceCache* cache = m_document->fontFaceCache();
   for (const auto& rule : fontFaceRules)
     cache->remove(rule);
   if (m_resolver)

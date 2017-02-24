@@ -136,8 +136,8 @@ bool FontFaceSet::inActiveDocumentContext() const {
   return context && toDocument(context)->isActive();
 }
 
-void FontFaceSet::addFontFacesToFontFaceCache(FontFaceCache* fontFaceCache,
-                                              CSSFontSelector* fontSelector) {
+void FontFaceSet::addFontFacesToFontFaceCache(CSSFontSelector* fontSelector) {
+  FontFaceCache* fontFaceCache = document()->fontFaceCache();
   for (const auto& fontFace : m_nonCSSConnectedFaces)
     fontFaceCache->addFontFace(fontSelector, fontFace, false);
 }
@@ -258,7 +258,7 @@ FontFaceSet* FontFaceSet::addForBinding(ScriptState*,
     return this;
   CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
   m_nonCSSConnectedFaces.add(fontFace);
-  fontSelector->fontFaceCache()->addFontFace(fontSelector, fontFace, false);
+  document()->fontFaceCache()->addFontFace(fontSelector, fontFace, false);
   if (fontFace->loadStatus() == FontFace::Loading)
     addToLoadingFonts(fontFace);
   fontSelector->fontFaceInvalidated();
@@ -269,7 +269,7 @@ void FontFaceSet::clearForBinding(ScriptState*, ExceptionState&) {
   if (!inActiveDocumentContext() || m_nonCSSConnectedFaces.isEmpty())
     return;
   CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
-  FontFaceCache* fontFaceCache = fontSelector->fontFaceCache();
+  FontFaceCache* fontFaceCache = document()->fontFaceCache();
   for (const auto& fontFace : m_nonCSSConnectedFaces) {
     fontFaceCache->removeFontFace(fontFace.get(), false);
     if (fontFace->loadStatus() == FontFace::Loading)
@@ -290,7 +290,7 @@ bool FontFaceSet::deleteForBinding(ScriptState*,
   if (it != m_nonCSSConnectedFaces.end()) {
     m_nonCSSConnectedFaces.remove(it);
     CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
-    fontSelector->fontFaceCache()->removeFontFace(fontFace, false);
+    document()->fontFaceCache()->removeFontFace(fontFace, false);
     if (fontFace->loadStatus() == FontFace::Loading)
       removeFromLoadingFonts(fontFace);
     fontSelector->fontFaceInvalidated();
@@ -313,10 +313,7 @@ const HeapListHashSet<Member<FontFace>>& FontFaceSet::cssConnectedFontFaceList()
     const {
   Document* document = this->document();
   document->updateActiveStyle();
-  return document->styleEngine()
-      .fontSelector()
-      ->fontFaceCache()
-      ->cssConnectedFontFaces();
+  return document->fontFaceCache()->cssConnectedFontFaces();
 }
 
 bool FontFaceSet::isCSSConnectedFontFace(FontFace* fontFace) const {
@@ -381,8 +378,7 @@ ScriptPromise FontFaceSet::load(ScriptState* scriptState,
     return promise;
   }
 
-  FontFaceCache* fontFaceCache =
-      document()->styleEngine().fontSelector()->fontFaceCache();
+  FontFaceCache* fontFaceCache = document()->fontFaceCache();
   FontFaceArray faces;
   for (const FontFamily* f = &font.getFontDescription().family(); f;
        f = f->next()) {
@@ -414,7 +410,7 @@ bool FontFaceSet::check(const String& fontString,
   }
 
   CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
-  FontFaceCache* fontFaceCache = fontSelector->fontFaceCache();
+  FontFaceCache* fontFaceCache = document()->fontFaceCache();
 
   bool hasLoadedFaces = false;
   for (const FontFamily* f = &font.getFontDescription().family(); f;

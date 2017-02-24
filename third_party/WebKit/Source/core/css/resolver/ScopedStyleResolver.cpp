@@ -76,8 +76,7 @@ void ScopedStyleResolver::addFontFaceRules(const RuleSet& ruleSet) {
       ruleSet.fontFaceRules();
   for (auto& fontFaceRule : fontFaceRules) {
     if (FontFace* fontFace = FontFace::create(&document, fontFaceRule))
-      cssFontSelector->fontFaceCache()->add(cssFontSelector, fontFaceRule,
-                                            fontFace);
+      document.fontFaceCache()->add(cssFontSelector, fontFaceRule, fontFace);
   }
   if (fontFaceRules.size() && document.styleResolver())
     document.styleResolver()->invalidateMatchedPropertiesCache();

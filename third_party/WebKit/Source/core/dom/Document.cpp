@@ -6591,6 +6591,7 @@ DEFINE_TRACE(Document) {
   visitor->trace(m_timeline);
   visitor->trace(m_compositorPendingAnimations);
   visitor->trace(m_contextDocument);
+  visitor->trace(m_fontFaceCache);
   visitor->trace(m_canvasFontCache);
   visitor->trace(m_intersectionObserverController);
   visitor->trace(m_snapCoordinator);
