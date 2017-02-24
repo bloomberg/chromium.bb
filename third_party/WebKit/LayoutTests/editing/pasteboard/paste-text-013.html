@@ -4,7 +4,7 @@
 See this bug: <a href="rdar://problem/3918712">&lt;rdar://problem/3918712&gt;</a> "Paste as Quotation" in Mail just pastes (&lt;blockquote&gt; tag seems to be lost).
 Should see one box with blockquoted "foo" text, followed by another box with an "x" (not in a blockquote) and "foo" (in a blockquote).
 
-<div id="sample" contenteditable><div><blockquote class="Apple-paste-as-quotation">foo</blockquote></div></div>
+<div id="sample" contenteditable><div><blockquote>foo</blockquote></div></div>
 <div id="log"></div>
 <script>
 test(function() {

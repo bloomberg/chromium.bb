@@ -518,17 +518,6 @@ bool ReplaceSelectionCommand::shouldMergeEnd(
          shouldMerge(endOfInsertedContent, next);
 }
 
-static bool isMailPasteAsQuotationHTMLBlockQuoteElement(const Node* node) {
-  if (!node || !node->isHTMLElement())
-    return false;
-  const HTMLElement& element = toHTMLElement(*node);
-  if (!element.hasTagName(blockquoteTag) ||
-      element.getAttribute(classAttr) != ApplePasteAsQuotation)
-    return false;
-  UseCounter::count(node->document(), UseCounter::EditingApplePasteAsQuotation);
-  return true;
-}
-
 static bool isHTMLHeaderElement(const Node* a) {
   if (!a || !a->isHTMLElement())
     return false;
@@ -552,9 +541,7 @@ bool ReplaceSelectionCommand::shouldMerge(const VisiblePosition& source,
   Node* destinationNode = destination.deepEquivalent().anchorNode();
   Element* sourceBlock = enclosingBlock(sourceNode);
   Element* destinationBlock = enclosingBlock(destinationNode);
-  return !enclosingNodeOfType(source.deepEquivalent(),
-                              &isMailPasteAsQuotationHTMLBlockQuoteElement) &&
-         sourceBlock && (!sourceBlock->hasTagName(blockquoteTag) ||
+  return sourceBlock && (!sourceBlock->hasTagName(blockquoteTag) ||
                          isMailHTMLBlockquoteElement(sourceBlock)) &&
          enclosingListChild(sourceBlock) ==
              enclosingListChild(destinationNode) &&
@@ -617,11 +604,10 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(
       // allowed to override those from the source document, see
       // <rdar://problem/4930986> and <rdar://problem/5089327>.
       HTMLQuoteElement* blockquoteElement =
-          !context || isMailPasteAsQuotationHTMLBlockQuoteElement(context)
-              ? toHTMLQuoteElement(context)
-              : toHTMLQuoteElement(enclosingNodeOfType(
-                    Position::firstPositionInNode(context),
-                    isMailHTMLBlockquoteElement, CanCrossEditingBoundary));
+          !context ? toHTMLQuoteElement(context)
+                   : toHTMLQuoteElement(enclosingNodeOfType(
+                         Position::firstPositionInNode(context),
+                         isMailHTMLBlockquoteElement, CanCrossEditingBoundary));
 
       // EditingStyle::removeStyleFromRulesAndContext() uses StyleResolver,
       // which requires clean style.
@@ -878,8 +864,7 @@ static void handleStyleSpansBeforeInsertion(ReplacementFragment& fragment,
   // Handling the case where we are doing Paste as Quotation or pasting into
   // quoted content is more complicated (see handleStyleSpans) and doesn't
   // receive the optimization.
-  if (isMailPasteAsQuotationHTMLBlockQuoteElement(topNode) ||
-      enclosingNodeOfType(firstPositionInOrBeforeNode(topNode),
+  if (enclosingNodeOfType(firstPositionInOrBeforeNode(topNode),
                           isMailHTMLBlockquoteElement, CanCrossEditingBoundary))
     return;
 
@@ -1020,11 +1005,6 @@ static bool isInlineHTMLElementWithStyle(const Node* node) {
   if (classAttributeValue == AppleConvertedSpace) {
     UseCounter::count(element->document(),
                       UseCounter::EditingAppleConvertedSpace);
-    return true;
-  }
-  if (classAttributeValue == ApplePasteAsQuotation) {
-    UseCounter::count(element->document(),
-                      UseCounter::EditingApplePasteAsQuotation);
     return true;
   }
 
@@ -1603,11 +1583,6 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
     if (editingState->isAborted())
       return;
   }
-
-  if (HTMLQuoteElement* mailBlockquote = toHTMLQuoteElement(enclosingNodeOfType(
-          positionAtStartOfInsertedContent().deepEquivalent(),
-          isMailPasteAsQuotationHTMLBlockQuoteElement)))
-    removeElementAttribute(mailBlockquote, classAttr);
 
   if (shouldPerformSmartReplace()) {
     addSpacesForSmartReplace(editingState);
