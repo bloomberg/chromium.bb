@@ -96,7 +96,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         if (article.isAssetDownload()) {
             assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
                     || windowOpenDisposition == WindowOpenDisposition.NEW_WINDOW
-                    || windowOpenDisposition == WindowOpenDisposition.NEW_FOREGROUND_TAB;
+                    || windowOpenDisposition == WindowOpenDisposition.NEW_BACKGROUND_TAB;
             DownloadUtils.openFile(
                     article.getAssetDownloadFile(), article.getAssetDownloadMimeType(), false);
             return;
@@ -123,7 +123,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
             assert article.getOfflinePageOfflineId() != null;
             assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
                     || windowOpenDisposition == WindowOpenDisposition.NEW_WINDOW
-                    || windowOpenDisposition == WindowOpenDisposition.NEW_FOREGROUND_TAB;
+                    || windowOpenDisposition == WindowOpenDisposition.NEW_BACKGROUND_TAB;
             loadUrlParams = OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
                     article.mUrl, article.getOfflinePageOfflineId());
             // Extra headers are not read in loadUrl, but verbatim headers are.
@@ -149,7 +149,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
             case WindowOpenDisposition.CURRENT_TAB:
                 mHost.loadUrl(loadUrlParams);
                 break;
-            case WindowOpenDisposition.NEW_FOREGROUND_TAB:
+            case WindowOpenDisposition.NEW_BACKGROUND_TAB:
                 openUrlInNewTab(loadUrlParams, false);
                 break;
             case WindowOpenDisposition.OFF_THE_RECORD:

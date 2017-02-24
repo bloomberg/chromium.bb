@@ -185,7 +185,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
                     mDelegate.openItem(WindowOpenDisposition.NEW_WINDOW);
                     return true;
                 case ID_OPEN_IN_NEW_TAB:
-                    mDelegate.openItem(WindowOpenDisposition.NEW_FOREGROUND_TAB);
+                    mDelegate.openItem(WindowOpenDisposition.NEW_BACKGROUND_TAB);
                     return true;
                 case ID_OPEN_IN_INCOGNITO_TAB:
                     mDelegate.openItem(WindowOpenDisposition.OFF_THE_RECORD);
