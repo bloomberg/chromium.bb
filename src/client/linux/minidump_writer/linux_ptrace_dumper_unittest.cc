@@ -490,58 +490,83 @@ TEST_F(LinuxPtraceDumperTest, SanitizeStackCopy) {
   ThreadInfo thread_info;
   EXPECT_TRUE(dumper.GetThreadInfoByIndex(0, &thread_info));
 
-  const void* stack;
-  size_t stack_len;
-  EXPECT_TRUE(dumper.GetStackInfo(&stack, &stack_len, thread_info.stack_pointer));
+  const uintptr_t defaced =
+#if defined(__LP64__)
+      0x0defaced0defaced;
+#else
+      0x0defaced;
+#endif
 
-  uint8_t* stack_copy = new uint8_t[stack_len];
-  dumper.CopyFromProcess(stack_copy, child_pid, stack, stack_len);
+  uintptr_t simulated_stack[2];
 
-  size_t stack_offset =
-      thread_info.stack_pointer - reinterpret_cast<uintptr_t>(stack);
+  // Pointers into the stack shouldn't be sanitized.
+  memset(simulated_stack, 0xff, sizeof(simulated_stack));
+  simulated_stack[1] = thread_info.stack_pointer;
+  dumper.SanitizeStackCopy(reinterpret_cast<uint8_t*>(&simulated_stack),
+                           sizeof(simulated_stack), thread_info.stack_pointer,
+                           sizeof(uintptr_t));
+  ASSERT_NE(simulated_stack[1], defaced);
 
-  const size_t word_count = (stack_len - stack_offset) / sizeof(uintptr_t);
-  uintptr_t* stack_words = new uintptr_t[word_count];
+  // Memory prior to the stack pointer should be cleared.
+  ASSERT_EQ(simulated_stack[0], 0u);
 
-  memcpy(stack_words, stack_copy + stack_offset, word_count * sizeof(uintptr_t));
-  std::map<uintptr_t, int> pre_sanitization_words;
-  for (size_t i = 0; i < word_count; ++i)
-    ++pre_sanitization_words[stack_words[i]];
-
-  dumper.SanitizeStackCopy(stack_copy, stack_len, thread_info.stack_pointer,
-                           stack_offset);
-
-  // Memory below the stack pointer should be zeroed.
-  for (size_t i = 0; i < stack_offset; ++i) {
-    ASSERT_EQ(0, stack_copy[i]);
+  // Small integers should not be sanitized.
+  for (int i = -4096; i <= 4096; ++i) {
+    memset(simulated_stack, 0, sizeof(simulated_stack));
+    simulated_stack[0] = static_cast<uintptr_t>(i);
+    dumper.SanitizeStackCopy(reinterpret_cast<uint8_t*>(&simulated_stack),
+                             sizeof(simulated_stack), thread_info.stack_pointer,
+                             0u);
+    ASSERT_NE(simulated_stack[0], defaced);
   }
 
-  memcpy(stack_words, stack_copy + stack_offset, word_count * sizeof(uintptr_t));
-  std::map<uintptr_t, int> post_sanitization_words;
-  for (size_t i = 0; i < word_count; ++i)
-    ++post_sanitization_words[stack_words[i]];
+  // The instruction pointer definitely should point into an executable mapping.
+  const MappingInfo* mapping_info = dumper.FindMappingNoBias(
+      reinterpret_cast<uintptr_t>(thread_info.GetInstructionPointer()));
+  ASSERT_NE(mapping_info, nullptr);
+  ASSERT_TRUE(mapping_info->exec);
 
-  std::set<uintptr_t> words;
-  for (auto &word : pre_sanitization_words) words.insert(word.first);
-  for (auto &word : post_sanitization_words) words.insert(word.first);
+  // Pointers to code shouldn't be sanitized.
+  memset(simulated_stack, 0, sizeof(simulated_stack));
+  simulated_stack[1] = thread_info.GetInstructionPointer();
+  dumper.SanitizeStackCopy(reinterpret_cast<uint8_t*>(&simulated_stack),
+                           sizeof(simulated_stack), thread_info.stack_pointer,
+                           0u);
+  ASSERT_NE(simulated_stack[0], defaced);
 
-  for (auto word : words) {
-    if (word == static_cast<uintptr_t>(0X0DEFACED0DEFACEDull)) {
-      continue;
-    }
+  // String fragments should be sanitized.
+  memcpy(simulated_stack, "abcdefghijklmnop", sizeof(simulated_stack));
+  dumper.SanitizeStackCopy(reinterpret_cast<uint8_t*>(&simulated_stack),
+                           sizeof(simulated_stack), thread_info.stack_pointer,
+                           0u);
+  ASSERT_EQ(simulated_stack[0], defaced);
+  ASSERT_EQ(simulated_stack[1], defaced);
 
-    bool should_be_sanitized = true;
-    if (static_cast<intptr_t>(word) <= 4096 &&
-        static_cast<intptr_t>(word) >= -4096) should_be_sanitized = false;
-    if (dumper.FindMappingNoBias(word)) should_be_sanitized = false;
-
-    ASSERT_EQ(should_be_sanitized, post_sanitization_words[word] == 0);
-  }
+  // Heap pointers should be sanititzed.
+#if defined(__ARM_EABI__)
+  uintptr_t heap_addr = thread_info.regs.uregs[3];
+#elif defined(__aarch64__)
+  uintptr_t heap_addr = thread_info.regs.regs[3];
+#elif defined(__i386)
+  uintptr_t heap_addr = thread_info.regs.ecx;
+#elif defined(__x86_64)
+  uintptr_t heap_addr = thread_info.regs.rcx;
+#elif defined(__mips__)
+  uintptr_t heap_addr = thread_info.mcontext.gregs[1];
+#else
+#error This test has not been ported to this platform.
+#endif
+  memset(simulated_stack, 0, sizeof(simulated_stack));
+  simulated_stack[0] = heap_addr;
+  dumper.SanitizeStackCopy(reinterpret_cast<uint8_t*>(&simulated_stack),
+                           sizeof(simulated_stack), thread_info.stack_pointer,
+                           0u);
+  ASSERT_EQ(simulated_stack[0], defaced);
 
   EXPECT_TRUE(dumper.ThreadsResume());
   kill(child_pid, SIGKILL);
 
-  // Reap child
+  // Reap child.
   int status;
   ASSERT_NE(-1, HANDLE_EINTR(waitpid(child_pid, &status, 0)));
   ASSERT_TRUE(WIFSIGNALED(status));
