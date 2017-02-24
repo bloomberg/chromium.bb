@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef testing::Test EnumerateModulesTest;
@@ -103,6 +104,7 @@ const struct CollapsePathList {
 };
 
 TEST_F(EnumerateModulesTest, CollapsePath) {
+  base::test::ScopedTaskScheduler scoped_task_scheduler;
   ModuleEnumerator module_enumerator(nullptr);
   module_enumerator.path_mapping_.clear();
   module_enumerator.path_mapping_.push_back(

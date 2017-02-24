@@ -28,7 +28,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -163,10 +163,15 @@ void ModuleEnumerator::NormalizeModule(Module* module) {
 }
 
 ModuleEnumerator::ModuleEnumerator(EnumerateModulesModel* observer)
-    : enumerated_modules_(nullptr),
+    : background_task_runner_(base::CreateTaskRunnerWithTraits(
+          base::TaskTraits()
+              .MayBlock()
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(
+                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))),
+      enumerated_modules_(nullptr),
       observer_(observer),
-      per_module_delay_(kDefaultPerModuleDelay) {
-}
+      per_module_delay_(kDefaultPerModuleDelay) {}
 
 ModuleEnumerator::~ModuleEnumerator() {
 }
@@ -178,11 +183,9 @@ void ModuleEnumerator::ScanNow(ModulesVector* list) {
   // This object can't be reaped until it has finished scanning, so its safe
   // to post a raw pointer to another thread. It will simply be leaked if the
   // scanning has not been finished before shutdown.
-  BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
+  background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ModuleEnumerator::ScanImplStart,
-                 base::Unretained(this)),
-      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+      base::Bind(&ModuleEnumerator::ScanImplStart, base::Unretained(this)));
 }
 
 void ModuleEnumerator::SetPerModuleDelayToZero() {
@@ -225,23 +228,10 @@ void ModuleEnumerator::ScanImplStart() {
 
   // Post a delayed task to scan the first module. This forwards directly to
   // ScanImplFinish if there are no modules to scan.
-  BrowserThread::GetBlockingPool()->PostDelayedWorkerTask(
+  background_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ModuleEnumerator::ScanImplModule,
-                 base::Unretained(this),
-                 0),
+      base::Bind(&ModuleEnumerator::ScanImplModule, base::Unretained(this), 0),
       per_module_delay_);
-}
-
-void ModuleEnumerator::ScanImplDelay(size_t index) {
-  // Bounce this over to a CONTINUE_ON_SHUTDOWN task in the same pool. This is
-  // necessary to prevent shutdown hangs while inspecting a module.
-  BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-      FROM_HERE,
-      base::Bind(&ModuleEnumerator::ScanImplModule,
-                 base::Unretained(this),
-                 index),
-      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 
 void ModuleEnumerator::ScanImplModule(size_t index) {
@@ -255,14 +245,12 @@ void ModuleEnumerator::ScanImplModule(size_t index) {
     enumeration_inspection_time_ += elapsed;
     enumeration_total_time_ += elapsed;
 
-    // With a non-zero delay, bounce back over to ScanImplDelay, which will
-    // bounce back to this function and inspect the next module.
+    // If |per_module_delay_| is non-zero, post a task to scan the next module
+    // when the delay expires.
     if (!per_module_delay_.is_zero()) {
-      BrowserThread::GetBlockingPool()->PostDelayedWorkerTask(
-          FROM_HERE,
-          base::Bind(&ModuleEnumerator::ScanImplDelay,
-                     base::Unretained(this),
-                     index + 1),
+      background_task_runner_->PostDelayedTask(
+          FROM_HERE, base::Bind(&ModuleEnumerator::ScanImplModule,
+                                base::Unretained(this), index + 1),
           per_module_delay_);
       return;
     }
@@ -613,9 +601,9 @@ void EnumerateModulesModel::ScanNow(bool background_mode) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // |module_enumerator_| is used as a lock to know whether or not there are
-  // active/pending blocking pool tasks. If a module enumerator exists then a
-  // scan is already underway. Otherwise, either no scan has been completed or
-  // a scan has terminated.
+  // active/pending background tasks. If a module enumerator exists then a scan
+  // is already underway. Otherwise, either no scan has been completed or a scan
+  // has terminated.
   if (module_enumerator_) {
     // If a scan is in progress and this request is for immediate results, then
     // inform the background scan. This is done without any locks because the
@@ -628,7 +616,7 @@ void EnumerateModulesModel::ScanNow(bool background_mode) {
 
   // Only allow a single scan per process lifetime. Immediately notify any
   // observers that the scan is complete. At this point |enumerated_modules_| is
-  // safe to access as no potentially racing blocking pool task can exist.
+  // safe to access as no potentially racing background task can exist.
   if (!enumerated_modules_.empty()) {
     for (Observer& observer : observers_)
       observer.OnScanCompleted();
