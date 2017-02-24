@@ -11,6 +11,7 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_collection_view_layout.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_overlay_view.h"
 #import "ios/clean/chrome/browser/ui/actions/settings_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
@@ -35,6 +36,7 @@ const CGFloat kToolbarHeight = 64.0f;
                                     UICollectionViewDelegate,
                                     SessionCellDelegate>
 @property(nonatomic, weak) UICollectionView* grid;
+@property(nonatomic, weak) UIView* noTabsOverlay;
 @property(nonatomic, strong) MDCFloatingButton* floatingNewTabButton;
 @end
 
@@ -45,6 +47,7 @@ const CGFloat kToolbarHeight = 64.0f;
 @synthesize tabGridCommandHandler = _tabGridCommandHandler;
 @synthesize tabCommandHandler = _tabCommandHandler;
 @synthesize grid = _grid;
+@synthesize noTabsOverlay = _noTabsOverlay;
 @synthesize floatingNewTabButton = _floatingNewTabButton;
 
 - (void)viewDidLoad {
@@ -103,7 +106,15 @@ const CGFloat kToolbarHeight = 64.0f;
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
-  return [self.dataSource numberOfTabsInTabGrid];
+  NSInteger items = [self.dataSource numberOfTabsInTabGrid];
+  // HACK: Do not make showing noTabsOverlay a side effect of the dataSource
+  // callback.
+  if (items) {
+    [self removeNoTabsOverlay];
+  } else {
+    [self showNoTabsOverlay];
+  }
+  return items;
 }
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
@@ -174,6 +185,30 @@ const CGFloat kToolbarHeight = 64.0f;
     [self.grid deleteItemsAtIndexPaths:@[ indexPath ]];
   };
   [self.grid performBatchUpdates:updateBlock completion:nil];
+}
+
+#pragma mark - Private
+
+// Shows an overlay covering the entire tab grid that informs the user that
+// there are no tabs.
+- (void)showNoTabsOverlay {
+  // PLACEHOLDER: The new tab grid will have a completely different zero tab
+  // overlay from the tab switcher. Also, the overlay will be above the recent
+  // tabs section.
+  TabSwitcherPanelOverlayView* overlayView =
+      [[TabSwitcherPanelOverlayView alloc] initWithFrame:self.grid.bounds
+                                            browserState:nil];
+  overlayView.overlayType =
+      TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_NO_OPEN_TABS;
+  overlayView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  [self.grid addSubview:overlayView];
+  self.noTabsOverlay = overlayView;
+}
+
+// Removes the noTabsOverlay covering the entire tab grid.
+- (void)removeNoTabsOverlay {
+  [self.noTabsOverlay removeFromSuperview];
 }
 
 @end
