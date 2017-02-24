@@ -30,7 +30,7 @@ URLLoaderClientImpl::~URLLoaderClientImpl() {
 
 void URLLoaderClientImpl::Bind(
     mojom::URLLoaderClientAssociatedPtrInfo* client_ptr_info) {
-  binding_.Bind(client_ptr_info);
+  binding_.Bind(client_ptr_info, task_runner_.get());
 }
 
 void URLLoaderClientImpl::SetDefersLoading() {
