@@ -31,6 +31,10 @@ function GuestViewContainer(element, viewType) {
   GuestViewInternalNatives.RegisterView(this.viewInstanceId, this, viewType);
 }
 
+// Prevent GuestViewContainer inadvertently inheriting code from the global
+// Object, allowing a pathway for executing unintended user code execution.
+GuestViewContainer.prototype.__proto__ = null;
+
 // Forward public API methods from |proto| to their internal implementations.
 GuestViewContainer.forwardApiMethods = function(proto, apiMethods) {
   var createProtoHandler = function(m) {

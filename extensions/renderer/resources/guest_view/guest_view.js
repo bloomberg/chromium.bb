@@ -45,6 +45,10 @@ function GuestViewImpl(guestView, viewType, guestInstanceId) {
   this.setupOnResize();
 }
 
+// Prevent GuestViewImpl inadvertently inheriting code from the global Object,
+// allowing a pathway for executing unintended user code execution.
+GuestViewImpl.prototype.__proto__ = null;
+
 // Possible states.
 GuestViewImpl.GuestState = {
   GUEST_STATE_START: 0,
