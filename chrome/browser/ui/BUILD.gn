@@ -3484,21 +3484,25 @@ static_library("test_support") {
     "//ui/shell_dialogs",
   ]
 
-  if (toolkit_views && (!is_mac || mac_views_browser)) {
+  if (toolkit_views) {
     sources += [
-      "views/find_bar_host_unittest_util_views.cc",
       "views/payments/test_chrome_payment_request_delegate.cc",
       "views/payments/test_chrome_payment_request_delegate.h",
-      "views/toolbar/browser_action_test_util_views.cc",
     ]
-    if (!is_mac) {
-      deps += [ "//ui/aura" ]
+    if (!is_mac || mac_views_browser) {
+      sources += [
+        "views/find_bar_host_unittest_util_views.cc",
+        "views/toolbar/browser_action_test_util_views.cc",
+      ]
+      if (!is_mac) {
+        deps += [ "//ui/aura" ]
+      }
+    } else {
+      sources += [
+        "cocoa/extensions/browser_action_test_util_mac.mm",
+        "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
+      ]
     }
-  } else {
-    sources += [
-      "cocoa/extensions/browser_action_test_util_mac.mm",
-      "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
-    ]
   }
 
   if (!is_android) {
