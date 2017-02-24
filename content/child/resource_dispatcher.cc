@@ -668,10 +668,8 @@ int ResourceDispatcher::StartAsync(
   }
 
   if (ipc_type == blink::WebURLRequest::LoadingIPCType::Mojo) {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        loading_task_runner ? loading_task_runner : main_thread_task_runner_;
     std::unique_ptr<URLLoaderClientImpl> client(
-        new URLLoaderClientImpl(request_id, this, std::move(task_runner)));
+        new URLLoaderClientImpl(request_id, this, main_thread_task_runner_));
     mojom::URLLoaderAssociatedPtr url_loader;
     mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info;
     client->Bind(&client_ptr_info);
