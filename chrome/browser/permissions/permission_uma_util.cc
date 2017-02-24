@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
-#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -91,7 +90,7 @@ const std::string GetRapporMetric(ContentSettingsType permission,
   std::string permission_str = PermissionUtil::GetPermissionString(permission);
   if (permission_str.empty())
     return "";
-  return base::StringPrintf("ContentSettings.PermissionActions_%s.%s.Url",
+  return base::StringPrintf("ContentSettings.PermissionActions_%s.%s.Url2",
                             permission_str.c_str(), action_str.c_str());
 }
 
@@ -103,30 +102,17 @@ void RecordPermissionRequest(ContentSettingsType content_type,
       g_browser_process->rappor_service();
   if (rappor_service) {
     if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-      // TODO(dominickn): remove this deprecated metric - crbug.com/605836.
-      rappor::SampleDomainAndRegistryFromGURL(
-          rappor_service, "ContentSettings.PermissionRequested.Geolocation.Url",
-          requesting_origin);
       rappor_service->RecordSampleString(
           "ContentSettings.PermissionRequested.Geolocation.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
     } else if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-      // TODO(dominickn): remove this deprecated metric - crbug.com/605836.
-      rappor::SampleDomainAndRegistryFromGURL(
-          rappor_service,
-          "ContentSettings.PermissionRequested.Notifications.Url",
-          requesting_origin);
       rappor_service->RecordSampleString(
           "ContentSettings.PermissionRequested.Notifications.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
     } else if (content_type == CONTENT_SETTINGS_TYPE_MIDI ||
                content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
-      // TODO(dominickn): remove this deprecated metric - crbug.com/605836.
-      rappor::SampleDomainAndRegistryFromGURL(
-          rappor_service, "ContentSettings.PermissionRequested.Midi.Url",
-          requesting_origin);
       rappor_service->RecordSampleString(
           "ContentSettings.PermissionRequested.Midi.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
@@ -157,33 +143,6 @@ void RecordPermissionRequest(ContentSettingsType content_type,
   } else {
     UMA_HISTOGRAM_ENUMERATION(
         "ContentSettings.PermissionRequested_InsecureOrigin",
-        static_cast<base::HistogramBase::Sample>(permission),
-        static_cast<base::HistogramBase::Sample>(PermissionType::NUM));
-  }
-
-  // In order to gauge the compatibility risk of implementing an improved
-  // iframe permissions security model, we would like to know the ratio of
-  // same-origin to cross-origin permission requests. Our estimate of this
-  // ratio could be somewhat biased by repeated requests coming from a
-  // single frame, but we expect this to be insignificant.
-  if (requesting_origin.GetOrigin() != embedding_origin.GetOrigin()) {
-    PermissionManager* manager = PermissionManager::Get(profile);
-    if (!manager)
-      return;
-    blink::mojom::PermissionStatus embedding_permission_status =
-        manager->GetPermissionStatus(content_type, embedding_origin,
-                                     embedding_origin);
-
-    base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
-        "Permissions.Requested.CrossOrigin_" +
-            PermissionUtil::GetPermissionString(content_type),
-        1, static_cast<int>(blink::mojom::PermissionStatus::LAST),
-        static_cast<int>(blink::mojom::PermissionStatus::LAST) + 1,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add(static_cast<int>(embedding_permission_status));
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Permissions.Requested.SameOrigin",
         static_cast<base::HistogramBase::Sample>(permission),
         static_cast<base::HistogramBase::Sample>(PermissionType::NUM));
   }
@@ -693,11 +652,13 @@ void PermissionUmaUtil::RecordPermissionAction(
   bool secure_origin = content::IsOriginSecure(requesting_origin);
 
   switch (permission) {
+    // Geolocation, MidiSysEx, Push, Durable Storage, and Media permissions are
+    // disabled on insecure origins, so there's no need to record metrics for
+    // secure/insecue.
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Geolocation",
-                            "Permissions.Action.SecureOrigin.Geolocation",
-                            "Permissions.Action.InsecureOrigin.Geolocation",
-                            action);
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.Geolocation",
+                                static_cast<int>(action),
+                                static_cast<int>(PermissionAction::NUM));
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Notifications",
@@ -706,16 +667,14 @@ void PermissionUmaUtil::RecordPermissionAction(
                             action);
       break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.MidiSysEx",
-                            "Permissions.Action.SecureOrigin.MidiSysEx",
-                            "Permissions.Action.InsecureOrigin.MidiSysEx",
-                            action);
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.MidiSysEx",
+                                static_cast<int>(action),
+                                static_cast<int>(PermissionAction::NUM));
       break;
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.PushMessaging",
-                            "Permissions.Action.SecureOrigin.PushMessaging",
-                            "Permissions.Action.InsecureOrigin.PushMessaging",
-                            action);
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.PushMessaging",
+                                static_cast<int>(action),
+                                static_cast<int>(PermissionAction::NUM));
       break;
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.ProtectedMedia",
@@ -724,14 +683,11 @@ void PermissionUmaUtil::RecordPermissionAction(
                             action);
       break;
     case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.DurableStorage",
-                            "Permissions.Action.SecureOrigin.DurableStorage",
-                            "Permissions.Action.InsecureOrigin.DurableStorage",
-                            action);
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.DurableStorage",
+                                static_cast<int>(action),
+                                static_cast<int>(PermissionAction::NUM));
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-      // Media permissions are disabled on insecure origins, so there's no
-      // need to record metrics for secure/insecue.
       UMA_HISTOGRAM_ENUMERATION("Permissions.Action.AudioCapture",
                                 static_cast<int>(action),
                                 static_cast<int>(PermissionAction::NUM));
@@ -754,20 +710,10 @@ void PermissionUmaUtil::RecordPermissionAction(
                    << " not accounted for";
   }
 
-  // Retrieve the name of the RAPPOR metric. Currently, the new metric name is
-  // the deprecated name with "2" on the end, e.g.
-  // ContentSettings.PermissionActions_Geolocation.Granted.Url2. For simplicity,
-  // we retrieve the deprecated name and append the "2" for the new name.
-  // TODO(dominickn): remove the deprecated metric and replace it solely with
-  // the new one in GetRapporMetric - crbug.com/605836.
-  const std::string deprecated_metric = GetRapporMetric(permission, action);
+  const std::string rappor_metric = GetRapporMetric(permission, action);
   rappor::RapporServiceImpl* rappor_service =
       g_browser_process->rappor_service();
-  if (!deprecated_metric.empty() && rappor_service) {
-    rappor::SampleDomainAndRegistryFromGURL(rappor_service, deprecated_metric,
-                                            requesting_origin);
-
-    std::string rappor_metric = deprecated_metric + "2";
+  if (!rappor_metric.empty() && rappor_service) {
     rappor_service->RecordSampleString(
         rappor_metric, rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
         rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
