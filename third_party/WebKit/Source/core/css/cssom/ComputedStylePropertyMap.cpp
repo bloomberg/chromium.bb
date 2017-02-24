@@ -59,6 +59,14 @@ Node* ComputedStylePropertyMap::node() const {
   return nullptr;
 }
 
+// ComputedStylePropertyMap::getAllInternal/get should return computed styles
+// (as opposed to resolved styles a la getComputedStyle()).
+//
+// Property values are read from an up-to-date ComputedStyle and converted into
+// CSSStyleValues. This has not been implemented for all properties yet.
+// Unsupported properties fall back to using resolved styles & converting them
+// to CSSStyleValues via StyleValueFactory. For some types of values, such as
+// images, the difference between the two is minor.
 CSSStyleValueVector ComputedStylePropertyMap::getAllInternal(
     CSSPropertyID propertyID) {
   CSSStyleValueVector styleValueVector;
@@ -67,16 +75,17 @@ CSSStyleValueVector ComputedStylePropertyMap::getAllInternal(
   if (!node || !node->inActiveDocument()) {
     return styleValueVector;
   }
+
+  // Update style before getting the value for the property
   node->document().updateStyleAndLayoutTreeForNode(node);
   node = this->node();
   if (!node) {
     return styleValueVector;
   }
   // I have copied this from
-  // CSSComputedStyleDeclaration::computeComputedStyle(). I don't know if
-  // there is any use in passing m_pseudoId if node is not already a
-  // PseudoElement, but passing
-  // pseudo_Id when it IS already a PseudoElement leads to disaster.
+  // CSSComputedStyleDeclaration::computeComputedStyle(). I don't know if there
+  // is any use in passing m_pseudoId if node is not already a PseudoElement,
+  // but passing pseudo_Id when it IS already a PseudoElement leads to disaster.
   const ComputedStyle* style = node->ensureComputedStyle(
       node->isPseudoElement() ? PseudoIdNone : m_pseudoId);
   node = this->node();
@@ -129,10 +138,8 @@ CSSStyleValueVector ComputedStylePropertyMap::getAllInternal(
       break;
     }
     default:
-      // TODO(rjwright): Add a flag argument to
-      // ComputedStyleCSSValyeMapping::get that makes it return
-      // just the raw value off the ComputedStyle, and not zoom adjusted or
-      // anything like that.
+      // For properties not yet handled above, fall back to using resolved
+      // style.
       const CSSValue* value = ComputedStyleCSSValueMapping::get(
           propertyID, *style, nullptr, node, false);
       if (value) {

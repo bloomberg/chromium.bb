@@ -12,6 +12,14 @@
 
 namespace blink {
 
+// This class implements computed StylePropertMapReadOnly in the Typed CSSOM
+// API. The specification is here:
+// https://drafts.css-houdini.org/css-typed-om-1/#computed-stylepropertymapreadonly-objects
+//
+// The computed StylePropertyMapReadOnly retrieves computed styles and returns
+// them as CSSStyleValues. The IDL for this class is in StylePropertyMap.idl.
+// The computed StylePropertyMapReadOnly for an element is accessed via
+// window.getComputedStyleMap(element) (see WindowGetComputedStyle.idl/h)
 class CORE_EXPORT ComputedStylePropertyMap : public ImmutableStylePropertyMap {
   WTF_MAKE_NONCOPYABLE(ComputedStylePropertyMap);
 
