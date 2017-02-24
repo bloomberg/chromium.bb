@@ -455,4 +455,21 @@ TEST_F(DownloadUIAdapterTest, RemoveObserversWhenClearingCache) {
   EXPECT_TRUE(items_loaded);
 }
 
+TEST_F(DownloadUIAdapterTest, UpdateProgress) {
+  offliner_stub->enable_callback(true);
+  AddRequest(GURL(kTestUrl), kTestClientId1);
+  PumpLoop();
+
+  int64_t offline_id = adapter->GetOfflineIdByGuid(kTestGuid1);
+  const DownloadUIItem* item = adapter->GetItem(kTestGuid1);
+
+  ASSERT_NE(nullptr, item);
+  EXPECT_EQ(item->download_progress_bytes, 0);
+  updated_guids.clear();
+
+  adapter->UpdateProgress(offline_id, 15);
+  EXPECT_EQ(kTestGuid1, updated_guids[0]);
+  EXPECT_EQ(item->download_progress_bytes, 15);
+}
+
 }  // namespace offline_pages

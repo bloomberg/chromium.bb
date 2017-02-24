@@ -32,6 +32,8 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
   typedef base::Callback<void(Offliner::RequestStatus, content::WebContents*)>
       LoadPageCallback;
 
+  typedef base::Callback<void(int64_t)> ProgressCallback;
+
   explicit PrerenderingLoader(content::BrowserContext* browser_context);
   ~PrerenderingLoader() override;
 
@@ -43,7 +45,9 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
   // once - first for a successful load and then if canceled after the
   // load (which may be from resources being reclaimed) at which point
   // the retrieved WebContents should no longer be used.
-  virtual bool LoadPage(const GURL& url, const LoadPageCallback& callback);
+  virtual bool LoadPage(const GURL& url,
+                        const LoadPageCallback& load_done_callback,
+                        const ProgressCallback& progress_callback);
 
   // Stops (completes or cancels) the load request. Must be called when
   // LoadPageCallback is done with consuming the contents. May be called
@@ -70,6 +74,7 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
   void OnPrerenderStopLoading() override;
   void OnPrerenderDomContentLoaded() override;
   void OnPrerenderStop() override;
+  void OnPrerenderNetworkBytesChanged(int64_t bytes) override;
 
   // SnapshotController::Client implementation:
   void StartSnapshot() override;
@@ -114,7 +119,10 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
 
   // Callback to call when the active load request completes, fails, or is
   // canceled.
-  LoadPageCallback callback_;
+  LoadPageCallback load_done_callback_;
+
+  // Callback to call when we know more bytes have loaded from the network.
+  ProgressCallback progress_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderingLoader);
 };

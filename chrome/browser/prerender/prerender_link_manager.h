@@ -149,6 +149,8 @@ class PrerenderLinkManager : public KeyedService,
   void OnPrerenderStopLoading(PrerenderHandle* prerender_handle) override;
   void OnPrerenderDomContentLoaded(PrerenderHandle* prerender_handle) override;
   void OnPrerenderStop(PrerenderHandle* prerender_handle) override;
+  void OnPrerenderNetworkBytesChanged(
+      PrerenderHandle* prerender_handle) override;
 
   bool has_shutdown_;
 

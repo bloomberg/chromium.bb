@@ -40,6 +40,11 @@ class PrerenderAdapter : public prerender::PrerenderHandle::Observer {
     // WebContents (via |GetWebContents()|) have become invalidated.
     virtual void OnPrerenderStop() = 0;
 
+    // Signals that a resource finished loading and altered the running byte
+    // count. |bytes| is the cumulative number of bytes received for this
+    // handle.
+    virtual void OnPrerenderNetworkBytesChanged(int64_t bytes) = 0;
+
    protected:
     Observer();
     virtual ~Observer();
@@ -83,6 +88,8 @@ class PrerenderAdapter : public prerender::PrerenderHandle::Observer {
   void OnPrerenderStopLoading(prerender::PrerenderHandle* handle) override;
   void OnPrerenderDomContentLoaded(prerender::PrerenderHandle* handle) override;
   void OnPrerenderStop(prerender::PrerenderHandle* handle) override;
+  void OnPrerenderNetworkBytesChanged(
+      prerender::PrerenderHandle* handle) override;
 
  private:
   // At most one prerender request may be active for this adapter and this

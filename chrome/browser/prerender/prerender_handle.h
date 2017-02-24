@@ -38,6 +38,10 @@ class PrerenderHandle : public PrerenderContents::Observer {
     // Signals that the prerender has stopped running.
     virtual void OnPrerenderStop(PrerenderHandle* handle) = 0;
 
+    // Signals that a resource finished loading and altered the running byte
+    // count.
+    virtual void OnPrerenderNetworkBytesChanged(PrerenderHandle* handle) = 0;
+
    protected:
     Observer();
     virtual ~Observer();
@@ -86,6 +90,8 @@ class PrerenderHandle : public PrerenderContents::Observer {
   void OnPrerenderDomContentLoaded(
       PrerenderContents* prerender_contents) override;
   void OnPrerenderStop(PrerenderContents* prerender_contents) override;
+  void OnPrerenderNetworkBytesChanged(
+      PrerenderContents* prerender_contents) override;
 
   Observer* observer_;
 

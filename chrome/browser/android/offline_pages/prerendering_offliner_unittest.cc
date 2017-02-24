@@ -42,9 +42,12 @@ class MockPrerenderingLoader : public PrerenderingLoader {
         mock_loaded_(false) {}
   ~MockPrerenderingLoader() override {}
 
-  bool LoadPage(const GURL& url, const LoadPageCallback& callback) override {
+  bool LoadPage(const GURL& url,
+                const LoadPageCallback& load_done_callback,
+                const ProgressCallback& progress_callback) override {
     mock_loading_ = can_prerender_;
-    load_page_callback_ = callback;
+    load_page_callback_ = load_done_callback;
+    progress_callback_ = progress_callback;
     return mock_loading_;
   }
 
@@ -95,6 +98,7 @@ class MockPrerenderingLoader : public PrerenderingLoader {
   bool mock_loading_;
   bool mock_loaded_;
   LoadPageCallback load_page_callback_;
+  ProgressCallback progress_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPrerenderingLoader);
 };

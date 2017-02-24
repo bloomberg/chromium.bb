@@ -132,6 +132,8 @@ class PrerenderLinkManager::PendingPrerenderManager
     }
   }
 
+  void OnPrerenderNetworkBytesChanged(PrerenderContents* launcher) override {}
+
  private:
   // A pointer to the parent PrerenderLinkManager.
   PrerenderLinkManager* link_manager_;
@@ -530,5 +532,8 @@ void PrerenderLinkManager::OnPrerenderStop(
   RemovePrerender(prerender);
   StartPrerenders();
 }
+
+void PrerenderLinkManager::OnPrerenderNetworkBytesChanged(
+    PrerenderHandle* prerender_handle) {}
 
 }  // namespace prerender

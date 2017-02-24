@@ -95,6 +95,7 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   // via Observer or directly by the user (as in 'open').
   void DeleteItem(const std::string& guid);
   int64_t GetOfflineIdByGuid(const std::string& guid) const;
+  void UpdateProgress(int64_t offline_id, int64_t bytes);
 
   // OfflinePageModel::Observer
   void OfflinePageModelLoaded(OfflinePageModel* model) override;

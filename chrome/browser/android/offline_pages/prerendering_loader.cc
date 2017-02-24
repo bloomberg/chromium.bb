@@ -88,7 +88,8 @@ PrerenderingLoader::~PrerenderingLoader() {
 }
 
 bool PrerenderingLoader::LoadPage(const GURL& url,
-                                  const LoadPageCallback& callback) {
+                                  const LoadPageCallback& load_done_callback,
+                                  const ProgressCallback& progress_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!IsIdle()) {
     DVLOG(1)
@@ -115,7 +116,8 @@ bool PrerenderingLoader::LoadPage(const GURL& url,
       new SnapshotController(base::ThreadTaskRunnerHandle::Get(), this,
                              kOfflinePageDclDelayMs,
                              kOfflinePageOnloadDelayMs));
-  callback_ = callback;
+  load_done_callback_ = load_done_callback;
+  progress_callback_ = progress_callback;
   session_contents_.swap(new_web_contents);
   state_ = State::LOADING;
   return true;
@@ -170,6 +172,11 @@ void PrerenderingLoader::OnPrerenderStop() {
   HandleLoadingStopped();
 }
 
+void PrerenderingLoader::OnPrerenderNetworkBytesChanged(int64_t bytes) {
+  if (state_ == State::LOADING)
+    progress_callback_.Run(bytes);
+}
+
 void PrerenderingLoader::StartSnapshot() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   HandleLoadEvent();
@@ -190,8 +197,8 @@ void PrerenderingLoader::HandleLoadEvent() {
   if (web_contents) {
     state_ = State::LOADED;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback_, Offliner::RequestStatus::LOADED, web_contents));
+        FROM_HERE, base::Bind(load_done_callback_,
+                              Offliner::RequestStatus::LOADED, web_contents));
   } else {
     // No WebContents means that the load failed (and it stopped).
     HandleLoadingStopped();
@@ -245,7 +252,7 @@ void PrerenderingLoader::HandleLoadingStopped() {
   session_contents_.reset(nullptr);
   state_ = State::IDLE;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback_, request_status, nullptr));
+      FROM_HERE, base::Bind(load_done_callback_, request_status, nullptr));
 }
 
 void PrerenderingLoader::CancelPrerender() {

@@ -168,7 +168,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromDomContentLoaded) {
   EXPECT_FALSE(loader()->IsLoaded());
   EXPECT_TRUE(loader()->LoadPage(
       gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this)),
+      base::Bind([](int64_t bytes) {})));
 
   test_adapter()->GetObserver()->OnPrerenderDomContentLoaded();
   // Skip SnapshotController's wait time and emulate StartSnapshot call.
@@ -193,7 +194,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromPrerenderStopLoading) {
   EXPECT_FALSE(loader()->IsLoaded());
   EXPECT_TRUE(loader()->LoadPage(
       gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this)),
+      base::Bind([](int64_t bytes) {})));
 
   PumpLoop();
   EXPECT_FALSE(loader()->IsIdle());
@@ -224,7 +226,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoContent) {
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(loader()->LoadPage(
       gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this)),
+      base::Bind([](int64_t bytes) {})));
   EXPECT_FALSE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());
 
@@ -247,7 +250,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoRetry) {
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(loader()->LoadPage(
       gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this)),
+      base::Bind([](int64_t bytes) {})));
   EXPECT_FALSE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());
 
@@ -272,7 +276,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoNext) {
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(loader()->LoadPage(
       gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this)),
+      base::Bind([](int64_t bytes) {})));
   EXPECT_FALSE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());
 
@@ -297,7 +302,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadCanceled) {
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(loader()->LoadPage(
       gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this)),
+      base::Bind([](int64_t bytes) {})));
   EXPECT_FALSE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());
 
@@ -319,7 +325,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedUnsupportedScheme) {
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(loader()->LoadPage(
       gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this)),
+      base::Bind([](int64_t bytes) {})));
   EXPECT_FALSE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());
 
@@ -341,7 +348,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadCanceledFromStopLoading) {
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(loader()->LoadPage(
       gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this)),
+      base::Bind([](int64_t bytes) {})));
   EXPECT_FALSE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());
 
@@ -356,14 +364,16 @@ TEST_F(PrerenderingLoaderTest, LoadPageNotAcceptedWhenNotIdle) {
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(loader()->LoadPage(
       gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this)),
+      base::Bind([](int64_t bytes) {})));
   EXPECT_FALSE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());
 
   // Now try another load while first is still active.
   EXPECT_FALSE(loader()->LoadPage(
       gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this)),
+      base::Bind([](int64_t bytes) {})));
   EXPECT_FALSE(loader()->IsIdle());
 }
 
@@ -373,7 +383,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageNotAcceptedWhenStartPrerenderFalse) {
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_FALSE(loader()->LoadPage(
       gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this)),
+      base::Bind([](int64_t bytes) {})));
   EXPECT_TRUE(loader()->IsIdle());
 }
 

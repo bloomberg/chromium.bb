@@ -778,6 +778,8 @@ void PrerenderContents::AddResourceThrottle(
 
 void PrerenderContents::AddNetworkBytes(int64_t bytes) {
   network_bytes_ += bytes;
+  for (Observer& observer : observer_list_)
+    observer.OnPrerenderNetworkBytesChanged(this);
 }
 
 }  // namespace prerender

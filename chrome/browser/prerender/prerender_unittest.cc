@@ -96,6 +96,30 @@ class DummyPrerenderContents : public PrerenderContents {
   FinalStatus expected_final_status_;
 };
 
+class TestNetworkBytesChangedObserver
+    : public prerender::PrerenderHandle::Observer {
+ public:
+  TestNetworkBytesChangedObserver() : network_bytes_changed_(false) {}
+
+  // prerender::PrerenderHandle::Observer
+  void OnPrerenderStart(PrerenderHandle* prerender_handle) override {}
+  void OnPrerenderStopLoading(PrerenderHandle* prerender_handle) override {}
+  void OnPrerenderDomContentLoaded(PrerenderHandle* prerender_handle) override {
+  }
+  void OnPrerenderStop(PrerenderHandle* prerender_handle) override {}
+  void OnPrerenderNetworkBytesChanged(
+      PrerenderHandle* prerender_handle) override {
+    network_bytes_changed_ = true;
+  }
+
+  bool network_bytes_changed() const { return network_bytes_changed_; }
+
+ private:
+  bool network_bytes_changed_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestNetworkBytesChangedObserver);
+};
+
 int DummyPrerenderContents::g_next_route_id_ = 0;
 
 const gfx::Size kSize(640, 480);
@@ -1997,6 +2021,22 @@ TEST_F(PrerenderTest, PrerenderContentsIsValidHttpMethod) {
   EXPECT_FALSE(prerender_contents->IsValidHttpMethod("POST"));
   EXPECT_FALSE(prerender_contents->IsValidHttpMethod("TRACE"));
   EXPECT_FALSE(prerender_contents->IsValidHttpMethod("WHATEVER"));
+}
+
+TEST_F(PrerenderTest, PrerenderContentsIncrementsByteCount) {
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* prerender_contents = nullptr;
+  prerender_contents = prerender_manager()->CreateNextPrerenderContents(
+      url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
+  std::unique_ptr<PrerenderHandle> prerender_handle =
+      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize);
+
+  TestNetworkBytesChangedObserver observer;
+  prerender_handle->SetObserver(&observer);
+
+  prerender_contents->AddNetworkBytes(12);
+  EXPECT_TRUE(observer.network_bytes_changed());
+  EXPECT_EQ(12, prerender_contents->network_bytes());
 }
 
 }  // namespace prerender

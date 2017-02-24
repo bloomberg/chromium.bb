@@ -192,6 +192,19 @@ int64_t DownloadUIAdapter::GetOfflineIdByGuid(const std::string& guid) const {
   return 0;
 }
 
+void DownloadUIAdapter::UpdateProgress(int64_t offline_id, int64_t bytes) {
+  for (auto& item : items_) {
+    if (item.second->is_request && item.second->offline_id == offline_id) {
+      if (bytes == item.second->ui_item->download_progress_bytes)
+        return;
+
+      item.second->ui_item->download_progress_bytes = bytes;
+      for (Observer& observer : observers_)
+        observer.ItemUpdated(*(item.second->ui_item));
+    }
+  }
+}
+
 // Note that several LoadCache calls may be issued before the async GetAllPages
 // comes back.
 void DownloadUIAdapter::LoadCache() {

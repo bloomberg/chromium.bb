@@ -109,6 +109,13 @@ void PrerenderHandle::OnPrerenderStop(PrerenderContents* prerender_contents) {
     observer_->OnPrerenderStop(this);
 }
 
+void PrerenderHandle::OnPrerenderNetworkBytesChanged(
+    PrerenderContents* prerender_contents) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (observer_)
+    observer_->OnPrerenderNetworkBytesChanged(this);
+}
+
 bool PrerenderHandle::RepresentingSamePrerenderAs(
     PrerenderHandle* other) const {
   return other && other->prerender_data_ && prerender_data_ &&

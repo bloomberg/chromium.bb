@@ -113,6 +113,7 @@ class PrerenderAdapterTest : public testing::Test,
   void OnPrerenderStopLoading() override;
   void OnPrerenderDomContentLoaded() override;
   void OnPrerenderStop() override;
+  void OnPrerenderNetworkBytesChanged(int64_t bytes) override;
 
   void SetUp() override;
 
@@ -130,6 +131,9 @@ class PrerenderAdapterTest : public testing::Test,
     return observer_dom_content_loaded_called_;
   }
   bool observer_stop_called() const { return observer_stop_called_; }
+  int64_t observer_network_bytes_changed() const {
+    return observer_network_bytes_changed_;
+  }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -140,6 +144,7 @@ class PrerenderAdapterTest : public testing::Test,
   bool observer_stop_loading_called_;
   bool observer_dom_content_loaded_called_;
   bool observer_stop_called_;
+  int64_t observer_network_bytes_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderAdapterTest);
 };
@@ -149,7 +154,8 @@ PrerenderAdapterTest::PrerenderAdapterTest()
       prerender_manager_(nullptr),
       observer_stop_loading_called_(false),
       observer_dom_content_loaded_called_(false),
-      observer_stop_called_(false) {}
+      observer_stop_called_(false),
+      observer_network_bytes_changed_(0) {}
 
 PrerenderAdapterTest::~PrerenderAdapterTest() {
   if (prerender_manager_)
@@ -166,6 +172,10 @@ void PrerenderAdapterTest::OnPrerenderDomContentLoaded() {
 
 void PrerenderAdapterTest::OnPrerenderStop() {
   observer_stop_called_ = true;
+}
+
+void PrerenderAdapterTest::OnPrerenderNetworkBytesChanged(int64_t bytes) {
+  observer_network_bytes_changed_ = bytes;
 }
 
 void PrerenderAdapterTest::SetUp() {
@@ -229,6 +239,11 @@ TEST_F(PrerenderAdapterTest, StartPrerenderSucceeds) {
       ->last_prerender_contents()
       ->ReportDomContentEvent();
   EXPECT_TRUE(observer_dom_content_loaded_called());
+
+  // Expect byte count reported to Observer.
+  prerender_contents_factory()->last_prerender_contents()->AddNetworkBytes(153);
+  EXPECT_EQ(153LL, observer_network_bytes_changed());
+
   prerender_contents_factory()->last_prerender_contents()->ReportOnLoadEvent();
   EXPECT_TRUE(observer_stop_loading_called());
   prerender_contents_factory()->last_prerender_contents()->StopWithStatus(

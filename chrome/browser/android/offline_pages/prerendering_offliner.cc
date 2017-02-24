@@ -12,11 +12,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/downloads/download_ui_adapter.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 
 namespace offline_pages {
+namespace {
+const char kDownloadUIAdapterKey[] = "download-ui-adapter";
+}
 
 PrerenderingOffliner::PrerenderingOffliner(
     content::BrowserContext* browser_context,
@@ -30,6 +34,20 @@ PrerenderingOffliner::PrerenderingOffliner(
       weak_ptr_factory_(this) {}
 
 PrerenderingOffliner::~PrerenderingOffliner() {}
+
+void PrerenderingOffliner::OnNetworkProgress(const SavePageRequest& request,
+                                             int64_t bytes) {
+  if (!pending_request_)
+    return;
+
+  DownloadUIAdapter* ui_adapter = static_cast<DownloadUIAdapter*>(
+      offline_page_model_->GetUserData(kDownloadUIAdapterKey));
+
+  if (!ui_adapter)
+    return;
+
+  ui_adapter->UpdateProgress(request.request_id(), bytes);
+}
 
 void PrerenderingOffliner::OnLoadPageDone(
     const SavePageRequest& request,
@@ -178,7 +196,9 @@ bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
   // Kick off load page attempt.
   bool accepted = GetOrCreateLoader()->LoadPage(
       request.url(), base::Bind(&PrerenderingOffliner::OnLoadPageDone,
-                                weak_ptr_factory_.GetWeakPtr(), request));
+                                weak_ptr_factory_.GetWeakPtr(), request),
+      base::Bind(&PrerenderingOffliner::OnNetworkProgress,
+                 weak_ptr_factory_.GetWeakPtr(), request));
   if (!accepted) {
     pending_request_.reset(nullptr);
   } else {

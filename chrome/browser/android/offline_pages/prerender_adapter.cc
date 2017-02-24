@@ -102,4 +102,15 @@ void PrerenderAdapter::OnPrerenderStop(prerender::PrerenderHandle* handle) {
   }
 }
 
+void PrerenderAdapter::OnPrerenderNetworkBytesChanged(
+    prerender::PrerenderHandle* handle) {
+  if (IsActive()) {
+    DCHECK_EQ(active_handle_.get(), handle);
+    prerender::PrerenderContents* contents = handle->contents();
+    if (!contents)
+      return;
+    observer_->OnPrerenderNetworkBytesChanged(contents->network_bytes());
+  }
+}
+
 }  // namespace offline_pages

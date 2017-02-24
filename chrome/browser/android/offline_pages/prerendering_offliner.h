@@ -57,6 +57,9 @@ class PrerenderingOffliner : public Offliner {
       const SavePageCallback& save_callback);
 
  private:
+  // Progress callback for PrerenderingLoader::LoadPage().
+  void OnNetworkProgress(const SavePageRequest& request, int64_t bytes);
+
   // Callback logic for PrerenderingLoader::LoadPage().
   void OnLoadPageDone(const SavePageRequest& request,
                       Offliner::RequestStatus load_status,
