@@ -649,13 +649,6 @@ if (is_win) {
       # non-component builds, will ensure the export symbol table is correct.
       ":verify_chrome_framework_order",
     ]
-
-    # Only official builds that include Widevine need the widevine
-    # signature file.
-    if (is_chrome_branded && enable_pepper_cdms) {
-      sources += [ "$root_out_dir/$chrome_framework_name.sig" ]
-      public_deps += [ ":sign_chrome_framework_for_widevine" ]
-    }
   }
 
   action("clean_up_old_versions") {
@@ -869,25 +862,12 @@ if (is_win) {
         ":widevine_cdm_library_copy",
         "//third_party/widevine/cdm:widevinecdmadapter",
       ]
-
-      # Signatures are only generated for official chrome.
-      if (is_chrome_branded) {
-        sources += [
-          "$root_out_dir/$widevine_cdm_path/widevinecdmadapter.plugin.sig",
-          "$root_out_dir/libwidevinecdm.dylib.sig",
-        ]
-        public_deps += [ ":sign_cdm_adapter_for_widevine" ]
-      }
     }
 
     copy("widevine_cdm_library_copy") {
       sources = [
         "$root_out_dir/$widevine_cdm_path/libwidevinecdm.dylib",
       ]
-      if (is_chrome_branded) {
-        sources +=
-            [ "$root_out_dir/$widevine_cdm_path/libwidevinecdm.dylib.sig" ]
-      }
       outputs = [
         "$root_out_dir/{{source_file_part}}",
       ]
@@ -905,25 +885,6 @@ if (is_win) {
       ]
       public_deps = [
         "//third_party/widevine/cdm:widevine_cdm_manifest",
-      ]
-    }
-
-    widevine_sign_file("sign_cdm_adapter_for_widevine") {
-      file = "$root_out_dir/$widevine_cdm_path/widevinecdmadapter.plugin"
-      deps = [
-        "//third_party/widevine/cdm:widevinecdmadapter",
-      ]
-    }
-
-    widevine_sign_file("sign_chrome_framework_for_widevine") {
-      file = "$root_out_dir/$chrome_framework_name.framework/"
-      if (defined(chrome_framework_version)) {
-        file += "Versions/$chrome_framework_version/"
-      }
-      file += "$chrome_framework_name"
-      signature_file = "$root_out_dir/$chrome_framework_name.sig"
-      deps = [
-        ":chrome_framework",
       ]
     }
   }
