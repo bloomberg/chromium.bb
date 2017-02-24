@@ -1197,7 +1197,8 @@ void ResourceFetcher::handleLoaderFinish(Resource* resource,
   }
 
   context().dispatchDidFinishLoading(resource->identifier(), finishTime,
-                                     encodedDataLength);
+                                     encodedDataLength,
+                                     resource->response().decodedBodyLength());
 
   if (type == DidFinishLoading)
     resource->finish(finishTime);

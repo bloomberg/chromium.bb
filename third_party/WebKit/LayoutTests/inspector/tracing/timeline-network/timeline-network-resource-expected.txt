@@ -41,6 +41,7 @@ Text details for ResourceReceiveResponse: timeline-network-resource.js
 ResourceFinish Properties:
 {
     data : {
+        decodedBodyLength : 223
         didFail : false
         encodedDataLength : <number>
         finishTime : <number>

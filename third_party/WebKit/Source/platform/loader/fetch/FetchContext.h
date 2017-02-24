@@ -115,7 +115,8 @@ class PLATFORM_EXPORT FetchContext
                                        int encodedDataLength);
   virtual void dispatchDidFinishLoading(unsigned long identifier,
                                         double finishTime,
-                                        int64_t encodedDataLength);
+                                        int64_t encodedDataLength,
+                                        int64_t decodedBodyLength);
   virtual void dispatchDidFail(unsigned long identifier,
                                const ResourceError&,
                                int64_t encodedDataLength,

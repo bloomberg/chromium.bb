@@ -107,7 +107,8 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
                                int encodedDataLength) override;
   void dispatchDidFinishLoading(unsigned long identifier,
                                 double finishTime,
-                                int64_t encodedDataLength) override;
+                                int64_t encodedDataLength,
+                                int64_t decodedBodyLength) override;
   void dispatchDidFail(unsigned long identifier,
                        const ResourceError&,
                        int64_t encodedDataLength,

@@ -218,7 +218,8 @@ namespace InspectorResourceFinishEvent {
 std::unique_ptr<TracedValue> data(unsigned long identifier,
                                   double finishTime,
                                   bool didFail,
-                                  int64_t encodedDataLength);
+                                  int64_t encodedDataLength,
+                                  int64_t decodedBodyLength);
 }
 
 namespace InspectorTimerInstallEvent {

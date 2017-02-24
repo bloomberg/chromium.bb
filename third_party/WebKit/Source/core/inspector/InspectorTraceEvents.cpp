@@ -596,13 +596,15 @@ std::unique_ptr<TracedValue> InspectorResourceFinishEvent::data(
     unsigned long identifier,
     double finishTime,
     bool didFail,
-    int64_t encodedDataLength) {
+    int64_t encodedDataLength,
+    int64_t decodedBodyLength) {
   String requestId = IdentifiersFactory::requestId(identifier);
 
   std::unique_ptr<TracedValue> value = TracedValue::create();
   value->setString("requestId", requestId);
   value->setBoolean("didFail", didFail);
   value->setDouble("encodedDataLength", encodedDataLength);
+  value->setDouble("decodedBodyLength", decodedBodyLength);
   if (finishTime)
     value->setDouble("finishTime", finishTime);
   return value;

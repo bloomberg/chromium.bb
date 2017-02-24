@@ -491,10 +491,12 @@ void FrameFetchContext::dispatchDidDownloadData(unsigned long identifier,
 
 void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier,
                                                  double finishTime,
-                                                 int64_t encodedDataLength) {
-  TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
-               InspectorResourceFinishEvent::data(identifier, finishTime, false,
-                                                  encodedDataLength));
+                                                 int64_t encodedDataLength,
+                                                 int64_t decodedBodyLength) {
+  TRACE_EVENT1(
+      "devtools.timeline", "ResourceFinish", "data",
+      InspectorResourceFinishEvent::data(identifier, finishTime, false,
+                                         encodedDataLength, decodedBodyLength));
   frame()->loader().progress().completeProgress(identifier);
   InspectorInstrumentation::didFinishLoading(frame(), identifier, finishTime,
                                              encodedDataLength);
@@ -508,7 +510,7 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier,
                                         bool isInternalRequest) {
   TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                InspectorResourceFinishEvent::data(identifier, 0, true,
-                                                  encodedDataLength));
+                                                  encodedDataLength, 0));
   frame()->loader().progress().completeProgress(identifier);
   InspectorInstrumentation::didFailLoading(frame(), identifier, error);
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
@@ -542,7 +544,8 @@ void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(
   if (resource->encodedSize() > 0)
     dispatchDidReceiveData(identifier, 0, resource->encodedSize());
 
-  dispatchDidFinishLoading(identifier, 0, 0);
+  dispatchDidFinishLoading(identifier, 0, 0,
+                           resource->response().decodedBodyLength());
 }
 
 bool FrameFetchContext::shouldLoadNewResource(Resource::Type type) const {

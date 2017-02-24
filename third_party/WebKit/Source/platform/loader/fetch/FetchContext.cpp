@@ -80,7 +80,10 @@ void FetchContext::dispatchDidReceiveEncodedData(unsigned long, int) {}
 
 void FetchContext::dispatchDidDownloadData(unsigned long, int, int) {}
 
-void FetchContext::dispatchDidFinishLoading(unsigned long, double, int64_t) {}
+void FetchContext::dispatchDidFinishLoading(unsigned long,
+                                            double,
+                                            int64_t,
+                                            int64_t) {}
 
 void FetchContext::dispatchDidFail(unsigned long,
                                    const ResourceError&,
