@@ -117,7 +117,6 @@ class Builder(object):
     steps = [stage.Run for stage in stage_objs]
     try:
       parallel.RunParallelSteps(steps)
-
     except BaseException as ex:
       logging.error('BaseException in _RunParallelStages %s' % ex,
                     exc_info=True)
@@ -130,15 +129,25 @@ class Builder(object):
           if not results_lib.Results.StageHasResults(name):
             results_lib.Results.Record(name, ex, str(ex))
 
-      if cidb.CIDBConnectionFactory.IsCIDBSetup():
-        db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-        if db:
-          for stage in stage_objs:
-            for build_stage_id in stage.GetBuildStageIDs():
-              if not db.HasBuildStageFailed(build_stage_id):
-                failures_lib.ReportStageFailureToCIDB(db,
-                                                      build_stage_id,
-                                                      ex)
+        if cidb.CIDBConnectionFactory.IsCIDBSetup():
+          db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+          for build_stage_id in stage.GetBuildStageIDs():
+            stage_status = db.GetBuildStage(build_stage_id)
+
+            # If no failures for this stage found in failureTable, and the stage
+            # has no status or has non-failure status in buildStageTable,
+            # report failures to failureTable for this stage.
+            if (not db.HasFailureMsgForStage(build_stage_id) and
+                (stage_status is None or stage_status['status']
+                 not in constants.BUILDER_NON_FAILURE_STATUSES)):
+              failures_lib.ReportStageFailureToCIDB(db, build_stage_id, ex)
+
+            # If this stage has non_completed status in buildStageTable, mark
+            # the stage as 'fail' status in buildStageTable.
+            if (stage_status is not None and stage_status['status'] not in
+                constants.BUILDER_COMPLETED_STATUSES):
+              db.FinishBuildStage(build_stage_id,
+                                  constants.BUILDER_STATUS_FAILED)
 
       raise
 

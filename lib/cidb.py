@@ -1038,6 +1038,25 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         self.BUILD_STATUS_KEYS)
 
   @minimum_schema(30)
+  def GetBuildStage(self, build_stage_id):
+    """Gets stage given the build_stage_id.
+
+    Args:
+      build_stage_id: build_stage_id to fetch the stage.
+
+    Returns:
+      If the build_stage_id exists, returns a dictionary presenting the stage
+      with keys (id, build_id, name, board, status, last_updated, start_time,
+      finish_time, final); else, returns None.
+    """
+    stage = self._SelectWhere(
+        'buildStageTable',
+        'id = %s' % build_stage_id,
+        ['id', 'build_id', 'name', 'board', 'status',
+         'last_updated', 'start_time', 'finish_time', 'final'])
+    return stage[0] if stage else None
+
+  @minimum_schema(30)
   def GetBuildStages(self, build_id):
     """Gets all the stages of a given build.
 
@@ -1469,14 +1488,15 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [clactions.CLAction(*values) for values in results]
 
   @minimum_schema(29)
-  def HasBuildStageFailed(self, build_stage_id):
-    """Determine whether a build stage has failed according to cidb.
+  def HasFailureMsgForStage(self, build_stage_id):
+    """Determine whether a build stage has failure messages in failureTable.
 
     Args:
       build_stage_id: The id of the build_stage to query for.
 
     Returns:
-      True if there is a failure reported for this build stage to cidb.
+      True if there're failures reported to failureTable for this build stage
+      to cidb; else, False.
     """
     failures = self._SelectWhere('failureTable',
                                  'build_stage_id = %d' % build_stage_id,

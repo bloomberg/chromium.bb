@@ -252,6 +252,18 @@ class FakeCIDBConnection(object):
               if b['master_build_id'] == master_build_id and
               b['buildbucket_id'] in buildbucket_ids]
 
+  def GetBuildStage(self, build_stage_id):
+    """Get build stage given the build_stage_id.
+
+    Args:
+      build_stage_id: The build_stage_id to get the stage.
+
+    Returns:
+      A dict prensenting the stage if the build_stage_id exists in
+      the buildStageTable; else, None.
+    """
+    return self.buildStageTable.get(build_stage_id)
+
   def GetBuildStages(self, build_id):
     """Gets build stages given the build_id"""
     return [self.buildStageTable[_id]
@@ -303,3 +315,20 @@ class FakeCIDBConnection(object):
         return self._TrimStatus(row)
 
     return None
+
+  def HasFailureMsgForStage(self, build_stage_id):
+    """Determine whether a build stage has failure messages in failureTable.
+
+    Args:
+      build_stage_id: The id of the build_stage to query for.
+
+    Returns:
+      True if there're failures reported to failureTable for this build stage
+      to cidb; else, False.
+    """
+    stages = self.failureTable.values()
+    for stage in stages:
+      if stage['build_stage_id'] == build_stage_id:
+        return True
+
+    return False
