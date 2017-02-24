@@ -15,6 +15,7 @@
 #include "printing/features/features.h"
 #include "printing/page_range.h"
 #include "printing/print_job_constants.h"
+#include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -162,9 +163,32 @@ void PrintMockRenderThread::OnUpdatePrintSettings(
       new_ranges.push_back(range);
     }
   }
-  std::vector<int> pages(printing::PageRange::GetPages(new_ranges));
-  printer_->UpdateSettings(document_cookie, params, pages, margins_type);
 
+  // Get media size
+  const base::DictionaryValue* media_size_value = nullptr;
+  gfx::Size page_size;
+  if (job_settings.GetDictionary(printing::kSettingMediaSize,
+                                 &media_size_value)) {
+    int width_microns = 0;
+    int height_microns = 0;
+    if (media_size_value->GetInteger(printing::kSettingMediaSizeWidthMicrons,
+                                     &width_microns) &&
+        media_size_value->GetInteger(printing::kSettingMediaSizeHeightMicrons,
+                                     &height_microns)) {
+      float device_microns_per_unit =
+          (printing::kHundrethsMMPerInch * 10.0f) / printing::kDefaultPdfDpi;
+      page_size = gfx::Size(width_microns / device_microns_per_unit,
+                            height_microns / device_microns_per_unit);
+    }
+  }
+
+  // Get scaling
+  int scale_factor = 100;
+  job_settings.GetInteger(printing::kSettingScaleFactor, &scale_factor);
+
+  std::vector<int> pages(printing::PageRange::GetPages(new_ranges));
+  printer_->UpdateSettings(document_cookie, params, pages, margins_type,
+                           page_size, scale_factor);
   job_settings.GetBoolean(printing::kSettingShouldPrintSelectionOnly,
                           &params->params.selection_only);
   job_settings.GetBoolean(printing::kSettingShouldPrintBackgrounds,

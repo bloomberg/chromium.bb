@@ -40,6 +40,13 @@ void UpdateMargins(int margins_type, int dpi, PrintMsg_Print_Params* params) {
   }
 }
 
+void UpdatePageSizeAndScaling(const gfx::Size& page_size,
+                              int scale_factor,
+                              PrintMsg_Print_Params* params) {
+  params->page_size = page_size;
+  params->scale_factor = static_cast<double>(scale_factor) / 100.0;
+}
+
 }  // namespace
 
 MockPrinterPage::MockPrinterPage(const void* source_data,
@@ -161,7 +168,9 @@ void MockPrinter::ScriptedPrint(int cookie,
 void MockPrinter::UpdateSettings(int cookie,
                                  PrintMsg_PrintPages_Params* params,
                                  const std::vector<int>& pages,
-                                 int margins_type) {
+                                 int margins_type,
+                                 const gfx::Size& page_size,
+                                 int scale_factor) {
   if (document_cookie_ == -1) {
     document_cookie_ = CreateDocumentCookie();
   }
@@ -169,6 +178,8 @@ void MockPrinter::UpdateSettings(int cookie,
   params->pages = pages;
   SetPrintParams(&(params->params));
   UpdateMargins(margins_type, dpi_, &(params->params));
+  if (!page_size.IsEmpty())
+    UpdatePageSizeAndScaling(page_size, scale_factor, &params->params);
   printer_status_ = PRINTER_PRINTING;
 }
 

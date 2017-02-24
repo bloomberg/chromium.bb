@@ -1854,9 +1854,15 @@ void PrintWebViewHelper::PrintPageInternal(
 
   double css_scale_factor = 1.0f;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-    if (params.params.scale_factor >= kEpsilon)
-      css_scale_factor = params.params.scale_factor;
+  if (params.params.scale_factor >= kEpsilon)
+    css_scale_factor = params.params.scale_factor;
 #endif
+
+  // Save the original page size here to avoid rounding errors incurred by
+  // converting to pixels and back and by scaling the page for reflow and
+  // scaling back. Windows uses |page_size_in_dpi| for the actual page size
+  // so requires an accurate value.
+  gfx::Size original_page_size = params.params.page_size;
   ComputePageLayoutInPointsForCss(frame, params.page_number, params.params,
                                   ignore_css_margins_, &css_scale_factor,
                                   &page_layout_in_points);
@@ -1864,19 +1870,10 @@ void PrintWebViewHelper::PrintPageInternal(
   gfx::Rect content_area;
   GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, &page_size,
                                           &content_area);
-  int dpi = static_cast<int>(params.params.dpi);
+
   // Calculate the actual page size and content area in dpi.
   if (page_size_in_dpi) {
-    // Windows uses this for the actual page size. We have scaled page size
-    // to get blink to reflow the page, so scale it back to the real size
-    // before returning it.
-    *page_size_in_dpi =
-        gfx::Size(static_cast<int>(ConvertUnitDouble(page_size.width(),
-                                                     kPointsPerInch, dpi) *
-                                   css_scale_factor),
-                  static_cast<int>(ConvertUnitDouble(page_size.height(),
-                                                     kPointsPerInch, dpi) *
-                                   css_scale_factor));
+    *page_size_in_dpi = original_page_size;
   }
 
   if (content_area_in_dpi) {

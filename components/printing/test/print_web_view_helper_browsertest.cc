@@ -24,6 +24,7 @@
 #include "ipc/ipc_listener.h"
 #include "printing/features/features.h"
 #include "printing/print_job_constants.h"
+#include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -209,6 +210,20 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
     EXPECT_EQ(count, std::get<0>(post_page_count_param).page_count);
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
+#if defined(OS_WIN)
+  // Verifies that the correct page size was returned.
+  void VerifyPrintedPageSize(const gfx::Size& page_size) {
+    const IPC::Message* print_msg =
+        render_thread_->sink().GetUniqueMessageMatching(
+            PrintHostMsg_DidPrintPage::ID);
+    PrintHostMsg_DidPrintPage::Param post_did_print_page_param;
+    PrintHostMsg_DidPrintPage::Read(print_msg, &post_did_print_page_param);
+    gfx::Size page_size_received =
+        std::get<0>(post_did_print_page_param).page_size;
+    EXPECT_EQ(page_size, page_size_received);
+  }
+#endif
 
   // Verifies whether the pages printed or not.
   void VerifyPagesPrinted(bool printed) {
@@ -969,6 +984,41 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreview) {
 
   VerifyPrintFailed(false);
   VerifyPagesPrinted(true);
+}
+
+// Tests that when printing non-default scaling values, the page size returned
+// by PrintWebViewHelper is still the real physical page size. See
+// crbug.com/686384
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewWithScaling) {
+  LoadHTML(kPrintPreviewHTML);
+
+  // Fill in some dummy values.
+  base::DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+
+  // Media size
+  gfx::Size page_size_in = gfx::Size(240, 480);
+  float device_microns_per_unit =
+      (printing::kHundrethsMMPerInch * 10.0f) / printing::kDefaultPdfDpi;
+  int height_microns =
+      static_cast<int>(page_size_in.height() * device_microns_per_unit);
+  int width_microns =
+      static_cast<int>(page_size_in.width() * device_microns_per_unit);
+  auto media_size = base::MakeUnique<base::DictionaryValue>();
+  media_size->SetInteger(kSettingMediaSizeHeightMicrons, height_microns);
+  media_size->SetInteger(kSettingMediaSizeWidthMicrons, width_microns);
+
+  // Non default scaling value
+  dict.SetInteger(kSettingScaleFactor, 80);
+  dict.Set(kSettingMediaSize, media_size.release());
+
+  OnPrintForPrintPreview(dict);
+
+  VerifyPrintFailed(false);
+  VerifyPagesPrinted(true);
+#if defined(OS_WIN)
+  VerifyPrintedPageSize(page_size_in);
+#endif
 }
 
 // Tests that printing from print preview fails and receiving error messages
