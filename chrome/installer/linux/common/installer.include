@@ -166,11 +166,13 @@ stage_install_common() {
       echo Widevine signing "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}"
       ${BUILDDIR}/installer/widevine/signature_generator.py \
         --input_file "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}" \
-        --output_file "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}.sig"
+        --output_file "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}.sig" \
+        --flags 1
       echo Widevine signing "${STAGEDIR}/${INSTALLDIR}/libwidevinecdmadapter.so"
       ${BUILDDIR}/installer/widevine/signature_generator.py \
         --input_file "${STAGEDIR}/${INSTALLDIR}/libwidevinecdmadapter.so" \
-        --output_file "${STAGEDIR}/${INSTALLDIR}/libwidevinecdmadapter.so.sig"
+        --output_file "${STAGEDIR}/${INSTALLDIR}/libwidevinecdmadapter.so.sig" \
+        --flags 0
       # Widevine signature file already exists for libwidevinecdm.so.
       cp "${BUILDDIR}/libwidevinecdm.so.sig" "${STAGEDIR}/${INSTALLDIR}/"
     fi
