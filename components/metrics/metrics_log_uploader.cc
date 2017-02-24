@@ -9,11 +9,12 @@ namespace metrics {
 MetricsLogUploader::MetricsLogUploader(
     const std::string& server_url,
     const std::string& mime_type,
+    MetricServiceType service_type,
     const base::Callback<void(int)>& on_upload_complete)
     : server_url_(server_url),
       mime_type_(mime_type),
-      on_upload_complete_(on_upload_complete) {
-}
+      service_type_(service_type),
+      on_upload_complete_(on_upload_complete) {}
 
 MetricsLogUploader::~MetricsLogUploader() {
 }

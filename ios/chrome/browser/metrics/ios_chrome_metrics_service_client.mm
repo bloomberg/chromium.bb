@@ -27,6 +27,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
@@ -164,10 +165,11 @@ std::unique_ptr<metrics::MetricsLogUploader>
 IOSChromeMetricsServiceClient::CreateUploader(
     const std::string& server_url,
     const std::string& mime_type,
+    metrics::MetricsLogUploader::MetricServiceType service_type,
     const base::Callback<void(int)>& on_upload_complete) {
   return base::MakeUnique<metrics::NetMetricsLogUploader>(
-      GetApplicationContext()->GetSystemURLRequestContext(),
-      server_url, mime_type, on_upload_complete);
+      GetApplicationContext()->GetSystemURLRequestContext(), server_url,
+      mime_type, service_type, on_upload_complete);
 }
 
 base::TimeDelta IOSChromeMetricsServiceClient::GetStandardUploadInterval() {

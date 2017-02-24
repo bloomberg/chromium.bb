@@ -14,6 +14,7 @@
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -204,10 +205,12 @@ std::unique_ptr<metrics::MetricsLogUploader>
 AwMetricsServiceClientImpl::CreateUploader(
     const std::string& server_url,
     const std::string& mime_type,
+    metrics::MetricsLogUploader::MetricServiceType service_type,
     const base::Callback<void(int)>& on_upload_complete) {
   return std::unique_ptr<::metrics::MetricsLogUploader>(
-      new metrics::NetMetricsLogUploader(
-          request_context_, server_url, mime_type, on_upload_complete));
+      new metrics::NetMetricsLogUploader(request_context_, server_url,
+                                         mime_type, service_type,
+                                         on_upload_complete));
 }
 
 base::TimeDelta AwMetricsServiceClientImpl::GetStandardUploadInterval() {

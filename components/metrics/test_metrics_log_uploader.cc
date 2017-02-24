@@ -3,14 +3,19 @@
 // found in the LICENSE file.
 
 #include "components/metrics/test_metrics_log_uploader.h"
+#include "components/metrics/metrics_log_uploader.h"
 
 namespace metrics {
 
 TestMetricsLogUploader::TestMetricsLogUploader(
     const std::string& server_url,
     const std::string& mime_type,
+    MetricsLogUploader::MetricServiceType service_type,
     const base::Callback<void(int)>& on_upload_complete)
-    : MetricsLogUploader(server_url, mime_type, on_upload_complete),
+    : MetricsLogUploader(server_url,
+                         mime_type,
+                         service_type,
+                         on_upload_complete),
       is_uploading_(false) {}
 
 TestMetricsLogUploader::~TestMetricsLogUploader() = default;

@@ -13,6 +13,7 @@ class TestMetricsLogUploader : public MetricsLogUploader {
  public:
   TestMetricsLogUploader(const std::string& server_url,
                          const std::string& mime_type,
+                         MetricsLogUploader::MetricServiceType service_type,
                          const base::Callback<void(int)>& on_upload_complete);
   ~TestMetricsLogUploader() override;
 

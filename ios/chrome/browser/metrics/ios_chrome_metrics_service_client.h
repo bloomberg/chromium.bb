@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
@@ -73,6 +74,7 @@ class IOSChromeMetricsServiceClient
   std::unique_ptr<metrics::MetricsLogUploader> CreateUploader(
       const std::string& server_url,
       const std::string& mime_type,
+      metrics::MetricsLogUploader::MetricServiceType service_type,
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
   base::string16 GetRegistryBackupKey() override;

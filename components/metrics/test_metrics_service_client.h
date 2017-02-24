@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/test_metrics_log_uploader.h"
 
@@ -38,6 +39,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   std::unique_ptr<MetricsLogUploader> CreateUploader(
       const std::string& server_url,
       const std::string& mime_type,
+      MetricsLogUploader::MetricServiceType service_type,
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
   bool IsReportingPolicyManaged() override;

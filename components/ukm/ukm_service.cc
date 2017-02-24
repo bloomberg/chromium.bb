@@ -277,8 +277,9 @@ void UkmService::StartScheduledUpload() {
   // TODO(holte): Handle data usage on cellular, etc.
   if (!log_uploader_) {
     log_uploader_ = client_->CreateUploader(
-        GetServerUrl(), kMimeType, base::Bind(&UkmService::OnLogUploadComplete,
-                                              self_ptr_factory_.GetWeakPtr()));
+        GetServerUrl(), kMimeType, metrics::MetricsLogUploader::UKM,
+        base::Bind(&UkmService::OnLogUploadComplete,
+                   self_ptr_factory_.GetWeakPtr()));
   }
   log_upload_in_progress_ = true;
 

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
@@ -16,10 +17,13 @@ NetMetricsLogUploader::NetMetricsLogUploader(
     net::URLRequestContextGetter* request_context_getter,
     const std::string& server_url,
     const std::string& mime_type,
+    MetricsLogUploader::MetricServiceType service_type,
     const base::Callback<void(int)>& on_upload_complete)
-    : MetricsLogUploader(server_url, mime_type, on_upload_complete),
-      request_context_getter_(request_context_getter) {
-}
+    : MetricsLogUploader(server_url,
+                         mime_type,
+                         service_type,
+                         on_upload_complete),
+      request_context_getter_(request_context_getter) {}
 
 NetMetricsLogUploader::~NetMetricsLogUploader() {
 }
@@ -28,8 +32,19 @@ void NetMetricsLogUploader::UploadLog(const std::string& compressed_log_data,
                                       const std::string& log_hash) {
   current_fetch_ =
       net::URLFetcher::Create(GURL(server_url_), net::URLFetcher::POST, this);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      current_fetch_.get(), data_use_measurement::DataUseUserData::UMA);
+
+  auto service = data_use_measurement::DataUseUserData::UMA;
+
+  switch (service_type_) {
+    case MetricsLogUploader::UMA:
+      service = data_use_measurement::DataUseUserData::UMA;
+      break;
+    case MetricsLogUploader::UKM:
+      service = data_use_measurement::DataUseUserData::UKM;
+      break;
+  }
+  data_use_measurement::DataUseUserData::AttachToFetcher(current_fetch_.get(),
+                                                         service);
   current_fetch_->SetRequestContext(request_context_getter_);
   current_fetch_->SetUploadData(mime_type_, compressed_log_data);
 

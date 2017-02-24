@@ -71,6 +71,7 @@ class TodayMetricsServiceClient : public metrics::MetricsServiceClient {
   std::unique_ptr<metrics::MetricsLogUploader> CreateUploader(
       const std::string& server_url,
       const std::string& mime_type,
+      metrics::MetricsLogUploader::MetricServiceType service_type,
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
 
@@ -151,6 +152,7 @@ std::unique_ptr<metrics::MetricsLogUploader>
 TodayMetricsServiceClient::CreateUploader(
     const std::string& server_url,
     const std::string& mime_type,
+    metrics::MetricsLogUploader::MetricServiceType service_type,
     const base::Callback<void(int)>& on_upload_complete) {
   NOTREACHED();
   return nullptr;

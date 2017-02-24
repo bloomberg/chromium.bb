@@ -30,6 +30,7 @@ class NetMetricsLogUploader : public MetricsLogUploader,
   NetMetricsLogUploader(net::URLRequestContextGetter* request_context_getter,
                         const std::string& server_url,
                         const std::string& mime_type,
+                        MetricsLogUploader::MetricServiceType service_type,
                         const base::Callback<void(int)>& on_upload_complete);
   ~NetMetricsLogUploader() override;
 

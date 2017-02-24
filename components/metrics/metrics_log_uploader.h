@@ -16,11 +16,20 @@ namespace metrics {
 // of MetricsService.
 class MetricsLogUploader {
  public:
+  // Possible service types. This should correspond to a type from
+  // DataUseUserData.
+  enum MetricServiceType {
+    UMA,
+    UKM,
+  };
+
   // Constructs the uploader that will upload logs to the specified |server_url|
-  // with the given |mime_type|. The |on_upload_complete| callback will be
-  // called with the HTTP response code of the upload or with -1 on an error.
+  // with the given |mime_type|. The |service_type| marks which service the
+  // data usage should be attributed to. The |on_upload_complete| callback will
+  // be called with the HTTP response code of the upload or with -1 on an error.
   MetricsLogUploader(const std::string& server_url,
                      const std::string& mime_type,
+                     MetricServiceType service_type,
                      const base::Callback<void(int)>& on_upload_complete);
   virtual ~MetricsLogUploader();
 
@@ -33,6 +42,11 @@ class MetricsLogUploader {
  protected:
   const std::string server_url_;
   const std::string mime_type_;
+
+  // Which service type this uploads for. This is used for bandwidth
+  // attribution.
+  const MetricServiceType service_type_;
+
   const base::Callback<void(int)> on_upload_complete_;
 
  private:

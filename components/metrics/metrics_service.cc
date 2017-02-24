@@ -1000,8 +1000,8 @@ void MetricsService::SendStagedLog() {
 
   if (!log_uploader_) {
     log_uploader_ = client_->CreateUploader(
-        client_->GetMetricsServerUrl(),
-        metrics::kDefaultMetricsMimeType,
+        client_->GetMetricsServerUrl(), metrics::kDefaultMetricsMimeType,
+        metrics::MetricsLogUploader::UMA,
         base::Bind(&MetricsService::OnLogUploadComplete,
                    self_ptr_factory_.GetWeakPtr()));
   }

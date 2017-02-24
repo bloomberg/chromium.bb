@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "components/metrics/enabled_state_provider.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
 
 class PrefRegistrySimple;
@@ -81,6 +82,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   std::unique_ptr<::metrics::MetricsLogUploader> CreateUploader(
       const std::string& server_url,
       const std::string& mime_type,
+      ::metrics::MetricsLogUploader::MetricServiceType service_type,
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
 

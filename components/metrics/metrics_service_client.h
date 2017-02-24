@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/proto/system_profile.pb.h"
 
@@ -95,6 +96,7 @@ class MetricsServiceClient {
   virtual std::unique_ptr<MetricsLogUploader> CreateUploader(
       const std::string& server_url,
       const std::string& mime_type,
+      metrics::MetricsLogUploader::MetricServiceType service_type,
       const base::Callback<void(int)>& on_upload_complete) = 0;
 
   // Returns the standard interval between upload attempts.

@@ -124,6 +124,8 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "NTPSnippetsThumbnails";
     case DOODLE:
       return "Doodle";
+    case UKM:
+      return "UKM";
   }
   return "INVALID";
 }
