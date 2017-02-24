@@ -292,8 +292,8 @@ void WindowedNotificationObserver::Wait() {
     return;
 
   running_ = true;
-  run_loop_.reset(new base::RunLoop);
-  run_loop_->Run();
+  message_loop_runner_ = new MessageLoopRunner;
+  message_loop_runner_->Run();
   EXPECT_TRUE(seen_);
 }
 
@@ -310,7 +310,7 @@ void WindowedNotificationObserver::Observe(
   if (!running_)
     return;
 
-  run_loop_->Quit();
+  message_loop_runner_->Quit();
   running_ = false;
 }
 
