@@ -10,6 +10,7 @@
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="add_site_dialog.html">
 <link rel="import" href="constants.html">
+<link rel="import" href="edit_exception_dialog.html">
 <link rel="import" href="site_settings_behavior.html">
 <link rel="import" href="site_settings_prefs_browser_proxy.html">
 
@@ -47,6 +48,10 @@
             on-tap="onSessionOnlyTap_"
             hidden$="[[!showSessionOnlyActionForSite_(actionMenuSite_)]]">
           $i18n{siteSettingsActionSessionOnly}
+        </button>
+        <button class="dropdown-item" role="option" id="edit"
+            on-tap="onEditTap_" hidden$="[[!showEditAction_]]">
+          $i18n{edit}
         </button>
         <button class="dropdown-item" role="option" id="reset"
             on-tap="onResetTap_">
@@ -93,6 +98,11 @@
         </template>
       </div>
     </div>
+    <template is="dom-if" if="[[showEditExceptionDialog_]]" restamp>
+      <settings-edit-exception-dialog model="[[actionMenuSite_]]"
+          on-close="onEditExceptionDialogClosed_">
+      </settings-edit-exception-dialog>
+    </template>
   </template>
   <script src="site_list.js"></script>
 </dom-module>

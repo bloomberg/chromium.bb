@@ -1,0 +1,29 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="../i18n_setup.html">
+<link rel="import" href="site_settings_prefs_browser_proxy.html">
+
+<dom-module id="settings-edit-exception-dialog">
+  <template>
+    <style include="settings-shared"></style>
+    <dialog is="cr-dialog" id="dialog">
+      <div class="title">$i18n{editSiteTitle}</div>
+      <div class="body">
+        <paper-input always-float-label label="$i18n{addSite}"
+            value="{{origin_}}" on-input="validate_" on-keypress="onKeypress_" >
+        </paper-input>
+      </div>
+      <div class="button-container">
+        <div class="action-buttons">
+          <paper-button class="cancel-button" on-tap="onCancelTap_"
+              id="cancel">$i18n{cancel}</paper-button>
+          <paper-button id="actionButton" class="action-button"
+              on-tap="onActionButtonTap_">$i18n{edit}</paper-button>
+        </div>
+      </div>
+    </dialog>
+  </template>
+  <script src="edit_exception_dialog.js"></script>
+</dom-module>

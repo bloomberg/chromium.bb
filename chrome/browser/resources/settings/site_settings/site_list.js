@@ -41,6 +41,12 @@ Polymer({
     actionMenuSite_: Object,
 
     /**
+     * Whether the "edit exception" dialog should be shown.
+     * @private
+     */
+    showEditExceptionDialog_: Boolean,
+
+    /**
      * Array of sites to display in the widget.
      * @type {!Array<SiteException>}
      */
@@ -69,23 +75,33 @@ Polymer({
 
     /**
      * Whether to show the Allow action in the action menu.
+     * @private
      */
     showAllowAction_: Boolean,
 
     /**
      * Whether to show the Block action in the action menu.
+     * @private
      */
     showBlockAction_: Boolean,
 
     /**
      * Whether to show the 'Clear on exit' action in the action
      * menu.
+     * @private
      */
     showSessionOnlyAction_: Boolean,
 
     /**
+     * Whether to show the 'edit' action in the action menu.
+     * @private
+     */
+    showEditAction_: Boolean,
+
+    /**
      * Keeps track of the incognito status of the current profile (whether one
      * exists).
+     * @private
      */
     incognitoProfileActive_: {
       type: Boolean,
@@ -94,6 +110,7 @@ Polymer({
 
     /**
      * All possible actions in the action menu.
+     * @private
      */
     actions_: {
       readOnly: true,
@@ -362,6 +379,8 @@ Polymer({
     this.showSessionOnlyAction_ =
         this.categorySubtype != settings.PermissionValues.SESSION_ONLY &&
         this.category == settings.ContentSettingsTypes.COOKIES;
+    this.showEditAction_ =
+        this.category == settings.ContentSettingsTypes.COOKIES;
   },
 
   /**
@@ -425,6 +444,19 @@ Polymer({
   /** @private */
   onSessionOnlyTap_: function() {
     this.onActionMenuActivate_(settings.PermissionValues.SESSION_ONLY);
+    this.closeActionMenu_();
+  },
+
+  /** @private */
+  onEditTap_: function() {
+    this.showEditExceptionDialog_ = true;
+  },
+
+  /** @private */
+  onEditExceptionDialogClosed_: function() {
+    this.showEditExceptionDialog_ = false;
+    // Close action menu after dialog has been closed, otherwise
+    // |actionMenuSite_| is reset while the dialog is still accessing it.
     this.closeActionMenu_();
   },
 

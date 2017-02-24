@@ -1544,7 +1544,7 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
                             Profile* profile) {
   LocalizedString localized_strings[] = {
-    {"addSiteHeader", IDS_SETTINGS_ADD_SITE_HEADER},
+    {"addSiteTitle", IDS_SETTINGS_ADD_SITE_TITLE},
     {"addSiteLink", IDS_SETTINGS_ADD_SITE_LINK},
     {"addSite", IDS_SETTINGS_ADD_SITE},
     {"cookieAppCache", IDS_SETTINGS_COOKIES_APPLICATION_CACHE},
@@ -1559,6 +1559,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"cookieServiceWorker", IDS_SETTINGS_COOKIES_SERVICE_WORKER},
     {"cookieSingular", IDS_SETTINGS_COOKIES_SINGLE_COOKIE},
     {"embeddedOnHost", IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST},
+    {"editSiteTitle", IDS_SETTINGS_EDIT_SITE_TITLE},
     {"appCacheManifest", IDS_SETTINGS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL},
     {"cacheStorageLastModified",
      IDS_SETTINGS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL},

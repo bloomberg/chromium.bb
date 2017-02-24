@@ -2030,8 +2030,11 @@
   <message name="IDS_SETTINGS_ADD_SITE_LINK" desc="Link text to show (to open the Add Site dialog)">
     Add site exception
   </message>
-  <message name="IDS_SETTINGS_ADD_SITE_HEADER" desc="Header for the Add Site dialog">
+  <message name="IDS_SETTINGS_ADD_SITE_TITLE" desc="Title for the Add Site dialog">
     Add an exception for a site
+  </message>
+  <message name="IDS_SETTINGS_EDIT_SITE_TITLE" desc="Title for the Edit Site dialog">
+    Edit exception
   </message>
   <message name="IDS_SETTINGS_ADD_SITE" desc="The label for the input box for adding a site">
     Site
