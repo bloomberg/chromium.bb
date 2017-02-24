@@ -520,16 +520,24 @@ void SVGSMILElement::parseAttribute(const AttributeModificationParams& params) {
       parseBeginOrEnd(fastGetAttribute(SVGNames::endAttr), End);
     }
     parseBeginOrEnd(value.getString(), Begin);
-    if (isConnected())
+    if (isConnected()) {
       connectSyncBaseConditions();
+      connectEventBaseConditions();
+      beginListChanged(elapsed());
+    }
+    animationAttributeChanged();
   } else if (name == SVGNames::endAttr) {
     if (!m_conditions.isEmpty()) {
       clearConditions();
       parseBeginOrEnd(fastGetAttribute(SVGNames::beginAttr), Begin);
     }
     parseBeginOrEnd(value.getString(), End);
-    if (isConnected())
+    if (isConnected()) {
       connectSyncBaseConditions();
+      connectEventBaseConditions();
+      endListChanged(elapsed());
+    }
+    animationAttributeChanged();
   } else if (name == SVGNames::onbeginAttr) {
     setAttributeEventListener(
         EventTypeNames::beginEvent,
@@ -566,14 +574,6 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName) {
     buildPendingResource();
     if (m_targetElement)
       clearAnimatedType();
-  } else if (attrName == SVGNames::beginAttr || attrName == SVGNames::endAttr) {
-    if (isConnected()) {
-      connectEventBaseConditions();
-      if (attrName == SVGNames::beginAttr)
-        beginListChanged(elapsed());
-      else if (attrName == SVGNames::endAttr)
-        endListChanged(elapsed());
-    }
   } else {
     SVGElement::svgAttributeChanged(attrName);
     return;
