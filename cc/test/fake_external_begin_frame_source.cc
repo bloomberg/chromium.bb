@@ -66,16 +66,32 @@ void FakeExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
     client_->OnRemoveObserver(obs);
 }
 
+void FakeExternalBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs,
+                                                  const BeginFrameAck& ack) {
+  last_acks_[obs] = ack;
+}
+
 bool FakeExternalBeginFrameSource::IsThrottled() const {
   return true;
+}
+
+BeginFrameArgs FakeExternalBeginFrameSource::CreateBeginFrameArgs(
+    BeginFrameArgs::CreationLocation location,
+    base::SimpleTestTickClock* now_src) {
+  return CreateBeginFrameArgsForTesting(location, source_id(),
+                                        next_begin_frame_number_++, now_src);
+}
+
+BeginFrameArgs FakeExternalBeginFrameSource::CreateBeginFrameArgs(
+    BeginFrameArgs::CreationLocation location) {
+  return CreateBeginFrameArgsForTesting(location, source_id(),
+                                        next_begin_frame_number_++);
 }
 
 void FakeExternalBeginFrameSource::TestOnBeginFrame(
     const BeginFrameArgs& args) {
   DCHECK(CalledOnValidThread());
   current_args_ = args;
-  current_args_.source_id = source_id();
-  current_args_.sequence_number = next_begin_frame_number_++;
   std::set<BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers)
     obs->OnBeginFrame(current_args_);
@@ -88,10 +104,9 @@ void FakeExternalBeginFrameSource::PostTestOnBeginFrame() {
       base::Bind(&FakeExternalBeginFrameSource::TestOnBeginFrame,
                  weak_ptr_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(begin_frame_task_.callback(),
-                            CreateBeginFrameArgsForTesting(
-                                BEGINFRAME_FROM_HERE, source_id(),
-                                next_begin_frame_number_)),
+      FROM_HERE,
+      base::Bind(begin_frame_task_.callback(),
+                 CreateBeginFrameArgs(BEGINFRAME_FROM_HERE)),
       base::TimeDelta::FromMilliseconds(milliseconds_per_frame_));
   next_begin_frame_number_++;
 }

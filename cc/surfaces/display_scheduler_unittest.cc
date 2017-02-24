@@ -97,13 +97,10 @@ class DisplaySchedulerTest : public testing::Test {
 
   void AdvanceTimeAndBeginFrameForTest() {
     now_src_.Advance(base::TimeDelta::FromMicroseconds(10000));
-    base::TimeTicks frame_time = now_src_.NowTicks();
-    base::TimeDelta interval = BeginFrameArgs::DefaultInterval();
-    base::TimeTicks deadline = frame_time + interval;
     // FakeBeginFrameSource deals with |source_id| and |sequence_number|.
-    fake_begin_frame_source_.TestOnBeginFrame(
-        BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, 0, 1, frame_time, deadline,
-                               interval, BeginFrameArgs::NORMAL));
+    BeginFrameArgs args = fake_begin_frame_source_.CreateBeginFrameArgs(
+        BEGINFRAME_FROM_HERE, &now_src_);
+    fake_begin_frame_source_.TestOnBeginFrame(args);
   }
 
  protected:

@@ -266,10 +266,10 @@ bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   if (!state_machine_.BeginFrameNeeded()) {
     TRACE_EVENT_INSTANT0("cc", "Scheduler::BeginFrameDropped",
                          TRACE_EVENT_SCOPE_THREAD);
-    // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
-    BeginFrameAck ack(args.source_id, args.sequence_number,
-                      args.sequence_number, 0, false);
-    begin_frame_source_->DidFinishFrame(this, ack);
+    // Since we don't use the BeginFrame, we may later receive the same
+    // BeginFrame again. Thus, we can't confirm it at this point, even though we
+    // don't have any updates right now.
+    SendBeginFrameAck(args, kBeginFrameSkipped);
     return false;
   }
 
@@ -331,10 +331,7 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
   // Discard missed begin frames if they are too late.
   if (adjusted_args.type == BeginFrameArgs::MISSED &&
       now > adjusted_args.deadline) {
-    // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
-    BeginFrameAck ack(adjusted_args.source_id, adjusted_args.sequence_number,
-                      adjusted_args.sequence_number, 0, false);
-    begin_frame_source_->DidFinishFrame(this, ack);
+    SendBeginFrameAck(adjusted_args, kBeginFrameSkipped);
     return;
   }
 
@@ -344,10 +341,12 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
     OnBeginImplFrameDeadline();
     // We may not need begin frames any longer.
     if (!observing_begin_frame_source_) {
-      // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
-      BeginFrameAck ack(adjusted_args.source_id, adjusted_args.sequence_number,
-                        adjusted_args.sequence_number, 0, false);
-      begin_frame_source_->DidFinishFrame(this, ack);
+      // We need to confirm the ignored BeginFrame, since we don't have updates.
+      // To persist the confirmation for future BeginFrameAcks, we let the state
+      // machine know about the BeginFrame.
+      state_machine_.OnBeginFrameDroppedNotObserving(args.source_id,
+                                                     args.sequence_number);
+      SendBeginFrameAck(adjusted_args, kBeginFrameSkipped);
       return;
     }
   }
@@ -406,12 +405,7 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
                                       can_activate_before_deadline)) {
     TRACE_EVENT_INSTANT0("cc", "SkipBeginImplFrameToReduceLatency",
                          TRACE_EVENT_SCOPE_THREAD);
-    if (begin_frame_source_) {
-      // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
-      BeginFrameAck ack(adjusted_args.source_id, adjusted_args.sequence_number,
-                        adjusted_args.sequence_number, 0, false);
-      begin_frame_source_->DidFinishFrame(this, ack);
-    }
+    SendBeginFrameAck(begin_main_frame_args_, kBeginFrameSkipped);
     return;
   }
 
@@ -439,15 +433,31 @@ void Scheduler::FinishImplFrame() {
   ProcessScheduledActions();
 
   client_->DidFinishImplFrame();
-  if (begin_frame_source_) {
-    // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
-    BeginFrameAck ack(begin_main_frame_args_.source_id,
-                      begin_main_frame_args_.sequence_number,
-                      begin_main_frame_args_.sequence_number, 0,
-                      state_machine_.did_submit_in_last_frame());
-    begin_frame_source_->DidFinishFrame(this, ack);
-  }
+  SendBeginFrameAck(begin_main_frame_args_, kBeginFrameFinished);
   begin_impl_frame_tracker_.Finish();
+}
+
+void Scheduler::SendBeginFrameAck(const BeginFrameArgs& args,
+                                  BeginFrameResult result) {
+  if (!begin_frame_source_)
+    return;
+
+  uint64_t latest_confirmed_sequence_number =
+      BeginFrameArgs::kInvalidFrameNumber;
+  if (args.source_id == state_machine_.begin_frame_source_id()) {
+    latest_confirmed_sequence_number =
+        state_machine_
+            .last_begin_frame_sequence_number_compositor_frame_was_fresh();
+  }
+
+  bool did_submit = false;
+  if (result == kBeginFrameFinished) {
+    did_submit = state_machine_.did_submit_in_last_frame();
+  }
+
+  BeginFrameAck ack(args.source_id, args.sequence_number,
+                    latest_confirmed_sequence_number, 0, did_submit);
+  begin_frame_source_->DidFinishFrame(this, ack);
 }
 
 // BeginImplFrame starts a compositor frame that will wait up until a deadline
@@ -460,7 +470,7 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   DCHECK(state_machine_.HasInitializedCompositorFrameSink());
 
   begin_impl_frame_tracker_.Start(args);
-  state_machine_.OnBeginImplFrame();
+  state_machine_.OnBeginImplFrame(args.source_id, args.sequence_number);
   devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
   compositor_timing_history_->WillBeginImplFrame(
       state_machine_.NewActiveTreeLikely());
