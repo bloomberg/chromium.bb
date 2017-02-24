@@ -24,6 +24,7 @@ source_set("tab_strip_ui") {
   sources = [
     "tab_strip_container_view_controller.h",
     "tab_strip_container_view_controller.mm",
+    "tab_strip_events.h",
   ]
   deps = [
     "//base",

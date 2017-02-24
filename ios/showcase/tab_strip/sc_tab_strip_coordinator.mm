@@ -25,7 +25,7 @@
 
   UIViewController* greenViewController =
       [self viewControllerWithButtonTitle:@"toggleStrip"
-                                   action:@selector(toggleTabStrip:)];
+                                   action:@selector(hideTabStrip:)];
   greenViewController.view.backgroundColor = [UIColor greenColor];
 
   self.viewController = [[TabStripContainerViewController alloc] init];

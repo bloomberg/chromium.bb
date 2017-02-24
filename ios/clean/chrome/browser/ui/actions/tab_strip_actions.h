@@ -14,8 +14,10 @@
 // Target/Action methods relating to the tab strip.
 @protocol TabStripActions
 @optional
-// Reveals or hides the tab strip.
-- (void)toggleTabStrip:(id)sender;
+// Shows the tab strip.
+- (void)showTabStrip:(id)sender;
+// Hides the tab strip.
+- (void)hideTabStrip:(id)sender;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_ACTIONS_TAB_STRIP_ACTIONS_H_

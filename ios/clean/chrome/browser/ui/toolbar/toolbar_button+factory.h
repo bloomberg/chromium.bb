@@ -17,8 +17,10 @@
 + (instancetype)backToolbarButton;
 // Forward ToolbarButton.
 + (instancetype)forwardToolbarButton;
-// Tab Switcher ToolbarButton.
-+ (instancetype)tabSwitcherToolbarButton;
+// Tab Switcher Strip ToolbarButton.
++ (instancetype)tabSwitcherStripToolbarButton;
+// Tab Switcher Grid ToolbarButton.
++ (instancetype)tabSwitcherGridToolbarButton;
 // Tools Menu ToolbarButton.
 + (instancetype)toolsMenuToolbarButton;
 // Share ToolbarButton.

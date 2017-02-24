@@ -16,7 +16,8 @@
 @property(nonatomic, assign) ToolbarComponentVisibility visibilityMask;
 // Returns true if the ToolbarButton should be hidden in the current SizeClass.
 @property(nonatomic, assign) BOOL hiddenInCurrentSizeClass;
-// Returns true if the ToolbarButton should be hidden due to a current WebState.
+// Returns true if the ToolbarButton should be hidden due to a current UI state
+// or WebState.
 @property(nonatomic, assign) BOOL hiddenInCurrentState;
 // Returns a ToolbarButton using the three images parameters for their
 // respective state.

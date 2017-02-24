@@ -159,9 +159,12 @@ CGFloat kStripHeight = 200.0;
 #pragma mark - TabStripActions
 
 // Action to toggle visibility of tab strip.
-- (void)toggleTabStrip:(id)sender {
-  self.stripHeightConstraint.constant =
-      self.stripHeightConstraint.constant > 0 ? 0.0 : kStripHeight;
+- (void)showTabStrip:(id)sender {
+  self.stripHeightConstraint.constant = kStripHeight;
+}
+
+- (void)hideTabStrip:(id)sender {
+  self.stripHeightConstraint.constant = 0.0f;
 }
 
 #pragma mark - MenuPresentationDelegate

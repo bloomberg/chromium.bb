@@ -43,13 +43,18 @@
   return forwardButton;
 }
 
-+ (instancetype)tabSwitcherToolbarButton {
-  ToolbarButton* tabSwitcherButton =
-      [self toolbarButtonWithImageForNormalState:
-                [UIImage imageNamed:@"tabswitcher_tab_switcher_button"]
-                        imageForHighlightedState:nil
-                           imageForDisabledState:nil];
-  return tabSwitcherButton;
++ (instancetype)tabSwitcherStripToolbarButton {
+  return [self toolbarButtonWithImageForNormalState:
+                   [UIImage imageNamed:@"tabswitcher_open_tabs"]
+                           imageForHighlightedState:nil
+                              imageForDisabledState:nil];
+}
+
++ (instancetype)tabSwitcherGridToolbarButton {
+  return [self toolbarButtonWithImageForNormalState:
+                   [UIImage imageNamed:@"tabswitcher_tab_switcher_button"]
+                           imageForHighlightedState:nil
+                              imageForDisabledState:nil];
 }
 
 + (instancetype)toolsMenuToolbarButton {

@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
+#import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
 #import "ios/clean/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
@@ -77,9 +78,9 @@ const BOOL kUseBottomToolbar = NO;
   // controller.
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
   [button addTarget:nil
-                action:@selector(showTabGrid:)
+                action:@selector(hideTabStrip:)
       forControlEvents:UIControlEventTouchUpInside];
-  [button setTitle:@"Tab grid" forState:UIControlStateNormal];
+  [button setTitle:@"Hide Strip" forState:UIControlStateNormal];
   button.frame = CGRectMake(10, 10, 100, 100);
 
   UIViewController* tabStripViewController = [[UIViewController alloc] init];

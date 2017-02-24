@@ -8,6 +8,7 @@
 
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 
+#import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_events.h"
 #import "ios/clean/chrome/browser/ui/ui_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -224,10 +225,22 @@ CGFloat kTabStripHeight = 200.0f;
 }
 
 #pragma mark - TabStripActions
+- (void)showTabStrip:(id)sender {
+  self.tabStripHeightConstraint.constant = kTabStripHeight;
+  // HACK: Remove fake action.
+  [[UIApplication sharedApplication] sendAction:@selector(tabStripDidShow:)
+                                             to:nil
+                                           from:sender
+                                       forEvent:nil];
+}
 
-- (void)toggleTabStrip:(id)sender {
-  self.tabStripHeightConstraint.constant =
-      self.tabStripHeightConstraint.constant > 0.0f ? 0.0f : kTabStripHeight;
+- (void)hideTabStrip:(id)sender {
+  self.tabStripHeightConstraint.constant = 0.0f;
+  // HACK: Remove fake action.
+  [[UIApplication sharedApplication] sendAction:@selector(tabStripDidHide:)
+                                             to:nil
+                                           from:sender
+                                       forEvent:nil];
 }
 
 #pragma mark - Abstract methods to be overriden by subclass

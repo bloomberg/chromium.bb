@@ -4,8 +4,6 @@
 
 source_set("tab") {
   sources = [
-    "tab_container_view_controller.h",
-    "tab_container_view_controller.mm",
     "tab_coordinator.h",
     "tab_coordinator.mm",
   ]
@@ -13,16 +11,30 @@ source_set("tab") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":tab_ui",
     "//base",
     "//ios/clean/chrome/browser",
-    "//ios/clean/chrome/browser/ui",
     "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/ntp",
-    "//ios/clean/chrome/browser/ui/presenters",
     "//ios/clean/chrome/browser/ui/toolbar",
     "//ios/clean/chrome/browser/ui/web_contents",
     "//ios/shared/chrome/browser/coordinator_context",
     "//ios/web",
   ]
+}
+
+source_set("tab_ui") {
+  sources = [
+    "tab_container_view_controller.h",
+    "tab_container_view_controller.mm",
+  ]
+  deps = [
+    "//ios/clean/chrome/browser/ui",
+    "//ios/clean/chrome/browser/ui/animators",
+    "//ios/clean/chrome/browser/ui/presenters",
+    "//ios/clean/chrome/browser/ui/tab_strip:tab_strip_ui",
+  ]
+  libs = [ "UIKit.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
