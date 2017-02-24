@@ -15,7 +15,6 @@
 #include "media/base/renderer.h"
 
 namespace media {
-
 class Demuxer;
 
 // PipelineController wraps a Pipeline to expose the one-at-a-time operations
@@ -23,8 +22,10 @@ class Demuxer;
 // pending operations and dispatches them when possible. Duplicate requests
 // (such as seeking twice to the same time) may be elided.
 //
-// TODO(sandersd):
-//   - Expose an operation that restarts via suspend+resume.
+// TODO(sandersd/tguilbert):
+//   - Expose an operation that replaces the Renderer (via Suspend/Resume).
+//   - Expose an operation that replaces the Demuxer (via Start/Stop). This will
+//     also implicitly replace the Renderer.
 //   - Block invalid calls after an error occurs.
 class MEDIA_EXPORT PipelineController {
  public:
@@ -44,8 +45,8 @@ class MEDIA_EXPORT PipelineController {
   using BeforeResumeCB = base::Callback<void()>;
   using ResumedCB = base::Callback<void()>;
 
-  // Construct a PipelineController wrapping |pipeline_|. |pipeline_| must
-  // outlive the resulting PipelineController. The callbacks are:
+  // Construct a PipelineController wrapping |pipeline_|.
+  // The callbacks are:
   //   - |renderer_factory_cb| is called by PipelineController to create new
   //     renderers when starting and resuming.
   //   - |seeked_cb| is called upon reaching a stable state if a seek occured.
@@ -54,7 +55,7 @@ class MEDIA_EXPORT PipelineController {
   //   - |resumed_cb| is called immediately after resuming.
   //   - |error_cb| is called if any operation on |pipeline_| does not result
   //     in PIPELINE_OK or its error callback is called.
-  PipelineController(Pipeline* pipeline,
+  PipelineController(std::unique_ptr<Pipeline> pipeline,
                      const RendererFactoryCB& renderer_factory_cb,
                      const SeekedCB& seeked_cb,
                      const SuspendedCB& suspended_cb,
@@ -108,6 +109,24 @@ class MEDIA_EXPORT PipelineController {
   // Returns true if |pipeline_| is suspended.
   bool IsPipelineSuspended();
 
+  // Subset of the Pipeline interface directly exposing |pipeline_|.
+  void Stop();
+  bool IsPipelineRunning() const;
+  double GetPlaybackRate() const;
+  void SetPlaybackRate(double playback_rate);
+  float GetVolume() const;
+  void SetVolume(float volume);
+  base::TimeDelta GetMediaTime() const;
+  Ranges<base::TimeDelta> GetBufferedTimeRanges() const;
+  base::TimeDelta GetMediaDuration() const;
+  bool DidLoadingProgress();
+  PipelineStatistics GetStatistics() const;
+  void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
+  void OnEnabledAudioTracksChanged(
+      const std::vector<MediaTrack::Id>& enabledTrackIds);
+  void OnSelectedVideoTrackChanged(
+      base::Optional<MediaTrack::Id> selected_track_id);
+
  private:
   // Attempts to make progress from the current state to the target state.
   void Dispatch();
@@ -116,7 +135,7 @@ class MEDIA_EXPORT PipelineController {
   void OnPipelineStatus(State state, PipelineStatus pipeline_status);
 
   // The Pipeline we are managing state for.
-  Pipeline* pipeline_ = nullptr;
+  std::unique_ptr<Pipeline> pipeline_;
 
   // Factory for Renderers, used for Start() and Resume().
   RendererFactoryCB renderer_factory_cb_;

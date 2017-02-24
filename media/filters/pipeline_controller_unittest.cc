@@ -32,7 +32,8 @@ namespace media {
 class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
  public:
   PipelineControllerTest()
-      : pipeline_controller_(&pipeline_,
+      : pipeline_(new StrictMock<MockPipeline>()),
+        pipeline_controller_(std::unique_ptr<Pipeline>(pipeline_),
                              base::Bind(&PipelineControllerTest::CreateRenderer,
                                         base::Unretained(this)),
                              base::Bind(&PipelineControllerTest::OnSeeked,
@@ -51,9 +52,9 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   PipelineStatusCB StartPipeline(bool is_streaming, bool is_static) {
     EXPECT_FALSE(pipeline_controller_.IsStable());
     PipelineStatusCB start_cb;
-    EXPECT_CALL(pipeline_, Start(_, _, _, _)).WillOnce(SaveArg<3>(&start_cb));
+    EXPECT_CALL(*pipeline_, Start(_, _, _, _)).WillOnce(SaveArg<3>(&start_cb));
     pipeline_controller_.Start(&demuxer_, this, is_streaming, is_static);
-    Mock::VerifyAndClear(&pipeline_);
+    Mock::VerifyAndClear(pipeline_);
     EXPECT_FALSE(pipeline_controller_.IsStable());
     return start_cb;
   }
@@ -71,9 +72,9 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   PipelineStatusCB SeekPipeline(base::TimeDelta time) {
     EXPECT_TRUE(pipeline_controller_.IsStable());
     PipelineStatusCB seek_cb;
-    EXPECT_CALL(pipeline_, Seek(time, _)).WillOnce(SaveArg<1>(&seek_cb));
+    EXPECT_CALL(*pipeline_, Seek(time, _)).WillOnce(SaveArg<1>(&seek_cb));
     pipeline_controller_.Seek(time, true);
-    Mock::VerifyAndClear(&pipeline_);
+    Mock::VerifyAndClear(pipeline_);
     EXPECT_FALSE(pipeline_controller_.IsStable());
     return seek_cb;
   }
@@ -81,9 +82,9 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   PipelineStatusCB SuspendPipeline() {
     EXPECT_TRUE(pipeline_controller_.IsStable());
     PipelineStatusCB suspend_cb;
-    EXPECT_CALL(pipeline_, Suspend(_)).WillOnce(SaveArg<0>(&suspend_cb));
+    EXPECT_CALL(*pipeline_, Suspend(_)).WillOnce(SaveArg<0>(&suspend_cb));
     pipeline_controller_.Suspend();
-    Mock::VerifyAndClear(&pipeline_);
+    Mock::VerifyAndClear(pipeline_);
     EXPECT_TRUE(pipeline_controller_.IsSuspended());
     EXPECT_FALSE(pipeline_controller_.IsStable());
     EXPECT_FALSE(pipeline_controller_.IsPipelineSuspended());
@@ -93,13 +94,13 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   PipelineStatusCB ResumePipeline() {
     EXPECT_TRUE(pipeline_controller_.IsPipelineSuspended());
     PipelineStatusCB resume_cb;
-    EXPECT_CALL(pipeline_, Resume(_, _, _))
+    EXPECT_CALL(*pipeline_, Resume(_, _, _))
         .WillOnce(
             DoAll(SaveArg<1>(&last_resume_time_), SaveArg<2>(&resume_cb)));
-    EXPECT_CALL(pipeline_, GetMediaTime())
+    EXPECT_CALL(*pipeline_, GetMediaTime())
         .WillRepeatedly(Return(base::TimeDelta()));
     pipeline_controller_.Resume();
-    Mock::VerifyAndClear(&pipeline_);
+    Mock::VerifyAndClear(pipeline_);
     EXPECT_FALSE(pipeline_controller_.IsSuspended());
     EXPECT_FALSE(pipeline_controller_.IsStable());
     EXPECT_FALSE(pipeline_controller_.IsPipelineSuspended());
@@ -141,7 +142,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   base::MessageLoop message_loop_;
 
   NiceMock<MockDemuxer> demuxer_;
-  StrictMock<MockPipeline> pipeline_;
+  StrictMock<MockPipeline>* pipeline_;
   PipelineController pipeline_controller_;
 
   bool was_seeked_ = false;
@@ -247,7 +248,7 @@ TEST_F(PipelineControllerTest, SeekAborted) {
 
   // When the first seek is completed (or aborted) the second should be issued.
   EXPECT_CALL(demuxer_, StartWaitingForSeek(seek_time_2));
-  EXPECT_CALL(pipeline_, Seek(seek_time_2, _));
+  EXPECT_CALL(*pipeline_, Seek(seek_time_2, _));
   Complete(seek_cb_1);
 }
 
@@ -264,7 +265,7 @@ TEST_F(PipelineControllerTest, PendingSuspend) {
   base::RunLoop().RunUntilIdle();
 
   // Expect the suspend to trigger when the seek is completed.
-  EXPECT_CALL(pipeline_, Suspend(_));
+  EXPECT_CALL(*pipeline_, Suspend(_));
   Complete(seek_cb);
 }
 
@@ -302,7 +303,7 @@ TEST_F(PipelineControllerTest, SeekMergesWithSeek) {
   base::RunLoop().RunUntilIdle();
 
   // Expect the third seek to trigger when the first seek completes.
-  EXPECT_CALL(pipeline_, Seek(seek_time_3, _));
+  EXPECT_CALL(*pipeline_, Seek(seek_time_3, _));
   Complete(seek_cb_1);
 }
 
@@ -335,7 +336,7 @@ TEST_F(PipelineControllerTest, SeekToSeekTimeNotElided) {
   base::RunLoop().RunUntilIdle();
 
   // Expect the second seek to trigger when the first seek completes.
-  EXPECT_CALL(pipeline_, Seek(seek_time, _));
+  EXPECT_CALL(*pipeline_, Seek(seek_time, _));
   Complete(seek_cb_1);
 }
 

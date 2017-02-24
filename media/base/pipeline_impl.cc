@@ -1256,6 +1256,9 @@ void PipelineImpl::OnError(PipelineStatus error) {
   }
 
   // Any kind of error stops the pipeline.
+  //
+  // TODO (tguilbert): Move this out to PipelineController to make the state
+  // changes more consistent. See crbug.com/695734.
   Stop();
 }
 

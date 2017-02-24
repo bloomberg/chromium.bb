@@ -10,14 +10,14 @@
 namespace media {
 
 PipelineController::PipelineController(
-    Pipeline* pipeline,
+    std::unique_ptr<Pipeline> pipeline,
     const RendererFactoryCB& renderer_factory_cb,
     const SeekedCB& seeked_cb,
     const SuspendedCB& suspended_cb,
     const BeforeResumeCB& before_resume_cb,
     const ResumedCB& resumed_cb,
     const PipelineStatusCB& error_cb)
-    : pipeline_(pipeline),
+    : pipeline_(std::move(pipeline)),
       renderer_factory_cb_(renderer_factory_cb),
       seeked_cb_(seeked_cb),
       suspended_cb_(suspended_cb),
@@ -38,7 +38,7 @@ PipelineController::~PipelineController() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-// TODO(sandersd): If there is a pending suspend, don't call pipeline_.Start()
+// TODO(sandersd): If there is a pending suspend, don't call pipeline_->Start()
 // until Resume().
 void PipelineController::Start(Demuxer* demuxer,
                                Pipeline::Client* client,
@@ -244,6 +244,71 @@ void PipelineController::Dispatch() {
       return;
     }
   }
+}
+
+void PipelineController::Stop() {
+  // For the moment, Stop() is only called on WMPI destruction, and updating the
+  // state of |this| is not relevant. Eventually, Start()/Stop() will be called
+  // in order to swap between demuxer types, and this will need to be adressed.
+  //
+  // TODO(tguilbert): Clarify the appropriate state changes when Stop() is
+  // called. See crbug.com/695734.
+  pipeline_->Stop();
+}
+
+bool PipelineController::IsPipelineRunning() const {
+  return pipeline_->IsRunning();
+}
+
+double PipelineController::GetPlaybackRate() const {
+  return pipeline_->GetPlaybackRate();
+}
+
+void PipelineController::SetPlaybackRate(double playback_rate) {
+  pipeline_->SetPlaybackRate(playback_rate);
+}
+
+float PipelineController::GetVolume() const {
+  return pipeline_->GetVolume();
+}
+
+void PipelineController::SetVolume(float volume) {
+  pipeline_->SetVolume(volume);
+}
+
+base::TimeDelta PipelineController::GetMediaTime() const {
+  return pipeline_->GetMediaTime();
+}
+
+Ranges<base::TimeDelta> PipelineController::GetBufferedTimeRanges() const {
+  return pipeline_->GetBufferedTimeRanges();
+}
+
+base::TimeDelta PipelineController::GetMediaDuration() const {
+  return pipeline_->GetMediaDuration();
+}
+
+bool PipelineController::DidLoadingProgress() {
+  return pipeline_->DidLoadingProgress();
+}
+
+PipelineStatistics PipelineController::GetStatistics() const {
+  return pipeline_->GetStatistics();
+}
+
+void PipelineController::SetCdm(CdmContext* cdm_context,
+                                const CdmAttachedCB& cdm_attached_cb) {
+  pipeline_->SetCdm(cdm_context, cdm_attached_cb);
+}
+
+void PipelineController::OnEnabledAudioTracksChanged(
+    const std::vector<MediaTrack::Id>& enabledTrackIds) {
+  pipeline_->OnEnabledAudioTracksChanged(enabledTrackIds);
+}
+
+void PipelineController::OnSelectedVideoTrackChanged(
+    base::Optional<MediaTrack::Id> selected_track_id) {
+  pipeline_->OnSelectedVideoTrackChanged(selected_track_id);
 }
 
 }  // namespace media

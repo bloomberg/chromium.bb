@@ -145,9 +145,9 @@ gfx::Size GetRotatedVideoSize(VideoRotation rotation, gfx::Size natural_size) {
 }
 
 base::TimeDelta GetCurrentTimeInternal(WebMediaPlayerImpl* p_this) {
-  // We wrap currentTime() instead of using pipeline_.GetMediaTime() since there
-  // are a variety of cases in which that time is not accurate; e.g., while
-  // remoting and during a pause or seek.
+  // We wrap currentTime() instead of using pipeline_controller_.GetMediaTime()
+  // since there are a variety of cases in which that time is not accurate;
+  // e.g., while remoting and during a pause or seek.
   return base::TimeDelta::FromSecondsD(p_this->currentTime());
 }
 
@@ -186,9 +186,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       media_task_runner_(params.media_task_runner()),
       worker_task_runner_(params.worker_task_runner()),
       media_log_(params.media_log()),
-      pipeline_(media_task_runner_, media_log_.get()),
       pipeline_controller_(
-          &pipeline_,
+          base::MakeUnique<PipelineImpl>(media_task_runner_, media_log_.get()),
           base::Bind(&WebMediaPlayerImpl::CreateRenderer,
                      base::Unretained(this)),
           base::Bind(&WebMediaPlayerImpl::OnPipelineSeeked, AsWeakPtr()),
@@ -283,8 +282,8 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   // Finalize any watch time metrics before destroying the pipeline.
   watch_time_reporter_.reset();
 
-  // Pipeline must be stopped before it is destroyed.
-  pipeline_.Stop();
+  // The underlying Pipeline must be stopped before it is destroyed.
+  pipeline_controller_.Stop();
 
   if (last_reported_memory_usage_)
     adjust_allocated_memory_cb_.Run(-last_reported_memory_usage_);
@@ -308,8 +307,8 @@ void WebMediaPlayerImpl::load(LoadType load_type,
   DVLOG(1) << __func__ << "(" << load_type << ", " << url << ", " << cors_mode
            << ")";
   if (!defer_load_cb_.is_null()) {
-    defer_load_cb_.Run(base::Bind(
-        &WebMediaPlayerImpl::DoLoad, AsWeakPtr(), load_type, url, cors_mode));
+    defer_load_cb_.Run(base::Bind(&WebMediaPlayerImpl::DoLoad, AsWeakPtr(),
+                                  load_type, url, cors_mode));
     return;
   }
   DoLoad(load_type, url, cors_mode);
@@ -433,7 +432,7 @@ void WebMediaPlayerImpl::play() {
   // TODO(sandersd): Do we want to reset the idle timer here?
   delegate_->SetIdle(delegate_id_, false);
   paused_ = false;
-  pipeline_.SetPlaybackRate(playback_rate_);
+  pipeline_controller_.SetPlaybackRate(playback_rate_);
   background_pause_timer_.Stop();
 
   if (data_source_)
@@ -471,13 +470,14 @@ void WebMediaPlayerImpl::pause() {
   }
 #endif
 
-  pipeline_.SetPlaybackRate(0.0);
+  pipeline_controller_.SetPlaybackRate(0.0);
 
   // pause() may be called after playback has ended and the HTMLMediaElement
   // requires that currentTime() == duration() after ending.  We want to ensure
   // |paused_time_| matches currentTime() in this case or a future seek() may
   // incorrectly discard what it thinks is a seek to the existing time.
-  paused_time_ = ended_ ? GetPipelineMediaDuration() : pipeline_.GetMediaTime();
+  paused_time_ =
+      ended_ ? GetPipelineMediaDuration() : pipeline_controller_.GetMediaTime();
 
   if (observer_)
     observer_->OnPaused();
@@ -574,7 +574,7 @@ void WebMediaPlayerImpl::setRate(double rate) {
 
   playback_rate_ = rate;
   if (!paused_) {
-    pipeline_.SetPlaybackRate(rate);
+    pipeline_controller_.SetPlaybackRate(rate);
     if (data_source_)
       data_source_->MediaPlaybackRateChanged(rate);
   }
@@ -584,7 +584,7 @@ void WebMediaPlayerImpl::setVolume(double volume) {
   DVLOG(1) << __func__ << "(" << volume << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   volume_ = volume;
-  pipeline_.SetVolume(volume_ * volume_multiplier_);
+  pipeline_controller_.SetVolume(volume_ * volume_multiplier_);
   if (watch_time_reporter_)
     watch_time_reporter_->OnVolumeChange(volume);
 
@@ -673,7 +673,7 @@ void WebMediaPlayerImpl::enabledAudioTracksChanged(
   }
   MEDIA_LOG(INFO, media_log_) << "Enabled audio tracks: [" << logstr.str()
                               << "]";
-  pipeline_.OnEnabledAudioTracksChanged(enabledMediaTrackIds);
+  pipeline_controller_.OnEnabledAudioTracksChanged(enabledMediaTrackIds);
 }
 
 void WebMediaPlayerImpl::selectedVideoTrackChanged(
@@ -685,7 +685,7 @@ void WebMediaPlayerImpl::selectedVideoTrackChanged(
     selected_video_track_id = MediaTrack::Id(selectedTrackId->utf8().data());
   MEDIA_LOG(INFO, media_log_) << "Selected video track: ["
                               << selected_video_track_id.value_or("") << "]";
-  pipeline_.OnSelectedVideoTrackChanged(selected_video_track_id);
+  pipeline_controller_.OnSelectedVideoTrackChanged(selected_video_track_id);
 }
 
 blink::WebSize WebMediaPlayerImpl::naturalSize() const {
@@ -702,7 +702,7 @@ bool WebMediaPlayerImpl::paused() const {
     return cast_impl_.IsPaused();
 #endif
 
-  return pipeline_.GetPlaybackRate() == 0.0f;
+  return pipeline_controller_.GetPlaybackRate() == 0.0f;
 }
 
 bool WebMediaPlayerImpl::seeking() const {
@@ -763,7 +763,7 @@ double WebMediaPlayerImpl::currentTime() const {
   if (paused_)
     return paused_time_.InSecondsF();
 
-  return pipeline_.GetMediaTime().InSecondsF();
+  return pipeline_controller_.GetMediaTime().InSecondsF();
 }
 
 WebMediaPlayer::NetworkState WebMediaPlayerImpl::getNetworkState() const {
@@ -785,12 +785,12 @@ blink::WebTimeRanges WebMediaPlayerImpl::buffered() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   Ranges<base::TimeDelta> buffered_time_ranges =
-      pipeline_.GetBufferedTimeRanges();
+      pipeline_controller_.GetBufferedTimeRanges();
 
   const base::TimeDelta duration = GetPipelineMediaDuration();
   if (duration != kInfiniteDuration) {
-    buffered_data_source_host_.AddBufferedTimeRanges(
-        &buffered_time_ranges, duration);
+    buffered_data_source_host_.AddBufferedTimeRanges(&buffered_time_ranges,
+                                                     duration);
   }
   return ConvertToWebTimeRanges(buffered_time_ranges);
 }
@@ -844,7 +844,7 @@ bool WebMediaPlayerImpl::didLoadingProgress() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Note: Separate variables used to ensure both methods are called every time.
-  const bool pipeline_progress = pipeline_.DidLoadingProgress();
+  const bool pipeline_progress = pipeline_controller_.DidLoadingProgress();
   const bool data_progress = buffered_data_source_host_.DidLoadingProgress();
   const bool did_loading_progress = pipeline_progress || data_progress;
 
@@ -1067,8 +1067,8 @@ void WebMediaPlayerImpl::SetCdm(blink::WebContentDecryptionModule* cdm) {
   // Keep the reference to the CDM, as it shouldn't be destroyed until
   // after the pipeline is done with the |cdm_context|.
   pending_cdm_ = std::move(cdm_reference);
-  pipeline_.SetCdm(cdm_context,
-                   base::Bind(&WebMediaPlayerImpl::OnCdmAttached, AsWeakPtr()));
+  pipeline_controller_.SetCdm(
+      cdm_context, base::Bind(&WebMediaPlayerImpl::OnCdmAttached, AsWeakPtr()));
 }
 
 void WebMediaPlayerImpl::OnCdmAttached(bool success) {
@@ -1106,10 +1106,10 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
     if (isRemote()) {
       paused_time_ = base::TimeDelta::FromSecondsD(cast_impl_.currentTime());
     } else {
-      paused_time_ = pipeline_.GetMediaTime();
+      paused_time_ = pipeline_controller_.GetMediaTime();
     }
 #else
-    paused_time_ = pipeline_.GetMediaTime();
+    paused_time_ = pipeline_controller_.GetMediaTime();
 #endif
   } else {
     DCHECK(watch_time_reporter_);
@@ -1359,12 +1359,10 @@ void WebMediaPlayerImpl::OnAddTextTrack(const TextTrackConfig& config,
 
   const WebInbandTextTrackImpl::Kind web_kind =
       static_cast<WebInbandTextTrackImpl::Kind>(config.kind());
-  const blink::WebString web_label =
-      blink::WebString::fromUTF8(config.label());
+  const blink::WebString web_label = blink::WebString::fromUTF8(config.label());
   const blink::WebString web_language =
       blink::WebString::fromUTF8(config.language());
-  const blink::WebString web_id =
-      blink::WebString::fromUTF8(config.id());
+  const blink::WebString web_id = blink::WebString::fromUTF8(config.id());
 
   std::unique_ptr<WebInbandTextTrackImpl> web_inband_text_track(
       new WebInbandTextTrackImpl(web_kind, web_label, web_language, web_id));
@@ -1520,7 +1518,8 @@ void WebMediaPlayerImpl::OnVolumeMultiplierUpdate(double multiplier) {
 
 void WebMediaPlayerImpl::ScheduleRestart() {
   // TODO(watk): All restart logic should be moved into PipelineController.
-  if (pipeline_.IsRunning() && !pipeline_controller_.IsPipelineSuspended()) {
+  if (pipeline_controller_.IsPipelineRunning() &&
+      !pipeline_controller_.IsPipelineSuspended()) {
     pending_suspend_resume_cycle_ = true;
     UpdatePlayState();
   }
@@ -1648,9 +1647,8 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
   else if (is_downloading && network_state_ == WebMediaPlayer::NetworkStateIdle)
     SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   media_log_->AddEvent(
-      media_log_->CreateBooleanEvent(
-          MediaLogEvent::NETWORK_ACTIVITY_SET,
-          "is_downloading_data", is_downloading));
+      media_log_->CreateBooleanEvent(MediaLogEvent::NETWORK_ACTIVITY_SET,
+                                     "is_downloading_data", is_downloading));
 }
 
 void WebMediaPlayerImpl::OnSurfaceCreated(int surface_id) {
@@ -1802,17 +1800,15 @@ blink::WebAudioSourceProvider* WebMediaPlayerImpl::getAudioSourceProvider() {
   return audio_source_provider_.get();
 }
 
-static void GetCurrentFrameAndSignal(
-    VideoFrameCompositor* compositor,
-    scoped_refptr<VideoFrame>* video_frame_out,
-    base::WaitableEvent* event) {
+static void GetCurrentFrameAndSignal(VideoFrameCompositor* compositor,
+                                     scoped_refptr<VideoFrame>* video_frame_out,
+                                     base::WaitableEvent* event) {
   TRACE_EVENT0("media", "GetCurrentFrameAndSignal");
   *video_frame_out = compositor->GetCurrentFrameAndUpdateIfStale();
   event->Signal();
 }
 
-scoped_refptr<VideoFrame>
-WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
+scoped_refptr<VideoFrame> WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl::GetCurrentFrameFromCompositor");
 
@@ -1826,11 +1822,10 @@ WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
   scoped_refptr<VideoFrame> video_frame;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  compositor_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(&GetCurrentFrameAndSignal,
-                                               base::Unretained(compositor_),
-                                               &video_frame,
-                                               &event));
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GetCurrentFrameAndSignal, base::Unretained(compositor_),
+                 &video_frame, &event));
   event.Wait();
   return video_frame;
 }
@@ -2224,7 +2219,8 @@ void WebMediaPlayerImpl::PauseVideoIfNeeded() {
 
   // Don't pause video while the pipeline is stopped, resuming or seeking.
   // Also if the video is paused already.
-  if (!pipeline_.IsRunning() || is_pipeline_resuming_ || seeking_ || paused_)
+  if (!pipeline_controller_.IsPipelineRunning() || is_pipeline_resuming_ ||
+      seeking_ || paused_)
     return;
 
   // OnPause() will set |paused_when_hidden_| to false and call
@@ -2236,7 +2232,8 @@ void WebMediaPlayerImpl::PauseVideoIfNeeded() {
 void WebMediaPlayerImpl::EnableVideoTrackIfNeeded() {
   // Don't change video track while the pipeline is stopped, resuming or
   // seeking.
-  if (!pipeline_.IsRunning() || is_pipeline_resuming_ || seeking_)
+  if (!pipeline_controller_.IsPipelineRunning() || is_pipeline_resuming_ ||
+      seeking_)
     return;
 
   if (video_track_disabled_) {
@@ -2269,7 +2266,8 @@ void WebMediaPlayerImpl::SetPipelineStatisticsForTest(
 PipelineStatistics WebMediaPlayerImpl::GetPipelineStatistics() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  return pipeline_statistics_for_test_.value_or(pipeline_.GetStatistics());
+  return pipeline_statistics_for_test_.value_or(
+      pipeline_controller_.GetStatistics());
 }
 
 void WebMediaPlayerImpl::SetPipelineMediaDurationForTest(
@@ -2281,7 +2279,7 @@ base::TimeDelta WebMediaPlayerImpl::GetPipelineMediaDuration() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   return pipeline_media_duration_for_test_.value_or(
-      pipeline_.GetMediaDuration());
+      pipeline_controller_.GetMediaDuration());
 }
 
 void WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame(

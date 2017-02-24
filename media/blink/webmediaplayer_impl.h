@@ -478,9 +478,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   scoped_refptr<base::TaskRunner> worker_task_runner_;
   scoped_refptr<MediaLog> media_log_;
 
-  // |pipeline_controller_| references |pipeline_| and therefore must be
-  // constructed after and destructed before |pipeline_|.
-  PipelineImpl pipeline_;
+  // |pipeline_controller_| owns an instance of Pipeline.
   PipelineController pipeline_controller_;
 
   // The LoadType passed in the |load_type| parameter of the load() call.
