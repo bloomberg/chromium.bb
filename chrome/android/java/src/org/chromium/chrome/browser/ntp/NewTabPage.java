@@ -137,13 +137,6 @@ public class NewTabPage
     }
 
     /**
-     * Object that registered through the {@link NewTabPageManager}, and that will be notified when
-     * the {@link NewTabPage} is destroyed.
-     * @see NewTabPageManager#addDestructionObserver(DestructionObserver)
-     */
-    public interface DestructionObserver { void onDestroy(); }
-
-    /**
      * Handles user interaction with the fakebox (the URL bar in the NTP).
      */
     public interface FakeboxDelegate {

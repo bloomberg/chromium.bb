@@ -8,12 +8,12 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 
