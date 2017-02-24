@@ -11,7 +11,7 @@
 <dom-module id="easy-unlock-turn-off-dialog">
   <template>
     <style include="settings-shared"></style>
-    <dialog is="cr-dialog" id="dialog">
+    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div class="title">[[getTitleText_(status_)]]</div>
       <div class="body">
         [[getDescriptionText_(status_)]]

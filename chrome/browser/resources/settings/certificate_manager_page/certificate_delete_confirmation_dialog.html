@@ -8,7 +8,7 @@
 <dom-module id="settings-certificate-delete-confirmation-dialog">
   <template>
     <style include="settings-shared"></style>
-    <dialog is="cr-dialog" id="dialog">
+    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div class="title">[[getTitleText_(model, certificateType)]]</div>
       <div class="body">
         <div>[[getDescriptionText_(model, certificateType)]]</div>

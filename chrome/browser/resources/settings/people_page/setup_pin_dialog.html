@@ -33,7 +33,8 @@
       }
     </style>
 
-    <dialog is="cr-dialog" id="dialog" on-close="close">
+    <dialog is="cr-dialog" id="dialog" on-close="close"
+        close-text="$i18n{close}">
       <div class="title">[[getTitleMessage_(isConfirmStep_)]]</div>
       <div class="body">
         <!-- Warning/error; only shown if title is hidden. Id is needed for
