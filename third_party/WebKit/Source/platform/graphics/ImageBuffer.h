@@ -196,9 +196,6 @@ class PLATFORM_EXPORT ImageBuffer {
   std::unique_ptr<ImageBufferSurface> m_surface;
   ImageBufferClient* m_client;
 
-  mutable bool m_gpuReadbackInvokedInCurrentFrame;
-  int m_gpuReadbackSuccessiveFrames;
-
   mutable intptr_t m_gpuMemoryUsage;
   static intptr_t s_globalGPUMemoryUsage;
   static unsigned s_globalAcceleratedImageBufferCount;

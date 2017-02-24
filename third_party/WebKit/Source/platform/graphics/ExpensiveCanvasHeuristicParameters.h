@@ -78,11 +78,7 @@ enum {
   // GPU readback prevention heuristics
   //====================================
 
-  GPUReadbackForcesNoAcceleration = 1,
-
-  // When gpu readback is successively invoked in following number of frames,
-  // we disable gpu acceleration to avoid the high cost of gpu readback.
-  GPUReadbackMinSuccessiveFrames = 3,
+  GetImageDataForcesNoAcceleration = 1,
 
   // When a canvas is used as a source image, if its destination is
   // non-accelerated and the source canvas is accelerated, a readback

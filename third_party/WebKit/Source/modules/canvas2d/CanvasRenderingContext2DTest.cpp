@@ -988,24 +988,10 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration) {
   EXPECT_EQ(720000, getGlobalGPUMemoryUsage());
 
   DummyExceptionStateForTesting exceptionState;
-  for (int i = 0;
-       i <
-       ExpensiveCanvasHeuristicParameters::GPUReadbackMinSuccessiveFrames - 1;
-       i++) {
-    context2d()->getImageData(0, 0, 1, 1, exceptionState);
-    canvasElement().finalizeFrame();
-
-    EXPECT_FALSE(exceptionState.hadException());
-    EXPECT_TRUE(canvasElement().buffer()->isAccelerated());
-    EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
-    EXPECT_EQ(720000, getGlobalGPUMemoryUsage());
-  }
-
   context2d()->getImageData(0, 0, 1, 1, exceptionState);
-  canvasElement().finalizeFrame();
 
   EXPECT_FALSE(exceptionState.hadException());
-  if (ExpensiveCanvasHeuristicParameters::GPUReadbackForcesNoAcceleration) {
+  if (ExpensiveCanvasHeuristicParameters::GetImageDataForcesNoAcceleration) {
     EXPECT_FALSE(canvasElement().buffer()->isAccelerated());
     EXPECT_EQ(0u, getGlobalAcceleratedImageBufferCount());
     EXPECT_EQ(0, getGlobalGPUMemoryUsage());
