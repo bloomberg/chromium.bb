@@ -51,14 +51,14 @@ var vrShellUi = (function() {
       element.setTranslation(0, 0, -this.BROWSING_SCREEN_DISTANCE);
       this.elementId = ui.addElement(element);
 
-      // Place an invisible but hittable plane behind the content quad, to keep
-      // the reticle roughly planar with the content if near content.
+      // Place an invisible (fill none) but hittable plane behind the content
+      // quad, to keep the reticle roughly planar with the content if near
+      // content.
       let backPlane = new api.UiElement(0, 0, 0, 0);
-      backPlane.setVisible(false);
-      backPlane.setHitTestable(true);
       backPlane.setSize(1000, 1000);
       backPlane.setTranslation(0, 0, -0.01);
       backPlane.setParentId(this.elementId);
+      backPlane.setFill(new api.NoFill());
       ui.addElement(backPlane);
 
       this.updateState();

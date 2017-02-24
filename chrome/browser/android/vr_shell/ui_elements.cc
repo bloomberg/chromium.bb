@@ -198,7 +198,7 @@ bool ContentRectangle::IsVisible() const {
 }
 
 bool ContentRectangle::IsHitTestable() const {
-  return hit_testable;
+  return IsVisible() && hit_testable;
 }
 
 }  // namespace vr_shell

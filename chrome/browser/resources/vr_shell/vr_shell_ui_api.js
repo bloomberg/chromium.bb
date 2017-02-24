@@ -140,6 +140,12 @@ api.Fill = class {
   }
 }
 
+api.NoFill = class extends api.Fill {
+  constructor() {
+    super(api.FillType.NONE);
+  }
+}
+
 api.Sprite = class extends api.Fill {
   constructor(pixelX, pixelY, pixelWidth, pixelHeight) {
     super(api.FillType.SPRITE);
