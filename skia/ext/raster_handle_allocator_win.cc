@@ -108,6 +108,10 @@ class GDIAllocator : public SkRasterHandleAllocator {
   }
 };
 
+void unmap_view_proc(void* pixels, void*) {
+  UnmapViewOfFile(pixels);
+}
+
 }  // namespace
 
 namespace skia {
@@ -137,8 +141,13 @@ std::unique_ptr<SkCanvas> CreatePlatformCanvasWithSharedSection(
     DCHECK(shared_section != NULL);
     void* pixels =
         MapViewOfFile(shared_section, FILE_MAP_WRITE, 0, 0, row_bytes * height);
-    if (pixels)
-      return SkCanvas::MakeRasterDirect(info, pixels, row_bytes);
+    if (pixels) {
+      SkBitmap bitmap;
+      if (bitmap.installPixels(info, pixels, row_bytes, nullptr,
+                               unmap_view_proc, nullptr)) {
+        return base::MakeUnique<SkCanvas>(bitmap);
+      }
+    }
   }
 
   if (failure_type == CRASH_ON_FAILURE)
