@@ -710,6 +710,108 @@ TEST_F(InMemoryURLIndexTest, ProperStringMatching) {
   EXPECT_EQ(1U, matches.size());
 }
 
+TEST_F(InMemoryURLIndexTest, TrimHistoryIds) {
+  // Constants ---------------------------------------------------------------
+
+  constexpr size_t kItemsToScoreLimit = 500;
+  constexpr size_t kAlmostLimit = kItemsToScoreLimit - 5;
+
+  constexpr int kLowTypedCount = 2;
+  constexpr int kHighTypedCount = 100;
+
+  constexpr int kLowVisitCount = 20;
+  constexpr int kHighVisitCount = 200;
+
+  constexpr base::TimeDelta kOld = base::TimeDelta::FromDays(15);
+  constexpr base::TimeDelta kNew = base::TimeDelta::FromDays(2);
+
+  constexpr int kMinRowId = 5000;
+
+  // Helpers -----------------------------------------------------------------
+
+  struct ItemGroup {
+    history::URLID min_id;
+    history::URLID max_id;
+    int typed_count;
+    int visit_count;
+    base::TimeDelta days_ago;
+  };
+
+  auto GetHistoryIdsUpTo = [&](HistoryID max) {
+    HistoryIDSet res;
+    // All ids are inserted in the end so the implicit hint would work.
+    for (HistoryID id = kMinRowId; id < max; ++id)
+      res.insert(id);
+    return res;
+  };
+
+  auto CountGroupElementsInIds = [](const ItemGroup& group,
+                                    const HistoryIDSet& ids) {
+    return std::count_if(ids.begin(), ids.end(), [&](history::URLID id) {
+      return group.min_id <= id && id < group.max_id;
+    });
+  };
+
+  // Test body --------------------------------------------------------------
+
+  // Groups of items ordered by increasing priority.
+  ItemGroup item_groups[] = {
+      {0, 0, kLowTypedCount, kLowVisitCount, kOld},
+      {0, 0, kLowTypedCount, kLowVisitCount, kNew},
+      {0, 0, kLowTypedCount, kHighVisitCount, kOld},
+      {0, 0, kLowTypedCount, kHighVisitCount, kNew},
+      {0, 0, kHighTypedCount, kLowVisitCount, kOld},
+      {0, 0, kHighTypedCount, kLowVisitCount, kNew},
+      {0, 0, kHighTypedCount, kHighVisitCount, kOld},
+      {0, 0, kHighTypedCount, kHighVisitCount, kNew},
+  };
+
+  // Initialize groups.
+  history::URLID row_id = kMinRowId;
+  for (auto& group : item_groups) {
+    group.min_id = row_id;
+    for (size_t i = 0; i < kAlmostLimit; ++i) {
+      history::URLRow new_row(
+          GURL("http://www.fake_url" + std::to_string(row_id) + ".com"),
+          row_id);
+      new_row.set_typed_count(group.typed_count);
+      new_row.set_visit_count(group.visit_count);
+      new_row.set_last_visit(base::Time::Now() - group.days_ago);
+      UpdateURL(std::move(new_row));
+      ++row_id;
+    }
+    group.max_id = row_id;
+  }
+
+  // First group. Because number of entries is small enough no trimming occurs.
+  {
+    auto ids = GetHistoryIdsUpTo(item_groups[0].max_id);
+    EXPECT_FALSE(GetPrivateData()->TrimHistoryIdsPool(&ids));
+    EXPECT_EQ(kAlmostLimit, ids.size());
+  }
+
+  // Each next group should fill almost everything, while the previous group
+  // should occupy what's left.
+  auto error_position = std::adjacent_find(
+      std::begin(item_groups), std::end(item_groups),
+      [&](const ItemGroup& previous, const ItemGroup& current) {
+        auto ids = GetHistoryIdsUpTo(current.max_id);
+        EXPECT_TRUE(GetPrivateData()->TrimHistoryIdsPool(&ids));
+
+        size_t current_count = CountGroupElementsInIds(current, ids);
+        EXPECT_EQ(kAlmostLimit, current_count);
+        if (current_count != kAlmostLimit)
+          return true;
+
+        size_t previous_count = CountGroupElementsInIds(previous, ids);
+        EXPECT_EQ(kItemsToScoreLimit - kAlmostLimit, previous_count);
+        return previous_count != kItemsToScoreLimit - kAlmostLimit;
+      });
+
+  EXPECT_TRUE(error_position == std::end(item_groups))
+      << "broken after: " << error_position - std::begin(item_groups);
+}
+
 TEST_F(InMemoryURLIndexTest, HugeResultSet) {
   // Create a huge set of qualifying history items.
   for (history::URLID row_id = 5000; row_id < 6000; ++row_id) {
@@ -721,12 +823,7 @@ TEST_F(InMemoryURLIndexTest, HugeResultSet) {
 
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("b"), base::string16::npos, kMaxMatches);
-  URLIndexPrivateData& private_data(*GetPrivateData());
   EXPECT_EQ(kMaxMatches, matches.size());
-  // There are 7 matches already in the database.
-  EXPECT_EQ(1008U, private_data.pre_filter_item_count_);
-  EXPECT_EQ(500U, private_data.post_filter_item_count_);
-  EXPECT_EQ(kMaxMatches, private_data.post_scoring_item_count_);
 }
 
 TEST_F(InMemoryURLIndexTest, TitleSearch) {

@@ -146,13 +146,14 @@ class URLIndexPrivateData
 
   friend class ::HistoryQuickProviderTest;
   friend class InMemoryURLIndexTest;
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CalculateWordStartsOffsets);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheSaveRestore);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CalculateWordStartsOffsets);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, HugeResultSet);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, ReadVisitsFromHistory);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Scoring);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TitleSearch);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TrimHistoryIds);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TypedCharacterCaching);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, WhitelistedURLs);
   FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
@@ -207,6 +208,14 @@ class URLIndexPrivateData
   // Composes a set of history item IDs by intersecting the set for each word
   // in |unsorted_words|.
   HistoryIDSet HistoryIDSetFromWords(const String16Vector& unsorted_words);
+
+  // Trims the candidate pool in advance of doing proper substring searching, to
+  // cap the cost of such searching. Discards the least-relevant items (based on
+  // visit stats), which are least likely to score highly in the end.  To
+  // minimize the risk of discarding a valuable URL, the candidate pool is still
+  // left two orders of magnitude larger than the final number of results
+  // returned from the HQP. Returns whether anything was trimmed.
+  bool TrimHistoryIdsPool(HistoryIDSet* history_id_set) const;
 
   // Helper function to HistoryIDSetFromWords which composes a set of history
   // ids for the given term given in |term|.
@@ -379,12 +388,6 @@ class URLIndexPrivateData
   // Used only for testing upgrading of an older version of the cache upon
   // restore.
   int saved_cache_version_;
-
-  // Used for unit testing only. Records the number of candidate history items
-  // at three stages in the index searching process.
-  size_t pre_filter_item_count_;    // After word index is queried.
-  size_t post_filter_item_count_;   // After trimming large result set.
-  size_t post_scoring_item_count_;  // After performing final filter/scoring.
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_URL_INDEX_PRIVATE_DATA_H_

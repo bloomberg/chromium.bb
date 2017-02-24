@@ -141,11 +141,7 @@ constexpr size_t URLIndexPrivateData::kMaxVisitsToStoreInCache;
 
 URLIndexPrivateData::URLIndexPrivateData()
     : restored_cache_version_(0),
-      saved_cache_version_(kCurrentCacheFileVersion),
-      pre_filter_item_count_(0),
-      post_filter_item_count_(0),
-      post_scoring_item_count_(0) {
-}
+      saved_cache_version_(kCurrentCacheFileVersion) {}
 
 ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     base::string16 original_search_string,
@@ -153,10 +149,6 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     size_t max_matches,
     bookmarks::BookmarkModel* bookmark_model,
     TemplateURLService* template_url_service) {
-  pre_filter_item_count_ = 0;
-  post_filter_item_count_ = 0;
-  post_scoring_item_count_ = 0;
-
   // This list will contain the original search string and any other string
   // transformations.
   String16Vector search_strings;
@@ -182,6 +174,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   // approach.
   ResetSearchTermCache();
 
+  bool history_ids_were_trimmed = false;
   for (const base::string16& search_string : search_strings) {
     // The search string we receive may contain escaped characters. For reducing
     // the index we need individual, lower-cased words, ignoring escapings. For
@@ -202,29 +195,8 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     if (lower_words.empty())
       continue;
     HistoryIDSet history_id_set = HistoryIDSetFromWords(lower_words);
-    pre_filter_item_count_ += history_id_set.size();
-    // Trim the candidate pool if it is large. Note that we do not filter out
-    // items that do not contain the search terms as proper substrings --
-    // doing so is the performance-costly operation we are trying to avoid in
-    // order to maintain omnibox responsiveness.
-    const size_t kItemsToScoreLimit = 500;
-    if (history_id_set.size() > kItemsToScoreLimit) {
-      HistoryIDVector history_ids;
-      std::copy(history_id_set.begin(), history_id_set.end(),
-                std::back_inserter(history_ids));
-      // Trim down the set by sorting by typed-count, visit-count, and last
-      // visit.
-      HistoryItemFactorGreater item_factor_functor(history_info_map_);
-      std::partial_sort(history_ids.begin(),
-                        history_ids.begin() + kItemsToScoreLimit,
-                        history_ids.end(), item_factor_functor);
-      history_id_set.clear();
-      std::copy(history_ids.begin(), history_ids.begin() + kItemsToScoreLimit,
-                std::inserter(history_id_set, history_id_set.end()));
-      post_filter_item_count_ += history_id_set.size();
-    } else {
-      post_filter_item_count_ += pre_filter_item_count_;
-    }
+    history_ids_were_trimmed |= TrimHistoryIdsPool(&history_id_set);
+
     ScoredHistoryMatches temp_scored_items;
     HistoryIdSetToScoredMatches(history_id_set, lower_raw_string,
                                 template_url_service, bookmark_model,
@@ -242,8 +214,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     std::sort(scored_items.begin(), scored_items.end(),
               ScoredHistoryMatch::MatchScoreGreater);
   }
-  post_scoring_item_count_ = scored_items.size();
-  if (pre_filter_item_count_ > post_filter_item_count_) {
+  if (history_ids_were_trimmed) {
     // If we trim the results set we do not want to cache the results for next
     // time as the user's ultimately desired result could easily be eliminated
     // in the early rough filter.
@@ -472,9 +443,6 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::Duplicate() const {
   return data_copy;
   // Not copied:
   //    search_term_cache_
-  //    pre_filter_item_count_
-  //    post_filter_item_count_
-  //    post_scoring_item_count_
 }
 
 bool URLIndexPrivateData::Empty() const {
@@ -526,6 +494,27 @@ HistoryIDSet URLIndexPrivateData::HistoryIDSetFromWords(
     }
   }
   return history_id_set;
+}
+
+bool URLIndexPrivateData::TrimHistoryIdsPool(
+    HistoryIDSet* history_id_set) const {
+  constexpr size_t kItemsToScoreLimit = 500;
+  if (history_id_set->size() <= kItemsToScoreLimit)
+    return false;
+
+  HistoryIDVector history_ids(history_id_set->begin(), history_id_set->end());
+
+  // Trim down the set by sorting by typed-count, visit-count, and last
+  // visit.
+  auto new_end = history_ids.begin() + kItemsToScoreLimit;
+  HistoryItemFactorGreater item_factor_functor(history_info_map_);
+
+  std::nth_element(history_ids.begin(), new_end, history_ids.end(),
+                   item_factor_functor);
+  history_ids.erase(new_end, history_ids.end());
+
+  *history_id_set = {history_ids.begin(), history_ids.end()};
+  return true;
 }
 
 HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
