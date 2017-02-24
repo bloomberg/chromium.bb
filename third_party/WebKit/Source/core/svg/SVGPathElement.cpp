@@ -20,7 +20,6 @@
 
 #include "core/svg/SVGPathElement.h"
 
-#include "core/css/CSSIdentifierValue.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/layout/svg/LayoutSVGPath.h"
 #include "core/svg/SVGMPathElement.h"
@@ -120,14 +119,8 @@ void SVGPathElement::collectStyleForPresentationAttribute(
     // geometry sharing.
     if (const SVGElement* element = correspondingElement())
       path = toSVGPathElement(element)->path();
-
-    CSSPathValue* pathValue = path->currentValue()->pathValue();
-    if (pathValue->stylePath()->byteStream().isEmpty()) {
-      addPropertyToPresentationAttributeStyle(
-          style, CSSPropertyD, CSSIdentifierValue::create(CSSValueNone));
-      return;
-    }
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyD, pathValue);
+    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
+                                            path->cssValue());
     return;
   }
   SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);

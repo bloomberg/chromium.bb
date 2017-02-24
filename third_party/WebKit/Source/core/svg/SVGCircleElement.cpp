@@ -83,13 +83,13 @@ void SVGCircleElement::collectStyleForPresentationAttribute(
     MutableStylePropertySet* style) {
   SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
   if (property == m_cx) {
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyCx,
+    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
                                             m_cx->cssValue());
   } else if (property == m_cy) {
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyCy,
+    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
                                             m_cy->cssValue());
   } else if (property == m_r) {
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyR,
+    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
                                             m_r->cssValue());
   } else {
     SVGGeometryElement::collectStyleForPresentationAttribute(name, value,

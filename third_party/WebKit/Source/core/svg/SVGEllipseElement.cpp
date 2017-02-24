@@ -96,16 +96,16 @@ void SVGEllipseElement::collectStyleForPresentationAttribute(
     MutableStylePropertySet* style) {
   SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
   if (property == m_cx) {
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyCx,
+    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
                                             m_cx->cssValue());
   } else if (property == m_cy) {
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyCy,
+    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
                                             m_cy->cssValue());
   } else if (property == m_rx) {
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyRx,
+    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
                                             m_rx->cssValue());
   } else if (property == m_ry) {
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyRy,
+    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
                                             m_ry->cssValue());
   } else {
     SVGGeometryElement::collectStyleForPresentationAttribute(name, value,

@@ -47,6 +47,8 @@ class SVGAnimatedPath : public SVGAnimatedProperty<SVGPath> {
     return new SVGAnimatedPath(contextElement, attributeName, cssPropertyId);
   }
 
+  const CSSValue* cssValue() const;
+
  protected:
   SVGAnimatedPath(SVGElement*,
                   const QualifiedName&,
