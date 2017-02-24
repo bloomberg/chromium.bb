@@ -2639,11 +2639,11 @@ AXObjectCache* Document::axObjectCache() const {
   if (!settings || !settings->getAccessibilityEnabled())
     return 0;
 
-  // The only document that actually has a AXObjectCache is the top-level
-  // document.  This is because we need to be able to get from any
-  // WebCoreAXObject to any other WebCoreAXObject on the same page.  Using a
-  // single cache allows lookups across nested webareas (i.e. multiple
-  // documents).
+  // Every document has its own AXObjectCache if accessibility is enabled,
+  // except for page popups (such as select popups or context menus),
+  // which share the AXObjectCache of their owner.
+  //
+  // See http://crbug.com/532249
   Document& cacheOwner = this->axObjectCacheOwner();
 
   // If the document has already been detached, do not make a new axObjectCache.
