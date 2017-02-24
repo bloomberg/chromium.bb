@@ -10253,6 +10253,11 @@
       }
     ]
   },
+  "Linux Clang Analyzer": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "Linux Trusty": {
     "gtest_tests": [
       {
