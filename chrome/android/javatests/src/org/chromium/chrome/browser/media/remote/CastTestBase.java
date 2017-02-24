@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.test.util.ClickUtils;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.UiUtils;
@@ -311,7 +312,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
                 getActivity(), chromecastName, MAX_VIEW_TIME_MS, VIEW_RETRY_MS);
         assertNotNull("Test route not found", testRouteButton);
 
-        RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
+        ClickUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
     }
 
     protected void checkDisconnected() {
@@ -356,7 +357,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
 
         assertNotNull("No disconnect button", disconnectButton);
 
-        RouterTestUtils.clickButton(disconnectButton);
+        ClickUtils.clickButton(disconnectButton);
     }
 
     /*
@@ -563,7 +564,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
                              ((float) (rect.top + rect.bottom)) / 2)
                 + core.getTopControlsHeightPix();
         // Click using a virtual mouse, since a touch may result in a disambiguation pop-up.
-        RouterTestUtils.mouseSingleClickView(getInstrumentation(), tab.getView(), clickX, clickY);
+        ClickUtils.mouseSingleClickView(getInstrumentation(), tab.getView(), clickX, clickY);
     }
 
 

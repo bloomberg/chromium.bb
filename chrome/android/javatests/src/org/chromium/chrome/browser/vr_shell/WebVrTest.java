@@ -12,10 +12,8 @@ import org.chromium.base.Log;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
-// TODO(bsheedy): Factor out the code used from RouterTestUtils into a new
-// file like org.chromium.base.test.util.ClickUtils or similar
-import org.chromium.chrome.browser.media.RouterTestUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.content.browser.test.util.ClickUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
@@ -98,7 +96,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * to fulfil WebVR's gesture requirement for presenting.
      */
     private void enterVrTap() {
-        RouterTestUtils.mouseSingleClickView(
+        ClickUtils.mouseSingleClickView(
                 getInstrumentation(), getActivity().getWindow().getDecorView().getRootView());
     }
 
