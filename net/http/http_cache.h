@@ -244,7 +244,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   friend class ViewCacheHelper;
   struct PendingOp;  // Info for an entry under construction.
 
-  typedef std::list<Transaction*> TransactionList;
+  using TransactionList = std::list<Transaction*>;
+  using TransactionSet = std::unordered_set<Transaction*>;
   typedef std::list<std::unique_ptr<WorkItem>> WorkItemList;
 
   struct ActiveEntry {
@@ -257,7 +258,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
 
     disk_cache::Entry* disk_entry;
     Transaction*       writer;
-    TransactionList    readers;
+    TransactionSet readers;
     TransactionList    pending_queue;
     bool               will_process_pending_queue;
     bool               doomed;

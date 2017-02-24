@@ -853,7 +853,7 @@ int HttpCache::AddTransactionToEntry(ActiveEntry* entry, Transaction* trans) {
     }
   } else {
     // transaction needs read access to the entry
-    entry->readers.push_back(trans);
+    entry->readers.insert(trans);
   }
 
   // We do this before calling EntryAvailable to force any further calls to
@@ -922,7 +922,7 @@ void HttpCache::DoneWritingToEntry(ActiveEntry* entry, bool success) {
 void HttpCache::DoneReadingFromEntry(ActiveEntry* entry, Transaction* trans) {
   DCHECK(!entry->writer);
 
-  auto it = std::find(entry->readers.begin(), entry->readers.end(), trans);
+  auto it = entry->readers.find(trans);
   DCHECK(it != entry->readers.end());
 
   entry->readers.erase(it);
@@ -938,7 +938,7 @@ void HttpCache::ConvertWriterToReader(ActiveEntry* entry) {
   Transaction* trans = entry->writer;
 
   entry->writer = NULL;
-  entry->readers.push_back(trans);
+  entry->readers.insert(trans);
 
   ProcessPendingQueue(entry);
 }
