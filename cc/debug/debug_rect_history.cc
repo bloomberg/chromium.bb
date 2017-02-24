@@ -91,7 +91,8 @@ void DebugRectHistory::SavePropertyChangedRects(
   for (size_t i = 0; i < render_surface_layer_list.size(); ++i) {
     size_t surface_index = render_surface_layer_list.size() - 1 - i;
     LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
-    RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
+    RenderSurfaceImpl* render_surface =
+        render_surface_layer->GetRenderSurface();
     DCHECK(render_surface);
 
     const LayerImplList& layer_list = render_surface->layer_list();
@@ -100,7 +101,8 @@ void DebugRectHistory::SavePropertyChangedRects(
          ++layer_index) {
       LayerImpl* layer = layer_list[layer_index];
 
-      if (layer->render_surface() && layer->render_surface() != render_surface)
+      if (layer->GetRenderSurface() &&
+          layer->GetRenderSurface() != render_surface)
         continue;
 
       if (layer == hud_layer)
@@ -122,7 +124,8 @@ void DebugRectHistory::SaveSurfaceDamageRects(
   for (size_t i = 0; i < render_surface_layer_list.size(); ++i) {
     size_t surface_index = render_surface_layer_list.size() - 1 - i;
     LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
-    RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
+    RenderSurfaceImpl* render_surface =
+        render_surface_layer->GetRenderSurface();
     DCHECK(render_surface);
 
     debug_rects_.push_back(DebugRect(
@@ -137,7 +140,8 @@ void DebugRectHistory::SaveScreenSpaceRects(
   for (size_t i = 0; i < render_surface_layer_list.size(); ++i) {
     size_t surface_index = render_surface_layer_list.size() - 1 - i;
     LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
-    RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
+    RenderSurfaceImpl* render_surface =
+        render_surface_layer->GetRenderSurface();
     DCHECK(render_surface);
 
     debug_rects_.push_back(

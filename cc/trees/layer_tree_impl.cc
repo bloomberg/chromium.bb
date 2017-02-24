@@ -277,7 +277,7 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
 }
 
 RenderSurfaceImpl* LayerTreeImpl::RootRenderSurface() const {
-  return layer_list_.empty() ? nullptr : layer_list_[0]->render_surface();
+  return layer_list_.empty() ? nullptr : layer_list_[0]->GetRenderSurface();
 }
 
 bool LayerTreeImpl::LayerListIsEmpty() const {
@@ -1049,7 +1049,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
                  "IsActive", IsActiveTree(), "SourceFrameNumber",
                  source_frame_number_);
     OcclusionTracker occlusion_tracker(
-        layer_list_[0]->render_surface()->content_rect());
+        layer_list_[0]->GetRenderSurface()->content_rect());
     occlusion_tracker.set_minimum_tracking_size(
         settings().minimum_occlusion_tracking_size);
 
@@ -1070,7 +1070,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
         const RenderSurfaceImpl* occlusion_surface =
             occlusion_tracker.OcclusionSurfaceForContributingSurface();
         gfx::Transform draw_transform;
-        RenderSurfaceImpl* render_surface = it->render_surface();
+        RenderSurfaceImpl* render_surface = it->GetRenderSurface();
         if (occlusion_surface) {
           // We are calculating transform between two render surfaces. So, we
           // need to apply the surface contents scale at target and remove the
@@ -1793,7 +1793,7 @@ static const gfx::Transform SurfaceScreenSpaceTransform(
     const LayerImpl* layer) {
   const PropertyTrees* property_trees =
       layer->layer_tree_impl()->property_trees();
-  RenderSurfaceImpl* render_surface = layer->render_surface();
+  RenderSurfaceImpl* render_surface = layer->GetRenderSurface();
   DCHECK(render_surface);
   return layer->is_drawn_render_surface_layer_list_member()
              ? render_surface->screen_space_transform()
@@ -1838,7 +1838,7 @@ static bool PointIsClippedByAncestorClipNode(
     }
     const LayerImpl* clip_node_owner =
         layer->layer_tree_impl()->LayerById(clip_node->owning_layer_id);
-    RenderSurfaceImpl* render_surface = clip_node_owner->render_surface();
+    RenderSurfaceImpl* render_surface = clip_node_owner->GetRenderSurface();
     if (render_surface &&
         !PointHitsRect(screen_space_point,
                        SurfaceScreenSpaceTransform(clip_node_owner),

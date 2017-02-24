@@ -118,8 +118,8 @@ static SimpleEnclosedRegion TransformSurfaceOpaqueRegion(
 }
 
 void OcclusionTracker::EnterRenderTarget(const LayerImpl* new_target) {
-  DCHECK(new_target->has_render_surface());
-  RenderSurfaceImpl* new_target_surface = new_target->render_surface();
+  DCHECK(new_target->GetRenderSurface());
+  RenderSurfaceImpl* new_target_surface = new_target->GetRenderSurface();
   if (!stack_.empty() && stack_.back().target == new_target_surface)
     return;
 
@@ -181,7 +181,7 @@ void OcclusionTracker::FinishedRenderTarget(const LayerImpl* finished_target) {
   // Make sure we know about the target surface.
   EnterRenderTarget(finished_target);
 
-  RenderSurfaceImpl* surface = finished_target->render_surface();
+  RenderSurfaceImpl* surface = finished_target->GetRenderSurface();
 
   // Readbacks always happen on render targets so we only need to check
   // for readbacks here.
@@ -255,8 +255,8 @@ static void ReduceOcclusionBelowSurface(
 void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
   DCHECK(!stack_.empty());
   size_t last_index = stack_.size() - 1;
-  DCHECK(new_target->has_render_surface());
-  RenderSurfaceImpl* new_surface = new_target->render_surface();
+  DCHECK(new_target->GetRenderSurface());
+  RenderSurfaceImpl* new_surface = new_target->GetRenderSurface();
   bool surface_will_be_at_top_after_pop =
       stack_.size() > 1 && stack_[last_index - 1].target == new_surface;
 

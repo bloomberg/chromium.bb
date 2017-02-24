@@ -291,7 +291,7 @@ static void ComputeInitialRenderSurfaceLayerList(
   // all non-skipped layers to the layer list of their target surface, and
   // add their content rect to their target surface's accumulated content rect.
   for (LayerImpl* layer : *layer_tree_impl) {
-    RenderSurfaceImpl* render_surface = layer->render_surface();
+    RenderSurfaceImpl* render_surface = layer->GetRenderSurface();
     if (render_surface) {
       render_surface->ClearLayerLists();
       ClearMaskLayersAreDrawnRenderSurfaceLayerListMembers(render_surface);
@@ -372,7 +372,7 @@ static void ComputeSurfaceContentRects(LayerTreeImpl* layer_tree_impl,
   // Walk the list backwards, accumulating each surface's content rect into its
   // target's content rect.
   for (LayerImpl* layer : base::Reversed(*render_surface_layer_list)) {
-    RenderSurfaceImpl* render_surface = layer->render_surface();
+    RenderSurfaceImpl* render_surface = layer->GetRenderSurface();
     if (layer_tree_impl->IsRootLayer(layer)) {
       // The root layer's surface content rect is always the entire viewport.
       render_surface->SetContentRectToViewport();
@@ -401,7 +401,7 @@ static void ComputeListOfNonEmptySurfaces(LayerTreeImpl* layer_tree_impl,
   // the final list do not get added to the final list.
   for (LayerImpl* layer : *initial_surface_list) {
     bool is_root = layer_tree_impl->IsRootLayer(layer);
-    RenderSurfaceImpl* surface = layer->render_surface();
+    RenderSurfaceImpl* surface = layer->GetRenderSurface();
     RenderSurfaceImpl* target_surface = surface->render_target();
     if (!is_root && (surface->content_rect().IsEmpty() ||
                      target_surface->layer_list().empty())) {
@@ -567,7 +567,7 @@ void CalculateDrawPropertiesInternal(
 
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.
-  DCHECK(inputs->root_layer->render_surface());
+  DCHECK(inputs->root_layer->GetRenderSurface());
 }
 
 void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(

@@ -57,7 +57,8 @@ void ResetCounts(LayerImplList* render_surface_layer_list) {
        ++surface_index) {
     TestLayerImpl* render_surface_layer = static_cast<TestLayerImpl*>(
         render_surface_layer_list->at(surface_index));
-    RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
+    RenderSurfaceImpl* render_surface =
+        render_surface_layer->GetRenderSurface();
 
     render_surface_layer->count_representing_target_surface_ = -1;
     render_surface_layer->count_representing_contributing_surface_ = -1;

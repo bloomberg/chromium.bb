@@ -192,7 +192,7 @@ DamageTracker::DamageAccumulator DamageTracker::TrackDamageFromActiveLayers(
     if (layer == layer->layer_tree_impl()->hud_layer())
       continue;
 
-    RenderSurfaceImpl* render_surface = layer->render_surface();
+    RenderSurfaceImpl* render_surface = layer->GetRenderSurface();
     if (render_surface && render_surface != target_surface)
       ExtendDamageForRenderSurface(render_surface, &damage);
     else

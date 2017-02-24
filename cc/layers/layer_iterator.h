@@ -164,7 +164,7 @@ class LayerIterator {
       : render_surface_layer_list_(render_surface_layer_list),
         target_render_surface_layer_index_(0) {
     for (size_t i = 0; i < render_surface_layer_list->size(); ++i) {
-      if (!render_surface_layer_list->at(i)->render_surface()) {
+      if (!render_surface_layer_list->at(i)->GetRenderSurface()) {
         NOTREACHED();
         MoveToEnd();
         return;
@@ -250,7 +250,7 @@ class LayerIterator {
   }
 
   inline bool current_layer_represents_contributing_render_surface() const {
-    RenderSurfaceImpl* render_surface = current_layer()->render_surface();
+    RenderSurfaceImpl* render_surface = current_layer()->GetRenderSurface();
     return render_surface && render_surface != target_render_surface();
   }
   inline bool current_layer_represents_target_render_surface() const {
@@ -259,7 +259,7 @@ class LayerIterator {
   }
 
   inline RenderSurfaceImpl* target_render_surface() const {
-    return target_render_surface_layer()->render_surface();
+    return target_render_surface_layer()->GetRenderSurface();
   }
   inline const LayerImplList& target_render_surface_children() const {
     return target_render_surface()->layer_list();

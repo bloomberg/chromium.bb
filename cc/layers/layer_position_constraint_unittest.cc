@@ -459,12 +459,12 @@ TEST_F(LayerPositionConstraintTest,
   gfx::Transform expected_grand_child_transform;
   gfx::Transform expected_great_grand_child_transform;
   expected_great_grand_child_transform.PreconcatTransform(rotation_about_z);
-  EXPECT_TRUE(grand_child_impl_->render_surface());
+  EXPECT_TRUE(grand_child_impl_->GetRenderSurface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
                                   child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_surface_draw_transform,
-      grand_child_impl_->render_surface()->draw_transform());
+      grand_child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
                                   grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
@@ -496,12 +496,12 @@ TEST_F(LayerPositionConstraintTest,
   expected_great_grand_child_transform.Translate(10.0, 30.0);
   expected_great_grand_child_transform.PreconcatTransform(rotation_about_z);
 
-  EXPECT_TRUE(grand_child_impl_->render_surface());
+  EXPECT_TRUE(grand_child_impl_->GetRenderSurface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
                                   child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_surface_draw_transform,
-      grand_child_impl_->render_surface()->draw_transform());
+      grand_child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
                                   grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
@@ -603,18 +603,18 @@ TEST_F(LayerPositionConstraintTest,
   gfx::Transform expected_fixed_position_child_transform;
   expected_fixed_position_child_transform.PreconcatTransform(rotation_about_z);
 
-  EXPECT_TRUE(grand_child_impl_->render_surface());
-  EXPECT_TRUE(great_grand_child_impl_->render_surface());
+  EXPECT_TRUE(grand_child_impl_->GetRenderSurface());
+  EXPECT_TRUE(great_grand_child_impl_->GetRenderSurface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
                                   child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_grand_child_surface_draw_transform,
-      grand_child_impl_->render_surface()->draw_transform());
+      grand_child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
                                   grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_great_grand_child_surface_draw_transform,
-      great_grand_child_impl_->render_surface()->draw_transform());
+      great_grand_child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
                                   great_grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_position_child_transform,
@@ -643,18 +643,18 @@ TEST_F(LayerPositionConstraintTest,
   expected_fixed_position_child_transform.Translate(10.0, 30.0);
   expected_fixed_position_child_transform.PreconcatTransform(rotation_about_z);
 
-  EXPECT_TRUE(grand_child_impl_->render_surface());
-  EXPECT_TRUE(great_grand_child_impl_->render_surface());
+  EXPECT_TRUE(grand_child_impl_->GetRenderSurface());
+  EXPECT_TRUE(great_grand_child_impl_->GetRenderSurface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
                                   child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_grand_child_surface_draw_transform,
-      grand_child_impl_->render_surface()->draw_transform());
+      grand_child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
                                   grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_great_grand_child_surface_draw_transform,
-      great_grand_child_impl_->render_surface()->draw_transform());
+      great_grand_child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
                                   great_grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_position_child_transform,
@@ -765,18 +765,18 @@ TEST_F(
   gfx::Transform expected_fixed_position_child_transform;
   expected_fixed_position_child_transform.PreconcatTransform(rotation_about_z);
 
-  EXPECT_TRUE(grand_child_impl_->render_surface());
-  EXPECT_TRUE(great_grand_child_impl_->render_surface());
+  EXPECT_TRUE(grand_child_impl_->GetRenderSurface());
+  EXPECT_TRUE(great_grand_child_impl_->GetRenderSurface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
                                   child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_grand_child_surface_draw_transform,
-      grand_child_impl_->render_surface()->draw_transform());
+      grand_child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
                                   grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_great_grand_child_surface_draw_transform,
-      great_grand_child_impl_->render_surface()->draw_transform());
+      great_grand_child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
                                   great_grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_position_child_transform,
@@ -810,18 +810,18 @@ TEST_F(
   expected_fixed_position_child_transform.Translate(10.0, 30.0);
   expected_fixed_position_child_transform.PreconcatTransform(rotation_about_z);
 
-  EXPECT_TRUE(grand_child_impl_->render_surface());
-  EXPECT_TRUE(great_grand_child_impl_->render_surface());
+  EXPECT_TRUE(grand_child_impl_->GetRenderSurface());
+  EXPECT_TRUE(great_grand_child_impl_->GetRenderSurface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
                                   child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_grand_child_surface_draw_transform,
-      grand_child_impl_->render_surface()->draw_transform());
+      grand_child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
                                   grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_great_grand_child_surface_draw_transform,
-      great_grand_child_impl_->render_surface()->draw_transform());
+      great_grand_child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
                                   great_grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_position_child_transform,
@@ -848,10 +848,10 @@ TEST_F(LayerPositionConstraintTest,
   gfx::Transform expected_surface_draw_transform;
   gfx::Transform expected_child_transform;
   gfx::Transform expected_grand_child_transform;
-  EXPECT_TRUE(child_impl_->render_surface());
+  EXPECT_TRUE(child_impl_->GetRenderSurface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_surface_draw_transform,
-      child_impl_->render_surface()->draw_transform());
+      child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
                                   child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
@@ -869,10 +869,10 @@ TEST_F(LayerPositionConstraintTest,
   expected_grand_child_transform.MakeIdentity();
   expected_grand_child_transform.Translate(10.0, 10.0);
 
-  EXPECT_TRUE(child_impl_->render_surface());
+  EXPECT_TRUE(child_impl_->GetRenderSurface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_surface_draw_transform,
-      child_impl_->render_surface()->draw_transform());
+      child_impl_->GetRenderSurface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
                                   child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,

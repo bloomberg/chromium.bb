@@ -123,9 +123,6 @@ class CC_EXPORT LayerImpl {
   void UpdatePropertyTreeTransformIsAnimated(bool is_animated);
   void UpdatePropertyTreeScrollOffset();
 
-  // For compatibility with Layer.
-  bool has_render_surface() const { return !!render_surface(); }
-
   LayerTreeImpl* layer_tree_impl() const { return layer_tree_impl_; }
 
   void PopulateSharedQuadState(SharedQuadState* state) const;
@@ -230,7 +227,7 @@ class CC_EXPORT LayerImpl {
 
   bool ShowDebugBorders() const;
 
-  RenderSurfaceImpl* render_surface() const;
+  RenderSurfaceImpl* GetRenderSurface() const;
 
   // The render surface which this layer draws into. This can be either owned by
   // the same layer or an ancestor of this layer.

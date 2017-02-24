@@ -693,7 +693,8 @@ void LayerTreeHostImpl::TrackDamageForAllSurfaces(
   for (size_t i = 0; i < render_surface_layer_list_size; ++i) {
     size_t surface_index = render_surface_layer_list_size - 1 - i;
     LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
-    RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
+    RenderSurfaceImpl* render_surface =
+        render_surface_layer->GetRenderSurface();
     DCHECK(render_surface);
     render_surface->damage_tracker()->UpdateDamageTrackingState(
         render_surface->layer_list(), render_surface,
@@ -832,7 +833,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     size_t surface_index = render_surface_layer_list_size - 1 - i;
     LayerImpl* render_surface_layer =
         (*frame->render_surface_layer_list)[surface_index];
-    RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
+    RenderSurfaceImpl* render_surface =
+        render_surface_layer->GetRenderSurface();
 
     bool should_draw_into_render_pass =
         active_tree_->IsRootLayer(render_surface_layer) ||
@@ -892,13 +894,13 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
            LayerIterator::Begin(frame->render_surface_layer_list);
        it != end; ++it) {
     auto target_render_pass_id =
-        it.target_render_surface_layer()->render_surface()->GetRenderPassId();
+        it.target_render_surface_layer()->GetRenderSurface()->GetRenderPassId();
     RenderPass* target_render_pass =
         FindRenderPassById(frame->render_passes, target_render_pass_id);
 
     AppendQuadsData append_quads_data;
 
-    RenderSurfaceImpl* render_surface = it->render_surface();
+    RenderSurfaceImpl* render_surface = it->GetRenderSurface();
     if (it.represents_target_render_surface()) {
       if (render_surface->HasCopyRequest()) {
         active_tree()
@@ -1719,7 +1721,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   // TODO(boliu): If we did a temporary software renderer frame, propogate the
   // damage forward to the next frame.
   for (size_t i = 0; i < frame->render_surface_layer_list->size(); i++) {
-    auto* surface = (*frame->render_surface_layer_list)[i]->render_surface();
+    auto* surface = (*frame->render_surface_layer_list)[i]->GetRenderSurface();
     surface->damage_tracker()->DidDrawDamagedArea();
   }
   active_tree_->ResetAllChangeTracking();
