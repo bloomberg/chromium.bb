@@ -17,7 +17,7 @@
 // protocols in |protocols|.
 - (instancetype)initWithProtocols:(NSArray<Protocol*>*)protocols;
 
-// The view controller (if any)_ that will be used to present alerts.
+// The view controller (if any) that will be used to present alerts.
 @property(nonatomic, weak) UIViewController* baseViewController;
 
 @end

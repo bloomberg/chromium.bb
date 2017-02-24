@@ -7,11 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/showcase/common/coordinator.h"
+#import "ios/showcase/common/navigation_coordinator.h"
 
-@interface SCTabStripCoordinator : NSObject<Coordinator>
-// Redefined to be a UINavigationController.
-@property(nonatomic, weak) UINavigationController* baseViewController;
+@interface SCTabStripCoordinator : NSObject<NavigationCoordinator>
 @end
 
 #endif  // IOS_SHOWCASE_TAB_STRIP_SC_TAB_STRIP_COORDINATOR_H_

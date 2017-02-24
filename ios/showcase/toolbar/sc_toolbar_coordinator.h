@@ -7,12 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/showcase/common/coordinator.h"
+#import "ios/showcase/common/navigation_coordinator.h"
 
-@interface SCToolbarCoordinator : NSObject<Coordinator>
-// Redefined to be a UINavigationController.
-@property(nonatomic, weak) UINavigationController* baseViewController;
-
+@interface SCToolbarCoordinator : NSObject<NavigationCoordinator>
 @end
 
 #endif  // IOS_SHOWCASE_TOOLBAR_SC_TOOLBAR_COORDINATOR_H_

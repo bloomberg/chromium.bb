@@ -7,13 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/showcase/common/coordinator.h"
+#import "ios/showcase/common/navigation_coordinator.h"
 
-@interface SCSuggestionsCoordinator : NSObject<Coordinator>
-
-// Redefined to be a UINavigationController.
-@property(nonatomic, weak) UINavigationController* baseViewController;
-
+@interface SCSuggestionsCoordinator : NSObject<NavigationCoordinator>
 @end
 
 #endif  // IOS_SHOWCASE_SUGGESTIONS_SC_SUGGESTIONS_COORDINATOR_H_

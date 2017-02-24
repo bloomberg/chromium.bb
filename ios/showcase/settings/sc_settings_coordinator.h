@@ -7,13 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/showcase/common/coordinator.h"
+#import "ios/showcase/common/navigation_coordinator.h"
 
-@interface SCSettingsCoordinator : NSObject<Coordinator>
-
-// Redefined to be a UINavigationController.
-@property(nonatomic, weak) UINavigationController* baseViewController;
-
+@interface SCSettingsCoordinator : NSObject<NavigationCoordinator>
 @end
 
 #endif  // IOS_SHOWCASE_SETTINGS_SC_SETTINGS_COORDINATOR_H_
