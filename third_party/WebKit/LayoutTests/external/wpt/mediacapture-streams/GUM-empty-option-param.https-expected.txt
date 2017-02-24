@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+FAIL Tests that getUserMedia raises a NOT_SUPPORTED_ERR exception when used with an empty options parameter assert_throws: function "function () {
+      navigator.getUserMedia({}, t.step_func(function (stream) {
+        assert_unreached("This should never be triggered since the constraints parameter is empty");
+        t.done();
+      }), t.step_func(function (error) {
+        assert_unreached("This should never be triggered since the constraints parameter is empty");
+      }));
+  }" threw object "TypeError: Failed to execute 'getUserMedia' on 'Navigator': At least one of audio and video must be requested" that is not a DOMException NOT_SUPPORTED_ERR: property "code" is equal to undefined, expected 9
+Harness: the test ran to completion.
+

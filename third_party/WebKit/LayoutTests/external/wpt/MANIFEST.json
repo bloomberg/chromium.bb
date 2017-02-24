@@ -313,6 +313,12 @@
      {}
     ]
    ],
+   "mediacapture-streams/MediaStreamTrack-end-manual.html": [
+    [
+     "/mediacapture-streams/MediaStreamTrack-end-manual.html",
+     {}
+    ]
+   ],
    "pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html": [
     [
      "/pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html",
@@ -18440,6 +18446,51 @@
     ]
    ],
    "media/white.webm": [
+    [
+     {}
+    ]
+   ],
+   "mediacapture-streams/GUM-deny.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mediacapture-streams/GUM-empty-option-param.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mediacapture-streams/GUM-impossible-constraint.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mediacapture-streams/GUM-unknownkey-option-param.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mediacapture-streams/MediaStream-MediaElement-preload-none.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mediacapture-streams/MediaStream-MediaElement-srcObject.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "mediacapture-streams/MediaStreamTrack-init.https-expected.txt": [
     [
      {}
     ]
@@ -40016,12 +40067,6 @@
      {}
     ]
    ],
-   "mediacapture-streams/MediaStreamTrack-end.https.html": [
-    [
-     "/mediacapture-streams/MediaStreamTrack-end.https.html",
-     {}
-    ]
-   ],
    "mediacapture-streams/MediaStreamTrack-id.https.html": [
     [
      "/mediacapture-streams/MediaStreamTrack-id.https.html",
@@ -54766,7 +54811,7 @@
    "support"
   ],
   "./MANIFEST.json": [
-   "9308ccf7a833b8f021128cebbb59c78a5b03a9ae",
+   "49ed1806559e344b58eda2479a32992e41b5ecdd",
    "support"
   ],
   "./README.md": [
@@ -73909,13 +73954,25 @@
    "6f4e3b2b4fdb287f99935193f273cb21becb9669",
    "testharness"
   ],
+  "mediacapture-streams/GUM-deny.https-expected.txt": [
+   "a139d610439c4e0bb551e8b045841b33d6301126",
+   "support"
+  ],
   "mediacapture-streams/GUM-deny.https.html": [
    "58581b53ff1a1edd5144c428145d668b073ef22f",
    "testharness"
   ],
+  "mediacapture-streams/GUM-empty-option-param.https-expected.txt": [
+   "8f79868c0b4c44940c4cc094ba09dd30d0b6db64",
+   "support"
+  ],
   "mediacapture-streams/GUM-empty-option-param.https.html": [
    "64d32a60ba62577a02f7314db5c1e43d3b0d51a9",
    "testharness"
+  ],
+  "mediacapture-streams/GUM-impossible-constraint.https-expected.txt": [
+   "83ef33025b6b7776852d8501718b670185056542",
+   "support"
   ],
   "mediacapture-streams/GUM-impossible-constraint.https.html": [
    "d0f93cff7289917b298a33691204509188bb633d",
@@ -73929,6 +73986,10 @@
    "46175d553affeaa8c801359261816430f8b1fdb8",
    "testharness"
   ],
+  "mediacapture-streams/GUM-unknownkey-option-param.https-expected.txt": [
+   "9a5065e1618f5d521471588f2c663964fcc4eb7c",
+   "support"
+  ],
   "mediacapture-streams/GUM-unknownkey-option-param.https.html": [
    "bfd825c8fb46797d043d57d70689a766fa557bd3",
    "testharness"
@@ -73941,9 +74002,17 @@
    "a515deeec87c394b4a826b538df6dd0baa05cae6",
    "testharness"
   ],
+  "mediacapture-streams/MediaStream-MediaElement-preload-none.https-expected.txt": [
+   "14e91f187214e8302a40719cb4ef2f69e1b1f59d",
+   "support"
+  ],
   "mediacapture-streams/MediaStream-MediaElement-preload-none.https.html": [
-   "f80c766d154b39a83b9a09b5a1c099ddb7336351",
+   "0f2bbd7581f2f51376b7fada199b4d436f411dba",
    "testharness"
+  ],
+  "mediacapture-streams/MediaStream-MediaElement-srcObject.https-expected.txt": [
+   "06ea90d42bbf5737624f3582a8726301e938540b",
+   "support"
   ],
   "mediacapture-streams/MediaStream-MediaElement-srcObject.https.html": [
    "f90dade04a03631f9c56333f621fd6379eb48998",
@@ -73981,21 +74050,33 @@
    "5f3e3390b52c567894cbcdf610489fc5b17ec94d",
    "testharness"
   ],
+  "mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https-expected.txt": [
+   "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+   "support"
+  ],
   "mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html": [
    "48620661c2947245554e227d559d551a93787ae2",
    "testharness"
+  ],
+  "mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https-expected.txt": [
+   "4034d28ea06d606101c2f0be58bcc312075da025",
+   "support"
   ],
   "mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html": [
    "ff30dfac08aae859ad469c15fd7e5469b830d3a9",
    "testharness"
   ],
-  "mediacapture-streams/MediaStreamTrack-end.https.html": [
+  "mediacapture-streams/MediaStreamTrack-end-manual.html": [
    "e5550adb1a9ce03ba672271aa1cdcec7ffde27d6",
-   "testharness"
+   "manual"
   ],
   "mediacapture-streams/MediaStreamTrack-id.https.html": [
    "ea67395aec0f0c619ba7b94eb4bd26b317a945d3",
    "testharness"
+  ],
+  "mediacapture-streams/MediaStreamTrack-init.https-expected.txt": [
+   "502d913f8ca1178e71eec066f3761a726607b93e",
+   "support"
   ],
   "mediacapture-streams/MediaStreamTrack-init.https.html": [
    "5cbc929d8add4eea27950f9b193001566d838f9e",

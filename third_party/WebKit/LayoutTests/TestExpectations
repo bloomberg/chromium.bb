@@ -769,8 +769,6 @@ crbug.com/671048 [ Linux Win ] virtual/color_space/fast/canvas/color-space/displ
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
-crbug.com/617152 external/wpt/mediacapture-streams/GUM-impossible-constraint.https.html [ Skip ]
-
 crbug.com/281504 fast/canvas/canvas-large-pattern.html [ Failure ]
 crbug.com/281504 virtual/display_list_2d_canvas/fast/canvas/canvas-large-pattern.html [ Failure ]
 crbug.com/281504 virtual/gpu/fast/canvas/canvas-large-pattern.html [ Failure ]
@@ -967,19 +965,7 @@ crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/in
 Bug(github) external/wpt/uievents/keyboard/key-manual.css [ Skip ]
 Bug(github) external/wpt/uievents/keyboard/key-manual.js [ Skip ]
 
-crbug.com/387740 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
-crbug.com/387740 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html [ Skip ]
-crbug.com/387740 external/wpt/mediacapture-streams/MediaStreamTrack-end.https.html [ Skip ]
-crbug.com/387740 external/wpt/mediacapture-streams/MediaStreamTrack-init.https.html [ Skip ]
-crbug.com/387740 external/wpt/mediacapture-streams/MediaStream-audio-only.https.html [ Skip ]
-crbug.com/387740 external/wpt/mediacapture-streams/MediaStream-finished-add.https.html [ Skip ]
-crbug.com/387740 external/wpt/mediacapture-streams/MediaStream-idl.https.html [ Skip ]
-crbug.com/387740 external/wpt/mediacapture-streams/MediaStream-removetrack.https.html [ Skip ]
-
-crbug.com/412381 external/wpt/mediacapture-streams/GUM-empty-option-param.https.html [ Failure ]
-crbug.com/412381 external/wpt/mediacapture-streams/GUM-unknownkey-option-param.https.html [ Failure ]
-crbug.com/412381 external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none.https.html [ Pass Timeout Failure ]
-
+crbug.com/688613 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 
 crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
@@ -1762,9 +1748,6 @@ crbug.com/599115 http/tests/preload/document-write [ Failure ]
 crbug.com/599115 http/tests/preload/document-write/document_write_no_preload.html [ Pass ]
 crbug.com/599115 virtual/mojo-loading/http/tests/preload/document-write [ Failure ]
 crbug.com/599115 virtual/mojo-loading/http/tests/preload/document-write/document_write_no_preload.html [ Pass ]
-
-crbug.com/600261 external/wpt/mediacapture-streams/GUM-deny.https.html [ Failure ]
-crbug.com/600261 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Failure ]
 
 crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 

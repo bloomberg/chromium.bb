@@ -1,0 +1,12 @@
+This is a testharness.js-based test.
+FAIL getUserMedia({doesnotexist:true}) aborts with NOT_SUPPORTED_ERR assert_throws: function "function () {
+        navigator.getUserMedia(
+            {doesnotexist:true},
+            t.step_func(function (stream) {
+              assert_unreached("This should never be triggered since the constraints parameter is unrecognized");
+            }), t.step_func(function (error) {
+              assert_unreached("This should never be triggered since the constraints parameter is unrecognized");
+            }));
+      }" threw object "ReferenceError: t is not defined" that is not a DOMException NOT_SUPPORTED_ERR: property "code" is equal to undefined, expected 9
+Harness: the test ran to completion.
+
