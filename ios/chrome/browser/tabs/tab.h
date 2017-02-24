@@ -133,7 +133,10 @@ extern NSString* const kProxyPassthroughHeaderValue;
 @property(nonatomic, assign) id<TabHeadersDelegate> tabHeadersDelegate;
 @property(nonatomic, assign) id<TabSnapshottingDelegate>
     tabSnapshottingDelegate;
-@property(nonatomic, readonly) BOOL useDesktopUserAgent;
+
+// Whether or not desktop user agent is used for the currently visible page.
+@property(nonatomic, readonly) BOOL usesDesktopUserAgent;
+
 @property(nonatomic, assign) id<StoreKitLauncher> storeKitLauncher;
 @property(nonatomic, assign) id<FullScreenControllerDelegate>
     fullScreenControllerDelegate;
