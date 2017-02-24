@@ -30,6 +30,8 @@ URLLoaderClientImpl::~URLLoaderClientImpl() {
 
 void URLLoaderClientImpl::Bind(
     mojom::URLLoaderClientAssociatedPtrInfo* client_ptr_info) {
+  // TODO(yhirano): Use |task_runner_| here.
+  // Currently it is unable because of a ChannelAssociatedInterface restriction.
   binding_.Bind(client_ptr_info);
 }
 
