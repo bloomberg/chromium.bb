@@ -128,8 +128,6 @@ class BrowserDistribution {
 
   virtual bool CanCreateDesktopShortcuts();
 
-  virtual bool GetChromeChannel(base::string16* channel);
-
   // Returns the CommandExecuteImpl class UUID (or empty string if this
   // distribution doesn't include a DelegateExecute verb handler).
   virtual base::string16 GetCommandExecuteImplClsid();

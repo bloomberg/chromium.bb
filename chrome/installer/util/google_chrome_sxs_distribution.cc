@@ -15,7 +15,6 @@
 namespace {
 
 const wchar_t kChromeSxSGuid[] = L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
-const wchar_t kChannelName[] = L"canary";
 const wchar_t kBrowserAppId[] = L"ChromeCanary";
 const wchar_t kBrowserProgIdPrefix[] = L"ChromeSSHTM";
 const wchar_t kBrowserProgIdDesc[] = L"Chrome Canary HTML Document";
@@ -79,11 +78,6 @@ int GoogleChromeSxSDistribution::GetIconIndex() {
   return icon_resources::kSxSApplicationIndex;
 }
 
-bool GoogleChromeSxSDistribution::GetChromeChannel(base::string16* channel) {
-  *channel = kChannelName;
-  return true;
-}
-
 base::string16 GoogleChromeSxSDistribution::GetCommandExecuteImplClsid() {
   return kCommandExecuteImplUuid;
 }
@@ -94,8 +88,4 @@ bool GoogleChromeSxSDistribution::ShouldSetExperimentLabels() {
 
 bool GoogleChromeSxSDistribution::HasUserExperiments() {
   return true;
-}
-
-base::string16 GoogleChromeSxSDistribution::ChannelName() {
-  return kChannelName;
 }

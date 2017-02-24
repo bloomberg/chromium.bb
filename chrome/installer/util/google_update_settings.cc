@@ -22,7 +22,6 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
@@ -404,10 +403,6 @@ bool GoogleUpdateSettings::UpdateDidRunState(bool did_run) {
   return WriteGoogleUpdateStrKeyInternal(dist->GetAppRegistrationData(),
                                          google_update::kRegDidRunField,
                                          did_run ? L"1" : L"0");
-}
-
-base::string16 GoogleUpdateSettings::GetChromeChannel(bool system_install) {
-  return install_static::GetChromeChannelName();
 }
 
 void GoogleUpdateSettings::UpdateInstallStatus(bool system_install,

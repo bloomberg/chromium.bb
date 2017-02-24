@@ -207,10 +207,6 @@ bool BrowserDistribution::CanCreateDesktopShortcuts() {
   return true;
 }
 
-bool BrowserDistribution::GetChromeChannel(base::string16* channel) {
-  return false;
-}
-
 base::string16 BrowserDistribution::GetCommandExecuteImplClsid() {
   return kCommandExecuteImplUuid;
 }

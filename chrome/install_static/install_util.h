@@ -123,9 +123,6 @@ void GetExecutableVersionDetails(const std::wstring& exe_path,
                                  std::wstring* channel_name);
 
 // Gets the channel name for the current Chrome process.
-// TODO(ananta)
-// http://crbug.com/604923
-// Unify this with the Browser Distribution code.
 std::wstring GetChromeChannelName();
 
 // Returns the registry path where the browser crash dumps metrics need to be

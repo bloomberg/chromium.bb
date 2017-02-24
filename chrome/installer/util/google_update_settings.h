@@ -184,10 +184,6 @@ class GoogleUpdateSettings {
   // Updates Chrome's "did run" state, returning true if the update succeeds.
   static bool UpdateDidRunState(bool did_run);
 
-  // Returns the channel name: "" (stable), "dev", "beta", "canary", or
-  // "unknown" if unknown. See kChromeChannel* in util_constants.h
-  static base::string16 GetChromeChannel(bool system_install);
-
   // This method changes the Google Update "ap" value to move the installation
   // on to or off of one of the recovery channels.
   // - If incremental installer fails we append a magic string ("-full"), if
