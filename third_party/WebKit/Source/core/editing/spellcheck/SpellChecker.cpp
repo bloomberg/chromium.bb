@@ -630,8 +630,20 @@ void SpellChecker::markAndReplaceFor(
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       frame().document()->lifecycle());
 
-  TextCheckingParagraph paragraph(request->checkingRange(),
-                                  request->checkingRange());
+  EphemeralRange checkingRange(request->checkingRange());
+
+  // Abort marking if the content of the checking change has been modified.
+  String currentContent =
+      plainText(checkingRange,
+                TextIteratorBehavior::Builder()
+                    .setEmitsObjectReplacementCharacter(true)
+                    .build());
+  if (currentContent != request->data().text()) {
+    // "editing/spelling/spellcheck-async-mutation.html" reaches here.
+    return;
+  }
+
+  TextCheckingParagraph paragraph(checkingRange, checkingRange);
 
   // TODO(xiaochengh): The following comment does not match the current behavior
   // and should be rewritten.
