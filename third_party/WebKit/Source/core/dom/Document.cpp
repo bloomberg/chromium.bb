@@ -406,10 +406,11 @@ static void recordLoadReasonToHistogram(WouldLoadReason reason) {
 }
 
 class Document::NetworkStateObserver final
-    : public GarbageCollected<Document::NetworkStateObserver>,
+    : public GarbageCollectedFinalized<Document::NetworkStateObserver>,
       public NetworkStateNotifier::NetworkStateObserver,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(Document::NetworkStateObserver);
+  EAGERLY_FINALIZE();
 
  public:
   explicit NetworkStateObserver(Document& document)
@@ -418,6 +419,9 @@ class Document::NetworkStateObserver final
         this,
         TaskRunnerHelper::get(TaskType::Networking, getExecutionContext()));
   }
+
+  // We eagerly finalize, so it's safe to touch getExecutionContext() here.
+  ~NetworkStateObserver() { unregisterAsObserver(getExecutionContext()); }
 
   void onLineStateChange(bool onLine) override {
     AtomicString eventName =
@@ -430,6 +434,12 @@ class Document::NetworkStateObserver final
   }
 
   void contextDestroyed(ExecutionContext* context) override {
+    unregisterAsObserver(context);
+  }
+
+  void unregisterAsObserver(ExecutionContext* context) {
+    if (!context)
+      return;
     networkStateNotifier().removeOnLineObserver(
         this, TaskRunnerHelper::get(TaskType::Networking, context));
   }
