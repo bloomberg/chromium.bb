@@ -315,7 +315,7 @@ bool WebApkInstaller::CanUseGooglePlayInstallService() {
   return Java_WebApkInstaller_canUseGooglePlayInstallService(env, java_ref_);
 }
 
-bool WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay(
+void WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay(
     const std::string& package_name,
     int version,
     const std::string& token) {
@@ -332,11 +332,11 @@ bool WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay(
       base::android::ConvertUTF8ToJavaString(env, shortcut_info_.url.spec());
 
   if (task_type_ == WebApkInstaller::INSTALL) {
-    return Java_WebApkInstaller_installWebApkFromGooglePlayAsync(
+    Java_WebApkInstaller_installWebApkFromGooglePlayAsync(
         env, java_ref_, java_webapk_package, version, java_title, java_token,
         java_url);
   } else {
-    return Java_WebApkInstaller_updateAsyncFromGooglePlay(
+    Java_WebApkInstaller_updateAsyncFromGooglePlay(
         env, java_ref_, java_webapk_package, version, java_title, java_token,
         java_url);
   }
@@ -435,10 +435,6 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
   if (CanUseGooglePlayInstallService()) {
     int version = 1;
     base::StringToInt(response->version(), &version);
-    // TODO(hanxi): crbug.com/688759. Remove the return value of
-    // InstallOrUpdateWebApkFromGooglePlay(), since a callback will be called
-    // asynchronously after the install or upidate has either failed or
-    // completed.
     InstallOrUpdateWebApkFromGooglePlay(response->package_name(), version,
                                         response->token());
     return;

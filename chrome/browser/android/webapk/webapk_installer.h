@@ -132,7 +132,7 @@ class WebApkInstaller : public net::URLFetcherDelegate {
 
   // Called when the package name of the WebAPK is available and the install
   // or update request is handled by Google Play.
-  virtual bool InstallOrUpdateWebApkFromGooglePlay(
+  virtual void InstallOrUpdateWebApkFromGooglePlay(
       const std::string& package_name,
       int version,
       const std::string& token);

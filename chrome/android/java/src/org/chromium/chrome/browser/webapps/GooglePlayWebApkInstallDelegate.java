@@ -39,11 +39,9 @@ public interface GooglePlayWebApkInstallDelegate {
      * @param token The token from WebAPK Minter Server.
      * @param url The start URL of the WebAPK to install.
      * @param callback The callback to invoke when the install is either completed or failed.
-     * @return True if the install was started. A "true" value does not guarantee that the install
-     *         succeeds.
      */
-    boolean installAsync(String packageName, int version, String title, String token,
-            String url, Callback<Boolean> callback);
+    void installAsync(String packageName, int version, String title, String token, String url,
+            Callback<Boolean> callback);
 
     /**
      * Calls the callback once the installation either succeeded or failed.

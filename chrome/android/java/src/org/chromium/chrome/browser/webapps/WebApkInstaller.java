@@ -107,15 +107,13 @@ public class WebApkInstaller {
      * @param title The title of the WebAPK to display during installation.
      * @param token The token from WebAPK Server.
      * @param url The start URL of the WebAPK to install.
-     * @return True if the install was started. A "true" return value does not guarantee that the
-     *         install succeeds.
      */
     @CalledByNative
-    private boolean installWebApkFromGooglePlayAsync(String packageName, int version, String title,
-            String token, String url) {
+    private void installWebApkFromGooglePlayAsync(
+            String packageName, int version, String title, String token, String url) {
         if (mGooglePlayWebApkInstallDelegate == null) {
             notify(false);
-            return false;
+            return;
         }
 
         Callback<Boolean> callback = new Callback<Boolean>() {
@@ -124,8 +122,8 @@ public class WebApkInstaller {
                 WebApkInstaller.this.notify(success);
             }
         };
-        return mGooglePlayWebApkInstallDelegate.installAsync(packageName, version, title, token,
-                url, callback);
+        mGooglePlayWebApkInstallDelegate.installAsync(
+                packageName, version, title, token, url, callback);
     }
 
     private void notify(boolean success) {
@@ -153,18 +151,14 @@ public class WebApkInstaller {
      * @param title The title of the WebAPK to display during installation.
      * @param token The token from WebAPK Server.
      * @param url The start URL of the WebAPK to install.
-     * @return True if the update was started. A "true" return value does not guarantee that the
-     *         update succeeds.
      */
     @CalledByNative
-    private boolean updateAsyncFromGooglePlay(String packageName, int version, String title,
-            String token, String url) {
-        if (mGooglePlayWebApkInstallDelegate == null) return false;
+    private void updateAsyncFromGooglePlay(
+            String packageName, int version, String title, String token, String url) {
+        if (mGooglePlayWebApkInstallDelegate == null) return;
 
-        // TODO(hanxi):crbug.com/634499. Adds a callback to show an infobar after the update
-        // succeeded.
-        return mGooglePlayWebApkInstallDelegate.installAsync(packageName, version, title, token,
-                url, null);
+        mGooglePlayWebApkInstallDelegate.installAsync(
+                packageName, version, title, token, url, null);
     }
 
     /**

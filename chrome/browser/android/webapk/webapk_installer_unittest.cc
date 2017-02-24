@@ -84,11 +84,10 @@ class TestWebApkInstaller : public WebApkInstaller {
     return can_use_google_play_install_service_;
   }
 
-  bool InstallOrUpdateWebApkFromGooglePlay(const std::string& package_name,
+  void InstallOrUpdateWebApkFromGooglePlay(const std::string& package_name,
                                            int version,
                                            const std::string& token) override {
     PostTaskToRunSuccessCallback();
-    return true;
   }
 
   void PostTaskToRunSuccessCallback() {
