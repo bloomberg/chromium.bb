@@ -833,12 +833,13 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
     CGFloat leftEdge = NSMinX([locationBar_ frame]);
     if ([browserActionsContainerView_ isHidden]) {
-      delta = leftEdge - NSMaxX([appMenuButton_ frame]) +
-              [ToolbarController appMenuPadding] + kButtonInset;
+      delta = leftEdge -
+              (NSMaxX([appMenuButton_ frame]) +
+               [ToolbarController appMenuPadding] + kButtonInset);
     } else {
       delta = leftEdge -
-              NSMaxX([browserActionsContainerView_ animationEndFrame]) +
-              kButtonInset;
+              (NSMaxX([browserActionsContainerView_ animationEndFrame]) +
+               kButtonInset);
     }
   } else {
     CGFloat rightEdge = NSMaxX([locationBar_ frame]);
