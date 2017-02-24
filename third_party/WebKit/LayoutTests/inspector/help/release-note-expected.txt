@@ -1,0 +1,16 @@
+Test release note
+
+Browser version: 99
+
+Dumping release note text:
+New in DevTools 99
+Test bullet #1
+Test bullet #2
+And more...Dismiss
+
+Last version of release note seen should be updated:
+99
+
+Click on hide button
+Hiding view: release-note
+

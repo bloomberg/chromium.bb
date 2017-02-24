@@ -9,6 +9,7 @@ Loaded modules:
     dom_extension
     emulation
     extensions
+    help
     host
     main
     network_conditions
@@ -32,6 +33,7 @@ Loaded modules:
     emulation
     event_listeners
     extensions
+    help
     host
     inline_editor
     main
@@ -61,6 +63,7 @@ Loaded modules:
     emulation
     event_listeners
     extensions
+    help
     host
     inline_editor
     main
@@ -94,6 +97,7 @@ Loaded modules:
     emulation
     event_listeners
     extensions
+    help
     host
     inline_editor
     main
@@ -130,6 +134,7 @@ Loaded modules:
     emulation
     event_listeners
     extensions
+    help
     host
     inline_editor
     main

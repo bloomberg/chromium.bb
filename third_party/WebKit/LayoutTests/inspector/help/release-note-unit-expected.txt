@@ -1,0 +1,45 @@
+Unit test for release note
+
+
+Running: getValidReleaseNote
+Last seen version: 2
+Browser version: 3
+Showed release note in drawer - version: 3
+
+Running: getAnotherValidReleaseNote
+Last seen version: 3
+Browser version: 4
+Showed release note in drawer - version: 4
+
+Running: getReleaseNoteTwoVersionsAhead
+Last seen version: 3
+Browser version: 5
+Showed release note in drawer - version: 5
+
+Running: alreadySeenReleaseNote
+Last seen version: 3
+Browser version: 3
+Did not show release note drawer
+
+Running: browserVersionAheadOfReleaseNote
+Last seen version: 5
+Browser version: 6
+Did not show release note drawer
+
+Running: getLatestReleaseNote
+Getting release note for browser version: 5
+Received release note: 5
+
+Running: getReleaseNoteMatchingVersion
+Getting release note for browser version: 4
+Received release note: 4
+
+Running: getMostRecentReleaseNote
+Getting release note for browser version: 7
+Received release note: 5
+
+Running: getReleaseNoteFallback
+Getting release note for browser version: 2
+error: Unable to find release note for version 2 - using last release note as fallback
+Received release note: 5
+

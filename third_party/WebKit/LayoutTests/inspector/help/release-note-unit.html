@@ -1,0 +1,93 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+function test()
+{
+    Help.releaseNoteText = [
+        {version: 3},
+        {version: 4},
+        {version: 5},
+    ];
+
+    function testMaybeShowInDrawer(lastSeenVersion, browserVersion) {
+        Help._latestReleaseNote = Help._getReleaseNoteByVersion(browserVersion);
+        InspectorTest.addResult(`Last seen version: ${lastSeenVersion}`);
+        InspectorTest.addResult(`Browser version: ${browserVersion}`);
+        InspectorTest.addSniffer(UI.inspectorView, "showPanel", onPanelShown);
+        var showedReleaseNote = false;
+
+        Help._showReleaseNoteIfNeeded(lastSeenVersion, browserVersion);
+
+        function onPanelShown() {
+            showedReleaseNote = true;
+        }
+        if (showedReleaseNote)
+            InspectorTest.addResult(`Showed release note in drawer - version: ${Help.latestReleaseNote().version}`);
+        else
+            InspectorTest.addResult('Did not show release note drawer');
+    }
+
+    function testGetReleaseNoteByVersion(version) {
+        InspectorTest.addResult(`Getting release note for browser version: ${version}`);
+        var releaseNote = Help._getReleaseNoteByVersion(version);
+        InspectorTest.addResult(`Received release note: ${releaseNote.version}`);
+    }
+
+    InspectorTest.runTestSuite([
+        function getValidReleaseNote(next) {
+            var browserVersion = 3;
+            var lastSeenVersion = 2;
+            testMaybeShowInDrawer(lastSeenVersion, browserVersion);
+            next();
+        },
+        function getAnotherValidReleaseNote(next) {
+            var browserVersion = 4;
+            var lastSeenVersion = 3;
+            testMaybeShowInDrawer(lastSeenVersion, browserVersion);
+            next();
+        },
+        function getReleaseNoteTwoVersionsAhead(next) {
+            var browserVersion = 5;
+            var lastSeenVersion = 3;
+            testMaybeShowInDrawer(lastSeenVersion, browserVersion);
+            next();
+        },
+        function alreadySeenReleaseNote(next) {
+            var browserVersion = 3;
+            var lastSeenVersion = 3;
+            testMaybeShowInDrawer(lastSeenVersion, browserVersion);
+            next();
+        },
+        function browserVersionAheadOfReleaseNote(next) {
+            var browserVersion = 6;
+            var lastSeenVersion = 5;
+            testMaybeShowInDrawer(lastSeenVersion, browserVersion);
+            next();
+        },
+        function getLatestReleaseNote(next) {
+            testGetReleaseNoteByVersion(5);
+            next();
+        },
+        function getReleaseNoteMatchingVersion(next) {
+            testGetReleaseNoteByVersion(4);
+            next();
+        },
+        function getMostRecentReleaseNote(next) {
+            testGetReleaseNoteByVersion(7);
+            next();
+        },
+        function getReleaseNoteFallback(next) {
+            testGetReleaseNoteByVersion(2);
+            next();
+        },
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+    Unit test for release note
+</p>
+</body>
+</html>
