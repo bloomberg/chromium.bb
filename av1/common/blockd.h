@@ -36,6 +36,8 @@
 extern "C" {
 #endif
 
+#define SUB8X8_COMP_REF 1
+
 #define MAX_MB_PLANE 3
 
 #if CONFIG_EXT_INTER

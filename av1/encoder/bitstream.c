@@ -1040,7 +1040,12 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     // does the feature use compound prediction or not
     // (if not specified at the frame/segment level)
     if (cm->reference_mode == REFERENCE_MODE_SELECT) {
+#if SUB8X8_COMP_REF
       aom_write(w, is_compound, av1_get_reference_mode_prob(cm, xd));
+#else
+      if (mbmi->sb_type >= BLOCK_8X8)
+        aom_write(w, is_compound, av1_get_reference_mode_prob(cm, xd));
+#endif
     } else {
       assert((!is_compound) == (cm->reference_mode == SINGLE_REFERENCE));
     }

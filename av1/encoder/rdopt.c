@@ -10139,6 +10139,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_REF_MV
       int_mv backup_ref_mv[2];
 
+#if !SUB8X8_COMP_REF
+      if (bsize < BLOCK_8X8 && mbmi->ref_frame[1] > INTRA_FRAME) continue;
+#endif
+
       backup_ref_mv[0] = mbmi_ext->ref_mvs[ref_frame][0];
       if (comp_pred) backup_ref_mv[1] = mbmi_ext->ref_mvs[second_ref_frame][0];
 #endif
@@ -10410,7 +10414,12 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
       if (this_rd == INT64_MAX) continue;
 
+#if SUB8X8_COMP_REF
       compmode_cost = av1_cost_bit(comp_mode_p, comp_pred);
+#else
+      if (mbmi->sb_type >= BLOCK_8X8)
+        compmode_cost = av1_cost_bit(comp_mode_p, comp_pred);
+#endif
 
       if (cm->reference_mode == REFERENCE_MODE_SELECT) rate2 += compmode_cost;
     }

@@ -1011,6 +1011,11 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
                                                 aom_reader *r) {
   if (cm->reference_mode == REFERENCE_MODE_SELECT) {
     const int ctx = av1_get_reference_mode_context(cm, xd);
+
+#if !SUB8X8_COMP_REF
+    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) return SINGLE_REFERENCE;
+#endif
+
     const REFERENCE_MODE mode =
         (REFERENCE_MODE)aom_read(r, cm->fc->comp_inter_prob[ctx], ACCT_STR);
     FRAME_COUNTS *counts = xd->counts;
@@ -1042,8 +1047,8 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       const int idx = cm->ref_frame_sign_bias[cm->comp_fixed_ref];
 #endif  // CONFIG_EXT_REFS
       const int ctx = av1_get_pred_context_comp_ref_p(cm, xd);
-      const int bit = aom_read(r, fc->comp_ref_prob[ctx][0], ACCT_STR);
 
+      const int bit = aom_read(r, fc->comp_ref_prob[ctx][0], ACCT_STR);
       if (counts) ++counts->comp_ref[ctx][0][bit];
 
 #if CONFIG_EXT_REFS
