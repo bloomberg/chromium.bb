@@ -2,14 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
 import copy
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.buildbot_mock import MockBuildBot
 from webkitpy.common.net.layout_test_results import LayoutTestResult, LayoutTestResults
-from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater, MARKER_COMMENT
@@ -420,6 +418,8 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertEqual(test_results_dict, test_results_dict_copy)
 
     def test_run_no_issue_number(self):
+        # TODO(qyearsley): For testing: Consider making a MockGitCL class
+        # and use that class to set fake return values when using git cl.
         updater = WPTExpectationsUpdater(self.mock_host())
         updater.get_issue_number = lambda: 'None'
         self.assertEqual(1, updater.run(args=[]))
@@ -427,21 +427,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def test_run_no_try_results(self):
         host = self.mock_host()
-        host.web = MockWeb(urls={
-            'https://codereview.chromium.org/api/11112222': json.dumps({
-                'patchsets': [1],
-            }),
-            'https://codereview.chromium.org/api/11112222/1': json.dumps({
-                'try_job_results': []
-            })
-        })
         updater = WPTExpectationsUpdater(host)
-        updater.get_issue_number = lambda: '11112222'
+        updater.get_latest_try_jobs = lambda: []
         self.assertEqual(1, updater.run(args=[]))
-        self.assertEqual(
-            host.web.urls_fetched,
-            [
-                'https://codereview.chromium.org/api/11112222',
-                'https://codereview.chromium.org/api/11112222/1'
-            ])
         self.assertLog(['ERROR: No try job information was collected.\n'])

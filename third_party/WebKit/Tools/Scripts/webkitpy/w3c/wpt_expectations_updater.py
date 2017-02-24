@@ -15,7 +15,6 @@ import logging
 
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net.git_cl import GitCL
-from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectationLine, TestExpectations
 from webkitpy.w3c.test_parser import TestParser
@@ -45,8 +44,7 @@ class WPTExpectationsUpdater(object):
             _log.error('No issue on current branch.')
             return 1
 
-        rietveld = Rietveld(self.host.web)
-        builds = rietveld.latest_try_jobs(issue_number, self._get_try_bots())
+        builds = self.get_latest_try_jobs()
         _log.debug('Latest try jobs: %r', builds)
         if not builds:
             _log.error('No try job information was collected.')
@@ -71,6 +69,10 @@ class WPTExpectationsUpdater(object):
     def get_issue_number(self):
         """Returns current CL number. Can be replaced in unit tests."""
         return GitCL(self.host).get_issue_number()
+
+    def get_latest_try_jobs(self):
+        """Returns the latest finished try jobs as Build objects."""
+        return GitCL(self.host).latest_try_jobs(self._get_try_bots())
 
     def get_failing_results_dict(self, build):
         """Returns a nested dict of failing test results.
