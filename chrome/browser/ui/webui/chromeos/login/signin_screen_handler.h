@@ -270,6 +270,10 @@ class SigninScreenHandler
   // show instantaneously in tests.
   void ZeroOfflineTimeoutForTesting();
 
+  // Gets the keyboard remapped pref value for |pref_name| key. Returns true if
+  // successful, otherwise returns false.
+  bool GetKeyboardRemappedPrefValue(const std::string& pref_name, int* value);
+
  private:
   enum UIState {
     UI_STATE_UNKNOWN = 0,

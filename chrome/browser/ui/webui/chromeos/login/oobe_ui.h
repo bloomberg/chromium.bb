@@ -154,7 +154,7 @@ class OobeUI : public content::WebUIController,
 
   const std::string& display_type() const { return display_type_; }
 
-  SigninScreenHandler* signin_screen_handler_for_test() {
+  SigninScreenHandler* signin_screen_handler() {
     return signin_screen_handler_;
   }
 

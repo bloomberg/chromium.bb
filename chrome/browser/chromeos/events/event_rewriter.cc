@@ -20,6 +20,8 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
@@ -132,14 +134,24 @@ const ModifierRemapping* kModifierRemappingNeoMod3 = &kModifierRemappings[1];
 // prefs::kLanguageRemapSearchKeyTo.
 const ModifierRemapping* GetRemappedKey(const std::string& pref_name,
                                         const PrefService& pref_service) {
-  if (!pref_service.FindPreference(pref_name.c_str()))
-    return NULL;  // The |pref_name| hasn't been registered. On login screen?
-  const int value = pref_service.GetInteger(pref_name.c_str());
+  int value = -1;
+  // If we're at the login screen, try to get the pref from the global prefs
+  // dictionary.
+  if (!LoginDisplayHost::default_host() ||
+      !LoginDisplayHost::default_host()
+           ->GetOobeUI()
+           ->signin_screen_handler()
+           ->GetKeyboardRemappedPrefValue(pref_name, &value)) {
+    if (!pref_service.FindPreference(pref_name))
+      return nullptr;
+    value = pref_service.GetInteger(pref_name);
+  }
+
   for (size_t i = 0; i < arraysize(kModifierRemappings); ++i) {
     if (value == kModifierRemappings[i].remap_to)
       return &kModifierRemappings[i];
   }
-  return NULL;
+  return nullptr;
 }
 
 bool HasDiamondKey() {

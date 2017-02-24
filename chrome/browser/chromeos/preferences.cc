@@ -58,7 +58,20 @@
 
 namespace chromeos {
 
+namespace {
+
 static const char kFallbackInputMethodLocale[] = "en-US";
+
+// The keyboard preferences that determine how we remap modifier keys. These
+// preferences will be saved in global user preferences dictionary so that they
+// can be used on signin screen.
+const char* const kLanguageRemapPrefs[] = {
+    prefs::kLanguageRemapSearchKeyTo, prefs::kLanguageRemapControlKeyTo,
+    prefs::kLanguageRemapAltKeyTo,    prefs::kLanguageRemapCapsLockKeyTo,
+    prefs::kLanguageRemapEscapeKeyTo, prefs::kLanguageRemapBackspaceKeyTo,
+    prefs::kLanguageRemapDiamondKeyTo};
+
+}  // namespace
 
 Preferences::Preferences()
     : prefs_(NULL),
@@ -400,6 +413,8 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kResolveTimezoneByGeolocation, callback);
   pref_change_registrar_.Add(prefs::kUse24HourClock, callback);
+  for (auto remap_pref : kLanguageRemapPrefs)
+    pref_change_registrar_.Add(remap_pref, callback);
 }
 
 void Preferences::Init(Profile* profile, const user_manager::User* user) {
@@ -713,6 +728,14 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool value = prefs_->GetBoolean(prefs::kUse24HourClock);
     user_manager::known_user::SetBooleanPref(user_->GetAccountId(),
                                              prefs::kUse24HourClock, value);
+  }
+
+  for (auto remap_pref : kLanguageRemapPrefs) {
+    if (pref_name == remap_pref || reason != REASON_ACTIVE_USER_CHANGED) {
+      const int value = prefs_->GetInteger(remap_pref);
+      user_manager::known_user::SetIntegerPref(user_->GetAccountId(),
+                                               remap_pref, value);
+    }
   }
 
   system::InputDeviceSettings::Get()->UpdateTouchDevicesStatusFromPrefs();

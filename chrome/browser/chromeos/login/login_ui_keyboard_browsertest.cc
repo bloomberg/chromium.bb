@@ -43,15 +43,12 @@ void Append_en_US_InputMethods(std::vector<std::string>* out) {
 class FocusPODWaiter {
  public:
   FocusPODWaiter() : focused_(false), runner_(new content::MessageLoopRunner) {
-    GetOobeUI()
-        ->signin_screen_handler_for_test()
-        ->SetFocusPODCallbackForTesting(
-            base::Bind(&FocusPODWaiter::OnFocusPOD, base::Unretained(this)));
+    GetOobeUI()->signin_screen_handler()->SetFocusPODCallbackForTesting(
+        base::Bind(&FocusPODWaiter::OnFocusPOD, base::Unretained(this)));
   }
   ~FocusPODWaiter() {
-    GetOobeUI()
-        ->signin_screen_handler_for_test()
-        ->SetFocusPODCallbackForTesting(base::Closure());
+    GetOobeUI()->signin_screen_handler()->SetFocusPODCallbackForTesting(
+        base::Closure());
   }
 
   void OnFocusPOD() {
@@ -70,9 +67,8 @@ class FocusPODWaiter {
     if (focused_)
       return;
     runner_->Run();
-    GetOobeUI()
-        ->signin_screen_handler_for_test()
-        ->SetFocusPODCallbackForTesting(base::Closure());
+    GetOobeUI()->signin_screen_handler()->SetFocusPODCallbackForTesting(
+        base::Closure());
     runner_ = NULL;
   }
 

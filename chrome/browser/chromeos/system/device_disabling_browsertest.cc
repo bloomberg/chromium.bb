@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   ASSERT_TRUE(network_state_informer);
   network_state_informer->AddObserver(this);
   SigninScreenHandler* const signin_screen_handler =
-      oobe_ui->signin_screen_handler_for_test();
+      oobe_ui->signin_screen_handler();
   ASSERT_TRUE(signin_screen_handler);
   signin_screen_handler->ZeroOfflineTimeoutForTesting();
   SimulateNetworkOffline();

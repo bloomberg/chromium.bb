@@ -676,6 +676,14 @@ void SigninScreenHandler::ZeroOfflineTimeoutForTesting() {
   zero_offline_timeout_for_test_ = true;
 }
 
+bool SigninScreenHandler::GetKeyboardRemappedPrefValue(
+    const std::string& pref_name,
+    int* value) {
+  return focused_pod_account_id_ && focused_pod_account_id_->is_valid() &&
+         user_manager::known_user::GetIntegerPref(*focused_pod_account_id_,
+                                                  pref_name, value);
+}
+
 // SigninScreenHandler, private: -----------------------------------------------
 
 void SigninScreenHandler::ShowImpl() {
