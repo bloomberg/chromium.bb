@@ -242,8 +242,6 @@ class PacedSender : public PacedPacketSender,
 
   State state_;
 
-  bool has_reached_upper_bound_once_;
-
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<PacedSender> weak_factory_;
 

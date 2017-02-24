@@ -6,7 +6,6 @@
 
 #include "base/big_endian.h"
 #include "base/bind.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 
@@ -20,12 +19,6 @@ static const int64_t kPacingIntervalMs = 10;
 // bursts of packets.
 static const size_t kPacingMaxBurstsPerFrame = 3;
 static const size_t kMaxDedupeWindowMs = 500;
-
-// "Impossible" upper-bound on the maximum number of packets that should ever be
-// enqueued in the pacer.  This is used to detect bugs, reported as crash dumps.
-static const size_t kHugeQueueLengthSeconds = 10;
-static const size_t kRidiculousNumberOfPackets =
-    kHugeQueueLengthSeconds * (kMaxBurstSize * 1000 / kPacingIntervalMs);
 
 }  // namespace
 
@@ -89,7 +82,6 @@ PacedSender::PacedSender(
       next_next_max_burst_size_(target_burst_size_),
       current_burst_size_(0),
       state_(State_Unblocked),
-      has_reached_upper_bound_once_(false),
       weak_factory_(this) {}
 
 PacedSender::~PacedSender() {}
@@ -335,15 +327,6 @@ void PacedSender::SendStoredPackets() {
   state_ = State_Unblocked;
   if (empty()) {
     return;
-  }
-
-  // If the queue ever becomes impossibly long, send a crash dump without
-  // actually crashing the process.
-  if (size() > kRidiculousNumberOfPackets && !has_reached_upper_bound_once_) {
-    NOTREACHED();
-    // Please use Cr=Internals-Cast label in bug reports:
-    base::debug::DumpWithoutCrashing();
-    has_reached_upper_bound_once_ = true;
   }
 
   base::TimeTicks now = clock_->NowTicks();
