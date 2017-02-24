@@ -36,7 +36,6 @@ static inline SVGTreeScopeResources& svgTreeScopeResourcesFromElement(
 LayoutSVGResourceContainer::LayoutSVGResourceContainer(SVGElement* node)
     : LayoutSVGHiddenContainer(node),
       m_isInLayout(false),
-      m_id(node->getIdAttribute()),
       m_invalidationMask(0),
       m_registered(false),
       m_isInvalidating(false) {}
@@ -74,8 +73,10 @@ void LayoutSVGResourceContainer::willBeDestroyed() {
   detachAllClients();
 
   LayoutSVGHiddenContainer::willBeDestroyed();
-  if (m_registered)
-    svgTreeScopeResourcesFromElement(element()).removeResource(m_id);
+  if (!m_registered)
+    return;
+  svgTreeScopeResourcesFromElement(element()).removeResource(
+      element()->getIdAttribute());
 }
 
 void LayoutSVGResourceContainer::styleDidChange(StyleDifference diff,
@@ -85,10 +86,12 @@ void LayoutSVGResourceContainer::styleDidChange(StyleDifference diff,
   if (m_registered)
     return;
   m_registered = true;
-  svgTreeScopeResourcesFromElement(element()).updateResource(m_id, this);
+  svgTreeScopeResourcesFromElement(element()).updateResource(
+      element()->getIdAttribute(), this);
 }
 
 void LayoutSVGResourceContainer::detachAllClients() {
+  const AtomicString& id = element()->getIdAttribute();
   for (auto* client : m_clients) {
     // Unlink the resource from the client's SVGResources. (The actual
     // removal will be signaled after processing all the clients.)
@@ -101,22 +104,22 @@ void LayoutSVGResourceContainer::detachAllClients() {
     // Add a pending resolution based on the id of the old resource.
     Element* clientElement = toElement(client->node());
     svgTreeScopeResourcesFromElement(clientElement)
-        .addPendingResource(m_id, *clientElement);
+        .addPendingResource(id, *clientElement);
   }
 
   removeAllClientsFromCache();
 }
 
-void LayoutSVGResourceContainer::idChanged() {
+void LayoutSVGResourceContainer::idChanged(const AtomicString& oldId,
+                                           const AtomicString& newId) {
   // Invalidate all our current clients.
   removeAllClientsFromCache();
 
   // Remove old id, that is guaranteed to be present in cache.
   SVGTreeScopeResources& treeScopeResources =
       svgTreeScopeResourcesFromElement(element());
-  treeScopeResources.removeResource(m_id);
-  m_id = element()->getIdAttribute();
-  treeScopeResources.updateResource(m_id, this);
+  treeScopeResources.removeResource(oldId);
+  treeScopeResources.updateResource(newId, this);
 }
 
 void LayoutSVGResourceContainer::markAllClientsForInvalidation(

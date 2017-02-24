@@ -62,7 +62,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
            resourceType == RadialGradientResourceType;
   }
 
-  void idChanged();
+  void idChanged(const AtomicString& oldId, const AtomicString& newId);
 
   void invalidateCacheAndMarkForLayout(SubtreeLayoutScope* = nullptr);
 
@@ -99,7 +99,6 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   void removeClient(LayoutObject*);
   void detachAllClients();
 
-  AtomicString m_id;
   // Track global (markAllClientsForInvalidation) invals to avoid redundant
   // crawls.
   unsigned m_invalidationMask : 8;

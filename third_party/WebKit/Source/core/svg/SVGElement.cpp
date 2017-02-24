@@ -904,8 +904,10 @@ void SVGElement::attributeChanged(const AttributeModificationParams& params) {
     LayoutObject* object = layoutObject();
     // Notify resources about id changes, this is important as we cache
     // resources by id in SVGDocumentExtensions
-    if (object && object->isSVGResourceContainer())
-      toLayoutSVGResourceContainer(object)->idChanged();
+    if (object && object->isSVGResourceContainer()) {
+      toLayoutSVGResourceContainer(object)->idChanged(params.oldValue,
+                                                      params.newValue);
+    }
     if (isConnected())
       buildPendingResourcesIfNeeded();
     invalidateInstances();
