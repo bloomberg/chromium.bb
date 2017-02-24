@@ -4363,53 +4363,71 @@ TEST_P(GLES2DecoderManualInitTest, TexStorageInvalidLevels) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_P(GLES2DecoderManualInitTest, TexStorageFormatAndTypeES2) {
+class GLES2DecoderTexStorageFormatAndTypeTest
+    : public GLES2DecoderManualInitTest {
+ public:
+  GLES2DecoderTexStorageFormatAndTypeTest() {}
+
+  void DoTexStorageFormatAndType(const InitState& init,
+                                 GLenum format,
+                                 GLenum adjusted_internal_format) {
+    InitDecoder(init);
+    DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+    EXPECT_CALL(*gl_, TexStorage2DEXT(GL_TEXTURE_2D, 2, format, 2, 2))
+        .Times(1)
+        .RetiresOnSaturation();
+    TexStorage2DEXT cmd;
+    cmd.Init(GL_TEXTURE_2D, 2, format, 2, 2);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    TextureRef* texture_ref =
+        group().texture_manager()->GetTexture(client_texture_id_);
+    Texture* texture = texture_ref->texture();
+    GLenum type;
+    GLenum internal_format;
+    EXPECT_TRUE(
+        texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
+    EXPECT_EQ(static_cast<GLenum>(adjusted_internal_format), internal_format);
+    EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderTexStorageFormatAndTypeTest,
+                        ::testing::Bool());
+
+TEST_P(GLES2DecoderTexStorageFormatAndTypeTest, ES2) {
   InitState init;
   init.gl_version = "OpenGL ES 2.0";
   init.extensions = "GL_ARB_texture_storage";
   init.bind_generates_resource = true;
   init.context_type = CONTEXT_TYPE_OPENGLES2;
-  InitDecoder(init);
-  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-  EXPECT_CALL(*gl_, TexStorage2DEXT(GL_TEXTURE_2D, 2, GL_RGBA8_OES, 2, 2))
-      .Times(1)
-      .RetiresOnSaturation();
-  TexStorage2DEXT cmd;
-  cmd.Init(GL_TEXTURE_2D, 2, GL_RGBA8_OES, 2, 2);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  TextureRef* texture_ref =
-      group().texture_manager()->GetTexture(client_texture_id_);
-  Texture* texture = texture_ref->texture();
-  GLenum type;
-  GLenum internal_format;
-  EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
-  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
-  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+  DoTexStorageFormatAndType(init, GL_RGBA8_OES, GL_RGBA);
 }
 
-TEST_P(GLES2DecoderManualInitTest, TexStorageFormatAndTypeES3) {
+TEST_P(GLES2DecoderTexStorageFormatAndTypeTest, WebGL1) {
+  InitState init;
+  init.gl_version = "OpenGL ES 2.0";
+  init.extensions = "GL_ARB_texture_storage";
+  init.bind_generates_resource = true;
+  init.context_type = CONTEXT_TYPE_WEBGL1;
+  DoTexStorageFormatAndType(init, GL_RGBA8_OES, GL_RGBA);
+}
+
+TEST_P(GLES2DecoderTexStorageFormatAndTypeTest, ES3) {
   InitState init;
   init.gl_version = "OpenGL ES 3.0";
   init.bind_generates_resource = true;
   init.context_type = CONTEXT_TYPE_OPENGLES3;
-  InitDecoder(init);
-  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-  EXPECT_CALL(*gl_, TexStorage2DEXT(GL_TEXTURE_2D, 2, GL_RGBA8, 2, 2))
-      .Times(1)
-      .RetiresOnSaturation();
-  TexStorage2DEXT cmd;
-  cmd.Init(GL_TEXTURE_2D, 2, GL_RGBA8, 2, 2);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  TextureRef* texture_ref =
-      group().texture_manager()->GetTexture(client_texture_id_);
-  Texture* texture = texture_ref->texture();
-  GLenum type;
-  GLenum internal_format;
-  EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
-  EXPECT_EQ(static_cast<GLenum>(GL_RGBA8), internal_format);
-  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+  DoTexStorageFormatAndType(init, GL_RGBA8, GL_RGBA8);
+}
+
+TEST_P(GLES2DecoderTexStorageFormatAndTypeTest, WebGL2) {
+  InitState init;
+  init.gl_version = "OpenGL ES 3.0";
+  init.bind_generates_resource = true;
+  init.context_type = CONTEXT_TYPE_WEBGL2;
+  DoTexStorageFormatAndType(init, GL_RGBA8, GL_RGBA8);
 }
 
 TEST_P(GLES3DecoderTest, TexStorage3DValidArgs) {

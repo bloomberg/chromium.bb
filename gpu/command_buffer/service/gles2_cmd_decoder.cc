@@ -17152,8 +17152,7 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     GLsizei level_depth = depth;
 
     GLenum adjusted_internal_format =
-        feature_info_->context_type() == CONTEXT_TYPE_OPENGLES2 ?
-        format : internal_format;
+        feature_info_->IsWebGL1OrES2Context() ? format : internal_format;
     for (int ii = 0; ii < levels; ++ii) {
       if (target == GL_TEXTURE_CUBE_MAP) {
         for (int jj = 0; jj < 6; ++jj) {
