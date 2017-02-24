@@ -432,7 +432,7 @@ void CompositeEditCommand::updatePositionForNodeRemovalPreservingChildren(
     Node& node) {
   int offset =
       position.isOffsetInAnchor() ? position.offsetInContainerNode() : 0;
-  updatePositionForNodeRemoval(position, node);
+  position = computePositionForNodeRemoval(position, node);
   if (offset == 0)
     return;
   position = Position(position.computeContainerNode(), offset);

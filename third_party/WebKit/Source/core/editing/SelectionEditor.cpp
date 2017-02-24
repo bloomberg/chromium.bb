@@ -191,15 +191,6 @@ void SelectionEditor::nodeChildrenWillBeRemoved(ContainerNode& container) {
   markCacheDirty();
 }
 
-static Position computePositionForNodeRemoval(const Position& position,
-                                              Node& nodeToBeRemoved) {
-  Position result = position;
-  // TODO(yosin): We should rename |updatePositionForNodeRemoval()|
-  // to |computePositionForNodeRemoval()| to avoid using output parameter.
-  updatePositionForNodeRemoval(result, nodeToBeRemoved);
-  return result;
-}
-
 void SelectionEditor::nodeWillBeRemoved(Node& nodeToBeRemoved) {
   if (m_selection.isNone())
     return;

@@ -1739,39 +1739,45 @@ PositionWithAffinity positionRespectingEditingBoundary(
   return targetNode->layoutObject()->positionForPoint(selectionEndPoint);
 }
 
-void updatePositionForNodeRemoval(Position& position, Node& node) {
+Position computePositionForNodeRemoval(const Position& position, Node& node) {
   if (position.isNull())
-    return;
+    return position;
   switch (position.anchorType()) {
     case PositionAnchorType::BeforeChildren:
-      if (node.isShadowIncludingInclusiveAncestorOf(
-              position.computeContainerNode()))
-        position = Position::inParentBeforeNode(node);
-      break;
+      if (!node.isShadowIncludingInclusiveAncestorOf(
+              position.computeContainerNode())) {
+        return position;
+      }
+      return Position::inParentBeforeNode(node);
     case PositionAnchorType::AfterChildren:
-      if (node.isShadowIncludingInclusiveAncestorOf(
-              position.computeContainerNode()))
-        position = Position::inParentAfterNode(node);
-      break;
+      if (!node.isShadowIncludingInclusiveAncestorOf(
+              position.computeContainerNode())) {
+        return position;
+      }
+      return Position::inParentAfterNode(node);
     case PositionAnchorType::OffsetInAnchor:
       if (position.computeContainerNode() == node.parentNode() &&
           static_cast<unsigned>(position.offsetInContainerNode()) >
-              node.nodeIndex())
-        position = Position(position.computeContainerNode(),
-                            position.offsetInContainerNode() - 1);
-      else if (node.isShadowIncludingInclusiveAncestorOf(
-                   position.computeContainerNode()))
-        position = Position::inParentBeforeNode(node);
-      break;
+              node.nodeIndex()) {
+        return Position(position.computeContainerNode(),
+                        position.offsetInContainerNode() - 1);
+      }
+      if (!node.isShadowIncludingInclusiveAncestorOf(
+              position.computeContainerNode())) {
+        return position;
+      }
+      return Position::inParentBeforeNode(node);
     case PositionAnchorType::AfterAnchor:
-      if (node.isShadowIncludingInclusiveAncestorOf(position.anchorNode()))
-        position = Position::inParentAfterNode(node);
-      break;
+      if (!node.isShadowIncludingInclusiveAncestorOf(position.anchorNode()))
+        return position;
+      return Position::inParentAfterNode(node);
     case PositionAnchorType::BeforeAnchor:
-      if (node.isShadowIncludingInclusiveAncestorOf(position.anchorNode()))
-        position = Position::inParentBeforeNode(node);
-      break;
+      if (!node.isShadowIncludingInclusiveAncestorOf(position.anchorNode()))
+        return position;
+      return Position::inParentBeforeNode(node);
   }
+  NOTREACHED() << "We should handle all PositionAnchorType";
+  return position;
 }
 
 bool isMailHTMLBlockquoteElement(const Node* node) {

@@ -1818,12 +1818,13 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(
         previous->data().length() <= kMergeSizeLimit) {
       insertTextIntoNode(text, 0, previous->data());
 
-      if (positionIsOffsetInAnchor)
+      if (positionIsOffsetInAnchor) {
         position =
             Position(position.computeContainerNode(),
                      previous->length() + position.offsetInContainerNode());
-      else
-        updatePositionForNodeRemoval(position, *previous);
+      } else {
+        position = computePositionForNodeRemoval(position, *previous);
+      }
 
       if (positionOnlyToBeUpdatedIsOffsetInAnchor) {
         if (positionOnlyToBeUpdated.computeContainerNode() == text)
@@ -1834,7 +1835,8 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(
           positionOnlyToBeUpdated =
               Position(text, positionOnlyToBeUpdated.offsetInContainerNode());
       } else {
-        updatePositionForNodeRemoval(positionOnlyToBeUpdated, *previous);
+        positionOnlyToBeUpdated =
+            computePositionForNodeRemoval(positionOnlyToBeUpdated, *previous);
       }
 
       removeNode(previous, editingState);
@@ -1850,15 +1852,17 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(
     insertTextIntoNode(text, originalLength, next->data());
 
     if (!positionIsOffsetInAnchor)
-      updatePositionForNodeRemoval(position, *next);
+      position = computePositionForNodeRemoval(position, *next);
 
     if (positionOnlyToBeUpdatedIsOffsetInAnchor &&
-        positionOnlyToBeUpdated.computeContainerNode() == next)
+        positionOnlyToBeUpdated.computeContainerNode() == next) {
       positionOnlyToBeUpdated =
           Position(text, originalLength +
                              positionOnlyToBeUpdated.offsetInContainerNode());
-    else
-      updatePositionForNodeRemoval(positionOnlyToBeUpdated, *next);
+    } else {
+      positionOnlyToBeUpdated =
+          computePositionForNodeRemoval(positionOnlyToBeUpdated, *next);
+    }
 
     removeNode(next, editingState);
     if (editingState->isAborted())

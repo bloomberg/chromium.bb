@@ -517,9 +517,11 @@ void DeleteSelectionCommand::removeNode(
   }
 
   // FIXME: Update the endpoints of the range being deleted.
-  updatePositionForNodeRemoval(m_endingPosition, *node);
-  updatePositionForNodeRemoval(m_leadingWhitespace, *node);
-  updatePositionForNodeRemoval(m_trailingWhitespace, *node);
+  m_endingPosition = computePositionForNodeRemoval(m_endingPosition, *node);
+  m_leadingWhitespace =
+      computePositionForNodeRemoval(m_leadingWhitespace, *node);
+  m_trailingWhitespace =
+      computePositionForNodeRemoval(m_trailingWhitespace, *node);
 
   CompositeEditCommand::removeNode(node, editingState,
                                    shouldAssumeContentIsAlwaysEditable);
@@ -671,7 +673,7 @@ void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState) {
         Node* nextNode = NodeTraversal::nextSkippingChildren(*node);
         // if we just removed a node from the end container, update end position
         // so the check above will work
-        updatePositionForNodeRemoval(m_downstreamEnd, *node);
+        m_downstreamEnd = computePositionForNodeRemoval(m_downstreamEnd, *node);
         removeNode(node, editingState);
         if (editingState->isAborted())
           return;

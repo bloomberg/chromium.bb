@@ -305,7 +305,7 @@ PositionWithAffinity positionRespectingEditingBoundary(
     const Position&,
     const LayoutPoint& localPoint,
     Node* targetNode);
-void updatePositionForNodeRemoval(Position&, Node&);
+Position computePositionForNodeRemoval(const Position&, Node&);
 
 // -------------------------------------------------------------------------
 // VisiblePosition
