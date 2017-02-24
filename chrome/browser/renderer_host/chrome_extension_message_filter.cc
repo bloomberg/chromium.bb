@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
@@ -245,20 +245,18 @@ void ChromeExtensionMessageFilter::OnGetExtMessageBundle(
     paths_to_load.push_back(imported_extension->path());
   }
 
-  BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(
-          &ChromeExtensionMessageFilter::OnGetExtMessageBundleOnBlockingPool,
-          this, paths_to_load, extension_id, default_locale, reply_msg));
+  // This blocks tab loading. Priority is inherited from the calling context.
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock(),
+      base::Bind(&ChromeExtensionMessageFilter::OnGetExtMessageBundleAsync,
+                 this, paths_to_load, extension_id, default_locale, reply_msg));
 }
 
-void ChromeExtensionMessageFilter::OnGetExtMessageBundleOnBlockingPool(
+void ChromeExtensionMessageFilter::OnGetExtMessageBundleAsync(
     const std::vector<base::FilePath>& extension_paths,
     const std::string& main_extension_id,
     const std::string& default_locale,
     IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   std::unique_ptr<extensions::MessageBundle::SubstitutionMap> dictionary_map(
       extensions::file_util::LoadMessageBundleSubstitutionMapFromPaths(
           extension_paths, main_extension_id, default_locale));
