@@ -128,6 +128,9 @@ typedef BOOL (^openExternalURLBlockType)(const GURL&);
 
 namespace {
 
+// Syntactically invalid URL per rfc3986.
+const char kInvalidURL[] = "http://%3";
+
 const char kTestURLString[] = "http://www.google.com/";
 const char kTestAppSpecificURL[] = "testwebui://test/";
 
@@ -685,6 +688,28 @@ TEST_F(CRWWebControllerNavigationTest, HTTPCreditCard) {
   [web_controller() didShowCreditCardInputOnHTTP];
   EXPECT_TRUE(nav_manager.GetLastCommittedItem()->GetSSL().content_status &
               web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+}
+
+// Real WKWebView is required for CRWWebControllerInvalidUrlTest.
+typedef web::WebTestWithWebState CRWWebControllerInvalidUrlTest;
+
+// Tests that web controller navigates to about:blank if invalid URL is loaded.
+TEST_F(CRWWebControllerInvalidUrlTest, LoadInvalidURL) {
+  GURL url(kInvalidURL);
+  ASSERT_FALSE(url.is_valid());
+  LoadHtml(@"<html><body></body></html>", url);
+  EXPECT_EQ(GURL(url::kAboutBlankURL), web_state()->GetLastCommittedURL());
+}
+
+// Tests that web controller does not navigate to about:blank if iframe src
+// has invalid url. Web controller loads about:blank if page navigates to
+// invalid url, but should do nothing if navigation is performed in iframe. This
+// test prevents crbug.com/694865 regression.
+TEST_F(CRWWebControllerInvalidUrlTest, IFrameWithInvalidURL) {
+  GURL url("http://chromium.test");
+  ASSERT_FALSE(GURL(kInvalidURL).is_valid());
+  LoadHtml([NSString stringWithFormat:@"<iframe src='%s'/>", kInvalidURL], url);
+  EXPECT_EQ(url, web_state()->GetLastCommittedURL());
 }
 
 // Real WKWebView is required for CRWWebControllerFormActivityTest.
