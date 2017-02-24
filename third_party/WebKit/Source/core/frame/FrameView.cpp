@@ -1400,16 +1400,17 @@ IntRect FrameView::computeVisibleArea() {
 FloatSize FrameView::viewportSizeForViewportUnits() const {
   float zoom = frame().pageZoomFactor();
 
-  FloatSize layoutSize;
-
   LayoutViewItem layoutViewItem = this->layoutViewItem();
   if (layoutViewItem.isNull())
-    return layoutSize;
+    return FloatSize();
 
+  FloatSize layoutSize;
   layoutSize.setWidth(layoutViewItem.viewWidth(IncludeScrollbars) / zoom);
   layoutSize.setHeight(layoutViewItem.viewHeight(IncludeScrollbars) / zoom);
 
-  if (RuntimeEnabledFeatures::inertTopControlsEnabled()) {
+  BrowserControls& browserControls = m_frame->host()->browserControls();
+  if (RuntimeEnabledFeatures::inertTopControlsEnabled() &&
+      browserControls.permittedState() != WebBrowserControlsHidden) {
     // We use the layoutSize rather than frameRect to calculate viewport units
     // so that we get correct results on mobile where the page is laid out into
     // a rect that may be larger than the viewport (e.g. the 980px fallback
@@ -1417,7 +1418,6 @@ FloatSize FrameView::viewportSizeForViewportUnits() const {
     // be the viewport with browser controls showing, we add the browser
     // controls height, compensating for page scale as well, since we want to
     // use the viewport with browser controls hidden for vh (to match Safari).
-    BrowserControls& browserControls = m_frame->host()->browserControls();
     int viewportWidth = m_frame->host()->visualViewport().size().width();
     if (m_frame->isMainFrame() && layoutSize.width() && viewportWidth) {
       float pageScaleAtLayoutWidth = viewportWidth / layoutSize.width();

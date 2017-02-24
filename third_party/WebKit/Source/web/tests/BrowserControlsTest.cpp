@@ -1006,4 +1006,62 @@ TEST_F(BrowserControlsTest,
   }
 }
 
+// Ensure that vh units are correct when browser controls are in a locked
+// state. That is, normally we need to add the browser controls height to vh
+// units since 100vh includes the browser controls even if they're hidden while
+// the ICB height does not. When the controls are locked hidden, the ICB size
+// is the full viewport height so there's no need to add the browser controls
+// height.  crbug.com/688738.
+TEST_F(BrowserControlsTest, MAYBE(ViewportUnitsWhenControlsLocked)) {
+  // Initialize with the browser controls showing.
+  WebViewImpl* webView = initialize("vh-height.html");
+  webView->resizeWithBrowserControls(WebSize(400, 300), 100.f, true);
+  webView->updateBrowserControlsState(WebBrowserControlsBoth,
+                                      WebBrowserControlsShown, false);
+  webView->browserControls().setShownRatio(1);
+  webView->updateAllLifecyclePhases();
+
+  ASSERT_EQ(100.f, webView->browserControls().contentOffset());
+  ASSERT_EQ(300, frame()->view()->layoutSize().height());
+
+  Element* absPos = getElementById(WebString::fromUTF8("abs"));
+  Element* fixedPos = getElementById(WebString::fromUTF8("fixed"));
+
+  // Lock the browser controls to hidden.
+  {
+    webView->updateBrowserControlsState(WebBrowserControlsHidden,
+                                        WebBrowserControlsHidden, false);
+    webView->resizeWithBrowserControls(WebSize(400, 400), 100.f, false);
+    webView->updateAllLifecyclePhases();
+
+    ASSERT_EQ(0.f, webView->browserControls().contentOffset());
+    ASSERT_EQ(400, frame()->view()->layoutSize().height());
+
+    // Make sure we're not adding the browser controls height to the vh units
+    // as when they're locked to hidden, the ICB fills the entire viewport
+    // already.
+    EXPECT_FLOAT_EQ(200.f, absPos->getBoundingClientRect()->height());
+    EXPECT_FLOAT_EQ(200.f, fixedPos->getBoundingClientRect()->height());
+    EXPECT_EQ(400, frame()->view()->viewportSizeForViewportUnits().height());
+  }
+
+  // Lock the browser controls to shown. This should cause the vh units to
+  // behave as usual by including the browser controls region in 100vh.
+  {
+    webView->updateBrowserControlsState(WebBrowserControlsShown,
+                                        WebBrowserControlsShown, false);
+    webView->resizeWithBrowserControls(WebSize(400, 300), 100.f, true);
+    webView->updateAllLifecyclePhases();
+
+    ASSERT_EQ(100.f, webView->browserControls().contentOffset());
+    ASSERT_EQ(300, frame()->view()->layoutSize().height());
+
+    // Make sure we're not adding the browser controls height to the vh units as
+    // when they're locked to hidden, the ICB fills the entire viewport already.
+    EXPECT_FLOAT_EQ(200.f, absPos->getBoundingClientRect()->height());
+    EXPECT_FLOAT_EQ(200.f, fixedPos->getBoundingClientRect()->height());
+    EXPECT_EQ(400, frame()->view()->viewportSizeForViewportUnits().height());
+  }
+}
+
 }  // namespace blink
