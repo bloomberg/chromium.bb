@@ -82,10 +82,10 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
         discardable_image[y][x] = CreateDiscardableImage(gfx::Size(500, 500));
-        SkPaint paint;
+        PaintFlags flags;
         content_layer_client.add_draw_image(
             discardable_image[y][x], gfx::Point(x * 512 + 6, y * 512 + 6),
-            paint);
+            flags);
       }
     }
   }
@@ -169,10 +169,10 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
         discardable_image[y][x] = CreateDiscardableImage(gfx::Size(500, 500));
-        SkPaint paint;
+        PaintFlags flags;
         content_layer_client.add_draw_image(
             discardable_image[y][x],
-            gfx::Point(1024 + x * 512 + 6, y * 512 + 6), paint);
+            gfx::Point(1024 + x * 512 + 6, y * 512 + 6), flags);
       }
     }
   }
@@ -285,10 +285,10 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
         discardable_image[y][x] = CreateDiscardableImage(gfx::Size(500, 500));
-        SkPaint paint;
+        PaintFlags flags;
         content_layer_client.add_draw_image(
             discardable_image[y][x], gfx::Point(x * 512 + 6, y * 512 + 6),
-            paint);
+            flags);
       }
     }
   }
@@ -330,9 +330,9 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
 
   sk_sp<SkImage> discardable_image =
       CreateDiscardableImage(gfx::Size(1 << 25, 1 << 25));
-  SkPaint paint;
+  PaintFlags flags;
   content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
-                                      paint);
+                                      flags);
 
   scoped_refptr<DisplayItemList> display_list =
       content_layer_client.PaintContentsToDisplayList(
@@ -387,9 +387,9 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMaxImage) {
   int dimension = std::numeric_limits<int>::max();
   sk_sp<SkImage> discardable_image =
       CreateDiscardableImage(gfx::Size(dimension, dimension));
-  SkPaint paint;
+  PaintFlags flags;
   content_layer_client.add_draw_image(discardable_image, gfx::Point(42, 42),
-                                      paint);
+                                      flags);
 
   scoped_refptr<DisplayItemList> display_list =
       content_layer_client.PaintContentsToDisplayList(
@@ -424,13 +424,13 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMaxImageMaxLayer) {
 
   sk_sp<SkImage> discardable_image =
       CreateDiscardableImage(gfx::Size(dimension, dimension));
-  SkPaint paint;
+  PaintFlags flags;
   content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
-                                      paint);
+                                      flags);
   content_layer_client.add_draw_image(discardable_image, gfx::Point(10000, 0),
-                                      paint);
+                                      flags);
   content_layer_client.add_draw_image(discardable_image,
-                                      gfx::Point(-10000, 500), paint);
+                                      gfx::Point(-10000, 500), flags);
 
   scoped_refptr<DisplayItemList> display_list =
       content_layer_client.PaintContentsToDisplayList(
@@ -478,13 +478,13 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesRectInBounds) {
   sk_sp<SkImage> long_discardable_image =
       CreateDiscardableImage(gfx::Size(10000, 100));
 
-  SkPaint paint;
+  PaintFlags flags;
   content_layer_client.add_draw_image(discardable_image, gfx::Point(-10, -11),
-                                      paint);
+                                      flags);
   content_layer_client.add_draw_image(discardable_image, gfx::Point(950, 951),
-                                      paint);
+                                      flags);
   content_layer_client.add_draw_image(long_discardable_image,
-                                      gfx::Point(-100, 500), paint);
+                                      gfx::Point(-100, 500), flags);
 
   scoped_refptr<DisplayItemList> display_list =
       content_layer_client.PaintContentsToDisplayList(
@@ -546,11 +546,11 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
         discardable_image[y][x] = CreateDiscardableImage(gfx::Size(500, 500));
         SkMatrix scale = SkMatrix::MakeScale(std::max(x * 0.5f, kMinScale),
                                              std::max(y * 0.5f, kMinScale));
-        SkPaint paint;
-        paint.setShader(discardable_image[y][x]->makeShader(
+        PaintFlags flags;
+        flags.setShader(discardable_image[y][x]->makeShader(
             SkShader::kClamp_TileMode, SkShader::kClamp_TileMode, &scale));
         content_layer_client.add_draw_rect(
-            gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500), paint);
+            gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500), flags);
       }
     }
   }

@@ -46,10 +46,12 @@ void DrawingDisplayItem::Raster(SkCanvas* canvas,
 
   // SkPicture always does a wrapping save/restore on the canvas, so it is not
   // necessary here.
-  if (callback)
+  if (callback) {
     picture_->playback(canvas, callback);
-  else
-    canvas->drawPicture(picture_.get());
+  } else {
+    // TODO(enne): switch this to playback once PaintRecord is real.
+    canvas->drawPicture(ToSkPicture(picture_.get()));
+  }
 }
 
 void DrawingDisplayItem::AsValueInto(
@@ -73,7 +75,8 @@ void DrawingDisplayItem::AsValueInto(
   array->EndArray();
 
   std::string b64_picture;
-  PictureDebugUtil::SerializeAsBase64(picture_.get(), &b64_picture);
+  PictureDebugUtil::SerializeAsBase64(ToSkPicture(picture_.get()),
+                                      &b64_picture);
   array->SetString("skp64", b64_picture);
   array->EndDictionary();
 }
@@ -83,7 +86,7 @@ void DrawingDisplayItem::CloneTo(DrawingDisplayItem* item) const {
 }
 
 size_t DrawingDisplayItem::ExternalMemoryUsage() const {
-  return SkPictureUtils::ApproximateBytesUsed(ToSkPicture(picture_.get()));
+  return picture_->approximateBytesUsed();
 }
 
 DISABLE_CFI_PERF

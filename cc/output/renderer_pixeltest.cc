@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/base/math_util.h"
 #include "cc/output/gl_renderer.h"
+#include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
@@ -3213,17 +3214,17 @@ TEST_F(GLRendererPixelTest, TextureQuadBatching) {
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(mask_rect.width(), mask_rect.height()));
   SkCanvas canvas(bitmap);
-  PaintFlags flags;
-  flags.setStyle(PaintFlags::kStroke_Style);
-  flags.setStrokeWidth(SkIntToScalar(4));
-  flags.setColor(SK_ColorGREEN);
+  SkPaint paint;
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(SkIntToScalar(4));
+  paint.setColor(SK_ColorGREEN);
   canvas.clear(SK_ColorWHITE);
   gfx::Rect inset_rect = rect;
   while (!inset_rect.IsEmpty()) {
     inset_rect.Inset(6, 6, 4, 4);
     canvas.drawRect(SkRect::MakeXYWH(inset_rect.x(), inset_rect.y(),
                                      inset_rect.width(), inset_rect.height()),
-                    flags);
+                    paint);
     inset_rect.Inset(6, 6, 4, 4);
   }
 

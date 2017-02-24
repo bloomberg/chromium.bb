@@ -183,8 +183,8 @@ TEST(RecordingSourceTest, NoDiscardableImages) {
   std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
 
-  SkPaint simple_paint;
-  simple_paint.setColor(SkColorSetARGB(255, 12, 23, 34));
+  PaintFlags simple_flags;
+  simple_flags.setColor(SkColorSetARGB(255, 12, 23, 34));
 
   SkBitmap non_discardable_bitmap;
   non_discardable_bitmap.allocN32Pixels(128, 128);
@@ -193,13 +193,13 @@ TEST(RecordingSourceTest, NoDiscardableImages) {
       SkImage::MakeFromBitmap(non_discardable_bitmap);
 
   recording_source->add_draw_rect_with_flags(gfx::Rect(0, 0, 256, 256),
-                                             simple_paint);
+                                             simple_flags);
   recording_source->add_draw_rect_with_flags(gfx::Rect(128, 128, 512, 512),
-                                             simple_paint);
+                                             simple_flags);
   recording_source->add_draw_rect_with_flags(gfx::Rect(512, 0, 256, 256),
-                                             simple_paint);
+                                             simple_flags);
   recording_source->add_draw_rect_with_flags(gfx::Rect(0, 512, 256, 256),
-                                             simple_paint);
+                                             simple_flags);
   recording_source->add_draw_image(non_discardable_image, gfx::Point(128, 0));
   recording_source->add_draw_image(non_discardable_image, gfx::Point(0, 128));
   recording_source->add_draw_image(non_discardable_image, gfx::Point(150, 150));

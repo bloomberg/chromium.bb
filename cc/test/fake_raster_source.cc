@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/synchronization/waitable_event.h"
+#include "cc/paint/paint_flags.h"
 #include "cc/test/fake_recording_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -139,7 +140,7 @@ FakeRasterSource::FakeRasterSource(const RecordingSource* recording_source,
 FakeRasterSource::~FakeRasterSource() {}
 
 void FakeRasterSource::PlaybackToCanvas(
-    PaintCanvas* canvas,
+    SkCanvas* canvas,
     const PlaybackSettings& settings) const {
   if (playback_allowed_event_)
     playback_allowed_event_->Wait();

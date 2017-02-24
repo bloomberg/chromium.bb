@@ -770,11 +770,11 @@ class TranslatedFilterTest : public LayerTreeHostFiltersPixelTest {
     // This is intended to test render pass removal optimizations.
     FakeContentLayerClient client;
     client.set_bounds(child_rect.size());
-    SkPaint paint;
-    paint.setColor(SK_ColorGREEN);
-    client.add_draw_rect(child_rect, paint);
-    paint.setColor(SK_ColorBLUE);
-    client.add_draw_rect(gfx::Rect(100, 50), paint);
+    PaintFlags flags;
+    flags.setColor(SK_ColorGREEN);
+    client.add_draw_rect(child_rect, flags);
+    flags.setColor(SK_ColorBLUE);
+    client.add_draw_rect(gfx::Rect(100, 50), flags);
     scoped_refptr<PictureLayer> child = PictureLayer::Create(&client);
     child->SetBounds(child_rect.size());
     child->SetIsDrawable(true);

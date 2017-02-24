@@ -48,7 +48,7 @@ void DrawDisplayList(unsigned char* buffer,
       SkImageInfo::MakeN32Premul(layer_rect.width(), layer_rect.height());
   SkBitmap bitmap;
   bitmap.installPixels(info, buffer, info.minRowBytes());
-  PaintCanvas canvas(bitmap);
+  SkCanvas canvas(bitmap);
   canvas.clipRect(gfx::RectToSkRect(layer_rect));
   list->Raster(&canvas, NULL, layer_rect, 1.0f);
 }

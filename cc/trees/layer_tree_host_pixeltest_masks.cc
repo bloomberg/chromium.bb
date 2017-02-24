@@ -103,7 +103,7 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   mask->SetBounds(mask_bounds);
 
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(200, 200);
-  PaintCanvas* canvas = surface->getCanvas();
+  SkCanvas* canvas = surface->getCanvas();
   canvas->scale(SkIntToScalar(4), SkIntToScalar(4));
   MaskContentLayerClient client(mask_bounds);
   scoped_refptr<DisplayItemList> mask_display_list =
