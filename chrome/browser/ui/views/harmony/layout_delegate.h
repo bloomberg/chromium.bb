@@ -12,6 +12,8 @@ class LayoutDelegate {
   enum class Metric {
     // Padding on the left and right side of a button's label.
     BUTTON_HORIZONTAL_PADDING,
+    // Default minimum width of a button.
+    BUTTON_MINIMUM_WIDTH,
     // Margin between the edge of a dialog and the left, right, or bottom of a
     // contained button.
     DIALOG_BUTTON_MARGIN,

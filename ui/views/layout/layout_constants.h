@@ -83,6 +83,12 @@ constexpr int kCheckboxIndent = 10;
 // and the start of its corresponding text.
 constexpr int kItemLabelSpacing = 10;
 
+// Padding on the left and right of a button's contents.
+const int kButtonHorizontalPadding = 16;
+
+// Default minimum width of buttons.
+const int kMinimumButtonWidth = 48;
+
 // Minimum width of dialog buttons.
 const int kDialogMinimumButtonWidth = 75;
 

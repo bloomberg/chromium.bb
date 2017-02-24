@@ -23,7 +23,9 @@ LayoutDelegate* LayoutDelegate::Get() {
 int LayoutDelegate::GetMetric(Metric metric) const {
   switch (metric) {
     case Metric::BUTTON_HORIZONTAL_PADDING:
-      return 0;
+      return views::kButtonHorizontalPadding;
+    case Metric::BUTTON_MINIMUM_WIDTH:
+      return views::kMinimumButtonWidth;
     case Metric::DIALOG_BUTTON_MARGIN:
       return views::kButtonHEdgeMarginNew;
     case Metric::DIALOG_BUTTON_MINIMUM_WIDTH:

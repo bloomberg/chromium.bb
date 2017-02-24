@@ -194,7 +194,7 @@ MdTextButton::MdTextButton(ButtonListener* listener)
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();
   const int minimum_width =
-      ViewsDelegate::GetInstance()->GetDialogButtonMinimumWidth();
+      ViewsDelegate::GetInstance()->GetButtonMinimumWidth();
   SetMinSize(gfx::Size(minimum_width, 0));
   SetFocusPainter(nullptr);
   label()->SetAutoColorReadabilityEnabled(false);

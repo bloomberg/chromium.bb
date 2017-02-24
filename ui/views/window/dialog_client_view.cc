@@ -296,8 +296,6 @@ LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
     button = MdTextButton::CreateSecondaryUiButton(this, title);
   }
 
-  // TODO(bsep): Setting the minimum size is redundant with MdTextButton, so
-  // this can be deleted when harmony is always on.
   const int minimum_width =
       ViewsDelegate::GetInstance()->GetDialogButtonMinimumWidth();
   button->SetMinSize(gfx::Size(minimum_width, 0));

@@ -588,6 +588,11 @@ gfx::Insets ChromeViewsDelegate::GetBubbleDialogMargins() const {
       LayoutDelegate::Metric::PANEL_CONTENT_MARGIN));
 }
 
+int ChromeViewsDelegate::GetButtonMinimumWidth() const {
+  return LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::BUTTON_MINIMUM_WIDTH);
+}
+
 int ChromeViewsDelegate::GetDialogButtonMinimumWidth() const {
   return LayoutDelegate::Get()->GetMetric(
       LayoutDelegate::Metric::DIALOG_BUTTON_MINIMUM_WIDTH);

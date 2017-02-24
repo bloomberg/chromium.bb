@@ -152,12 +152,16 @@ gfx::Insets ViewsDelegate::GetBubbleDialogMargins() const {
   return gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
 }
 
+int ViewsDelegate::GetButtonMinimumWidth() const {
+  return kMinimumButtonWidth;
+}
+
 int ViewsDelegate::GetDialogButtonMinimumWidth() const {
   return kDialogMinimumButtonWidth;
 }
 
 int ViewsDelegate::GetButtonHorizontalPadding() const {
-  return 0;
+  return kButtonHorizontalPadding;
 }
 
 ViewsDelegate::ViewsDelegate()
