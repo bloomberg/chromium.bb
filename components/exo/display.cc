@@ -179,6 +179,7 @@ std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
 
 std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
     Surface* surface,
+    const gfx::Point& origin,
     int container) {
   TRACE_EVENT2("exo", "Display::CreateRemoteShellSurface", "surface",
                surface->AsTracedValue(), "container", container);
@@ -192,7 +193,7 @@ std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
   bool can_minimize = container != ash::kShellWindowId_SystemModalContainer;
 
   return base::MakeUnique<ShellSurface>(
-      surface, nullptr, ShellSurface::BoundsMode::CLIENT, gfx::Point(),
+      surface, nullptr, ShellSurface::BoundsMode::CLIENT, origin,
       true /* activatable */, can_minimize, container);
 }
 

@@ -1005,7 +1005,8 @@ uint32_t HandleShellSurfaceConfigureCallback(
     const gfx::Size& size,
     ash::wm::WindowStateType state_type,
     bool resizing,
-    bool activated) {
+    bool activated,
+    const gfx::Point& origin) {
   wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
                                   size.width(), size.height());
   wl_client_flush(wl_resource_get_client(resource));
@@ -1530,7 +1531,8 @@ uint32_t HandleXdgToplevelV6ConfigureCallback(
     const gfx::Size& size,
     ash::wm::WindowStateType state_type,
     bool resizing,
-    bool activated) {
+    bool activated,
+    const gfx::Point& origin) {
   wl_array states;
   wl_array_init(&states);
   if (state_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED)
@@ -1667,7 +1669,8 @@ uint32_t HandleXdgSurfaceV5ConfigureCallback(
     const gfx::Size& size,
     ash::wm::WindowStateType state_type,
     bool resizing,
-    bool activated) {
+    bool activated,
+    const gfx::Point& origin) {
   wl_array states;
   wl_array_init(&states);
   if (state_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED)
@@ -1976,7 +1979,7 @@ void remote_surface_set_rectangular_surface_shadow(wl_client* client,
 void remote_surface_ack_configure(wl_client* client,
                                   wl_resource* resource,
                                   uint32_t serial) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->AcknowledgeConfigure(serial);
 }
 
 void remote_surface_move(wl_client* client, wl_resource* resource) {
@@ -2048,9 +2051,13 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
     display::Screen::GetScreen()->RemoveObserver(this);
   }
 
+  bool IsMultiDisplaySupported() const {
+    return wl_resource_get_version(remote_shell_resource_) >= 3;
+  }
+
   std::unique_ptr<ShellSurface> CreateShellSurface(Surface* surface,
                                                    int container) {
-    return display_->CreateRemoteShellSurface(surface, container);
+    return display_->CreateRemoteShellSurface(surface, gfx::Point(), container);
   }
 
   std::unique_ptr<NotificationSurface> CreateNotificationSurface(
@@ -2222,14 +2229,32 @@ void HandleRemoteSurfaceStateChangedCallback(
   wl_client_flush(wl_resource_get_client(resource));
 }
 
+uint32_t HandleRemoteSurfaceConfigureCallback(
+    wl_resource* resource,
+    const gfx::Size& size,
+    ash::wm::WindowStateType state_type,
+    bool resizing,
+    bool activated,
+    const gfx::Point& origin) {
+  wl_array states;
+  wl_array_init(&states);
+  uint32_t serial = wl_display_next_serial(
+      wl_client_get_display(wl_resource_get_client(resource)));
+  zcr_remote_surface_v1_send_configure(resource, origin.x(), origin.y(),
+                                       &states, serial);
+  wl_client_flush(wl_resource_get_client(resource));
+  wl_array_release(&states);
+  return serial;
+}
+
 void remote_shell_get_remote_surface(wl_client* client,
                                      wl_resource* resource,
                                      uint32_t id,
                                      wl_resource* surface,
                                      uint32_t container) {
-  std::unique_ptr<ShellSurface> shell_surface =
-      GetUserDataAs<WaylandRemoteShell>(resource)->CreateShellSurface(
-          GetUserDataAs<Surface>(surface), RemoteSurfaceContainer(container));
+  WaylandRemoteShell* shell = GetUserDataAs<WaylandRemoteShell>(resource);
+  std::unique_ptr<ShellSurface> shell_surface = shell->CreateShellSurface(
+      GetUserDataAs<Surface>(surface), RemoteSurfaceContainer(container));
   if (!shell_surface) {
     wl_resource_post_error(resource, ZCR_REMOTE_SHELL_V1_ERROR_ROLE,
                            "surface has already been assigned a role");
@@ -2246,6 +2271,11 @@ void remote_shell_get_remote_surface(wl_client* client,
   shell_surface->set_state_changed_callback(
       base::Bind(&HandleRemoteSurfaceStateChangedCallback,
                  base::Unretained(remote_surface_resource)));
+  if (shell->IsMultiDisplaySupported()) {
+    shell_surface->set_configure_callback(
+        base::Bind(&HandleRemoteSurfaceConfigureCallback,
+                   base::Unretained(remote_surface_resource)));
+  }
 
   SetImplementation(remote_surface_resource, &remote_surface_implementation,
                     std::move(shell_surface));

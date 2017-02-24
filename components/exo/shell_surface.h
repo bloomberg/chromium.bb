@@ -56,7 +56,8 @@ class ShellSurface : public SurfaceDelegate,
   //
   // When bounds are controlled by the client, it represents the origin of a
   // coordinate system to which the position of the shell surface, specified
-  // as part of the geometry, is relative.
+  // as part of the geometry, is relative. The client must acknowledge changes
+  // to the origin, and offset the geometry accordingly.
   ShellSurface(Surface* surface,
                ShellSurface* parent,
                BoundsMode bounds_mode,
@@ -96,7 +97,8 @@ class ShellSurface : public SurfaceDelegate,
       base::Callback<uint32_t(const gfx::Size& size,
                               ash::wm::WindowStateType state_type,
                               bool resizing,
-                              bool activated)>;
+                              bool activated,
+                              const gfx::Point& origin)>;
   void set_configure_callback(const ConfigureCallback& configure_callback) {
     configure_callback_ = configure_callback;
   }

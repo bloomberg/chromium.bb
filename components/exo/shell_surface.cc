@@ -369,8 +369,10 @@ void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
       break;
   }
 
-  if (widget_)
+  if (widget_) {
     UpdateWidgetBounds();
+    UpdateShadow();
+  }
 }
 
 void ShellSurface::SetParent(ShellSurface* parent) {
@@ -629,7 +631,29 @@ void ShellSurface::SetTopInset(int height) {
 void ShellSurface::SetOrigin(const gfx::Point& origin) {
   TRACE_EVENT1("exo", "ShellSurface::SetOrigin", "origin", origin.ToString());
 
+  if (origin == origin_)
+    return;
+
+  if (bounds_mode_ != BoundsMode::CLIENT) {
+    origin_ = origin;
+    return;
+  }
+
+  // If the origin changed, give the client a chance to adjust window positions
+  // before switching to the new coordinate system. Retain the old origin by
+  // reverting the origin delta until the next configure is acknowledged.
+  gfx::Vector2d delta = origin - origin_;
+  origin_offset_ -= delta;
+  pending_origin_offset_accumulator_ += delta;
+
   origin_ = origin;
+
+  if (widget_) {
+    UpdateWidgetBounds();
+    UpdateShadow();
+  }
+
+  Configure();
 }
 
 void ShellSurface::SetActivatable(bool activatable) {
@@ -676,10 +700,12 @@ void ShellSurface::OnSurfaceCommit() {
 
   if (enabled() && !widget_) {
     // Defer widget creation until surface contains some contents.
-    if (surface_->content_size().IsEmpty())
+    if (surface_->content_size().IsEmpty()) {
       Configure();
-    else
-      CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
+      return;
+    }
+
+    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
   }
 
   // Apply the accumulated pending origin offset to reflect acknowledged
@@ -871,7 +897,10 @@ void ShellSurface::OnPreWindowStateTypeChange(
     // cross-fade animations. The configure callback provides a mechanism for
     // the client to inform us that a frame has taken the state change into
     // account and without this cross-fade animations are unreliable.
-    if (configure_callback_.is_null())
+
+    // TODO(domlaskowski): For shell surfaces whose bounds are controlled by the
+    // client, the configure callback does not yet support window state changes.
+    if (configure_callback_.is_null() || bounds_mode_ == BoundsMode::CLIENT)
       scoped_animations_disabled_.reset(new ScopedAnimationsDisabled(this));
   }
 }
@@ -903,6 +932,11 @@ void ShellSurface::OnPostWindowStateTypeChange(
 void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds) {
+  // TODO(domlaskowski): For shell surfaces whose bounds are controlled by the
+  // client, the configure callback does not yet support resizing.
+  if (bounds_mode_ == BoundsMode::CLIENT)
+    return;
+
   if (!widget_ || !surface_ || ignore_window_bounds_changes_)
     return;
 
@@ -1154,10 +1188,11 @@ void ShellSurface::Configure() {
       serial = configure_callback_.Run(
           non_client_view->frame_view()->GetBoundsForClientView().size(),
           ash::wm::GetWindowState(widget_->GetNativeWindow())->GetStateType(),
-          IsResizing(), widget_->IsActive());
+          IsResizing(), widget_->IsActive(), origin_);
     } else {
-      serial = configure_callback_.Run(
-          gfx::Size(), ash::wm::WINDOW_STATE_TYPE_NORMAL, false, false);
+      serial = configure_callback_.Run(gfx::Size(),
+                                       ash::wm::WINDOW_STATE_TYPE_NORMAL, false,
+                                       false, origin_);
     }
   }
 
@@ -1290,21 +1325,16 @@ gfx::Rect ShellSurface::GetVisibleBounds() const {
 }
 
 gfx::Point ShellSurface::GetSurfaceOrigin() const {
-  // For client-positioned shell surfaces, the surface origin corresponds to the
-  // widget position relative to the origin specified by the client. Since the
-  // surface is positioned relative to the widget, negate this vector to align
-  // the surface with the widget.
-  if (bounds_mode_ != BoundsMode::SHELL) {
-    gfx::Point position = widget_->GetNativeWindow()->bounds().origin();
-    wm::ConvertPointToScreen(widget_->GetNativeWindow()->parent(), &position);
-    return origin_ - position.OffsetFromOrigin();
-  }
+  DCHECK(bounds_mode_ == BoundsMode::SHELL || resize_component_ == HTCAPTION);
 
   gfx::Rect visible_bounds = GetVisibleBounds();
   gfx::Rect client_bounds =
       widget_->non_client_view()->frame_view()->GetBoundsForClientView();
   switch (resize_component_) {
     case HTCAPTION:
+      if (bounds_mode_ == BoundsMode::CLIENT)
+        return origin_ + origin_offset_ - visible_bounds.OffsetFromOrigin();
+
       return gfx::Point() + origin_offset_ - visible_bounds.OffsetFromOrigin();
     case HTBOTTOM:
     case HTRIGHT:
@@ -1357,8 +1387,8 @@ void ShellSurface::UpdateWidgetBounds() {
   switch (bounds_mode_) {
     case BoundsMode::CLIENT:
     case BoundsMode::FIXED:
-      // Position is relative to the origin.
-      new_widget_bounds += origin_.OffsetFromOrigin();
+      new_widget_bounds.set_origin(origin_ -
+                                   GetSurfaceOrigin().OffsetFromOrigin());
       break;
     case BoundsMode::SHELL:
       // Update widget origin using the surface origin if the current location
@@ -1407,22 +1437,41 @@ void ShellSurface::UpdateShadow() {
     wm::SetShadowElevation(window, wm::ShadowElevation::MEDIUM);
     gfx::Rect shadow_content_bounds =
         gfx::ScaleToEnclosedRect(shadow_content_bounds_, 1.f / scale_);
+
+    // Convert from screen to display coordinates.
+    if (!shadow_content_bounds.IsEmpty()) {
+      gfx::Point origin = shadow_content_bounds.origin() - origin_offset_;
+      wm::ConvertPointFromScreen(window->parent(), &origin);
+      shadow_content_bounds.set_origin(origin);
+    }
+
     gfx::Rect shadow_underlay_bounds = shadow_content_bounds_;
-    if (shadow_underlay_bounds.IsEmpty())
+
+    if (shadow_underlay_bounds.IsEmpty()) {
       shadow_underlay_bounds = gfx::Rect(surface_->window()->bounds().size());
+    } else if (shadow_underlay_in_surface_) {
+      // Since the shadow underlay is positioned relative to the surface, its
+      // origin corresponds to the shadow content position relative to the
+      // origin specified by the client.
+      shadow_underlay_bounds -=
+          gfx::ScaleToCeiledPoint(origin_ + origin_offset_, scale_)
+              .OffsetFromOrigin();
+    }
 
     if (!shadow_underlay_in_surface_) {
       shadow_content_bounds = shadow_content_bounds_;
       if (shadow_content_bounds.IsEmpty()) {
         shadow_content_bounds = window->bounds();
+      } else {
+        // Convert from screen to display coordinates.
+        gfx::Point origin = shadow_content_bounds.origin() - origin_offset_;
+        wm::ConvertPointFromScreen(window->parent(), &origin);
+        shadow_content_bounds.set_origin(origin);
       }
     }
 
-    // TODO(oshima): Adjust the coordinates from client screen to
-    // chromeos screen when multi displays are supported.
-    gfx::Point origin = window->bounds().origin();
     gfx::Point shadow_origin = shadow_content_bounds.origin();
-    shadow_origin -= origin.OffsetFromOrigin();
+    shadow_origin -= window->bounds().OffsetFromOrigin();
     gfx::Rect shadow_bounds(shadow_origin, shadow_content_bounds.size());
 
     // Always create and show the underlay, even in maximized/fullscreen.
