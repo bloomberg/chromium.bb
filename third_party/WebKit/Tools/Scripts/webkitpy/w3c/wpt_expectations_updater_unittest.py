@@ -426,8 +426,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertLog(['ERROR: No issue on current branch.\n'])
 
     def test_run_no_try_results(self):
-        host = self.mock_host()
-        updater = WPTExpectationsUpdater(host)
+        updater = WPTExpectationsUpdater(self.mock_host())
         updater.get_latest_try_jobs = lambda: []
         self.assertEqual(1, updater.run(args=[]))
         self.assertLog(['ERROR: No try job information was collected.\n'])

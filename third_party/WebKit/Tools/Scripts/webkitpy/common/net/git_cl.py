@@ -16,24 +16,16 @@ from webkitpy.common.net.buildbot import Build, filter_latest_builds
 
 _log = logging.getLogger(__name__)
 
-_COMMANDS_THAT_REQUIRE_AUTH = (
-    'archive', 'comments', 'commit', 'description', 'diff', 'land', 'lint', 'owners', 'patch',
-    'presubmit', 'set-close', 'set-commit', 'status', 'try-results', 'try', 'upload',
-)
-
 
 class GitCL(object):
 
-    def __init__(self, host, auth_refresh_token_json=None, cwd=None):
+    def __init__(self, host, cwd=None):
         self._host = host
-        self._auth_refresh_token_json = auth_refresh_token_json
         self._cwd = cwd
 
     def run(self, args):
         """Runs git-cl with the given arguments and returns the output."""
         command = ['git', 'cl'] + args
-        if self._auth_refresh_token_json and args[0] in _COMMANDS_THAT_REQUIRE_AUTH:
-            command += ['--auth-refresh-token-json', self._auth_refresh_token_json]
         return self._host.executive.run_command(command, cwd=self._cwd)
 
     def get_issue_number(self):

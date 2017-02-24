@@ -55,7 +55,7 @@ class TestImporter(object):
         if not self.checkout_is_okay(options.allow_local_commits):
             return 1
 
-        self.git_cl = GitCL(self.host, auth_refresh_token_json=options.auth_refresh_token_json)
+        self.git_cl = GitCL(self.host)
 
         _log.debug('Noting the current Chromium commit.')
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
@@ -124,7 +124,7 @@ class TestImporter(object):
         parser.add_argument('--auto-update', action='store_true',
                             help='uploads CL and initiates commit queue.')
         parser.add_argument('--auth-refresh-token-json',
-                            help='Rietveld auth refresh JSON token.')
+                            help='Auth refresh JSON token (ignored, deprecated)')
         parser.add_argument('--ignore-exportable-commits', action='store_true',
                             help='Continue even if there are exportable commits that may be overwritten.')
         return parser.parse_args(argv)
@@ -344,7 +344,7 @@ class TestImporter(object):
             self.fetch_new_expectations_and_baselines()
 
         # Trigger CQ and wait for CQ try jobs to finish.
-        self.git_cl.run(['set-commit', '--rietveld'])
+        self.git_cl.run(['set-commit', '--gerrit'])
         try_results = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS, timeout_seconds=TIMEOUT_SECONDS)
 
@@ -371,7 +371,7 @@ class TestImporter(object):
         self.git_cl.run([
             'upload',
             '-f',
-            '--rietveld',
+            '--gerrit',
             '-m',
             description,
         ] + ['--cc=' + email_address for email_address in directory_owners])
@@ -415,7 +415,7 @@ class TestImporter(object):
         expectation_updater.run(args=[])
         message = 'Update test expectations and baselines.'
         self.check_run(['git', 'commit', '-a', '-m', message])
-        self.git_cl.run(['upload', '-m', message, '--rietveld'])
+        self.git_cl.run(['upload', '-m', message, '--gerrit'])
 
     def update_all_test_expectations_files(self, deleted_tests, renamed_tests):
         """Updates all test expectations files for tests that have been deleted or renamed."""
