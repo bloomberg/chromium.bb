@@ -240,6 +240,11 @@
     },
 
     {
+      name: "embeddedMediaExperienceEnabled",
+      initial: false,
+    },
+
+    {
       name: "scrollAnimatorEnabled",
       initial: true,
     },

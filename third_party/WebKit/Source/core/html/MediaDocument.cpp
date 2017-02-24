@@ -27,6 +27,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -34,6 +35,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLBodyElement.h"
@@ -50,6 +52,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/Histogram.h"
 #include "platform/KeyboardCodes.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/text/PlatformLocale.h"
 
 namespace blink {
@@ -113,6 +116,31 @@ class MediaDownloadEventListener final : public EventListener {
   bool m_clicked;
 };
 
+class MediaLoadedEventListener final : public EventListener {
+  WTF_MAKE_NONCOPYABLE(MediaLoadedEventListener);
+
+ public:
+  static MediaLoadedEventListener* create() {
+    return new MediaLoadedEventListener();
+  }
+
+  bool operator==(const EventListener& other) const override {
+    return this == &other;
+  }
+
+ private:
+  MediaLoadedEventListener() : EventListener(CPPEventListenerType) {}
+
+  void handleEvent(ExecutionContext* context, Event* event) override {
+    HTMLVideoElement* media =
+        static_cast<HTMLVideoElement*>(event->target()->toNode());
+    UserGestureIndicator gesture(
+        DocumentUserGestureToken::create(&media->document()));
+    media->webkitEnterFullscreen();
+    media->play();
+  }
+};
+
 void MediaDocumentParser::createDocumentStructure() {
   DCHECK(document());
   HTMLHtmlElement* rootElement = HTMLHtmlElement::create(*document());
@@ -162,6 +190,17 @@ void MediaDocumentParser::createDocumentStructure() {
                     "height: 100%;");
   HTMLContentElement* content = HTMLContentElement::create(*document());
   div->appendChild(content);
+
+  if (document()->settings() &&
+      document()->settings()->getEmbeddedMediaExperienceEnabled()) {
+    EventListener* listener = MediaLoadedEventListener::create();
+    AddEventListenerOptions options;
+    options.setOnce(true);
+    AddEventListenerOptionsOrBoolean optionsOrBoolean;
+    optionsOrBoolean.setAddEventListenerOptions(options);
+    media->addEventListener(EventTypeNames::loadedmetadata, listener,
+                            optionsOrBoolean);
+  }
 
   if (RuntimeEnabledFeatures::mediaDocumentDownloadButtonEnabled()) {
     HTMLAnchorElement* anchor = HTMLAnchorElement::create(*document());

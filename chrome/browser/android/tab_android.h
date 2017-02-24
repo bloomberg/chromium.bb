@@ -240,6 +240,13 @@ class TabAndroid : public CoreTabHelperDelegate,
     return webapp_manifest_scope_;
   }
 
+  void EnableEmbeddedMediaExperience(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean enabled);
+
+  bool ShouldEnableEmbeddedMediaExperience() const;
+
   // Register the Tab's native methods through JNI.
   static bool RegisterTabAndroid(JNIEnv* env);
 
@@ -266,6 +273,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   std::unique_ptr<browser_sync::SyncedTabDelegateAndroid> synced_tab_delegate_;
 
   std::string webapp_manifest_scope_;
+  bool embedded_media_experience_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(TabAndroid);
 };

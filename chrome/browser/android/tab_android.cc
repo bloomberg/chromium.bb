@@ -126,7 +126,8 @@ TabAndroid::TabAndroid(JNIEnv* env, const JavaRef<jobject>& obj)
     : weak_java_tab_(env, obj),
       content_layer_(cc::Layer::Create()),
       tab_content_manager_(NULL),
-      synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)) {
+      synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)),
+      embedded_media_experience_enabled_(false) {
   Java_Tab_setNativePtr(env, obj, reinterpret_cast<intptr_t>(this));
 }
 
@@ -714,6 +715,22 @@ bool TabAndroid::HasPrerenderedUrl(JNIEnv* env,
                                    const JavaParamRef<jstring>& url) {
   GURL gurl(base::android::ConvertJavaStringToUTF8(env, url));
   return HasPrerenderedUrl(gurl);
+}
+
+void TabAndroid::EnableEmbeddedMediaExperience(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jboolean enabled) {
+  embedded_media_experience_enabled_ = enabled;
+
+  if (!web_contents() || !web_contents()->GetRenderViewHost())
+    return;
+
+  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+}
+
+bool TabAndroid::ShouldEnableEmbeddedMediaExperience() const {
+  return embedded_media_experience_enabled_;
 }
 
 namespace {

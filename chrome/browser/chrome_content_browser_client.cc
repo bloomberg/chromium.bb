@@ -2660,13 +2660,16 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->data_saver_enabled = GetDataSaverEnabledPref(prefs);
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(
-          features::kAllowAutoplayUnmutedInWebappManifestScope)) {
-    content::WebContents* contents =
-        content::WebContents::FromRenderViewHost(rvh);
-    if (contents) {
-      TabAndroid* tab_android = TabAndroid::FromWebContents(contents);
-      if (tab_android) {
+  content::WebContents* contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  if (contents) {
+    TabAndroid* tab_android = TabAndroid::FromWebContents(contents);
+    if (tab_android) {
+      web_prefs->embedded_media_experience_enabled =
+          tab_android->ShouldEnableEmbeddedMediaExperience();
+
+      if (base::FeatureList::IsEnabled(
+              features::kAllowAutoplayUnmutedInWebappManifestScope)) {
         web_prefs->media_playback_gesture_whitelist_scope =
             tab_android->GetWebappManifestScope();
       }

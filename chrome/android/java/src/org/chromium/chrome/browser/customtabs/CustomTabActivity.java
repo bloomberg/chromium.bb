@@ -549,6 +549,11 @@ public class CustomTabActivity extends ChromeActivity {
                         mIntentDataProvider.isOpenedByChrome(),
                         getFullscreenManager().getBrowserVisibilityDelegate()),
                 false, false);
+
+        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
+            tab.enableEmbeddedMediaExperience(true);
+        }
+
         initializeMainTab(tab);
         return tab;
     }

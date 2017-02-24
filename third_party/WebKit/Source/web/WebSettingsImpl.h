@@ -124,6 +124,7 @@ class WEB_EXPORT WebSettingsImpl final : NON_EXPORTED_BASE(public WebSettings) {
   void setMediaPlaybackRequiresUserGesture(bool) override;
   void setMediaPlaybackGestureWhitelistScope(const WebString&) override;
   void setPresentationRequiresUserGesture(bool) override;
+  void setEmbeddedMediaExperienceEnabled(bool) override;
   void setMinimumAccelerated2dCanvasSize(int) override;
   void setMinimumFontSize(int) override;
   void setMinimumLogicalFontSize(int) override;

@@ -73,6 +73,7 @@ public class DownloadUtils {
 
     private static final String DEFAULT_MIME_TYPE = "*/*";
     private static final String MIME_TYPE_DELIMITER = "/";
+    private static final String MIME_TYPE_VIDEO = "video";
 
     private static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
@@ -420,6 +421,8 @@ public class DownloadUtils {
         intent.setData(contentUri);
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_MEDIA_VIEWER, true);
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_MEDIA_VIEWER_URL, fileUri.toString());
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_ENABLE_EMBEDDED_MEDIA_EXPERIENCE,
+                isMimeTypeVideo(mimeType));
         intent.putExtra(
                 CustomTabIntentDataProvider.EXTRA_INITIAL_BACKGROUND_COLOR, mediaColor);
         intent.putExtra(
@@ -698,5 +701,14 @@ public class DownloadUtils {
     public static ColorStateList getIconForegroundColorList(Context context) {
         return ApiCompatibilityUtils.getColorStateList(
                 context.getResources(), R.color.white_mode_tint);
+    }
+
+    private static boolean isMimeTypeVideo(String mimeType) {
+        if (TextUtils.isEmpty(mimeType)) return false;
+
+        String[] pieces = mimeType.split(MIME_TYPE_DELIMITER);
+        if (pieces.length != 2) return false;
+
+        return MIME_TYPE_VIDEO.equals(pieces[0]);
     }
 }

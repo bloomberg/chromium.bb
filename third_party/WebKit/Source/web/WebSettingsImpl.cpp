@@ -638,6 +638,10 @@ void WebSettingsImpl::setPresentationRequiresUserGesture(bool required) {
   m_settings->setPresentationRequiresUserGesture(required);
 }
 
+void WebSettingsImpl::setEmbeddedMediaExperienceEnabled(bool enabled) {
+  m_settings->setEmbeddedMediaExperienceEnabled(enabled);
+}
+
 void WebSettingsImpl::setViewportEnabled(bool enabled) {
   m_settings->setViewportEnabled(enabled);
 }
