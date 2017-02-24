@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -150,13 +151,13 @@ void DebugDaemonLogSource::OnGetUserLogFiles(
               (*it)->username_hash()));
     }
 
-    content::BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
-        base::Bind(&DebugDaemonLogSource::ReadUserLogFiles,
-                   user_log_files, profile_dirs, response),
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::BACKGROUND),
+        base::Bind(&DebugDaemonLogSource::ReadUserLogFiles, user_log_files,
+                   profile_dirs, response),
         base::Bind(&DebugDaemonLogSource::MergeResponse,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Owned(response)));
+                   weak_ptr_factory_.GetWeakPtr(), base::Owned(response)));
   } else {
     (*response_)[kUserLogFileKeyName] = kNotAvailable;
     RequestCompleted();
