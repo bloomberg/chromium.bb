@@ -43,6 +43,7 @@ class NoOpGLSurface : public GLSurface {
   void* GetHandle() override { return nullptr; }
   void* GetDisplay() override { return nullptr; }
   bool IsSurfaceless() const override { return true; }
+  GLSurfaceFormat GetFormat() override { return GLSurfaceFormat(); }
 
  protected:
   ~NoOpGLSurface() override {}

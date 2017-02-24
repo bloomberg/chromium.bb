@@ -320,6 +320,10 @@ void* NativeViewGLSurfaceWGL::GetHandle() {
   return device_context_;
 }
 
+GLSurfaceFormat NativeViewGLSurfaceWGL::GetFormat() {
+  return GLSurfaceFormat();
+}
+
 PbufferGLSurfaceWGL::PbufferGLSurfaceWGL(const gfx::Size& size)
     : size_(size),
       device_context_(NULL),
@@ -392,6 +396,10 @@ gfx::Size PbufferGLSurfaceWGL::GetSize() {
 
 void* PbufferGLSurfaceWGL::GetHandle() {
   return device_context_;
+}
+
+GLSurfaceFormat PbufferGLSurfaceWGL::GetFormat() {
+  return GLSurfaceFormat();
 }
 
 }  // namespace gl

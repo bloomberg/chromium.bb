@@ -47,6 +47,7 @@ class GL_EXPORT NativeViewGLSurfaceWGL : public GLSurfaceWGL {
   gfx::SwapResult SwapBuffers() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
+  GLSurfaceFormat GetFormat() override;
 
  private:
   ~NativeViewGLSurfaceWGL() override;
@@ -73,6 +74,7 @@ class GL_EXPORT PbufferGLSurfaceWGL : public GLSurfaceWGL {
   gfx::SwapResult SwapBuffers() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
+  GLSurfaceFormat GetFormat() override;
 
  private:
   ~PbufferGLSurfaceWGL() override;

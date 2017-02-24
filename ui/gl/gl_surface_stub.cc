@@ -35,6 +35,10 @@ bool GLSurfaceStub::BuffersFlipped() const {
   return buffers_flipped_;
 }
 
+GLSurfaceFormat GLSurfaceStub::GetFormat() {
+  return GLSurfaceFormat();
+}
+
 GLSurfaceStub::~GLSurfaceStub() {}
 
 }  // namespace gl

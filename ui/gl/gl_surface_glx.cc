@@ -616,6 +616,10 @@ void* NativeViewGLSurfaceGLX::GetConfig() {
   return config_;
 }
 
+GLSurfaceFormat NativeViewGLSurfaceGLX::GetFormat() {
+  return GLSurfaceFormat();
+}
+
 unsigned long NativeViewGLSurfaceGLX::GetCompatibilityKey() {
   return visual_id_;
 }
@@ -707,6 +711,10 @@ void* UnmappedNativeViewGLSurfaceGLX::GetConfig() {
   if (!config_)
     config_ = GetConfigForWindow(g_display, window_);
   return config_;
+}
+
+GLSurfaceFormat UnmappedNativeViewGLSurfaceGLX::GetFormat() {
+  return GLSurfaceFormat();
 }
 
 unsigned long UnmappedNativeViewGLSurfaceGLX::GetCompatibilityKey() {

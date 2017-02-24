@@ -72,6 +72,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   void* GetHandle() override;
   bool SupportsPostSubBuffer() override;
   void* GetConfig() override;
+  GLSurfaceFormat GetFormat() override;
   unsigned long GetCompatibilityKey() override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
@@ -127,6 +128,7 @@ class GL_EXPORT UnmappedNativeViewGLSurfaceGLX : public GLSurfaceGLX {
   gfx::Size GetSize() override;
   void* GetHandle() override;
   void* GetConfig() override;
+  GLSurfaceFormat GetFormat() override;
   unsigned long GetCompatibilityKey() override;
 
  protected:

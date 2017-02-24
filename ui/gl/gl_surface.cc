@@ -133,11 +133,6 @@ unsigned long GLSurface::GetCompatibilityKey() {
   return 0;
 }
 
-GLSurfaceFormat GLSurface::GetFormat() {
-  NOTIMPLEMENTED();
-  return GLSurfaceFormat();
-}
-
 gfx::VSyncProvider* GLSurface::GetVSyncProvider() {
   return NULL;
 }

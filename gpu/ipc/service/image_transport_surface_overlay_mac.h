@@ -50,6 +50,7 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
   bool SupportsPostSubBuffer() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
+  gl::GLSurfaceFormat GetFormat() override;
   bool OnMakeCurrent(gl::GLContext* context) override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,

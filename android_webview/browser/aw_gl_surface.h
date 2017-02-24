@@ -25,6 +25,7 @@ class AwGLSurface : public gl::GLSurface {
   gfx::Size GetSize() override;
   void* GetHandle() override;
   void* GetDisplay() override;
+  gl::GLSurfaceFormat GetFormat() override;
 
  protected:
   ~AwGLSurface() override;

@@ -157,8 +157,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // with this GLSurface.
   virtual unsigned long GetCompatibilityKey();
 
-  // Get the GL pixel format of the surface, if available.
-  virtual GLSurfaceFormat GetFormat();
+  // Get the GL pixel format of the surface. Must be implemented in a
+  // subclass, though it's ok to just "return GLSurfaceFormat()" if
+  // the default is appropriate.
+  virtual GLSurfaceFormat GetFormat() = 0;
 
   // Get access to a helper providing time of recent refresh and period
   // of screen refresh. If unavailable, returns NULL.

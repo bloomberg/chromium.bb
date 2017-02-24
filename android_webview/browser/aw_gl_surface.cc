@@ -39,4 +39,8 @@ void* AwGLSurface::GetDisplay() {
   return NULL;
 }
 
+gl::GLSurfaceFormat AwGLSurface::GetFormat() {
+  return gl::GLSurfaceFormat();
+}
+
 }  // namespace android_webview

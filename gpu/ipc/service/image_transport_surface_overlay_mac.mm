@@ -304,6 +304,10 @@ void* ImageTransportSurfaceOverlayMac::GetHandle() {
   return nullptr;
 }
 
+gl::GLSurfaceFormat ImageTransportSurfaceOverlayMac::GetFormat() {
+  return gl::GLSurfaceFormat();
+}
+
 bool ImageTransportSurfaceOverlayMac::OnMakeCurrent(gl::GLContext* context) {
   // Ensure that the context is on the appropriate GL renderer. The GL renderer
   // will generally only change when the GPU changes.

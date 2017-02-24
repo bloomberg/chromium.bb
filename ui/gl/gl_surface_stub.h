@@ -26,6 +26,7 @@ class GL_EXPORT GLSurfaceStub : public GLSurface {
   gfx::Size GetSize() override;
   void* GetHandle() override;
   bool BuffersFlipped() const override;
+  GLSurfaceFormat GetFormat() override;
 
  protected:
   ~GLSurfaceStub() override;
