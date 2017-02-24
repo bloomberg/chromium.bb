@@ -79,6 +79,8 @@ var BookmarksStore = Polymer({
     // Attach bookmarks API listeners.
     chrome.bookmarks.onRemoved.addListener(this.onBookmarkRemoved_.bind(this));
     chrome.bookmarks.onChanged.addListener(this.onBookmarkChanged_.bind(this));
+    chrome.bookmarks.onImportBegan.addListener(this.onImportBegan_.bind(this));
+    chrome.bookmarks.onImportEnded.addListener(this.onImportEnded_.bind(this));
   },
 
   //////////////////////////////////////////////////////////////////////////////
@@ -324,6 +326,23 @@ var BookmarksStore = Polymer({
 
     if (this.searchTerm)
       this.updateSearchDisplay_();
+  },
+
+  /**
+   * Called when importing bookmark is started.
+   */
+  onImportBegan_: function() {
+    // TODO(rongjie): pause onCreated once this event is used.
+  },
+
+  /**
+   * Called when importing bookmark node is finished.
+   */
+  onImportEnded_: function() {
+    chrome.bookmarks.getTree(function(results) {
+      this.setupStore_(results[0]);
+      this.updateSelectedDisplay_();
+    }.bind(this));
   },
 
   //////////////////////////////////////////////////////////////////////////////

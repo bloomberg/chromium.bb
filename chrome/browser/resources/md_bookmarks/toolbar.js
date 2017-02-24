@@ -43,12 +43,14 @@ Polymer({
   },
 
   /** @private */
-  onAddImportTap_: function() {
+  onImportTap_: function() {
+    chrome.bookmarks.import();
     this.closeDropdownMenu_();
   },
 
   /** @private */
-  onAddExportTap_: function() {
+  onExportTap_: function() {
+    chrome.bookmarks.export();
     this.closeDropdownMenu_();
   },
 
