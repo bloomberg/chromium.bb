@@ -21,7 +21,7 @@ MediaResource::Type MediaResource::GetType() const {
 
 DemuxerStream* MediaResource::GetFirstStream(DemuxerStream::Type type) {
   const auto& streams = GetAllStreams();
-  for (const auto& stream : streams) {
+  for (auto* stream : streams) {
     if (stream->type() == type)
       return stream;
   }

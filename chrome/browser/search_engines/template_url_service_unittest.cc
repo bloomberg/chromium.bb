@@ -315,7 +315,7 @@ void TemplateURLServiceTest::SetOverriddenEngines() {
   auto overrides_list = base::MakeUnique<base::ListValue>();
   overrides_list->Append(std::move(entry));
 
-  auto prefs = test_util()->profile()->GetTestingPrefService();
+  auto* prefs = test_util()->profile()->GetTestingPrefService();
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
                      new base::FundamentalValue(1));
   prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides_list.release());

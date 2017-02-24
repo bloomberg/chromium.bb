@@ -107,7 +107,7 @@ class FFmpegDemuxerTest : public testing::Test {
 
   DemuxerStream* GetStream(DemuxerStream::Type type) {
     std::vector<DemuxerStream*> streams = demuxer_->GetAllStreams();
-    for (const auto& stream : streams) {
+    for (auto* stream : streams) {
       if (stream->type() == type)
         return stream;
     }

@@ -400,7 +400,7 @@ TEST(RemoteSuggestionTest, CreateFromProtoToProtoRoundtrip) {
   proto.set_dismissed(false);
   proto.set_remote_category_id(1);
   proto.set_fetch_date(1476364691);
-  auto source = proto.add_sources();
+  auto* source = proto.add_sources();
   source->set_url("http://cool-suggestions.com/");
   source->set_publisher_name("Great Suggestions Inc.");
   source->set_amp_url("http://cdn.ampproject.org/c/foo/");
