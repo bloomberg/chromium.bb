@@ -1260,11 +1260,22 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
     if (source_frame->getPrintPresetOptionsForPlugin(source_node,
                                                      &preset_options)) {
       if (preset_options.isPageSizeUniform) {
+        // Figure out if the sizes have the same orientation
+        bool is_printable_area_landscape = printable_area_in_points.width() >
+                                           printable_area_in_points.height();
+        bool is_preset_landscape = preset_options.uniformPageSize.width >
+                                   preset_options.uniformPageSize.height;
+        bool rotate = is_printable_area_landscape != is_preset_landscape;
+        // Match orientation for computing scaling
+        double printable_width = rotate ? printable_area_in_points.height()
+                                        : printable_area_in_points.width();
+        double printable_height = rotate ? printable_area_in_points.width()
+                                         : printable_area_in_points.height();
         double scale_width =
-            static_cast<double>(printable_area_in_points.width()) /
+            printable_width /
             static_cast<double>(preset_options.uniformPageSize.width);
         double scale_height =
-            static_cast<double>(printable_area_in_points.height()) /
+            printable_height /
             static_cast<double>(preset_options.uniformPageSize.height);
         fit_to_page_scale_factor = std::min(scale_width, scale_height);
       } else {
