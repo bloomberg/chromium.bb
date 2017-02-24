@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+PASS Service worker test setup 
+PASS Writable stream: throwing strategy.size getter 
+PASS reject any non-function value for strategy.size 
+PASS Writable stream: throwing strategy.highWaterMark getter 
+PASS Writable stream: invalid strategy.highWaterMark 
+FAIL Writable stream: throwing strategy.size method assert_throws: write should reject with a TypeError function "function () { throw e }" threw object "error1: a unique string" ("error1") expected object "TypeError" ("TypeError")
+PASS Writable stream: invalid strategy.size return value 
+Harness: the test ran to completion.
+

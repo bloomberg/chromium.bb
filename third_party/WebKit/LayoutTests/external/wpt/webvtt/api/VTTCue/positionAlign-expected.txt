@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL VTTCue.positionAlign, script-created cue assert_equals: expected "center" but got "auto\0"
+Harness: the test ran to completion.
+
