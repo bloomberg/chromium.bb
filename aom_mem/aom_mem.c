@@ -57,36 +57,6 @@ void *aom_calloc(size_t num, size_t size) {
   return x;
 }
 
-void *aom_realloc(void *memblk, size_t size) {
-  void *new_addr = NULL;
-
-  /*
-  The realloc() function changes the size of the object pointed to by
-  ptr to the size specified by size, and returns a pointer to the
-  possibly moved block. The contents are unchanged up to the lesser
-  of the new and old sizes. If ptr is null, realloc() behaves like
-  malloc() for the specified size. If size is zero (0) and ptr is
-  not a null pointer, the object pointed to is freed.
-  */
-  if (!memblk)
-    new_addr = aom_malloc(size);
-  else if (!size)
-    aom_free(memblk);
-  else {
-    void *addr = GetActualMallocAddress(memblk);
-    const size_t aligned_size = GetAlignedMallocSize(size, DEFAULT_ALIGNMENT);
-    memblk = NULL;
-    addr = realloc(addr, aligned_size);
-    if (addr) {
-      new_addr = align_addr((unsigned char *)addr + ADDRESS_STORAGE_SIZE,
-                            DEFAULT_ALIGNMENT);
-      SetActualMallocAddress(new_addr, addr);
-    }
-  }
-
-  return new_addr;
-}
-
 void aom_free(void *memblk) {
   if (memblk) {
     void *addr = GetActualMallocAddress(memblk);

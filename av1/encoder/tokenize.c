@@ -725,9 +725,13 @@ int av1_has_high_freq_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
 void add_pvq_block(AV1_COMMON *const cm, MACROBLOCK *const x, PVQ_INFO *pvq) {
   PVQ_QUEUE *q = x->pvq_q;
   if (q->curr_pos >= q->buf_len) {
-    q->buf_len = 2 * q->buf_len + 1;
-    CHECK_MEM_ERROR(cm, q->buf,
-                    aom_realloc(q->buf, q->buf_len * sizeof(PVQ_INFO)));
+    int new_buf_len = 2 * q->buf_len + 1;
+    PVQ_INFO *new_buf;
+    CHECK_MEM_ERROR(cm, new_buf, aom_malloc(new_buf_len * sizeof(PVQ_INFO)));
+    memcpy(new_buf, q->buf, q->buf_len * sizeof(PVQ_INFO));
+    aom_free(q->buf);
+    q->buf = new_buf;
+    q->buf_len = new_buf_len;
   }
   // memcpy(q->buf + q->curr_pos, pvq, sizeof(PVQ_INFO));
   OD_COPY(q->buf + q->curr_pos, pvq, 1);

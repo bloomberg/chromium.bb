@@ -95,9 +95,9 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
     av1_alloc_restoration_struct(
         cm, &cm->rst_info[p], ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
         ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y));
-  CHECK_MEM_ERROR(
-      cm, cm->rst_internal.tmpbuf,
-      (int32_t *)aom_realloc(cm->rst_internal.tmpbuf, RESTORATION_TMPBUF_SIZE));
+  aom_free(cm->rst_internal.tmpbuf);
+  CHECK_MEM_ERROR(cm, cm->rst_internal.tmpbuf,
+                  (int32_t *)aom_malloc(RESTORATION_TMPBUF_SIZE));
 }
 
 void av1_free_restoration_buffers(AV1_COMMON *cm) {
