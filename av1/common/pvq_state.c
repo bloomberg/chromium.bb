@@ -21,10 +21,8 @@ void od_adapt_ctx_reset(od_adapt_ctx *adapt, int is_keyframe) {
   for (pli = 0; pli < OD_NPLANES_MAX; pli++) {
     generic_model_init(&adapt->model_dc[pli]);
     for (i = 0; i < OD_TXSIZES; i++) {
-      adapt->ex_g[pli][i] = 8;
-    }
-    for (i = 0; i < 4; i++) {
       int j;
+      adapt->ex_g[pli][i] = 8;
       for (j = 0; j < 3; j++) {
         adapt->ex_dc[pli][i][j] = pli > 0 ? 8 : 32768;
       }
