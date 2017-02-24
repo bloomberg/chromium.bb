@@ -11,11 +11,6 @@
 #include "wtf/Compiler.h"
 #include "wtf/allocator/Partitions.h"
 
-#if OS(POSIX)
-#include <sys/mman.h>
-#include <unistd.h>
-#endif
-
 namespace blink {
 
 class RegionTree;
@@ -122,7 +117,6 @@ class RegionTree {
   PageMemoryRegion* lookup(Address);
 
  private:
-  Mutex m_mutex;
   RegionTreeNode* m_root;
 };
 
