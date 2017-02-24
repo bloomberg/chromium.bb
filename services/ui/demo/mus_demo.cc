@@ -31,15 +31,32 @@ void MusDemo::AddPrimaryDisplay(const display::Display& display) {
                                      display::DisplayList::Type::PRIMARY);
 }
 
-void MusDemo::InitWindowTreeData(
-    std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
-  DCHECK(window_tree_data_);
-  DCHECK(!window_tree_data_->IsInitialized());
-  window_tree_data_->Init(std::move(window_tree_host));
+bool MusDemo::HasPendingWindowTreeData() const {
+  return !window_tree_data_list_.empty() &&
+         !window_tree_data_list_.back()->IsInitialized();
 }
 
-void MusDemo::CleanupWindowTreeData() {
-  window_tree_data_.reset();
+void MusDemo::AppendWindowTreeData(
+    std::unique_ptr<WindowTreeData> window_tree_data) {
+  DCHECK(!HasPendingWindowTreeData());
+  window_tree_data_list_.push_back(std::move(window_tree_data));
+}
+
+void MusDemo::InitWindowTreeData(
+    std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
+  DCHECK(HasPendingWindowTreeData());
+  window_tree_data_list_.back()->Init(std::move(window_tree_host));
+}
+
+void MusDemo::RemoveWindowTreeData(aura::WindowTreeHostMus* window_tree_host) {
+  DCHECK(window_tree_host);
+  auto it =
+      std::find_if(window_tree_data_list_.begin(), window_tree_data_list_.end(),
+                   [window_tree_host](std::unique_ptr<WindowTreeData>& data) {
+                     return data->WindowTreeHost() == window_tree_host;
+                   });
+  DCHECK(it != window_tree_data_list_.end());
+  window_tree_data_list_.erase(it);
 }
 
 void MusDemo::OnStart() {
@@ -51,7 +68,8 @@ void MusDemo::OnStart() {
   property_converter_ = base::MakeUnique<aura::PropertyConverter>();
   wm_state_ = base::MakeUnique<::wm::WMState>();
 
-  OnStartImpl(&window_tree_client_, &window_tree_data_);
+  window_tree_client_ = CreateWindowTreeClient();
+  OnStartImpl();
 
   env_->SetWindowTreeClient(window_tree_client_.get());
 }
@@ -76,7 +94,7 @@ void MusDemo::OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) {
 
 void MusDemo::OnLostConnection(aura::WindowTreeClient* client) {
   window_tree_client_.reset();
-  CleanupWindowTreeData();
+  window_tree_data_list_.clear();
 }
 
 void MusDemo::OnPointerEventObserved(const PointerEvent& event,

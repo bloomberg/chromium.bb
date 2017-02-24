@@ -22,13 +22,16 @@ MusDemoInternal::MusDemoInternal() {}
 
 MusDemoInternal::~MusDemoInternal() {}
 
-void MusDemoInternal::OnStartImpl(
-    std::unique_ptr<aura::WindowTreeClient>* window_tree_client,
-    std::unique_ptr<WindowTreeData>* window_tree_data) {
-  *window_tree_client = base::MakeUnique<aura::WindowTreeClient>(
-      context()->connector(), this, this);
-  window_tree_client->get()->ConnectAsWindowManager();
-  *window_tree_data = base::MakeUnique<WindowTreeData>(kSquareSize);
+std::unique_ptr<aura::WindowTreeClient>
+MusDemoInternal::CreateWindowTreeClient() {
+  return base::MakeUnique<aura::WindowTreeClient>(context()->connector(), this,
+                                                  this);
+}
+
+void MusDemoInternal::OnStartImpl() {
+  window_tree_client()->ConnectAsWindowManager();
+  // The demo will actually start when the window server creates the display,
+  // causing OnWmNewDisplay to be called.
 }
 
 void MusDemoInternal::SetWindowManagerClient(
@@ -67,12 +70,13 @@ void MusDemoInternal::OnWmWillCreateDisplay(const display::Display& display) {
 void MusDemoInternal::OnWmNewDisplay(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
+  AppendWindowTreeData(base::MakeUnique<WindowTreeData>(kSquareSize));
   InitWindowTreeData(std::move(window_tree_host));
 }
 
 void MusDemoInternal::OnWmDisplayRemoved(
     aura::WindowTreeHostMus* window_tree_host) {
-  CleanupWindowTreeData();
+  RemoveWindowTreeData(window_tree_host);
 }
 
 void MusDemoInternal::OnWmDisplayModified(const display::Display& display) {}

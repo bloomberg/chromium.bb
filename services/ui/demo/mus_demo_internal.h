@@ -27,8 +27,8 @@ class MusDemoInternal : public MusDemo, public aura::WindowManagerDelegate {
 
  private:
   // ui::demo::MusDemo:
-  void OnStartImpl(std::unique_ptr<aura::WindowTreeClient>* window_tree_client,
-                   std::unique_ptr<WindowTreeData>* window_tree_data) final;
+  void OnStartImpl() final;
+  std::unique_ptr<aura::WindowTreeClient> CreateWindowTreeClient() final;
 
   // aura::WindowManagerDelegate:
   void SetWindowManagerClient(aura::WindowManagerClient* client) final;

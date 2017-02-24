@@ -24,49 +24,81 @@ class WindowTreeDataExternal : public WindowTreeData {
                          mojom::WindowTreeClientPtr tree_client,
                          int square_size)
       : WindowTreeData(square_size) {
+    // TODO(tonikitoo,fwang): Extend the API to allow creating WindowTreeHost
+    // using the WindowTreeClient.
     factory->CreateWindowTreeHost(MakeRequest(&host_), std::move(tree_client));
   }
 
  private:
   // Holds the Mojo pointer to the window tree host.
   mojom::WindowTreeHostPtr host_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeDataExternal);
 };
 
-// Size of square in pixels to draw.
-const int kSquareSize = 500;
+// Number of windows to open.
+// TODO(tonikitoo,fwang): Open multiple windows.
+const size_t kNumberOfWindows = 1;
+
+int GetSquareSizeForWindow(int window_index) {
+  return 50 * window_index + 400;
+};
+
 }  // namespace
 
 MusDemoExternal::MusDemoExternal() {}
 
 MusDemoExternal::~MusDemoExternal() {}
 
-void MusDemoExternal::OnStartImpl(
-    std::unique_ptr<aura::WindowTreeClient>* window_tree_client,
-    std::unique_ptr<WindowTreeData>* window_tree_data) {
+std::unique_ptr<aura::WindowTreeClient>
+MusDemoExternal::CreateWindowTreeClient() {
+  return base::MakeUnique<aura::WindowTreeClient>(
+      context()->connector(), this, nullptr,
+      MakeRequest(&window_tree_client_mojo_));
+}
+
+void MusDemoExternal::OnStartImpl() {
+  // TODO(tonikitoo,fwang): Extend the WindowTreeClient API to allow connection
+  // to the window tree host factory using window_tree_client().
   context()->connector()->BindInterface(ui::mojom::kServiceName,
                                         &window_tree_host_factory_);
-  mojom::WindowTreeClientPtr tree_client;
-  *window_tree_client = base::MakeUnique<aura::WindowTreeClient>(
-      context()->connector(), this, nullptr, MakeRequest(&tree_client));
-  // TODO(tonikitoo,fwang): Open two external windows with different square
-  // sizes.
-  *window_tree_data = base::MakeUnique<WindowTreeDataExternal>(
-      window_tree_host_factory_.get(), std::move(tree_client), kSquareSize);
 
   // TODO(tonikitoo,fwang): Implement management of displays in external mode.
   // For now, a fake display is created in order to work around an assertion in
   // aura::GetDeviceScaleFactorFromDisplay().
   AddPrimaryDisplay(display::Display(0));
+
+  // The number of windows to open is specified by kNumberOfWindows. The windows
+  // are opened sequentially (the first one here and the others after each call
+  // to OnEmbed) to ensure that the WindowTreeHostMus passed to OnEmbed
+  // corresponds to the WindowTreeDataExternal::host_ created in OpenNewWindow.
+  OpenNewWindow();
+}
+
+void MusDemoExternal::OpenNewWindow() {
+  // TODO(tonikitoo,fwang): Extend the WindowTreeClient API to allow creation
+  // of window tree host. Then pass window_tree_client() here and remove
+  // window_tree_host_factory_ and window_tree_client_mojo_. Currently
+  // window_tree_client_mojo_ is only initialized once so this is incorrect when
+  // kNumberOfWindows > 1.
+  AppendWindowTreeData(base::MakeUnique<WindowTreeDataExternal>(
+      window_tree_host_factory_.get(), std::move(window_tree_client_mojo_),
+      GetSquareSizeForWindow(initialized_windows_count_)));
 }
 
 void MusDemoExternal::OnEmbed(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
   InitWindowTreeData(std::move(window_tree_host));
+  initialized_windows_count_++;
+
+  // Open the next window until the requested number of windows is reached.
+  if (initialized_windows_count_ < kNumberOfWindows)
+    OpenNewWindow();
 }
 
 void MusDemoExternal::OnEmbedRootDestroyed(
     aura::WindowTreeHostMus* window_tree_host) {
-  CleanupWindowTreeData();
+  RemoveWindowTreeData(window_tree_host);
 }
 
 }  // namespace demo

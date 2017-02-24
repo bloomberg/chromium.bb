@@ -44,14 +44,28 @@ class MusDemo : public service_manager::Service,
 
  protected:
   void AddPrimaryDisplay(const display::Display& display);
+
+  // These functions help to manage the list of WindowTreeData structures.
+  // AppendWindowTreeData is used to add an uninitialized structure at the end
+  // of the list. When a new WindowTreeHostMus is created and is sent to
+  // MusDemo (via OnWmNewDisplay or OnEmbed), the WindowTreeData is initialized
+  // by a call to InitWindowTreeData and the demo starts. When the destruction
+  // of the WindowTreeHostMus is announced to MusDemo (via OnWmDisplayRemoved
+  // or OnEmbedRootDestroyed), the corresponding WindowTreeData is removed by
+  // a call to RemoveWindowTreeData.
+  void AppendWindowTreeData(std::unique_ptr<WindowTreeData> window_tree_data);
   void InitWindowTreeData(
       std::unique_ptr<aura::WindowTreeHostMus> window_tree_host);
-  void CleanupWindowTreeData();
+  void RemoveWindowTreeData(aura::WindowTreeHostMus* window_tree_host);
+
+  aura::WindowTreeClient* window_tree_client() {
+    return window_tree_client_.get();
+  }
 
  private:
-  virtual void OnStartImpl(
-      std::unique_ptr<aura::WindowTreeClient>* window_tree_client,
-      std::unique_ptr<WindowTreeData>* window_tree_data) = 0;
+  virtual void OnStartImpl() = 0;
+  virtual std::unique_ptr<aura::WindowTreeClient> CreateWindowTreeClient() = 0;
+  bool HasPendingWindowTreeData() const;
 
   // service_manager::Service:
   void OnStart() override;
@@ -76,7 +90,10 @@ class MusDemo : public service_manager::Service,
   std::unique_ptr<::wm::WMState> wm_state_;
   std::unique_ptr<aura::PropertyConverter> property_converter_;
 
-  std::unique_ptr<WindowTreeData> window_tree_data_;
+  // List of WindowTreeData structures. When a new window is opened, its data
+  // is appended at the end of that list and it remains uninitialized until the
+  // next call to InitWindowTreeData.
+  std::vector<std::unique_ptr<WindowTreeData>> window_tree_data_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MusDemo);
 };

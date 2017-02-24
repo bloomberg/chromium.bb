@@ -29,6 +29,10 @@ class WindowTreeData {
   void Init(std::unique_ptr<aura::WindowTreeHostMus> window_tree_host);
   bool IsInitialized() const { return !!window_tree_host_; }
 
+  const aura::WindowTreeHostMus* WindowTreeHost() const {
+    return window_tree_host_.get();
+  }
+
  private:
   // Draws one frame, incrementing the rotation angle.
   void DrawFrame();
