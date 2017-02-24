@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_downloader.h"
@@ -146,7 +147,6 @@ std::string GetLocaleSpecificStringImpl(
 }
 
 void CheckWallpaperCacheExists(const base::FilePath& path, bool* exists) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(exists);
   *exists = base::PathExists(path);
 }
@@ -866,10 +866,10 @@ void ServicesCustomizationDocument::CheckAndApplyWallpaper() {
       &ServicesCustomizationDocument::OnCheckedWallpaperCacheExists,
       weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(exists)),
       base::Passed(std::move(applying)));
-  if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
-          FROM_HERE, check_file_exists, on_checked_closure)) {
-    LOG(WARNING) << "Failed to start check Wallpaper cache exists.";
-  }
+  base::PostTaskWithTraitsAndReply(FROM_HERE,
+                                   base::TaskTraits().MayBlock().WithPriority(
+                                       base::TaskPriority::BACKGROUND),
+                                   check_file_exists, on_checked_closure);
 }
 
 void ServicesCustomizationDocument::OnCheckedWallpaperCacheExists(
