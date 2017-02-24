@@ -37,9 +37,6 @@ Bug(none) external/wpt/html/browsers/history/the-location-interface/location-pro
 Bug(695072) http/tests/security/location-href-clears-username-password.html [ Failure ]
 Bug(695072) virtual/mojo-loading/http/tests/security/location-href-clears-username-password.html [ Failure ]
 
-# Timeout
-Bug(none) fast/loader/crash-replacing-location-before-load.html [ Timeout ]
-
 # These tests are flaky.
 Bug(none) external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Crash ]
 Bug(none) http/tests/misc/window-open-then-write.html [ Timeout ]

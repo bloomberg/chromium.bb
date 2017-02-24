@@ -864,6 +864,10 @@ void FrameLoader::loadInSameDocument(
   // If we have a provisional request for a different document, a fragment
   // scroll should cancel it.
   detachDocumentLoader(m_provisionalDocumentLoader);
+
+  // PlzNavigate: A fragment scroll should clear ongoing client navigations.
+  clearNavigationHandledByClient();
+
   if (!m_frame->host())
     return;
   saveScrollState();
