@@ -324,16 +324,11 @@ bool ChromeCrashReporterClient::GetDeferredUploadsSupported(
   return false;
 }
 
-// TODO(grt): Remove |exe_path| from crash_reporter::CrashReporterClient.
-bool ChromeCrashReporterClient::GetIsPerUserInstall(
-    const base::string16& exe_path) {
+bool ChromeCrashReporterClient::GetIsPerUserInstall() {
   return !install_static::InstallDetails::Get().system_level();
 }
 
-// TODO(grt): Remove |is_per_user_install| from
-// crash_reporter::CrashReporterClient.
-bool ChromeCrashReporterClient::GetShouldDumpLargerDumps(
-    bool is_per_user_install) {
+bool ChromeCrashReporterClient::GetShouldDumpLargerDumps() {
   // Capture larger dumps for Google Chrome "beta", "dev", and "canary"
   // channels. Stable channel and Chromium builds are on channel "", and use
   // smaller dumps.

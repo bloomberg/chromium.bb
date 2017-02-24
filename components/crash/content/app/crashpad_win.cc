@@ -94,9 +94,7 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
 
     base::FilePath exe_file(exe_file_path);
 
-    bool is_per_user_install =
-        crash_reporter_client->GetIsPerUserInstall(exe_file.value());
-    if (crash_reporter_client->GetShouldDumpLargerDumps(is_per_user_install)) {
+    if (crash_reporter_client->GetShouldDumpLargerDumps()) {
       const uint32_t kIndirectMemoryLimit = 4 * 1024 * 1024;
       crashpad::CrashpadInfo::GetCrashpadInfo()
           ->set_gather_indirectly_referenced_memory(

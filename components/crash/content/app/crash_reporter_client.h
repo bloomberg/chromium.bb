@@ -94,10 +94,10 @@ class CrashReporterClient {
   virtual bool GetDeferredUploadsSupported(bool is_per_user_install);
 
   // Returns true if the running binary is a per-user installation.
-  virtual bool GetIsPerUserInstall(const base::string16& exe_path);
+  virtual bool GetIsPerUserInstall();
 
   // Returns true if larger crash dumps should be dumped.
-  virtual bool GetShouldDumpLargerDumps(bool is_per_user_install);
+  virtual bool GetShouldDumpLargerDumps();
 
   // Returns the result code to return when breakpad failed to respawn a
   // crashed process.

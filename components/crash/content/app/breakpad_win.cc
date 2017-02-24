@@ -555,9 +555,6 @@ void InitCrashReporter(const std::string& process_type_switch) {
   exe_path[0] = 0;
   GetModuleFileNameW(NULL, exe_path, MAX_PATH);
 
-  bool is_per_user_install =
-      GetCrashReporterClient()->GetIsPerUserInstall(exe_path);
-
   // This is intentionally leaked.
   CrashKeysWin* keeper = new CrashKeysWin();
 
@@ -590,7 +587,7 @@ void InitCrashReporter(const std::string& process_type_switch) {
   }
 
   if (GetCrashReporterClient()->ShouldCreatePipeName(process_type))
-    InitPipeNameEnvVar(is_per_user_install);
+    InitPipeNameEnvVar(GetCrashReporterClient()->GetIsPerUserInstall());
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string pipe_name_ascii;
@@ -622,8 +619,7 @@ void InitCrashReporter(const std::string& process_type_switch) {
   // Capture full memory if explicitly instructed to.
   if (command.HasSwitch(switches::kFullMemoryCrashReport))
     dump_type = kFullDumpType;
-  else if (GetCrashReporterClient()->GetShouldDumpLargerDumps(
-               is_per_user_install))
+  else if (GetCrashReporterClient()->GetShouldDumpLargerDumps())
     dump_type = kLargerDumpType;
 
   g_breakpad = new google_breakpad::ExceptionHandler(temp_dir, &FilterCallback,

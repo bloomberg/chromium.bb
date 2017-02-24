@@ -35,8 +35,8 @@ class MockCrashReporterClient : public crash_reporter::CrashReporterClient {
                                              bool* is_rtl_locale));
   MOCK_METHOD0(AboutToRestart, bool());
   MOCK_METHOD1(GetDeferredUploadsSupported, bool(bool is_per_user_install));
-  MOCK_METHOD1(GetIsPerUserInstall, bool(const base::string16& exe_path));
-  MOCK_METHOD1(GetShouldDumpLargerDumps, bool(bool is_per_user_install));
+  MOCK_METHOD0(GetIsPerUserInstall, bool());
+  MOCK_METHOD0(GetShouldDumpLargerDumps, bool());
   MOCK_METHOD0(GetResultCodeRespawnFailed, int());
   MOCK_METHOD0(InitBrowserCrashDumpsRegKey, void());
   MOCK_METHOD1(RecordCrashDumpAttempt, void(bool is_real_crash));

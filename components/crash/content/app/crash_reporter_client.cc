@@ -75,11 +75,11 @@ bool CrashReporterClient::GetDeferredUploadsSupported(
   return false;
 }
 
-bool CrashReporterClient::GetIsPerUserInstall(const base::string16& exe_path) {
+bool CrashReporterClient::GetIsPerUserInstall() {
   return true;
 }
 
-bool CrashReporterClient::GetShouldDumpLargerDumps(bool is_per_user_install) {
+bool CrashReporterClient::GetShouldDumpLargerDumps() {
   return false;
 }
 

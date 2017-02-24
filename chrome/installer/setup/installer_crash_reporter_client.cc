@@ -77,14 +77,11 @@ bool InstallerCrashReporterClient::GetDeferredUploadsSupported(
   return false;
 }
 
-bool InstallerCrashReporterClient::GetIsPerUserInstall(
-    const base::string16& exe_path) {
+bool InstallerCrashReporterClient::GetIsPerUserInstall() {
   return is_per_user_install_;
 }
 
-bool InstallerCrashReporterClient::GetShouldDumpLargerDumps(
-    bool is_per_user_install) {
-  DCHECK_EQ(is_per_user_install_, is_per_user_install);
+bool InstallerCrashReporterClient::GetShouldDumpLargerDumps() {
   // Use large dumps for all but the stable channel.
   return !install_static::GetChromeChannelName().empty();
 }
