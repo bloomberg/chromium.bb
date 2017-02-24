@@ -978,10 +978,10 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment,
       rect = LayoutRect(absoluteCaretBounds());
       break;
     case RangeSelection:
-      rect = LayoutRect(
-          revealExtentOption == RevealExtent
-              ? absoluteCaretBoundsOf(createVisiblePosition(extent()))
-              : enclosingIntRect(unclippedBounds()));
+      rect = LayoutRect(revealExtentOption == RevealExtent
+                            ? absoluteCaretBoundsOf(createVisiblePosition(
+                                  computeVisibleSelectionInDOMTree().extent()))
+                            : enclosingIntRect(unclippedBounds()));
       break;
   }
 

@@ -2649,14 +2649,20 @@ unsigned Internals::visibleSelectionAnchorOffset() {
 Node* Internals::visibleSelectionFocusNode() {
   if (!frame())
     return nullptr;
-  Position position = frame()->selection().extent();
+  Position position = frame()
+                          ->selection()
+                          .computeVisibleSelectionInDOMTreeDeprecated()
+                          .extent();
   return position.isNull() ? nullptr : position.computeContainerNode();
 }
 
 unsigned Internals::visibleSelectionFocusOffset() {
   if (!frame())
     return 0;
-  Position position = frame()->selection().extent();
+  Position position = frame()
+                          ->selection()
+                          .computeVisibleSelectionInDOMTreeDeprecated()
+                          .extent();
   return position.isNull() ? 0 : position.computeOffsetInContainerNode();
 }
 

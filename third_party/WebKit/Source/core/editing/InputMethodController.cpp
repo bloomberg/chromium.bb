@@ -590,7 +590,8 @@ void InputMethodController::setComposition(
   if (!baseNode || !baseNode->isTextNode())
     return;
 
-  Position extent = frame().selection().extent();
+  Position extent =
+      frame().selection().computeVisibleSelectionInDOMTree().extent();
   Node* extentNode = extent.anchorNode();
 
   unsigned extentOffset = extent.computeOffsetInContainerNode();

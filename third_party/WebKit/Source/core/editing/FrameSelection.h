@@ -172,10 +172,6 @@ class CORE_EXPORT FrameSelection final
 
   TextGranularity granularity() const { return m_granularity; }
 
-  Position extent() const {
-    return computeVisibleSelectionInDOMTreeDeprecated().extent();
-  }
-
   // Returns true if specified layout block should paint caret. This function is
   // called during painting only.
   bool shouldPaintCaret(const LayoutBlock&) const;
