@@ -156,21 +156,15 @@ void SVGAnimateElement::parseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == SVGNames::attributeTypeAttr) {
     setAttributeType(params.newValue);
+    animationAttributeChanged();
+    return;
+  }
+  if (params.name == SVGNames::attributeNameAttr) {
+    setAttributeName(constructQualifiedName(*this, params.newValue));
+    animationAttributeChanged();
     return;
   }
   SVGAnimationElement::parseAttribute(params);
-}
-
-void SVGAnimateElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::attributeTypeAttr) {
-  } else if (attrName == SVGNames::attributeNameAttr) {
-    setAttributeName(constructQualifiedName(
-        *this, fastGetAttribute(SVGNames::attributeNameAttr)));
-  } else {
-    SVGAnimationElement::svgAttributeChanged(attrName);
-    return;
-  }
-  animationAttributeChanged();
 }
 
 void SVGAnimateElement::resolveTargetProperty() {

@@ -74,7 +74,6 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   bool isAdditive() final;
 
   void parseAttribute(const AttributeModificationParams&) override;
-  void svgAttributeChanged(const QualifiedName&) override;
 
   void setTargetElement(SVGElement*) final;
   void setAttributeName(const QualifiedName&);
