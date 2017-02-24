@@ -98,7 +98,7 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
   bool m_capturing;
   UpDownState m_upDownState;
   UpDownState m_pressStartingState;
-  Timer<SpinButtonElement> m_repeatingTimer;
+  TaskRunnerTimer<SpinButtonElement> m_repeatingTimer;
 };
 
 DEFINE_TYPE_CASTS(SpinButtonElement,

@@ -27,6 +27,7 @@
 #include "core/html/shadow/SpinButtonElement.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/WheelEvent.h"
 #include "core/frame/LocalFrame.h"
@@ -48,7 +49,10 @@ inline SpinButtonElement::SpinButtonElement(Document& document,
       m_capturing(false),
       m_upDownState(Indeterminate),
       m_pressStartingState(Indeterminate),
-      m_repeatingTimer(this, &SpinButtonElement::repeatingTimerFired) {}
+      m_repeatingTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &document),
+          this,
+          &SpinButtonElement::repeatingTimerFired) {}
 
 SpinButtonElement* SpinButtonElement::create(Document& document,
                                              SpinButtonOwner& spinButtonOwner) {
