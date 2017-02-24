@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<body>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<form><input><input type=submit></form>
+<script>
+test(() => {
+  assert_exists(window, 'eventSender');
+  let form = document.querySelector('form');
+  let text = document.querySelector('input');
+  let submit = document.querySelectorAll('input')[1];
+  var lastChangeValue = '';
+  form.addEventListener('submit', (event) => {
+    text.value = '';
+    event.preventDefault();
+  });
+  text.addEventListener('change', () => { lastChangeValue = text.value; });
+
+  text.focus();
+  eventSender.keyDown('f');
+  eventSender.keyDown('Enter'); // Trigger implicit submission
+  assert_equals(lastChangeValue, 'f');
+  lastChangeValue = null;
+  assert_equals(document.activeElement, text);
+  assert_equals(text.value, '');
+
+  eventSender.keyDown('f');
+  eventSender.keyDown('Enter'); // Trigger implicit submission again.
+  assert_equals(lastChangeValue, 'f', 'The second submission should trigger change event.');
+
+}, 'Clearing INPUT value in submit event handler should not prevent next change event. crbug.com/695349');
+</script>
+</body>
