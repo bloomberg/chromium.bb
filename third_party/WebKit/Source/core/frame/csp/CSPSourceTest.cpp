@@ -187,11 +187,13 @@ TEST_F(CSPSourceTest, SchemeIsEmpty) {
         *SecurityOrigin::createFromString("non-standard-scheme://a.com/"));
     CSPSource source(csp.get(), "", "a.com", 0, "/", CSPSource::NoWildcard,
                      CSPSource::NoWildcard);
-    // TODO(mkwst, arthursonzogni): This result might be wrong.
-    // See http://crbug.com/692449
     EXPECT_FALSE(source.matches(KURL(base, "http://a.com")));
-    // TODO(mkwst, arthursonzogni): This result might be wrong.
-    // See http://crbug.com/692449
+
+    // The reason matching fails is because the host is parsed as "" when
+    // using a non standard scheme even though it should be parsed as "a.com"
+    // After adding it to the list of standard schemes it now gets parsed
+    // correctly. This does not matter in practice though because there is
+    // no way to render/load anything like "non-standard-scheme://a.com"
     EXPECT_FALSE(source.matches(KURL(base, "non-standard-scheme://a.com")));
   }
 }
