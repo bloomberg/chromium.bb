@@ -227,6 +227,9 @@
           "--additional-apk=third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
         ],
         "name": "nonddready-cardboard-current_chrome_public_test_vr_apk",
+        "override_compile_targets": [
+          "chrome_public_test_vr_apk"
+        ],
         "override_isolate_target": "chrome_public_test_vr_apk",
         "swarming": {
           "can_use_on_swarming_builders": true,
