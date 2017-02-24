@@ -17,6 +17,15 @@ namespace breakpad {
 extern void InitCrashReporter(const std::string& process_type);
 
 #if defined(OS_ANDROID)
+struct SanitizationInfo {
+  bool should_sanitize_dumps = false;
+  bool skip_dump_if_principal_mapping_not_referenced = false;
+  uintptr_t address_within_principal_mapping = 0;
+};
+
+// Turns on the crash reporter in any process.
+extern void InitCrashReporter(const std::string& process_type,
+                              const SanitizationInfo& sanitization_info);
 
 const char kWebViewSingleProcessType[] = "webview";
 const char kBrowserProcessType[] = "browser";
@@ -24,10 +33,15 @@ const char kBrowserProcessType[] = "browser";
 // Enables the crash reporter in child processes.
 extern void InitNonBrowserCrashReporterForAndroid(
     const std::string& process_type);
+// Enables the crash reporter in child processes.
+extern void InitNonBrowserCrashReporterForAndroid(
+    const std::string& process_type,
+    const SanitizationInfo& sanitization_info);
 
 // Enables *micro*dump only. Can be called from any process.
 extern void InitMicrodumpCrashHandlerIfNecessary(
-    const std::string& process_type);
+    const std::string& process_type,
+    const SanitizationInfo& sanitization_info);
 
 extern void AddGpuFingerprintToMicrodumpCrashHandler(
     const std::string& gpu_fingerprint);
@@ -36,23 +50,7 @@ extern void AddGpuFingerprintToMicrodumpCrashHandler(
 // generate dumps. Calling base::debug::DumpWithoutCrashing will still
 // generate a dump.
 extern void SuppressDumpGeneration();
-
-// Calling SetShouldSanitizeDumps determines whether or not subsequent
-// crash dumps should be sanitized. Sanitized dumps still contain
-// enough stack information to unwind crashes, but other stack data is
-// erased.
-extern void SetShouldSanitizeDumps(bool sanitize_dumps);
-
-// Inform breakpad of an address within the text section that is
-// considered interesting for the purpose of crashes so that this can
-// be used to elide microdumps that do not reference interesting
-// code. Minidumps will still be generated, but stacks from threads
-// that do not reference the principal mapping will not be included.
-// The full interesting address range is determined by looking up the
-// memory mapping that contains |addr|.
-extern void SetSkipDumpIfPrincipalMappingNotReferenced(
-    uintptr_t address_within_principal_mapping);
-#endif
+#endif  // defined(OS_ANDROID)
 
 // Checks if crash reporting is enabled. Note that this is not the same as
 // being opted into metrics reporting (and crash reporting), which controls

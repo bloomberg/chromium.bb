@@ -168,20 +168,23 @@ void EnableCrashReporter(const std::string& process_type, int crash_signal_fd) {
     client->set_crash_signal_fd(crash_signal_fd);
   }
   ::crash_reporter::SetCrashReporterClient(client);
-  breakpad::SetShouldSanitizeDumps(true);
+  breakpad::SanitizationInfo sanitization_info;
+  sanitization_info.should_sanitize_dumps = true;
 #if !defined(COMPONENT_BUILD)
-  breakpad::SetSkipDumpIfPrincipalMappingNotReferenced(
-        reinterpret_cast<uintptr_t>(&EnableCrashReporter));
-#endif
+  sanitization_info.skip_dump_if_principal_mapping_not_referenced = true;
+  sanitization_info.address_within_principal_mapping =
+      reinterpret_cast<uintptr_t>(&EnableCrashReporter);
+#endif  // defined(COMPONENT_BUILD)
 
   bool is_browser_process =
       process_type.empty() ||
       process_type == breakpad::kWebViewSingleProcessType ||
       process_type == breakpad::kBrowserProcessType;
   if (is_browser_process) {
-    breakpad::InitCrashReporter("");
+    breakpad::InitCrashReporter("", sanitization_info);
   } else {
-    breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
+    breakpad::InitNonBrowserCrashReporterForAndroid(process_type,
+                                                    sanitization_info);
   }
   g_enabled = true;
 }

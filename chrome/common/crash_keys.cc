@@ -101,7 +101,10 @@ size_t RegisterChromeCrashKeys() {
   // but ultimately constitute a single key-value pair.
   //
   // If you're adding keys here, please also add them to the following list:
-  // chrome/app/chrome_crash_reporter_client_win.cc::RegisterCrashKeysHelper().
+  // chrome/app/chrome_crash_reporter_client_win.cc::RegisterCrashKeysHelper(),
+  // and consider adding the new keys to the following list as well:
+  // android_webview/common/crash_reporter/crash_keys.cc::
+  //     RegisterWebViewCrashKeys().
   base::debug::CrashKey fixed_keys[] = {
 #if defined(OS_MACOSX) || defined(OS_WIN)
     { kMetricsClientId, kSmallSize },
