@@ -536,6 +536,12 @@ config("ubsan_vptr_flags") {
   }
 }
 
+config("fuzzing_build_mode") {
+  if (use_libfuzzer || use_afl) {
+    defines = [ "FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION" ]
+  }
+}
+
 all_sanitizer_configs = [
   ":common_sanitizer_flags",
   ":coverage_flags",
@@ -550,6 +556,7 @@ all_sanitizer_configs = [
   ":ubsan_null_flags",
   ":ubsan_security_flags",
   ":ubsan_vptr_flags",
+  ":fuzzing_build_mode",
 ]
 
 # This config is applied by default to all targets. It sets the compiler flags
