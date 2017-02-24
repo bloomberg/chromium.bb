@@ -210,6 +210,11 @@ request or modifying headers (<code>onBeforeSendHeaders</code>,
 <code>onHeadersReceived</code>), or providing authentication credentials
 (<code>onAuthRequired</code>).</p>
 
+<p>If the optional <code>opt_extraInfoSpec</code> array contains the string
+<code>'asyncBlocking'</code> instead (only allowed for
+<code>onAuthRequired</code>), the extension can generate the
+$(ref:webRequest.BlockingResponse) asynchronously.
+
 <p>The $(ref:webRequest.RequestFilter)
 <code>filter</code> allows limiting the requests for which events are
 triggered in various dimensions:
