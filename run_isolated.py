@@ -213,7 +213,15 @@ def get_command_env(tmp_dir, cipd_info):
 
   env = os.environ.copy()
 
-  key = {'darwin': 'TMPDIR', 'win32': 'TEMP'}.get(sys.platform, 'TMP')
+  # TMPDIR is specified as the POSIX standard envvar for the temp directory.
+  #   * mktemp on linux respects $TEMPDIR, not $TMP
+  #   * mktemp on OS X SOMETIMES respects $TEMPDIR
+  #   * chromium's base utils respects $TMPDIR on linux, $TEMP on windows.
+  #     Unfortunately at the time of writing it completely ignores all envvars
+  #     on OS X.
+  #   * python respects TEMPDIR, TEMP, and TMP (regardless of platform)
+  #   * golang respects TEMPDIR on linux+mac, TEMP on windows.
+  key = {'win32': 'TEMP'}.get(sys.platform, 'TMPDIR')
   env[key] = to_fs_enc(tmp_dir)
 
   if cipd_info:
