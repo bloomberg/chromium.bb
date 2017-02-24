@@ -5,6 +5,7 @@
 #include "chrome/browser/feedback/feedback_profile_observer.h"
 
 #include "base/callback.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/feedback/feedback_report.h"
@@ -59,7 +60,9 @@ void FeedbackProfileObserver::QueueUnsentReports(
     content::BrowserContext* context) {
   feedback::FeedbackUploader* uploader =
       feedback::FeedbackUploaderFactory::GetForBrowserContext(context);
-  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(
           &FeedbackReport::LoadReportsAndQueue,
           uploader->GetFeedbackReportsPath(),
