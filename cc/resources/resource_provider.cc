@@ -547,7 +547,8 @@ bool ResourceProvider::IsResourceFormatSupported(ResourceFormat format) const {
       // TODO(ccameron): This will always return false on pixel tests, which
       // makes it un-test-able until we upgrade Mesa.
       // https://crbug.com/687720
-      return caps.texture_half_float_linear && caps.color_buffer_float;
+      return caps.texture_half_float_linear &&
+             caps.color_buffer_half_float_rgba;
   }
 
   NOTREACHED();

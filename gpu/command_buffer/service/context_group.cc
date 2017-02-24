@@ -50,6 +50,7 @@ DisallowedFeatures AdjustDisallowedFeatures(
     adjusted_disallowed_features.chromium_color_buffer_float_rgba = true;
     adjusted_disallowed_features.chromium_color_buffer_float_rgb = true;
     adjusted_disallowed_features.ext_color_buffer_float = true;
+    adjusted_disallowed_features.ext_color_buffer_half_float = true;
     adjusted_disallowed_features.oes_texture_float_linear = true;
   }
   return adjusted_disallowed_features;

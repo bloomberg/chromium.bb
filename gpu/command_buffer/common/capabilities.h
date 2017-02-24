@@ -140,7 +140,7 @@ struct GPU_EXPORT Capabilities {
   bool blend_equation_advanced_coherent = false;
   bool texture_rg = false;
   bool texture_half_float_linear = false;
-  bool color_buffer_float = false;
+  bool color_buffer_half_float_rgba = false;
   bool image_ycbcr_422 = false;
   bool image_ycbcr_420v = false;
   bool render_buffer_format_bgra8888 = false;

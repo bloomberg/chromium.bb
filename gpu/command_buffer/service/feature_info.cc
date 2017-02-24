@@ -37,7 +37,9 @@ struct FormatInfo {
   size_t count;
 };
 
-class StringSet {
+}  // anonymous namespace.
+
+class FeatureInfo::StringSet {
  public:
   StringSet() {}
 
@@ -64,11 +66,11 @@ class StringSet {
     string_set_.insert(tokens.begin(), tokens.end());
   }
 
-  bool Contains(const char* s) {
+  bool Contains(const char* s) const {
     return string_set_.find(s) != string_set_.end();
   }
 
-  bool Contains(const std::string& s) {
+  bool Contains(const std::string& s) const {
     return string_set_.find(s) != string_set_.end();
   }
 
@@ -79,6 +81,8 @@ class StringSet {
  private:
   std::set<std::string> string_set_;
 };
+
+namespace {
 
 class ScopedPixelUnpackBufferOverride {
  public:
@@ -234,6 +238,21 @@ void FeatureInfo::EnableEXTColorBufferFloat() {
   validators_.texture_sized_color_renderable_internal_format.AddValue(
       GL_R11F_G11F_B10F);
   feature_flags_.enable_color_buffer_float = true;
+}
+
+void FeatureInfo::EnableEXTColorBufferHalfFloat() {
+  AddExtensionString("GL_EXT_color_buffer_half_float");
+  validators_.render_buffer_format.AddValue(GL_R16F);
+  validators_.render_buffer_format.AddValue(GL_RG16F);
+  validators_.render_buffer_format.AddValue(GL_RGB16F);
+  validators_.render_buffer_format.AddValue(GL_RGBA16F);
+  validators_.texture_sized_color_renderable_internal_format.AddValue(GL_R16F);
+  validators_.texture_sized_color_renderable_internal_format.AddValue(GL_RG16F);
+  validators_.texture_sized_color_renderable_internal_format.AddValue(
+      GL_RGB16F);
+  validators_.texture_sized_color_renderable_internal_format.AddValue(
+      GL_RGBA16F);
+  feature_flags_.enable_color_buffer_half_float = true;
 }
 
 void FeatureInfo::EnableCHROMIUMColorBufferFloatRGBA() {
@@ -655,6 +674,19 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
+  if (enable_texture_storage) {
+    feature_flags_.ext_texture_storage = true;
+    AddExtensionString("GL_EXT_texture_storage");
+    validators_.texture_parameter.AddValue(GL_TEXTURE_IMMUTABLE_FORMAT_EXT);
+    if (enable_texture_format_bgra8888) {
+      validators_.texture_internal_format_storage.AddValue(GL_BGRA8_EXT);
+      validators_.texture_sized_color_renderable_internal_format.AddValue(
+          GL_BGRA8_EXT);
+      validators_.texture_sized_texture_filterable_internal_format.AddValue(
+          GL_BGRA8_EXT);
+    }
+  }
+
   if (enable_texture_format_bgra8888) {
     feature_flags_.ext_texture_format_bgra8888 = true;
     AddExtensionString("GL_EXT_texture_format_BGRA8888");
@@ -725,171 +757,7 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.npot_ok = true;
   }
 
-  // Check if we should allow GL_OES_texture_float, GL_OES_texture_half_float,
-  // GL_OES_texture_float_linear, GL_OES_texture_half_float_linear
-  bool enable_texture_float = false;
-  bool enable_texture_float_linear = false;
-  bool enable_texture_half_float = false;
-  bool enable_texture_half_float_linear = false;
-  bool enable_ext_color_buffer_float = false;
-
-  bool may_enable_chromium_color_buffer_float = false;
-
-  // This extension allows a variety of floating point formats to be
-  // rendered to via framebuffer objects.
-  if (extensions.Contains("GL_EXT_color_buffer_float")) {
-    enable_ext_color_buffer_float = true;
-  }
-
-  if (extensions.Contains("GL_ARB_texture_float") ||
-      gl_version_info_->is_desktop_core_profile) {
-    enable_texture_float = true;
-    enable_texture_float_linear = true;
-    enable_texture_half_float = true;
-    enable_texture_half_float_linear = true;
-    may_enable_chromium_color_buffer_float = true;
-  } else {
-    // GLES3 adds support for Float type by default but it doesn't support all
-    // formats as GL_OES_texture_float(i.e.LUMINANCE_ALPHA,LUMINANCE and Alpha)
-    if (extensions.Contains("GL_OES_texture_float")) {
-      enable_texture_float = true;
-      if (extensions.Contains("GL_OES_texture_float_linear")) {
-        enable_texture_float_linear = true;
-      }
-
-      if (enable_ext_color_buffer_float || gl_version_info_->is_angle) {
-        may_enable_chromium_color_buffer_float = true;
-      }
-    }
-
-    // TODO(dshwang): GLES3 supports half float by default but GL_HALF_FLOAT_OES
-    // isn't equal to GL_HALF_FLOAT.
-    if (extensions.Contains("GL_OES_texture_half_float")) {
-      enable_texture_half_float = true;
-      if (extensions.Contains("GL_OES_texture_half_float_linear")) {
-        enable_texture_half_float_linear = true;
-      }
-    }
-  }
-
-  if (enable_texture_float) {
-    validators_.pixel_type.AddValue(GL_FLOAT);
-    validators_.read_pixel_type.AddValue(GL_FLOAT);
-    AddExtensionString("GL_OES_texture_float");
-    if (enable_texture_float_linear) {
-      oes_texture_float_linear_available_ = true;
-      if (!disallowed_features_.oes_texture_float_linear)
-        EnableOESTextureFloatLinear();
-    }
-  }
-
-  if (enable_texture_half_float) {
-    validators_.pixel_type.AddValue(GL_HALF_FLOAT_OES);
-    validators_.read_pixel_type.AddValue(GL_HALF_FLOAT_OES);
-    AddExtensionString("GL_OES_texture_half_float");
-    if (enable_texture_half_float_linear) {
-      oes_texture_half_float_linear_available_ = true;
-      if (!disallowed_features_.oes_texture_half_float_linear)
-        EnableOESTextureHalfFloatLinear();
-    }
-  }
-
-  if (may_enable_chromium_color_buffer_float) {
-    static_assert(GL_RGBA32F_ARB == GL_RGBA32F &&
-                  GL_RGBA32F_EXT == GL_RGBA32F &&
-                  GL_RGB32F_ARB == GL_RGB32F &&
-                  GL_RGB32F_EXT == GL_RGB32F,
-                  "sized float internal format variations must match");
-    // We don't check extension support beyond ARB_texture_float on desktop GL,
-    // and format support varies between GL configurations. For example, spec
-    // prior to OpenGL 3.0 mandates framebuffer support only for one
-    // implementation-chosen format, and ES3.0 EXT_color_buffer_float does not
-    // support rendering to RGB32F. Check for framebuffer completeness with
-    // formats that the extensions expose, and only enable an extension when a
-    // framebuffer created with its texture format is reported as complete.
-    GLint fb_binding = 0;
-    GLint tex_binding = 0;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fb_binding);
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex_binding);
-
-    GLuint tex_id = 0;
-    GLuint fb_id = 0;
-    GLsizei width = 16;
-
-    glGenTextures(1, &tex_id);
-    glGenFramebuffersEXT(1, &fb_id);
-    glBindTexture(GL_TEXTURE_2D, tex_id);
-    // Nearest filter needed for framebuffer completeness on some drivers.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, width, 0, GL_RGBA,
-                 GL_FLOAT, NULL);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, fb_id);
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D, tex_id, 0);
-    GLenum status_rgba = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, width, 0, GL_RGB,
-                 GL_FLOAT, NULL);
-    GLenum status_rgb = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
-
-    // For desktop systems, check to see if we support rendering to the full
-    // range of formats supported by EXT_color_buffer_float
-    if (status_rgba == GL_FRAMEBUFFER_COMPLETE && enable_es3) {
-      bool full_float_support = true;
-
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width, 0, GL_RED,
-          GL_FLOAT, NULL);
-      full_float_support &= glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
-          GL_FRAMEBUFFER_COMPLETE;
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, width, 0, GL_RG,
-          GL_FLOAT, NULL);
-      full_float_support &= glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
-          GL_FRAMEBUFFER_COMPLETE;
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, width, 0, GL_RGBA,
-          GL_FLOAT, NULL);
-      full_float_support &= glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
-          GL_FRAMEBUFFER_COMPLETE;
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, width, 0, GL_RED,
-          GL_FLOAT, NULL);
-      full_float_support &= glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
-          GL_FRAMEBUFFER_COMPLETE;
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, width, width, 0, GL_RG,
-          GL_FLOAT, NULL);
-      full_float_support &= glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
-          GL_FRAMEBUFFER_COMPLETE;
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, width, width, 0, GL_RGB,
-          GL_FLOAT, NULL);
-      full_float_support &= glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
-          GL_FRAMEBUFFER_COMPLETE;
-
-      enable_ext_color_buffer_float = full_float_support;
-    }
-
-    glDeleteFramebuffersEXT(1, &fb_id);
-    glDeleteTextures(1, &tex_id);
-
-    glBindFramebufferEXT(GL_FRAMEBUFFER, static_cast<GLuint>(fb_binding));
-    glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(tex_binding));
-
-    DCHECK(glGetError() == GL_NO_ERROR);
-
-    if (status_rgba == GL_FRAMEBUFFER_COMPLETE) {
-      feature_flags_.chromium_color_buffer_float_rgba = true;
-      if (!disallowed_features_.chromium_color_buffer_float_rgba)
-        EnableCHROMIUMColorBufferFloatRGBA();
-    }
-    if (status_rgb == GL_FRAMEBUFFER_COMPLETE) {
-      feature_flags_.chromium_color_buffer_float_rgb = true;
-      if (!disallowed_features_.chromium_color_buffer_float_rgb)
-        EnableCHROMIUMColorBufferFloatRGB();
-    }
-  }
-
-  // Enable the GL_EXT_color_buffer_float extension for WebGL 2.0
-  if (enable_ext_color_buffer_float && enable_es3) {
-    ext_color_buffer_float_available_ = true;
-    if (!disallowed_features_.ext_color_buffer_float)
-      EnableEXTColorBufferFloat();
-  }
+  InitializeFloatAndHalfFloatFeatures(extensions);
 
   // Check for multisample support
   if (!workarounds_.disable_chromium_framebuffer_multisample) {
@@ -1081,37 +949,6 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.angle_texture_usage = true;
     AddExtensionString("GL_ANGLE_texture_usage");
     validators_.texture_parameter.AddValue(GL_TEXTURE_USAGE_ANGLE);
-  }
-
-  if (enable_texture_storage) {
-    feature_flags_.ext_texture_storage = true;
-    AddExtensionString("GL_EXT_texture_storage");
-    validators_.texture_parameter.AddValue(GL_TEXTURE_IMMUTABLE_FORMAT_EXT);
-    if (enable_texture_format_bgra8888) {
-      validators_.texture_internal_format_storage.AddValue(GL_BGRA8_EXT);
-      validators_.texture_sized_color_renderable_internal_format.AddValue(
-          GL_BGRA8_EXT);
-      validators_.texture_sized_texture_filterable_internal_format.AddValue(
-          GL_BGRA8_EXT);
-    }
-    if (enable_texture_float) {
-        validators_.texture_internal_format_storage.AddValue(GL_RGBA32F_EXT);
-        validators_.texture_internal_format_storage.AddValue(GL_RGB32F_EXT);
-        validators_.texture_internal_format_storage.AddValue(GL_ALPHA32F_EXT);
-        validators_.texture_internal_format_storage.AddValue(
-            GL_LUMINANCE32F_EXT);
-        validators_.texture_internal_format_storage.AddValue(
-            GL_LUMINANCE_ALPHA32F_EXT);
-    }
-    if (enable_texture_half_float) {
-        validators_.texture_internal_format_storage.AddValue(GL_RGBA16F_EXT);
-        validators_.texture_internal_format_storage.AddValue(GL_RGB16F_EXT);
-        validators_.texture_internal_format_storage.AddValue(GL_ALPHA16F_EXT);
-        validators_.texture_internal_format_storage.AddValue(
-            GL_LUMINANCE16F_EXT);
-        validators_.texture_internal_format_storage.AddValue(
-            GL_LUMINANCE_ALPHA16F_EXT);
-    }
   }
 
   bool have_occlusion_query =
@@ -1416,6 +1253,214 @@ void FeatureInfo::InitializeFeatures() {
       extensions.Contains("GL_CHROMIUM_copy_compressed_texture");
   feature_flags_.angle_client_arrays =
       extensions.Contains("GL_ANGLE_client_arrays");
+}
+
+void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
+    const StringSet& extensions) {
+  // Check if we should allow GL_OES_texture_float, GL_OES_texture_half_float,
+  // GL_OES_texture_float_linear, GL_OES_texture_half_float_linear
+  bool enable_texture_float = false;
+  bool enable_texture_float_linear = false;
+  bool enable_texture_half_float = false;
+  bool enable_texture_half_float_linear = false;
+  bool enable_ext_color_buffer_float = false;
+  bool enable_ext_color_buffer_half_float = false;
+
+  bool may_enable_chromium_color_buffer_float = false;
+
+  bool enable_es3 = IsWebGL2OrES3Context();
+
+  // These extensions allow a variety of floating point formats to be
+  // rendered to via framebuffer objects.
+  if (extensions.Contains("GL_EXT_color_buffer_float"))
+    enable_ext_color_buffer_float = true;
+  if (extensions.Contains("GL_EXT_color_buffer_half_float"))
+    enable_ext_color_buffer_half_float = true;
+
+  if (extensions.Contains("GL_ARB_texture_float") ||
+      gl_version_info_->is_desktop_core_profile) {
+    enable_texture_float = true;
+    enable_texture_float_linear = true;
+    enable_texture_half_float = true;
+    enable_texture_half_float_linear = true;
+    may_enable_chromium_color_buffer_float = true;
+  } else {
+    // GLES3 adds support for Float type by default but it doesn't support all
+    // formats as GL_OES_texture_float(i.e.LUMINANCE_ALPHA,LUMINANCE and Alpha)
+    if (extensions.Contains("GL_OES_texture_float")) {
+      enable_texture_float = true;
+      if (extensions.Contains("GL_OES_texture_float_linear")) {
+        enable_texture_float_linear = true;
+      }
+
+      if (enable_ext_color_buffer_float || gl_version_info_->is_angle) {
+        may_enable_chromium_color_buffer_float = true;
+      }
+    }
+
+    // TODO(dshwang): GLES3 supports half float by default but GL_HALF_FLOAT_OES
+    // isn't equal to GL_HALF_FLOAT.
+    if (extensions.Contains("GL_OES_texture_half_float")) {
+      enable_texture_half_float = true;
+      if (extensions.Contains("GL_OES_texture_half_float_linear")) {
+        enable_texture_half_float_linear = true;
+      }
+    }
+  }
+
+  if (enable_texture_float) {
+    validators_.pixel_type.AddValue(GL_FLOAT);
+    validators_.read_pixel_type.AddValue(GL_FLOAT);
+    AddExtensionString("GL_OES_texture_float");
+    if (enable_texture_float_linear) {
+      oes_texture_float_linear_available_ = true;
+      if (!disallowed_features_.oes_texture_float_linear)
+        EnableOESTextureFloatLinear();
+    }
+  }
+
+  if (enable_texture_half_float) {
+    validators_.pixel_type.AddValue(GL_HALF_FLOAT_OES);
+    validators_.read_pixel_type.AddValue(GL_HALF_FLOAT_OES);
+    AddExtensionString("GL_OES_texture_half_float");
+    if (enable_texture_half_float_linear) {
+      oes_texture_half_float_linear_available_ = true;
+      if (!disallowed_features_.oes_texture_half_float_linear)
+        EnableOESTextureHalfFloatLinear();
+    }
+  }
+
+  if (may_enable_chromium_color_buffer_float) {
+    static_assert(GL_RGBA32F_ARB == GL_RGBA32F &&
+                      GL_RGBA32F_EXT == GL_RGBA32F &&
+                      GL_RGB32F_ARB == GL_RGB32F && GL_RGB32F_EXT == GL_RGB32F,
+                  "sized float internal format variations must match");
+    // We don't check extension support beyond ARB_texture_float on desktop GL,
+    // and format support varies between GL configurations. For example, spec
+    // prior to OpenGL 3.0 mandates framebuffer support only for one
+    // implementation-chosen format, and ES3.0 EXT_color_buffer_float does not
+    // support rendering to RGB32F. Check for framebuffer completeness with
+    // formats that the extensions expose, and only enable an extension when a
+    // framebuffer created with its texture format is reported as complete.
+    GLint fb_binding = 0;
+    GLint tex_binding = 0;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fb_binding);
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex_binding);
+
+    GLuint tex_id = 0;
+    GLuint fb_id = 0;
+    GLsizei width = 16;
+
+    glGenTextures(1, &tex_id);
+    glGenFramebuffersEXT(1, &fb_id);
+    glBindTexture(GL_TEXTURE_2D, tex_id);
+    // Nearest filter needed for framebuffer completeness on some drivers.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, width, 0, GL_RGBA,
+                 GL_FLOAT, NULL);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, fb_id);
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, tex_id, 0);
+    GLenum status_rgba = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, width, 0, GL_RGB, GL_FLOAT,
+                 NULL);
+    GLenum status_rgb = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+
+    // For desktop systems, check to see if we support rendering to the full
+    // range of formats supported by EXT_color_buffer_float
+    if (status_rgba == GL_FRAMEBUFFER_COMPLETE && enable_es3) {
+      bool full_float_support = true;
+      GLenum internal_formats[] = {
+          GL_R16F, GL_RG16F, GL_RGBA16F, GL_R32F, GL_RG32F, GL_R11F_G11F_B10F,
+      };
+      GLenum formats[] = {
+          GL_RED, GL_RG, GL_RGBA, GL_RED, GL_RG, GL_RGB,
+      };
+      DCHECK_EQ(arraysize(internal_formats), arraysize(formats));
+      for (size_t i = 0; i < arraysize(formats); ++i) {
+        glTexImage2D(GL_TEXTURE_2D, 0, internal_formats[i], width, width, 0,
+                     formats[i], GL_FLOAT, NULL);
+        full_float_support &= glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
+                              GL_FRAMEBUFFER_COMPLETE;
+      }
+      enable_ext_color_buffer_float = full_float_support;
+    }
+    // Likewise for EXT_color_buffer_half_float on ES2 contexts.
+    if (IsWebGL1OrES2Context() && !enable_ext_color_buffer_half_float) {
+      bool full_half_float_support = true;
+      GLenum internal_formats[] = {
+          GL_R16F, GL_RG16F, GL_RGBA16F,
+      };
+      GLenum formats[] = {
+          GL_RED, GL_RG, GL_RGBA,
+      };
+      GLenum data_type = GL_FLOAT;
+      if (gl_version_info_->is_es2)
+        data_type = GL_HALF_FLOAT_OES;
+      if (gl_version_info_->is_es3)
+        data_type = GL_HALF_FLOAT;
+      DCHECK_EQ(arraysize(internal_formats), arraysize(formats));
+      for (size_t i = 0; i < arraysize(formats); ++i) {
+        glTexImage2D(GL_TEXTURE_2D, 0, internal_formats[i], width, width, 0,
+                     formats[i], data_type, NULL);
+        full_half_float_support &=
+            glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
+            GL_FRAMEBUFFER_COMPLETE;
+      }
+      enable_ext_color_buffer_half_float = full_half_float_support;
+    }
+
+    glDeleteFramebuffersEXT(1, &fb_id);
+    glDeleteTextures(1, &tex_id);
+
+    glBindFramebufferEXT(GL_FRAMEBUFFER, static_cast<GLuint>(fb_binding));
+    glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(tex_binding));
+
+    DCHECK_EQ(glGetError(), static_cast<GLuint>(GL_NO_ERROR));
+
+    if (status_rgba == GL_FRAMEBUFFER_COMPLETE) {
+      feature_flags_.chromium_color_buffer_float_rgba = true;
+      if (!disallowed_features_.chromium_color_buffer_float_rgba)
+        EnableCHROMIUMColorBufferFloatRGBA();
+    }
+    if (status_rgb == GL_FRAMEBUFFER_COMPLETE) {
+      feature_flags_.chromium_color_buffer_float_rgb = true;
+      if (!disallowed_features_.chromium_color_buffer_float_rgb)
+        EnableCHROMIUMColorBufferFloatRGB();
+    }
+  }
+
+  // Enable the GL_EXT_color_buffer_float extension for WebGL 2.0
+  if (enable_ext_color_buffer_float && enable_es3) {
+    ext_color_buffer_float_available_ = true;
+    if (!disallowed_features_.ext_color_buffer_float)
+      EnableEXTColorBufferFloat();
+  }
+
+  // Enable GL_EXT_color_buffer_half_float if we have found the capability.
+  if (enable_ext_color_buffer_half_float &&
+      !disallowed_features_.ext_color_buffer_half_float) {
+    EnableEXTColorBufferHalfFloat();
+  }
+
+  if (feature_flags_.ext_texture_storage) {
+    if (enable_texture_float) {
+      validators_.texture_internal_format_storage.AddValue(GL_RGBA32F_EXT);
+      validators_.texture_internal_format_storage.AddValue(GL_RGB32F_EXT);
+      validators_.texture_internal_format_storage.AddValue(GL_ALPHA32F_EXT);
+      validators_.texture_internal_format_storage.AddValue(GL_LUMINANCE32F_EXT);
+      validators_.texture_internal_format_storage.AddValue(
+          GL_LUMINANCE_ALPHA32F_EXT);
+    }
+    if (enable_texture_half_float) {
+      validators_.texture_internal_format_storage.AddValue(GL_RGBA16F_EXT);
+      validators_.texture_internal_format_storage.AddValue(GL_RGB16F_EXT);
+      validators_.texture_internal_format_storage.AddValue(GL_ALPHA16F_EXT);
+      validators_.texture_internal_format_storage.AddValue(GL_LUMINANCE16F_EXT);
+      validators_.texture_internal_format_storage.AddValue(
+          GL_LUMINANCE_ALPHA16F_EXT);
+    }
+  }
 }
 
 bool FeatureInfo::IsES3Capable() const {

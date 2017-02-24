@@ -269,6 +269,10 @@ class TextureAttachment
         internal_format == GL_LUMINANCE_ALPHA) {
       return false;
     }
+    // Disallow RGB16F, because it is only supported in ES2 and not ES3.
+    if (internal_format == GL_RGB16F) {
+      return false;
+    }
     return (need & have) != 0;
   }
 

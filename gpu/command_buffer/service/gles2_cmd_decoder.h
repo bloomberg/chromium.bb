@@ -54,31 +54,25 @@ struct ContextCreationAttribHelper;
 struct ContextState;
 
 struct DisallowedFeatures {
-  DisallowedFeatures()
-      : gpu_memory_manager(false),
-        npot_support(false),
-        chromium_color_buffer_float_rgba(false),
-        chromium_color_buffer_float_rgb(false),
-        ext_color_buffer_float(false),
-        oes_texture_float_linear(false),
-        oes_texture_half_float_linear(false) {
-  }
+  DisallowedFeatures() {}
 
   void AllowExtensions() {
     chromium_color_buffer_float_rgba = false;
     chromium_color_buffer_float_rgb = false;
     ext_color_buffer_float = false;
+    ext_color_buffer_half_float = false;
     oes_texture_float_linear = false;
     oes_texture_half_float_linear = false;
   }
 
-  bool gpu_memory_manager;
-  bool npot_support;
-  bool chromium_color_buffer_float_rgba;
-  bool chromium_color_buffer_float_rgb;
-  bool ext_color_buffer_float;
-  bool oes_texture_float_linear;
-  bool oes_texture_half_float_linear;
+  bool gpu_memory_manager = false;
+  bool npot_support = false;
+  bool chromium_color_buffer_float_rgba = false;
+  bool chromium_color_buffer_float_rgb = false;
+  bool ext_color_buffer_float = false;
+  bool ext_color_buffer_half_float = false;
+  bool oes_texture_float_linear = false;
+  bool oes_texture_half_float_linear = false;
 };
 
 typedef base::Callback<void(const std::string& key,
