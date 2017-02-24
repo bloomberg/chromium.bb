@@ -203,9 +203,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       cmd->GetSwitchValueASCII(switches::kAppShellRefreshToken)));
 
 #if !defined(DISABLE_NACL)
-  // Takes ownership.
   nacl::NaClBrowser::SetDelegate(
-      new ShellNaClBrowserDelegate(browser_context_.get()));
+      base::MakeUnique<ShellNaClBrowserDelegate>(browser_context_.get()));
   // Track the task so it can be canceled if app_shell shuts down very quickly,
   // such as in browser tests.
   task_tracker_.PostTask(
@@ -242,7 +241,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
 #if !defined(DISABLE_NACL)
   task_tracker_.TryCancelAll();
-  nacl::NaClBrowser::SetDelegate(nullptr);
 #endif
 
   oauth2_token_service_.reset();

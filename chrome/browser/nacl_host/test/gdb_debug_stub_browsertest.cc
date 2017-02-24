@@ -54,14 +54,14 @@ void NaClGdbDebugStubTest::RunDebugStubTest(const std::string& nacl_module,
                                             const std::string& test_name) {
   base::Process test_script;
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  nacl::NaClBrowser::GetInstance()->SetGdbDebugStubPortListener(
-      base::Bind(&NaClGdbDebugStubTest::StartTestScript,
-                 base::Unretained(this), &test_script, test_name));
+  nacl::NaClBrowser::SetGdbDebugStubPortListenerForTest(
+      base::Bind(&NaClGdbDebugStubTest::StartTestScript, base::Unretained(this),
+                 &test_script, test_name));
   // Turn on debug stub logging.
   env->SetVar("NACLVERBOSITY", "1");
   RunTestViaHTTP(nacl_module);
   env->UnSetVar("NACLVERBOSITY");
-  nacl::NaClBrowser::GetInstance()->ClearGdbDebugStubPortListener();
+  nacl::NaClBrowser::ClearGdbDebugStubPortListenerForTest();
   int exit_code;
   test_script.WaitForExit(&exit_code);
   EXPECT_EQ(0, exit_code);

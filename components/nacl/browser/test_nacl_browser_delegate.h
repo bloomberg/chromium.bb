@@ -17,7 +17,7 @@
 //
 // and
 //
-//   NaClBrowser::SetDelegate(NULL);   // frees the test delegate.
+//   NaClBrowser::ClearAndDeleteDelegateForTest();
 class TestNaClBrowserDelegate : public NaClBrowserDelegate {
  public:
   TestNaClBrowserDelegate();

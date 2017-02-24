@@ -1662,12 +1662,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   content::WebUIControllerFactory::RegisterFactory(
       ChromeWebUIControllerFactory::GetInstance());
 
+#if !defined(DISABLE_NACL)
   // NaClBrowserDelegateImpl is accessed inside PostProfileInit().
   // So make sure to create it before that.
-#if !defined(DISABLE_NACL)
-  NaClBrowserDelegateImpl* delegate =
-      new NaClBrowserDelegateImpl(browser_process_->profile_manager());
-  nacl::NaClBrowser::SetDelegate(delegate);
+  nacl::NaClBrowser::SetDelegate(base::MakeUnique<NaClBrowserDelegateImpl>(
+      browser_process_->profile_manager()));
 #endif  // !defined(DISABLE_NACL)
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.

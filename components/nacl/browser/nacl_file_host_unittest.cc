@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -40,12 +41,12 @@ class NaClFileHostTest : public testing::Test {
 
   void SetUp() override {
     nacl_browser_delegate_ = new FileHostTestNaClBrowserDelegate;
-    nacl::NaClBrowser::SetDelegate(nacl_browser_delegate_);
+    nacl::NaClBrowser::SetDelegate(base::WrapUnique(nacl_browser_delegate_));
   }
 
   void TearDown() override {
-    // This deletes nacl_browser_delegate_.
-    nacl::NaClBrowser::SetDelegate(NULL);
+    nacl_browser_delegate_ = nullptr;
+    nacl::NaClBrowser::ClearAndDeleteDelegateForTest();
   }
 
   FileHostTestNaClBrowserDelegate* nacl_browser_delegate() {

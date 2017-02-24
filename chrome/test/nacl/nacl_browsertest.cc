@@ -310,14 +310,14 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
   void RunWithTestDebugger(const base::FilePath::StringType& test_url) {
     base::Process test_script;
     std::unique_ptr<base::Environment> env(base::Environment::Create());
-    nacl::NaClBrowser::GetInstance()->SetGdbDebugStubPortListener(
+    nacl::NaClBrowser::SetGdbDebugStubPortListenerForTest(
         base::Bind(&NaClBrowserTestPnaclDebug::StartTestScript,
                    base::Unretained(this), &test_script));
     // Turn on debug stub logging.
     env->SetVar("NACLVERBOSITY", "1");
     RunLoadTest(test_url);
     env->UnSetVar("NACLVERBOSITY");
-    nacl::NaClBrowser::GetInstance()->ClearGdbDebugStubPortListener();
+    nacl::NaClBrowser::ClearGdbDebugStubPortListenerForTest();
     int exit_code;
     LOG(INFO) << "Waiting for script to exit (which waits for embed to die).";
     test_script.WaitForExit(&exit_code);

@@ -14,8 +14,6 @@
 #include "base/containers/mru_cache.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
@@ -66,16 +64,17 @@ class NaClBrowser {
   // IRT file handle, only available when IsReady().
   const base::File& IrtFile() const;
 
-  // Methods for testing GDB debug stub in browser. If test adds debug stub
-  // port listener, Chrome will allocate a currently-unused TCP port number for
-  // debug stub server instead of a fixed one.
-
-  // Notify listener that new debug stub TCP port is allocated.
+  // Methods for tracking the GDB debug stub port associated with each NaCl
+  // process.
   void SetProcessGdbDebugStubPort(int process_id, int port);
-  void SetGdbDebugStubPortListener(base::Callback<void(int)> listener);
-  void ClearGdbDebugStubPortListener();
-
   int GetProcessGdbDebugStubPort(int process_id);
+
+  // While a test has a GDB debug port callback set, Chrome will allocate a
+  // currently-unused TCP port to the debug stub server, instead of a fixed
+  // one.
+  static void SetGdbDebugStubPortListenerForTest(
+      base::Callback<void(int)> listener);
+  static void ClearGdbDebugStubPortListenerForTest();
 
   enum ValidationCacheStatus {
     CACHE_MISS = 0,
@@ -91,7 +90,7 @@ class NaClBrowser {
     return validation_cache_.GetValidationCacheKey();
   }
 
-  // The NaCl singleton keeps information about NaCl executable files opened via
+  // The instance keeps information about NaCl executable files opened via
   // PPAPI.  This allows the NaCl process to get trusted information about the
   // file directly from the browser process.  In theory, a compromised renderer
   // could provide a writable file handle or lie about the file's path.  If we
@@ -129,26 +128,31 @@ class NaClBrowser {
 #endif
 
   void EarlyStartup();
-  static void SetDelegate(NaClBrowserDelegate* delegate);
-  static NaClBrowserDelegate* GetDelegate();
 
-  // Each time a NaCl process ends, the browser is notified.
+  // Set/get the NaClBrowserDelegate. The |delegate| must be set at startup,
+  // from the Browser's UI thread. It will be leaked at browser teardown.
+  static void SetDelegate(std::unique_ptr<NaClBrowserDelegate> delegate);
+  static NaClBrowserDelegate* GetDelegate();
+  static void ClearAndDeleteDelegateForTest();
+
+  // Called whenever a NaCl process exits.
   void OnProcessEnd(int process_id);
-  // Support for NaCl crash throttling.
-  // Each time a NaCl module crashes, the browser is notified.
+
+  // Called whenever a NaCl process crashes, before OnProcessEnd().
   void OnProcessCrashed();
+
   // If "too many" crashes occur within a given time period, NaCl is throttled
   // until the rate again drops below the threshold.
   bool IsThrottled();
 
  private:
-  friend struct base::DefaultSingletonTraits<NaClBrowser>;
-
   enum NaClResourceState {
     NaClResourceUninitialized,
     NaClResourceRequested,
     NaClResourceReady
   };
+
+  static NaClBrowser* GetInstanceInternal();
 
   NaClBrowser();
   ~NaClBrowser();
@@ -174,7 +178,6 @@ class NaClBrowser {
   void MarkValidationCacheAsModified();
   void PersistValidationCache();
 
-
   base::File irt_file_;
   base::FilePath irt_filepath_;
   NaClResourceState irt_state_;
@@ -193,17 +196,13 @@ class NaClBrowser {
   typedef base::HashingMRUCache<std::string, base::FilePath> PathCacheType;
   PathCacheType path_cache_;
 
-  bool ok_;
+  // True if it is no longer possible to launch NaCl processes.
+  bool has_failed_;
 
   // A list of pending tasks to start NaCl processes.
   std::vector<base::Closure> waiting_;
 
-  std::unique_ptr<NaClBrowserDelegate> browser_delegate_;
-
   std::deque<base::Time> crash_times_;
-
-  // Singletons get destroyed at shutdown.
-  base::WeakPtrFactory<NaClBrowser> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
 };
