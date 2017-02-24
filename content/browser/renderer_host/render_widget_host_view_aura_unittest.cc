@@ -428,8 +428,8 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return GetDelegatedFrameHost()->ReleasedFrontLockActiveForTesting();
   }
 
-  void ReturnResources(const cc::ReturnedResourceArray& resources) {
-    GetDelegatedFrameHost()->ReturnResources(resources);
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) {
+    GetDelegatedFrameHost()->ReclaimResources(resources);
   }
 
   void ResetCompositor() { GetDelegatedFrameHost()->ResetCompositor(); }
@@ -1767,12 +1767,12 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
   view_->Show();
   sink_->ClearMessages();
 
-  // Accumulate some returned resources. This should not trigger an IPC.
+  // Accumulate some returned resources. This should trigger an IPC.
   cc::ReturnedResourceArray resources;
   cc::ReturnedResource resource;
   resource.id = 1;
   resources.push_back(resource);
-  view_->ReturnResources(resources);
+  view_->ReclaimResources(resources);
   EXPECT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
@@ -1804,20 +1804,17 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   view_->Show();
   sink_->ClearMessages();
 
-  view_->OnSwapCompositorFrame(0,
-                               MakeDelegatedFrame(1.f, view_size, view_rect));
-
-  // Accumulate some returned resources. This should not trigger an IPC.
-  cc::ReturnedResourceArray resources;
-  cc::ReturnedResource resource;
+  // Submit a frame with resources.
+  cc::CompositorFrame frame = MakeDelegatedFrame(1.f, view_size, view_rect);
+  cc::TransferableResource resource;
   resource.id = 1;
-  resources.push_back(resource);
-  view_->ReturnResources(resources);
+  frame.resource_list.push_back(resource);
+  view_->OnSwapCompositorFrame(0, std::move(frame));
   EXPECT_EQ(0u, sink_->message_count());
 
   // Swap another CompositorFrame but this time from another
-  // compositor_frame_sink_id. The resources held by DelegatedFrameHost are old
-  // and should not be returned.
+  // compositor_frame_sink_id. The resources for the previous frame are old and
+  // should not be returned.
   view_->OnSwapCompositorFrame(1,
                                MakeDelegatedFrame(1.f, view_size, view_rect));
   EXPECT_EQ(0u, sink_->message_count());

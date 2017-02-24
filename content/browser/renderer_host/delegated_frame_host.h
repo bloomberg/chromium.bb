@@ -11,7 +11,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/surfaces/surface_factory_client.h"
+#include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
@@ -31,8 +32,8 @@ class TickClock;
 }
 
 namespace cc {
+class CompositorFrameSinkSupport;
 class LocalSurfaceIdAllocator;
-class SurfaceFactory;
 }
 
 namespace media {
@@ -87,7 +88,8 @@ class CONTENT_EXPORT DelegatedFrameHost
       public ui::CompositorVSyncManager::Observer,
       public ui::ContextFactoryObserver,
       public DelegatedFrameEvictorClient,
-      public cc::SurfaceFactoryClient,
+      public NON_EXPORTED_BASE(cc::CompositorFrameSinkSupportClient),
+      public cc::ExternalBeginFrameSourceClient,
       public base::SupportsWeakPtr<DelegatedFrameHost> {
  public:
   DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
@@ -112,11 +114,12 @@ class CONTENT_EXPORT DelegatedFrameHost
   // DelegatedFrameEvictorClient implementation.
   void EvictDelegatedFrame() override;
 
-  // cc::SurfaceFactoryClient implementation.
-  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+  // cc::CompositorFrameSinkSupportClient implementation.
+  void DidReceiveCompositorFrameAck() override;
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
   void WillDrawSurface(const cc::LocalSurfaceId& id,
                        const gfx::Rect& damage_rect) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
   bool CanCopyToBitmap() const;
 
@@ -243,13 +246,16 @@ class CONTENT_EXPORT DelegatedFrameHost
       scoped_refptr<OwnedMailbox> subscriber_texture,
       const gpu::SyncToken& sync_token);
 
-  void SendReclaimCompositorResources(uint32_t compositor_frame_sink_id,
-                                      bool is_swap_ack);
-  void SurfaceDrawn(uint32_t compositor_frame_sink_id);
-
   // Called to consult the current |frame_subscriber_|, to determine and maybe
   // initiate a copy-into-video-frame request.
   void AttemptFrameSubscriberCapture(const gfx::Rect& damage_rect);
+
+  // cc::ExternalBeginFrameSource implementation.
+  void OnNeedsBeginFrames(bool needs_begin_frames) override;
+  void OnDidFinishFrame(const cc::BeginFrameAck& ack) override;
+
+  void CreateCompositorFrameSinkSupport();
+  void ResetCompositorFrameSinkSupport();
 
   const cc::FrameSinkId frame_sink_id_;
   cc::LocalSurfaceId local_surface_id_;
@@ -272,10 +278,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   // surfaces.
   uint32_t last_compositor_frame_sink_id_;
 
-  // The number of delegated frame acks that are pending, to delay resource
-  // returns until the acks are sent.
-  int pending_delegated_ack_count_;
-
   // True after a delegated frame has been skipped, until a frame is not
   // skipped.
   bool skipped_frames_;
@@ -289,7 +291,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // State for rendering into a Surface.
   std::unique_ptr<cc::LocalSurfaceIdAllocator> id_allocator_;
-  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
+  std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
   gfx::Size current_surface_size_;
   float current_scale_factor_;
   cc::ReturnedResourceArray surface_returned_resources_;
@@ -333,6 +335,10 @@ class CONTENT_EXPORT DelegatedFrameHost
   // YUV readback pipeline.
   std::unique_ptr<display_compositor::ReadbackYUVInterface>
       yuv_readback_pipeline_;
+
+  std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
+
+  bool needs_begin_frame_ = false;
 
   std::unique_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
 };
