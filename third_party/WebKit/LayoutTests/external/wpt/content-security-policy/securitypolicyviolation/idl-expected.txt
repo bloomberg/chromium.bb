@@ -1,0 +1,32 @@
+This is a testharness.js-based test.
+FAIL SecurityPolicyViolationEvent interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
+PASS SecurityPolicyViolationEvent interface object length 
+PASS SecurityPolicyViolationEvent interface object name 
+FAIL SecurityPolicyViolationEvent interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
+PASS SecurityPolicyViolationEvent interface: existence and properties of interface prototype object's "constructor" property 
+PASS SecurityPolicyViolationEvent interface: attribute documentURI 
+PASS SecurityPolicyViolationEvent interface: attribute referrer 
+PASS SecurityPolicyViolationEvent interface: attribute blockedURI 
+PASS SecurityPolicyViolationEvent interface: attribute violatedDirective 
+PASS SecurityPolicyViolationEvent interface: attribute effectiveDirective 
+PASS SecurityPolicyViolationEvent interface: attribute originalPolicy 
+PASS SecurityPolicyViolationEvent interface: attribute sourceFile 
+PASS SecurityPolicyViolationEvent interface: attribute disposition 
+PASS SecurityPolicyViolationEvent interface: attribute statusCode 
+PASS SecurityPolicyViolationEvent interface: attribute lineNumber 
+PASS SecurityPolicyViolationEvent interface: attribute columnNumber 
+PASS SecurityPolicyViolationEvent must be primary interface of new SecurityPolicyViolationEvent({}) 
+FAIL Stringification of new SecurityPolicyViolationEvent({}) Cannot read property 'has_stringifier' of undefined
+PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "documentURI" with the proper type (0) 
+PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "referrer" with the proper type (1) 
+PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "blockedURI" with the proper type (2) 
+PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "violatedDirective" with the proper type (3) 
+PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "effectiveDirective" with the proper type (4) 
+PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "originalPolicy" with the proper type (5) 
+PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "sourceFile" with the proper type (6) 
+PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "disposition" with the proper type (7) 
+PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "statusCode" with the proper type (8) 
+PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "lineNumber" with the proper type (9) 
+PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "columnNumber" with the proper type (10) 
+Harness: the test ran to completion.
+

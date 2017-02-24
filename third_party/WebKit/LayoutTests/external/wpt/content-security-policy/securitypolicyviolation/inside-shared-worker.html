@@ -6,16 +6,16 @@
   Set a policy in the document to ensure that the block is triggering
   in the worker and not in the document.
 -->
-<meta http-equiv="content-security-policy" content="connect-src http://127.0.0.1:8000">
+<meta http-equiv="content-security-policy" content="connect-src 'self'">
 
 <script>
-  var w = new SharedWorker("./resources/inside-worker.php");
+  var w = new SharedWorker("./support/inside-worker.sub.js");
 
   // Forward 'securitypolicyviolation' events from the document into the
   // worker (we shouldn't actually see any, so the worker will assert that
   // none are fired.
   document.addEventListener('securitypolicyviolation', _ => {
-    w.port.postMessage("SecurityPolicyViolation from Document", "*");
+    w.port.postMessage("SecurityPolicyViolation from Document");
   });
 
   fetch_tests_from_worker(w);

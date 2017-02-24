@@ -1857,8 +1857,11 @@ crbug.com/685778 virtual/mojo-loading/http/tests/dom/promise-rejection-events.ht
 # were matched on pass/fail but not exact error messages.
 crbug.com/688854 external/wpt/hr-time/window-worker-time-origin.html [ Failure ]
 
+# Working on getting the CSP tests going:
+crbug.com/694525 external/wpt/content-security-policy [ Skip ]
+crbug.com/694525 external/wpt/content-security-policy/securitypolicyviolation [ Pass ]
+
 # 2017-02-17: These directories were just imported but expectations and baselines haven't been set yet.
-crbug.com/692105 external/wpt/content-security-policy [ Skip ]
 crbug.com/692105 external/wpt/domxpath/interfaces.html [ Skip ]
 crbug.com/692105 external/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-canceling.html [ Skip ]
 crbug.com/692105 external/wpt/html/browsers/history/the-location-interface/location-valueof.html [ Skip ]

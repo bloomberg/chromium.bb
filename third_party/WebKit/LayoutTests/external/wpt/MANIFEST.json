@@ -8179,6 +8179,21 @@
      {}
     ]
    ],
+   "content-security-policy/securitypolicyviolation/idl-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/support/inside-worker.sub.js": [
+    [
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/support/inside-worker.sub.js.headers": [
+    [
+     {}
+    ]
+   ],
    "content-security-policy/style-src/3_3.css": [
     [
      {}
@@ -8254,6 +8269,11 @@
      {}
     ]
    ],
+   "content-security-policy/support/inject-image.sub.js": [
+    [
+     {}
+    ]
+   ],
    "content-security-policy/support/logTest.sub.js": [
     [
      {}
@@ -8275,6 +8295,11 @@
     ]
    ],
    "content-security-policy/support/report.py": [
+    [
+     {}
+    ]
+   ],
+   "content-security-policy/support/resource.py": [
     [
      {}
     ]
@@ -29534,6 +29559,48 @@
    "content-security-policy/securitypolicyviolation/idl.html": [
     [
      "/content-security-policy/securitypolicyviolation/idl.html",
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/inside-dedicated-worker.html": [
+    [
+     "/content-security-policy/securitypolicyviolation/inside-dedicated-worker.html",
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/inside-service-worker.https.html": [
+    [
+     "/content-security-policy/securitypolicyviolation/inside-service-worker.https.html",
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/inside-shared-worker.html": [
+    [
+     "/content-security-policy/securitypolicyviolation/inside-shared-worker.html",
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-cross-origin-image-from-script.sub.html": [
+    [
+     "/content-security-policy/securitypolicyviolation/securitypolicyviolation-block-cross-origin-image-from-script.sub.html",
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-cross-origin-image.sub.html": [
+    [
+     "/content-security-policy/securitypolicyviolation/securitypolicyviolation-block-cross-origin-image.sub.html",
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-image-from-script.sub.html": [
+    [
+     "/content-security-policy/securitypolicyviolation/securitypolicyviolation-block-image-from-script.sub.html",
+     {}
+    ]
+   ],
+   "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-image.sub.html": [
+    [
+     "/content-security-policy/securitypolicyviolation/securitypolicyviolation-block-image.sub.html",
      {}
     ]
    ],
@@ -54699,7 +54766,7 @@
    "support"
   ],
   "./MANIFEST.json": [
-   "13e9140a1ead023d3512d65c31debc599f6d4be2",
+   "9308ccf7a833b8f021128cebbb59c78a5b03a9ae",
    "support"
   ],
   "./README.md": [
@@ -58278,12 +58345,52 @@
    "8e7326101e28ec65c6c834f7711b261917f93218",
    "testharness"
   ],
+  "content-security-policy/securitypolicyviolation/idl-expected.txt": [
+   "8a26544297000dbcd2ad096b596bfb2b53e28807",
+   "support"
+  ],
   "content-security-policy/securitypolicyviolation/idl.html": [
    "5f2ff4a87aa476168cf3d13b10a8d81a387b8e42",
    "testharness"
   ],
+  "content-security-policy/securitypolicyviolation/inside-dedicated-worker.html": [
+   "46d18c97d554716b714856c00bdc49388d211868",
+   "testharness"
+  ],
+  "content-security-policy/securitypolicyviolation/inside-service-worker.https.html": [
+   "71fc4b304975aa643a925e36fd2eb232cb239d9e",
+   "testharness"
+  ],
+  "content-security-policy/securitypolicyviolation/inside-shared-worker.html": [
+   "fb7fc789e44d9f17ff508cc9a080c23aec5e1597",
+   "testharness"
+  ],
+  "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-cross-origin-image-from-script.sub.html": [
+   "156d207242f9cfaf200f442a6c7756ad4504f026",
+   "testharness"
+  ],
+  "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-cross-origin-image.sub.html": [
+   "7650a2e83361dde2493c03faeee300ef477acf98",
+   "testharness"
+  ],
+  "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-image-from-script.sub.html": [
+   "bc7df6c0d1aaef2bfcaf8d00a9c5056b0205c815",
+   "testharness"
+  ],
+  "content-security-policy/securitypolicyviolation/securitypolicyviolation-block-image.sub.html": [
+   "38b10d421ec3e2e156180db3cfab54291f22074d",
+   "testharness"
+  ],
+  "content-security-policy/securitypolicyviolation/support/inside-worker.sub.js": [
+   "f425a7ae6c167bfe9857f08f460897e16bf6ca95",
+   "support"
+  ],
+  "content-security-policy/securitypolicyviolation/support/inside-worker.sub.js.headers": [
+   "ac19897e2693ba3228640d03c770cd5a33c51381",
+   "support"
+  ],
   "content-security-policy/securitypolicyviolation/targeting.html": [
-   "338ac400216d671bed9c45baaec86a5849f2e0fb",
+   "36ec8dd9ef0bd1be3615913015d857aa1a7c9e97",
    "testharness"
   ],
   "content-security-policy/style-src/3_3.css": [
@@ -58362,6 +58469,10 @@
    "d3fb6499c3910cd966efb85888f4a116bf6738c7",
    "support"
   ],
+  "content-security-policy/support/inject-image.sub.js": [
+   "52ac4b96df971b3b284b128c06e2c97a30f69750",
+   "support"
+  ],
   "content-security-policy/support/logTest.sub.js": [
    "b10c13ac32450d15761f99a5096e1a3deda0e9bc",
    "support"
@@ -58382,12 +58493,16 @@
    "8cd779a8017cba678a565475271b892e8ed53e58",
    "support"
   ],
+  "content-security-policy/support/resource.py": [
+   "e6e5eb285a3988173c49a116b1ae8a76f9f7ab1a",
+   "support"
+  ],
   "content-security-policy/support/siblingPath.js": [
    "1743309038e2aef21670a82973c1cea2fbc01253",
    "support"
   ],
   "content-security-policy/support/testharness-helper.js": [
-   "7146102c93b75c1acf9b23891e1ea3c55581cec2",
+   "9ff54032181b9f2fada44e71167efa74af90b7b4",
    "support"
   ],
   "content-security-policy/svg/including.sub.svg": [
@@ -69951,7 +70066,7 @@
    "testharness"
   ],
   "html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation_by_user_activation-manual.html": [
-   "ffed01db4e8c7b2bb566dc1f0d1108e35255be19",
+   "31fa1d1e2ad26e0e6746269a4f7673c2e12c187f",
    "manual"
   ],
   "html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation_by_user_activation_without_user_gesture.html": [
@@ -70011,7 +70126,7 @@
    "support"
   ],
   "html/semantics/embedded-content/the-iframe-element/support/iframe-that-performs-top-navigation.html": [
-   "b380676429cf167a475c07dc549945052cf4bc21",
+   "1fb30b9d76157dc9f5ac9d294cec54c2d9479a9d",
    "support"
   ],
   "html/semantics/embedded-content/the-iframe-element/support/navigation-changed-iframe.html": [
