@@ -386,7 +386,8 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, tran_low_t *ref_coeff,
 
   // copy int16 inputs to int32
   for (i = 0; i < blk_size * blk_size; i++) {
-    ref_int32[i] = ref_coeff_pvq[i] << (OD_COEFF_SHIFT - coeff_shift);
+    ref_int32[i] =
+        AOM_SIGNED_SHL(ref_coeff_pvq[i], OD_COEFF_SHIFT - coeff_shift);
   }
 
   od_pvq_decode(dec, ref_int32, out_int32, quant[1] << (OD_COEFF_SHIFT - 3),

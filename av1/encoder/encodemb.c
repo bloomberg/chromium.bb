@@ -1212,8 +1212,9 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
 
   // copy int16 inputs to int32
   for (i = 0; i < tx_blk_size * tx_blk_size; i++) {
-    ref_int32[i] = ref_coeff_pvq[i] << (OD_COEFF_SHIFT - coeff_shift);
-    in_int32[i] = coeff_pvq[i] << (OD_COEFF_SHIFT - coeff_shift);
+    ref_int32[i] =
+        AOM_SIGNED_SHL(ref_coeff_pvq[i], OD_COEFF_SHIFT - coeff_shift);
+    in_int32[i] = AOM_SIGNED_SHL(coeff_pvq[i], OD_COEFF_SHIFT - coeff_shift);
   }
 
   if (abs(in_int32[0] - ref_int32[0]) < pvq_dc_quant * 141 / 256) { /* 0.55 */
