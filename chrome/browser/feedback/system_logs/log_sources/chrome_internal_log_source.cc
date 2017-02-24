@@ -6,6 +6,7 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
@@ -71,7 +72,7 @@ std::string GetEnrollmentStatusString() {
   return std::string();
 }
 
-void GetEntriesOnBlockingPool(SystemLogsResponse* response) {
+void GetEntriesAsync(SystemLogsResponse* response) {
   DCHECK(response);
 
   chromeos::system::StatisticsProvider* stats =
@@ -135,8 +136,10 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
   // Get the entries that should be retrieved on the blocking pool and invoke
   // the callback later when done.
   SystemLogsResponse* response_ptr = response.release();
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(&GetEntriesOnBlockingPool, response_ptr),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&GetEntriesAsync, response_ptr),
       base::Bind(callback, base::Owned(response_ptr)));
 #else
   // On other platforms, we're done. Invoke the callback.
