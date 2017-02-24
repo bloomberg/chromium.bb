@@ -231,7 +231,7 @@ if (CONFIG_ENCODERS)
         "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse4.c")
 
     set(AOM_DSP_ENCODER_AVX2_INTRIN
-        ${AOM_ENCODER_DSP_AVX2_INTRIN}
+        ${AOM_DSP_ENCODER_AVX2_INTRIN}
         "${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c")
   endif ()
 
