@@ -27,27 +27,67 @@ std::unique_ptr<std::vector<uint8_t>> GetArray(Window* window,
       mojo::ConvertTo<std::vector<uint8_t>>(*value));
 }
 
+// A validator that always returns true regardless of its input.
+bool AlwaysTrue(int64_t value) {
+  return true;
+}
+
+bool ValidateResizeBehaviour(int64_t value) {
+  // Resize behaviour is a 3 bitfield.
+  return value >= 0 &&
+         value <= (ui::mojom::kResizeBehaviorCanMaximize |
+                   ui::mojom::kResizeBehaviorCanMinimize |
+                   ui::mojom::kResizeBehaviorCanResize);
+}
+
+bool ValidateShowState(int64_t value) {
+  return value == int64_t(ui::mojom::ShowState::DEFAULT) ||
+         value == int64_t(ui::mojom::ShowState::NORMAL) ||
+         value == int64_t(ui::mojom::ShowState::MINIMIZED) ||
+         value == int64_t(ui::mojom::ShowState::MAXIMIZED) ||
+         value == int64_t(ui::mojom::ShowState::INACTIVE) ||
+         value == int64_t(ui::mojom::ShowState::FULLSCREEN) ||
+         value == int64_t(ui::mojom::ShowState::DOCKED);
+}
+
 }  // namespace
+
+PropertyConverter::PrimitiveProperty::PrimitiveProperty() {}
+
+PropertyConverter::PrimitiveProperty::PrimitiveProperty(
+    const PrimitiveProperty& property) = default;
+
+PropertyConverter::PrimitiveProperty::~PrimitiveProperty() {}
+
+// static
+base::RepeatingCallback<bool(int64_t)>
+PropertyConverter::CreateAcceptAnyValueCallback() {
+  return base::Bind(&AlwaysTrue);
+}
 
 PropertyConverter::PropertyConverter() {
   // Add known aura properties with associated mus properties.
   RegisterProperty(client::kAlwaysOnTopKey,
-                   ui::mojom::WindowManager::kAlwaysOnTop_Property);
+                   ui::mojom::WindowManager::kAlwaysOnTop_Property,
+                   CreateAcceptAnyValueCallback());
   RegisterProperty(client::kAppIconKey,
                    ui::mojom::WindowManager::kAppIcon_Property);
   RegisterProperty(client::kAppIdKey,
                    ui::mojom::WindowManager::kAppID_Property);
   RegisterProperty(client::kImmersiveFullscreenKey,
-                   ui::mojom::WindowManager::kImmersiveFullscreen_Property);
+                   ui::mojom::WindowManager::kImmersiveFullscreen_Property,
+                   CreateAcceptAnyValueCallback());
   RegisterProperty(client::kNameKey, ui::mojom::WindowManager::kName_Property);
   RegisterProperty(client::kPreferredSize,
                    ui::mojom::WindowManager::kPreferredSize_Property);
   RegisterProperty(client::kResizeBehaviorKey,
-                   ui::mojom::WindowManager::kResizeBehavior_Property);
+                   ui::mojom::WindowManager::kResizeBehavior_Property,
+                   base::Bind(&ValidateResizeBehaviour));
   RegisterProperty(client::kRestoreBoundsKey,
                    ui::mojom::WindowManager::kRestoreBounds_Property);
   RegisterProperty(client::kShowStateKey,
-                   ui::mojom::WindowManager::kShowState_Property);
+                   ui::mojom::WindowManager::kShowState_Property,
+                   base::Bind(&ValidateShowState));
   RegisterProperty(client::kWindowIconKey,
                    ui::mojom::WindowManager::kWindowIcon_Property);
   RegisterProperty(client::kTitleKey,
@@ -158,6 +198,11 @@ void PropertyConverter::SetPropertyFromTransportValue(
         return;
       }
       const PrimitiveType value = mojo::ConvertTo<PrimitiveType>(*data);
+      if (!primitive_property.second.validator.Run(value)) {
+        DVLOG(2) << "Property value rejected (PrimitiveType): "
+                 << transport_name;
+        return;
+      }
       // TODO(msw): Should aura::Window just store all properties by name?
       window->SetPropertyInternal(
           primitive_property.first, primitive_property.second.property_name,
@@ -233,7 +278,13 @@ bool PropertyConverter::GetPropertyValueFromTransportValue(
   }
   for (const auto& primitive_property : primitive_properties_) {
     if (primitive_property.second.transport_name == transport_name) {
-      *value = mojo::ConvertTo<PrimitiveType>(transport_data);
+      PrimitiveType v = mojo::ConvertTo<PrimitiveType>(transport_data);
+      if (!primitive_property.second.validator.Run(v)) {
+        DVLOG(2) << "Property value rejected (PrimitiveType): "
+                 << transport_name;
+        return false;
+      }
+      *value = v;
       return true;
     }
   }

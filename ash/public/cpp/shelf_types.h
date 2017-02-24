@@ -5,6 +5,10 @@
 #ifndef ASH_PUBLIC_CPP_SHELF_TYPES_H_
 #define ASH_PUBLIC_CPP_SHELF_TYPES_H_
 
+#include <cstdint>
+
+#include "ash/public/cpp/ash_public_export.h"
+
 namespace ash {
 
 enum ShelfAlignment {
@@ -113,6 +117,9 @@ enum ShelfItemType {
   // Default value.
   TYPE_UNDEFINED,
 };
+
+// Returns true if |type| is a valid ShelfItemType.
+ASH_PUBLIC_EXPORT bool IsValidShelfItemType(int64_t type);
 
 // Represents the status of applications in the shelf.
 enum ShelfItemStatus {

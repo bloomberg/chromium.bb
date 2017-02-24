@@ -45,12 +45,15 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     views::MusClient* mus_client = views::MusClient::Get();
     aura::WindowTreeClientDelegate* delegate = mus_client;
     aura::PropertyConverter* converter = delegate->GetPropertyConverter();
+
     converter->RegisterProperty(
         ash::kPanelAttachedKey,
-        ui::mojom::WindowManager::kPanelAttached_Property);
+        ui::mojom::WindowManager::kPanelAttached_Property,
+        aura::PropertyConverter::CreateAcceptAnyValueCallback());
     converter->RegisterProperty(
         ash::kShelfItemTypeKey,
-        ui::mojom::WindowManager::kShelfItemType_Property);
+        ui::mojom::WindowManager::kShelfItemType_Property,
+        base::Bind(&ash::IsValidShelfItemType));
 
     mus_client->SetMusPropertyMirror(
         base::MakeUnique<ash::MusPropertyMirrorAsh>());

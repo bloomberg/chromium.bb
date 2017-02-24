@@ -23,6 +23,7 @@
 #include "ash/mus/shell_delegate_mus.h"
 #include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_properties.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -65,15 +66,19 @@ WindowManager::WindowManager(service_manager::Connector* connector)
       wm_state_(base::MakeUnique<::wm::WMState>()),
       property_converter_(base::MakeUnique<aura::PropertyConverter>()) {
   property_converter_->RegisterProperty(
-      kPanelAttachedKey, ui::mojom::WindowManager::kPanelAttached_Property);
+      kPanelAttachedKey, ui::mojom::WindowManager::kPanelAttached_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter_->RegisterProperty(
       kRenderTitleAreaProperty,
-      ui::mojom::WindowManager::kRenderParentTitleArea_Property);
+      ui::mojom::WindowManager::kRenderParentTitleArea_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter_->RegisterProperty(
-      kShelfItemTypeKey, ui::mojom::WindowManager::kShelfItemType_Property);
+      kShelfItemTypeKey, ui::mojom::WindowManager::kShelfItemType_Property,
+      base::Bind(&IsValidShelfItemType));
   property_converter_->RegisterProperty(
       ::wm::kShadowElevationKey,
-      ui::mojom::WindowManager::kShadowElevation_Property);
+      ui::mojom::WindowManager::kShadowElevation_Property,
+      base::Bind(&::wm::IsValidShadowElevation));
 }
 
 WindowManager::~WindowManager() {

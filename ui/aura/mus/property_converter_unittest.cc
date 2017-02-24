@@ -77,7 +77,8 @@ void TestPrimitiveProperty(PropertyConverter* property_converter,
                            const char* transport_name,
                            T value_1,
                            T value_2) {
-  property_converter->RegisterProperty(key, transport_name);
+  property_converter->RegisterProperty(
+      key, transport_name, PropertyConverter::CreateAcceptAnyValueCallback());
   EXPECT_EQ(transport_name,
             property_converter->GetTransportNameForPropertyKey(key));
   EXPECT_TRUE(property_converter->IsTransportNameRegistered(transport_name));
@@ -110,6 +111,10 @@ void TestPrimitiveProperty(PropertyConverter* property_converter,
   EXPECT_TRUE(property_converter->GetPropertyValueFromTransportValue(
       transport_name, transport_value2, &decoded_value_2));
   EXPECT_EQ(value_2, static_cast<T>(decoded_value_2));
+}
+
+bool OnlyAllowNegativeNumbers(int64_t number) {
+  return number < 0;
 }
 
 }  // namespace
@@ -163,6 +168,30 @@ TEST_F(PropertyConverterTest, PrimitiveProperties) {
   const int64_t value_9a = INT64_MIN / 5, value_9b = INT64_MIN / 6;
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey9,
                         kTestPropertyServerKey9, value_9a, value_9b);
+}
+
+TEST_F(PropertyConverterTest, TestPrimitiveVerifier) {
+  std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));
+
+  PropertyConverter property_converter;
+  property_converter.RegisterProperty(kTestPropertyKey8,
+                                      kTestPropertyServerKey8,
+                                      base::Bind(&OnlyAllowNegativeNumbers));
+
+  // Test that we reject invalid TransportValues during
+  // GetPropertyValueFromTransportValue().
+  int64_t int_value = 5;
+  std::vector<uint8_t> transport =
+      mojo::ConvertTo<std::vector<uint8_t>>(int_value);
+  EXPECT_FALSE(property_converter.GetPropertyValueFromTransportValue(
+      kTestPropertyServerKey8, transport, &int_value));
+
+  // Test that we reject invalid TransportValues during
+  // SetPropertyFromTransportValue().
+  EXPECT_EQ(-1, window->GetProperty(kTestPropertyKey8));
+  property_converter.SetPropertyFromTransportValue(
+      window.get(), kTestPropertyServerKey8, &transport);
+  EXPECT_EQ(-1, window->GetProperty(kTestPropertyKey8));
 }
 
 // Verifies property setting behavior for a gfx::ImageSkia* property.

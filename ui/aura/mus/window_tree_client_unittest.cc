@@ -73,9 +73,15 @@ bool IsWindowHostVisible(Window* window) {
 
 // Register some test window properties for aura/mus conversion.
 void RegisterTestProperties(PropertyConverter* converter) {
-  converter->RegisterProperty(kTestPropertyKey1, kTestPropertyServerKey1);
-  converter->RegisterProperty(kTestPropertyKey2, kTestPropertyServerKey2);
-  converter->RegisterProperty(kTestPropertyKey3, kTestPropertyServerKey3);
+  converter->RegisterProperty(
+      kTestPropertyKey1, kTestPropertyServerKey1,
+      PropertyConverter::CreateAcceptAnyValueCallback());
+  converter->RegisterProperty(
+      kTestPropertyKey2, kTestPropertyServerKey2,
+      PropertyConverter::CreateAcceptAnyValueCallback());
+  converter->RegisterProperty(
+      kTestPropertyKey3, kTestPropertyServerKey3,
+      PropertyConverter::CreateAcceptAnyValueCallback());
 }
 
 // Convert a primitive aura property value to a mus transport value.

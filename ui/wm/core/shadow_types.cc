@@ -18,4 +18,12 @@ void SetShadowElevation(aura::Window* window, ShadowElevation elevation) {
   window->SetProperty(kShadowElevationKey, elevation);
 }
 
+bool IsValidShadowElevation(int64_t value) {
+  return value == int64_t(ShadowElevation::DEFAULT) ||
+         value == int64_t(ShadowElevation::NONE) ||
+         value == int64_t(ShadowElevation::SMALL) ||
+         value == int64_t(ShadowElevation::MEDIUM) ||
+         value == int64_t(ShadowElevation::LARGE);
+}
+
 }  // namespace wm

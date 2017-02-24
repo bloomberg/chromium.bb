@@ -81,7 +81,8 @@ MusClient::MusClient(service_manager::Connector* connector,
   property_converter_ = base::MakeUnique<aura::PropertyConverter>();
   property_converter_->RegisterProperty(
       wm::kShadowElevationKey,
-      ui::mojom::WindowManager::kShadowElevation_Property);
+      ui::mojom::WindowManager::kShadowElevation_Property,
+      base::Bind(&wm::IsValidShadowElevation));
 
   if (create_wm_state)
     wm_state_ = base::MakeUnique<wm::WMState>();

@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
@@ -35,6 +36,10 @@ class AURA_EXPORT PropertyConverter {
 
   PropertyConverter();
   ~PropertyConverter();
+
+  // Creates a validation callback for use in RegisterProperty() which will
+  // accept any value.
+  static base::RepeatingCallback<bool(int64_t)> CreateAcceptAnyValueCallback();
 
   // Returns true if RegisterProperty() has been called with the specified
   // transport name.
@@ -71,14 +76,19 @@ class AURA_EXPORT PropertyConverter {
       PrimitiveType* value);
 
   // Register a property to support conversion between mus and aura.
-  template<typename T>
-  void RegisterProperty(const WindowProperty<T>* property,
-                        const char* transport_name) {
+  // |validator| is a callback used to validate incoming values from
+  // transport_data; if it returns false, the value is rejected.
+  template <typename T>
+  void RegisterProperty(
+      const WindowProperty<T>* property,
+      const char* transport_name,
+      const base::RepeatingCallback<bool(int64_t)>& validator) {
     PrimitiveProperty primitive_property;
     primitive_property.property_name = property->name;
     primitive_property.transport_name = transport_name;
     primitive_property.default_value =
         ui::ClassPropertyCaster<T>::ToInt64(property->default_value);
+    primitive_property.validator = validator;
     primitive_properties_[property] = primitive_property;
     transport_names_.insert(transport_name);
   }
@@ -97,13 +107,19 @@ class AURA_EXPORT PropertyConverter {
 
  private:
   // Contains data needed to store and convert primitive-type properties.
-  struct PrimitiveProperty {
+  struct AURA_EXPORT PrimitiveProperty {
+    PrimitiveProperty();
+    PrimitiveProperty(const PrimitiveProperty& property);
+    ~PrimitiveProperty();
+
     // The aura::WindowProperty::name used for storage.
     const char* property_name = nullptr;
     // The mus property name used for transport.
     const char* transport_name = nullptr;
     // The aura::WindowProperty::default_value stored using PrimitiveType.
     PrimitiveType default_value = 0;
+    // A callback used to validate incoming values.
+    base::RepeatingCallback<bool(int64_t)> validator;
   };
 
   // A map of aura::WindowProperty<T> to PrimitiveProperty structs.

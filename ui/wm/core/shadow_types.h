@@ -30,6 +30,9 @@ enum class ShadowElevation {
 WM_EXPORT void SetShadowElevation(aura::Window* window,
                                   ShadowElevation elevation);
 
+// Returns true if |value| is a valid element of ShadowElevation elements.
+WM_EXPORT bool IsValidShadowElevation(int64_t value);
+
 // A property key describing the drop shadow that should be displayed under the
 // window. A null value is interpreted as using the default.
 WM_EXPORT extern const aura::WindowProperty<ShadowElevation>* const
