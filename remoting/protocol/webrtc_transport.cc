@@ -29,6 +29,7 @@
 #include "remoting/protocol/webrtc_audio_module.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
+#include "third_party/webrtc/api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "third_party/webrtc/api/test/fakeconstraints.h"
 
 using buzz::QName;
@@ -175,7 +176,9 @@ class WebrtcTransport::PeerConnectionWrapper
 
     peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
         worker_thread, rtc::Thread::Current(), audio_module_.get(),
-        encoder_factory.release(), nullptr);
+        webrtc::CreateBuiltinAudioEncoderFactory(),
+        webrtc::CreateBuiltinAudioDecoderFactory(), encoder_factory.release(),
+        nullptr);
 
     webrtc::FakeConstraints constraints;
     constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,

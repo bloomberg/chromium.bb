@@ -475,6 +475,7 @@ target(link_target_type, "renderer") {
     "//third_party/icu",
     "//third_party/libjingle",
     "//third_party/libyuv",
+    "//third_party/webrtc/api/audio_codecs:builtin_audio_decoder_factory",
     "//third_party/widevine/cdm:headers",
     "//ui/accessibility",
     "//ui/base",

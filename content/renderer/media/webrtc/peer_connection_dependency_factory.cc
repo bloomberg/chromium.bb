@@ -62,6 +62,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/webrtc/api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/api/videosourceproxy.h"
 #include "third_party/webrtc/base/ssladapter.h"
@@ -251,7 +252,9 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
 
   pc_factory_ = webrtc::CreatePeerConnectionFactory(
       worker_thread_, signaling_thread_, audio_device_.get(),
-      encoder_factory.release(), decoder_factory.release());
+      webrtc::CreateBuiltinAudioEncoderFactory(),
+      webrtc::CreateBuiltinAudioDecoderFactory(), encoder_factory.release(),
+      decoder_factory.release());
   CHECK(pc_factory_.get());
 
   webrtc::PeerConnectionFactoryInterface::Options factory_options;
