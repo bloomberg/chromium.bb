@@ -383,6 +383,7 @@ class MotionEvents {
                size_t num_rects,
                size_t max_frames_pending,
                bool fullscreen,
+               bool transparent_background,
                bool show_fps_counter,
                size_t num_benchmark_runs,
                base::TimeDelta benchmark_interval,
@@ -393,6 +394,7 @@ class MotionEvents {
         num_rects_(num_rects),
         max_frames_pending_(max_frames_pending),
         fullscreen_(fullscreen),
+        transparent_background_(transparent_background),
         show_fps_counter_(show_fps_counter),
         num_benchmark_runs_(num_benchmark_runs),
         benchmark_interval_(benchmark_interval),
@@ -410,6 +412,7 @@ class MotionEvents {
   const size_t num_rects_;
   const size_t max_frames_pending_;
   const bool fullscreen_;
+  const bool transparent_background_;
   const bool show_fps_counter_;
   const size_t num_benchmark_runs_;
   const base::TimeDelta benchmark_interval_;
@@ -560,15 +563,17 @@ int MotionEvents::Run() {
     return 1;
   }
 
-  std::unique_ptr<wl_region> opaque_region(static_cast<wl_region*>(
-      wl_compositor_create_region(globals_.compositor.get())));
-  if (!opaque_region) {
-    LOG(ERROR) << "Can't create region";
-    return 1;
-  }
+  if (!transparent_background_) {
+    std::unique_ptr<wl_region> opaque_region(static_cast<wl_region*>(
+        wl_compositor_create_region(globals_.compositor.get())));
+    if (!opaque_region) {
+      LOG(ERROR) << "Can't create region";
+      return 1;
+    }
 
-  wl_region_add(opaque_region.get(), 0, 0, width_, height_);
-  wl_surface_set_opaque_region(surface.get(), opaque_region.get());
+    wl_region_add(opaque_region.get(), 0, 0, width_, height_);
+    wl_surface_set_opaque_region(surface.get(), opaque_region.get());
+  }
 
   std::unique_ptr<wl_shell_surface> shell_surface(
       static_cast<wl_shell_surface*>(
@@ -691,7 +696,8 @@ int MotionEvents::Run() {
 
       SkCanvas* canvas = buffer->sk_surface->getCanvas();
       if (event_times.empty()) {
-        canvas->clear(SK_ColorBLACK);
+        canvas->clear(transparent_background_ ? SK_ColorTRANSPARENT
+                                              : SK_ColorBLACK);
       } else {
         // Split buffer into one horizontal rectangle for each event received
         // since last frame. Latest event at the top.
@@ -911,6 +917,9 @@ const char kMaxFramesPending[] = "max-frames-pending";
 // Specifies if client should be fullscreen.
 const char kFullscreen[] = "fullscreen";
 
+// Specifies if the background should be transparent.
+const char kTransparentBackground[] = "transparent-background";
+
 // Specifies if FPS counter should be shown.
 const char kShowFpsCounter[] = "show-fps-counter";
 
@@ -997,6 +1006,7 @@ int main(int argc, char* argv[]) {
   exo::wayland::clients::MotionEvents client(
       width, height, scale, num_rects, max_frames_pending,
       command_line->HasSwitch(switches::kFullscreen),
+      command_line->HasSwitch(switches::kTransparentBackground),
       command_line->HasSwitch(switches::kShowFpsCounter), num_benchmark_runs,
       base::TimeDelta::FromMilliseconds(benchmark_interval_ms), use_drm.get());
   return client.Run();
