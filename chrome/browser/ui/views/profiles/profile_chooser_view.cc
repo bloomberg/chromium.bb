@@ -195,6 +195,7 @@ class BackgroundColorHoverButton : public views::LabelButton {
 #endif
         title_(nullptr),
         subtitle_(nullptr) {
+    DCHECK(profile_chooser_view);
     SetImageLabelSpacing(switches::IsMaterialDesignUserMenu()
                              ? (kMaterialMenuEdgeMargin - 2)
                              : views::kItemLabelSpacing);
@@ -2133,9 +2134,8 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   int available_width = width - 2 * views::kButtonHEdgeMarginNew -
                         kDeleteButtonWidth - warning_button_width;
   views::LabelButton* email_button = new BackgroundColorHoverButton(
-      reauth_required ? this : NULL,
-      base::UTF8ToUTF16(email),
-      warning_default_image);
+      this, base::UTF8ToUTF16(email), warning_default_image);
+  email_button->SetEnabled(reauth_required);
   email_button->SetElideBehavior(gfx::ELIDE_EMAIL);
   email_button->SetMinSize(gfx::Size(0, kButtonHeight));
   email_button->SetMaxSize(gfx::Size(available_width, kButtonHeight));
