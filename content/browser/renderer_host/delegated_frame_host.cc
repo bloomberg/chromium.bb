@@ -443,6 +443,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
     surface_returned_resources_.clear();
     last_compositor_frame_sink_id_ = compositor_frame_sink_id;
   }
+  bool skip_frame = false;
   pending_delegated_ack_count_++;
 
   background_color_ = frame.metadata.root_background_color;
@@ -461,13 +462,25 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
       allocated_new_local_surface_id = true;
     }
 
-    frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
-                                       skipped_latency_info_list_.begin(),
-                                       skipped_latency_info_list_.end());
-    skipped_latency_info_list_.clear();
+    gfx::Size desired_size = client_->DelegatedFrameHostDesiredSizeInDIP();
+    if (desired_size != frame_size_in_dip && !desired_size.IsEmpty()) {
+      skip_frame = true;
+      skipped_latency_info_list_.insert(skipped_latency_info_list_.end(),
+                                        frame.metadata.latency_info.begin(),
+                                        frame.metadata.latency_info.end());
+      frame.metadata.latency_info.clear();
+    } else {
+      frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
+                                         skipped_latency_info_list_.begin(),
+                                         skipped_latency_info_list_.end());
+      skipped_latency_info_list_.clear();
+    }
 
-    auto ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn,
-                                   AsWeakPtr(), compositor_frame_sink_id);
+    cc::SurfaceFactory::DrawCallback ack_callback;
+    if (!skip_frame) {
+      ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn, AsWeakPtr(),
+                                compositor_frame_sink_id);
+    }
     surface_factory_->SubmitCompositorFrame(local_surface_id_, std::move(frame),
                                             ack_callback);
     if (allocated_new_local_surface_id) {
@@ -492,7 +505,12 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
         damage_rect_in_dip);
   }
 
-  if (compositor_)
+  if (skip_frame) {
+    SendReclaimCompositorResources(compositor_frame_sink_id,
+                                   true /* is_swap_ack */);
+  }
+
+  if (compositor_ && !skip_frame)
     can_lock_compositor_ = NO_PENDING_COMMIT;
 
   if (local_surface_id_.is_valid()) {
