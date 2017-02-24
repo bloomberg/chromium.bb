@@ -58,7 +58,7 @@ typedef const aom_tree_index aom_tree[];
 static INLINE aom_prob get_prob(unsigned int num, unsigned int den) {
   assert(den != 0);
   {
-    const int p = (int)(((int64_t)num * 256 + (den >> 1)) / den);
+    const int p = (int)(((uint64_t)num * 256 + (den >> 1)) / den);
     // (p > 255) ? 255 : (p < 1) ? 1 : p;
     const int clipped_prob = p | ((255 - p) >> 23) | (p == 0);
     return (aom_prob)clipped_prob;
