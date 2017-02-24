@@ -341,7 +341,16 @@ std::string FlashComponentInstallerTraits::GetName() const {
 
 update_client::InstallerAttributes
 FlashComponentInstallerTraits::GetInstallerAttributes() const {
-  return update_client::InstallerAttributes();
+  // For Chrome OS, send the built-in flash player version to the server,
+  // otherwise it will serve component updates of outdated flash players.
+  update_client::InstallerAttributes attrs;
+#if defined(OS_CHROMEOS)
+  const std::string flash_version =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kPpapiFlashVersion);
+  attrs["built_in_version"] = flash_version;
+#endif  // #defined(OS_CHROMEOS)
+  return attrs;
 }
 
 std::vector<std::string> FlashComponentInstallerTraits::GetMimeTypes() const {
