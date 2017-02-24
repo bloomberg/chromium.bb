@@ -1048,16 +1048,6 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 #endif
   UpdateShowSyncState(show_main_ui);
 
-  // Settings page/subpages are forced to open in normal mode. We disable these
-  // commands for guest sessions and when incognito is forced.
-  const bool options_enabled = show_main_ui &&
-      IncognitoModePrefs::GetAvailability(
-          profile()->GetPrefs()) != IncognitoModePrefs::FORCED;
-  const bool guest_session = profile()->IsGuestSession();
-  command_updater_.UpdateCommandEnabled(IDC_OPTIONS, options_enabled);
-  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS,
-                                        options_enabled && !guest_session);
-
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
@@ -1079,6 +1069,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
                                         fullscreen_enabled);
 
   UpdateCommandsForBookmarkBar();
+  UpdateCommandsForIncognitoAvailability();
 }
 
 void BrowserCommandController::UpdatePrintingState() {
