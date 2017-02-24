@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/files/file_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -31,7 +31,6 @@ const double kMaxRetrySleepSeconds = 6 * 3600;  // 6 hours
 
 void CreateWallpaperDirectory(const base::FilePath& wallpaper_dir,
                               bool* success) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(success);
 
   *success = CreateDirectoryAndGetError(wallpaper_dir, NULL);
@@ -44,7 +43,6 @@ void CreateWallpaperDirectory(const base::FilePath& wallpaper_dir,
 void RenameTemporaryFile(const base::FilePath& from,
                          const base::FilePath& to,
                          bool* success) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(success);
 
   base::File::Error error;
@@ -96,11 +94,11 @@ void CustomizationWallpaperDownloader::StartRequest() {
                              net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  base::SequencedWorkerPool* blocking_pool =
-      content::BrowserThread::GetBlockingPool();
   url_fetcher_->SaveResponseToFileAtPath(
       wallpaper_temporary_file_,
-      blocking_pool->GetSequencedTaskRunner(blocking_pool->GetSequenceToken()));
+      base::CreateSequencedTaskRunnerWithTraits(
+          base::TaskTraits().MayBlock().WithPriority(
+              base::TaskPriority::BACKGROUND)));
   url_fetcher_->Start();
 }
 
@@ -130,10 +128,10 @@ void CustomizationWallpaperDownloader::Start() {
   base::Closure on_created_closure =
       base::Bind(&CustomizationWallpaperDownloader::OnWallpaperDirectoryCreated,
                  weak_factory_.GetWeakPtr(), base::Passed(std::move(success)));
-  if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
-          FROM_HERE, mkdir_closure, on_created_closure)) {
-    LOG(WARNING) << "Failed to start Customized Wallpaper download.";
-  }
+  base::PostTaskWithTraitsAndReply(FROM_HERE,
+                                   base::TaskTraits().MayBlock().WithPriority(
+                                       base::TaskPriority::BACKGROUND),
+                                   mkdir_closure, on_created_closure);
 }
 
 void CustomizationWallpaperDownloader::OnWallpaperDirectoryCreated(
@@ -178,12 +176,10 @@ void CustomizationWallpaperDownloader::OnURLFetchComplete(
   base::Closure on_rename_closure =
       base::Bind(&CustomizationWallpaperDownloader::OnTemporaryFileRenamed,
                  weak_factory_.GetWeakPtr(), base::Passed(std::move(success)));
-  if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
-          FROM_HERE, rename_closure, on_rename_closure)) {
-    LOG(WARNING)
-        << "Failed to start Customized Wallpaper Rename DownloadedFile.";
-    on_wallpaper_fetch_completed_.Run(false, wallpaper_url_);
-  }
+  base::PostTaskWithTraitsAndReply(FROM_HERE,
+                                   base::TaskTraits().MayBlock().WithPriority(
+                                       base::TaskPriority::BACKGROUND),
+                                   rename_closure, on_rename_closure);
 }
 
 void CustomizationWallpaperDownloader::OnTemporaryFileRenamed(
