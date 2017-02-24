@@ -109,6 +109,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   void AddDocument(const Document& document);
 
   // mojom::FileSystemInstance:
+  void AddWatcher(const std::string& authority,
+                  const std::string& document_id,
+                  const AddWatcherCallback& callback) override;
   void GetChildDocuments(const std::string& authority,
                          const std::string& document_id,
                          const GetChildDocumentsCallback& callback) override;
@@ -117,8 +120,11 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
                    const GetDocumentCallback& callback) override;
   void GetFileSize(const std::string& url,
                    const GetFileSizeCallback& callback) override;
+  void Init(mojom::FileSystemHostPtr host) override;
   void OpenFileToRead(const std::string& url,
                       const OpenFileToReadCallback& callback) override;
+  void RemoveWatcher(int64_t watcher_id,
+                     const RemoveWatcherCallback& callback) override;
   void RequestMediaScan(const std::vector<std::string>& paths) override;
 
  private:

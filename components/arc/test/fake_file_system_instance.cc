@@ -115,6 +115,13 @@ void FakeFileSystemInstance::AddDocument(const Document& document) {
   }
 }
 
+void FakeFileSystemInstance::AddWatcher(const std::string& authority,
+                                        const std::string& document_id,
+                                        const AddWatcherCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  NOTIMPLEMENTED();
+}
+
 void FakeFileSystemInstance::GetFileSize(const std::string& url,
                                          const GetFileSizeCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -192,6 +199,18 @@ void FakeFileSystemInstance::GetChildDocuments(
       FROM_HERE,
       base::Bind(callback,
                  base::Passed(base::make_optional(std::move(children)))));
+}
+
+void FakeFileSystemInstance::Init(mojom::FileSystemHostPtr host) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  NOTIMPLEMENTED();
+}
+
+void FakeFileSystemInstance::RemoveWatcher(
+    int64_t watcher_id,
+    const RemoveWatcherCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  NOTIMPLEMENTED();
 }
 
 void FakeFileSystemInstance::RequestMediaScan(

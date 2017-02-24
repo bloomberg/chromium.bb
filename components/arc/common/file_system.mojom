@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 module arc.mojom;
 
@@ -29,7 +29,31 @@ struct Document {
   uint64 last_modified;
 };
 
-// Next method ID: 5
+// Describes the type of a change made to a document.
+[Extensible]
+enum ChangeType {
+  // Indicates that the child document list of the watched directory was
+  // changed. Note that a watcher can be installed only on directory for now.
+  CHANGED = 0,
+
+  // Indicates that the watched document itself was deleted.
+  // When OnDocumentChanged() is called with this change type, the corresponding
+  // watcher has been already uninstalled and the host should not call
+  // RemoveWatcher().
+  DELETED = 1,
+};
+
+
+// Next method ID: 1
+interface FileSystemHost {
+  // Called when a watched document was changed.
+  // |type| describes the type of change made to the document. If |type| is
+  // DELETED, the watcher has been already removed and the host should not call
+  // RemoveWatcher().
+  [MinVersion=3] OnDocumentChanged@0(int64 watcher_id, ChangeType type);
+};
+
+// Next method ID: 8
 interface FileSystemInstance {
   // Notes about Android Documents Provider:
   //
@@ -46,6 +70,21 @@ interface FileSystemInstance {
   // See the following documents for details about Documents Provider:
   // https://developer.android.com/guide/topics/providers/document-provider.html
   // https://developer.android.com/reference/android/provider/DocumentsContract.html
+
+  // Installs a document watcher to watch updates of a document.
+  //
+  // Note: Currently, watchers can be installed only on directories, and only
+  // directory content changes are notified.
+  //
+  // On success, a positive unique integer is returned as a watcher ID.
+  // FileSystemHost.OnDocumentChanged() will be called with the watcher ID
+  // on directory content changes.
+  // On failure, -1 is returned.
+  //
+  // It is allowed to install multiple watchers to the same directory. In that
+  // case, different watcher IDs are returned.
+  [MinVersion=3] AddWatcher@6(string authority, string document_id) =>
+      (int64 watcher_id);
 
   // Queries child documents of the directory specified by |authority| and
   // |parent_document_id| in Documents Provider.
@@ -65,9 +104,23 @@ interface FileSystemInstance {
   // streams), -1 is returned.
   [MinVersion=1] GetFileSize@1(string url) => (int64 size);
 
+  // Establishes full-duplex communication with the host.
+  [MinVersion=3] Init@5(FileSystemHost host_ptr);
+
   // Asks the ContentResolver to get a FD to read the file specified by the
   // URL.
   [MinVersion=1] OpenFileToRead@2(string url) => (handle? fd);
+
+  // Uninstalls a document watcher.
+  //
+  // After this method call returns, OnDocumentChanged() will never be called
+  // with the watcher ID. Whether OnDocumentChanged() is called or not after
+  // this method is called and before this method returns is undefined.
+  //
+  // It fails if the specified watcher does not exist. Note that a watcher
+  // can be automatically uninstalled when a watched document is deleted
+  // (notified by OnDocumentChanged() with |type| = DELETED).
+  [MinVersion=3] RemoveWatcher@7(int64 watcher_id) => (bool success);
 
   // Requests MediaProvider to scan specified files.
   // When the specified file does not exist, the corresponding entry in
