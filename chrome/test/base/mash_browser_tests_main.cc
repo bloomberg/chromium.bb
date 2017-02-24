@@ -27,6 +27,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_launcher.h"
 #include "mash/package/mash_packaged_service.h"
+#include "mash/session/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -43,7 +44,7 @@ const base::FilePath::CharType kCatalogFilename[] =
     FILE_PATH_LITERAL("mash_browser_tests_catalog.json");
 
 void ConnectToDefaultApps(service_manager::Connector* connector) {
-  connector->Connect("mash_session");
+  connector->Connect(mash::session::mojom::kServiceName);
 }
 
 class MashTestSuite : public ChromeTestSuite {

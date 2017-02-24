@@ -10,6 +10,7 @@ include_rules = [
   "+device/geolocation",
   "+extensions",
   "+mash/package",
+  "+mash/session/public/interfaces",
   "+mojo",
   "+rlz/features",
   "+services",

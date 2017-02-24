@@ -1194,6 +1194,7 @@ static_library("browser_tests_runner") {
 
     deps += [
       "//mash/package",
+      "//mash/session/public/interfaces:constants",
       "//services/service_manager/background:lib",
     ]
 
