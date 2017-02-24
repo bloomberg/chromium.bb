@@ -213,6 +213,8 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
   Member<Document> m_ownerDocument;  // Cannot be null.
   RangeBoundaryPoint m_start;
   RangeBoundaryPoint m_end;
+
+  friend class RangeUpdateScope;
 };
 
 CORE_EXPORT bool areRangesEqual(const Range*, const Range*);

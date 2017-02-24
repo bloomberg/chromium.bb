@@ -57,6 +57,51 @@
 
 namespace blink {
 
+class RangeUpdateScope {
+  STACK_ALLOCATED();
+  RangeUpdateScope(Range* range) {
+    DCHECK(range);
+    if (++s_scopeCount == 1) {
+      m_range = range;
+      m_oldDocument = range->ownerDocument();
+#if DCHECK_IS_ON()
+      s_range = range;
+    } else {
+      DCHECK_EQ(s_range, range);
+#endif
+    }
+  }
+
+  ~RangeUpdateScope() {
+    DCHECK_GE(s_scopeCount, 1);
+    if (--s_scopeCount > 0)
+      return;
+    m_range->removeFromSelectionIfInDifferentRoot(*m_oldDocument);
+    m_range->updateSelectionIfAddedToSelection();
+#if DCHECK_IS_ON()
+    s_range = nullptr;
+#endif
+  }
+
+ private:
+  static int s_scopeCount;
+#if DCHECK_IS_ON()
+  // This raw pointer is safe because
+  //  - s_range has a valid pointer only if RangeUpdateScope instance is live.
+  //  - RangeUpdateScope is used only in Range member functions.
+  static Range* s_range;
+#endif
+  Member<Range> m_range;
+  Member<Document> m_oldDocument;
+
+  DISALLOW_COPY_AND_ASSIGN(RangeUpdateScope);
+};
+
+int RangeUpdateScope::s_scopeCount = 0;
+#if DCHECK_IS_ON()
+Range* RangeUpdateScope::s_range;
+#endif
+
 inline Range::Range(Document& ownerDocument)
     : m_ownerDocument(&ownerDocument),
       m_start(m_ownerDocument),
@@ -172,7 +217,7 @@ void Range::setStart(Node* refNode,
     return;
   }
 
-  Document& oldDocument = ownerDocument();
+  RangeUpdateScope scope(this);
   bool didMoveDocument = false;
   if (refNode->document() != m_ownerDocument) {
     setDocument(refNode->document());
@@ -185,12 +230,8 @@ void Range::setStart(Node* refNode,
 
   m_start.set(refNode, offset, childNode);
 
-  if (didMoveDocument || checkForDifferentRootContainer(m_start, m_end)) {
-    removeFromSelectionIfInDifferentRoot(oldDocument);
+  if (didMoveDocument || checkForDifferentRootContainer(m_start, m_end))
     collapse(true);
-    return;
-  }
-  updateSelectionIfAddedToSelection();
 }
 
 void Range::setEnd(Node* refNode,
@@ -203,8 +244,8 @@ void Range::setEnd(Node* refNode,
     return;
   }
 
+  RangeUpdateScope scope(this);
   bool didMoveDocument = false;
-  Document& oldDocument = ownerDocument();
   if (refNode->document() != m_ownerDocument) {
     setDocument(refNode->document());
     didMoveDocument = true;
@@ -216,12 +257,8 @@ void Range::setEnd(Node* refNode,
 
   m_end.set(refNode, offset, childNode);
 
-  if (didMoveDocument || checkForDifferentRootContainer(m_start, m_end)) {
-    removeFromSelectionIfInDifferentRoot(oldDocument);
+  if (didMoveDocument || checkForDifferentRootContainer(m_start, m_end))
     collapse(false);
-    return;
-  }
-  updateSelectionIfAddedToSelection();
 }
 
 void Range::setStart(const Position& start, ExceptionState& exceptionState) {
@@ -237,11 +274,11 @@ void Range::setEnd(const Position& end, ExceptionState& exceptionState) {
 }
 
 void Range::collapse(bool toStart) {
+  RangeUpdateScope scope(this);
   if (toStart)
     m_end = m_start;
   else
     m_start = m_end;
-  updateSelectionIfAddedToSelection();
 }
 
 bool Range::isNodeFullyContained(Node& node) const {
@@ -1208,6 +1245,7 @@ void Range::selectNode(Node* refNode, ExceptionState& exceptionState) {
       return;
   }
 
+  RangeUpdateScope scope(this);
   setStartBefore(refNode);
   setEndAfter(refNode);
 }
@@ -1242,14 +1280,12 @@ void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState) {
     }
   }
 
-  Document& oldDocument = ownerDocument();
+  RangeUpdateScope scope(this);
   if (m_ownerDocument != refNode->document())
     setDocument(refNode->document());
 
   m_start.setToStartOfNode(*refNode);
   m_end.setToEndOfNode(*refNode);
-  removeFromSelectionIfInDifferentRoot(oldDocument);
-  updateSelectionIfAddedToSelection();
 }
 
 bool Range::selectNodeContents(Node* refNode, Position& start, Position& end) {
