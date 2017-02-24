@@ -762,6 +762,13 @@ if (aom_config("CONFIG_CDEF") eq "yes") {
   specialize qw/od_filter_dering_direction_8x8 sse4_1/;
 }
 
+# PVQ Functions
+
+if (aom_config("CONFIG_PVQ") eq "yes") {
+  add_proto qw/double pvq_search_rdo_double/, "const int16_t *xcoeff, int n, int k, int *ypulse, double g2, double pvq_norm_lambda, int prev_k";
+  specialize qw/pvq_search_rdo_double sse4_1/;
+}
+
 # WARPED_MOTION / GLOBAL_MOTION functions
 
 if ((aom_config("CONFIG_WARPED_MOTION") eq "yes") ||

@@ -82,7 +82,7 @@ static void od_fill_dynamic_rsqrt_table(double *table, const int table_size,
  *                          reuse for the search (or 0 for a new search)
  * @return                  cosine distance between x and y (between 0 and 1)
  */
-static double pvq_search_rdo_double(const od_val16 *xcoeff, int n, int k,
+double pvq_search_rdo_double_c(const od_val16 *xcoeff, int n, int k,
  od_coeff *ypulse, double g2, double pvq_norm_lambda, int prev_k) {
   int i, j;
   double xy;
@@ -325,7 +325,7 @@ static int pvq_theta(od_coeff *out, const od_coeff *x0, const od_coeff *r0,
  const int16_t *qm_inv, double pvq_norm_lambda, int speed) {
   od_val32 g;
   od_val32 gr;
-  od_coeff y_tmp[MAXN];
+  od_coeff y_tmp[MAXN + 3];
   int i;
   /* Number of pulses. */
   int k;

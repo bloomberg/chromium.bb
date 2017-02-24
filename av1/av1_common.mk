@@ -120,6 +120,8 @@ AV1_COMMON_SRCS-yes += common/generic_code.h
 AV1_COMMON_SRCS-yes += common/pvq_state.c
 AV1_COMMON_SRCS-yes += common/pvq_state.h
 AV1_COMMON_SRCS-yes += common/laplace_tables.c
+AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/pvq_sse4.c
+AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/pvq_sse4.h
 endif
 
 ifneq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
