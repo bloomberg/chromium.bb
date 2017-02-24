@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_IMPL_H_
-#define ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_IMPL_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_H_
+#define ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_H_
 
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_service_client.h"
@@ -38,4 +38,4 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_IMPL_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_H_

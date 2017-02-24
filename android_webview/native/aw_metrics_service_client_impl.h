@@ -79,4 +79,4 @@ bool RegisterAwMetricsServiceClient(JNIEnv* env);
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_NATIVE_AW_METRICS_SWITCH_
+#endif  // ANDROID_WEBVIEW_NATIVE_AW_METRICS_SERVICE_CLIENT_IMPL_
