@@ -81,8 +81,8 @@ SearchResultView::SearchResultView(SearchResultListView* list_view)
       badge_icon_(new views::ImageView),
       actions_view_(new SearchResultActionsView(this)),
       progress_bar_(new views::ProgressBar) {
-  icon_->set_interactive(false);
-  badge_icon_->set_interactive(false);
+  icon_->set_can_process_events_within_subtree(false);
+  badge_icon_->set_can_process_events_within_subtree(false);
 
   AddChildView(icon_);
   AddChildView(badge_icon_);

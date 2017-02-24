@@ -28,7 +28,7 @@ TileItemView::TileItemView()
       title_(new views::Label),
       selected_(false) {
   // Prevent the icon view from interfering with our mouse events.
-  icon_->set_interactive(false);
+  icon_->set_can_process_events_within_subtree(false);
   icon_->SetVerticalAlignment(views::ImageView::LEADING);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

@@ -152,7 +152,7 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
   }
 
   views::ImageView* chevron = new views::ImageView();
-  chevron->set_interactive(false);
+  chevron->set_can_process_events_within_subtree(false);
   chevron->SetImage(gfx::CreateVectorIcon(
       views::kSubmenuArrowIcon,
       color_utils::DeriveDefaultIconColor(name_label->enabled_color())));

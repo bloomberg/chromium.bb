@@ -135,7 +135,7 @@ std::unique_ptr<views::ImageView> CreateCardIconView(
     const std::string& card_type) {
   std::unique_ptr<views::ImageView> card_icon_view =
       base::MakeUnique<views::ImageView>();
-  card_icon_view->set_interactive(false);
+  card_icon_view->set_can_process_events_within_subtree(false);
   card_icon_view->SetImage(
       ResourceBundle::GetSharedInstance()
           .GetImageNamed(autofill::data_util::GetPaymentRequestData(card_type)

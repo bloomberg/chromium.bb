@@ -146,7 +146,7 @@ class ShelfButton::BarView : public views::ImageView,
         animation_end_time_(base::TimeTicks()),
         animating_(false) {
     // Make sure the events reach the parent view for handling.
-    set_interactive(false);
+    set_can_process_events_within_subtree(false);
   }
 
   ~BarView() override {
@@ -276,7 +276,7 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
   icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
   icon_view_->SetVerticalAlignment(views::ImageView::LEADING);
   // Do not make this interactive, so that events are sent to ShelfView.
-  icon_view_->set_interactive(false);
+  icon_view_->set_can_process_events_within_subtree(false);
 
   AddChildView(bar_);
   AddChildView(icon_view_);

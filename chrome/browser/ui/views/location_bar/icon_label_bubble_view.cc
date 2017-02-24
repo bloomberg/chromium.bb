@@ -30,7 +30,7 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
       label_(new views::Label(base::string16(), font_list)) {
   // Disable separate hit testing for |image_|.  This prevents views treating
   // |image_| as a separate mouse hover region from |this|.
-  image_->set_interactive(false);
+  image_->set_can_process_events_within_subtree(false);
   image_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(LocationBarView::kIconInteriorPadding)));
   AddChildView(image_);

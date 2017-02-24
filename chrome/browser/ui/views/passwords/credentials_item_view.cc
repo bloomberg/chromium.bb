@@ -76,7 +76,7 @@ CredentialsItemView::CredentialsItemView(
   // Create an image-view for the avatar. Make sure it ignores events so that
   // the parent can receive the events instead.
   image_view_ = new CircularImageView;
-  image_view_->set_interactive(false);
+  image_view_->set_can_process_events_within_subtree(false);
   gfx::Image image = ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE);
   DCHECK(image.Width() >= kAvatarImageSize &&

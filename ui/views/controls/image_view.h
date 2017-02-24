@@ -6,7 +6,6 @@
 #define UI_VIEWS_CONTROLS_IMAGE_VIEW_H_
 
 #include "base/macros.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
 
@@ -15,8 +14,6 @@ class Canvas;
 }
 
 namespace views {
-
-class Painter;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -75,20 +72,13 @@ class VIEWS_EXPORT ImageView : public View {
   void SetTooltipText(const base::string16& tooltip);
   base::string16 GetTooltipText() const;
 
-  void set_interactive(bool interactive) { interactive_ = interactive; }
-
-  void SetFocusPainter(std::unique_ptr<Painter> focus_painter);
-
   // Overriden from View:
   gfx::Size GetPreferredSize() const override;
-  void OnFocus() override;
-  void OnBlur() override;
   void OnPaint(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
-  bool CanProcessEventsWithinSubtree() const override;
 
  private:
   void OnPaintImage(gfx::Canvas* canvas);
@@ -123,17 +113,12 @@ class VIEWS_EXPORT ImageView : public View {
   // The current tooltip text.
   base::string16 tooltip_text_;
 
-  // A flag controlling hit test handling for interactivity.
-  bool interactive_;
-
   // Scale last painted at.
   float last_paint_scale_;
 
   // Address of bytes we last painted. This is used only for comparison, so its
   // safe to cache.
   void* last_painted_bitmap_pixels_;
-
-  std::unique_ptr<views::Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageView);
 };

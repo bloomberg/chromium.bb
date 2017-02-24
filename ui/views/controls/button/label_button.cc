@@ -104,7 +104,7 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
   ink_drop_container_->SetVisible(false);
 
   AddChildView(image_);
-  image_->set_interactive(false);
+  image_->set_can_process_events_within_subtree(false);
 
   AddChildView(label_);
   label_->SetFontList(cached_normal_font_list_);

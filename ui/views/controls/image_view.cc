@@ -12,7 +12,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/painter.h"
 
 namespace views {
 
@@ -35,14 +34,10 @@ ImageView::ImageView()
     : image_size_set_(false),
       horiz_alignment_(CENTER),
       vert_alignment_(CENTER),
-      interactive_(true),
       last_paint_scale_(0.f),
-      last_painted_bitmap_pixels_(NULL),
-      focus_painter_(Painter::CreateDashedFocusPainter()) {
-}
+      last_painted_bitmap_pixels_(NULL) {}
 
-ImageView::~ImageView() {
-}
+ImageView::~ImageView() {}
 
 void ImageView::SetImage(const gfx::ImageSkia& img) {
   if (IsImageEqual(img))
@@ -82,10 +77,6 @@ gfx::Rect ImageView::GetImageBounds() const {
 
 void ImageView::ResetImageSize() {
   image_size_set_ = false;
-}
-
-void ImageView::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
-  focus_painter_ = std::move(focus_painter);
 }
 
 gfx::Size ImageView::GetPreferredSize() const {
@@ -138,22 +129,9 @@ gfx::Point ImageView::ComputeImageOrigin(const gfx::Size& image_size) const {
   return gfx::Point(x, y);
 }
 
-void ImageView::OnFocus() {
-  View::OnFocus();
-  if (focus_painter_.get())
-    SchedulePaint();
-}
-
-void ImageView::OnBlur() {
-  View::OnBlur();
-  if (focus_painter_.get())
-    SchedulePaint();
-}
-
 void ImageView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
   OnPaintImage(canvas);
-  Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
 
 void ImageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -202,10 +180,6 @@ bool ImageView::GetTooltipText(const gfx::Point& p,
 
   *tooltip = GetTooltipText();
   return true;
-}
-
-bool ImageView::CanProcessEventsWithinSubtree() const {
-  return interactive_;
 }
 
 void ImageView::OnPaintImage(gfx::Canvas* canvas) {

@@ -19,7 +19,7 @@
 
 void BubbleIconView::Init() {
   AddChildView(image_);
-  image_->set_interactive(false);
+  image_->set_can_process_events_within_subtree(false);
   image_->EnableCanvasFlippingForRTLUI(true);
   SetInkDropMode(InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);

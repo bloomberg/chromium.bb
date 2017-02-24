@@ -101,7 +101,7 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item,
 
     std::unique_ptr<views::ImageView> checkmark =
         base::MakeUnique<views::ImageView>();
-    checkmark->set_interactive(false);
+    checkmark->set_can_process_events_within_subtree(false);
     checkmark->SetImage(
         gfx::CreateVectorIcon(views::kMenuCheckIcon, 0xFF609265));
     layout->AddView(checkmark.release());

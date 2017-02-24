@@ -87,7 +87,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   shadow_animator_.animation()->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   shadow_animator_.SetStartAndEndShadows(IconStartShadows(), IconEndShadows());
 
-  icon_->set_interactive(false);
+  icon_->set_can_process_events_within_subtree(false);
   icon_->SetVerticalAlignment(views::ImageView::LEADING);
 
   title_->SetBackgroundColor(0);
