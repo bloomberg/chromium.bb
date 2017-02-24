@@ -2768,6 +2768,7 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
     enumerator_.Release();
     processor_width_ = 0;
     processor_height_ = 0;
+    dx11_converter_color_space_ = gfx::ColorSpace();
 
     D3D11_VIDEO_PROCESSOR_CONTENT_DESC desc;
     desc.InputFrameFormat = D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE;
