@@ -1746,8 +1746,13 @@ void Range::updateSelectionIfAddedToSelection() {
   DCHECK(startContainer()->document() == ownerDocument());
   DCHECK(endContainer()->isConnected());
   DCHECK(endContainer()->document() == ownerDocument());
-  selection.setSelectedRange(EphemeralRange(this), VP_DEFAULT_AFFINITY);
+  bool didSet = selection.setSelectionDeprecated(SelectionInDOMTree::Builder()
+                                                     .collapse(startPosition())
+                                                     .extend(endPosition())
+                                                     .build());
   selection.cacheRangeOfDocument(this);
+  if (didSet)
+    selection.didSetSelectionDeprecated();
 }
 
 void Range::removeFromSelectionIfInDifferentRoot(Document& oldDocument) {

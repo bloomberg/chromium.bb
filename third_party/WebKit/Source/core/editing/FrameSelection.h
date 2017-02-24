@@ -148,6 +148,19 @@ class CORE_EXPORT FrameSelection final
   void selectAll();
   void clear();
 
+  // TODO(tkent): These two functions were added to fix crbug.com/695211 without
+  // changing focus behavior. Once we fix crbug.com/690272, we can remove these
+  // functions.
+  // setSelectionDeprecated() returns true if didSetSelectionDeprecated() should
+  // be called.
+  bool setSelectionDeprecated(const SelectionInDOMTree&,
+                              SetSelectionOptions = CloseTyping |
+                                                    ClearTypingStyle,
+                              TextGranularity = CharacterGranularity);
+  void didSetSelectionDeprecated(
+      SetSelectionOptions = CloseTyping | ClearTypingStyle,
+      CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded);
+
   // Call this after doing user-triggered selections to make it easy to delete
   // the frame you entirely selected.
   void selectFrameElementInParentIfFullySelected();

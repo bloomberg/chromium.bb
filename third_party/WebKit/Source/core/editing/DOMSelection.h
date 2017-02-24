@@ -108,6 +108,7 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
 
   bool isAvailable() const;
 
+  void updateFrameSelection(const SelectionInDOMTree&, Range*) const;
   // Convenience methods for accessors, does not check m_frame present.
   const VisibleSelection& visibleSelection() const;
   bool isBaseFirstInSelection() const;

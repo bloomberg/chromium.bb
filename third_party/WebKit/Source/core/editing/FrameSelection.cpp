@@ -186,6 +186,14 @@ void FrameSelection::setSelection(const SelectionInDOMTree& passedSelection,
                                   SetSelectionOptions options,
                                   CursorAlignOnScroll align,
                                   TextGranularity granularity) {
+  if (setSelectionDeprecated(passedSelection, options, granularity))
+    didSetSelectionDeprecated(options, align);
+}
+
+bool FrameSelection::setSelectionDeprecated(
+    const SelectionInDOMTree& passedSelection,
+    SetSelectionOptions options,
+    TextGranularity granularity) {
   DCHECK(isAvailable());
   passedSelection.assertValidFor(document());
 
@@ -211,7 +219,7 @@ void FrameSelection::setSelection(const SelectionInDOMTree& passedSelection,
   const SelectionInDOMTree oldSelectionInDOMTree =
       m_selectionEditor->selectionInDOMTree();
   if (oldSelectionInDOMTree == newSelection)
-    return;
+    return false;
   m_selectionEditor->setSelection(newSelection);
   scheduleVisualUpdateForPaintInvalidationIfNeeded();
 
@@ -223,7 +231,12 @@ void FrameSelection::setSelection(const SelectionInDOMTree& passedSelection,
   m_frame->editor().respondToChangedSelection(
       oldSelectionInDOMTree.computeStartPosition(), options);
   DCHECK_EQ(currentDocument, document());
+  return true;
+}
 
+void FrameSelection::didSetSelectionDeprecated(SetSelectionOptions options,
+                                               CursorAlignOnScroll align) {
+  const Document& currentDocument = document();
   if (!selectionInDOMTree().isNone() && !(options & DoNotSetFocus)) {
     setFocusedNodeIfNeeded();
     // |setFocusedNodeIfNeeded()| dispatches sync events "FocusOut" and

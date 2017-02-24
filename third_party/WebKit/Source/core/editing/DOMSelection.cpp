@@ -75,6 +75,17 @@ bool DOMSelection::isAvailable() const {
   return frame() && frame()->selection().isAvailable();
 }
 
+void DOMSelection::updateFrameSelection(const SelectionInDOMTree& selection,
+                                        Range* newCachedRange) const {
+  DCHECK(frame());
+  FrameSelection& frameSelection = frame()->selection();
+  // TODO(tkent): Specify FrameSelection::DoNotSetFocus. crbug.com/690272
+  bool didSet = frameSelection.setSelectionDeprecated(selection);
+  cacheRangeIfSelectionOfDocument(newCachedRange);
+  if (didSet)
+    frameSelection.didSetSelectionDeprecated();
+}
+
 const VisibleSelection& DOMSelection::visibleSelection() const {
   DCHECK(frame());
   return frame()->selection().computeVisibleSelectionInDOMTreeDeprecated();
@@ -254,12 +265,12 @@ void DOMSelection::collapse(Node* node,
     return;
 
   // 6. Set the context object's range to newRange.
-  frame()->selection().setSelection(
+  updateFrameSelection(
       SelectionInDOMTree::Builder()
           .collapse(Position(node, offset))
           .setIsDirectional(frame()->selection().isDirectional())
-          .build());
-  cacheRangeIfSelectionOfDocument(newRange);
+          .build(),
+      newRange);
 }
 
 // https://www.w3.org/TR/selection-api/#dom-selection-collapsetoend
@@ -283,8 +294,7 @@ void DOMSelection::collapseToEnd(ExceptionState& exceptionState) {
   // and then set the context object's range to the newly-created range.
   SelectionInDOMTree::Builder builder;
   builder.collapse(newRange->endPosition());
-  frame()->selection().setSelection(builder.build());
-  cacheRangeIfSelectionOfDocument(newRange);
+  updateFrameSelection(builder.build(), newRange);
 }
 
 // https://www.w3.org/TR/selection-api/#dom-selection-collapsetostart
@@ -308,8 +318,7 @@ void DOMSelection::collapseToStart(ExceptionState& exceptionState) {
   // and then set the context object's range to the newly-created range.
   SelectionInDOMTree::Builder builder;
   builder.collapse(newRange->startPosition());
-  frame()->selection().setSelection(builder.build());
-  cacheRangeIfSelectionOfDocument(newRange);
+  updateFrameSelection(builder.build(), newRange);
 }
 
 void DOMSelection::empty() {
@@ -360,12 +369,6 @@ void DOMSelection::setBaseAndExtent(Node* baseNode,
 
   Position basePosition(baseNode, baseOffset);
   Position extentPosition(extentNode, extentOffset);
-  frame()->selection().setSelection(
-      SelectionInDOMTree::Builder()
-          .setBaseAndExtentDeprecated(basePosition, extentPosition)
-          .setIsDirectional(true)
-          .build());
-
   Range* newRange = Range::create(baseNode->document());
   if (extentPosition.isNull()) {
     newRange->setStart(baseNode, baseOffset);
@@ -377,7 +380,12 @@ void DOMSelection::setBaseAndExtent(Node* baseNode,
     newRange->setStart(extentNode, extentOffset);
     newRange->setEnd(baseNode, baseOffset);
   }
-  cacheRangeIfSelectionOfDocument(newRange);
+  updateFrameSelection(
+      SelectionInDOMTree::Builder()
+          .setBaseAndExtentDeprecated(basePosition, extentPosition)
+          .setIsDirectional(true)
+          .build(),
+      newRange);
 }
 
 void DOMSelection::modify(const String& alterString,
@@ -509,8 +517,7 @@ void DOMSelection::extend(Node* node,
     builder.collapse(newFocus);
   else
     builder.collapse(oldAnchor).extend(newFocus);
-  frame()->selection().setSelection(builder.setIsDirectional(true).build());
-  cacheRangeIfSelectionOfDocument(newRange);
+  updateFrameSelection(builder.setIsDirectional(true).build(), newRange);
 }
 
 Range* DOMSelection::getRangeAt(unsigned index,
@@ -609,8 +616,11 @@ void DOMSelection::addRange(Range* newRange) {
   }
 
   if (rangeCount() == 0) {
-    selection.setSelectedRange(EphemeralRange(newRange), VP_DEFAULT_AFFINITY);
-    cacheRangeIfSelectionOfDocument(newRange);
+    updateFrameSelection(SelectionInDOMTree::Builder()
+                             .collapse(newRange->startPosition())
+                             .extend(newRange->endPosition())
+                             .build(),
+                         newRange);
     return;
   }
 
