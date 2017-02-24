@@ -15,9 +15,8 @@
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/ozone/public/input_controller.h"
@@ -87,8 +86,6 @@ std::string GetEventLogListOfOnePrefix(
 // analysis tools.
 void PackEventLog(system_logs::SystemLogsResponse* response,
                   std::unique_ptr<std::vector<base::FilePath>> log_paths) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   // Combine logs with a command line call that tars them up and uuencode the
   // result in one string. This is to be compatible with the X11 behavior.
   std::vector<std::pair<std::string, base::CommandLine>> commands;
@@ -128,8 +125,11 @@ void PackEventLog(system_logs::SystemLogsResponse* response,
   }
 
   // Cleanup these temporary log files.
-  BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(CleanupEventLog, base::Passed(&log_paths)));
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
+      base::Bind(CleanupEventLog, base::Passed(&log_paths)));
 }
 
 // Callback for handing the outcome of GetTouchEventLog().
@@ -148,8 +148,10 @@ void OnEventLogCollected(
                  base::Passed(&log_paths));
   const base::Closure callback_closure =
       base::Bind(callback, base::Owned(response.release()));
-  BrowserThread::PostBlockingPoolTaskAndReply(FROM_HERE, pack_closure,
-                                              callback_closure);
+  base::PostTaskWithTraitsAndReply(FROM_HERE,
+                                   base::TaskTraits().MayBlock().WithPriority(
+                                       base::TaskPriority::BACKGROUND),
+                                   pack_closure, callback_closure);
 }
 
 // Callback for handing the outcome of GetTouchDeviceStatus().
