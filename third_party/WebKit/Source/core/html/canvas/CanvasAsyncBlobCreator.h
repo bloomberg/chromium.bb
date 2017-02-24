@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CanvasAsyncBlobCreator_h
+#define CanvasAsyncBlobCreator_h
+
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
@@ -143,3 +146,5 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 };
 
 }  // namespace blink
+
+#endif  // CanvasAsyncBlobCreator_h
