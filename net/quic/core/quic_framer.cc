@@ -138,6 +138,7 @@ QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
       largest_packet_number_(0),
       last_path_id_(kInvalidPathId),
       last_serialized_connection_id_(0),
+      last_version_tag_(0),
       supported_versions_(supported_versions),
       decrypter_level_(ENCRYPTION_NONE),
       alternative_decrypter_level_(ENCRYPTION_NONE),
@@ -696,7 +697,9 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
   if (header.public_header.version_flag) {
     DCHECK_EQ(Perspective::IS_CLIENT, perspective_);
     QuicTag tag = QuicVersionToQuicTag(quic_version_);
-    writer->WriteUInt32(tag);
+    if (!writer->WriteUInt32(tag)) {
+      return false;
+    }
     QUIC_DVLOG(1) << ENDPOINT << "version = " << quic_version_ << ", tag = '"
                   << QuicTagToString(tag) << "'";
   }
