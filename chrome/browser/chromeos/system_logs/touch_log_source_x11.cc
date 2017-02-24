@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/process/launch.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -61,9 +62,11 @@ void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(!callback.is_null());
 
   SystemLogsResponse* response = new SystemLogsResponse;
-  BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(&GetTouchLogsX11, response),
-      base::Bind(callback, base::Owned(response)));
+  base::PostTaskWithTraitsAndReply(FROM_HERE,
+                                   base::TaskTraits().MayBlock().WithPriority(
+                                       base::TaskPriority::BACKGROUND),
+                                   base::Bind(&GetTouchLogsX11, response),
+                                   base::Bind(callback, base::Owned(response)));
 }
 
 }  // namespace system_logs
