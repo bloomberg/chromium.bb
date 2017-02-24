@@ -33,6 +33,10 @@ double PlatformSensor::GetMaximumSupportedFrequency() {
   return GetDefaultConfiguration().frequency();
 }
 
+double PlatformSensor::GetMinimumSupportedFrequency() {
+  return 1.0 / (60 * 60);
+}
+
 bool PlatformSensor::StartListening(Client* client,
                                     const PlatformSensorConfiguration& config) {
   DCHECK(clients_.HasObserver(client));

@@ -5,11 +5,6 @@
 // is called so that the value read in JavaScript are the values expected (the ones
 // sent by |updateReading|).
 function runGenericSensorTests(sensorType, updateReading, verifyReading) {
-  test(() => assert_throws(
-    new RangeError(),
-    () => new sensorType({frequency: -60})),
-    'Test that negative frequency causes exception from constructor.');
-
   sensor_test(sensor => {
     sensor.mockSensorProvider.setGetSensorShouldFail(true);
     let sensorObject = new sensorType;
@@ -95,6 +90,30 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
     return testPromise;
   }, 'Test that frequency is capped to the maximum supported from frequency.');
+
+  sensor_test(sensor => {
+    let minSupportedFrequency = 2;
+    sensor.mockSensorProvider.setMinimumSupportedFrequency(minSupportedFrequency);
+    let sensorObject = new sensorType({frequency: -1});
+    sensorObject.start();
+    let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+        .then(mockSensor => { return mockSensor.addConfigurationCalled(); })
+        .then(mockSensor => {
+          return new Promise((resolve, reject) => {
+            let wrapper = new CallbackWrapper(() => {
+              let configuration = mockSensor.active_sensor_configurations_[0];
+              assert_equals(configuration.frequency, minSupportedFrequency);
+              sensorObject.stop();
+              assert_equals(sensorObject.state, 'idle');
+              resolve(mockSensor);
+           }, reject);
+           sensorObject.onactivate = wrapper.callback;
+           sensorObject.onerror = reject;
+          });
+        })
+        .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+    return testPromise;
+  }, 'Test that frequency is limited to the minimum supported from frequency.');
 
   sensor_test(sensor => {
     let sensorObject = new sensorType({frequency: 60});

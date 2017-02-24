@@ -48,6 +48,10 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensor
   // The default implementation returns default frequency.
   virtual double GetMaximumSupportedFrequency();
 
+  // Can be overriden to return the sensor minimum sampling frequency.
+  // The default implementation returns '1.0 / (60 * 60)', i.e. once per hour.
+  virtual double GetMinimumSupportedFrequency();
+
   mojom::SensorType GetType() const;
 
   bool StartListening(Client* client,

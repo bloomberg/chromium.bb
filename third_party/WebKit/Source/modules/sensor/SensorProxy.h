@@ -81,7 +81,9 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
 
   const device::mojom::blink::SensorConfiguration* defaultConfig() const;
 
-  double maximumFrequency() const { return m_maximumFrequency; }
+  const std::pair<double, double>& frequencyLimits() const {
+    return m_frequencyLimits;
+  }
 
   Document* document() const;
   const WTF::Vector<double>& frequenciesUsed() const {
@@ -138,7 +140,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   mojo::ScopedSharedBufferMapping m_sharedBuffer;
   bool m_suspended;
   device::SensorReading m_reading;
-  double m_maximumFrequency;
+  std::pair<double, double> m_frequencyLimits;
 
   Member<SensorReadingUpdater> m_readingUpdater;
   WTF::Vector<double> m_frequenciesUsed;

@@ -95,11 +95,13 @@ void SensorProviderImpl::SensorCreated(
   init_params->default_configuration = sensor->GetDefaultConfiguration();
 
   double maximum_frequency = sensor->GetMaximumSupportedFrequency();
-  DCHECK(maximum_frequency > 0);
+  DCHECK_GT(maximum_frequency, 0.0);
   if (maximum_frequency > mojom::SensorConfiguration::kMaxAllowedFrequency)
     maximum_frequency = mojom::SensorConfiguration::kMaxAllowedFrequency;
 
   init_params->maximum_frequency = maximum_frequency;
+  init_params->minimum_frequency = sensor->GetMinimumSupportedFrequency();
+  DCHECK_GT(init_params->minimum_frequency, 0.0);
 
   NotifySensorCreated(std::move(init_params), sensor_impl->GetClient(),
                       callback);

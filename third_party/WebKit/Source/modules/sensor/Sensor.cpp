@@ -45,11 +45,6 @@ Sensor::Sensor(ExecutionContext* executionContext,
   // Check the given frequency value.
   if (m_sensorOptions.hasFrequency()) {
     double frequency = m_sensorOptions.frequency();
-    if (frequency <= 0.0) {
-      exceptionState.throwRangeError("Frequency must be positive.");
-      return;
-    }
-
     if (frequency > SensorConfiguration::kMaxAllowedFrequency) {
       m_sensorOptions.setFrequency(SensorConfiguration::kMaxAllowedFrequency);
       ConsoleMessage* consoleMessage = ConsoleMessage::create(
@@ -151,7 +146,8 @@ auto Sensor::createSensorConfig() -> SensorConfigurationPtr {
   auto result = SensorConfiguration::New();
 
   double defaultFrequency = m_sensorProxy->defaultConfig()->frequency;
-  double maximumFrequency = m_sensorProxy->maximumFrequency();
+  double minimumFrequency = m_sensorProxy->frequencyLimits().first;
+  double maximumFrequency = m_sensorProxy->frequencyLimits().second;
 
   double frequency = m_sensorOptions.hasFrequency()
                          ? m_sensorOptions.frequency()
@@ -159,6 +155,8 @@ auto Sensor::createSensorConfig() -> SensorConfigurationPtr {
 
   if (frequency > maximumFrequency)
     frequency = maximumFrequency;
+  if (frequency < minimumFrequency)
+    frequency = minimumFrequency;
 
   result->frequency = frequency;
   return result;
@@ -248,7 +246,8 @@ void Sensor::startListening() {
     m_configuration = createSensorConfig();
     DCHECK(m_configuration);
     DCHECK(m_configuration->frequency > 0 &&
-           m_configuration->frequency <= m_sensorProxy->maximumFrequency());
+           m_configuration->frequency <=
+               SensorConfiguration::kMaxAllowedFrequency);
   }
 
   auto startCallback =

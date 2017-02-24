@@ -249,6 +249,7 @@ function sensor_mocks(mojo) {
         this.resolve_func_ = null;
         this.is_continuous_ = false;
         this.max_frequency_ = 60;
+        this.min_frequency_ = 1;
         this.binding_ = new bindings.Binding(sensor_provider.SensorProvider,
                                              this);
       }
@@ -288,6 +289,7 @@ function sensor_mocks(mojo) {
                   buffer_offset: offset,
                   mode: reporting_mode,
                   default_configuration: default_config,
+                  minimum_frequency: this.min_frequency_,
                   maximum_frequency: this.max_frequency_});
 
         if (this.resolve_func_ !== null) {
@@ -319,6 +321,7 @@ function sensor_mocks(mojo) {
         this.get_sensor_should_fail_ = false;
         this.resolve_func_ = null;
         this.max_frequency_ = 60;
+        this.min_frequency_ = 1;
         this.is_continuous_ = false;
         this.binding_.close();
       }
@@ -348,6 +351,11 @@ function sensor_mocks(mojo) {
       // Sets the maximum frequency for a concrete sensor.
       setMaximumSupportedFrequency(frequency) {
           this.max_frequency_ = frequency;
+      }
+
+      // Sets the minimum frequency for a concrete sensor.
+      setMinimumSupportedFrequency(frequency) {
+          this.min_frequency_ = frequency;
       }
     }
 
