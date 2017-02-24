@@ -562,12 +562,13 @@ VALID_BUILD_TYPES = (
 
 # The default list of pre-cq configs to use.
 PRE_CQ_DEFAULT_CONFIGS = [
-    'daisy_spring-no-vmtest-pre-cq',  # kernel 3.8 coverage
-    'lumpy-no-vmtest-pre-cq',         # kernel 3.8 coverage
-    'rambi-pre-cq',                   # vmtest coverage
-    'samus-no-vmtest-pre-cq',         # kernel 3.14 coverage
-    'whirlwind-no-vmtest-pre-cq',     # brillo coverage
-    'x86-alex-no-vmtest-pre-cq',      # x86 coverage
+    'caroline-pre-cq',                # skylake      kernel 3.18      vmtest
+    'daisy_spring-no-vmtest-pre-cq',  # arm          kernel 3.8
+    'lumpy-no-vmtest-pre-cq',         # sandybridge  kernel 3.8
+    'rambi-no-vmtest-pre-cq',         # baytrail     kernel 4.4
+    'samus-no-vmtest-pre-cq',         # broadwell    kernel 3.14
+    'whirlwind-no-vmtest-pre-cq',     # brillo
+    'x86-alex-no-vmtest-pre-cq',      # x86          kernel 3.8
 ]
 
 # The name of the pre-cq launching config.
