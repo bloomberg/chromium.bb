@@ -38,6 +38,15 @@
 #include "base/numerics/safe_math.h"
 #endif  // defined(OS_MACOSX)
 
+#if defined(OS_WIN)
+#include <psapi.h>
+#include <tchar.h>
+#include <windows.h>
+
+#include <base/strings/sys_string_conversions.h>
+#include <base/win/win_util.h>
+#endif  // defined(OS_WIN)
+
 namespace tracing {
 
 namespace {
@@ -232,6 +241,37 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessMemoryMaps(
   return res;
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+bool ProcessMetricsMemoryDumpProvider::DumpProcessMemoryMaps(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  std::vector<HMODULE> modules;
+  if (!base::win::GetLoadedModulesSnapshot(::GetCurrentProcess(), &modules))
+    return false;
+
+  // Query the base address for each module, and attach it to the dump.
+  for (size_t i = 0; i < modules.size(); ++i) {
+    wchar_t module_name[MAX_PATH];
+    if (!::GetModuleFileName(modules[i], module_name, MAX_PATH))
+      continue;
+
+    MODULEINFO module_info;
+    if (!::GetModuleInformation(::GetCurrentProcess(), modules[i],
+                                &module_info, sizeof(MODULEINFO))) {
+      continue;
+    }
+    base::trace_event::ProcessMemoryMaps::VMRegion region;
+    region.size_in_bytes = module_info.SizeOfImage;
+    region.mapped_file = base::SysWideToNativeMB(module_name);
+    region.start_address = reinterpret_cast<uint64_t>(module_info.lpBaseOfDll);
+    pmd->process_mmaps()->AddVMRegion(region);
+  }
+  if (!pmd->process_mmaps()->vm_regions().empty())
+    pmd->set_has_process_mmaps();
+  return true;
+}
+#endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
 
@@ -547,11 +587,9 @@ bool ProcessMetricsMemoryDumpProvider::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
   bool res = DumpProcessTotals(args, pmd);
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX)
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED)
     res &= DumpProcessMemoryMaps(args, pmd);
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX)
   return res;
 }
 

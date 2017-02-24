@@ -22,6 +22,10 @@
 #include <mach-o/dyld.h>
 #endif
 
+#if defined(OS_WIN)
+#include <base/strings/sys_string_conversions.h>
+#endif
+
 namespace tracing {
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -273,6 +277,56 @@ TEST(ProcessMetricsMemoryDumpProviderTest, TestPollFastMemoryTotal) {
   mdp.SuspendFastMemoryPolling();
 #endif
 }
+
+#if defined(OS_WIN)
+
+void DummyFunction() {}
+
+TEST(ProcessMetricsMemoryDumpProviderTest, TestWinModuleReading) {
+  using VMRegion = base::trace_event::ProcessMemoryMaps::VMRegion;
+
+  ProcessMetricsMemoryDumpProvider mdp(base::kNullProcessId);
+  base::trace_event::MemoryDumpArgs args;
+  base::trace_event::ProcessMemoryDump dump(nullptr, args);
+  ASSERT_TRUE(mdp.DumpProcessMemoryMaps(args, &dump));
+  ASSERT_TRUE(dump.has_process_mmaps());
+
+  wchar_t module_name[MAX_PATH];
+  DWORD result = GetModuleFileName(nullptr, module_name, MAX_PATH);
+  ASSERT_TRUE(result);
+  std::string executable_name = base::SysWideToNativeMB(module_name);
+
+  HMODULE module_containing_dummy = nullptr;
+  uintptr_t dummy_function_address =
+      reinterpret_cast<uintptr_t>(&DummyFunction);
+  result = GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                             reinterpret_cast<LPCWSTR>(dummy_function_address),
+                             &module_containing_dummy);
+  ASSERT_TRUE(result);
+  result = GetModuleFileName(nullptr, module_name, MAX_PATH);
+  ASSERT_TRUE(result);
+  std::string module_containing_dummy_name =
+      base::SysWideToNativeMB(module_name);
+
+  bool found_executable = false;
+  bool found_region_with_dummy = false;
+  for (const VMRegion& region : dump.process_mmaps()->vm_regions()) {
+    EXPECT_NE(0u, region.start_address);
+    EXPECT_NE(0u, region.size_in_bytes);
+
+    if (region.mapped_file.find(executable_name) != std::string::npos)
+      found_executable = true;
+
+    if (dummy_function_address >= region.start_address &&
+        dummy_function_address < region.start_address + region.size_in_bytes) {
+      found_region_with_dummy = true;
+      EXPECT_EQ(module_containing_dummy_name, region.mapped_file);
+    }
+  }
+  EXPECT_TRUE(found_executable);
+  EXPECT_TRUE(found_region_with_dummy);
+}
+#endif
 
 #if defined(OS_MACOSX)
 TEST(ProcessMetricsMemoryDumpProviderTest, TestMachOReading) {
