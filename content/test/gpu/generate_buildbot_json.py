@@ -591,6 +591,17 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'linux',
     },
+    'Linux GPU TSAN Release': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Ubuntu'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'linux',
+    },
     'Android Release (Nexus 5)': {
       'swarming_dimensions': [
         {
