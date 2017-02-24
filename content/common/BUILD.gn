@@ -405,7 +405,6 @@ source_set("common") {
     "//third_party/icu",
     "//third_party/libjingle",
     "//third_party/webrtc/base:rtc_base",
-    "//third_party/webrtc/base:rtc_task_runner",
     "//ui/accessibility",
     "//ui/base",
     "//ui/base/ime",

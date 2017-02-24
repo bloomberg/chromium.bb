@@ -36,7 +36,6 @@ source_set("bridge") {
   public_deps = [
     "//remoting/protocol",
     "//third_party/webrtc/base:rtc_base",
-    "//third_party/webrtc/base:rtc_task_runner",
     "//third_party/webrtc/modules/desktop_capture:primitives",
   ]
 

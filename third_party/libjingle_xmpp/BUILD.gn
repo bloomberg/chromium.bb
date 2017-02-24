@@ -12,6 +12,17 @@ group("libjingle_xmpp") {
   ]
 }
 
+rtc_static_library("rtc_task_runner") {
+  sources = [
+    "task_runner/task.cc",
+    "task_runner/task.h",
+    "task_runner/taskparent.cc",
+    "task_runner/taskparent.h",
+    "task_runner/taskrunner.cc",
+    "task_runner/taskrunner.h",
+  ]
+}
+
 rtc_static_library("rtc_xmllite") {
   sources = [
     "xmllite/qname.cc",
@@ -32,7 +43,6 @@ rtc_static_library("rtc_xmllite") {
 
   deps = [
     "//third_party/webrtc/base:rtc_base",
-    "//third_party/webrtc/base:rtc_task_runner",
   ]
   public_deps = [
     "//third_party/expat",
@@ -83,9 +93,9 @@ rtc_static_library("rtc_xmpp") {
   deps = [
     ":rtc_xmllite",
     "//third_party/webrtc/base:rtc_base",
-    "//third_party/webrtc/base:rtc_task_runner",
   ]
   public_deps = [
+    ":rtc_task_runner",
     "//third_party/expat",
   ]
   configs += [ ":rtc_xmpp_warnings_config" ]
@@ -120,6 +130,7 @@ rtc_test("libjingle_xmpp_unittests") {
 
   deps = [
     ":libjingle_xmpp",
+    ":rtc_task_runner",
 
     # TODO(kjellander): Refactor/remove this dependency. It is needed by
     # third_party/webrtc_overrides/webrtc/base/win32socketinit.cc.
@@ -129,6 +140,7 @@ rtc_test("libjingle_xmpp_unittests") {
 
   sources = [
     "run_all_unittests.cc",
+    "task_runner/task_unittest.cc",
     "xmllite/qname_unittest.cc",
     "xmllite/xmlbuilder_unittest.cc",
     "xmllite/xmlelement_unittest.cc",

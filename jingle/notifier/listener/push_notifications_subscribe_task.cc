@@ -10,12 +10,12 @@
 #include "base/logging.h"
 #include "jingle/notifier/listener/notification_constants.h"
 #include "jingle/notifier/listener/xml_element_util.h"
+#include "third_party/libjingle_xmpp/task_runner/task.h"
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppclient.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "webrtc/base/task.h"
 
 namespace notifier {
 

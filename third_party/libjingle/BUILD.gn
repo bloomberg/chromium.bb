@@ -43,8 +43,8 @@ static_library("libjingle") {
     # TODO(kjellander): Start cleaning up this target as soon as
     # https://codereview.chromium.org/2022833002/ is landed. The target should
     # be removed entirely if possible.
+    "//third_party/libjingle_xmpp:rtc_task_runner",
     "//third_party/webrtc/base:rtc_base",
-    "//third_party/webrtc/base:rtc_task_runner",
   ]
   deps = [
     "//third_party/webrtc/p2p:rtc_p2p",

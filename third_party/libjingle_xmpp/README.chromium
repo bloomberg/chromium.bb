@@ -11,10 +11,14 @@ XMPP (Extensible Messaging and Presence Protocol) is a communications protocol
 for messaging based on XML. xmllite is a minimalistic library for parsing and
 generating XML. The source for these libraries originates from the libjingle
 project, which was merged into the WebRTC codebase where it received minor
-updates. As time passed, the code was no longer used in WebRTC but is still used
-in Chromium. Only the parts that are used in Chromium are added here.
+updates. The code in the task_runner subdirectory used to live in
+third_party/webrtc/base, and it is a dependency for these libraries and
+Chromium's jingle component. As time passed, the code was no longer used in
+WebRTC but is still used in Chromium. Only the parts that are used in Chromium
+are added here.
 
 Local Modifications:
-* Include paths in third_party/libjingle_xmpp/xmllite and
-  third_party/libjingle_xmpp/xmpp are updated to reflect the new
-  absolute paths to their own headers.
+* Include paths in third_party/libjingle_xmpp/xmllite,
+  third_party/libjingle_xmpp/xmpp, and third_party/libjingle_xmpp/task_runner
+  are updated to reflect the new absolute paths to their own and webrtc's
+  headers.

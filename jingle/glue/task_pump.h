@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "third_party/webrtc/base/taskrunner.h"
+#include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
 
 namespace jingle_glue {
 

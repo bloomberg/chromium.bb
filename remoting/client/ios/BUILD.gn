@@ -46,7 +46,6 @@ source_set("ios_core") {
 
   public_deps = [
     "//third_party/webrtc/base:rtc_base",
-    "//third_party/webrtc/base:rtc_task_runner",
     "//third_party/webrtc/modules/desktop_capture:primitives",
   ]
 

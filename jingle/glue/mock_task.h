@@ -8,7 +8,7 @@
 #define JINGLE_GLUE_MOCK_TASK_H_
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/webrtc/base/task.h"
+#include "third_party/libjingle_xmpp/task_runner/task.h"
 
 namespace jingle_glue {
 
