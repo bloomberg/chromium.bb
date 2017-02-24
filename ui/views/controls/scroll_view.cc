@@ -181,7 +181,7 @@ ScrollView::~ScrollView() {
 
 // static
 ScrollView* ScrollView::CreateScrollViewWithBorder() {
-  auto scroll_view = new ScrollView();
+  auto* scroll_view = new ScrollView();
   scroll_view->AddBorder();
   return scroll_view;
 }
@@ -193,7 +193,7 @@ ScrollView* ScrollView::GetScrollViewForContents(View* contents) {
   if (!grandparent || grandparent->GetClassName() != ScrollView::kViewClassName)
     return nullptr;
 
-  auto scroll_view = static_cast<ScrollView*>(grandparent);
+  auto* scroll_view = static_cast<ScrollView*>(grandparent);
   DCHECK_EQ(contents, scroll_view->contents());
   return scroll_view;
 }
