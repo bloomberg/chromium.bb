@@ -1793,6 +1793,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   const GURL currentURL([self currentURL]);
   [self didStartLoadingURL:currentURL updateHistory:loadSuccess];
   _loadPhase = web::PAGE_LOADED;
+  if (loadSuccess) {
+    _webStateImpl->OnNavigationCommitted(currentURL);
+  } else {
+    _webStateImpl->OnErrorPageNavigation(currentURL);
+  }
 
   // Perform post-load-finished updates.
   [self didFinishWithURL:currentURL loadSuccess:loadSuccess];
@@ -4039,6 +4044,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)didUpdateHistoryStateWithPageURL:(const GURL&)url {
+  _webStateImpl->OnSamePageNavigation(url);
   [_delegate webDidUpdateHistoryStateWithPageURL:url];
 }
 
@@ -4897,7 +4903,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // A fast back/forward within the same origin does not call
     // |didCommitNavigation:|, so signal page change explicitly.
     DCHECK_EQ(_documentURL.GetOrigin(), webViewURL.GetOrigin());
+    BOOL isSameDocumentNavigation =
+        [self isKVOChangePotentialSameDocumentNavigationToURL:webViewURL];
     [self setDocumentURL:webViewURL];
+    if (isSameDocumentNavigation) {
+      _webStateImpl->OnSamePageNavigation(webViewURL);
+    } else {
+      _webStateImpl->OnNavigationCommitted(webViewURL);
+    }
     [self webPageChanged];
   }
 
@@ -5004,7 +5017,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (BOOL)isKVOChangePotentialSameDocumentNavigationToURL:(const GURL&)newURL {
-  DCHECK([_webView isLoading]);
   // If the origin changes, it can't be same-document.
   if (_documentURL.GetOrigin().is_empty() ||
       _documentURL.GetOrigin() != newURL.GetOrigin()) {
@@ -5052,6 +5064,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   if (!_changingHistoryState) {
     [self didStartLoadingURL:_documentURL updateHistory:YES];
+    _webStateImpl->OnSamePageNavigation(newURL);
     [self updateSSLStatusForCurrentNavigationItem];
     [self didFinishNavigation];
   }

@@ -47,16 +47,14 @@ class GURL;
 // Called when the page URL has changed. Phase will be PAGE_LOADING. Can be
 // followed by webDidFinishWithURL or webWillStartLoadingURL.
 // |updateHistory| is YES if the URL should be added to the history DB.
-// TODO(stuartmorgan): Remove or rename the history param; the history DB
-// isn't a web concept, so this shoud be expressed differently.
+// TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
 - (void)webDidStartLoadingURL:(const GURL&)url
           shouldUpdateHistory:(BOOL)updateHistory;
 // Called when the page load was cancelled by page activity (before a success /
 // failure state is known). Phase will be PAGE_LOADED.
 - (void)webLoadCancelled:(const GURL&)url;
 // Called when a page updates its history stack using pushState or replaceState.
-// TODO(stuartmorgan): Generalize this to cover any change of URL without page
-// document change.
+// TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
 - (void)webDidUpdateHistoryStateWithPageURL:(const GURL&)pageUrl;
 // Called when a placeholder image should be displayed instead of the WebView.
 - (void)webController:(CRWWebController*)webController
@@ -80,6 +78,7 @@ class GURL;
             (const web::NavigationManager::WebLoadParams&)params
                         wasInitialNavigation:(BOOL)initialNavigation;
 // Called from finishHistoryNavigationFromEntry.
+// TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
 - (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry;
 // ---------------------------------------------------------------------
 

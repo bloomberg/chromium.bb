@@ -18,6 +18,7 @@ namespace web {
 
 struct Credential;
 struct FaviconURL;
+class NavigationContext;
 struct LoadCommittedDetails;
 class WebState;
 class TestWebState;
@@ -48,6 +49,25 @@ class WebStateObserver {
   virtual void NavigationItemCommitted(
       const LoadCommittedDetails& load_details) {}
 
+  // Called when a navigation finished in the WebState. This happens when a
+  // navigation is committed, aborted or replaced by a new one. To know if the
+  // navigation has resulted in an error page, use
+  // NavigationContext::IsErrorPage().
+  //
+  // If this is called because the navigation committed, then the document load
+  // will still be ongoing in the WebState returned by |navigation_context|.
+  // Use the document loads events such as DidStopLoading
+  // and related methods to listen for continued events from this
+  // WebState.
+  //
+  // This is also fired by same-page navigations, such as fragment navigations
+  // or pushState/replaceState, which will not result in a document change. To
+  // filter these out, use NavigationContext::IsSamePage().
+  //
+  // |navigation_context| will be destroyed at the end of this call, so do not
+  // keep a reference to it afterward.
+  virtual void DidFinishNavigation(NavigationContext* navigation_context) {}
+
   // Called when the current page has started loading.
   virtual void DidStartLoading() {}
 
@@ -61,9 +81,11 @@ class WebStateObserver {
   virtual void InterstitialDismissed() {}
 
   // Called on URL hash change events.
+  // TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
   virtual void UrlHashChanged() {}
 
   // Called on history state change events.
+  // TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
   virtual void HistoryStateChanged() {}
 
   // Notifies the observer that the page has made some progress loading.

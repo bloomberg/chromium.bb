@@ -7,5 +7,6 @@
 namespace web {
 
 const char kTestWebUIScheme[] = "testwebui";
+const char kTestNativeContentScheme[] = "testnativecontent";
 
 }  // namespace web

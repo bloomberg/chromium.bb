@@ -151,6 +151,7 @@ source_set("web_arc") {
     "public/web_state/js/crw_js_injection_evaluator.h",
     "public/web_state/js/crw_js_injection_manager.h",
     "public/web_state/js/crw_js_injection_receiver.h",
+    "public/web_state/navigation_context.h",
     "public/web_state/page_display_state.h",
     "public/web_state/page_display_state.mm",
     "public/web_state/ui/crw_content_view.h",
@@ -208,6 +209,8 @@ source_set("web_arc") {
     "web_state/js/crw_js_window_id_manager.mm",
     "web_state/js/page_script_util.h",
     "web_state/js/page_script_util.mm",
+    "web_state/navigation_context_impl.h",
+    "web_state/navigation_context_impl.mm",
     "web_state/page_viewport_state.h",
     "web_state/page_viewport_state.mm",
     "web_state/ui/crw_context_menu_controller.h",
@@ -559,6 +562,7 @@ test("ios_web_unittests") {
     "web_state/js/crw_js_post_request_loader_unittest.mm",
     "web_state/js/crw_js_window_id_manager_unittest.mm",
     "web_state/js/page_script_util_unittest.mm",
+    "web_state/navigation_context_impl_unittest.mm",
     "web_state/page_display_state_unittest.mm",
     "web_state/ui/crw_web_controller_container_view_unittest.mm",
     "web_state/ui/crw_web_controller_observer_unittest.mm",
@@ -604,6 +608,7 @@ test("ios_web_inttests") {
     "public/test/http_server_inttest.mm",
     "test/run_all_unittests.cc",
     "web_state/http_auth_inttest.mm",
+    "web_state/navigation_callbacks_inttest.mm",
     "webui/web_ui_mojo_inttest.mm",
   ]
 

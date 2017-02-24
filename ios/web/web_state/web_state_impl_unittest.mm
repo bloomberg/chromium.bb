@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/values.h"
@@ -128,6 +129,7 @@ class TestWebStateObserver : public WebStateObserver {
         page_loaded_called_with_success_(false),
         url_hash_changed_called_(false),
         history_state_changed_called_(false),
+        did_finish_navigation_called_(false),
         web_state_destroyed_called_(false) {}
 
   // Methods returning true if the corresponding WebStateObserver method has
@@ -151,6 +153,9 @@ class TestWebStateObserver : public WebStateObserver {
   bool history_state_changed_called() const {
     return history_state_changed_called_;
   }
+  bool did_finish_navigation_called() const {
+    return did_finish_navigation_called_;
+  }
   bool web_state_destroyed_called() const {
     return web_state_destroyed_called_;
   }
@@ -169,6 +174,9 @@ class TestWebStateObserver : public WebStateObserver {
   void NavigationItemCommitted(
       const LoadCommittedDetails& load_details) override {
     navigation_item_committed_called_ = true;
+  }
+  void DidFinishNavigation(NavigationContext* navigation_context) override {
+    did_finish_navigation_called_ = true;
   }
   void PageLoaded(PageLoadCompletionStatus load_completion_status) override {
     page_loaded_called_with_success_ =
@@ -189,6 +197,7 @@ class TestWebStateObserver : public WebStateObserver {
   bool page_loaded_called_with_success_;
   bool url_hash_changed_called_;
   bool history_state_changed_called_;
+  bool did_finish_navigation_called_;
   bool web_state_destroyed_called_;
 };
 
@@ -392,6 +401,18 @@ TEST_F(WebStateTest, ObserverTest) {
   EXPECT_FALSE(observer->history_state_changed_called());
   web_state_->OnHistoryStateChanged();
   EXPECT_TRUE(observer->history_state_changed_called());
+
+  // Test that DidFinishNavigation() is called for same page navigations.
+  EXPECT_FALSE(observer->did_finish_navigation_called());
+  web_state_->OnSamePageNavigation(GURL("http://test"));
+  EXPECT_TRUE(observer->did_finish_navigation_called());
+
+  // Reset the observer and test that DidFinishNavigation() is called
+  // for error navigations.
+  observer = base::MakeUnique<TestWebStateObserver>(web_state_.get());
+  EXPECT_FALSE(observer->did_finish_navigation_called());
+  web_state_->OnErrorPageNavigation(GURL("http://test"));
+  EXPECT_TRUE(observer->did_finish_navigation_called());
 
   // Test that WebStateDestroyed() is called.
   EXPECT_FALSE(observer->web_state_destroyed_called());

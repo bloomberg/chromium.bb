@@ -88,6 +88,12 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Notifies the observers that the history state of the current page changed.
   void OnHistoryStateChanged();
 
+  // Notifies the observers that same page navigation did finish.
+  void OnSamePageNavigation(const GURL& url);
+
+  // Notifies the observers that navigation to error page did finish.
+  void OnErrorPageNavigation(const GURL& url);
+
   // Notifies the observers that the render process was terminated.
   void OnRenderProcessGone();
 

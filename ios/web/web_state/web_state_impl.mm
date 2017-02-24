@@ -31,6 +31,7 @@
 #include "ios/web/public/web_thread.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
+#include "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #include "ios/web/web_state/web_state_facade_delegate.h"
@@ -186,6 +187,10 @@ void WebStateImpl::SetFacadeDelegate(WebStateFacadeDelegate* facade_delegate) {
 
 void WebStateImpl::OnNavigationCommitted(const GURL& url) {
   UpdateHttpResponseHeaders(url);
+  std::unique_ptr<NavigationContext> context =
+      NavigationContextImpl::CreateNavigationContext(this, url);
+  for (auto& observer : observers_)
+    observer.DidFinishNavigation(context.get());
 }
 
 void WebStateImpl::OnUrlHashChanged() {
@@ -196,6 +201,20 @@ void WebStateImpl::OnUrlHashChanged() {
 void WebStateImpl::OnHistoryStateChanged() {
   for (auto& observer : observers_)
     observer.HistoryStateChanged();
+}
+
+void WebStateImpl::OnSamePageNavigation(const GURL& url) {
+  std::unique_ptr<NavigationContext> context =
+      NavigationContextImpl::CreateSamePageNavigationContext(this, url);
+  for (auto& observer : observers_)
+    observer.DidFinishNavigation(context.get());
+}
+
+void WebStateImpl::OnErrorPageNavigation(const GURL& url) {
+  std::unique_ptr<NavigationContext> context =
+      NavigationContextImpl::CreateErrorPageNavigationContext(this, url);
+  for (auto& observer : observers_)
+    observer.DidFinishNavigation(context.get());
 }
 
 void WebStateImpl::OnRenderProcessGone() {
