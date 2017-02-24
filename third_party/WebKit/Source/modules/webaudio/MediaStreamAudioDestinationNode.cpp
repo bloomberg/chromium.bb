@@ -52,8 +52,8 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(
                                 AudioUtilities::kRenderQuantumFrames)) {
   m_source = MediaStreamSource::create(
       "WebAudio-" + createCanonicalUUIDString(), MediaStreamSource::TypeAudio,
-      "MediaStreamAudioDestinationNode", MediaStreamSource::ReadyStateLive,
-      true);
+      "MediaStreamAudioDestinationNode", false,
+      MediaStreamSource::ReadyStateLive, true);
   MediaStreamSourceVector audioSources;
   audioSources.push_back(m_source.get());
   MediaStreamSourceVector videoSources;

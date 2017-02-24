@@ -36,7 +36,8 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
         source_started_(false) {
     blink_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
                              blink::WebMediaStreamSource::TypeVideo,
-                             blink::WebString::fromASCII("dummy_source_name"));
+                             blink::WebString::fromASCII("dummy_source_name"),
+                             false /* remote */);
     blink_source_.setExtraData(mock_source_);
   }
 
@@ -86,7 +87,8 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
     mock_source_ = new MockMediaStreamVideoSource(false, true);
     blink_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
                              blink::WebMediaStreamSource::TypeVideo,
-                             blink::WebString::fromASCII("dummy_source_name"));
+                             blink::WebString::fromASCII("dummy_source_name"),
+                             false /* remote */);
     blink_source_.setExtraData(mock_source_);
   }
 

@@ -992,7 +992,8 @@ blink::WebMediaStreamSource UserMediaClientImpl::FindOrInitializeSourceObject(
 
   blink::WebMediaStreamSource source;
   source.initialize(blink::WebString::fromUTF8(device.device.id), type,
-                    blink::WebString::fromUTF8(device.device.name));
+                    blink::WebString::fromUTF8(device.device.name),
+                    false /* remote */);
 
   DVLOG(1) << "Initialize source object :"
            << "id = " << source.id().utf8()
