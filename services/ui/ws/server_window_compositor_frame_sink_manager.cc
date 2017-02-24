@@ -26,12 +26,9 @@ void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_request) {
-  cc::FrameSinkId frame_sink_id(WindowIdToTransportId(window_->id()), 0);
-
   if (!frame_sink_data_)
     frame_sink_data_ = base::MakeUnique<CompositorFrameSinkData>();
 
-  frame_sink_data_->frame_sink_id = frame_sink_id;
   cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request;
   if (frame_sink_data_->pending_compositor_frame_sink_request.is_pending()) {
     private_request =
@@ -45,28 +42,17 @@ void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
   // or Android. We should instead use GpuSurfaceTracker here on those
   // platforms.
   window_->delegate()->GetDisplayCompositor()->CreateRootCompositorFrameSink(
-      frame_sink_id, widget, std::move(sink_request),
+      window_->frame_sink_id(), widget, std::move(sink_request),
       std::move(private_request), std::move(client),
       std::move(display_request));
-
-  if (window_->parent()) {
-    ServerWindow* root_window = window_->GetRoot();
-    if (root_window) {
-      root_window->GetOrCreateCompositorFrameSinkManager()->AddChildFrameSinkId(
-          frame_sink_id);
-    }
-  }
 }
 
 void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
-  cc::FrameSinkId frame_sink_id(WindowIdToTransportId(window_->id()), 0);
-
   if (!frame_sink_data_)
     frame_sink_data_ = base::MakeUnique<CompositorFrameSinkData>();
 
-  frame_sink_data_->frame_sink_id = frame_sink_id;
   cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request;
   if (frame_sink_data_->pending_compositor_frame_sink_request.is_pending()) {
     private_request =
@@ -77,50 +63,8 @@ void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
   }
 
   window_->delegate()->GetDisplayCompositor()->CreateCompositorFrameSink(
-      frame_sink_id, std::move(request), std::move(private_request),
+      window_->frame_sink_id(), std::move(request), std::move(private_request),
       std::move(client));
-
-  if (window_->parent()) {
-    ServerWindow* root_window = window_->GetRoot();
-    if (root_window) {
-      root_window->GetOrCreateCompositorFrameSinkManager()->AddChildFrameSinkId(
-          frame_sink_id);
-    }
-  }
-}
-
-void ServerWindowCompositorFrameSinkManager::AddChildFrameSinkId(
-    const cc::FrameSinkId& frame_sink_id) {
-  if (frame_sink_data_) {
-    frame_sink_data_->compositor_frame_sink->AddChildFrameSink(frame_sink_id);
-    return;
-  }
-  frame_sink_data_ = base::MakeUnique<CompositorFrameSinkData>();
-  frame_sink_data_->pending_compositor_frame_sink_request =
-      mojo::MakeRequest(&frame_sink_data_->compositor_frame_sink);
-  frame_sink_data_->compositor_frame_sink->AddChildFrameSink(frame_sink_id);
-}
-
-void ServerWindowCompositorFrameSinkManager::RemoveChildFrameSinkId(
-    const cc::FrameSinkId& frame_sink_id) {
-  DCHECK(frame_sink_data_);
-  frame_sink_data_->compositor_frame_sink->RemoveChildFrameSink(frame_sink_id);
-}
-
-void ServerWindowCompositorFrameSinkManager::OnRootChanged(
-    ServerWindow* old_root,
-    ServerWindow* new_root) {
-  if (!frame_sink_data_)
-    return;
-
-  if (old_root) {
-    old_root->GetOrCreateCompositorFrameSinkManager()->RemoveChildFrameSinkId(
-        frame_sink_data_->frame_sink_id);
-  }
-  if (new_root) {
-    new_root->GetOrCreateCompositorFrameSinkManager()->AddChildFrameSinkId(
-        frame_sink_data_->frame_sink_id);
-  }
 }
 
 CompositorFrameSinkData::CompositorFrameSinkData() {}

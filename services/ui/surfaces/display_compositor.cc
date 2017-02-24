@@ -50,25 +50,6 @@ DisplayCompositor::~DisplayCompositor() {
   manager_.RemoveObserver(this);
 }
 
-void DisplayCompositor::OnClientConnectionLost(
-    const cc::FrameSinkId& frame_sink_id,
-    bool destroy_compositor_frame_sink) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (destroy_compositor_frame_sink)
-    DestroyCompositorFrameSink(frame_sink_id);
-  // TODO(fsamuel): Tell the display compositor host that the client connection
-  // has been lost so that it can drop its private connection and allow a new
-  // client instance to create a new CompositorFrameSink.
-}
-
-void DisplayCompositor::OnPrivateConnectionLost(
-    const cc::FrameSinkId& frame_sink_id,
-    bool destroy_compositor_frame_sink) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (destroy_compositor_frame_sink)
-    DestroyCompositorFrameSink(frame_sink_id);
-}
-
 void DisplayCompositor::CreateRootCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
@@ -106,6 +87,20 @@ void DisplayCompositor::CreateCompositorFrameSink(
       base::MakeUnique<display_compositor::GpuCompositorFrameSink>(
           this, &manager_, frame_sink_id, std::move(request),
           std::move(private_request), std::move(client));
+}
+
+void DisplayCompositor::RegisterFrameSinkHierarchy(
+    const cc::FrameSinkId& parent_frame_sink_id,
+    const cc::FrameSinkId& child_frame_sink_id) {
+  manager_.RegisterFrameSinkHierarchy(parent_frame_sink_id,
+                                      child_frame_sink_id);
+}
+
+void DisplayCompositor::UnregisterFrameSinkHierarchy(
+    const cc::FrameSinkId& parent_frame_sink_id,
+    const cc::FrameSinkId& child_frame_sink_id) {
+  manager_.UnregisterFrameSinkHierarchy(parent_frame_sink_id,
+                                        child_frame_sink_id);
 }
 
 std::unique_ptr<cc::Display> DisplayCompositor::CreateDisplay(
@@ -169,5 +164,24 @@ void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
 
 void DisplayCompositor::OnSurfaceDamaged(const cc::SurfaceId& surface_id,
                                          bool* changed) {}
+
+void DisplayCompositor::OnClientConnectionLost(
+    const cc::FrameSinkId& frame_sink_id,
+    bool destroy_compositor_frame_sink) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (destroy_compositor_frame_sink)
+    DestroyCompositorFrameSink(frame_sink_id);
+  // TODO(fsamuel): Tell the display compositor host that the client connection
+  // has been lost so that it can drop its private connection and allow a new
+  // client instance to create a new CompositorFrameSink.
+}
+
+void DisplayCompositor::OnPrivateConnectionLost(
+    const cc::FrameSinkId& frame_sink_id,
+    bool destroy_compositor_frame_sink) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (destroy_compositor_frame_sink)
+    DestroyCompositorFrameSink(frame_sink_id);
+}
 
 }  // namespace ui

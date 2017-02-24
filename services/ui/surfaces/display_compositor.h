@@ -62,12 +62,6 @@ class DisplayCompositor
 
   cc::SurfaceManager* manager() { return &manager_; }
 
-  // display_compositor::GpuCompositorFrameSinkDelegate implementation.
-  void OnClientConnectionLost(const cc::FrameSinkId& frame_sink_id,
-                              bool destroy_compositor_frame_sink) override;
-  void OnPrivateConnectionLost(const cc::FrameSinkId& frame_sink_id,
-                               bool destroy_compositor_frame_sink) override;
-
   // cc::mojom::DisplayCompositor implementation:
   void CreateRootCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
@@ -82,22 +76,18 @@ class DisplayCompositor
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
+  void RegisterFrameSinkHierarchy(
+      const cc::FrameSinkId& parent_frame_sink_id,
+      const cc::FrameSinkId& child_frame_sink_id) override;
+  void UnregisterFrameSinkHierarchy(
+      const cc::FrameSinkId& parent_frame_sink_id,
+      const cc::FrameSinkId& child_frame_sink_id) override;
 
  private:
   std::unique_ptr<cc::Display> CreateDisplay(
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       cc::SyntheticBeginFrameSource* begin_frame_source);
-
-  void CreateCompositorFrameSinkInternal(
-      const cc::FrameSinkId& frame_sink_id,
-      gpu::SurfaceHandle surface_handle,
-      std::unique_ptr<cc::Display> display,
-      std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client,
-      cc::mojom::DisplayPrivateRequest display_private_request);
 
   // It is necessary to pass |frame_sink_id| by value because the id
   // is owned by the GpuCompositorFrameSink in the map. When the sink is
@@ -110,6 +100,12 @@ class DisplayCompositor
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
   void OnSurfaceDamaged(const cc::SurfaceId& surface_id,
                         bool* changed) override;
+
+  // display_compositor::GpuCompositorFrameSinkDelegate implementation.
+  void OnClientConnectionLost(const cc::FrameSinkId& frame_sink_id,
+                              bool destroy_compositor_frame_sink) override;
+  void OnPrivateConnectionLost(const cc::FrameSinkId& frame_sink_id,
+                               bool destroy_compositor_frame_sink) override;
 
   // SurfaceManager should be the first object constructed and the last object
   // destroyed in order to ensure that all other objects that depend on it have

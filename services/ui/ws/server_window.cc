@@ -26,6 +26,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
                            const Properties& properties)
     : delegate_(delegate),
       id_(id),
+      frame_sink_id_(WindowIdToTransportId(id), 0),
       parent_(nullptr),
       stacking_target_(nullptr),
       transient_parent_(nullptr),
@@ -117,17 +118,11 @@ void ServerWindow::Add(ServerWindow* child) {
   for (auto& observer : child->observers_)
     observer.OnWillChangeWindowHierarchy(child, this, old_parent);
 
-  ServerWindow* old_root = child->GetRoot();
-  ServerWindow* new_root = GetRoot();
-
   if (child->parent())
     child->parent()->RemoveImpl(child);
 
   child->parent_ = this;
   children_.push_back(child);
-
-  if (old_root != new_root)
-    child->ProcessRootChanged(old_root, new_root);
 
   // Stack the child properly if it is a transient child of a sibling.
   if (child->transient_parent_ && child->transient_parent_->parent() == this)
@@ -148,9 +143,6 @@ void ServerWindow::Remove(ServerWindow* child) {
     observer.OnWillChangeWindowHierarchy(child, nullptr, this);
 
   RemoveImpl(child);
-
-  if (GetRoot() != nullptr)
-    child->ProcessRootChanged(GetRoot(), nullptr);
 
   // Stack the child properly if it is a transient child of a sibling.
   if (child->transient_parent_ && child->transient_parent_->parent() == this)
@@ -429,14 +421,6 @@ void ServerWindow::BuildDebugInfo(const std::string& depth,
 void ServerWindow::RemoveImpl(ServerWindow* window) {
   window->parent_ = nullptr;
   children_.erase(std::find(children_.begin(), children_.end(), window));
-}
-
-void ServerWindow::ProcessRootChanged(ServerWindow* old_root,
-                                      ServerWindow* new_root) {
-  if (compositor_frame_sink_manager_)
-    compositor_frame_sink_manager_->OnRootChanged(old_root, new_root);
-  for (ServerWindow* child : children_)
-    child->ProcessRootChanged(old_root, new_root);
 }
 
 void ServerWindow::OnStackingChanged() {

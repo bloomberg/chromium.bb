@@ -99,16 +99,6 @@ void GpuRootCompositorFrameSink::Satisfy(const cc::SurfaceSequence& sequence) {
   support_->Satisfy(sequence);
 }
 
-void GpuRootCompositorFrameSink::AddChildFrameSink(
-    const cc::FrameSinkId& child_frame_sink_id) {
-  support_->AddChildFrameSink(child_frame_sink_id);
-}
-
-void GpuRootCompositorFrameSink::RemoveChildFrameSink(
-    const cc::FrameSinkId& child_frame_sink_id) {
-  support_->RemoveChildFrameSink(child_frame_sink_id);
-}
-
 void GpuRootCompositorFrameSink::RequestCopyOfSurface(
     std::unique_ptr<cc::CopyOutputRequest> request) {
   support_->RequestCopyOfSurface(std::move(request));

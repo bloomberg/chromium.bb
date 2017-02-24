@@ -70,14 +70,10 @@ interface MojoCompositorFrameSinkClient {
   WillDrawSurface(LocalSurfaceId local_surface_id, gfx.mojom.Rect damage_rect);
 };
 
-// MojoCompositorFrameSinkPrivate is used by the display compositor host to set
-// up BeginFrameSource hierarchies.  This API lives in SurfaceManager but is
-// called from here in order to ensure that hierarchy registration does not race
-// CompositorFrameSink creation.
+// MojoCompositorFrameSinkPrivate is used by the display compositor host to
+// perform privilieged operations on a CompositorFrameSink such as
+// CopyOutputRequests.
 interface MojoCompositorFrameSinkPrivate {
-  AddChildFrameSink(FrameSinkId child_frame_sink_id);
-  RemoveChildFrameSink(FrameSinkId child_frame_sink_id);
-
   // Requests that the renderer send back a copy of the surface that this
   // CompositorFrameSink submits to. The result can be in form of a bitmap
   // or a texture. See cc::CopyOutputRequest.

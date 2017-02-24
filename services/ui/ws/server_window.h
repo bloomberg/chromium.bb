@@ -72,6 +72,8 @@ class ServerWindow {
 
   const WindowId& id() const { return id_; }
 
+  const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+
   void Add(ServerWindow* child);
   void Remove(ServerWindow* child);
   void Reorder(ServerWindow* relative, mojom::OrderDirection diretion);
@@ -211,10 +213,6 @@ class ServerWindow {
   // Implementation of removing a window. Doesn't send any notification.
   void RemoveImpl(ServerWindow* window);
 
-  // Called when the root window changes from |old_root| to |new_root|. This is
-  // called after the window is moved from |old_root| to |new_root|.
-  void ProcessRootChanged(ServerWindow* old_root, ServerWindow* new_root);
-
   // Called when this window's stacking order among its siblings is changed.
   void OnStackingChanged();
 
@@ -228,6 +226,7 @@ class ServerWindow {
 
   ServerWindowDelegate* delegate_;
   const WindowId id_;
+  cc::FrameSinkId frame_sink_id_;
   ServerWindow* parent_;
   Windows children_;
 

@@ -30,7 +30,6 @@ struct CompositorFrameSinkData {
   cc::mojom::MojoCompositorFrameSinkPrivatePtr compositor_frame_sink;
   cc::mojom::MojoCompositorFrameSinkPrivateRequest
       pending_compositor_frame_sink_request;
-  cc::FrameSinkId frame_sink_id;
 };
 
 // ServerWindowCompositorFrameSinkManager tracks the surfaces associated with a
@@ -51,18 +50,6 @@ class ServerWindowCompositorFrameSinkManager {
   void CreateCompositorFrameSink(
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
-
-  // Adds the provided |frame_sink_id| to this ServerWindow's associated
-  // CompositorFrameSink if possible. If this ServerWindow does not have
-  // an associated CompositorFrameSink then this method will recursively
-  // walk up the window hierarchy and register itself with the first ancestor
-  // that has a CompositorFrameSink of the same type. This method returns
-  // the FrameSinkId that is the first composited ancestor of the ServerWindow
-  // assocaited with the provided |frame_sink_id|.
-  void AddChildFrameSinkId(const cc::FrameSinkId& frame_sink_id);
-  void RemoveChildFrameSinkId(const cc::FrameSinkId& frame_sink_id);
-
-  void OnRootChanged(ServerWindow* old_root, ServerWindow* new_root);
 
  private:
   friend class ServerWindowCompositorFrameSinkManagerTestApi;

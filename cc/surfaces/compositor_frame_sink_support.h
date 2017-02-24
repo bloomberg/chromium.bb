@@ -53,8 +53,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void Require(const LocalSurfaceId& local_surface_id,
                const SurfaceSequence& sequence);
   void Satisfy(const SurfaceSequence& sequence);
-  void AddChildFrameSink(const FrameSinkId& child_frame_sink_id);
-  void RemoveChildFrameSink(const FrameSinkId& child_frame_sink_id);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
   void ForceReclaimResources();
 
@@ -115,9 +113,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   // Track the surface references for the surface corresponding to this
   // compositor frame sink.
   ReferencedSurfaceTracker reference_tracker_;
-
-  // The set of BeginFrame children of this CompositorFrameSink.
-  std::unordered_set<FrameSinkId, FrameSinkIdHash> child_frame_sinks_;
 
   const bool is_root_;
 

@@ -638,6 +638,15 @@ void WindowServer::OnWindowHierarchyChanged(ServerWindow* window,
 
   ProcessWindowHierarchyChanged(window, new_parent, old_parent);
 
+  if (old_parent) {
+    display_compositor_->UnregisterFrameSinkHierarchy(
+        old_parent->frame_sink_id(), window->frame_sink_id());
+  }
+  if (new_parent) {
+    display_compositor_->RegisterFrameSinkHierarchy(new_parent->frame_sink_id(),
+                                                    window->frame_sink_id());
+  }
+
   UpdateNativeCursorFromMouseLocation(window);
 }
 

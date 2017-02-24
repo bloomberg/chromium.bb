@@ -64,9 +64,6 @@ class DISPLAY_COMPOSITOR_EXPORT GpuRootCompositorFrameSink
   void Satisfy(const cc::SurfaceSequence& sequence) override;
 
   // cc::mojom::MojoCompositorFrameSinkPrivate:
-  void AddChildFrameSink(const cc::FrameSinkId& child_frame_sink_id) override;
-  void RemoveChildFrameSink(
-      const cc::FrameSinkId& child_frame_sink_id) override;
   void RequestCopyOfSurface(
       std::unique_ptr<cc::CopyOutputRequest> request) override;
 

@@ -66,16 +66,6 @@ void GpuCompositorFrameSink::DidReceiveCompositorFrameAck() {
     client_->DidReceiveCompositorFrameAck();
 }
 
-void GpuCompositorFrameSink::AddChildFrameSink(
-    const cc::FrameSinkId& child_frame_sink_id) {
-  support_->AddChildFrameSink(child_frame_sink_id);
-}
-
-void GpuCompositorFrameSink::RemoveChildFrameSink(
-    const cc::FrameSinkId& child_frame_sink_id) {
-  support_->RemoveChildFrameSink(child_frame_sink_id);
-}
-
 void GpuCompositorFrameSink::RequestCopyOfSurface(
     std::unique_ptr<cc::CopyOutputRequest> request) {
   support_->RequestCopyOfSurface(std::move(request));
