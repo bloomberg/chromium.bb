@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "build/build_config.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
@@ -53,7 +54,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
 class RenderWidgetHostViewGuestTest : public testing::Test {
  public:
-  RenderWidgetHostViewGuestTest() {}
+  RenderWidgetHostViewGuestTest() : task_scheduler_(&message_loop_) {}
 
   void SetUp() override {
 #if !defined(OS_ANDROID)
@@ -96,6 +97,10 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
 
  protected:
   base::MessageLoopForUI message_loop_;
+
+  // Needed by base::PostTaskWithTraits in RenderWidgetHostImpl constructor.
+  base::test::ScopedTaskScheduler task_scheduler_;
+
   std::unique_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;
 
@@ -114,13 +119,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
 
 }  // namespace
 
-// Fails on Windows, crbug.com/695375.
-#if defined(OS_WIN)
-#define MAYBE_VisibilityTest DISABLED_VisibilityTest
-#else
-#define MAYBE_VisibilityTest VisibilityTest
-#endif
-TEST_F(RenderWidgetHostViewGuestTest, MAYBE_VisibilityTest) {
+TEST_F(RenderWidgetHostViewGuestTest, VisibilityTest) {
   view_->Show();
   ASSERT_TRUE(view_->IsShowing());
 
