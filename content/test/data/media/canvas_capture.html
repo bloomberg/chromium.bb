@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Media Capture from Canvas ElementsBrowser Test</title>
+<title>Media Capture from Canvas Browser Test</title>
 </head>
 <body>
   <div> Capture and playback from canvas elements.</div>
@@ -39,6 +39,16 @@ function drawOffscreenCanvasCommit(canvas, drawCounter) {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.commit();
   checkForRedraw(canvas, drawCounter, drawOffscreenCanvasCommit);
+};
+
+function drawBitmapRenderer(canvas, drawCounter) {
+  var gl = canvas.getContext('bitmaprenderer');
+  var offscreen = new OffscreenCanvas(64, 48);
+  var ctx = offscreen.getContext('2d');
+  ctx.fillStyle = 'green';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  gl.transferFromImageBitmap(offscreen.transferToImageBitmap());
+  checkForRedraw(canvas, drawCounter, drawBitmapRenderer);
 };
 
 function testCanvasCapture(drawFunction) {

@@ -62,8 +62,7 @@ void ImageBitmapRenderingContext::transferFromImageBitmap(
     surface->getCanvas()->drawImage(skImage, 0, 0);
     m_image = StaticBitmapImage::create(surface->makeImageSnapshot());
   }
-  canvas()->didDraw(
-      FloatRect(FloatPoint(), FloatSize(m_image->width(), m_image->height())));
+  didDraw(skImage->bounds());
   imageBitmap->close();
 }
 

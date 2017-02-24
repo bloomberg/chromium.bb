@@ -1256,8 +1256,11 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
     return result;
   }
 
-  if (m_context->getContextType() == CanvasRenderingContext::ContextImageBitmap)
+  if (m_context->getContextType() ==
+      CanvasRenderingContext::ContextImageBitmap) {
+    *status = NormalSourceImageStatus;
     return m_context->getImage(hint, reason);
+  }
 
   sk_sp<SkImage> skImage;
   // TODO(ccameron): Canvas should produce sRGB images.

@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       VerifyCanvasCaptureFrames) {
+                       VerifyCanvasCapture2DFrames) {
   MakeTypicalCall("testCanvasCapture(draw2d);", kCanvasCaptureTestHtmlFile);
 }
 
@@ -100,6 +100,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
                        MAYBE_VerifyCanvasCaptureOffscreenCanvasCommitFrames) {
   MakeTypicalCall("testCanvasCapture(drawOffscreenCanvasCommit);",
+                  kCanvasCaptureTestHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
+                       VerifyCanvasCaptureBitmapRendererFrames) {
+  MakeTypicalCall("testCanvasCapture(drawBitmapRenderer);",
                   kCanvasCaptureTestHtmlFile);
 }
 
