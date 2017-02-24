@@ -1086,6 +1086,15 @@ BasePage* ThreadState::findPageFromAddress(Address address) {
 }
 #endif
 
+bool ThreadState::isAddressInHeapDoesNotContainCache(Address address) {
+  // If the cache has been marked as invalidated, it's cleared prior
+  // to performing the next GC. Hence, consider the cache as being
+  // effectively empty.
+  if (m_shouldFlushHeapDoesNotContainCache)
+    return false;
+  return heap().m_heapDoesNotContainCache->lookup(address);
+}
+
 size_t ThreadState::objectPayloadSizeForTesting() {
   size_t objectPayloadSize = 0;
   for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)

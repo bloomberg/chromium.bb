@@ -379,6 +379,8 @@ class PLATFORM_EXPORT ThreadState {
     m_shouldFlushHeapDoesNotContainCache = true;
   }
 
+  bool isAddressInHeapDoesNotContainCache(Address);
+
   void registerTraceDOMWrappers(
       v8::Isolate* isolate,
       void (*traceDOMWrappers)(v8::Isolate*, Visitor*),
