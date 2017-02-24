@@ -52,6 +52,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -683,6 +684,10 @@ TEST_F(TranslateManagerRenderViewHostTest,
 TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   // See BubbleNormalTranslate for corresponding bubble UX testing.
   if (TranslateService::IsTranslateBubbleEnabled())
+    return;
+
+  // http://crbug.com/695624
+  if (content::IsBrowserSideNavigationEnabled())
     return;
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
