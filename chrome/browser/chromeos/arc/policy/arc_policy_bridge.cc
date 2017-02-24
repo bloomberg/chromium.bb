@@ -41,43 +41,7 @@ namespace {
 
 constexpr char kArcGlobalAppRestrictions[] = "globalAppRestrictions";
 constexpr char kArcCaCerts[] = "caCerts";
-constexpr char kNonComplianceDetails[] = "nonComplianceDetails";
-constexpr char kNonComplianceReason[] = "nonComplianceReason";
 constexpr char kPolicyCompliantJson[] = "{ \"policyCompliant\": true }";
-constexpr char kPolicyNonCompliantJson[] = "{ \"policyCompliant\": false }";
-
-// Value from CloudDPS NonComplianceDetail.NonComplianceReason enum.
-// Used to figure out whether to ignore non-compliance.
-enum NonComplianceReason : int {
-  UNKNOWN = 0,
-
-  // The API level of the device does not support the setting.
-  API_LEVEL = 1,
-
-  // The admin type (profile owner, device owner, etc.) does not support the
-  // setting.
-  ADMIN_TYPE = 2,
-
-  // The user has not taken required action to comply with the setting.
-  USER_ACTION = 3,
-
-  // The setting has an invalid value.
-  INVALID_VALUE = 4,
-
-  // A required application has not been (or cannot be) installed.
-  APP_NOT_INSTALLED = 5,
-
-  // The policy is not supported by the version of CloudDPC on the device.
-  UNSUPPORTED = 6,
-};
-
-// ChromeOS should ignore some non-critical CloudDPC non-compliance reasons
-// and proceed with starting ARC apps.
-bool IgnoreNonComplianceReason(int reason) {
-  return reason == NonComplianceReason::API_LEVEL ||
-         reason == NonComplianceReason::APP_NOT_INSTALLED ||
-         reason == NonComplianceReason::UNSUPPORTED;
-}
 
 // invert_bool_value: If the Chrome policy and the ARC policy with boolean value
 // have opposite semantics, set this to true so the bool is inverted before
@@ -315,7 +279,9 @@ Profile* GetProfile() {
 void OnReportComplianceParseFailure(
     const ArcPolicyBridge::ReportComplianceCallback& callback,
     const std::string& error) {
-  callback.Run(kPolicyNonCompliantJson);
+  // TODO(poromov@): Report to histogram.
+  DLOG(ERROR) << "Can't parse policy compliance report";
+  callback.Run(kPolicyCompliantJson);
 }
 
 void UpdateFirstComplianceSinceSignInTiming(
@@ -370,12 +336,6 @@ ArcPolicyBridge::ArcPolicyBridge(ArcBridgeService* bridge_service,
 ArcPolicyBridge::~ArcPolicyBridge() {
   VLOG(2) << "ArcPolicyBridge::~ArcPolicyBridge";
   arc_bridge_service()->policy()->RemoveObserver(this);
-}
-
-// static
-void ArcPolicyBridge::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kArcPolicyCompliant, false);
 }
 
 void ArcPolicyBridge::OverrideIsManagedForTesting(bool is_managed) {
@@ -457,37 +417,12 @@ std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
 void ArcPolicyBridge::OnReportComplianceParseSuccess(
     const ArcPolicyBridge::ReportComplianceCallback& callback,
     std::unique_ptr<base::Value> parsed_json) {
-  const base::DictionaryValue* dict;
-  Profile* const profile = GetProfile();
-  if (!profile || !parsed_json || !parsed_json->GetAsDictionary(&dict) ||
-      !dict) {
-    callback.Run(kPolicyNonCompliantJson);
-    return;
-  }
+  // Always returns "compliant".
+  callback.Run(kPolicyCompliantJson);
 
-  // ChromeOS is 'compliant' with the report if all "nonComplianceDetails"
-  // entries have API_LEVEL, APP_NOT_INSTALLED or UNSUPPORTED reason.
-  bool compliant = true;
-  const base::ListValue* value = nullptr;
-  dict->GetList(kNonComplianceDetails, &value);
-  if (!dict->empty() && value && !value->empty()) {
-    for (const auto& entry : *value) {
-      const base::DictionaryValue* entry_dict;
-      int reason = 0;
-      // Get NonComplianceDetails.NonComplianceReason int enum value and check
-      // whether it shouldn't be ignored.
-      if (entry->GetAsDictionary(&entry_dict) &&
-          entry_dict->GetInteger(kNonComplianceReason, &reason) &&
-          !IgnoreNonComplianceReason(reason)) {
-        compliant = false;
-        break;
-      }
-    }
-  }
-  profile->GetPrefs()->SetBoolean(prefs::kArcPolicyCompliant, compliant);
-  callback.Run(compliant ? kPolicyCompliantJson : kPolicyNonCompliantJson);
-
-  UpdateComplianceReportMetrics(dict);
+  const base::DictionaryValue* dict = nullptr;
+  if (parsed_json->GetAsDictionary(&dict))
+    UpdateComplianceReportMetrics(dict);
 }
 
 void ArcPolicyBridge::UpdateComplianceReportMetrics(

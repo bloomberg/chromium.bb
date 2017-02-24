@@ -15,6 +15,7 @@ interface PolicyHost {
   // Pass a JSON with policy compliance details that reference fields in
   // CloudDps NonComplianceReason. Should return ChromeOS response to the report
   // in JSON format as in CloudDps PolicyComplianceReportResponse.
+  // ChromeOS always returns that it's compliant with the report.
   [MinVersion=1] ReportCompliance@1(string request) => (string response);
 };
 

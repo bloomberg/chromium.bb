@@ -57,7 +57,6 @@ constexpr char kFakeONC[] =
     "]}";
 
 constexpr char kPolicyCompliantResponse[] = "{ \"policyCompliant\": true }";
-constexpr char kPolicyNonCompliantResponse[] = "{ \"policyCompliant\": false }";
 
 // Helper class to define callbacks that verify that they were run.
 // Wraps a bool initially set to |false| and verifies that it's been set to
@@ -416,24 +415,14 @@ TEST_F(ArcPolicyBridgeTest, NonParsableReportComplianceTest) {
   policy_bridge()->ReportCompliance(
       "\"nonComplianceDetails\" : [}",
       PolicyComplianceCallback(run_loop().QuitClosure(),
-                               kPolicyNonCompliantResponse));
+                               kPolicyCompliantResponse));
   run_loop().Run();
 }
 
-TEST_F(ArcPolicyBridgeTest, ReportComplianceTest_NonCompliantReasons) {
+TEST_F(ArcPolicyBridgeTest, ReportComplianceTest_WithNonCompliantDetails) {
   policy_bridge()->ReportCompliance(
       "{\"nonComplianceDetails\" : "
       "[{\"fieldPath\":\"\",\"nonComplianceReason\":0,\"packageName\":\"\","
-      "\"settingName\":\"someSetting\",\"cachedSize\":-1}]}",
-      PolicyComplianceCallback(run_loop().QuitClosure(),
-                               kPolicyNonCompliantResponse));
-  run_loop().Run();
-}
-
-TEST_F(ArcPolicyBridgeTest, ReportComplianceTest_CompliantReasons) {
-  policy_bridge()->ReportCompliance(
-      "{\"nonComplianceDetails\" : "
-      "[{\"fieldPath\":\"\",\"nonComplianceReason\":1,\"packageName\":\"\","
       "\"settingName\":\"someSetting\",\"cachedSize\":-1}]}",
       PolicyComplianceCallback(run_loop().QuitClosure(),
                                kPolicyCompliantResponse));

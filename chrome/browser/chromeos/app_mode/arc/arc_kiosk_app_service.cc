@@ -141,11 +141,6 @@ ArcKioskAppService::ArcKioskAppService(Profile* profile) : profile_(profile) {
   app_manager_->AddObserver(this);
   pref_change_registrar_.reset(new PrefChangeRegistrar());
   pref_change_registrar_->Init(profile_->GetPrefs());
-  // Try to start/stop kiosk app on policy compliance state change.
-  pref_change_registrar_->Add(
-      prefs::kArcPolicyCompliant,
-      base::Bind(&ArcKioskAppService::PreconditionsChanged,
-                 base::Unretained(this)));
   notification_blocker_.reset(new ArcKioskNotificationBlocker());
   PreconditionsChanged();
 }
@@ -159,9 +154,7 @@ void ArcKioskAppService::PreconditionsChanged() {
   if (app_id_.empty())
     return;
   app_info_ = ArcAppListPrefs::Get(profile_)->GetApp(app_id_);
-  if (app_info_ && app_info_->ready &&
-      profile_->GetPrefs()->GetBoolean(prefs::kArcPolicyCompliant) &&
-      !maintenance_session_running_) {
+  if (app_info_ && app_info_->ready && !maintenance_session_running_) {
     if (!app_launcher_)
       app_launcher_ = base::MakeUnique<ArcKioskAppLauncher>(
           profile_, ArcAppListPrefs::Get(profile_), app_id_, this);
