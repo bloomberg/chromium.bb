@@ -89,7 +89,7 @@ int MediaValues::calculateMonochromeBitsPerComponent(LocalFrame* frame) {
 }
 
 int MediaValues::calculateDefaultFontSize(LocalFrame* frame) {
-  return frame->host()->settings().getDefaultFontSize();
+  return frame->page()->settings().getDefaultFontSize();
 }
 
 const String MediaValues::calculateMediaType(LocalFrame* frame) {
@@ -101,7 +101,7 @@ const String MediaValues::calculateMediaType(LocalFrame* frame) {
 
 WebDisplayMode MediaValues::calculateDisplayMode(LocalFrame* frame) {
   ASSERT(frame);
-  WebDisplayMode mode = frame->host()->settings().getDisplayModeOverride();
+  WebDisplayMode mode = frame->page()->settings().getDisplayModeOverride();
 
   if (mode != WebDisplayModeUndefined)
     return mode;

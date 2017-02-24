@@ -911,12 +911,12 @@ int LocalDOMWindow::outerHeight() const {
   if (!frame())
     return 0;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return 0;
 
-  ChromeClient& chromeClient = host->chromeClient();
-  if (host->settings().getReportScreenSizeInPhysicalPixelsQuirk())
+  ChromeClient& chromeClient = page->chromeClient();
+  if (page->settings().getReportScreenSizeInPhysicalPixelsQuirk())
     return lroundf(chromeClient.rootWindowRect().height() *
                    chromeClient.screenInfo().deviceScaleFactor);
   return chromeClient.rootWindowRect().height();
@@ -926,12 +926,12 @@ int LocalDOMWindow::outerWidth() const {
   if (!frame())
     return 0;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return 0;
 
-  ChromeClient& chromeClient = host->chromeClient();
-  if (host->settings().getReportScreenSizeInPhysicalPixelsQuirk())
+  ChromeClient& chromeClient = page->chromeClient();
+  if (page->settings().getReportScreenSizeInPhysicalPixelsQuirk())
     return lroundf(chromeClient.rootWindowRect().width() *
                    chromeClient.screenInfo().deviceScaleFactor);
 
@@ -947,15 +947,19 @@ FloatSize LocalDOMWindow::getViewportSize(
   if (!view)
     return FloatSize();
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return FloatSize();
+
+  // If we have a Page, we must have a FrameHost.
+  FrameHost* host = frame()->host();
+  DCHECK(host);
 
   // The main frame's viewport size depends on the page scale. Since the
   // initial page scale depends on the content width and is set after a
   // layout, perform one now so queries during page load will use the up to
   // date viewport.
-  if (host->settings().getViewportEnabled() && frame()->isMainFrame())
+  if (page->settings().getViewportEnabled() && frame()->isMainFrame())
     document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   // FIXME: This is potentially too much work. We really only need to know the
@@ -967,7 +971,7 @@ FloatSize LocalDOMWindow::getViewportSize(
           ->updateStyleAndLayoutIgnorePendingStylesheets();
   }
 
-  return frame()->isMainFrame() && !host->settings().getInertVisualViewport()
+  return frame()->isMainFrame() && !page->settings().getInertVisualViewport()
              ? FloatSize(host->visualViewport().visibleRect().size())
              : FloatSize(view->visibleContentRect(scrollbarInclusion).size());
 }
@@ -994,12 +998,12 @@ int LocalDOMWindow::screenX() const {
   if (!frame())
     return 0;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return 0;
 
-  ChromeClient& chromeClient = host->chromeClient();
-  if (host->settings().getReportScreenSizeInPhysicalPixelsQuirk())
+  ChromeClient& chromeClient = page->chromeClient();
+  if (page->settings().getReportScreenSizeInPhysicalPixelsQuirk())
     return lroundf(chromeClient.rootWindowRect().x() *
                    chromeClient.screenInfo().deviceScaleFactor);
   return chromeClient.rootWindowRect().x();
@@ -1009,22 +1013,22 @@ int LocalDOMWindow::screenY() const {
   if (!frame())
     return 0;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return 0;
 
-  ChromeClient& chromeClient = host->chromeClient();
-  if (host->settings().getReportScreenSizeInPhysicalPixelsQuirk())
+  ChromeClient& chromeClient = page->chromeClient();
+  if (page->settings().getReportScreenSizeInPhysicalPixelsQuirk())
     return lroundf(chromeClient.rootWindowRect().y() *
                    chromeClient.screenInfo().deviceScaleFactor);
   return chromeClient.rootWindowRect().y();
 }
 
 double LocalDOMWindow::scrollX() const {
-  if (!frame() || !frame()->host())
+  if (!frame() || !frame()->page())
     return 0;
 
-  if (!frame()->host()->settings().getInertVisualViewport())
+  if (!frame()->page()->settings().getInertVisualViewport())
     return m_visualViewport->pageX();
 
   FrameView* view = frame()->view();
@@ -1039,10 +1043,10 @@ double LocalDOMWindow::scrollX() const {
 }
 
 double LocalDOMWindow::scrollY() const {
-  if (!frame() || !frame()->host())
+  if (!frame() || !frame()->page())
     return 0;
 
-  if (!frame()->host()->settings().getInertVisualViewport())
+  if (!frame()->page()->settings().getInertVisualViewport())
     return m_visualViewport->pageY();
 
   FrameView* view = frame()->view();
@@ -1167,14 +1171,14 @@ void LocalDOMWindow::scrollBy(double x,
   if (!view)
     return;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return;
 
   x = ScrollableArea::normalizeNonFiniteScroll(x);
   y = ScrollableArea::normalizeNonFiniteScroll(y);
 
-  ScrollableArea* viewport = host->settings().getInertVisualViewport()
+  ScrollableArea* viewport = page->settings().getInertVisualViewport()
                                  ? view->layoutViewportScrollableArea()
                                  : view->getScrollableArea();
 
@@ -1207,8 +1211,8 @@ void LocalDOMWindow::scrollTo(double x, double y) const {
   if (!view)
     return;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return;
 
   x = ScrollableArea::normalizeNonFiniteScroll(x);
@@ -1221,7 +1225,7 @@ void LocalDOMWindow::scrollTo(double x, double y) const {
 
   ScrollOffset layoutOffset(x * frame()->pageZoomFactor(),
                             y * frame()->pageZoomFactor());
-  ScrollableArea* viewport = host->settings().getInertVisualViewport()
+  ScrollableArea* viewport = page->settings().getInertVisualViewport()
                                  ? view->layoutViewportScrollableArea()
                                  : view->getScrollableArea();
   viewport->setScrollOffset(layoutOffset, ProgrammaticScroll,
@@ -1236,8 +1240,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const {
   if (!view)
     return;
 
-  FrameHost* host = frame()->host();
-  if (!host)
+  Page* page = frame()->page();
+  if (!page)
     return;
 
   // It is only necessary to have an up-to-date layout if the position may be
@@ -1250,7 +1254,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const {
   double scaledX = 0.0;
   double scaledY = 0.0;
 
-  ScrollableArea* viewport = host->settings().getInertVisualViewport()
+  ScrollableArea* viewport = page->settings().getInertVisualViewport()
                                  ? view->layoutViewportScrollableArea()
                                  : view->getScrollableArea();
 

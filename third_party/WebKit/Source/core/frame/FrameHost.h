@@ -49,7 +49,6 @@ class OverscrollController;
 class Page;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
-class Settings;
 class TopDocumentRootScrollerController;
 class UseCounter;
 class VisualViewport;
@@ -63,6 +62,7 @@ class VisualViewport;
 // browser-level concept and Blink core/ only knows about its LocalFrame (and
 // FrameHost).  Separating Page from the rest of core/ through this indirection
 // allows us to slowly refactor Page without breaking the rest of core.
+// TODO(sashab): Merge FrameHost back into Page. crbug.com/688614
 class CORE_EXPORT FrameHost final
     : public GarbageCollectedFinalized<FrameHost> {
   WTF_MAKE_NONCOPYABLE(FrameHost);
@@ -71,12 +71,8 @@ class CORE_EXPORT FrameHost final
   static FrameHost* create(Page&);
   ~FrameHost();
 
-  // Careful: This function will eventually be removed.
   Page& page();
   const Page& page() const;
-
-  Settings& settings();
-  const Settings& settings() const;
 
   ChromeClient& chromeClient();
   const ChromeClient& chromeClient() const;

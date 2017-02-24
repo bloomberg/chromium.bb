@@ -512,7 +512,7 @@ Page* InspectorOverlay::overlayPage() {
   pageClients.chromeClient = m_overlayChromeClient.get();
   m_overlayPage = Page::create(pageClients);
 
-  Settings& settings = m_frameImpl->frame()->host()->settings();
+  Settings& settings = m_frameImpl->frame()->page()->settings();
   Settings& overlaySettings = m_overlayPage->settings();
 
   overlaySettings.genericFontFamilySettings().updateStandard(

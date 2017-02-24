@@ -5,7 +5,6 @@
 #include "modules/storage/DOMWindowStorage.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -124,8 +123,8 @@ Storage* DOMWindowStorage::localStorage(ExceptionState& exceptionState) const {
     return m_localStorage;
   }
   // FIXME: Seems this check should be much higher?
-  FrameHost* host = document->frameHost();
-  if (!host || !host->settings().getLocalStorageEnabled())
+  Page* page = document->page();
+  if (!page || !page->settings().getLocalStorageEnabled())
     return nullptr;
   StorageArea* storageArea =
       StorageNamespace::localStorageArea(document->getSecurityOrigin());

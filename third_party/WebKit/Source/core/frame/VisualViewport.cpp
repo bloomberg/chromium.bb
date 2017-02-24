@@ -270,7 +270,7 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
             frameHost().page().scrollingCoordinator())
       coordinator->scrollableAreaScrollLayerDidChange(this);
 
-    if (!frameHost().settings().getInertVisualViewport()) {
+    if (!frameHost().page().settings().getInertVisualViewport()) {
       if (Document* document = mainFrame()->document())
         document->enqueueScrollEventForNode(document);
     }
@@ -377,7 +377,7 @@ void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot) {
     // Set masks to bounds so the compositor doesn't clobber a manually
     // set inner viewport container layer size.
     m_innerViewportContainerLayer->setMasksToBounds(
-        frameHost().settings().getMainFrameClipsContent());
+        frameHost().page().settings().getMainFrameClipsContent());
     m_innerViewportContainerLayer->setSize(FloatSize(m_size));
 
     m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
@@ -411,7 +411,7 @@ void VisualViewport::initializeScrollbars() {
     return;
 
   if (visualViewportSuppliesScrollbars() &&
-      !frameHost().settings().getHideScrollbars()) {
+      !frameHost().page().settings().getHideScrollbars()) {
     if (!m_overlayScrollbarHorizontal->parent())
       m_innerViewportContainerLayer->addChild(
           m_overlayScrollbarHorizontal.get());
@@ -494,11 +494,11 @@ void VisualViewport::setScrollLayerOnScrollbars(WebLayer* scrollLayer) const {
 }
 
 bool VisualViewport::visualViewportSuppliesScrollbars() const {
-  return frameHost().settings().getViewportEnabled();
+  return frameHost().page().settings().getViewportEnabled();
 }
 
 bool VisualViewport::scrollAnimatorEnabled() const {
-  return frameHost().settings().getScrollAnimatorEnabled();
+  return frameHost().page().settings().getScrollAnimatorEnabled();
 }
 
 HostWindow* VisualViewport::getHostWindow() const {

@@ -384,8 +384,8 @@ LayoutPartItem Frame::ownerLayoutItem() const {
 }
 
 Settings* Frame::settings() const {
-  if (m_host)
-    return &m_host->settings();
+  if (page())
+    return &page()->settings();
   return nullptr;
 }
 

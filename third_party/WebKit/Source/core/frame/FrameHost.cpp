@@ -74,14 +74,6 @@ const Page& FrameHost::page() const {
   return *m_page;
 }
 
-Settings& FrameHost::settings() {
-  return m_page->settings();
-}
-
-const Settings& FrameHost::settings() const {
-  return m_page->settings();
-}
-
 ChromeClient& FrameHost::chromeClient() {
   return m_page->chromeClient();
 }
