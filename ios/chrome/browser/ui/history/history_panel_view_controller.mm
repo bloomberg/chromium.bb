@@ -409,6 +409,10 @@ CGFloat kShadowOpacity = 0.2f;
 
 #pragma mark - UIResponder
 
+- (BOOL)canBecomeFirstResponder {
+  return YES;
+}
+
 - (NSArray*)keyCommands {
   __weak HistoryPanelViewController* weakSelf = self;
   return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape

@@ -28,4 +28,10 @@
   return NO;
 }
 
+#pragma mark - UIResponder
+
+- (BOOL)canBecomeFirstResponder {
+  return YES;
+}
+
 @end

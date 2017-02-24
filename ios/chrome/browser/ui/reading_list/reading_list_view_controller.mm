@@ -164,6 +164,10 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 
 #pragma mark - UIResponder
 
+- (BOOL)canBecomeFirstResponder {
+  return YES;
+}
+
 - (NSArray*)keyCommands {
   __weak ReadingListViewController* weakSelf = self;
   return @[ [UIKeyCommand

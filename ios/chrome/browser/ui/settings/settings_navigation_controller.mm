@@ -656,4 +656,10 @@ initWithRootViewController:(UIViewController*)rootViewController
   return [NSValue valueWithPointer:controller];
 }
 
+#pragma mark - UIResponder
+
+- (BOOL)canBecomeFirstResponder {
+  return YES;
+}
+
 @end
