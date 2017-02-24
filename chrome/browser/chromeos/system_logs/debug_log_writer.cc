@@ -13,9 +13,9 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/logging_chrome.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -195,13 +195,12 @@ void OnSystemLogsAdded(const DebugLogWriter::StoreLogsCallback& callback,
   base::FilePath user_log_dir =
       logging::GetSessionLogDir(*base::CommandLine::ForCurrentProcess());
 
-  content::BrowserThread::PostBlockingPoolTask(
+  base::PostTaskWithTraits(
       FROM_HERE,
-      base::Bind(&AddUserLogsToArchive,
-                 user_log_dir,
-                 tar_file_path,
-                 compressed_output_path,
-                 callback));
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
+      base::Bind(&AddUserLogsToArchive, user_log_dir, tar_file_path,
+                 compressed_output_path, callback));
 }
 
 void InitializeLogFile(base::File* file,
