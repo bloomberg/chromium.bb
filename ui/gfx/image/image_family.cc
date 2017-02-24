@@ -117,8 +117,14 @@ gfx::Image ImageFamily::CreateExact(int width, int height) const {
   if (!image)
     return gfx::Image();
 
-  if (image->Width() == width && image->Height() == height)
-    return gfx::Image(*image);
+  if (image->Width() == width && image->Height() == height) {
+    // Make a copy at gfx::ImageSkia level, so that resulting image's ref count
+    // is not racy to |image|. Since this function can run on a different thread
+    // than the thread |image| created on, we should not touch the
+    // non-thread-safe ref count in gfx::Image here.
+    std::unique_ptr<gfx::ImageSkia> image_skia(image->CopyImageSkia());
+    return gfx::Image(*image_skia);
+  }
 
   SkBitmap bitmap = image->AsBitmap();
   SkBitmap resized_bitmap = skia::ImageOperations::Resize(
