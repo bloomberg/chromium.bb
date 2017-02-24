@@ -2076,6 +2076,13 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   }
 
   LayoutSize containerOffset = offsetFromContainer(container);
+
+  // TODO(smcgruer): This is inefficient. Instead we should avoid including
+  // offsetForInFlowPosition in offsetFromContainer when ignoring sticky.
+  if (mode & IgnoreStickyOffset && isStickyPositioned()) {
+    containerOffset -= toLayoutBoxModelObject(this)->offsetForInFlowPosition();
+  }
+
   if (isLayoutFlowThread()) {
     // So far the point has been in flow thread coordinates (i.e. as if
     // everything in the fragmentation context lived in one tall single column).

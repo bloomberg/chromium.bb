@@ -1,0 +1,55 @@
+<style>
+body {
+  margin: 0;
+}
+
+.group {
+  position: relative;
+  width: 350px;
+  height: 200px;
+}
+
+.container {
+  width: 350px;
+  height: 180px;
+  outline: 2px solid black;
+}
+
+.outerBox {
+  position: absolute;
+  background-color: green;
+  width: 200px;
+  height: 180px;
+}
+
+.innerBox {
+  position: absolute;
+  background-color: red;
+  width: 100px;
+  height: 180px;
+}
+</style>
+
+<div class="group">
+  <div class="container">
+    <div class="outerBox" style="left: 50px;">
+      <div class="innerBox" style="left: 0;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="group">
+  <div class="container">
+    <div class="outerBox" style="left: 50px;">
+      <div class="innerBox" style="left: 50px;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="group">
+  <div class="container">
+    <div class="outerBox" style="left: 50px;">
+      <div class="innerBox" style="left: 100px;"></div>
+    </div>
+  </div>
+</div>

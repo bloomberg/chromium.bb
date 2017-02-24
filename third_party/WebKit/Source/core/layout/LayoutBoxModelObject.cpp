@@ -46,6 +46,47 @@
 
 namespace blink {
 
+namespace {
+inline bool isOutOfFlowPositionedWithImplicitHeight(
+    const LayoutBoxModelObject* child) {
+  return child->isOutOfFlowPositioned() &&
+         !child->style()->logicalTop().isAuto() &&
+         !child->style()->logicalBottom().isAuto();
+}
+
+StickyPositionScrollingConstraints* stickyConstraintsForLayoutObject(
+    const LayoutBoxModelObject* obj,
+    const PaintLayer* ancestorOverflowLayer) {
+  if (!obj)
+    return nullptr;
+
+  PaintLayerScrollableArea* scrollableArea =
+      ancestorOverflowLayer->getScrollableArea();
+  auto it = scrollableArea->stickyConstraintsMap().find(obj->layer());
+  if (it == scrollableArea->stickyConstraintsMap().end())
+    return nullptr;
+
+  return &it->value;
+}
+
+// Inclusive of |from|, exclusive of |to|.
+LayoutBoxModelObject* findFirstStickyBetween(LayoutObject* from,
+                                             LayoutObject* to) {
+  LayoutObject* maybeStickyAncestor = from;
+  while (maybeStickyAncestor && maybeStickyAncestor != to) {
+    if (maybeStickyAncestor->isStickyPositioned()) {
+      return toLayoutBoxModelObject(maybeStickyAncestor);
+    }
+
+    maybeStickyAncestor =
+        maybeStickyAncestor->isLayoutInline()
+            ? maybeStickyAncestor->containingBlock()
+            : toLayoutBox(maybeStickyAncestor)->locationContainer();
+  }
+  return nullptr;
+}
+}  // namespace
+
 class FloatStateForStyleChange {
  public:
   static void setWasFloating(LayoutBoxModelObject* boxModelObject,
@@ -662,13 +703,6 @@ void LayoutBoxModelObject::updateFromStyle() {
   setHorizontalWritingMode(styleToUse.isHorizontalWritingMode());
 }
 
-static inline bool isOutOfFlowPositionedWithImplicitHeight(
-    const LayoutBoxModelObject* child) {
-  return child->isOutOfFlowPositioned() &&
-         !child->style()->logicalTop().isAuto() &&
-         !child->style()->logicalBottom().isAuto();
-}
-
 LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(
     Length logicalHeight) const {
   // For percentage heights: The percentage is calculated with respect to the
@@ -836,14 +870,13 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
   FloatSize skippedContainersOffset;
   LayoutBlock* containingBlock = this->containingBlock();
   // The location container for boxes is not always the containing block.
-  LayoutBox* locationContainer = isLayoutInline()
-                                     ? containingBlock
-                                     : toLayoutBox(this)->locationContainer();
+  LayoutObject* locationContainer =
+      isLayoutInline() ? container() : toLayoutBox(this)->locationContainer();
   // Skip anonymous containing blocks.
   while (containingBlock->isAnonymous()) {
     containingBlock = containingBlock->containingBlock();
   }
-  MapCoordinatesFlags flags = 0;
+  MapCoordinatesFlags flags = IgnoreStickyOffset;
   skippedContainersOffset =
       toFloatSize(locationContainer
                       ->localToAncestorQuadWithoutTransforms(
@@ -923,6 +956,7 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
   FloatRect stickyBoxRect =
       isLayoutInline() ? FloatRect(toLayoutInline(this)->linesBoundingBox())
                        : FloatRect(toLayoutBox(this)->frameRect());
+
   FloatRect flippedStickyBoxRect = stickyBoxRect;
   containingBlock->flipForWritingMode(flippedStickyBoxRect);
   FloatPoint stickyLocation =
@@ -940,6 +974,19 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
       FloatRect(scrollContainerRelativePaddingBoxRect.location() +
                     toFloatSize(stickyLocation),
                 flippedStickyBoxRect.size()));
+
+  // To correctly compute the offsets, the constraints need to know about any
+  // nested position:sticky elements between themselves and their
+  // containingBlock, and between the containingBlock and their scrollAncestor.
+  //
+  // The respective search ranges are [container, containingBlock) and
+  // [containingBlock, scrollAncestor).
+  constraints.setNearestStickyBoxShiftingStickyBox(
+      findFirstStickyBetween(locationContainer, containingBlock));
+  // We cannot use |scrollAncestor| here as it disregards the root
+  // ancestorOverflowLayer(), which we should include.
+  constraints.setNearestStickyBoxShiftingContainingBlock(findFirstStickyBetween(
+      containingBlock, &layer()->ancestorOverflowLayer()->layoutObject()));
 
   // We skip the right or top sticky offset if there is not enough space to
   // honor both the left/right or top/bottom offsets.
@@ -1035,19 +1082,28 @@ LayoutSize LayoutBoxModelObject::stickyPositionOffset() const {
   // compositing inputs have been computed?
   if (!ancestorOverflowLayer)
     return LayoutSize();
-  FloatRect constrainingRect = computeStickyConstrainingRect();
-  PaintLayerScrollableArea* scrollableArea =
-      ancestorOverflowLayer->getScrollableArea();
+
+  StickyPositionScrollingConstraints* constraints =
+      stickyConstraintsForLayoutObject(this, ancestorOverflowLayer);
+  if (!constraints)
+    return LayoutSize();
+
+  StickyPositionScrollingConstraints* shiftingStickyBoxConstraints =
+      stickyConstraintsForLayoutObject(
+          constraints->nearestStickyBoxShiftingStickyBox(),
+          ancestorOverflowLayer);
+
+  StickyPositionScrollingConstraints* shiftingContainingBlockConstraints =
+      stickyConstraintsForLayoutObject(
+          constraints->nearestStickyBoxShiftingContainingBlock(),
+          ancestorOverflowLayer);
 
   // The sticky offset is physical, so we can just return the delta computed in
   // absolute coords (though it may be wrong with transforms).
-  // TODO: Force compositing input update if we ask for offset with stale
-  // compositing inputs.
-  if (!scrollableArea->stickyConstraintsMap().contains(layer()))
-    return LayoutSize();
-  return LayoutSize(
-      scrollableArea->stickyConstraintsMap().at(layer()).computeStickyOffset(
-          constrainingRect));
+  FloatRect constrainingRect = computeStickyConstrainingRect();
+  return LayoutSize(constraints->computeStickyOffset(
+      constrainingRect, shiftingStickyBoxConstraints,
+      shiftingContainingBlockConstraints));
 }
 
 LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(

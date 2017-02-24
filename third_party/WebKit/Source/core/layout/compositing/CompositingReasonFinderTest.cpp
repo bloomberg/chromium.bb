@@ -271,4 +271,36 @@ TEST_F(CompositingReasonFinderTest, RequiresCompositingForEffectAnimation) {
       CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
 }
 
+TEST_F(CompositingReasonFinderTest, DoNotCompositeNestedSticky) {
+  ScopedCompositeFixedPositionForTest compositeFixedPosition(true);
+
+  setBodyInnerHTML(
+      "<style>.scroller { overflow: scroll; height: 200px; width: 100px; }"
+      ".container { height: 500px; }"
+      ".opaque { background-color: white; contain: paint; }"
+      "#outerSticky { height: 50px; position: sticky; top: 0px; }"
+      "#innerSticky { height: 20px; position: sticky; top: 25px; }</style>"
+      "<div class='scroller'>"
+      "  <div class='container'>"
+      "    <div id='outerSticky' class='opaque'>"
+      "      <div id='innerSticky' class='opaque'></div>"
+      "    </div>"
+      "  </div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* outerSticky = document().getElementById("outerSticky");
+  PaintLayer* outerStickyLayer =
+      toLayoutBoxModelObject(outerSticky->layoutObject())->layer();
+  ASSERT_TRUE(outerStickyLayer);
+
+  Element* innerSticky = document().getElementById("innerSticky");
+  PaintLayer* innerStickyLayer =
+      toLayoutBoxModelObject(innerSticky->layoutObject())->layer();
+  ASSERT_TRUE(innerStickyLayer);
+
+  EXPECT_EQ(PaintsIntoOwnBacking, outerStickyLayer->compositingState());
+  EXPECT_EQ(NotComposited, innerStickyLayer->compositingState());
+}
+
 }  // namespace blink

@@ -345,6 +345,7 @@ void CompositedLayerMapping::updateStickyConstraints(
         enclosingIntRect(constraints.scrollContainerRelativeStickyBoxRect());
     webConstraint.scrollContainerRelativeContainingBlockRect = enclosingIntRect(
         constraints.scrollContainerRelativeContainingBlockRect());
+    // TODO(smcgruer): Copy fields for nested sticky in cc (crbug.com/672710)
   }
 
   m_graphicsLayer->setStickyPositionConstraint(webConstraint);

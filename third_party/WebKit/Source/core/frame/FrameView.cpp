@@ -1965,11 +1965,20 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded() {
   if (!hasViewportConstrainedObjects())
     return;
 
-  // Update sticky position objects which are stuck to the viewport.
+  // Update sticky position objects which are stuck to the viewport. In order to
+  // correctly compute the sticky position offsets the layers must be visited
+  // top-down, so start at the 'root' sticky elements and recurse downwards.
   for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
     LayoutObject* layoutObject = viewportConstrainedObject;
+    if (layoutObject->style()->position() != EPosition::kSticky)
+      continue;
+
     PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
-    if (layoutObject->style()->position() == EPosition::kSticky) {
+    StickyConstraintsMap constraintsMap = layer->ancestorOverflowLayer()
+                                              ->getScrollableArea()
+                                              ->stickyConstraintsMap();
+    if (constraintsMap.contains(layer) &&
+        !constraintsMap.at(layer).hasAncestorStickyElement()) {
       // TODO(skobes): Resolve circular dependency between scroll offset and
       // compositing state, and remove this disabler. https://crbug.com/420741
       DisableCompositingQueryAsserts disabler;

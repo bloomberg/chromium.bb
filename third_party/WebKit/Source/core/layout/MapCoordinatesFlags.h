@@ -25,6 +25,10 @@ enum MapCoordinatesMode {
   // disables view clipping and scroll offset adjustment.
   // TODO(wangxianzhu): Remove this when root-layer-scrolls launches.
   InputIsInFrameCoordinates = 1 << 4,
+
+  // Ignore offset adjustments caused by position:sticky calculations when
+  // walking the chain.
+  IgnoreStickyOffset = 1 << 5,
 };
 typedef unsigned MapCoordinatesFlags;
 
