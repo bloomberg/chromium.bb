@@ -58,7 +58,7 @@
 
       iron-icon {
         -webkit-margin-end: var(--about-page-image-space);
-        width: 32px;  /* The width of the product-logo img. */
+        min-width: 32px;  /* The width of the product-logo img. */
       }
 
       iron-icon[icon='settings:check-circle'] {
@@ -67,6 +67,10 @@
 
       iron-icon[icon='settings:error'] {
         fill: var(--paper-red-600);
+      }
+
+      .settings-box .start {
+        overflow-x: auto;
       }
 
       #regulatoryInfo img {

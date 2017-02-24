@@ -277,17 +277,16 @@ Polymer({
         return this.i18n('aboutUpgradeUpdating');
       default:
         function formatMessage(msg) {
-          return '<div>' +
-              parseHtmlSubset('<b>' + msg + '</b>').firstChild.innerHTML +
-              '</div>';
+          return parseHtmlSubset(
+              '<b>' + msg + '</b>', ['br', 'pre']).firstChild.innerHTML;
         }
         var result = '';
         var message = this.currentUpdateStatusEvent_.message;
-        if (!!message)
+        if (message)
           result += formatMessage(message);
         var connectMessage = this.currentUpdateStatusEvent_.connectionTypes;
-        if (!!connectMessage)
-          result += formatMessage(connectMessage);
+        if (connectMessage)
+          result += '<div>' + formatMessage(connectMessage) + '</div>';
         return result;
     }
   },
