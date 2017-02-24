@@ -101,7 +101,6 @@ class CORE_EXPORT FrameSelection final
   Document& document() const;
   LocalFrame* frame() const { return m_frame; }
   Element* rootEditableElementOrDocumentElement() const;
-  ContainerNode* rootEditableElementOrTreeScopeRootNode() const;
 
   // An implementation of |WebFrame::moveCaretSelection()|
   void moveCaretSelection(const IntPoint&);

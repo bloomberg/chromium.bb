@@ -85,8 +85,8 @@ PlainTextRange getSelectionOffsets(LocalFrame* frame) {
       frame->selection().computeVisibleSelectionInDOMTreeDeprecated());
   if (range.isNull())
     return PlainTextRange();
-  ContainerNode* editable =
-      frame->selection().rootEditableElementOrTreeScopeRootNode();
+  ContainerNode* const editable = rootEditableElementOrTreeScopeRootNodeOf(
+      frame->selection().computeVisibleSelectionInDOMTreeDeprecated());
   DCHECK(editable);
   return PlainTextRange::create(*editable, range);
 }

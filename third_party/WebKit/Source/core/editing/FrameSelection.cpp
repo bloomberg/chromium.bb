@@ -139,15 +139,15 @@ Element* FrameSelection::rootEditableElementOrDocumentElement() const {
   return selectionRoot ? selectionRoot : document().documentElement();
 }
 
-ContainerNode* FrameSelection::rootEditableElementOrTreeScopeRootNode() const {
-  Element* selectionRoot =
-      computeVisibleSelectionInDOMTreeDeprecated().rootEditableElement();
+// TODO(yosin): We should move |rootEditableElementOrTreeScopeRootNodeOf()| to
+// "EditingUtilities.cpp"
+ContainerNode* rootEditableElementOrTreeScopeRootNodeOf(
+    const VisibleSelection& visibleSelection) {
+  Element* selectionRoot = visibleSelection.rootEditableElement();
   if (selectionRoot)
     return selectionRoot;
 
-  Node* node = computeVisibleSelectionInDOMTreeDeprecated()
-                   .base()
-                   .computeContainerNode();
+  Node* const node = visibleSelection.base().computeContainerNode();
   return node ? &node->treeScope().rootNode() : 0;
 }
 
