@@ -109,8 +109,7 @@ class VrController {
 
   void Reset();
 
-  // Update gesture parameters,
-  void UpdateGesture(WebGestureEvent* gesture);
+  void UpdateGestureParameters();
 
   // If the user is touching the touch pad and the touch point is different from
   // before, update the touch point and return true. Otherwise, return false.

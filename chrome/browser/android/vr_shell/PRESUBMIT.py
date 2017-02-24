@@ -15,9 +15,9 @@ import re
 # linters, and add exclusions if necessary.
 #
 # Note that this list must be non-empty, or cpplint will use its default set of
-# filters. Therefore, explicitly enable a single dummy linter.
+# filters.
 LINT_FILTERS = [
-  '+build/include',
+  '-build/include',
 ]
 
 VERBOSITY_LEVEL = 4

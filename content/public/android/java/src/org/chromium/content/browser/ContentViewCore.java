@@ -1985,7 +1985,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     @SuppressWarnings("unused")
     @CalledByNative
     private MotionEventSynthesizer createMotionEventSynthesizer() {
-        return new MotionEventSynthesizer(this);
+        return new MotionEventSynthesizer(getContainerView(), this);
     }
 
     @SuppressWarnings("unused")

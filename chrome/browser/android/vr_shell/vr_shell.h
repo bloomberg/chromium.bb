@@ -38,6 +38,7 @@ class WindowAndroid;
 
 namespace vr_shell {
 
+class AndroidUiGestureTarget;
 class UiInterface;
 class VrCompositor;
 class VrGLThread;
@@ -74,9 +75,11 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
           VrShellDelegate* delegate,
           gvr_context* gvr_api,
           bool reprojected_rendering);
-  void SwapContents(JNIEnv* env,
-                    const base::android::JavaParamRef<jobject>& obj,
-                    const base::android::JavaParamRef<jobject>& web_contents);
+  void SwapContents(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& web_contents,
+      const base::android::JavaParamRef<jobject>& touch_event_synthesizer);
   void LoadUIContent(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -204,6 +207,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   bool webvr_mode_ = false;
 
   content::WebContents* main_contents_ = nullptr;
+  base::android::ScopedJavaGlobalRef<jobject> j_motion_event_synthesizer_;
   ui::WindowAndroid* content_window_;
   std::unique_ptr<VrCompositor> content_compositor_;
   content::WebContents* ui_contents_;
@@ -215,6 +219,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;
 
   std::unique_ptr<VrInputManager> content_input_manager_;
+  std::unique_ptr<AndroidUiGestureTarget> android_ui_gesture_target_;
   std::unique_ptr<VrInputManager> ui_input_manager_;
   std::unique_ptr<VrMetricsHelper> metrics_helper_;
 

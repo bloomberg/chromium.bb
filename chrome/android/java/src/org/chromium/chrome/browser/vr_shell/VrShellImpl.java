@@ -13,6 +13,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.FrameLayout;
 
 import com.google.vr.ndk.base.AndroidCompat;
@@ -41,6 +42,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.MotionEventSynthesizer;
+import org.chromium.content.browser.WindowAndroidChangedObserver;
+import org.chromium.content.browser.WindowAndroidProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
@@ -53,7 +57,8 @@ import org.chromium.ui.display.VirtualDisplayAndroid;
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
  */
 @JNINamespace("vr_shell")
-public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Callback {
+public class VrShellImpl
+        extends GvrLayout implements VrShell, SurfaceHolder.Callback, WindowAndroidProvider {
     private static final String TAG = "VrShellImpl";
 
     // TODO(mthiesse): These values work well for Pixel/Pixel XL in VR, but we need to come up with
@@ -108,6 +113,8 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private float mLastContentWidth;
     private float mLastContentHeight;
     private float mLastContentDpr;
+
+    private MotionEventSynthesizer mMotionEventSynthesizer;
 
     public VrShellImpl(ChromeActivity activity, VrShellDelegate delegate,
             CompositorViewHolder compositorViewHolder) {
@@ -173,6 +180,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
                 if (mNativePage != null) {
                     UiUtils.removeViewFromParent(mNativePage.getView());
                     mNativePage = null;
+                    mMotionEventSynthesizer = null;
                     if (tab.getNativePage() == null) {
                         nativeRestoreContentSurface(mNativeVrShell);
                         mRenderToSurfaceLayout.setVisibility(View.INVISIBLE);
@@ -187,14 +195,17 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
                             new FrameLayout.LayoutParams(
                                     LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
                     mNativePage.getView().invalidate();
+                    mMotionEventSynthesizer =
+                            new MotionEventSynthesizer(mNativePage.getView(), VrShellImpl.this);
                 }
                 setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
                 if (tab.getNativePage() == null && mTab.getContentViewCore() != null) {
                     mTab.getContentViewCore().onAttachedToWindow();
                     mTab.getContentViewCore().getContainerView().requestFocus();
-                    nativeSwapContents(mNativeVrShell, mTab.getContentViewCore().getWebContents());
+                    nativeSwapContents(
+                            mNativeVrShell, mTab.getContentViewCore().getWebContents(), null);
                 } else {
-                    nativeSwapContents(mNativeVrShell, null);
+                    nativeSwapContents(mNativeVrShell, null, mMotionEventSynthesizer);
                 }
             }
 
@@ -241,6 +252,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
             @Override
             protected void dispatchDraw(Canvas canvas) {
                 if (mSurface == null) return;
+                // TODO(mthiesse): Support mSurface.lockHardwareCanvas(); crbug.com/692775
                 final Canvas surfaceCanvas = mSurface.lockCanvas(null);
                 super.dispatchDraw(surfaceCanvas);
                 mSurface.unlockCanvasAndPost(surfaceCanvas);
@@ -252,6 +264,18 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
             }
         };
         mRenderToSurfaceLayout.setVisibility(View.INVISIBLE);
+        // We need a pre-draw listener to invalidate the native page because scrolling usually
+        // doesn't trigger an onDraw call, so our texture won't get updated.
+        mRenderToSurfaceLayout.getViewTreeObserver().addOnPreDrawListener(new OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (mRenderToSurfaceLayout.isDirty()) {
+                    mRenderToSurfaceLayout.invalidate();
+                    if (mNativePage != null) mNativePage.getView().invalidate();
+                }
+                return true;
+            }
+        });
         addView(mRenderToSurfaceLayout);
     }
 
@@ -558,11 +582,29 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mTab.reload();
     }
 
+    @CalledByNative
+    public float getNativePageScrollRatio() {
+        return mOriginalWindowAndroid.getDisplay().getDipScale()
+                / mContentVrWindowAndroid.getDisplay().getDipScale();
+    }
+
+    @Override
+    public WindowAndroid getWindowAndroid() {
+        return mContentVrWindowAndroid;
+    }
+
+    @Override
+    public void addWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {}
+
+    @Override
+    public void removeWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {}
+
     private native long nativeInit(WebContents uiWebContents, long nativeContentWindowAndroid,
             long nativeUiWindowAndroid, boolean forWebVR, VrShellDelegate delegate, long gvrApi,
             boolean reprojectedRendering);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
-    private native void nativeSwapContents(long nativeVrShell, WebContents webContents);
+    private native void nativeSwapContents(
+            long nativeVrShell, WebContents webContents, MotionEventSynthesizer eventSynthesizer);
     private native void nativeLoadUIContent(long nativeVrShell);
     private native void nativeDestroy(long nativeVrShell);
     private native void nativeOnTriggerEvent(long nativeVrShell);

@@ -13,6 +13,8 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
     defines = []
 
     sources = [
+      "android_ui_gesture_target.cc",
+      "android_ui_gesture_target.h",
       "animation.cc",
       "animation.h",
       "easing.cc",
@@ -65,6 +67,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "//components/omnibox/browser",
       "//components/rappor",
       "//components/security_state/core",
+      "//content/public/android:jni",
       "//content/public/browser",
       "//content/public/common",
       "//device/gamepad",

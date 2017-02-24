@@ -253,7 +253,7 @@ void VrController::UpdateGestureFromTouchInfo(WebGestureEvent* gesture) {
       HandleScrollingState(gesture);
       break;
     default:
-      LOG(ERROR) << "Wrong gesture detector state: " << state_;
+      NOTREACHED();
       break;
   }
 }
@@ -287,11 +287,13 @@ void VrController::HandleDetectingState(WebGestureEvent* gesture) {
       !ButtonDownHappened(gvr::kControllerButtonClick)) {
     state_ = SCROLLING;
     gesture->setType(WebInputEvent::GestureScrollBegin);
-    UpdateGesture(gesture);
+    UpdateGestureParameters();
     gesture->data.scrollBegin.deltaXHint =
         displacement_.x * kDisplacementScaleFactor;
     gesture->data.scrollBegin.deltaYHint =
         displacement_.y * kDisplacementScaleFactor;
+    gesture->data.scrollBegin.deltaHintUnits =
+        blink::WebGestureEvent::ScrollUnits::PrecisePixels;
   }
 }
 
@@ -300,11 +302,11 @@ void VrController::HandleScrollingState(WebGestureEvent* gesture) {
       ButtonDownHappened(gvr::kControllerButtonClick)) {
     // Gesture ends.
     gesture->setType(WebInputEvent::GestureScrollEnd);
-    UpdateGesture(gesture);
+    UpdateGestureParameters();
   } else if (touch_position_changed_) {
     // User continues scrolling and there is a change in touch position.
     gesture->setType(WebInputEvent::GestureScrollUpdate);
-    UpdateGesture(gesture);
+    UpdateGestureParameters();
     if (IsHorizontalGesture()) {
       gesture->data.scrollUpdate.deltaX =
           displacement_.x * kDisplacementScaleFactor;
@@ -340,9 +342,7 @@ void VrController::Reset() {
   Vector::SetZero(&last_velocity_);
 }
 
-void VrController::UpdateGesture(WebGestureEvent* gesture) {
-  if (!gesture)
-    LOG(ERROR) << "The gesture pointer is not initiated properly.";
+void VrController::UpdateGestureParameters() {
   displacement_ = Vector::Subtract(touch_info_->touch_point.position,
                                    prev_touch_point_->position);
 }

@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/vr_shell/android_ui_gesture_target.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_gl_thread.h"
@@ -106,16 +107,19 @@ void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void VrShell::SwapContents(JNIEnv* env,
-                           const JavaParamRef<jobject>& obj,
-                           const JavaParamRef<jobject>& web_contents) {
+void VrShell::SwapContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& web_contents,
+    const JavaParamRef<jobject>& touch_event_synthesizer) {
   content::WebContents* contents =
       content::WebContents::FromJavaWebContents(web_contents);
-  if (contents == main_contents_)
+  if (contents == main_contents_ &&
+      touch_event_synthesizer.obj() == j_motion_event_synthesizer_.obj())
     return;
 
   SetIsInVR(main_contents_, false);
-
+  j_motion_event_synthesizer_.Reset(env, touch_event_synthesizer);
   main_contents_ = contents;
   content_compositor_->SetLayer(main_contents_);
   SetIsInVR(main_contents_, true);
@@ -123,6 +127,9 @@ void VrShell::SwapContents(JNIEnv* env,
   SetUiState();
 
   if (!main_contents_) {
+    android_ui_gesture_target_ = base::MakeUnique<AndroidUiGestureTarget>(
+        j_motion_event_synthesizer_.obj(),
+        Java_VrShellImpl_getNativePageScrollRatio(env, j_vr_shell_.obj()));
     content_input_manager_ = nullptr;
     vr_web_contents_observer_ = nullptr;
     metrics_helper_ = nullptr;
@@ -567,6 +574,8 @@ void VrShell::ProcessContentGesture(
     std::unique_ptr<blink::WebInputEvent> event) {
   if (content_input_manager_) {
     content_input_manager_->ProcessUpdatedGesture(std::move(event));
+  } else if (android_ui_gesture_target_) {
+    android_ui_gesture_target_->DispatchWebInputEvent(std::move(event));
   }
 }
 
