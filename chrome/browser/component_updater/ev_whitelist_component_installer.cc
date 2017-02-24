@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
 #include "components/component_updater/component_updater_paths.h"
@@ -106,11 +107,11 @@ void EVWhitelistComponentInstallerTraits::ComponentReady(
   VLOG(1) << "Component ready, version " << version.GetString() << " in "
           << install_dir.value();
 
-  if (!content::BrowserThread::PostBlockingPoolTask(
-          FROM_HERE, base::Bind(&LoadWhitelistFromDisk,
-                                GetInstalledPath(install_dir), version))) {
-    NOTREACHED();
-  }
+  base::PostTaskWithTraits(FROM_HERE,
+                           base::TaskTraits().MayBlock().WithPriority(
+                               base::TaskPriority::BACKGROUND),
+                           base::Bind(&LoadWhitelistFromDisk,
+                                      GetInstalledPath(install_dir), version));
 }
 
 // Called during startup and installation before ComponentReady().
