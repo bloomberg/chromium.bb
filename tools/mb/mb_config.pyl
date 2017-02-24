@@ -1204,7 +1204,7 @@
     ],
 
     'gpu_fyi_tests_chromeos_ozone_release_trybot': [
-      'gpu_fyi_tests', 'release_trybot', 'chromeos', 'ozone_linux', 'system_gbm_libdrm',
+      'gpu_fyi_tests', 'release_trybot', 'chromeos', 'ozone', 'ozone_linux', 'system_gbm_libdrm',
     ],
 
     'gpu_fyi_tests_chromeos_release_trybot': [
