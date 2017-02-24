@@ -20,7 +20,6 @@ var test = function()
             .then(waitUntilReady)
             .then(onBreakpointsReady);
         InspectorTest.setBreakpoint(sourceFrame, 14, "", true);
-        InspectorTest.setBreakpoint(sourceFrame, 15, "", true);
 
         function onBreakpointsReady()
         {
@@ -36,7 +35,7 @@ var test = function()
     }
 
     function waitUntilReady() {
-        var expectedBreakpointLocations = [[14, 0], [16, 4]];
+        var expectedBreakpointLocations = [[16, 4]];
         var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).contentElement;
         var entries = Array.from(paneElement.querySelectorAll('.breakpoint-entry'));
         for (var entry of entries) {

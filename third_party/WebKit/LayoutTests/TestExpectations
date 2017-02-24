@@ -1669,7 +1669,7 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/list-item-with-empty-first-
 crbug.com/618082 [ Win10 ] printing/thead-repeats-at-top-of-each-page.html [ Failure ]
 crbug.com/618082 [ Win10 ] virtual/threaded/printing/thead-repeats-at-top-of-each-page.html [ Failure ]
 
-crbug.com/695203 inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ NeedsManualRebaseline ]
+crbug.com/695203 inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ NeedsManualRebaseline Timeout ]
 crbug.com/695203 inspector/sources/debugger-breakpoints/possible-breakpoints.html [ NeedsManualRebaseline ]
 crbug.com/695203 inspector/sources/debugger/source-frame-inline-breakpoint-decorations.html [ NeedsManualRebaseline ]
 
