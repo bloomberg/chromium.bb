@@ -1069,7 +1069,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     return NO;
 
   // If |useDesktopUserAgent| is |NO|, allow useDesktopUserAgent.
-  return !tab.usesDesktopUserAgent;
+  return !tab.useDesktopUserAgent;
 }
 
 // Whether the sharing menu should be shown.
@@ -4814,7 +4814,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 #pragma mark - PreloadControllerDelegate methods
 
 - (BOOL)shouldUseDesktopUserAgent {
-  return [_model currentTab].usesDesktopUserAgent;
+  return [_model currentTab].useDesktopUserAgent;
 }
 
 - (CRWSessionEntry*)currentSessionEntry {

@@ -1550,16 +1550,13 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [storeKitLauncher_ openAppStore:appId];
 }
 
-- (BOOL)usesDesktopUserAgent {
-  if (!self.navigationManager)
-    return NO;
-
-  web::NavigationItem* visibleItem = self.navigationManager->GetVisibleItem();
-  return visibleItem && visibleItem->IsOverridingUserAgent();
+- (BOOL)useDesktopUserAgent {
+  web::NavigationItem* currentItem = self.currentNavigationItem;
+  return currentItem && currentItem->IsOverridingUserAgent();
 }
 
 - (void)enableDesktopUserAgent {
-  DCHECK_EQ(self.usesDesktopUserAgent, NO);
+  DCHECK_EQ(self.useDesktopUserAgent, NO);
   DCHECK([self navigationManager]);
   [self navigationManager]->OverrideDesktopUserAgentForNextPendingItem();
 }
