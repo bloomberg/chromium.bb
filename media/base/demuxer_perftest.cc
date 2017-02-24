@@ -103,7 +103,7 @@ class StreamReader {
 StreamReader::StreamReader(media::Demuxer* demuxer,
                            bool enable_bitstream_converter) {
   std::vector<media::DemuxerStream*> streams = demuxer->GetAllStreams();
-  for (const auto& stream : streams) {
+  for (auto* stream : streams) {
     streams_.push_back(stream);
     end_of_stream_.push_back(false);
     last_read_timestamp_.push_back(media::kNoTimestamp);

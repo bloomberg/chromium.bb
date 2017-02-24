@@ -90,7 +90,7 @@ TEST_F(GpuJpegDecodeAcceleratorTest, DecodeFrameCallArrivesAtDecoder) {
   auto io_task_runner = io_thread_.task_runner();
   auto main_task_runner = base::ThreadTaskRunnerHandle::Get();
   auto decoder = base::MakeUnique<MockJpegDecodeAccelerator>();
-  auto decoder_ptr = decoder.get();
+  auto* decoder_ptr = decoder.get();
   ON_CALL(*decoder, Initialize(_)).WillByDefault(Return(true));
 
   IPC::MessageFilter* message_filter = nullptr;

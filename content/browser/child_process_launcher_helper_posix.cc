@@ -27,12 +27,12 @@ using RequiredFilesByServiceMap =
     std::map<std::string, catalog::RequiredFileMap>;
 
 RequiredFilesByServiceMap& GetRequiredFilesByServiceMap() {
-  static auto required_files_by_service = new RequiredFilesByServiceMap();
+  static auto* required_files_by_service = new RequiredFilesByServiceMap();
   return *required_files_by_service;
 }
 
 std::map<std::string, std::string>& GetServiceNameByProcessTypeMap() {
-  static auto service_name_resolver = new std::map<std::string, std::string>(
+  static auto* service_name_resolver = new std::map<std::string, std::string>(
       {// The service names are defined in the JSON manifests, so we don't have
        // a constant accessible for them.
        // TODO(jcivelli): remove this map once the service name is accessible
@@ -49,9 +49,9 @@ std::map<std::string, std::string>& GetServiceNameByProcessTypeMap() {
 
 base::PlatformFile OpenFileIfNecessary(const base::FilePath& path,
                                        base::MemoryMappedFile::Region* region) {
-  static auto opened_files =
-      new std::map<base::FilePath, std::pair<base::PlatformFile,
-                                             base::MemoryMappedFile::Region>>;
+  static auto* opened_files = new std::map<
+      base::FilePath,
+      std::pair<base::PlatformFile, base::MemoryMappedFile::Region>>;
 
   const auto& iter = opened_files->find(path);
   if (iter != opened_files->end()) {

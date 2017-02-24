@@ -916,7 +916,7 @@ void PipelineImpl::RendererWrapper::ReportMetadata() {
       metadata.timeline_offset = demuxer_->GetTimelineOffset();
       // TODO(servolk): What should we do about metadata for multiple streams?
       streams = demuxer_->GetAllStreams();
-      for (const auto& stream : streams) {
+      for (auto* stream : streams) {
         if (stream->type() == DemuxerStream::VIDEO && !metadata.has_video) {
           metadata.has_video = true;
           metadata.natural_size = GetRotatedVideoSize(
