@@ -863,6 +863,8 @@ split_static_library("browser") {
     "permissions/permission_request_impl.h",
     "permissions/permission_request_manager.cc",
     "permissions/permission_request_manager.h",
+    "permissions/permission_result.cc",
+    "permissions/permission_result.h",
     "permissions/permission_uma_util.cc",
     "permissions/permission_uma_util.h",
     "permissions/permission_util.cc",

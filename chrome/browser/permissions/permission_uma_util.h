@@ -11,7 +11,9 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "content/public/browser/permission_type.h"
 
 enum class PermissionRequestGestureType;
 class GURL;
