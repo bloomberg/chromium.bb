@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -106,10 +107,11 @@ void CommandLineLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(!callback.is_null());
 
   SystemLogsResponse* response = new SystemLogsResponse;
-  BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ExecuteCommandLines, response),
-      base::Bind(callback, base::Owned(response)));
+  base::PostTaskWithTraitsAndReply(FROM_HERE,
+                                   base::TaskTraits().MayBlock().WithPriority(
+                                       base::TaskPriority::BACKGROUND),
+                                   base::Bind(&ExecuteCommandLines, response),
+                                   base::Bind(callback, base::Owned(response)));
 }
 
 }  // namespace system_logs
