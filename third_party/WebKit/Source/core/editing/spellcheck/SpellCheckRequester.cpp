@@ -251,7 +251,8 @@ void SpellCheckRequester::didCheck(int sequence,
     return;
   }
 
-  frame().spellChecker().markAndReplaceFor(m_processingRequest, results);
+  if (results.size())
+    frame().spellChecker().markAndReplaceFor(m_processingRequest, results);
 
   DCHECK_LT(m_lastProcessedSequence, sequence);
   m_lastProcessedSequence = sequence;
