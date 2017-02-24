@@ -75,7 +75,8 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
                                blink::WebInputEvent::Type type,
                                blink::WebInputEventResult result,
                                InputEventAckState ack_result) override;
-  void ProcessRafAlignedInput(int routing_id) override;
+  void ProcessRafAlignedInput(int routing_id,
+                              base::TimeTicks frame_time) override;
 
   // IPC::MessageFilter methods:
   void OnFilterAdded(IPC::Channel* channel) override;

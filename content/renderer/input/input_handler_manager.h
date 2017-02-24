@@ -77,7 +77,8 @@ class CONTENT_EXPORT InputHandlerManager {
                                            blink::WebInputEvent::Type,
                                            blink::WebInputEventResult,
                                            InputEventAckState);
-  void ProcessRafAlignedInputOnMainThread(int routing_id);
+  void ProcessRafAlignedInputOnMainThread(int routing_id,
+                                          base::TimeTicks frame_time);
 
   // Callback only from the compositor's thread.
   void RemoveInputHandler(int routing_id);

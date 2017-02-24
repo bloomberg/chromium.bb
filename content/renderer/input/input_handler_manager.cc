@@ -196,8 +196,10 @@ void InputHandlerManager::NotifyInputEventHandledOnMainThread(
   client_->NotifyInputEventHandled(routing_id, type, result, ack_result);
 }
 
-void InputHandlerManager::ProcessRafAlignedInputOnMainThread(int routing_id) {
-  client_->ProcessRafAlignedInput(routing_id);
+void InputHandlerManager::ProcessRafAlignedInputOnMainThread(
+    int routing_id,
+    base::TimeTicks frame_time) {
+  client_->ProcessRafAlignedInput(routing_id, frame_time);
 }
 
 void InputHandlerManager::HandleInputEvent(

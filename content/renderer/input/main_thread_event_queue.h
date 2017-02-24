@@ -24,7 +24,8 @@ class EventWithDispatchType : public ScopedWebInputEventWithLatencyInfo {
  public:
   EventWithDispatchType(ui::WebScopedInputEvent event,
                         const ui::LatencyInfo& latency,
-                        InputEventDispatchType dispatch_type);
+                        InputEventDispatchType dispatch_type,
+                        bool originally_cancelable);
   ~EventWithDispatchType();
   void CoalesceWith(const EventWithDispatchType& other);
 
@@ -41,6 +42,8 @@ class EventWithDispatchType : public ScopedWebInputEventWithLatencyInfo {
     return non_blocking_coalesced_count_ + blocking_coalesced_event_ids_.size();
   }
 
+  bool originallyCancelable() const { return originally_cancelable_; }
+
  private:
   InputEventDispatchType dispatch_type_;
 
@@ -53,6 +56,12 @@ class EventWithDispatchType : public ScopedWebInputEventWithLatencyInfo {
   size_t non_blocking_coalesced_count_;
   base::TimeTicks creation_timestamp_;
   base::TimeTicks last_coalesced_timestamp_;
+
+  // Whether the received event was originally cancelable or not. The compositor
+  // input handler can change the event based on presence of event handlers so
+  // this is the state at which the renderer received the event from the
+  // browser.
+  bool originally_cancelable_;
 };
 
 class CONTENT_EXPORT MainThreadEventQueueClient {
@@ -124,7 +133,7 @@ class CONTENT_EXPORT MainThreadEventQueue
                    const ui::LatencyInfo& latency,
                    InputEventDispatchType dispatch_type,
                    InputEventAckState ack_result);
-  void DispatchRafAlignedInput();
+  void DispatchRafAlignedInput(base::TimeTicks frame_time);
 
   // Call once the main thread has handled an outstanding |type| event
   // in flight.
@@ -167,6 +176,7 @@ class CONTENT_EXPORT MainThreadEventQueue
 
     WebInputEventQueue<EventWithDispatchType> events_;
     bool sent_main_frame_request_;
+    base::TimeTicks last_async_touch_move_timestamp_;
   };
 
   // Lock used to serialize |shared_state_|.

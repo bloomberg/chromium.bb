@@ -91,6 +91,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -874,7 +875,8 @@ void RenderWidget::BeginMainFrame(double frame_time_sec) {
   InputHandlerManager* input_handler_manager =
       render_thread ? render_thread->input_handler_manager() : NULL;
   if (input_handler_manager)
-    input_handler_manager->ProcessRafAlignedInputOnMainThread(routing_id_);
+    input_handler_manager->ProcessRafAlignedInputOnMainThread(
+        routing_id_, ui::EventTimeStampFromSeconds(frame_time_sec));
 
   GetWebWidget()->beginFrame(frame_time_sec);
 }

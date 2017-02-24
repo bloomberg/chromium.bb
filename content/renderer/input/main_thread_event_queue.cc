@@ -14,6 +14,10 @@ namespace content {
 
 namespace {
 
+// Time interval at which touchmove events will be skipped during rAF signal.
+const base::TimeDelta kAsyncTouchMoveInterval =
+    base::TimeDelta::FromMilliseconds(200);
+
 const size_t kTenSeconds = 10 * 1000 * 1000;
 
 bool IsContinuousEvent(const std::unique_ptr<EventWithDispatchType>& event) {
@@ -27,17 +31,27 @@ bool IsContinuousEvent(const std::unique_ptr<EventWithDispatchType>& event) {
   }
 }
 
+bool IsAsyncTouchMove(const std::unique_ptr<EventWithDispatchType>& event) {
+  if (event->event().type() != blink::WebInputEvent::TouchMove)
+    return false;
+  const blink::WebTouchEvent& touch_event =
+      static_cast<const blink::WebTouchEvent&>(event->event());
+  return touch_event.movedBeyondSlopRegion && !event->originallyCancelable();
+}
+
 }  // namespace
 
 EventWithDispatchType::EventWithDispatchType(
     ui::WebScopedInputEvent event,
     const ui::LatencyInfo& latency,
-    InputEventDispatchType dispatch_type)
+    InputEventDispatchType dispatch_type,
+    bool originally_cancelable)
     : ScopedWebInputEventWithLatencyInfo(std::move(event), latency),
       dispatch_type_(dispatch_type),
       non_blocking_coalesced_count_(0),
       creation_timestamp_(base::TimeTicks::Now()),
-      last_coalesced_timestamp_(creation_timestamp_) {}
+      last_coalesced_timestamp_(creation_timestamp_),
+      originally_cancelable_(originally_cancelable) {}
 
 EventWithDispatchType::~EventWithDispatchType() {}
 
@@ -53,6 +67,7 @@ void EventWithDispatchType::CoalesceWith(const EventWithDispatchType& other) {
   ScopedWebInputEventWithLatencyInfo::CoalesceWith(other);
   dispatch_type_ = other.dispatch_type_;
   last_coalesced_timestamp_ = base::TimeTicks::Now();
+  originally_cancelable_ = other.originally_cancelable_;
 }
 
 MainThreadEventQueue::SharedState::SharedState()
@@ -116,10 +131,14 @@ bool MainThreadEventQueue::HandleEvent(
                       ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING;
   bool is_wheel = event->type() == blink::WebInputEvent::MouseWheel;
   bool is_touch = blink::WebInputEvent::isTouchEventType(event->type());
+  bool originally_cancelable = false;
 
   if (is_touch) {
     blink::WebTouchEvent* touch_event =
         static_cast<blink::WebTouchEvent*>(event.get());
+
+    originally_cancelable =
+        touch_event->dispatchType == blink::WebInputEvent::Blocking;
 
     // Adjust the |dispatchType| on the event since the compositor
     // determined all event listeners are passive.
@@ -161,18 +180,25 @@ bool MainThreadEventQueue::HandleEvent(
       non_blocking = true;
   }
 
-  if (is_wheel && non_blocking) {
-    // Adjust the |dispatchType| on the event since the compositor
-    // determined all event listeners are passive.
-    static_cast<blink::WebMouseWheelEvent*>(event.get())
-        ->dispatchType = blink::WebInputEvent::ListenersNonBlockingPassive;
+  if (is_wheel) {
+    blink::WebMouseWheelEvent* wheel_event =
+        static_cast<blink::WebMouseWheelEvent*>(event.get());
+    originally_cancelable =
+        wheel_event->dispatchType == blink::WebInputEvent::Blocking;
+    if (non_blocking) {
+      // Adjust the |dispatchType| on the event since the compositor
+      // determined all event listeners are passive.
+      wheel_event->dispatchType =
+          blink::WebInputEvent::ListenersNonBlockingPassive;
+    }
   }
 
   InputEventDispatchType dispatch_type =
       non_blocking ? DISPATCH_TYPE_NON_BLOCKING : DISPATCH_TYPE_BLOCKING;
 
   std::unique_ptr<EventWithDispatchType> event_with_dispatch_type(
-      new EventWithDispatchType(std::move(event), latency, dispatch_type));
+      new EventWithDispatchType(std::move(event), latency, dispatch_type,
+                                originally_cancelable));
 
   QueueEvent(std::move(event_with_dispatch_type));
 
@@ -269,7 +295,7 @@ void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type,
   }
 }
 
-void MainThreadEventQueue::DispatchRafAlignedInput() {
+void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {
   if (IsRafAlignedInputDisabled())
     return;
 
@@ -278,9 +304,20 @@ void MainThreadEventQueue::DispatchRafAlignedInput() {
     base::AutoLock lock(shared_state_lock_);
     shared_state_.sent_main_frame_request_ = false;
 
-    while(!shared_state_.events_.empty()) {
+    while (!shared_state_.events_.empty()) {
       if (!IsRafAlignedEvent(shared_state_.events_.front()->event()))
         break;
+
+      // Throttle touchmoves that are async.
+      if (handle_raf_aligned_touch_input_ &&
+          IsAsyncTouchMove(shared_state_.events_.front())) {
+        if (shared_state_.events_.size() == 1 &&
+            frame_time < shared_state_.last_async_touch_move_timestamp_ +
+                             kAsyncTouchMoveInterval) {
+          break;
+        }
+        shared_state_.last_async_touch_move_timestamp_ = frame_time;
+      }
       events_to_process.emplace_back(shared_state_.events_.Pop());
     }
   }

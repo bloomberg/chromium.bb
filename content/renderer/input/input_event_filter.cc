@@ -126,7 +126,8 @@ void InputEventFilter::NotifyInputEventHandled(
   queue->EventHandled(type, result, ack_result);
 }
 
-void InputEventFilter::ProcessRafAlignedInput(int routing_id) {
+void InputEventFilter::ProcessRafAlignedInput(int routing_id,
+                                              base::TimeTicks frame_time) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   scoped_refptr<MainThreadEventQueue> queue;
   {
@@ -137,7 +138,7 @@ void InputEventFilter::ProcessRafAlignedInput(int routing_id) {
     queue = iter->second;
   }
 
-  queue->DispatchRafAlignedInput();
+  queue->DispatchRafAlignedInput(frame_time);
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {
