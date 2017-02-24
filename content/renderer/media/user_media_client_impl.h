@@ -39,7 +39,7 @@ class PeerConnectionDependencyFactory;
 class MediaStreamAudioSource;
 class MediaStreamDispatcher;
 class MediaStreamVideoSource;
-struct VideoCaptureSourceSelectionResult;
+struct VideoDeviceCaptureSourceSelectionResult;
 
 // UserMediaClientImpl is a delegate for the Media Stream GetUserMedia API.
 // It ties together WebKit and MediaStreamManager
@@ -315,7 +315,7 @@ class CONTENT_EXPORT UserMediaClientImpl
       const blink::WebUserMediaRequest& user_media_request,
       std::unique_ptr<StreamControls> controls,
       const RequestSettings& request_settings,
-      const VideoCaptureSourceSelectionResult& selection_result);
+      const VideoDeviceCaptureSourceSelectionResult& selection_result);
 
   void FinalizeRequestUserMedia(
       int request_id,

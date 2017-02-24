@@ -69,6 +69,30 @@ rtc::Optional<bool> ConstraintToOptional(
     const blink::WebMediaConstraints& constraints,
     const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker);
 
+template <typename ConstraintType>
+bool ConstraintHasMax(const ConstraintType& constraint) {
+  return constraint.hasMax() || constraint.hasExact();
+}
+
+template <typename ConstraintType>
+bool ConstraintHasMin(const ConstraintType& constraint) {
+  return constraint.hasMin() || constraint.hasExact();
+}
+
+template <typename ConstraintType>
+auto ConstraintMax(const ConstraintType& constraint)
+    -> decltype(constraint.max()) {
+  DCHECK(ConstraintHasMax(constraint));
+  return constraint.hasExact() ? constraint.exact() : constraint.max();
+}
+
+template <typename ConstraintType>
+auto ConstraintMin(const ConstraintType& constraint)
+    -> decltype(constraint.min()) {
+  DCHECK(ConstraintHasMin(constraint));
+  return constraint.hasExact() ? constraint.exact() : constraint.min();
+}
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_CONSTRAINTS_UTIL_H_

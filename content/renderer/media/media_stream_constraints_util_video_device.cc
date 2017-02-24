@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/media_stream_constraints_util_video_source.h"
+#include "content/renderer/media/media_stream_constraints_util_video_device.h"
 
 #include <algorithm>
 #include <cmath>
@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -49,28 +50,73 @@ blink::WebString ToWebString(::mojom::FacingMode facing_mode) {
   }
 }
 
-template <typename ConstraintType>
-bool ConstraintHasMax(const ConstraintType& constraint) {
-  return constraint.hasMax() || constraint.hasExact();
-}
+struct VideoDeviceCaptureSourceSettings {
+ public:
+  VideoDeviceCaptureSourceSettings()
+      : facing_mode_(::mojom::FacingMode::NONE),
+        power_line_frequency_(media::PowerLineFrequency::FREQUENCY_DEFAULT) {}
 
-template <typename ConstraintType>
-bool ConstraintHasMin(const ConstraintType& constraint) {
-  return constraint.hasMin() || constraint.hasExact();
-}
+  VideoDeviceCaptureSourceSettings(
+      const std::string& device_id,
+      const media::VideoCaptureFormat& format,
+      ::mojom::FacingMode facing_mode,
+      media::PowerLineFrequency power_line_frequency)
+      : device_id_(device_id),
+        format_(format),
+        facing_mode_(facing_mode),
+        power_line_frequency_(power_line_frequency) {}
 
-template <typename ConstraintType>
-auto ConstraintMax(const ConstraintType& constraint)
-    -> decltype(constraint.max()) {
-  DCHECK(ConstraintHasMax(constraint));
-  return constraint.hasExact() ? constraint.exact() : constraint.max();
-}
+  VideoDeviceCaptureSourceSettings(
+      const VideoDeviceCaptureSourceSettings& other) = default;
+  VideoDeviceCaptureSourceSettings& operator=(
+      const VideoDeviceCaptureSourceSettings& other) = default;
+  VideoDeviceCaptureSourceSettings(VideoDeviceCaptureSourceSettings&& other) =
+      default;
+  VideoDeviceCaptureSourceSettings& operator=(
+      VideoDeviceCaptureSourceSettings&& other) = default;
+  ~VideoDeviceCaptureSourceSettings() = default;
 
-template <typename ConstraintType>
-auto ConstraintMin(const ConstraintType& constraint)
-    -> decltype(constraint.min()) {
-  DCHECK(ConstraintHasMin(constraint));
-  return constraint.hasExact() ? constraint.exact() : constraint.min();
+  // These accessor-like methods transform types to what Blink constraint
+  // classes expect.
+  blink::WebString GetFacingMode() const { return ToWebString(facing_mode_); }
+  long GetPowerLineFrequency() const {
+    return static_cast<long>(power_line_frequency_);
+  }
+  long GetWidth() const { return format_.frame_size.width(); }
+  long GetHeight() const { return format_.frame_size.height(); }
+  double GetFrameRate() const { return format_.frame_rate; }
+  blink::WebString GetDeviceId() const {
+    return blink::WebString::fromASCII(device_id_.data());
+  }
+  blink::WebString GetVideoKind() const {
+    return GetVideoKindForFormat(format_);
+  }
+
+  // Accessors.
+  const media::VideoCaptureFormat& format() const { return format_; }
+  const std::string& device_id() const { return device_id_; }
+  ::mojom::FacingMode facing_mode() const { return facing_mode_; }
+  media::PowerLineFrequency power_line_frequency() const {
+    return power_line_frequency_;
+  }
+
+ private:
+  std::string device_id_;
+  media::VideoCaptureFormat format_;
+  ::mojom::FacingMode facing_mode_;
+  media::PowerLineFrequency power_line_frequency_;
+};
+
+VideoDeviceCaptureSourceSelectionResult ResultFromSettings(
+    const VideoDeviceCaptureSourceSettings& settings) {
+  VideoDeviceCaptureSourceSelectionResult result;
+  result.capture_params.power_line_frequency = settings.power_line_frequency();
+  result.capture_params.requested_format = settings.format();
+  result.device_id = settings.device_id();
+  result.facing_mode = settings.facing_mode();
+  result.failed_constraint_name = nullptr;
+
+  return result;
 }
 
 // Generic distance function between two numeric values. Based on the fitness
@@ -324,7 +370,7 @@ double FormatSourceDistance(
 // Otherwise the distance is a finite value. Candidates with lower distance
 // satisfy |constraint_set| in a "better" way.
 double CandidateSourceDistance(
-    const VideoCaptureSourceSettings& candidate,
+    const VideoDeviceCaptureSourceSettings& candidate,
     const blink::WebMediaTrackConstraintSet& constraint_set,
     const char** failed_constraint_name) {
   return DeviceSourceDistance(candidate.device_id(), candidate.facing_mode(),
@@ -470,7 +516,7 @@ double PowerLineFrequencyConstraintFitnessDistance(
 // setting in |candidate| and the corresponding constraint in |constraint_set|.
 // Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
 double CandidateFitnessDistance(
-    const VideoCaptureSourceSettings& candidate,
+    const VideoDeviceCaptureSourceSettings& candidate,
     const blink::WebMediaTrackConstraintSet& constraint_set) {
   DCHECK(std::isfinite(
       CandidateSourceDistance(candidate, constraint_set, nullptr)));
@@ -502,7 +548,7 @@ double CandidateFitnessDistance(
 // height and frame rate).
 // Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
 double CandidateNativeFitnessDistance(
-    const VideoCaptureSourceSettings& candidate,
+    const VideoDeviceCaptureSourceSettings& candidate,
     const blink::WebMediaTrackConstraintSet& constraint_set) {
   DCHECK(std::isfinite(
       CandidateSourceDistance(candidate, constraint_set, nullptr)));
@@ -524,9 +570,10 @@ using DistanceVector = std::vector<double>;
 // These entries are to be used as the final tie breaker for candidates that
 // are equally good according to the spec and the custom distance functions
 // between candidates and constraints.
-void AppendDistanceFromDefault(const VideoCaptureSourceSettings& candidate,
-                               const VideoCaptureCapabilities& capabilities,
-                               DistanceVector* distance_vector) {
+void AppendDistanceFromDefault(
+    const VideoDeviceCaptureSourceSettings& candidate,
+    const VideoDeviceCaptureCapabilities& capabilities,
+    DistanceVector* distance_vector) {
   // Favor IDs that appear first in the enumeration.
   for (size_t i = 0; i < capabilities.device_capabilities.size(); ++i) {
     if (candidate.device_id() ==
@@ -570,82 +617,36 @@ blink::WebString GetVideoKindForFormat(
              : blink::WebString::fromASCII(kVideoKindColor);
 }
 
-VideoCaptureCapabilities::VideoCaptureCapabilities() = default;
-VideoCaptureCapabilities::VideoCaptureCapabilities(
-    VideoCaptureCapabilities&& other) = default;
-VideoCaptureCapabilities::~VideoCaptureCapabilities() = default;
-VideoCaptureCapabilities& VideoCaptureCapabilities::operator=(
-    VideoCaptureCapabilities&& other) = default;
-
-VideoCaptureSourceSettings::VideoCaptureSourceSettings(
-    const VideoCaptureSourceSettings& other) = default;
-VideoCaptureSourceSettings::VideoCaptureSourceSettings(
-    VideoCaptureSourceSettings&& other) = default;
-VideoCaptureSourceSettings::~VideoCaptureSourceSettings() = default;
-VideoCaptureSourceSettings& VideoCaptureSourceSettings::operator=(
-    const VideoCaptureSourceSettings& other) = default;
-VideoCaptureSourceSettings& VideoCaptureSourceSettings::operator=(
-    VideoCaptureSourceSettings&& other) = default;
-
-VideoCaptureSourceSettings::VideoCaptureSourceSettings()
-    : facing_mode_(::mojom::FacingMode::NONE),
-      power_line_frequency_(media::PowerLineFrequency::FREQUENCY_DEFAULT) {}
-
-VideoCaptureSourceSettings::VideoCaptureSourceSettings(
-    const std::string& device_id,
-    const media::VideoCaptureFormat& format,
-    ::mojom::FacingMode facing_mode,
-    media::PowerLineFrequency power_line_frequency)
-    : device_id_(device_id),
-      format_(format),
-      facing_mode_(facing_mode),
-      power_line_frequency_(power_line_frequency) {}
-
-blink::WebString VideoCaptureSourceSettings::GetFacingMode() const {
-  return ToWebString(facing_mode_);
-}
-
-long VideoCaptureSourceSettings::GetPowerLineFrequency() const {
-  return static_cast<long>(power_line_frequency_);
-}
-
-long VideoCaptureSourceSettings::GetWidth() const {
-  return format_.frame_size.width();
-}
-
-long VideoCaptureSourceSettings::GetHeight() const {
-  return format_.frame_size.height();
-}
-
-double VideoCaptureSourceSettings::GetFrameRate() const {
-  return format_.frame_rate;
-}
-
-blink::WebString VideoCaptureSourceSettings::GetDeviceId() const {
-  return blink::WebString::fromASCII(device_id_.data());
-}
-
-blink::WebString VideoCaptureSourceSettings::GetVideoKind() const {
-  return GetVideoKindForFormat(format_);
-}
+VideoDeviceCaptureCapabilities::VideoDeviceCaptureCapabilities() = default;
+VideoDeviceCaptureCapabilities::VideoDeviceCaptureCapabilities(
+    VideoDeviceCaptureCapabilities&& other) = default;
+VideoDeviceCaptureCapabilities::~VideoDeviceCaptureCapabilities() = default;
+VideoDeviceCaptureCapabilities& VideoDeviceCaptureCapabilities::operator=(
+    VideoDeviceCaptureCapabilities&& other) = default;
 
 const char kDefaultFailedConstraintName[] = "";
 
-VideoCaptureSourceSelectionResult::VideoCaptureSourceSelectionResult()
-    : failed_constraint_name(kDefaultFailedConstraintName) {}
-VideoCaptureSourceSelectionResult::VideoCaptureSourceSelectionResult(
-    const VideoCaptureSourceSelectionResult& other) = default;
-VideoCaptureSourceSelectionResult::VideoCaptureSourceSelectionResult(
-    VideoCaptureSourceSelectionResult&& other) = default;
-VideoCaptureSourceSelectionResult::~VideoCaptureSourceSelectionResult() =
-    default;
-VideoCaptureSourceSelectionResult& VideoCaptureSourceSelectionResult::operator=(
-    const VideoCaptureSourceSelectionResult& other) = default;
-VideoCaptureSourceSelectionResult& VideoCaptureSourceSelectionResult::operator=(
-    VideoCaptureSourceSelectionResult&& other) = default;
+VideoDeviceCaptureSourceSelectionResult::
+    VideoDeviceCaptureSourceSelectionResult()
+    : failed_constraint_name(kDefaultFailedConstraintName),
+      facing_mode(::mojom::FacingMode::NONE) {}
+VideoDeviceCaptureSourceSelectionResult::
+    VideoDeviceCaptureSourceSelectionResult(
+        const VideoDeviceCaptureSourceSelectionResult& other) = default;
+VideoDeviceCaptureSourceSelectionResult::
+    VideoDeviceCaptureSourceSelectionResult(
+        VideoDeviceCaptureSourceSelectionResult&& other) = default;
+VideoDeviceCaptureSourceSelectionResult::
+    ~VideoDeviceCaptureSourceSelectionResult() = default;
+VideoDeviceCaptureSourceSelectionResult&
+VideoDeviceCaptureSourceSelectionResult::operator=(
+    const VideoDeviceCaptureSourceSelectionResult& other) = default;
+VideoDeviceCaptureSourceSelectionResult&
+VideoDeviceCaptureSourceSelectionResult::operator=(
+    VideoDeviceCaptureSourceSelectionResult&& other) = default;
 
-VideoCaptureSourceSelectionResult SelectVideoCaptureSourceSettings(
-    const VideoCaptureCapabilities& capabilities,
+VideoDeviceCaptureSourceSelectionResult SelectVideoDeviceCaptureSourceSettings(
+    const VideoDeviceCaptureCapabilities& capabilities,
     const blink::WebMediaConstraints& constraints) {
   // This function works only if infinity is defined for the double type.
   DCHECK(std::numeric_limits<double>::has_infinity);
@@ -667,7 +668,7 @@ VideoCaptureSourceSelectionResult SelectVideoCaptureSourceSettings(
   DistanceVector best_distance(2 * constraints.advanced().size() + 3 +
                                kNumDefaultDistanceEntries);
   std::fill(best_distance.begin(), best_distance.end(), HUGE_VAL);
-  VideoCaptureSourceSelectionResult result;
+  VideoDeviceCaptureSourceSelectionResult result;
   const char* failed_constraint_name = result.failed_constraint_name;
 
   for (auto& device : capabilities.device_capabilities) {
@@ -701,9 +702,9 @@ VideoCaptureSourceSelectionResult SelectVideoCaptureSourceSettings(
         // Custom distances must be added to the candidate distance vector after
         // all the spec-mandated values.
         DistanceVector advanced_custom_distance_vector;
-        VideoCaptureSourceSettings candidate(device->device_id, format,
-                                             device->facing_mode,
-                                             power_line_frequency);
+        VideoDeviceCaptureSourceSettings candidate(device->device_id, format,
+                                                   device->facing_mode,
+                                                   power_line_frequency);
         DistanceVector candidate_distance_vector;
         // First criteria for valid candidates is satisfaction of advanced
         // constraint sets.
@@ -736,14 +737,13 @@ VideoCaptureSourceSelectionResult SelectVideoCaptureSourceSettings(
         DCHECK_EQ(best_distance.size(), candidate_distance_vector.size());
         if (candidate_distance_vector < best_distance) {
           best_distance = candidate_distance_vector;
-          result.settings = std::move(candidate);
-          result.failed_constraint_name = nullptr;
+          result = ResultFromSettings(candidate);
         }
       }
     }
   }
 
-  if (!result.has_value())
+  if (!result.HasValue())
     result.failed_constraint_name = failed_constraint_name;
 
   return result;

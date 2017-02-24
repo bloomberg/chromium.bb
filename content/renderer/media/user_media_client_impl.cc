@@ -26,7 +26,7 @@
 #include "content/renderer/media/local_media_stream_audio_source.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
-#include "content/renderer/media/media_stream_constraints_util_video_source.h"
+#include "content/renderer/media/media_stream_constraints_util_video_device.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
@@ -366,7 +366,7 @@ void UserMediaClientImpl::SelectVideoDeviceSourceSettings(
   DCHECK(controls->video.requested);
   DCHECK(IsDeviceSource(controls->video.stream_source));
 
-  VideoCaptureCapabilities capabilities;
+  VideoDeviceCaptureCapabilities capabilities;
   capabilities.device_capabilities = std::move(video_input_capabilities);
   capabilities.power_line_capabilities = {
       media::PowerLineFrequency::FREQUENCY_DEFAULT,
@@ -375,7 +375,8 @@ void UserMediaClientImpl::SelectVideoDeviceSourceSettings(
 
   base::PostTaskAndReplyWithResult(
       worker_task_runner_.get(), FROM_HERE,
-      base::Bind(&SelectVideoCaptureSourceSettings, std::move(capabilities),
+      base::Bind(&SelectVideoDeviceCaptureSourceSettings,
+                 std::move(capabilities),
                  user_media_request.videoConstraints()),
       base::Bind(&UserMediaClientImpl::FinalizeSelectVideoDeviceSourceSettings,
                  weak_factory_.GetWeakPtr(), request_id, user_media_request,
@@ -387,10 +388,10 @@ void UserMediaClientImpl::FinalizeSelectVideoDeviceSourceSettings(
     const blink::WebUserMediaRequest& user_media_request,
     std::unique_ptr<StreamControls> controls,
     const RequestSettings& request_settings,
-    const VideoCaptureSourceSelectionResult& selection_result) {
+    const VideoDeviceCaptureSourceSelectionResult& selection_result) {
   DCHECK(CalledOnValidThread());
-  if (selection_result.has_value()) {
-    controls->video.device_id = selection_result.settings.device_id();
+  if (selection_result.HasValue()) {
+    controls->video.device_id = selection_result.device_id;
   } else {
     // TODO(guidou): Abort the request in all cases where |selection_result|
     // has no value, as the spec mandates.

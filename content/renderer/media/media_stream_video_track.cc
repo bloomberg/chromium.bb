@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/renderer/media/media_stream_constraints_util_video_source.h"
+#include "content/renderer/media/media_stream_constraints_util_video_device.h"
 
 namespace content {
 

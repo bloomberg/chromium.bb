@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_SOURCE_H_
-#define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_SOURCE_H_
+#ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
+#define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
 
-#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -25,69 +24,51 @@ namespace content {
 blink::WebString CONTENT_EXPORT
 GetVideoKindForFormat(const media::VideoCaptureFormat& format);
 
-struct CONTENT_EXPORT VideoCaptureCapabilities {
-  VideoCaptureCapabilities();
-  VideoCaptureCapabilities(VideoCaptureCapabilities&& other);
-  ~VideoCaptureCapabilities();
-  VideoCaptureCapabilities& operator=(VideoCaptureCapabilities&& other);
+struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
+  VideoDeviceCaptureCapabilities();
+  VideoDeviceCaptureCapabilities(VideoDeviceCaptureCapabilities&& other);
+  ~VideoDeviceCaptureCapabilities();
+  VideoDeviceCaptureCapabilities& operator=(
+      VideoDeviceCaptureCapabilities&& other);
 
   // Each field is independent of each other.
   std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> device_capabilities;
   std::vector<media::PowerLineFrequency> power_line_capabilities;
 };
 
-class CONTENT_EXPORT VideoCaptureSourceSettings {
- public:
-  VideoCaptureSourceSettings();
-  VideoCaptureSourceSettings(const VideoCaptureSourceSettings& other);
-  VideoCaptureSourceSettings(VideoCaptureSourceSettings&& other);
-  VideoCaptureSourceSettings(const std::string& device_id,
-                             const media::VideoCaptureFormat& format,
-                             ::mojom::FacingMode facing_mode,
-                             media::PowerLineFrequency power_line_frequency);
-  ~VideoCaptureSourceSettings();
-  VideoCaptureSourceSettings& operator=(
-      const VideoCaptureSourceSettings& other);
-  VideoCaptureSourceSettings& operator=(VideoCaptureSourceSettings&& other);
+struct CONTENT_EXPORT VideoDeviceCaptureSourceSelectionResult {
+  VideoDeviceCaptureSourceSelectionResult();
+  VideoDeviceCaptureSourceSelectionResult(
+      const VideoDeviceCaptureSourceSelectionResult& other);
+  VideoDeviceCaptureSourceSelectionResult(
+      VideoDeviceCaptureSourceSelectionResult&& other);
+  ~VideoDeviceCaptureSourceSelectionResult();
+  VideoDeviceCaptureSourceSelectionResult& operator=(
+      const VideoDeviceCaptureSourceSelectionResult& other);
+  VideoDeviceCaptureSourceSelectionResult& operator=(
+      VideoDeviceCaptureSourceSelectionResult&& other);
 
-  // Accessors for easier interaction with blink constraint classes.
-  blink::WebString GetFacingMode() const;
-  long GetPowerLineFrequency() const;
-  long GetWidth() const;
-  long GetHeight() const;
-  double GetFrameRate() const;
-  blink::WebString GetDeviceId() const;
-  blink::WebString GetVideoKind() const;
+  bool HasValue() const { return failed_constraint_name == nullptr; }
 
-  const media::VideoCaptureFormat& format() const { return format_; }
-  const std::string& device_id() const { return device_id_; }
-  ::mojom::FacingMode facing_mode() const { return facing_mode_; }
-  media::PowerLineFrequency power_line_frequency() const {
-    return power_line_frequency_;
+  // Convenience accessors for fields embedded in |capture_params|.
+  const media::VideoCaptureFormat& Format() const {
+    return capture_params.requested_format;
+  }
+  int Width() const {
+    return capture_params.requested_format.frame_size.width();
+  }
+  int Height() const {
+    return capture_params.requested_format.frame_size.height();
+  }
+  float FrameRate() const { return capture_params.requested_format.frame_rate; }
+  media::PowerLineFrequency PowerLineFrequency() const {
+    return capture_params.power_line_frequency;
   }
 
- private:
-  std::string device_id_;
-  media::VideoCaptureFormat format_;
-  ::mojom::FacingMode facing_mode_;
-  media::PowerLineFrequency power_line_frequency_;
-};
-
-struct CONTENT_EXPORT VideoCaptureSourceSelectionResult {
-  VideoCaptureSourceSelectionResult();
-  VideoCaptureSourceSelectionResult(
-      const VideoCaptureSourceSelectionResult& other);
-  VideoCaptureSourceSelectionResult(VideoCaptureSourceSelectionResult&& other);
-  ~VideoCaptureSourceSelectionResult();
-  VideoCaptureSourceSelectionResult& operator=(
-      const VideoCaptureSourceSelectionResult& other);
-  VideoCaptureSourceSelectionResult& operator=(
-      VideoCaptureSourceSelectionResult&& other);
-
-  bool has_value() const { return failed_constraint_name == nullptr; }
-
-  VideoCaptureSourceSettings settings;
   const char* failed_constraint_name;
+  std::string device_id;
+  ::mojom::FacingMode facing_mode;
+  media::VideoCaptureParams capture_params;
 };
 
 // This function performs source and source-settings selection based on
@@ -152,10 +133,11 @@ struct CONTENT_EXPORT VideoCaptureSourceSelectionResult {
 //    settings that include the device ID, power-line frequency, resolution, and
 //    frame rate, in that order. Note that there is no default facing mode or
 //    aspect ratio.
-VideoCaptureSourceSelectionResult CONTENT_EXPORT
-SelectVideoCaptureSourceSettings(const VideoCaptureCapabilities& capabilities,
-                                 const blink::WebMediaConstraints& constraints);
+VideoDeviceCaptureSourceSelectionResult CONTENT_EXPORT
+SelectVideoDeviceCaptureSourceSettings(
+    const VideoDeviceCaptureCapabilities& capabilities,
+    const blink::WebMediaConstraints& constraints);
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_SOURCE_H_
+#endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
