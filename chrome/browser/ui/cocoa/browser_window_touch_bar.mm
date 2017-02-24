@@ -25,7 +25,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/native_theme/native_theme.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/vector_icons/vector_icons.h"
 
 namespace {
@@ -38,8 +38,8 @@ const NSTouchBarCustomizationIdentifier kBrowserWindowTouchBarId =
 const NSTouchBarItemIdentifier kBackForwardTouchId = @"BackForwardTouchId";
 const NSTouchBarItemIdentifier kReloadOrStopTouchId = @"ReloadOrStopTouchId";
 const NSTouchBarItemIdentifier kSearchTouchId = @"SearchTouchId";
-const NSTouchBarItemIdentifier kNewTabTouchId = @"NewTabTouchId";
 const NSTouchBarItemIdentifier kStarTouchId = @"StarTouchId";
+const NSTouchBarItemIdentifier kNewTabTouchId = @"NewTabTouchId";
 
 // The button indexes in the back and forward segment control.
 const int kBackSegmentIndex = 0;
@@ -47,6 +47,7 @@ const int kForwardSegmentIndex = 1;
 
 // Touch bar icon colors values.
 const SkColor kTouchBarDefaultIconColor = SK_ColorWHITE;
+const SkColor kTouchBarStarActiveColor = gfx::kGoogleBlue500;
 
 // The size of the touch bar icons.
 const int kTouchBarIconSize = 16;
@@ -114,8 +115,8 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
   base::scoped_nsobject<NSTouchBar> touchBar(
       [[NSClassFromString(@"NSTouchBar") alloc] init]);
   NSArray* touchBarItemIdentifiers = @[
-    kBackForwardTouchId, kReloadOrStopTouchId, kSearchTouchId, kNewTabTouchId,
-    kStarTouchId
+    kBackForwardTouchId, kReloadOrStopTouchId, kSearchTouchId, kStarTouchId,
+    kNewTabTouchId
   ];
   [touchBar setCustomizationIdentifier:kBrowserWindowTouchBarId];
   [touchBar setDefaultItemIdentifiers:touchBarItemIdentifiers];
@@ -143,13 +144,10 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
     [touchBarItem setView:CreateTouchBarButton(kNewTabMacTouchbarIcon, self,
                                                IDC_NEW_TAB)];
   } else if ([identifier isEqualTo:kStarTouchId]) {
-    const SkColor kStarredIconColor =
-        ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-            ui::NativeTheme::kColorId_ProminentButtonColor);
     const gfx::VectorIcon& icon =
         isStarred_ ? toolbar::kStarActiveIcon : toolbar::kStarIcon;
     SkColor iconColor =
-        isStarred_ ? kStarredIconColor : kTouchBarDefaultIconColor;
+        isStarred_ ? kTouchBarStarActiveColor : kTouchBarDefaultIconColor;
     [touchBarItem
         setView:CreateTouchBarButton(icon, self, IDC_BOOKMARK_PAGE, iconColor)];
   } else if ([identifier isEqualTo:kSearchTouchId]) {
@@ -179,12 +177,32 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
 }
 
 - (NSView*)searchTouchBarView {
-  // TODO(spqchan): Use the Google search icon if the default search engine is
-  // Google.
-  base::string16 title = l10n_util::GetStringUTF16(IDS_TOUCH_BAR_SEARCH);
+  TemplateURLService* templateUrlService =
+      TemplateURLServiceFactory::GetForProfile(browser_->profile());
+  const TemplateURL* defaultProvider =
+      templateUrlService->GetDefaultSearchProvider();
+  BOOL isGoogle =
+      defaultProvider->GetEngineType(templateUrlService->search_terms_data()) ==
+      SEARCH_ENGINE_GOOGLE;
+
+  base::string16 title =
+      isGoogle ? l10n_util::GetStringUTF16(IDS_TOUCH_BAR_GOOGLE_SEARCH)
+               : l10n_util::GetStringFUTF16(IDS_TOUCH_BAR_SEARCH,
+                                            defaultProvider->short_name());
+
+  NSImage* image;
+  if (isGoogle) {
+    image = NSImageFromImageSkiaWithColorSpace(
+        gfx::CreateVectorIcon(gfx::VectorIconId::GOOGLE_SEARCH_MAC_TOUCHBAR,
+                              kTouchBarIconSize, gfx::kPlaceholderColor),
+        base::mac::GetSRGBColorSpace());
+  } else {
+    image = CreateNSImageFromIcon(omnibox::kSearchIcon);
+  }
+
   NSButton* searchButton =
       [NSButton buttonWithTitle:base::SysUTF16ToNSString(title)
-                          image:CreateNSImageFromIcon(omnibox::kSearchIcon)
+                          image:image
                          target:self
                          action:@selector(executeCommand:)];
   searchButton.imageHugsTitle = YES;

@@ -67,6 +67,10 @@ action("aggregate_vector_icons") {
     "${branding_path_component}/product.icon",
   ]
 
+  if (is_mac) {
+    icons += [ "google_search_mac_touchbar.icon" ]
+  }
+
   output_cc = "$target_gen_dir/vector_icons.cc"
   output_h = "$target_gen_dir/vector_icons.h"
 
