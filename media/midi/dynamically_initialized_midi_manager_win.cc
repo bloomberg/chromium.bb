@@ -26,6 +26,10 @@ namespace midi {
 
 namespace {
 
+// Assumes that nullptr represents an invalid MIDI handle.
+constexpr HMIDIIN kInvalidInHandle = nullptr;
+constexpr HMIDIOUT kInvalidOutHandle = nullptr;
+
 // Global variables to identify MidiManager instance.
 constexpr int kInvalidInstanceId = -1;
 int g_active_instance_id = kInvalidInstanceId;
@@ -47,6 +51,9 @@ int IssueNextInstanceId() {
 constexpr int kTaskRunner = 0;
 
 // Obtains base::Lock instance pointer to ensure tasks run safely on TaskRunner.
+// Since all tasks on TaskRunner run behind a lock of *GetTaskLock(), we can
+// access all members even on the I/O thread if a lock of *GetTaskLock() is
+// obtained.
 base::Lock* GetTaskLock() {
   static base::Lock* lock = new base::Lock;
   return lock;
@@ -69,6 +76,36 @@ void RunTask(int instance_id, const base::Closure& task) {
 // TODO(toyoshim): Factor out TaskRunner related functionaliries above, and
 // deprecate MidiScheduler. It should be available via MidiManager::scheduler().
 
+// Helper functions to close MIDI device handles on TaskRunner asynchronously.
+void FinalizeInPort(HMIDIIN handle) {
+  midiInClose(handle);
+}
+
+void FinalizeOutPort(HMIDIOUT handle) {
+  midiOutClose(handle);
+}
+
+// Handles MIDI input port callbacks that runs on a system provided thread.
+void CALLBACK HandleMidiInCallback(HMIDIIN hmi,
+                                   UINT msg,
+                                   DWORD_PTR instance,
+                                   DWORD_PTR param1,
+                                   DWORD_PTR param2) {
+  // TODO(toyoshim): Following patches will implement actual functions.
+}
+
+// Handles MIDI output port callbacks that runs on a system provided thread.
+void CALLBACK HandleMidiOutCallback(HMIDIOUT hmo,
+                                    UINT msg,
+                                    DWORD_PTR instance,
+                                    DWORD_PTR param1,
+                                    DWORD_PTR param2) {
+  // TODO(toyoshim): Following patches will implement actual functions.
+}
+
+// All instances of Port subclasses are always accessed behind a lock of
+// *GetTaskLock(). Port and subclasses implementation do not need to
+// consider thread safety.
 class Port {
  public:
   Port(const std::string& type,
@@ -162,7 +199,8 @@ class DynamicallyInitializedMidiManagerWin::InPort final : public Port {
              caps.wPid,
              caps.vDriverVersion,
              base::WideToUTF8(
-                 base::string16(caps.szPname, wcslen(caps.szPname)))) {}
+                 base::string16(caps.szPname, wcslen(caps.szPname)))),
+        in_handle_(kInvalidInHandle) {}
 
   static std::vector<std::unique_ptr<InPort>> EnumerateActivePorts() {
     std::vector<std::unique_ptr<InPort>> ports;
@@ -180,6 +218,13 @@ class DynamicallyInitializedMidiManagerWin::InPort final : public Port {
     return ports;
   }
 
+  void Finalize(scoped_refptr<base::SingleThreadTaskRunner> runner) {
+    if (in_handle_ != kInvalidInHandle) {
+      runner->PostTask(FROM_HERE, base::Bind(&FinalizeInPort, in_handle_));
+      in_handle_ = kInvalidInHandle;
+    }
+  }
+
   void NotifyPortStateSet(DynamicallyInitializedMidiManagerWin* manager) {
     manager->PostReplyTask(
         base::Bind(&DynamicallyInitializedMidiManagerWin::SetInputPortState,
@@ -191,6 +236,34 @@ class DynamicallyInitializedMidiManagerWin::InPort final : public Port {
         base::Bind(&DynamicallyInitializedMidiManagerWin::AddInputPort,
                    base::Unretained(manager), info_));
   }
+
+  // Port overrides:
+  bool Disconnect() override {
+    if (in_handle_ != kInvalidInHandle) {
+      // Following API call may fail because device was already disconnected.
+      // But just in case.
+      midiInClose(in_handle_);
+      in_handle_ = kInvalidInHandle;
+    }
+    return Port::Disconnect();
+  }
+
+  void Open() override {
+    // TODO(toyoshim): Pass instance_id to implement HandleMidiInCallback.
+    MMRESULT result =
+        midiInOpen(&in_handle_, device_id_,
+                   reinterpret_cast<DWORD_PTR>(&HandleMidiInCallback), 0,
+                   CALLBACK_FUNCTION);
+    if (result == MMSYSERR_NOERROR) {
+      Port::Open();
+    } else {
+      in_handle_ = kInvalidInHandle;
+      Disconnect();
+    }
+  }
+
+ private:
+  HMIDIIN in_handle_;
 };
 
 // TODO(toyoshim): Following patches will implement actual functions.
@@ -204,7 +277,8 @@ class DynamicallyInitializedMidiManagerWin::OutPort final : public Port {
              caps.vDriverVersion,
              base::WideToUTF8(
                  base::string16(caps.szPname, wcslen(caps.szPname)))),
-        software_(caps.wTechnology == MOD_SWSYNTH) {}
+        software_(caps.wTechnology == MOD_SWSYNTH),
+        out_handle_(kInvalidOutHandle) {}
 
   static std::vector<std::unique_ptr<OutPort>> EnumerateActivePorts() {
     std::vector<std::unique_ptr<OutPort>> ports;
@@ -222,19 +296,13 @@ class DynamicallyInitializedMidiManagerWin::OutPort final : public Port {
     return ports;
   }
 
-  // Port overrides:
-  bool Connect() override {
-    // Until |software| option is supported, disable Microsoft GS Wavetable
-    // Synth that has a known security issue.
-    if (software_ && manufacturer_id_ == MM_MICROSOFT &&
-        (product_id_ == MM_MSFT_WDMAUDIO_MIDIOUT ||
-         product_id_ == MM_MSFT_GENERIC_MIDISYNTH)) {
-      return false;
+  void Finalize(scoped_refptr<base::SingleThreadTaskRunner> runner) {
+    if (out_handle_ != kInvalidOutHandle) {
+      runner->PostTask(FROM_HERE, base::Bind(&FinalizeOutPort, out_handle_));
+      out_handle_ = kInvalidOutHandle;
     }
-    return Port::Connect();
   }
 
-  // Port Overrides:
   void NotifyPortStateSet(DynamicallyInitializedMidiManagerWin* manager) {
     manager->PostReplyTask(
         base::Bind(&DynamicallyInitializedMidiManagerWin::SetOutputPortState,
@@ -247,7 +315,43 @@ class DynamicallyInitializedMidiManagerWin::OutPort final : public Port {
                    base::Unretained(manager), info_));
   }
 
+  // Port overrides:
+  bool Connect() override {
+    // Until |software| option is supported, disable Microsoft GS Wavetable
+    // Synth that has a known security issue.
+    if (software_ && manufacturer_id_ == MM_MICROSOFT &&
+        (product_id_ == MM_MSFT_WDMAUDIO_MIDIOUT ||
+         product_id_ == MM_MSFT_GENERIC_MIDISYNTH)) {
+      return false;
+    }
+    return Port::Connect();
+  }
+
+  bool Disconnect() override {
+    if (out_handle_ != kInvalidOutHandle) {
+      // Following API call may fail because device was already disconnected.
+      // But just in case.
+      midiOutClose(out_handle_);
+      out_handle_ = kInvalidOutHandle;
+    }
+    return Port::Disconnect();
+  }
+
+  void Open() override {
+    MMRESULT result =
+        midiOutOpen(&out_handle_, device_id_,
+                    reinterpret_cast<DWORD_PTR>(&HandleMidiOutCallback), 0,
+                    CALLBACK_FUNCTION);
+    if (result == MMSYSERR_NOERROR) {
+      Port::Open();
+    } else {
+      out_handle_ = kInvalidOutHandle;
+      Disconnect();
+    }
+  }
+
   const bool software_;
+  HMIDIOUT out_handle_;
 };
 
 DynamicallyInitializedMidiManagerWin::DynamicallyInitializedMidiManagerWin(
@@ -304,7 +408,18 @@ void DynamicallyInitializedMidiManagerWin::Finalize() {
   // Ensures that no task runs on TaskRunner so to destruct the instance safely.
   // Tasks that did not started yet will do nothing after invalidate the
   // instance ID above.
+  // Behind the lock below, we can safely access all members for finalization
+  // even on the I/O thread.
   base::AutoLock lock(*GetTaskLock());
+
+  // Posts tasks that finalize each device port without MidiManager instance
+  // on TaskRunner. If another MidiManager instance is created, its
+  // initialization runs on the same task runner after all tasks posted here
+  // finish.
+  for (const auto& port : input_ports_)
+    port->Finalize(service()->GetTaskRunner(kTaskRunner));
+  for (const auto& port : output_ports_)
+    port->Finalize(service()->GetTaskRunner(kTaskRunner));
 }
 
 void DynamicallyInitializedMidiManagerWin::DispatchSendMidiData(
