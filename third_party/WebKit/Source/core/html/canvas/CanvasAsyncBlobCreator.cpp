@@ -4,6 +4,7 @@
 
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/Blob.h"
@@ -478,8 +479,8 @@ void CanvasAsyncBlobCreator::createNullAndReturnResult() {
                    WTF::bind(&BlobCallback::handleEvent,
                              wrapPersistent(m_callback.get()), nullptr));
   } else {
-    Blob* blob = nullptr;
-    m_scriptPromiseResolver->reject(blob);
+    m_scriptPromiseResolver->reject(DOMException::create(
+        EncodingError, "Encoding of the source image has failed."));
   }
   // Avoid unwanted retention, see dispose().
   dispose();
@@ -492,10 +493,10 @@ void CanvasAsyncBlobCreator::encodeImageOnEncoderThread(double quality) {
   if (!ImageDataBuffer(m_size, m_data->data())
            .encodeImage("image/webp", quality, m_encodedImage.get())) {
     m_parentFrameTaskRunner->get(TaskType::CanvasBlobSerialization)
-        ->postTask(BLINK_FROM_HERE,
-                   crossThreadBind(&BlobCallback::handleEvent,
-                                   wrapCrossThreadPersistent(m_callback.get()),
-                                   nullptr));
+        ->postTask(
+            BLINK_FROM_HERE,
+            crossThreadBind(&CanvasAsyncBlobCreator::createNullAndReturnResult,
+                            wrapCrossThreadPersistent(this)));
     return;
   }
 

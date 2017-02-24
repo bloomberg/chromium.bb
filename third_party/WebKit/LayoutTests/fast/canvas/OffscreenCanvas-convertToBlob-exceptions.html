@@ -33,7 +33,29 @@ async_test(function(t) {
         assert_true(e instanceof DOMException);
         assert_equals(e.name, "IndexSizeError");
     }));
-}, "Test that call convertToBlob on a OffscreenCanvas with size 0 throws exception");
+}, "Test that call convertToBlob on an OffscreenCanvas with size 0 throws exception");
+
+async_test(function(t) {
+    var webp_max_dimension = 16383; // Based on WEBPImageEncoder.cpp?l=52
+    var offscreenCanvas = new OffscreenCanvas(10, webp_max_dimension + 1);
+    var ctx = offscreenCanvas.getContext("2d");
+    offscreenCanvas.convertToBlob({type: "image/webp"}).then(t.step_func_done(function() {
+        assert_false("convertToBlob didn't throw, but should be");
+    }), t.step_func_done(function(e) {
+        assert_true(e instanceof DOMException);
+        assert_equals(e.name, "EncodingError");
+    }));
+}, "Test that call convertToBlob throws EncodingError exception when encoding fails");
+
+async_test(function(t) {
+    var offscreenCanvas = new OffscreenCanvas(10, 10);
+    offscreenCanvas.convertToBlob().then(t.step_func_done(function() {
+        assert_false("convertToBlob didn't throw, but should be");
+    }), t.step_func_done(function(e) {
+        assert_true(e instanceof DOMException);
+        assert_equals(e.name, "InvalidStateError");
+    }));
+}, "Test that call convertToBlob on an OffscreenCanvas without contexts throws exception");
 
 </script>
 

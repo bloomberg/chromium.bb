@@ -305,7 +305,9 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* scriptState,
     imageData = this->renderingContext()->toImageData(SnapshotReasonUnknown);
   }
   if (!imageData) {
-    return ScriptPromise();
+    exceptionState.throwDOMException(
+        InvalidStateError, "OffscreenCanvas object has no rendering contexts");
+    return exceptionState.reject(scriptState);
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
