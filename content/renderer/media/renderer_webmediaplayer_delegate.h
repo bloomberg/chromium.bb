@@ -45,7 +45,6 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // WebMediaPlayerDelegate implementation.
   bool IsFrameHidden() override;
   bool IsFrameClosed() override;
-  bool IsBackgroundVideoPlaybackUnlocked() override;
   int AddObserver(Observer* observer) override;
   void RemoveObserver(int player_id) override;
   void DidPlay(int player_id,
@@ -102,7 +101,6 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // autoplay logic in RenderFrameImpl.
   bool has_played_media_ = false;
 
-  bool background_video_allowed_ = false;
   bool is_frame_closed_ = false;
   bool is_frame_hidden_for_testing_ = false;
 

@@ -101,7 +101,6 @@ class FakeWebMediaPlayerDelegate
 
   bool IsFrameHidden() override { return is_hidden_; }
   bool IsFrameClosed() override { return false; }
-  bool IsBackgroundVideoPlaybackUnlocked() override { return false; }
 
   void set_hidden(bool is_hidden) { is_hidden_ = is_hidden; }
 

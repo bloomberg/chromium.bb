@@ -164,7 +164,7 @@ class MediaSessionImplVisibilityBrowserTest
     if (state_before_hide == state_after_hide) {
       LOG(INFO) << "Waiting for 1 second and check session state is unchanged";
       Wait(base::TimeDelta::FromSeconds(1));
-      ASSERT_EQ(media_session_->audio_focus_state_, state_after_hide);
+      ASSERT_EQ(state_after_hide, media_session_->audio_focus_state_);
     } else {
       LOG(INFO) << "Waiting for Session to change";
       WaitForMediaSessionState(state_after_hide);

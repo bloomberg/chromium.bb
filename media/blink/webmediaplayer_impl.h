@@ -241,6 +241,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
  private:
   friend class WebMediaPlayerImplTest;
+  friend class WebMediaPlayerImplBackgroundBehaviorTest;
 
   void EnableOverlay();
   void DisableOverlay();
@@ -702,6 +703,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Pipeline media duration overridden by tests.
   base::Optional<base::TimeDelta> pipeline_media_duration_for_test_;
+
+  // Whether the video requires a user gesture to resume after it was paused in
+  // the background. Affects the value of ShouldPauseVideoWhenHidden().
+  bool video_locked_when_paused_when_hidden_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

@@ -33,6 +33,7 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
 
@@ -123,7 +124,6 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
   MOCK_METHOD4(DidPlay, void(int, bool, bool, MediaContentType));
   MOCK_METHOD1(DidPause, void(int));
   MOCK_METHOD1(PlayerGone, void(int));
-  MOCK_METHOD0(IsBackgroundVideoPlaybackUnlocked, bool());
 
   void SetIdle(int player_id, bool is_idle) override {
     DCHECK_EQ(player_id_, player_id);
@@ -285,27 +285,39 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->SetDelegateState(state, false);
   }
 
-  bool ShouldDisableVideoWhenHidden() const {
-    return wmpi_->ShouldDisableVideoWhenHidden();
+  void SetUpMediaSuspend(bool enable) {
+#if defined(OS_ANDROID)
+    if (!enable) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kDisableMediaSuspend);
+    }
+#else
+    if (enable) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableMediaSuspend);
+    }
+#endif
   }
 
-  bool ShouldPauseVideoWhenHidden() const {
-    return wmpi_->ShouldPauseVideoWhenHidden();
+  bool IsVideoLockedWhenPausedWhenHidden() const {
+    return wmpi_->video_locked_when_paused_when_hidden_;
   }
 
-  bool IsBackgroundOptimizationCandidate() const {
-    return wmpi_->IsBackgroundOptimizationCandidate();
+  void BackgroundPlayer() {
+    delegate_.SetFrameHiddenForTesting(true);
+    delegate_.SetFrameClosedForTesting(false);
+    wmpi_->OnFrameHidden();
   }
 
-  void SetVideoKeyframeDistanceAverage(base::TimeDelta value) {
-    PipelineStatistics statistics;
-    statistics.video_keyframe_distance_average = value;
-    wmpi_->SetPipelineStatisticsForTest(statistics);
+  void ForegroundPlayer() {
+    delegate_.SetFrameHiddenForTesting(false);
+    delegate_.SetFrameClosedForTesting(false);
+    wmpi_->OnFrameShown();
   }
 
-  void SetDuration(base::TimeDelta value) {
-    wmpi_->SetPipelineMediaDurationForTest(value);
-  }
+  void Play() { wmpi_->play(); }
+
+  void Pause() { wmpi_->pause(); }
 
   // "Renderer" thread.
   base::MessageLoop message_loop_;
@@ -463,27 +475,59 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHidden) {
   SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
   SetPaused(false);
 
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(kResumeBackgroundVideo);
+  WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
+  EXPECT_FALSE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
+  EXPECT_TRUE(state.is_memory_reporting_enabled);
+}
 
-    WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
-    EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
-    EXPECT_TRUE(state.is_idle);
-    EXPECT_TRUE(state.is_suspended);
-    EXPECT_FALSE(state.is_memory_reporting_enabled);
-  }
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHiddenAudioOnly) {
+  InitializeWebMediaPlayerImpl(true);
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetPaused(false);
 
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(kResumeBackgroundVideo);
+  SetMetadata(true, false);
+  WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
+  EXPECT_FALSE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
+  EXPECT_TRUE(state.is_memory_reporting_enabled);
+}
 
-    WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
-    EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
-    EXPECT_TRUE(state.is_idle);
-    EXPECT_TRUE(state.is_suspended);
-    EXPECT_FALSE(state.is_memory_reporting_enabled);
-  }
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHiddenSuspendNoResume) {
+  SetUpMediaSuspend(true);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kResumeBackgroundVideo);
+
+  InitializeWebMediaPlayerImpl(true);
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetPaused(false);
+
+  WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+  EXPECT_TRUE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
+  EXPECT_TRUE(state.is_memory_reporting_enabled);
+}
+
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHiddenSuspendWithResume) {
+  SetUpMediaSuspend(true);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kResumeBackgroundVideo);
+
+  InitializeWebMediaPlayerImpl(true);
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetPaused(false);
+
+  WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
+  EXPECT_FALSE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
+  EXPECT_TRUE(state.is_memory_reporting_enabled);
 }
 
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameClosed) {
@@ -602,38 +646,6 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Streaming) {
   EXPECT_FALSE(state.is_memory_reporting_enabled);
 }
 
-TEST_F(WebMediaPlayerImplTest, ComputePlayState_PlayingBackgroundedVideo) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kResumeBackgroundVideo);
-
-  InitializeWebMediaPlayerImpl(true);
-  SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
-  SetPaused(false);
-  EXPECT_CALL(delegate_, IsBackgroundVideoPlaybackUnlocked())
-      .WillRepeatedly(Return(true));
-
-  WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
-  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
-  EXPECT_FALSE(state.is_idle);
-  EXPECT_FALSE(state.is_suspended);
-  EXPECT_TRUE(state.is_memory_reporting_enabled);
-}
-
-TEST_F(WebMediaPlayerImplTest, ComputePlayState_AudioOnly) {
-  InitializeWebMediaPlayerImpl(true);
-  SetMetadata(true, false);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
-  SetPaused(false);
-
-  // Backgrounded audio-only playback stays playing.
-  WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
-  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
-  EXPECT_FALSE(state.is_idle);
-  EXPECT_FALSE(state.is_suspended);
-  EXPECT_TRUE(state.is_memory_reporting_enabled);
-}
-
 TEST_F(WebMediaPlayerImplTest, AutoplayMuted_StartsAndStops) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
@@ -693,102 +705,196 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   ASSERT_EQ(blink::WebSize(1080, 1920), wmpi_->naturalSize());
 }
 
-TEST_F(WebMediaPlayerImplTest, BackgroundOptimizationsFeatureEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBackgroundVideoTrackOptimization);
+TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   InitializeWebMediaPlayerImpl(true);
-  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(5));
-  SetDuration(base::TimeDelta::FromSeconds(300));
 
-  // Audible video.
-  SetMetadata(true, true);
-  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
-  EXPECT_TRUE(ShouldDisableVideoWhenHidden());
+  // Setting metadata initializes |watch_time_reporter_| used in play().
+  PipelineMetadata metadata;
+  metadata.has_video = true;
+  OnMetadata(metadata);
+
+  EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
+
+  // Backgrounding the player sets the lock.
+  BackgroundPlayer();
+  EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
+
+  // Play without a user gesture doesn't unlock the player.
+  Play();
+  EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
+
+  // With a user gesture it does unlock the player.
+  {
+    blink::WebScopedUserGesture user_gesture(nullptr);
+    Play();
+    EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
+  }
+
+  // Pause without a user gesture doesn't lock the player.
+  Pause();
+  EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
+
+  // With a user gesture, pause does lock the player.
+  {
+    blink::WebScopedUserGesture user_gesture(nullptr);
+    Pause();
+    EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
+  }
+
+  // Foregrounding the player unsets the lock.
+  ForegroundPlayer();
+  EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
+}
+
+class WebMediaPlayerImplBackgroundBehaviorTest
+    : public WebMediaPlayerImplTest,
+      public ::testing::WithParamInterface<
+          std::tuple<bool, bool, int, int, bool>> {
+ public:
+  // Indices of the tuple parameters.
+  static const int kIsMediaSuspendEnabled = 0;
+  static const int kIsBackgroundOptimizationEnabled = 1;
+  static const int kDurationSec = 2;
+  static const int kAverageKeyframeDistanceSec = 3;
+  static const int kIsResumeBackgroundVideoEnabled = 4;
+
+  void SetUp() override {
+    WebMediaPlayerImplTest::SetUp();
+
+    SetUpMediaSuspend(IsMediaSuspendOn());
+
+    std::string enabled_features;
+    std::string disabled_features;
+    if (IsBackgroundOptimizationOn()) {
+      enabled_features += kBackgroundVideoTrackOptimization.name;
+    } else {
+      disabled_features += kBackgroundVideoTrackOptimization.name;
+    }
+
+    if (IsResumeBackgroundVideoEnabled()) {
+      if (!enabled_features.empty())
+        enabled_features += ",";
+      enabled_features += kResumeBackgroundVideo.name;
+    } else {
+      if (!disabled_features.empty())
+        disabled_features += ",";
+      disabled_features += kResumeBackgroundVideo.name;
+    }
+
+    feature_list_.InitFromCommandLine(enabled_features, disabled_features);
+
+    InitializeWebMediaPlayerImpl(true);
+    SetVideoKeyframeDistanceAverage(
+        base::TimeDelta::FromSeconds(GetAverageKeyframeDistanceSec()));
+    SetDuration(base::TimeDelta::FromSeconds(GetDurationSec()));
+    BackgroundPlayer();
+  }
+
+  void SetDuration(base::TimeDelta value) {
+    wmpi_->SetPipelineMediaDurationForTest(value);
+  }
+
+  void SetVideoKeyframeDistanceAverage(base::TimeDelta value) {
+    PipelineStatistics statistics;
+    statistics.video_keyframe_distance_average = value;
+    wmpi_->SetPipelineStatisticsForTest(statistics);
+  }
+
+  bool IsMediaSuspendOn() {
+    return std::get<kIsMediaSuspendEnabled>(GetParam());
+  }
+
+  bool IsBackgroundOptimizationOn() {
+    return std::get<kIsBackgroundOptimizationEnabled>(GetParam());
+  }
+
+  bool IsResumeBackgroundVideoEnabled() {
+    return std::get<kIsResumeBackgroundVideoEnabled>(GetParam());
+  }
+
+  int GetDurationSec() const { return std::get<kDurationSec>(GetParam()); }
+
+  int GetAverageKeyframeDistanceSec() const {
+    return std::get<kAverageKeyframeDistanceSec>(GetParam());
+  }
+
+  bool IsAndroid() {
+#if defined(OS_ANDROID)
+    return true;
+#else
+    return false;
+#endif
+  }
+
+  bool ShouldDisableVideoWhenHidden() const {
+    return wmpi_->ShouldDisableVideoWhenHidden();
+  }
+
+  bool ShouldPauseVideoWhenHidden() const {
+    return wmpi_->ShouldPauseVideoWhenHidden();
+  }
+
+  bool IsBackgroundOptimizationCandidate() const {
+    return wmpi_->IsBackgroundOptimizationCandidate();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioOnly) {
+  // Never optimize or pause an audio-only player.
+  SetMetadata(true, false);
+  EXPECT_FALSE(IsBackgroundOptimizationCandidate());
   EXPECT_FALSE(ShouldPauseVideoWhenHidden());
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+}
 
+TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, VideoOnly) {
   // Video only.
   SetMetadata(false, true);
-  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
-  EXPECT_TRUE(ShouldPauseVideoWhenHidden());
+
+  // Never disable video track for a video only stream.
   EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 
-  // Audio only.
-  SetMetadata(true, false);
-  EXPECT_FALSE(IsBackgroundOptimizationCandidate());
-  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
-  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+  // There's no optimization criteria for video only on Android.
+  bool matches_requirements =
+      IsAndroid() ||
+      ((GetDurationSec() < GetAverageKeyframeDistanceSec()) ||
+       (GetAverageKeyframeDistanceSec() < 10));
+  EXPECT_EQ(matches_requirements, IsBackgroundOptimizationCandidate());
 
-  // Duration is shorter than max video keyframe distance.
-  SetDuration(base::TimeDelta::FromSeconds(5));
-  SetMetadata(true, true);
-  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
-  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
-  EXPECT_TRUE(ShouldDisableVideoWhenHidden());
-
-  // Average keyframe distance is too big.
-  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(100));
-  SetDuration(base::TimeDelta::FromSeconds(300));
-  EXPECT_FALSE(IsBackgroundOptimizationCandidate());
-  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
-  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+  // Video is always paused when suspension is on and only if matches the
+  // optimization criteria if the optimization is on.
+  bool should_pause = IsMediaSuspendOn() ||
+                      (IsBackgroundOptimizationOn() && matches_requirements);
+  EXPECT_EQ(should_pause, ShouldPauseVideoWhenHidden());
 }
 
-TEST_F(WebMediaPlayerImplTest, BackgroundOptimizationsFeatureDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kBackgroundVideoTrackOptimization);
-
-  InitializeWebMediaPlayerImpl(true);
-  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(5));
-  SetDuration(base::TimeDelta::FromSeconds(300));
-
-  // Audible video.
+TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
   SetMetadata(true, true);
-  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
-  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
-  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
 
-  // Video only (pausing is enabled on Android).
-  SetMetadata(false, true);
-  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
-  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
-#if defined(OS_ANDROID)
-  EXPECT_TRUE(ShouldPauseVideoWhenHidden());
+  // Optimization requirements are the same for all platforms.
+  bool matches_requirements =
+      (GetDurationSec() < GetAverageKeyframeDistanceSec()) ||
+      (GetAverageKeyframeDistanceSec() < 10);
 
-  // On Android, the duration and keyframe distance don't matter for video-only.
-  SetDuration(base::TimeDelta::FromSeconds(5));
-  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
-  EXPECT_TRUE(ShouldPauseVideoWhenHidden());
+  EXPECT_EQ(matches_requirements, IsBackgroundOptimizationCandidate());
+  EXPECT_EQ(IsBackgroundOptimizationOn() && matches_requirements,
+            ShouldDisableVideoWhenHidden());
 
-  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(100));
-  SetDuration(base::TimeDelta::FromSeconds(300));
-  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
-  EXPECT_TRUE(ShouldPauseVideoWhenHidden());
-
-  // Restore average keyframe distance.
-  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(5));
-#else
-  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
-#endif
-
-  // Audio only.
-  SetMetadata(true, false);
-  EXPECT_FALSE(IsBackgroundOptimizationCandidate());
-  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
-  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
-
-  // Duration is shorter than max video keyframe distance.
-  SetDuration(base::TimeDelta::FromSeconds(5));
-  SetMetadata(true, true);
-  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
-  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
-  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
-
-  // Average keyframe distance is too big.
-  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(100));
-  SetDuration(base::TimeDelta::FromSeconds(300));
-  EXPECT_FALSE(IsBackgroundOptimizationCandidate());
-  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
-  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+  // Only pause audible videos on Android if both media suspend and resume
+  // background videos is on. On Desktop
+  EXPECT_EQ(IsMediaSuspendOn() && IsResumeBackgroundVideoEnabled(),
+            ShouldPauseVideoWhenHidden());
 }
+
+INSTANTIATE_TEST_CASE_P(BackgroundBehaviorTestInstances,
+                        WebMediaPlayerImplBackgroundBehaviorTest,
+                        ::testing::Combine(::testing::Bool(),
+                                           ::testing::Bool(),
+                                           ::testing::Values(5, 300),
+                                           ::testing::Values(5, 100),
+                                           ::testing::Bool()));
 
 }  // namespace media

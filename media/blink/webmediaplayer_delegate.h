@@ -62,10 +62,6 @@ class WebMediaPlayerDelegate {
   // Returns true if the host frame is closed.
   virtual bool IsFrameClosed() = 0;
 
-  // Returns |true| if background video playback permission has been granted,
-  // for example by a media session 'play' command.
-  virtual bool IsBackgroundVideoPlaybackUnlocked() = 0;
-
   // Subscribe to observer callbacks. A player must use the returned |player_id|
   // for the rest of the calls below.
   virtual int AddObserver(Observer* observer) = 0;

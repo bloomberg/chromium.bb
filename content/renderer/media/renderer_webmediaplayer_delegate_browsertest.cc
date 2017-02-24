@@ -69,10 +69,6 @@ class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
  protected:
   IPC::TestSink& test_sink() { return render_thread_->sink(); }
 
-  void SetBackgroundVideoPlaybackUnlocked(bool is_unlocked) {
-    delegate_manager_->background_video_allowed_ = is_unlocked;
-  }
-
   void CallOnMediaDelegatePlay(int delegate_id) {
     delegate_manager_->OnMediaDelegatePlay(delegate_id);
   }
@@ -272,41 +268,6 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
     EXPECT_CALL(observer_1_, OnIdleTimeout());
     tick_clock_.Advance(kIdleTimeout + base::TimeDelta::FromMicroseconds(1));
     RunLoopOnce();
-  }
-}
-
-TEST_F(RendererWebMediaPlayerDelegateTest, IsBackgroundVideoPlaybackUnlocked) {
-  NiceMock<MockWebMediaPlayerDelegateObserver> observer;
-  int delegate_id = delegate_manager_->AddObserver(&observer);
-  EXPECT_FALSE(delegate_manager_->IsBackgroundVideoPlaybackUnlocked());
-
-  // Showing the frame always clears the flag.
-  SetBackgroundVideoPlaybackUnlocked(true);
-  delegate_manager_->WasShown();
-  EXPECT_FALSE(delegate_manager_->IsBackgroundVideoPlaybackUnlocked());
-
-  // Pausing a currently playing video clears the flag.
-  delegate_manager_->DidPlay(delegate_id, true, true,
-                             MediaContentType::Persistent);
-  SetBackgroundVideoPlaybackUnlocked(true);
-  CallOnMediaDelegatePause(delegate_id);
-  EXPECT_FALSE(delegate_manager_->IsBackgroundVideoPlaybackUnlocked());
-
-  // TODO(avayvod): this test can't mock the IsFrameHidden() method.
-  // Just test that the value changes or doesn't depending on whether the video
-  // is currently playing.
-  if (delegate_manager_->IsFrameHidden()) {
-    SetBackgroundVideoPlaybackUnlocked(false);
-    CallOnMediaDelegatePlay(delegate_id);
-    EXPECT_TRUE(delegate_manager_->IsBackgroundVideoPlaybackUnlocked());
-    CallOnMediaDelegatePause(delegate_id);
-    EXPECT_FALSE(delegate_manager_->IsBackgroundVideoPlaybackUnlocked());
-  } else {
-    SetBackgroundVideoPlaybackUnlocked(false);
-    CallOnMediaDelegatePlay(delegate_id);
-    EXPECT_FALSE(delegate_manager_->IsBackgroundVideoPlaybackUnlocked());
-    CallOnMediaDelegatePause(delegate_id);
-    EXPECT_FALSE(delegate_manager_->IsBackgroundVideoPlaybackUnlocked());
   }
 }
 

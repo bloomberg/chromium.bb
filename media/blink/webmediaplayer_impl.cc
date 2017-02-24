@@ -63,6 +63,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 #if defined(OS_ANDROID)
@@ -419,6 +420,10 @@ void WebMediaPlayerImpl::play() {
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  // User initiated play unlocks background video playback.
+  if (blink::WebUserGestureIndicator::isProcessingUserGesture())
+    video_locked_when_paused_when_hidden_ = false;
+
 #if defined(OS_ANDROID)  // WMPI_CAST
   if (isRemote()) {
     cast_impl_.play();
@@ -454,6 +459,10 @@ void WebMediaPlayerImpl::pause() {
 
   // No longer paused because it was hidden.
   paused_when_hidden_ = false;
+
+  // User initiated pause locks background videos.
+  if (blink::WebUserGestureIndicator::isProcessingUserGesture())
+    video_locked_when_paused_when_hidden_ = true;
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   if (isRemote()) {
@@ -1429,20 +1438,14 @@ void WebMediaPlayerImpl::OnVideoAverageKeyframeDistanceUpdate() {
 void WebMediaPlayerImpl::OnFrameHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  // Backgrounding a video requires a user gesture to resume playback.
+  if (IsHidden())
+    video_locked_when_paused_when_hidden_ = true;
+
   if (watch_time_reporter_)
     watch_time_reporter_->OnHidden();
 
-  // OnFrameHidden() can be called when frame is closed, then IsHidden() will
-  // return false, so check explicitly.
-  if (IsHidden()) {
-    if (ShouldPauseVideoWhenHidden()) {
-      PauseVideoIfNeeded();
-      return;
-    } else {
-      DisableVideoTrackIfNeeded();
-    }
-  }
-
+  UpdateBackgroundVideoOptimizationState();
   UpdatePlayState();
 
   // Schedule suspended playing media to be paused if the user doesn't come back
@@ -1458,6 +1461,9 @@ void WebMediaPlayerImpl::OnFrameClosed() {
 void WebMediaPlayerImpl::OnFrameShown() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   background_pause_timer_.Stop();
+
+  // Foreground videos don't require user gesture to continue playback.
+  video_locked_when_paused_when_hidden_ = false;
 
   if (watch_time_reporter_)
     watch_time_reporter_->OnShown();
@@ -1477,13 +1483,13 @@ void WebMediaPlayerImpl::OnFrameShown() {
                    base::Unretained(compositor_), new_processed_frame_cb));
   }
 
+  EnableVideoTrackIfNeeded();
+
   if (paused_when_hidden_) {
     paused_when_hidden_ = false;
     OnPlay();  // Calls UpdatePlayState() so return afterwards.
     return;
   }
-
-  EnableVideoTrackIfNeeded();
 
   UpdatePlayState();
 }
@@ -1949,25 +1955,14 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // errors.
   bool has_error = IsNetworkStateError(network_state_);
 
-  // After HaveMetadata, we know which tracks are present and the duration.
-  bool have_metadata = ready_state_ >= WebMediaPlayer::ReadyStateHaveMetadata;
-
   // After HaveFutureData, Blink will call play() if the state is not paused;
   // prior to this point |paused_| is not accurate.
   bool have_future_data =
       highest_ready_state_ >= WebMediaPlayer::ReadyStateHaveFutureData;
 
-  // Background suspend is not enabled for audio-only players unless paused,
-  // though in the case of audio-only the session should be kept.
-  // Videos are not suspended if the user resumed the playback via the remote
-  // controls earlier and it's still playing.
-  bool is_backgrounded_video = is_backgrounded && have_metadata && hasVideo();
-  bool can_play_backgrounded = is_backgrounded_video && !is_remote &&
-                               hasAudio() && IsResumeBackgroundVideosEnabled();
-  bool is_background_playing = delegate_->IsBackgroundVideoPlaybackUnlocked();
-  bool background_suspended = can_auto_suspend && is_backgrounded_video &&
-                              !(can_play_backgrounded && is_background_playing);
-  bool background_pause_suspended =
+  // Background suspend is only enabled for paused players.
+  // In the case of players with audio the session should be kept.
+  bool background_suspended =
       can_auto_suspend && is_backgrounded && paused_ && have_future_data;
 
   // Idle suspension is allowed prior to have future data since there exist
@@ -1987,8 +1982,7 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
 
   // Combined suspend state.
   result.is_suspended = is_remote || must_suspend || idle_suspended ||
-                        background_suspended || background_pause_suspended ||
-                        can_stay_suspended;
+                        background_suspended || can_stay_suspended;
 
   // We do not treat |playback_rate_| == 0 as paused. For the media session,
   // being paused implies displaying a play button, which is incorrect in this
@@ -2000,30 +1994,35 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // Despite that, |ended_| does result in a separate paused state, to simplfy
   // the contract for SetDelegateState().
   //
-  // |has_session| is used to decide when to create a media session. Idle
+  // |has_remote_controls| indicates if the player can be controlled outside the
+  // page (e.g. via the notification controls or by audio focus events). Idle
   // suspension does not destroy the media session, because we expect that the
-  // notification controls (and audio focus) remain. We also require:
-  //   - |have_metadata|, since the tracks and duration are passed to DidPlay().
+  // notification controls (and audio focus) remain. The following must be true
+  // for the player to have remote controls:
   //   - |have_future_data|, since we need to know whether we are paused to
-  //     correctly configure the session.
+  //     correctly configure the session and also because the tracks and
+  //     duration are passed to DidPlay()
+  //   - |is_remote| is false as remote players have their own controls
+  //   - |has_error| is false player should have no errors
+  //   - hasAudio() (requires |have_future_data|)
   //
-  // TODO(sandersd): If Blink told us the paused state sooner, we could create
-  // the media session sooner.
+  // TODO(sandersd): If Blink told us the paused state sooner, we could detect
+  // if the remote controls are available sooner.
+
+  // Background videos with audio don't have remote controls if background
+  // suspend is enabled and resuming background videos is not (original Android
+  // behavior).
+  bool backgrounded_video_has_no_remote_controls =
+      IsBackgroundedSuspendEnabled() && !IsResumeBackgroundVideosEnabled() &&
+      is_backgrounded && hasVideo();
   bool can_play = !has_error && !is_remote && have_future_data;
-  bool has_session_playing = can_play && !must_suspend && !background_suspended;
+  bool has_remote_controls = can_play && !must_suspend && hasAudio() &&
+                             !backgrounded_video_has_no_remote_controls;
 
-  // |has_session_suspended| means the player is suspended from the media
-  // element point of view but paused and can be resumed from the delegate point
-  // of view. Therefore it behaves like |paused_| for the delegate.
-  bool has_session_suspended = can_play && !must_suspend &&
-                               background_suspended && can_play_backgrounded;
-
-  bool has_session = has_session_playing || has_session_suspended;
-
-  if (!has_session) {
+  if (!has_remote_controls) {
     result.delegate_state = DelegateState::GONE;
     result.is_idle = delegate_->IsIdle(delegate_id_);
-  } else if (paused_ || has_session_suspended) {
+  } else if (paused_) {
     // TODO(sandersd): Is it possible to have a suspended session, be ended,
     // and not be paused? If so we should be in a PLAYING state.
     result.delegate_state =
@@ -2101,8 +2100,9 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
 }
 
 void WebMediaPlayerImpl::ScheduleIdlePauseTimer() {
-  // Only schedule the pause timer if we're playing and are suspended.
-  if (paused_ || !pipeline_controller_.IsSuspended())
+  // Only schedule the pause timer if we're not paused or paused but going to
+  // resume when foregrounded, and are suspended.
+  if ((paused_ && !paused_when_hidden_) || !pipeline_controller_.IsSuspended())
     return;
 
 #if defined(OS_ANDROID)
@@ -2150,14 +2150,26 @@ void WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring(bool activate) {
 }
 
 bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
-#if !defined(OS_ANDROID)
-  // On desktop, this behavior is behind the feature flag.
-  if (!IsBackgroundVideoTrackOptimizationEnabled())
-    return false;
+  // If suspending background video, pause any video that's not remoted or
+  // not unlocked to play in the background.
+  if (IsBackgroundedSuspendEnabled()) {
+    if (!hasVideo())
+      return false;
+
+#if defined(OS_ANDROID)
+    if (isRemote())
+      return false;
 #endif
 
-  // Pause video-only players that match the criteria for being optimized.
-  return !hasAudio() && IsBackgroundOptimizationCandidate();
+    return !hasAudio() ||
+           (IsResumeBackgroundVideosEnabled() &&
+            video_locked_when_paused_when_hidden_);
+  }
+
+  // Otherwise only pause if the optimization is on and it's a video-only
+  // optimization candidate.
+  return IsBackgroundVideoTrackOptimizationEnabled() && !hasAudio() &&
+         IsBackgroundOptimizationCandidate();
 }
 
 bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
@@ -2288,7 +2300,6 @@ void WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame(
                         time_to_first_frame);
   }
 }
-
 void WebMediaPlayerImpl::SwitchRenderer(bool disable_pipeline_auto_suspend) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   disable_pipeline_auto_suspend_ = disable_pipeline_auto_suspend;

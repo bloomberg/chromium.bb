@@ -14,6 +14,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -59,11 +60,6 @@ bool RendererWebMediaPlayerDelegate::IsFrameHidden() {
 
 bool RendererWebMediaPlayerDelegate::IsFrameClosed() {
   return is_frame_closed_;
-}
-
-bool RendererWebMediaPlayerDelegate::IsBackgroundVideoPlaybackUnlocked() {
-  // TODO(sandersd): Include a check for kResumeBackgroundVideo?
-  return background_video_allowed_;
 }
 
 int RendererWebMediaPlayerDelegate::AddObserver(Observer* observer) {
@@ -187,7 +183,6 @@ void RendererWebMediaPlayerDelegate::WasHidden() {
 void RendererWebMediaPlayerDelegate::WasShown() {
   RecordAction(base::UserMetricsAction("Media.Shown"));
   is_frame_closed_ = false;
-  background_video_allowed_ = false;
 
   for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
     it.GetCurrentValue()->OnFrameShown();
@@ -228,12 +223,7 @@ void RendererWebMediaPlayerDelegate::SetFrameHiddenForTesting(bool is_hidden) {
   if (is_hidden == is_frame_hidden_for_testing_)
     return;
 
-  if (is_hidden) {
-    is_frame_hidden_for_testing_ = true;
-  } else {
-    is_frame_hidden_for_testing_ = false;
-    background_video_allowed_ = false;
-  }
+  is_frame_hidden_for_testing_ = is_hidden;
 
   ScheduleUpdateTask();
 }
@@ -243,7 +233,12 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(int player_id) {
 
   Observer* observer = id_map_.Lookup(player_id);
   if (observer) {
-    background_video_allowed_ = false;
+    // TODO(avayvod): remove when default play/pause is handled via
+    // the MediaSession code path.
+    std::unique_ptr<blink::WebScopedUserGesture> gesture(
+        render_frame()
+            ? new blink::WebScopedUserGesture(render_frame()->GetWebFrame())
+            : nullptr);
     observer->OnPause();
   }
 }
@@ -253,10 +248,12 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int player_id) {
 
   Observer* observer = id_map_.Lookup(player_id);
   if (observer) {
-    // TODO(sandersd): Ideally we would only set the flag if the player has
-    // video, but we don't reliably know if a paused player has video.
-    if (IsFrameHidden() && !IsFrameClosed())
-      background_video_allowed_ = true;
+    // TODO(avayvod): remove when default play/pause is handled via
+    // the MediaSession code path.
+    std::unique_ptr<blink::WebScopedUserGesture> gesture(
+        render_frame()
+            ? new blink::WebScopedUserGesture(render_frame()->GetWebFrame())
+            : nullptr);
     observer->OnPlay();
   }
 }
