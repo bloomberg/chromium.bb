@@ -143,6 +143,7 @@ class CONTENT_EXPORT MediaStreamAudioSource
 
   // True if the source of audio is a local device. False if the source is
   // remote (e.g., streamed-in from a server).
+  // TODO(crbug.com/598704): should be remove is_local_source_ variable.
   const bool is_local_source_;
 
   // Set to true once this source has been permanently stopped.

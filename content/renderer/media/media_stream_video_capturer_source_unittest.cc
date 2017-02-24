@@ -85,8 +85,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
     webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
-                              blink::WebString::fromASCII("dummy_source_name"),
-                              false /* remote */);
+                              blink::WebString::fromASCII("dummy_source_name"));
     webkit_source_.setExtraData(source_);
     webkit_source_id_ = webkit_source_.id();
   }
@@ -300,8 +299,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
       std::move(delegate));
   webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
                             blink::WebMediaStreamSource::TypeVideo,
-                            blink::WebString::fromASCII("dummy_source_name"),
-                            false /* remote */);
+                            blink::WebString::fromASCII("dummy_source_name"));
   webkit_source_.setExtraData(source_);
   webkit_source_id_ = webkit_source_.id();
 

@@ -91,15 +91,7 @@ void WebMediaStreamSource::initialize(const WebString& id,
                                       Type type,
                                       const WebString& name) {
   m_private = MediaStreamSource::create(
-      id, static_cast<MediaStreamSource::StreamType>(type), name, false);
-}
-
-void WebMediaStreamSource::initialize(const WebString& id,
-                                      Type type,
-                                      const WebString& name,
-                                      bool remote) {
-  m_private = MediaStreamSource::create(
-      id, static_cast<MediaStreamSource::StreamType>(type), name, remote);
+      id, static_cast<MediaStreamSource::StreamType>(type), name);
 }
 
 WebString WebMediaStreamSource::id() const {
@@ -115,11 +107,6 @@ WebMediaStreamSource::Type WebMediaStreamSource::getType() const {
 WebString WebMediaStreamSource::name() const {
   ASSERT(!m_private.isNull());
   return m_private.get()->name();
-}
-
-bool WebMediaStreamSource::remote() const {
-  ASSERT(!m_private.isNull());
-  return m_private.get()->remote();
 }
 
 void WebMediaStreamSource::setReadyState(ReadyState state) {

@@ -858,8 +858,6 @@ void RendererBlinkPlatformImpl::createHTMLVideoElementCapturer(
   AddVideoTrackToMediaStream(
       HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
           web_media_player, content::RenderThread::Get()->GetIOTaskRunner()),
-      false,  // is_remote
-      false,  // is_readonly
       web_media_stream);
 #endif
 }
@@ -875,10 +873,8 @@ void RendererBlinkPlatformImpl::createHTMLAudioElementCapturer(
   blink::WebMediaStreamTrack web_media_stream_track;
   const WebString track_id = WebString::fromUTF8(base::GenerateGUID());
 
-  web_media_stream_source.initialize(track_id,
-                                     blink::WebMediaStreamSource::TypeAudio,
-                                     track_id,
-                                     false /* is_remote */);
+  web_media_stream_source.initialize(
+      track_id, blink::WebMediaStreamSource::TypeAudio, track_id);
   web_media_stream_track.initialize(web_media_stream_source);
 
   MediaStreamAudioSource* const media_stream_source =

@@ -3398,7 +3398,6 @@ interface MediaStreamTrack : EventTarget
     getter onmute
     getter onunmute
     getter readyState
-    getter remote
     method clone
     method constructor
     method getConstraints
