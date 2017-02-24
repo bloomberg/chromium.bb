@@ -59,8 +59,10 @@ typedef void (*restore_func_highbd_type)(uint8_t *data8, int width, int height,
 int av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rst_info,
                                  int width, int height) {
   const int ntiles = av1_get_rest_ntiles(width, height, NULL, NULL, NULL, NULL);
-  rst_info->restoration_type = (RestorationType *)aom_realloc(
-      rst_info->restoration_type, sizeof(*rst_info->restoration_type) * ntiles);
+  CHECK_MEM_ERROR(cm, rst_info->restoration_type,
+                  (RestorationType *)aom_realloc(
+                      rst_info->restoration_type,
+                      sizeof(*rst_info->restoration_type) * ntiles));
   aom_free(rst_info->wiener_info);
   CHECK_MEM_ERROR(
       cm, rst_info->wiener_info,
@@ -71,9 +73,6 @@ int av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rst_info,
       (SgrprojInfo *)aom_realloc(rst_info->sgrproj_info,
                                  sizeof(*rst_info->sgrproj_info) * ntiles));
 #if USE_DOMAINTXFMRF
-  rst_info->domaintxfmrf_info = (DomaintxfmrfInfo *)aom_realloc(
-      rst_info->domaintxfmrf_info,
-      sizeof(*rst_info->domaintxfmrf_info) * ntiles);
   CHECK_MEM_ERROR(cm, rst_info->domaintxfmrf_info,
                   (DomaintxfmrfInfo *)aom_realloc(
                       rst_info->domaintxfmrf_info,
