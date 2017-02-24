@@ -16,11 +16,8 @@ WindowManagerWindowTreeFactory::WindowManagerWindowTreeFactory(
     WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set,
     const UserId& user_id,
     mojo::InterfaceRequest<mojom::WindowManagerWindowTreeFactory> request)
-    : window_manager_window_tree_factory_set_(
-          window_manager_window_tree_factory_set),
-      user_id_(user_id),
-      binding_(this),
-      window_tree_(nullptr) {
+    : WindowManagerWindowTreeFactory(window_manager_window_tree_factory_set,
+                                     user_id) {
   if (request.is_pending())
     binding_.Bind(std::move(request));
 }
