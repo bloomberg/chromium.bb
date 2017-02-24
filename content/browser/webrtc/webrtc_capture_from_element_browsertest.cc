@@ -88,17 +88,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
   MakeTypicalCall("testCanvasCapture(drawWebGL);", kCanvasCaptureTestHtmlFile);
 }
 
-#if defined(OS_MACOSX)
-// This test causes GL related issues in Mac: https://crbug.com/695452.
-#define MAYBE_VerifyCanvasCaptureOffscreenCanvasCommitFrames \
-  DISABLED_VerifyCanvasCaptureOffscreenCanvasCommitFrames
-#else
-#define MAYBE_VerifyCanvasCaptureOffscreenCanvasCommitFrames \
-  VerifyCanvasCaptureOffscreenCanvasCommitFrames
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       MAYBE_VerifyCanvasCaptureOffscreenCanvasCommitFrames) {
+// This test causes GL related issues on Win and Mac: https://crbug.com/695452.
+IN_PROC_BROWSER_TEST_F(
+    WebRtcCaptureFromElementBrowserTest,
+    DISABLED_VerifyCanvasCaptureOffscreenCanvasCommitFrames) {
   MakeTypicalCall("testCanvasCapture(drawOffscreenCanvasCommit);",
                   kCanvasCaptureTestHtmlFile);
 }
