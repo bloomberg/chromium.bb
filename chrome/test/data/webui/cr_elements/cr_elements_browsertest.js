@@ -37,6 +37,10 @@ CrElementsBrowserTest.prototype = {
   },
 };
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsLazyRenderTest() {}
 
 /**
@@ -175,6 +179,10 @@ TEST_F('CrElementsScrollableBehaviorTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsPolicyPrefIndicatorTest() {}
 
 CrElementsPolicyPrefIndicatorTest.prototype = {
@@ -191,5 +199,27 @@ CrElementsPolicyPrefIndicatorTest.prototype = {
 };
 
 TEST_F('CrElementsPolicyPrefIndicatorTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsDialogTest() {}
+
+CrElementsDialogTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_dialog/cr_dialog.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_dialog_test.js',
+  ]),
+};
+
+TEST_F('CrElementsDialogTest', 'All', function() {
   mocha.run();
 });

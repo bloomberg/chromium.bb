@@ -41,6 +41,13 @@ Polymer({
     }.bind(this));
   },
 
+  /** @override */
+  attached: function() {
+    var title = this.getContentChildren('[select=".title"]');
+    if (title.length)
+      title[0].tabIndex = -1;
+  },
+
   cancel: function() {
     this.fire('cancel');
     HTMLDialogElement.prototype.close.call(this, '');
