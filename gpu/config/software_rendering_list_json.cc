@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.15",
+  "version": "12.16",
   "entries": [
     {
       "id": 1,
@@ -1484,6 +1484,22 @@ LONG_STRING_CONST(
       ],
       "features": [
         "all"
+      ]
+    },
+    {
+      "id": 135,
+      "description": "Key parts of WebGL 2 broken on old Qualcomm drivers (depth texture, MSAA)",
+      "cr_bugs": [682753, 682075],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "6.0"
+        }
+      },
+      "gl_vendor": "Qualcomm.*",
+      "features": [
+        "webgl2"
       ]
     }
   ]

@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.30",
+  "version": "9.31",
   "entries": [
     {
       "id": 1,
@@ -84,8 +84,13 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 19,
       "description": "Disable depth textures on Android with Qualcomm GPUs",
+      "cr_bugs": [682075],
       "os": {
-        "type": "android"
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "6.0"
+        }
       },
       "gl_vendor": "Qualcomm.*",
       "features": [
@@ -419,10 +424,14 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 52,
-      "cr_bugs": [449116, 471200, 612474],
+      "cr_bugs": [449116, 471200, 612474, 682075],
       "description": "ES3 MSAA is broken on Qualcomm",
       "os": {
-        "type": "android"
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "6.0"
+        }
       },
       "gl_vendor": "Qualcomm.*",
       "features": [
