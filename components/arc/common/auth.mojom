@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 module arc.mojom;
 
@@ -79,6 +79,23 @@ enum ChromeAccountType {
   ACTIVE_DIRECTORY_ACCOUNT = 3,
 };
 
+// These values describe the type of the metrics to report.
+[Extensible]
+enum MetricsType {
+  // Duration of waiting for network connection in milliseconds.
+  NETWORK_WAITING_TIME_MILLISECONDS = 0,
+
+  // Number of attempts to wait for Checkin task completed. 0 indicates that
+  // Checkin task was already completed prior to GMS SignIn.
+  CHECKIN_ATTEMPTS = 1,
+
+  // Duration of waiting for Checkin task completed in milliseconds.
+  CHECKIN_TIME_MILLISECONDS = 2,
+
+  // Duration of waiting for sign-in completed in milliseconds.
+  SIGNIN_TIME_MILLISECONDS = 3,
+};
+
 // The necessary information for Android to sign in and provision itself.
 struct AccountInfo {
   // The authorization code that can be used in Android to sign in when
@@ -98,7 +115,7 @@ struct AccountInfo {
   bool is_managed@2;
 };
 
-// Next Method ID: 7.
+// Next Method ID: 9.
 interface AuthHost {
   // Notifies Chrome that the sign-in is completed successfully.
   [MinVersion=2] OnSignInComplete@2();
@@ -108,6 +125,9 @@ interface AuthHost {
   // Asynchronously requests an authorization code, as well as the account
   // information.
   [MinVersion=5] RequestAccountInfo@7();
+
+  // Reports metrics to Chrome to be recorded in UMA.
+  [MinVersion=7] ReportMetrics@8(MetricsType metrics_type, int32 value);
 
   // Deprecated methods:
 

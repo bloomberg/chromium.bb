@@ -121,6 +121,8 @@ void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
                               bool success,
                               bool managed);
 void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state);
+void UpdateAuthTiming(const char* histogram_name, base::TimeDelta elapsed_time);
+void UpdateAuthCheckinAttempts(int32_t num_attempts);
 
 // Outputs the stringified |result| to |os|. This is only for logging purposes.
 std::ostream& operator<<(std::ostream& os, const ProvisioningResult& result);
