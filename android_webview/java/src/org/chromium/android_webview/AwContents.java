@@ -2354,6 +2354,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (isDestroyedOrNoOperation(NO_WARN)) return;
         if (requestCode == PROCESS_TEXT_REQUEST_CODE) {
             mContentViewCore.onReceivedProcessTextResult(resultCode, data);
         } else {
