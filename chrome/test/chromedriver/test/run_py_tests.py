@@ -2255,6 +2255,8 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
     if util.IsLinux() and not util.Is64Bit():
       # Workaround for crbug.com/611886.
       cmd.append('--no-sandbox')
+      # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1695
+      cmd.append('--disable-gpu')
     process = subprocess.Popen(cmd)
     if process is None:
       raise RuntimeError('Chrome could not be started with debugging port')
