@@ -150,6 +150,10 @@ class StateMachine : public SchedulerStateMachine {
     has_pending_tree_ = has_pending_tree;
   }
 
+  bool needs_impl_side_invalidation() const {
+    return needs_impl_side_invalidation_;
+  }
+
   using SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately;
   using SchedulerStateMachine::ProactiveBeginFrameWanted;
   using SchedulerStateMachine::WillCommit;
@@ -199,6 +203,10 @@ void PerformAction(StateMachine* sm, SchedulerStateMachine::Action action) {
 
     case SchedulerStateMachine::ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK:
       sm->WillInvalidateCompositorFrameSink();
+      return;
+
+    case SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION:
+      sm->WillPerformImplSideInvalidation();
       return;
   }
 }
@@ -2121,6 +2129,256 @@ TEST(SchedulerStateMachineTest,
   // The scheduler should begin the CompositorFrameSink creation now.
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+}
+
+TEST(SchedulerStateMachineTest, NoImplSideInvalidationsWhileInvisible) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  // No impl-side invalidations should be performed while we are not visible.
+  state.SetVisible(false);
+  state.SetNeedsImplSideInvalidation();
+  state.OnBeginImplFrame();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+}
+
+TEST(SchedulerStateMachineTest,
+     NoImplSideInvalidationsWhenBeginFrameSourcePaused) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  // No impl-side invalidations should be performed while we can not make impl
+  // frames.
+  state.SetBeginFrameSourcePaused(true);
+  state.SetNeedsImplSideInvalidation();
+  state.OnBeginImplFrame();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+}
+
+TEST(SchedulerStateMachineTest, ImplSideInvalidationOnlyInsideDeadline) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  state.SetNeedsImplSideInvalidation();
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+}
+
+TEST(SchedulerStateMachineTest,
+     NoImplSideInvalidationWithoutCompositorFrameSink) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  // Impl-side invalidations should not be triggered till the frame sink is
+  // initialized.
+  state.DidLoseCompositorFrameSink();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // No impl-side invalidations should be performed during frame sink creation.
+  state.SetNeedsImplSideInvalidation();
+  state.OnBeginImplFrame();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Initializing the CompositorFrameSink puts us in a state waiting for the
+  // first commit.
+  state.DidCreateAndInitializeCompositorFrameSink();
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+}
+
+TEST(SchedulerStateMachineTest, ImplSideInvalidationWhenPendingTreeExists) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  // Set up request for the main frame, commit and create the pending tree.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+
+  // Request an impl-side invalidation after the commit. The request should wait
+  // till the current pending tree is activated.
+  state.SetNeedsImplSideInvalidation();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Activate the pending tree. Since the commit fills the impl-side
+  // invalidation funnel as well, the request should wait until the next
+  // BeginFrame.
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Since there is no main frame request, this should perform impl-side
+  // invalidations.
+  state.OnBeginImplFrame();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+}
+
+TEST(SchedulerStateMachineTest, ImplSideInvalidationWhileReadyToCommit) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  // Set up request for the main frame.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Request an impl-side invalidation. The request should wait till a response
+  // is received from the main thread.
+  state.SetNeedsImplSideInvalidation();
+  EXPECT_TRUE(state.needs_impl_side_invalidation());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Perform a commit, the impl-side invalidation request should be reset since
+  // they will be merged with the commit.
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  EXPECT_FALSE(state.needs_impl_side_invalidation());
+
+  // Deadline.
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+}
+
+TEST(SchedulerStateMachineTest,
+     ConsecutiveImplSideInvalidationsWaitForBeginFrame) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  // Set up a request for impl-side invalidation.
+  state.SetNeedsImplSideInvalidation();
+  state.OnBeginImplFrame();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Request another invalidation, which should wait until the pending tree is
+  // activated *and* we start the next BeginFrame.
+  state.SetNeedsImplSideInvalidation();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Now start the next frame, which will first draw the active tree and then
+  // perform the pending impl-side invalidation request.
+  state.OnBeginImplFrame();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+}
+
+TEST(SchedulerStateMachineTest, ImplSideInvalidationsThrottledOnDraw) {
+  // In commit_to_active_tree mode, performing the next invalidation should be
+  // throttled on the active tree being drawn.
+  SchedulerSettings settings;
+  settings.commit_to_active_tree = true;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  // Commit to the sync tree, activate and draw.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+  state.NotifyReadyToDraw();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+  state.DidSubmitCompositorFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Request impl-side invalidation and start a new frame, which should be
+  // blocked on the ack for the previous frame.
+  state.SetNeedsImplSideInvalidation();
+  state.OnBeginImplFrame();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Ack the previous frame and begin impl frame, which should perform the
+  // invalidation now.
+  state.DidReceiveCompositorFrameAck();
+  state.OnBeginImplFrame();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+}
+
+TEST(SchedulerStateMachineTest,
+     ImplSideInvalidationsWhenMainFrameRequestIsPending) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  // Set up request for the main frame.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Request an impl-side invalidation and trigger the deadline, the
+  // invalidation should run if the request is still pending when we enter the
+  // deadline.
+  state.SetNeedsImplSideInvalidation();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+}
+
+TEST(SchedulerStateMachineTest, PrepareTilesWaitForImplSideInvalidation) {
+  // PrepareTiles
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  // Request a PrepareTiles and impl-side invalidation. The impl-side
+  // invalidation should run first, since it will perform PrepareTiles as well.
+  state.SetNeedsImplSideInvalidation();
+  state.SetNeedsPrepareTiles();
+  state.OnBeginImplFrame();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
+  state.DidPrepareTiles();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
 }  // namespace

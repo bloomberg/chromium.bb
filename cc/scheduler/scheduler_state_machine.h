@@ -115,6 +115,7 @@ class CC_EXPORT SchedulerStateMachine {
     ACTION_SEND_BEGIN_MAIN_FRAME,
     ACTION_COMMIT,
     ACTION_ACTIVATE_SYNC_TREE,
+    ACTION_PERFORM_IMPL_SIDE_INVALIDATION,
     ACTION_DRAW_IF_POSSIBLE,
     ACTION_DRAW_FORCED,
     ACTION_DRAW_ABORT,
@@ -135,6 +136,7 @@ class CC_EXPORT SchedulerStateMachine {
   void WillBeginCompositorFrameSinkCreation();
   void WillPrepareTiles();
   void WillInvalidateCompositorFrameSink();
+  void WillPerformImplSideInvalidation();
 
   void DidDraw(DrawResult draw_result);
 
@@ -249,6 +251,8 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates the active tree's visible tiles are ready to be drawn.
   void NotifyReadyToDraw();
 
+  void SetNeedsImplSideInvalidation();
+
   bool has_pending_tree() const { return has_pending_tree_; }
   bool active_tree_needs_first_draw() const {
     return active_tree_needs_first_draw_;
@@ -271,10 +275,20 @@ class CC_EXPORT SchedulerStateMachine {
 
   bool did_submit_in_last_frame() const { return did_submit_in_last_frame_; }
 
+  bool needs_impl_side_invalidation() const {
+    return needs_impl_side_invalidation_;
+  }
+  bool previous_pending_tree_was_impl_side() const {
+    return previous_pending_tree_was_impl_side_;
+  }
+
  protected:
   bool BeginFrameRequiredForAction() const;
   bool BeginFrameNeededForVideo() const;
   bool ProactiveBeginFrameWanted() const;
+
+  bool ShouldPerformImplSideInvalidation() const;
+  bool CouldCreatePendingTree() const;
 
   bool ShouldTriggerBeginImplFrameDeadlineImmediately() const;
 
@@ -291,6 +305,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldInvalidateCompositorFrameSink() const;
 
   void WillDrawInternal();
+  void WillPerformImplSideInvalidationInternal();
   void DidDrawInternal(DrawResult draw_result);
 
   const SchedulerSettings settings_;
@@ -313,6 +328,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool draw_funnel_;
   bool send_begin_main_frame_funnel_;
   bool invalidate_compositor_frame_sink_funnel_;
+  bool impl_side_invalidation_funnel_;
   // prepare_tiles_funnel_ is "filled" each time PrepareTiles is called
   // and "drained" on each BeginImplFrame. If the funnel gets too full,
   // we start throttling ACTION_PREPARE_TILES such that we average one
@@ -345,6 +361,10 @@ class CC_EXPORT SchedulerStateMachine {
   bool wait_for_ready_to_draw_;
   bool did_draw_in_last_frame_;
   bool did_submit_in_last_frame_;
+  bool needs_impl_side_invalidation_;
+
+  bool previous_pending_tree_was_impl_side_;
+  bool current_pending_tree_is_impl_side_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

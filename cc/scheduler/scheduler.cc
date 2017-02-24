@@ -66,6 +66,11 @@ void Scheduler::Stop() {
   stopped_ = true;
 }
 
+void Scheduler::SetNeedsImplSideInvalidation() {
+  state_machine_.SetNeedsImplSideInvalidation();
+  ProcessScheduledActions();
+}
+
 base::TimeTicks Scheduler::Now() const {
   base::TimeTicks now = base::TimeTicks::Now();
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.now"),
@@ -549,7 +554,8 @@ void Scheduler::OnBeginImplFrameDeadline() {
 
 void Scheduler::DrawIfPossible() {
   bool drawing_with_new_active_tree =
-      state_machine_.active_tree_needs_first_draw();
+      state_machine_.active_tree_needs_first_draw() &&
+      !state_machine_.previous_pending_tree_was_impl_side();
   bool main_thread_missed_last_deadline =
       state_machine_.main_thread_missed_last_deadline();
   compositor_timing_history_->WillDraw();
@@ -563,7 +569,8 @@ void Scheduler::DrawIfPossible() {
 
 void Scheduler::DrawForced() {
   bool drawing_with_new_active_tree =
-      state_machine_.active_tree_needs_first_draw();
+      state_machine_.active_tree_needs_first_draw() &&
+      !state_machine_.previous_pending_tree_was_impl_side();
   bool main_thread_missed_last_deadline =
       state_machine_.main_thread_missed_last_deadline();
   compositor_timing_history_->WillDraw();
@@ -623,6 +630,10 @@ void Scheduler::ProcessScheduledActions() {
         state_machine_.WillActivate();
         client_->ScheduledActionActivateSyncTree();
         compositor_timing_history_->DidActivate();
+        break;
+      case SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION:
+        state_machine_.WillPerformImplSideInvalidation();
+        client_->ScheduledActionPerformImplSideInvalidation();
         break;
       case SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE:
         DrawIfPossible();

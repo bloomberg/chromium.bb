@@ -45,6 +45,7 @@ class SchedulerClient {
   virtual void ScheduledActionBeginCompositorFrameSinkCreation() = 0;
   virtual void ScheduledActionPrepareTiles() = 0;
   virtual void ScheduledActionInvalidateCompositorFrameSink() = 0;
+  virtual void ScheduledActionPerformImplSideInvalidation() = 0;
   virtual void DidFinishImplFrame() = 0;
   virtual void SendBeginMainFrameNotExpectedSoon() = 0;
 
@@ -88,6 +89,15 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void SetNeedsRedraw();
 
   void SetNeedsPrepareTiles();
+
+  // Requests a pending tree should be created to invalidate content on the impl
+  // thread, after the current tree is activated, if any. If the request
+  // necessitates creating a pending tree only for impl-side invalidations, the
+  // |client_| is informed to perform this action using
+  // ScheduledActionRunImplSideInvalidation.
+  // If ScheduledActionCommit is performed, the impl-side invalidations should
+  // be merged with the main frame and the request is assumed to be completed.
+  void SetNeedsImplSideInvalidation();
 
   // Drawing should result in submitting a CompositorFrame to the
   // CompositorFrameSink and then calling this.

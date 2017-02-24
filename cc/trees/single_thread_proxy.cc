@@ -731,6 +731,10 @@ void SingleThreadProxy::ScheduledActionInvalidateCompositorFrameSink() {
   NOTREACHED();
 }
 
+void SingleThreadProxy::ScheduledActionPerformImplSideInvalidation() {
+  NOTIMPLEMENTED();
+}
+
 void SingleThreadProxy::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,

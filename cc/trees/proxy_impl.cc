@@ -555,6 +555,10 @@ void ProxyImpl::ScheduledActionInvalidateCompositorFrameSink() {
   layer_tree_host_impl_->compositor_frame_sink()->Invalidate();
 }
 
+void ProxyImpl::ScheduledActionPerformImplSideInvalidation() {
+  NOTIMPLEMENTED();
+}
+
 void ProxyImpl::SendBeginMainFrameNotExpectedSoon() {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(

@@ -70,6 +70,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void ScheduledActionBeginCompositorFrameSinkCreation() override;
   void ScheduledActionPrepareTiles() override;
   void ScheduledActionInvalidateCompositorFrameSink() override;
+  void ScheduledActionPerformImplSideInvalidation() override;
   void SendBeginMainFrameNotExpectedSoon() override;
 
   // LayerTreeHostImplClient implementation

@@ -148,6 +148,10 @@ class TestScheduler : public Scheduler {
     return state_machine_.current_frame_number();
   }
 
+  bool needs_impl_side_invalidation() const {
+    return state_machine_.needs_impl_side_invalidation();
+  }
+
   ~TestScheduler() override;
 
   base::TimeDelta BeginImplFrameInterval() {
