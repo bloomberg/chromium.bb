@@ -9,7 +9,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
@@ -27,14 +26,6 @@ class SkiaUtilsMacTest : public testing::Test {
 
   // Checks that the given bitmap is red.
   void TestSkBitmap(const SkBitmap& bitmap);
-
-  enum BitLockerTest {
-    TestIdentity = 0,
-    TestTranslate = 1,
-    TestClip = 2,
-    TestXClip = TestTranslate | TestClip,
-  };
-  void RunBitLockerTest(BitLockerTest test);
 
   // If not red, is blue.
   // If not tfbit (twenty-four-bit), is 444.
@@ -130,45 +121,6 @@ void SkiaUtilsMacTest::TestSkBitmap(const SkBitmap& bitmap) {
   EXPECT_EQ(255u, SkColorGetA(color));
 }
 
-void SkiaUtilsMacTest::RunBitLockerTest(BitLockerTest test) {
-  const unsigned width = 2;
-  const unsigned height = 2;
-  const unsigned storageSize = width * height;
-  const unsigned original[] = {0xFF333333, 0xFF666666, 0xFF999999, 0xFFCCCCCC};
-  EXPECT_EQ(storageSize, sizeof(original) / sizeof(original[0]));
-  unsigned bits[storageSize];
-  memcpy(bits, original, sizeof(original));
-  SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
-  SkBitmap bitmap;
-  bitmap.installPixels(info, bits, info.minRowBytes());
-
-  SkCanvas canvas(bitmap);
-  if (test & TestTranslate)
-    canvas.translate(width / 2, 0);
-  if (test & TestClip) {
-    SkRect clipRect = {0, height / 2, width, height};
-    canvas.clipRect(clipRect);
-  }
-  {
-    SkIRect clip = SkIRect::MakeSize(canvas.getBaseLayerSize()).
-        makeOffset((test & TestTranslate) ? - (static_cast<int>(width)) / 2 : 0, 0);
-    skia::SkiaBitLocker bitLocker(&canvas, clip);
-    CGContextRef cgContext = bitLocker.cgContext();
-    CGColorRef testColor = CGColorGetConstantColor(kCGColorWhite);
-    CGContextSetFillColorWithColor(cgContext, testColor);
-    CGRect cgRect = {{0, 0}, {width, height}};
-    CGContextFillRect(cgContext, cgRect);
-  }
-  const unsigned results[][storageSize] = {
-    {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, // identity
-    {0xFF333333, 0xFFFFFFFF, 0xFF999999, 0xFFFFFFFF}, // translate
-    {0xFF333333, 0xFF666666, 0xFFFFFFFF, 0xFFFFFFFF}, // clip
-    {0xFF333333, 0xFF666666, 0xFF999999, 0xFFFFFFFF}  // translate | clip
-  };
-  for (unsigned index = 0; index < storageSize; index++)
-    EXPECT_EQ(results[test][index], bits[index]);
-}
-
 void SkiaUtilsMacTest::ShapeHelper(int width, int height,
                                    bool isred, bool tfbit) {
   SkBitmap thing(CreateSkBitmap(width, height, isred, tfbit));
@@ -222,22 +174,6 @@ TEST_F(SkiaUtilsMacTest, NSImageRepToSkBitmap) {
   SkBitmap bitmap(skia::NSImageRepToSkBitmapWithColorSpace(
       imageRep, [image size], false, [colorSpace CGColorSpace]));
   TestSkBitmap(bitmap);
-}
-
-TEST_F(SkiaUtilsMacTest, BitLocker_Identity) {
-  RunBitLockerTest(SkiaUtilsMacTest::TestIdentity);
-}
-
-TEST_F(SkiaUtilsMacTest, BitLocker_Translate) {
-  RunBitLockerTest(SkiaUtilsMacTest::TestTranslate);
-}
-
-TEST_F(SkiaUtilsMacTest, BitLocker_Clip) {
-  RunBitLockerTest(SkiaUtilsMacTest::TestClip);
-}
-
-TEST_F(SkiaUtilsMacTest, BitLocker_XClip) {
-  RunBitLockerTest(SkiaUtilsMacTest::TestXClip);
 }
 
 }  // namespace

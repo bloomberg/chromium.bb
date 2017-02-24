@@ -20,7 +20,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/paint/PaintCanvas.h"
-#include "skia/ext/skia_utils_mac.h"
+#include "platform/mac/GraphicsContextCanvas.h"
 #include "wtf/Noncopyable.h"
 
 OBJC_CLASS NSGraphicsContext;
@@ -47,6 +47,6 @@ class PLATFORM_EXPORT LocalCurrentGraphicsContext {
   NSGraphicsContext* m_savedNSGraphicsContext;
   bool m_didSetGraphicsContext;
   IntRect m_inflatedDirtyRect;
-  skia::SkiaBitLocker m_skiaBitLocker;
+  GraphicsContextCanvas m_graphicsContextCanvas;
 };
 }
