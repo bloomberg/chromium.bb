@@ -1,18 +1,16 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/panner-model-testing.js"></script>
   </head>
 
   <body>
-    <div id="description"></div>
-    <div id="console"></div>
-
     <script>
-      description("Test equal-power panner model of AudioPannerNode with stereo source.");
+      let audit = Audit.createTaskRunner();
 
       // To test the panner, we create a number of panner nodes
       // equally spaced on a semicircle at unit distance.  The
@@ -20,25 +18,25 @@
       // covering full left to full right.  Each source is an impulse
       // turning at a different time and we check that the rendered
       // impulse has the expected gain.
-      function runTest() {
-          if (window.testRunner) {
-              testRunner.dumpAsText();
-              testRunner.waitUntilDone();
-          }
+      audit.define(
+          {
+            label: 'test',
+            description:
+                'Equal-power panner model of AudioPannerNode with stereo source'
+          },
+          (task, should) => {
+            context = new OfflineAudioContext(
+                2, sampleRate * renderLengthSeconds, sampleRate);
 
-          window.jsTestIsAsync = true;
-
-          // Create offline audio context.
-          context = new OfflineAudioContext(2, sampleRate * renderLengthSeconds, sampleRate);
-
-          createTestAndRun(context, nodesToCreate, 2, function (panner, x, y, z) {
-            panner.setPosition(x, y, z);
+            createTestAndRun(
+                context, should, nodesToCreate, 2,
+                function(panner, x, y, z) {
+                  panner.setPosition(x, y, z);
+                })
+                .then(() => task.done());
           });
-      }
-
-      runTest();
-      successfullyParsed = true;
-
+      
+      audit.run();
     </script>
 
   </body>

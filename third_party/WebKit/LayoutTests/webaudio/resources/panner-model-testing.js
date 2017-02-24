@@ -62,13 +62,14 @@ function createGraph(context, nodeCount, positionSetter) {
     }
 }
 
-function createTestAndRun(context, nodeCount, numberOfSourceChannels, positionSetter) {
+function createTestAndRun(context, should, nodeCount, numberOfSourceChannels,
+    positionSetter) {
     numberOfChannels = numberOfSourceChannels;
 
     createGraph(context, nodeCount, positionSetter);
 
-    context.oncomplete = checkResult;
-    context.startRendering();
+    return context.startRendering()
+        .then(buffer => checkResult(buffer, should));
 }
 
 // Map our position angle to the azimuth angle (in degrees).
@@ -108,8 +109,7 @@ function equalPowerGain(angle) {
     }
 }
 
-function checkResult(event) {
-    renderedBuffer = event.renderedBuffer;
+function checkResult(renderedBuffer, should) {
     renderedLeft = renderedBuffer.getChannelData(0);
     renderedRight = renderedBuffer.getChannelData(1);
 
@@ -168,42 +168,15 @@ function checkResult(event) {
         }
     }
 
-    if (impulseCount == nodesToCreate) {
-        testPassed("Number of impulses matches the number of panner nodes.");
-    } else {
-        testFailed("Number of impulses is incorrect.  (Found " + impulseCount + " but expected " + nodesToCreate + ")");
-        success = false;
-    }
+    should(impulseCount, "Number of impulses found")
+        .beEqualTo(nodesToCreate);
 
-    if (timeErrors.length > 0) {
-        success = false;
-        testFailed(timeErrors.length + " timing errors found in " + nodesToCreate + " panner nodes.");
-        for (var k = 0; k < timeErrors.length; ++k) {
-            testFailed("Impulse at sample " + timeErrors[k].actual + " but expected " + timeErrors[k].expected);
-        }
-    } else {
-        testPassed("All impulses at expected offsets.");
-    }
+    should(timeErrors.map(x => x.actual), "Offsets of impulses at the wrong position")
+        .beEqualToArray(timeErrors.map(x => x.expected));
 
-    if (maxErrorL <= maxAllowedError) {
-        testPassed("Left channel gain values are correct.");
-    } else {
-        testFailed("Left channel gain values are incorrect.  Max error = " + maxErrorL + " at time " + time[maxErrorIndexL] + " (threshold = " + maxAllowedError + ")");
-        success = false;
-    }
-    
-    if (maxErrorR <= maxAllowedError) {
-        testPassed("Right channel gain values are correct.");
-    } else {
-        testFailed("Right channel gain values are incorrect.  Max error = " + maxErrorR + " at time " + time[maxErrorIndexR] + " (threshold = " + maxAllowedError + ")");
-        success = false;
-    }
+    should(maxErrorL, "Error in left channel gain values")
+        .beLessThanOrEqualTo(maxAllowedError);
 
-    if (success) {
-        testPassed("EqualPower panner test passed");
-    } else {
-        testFailed("EqualPower panner test failed");
-    }
-
-    finishJSTest();
+    should(maxErrorR, "Error in right channel gain values")
+        .beLessThanOrEqualTo(maxAllowedError);
 }
