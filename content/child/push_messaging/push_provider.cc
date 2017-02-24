@@ -136,20 +136,18 @@ void PushProvider::subscribe(
       content_options,
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
-      base::Bind(&PushProvider::SubscribeCallback, base::Unretained(this),
+      base::Bind(&PushProvider::DidSubscribe, base::Unretained(this),
                  base::Passed(&callbacks)));
 }
 
-void PushProvider::SubscribeCallback(
+void PushProvider::DidSubscribe(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
     content::PushRegistrationStatus status,
     const base::Optional<GURL>& endpoint,
     const base::Optional<content::PushSubscriptionOptions>& options,
     const base::Optional<std::vector<uint8_t>>& p256dh,
     const base::Optional<std::vector<uint8_t>>& auth) {
-  if (!callbacks) {
-    return;
-  }
+  DCHECK(callbacks);
 
   if (status == PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE ||
       status == PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE) {
@@ -180,19 +178,17 @@ void PushProvider::unsubscribe(
       service_worker_registration_id,
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
-      base::Bind(&PushProvider::UnsubscribeCallback, base::Unretained(this),
+      base::Bind(&PushProvider::DidUnsubscribe, base::Unretained(this),
                  base::Passed(&callbacks)));
 }
 
-void PushProvider::UnsubscribeCallback(
+void PushProvider::DidUnsubscribe(
     std::unique_ptr<blink::WebPushUnsubscribeCallbacks> callbacks,
     bool is_success,
     bool did_unsubscribe,
     blink::WebPushError::ErrorType error_type,
     const base::Optional<std::string>& error_message) {
-  if (!callbacks) {
-    return;
-  }
+  DCHECK(callbacks);
 
   if (is_success) {
     callbacks->onSuccess(did_unsubscribe);
@@ -215,19 +211,18 @@ void PushProvider::getSubscription(
       service_worker_registration_id,
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
-      base::Bind(&PushProvider::GetSubscriptionCallback, base::Unretained(this),
+      base::Bind(&PushProvider::DidGetSubscription, base::Unretained(this),
                  base::Passed(&callbacks)));
 }
 
-void PushProvider::GetSubscriptionCallback(
+void PushProvider::DidGetSubscription(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
     content::PushGetRegistrationStatus status,
     const base::Optional<GURL>& endpoint,
     const base::Optional<content::PushSubscriptionOptions>& options,
     const base::Optional<std::vector<uint8_t>>& p256dh,
     const base::Optional<std::vector<uint8_t>>& auth) {
-  if (!callbacks)
-    return;
+  DCHECK(callbacks);
 
   if (status == PUSH_GETREGISTRATION_STATUS_SUCCESS) {
     DCHECK(endpoint);
@@ -259,17 +254,16 @@ void PushProvider::getPermissionStatus(
       service_worker_registration_id, options.userVisibleOnly,
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
-      base::Bind(&PushProvider::GetPermissionStatusCallback,
-                 base::Unretained(this), base::Passed(&callbacks)));
+      base::Bind(&PushProvider::DidGetPermissionStatus, base::Unretained(this),
+                 base::Passed(&callbacks)));
 }
 
-void PushProvider::GetPermissionStatusCallback(
+void PushProvider::DidGetPermissionStatus(
     std::unique_ptr<blink::WebPushPermissionStatusCallbacks> callbacks,
     bool is_success,
     blink::WebPushPermissionStatus status,
     blink::WebPushError::ErrorType error) {
-  if (!callbacks)
-    return;
+  DCHECK(callbacks);
 
   if (is_success) {
     callbacks->onSuccess(status);

@@ -62,32 +62,27 @@ class PushMessagingManager : public mojom::PushMessaging {
   ~PushMessagingManager() override;
 
   void DidCheckForExistingRegistration(
-      const SubscribeCallback& callback,
       const RegisterData& data,
       const std::vector<std::string>& push_registration_id,
       ServiceWorkerStatusCode service_worker_status);
 
-  void DidGetEncryptionKeys(const SubscribeCallback& callback,
-                            const RegisterData& data,
+  void DidGetEncryptionKeys(const RegisterData& data,
                             const std::string& push_registration_id,
                             bool success,
                             const std::vector<uint8_t>& p256dh,
                             const std::vector<uint8_t>& auth);
 
-  void DidGetSenderIdFromStorage(const SubscribeCallback& callback,
-                                 const RegisterData& data,
+  void DidGetSenderIdFromStorage(const RegisterData& data,
                                  const std::vector<std::string>& sender_id,
                                  ServiceWorkerStatusCode service_worker_status);
 
   // Called via PostTask from UI thread.
-  void PersistRegistrationOnIO(const SubscribeCallback& callback,
-                               const RegisterData& data,
+  void PersistRegistrationOnIO(const RegisterData& data,
                                const std::string& push_registration_id,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth);
 
   void DidPersistRegistrationOnIO(
-      const SubscribeCallback& callback,
       const RegisterData& data,
       const std::string& push_registration_id,
       const std::vector<uint8_t>& p256dh,
@@ -95,12 +90,10 @@ class PushMessagingManager : public mojom::PushMessaging {
       ServiceWorkerStatusCode service_worker_status);
 
   // Called both from IO thread, and via PostTask from UI thread.
-  void SendSubscriptionError(const SubscribeCallback& callback,
-                             const RegisterData& data,
+  void SendSubscriptionError(const RegisterData& data,
                              PushRegistrationStatus status);
   // Called both from IO thread, and via PostTask from UI thread.
-  void SendSubscriptionSuccess(const SubscribeCallback& callback,
-                               const RegisterData& data,
+  void SendSubscriptionSuccess(const RegisterData& data,
                                PushRegistrationStatus status,
                                const std::string& push_subscription_id,
                                const std::vector<uint8_t>& p256dh,

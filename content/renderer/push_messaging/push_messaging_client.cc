@@ -77,10 +77,9 @@ void PushMessagingClient::DidGetManifest(
   // Get the sender_info from the manifest since it wasn't provided by
   // the caller.
   if (manifest.IsEmpty()) {
-    SubscribeCallback(std::move(callbacks),
-                      PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING,
-                      base::nullopt, base::nullopt, base::nullopt,
-                      base::nullopt);
+    DidSubscribe(std::move(callbacks),
+                 PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING,
+                 base::nullopt, base::nullopt, base::nullopt, base::nullopt);
     return;
   }
 
@@ -105,9 +104,8 @@ void PushMessagingClient::DoSubscribe(
           ->registrationId();
 
   if (options.sender_info.empty()) {
-    SubscribeCallback(std::move(callbacks),
-                      PUSH_REGISTRATION_STATUS_NO_SENDER_ID, base::nullopt,
-                      base::nullopt, base::nullopt, base::nullopt);
+    DidSubscribe(std::move(callbacks), PUSH_REGISTRATION_STATUS_NO_SENDER_ID,
+                 base::nullopt, base::nullopt, base::nullopt, base::nullopt);
     return;
   }
 
@@ -116,11 +114,11 @@ void PushMessagingClient::DoSubscribe(
       routing_id(), service_worker_registration_id, options,
       // Safe to use base::Unretained because |push_messaging_manager_ |is
       // owned by |this|.
-      base::Bind(&PushMessagingClient::SubscribeCallback,
-                 base::Unretained(this), base::Passed(&callbacks)));
+      base::Bind(&PushMessagingClient::DidSubscribe, base::Unretained(this),
+                 base::Passed(&callbacks)));
 }
 
-void PushMessagingClient::SubscribeCallback(
+void PushMessagingClient::DidSubscribe(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
     content::PushRegistrationStatus status,
     const base::Optional<GURL>& endpoint,

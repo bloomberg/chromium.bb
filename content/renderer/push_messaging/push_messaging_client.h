@@ -59,7 +59,7 @@ class PushMessagingClient : public RenderFrameObserver,
       const PushSubscriptionOptions& options,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks);
 
-  void SubscribeCallback(
+  void DidSubscribe(
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       content::PushRegistrationStatus status,
       const base::Optional<GURL>& endpoint,

@@ -67,7 +67,7 @@ class PushProvider : public blink::WebPushProvider,
 
   static void GetInterface(mojom::PushMessagingRequest request);
 
-  void SubscribeCallback(
+  void DidSubscribe(
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       content::PushRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
@@ -75,14 +75,14 @@ class PushProvider : public blink::WebPushProvider,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
 
-  void UnsubscribeCallback(
+  void DidUnsubscribe(
       std::unique_ptr<blink::WebPushUnsubscribeCallbacks> callbacks,
       bool is_success,
       bool did_unsubscribe,
       blink::WebPushError::ErrorType error_type,
       const base::Optional<std::string>& error_message);
 
-  void GetSubscriptionCallback(
+  void DidGetSubscription(
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       content::PushGetRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
@@ -90,7 +90,7 @@ class PushProvider : public blink::WebPushProvider,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
 
-  void GetPermissionStatusCallback(
+  void DidGetPermissionStatus(
       std::unique_ptr<blink::WebPushPermissionStatusCallbacks> callbacks,
       bool is_success,
       blink::WebPushPermissionStatus status,
