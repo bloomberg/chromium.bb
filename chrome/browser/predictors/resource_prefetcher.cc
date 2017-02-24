@@ -140,7 +140,7 @@ void ResourcePrefetcher::TryToLaunchPrefetchRequests() {
 
 void ResourcePrefetcher::SendRequest(const GURL& url) {
   std::unique_ptr<net::URLRequest> url_request =
-      delegate_->GetURLRequestContext()->CreateRequest(url, net::LOW, this);
+      delegate_->GetURLRequestContext()->CreateRequest(url, net::IDLE, this);
   host_inflight_counts_[url.host()] += 1;
 
   url_request->set_method("GET");
