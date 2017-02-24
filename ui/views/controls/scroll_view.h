@@ -46,6 +46,10 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // Creates a ScrollView with a theme specific border.
   static ScrollView* CreateScrollViewWithBorder();
 
+  // Returns the ScrollView for which |contents| is its contents, or null if
+  // |contents| is not in a ScrollView.
+  static ScrollView* GetScrollViewForContents(View* contents);
+
   // Set the contents. Any previous contents will be deleted. The contents
   // is the view that needs to scroll.
   void SetContents(View* a_view);
@@ -88,8 +92,8 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void SetHorizontalScrollBar(ScrollBar* horiz_sb);
   void SetVerticalScrollBar(ScrollBar* vert_sb);
 
-  // Sets whether this ScrollView has a focus ring or not.
-  void SetHasFocusRing(bool has_focus_ring);
+  // Sets whether this ScrollView has a focus indicator or not.
+  void SetHasFocusIndicator(bool has_focus_indicator);
 
   // View overrides:
   gfx::Size GetPreferredSize() const override;
@@ -100,6 +104,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   const char* GetClassName() const override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // ScrollBarController overrides:
   void ScrollToPosition(ScrollBar* source, int position) override;
@@ -154,6 +159,9 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // Horizontally scrolls the header (if any) to match the contents.
   void ScrollHeader();
 
+  void AddBorder();
+  void UpdateBorder();
+
   // The current contents and its viewport. |contents_| is contained in
   // |contents_viewport_|.
   View* contents_;
@@ -185,6 +193,13 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // If true, never show the horizontal scrollbar (even if the contents is wider
   // than the viewport).
   bool hide_horizontal_scrollbar_;
+
+  // In Harmony, the indicator is a focus ring. Pre-Harmony, the indicator is a
+  // different border painter.
+  bool draw_focus_indicator_ = false;
+
+  // Only needed for pre-Harmony. Remove when Harmony is default.
+  bool draw_border_ = false;
 
   // Focus ring, if one is installed.
   View* focus_ring_ = nullptr;

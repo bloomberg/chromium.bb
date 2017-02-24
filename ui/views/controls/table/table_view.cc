@@ -546,8 +546,6 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
     const bool is_selected = selection_model_.IsSelected(model_index);
     if (is_selected)
       canvas->FillRect(GetRowBounds(i), selected_bg_color);
-    if (selection_model_.active() == model_index && HasFocus())
-      canvas->DrawFocusRect(GetRowBounds(i));
     for (int j = region.min_column; j < region.max_column; ++j) {
       const gfx::Rect cell_bounds(GetCellBounds(i, j));
       int text_x = kTextHorizontalPadding + cell_bounds.x();
@@ -625,11 +623,18 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void TableView::OnFocus() {
+  ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
+  if (scroll_view)
+    scroll_view->SetHasFocusIndicator(true);
   SchedulePaintForSelection();
+
   NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
 void TableView::OnBlur() {
+  ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
+  if (scroll_view)
+    scroll_view->SetHasFocusIndicator(false);
   SchedulePaintForSelection();
 }
 

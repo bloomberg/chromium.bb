@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
@@ -31,23 +32,7 @@ const base::Feature kToolkitViewsScrollWithLayers {
 #endif
 };
 
-// Subclass of ScrollView that resets the border when the theme changes.
-class ScrollViewWithBorder : public views::ScrollView {
- public:
-  ScrollViewWithBorder() {}
-
-  // View overrides;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
-    SetBorder(CreateSolidBorder(
-        1,
-        theme->GetSystemColor(ui::NativeTheme::kColorId_UnfocusedBorderColor)));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScrollViewWithBorder);
-};
-
-class ScrollCornerView : public views::View {
+class ScrollCornerView : public View {
  public:
   ScrollCornerView() {}
 
@@ -196,7 +181,21 @@ ScrollView::~ScrollView() {
 
 // static
 ScrollView* ScrollView::CreateScrollViewWithBorder() {
-  return new ScrollViewWithBorder();
+  auto scroll_view = new ScrollView();
+  scroll_view->AddBorder();
+  return scroll_view;
+}
+
+// static
+ScrollView* ScrollView::GetScrollViewForContents(View* contents) {
+  View* grandparent =
+      contents->parent() ? contents->parent()->parent() : nullptr;
+  if (!grandparent || grandparent->GetClassName() != ScrollView::kViewClassName)
+    return nullptr;
+
+  auto scroll_view = static_cast<ScrollView*>(grandparent);
+  DCHECK_EQ(contents, scroll_view->contents());
+  return scroll_view;
 }
 
 void ScrollView::SetContents(View* a_view) {
@@ -269,14 +268,21 @@ void ScrollView::SetVerticalScrollBar(ScrollBar* vert_sb) {
   vert_sb_ = vert_sb;
 }
 
-void ScrollView::SetHasFocusRing(bool has_focus_ring) {
-  if (has_focus_ring == (focus_ring_ != nullptr))
+void ScrollView::SetHasFocusIndicator(bool has_focus_indicator) {
+  if (has_focus_indicator == draw_focus_indicator_)
     return;
-  if (has_focus_ring) {
-    focus_ring_ = FocusRing::Install(this);
+  draw_focus_indicator_ = has_focus_indicator;
+
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    DCHECK_EQ(draw_focus_indicator_, !focus_ring_);
+    if (has_focus_indicator) {
+      focus_ring_ = FocusRing::Install(this);
+    } else {
+      FocusRing::Uninstall(this);
+      focus_ring_ = nullptr;
+    }
   } else {
-    FocusRing::Uninstall(this);
-    focus_ring_ = nullptr;
+    UpdateBorder();
   }
   SchedulePaint();
 }
@@ -517,6 +523,10 @@ const char* ScrollView::GetClassName() const {
   return kViewClassName;
 }
 
+void ScrollView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  UpdateBorder();
+}
+
 void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
   if (!contents_)
     return;
@@ -734,6 +744,23 @@ void ScrollView::ScrollHeader() {
     header_->SetX(-x_offset);
     header_->SchedulePaintInRect(header_->GetVisibleBounds());
   }
+}
+
+void ScrollView::AddBorder() {
+  draw_border_ = true;
+  UpdateBorder();
+}
+
+void ScrollView::UpdateBorder() {
+  if (!draw_border_ || !GetWidget())
+    return;
+
+  SetBorder(CreateSolidBorder(
+      1,
+      GetNativeTheme()->GetSystemColor(
+          draw_focus_indicator_
+              ? ui::NativeTheme::kColorId_FocusedBorderColor
+              : ui::NativeTheme::kColorId_UnfocusedBorderColor)));
 }
 
 // VariableRowHeightScrollHelper ----------------------------------------------

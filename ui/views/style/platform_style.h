@@ -56,9 +56,6 @@ class VIEWS_EXPORT PlatformStyle {
   // Otherwise, Return does nothing unless it is handled by an accelerator.
   static const bool kReturnClicksFocusedControl;
 
-  // Whether TreeViews get a focus ring on the entire TreeView when focused.
-  static const bool kTreeViewHasFocusRing;
-
   // Whether selecting a row in a TreeView selects the entire row or only the
   // label for that row.
   static const bool kTreeViewSelectionPaintsEntireRow;

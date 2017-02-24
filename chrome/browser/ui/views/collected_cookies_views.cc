@@ -64,9 +64,6 @@ const int kInfobarBorderSize = 1;
 const int kTreeViewWidth = 400;
 const int kTreeViewHeight = 125;
 
-// The color of the border around the cookies tree view.
-const SkColor kCookiesBorderColor = SkColorSetRGB(0xC8, 0xC8, 0xC8);
-
 // Spacing constants used with non-Harmony dialogs.
 const int kTabbedPaneTopPadding = 14;
 const int kCookieInfoBottomPadding = 4;
@@ -489,9 +486,9 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
 }
 
 views::View* CollectedCookiesViews::CreateScrollView(views::TreeView* pane) {
-  views::ScrollView* scroll_view = new views::ScrollView();
+  views::ScrollView* scroll_view =
+      views::ScrollView::CreateScrollViewWithBorder();
   scroll_view->SetContents(pane);
-  scroll_view->SetBorder(views::CreateSolidBorder(1, kCookiesBorderColor));
   return scroll_view;
 }
 

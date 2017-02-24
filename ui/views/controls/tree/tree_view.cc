@@ -638,7 +638,7 @@ void TreeView::OnFocus() {
   if (GetInputMethod())
     GetInputMethod()->OnCaretBoundsChanged(GetPrefixSelector());
 
-  SetHasFocusRing(true);
+  SetHasFocusIndicator(true);
 }
 
 void TreeView::OnBlur() {
@@ -647,7 +647,7 @@ void TreeView::OnBlur() {
   SchedulePaintForNode(selected_node_);
   if (selector_)
     selector_->OnViewBlur();
-  SetHasFocusRing(false);
+  SetHasFocusIndicator(false);
 }
 
 bool TreeView::OnClickOrTap(const ui::LocatedEvent& event) {
@@ -807,8 +807,6 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
   if (!PlatformStyle::kTreeViewSelectionPaintsEntireRow &&
       node == selected_node_) {
     canvas->FillRect(text_bounds, selected_row_bg_color);
-    if (HasFocus())
-      canvas->DrawFocusRect(text_bounds);
   }
 
   // Paint the text.
@@ -1057,20 +1055,13 @@ bool TreeView::IsPointInExpandControl(InternalNode* node,
   return arrow_bounds.Contains(point);
 }
 
-void TreeView::SetHasFocusRing(bool shows) {
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial() ||
-      !PlatformStyle::kTreeViewHasFocusRing) {
-    return;
-  }
+void TreeView::SetHasFocusIndicator(bool shows) {
   // If this View is the grandchild of a ScrollView, use the grandparent
   // ScrollView for the focus ring instead of this View so that the focus ring
-  // won't be scrolled. Since ScrollViews have a single content view, which they
-  // wrap in a ScrollView::Viewport, being the grandchild of a ScrollView
-  // implies being the sole grandchild, which means it's fine to wrap the focus
-  // ring around the grandparent here.
-  View* grandparent = parent() ? parent()->parent() : nullptr;
-  if (grandparent && grandparent->GetClassName() == ScrollView::kViewClassName)
-    static_cast<ScrollView*>(grandparent)->SetHasFocusRing(shows);
+  // won't be scrolled.
+  ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
+  if (scroll_view)
+    scroll_view->SetHasFocusIndicator(shows);
 }
 
 // InternalNode ----------------------------------------------------------------
