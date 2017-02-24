@@ -83,8 +83,6 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1673
     'ChromeDownloadDirTest.testFileDownloadWithGet',
     'ChromeDriverPageLoadTimeoutTest.*',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1683
-    'ChromeDriverTest.testShadowDomClick',
 ]
 _VERSION_SPECIFIC_FILTER['57'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=992
