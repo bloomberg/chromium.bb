@@ -23,6 +23,7 @@
 #include "components/offline_pages/core/offline_page_test_archiver.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/web_contents_tester.h"
@@ -853,6 +854,37 @@ TEST_F(RecentTabHelperTest, SaveSamePageNavigationSnapshots) {
   EXPECT_EQ(kTestPageUrlWithSegment, downloads_page->url);
   EXPECT_EQ(client_id, downloads_page->client_id);
   EXPECT_EQ(offline_id, downloads_page->offline_id);
+}
+
+// Tests that a page reloaded is tracked as an actual load and properly saved.
+TEST_F(RecentTabHelperTest, ReloadIsTrackedAsNavigationAndSavedOnlyUponLoad) {
+  // Navigates and load fully then hide the tab so that a snapshot is created.
+  NavigateAndCommit(kTestPageUrl);
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
+  recent_tab_helper()->WasHidden();
+  RunUntilIdle();
+  ASSERT_EQ(1U, GetAllPages().size());
+
+  // Starts a reload and hides the tab. No new snapshot should be saved.
+  controller().Reload(content::ReloadType::NORMAL, false);
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->CommitPendingNavigation();
+  recent_tab_helper()->WasHidden();
+  RunUntilIdle();
+  EXPECT_EQ(1U, page_added_count());
+  EXPECT_EQ(0U, model_removed_count());
+  ASSERT_EQ(1U, GetAllPages().size());
+
+  // Finish loading and hide the tab. A new snapshot should be created.
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
+  recent_tab_helper()->WasHidden();
+  RunUntilIdle();
+  EXPECT_EQ(2U, page_added_count());
+  EXPECT_EQ(1U, model_removed_count());
+  ASSERT_EQ(1U, GetAllPages().size());
 }
 
 }  // namespace offline_pages

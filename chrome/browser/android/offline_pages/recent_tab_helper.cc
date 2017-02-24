@@ -117,6 +117,8 @@ void RecentTabHelper::ObserveAndDownloadCurrentPage(
   // If this tab helper is not enabled, immediately give the job back to
   // RequestCoordinator.
   if (!EnsureInitialized()) {
+    DVLOG(1) << "Snapshots disabled; ignored download request for: "
+             << web_contents()->GetLastCommittedURL().spec();
     ReportDownloadStatusToRequestCoordinator(new_downloads_snapshot_info.get(),
                                              false);
     return;
@@ -132,6 +134,8 @@ void RecentTabHelper::ObserveAndDownloadCurrentPage(
   // request to download the page will be immediately dismissed. See
   // https://crbug.com/686283.
   if (downloads_ongoing_snapshot_info_) {
+    DVLOG(1) << "Ongoing request exist; ignored download request for: "
+             << web_contents()->GetLastCommittedURL().spec();
     ReportDownloadStatusToRequestCoordinator(new_downloads_snapshot_info.get(),
                                              true);
     return;
@@ -143,11 +147,15 @@ void RecentTabHelper::ObserveAndDownloadCurrentPage(
   // If the page is not yet ready for a snapshot return now as it will be
   // started later, once page loading advances.
   if (PageQuality::POOR == snapshot_controller_->current_page_quality()) {
+    DVLOG(1) << "Waiting for loading page to serve download request for: "
+             << web_contents()->GetLastCommittedURL().spec();
     downloads_snapshot_on_hold_ = true;
     return;
   }
 
   // Otherwise start saving the snapshot now.
+  DVLOG(1) << "Starting download request for: "
+           << web_contents()->GetLastCommittedURL().spec();
   SaveSnapshotForDownloads(false);
 }
 
@@ -185,15 +193,23 @@ void RecentTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() || navigation_handle->IsSamePage()) {
+    DVLOG_IF(1, navigation_handle->IsInMainFrame())
+        << "Main frame navigation ignored (reasons: "
+        << !navigation_handle->HasCommitted() << ", "
+        << navigation_handle->IsSamePage()
+        << ") to: " << web_contents()->GetLastCommittedURL().spec();
     return;
   }
 
   if (!EnsureInitialized())
     return;
+  DVLOG(1) << "Navigation acknowledged to: "
+           << web_contents()->GetLastCommittedURL().spec();
 
-  // If there is an ongoing downloads request, lets allow Background Offliner to
-  // continue downloading this page.
+  // If there is an ongoing downloads request, lets make Background Offliner
+  // take over downloading that page.
   if (downloads_ongoing_snapshot_info_) {
+    DVLOG(1) << " - Passing ongoing downloads request to Background Offliner";
     ReportDownloadStatusToRequestCoordinator(
         downloads_ongoing_snapshot_info_.get(), false);
   }
@@ -211,6 +227,7 @@ void RecentTabHelper::DidFinishNavigation(
       OfflinePageModel::CanSaveURL(web_contents()->GetLastCommittedURL()) &&
       OfflinePageUtils::GetOfflinePageFromWebContents(web_contents()) ==
           nullptr;
+  DVLOG_IF(1, !can_save) << " - Page can not be saved";
 
   UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
 
@@ -218,6 +235,7 @@ void RecentTabHelper::DidFinishNavigation(
     snapshot_controller_->Stop();
   last_n_listen_to_tab_hidden_ = can_save && !delegate_->IsLowEndDevice() &&
                                  IsOffliningRecentPagesEnabled();
+  DVLOG_IF(1, !last_n_listen_to_tab_hidden_) << " - Last_n is disabled";
 }
 
 void RecentTabHelper::DocumentAvailableInMainFrame() {
@@ -233,9 +251,12 @@ void RecentTabHelper::DocumentOnLoadCompletedInMainFrame() {
 void RecentTabHelper::WebContentsDestroyed() {
   // If there is an ongoing downloads request, lets allow Background Offliner to
   // continue downloading this page.
-  if (downloads_ongoing_snapshot_info_)
+  if (downloads_ongoing_snapshot_info_) {
+    DVLOG(1) << "WebContents destroyed; passing ongoing downloads request to "
+                "Background Offliner";
     ReportDownloadStatusToRequestCoordinator(
         downloads_ongoing_snapshot_info_.get(), false);
+  }
   // And cancel any ongoing snapshots.
   CancelInFlightSnapshots();
 }
@@ -247,16 +268,26 @@ void RecentTabHelper::WasHidden() {
   if (!IsOffliningRecentPagesEnabled())
     return;
 
-  // Return immediately if last_n is not listening to tab hidden events or if a
-  // last_n snapshot is currently being saved.
-  if (!last_n_listen_to_tab_hidden_ || last_n_ongoing_snapshot_info_)
+  // Return immediately if last_n is not listening to tab hidden events, if a
+  // last_n snapshot is currently being saved or if the tab is closing.
+  if (!last_n_listen_to_tab_hidden_ || last_n_ongoing_snapshot_info_) {
+    DVLOG(1) << "Will not snapshot for last_n (reasons: "
+             << !last_n_listen_to_tab_hidden_ << ", "
+             << !!last_n_ongoing_snapshot_info_
+             << ") for: " << web_contents()->GetLastCommittedURL().spec();
     return;
+  }
 
   // Do not save if page quality is too low.
   // Note: we assume page quality for a page can only increase.
-  if (snapshot_controller_->current_page_quality() == PageQuality::POOR)
+  if (snapshot_controller_->current_page_quality() == PageQuality::POOR) {
+    DVLOG(1) << "Will not snapshot for last_n (page quality too low) for: "
+             << web_contents()->GetLastCommittedURL().spec();
     return;
+  }
 
+  DVLOG(1) << "Starting last_n snapshot for: "
+           << web_contents()->GetLastCommittedURL().spec();
   last_n_ongoing_snapshot_info_ =
       base::MakeUnique<SnapshotProgressInfo>(GetRecentPagesClientId());
   DCHECK(last_n_ongoing_snapshot_info_->IsForLastN());
@@ -278,6 +309,8 @@ void RecentTabHelper::StartSnapshot() {
   // that allow for a navigation event to start a snapshot:
   // 1) There is a request on hold waiting for the page to be minimally loaded.
   if (snapshots_enabled_ && downloads_snapshot_on_hold_) {
+    DVLOG(1) << "Resuming downloads snapshot request for: "
+             << web_contents()->GetLastCommittedURL().spec();
     downloads_snapshot_on_hold_ = false;
     SaveSnapshotForDownloads(false);
     return;
@@ -290,6 +323,8 @@ void RecentTabHelper::StartSnapshot() {
        downloads_latest_saved_snapshot_info_ &&
        downloads_latest_saved_snapshot_info_->expected_page_quality <
            snapshot_controller_->current_page_quality())) {
+    DVLOG(1) << "Upgrading last downloads snapshot for: "
+             << web_contents()->GetLastCommittedURL().spec();
     SaveSnapshotForDownloads(true);
     return;
   }
@@ -334,6 +369,8 @@ void RecentTabHelper::ContinueSnapshotWithIdsToPurge(
     const std::vector<int64_t>& page_ids) {
   DCHECK(snapshot_info);
 
+  DVLOG_IF(1, !page_ids.empty()) << "Deleting " << page_ids.size()
+                                 << " offline pages...";
   page_model_->DeletePagesByOfflineId(
       page_ids, base::Bind(&RecentTabHelper::ContinueSnapshotAfterPurge,
                            weak_ptr_factory_.GetWeakPtr(), snapshot_info));
@@ -374,6 +411,9 @@ void RecentTabHelper::SavePageCallback(SnapshotProgressInfo* snapshot_info,
 void RecentTabHelper::ReportSnapshotCompleted(
     SnapshotProgressInfo* snapshot_info,
     bool success) {
+  DVLOG(1) << (snapshot_info->IsForLastN() ? "Last_n" : "Downloads")
+           << " snapshot " << (success ? "succeeded" : "failed")
+           << " for: " << web_contents()->GetLastCommittedURL().spec();
   if (snapshot_info->IsForLastN()) {
     DCHECK_EQ(snapshot_info, last_n_ongoing_snapshot_info_.get());
     last_n_ongoing_snapshot_info_.reset();
