@@ -119,6 +119,12 @@ class MEDIA_EXPORT VideoDecoderConfig {
   void set_hdr_metadata(const HDRMetadata& hdr_metadata);
   base::Optional<HDRMetadata> hdr_metadata() const;
 
+  // Sets the config to be encrypted or not encrypted manually. This can be
+  // useful for decryptors that decrypts an encrypted stream to a clear stream,
+  // or for decoder selectors that wants to select decrypting decoders instead
+  // of clear decoders.
+  void SetIsEncrypted(bool is_encrypted);
+
  private:
   VideoCodec codec_;
   VideoCodecProfile profile_;

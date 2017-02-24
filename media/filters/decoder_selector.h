@@ -37,6 +37,7 @@ class MEDIA_EXPORT DecoderSelector {
  public:
   typedef DecoderStreamTraits<StreamType> StreamTraits;
   typedef typename StreamTraits::DecoderType Decoder;
+  typedef typename StreamTraits::DecoderConfigType DecoderConfig;
 
   // Indicates completion of Decoder selection.
   // - First parameter: The initialized Decoder. If it's set to NULL, then
@@ -93,7 +94,11 @@ class MEDIA_EXPORT DecoderSelector {
   scoped_refptr<MediaLog> media_log_;
 
   StreamTraits* traits_;
+
+  // Could be the |stream| passed in SelectDecoder, or |decrypted_stream_| when
+  // a DecryptingDemuxerStream is selected.
   DemuxerStream* input_stream_;
+
   CdmContext* cdm_context_;
   SelectDecoderCB select_decoder_cb_;
   typename Decoder::OutputCB output_cb_;
@@ -101,6 +106,9 @@ class MEDIA_EXPORT DecoderSelector {
 
   std::unique_ptr<Decoder> decoder_;
   std::unique_ptr<DecryptingDemuxerStream> decrypted_stream_;
+
+  // Config of the |input_stream| used to initialize decoders.
+  DecoderConfig config_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderSelector> weak_ptr_factory_;

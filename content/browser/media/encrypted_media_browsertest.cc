@@ -244,10 +244,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_ClearToClear) {
   TestConfigChange(ConfigChangeType::CLEAR_TO_CLEAR);
 }
 
-// TODO(xhwang): Support switching from clear to encrypted and enable this test.
-// See http://crbug.com/597443
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       DISABLED_ConfigChangeVideo_ClearToEncrypted) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_ClearToEncrypted) {
   TestConfigChange(ConfigChangeType::CLEAR_TO_ENCRYPTED);
 }
 

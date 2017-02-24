@@ -251,8 +251,14 @@ base::TimeDelta DecoderStream<StreamType>::AverageDuration() const {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::SelectDecoder() {
+  // If we are already using DecryptingDemuxerStream (DDS), e.g. during
+  // fallback, the |stream_| will always be clear. In this case, no need pass in
+  // the |cdm_context_|. This will also help prevent creating a new DDS on top
+  // of the current DDS.
+  CdmContext* cdm_context = decrypting_demuxer_stream_ ? nullptr : cdm_context_;
+
   decoder_selector_->SelectDecoder(
-      &traits_, stream_, cdm_context_,
+      &traits_, stream_, cdm_context,
       base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,

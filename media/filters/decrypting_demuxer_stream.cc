@@ -359,28 +359,21 @@ void DecryptingDemuxerStream::InitializeDecoderConfig() {
   // The decoder selector or upstream demuxer make sure the stream is valid.
   DCHECK(IsStreamValid(demuxer_stream_));
 
+  // Since |this| is a decrypted version of |demuxer_stream_|, the decoder
+  // config of |this| should always be a decrypted version of |demuxer_stream_|
+  // configs.
   switch (demuxer_stream_->type()) {
     case AUDIO: {
-      AudioDecoderConfig input_audio_config =
-          demuxer_stream_->audio_decoder_config();
-      audio_config_.Initialize(
-          input_audio_config.codec(), input_audio_config.sample_format(),
-          input_audio_config.channel_layout(),
-          input_audio_config.samples_per_second(),
-          input_audio_config.extra_data(), Unencrypted(),
-          input_audio_config.seek_preroll(), input_audio_config.codec_delay());
+      audio_config_ = demuxer_stream_->audio_decoder_config();
+      if (audio_config_.is_encrypted())
+        audio_config_.SetIsEncrypted(false);
       break;
     }
 
     case VIDEO: {
-      VideoDecoderConfig input_video_config =
-          demuxer_stream_->video_decoder_config();
-      video_config_.Initialize(
-          input_video_config.codec(), input_video_config.profile(),
-          input_video_config.format(), input_video_config.color_space(),
-          input_video_config.coded_size(), input_video_config.visible_rect(),
-          input_video_config.natural_size(), input_video_config.extra_data(),
-          Unencrypted());
+      video_config_ = demuxer_stream_->video_decoder_config();
+      if (video_config_.is_encrypted())
+        video_config_.SetIsEncrypted(false);
       break;
     }
 

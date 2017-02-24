@@ -57,7 +57,6 @@ class VideoFrameStreamTest
       : demuxer_stream_(new FakeDemuxerStream(kNumConfigs,
                                               kNumBuffersInOneConfig,
                                               GetParam().is_encrypted)),
-        cdm_context_(new StrictMock<MockCdmContext>()),
         is_initialized_(false),
         num_decoded_frames_(0),
         pending_initialize_(false),
@@ -79,7 +78,7 @@ class VideoFrameStreamTest
                                      bytes_decoded_cb);
 
     // TODO(xhwang): We should test the case where only certain decoder
-    // supports encrypted streams. Currently this is hard to test becasue we use
+    // supports encrypted streams. Currently this is hard to test because we use
     // parameterized tests which need to pass in all combinations.
     if (GetParam().is_encrypted && !GetParam().has_decryptor) {
       decoder1_->EnableEncryptedConfigSupport();
@@ -95,7 +94,7 @@ class VideoFrameStreamTest
     video_frame_stream_.reset(new VideoFrameStream(
         message_loop_.task_runner(), std::move(decoders), new MediaLog()));
 
-    if (GetParam().has_decryptor) {
+    if (GetParam().is_encrypted && GetParam().has_decryptor) {
       decryptor_.reset(new NiceMock<MockDecryptor>());
 
       // Decryptor can only decrypt (not decrypt-and-decode) so that
@@ -106,8 +105,12 @@ class VideoFrameStreamTest
           .WillRepeatedly(Invoke(this, &VideoFrameStreamTest::Decrypt));
     }
 
-    EXPECT_CALL(*cdm_context_, GetDecryptor())
-        .WillRepeatedly(Return(decryptor_.get()));
+    if (GetParam().is_encrypted) {
+      cdm_context_.reset(new StrictMock<MockCdmContext>());
+
+      EXPECT_CALL(*cdm_context_, GetDecryptor())
+          .WillRepeatedly(Return(decryptor_.get()));
+    }
   }
 
   ~VideoFrameStreamTest() {

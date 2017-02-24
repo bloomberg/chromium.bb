@@ -559,12 +559,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_ClearToClear) {
   TestConfigChange(ConfigChangeType::CLEAR_TO_CLEAR);
 }
 
-// TODO(xhwang): Support switching from clear to encrypted and fix the test
-// expectation. Currently this test passes when we do decrypt-and-decode but
-// fails when we do decrypt-only due to how decoder reselection during config
-// change is handled. See http://crbug.com/597443
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       DISABLED_ConfigChangeVideo_ClearToEncrypted) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_ClearToEncrypted) {
   TestConfigChange(ConfigChangeType::CLEAR_TO_ENCRYPTED);
 }
 

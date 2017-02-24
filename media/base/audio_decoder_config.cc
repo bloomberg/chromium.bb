@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "media/base/limits.h"
+#include "media/base/media_util.h"
 
 namespace media {
 
@@ -93,6 +94,21 @@ std::string AudioDecoderConfig::AsHumanReadableString() const {
     << (extra_data().empty() ? "false" : "true") << " encrypted? "
     << (is_encrypted() ? "true" : "false");
   return s.str();
+}
+
+void AudioDecoderConfig::SetIsEncrypted(bool is_encrypted) {
+  if (!is_encrypted) {
+    DCHECK(encryption_scheme_.is_encrypted()) << "Config is already clear.";
+    encryption_scheme_ = Unencrypted();
+  } else {
+    DCHECK(!encryption_scheme_.is_encrypted())
+        << "Config is already encrypted.";
+    // TODO(xhwang): This is only used to guide decoder selection, so set
+    // a common encryption scheme that should be supported by all decrypting
+    // decoders. We should be able to remove this when we support switching
+    // decoders at run time. See http://crbug.com/695595
+    encryption_scheme_ = AesCtrEncryptionScheme();
+  }
 }
 
 }  // namespace media

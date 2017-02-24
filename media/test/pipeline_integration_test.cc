@@ -737,6 +737,8 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
     EXPECT_CALL(*this, OnDurationChange()).Times(AnyNumber());
     EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AtMost(1));
     EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(AtMost(1));
+    EXPECT_CALL(*this, OnVideoAverageKeyframeDistanceUpdate())
+        .Times(AnyNumber());
 
     source->set_demuxer_failure_cb(base::Bind(
         &PipelineIntegrationTest::OnStatusCallback, base::Unretained(this)));
@@ -1505,6 +1507,7 @@ TEST_F(PipelineIntegrationTest,
   EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(640, 360))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360-av_enc-av.webm");
+
   ASSERT_TRUE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                                   second_file->data(),
                                   second_file->data_size()));
@@ -1522,9 +1525,6 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-// TODO(xhwang): Config change from clear to encrypted is allowed by the
-// demuxer, but is not currently supported by the Renderer. See
-// http://crbug.com/597443
 TEST_F(PipelineIntegrationTest,
        MAYBE_EME(MediaSource_ConfigChange_ClearThenEncrypted_WebM)) {
   MockMediaSource source("bear-320x240-16x9-aspect.webm", kWebM,
@@ -1533,6 +1533,7 @@ TEST_F(PipelineIntegrationTest,
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
 
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(640, 360))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360-av_enc-av.webm");
 
@@ -1542,8 +1543,7 @@ TEST_F(PipelineIntegrationTest,
   source.EndOfStream();
 
   Play();
-
-  EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
+  EXPECT_TRUE(WaitUntilOnEnded());
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
@@ -1551,6 +1551,7 @@ TEST_F(PipelineIntegrationTest,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   source.Shutdown();
+  Stop();
 }
 
 // Config change from encrypted to clear is allowed by the demuxer, and is

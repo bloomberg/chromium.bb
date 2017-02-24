@@ -52,6 +52,7 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(decode_cb_.is_null());
   DCHECK(reset_cb_.is_null());
   DCHECK(config.IsValidConfig());
+  DCHECK(cdm_context);
 
   init_cb_ = BindToCurrentLoop(init_cb);
   output_cb_ = BindToCurrentLoop(output_cb);
@@ -59,11 +60,6 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
   config_ = config;
 
   if (state_ == kUninitialized) {
-    // DecoderSelector only chooses |this| when the stream is encrypted.
-    // TODO(xhwang): We may also select this decoder for clear stream if a CDM
-    // is attached. Then we need to update this. See http://crbug.com/597443
-    DCHECK(config.is_encrypted());
-    DCHECK(cdm_context);
     if (!cdm_context->GetDecryptor()) {
       MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no decryptor";
       base::ResetAndReturn(&init_cb_).Run(false);
