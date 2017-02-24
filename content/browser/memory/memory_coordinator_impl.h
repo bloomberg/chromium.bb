@@ -101,6 +101,9 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // the state is actually changed.
   bool ChangeStateIfNeeded(MemoryState prev_state, MemoryState next_state);
 
+  // Asks the delegate to discard a tab.
+  void DiscardTab();
+
  protected:
   // Returns the RenderProcessHost which is correspond to the given id.
   // Returns nullptr if there is no corresponding RenderProcessHost.
@@ -111,6 +114,8 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // Sets a delegate for testing.
   void SetDelegateForTesting(
       std::unique_ptr<MemoryCoordinatorDelegate> delegate);
+
+  MemoryCoordinatorDelegate* delegate() { return delegate_.get(); }
 
   // Adds the given ChildMemoryCoordinator as a child of this coordinator.
   void AddChildForTesting(int dummy_render_process_id,

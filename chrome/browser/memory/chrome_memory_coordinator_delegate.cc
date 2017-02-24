@@ -31,4 +31,11 @@ bool ChromeMemoryCoordinatorDelegate::CanSuspendBackgroundedRenderer(
 #endif
 }
 
+void ChromeMemoryCoordinatorDelegate::DiscardTab() {
+#if !defined(OS_ANDROID)
+  if (g_browser_process->GetTabManager())
+    g_browser_process->GetTabManager()->DiscardTab();
+#endif
+}
+
 }  // namespace memory

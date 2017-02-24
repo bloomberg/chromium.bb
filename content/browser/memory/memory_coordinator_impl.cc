@@ -340,6 +340,11 @@ bool MemoryCoordinatorImpl::ChangeStateIfNeeded(base::MemoryState prev_state,
   return true;
 }
 
+void MemoryCoordinatorImpl::DiscardTab() {
+  if (delegate_)
+    delegate_->DiscardTab();
+}
+
 RenderProcessHost* MemoryCoordinatorImpl::GetRenderProcessHost(
     int render_process_id) {
   return RenderProcessHost::FromID(render_process_id);

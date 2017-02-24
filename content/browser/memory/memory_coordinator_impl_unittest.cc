@@ -101,7 +101,13 @@ class TestMemoryCoordinatorDelegate : public MemoryCoordinatorDelegate {
     return true;
   }
 
+  void DiscardTab() override { discard_tab_called_ = true; }
+
+  bool discard_tab_called() const { return discard_tab_called_; }
+
  private:
+  bool discard_tab_called_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TestMemoryCoordinatorDelegate);
 };
 
@@ -150,6 +156,10 @@ class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
     if (iter == render_process_hosts_.end())
       return nullptr;
     return iter->second.get();
+  }
+
+  TestMemoryCoordinatorDelegate* GetDelegate() {
+    return static_cast<TestMemoryCoordinatorDelegate*>(delegate());
   }
 
   // Wrapper of MemoryCoordinator::SetMemoryState that also calls RunUntilIdle.
@@ -477,6 +487,10 @@ TEST_F(MemoryCoordinatorImplTest, ForceSetGlobalState) {
   EXPECT_EQ(base::MemoryState::THROTTLED, coordinator_->GetGlobalMemoryState());
 }
 
+TEST_F(MemoryCoordinatorImplTest, DiscardTab) {
+  coordinator_->DiscardTab();
+  EXPECT_TRUE(coordinator_->GetDelegate()->discard_tab_called());
+}
 
 #if defined(OS_ANDROID)
 // TODO(jcivelli): Broken on Android. http://crbug.com/678665
