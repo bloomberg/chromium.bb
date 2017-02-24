@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/fileapi/mtp_watcher_manager.h"
 
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
+
 namespace chromeos {
 
 MTPWatcherManager::MTPWatcherManager(
@@ -20,6 +24,7 @@ void MTPWatcherManager::AddWatcher(
     bool recursive,
     const StatusCallback& callback,
     const NotificationCallback& notification_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   device_media_async_file_util_->AddWatcher(url, recursive, callback,
                                             notification_callback);
 }
@@ -27,6 +32,7 @@ void MTPWatcherManager::AddWatcher(
 void MTPWatcherManager::RemoveWatcher(const storage::FileSystemURL& url,
                                       bool recursive,
                                       const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   device_media_async_file_util_->RemoveWatcher(url, recursive, callback);
 }
 

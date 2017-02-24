@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fileapi/watcher_manager.h"
 
+#include "base/files/file.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "content/public/browser/browser_thread.h"
@@ -14,16 +15,30 @@ using content::BrowserThread;
 namespace chromeos {
 namespace file_system_provider {
 
-WatcherManager::WatcherManager() {
-}
-WatcherManager::~WatcherManager() {
+namespace {
+
+using StatusCallback = storage::WatcherManager::StatusCallback;
+using NotificationCallback = storage::WatcherManager::NotificationCallback;
+using ChangeType = storage::WatcherManager::ChangeType;
+
+void CallStatusCallbackOnIOThread(const StatusCallback& callback,
+                                  base::File::Error error) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback, error));
 }
 
-void WatcherManager::AddWatcher(
-    const storage::FileSystemURL& url,
-    bool recursive,
-    const StatusCallback& callback,
-    const NotificationCallback& notification_callback) {
+void CallNotificationCallbackOnIOThread(const NotificationCallback& callback,
+                                        ChangeType type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback, type));
+}
+
+void AddWatcherOnUIThread(const storage::FileSystemURL& url,
+                          bool recursive,
+                          const StatusCallback& callback,
+                          const NotificationCallback& notification_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   util::FileSystemURLParser parser(url);
@@ -40,9 +55,9 @@ void WatcherManager::AddWatcher(
                                    notification_callback);
 }
 
-void WatcherManager::RemoveWatcher(const storage::FileSystemURL& url,
-                                   bool recursive,
-                                   const StatusCallback& callback) {
+void RemoveWatcherOnUIThread(const storage::FileSystemURL& url,
+                             bool recursive,
+                             const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   util::FileSystemURLParser parser(url);
@@ -53,6 +68,35 @@ void WatcherManager::RemoveWatcher(const storage::FileSystemURL& url,
 
   parser.file_system()->RemoveWatcher(
       url.origin(), parser.file_path(), recursive, callback);
+}
+
+}  // namespace
+
+WatcherManager::WatcherManager() = default;
+WatcherManager::~WatcherManager() = default;
+
+void WatcherManager::AddWatcher(
+    const storage::FileSystemURL& url,
+    bool recursive,
+    const StatusCallback& callback,
+    const NotificationCallback& notification_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&AddWatcherOnUIThread, url, recursive,
+                 base::Bind(&CallStatusCallbackOnIOThread, callback),
+                 base::Bind(&CallNotificationCallbackOnIOThread,
+                            notification_callback)));
+}
+
+void WatcherManager::RemoveWatcher(const storage::FileSystemURL& url,
+                                   bool recursive,
+                                   const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&RemoveWatcherOnUIThread, url, recursive,
+                 base::Bind(&CallStatusCallbackOnIOThread, callback)));
 }
 
 }  // namespace file_system_provider

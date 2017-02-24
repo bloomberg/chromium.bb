@@ -56,7 +56,7 @@ ArcDocumentsProviderBackendDelegate::CreateFileStreamWriter(
 
 storage::WatcherManager* ArcDocumentsProviderBackendDelegate::GetWatcherManager(
     storage::FileSystemType type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Non-watchable file system.
   return nullptr;
 }

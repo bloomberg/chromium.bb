@@ -79,7 +79,7 @@ BackendDelegate::CreateFileStreamWriter(const storage::FileSystemURL& url,
 
 storage::WatcherManager* BackendDelegate::GetWatcherManager(
     storage::FileSystemType type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeProvided, type);
   return watcher_manager_.get();
 }
