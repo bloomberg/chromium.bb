@@ -325,12 +325,6 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   void RecordSessionUpdateHistogramData(int type,
     base::TimeTicks* last_updated_time);
 
-  // Helper methods to record the histogram data
-  void RecordUpdatedTabClosed(base::TimeDelta delta, bool use_long_period);
-  void RecordUpdatedNavListPruned(base::TimeDelta delta, bool use_long_period);
-  void RecordUpdatedNavEntryCommit(base::TimeDelta delta, bool use_long_period);
-  void RecordUpdatedSaveTime(base::TimeDelta delta, bool use_long_period);
-
   // Deletes session data if no windows are open for the current profile.
   void MaybeDeleteSessionOnlyData();
 
@@ -386,17 +380,6 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   // is made the last session. See description above class for details on
   // current/last session.
   bool move_on_new_browser_;
-
-  // Used for reporting frequency of session altering operations.
-  base::TimeTicks last_updated_tab_closed_time_;
-  base::TimeTicks last_updated_nav_list_pruned_time_;
-  base::TimeTicks last_updated_nav_entry_commit_time_;
-  base::TimeTicks last_updated_save_time_;
-
-  // Constants used in calculating histogram data.
-  const base::TimeDelta save_delay_in_millis_;
-  const base::TimeDelta save_delay_in_mins_;
-  const base::TimeDelta save_delay_in_hrs_;
 
   // For browser_tests, since we want to simulate the browser shutting down
   // without quitting.

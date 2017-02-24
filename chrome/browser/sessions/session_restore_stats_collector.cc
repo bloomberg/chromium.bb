@@ -98,9 +98,7 @@ SessionRestoreStatsCollector::TabLoaderStats::TabLoaderStats()
     : tab_count(0u),
       tabs_deferred(0u),
       tabs_load_started(0u),
-      tabs_loaded(0u),
-      parallel_tab_loads(0u) {
-}
+      tabs_loaded(0u) {}
 
 SessionRestoreStatsCollector::TabState::TabState(
     NavigationController* controller)
@@ -397,11 +395,8 @@ void SessionRestoreStatsCollector::MarkTabAsLoading(TabState* tab_state) {
   tab_state->loading_state = TAB_IS_LOADING;
   ++loading_tab_count_;
 
-  if (!done_tracking_non_deferred_tabs_) {
+  if (!done_tracking_non_deferred_tabs_)
     ++tab_loader_stats_.tabs_load_started;
-    tab_loader_stats_.parallel_tab_loads =
-        std::max(tab_loader_stats_.parallel_tab_loads, loading_tab_count_);
-  }
 }
 
 void SessionRestoreStatsCollector::ReleaseIfDoneTracking() {
@@ -516,9 +511,6 @@ void SessionRestoreStatsCollector::UmaStatsReportingDelegate::
         base::Histogram::kUmaTargetedHistogramFlag);
     counter_for_count->AddTime(tab_loader_stats.non_deferred_tabs_loaded);
   }
-
-  UMA_HISTOGRAM_COUNTS_100("SessionRestore.ParallelTabLoads",
-                           tab_loader_stats.parallel_tab_loads);
 }
 
 void SessionRestoreStatsCollector::UmaStatsReportingDelegate::

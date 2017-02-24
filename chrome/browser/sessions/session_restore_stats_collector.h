@@ -103,10 +103,6 @@ class SessionRestoreStatsCollector
     // (vaguely named for historical reasons, as it predates the concept of
     // deferred tabs).
     base::TimeDelta non_deferred_tabs_loaded;
-
-    // The maximum number of tabs loading in parallel. This corresponds to the
-    // "SessionRestore.ParallelTabLoads" metric.
-    size_t parallel_tab_loads;
   };
 
   // The StatsReportingDelegate is responsible for delivering statistics

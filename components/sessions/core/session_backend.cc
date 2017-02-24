@@ -56,8 +56,7 @@ class SessionFileReader {
   }
   // Reads the contents of the file specified in the constructor, returning
   // true on success, and filling up |commands| with commands.
-  bool Read(sessions::BaseSessionService::SessionType type,
-            std::vector<std::unique_ptr<sessions::SessionCommand>>* commands);
+  bool Read(std::vector<std::unique_ptr<sessions::SessionCommand>>* commands);
 
  private:
   // Reads a single command, returning it. A return value of NULL indicates
@@ -91,13 +90,11 @@ class SessionFileReader {
 };
 
 bool SessionFileReader::Read(
-    sessions::BaseSessionService::SessionType type,
     std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
   if (!file_->IsValid())
     return false;
   FileHeader header;
   int read_count;
-  TimeTicks start_time = TimeTicks::Now();
   read_count = file_->ReadAtCurrentPos(reinterpret_cast<char*>(&header),
                                        sizeof(header));
   if (read_count != sizeof(header) || header.signature != kFileSignature ||
@@ -110,13 +107,6 @@ bool SessionFileReader::Read(
     read_commands.push_back(std::move(command));
   if (!errored_)
     read_commands.swap(*commands);
-  if (type == sessions::BaseSessionService::TAB_RESTORE) {
-    UMA_HISTOGRAM_TIMES("TabRestore.read_session_file_time",
-                        TimeTicks::Now() - start_time);
-  } else {
-    UMA_HISTOGRAM_TIMES("SessionRestore.read_session_file_time",
-                        TimeTicks::Now() - start_time);
-  }
   return !errored_;
 }
 
@@ -262,7 +252,7 @@ bool SessionBackend::ReadLastSessionCommandsImpl(
     std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
   Init();
   SessionFileReader file_reader(GetLastSessionPath());
-  return file_reader.Read(type_, commands);
+  return file_reader.Read(commands);
 }
 
 void SessionBackend::DeleteLastSession() {
@@ -278,19 +268,8 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
   const base::FilePath last_session_path = GetLastSessionPath();
   if (base::PathExists(last_session_path))
     base::DeleteFile(last_session_path, false);
-  if (base::PathExists(current_session_path)) {
-    int64_t file_size;
-    if (base::GetFileSize(current_session_path, &file_size)) {
-      if (type_ == sessions::BaseSessionService::TAB_RESTORE) {
-        UMA_HISTOGRAM_COUNTS("TabRestore.last_session_file_size",
-                             static_cast<int>(file_size / 1024));
-      } else {
-        UMA_HISTOGRAM_COUNTS("SessionRestore.last_session_file_size",
-                             static_cast<int>(file_size / 1024));
-      }
-    }
+  if (base::PathExists(current_session_path))
     last_session_valid_ = base::Move(current_session_path, last_session_path);
-  }
 
   if (base::PathExists(current_session_path))
     base::DeleteFile(current_session_path, false);
@@ -303,7 +282,7 @@ bool SessionBackend::ReadCurrentSessionCommandsImpl(
     std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
   Init();
   SessionFileReader file_reader(GetCurrentSessionPath());
-  return file_reader.Read(type_, commands);
+  return file_reader.Read(commands);
 }
 
 bool SessionBackend::AppendCommandsToFile(
@@ -313,10 +292,6 @@ bool SessionBackend::AppendCommandsToFile(
     int wrote;
     const size_type content_size = static_cast<size_type>((*i)->size());
     const size_type total_size =  content_size + sizeof(id_type);
-    if (type_ == sessions::BaseSessionService::TAB_RESTORE)
-      UMA_HISTOGRAM_COUNTS("TabRestore.command_size", total_size);
-    else
-      UMA_HISTOGRAM_COUNTS("SessionRestore.command_size", total_size);
     wrote = file->WriteAtCurrentPos(reinterpret_cast<const char*>(&total_size),
                                     sizeof(total_size));
     if (wrote != sizeof(total_size)) {
