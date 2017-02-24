@@ -647,13 +647,14 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceMultipleFetchersAndMove) {
   Resource* resource = MockResource::fetch(fetchRequestOriginal, fetcher);
   ASSERT_TRUE(resource);
   EXPECT_TRUE(resource->isLinkPreload());
+  EXPECT_FALSE(fetcher->isFetching());
   fetcher->preloadStarted(resource);
 
   // Resource created by parser on the second fetcher
   FetchRequest fetchRequest2 = FetchRequest(url, FetchInitiatorInfo());
   Resource* newResource2 = MockResource::fetch(fetchRequest2, fetcher2);
   Persistent<MockResourceClient> client2 = new MockResourceClient(newResource2);
-  EXPECT_EQ(resource, newResource2);
+  EXPECT_NE(resource, newResource2);
   EXPECT_FALSE(fetcher2->isFetching());
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
 }

@@ -74,6 +74,8 @@ class PLATFORM_EXPORT ResourceLoader final
     return m_isCacheAwareLoadingActivated;
   }
 
+  ResourceFetcher* fetcher() { return m_fetcher; }
+
   // WebURLLoaderClient
   //
   // A succesful load will consist of:

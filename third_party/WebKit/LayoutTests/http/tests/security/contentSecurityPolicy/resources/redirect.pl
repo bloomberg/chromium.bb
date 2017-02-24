@@ -5,6 +5,11 @@ use CGI;
 my $cgi = new CGI;
 
 my $resourceType = $cgi->param("type");
+my $wait = $cgi->param("wait");
+
+if ($wait) {
+    sleep(2);
+}
 
 if ($resourceType eq "script") {
     print "Location: http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script-redirect-not-allowed.js";

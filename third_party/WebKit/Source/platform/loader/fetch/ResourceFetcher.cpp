@@ -800,6 +800,14 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
   if (!existingResource)
     return Load;
 
+  // If the existing resource is loading and the associated fetcher is not equal
+  // to |this|, we must not use the resource. Otherwise, CSP violation may
+  // happen in redirect handling.
+  if (existingResource->loader() &&
+      existingResource->loader()->fetcher() != this) {
+    return Reload;
+  }
+
   // Checks if the resource has an explicit policy about integrity metadata.
   //
   // This is necessary because ScriptResource and CSSStyleSheetResource objects
