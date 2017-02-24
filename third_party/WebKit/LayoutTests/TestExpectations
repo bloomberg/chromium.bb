@@ -1865,8 +1865,6 @@ crbug.com/692105 external/wpt/streams/writable-streams/floating-point-total-queu
 crbug.com/692105 external/wpt/streams/writable-streams/floating-point-total-queue-size.html [ Skip ]
 crbug.com/692105 external/wpt/streams/writable-streams/floating-point-total-queue-size.serviceworker.https.html [ Skip ]
 crbug.com/692105 external/wpt/streams/writable-streams/floating-point-total-queue-size.sharedworker.html [ Skip ]
-crbug.com/692105 external/wpt/web-animations/animation-model/keyframe-effects/effect-value-transformed-distance.html [ Skip ]
-crbug.com/692105 external/wpt/web-animations/timing-model/time-transformations/transformed-progress.html [ Skip ]
 
 # These policies are not implemented yet.
 crbug.com/627968 external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/ [ Skip ]
