@@ -53,14 +53,9 @@ if (current_cpu == "x86") {
   ffmpeg_arch = current_cpu
 }
 
-# Android ia32 can't handle textrels and ffmpeg can't compile without them.
-# http://crbug.com/559379
-disable_ffmpeg_asm = is_android && current_cpu == "x86"
-
 os_config = current_os
 if ((is_linux || is_chromeos) && is_msan) {
   os_config = "linux-noasm"
-  disable_ffmpeg_asm = true
 } else if (is_chromeos) {
   os_config = "linux"
 }
