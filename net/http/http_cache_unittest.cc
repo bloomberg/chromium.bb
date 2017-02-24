@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
 #include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "net/base/cache_type.h"
@@ -8357,8 +8358,18 @@ TEST(HttpCache, CacheEntryStatusCantConditionalize) {
             response_info.cache_entry_status);
 }
 
+class HttpCacheMemoryDumpTest
+    : public testing::TestWithParam<
+          base::trace_event::MemoryDumpLevelOfDetail> {};
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    HttpCacheMemoryDumpTest,
+    ::testing::Values(base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
+                      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND));
+
 // Basic test to make sure HttpCache::DumpMemoryStats doesn't crash.
-TEST(HttpCache, DumpMemoryStats) {
+TEST_P(HttpCacheMemoryDumpTest, DumpMemoryStats) {
   MockHttpCache cache;
   cache.FailConditionalizations();
   RunTransactionTest(cache.http_cache(), kTypicalGET_Transaction);
@@ -8372,17 +8383,17 @@ TEST(HttpCache, DumpMemoryStats) {
   EXPECT_EQ(CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE,
             response_info.cache_entry_status);
 
-  base::trace_event::MemoryDumpArgs dump_args = {
-      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+  base::trace_event::MemoryDumpArgs dump_args = {GetParam()};
   std::unique_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
       new base::trace_event::ProcessMemoryDump(nullptr, dump_args));
   base::trace_event::MemoryAllocatorDump* parent_dump =
-      process_memory_dump->CreateAllocatorDump("parent");
+      process_memory_dump->CreateAllocatorDump("net/url_request_context_0x123");
   cache.http_cache()->DumpMemoryStats(process_memory_dump.get(),
                                       parent_dump->absolute_name());
 
   const base::trace_event::MemoryAllocatorDump* dump =
-      process_memory_dump->GetAllocatorDump("parent/http_cache");
+      process_memory_dump->GetAllocatorDump(
+          "net/url_request_context_0x123/http_cache");
   ASSERT_NE(nullptr, dump);
   std::unique_ptr<base::Value> raw_attrs =
       dump->attributes_for_testing()->ToBaseValue();
