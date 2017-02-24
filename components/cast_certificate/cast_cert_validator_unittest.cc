@@ -8,6 +8,7 @@
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/trust_store_in_memory.h"
+#include "net/cert/x509_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cast_certificate {
@@ -82,7 +83,8 @@ void RunTest(TestResult expected_result,
       // Parse the root certificate of the chain.
       net::CertErrors errors;
       scoped_refptr<net::ParsedCertificate> root =
-          net::ParsedCertificate::Create(certs.back(), {}, &errors);
+          net::ParsedCertificate::Create(
+              net::x509_util::CreateCryptoBuffer(certs.back()), {}, &errors);
       ASSERT_TRUE(root) << errors.ToDebugString();
 
       // Remove it from the chain.

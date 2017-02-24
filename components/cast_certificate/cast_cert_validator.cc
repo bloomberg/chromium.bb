@@ -13,8 +13,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "net/cert/internal/cert_issuer_source_static.h"
 #include "components/cast_certificate/cast_crl.h"
+#include "net/cert/internal/cert_issuer_source_static.h"
 #include "net/cert/internal/certificate_policies.h"
 #include "net/cert/internal/extended_key_usage.h"
 #include "net/cert/internal/parse_certificate.h"
@@ -25,6 +25,7 @@
 #include "net/cert/internal/signature_policy.h"
 #include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert/internal/verify_signed_data.h"
+#include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
 #include "net/der/input.h"
 
@@ -286,7 +287,8 @@ bool VerifyDeviceCertUsingCustomTrustStore(
   net::CertIssuerSourceStatic intermediate_cert_issuer_source;
   for (size_t i = 0; i < certs.size(); ++i) {
     scoped_refptr<net::ParsedCertificate> cert(net::ParsedCertificate::Create(
-        certs[i], GetCertParsingOptions(), &errors));
+        net::x509_util::CreateCryptoBuffer(certs[i]), GetCertParsingOptions(),
+        &errors));
     // TODO(eroman): Propagate/log these parsing errors.
     if (!cert)
       return false;

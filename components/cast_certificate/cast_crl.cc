@@ -22,6 +22,7 @@
 #include "net/cert/internal/verify_certificate_chain.h"
 #include "net/cert/internal/verify_signed_data.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
@@ -110,7 +111,9 @@ bool VerifyCRL(const Crl& crl,
   // Verify the trust of the CRL authority.
   net::CertErrors parse_errors;
   scoped_refptr<net::ParsedCertificate> parsed_cert =
-      net::ParsedCertificate::Create(crl.signer_cert(), {}, &parse_errors);
+      net::ParsedCertificate::Create(
+          net::x509_util::CreateCryptoBuffer(crl.signer_cert()), {},
+          &parse_errors);
   if (parsed_cert == nullptr) {
     VLOG(2) << "CRL - Issuer certificate parsing failed:\n"
             << parse_errors.ToDebugString();

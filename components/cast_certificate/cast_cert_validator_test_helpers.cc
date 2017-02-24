@@ -4,10 +4,11 @@
 
 #include "components/cast_certificate/cast_cert_validator_test_helpers.h"
 
-#include "net/cert/internal/cert_errors.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "net/cert/internal/cert_errors.h"
 #include "net/cert/pem_tokenizer.h"
+#include "net/cert/x509_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cast_certificate {
@@ -89,8 +90,8 @@ std::unique_ptr<net::TrustStoreInMemory> CreateTrustStoreFromFile(
       cast_certificate::testing::ReadCertificateChainFromFile(path);
   for (const auto& trusted_root : trusted_test_roots) {
     net::CertErrors errors;
-    scoped_refptr<net::ParsedCertificate> cert(
-        net::ParsedCertificate::Create(trusted_root, {}, &errors));
+    scoped_refptr<net::ParsedCertificate> cert(net::ParsedCertificate::Create(
+        net::x509_util::CreateCryptoBuffer(trusted_root), {}, &errors));
     EXPECT_TRUE(cert) << errors.ToDebugString();
     scoped_refptr<net::TrustAnchor> anchor =
         net::TrustAnchor::CreateFromCertificateWithConstraints(std::move(cert));
