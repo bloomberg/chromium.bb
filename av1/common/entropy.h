@@ -56,6 +56,24 @@ extern "C" {
 
 #define ENTROPY_NODES 11
 
+#if CONFIG_LV_MAP
+#define TXB_SKIP_CONTEXTS 13
+#define SIG_COEF_CONTEXTS 20
+#define EOB_COEF_CONTEXTS 25
+#define COEFF_BASE_CONTEXTS 42
+#define DC_SIGN_CONTEXTS 3
+
+#define BR_TMP_OFFSET 12
+#define BR_REF_CAT 4
+#define LEVEL_CONTEXTS (BR_TMP_OFFSET * BR_REF_CAT)
+
+#define NUM_BASE_LEVELS 2
+#define COEFF_BASE_RANGE (15 - NUM_BASE_LEVELS)
+
+#define COEFF_CONTEXT_BITS 6
+#define COEFF_CONTEXT_MASK ((1 << COEFF_CONTEXT_BITS) - 1)
+#endif
+
 DECLARE_ALIGNED(16, extern const uint8_t, av1_pt_energy_class[ENTROPY_TOKENS]);
 
 #define CAT1_MIN_VAL 5

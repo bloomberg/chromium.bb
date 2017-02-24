@@ -160,6 +160,16 @@ typedef struct frame_contexts {
   SCAN_ORDER sc[TX_SIZES_ALL][TX_TYPES];
 #endif  // CONFIG_ADAPT_SCAN
 
+#if CONFIG_LV_MAP
+  aom_prob txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS];
+  aom_prob nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS];
+  aom_prob eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS];
+  aom_prob dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS];
+  aom_prob coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
+                     [COEFF_BASE_CONTEXTS];
+  aom_prob coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS];
+#endif
+
 #if CONFIG_REF_MV
   aom_prob newmv_prob[NEWMV_MODE_CONTEXTS];
   aom_prob zeromv_prob[ZEROMV_MODE_CONTEXTS];
@@ -288,6 +298,17 @@ typedef struct FRAME_COUNTS {
 
   unsigned int txb_count[TX_SIZES_ALL][TX_TYPES];
 #endif  // CONFIG_ADAPT_SCAN
+
+#if CONFIG_LV_MAP
+  unsigned int txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS][2];
+  unsigned int nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS][2];
+  unsigned int eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
+  unsigned int dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS][2];
+  unsigned int coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
+                         [COEFF_BASE_CONTEXTS][2];
+  unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS][2];
+#endif  // CONFIG_LV_MAP
+
 #if CONFIG_EC_MULTISYMBOL
   av1_blockz_count_model blockz_count[TX_SIZES][PLANE_TYPES];
 #endif
