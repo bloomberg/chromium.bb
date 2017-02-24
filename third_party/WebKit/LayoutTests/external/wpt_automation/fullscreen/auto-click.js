@@ -1,15 +1,31 @@
 (function() {
 
+// Gets the offset of an element in coordinates relative to the top-level frame.
+function offset(element) {
+  const rect = element.getBoundingClientRect();
+  const iframe = element.ownerDocument.defaultView.frameElement;
+  if (!iframe) {
+    return { left: rect.left, top: rect.top };
+  }
+  const outerOffset = offset(iframe);
+  const style = getComputedStyle(iframe);
+  const get = prop => +/[\d.]*/.exec(style[prop])[0];
+  return {
+    left: outerOffset.left + get('borderLeftWidth') + get('paddingLeft') + rect.left,
+    top: outerOffset.top + get('borderTopWidth') + get('paddingTop') + rect.top
+  };
+}
+
 function click(button) {
-  var rect = button.getBoundingClientRect();
-  eventSender.mouseMoveTo(rect.left, rect.top);
+  const pos = offset(button);
+  eventSender.mouseMoveTo(Math.ceil(pos.left), Math.ceil(pos.top));
   eventSender.mouseDown();
   eventSender.mouseUp();
 }
 
-var observer = new MutationObserver(mutations => {
-  for (var mutation of mutations) {
-    for (var node of mutation.addedNodes) {
+const observer = new MutationObserver(mutations => {
+  for (const mutation of mutations) {
+    for (const node of mutation.addedNodes) {
       if (node.localName == 'button')
         click(node);
       else if (node.localName == 'iframe')
@@ -23,11 +39,14 @@ function observe(target) {
 }
 
 // Handle what's already in the document.
-for (var button of document.getElementsByTagName('button')) {
+for (const button of document.getElementsByTagName('button')) {
   click(button);
 }
-for (var iframe of document.getElementsByTagName('iframe')) {
+for (const iframe of document.getElementsByTagName('iframe')) {
   observe(iframe.contentDocument);
+  iframe.addEventListener('load', () => {
+    observe(iframe.contentDocument);
+  });
 }
 
 // Observe future changes.
