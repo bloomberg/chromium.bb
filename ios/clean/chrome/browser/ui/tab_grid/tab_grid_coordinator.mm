@@ -94,6 +94,10 @@
   return urlText;
 }
 
+- (NSInteger)indexOfActiveTab {
+  return static_cast<NSInteger>(_activeWebStateIndex);
+}
+
 #pragma mark - TabCommands
 
 - (void)showTabAtIndexPath:(NSIndexPath*)indexPath {
