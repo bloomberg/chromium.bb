@@ -15,10 +15,18 @@ import subprocess
 
 def _WarnIfReadmeIsUnchanged(input_api, output_api):
   """Warn if the README file hasn't been updated with change notes."""
+  has_ffmpeg_changes = False
+  chromium_re = re.compile(r'.*[/\\]?chromium.*|PRESUBMIT.py$|.*\.chromium$')
   readme_re = re.compile(r'.*[/\\]?chromium[/\\]patches[/\\]README$')
   for f in input_api.AffectedFiles():
     if readme_re.match(f.LocalPath()):
       return []
+    if not chromium_re.match(f.LocalPath()):
+      has_ffmpeg_changes = True
+      break
+
+  if not has_ffmpeg_changes:
+    return []
 
   return [output_api.PresubmitPromptWarning('\n'.join([
       'FFmpeg changes detected without any update to chromium/patches/README,',
