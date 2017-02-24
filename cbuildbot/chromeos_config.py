@@ -2494,6 +2494,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ShardHWTestsBetweenBuilders('nyan_big-paladin', 'nyan_kitty-paladin')
   ShardHWTestsBetweenBuilders('winky-paladin', 'kip-paladin')
   ShardHWTestsBetweenBuilders('elm-paladin', None)
+  ShardHWTestsBetweenBuilders('kevin-paladin', None)
 
 
 def IncrementalBuilders(site_config, boards_dict, ge_build_config):
