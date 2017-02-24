@@ -7,6 +7,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -96,6 +98,10 @@ FakeFileSystemInstance::~FakeFileSystemInstance() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
+bool FakeFileSystemInstance::InitCalled() {
+  return host_;
+}
+
 void FakeFileSystemInstance::AddFile(const File& file) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(0u, files_.count(std::string(file.url)));
@@ -115,11 +121,38 @@ void FakeFileSystemInstance::AddDocument(const Document& document) {
   }
 }
 
+void FakeFileSystemInstance::TriggerWatchers(const std::string& authority,
+                                             const std::string& document_id,
+                                             mojom::ChangeType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!host_) {
+    LOG(ERROR) << "FileSystemHost is not available.";
+    return;
+  }
+  auto iter = document_to_watchers_.find(DocumentKey(authority, document_id));
+  if (iter == document_to_watchers_.end())
+    return;
+  for (int64_t watcher_id : iter->second) {
+    host_->OnDocumentChanged(watcher_id, type);
+  }
+}
+
 void FakeFileSystemInstance::AddWatcher(const std::string& authority,
                                         const std::string& document_id,
                                         const AddWatcherCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NOTIMPLEMENTED();
+  DocumentKey key(authority, document_id);
+  auto iter = documents_.find(key);
+  if (iter == documents_.end()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, -1));
+    return;
+  }
+  int64_t watcher_id = next_watcher_id_++;
+  document_to_watchers_[key].insert(watcher_id);
+  watcher_to_document_.insert(std::make_pair(watcher_id, key));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, watcher_id));
 }
 
 void FakeFileSystemInstance::GetFileSize(const std::string& url,
@@ -203,14 +236,25 @@ void FakeFileSystemInstance::GetChildDocuments(
 
 void FakeFileSystemInstance::Init(mojom::FileSystemHostPtr host) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NOTIMPLEMENTED();
+  DCHECK(host);
+  DCHECK(!host_);
+  host_ = std::move(host);
 }
 
 void FakeFileSystemInstance::RemoveWatcher(
     int64_t watcher_id,
     const RemoveWatcherCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NOTIMPLEMENTED();
+  auto iter = watcher_to_document_.find(watcher_id);
+  if (iter == watcher_to_document_.end()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, false));
+    return;
+  }
+  document_to_watchers_[iter->second].erase(watcher_id);
+  watcher_to_document_.erase(iter);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, true));
 }
 
 void FakeFileSystemInstance::RequestMediaScan(
