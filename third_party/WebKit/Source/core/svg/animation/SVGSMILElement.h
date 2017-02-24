@@ -186,16 +186,10 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
    public:
     enum Type { EventBase, Syncbase, AccessKey };
 
-    Condition(Type,
-              BeginOrEnd,
-              const String& baseID,
-              const String& name,
-              SMILTime offset,
-              int repeat = -1);
     static Condition* create(Type type,
                              BeginOrEnd beginOrEnd,
-                             const String& baseID,
-                             const String& name,
+                             const AtomicString& baseID,
+                             const AtomicString& name,
                              SMILTime offset,
                              int repeat = -1) {
       return new Condition(type, beginOrEnd, baseID, name, offset, repeat);
@@ -205,22 +199,33 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
     Type getType() const { return m_type; }
     BeginOrEnd getBeginOrEnd() const { return m_beginOrEnd; }
-    String baseID() const { return m_baseID; }
-    String name() const { return m_name; }
+    const AtomicString& name() const { return m_name; }
     SMILTime offset() const { return m_offset; }
     int repeat() const { return m_repeat; }
-    SVGSMILElement* syncBase() const { return m_syncBase.get(); }
-    void setSyncBase(SVGSMILElement* element) { m_syncBase = element; }
-    ConditionEventListener* eventListener() const {
-      return m_eventListener.get();
+
+    void connectSyncBase(SVGSMILElement&);
+    void disconnectSyncBase(SVGSMILElement&);
+    bool syncBaseEquals(SVGSMILElement& timedElement) const {
+      return m_syncBase == timedElement;
     }
-    void setEventListener(ConditionEventListener*);
+
+    void connectEventBase(SVGSMILElement&);
+    void disconnectEventBase(SVGSMILElement&);
 
    private:
+    Condition(Type,
+              BeginOrEnd,
+              const AtomicString& baseID,
+              const AtomicString& name,
+              SMILTime offset,
+              int repeat);
+
+    SVGElement* lookupEventBase(SVGSMILElement&) const;
+
     Type m_type;
     BeginOrEnd m_beginOrEnd;
-    String m_baseID;
-    String m_name;
+    AtomicString m_baseID;
+    AtomicString m_name;
     SMILTime m_offset;
     int m_repeat;
     Member<SVGSMILElement> m_syncBase;
@@ -228,7 +233,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   };
   bool parseCondition(const String&, BeginOrEnd beginOrEnd);
   void parseBeginOrEnd(const String&, BeginOrEnd beginOrEnd);
-  SVGElement* eventBaseFor(const Condition&);
 
   void disconnectSyncBaseConditions();
   void disconnectEventBaseConditions();
@@ -237,9 +241,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void handleConditionEvent(Event*, Condition*);
 
   void notifyDependentsIntervalChanged();
-  void createInstanceTimesFromSyncbase(SVGSMILElement* syncbase);
-  void addSyncBaseDependent(SVGSMILElement*);
-  void removeSyncBaseDependent(SVGSMILElement*);
+  void createInstanceTimesFromSyncbase(SVGSMILElement& syncbase);
+  void addSyncBaseDependent(SVGSMILElement&);
+  void removeSyncBaseDependent(SVGSMILElement&);
 
   enum ActiveState { Inactive, Active, Frozen };
 
