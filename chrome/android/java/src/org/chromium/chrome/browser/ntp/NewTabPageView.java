@@ -229,10 +229,13 @@ public class NewTabPageView
             }
         });
 
+        OfflinePageBridge offlinePageBridge =
+                OfflinePageBridge.getForProfile(Profile.getLastUsedProfile());
+
         mTileGridLayout = (TileGridLayout) mNewTabPageLayout.findViewById(R.id.tile_grid_layout);
         mTileGridLayout.setMaxRows(getMaxTileRows(searchProviderHasLogo));
         mTileGroup = new TileGroup(mActivity, mManager, mContextMenuManager, mTileGroupDelegate,
-                /* observer = */ this, getTileTitleLines());
+                /* observer = */ this, offlinePageBridge, getTileTitleLines());
 
         mSearchProviderLogoView =
                 (LogoView) mNewTabPageLayout.findViewById(R.id.search_provider_logo);
@@ -249,8 +252,7 @@ public class NewTabPageView
 
         // Set up snippets
         NewTabPageAdapter newTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout,
-                mUiConfig, OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
-                mContextMenuManager, /* tileGroupDelegate = */ null);
+                mUiConfig, offlinePageBridge, mContextMenuManager, /* tileGroupDelegate = */ null);
         mRecyclerView.setAdapter(newTabPageAdapter);
 
         int scrollOffset;
@@ -875,6 +877,12 @@ public class NewTabPageView
     @Override
     public void onTileIconChanged(Tile tile) {
         mTileGridLayout.updateIconView(tile);
+        mSnapshotTileGridChanged = true;
+    }
+
+    @Override
+    public void onTileOfflineBadgeVisibilityChanged(Tile tile) {
+        mTileGridLayout.updateOfflineBadge(tile);
         mSnapshotTileGridChanged = true;
     }
 

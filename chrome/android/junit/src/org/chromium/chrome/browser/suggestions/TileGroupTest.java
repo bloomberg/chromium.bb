@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.suggestions;
 
 import static junit.framework.TestCase.assertNotNull;
 
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -16,29 +15,26 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.DimenRes;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadows.ShadowResources;
 
-import org.chromium.base.Callback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.EnableFeatures;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NodeParent;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsSection;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
-
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * Unit tests for {@link TileGroup}.
@@ -50,6 +46,9 @@ public class TileGroupTest {
     private static final int TILE_TITLE_LINES = 1;
     private static final String[] URLS = {"https://www.google.com", "https://tellmedadjokes.com"};
 
+    @Rule
+    public EnableFeatures.Processor mEnableFeatureProcessor = new EnableFeatures.Processor();
+
     @Mock
     private SuggestionsSection.Delegate mDelegate;
     @Mock
@@ -58,6 +57,8 @@ public class TileGroupTest {
     private SuggestionsUiDelegate mUiDelegate;
     @Mock
     private TileGroup.Observer mTileGroupObserver;
+    @Mock
+    private OfflinePageBridge mOfflinePageBridge;
 
     private FakeTileGroupDelegate mTileGroupDelegate;
 
@@ -69,10 +70,11 @@ public class TileGroupTest {
     }
 
     @Test
+    @EnableFeatures({ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME})
     public void testInitialiseWithEmptyTileList() {
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, mUiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                TILE_TITLE_LINES);
+                mOfflinePageBridge, TILE_TITLE_LINES);
         tileGroup.startObserving(MAX_TILES_TO_FETCH);
         notifyTileUrlsAvailable();
 
@@ -82,17 +84,12 @@ public class TileGroupTest {
     }
 
     @Test
-    public void testInitialiseWithOfflineUrl() {
+    @EnableFeatures({ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME})
+    public void testInitialiseWithTileList() {
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, mUiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                TILE_TITLE_LINES);
+                mOfflinePageBridge, TILE_TITLE_LINES);
         tileGroup.startObserving(MAX_TILES_TO_FETCH);
-
-        OfflineUrlsCallbackHandler callbackHandler = new OfflineUrlsCallbackHandler();
-        doAnswer(callbackHandler)
-                .when(mUiDelegate)
-                .getUrlsAvailableOffline(ArgumentMatchers.<Set<String>>any(),
-                        ArgumentMatchers.<Callback<Set<String>>>any());
 
         notifyTileUrlsAvailable(URLS);
 
@@ -100,37 +97,6 @@ public class TileGroupTest {
         inOrder.verify(mTileGroupObserver).onTileCountChanged();
         inOrder.verify(mTileGroupObserver).onLoadTaskCompleted();
         inOrder.verify(mTileGroupObserver).onTileDataChanged();
-
-        callbackHandler.engage(Collections.singleton(URLS[1]));
-
-        // Notification about the url that should be marked as offline.
-        inOrder.verify(mTileGroupObserver).onTileDataChanged();
-        inOrder.verifyNoMoreInteractions();
-    }
-
-    @Test
-    public void testInitialiseNoOfflineUrl() {
-        TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, mUiDelegate,
-                mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                TILE_TITLE_LINES);
-        tileGroup.startObserving(MAX_TILES_TO_FETCH);
-
-        OfflineUrlsCallbackHandler callbackHandler = new OfflineUrlsCallbackHandler();
-        doAnswer(callbackHandler)
-                .when(mUiDelegate)
-                .getUrlsAvailableOffline(ArgumentMatchers.<Set<String>>any(),
-                        ArgumentMatchers.<Callback<Set<String>>>any());
-
-        notifyTileUrlsAvailable(URLS);
-
-        InOrder inOrder = inOrder(mTileGroupObserver);
-        inOrder.verify(mTileGroupObserver).onTileCountChanged();
-        inOrder.verify(mTileGroupObserver).onLoadTaskCompleted();
-        inOrder.verify(mTileGroupObserver).onTileDataChanged();
-
-        callbackHandler.engage(Collections.<String>emptySet());
-
-        // Triggering the offline callback does not cause updates because the data has not changed.
         inOrder.verifyNoMoreInteractions();
     }
 
@@ -143,29 +109,6 @@ public class TileGroupTest {
         for (int i = 0; i < urls.length; ++i) whitelistIconPaths[i] = "";
         mTileGroupDelegate.mObserver.onMostVisitedURLsAvailable(
                 titles, urls, whitelistIconPaths, sources);
-    }
-
-    private static class OfflineUrlsCallbackHandler implements Answer<Void> {
-        private Callback<Set<String>> mCallback;
-        private Set<String> mCallbackArgument;
-
-        @Override
-        public Void answer(InvocationOnMock invocation) throws Throwable {
-            mCallback = invocation.getArgument(1);
-            if (mCallbackArgument != null) invokeCallback();
-            return null;
-        }
-
-        public void engage(Set<String> callbackArgument) {
-            mCallbackArgument = callbackArgument;
-            if (mCallbackArgument != null && mCallback != null) invokeCallback();
-        }
-
-        private void invokeCallback() {
-            mCallback.onResult(mCallbackArgument);
-            mCallback = null;
-            mCallbackArgument = null;
-        }
     }
 
     private class FakeTileGroupDelegate implements TileGroup.Delegate {

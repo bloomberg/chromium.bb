@@ -65,6 +65,11 @@ public class TileView extends FrameLayout {
         mIconView.setImageDrawable(tile.getIcon());
     }
 
+    /** Shows or hides the offline badge to reflect the offline availability of the {@link Tile}. */
+    public void renderOfflineBadge(Tile tile) {
+        mBadgeView.setVisibility(tile.isOfflineAvailable() ? VISIBLE : GONE);
+    }
+
     /** Updates the view if there have been changes since the last time. */
     public void updateIfDataChanged(Tile tile) {
         if (!isUpToDate(tile)) renderTile(tile);
@@ -84,7 +89,7 @@ public class TileView extends FrameLayout {
         // callbacks and handlers use it to look up the data and notify the rest of the system.
         assert mUrl.equals(tile.getUrl());
         mTitleView.setText(TitleUtil.getTitleForDisplay(tile.getTitle(), tile.getUrl()));
-        mBadgeView.setVisibility(tile.isOfflineAvailable() ? VISIBLE : GONE);
+        renderOfflineBadge(tile);
         renderIcon(tile);
     }
 }

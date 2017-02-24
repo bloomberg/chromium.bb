@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
 /**
  * The model and controller for a group of site suggestion tiles that will be rendered in a grid.
@@ -38,10 +39,10 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
     private final TileGroup mTileGroup;
 
     public TileGrid(SuggestionsUiDelegate uiDelegate, ContextMenuManager contextMenuManager,
-            TileGroup.Delegate tileGroupDelegate) {
+            TileGroup.Delegate tileGroupDelegate, OfflinePageBridge offlinePageBridge) {
         mTileGroup = new TileGroup(ContextUtils.getApplicationContext(), uiDelegate,
                 contextMenuManager, tileGroupDelegate,
-                /* observer = */ this, getTileTitleLines());
+                /* observer = */ this, offlinePageBridge, getTileTitleLines());
         mTileGroup.startObserving(getMaxTileRows() * MAX_TILE_COLUMNS);
     }
 
@@ -71,6 +72,11 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
     @Override
     public void onTileIconChanged(Tile tile) {
         if (isVisible()) notifyItemChanged(0, new ViewHolder.UpdateIconViewCallback(tile));
+    }
+
+    @Override
+    public void onTileOfflineBadgeVisibilityChanged(Tile tile) {
+        if (isVisible()) notifyItemChanged(0, new ViewHolder.UpdateOfflineBadgeCallback(tile));
     }
 
     @Override
@@ -112,6 +118,10 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
             mLayout.updateIconView(tile);
         }
 
+        public void updateOfflineBadge(Tile tile) {
+            mLayout.updateOfflineBadge(tile);
+        }
+
         /**
          * Callback to update the icon view for the view holder.
          */
@@ -126,6 +136,23 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
             public void onResult(NewTabPageViewHolder holder) {
                 assert holder instanceof ViewHolder;
                 ((ViewHolder) holder).updateIconView(mTile);
+            }
+        }
+
+        /**
+         * Callback to update the offline badge for the view holder.
+         */
+        public static class UpdateOfflineBadgeCallback extends PartialBindCallback {
+            private final Tile mTile;
+
+            public UpdateOfflineBadgeCallback(Tile tile) {
+                mTile = tile;
+            }
+
+            @Override
+            public void onResult(NewTabPageViewHolder holder) {
+                assert holder instanceof ViewHolder;
+                ((ViewHolder) holder).updateOfflineBadge(mTile);
             }
         }
     }

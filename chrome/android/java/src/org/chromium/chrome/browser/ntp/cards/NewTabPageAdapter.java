@@ -85,7 +85,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             mRoot.addChild(mAboveTheFold);
         }
         if (tileGroupDelegate != null) {
-            mRoot.addChild(new TileGrid(uiDelegate, mContextMenuManager, tileGroupDelegate));
+            mRoot.addChild(new TileGrid(
+                    uiDelegate, mContextMenuManager, tileGroupDelegate, offlinePageBridge));
         }
         mRoot.addChildren(mSections, mSigninPromo, mAllDismissed, mFooter);
         if (mAboveTheFoldView == null

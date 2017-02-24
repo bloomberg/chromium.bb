@@ -71,14 +71,17 @@ public class TileGridLayout extends FrameLayout {
      * @param tile The tile that holds the data to populate the tile view.
      */
     public void updateIconView(Tile tile) {
-        int childCount = getChildCount();
-        for (int i = 0; i < childCount; i++) {
-            TileView tileView = (TileView) getChildAt(i);
-            if (TextUtils.equals(tile.getUrl(), tileView.getUrl())) {
-                tileView.renderIcon(tile);
-                break;
-            }
-        }
+        TileView tileView = getTileView(tile.getUrl());
+        if (tileView != null) tileView.renderIcon(tile);
+    }
+
+    /**
+     * Updates the visibility of the offline badge on the child view with a matching URL.
+     * @param tile The tile that holds the data to populate the tile view.
+     */
+    public void updateOfflineBadge(Tile tile) {
+        TileView tileView = getTileView(tile.getUrl());
+        if (tileView != null) tileView.renderOfflineBadge(tile);
     }
 
     @Override
@@ -147,5 +150,15 @@ public class TileGridLayout extends FrameLayout {
                 + (numRows - 1) * mVerticalSpacing + mExtraVerticalSpacing;
 
         setMeasuredDimension(totalWidth, resolveSize(totalHeight, heightMeasureSpec));
+    }
+
+    /** @return A tile view associated to the provided URL, or {@code null} if none is found. */
+    private TileView getTileView(String url) {
+        int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            TileView tileView = (TileView) getChildAt(i);
+            if (TextUtils.equals(url, tileView.getUrl())) return tileView;
+        }
+        return null;
     }
 }

@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -39,7 +38,6 @@ import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Set;
 
 /**
  * Tests for the appearance of Article Snippets.
@@ -227,11 +225,6 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         @Override
         public void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
                 boolean isTemporary, IconAvailabilityCallback callback) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void getUrlsAvailableOffline(Set<String> pageUrls, Callback<Set<String>> callback) {
             throw new UnsupportedOperationException();
         }
 

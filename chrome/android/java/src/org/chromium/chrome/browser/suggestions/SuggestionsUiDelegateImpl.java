@@ -4,30 +4,19 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import android.net.Uri;
-import android.os.SystemClock;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.NativePageHost;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * {@link SuggestionsUiDelegate} implementation.
@@ -81,55 +70,6 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
                     mHost.getActiveTab().getWebContents(), pageUrl, iconUrl, isLargeIcon,
                     isTemporary, callback);
         }
-    }
-
-    @Override
-    public void getUrlsAvailableOffline(
-            Set<String> pageUrls, final Callback<Set<String>> callback) {
-        final Set<String> urlsAvailableOffline = new HashSet<>();
-        if (mIsDestroyed || !isNtpOfflinePagesEnabled()) {
-            callback.onResult(urlsAvailableOffline);
-            return;
-        }
-
-        HashSet<String> urlsToCheckForOfflinePage = new HashSet<>();
-
-        for (String pageUrl : pageUrls) {
-            if (isLocalUrl(pageUrl)) {
-                urlsAvailableOffline.add(pageUrl);
-            } else {
-                urlsToCheckForOfflinePage.add(pageUrl);
-            }
-        }
-
-        final long offlineQueryStartTime = SystemClock.elapsedRealtime();
-
-        OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(mProfile);
-
-        // TODO(dewittj): Remove this code by making the NTP badging available after the NTP is
-        // fully loaded.
-        if (offlinePageBridge == null || !offlinePageBridge.isOfflinePageModelLoaded()) {
-            // Posting a task to avoid potential re-entrancy issues.
-            ThreadUtils.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onResult(urlsAvailableOffline);
-                }
-            });
-            return;
-        }
-
-        offlinePageBridge.checkPagesExistOffline(
-                urlsToCheckForOfflinePage, new Callback<Set<String>>() {
-                    @Override
-                    public void onResult(Set<String> urlsWithOfflinePages) {
-                        urlsAvailableOffline.addAll(urlsWithOfflinePages);
-                        callback.onResult(urlsAvailableOffline);
-                        RecordHistogram.recordTimesHistogram("NewTabPage.OfflineUrlsLoadTime",
-                                SystemClock.elapsedRealtime() - offlineQueryStartTime,
-                                TimeUnit.MILLISECONDS);
-                    }
-                });
     }
 
     @Override
@@ -189,13 +129,5 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
         assert !mIsDestroyed;
         if (mLargeIconBridge == null) mLargeIconBridge = new LargeIconBridge(mProfile);
         return mLargeIconBridge;
-    }
-
-    private boolean isNtpOfflinePagesEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME);
-    }
-
-    private boolean isLocalUrl(String url) {
-        return UrlConstants.FILE_SCHEME.equals(Uri.parse(url).getScheme());
     }
 }

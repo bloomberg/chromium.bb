@@ -9,6 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -243,19 +244,20 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
         registerCategory(mSuggestionSource,
                 new CategoryInfoBuilder(CATEGORY2).withViewAllAction().build(), 3);
+
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
         bindViewHolders(sectionList);
 
         ArgumentCaptor<DestructionObserver> argument =
                 ArgumentCaptor.forClass(DestructionObserver.class);
-        verify(mUiDelegate).addDestructionObserver(argument.capture());
+        verify(mUiDelegate, atLeastOnce()).addDestructionObserver(argument.capture());
 
         assertFalse(sectionList.isEmpty());
         SuggestionsSection section = sectionList.getSectionForTesting(CATEGORY1);
         assertNotNull(section);
 
         // Now destroy the UI and thus notify the SectionList.
-        argument.getValue().onDestroy();
+        for (DestructionObserver observer : argument.getAllValues()) observer.onDestroy();
         // The section should be removed.
         assertTrue(sectionList.isEmpty());
         // Verify that the section has been detached by notifying its parent about changes. If not

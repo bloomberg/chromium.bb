@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.annotation.CallSuper;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
@@ -16,9 +17,8 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
-import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
@@ -39,8 +39,7 @@ public class SuggestionsSection extends InnerNode {
 
     private final Delegate mDelegate;
     private final SuggestionsCategoryInfo mCategoryInfo;
-    private final OfflinePageBridge mOfflinePageBridge;
-    private final OfflinePageBridge.OfflinePageModelObserver mOfflinePageObserver;
+    private final OfflineModelObserver mOfflineModelObserver;
 
     // Children
     private final SectionHeader mHeader;
@@ -75,7 +74,6 @@ public class SuggestionsSection extends InnerNode {
             SuggestionsCategoryInfo info) {
         mDelegate = delegate;
         mCategoryInfo = info;
-        mOfflinePageBridge = offlinePageBridge;
 
         mHeader = new SectionHeader(info.getTitle());
         mSuggestionsList = new SuggestionsList(uiDelegate, ranker, info);
@@ -84,33 +82,8 @@ public class SuggestionsSection extends InnerNode {
         mProgressIndicator = new ProgressItem();
         addChildren(mHeader, mSuggestionsList, mStatus, mMoreButton, mProgressIndicator);
 
-        mOfflinePageObserver =
-                new OfflinePageBridge.OfflinePageModelObserver() {
-                    @Override
-                    public void offlinePageModelLoaded() {
-                        updateAllSnippetOfflineAvailability();
-                    }
-
-                    @Override
-                    public void offlinePageAdded(OfflinePageItem addedPage) {
-                        updateAllSnippetOfflineAvailability();
-                    }
-
-                    @Override
-                    public void offlinePageDeleted(long offlineId, ClientId clientId) {
-                        for (SnippetArticle article : mSuggestionsList) {
-                            if (article.requiresExactOfflinePage()) continue;
-                            Long articleOfflineId = article.getOfflinePageOfflineId();
-                            if (articleOfflineId == null) continue;
-                            if (articleOfflineId.longValue() != offlineId) continue;
-                            // The old value cannot be simply removed without a request to the
-                            // model, because there may be an older offline page for the same
-                            // URL.
-                            updateSnippetOfflineAvailability(article);
-                        }
-                    }
-                };
-        mOfflinePageBridge.addObserver(mOfflinePageObserver);
+        mOfflineModelObserver = new OfflineModelObserver(offlinePageBridge);
+        uiDelegate.addDestructionObserver(mOfflineModelObserver);
 
         mStatus.setVisible(!hasSuggestions());
     }
@@ -234,7 +207,7 @@ public class SuggestionsSection extends InnerNode {
     @Override
     @CallSuper
     public void detach() {
-        mOfflinePageBridge.removeObserver(mOfflinePageObserver);
+        mOfflineModelObserver.onDestroy();
         super.detach();
     }
 
@@ -417,37 +390,12 @@ public class SuggestionsSection extends InnerNode {
 
         for (SnippetArticle article : suggestions) {
             if (!article.requiresExactOfflinePage()) {
-                updateSnippetOfflineAvailability(article);
+                mOfflineModelObserver.updateOfflinableSuggestionAvailability(article);
             }
         }
     }
 
-    private void updateSnippetOfflineAvailability(final SnippetArticle article) {
-        // This method is not applicable to articles for which the exact offline id must specified.
-        assert !article.requiresExactOfflinePage();
-        if (!mOfflinePageBridge.isOfflinePageModelLoaded()) return;
-        // TabId is relevant only for recent tab offline pages, which we do not handle here, so we
-        // do not care about tab id.
-        mOfflinePageBridge.selectPageForOnlineUrl(
-                article.mUrl, /*tabId=*/0, new Callback<OfflinePageItem>() {
-                    @Override
-                    public void onResult(OfflinePageItem item) {
-                        mSuggestionsList.updateSuggestionOfflineId(
-                                article, item == null ? null : item.getOfflineId());
-                    }
-                });
-    }
 
-    /**
-     * Checks which SnippetArticles are available offline and updates them with offline id of the
-     * matched offline page.
-     */
-    private void updateAllSnippetOfflineAvailability() {
-        for (final SnippetArticle article : mSuggestionsList) {
-            if (article.requiresExactOfflinePage()) continue;
-            updateSnippetOfflineAvailability(article);
-        }
-    }
 
     /** Lets the {@link SuggestionsSection} know when a suggestion fetch has been started. */
     public void onFetchStarted() {
@@ -512,5 +460,21 @@ public class SuggestionsSection extends InnerNode {
 
     SectionHeader getHeaderItemForTesting() {
         return mHeader;
+    }
+
+    private class OfflineModelObserver extends SuggestionsOfflineModelObserver<SnippetArticle> {
+        public OfflineModelObserver(OfflinePageBridge bridge) {
+            super(bridge);
+        }
+
+        @Override
+        public void onSuggestionOfflineIdChanged(SnippetArticle suggestion, @Nullable Long id) {
+            mSuggestionsList.updateSuggestionOfflineId(suggestion, id);
+        }
+
+        @Override
+        public Iterable<SnippetArticle> getOfflinableSuggestions() {
+            return mSuggestionsList;
+        }
     }
 }

@@ -426,6 +426,7 @@ public class OfflinePageBridge {
      * Returns via callback any urls in <code>urls</code> for which there exist offline pages.
      *
      * TODO(http://crbug.com/598006): Add metrics for preventing UI jank.
+     * TODO(http://crbug.com/693514): Now unused in production code. Can be removed.
      */
     public void checkPagesExistOffline(Set<String> urls, Callback<Set<String>> callback) {
         String[] urlArray = urls.toArray(new String[urls.size()]);

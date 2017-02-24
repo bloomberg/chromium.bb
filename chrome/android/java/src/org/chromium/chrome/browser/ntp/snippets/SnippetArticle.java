@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 
+import org.chromium.chrome.browser.suggestions.OfflinableSuggestion;
+
 import java.io.File;
 
 /**
  * Represents the data for an article card on the NTP.
  */
-public class SnippetArticle {
+public class SnippetArticle implements OfflinableSuggestion {
     /** The category of this article. */
     public final int mCategory;
 
@@ -170,10 +172,7 @@ public class SnippetArticle {
         setOfflinePageOfflineId(offlinePageId);
     }
 
-    /**
-    * @return whether a snippet has to be matched with the exact offline page or with the most
-    * recent offline page found by the snippet's URL.
-    */
+    @Override
     public boolean requiresExactOfflinePage() {
         return isDownload() || isRecentTab();
     }
@@ -201,15 +200,17 @@ public class SnippetArticle {
         setOfflinePageOfflineId(offlinePageId);
     }
 
-    /** Sets offline id of the corresponding to the snippet offline page. Null to clear.*/
+    @Override
+    public String getUrl() {
+        return mUrl;
+    }
+
+    @Override
     public void setOfflinePageOfflineId(@Nullable Long offlineId) {
         mOfflinePageOfflineId = offlineId;
     }
 
-    /**
-     * Gets offline id of the corresponding to the snippet offline page.
-     * Null if there is no corresponding offline page.
-     */
+    @Override
     @Nullable
     public Long getOfflinePageOfflineId() {
         return mOfflinePageOfflineId;

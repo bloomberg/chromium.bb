@@ -14,11 +14,10 @@ import org.chromium.chrome.browser.ntp.NTPTileSource.NTPTileSourceEnum;
 /**
  * Holds the details to populate a site suggestion tile.
  */
-public class Tile {
+public class Tile implements OfflinableSuggestion {
     private final String mTitle;
     private final String mUrl;
     private final String mWhitelistIconPath;
-    private final boolean mOfflineAvailable;
     private final int mIndex;
 
     @NTPTileSourceEnum
@@ -30,21 +29,22 @@ public class Tile {
     @Nullable
     private Drawable mIcon;
 
+    @Nullable
+    private Long mOfflinePageOfflineId;
+
     /**
      * @param title The tile title.
      * @param url The site URL.
      * @param whitelistIconPath The path to the icon image file, if this is a whitelisted tile.
      * Empty otherwise.
-     * @param offlineAvailable Whether there is an offline copy of the URL available.
      * @param index The index of this tile in the list of tiles.
      * @param source The {@code NTPTileSource} that generated this tile.
      */
-    public Tile(String title, String url, String whitelistIconPath, boolean offlineAvailable,
-            int index, @NTPTileSourceEnum int source) {
+    public Tile(String title, String url, String whitelistIconPath, int index,
+            @NTPTileSourceEnum int source) {
         mTitle = title;
         mUrl = url;
         mWhitelistIconPath = whitelistIconPath;
-        mOfflineAvailable = offlineAvailable;
         mIndex = index;
         mSource = source;
     }
@@ -62,9 +62,9 @@ public class Tile {
 
         mType = tile.getType();
         mIcon = tile.getIcon();
+        mOfflinePageOfflineId = tile.mOfflinePageOfflineId;
 
         if (!tile.getTitle().equals(mTitle)) return true;
-        if (tile.isOfflineAvailable() != mOfflineAvailable) return true;
         if (tile.getIndex() != mIndex) return true;
 
         // Ignore the whitelist changes when we already have an icon, since we won't need to reload
@@ -74,11 +74,25 @@ public class Tile {
         return false;
     }
 
-    /**
-     * @return The site URL of this tile.
-     */
+    @Override
     public String getUrl() {
         return mUrl;
+    }
+
+    @Override
+    public void setOfflinePageOfflineId(@Nullable Long offlineId) {
+        mOfflinePageOfflineId = offlineId;
+    }
+
+    @Nullable
+    @Override
+    public Long getOfflinePageOfflineId() {
+        return mOfflinePageOfflineId;
+    }
+
+    @Override
+    public boolean requiresExactOfflinePage() {
+        return false;
     }
 
     /**
@@ -99,7 +113,7 @@ public class Tile {
      * @return Whether this tile is available offline.
      */
     public boolean isOfflineAvailable() {
-        return mOfflineAvailable;
+        return getOfflinePageOfflineId() != null;
     }
 
     /**

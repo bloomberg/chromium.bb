@@ -22,13 +22,14 @@ import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.MostVisitedTileType;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -93,6 +94,12 @@ public class TileGroup implements MostVisitedSites.Observer {
         void onTileIconChanged(Tile tile);
 
         /**
+         * Called when the visibility of a tile's offline badge has changed.
+         * @param tile The tile for which the visibility of the offline badge has changed.
+         */
+        void onTileOfflineBadgeVisibilityChanged(Tile tile);
+
+        /**
          * Called when an asynchronous loading task has started.
          */
         void onLoadTaskAdded();
@@ -120,6 +127,13 @@ public class TileGroup implements MostVisitedSites.Observer {
     private final RoundedIconGenerator mIconGenerator;
 
     /**
+     * Access point to offline related features. Will be {@code null} when the badges are disabled.
+     * @see ChromeFeatureList#NTP_OFFLINE_PAGES_FEATURE_NAME
+     */
+    @Nullable
+    private final OfflineModelObserver mOfflineModelObserver;
+
+    /**
      * Source of truth for the tile data. Since the objects can change when the data is updated,
      * other objects should not hold references to them but keep track of the URL instead, and use
      * it to retrieve a {@link Tile}.
@@ -138,7 +152,7 @@ public class TileGroup implements MostVisitedSites.Observer {
      */
     public TileGroup(Context context, SuggestionsUiDelegate uiDelegate,
             ContextMenuManager contextMenuManager, Delegate tileGroupDelegate, Observer observer,
-            int titleLines) {
+            OfflinePageBridge offlinePageBridge, int titleLines) {
         mContext = context;
         mUiDelegate = uiDelegate;
         mContextMenuManager = contextMenuManager;
@@ -156,29 +170,51 @@ public class TileGroup implements MostVisitedSites.Observer {
                 ApiCompatibilityUtils.getColor(resources, R.color.default_favicon_background_color);
         mIconGenerator = new RoundedIconGenerator(mContext, desiredIconSizeDp, desiredIconSizeDp,
                 ICON_CORNER_RADIUS_DP, iconColor, ICON_TEXT_SIZE_DP);
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME)) {
+            mOfflineModelObserver = new OfflineModelObserver(offlinePageBridge);
+            mUiDelegate.addDestructionObserver(mOfflineModelObserver);
+        } else {
+            mOfflineModelObserver = null;
+        }
     }
 
     @Override
     public void onMostVisitedURLsAvailable(final String[] titles, final String[] urls,
             final String[] whitelistIconPaths, final int[] sources) {
-        // If no tiles have been built yet, this is the initial load. Build the tiles immediately so
-        // the layout is stable during initial rendering. They can be
-        // replaced later if there are offline urls, but that will not affect the layout widths and
-        // heights. A stable layout enables reliable scroll position initialization.
-        if (!mHasReceivedData) {
-            buildTiles(titles, urls, whitelistIconPaths, null, sources);
+        boolean isInitialLoad = !mHasReceivedData;
+        mHasReceivedData = true;
+
+        Tile[] newTiles = new Tile[titles.length];
+        Set<String> addedUrls = new HashSet<>();
+        boolean countChanged = isInitialLoad || mTiles.length != titles.length;
+        boolean dataChanged = countChanged;
+        for (int i = 0; i < titles.length; i++) {
+            assert urls[i] != null; // We assume everywhere that the url is not null.
+
+            // TODO(dgn): Add UMA to track the cause of https://crbug.com/690926. Checking this
+            // should not even be necessary as the backend is supposed to send non dupes URLs.
+            if (addedUrls.contains(urls[i])) {
+                assert false : "Incoming NTP Tiles are not unique. Dupe on " + urls[i];
+                continue;
+            }
+
+            newTiles[i] = new Tile(titles[i], urls[i], whitelistIconPaths[i], i, sources[i]);
+            if (newTiles[i].importData(getTile(urls[i]))) dataChanged = true;
+            addedUrls.add(urls[i]);
         }
 
-        // TODO(https://crbug.com/607573): We should show offline-available content in a nonblocking
-        // way so that responsiveness of the NTP does not depend on ready availability of offline
-        // pages.
-        Set<String> urlSet = new HashSet<>(Arrays.asList(urls));
-        mUiDelegate.getUrlsAvailableOffline(urlSet, new Callback<Set<String>>() {
-            @Override
-            public void onResult(Set<String> offlineUrls) {
-                buildTiles(titles, urls, whitelistIconPaths, offlineUrls, sources);
-            }
-        });
+        if (!dataChanged) return;
+
+        mTiles = newTiles;
+
+        if (mOfflineModelObserver != null) {
+            mOfflineModelObserver.updateOfflinableSuggestionsAvailability();
+        }
+
+        if (countChanged) mObserver.onTileCountChanged();
+        if (isInitialLoad) mObserver.onLoadTaskCompleted();
+        mObserver.onTileDataChanged();
     }
 
     @Override
@@ -238,40 +274,6 @@ public class TileGroup implements MostVisitedSites.Observer {
 
     public boolean hasReceivedData() {
         return mHasReceivedData;
-    }
-
-    private void buildTiles(String[] titles, String[] urls, String[] whitelistIconPaths,
-            @Nullable Set<String> offlineUrls, int[] sources) {
-        boolean isInitialLoad = !mHasReceivedData;
-        mHasReceivedData = true;
-
-        Tile[] newTiles = new Tile[titles.length];
-        Set<String> addedUrls = new HashSet<>();
-        boolean countChanged = isInitialLoad || mTiles.length != titles.length;
-        boolean dataChanged = countChanged;
-        for (int i = 0; i < titles.length; i++) {
-            assert urls[i] != null; // We assume everywhere that the url is not null.
-
-            // TODO(dgn): Add UMA to track the cause of https://crbug.com/690926. Checking this
-            // should not even be necessary as the backend is supposed to send non dupes URLs.
-            if (addedUrls.contains(urls[i])) {
-                assert false : "Incoming NTP Tiles are not unique. Dupe on " + urls[i];
-                continue;
-            }
-
-            boolean offlineAvailable = offlineUrls != null && offlineUrls.contains(urls[i]);
-            newTiles[i] = new Tile(
-                    titles[i], urls[i], whitelistIconPaths[i], offlineAvailable, i, sources[i]);
-            if (newTiles[i].importData(getTile(urls[i]))) dataChanged = true;
-            addedUrls.add(urls[i]);
-        }
-
-        if (!dataChanged) return;
-
-        mTiles = newTiles;
-        if (countChanged) mObserver.onTileCountChanged();
-        if (isInitialLoad) mObserver.onLoadTaskCompleted();
-        mObserver.onTileDataChanged();
     }
 
     /**
@@ -415,6 +417,31 @@ public class TileGroup implements MostVisitedSites.Observer {
         public void onCreateContextMenu(
                 ContextMenu contextMenu, View view, ContextMenuInfo contextMenuInfo) {
             mContextMenuManager.createContextMenu(contextMenu, view, this);
+        }
+    }
+
+    private class OfflineModelObserver extends SuggestionsOfflineModelObserver<Tile> {
+        public OfflineModelObserver(OfflinePageBridge bridge) {
+            super(bridge);
+        }
+
+        @Override
+        public void onSuggestionOfflineIdChanged(Tile suggestion, @Nullable Long id) {
+            // Retrieve a tile from the internal data, to make sure we don't update a stale object.
+            Tile tile = getTile(suggestion.getUrl());
+            if (tile == null) return;
+
+            boolean oldOfflineAvailable = tile.isOfflineAvailable();
+            tile.setOfflinePageOfflineId(id);
+
+            // Only notify to update the view if there will be a visible change.
+            if (oldOfflineAvailable == tile.isOfflineAvailable()) return;
+            mObserver.onTileOfflineBadgeVisibilityChanged(tile);
+        }
+
+        @Override
+        public Iterable<Tile> getOfflinableSuggestions() {
+            return Arrays.asList(mTiles);
         }
     }
 }

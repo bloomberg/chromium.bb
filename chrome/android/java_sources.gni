@@ -932,6 +932,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/suggestions/Tile.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileGrid.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileGridLayout.java",
+  "java/src/org/chromium/chrome/browser/suggestions/OfflinableSuggestion.java",
+  "java/src/org/chromium/chrome/browser/suggestions/SuggestionsOfflineModelObserver.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileGroup.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileGroupDelegateImpl.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileView.java",
