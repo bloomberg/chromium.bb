@@ -152,6 +152,8 @@ component("base") {
     "allocator/allocator_interception_mac.h",
     "allocator/allocator_interception_mac.mm",
     "allocator/allocator_shim.h",
+    "allocator/malloc_zone_functions_mac.cc",
+    "allocator/malloc_zone_functions_mac.h",
     "android/animation_frame_time_histogram.cc",
     "android/animation_frame_time_histogram.h",
     "android/apk_assets.cc",
@@ -1885,6 +1887,7 @@ if (is_ios || is_mac) {
 
 test("base_unittests") {
   sources = [
+    "allocator/malloc_zone_functions_mac_unittest.cc",
     "allocator/tcmalloc_unittest.cc",
     "android/application_status_listener_unittest.cc",
     "android/content_uri_utils_unittest.cc",

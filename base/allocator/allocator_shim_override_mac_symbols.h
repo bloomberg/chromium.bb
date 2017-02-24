@@ -8,6 +8,7 @@
 #define BASE_ALLOCATOR_ALLOCATOR_SHIM_OVERRIDE_MAC_SYMBOLS_H_
 
 #include "base/allocator/allocator_interception_mac.h"
+#include "base/allocator/malloc_zone_functions_mac.h"
 #include "third_party/apple_apsl/malloc.h"
 
 namespace base {
@@ -53,7 +54,7 @@ void OverrideMacSymbols() {
     ShimFreeDefiniteSize(ptr, size, zone);
   };
 
-  base::allocator::ReplaceFunctionsForDefaultZone(&new_functions);
+  base::allocator::ReplaceFunctionsForStoredZones(&new_functions);
 }
 
 }  // namespace allocator
