@@ -300,6 +300,8 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
     const base::string16& text,
     WebTextCheckingCompletion* completion) {
   size_t last_length = last_request_.length();
+  if (!last_length)
+    return false;
 
   // Send back the |last_results_| if the |last_request_| is a substring of
   // |text| and |text| does not have more words to check. Provider cannot cancel
@@ -314,15 +316,8 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
       completion->didFinishCheckingText(last_results_);
       return true;
     }
-    int code = 0;
-    int length = static_cast<int>(text_length);
-    U16_PREV(text.data(), 0, length, code);
-    UErrorCode error = U_ZERO_ERROR;
-    if (uscript_getScript(code, &error) != USCRIPT_COMMON) {
-      completion->didCancelCheckingText();
-      return true;
-    }
   }
+
   // Create a subset of the cached results and return it if the given text is a
   // substring of the cached text.
   if (text_length < last_length &&

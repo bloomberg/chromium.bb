@@ -39,19 +39,12 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
                                 std::vector<SpellCheckMarker>());
   EXPECT_TRUE(provider_.text_.empty());
 
-  // Verify that the SpellCheckProvider class does not spellcheck text while we
-  // are typing a word.
+  // Verify that the SpellCheckProvider class spellcheck the first word when we
+  // stop typing after finishing the first word.
   provider_.ResetResult();
   provider_.RequestTextChecking(ASCIIToUTF16("First"), &completion,
                                 std::vector<SpellCheckMarker>());
-  EXPECT_TRUE(provider_.text_.empty());
-
-  // Verify that the SpellCheckProvider class spellcheck the first word when we
-  // type a space key, i.e. when we finish typing a word.
-  provider_.ResetResult();
-  provider_.RequestTextChecking(ASCIIToUTF16("First "), &completion,
-                                std::vector<SpellCheckMarker>());
-  EXPECT_EQ(ASCIIToUTF16("First "), provider_.text_);
+  EXPECT_EQ(ASCIIToUTF16("First"), provider_.text_);
 
   // Verify that the SpellCheckProvider class spellcheck the first line when we
   // type a return key, i.e. when we finish typing a line.
@@ -140,29 +133,6 @@ TEST_F(SpellCheckProviderTest, CompleteNecessaryRequests) {
                                 std::vector<SpellCheckMarker>());
   EXPECT_EQ(0U, completion.cancellation_count_) << "Should finish checking \""
                                                 << text << "\"";
-}
-
-// Tests that the SpellCheckProvider cancels spelling requests in the middle of
-// a word.
-TEST_F(SpellCheckProviderTest, CancelMidWordRequests) {
-  FakeTextCheckingCompletion completion;
-  provider_.RequestTextChecking(ASCIIToUTF16("hello "), &completion,
-                                std::vector<SpellCheckMarker>());
-  EXPECT_EQ(completion.completion_count_, 1U);
-  EXPECT_EQ(completion.cancellation_count_, 0U);
-  EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
-
-  provider_.RequestTextChecking(ASCIIToUTF16("hello world"), &completion,
-                                std::vector<SpellCheckMarker>());
-  EXPECT_EQ(completion.completion_count_, 2U);
-  EXPECT_EQ(completion.cancellation_count_, 1U);
-  EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
-
-  provider_.RequestTextChecking(ASCIIToUTF16("hello world."), &completion,
-                                std::vector<SpellCheckMarker>());
-  EXPECT_EQ(completion.completion_count_, 3U);
-  EXPECT_EQ(completion.cancellation_count_, 1U);
-  EXPECT_EQ(provider_.spelling_service_call_count_, 2U);
 }
 
 }  // namespace

@@ -42,7 +42,9 @@ class SpellCheckProvider
   ~SpellCheckProvider() override;
 
   // Requests async spell and grammar checker to the platform text
-  // checker, which is available on the browser process.
+  // checker, which is available on the browser process. The function does not
+  // have special handling for partial words, as Blink guarantees that no
+  // request is made when typing in the middle of a word.
   void RequestTextChecking(
       const base::string16& text,
       blink::WebTextCheckingCompletion* completion,
