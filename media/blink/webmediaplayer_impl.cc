@@ -240,6 +240,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           params.max_keyframe_distance_to_disable_background_video()),
       enable_instant_source_buffer_gc_(
           params.enable_instant_source_buffer_gc()) {
+  DVLOG(1) << __func__;
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
   DCHECK(client_);
@@ -272,7 +273,14 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
+  DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  if (set_cdm_result_) {
+    DVLOG(2) << "Resolve pending SetCdm() when media player is destroyed.";
+    set_cdm_result_->complete();
+    set_cdm_result_.reset();
+  }
 
   suppress_destruction_errors_ = true;
 
@@ -301,6 +309,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
 void WebMediaPlayerImpl::load(LoadType load_type,
                               const blink::WebMediaPlayerSource& source,
                               CORSMode cors_mode) {
+  DVLOG(1) << __func__;
   // Only URL or MSE blob URL is supported.
   DCHECK(source.isURL());
   blink::WebURL url = source.getAsURL();
@@ -968,6 +977,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
 void WebMediaPlayerImpl::setContentDecryptionModule(
     blink::WebContentDecryptionModule* cdm,
     blink::WebContentDecryptionModuleResult result) {
+  DVLOG(1) << __func__ << ": cdm = " << cdm;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Once the CDM is set it can't be cleared as there may be frames being
@@ -1072,6 +1082,7 @@ void WebMediaPlayerImpl::SetCdm(blink::WebContentDecryptionModule* cdm) {
 }
 
 void WebMediaPlayerImpl::OnCdmAttached(bool success) {
+  DVLOG(1) << __func__ << ": success = " << success;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(pending_cdm_);
 

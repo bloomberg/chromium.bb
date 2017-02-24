@@ -69,7 +69,10 @@ class SetContentDecryptionModuleResult final
         m_failureCallback(std::move(failure)) {}
 
   // ContentDecryptionModuleResult implementation.
-  void complete() override { (*m_successCallback)(); }
+  void complete() override {
+    DVLOG(EME_LOG_LEVEL) << __func__ << ": promise resolved.";
+    (*m_successCallback)();
+  }
 
   void completeWithContentDecryptionModule(
       WebContentDecryptionModule*) override {
@@ -97,6 +100,9 @@ class SetContentDecryptionModuleResult final
       result.appendNumber(systemCode);
       result.append(')');
     }
+
+    DVLOG(EME_LOG_LEVEL) << __func__ << ": promise rejected with code " << code
+                         << " and message: " << result.toString();
 
     (*m_failureCallback)(WebCdmExceptionToExceptionCode(code),
                          result.toString());
@@ -338,7 +344,7 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(
     MediaKeys* mediaKeys) {
   HTMLMediaElementEncryptedMedia& thisElement =
       HTMLMediaElementEncryptedMedia::from(element);
-  DVLOG(EME_LOG_LEVEL) << __func__ << " current("
+  DVLOG(EME_LOG_LEVEL) << __func__ << ": current("
                        << thisElement.m_mediaKeys.get() << "), new("
                        << mediaKeys << ")";
 

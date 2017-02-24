@@ -143,6 +143,7 @@ void RendererImpl::Initialize(MediaResource* media_resource,
   init_cb_ = init_cb;
 
   if (HasEncryptedStream() && !cdm_context_) {
+    DVLOG(1) << __func__ << ": Has encrypted stream but CDM is not set.";
     state_ = STATE_INIT_PENDING_CDM;
     return;
   }
