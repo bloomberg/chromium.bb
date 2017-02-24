@@ -29,8 +29,8 @@
     {
       'target_name': 'files_ripple',
       'dependencies': [
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-ripple/compiled_resources2.gyp:paper-ripple-extracted',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(EXTERNS_GYP):web_animations',
       ],
       'includes': ['../../../compile_js2.gypi'],
     },

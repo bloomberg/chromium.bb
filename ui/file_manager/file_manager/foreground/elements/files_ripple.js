@@ -26,6 +26,11 @@ var FilesRipple = Polymer({
    */
   pressAnimationPromise_: null,
 
+  ready: function() {
+    /** @type {HTMLElement} */
+    this.ripple_ = this.$.ripple;
+  },
+
   attached: function() {
     var node = assert(this.parentElement || this.parentNode.host);
     // Listen events of parent element.
@@ -51,7 +56,8 @@ var FilesRipple = Polymer({
    * Performs press animation.
    */
   performPressAnimation: function() {
-    var animationPlayer = this.$.ripple.animate([
+    /** @type {EventTarget} */
+    var animationPlayer = this.ripple_.animate([
       {
         width: '2%',
         height: '2%',
@@ -69,8 +75,10 @@ var FilesRipple = Polymer({
 
     this._setPressed(true);
 
-    this.pressAnimationPromise_ = new Promise(
-        animationPlayer.addEventListener.bind(animationPlayer, 'finish'));
+    this.pressAnimationPromise_ = new Promise(function(resolve, reject) {
+      animationPlayer.addEventListener('finish', resolve, false);
+      animationPlayer.addEventListener('cancel', reject, false);
+    });
   },
 
   /**
@@ -85,7 +93,7 @@ var FilesRipple = Polymer({
     pressAnimationPromise.then(function() {
       this._setPressed(false);
 
-      this.$.ripple.animate([
+      this.ripple_.animate([
         {
           opacity: 0.2,
           offset: 0,
@@ -96,7 +104,7 @@ var FilesRipple = Polymer({
           offset: 1
         }
       ], 150);
-      this.$.ripple.animate([
+      this.ripple_.animate([
         {
           width: '50%',
           height: '50%',
