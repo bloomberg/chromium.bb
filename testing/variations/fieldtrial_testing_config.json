@@ -1262,6 +1262,21 @@
             ]
         }
     ],
+    "NTPPreferAmpUrls": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NTPPreferAmpUrls"
+                    ]
+                }
+            ]
+        }
+    ],
     "NTPRecentForeignTabs": [
         {
             "platforms": [
