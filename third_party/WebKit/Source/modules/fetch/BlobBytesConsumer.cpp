@@ -37,7 +37,10 @@ BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* executionContext,
                                      PassRefPtr<BlobDataHandle> blobDataHandle)
     : BlobBytesConsumer(executionContext, std::move(blobDataHandle), nullptr) {}
 
-BlobBytesConsumer::~BlobBytesConsumer() {}
+BlobBytesConsumer::~BlobBytesConsumer() {
+  if (!m_blobURL.isEmpty())
+    BlobRegistry::revokePublicBlobURL(m_blobURL);
+}
 
 BytesConsumer::Result BlobBytesConsumer::beginRead(const char** buffer,
                                                    size_t* available) {
@@ -52,7 +55,8 @@ BytesConsumer::Result BlobBytesConsumer::beginRead(const char** buffer,
   }
 
   if (isClean()) {
-    KURL m_blobURL =
+    DCHECK(m_blobURL.isEmpty());
+    m_blobURL =
         BlobURL::createPublicURL(getExecutionContext()->getSecurityOrigin());
     if (m_blobURL.isEmpty()) {
       error();
