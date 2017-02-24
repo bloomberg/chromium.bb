@@ -89,10 +89,6 @@ component("accessibility") {
 
     configs += [ "//build/config/linux/atk" ]
 
-    if (use_gconf) {
-      configs += [ "//build/config/linux/gconf" ]
-    }
-
     if (use_glib) {
       configs += [ "//build/config/linux:glib" ]
     }

@@ -33,9 +33,7 @@ class AtkUtilAuraLinux {
   void CheckIfAccessibilityIsEnabledOnFileThread();
   void FinishAccessibilityInitOnUIThread();
 
-#if defined(USE_GCONF)
   bool is_enabled_;
-#endif
 };
 
 }  // namespace ui

@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 #include <atk/atk.h>
-#if defined(USE_GCONF)
-#include <gconf/gconf-client.h>
-#endif
 #include <glib-2.0/gmodule.h>
 
 #include "base/bind.h"
+#include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/task_runner.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
@@ -21,8 +21,11 @@ namespace {
 
 typedef void (*gnome_accessibility_module_init)();
 
+const char kAccessibilityEnabled[] = "ACCESSIBILITY_ENABLED";
+const char kAtkBridgeModule[] = "gail:atk-bridge";
 const char kAtkBridgePath[] = "gtk-2.0/modules/libatk-bridge.so";
 const char kAtkBridgeSymbolName[] = "gnome_accessibility_module_init";
+const char kGtkModules[] = "GTK_MODULES";
 
 gnome_accessibility_module_init g_accessibility_module_init = nullptr;
 
@@ -48,51 +51,26 @@ bool AccessibilityModuleInitOnFileThread() {
   return true;
 }
 
-#if defined(USE_GCONF)
-
-const char kAccessibilityEnabled[] = "ACCESSIBILITY_ENABLED";
-const char kGnomeAccessibilityEnabledKey[] =
-    "/desktop/gnome/interface/accessibility";
-
 bool PlatformShouldEnableAccessibility() {
-  GConfClient* client = gconf_client_get_default();
-  if (!client) {
-    LOG(ERROR) << "gconf_client_get_default failed";
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string gtk_modules;
+  if (!env->GetVar(kGtkModules, &gtk_modules))
     return false;
+
+  for (const std::string& module :
+       base::SplitString(gtk_modules, base::kWhitespaceASCII,
+                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    if (module == kAtkBridgeModule)
+      return true;
   }
-
-  GError* error = nullptr;
-  gboolean value = gconf_client_get_bool(client,
-                                         kGnomeAccessibilityEnabledKey,
-                                         &error);
-  g_object_unref(client);
-
-  if (error) {
-    VLOG(1) << "gconf_client_get_bool failed";
-    g_error_free(error);
-    return false;
-  }
-
-  return value;
-}
-
-#else  // !defined(USE_GCONF)
-
-bool PlatformShouldEnableAccessibility() {
-  // TODO(iceman): implement this for non-GNOME desktops.
   return false;
 }
 
-#endif  // defined(USE_GCONF)
-
 bool ShouldEnableAccessibility() {
-#if defined(USE_GCONF)
   char* enable_accessibility = getenv(kAccessibilityEnabled);
   if ((enable_accessibility && atoi(enable_accessibility) == 1) ||
       PlatformShouldEnableAccessibility())
     return true;
-#endif  // defined(USE_GCONF)
-
   return false;
 }
 
@@ -183,18 +161,7 @@ AtkUtilAuraLinux* AtkUtilAuraLinux::GetInstance() {
   return base::Singleton<AtkUtilAuraLinux>::get();
 }
 
-#if defined(USE_GCONF)
-
-AtkUtilAuraLinux::AtkUtilAuraLinux()
-    : is_enabled_(false) {
-}
-
-#else
-
-AtkUtilAuraLinux::AtkUtilAuraLinux() {
-}
-
-#endif // defined(USE_GCONF)
+AtkUtilAuraLinux::AtkUtilAuraLinux() : is_enabled_(false) {}
 
 void AtkUtilAuraLinux::Initialize(
     scoped_refptr<base::TaskRunner> init_task_runner) {
@@ -218,8 +185,6 @@ void AtkUtilAuraLinux::Initialize(
 AtkUtilAuraLinux::~AtkUtilAuraLinux() {
 }
 
-#if defined(USE_GCONF)
-
 void AtkUtilAuraLinux::CheckIfAccessibilityIsEnabledOnFileThread() {
   is_enabled_ = AccessibilityModuleInitOnFileThread();
 }
@@ -233,15 +198,5 @@ void AtkUtilAuraLinux::FinishAccessibilityInitOnUIThread() {
   DCHECK(g_accessibility_module_init);
   g_accessibility_module_init();
 }
-
-#else
-
-void AtkUtilAuraLinux::CheckIfAccessibilityIsEnabledOnFileThread() {
-}
-
-void AtkUtilAuraLinux::FinishAccessibilityInitOnUIThread() {
-}
-
-#endif // defined(USE_GCONF)
 
 }  // namespace ui
