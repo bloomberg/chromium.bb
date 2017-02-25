@@ -423,6 +423,13 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
              "https://www.chromestatus.com/features/6680566019653632 for more "
              "details.";
 
+    case UseCounter::SubtleCryptoOnlyStrictSecureContextCheckFailed:
+      return String::format(
+          "Web Crypto API usage inside secure frames with non-secure ancestors "
+          "is deprecated. The API will no longer be exposed in these contexts "
+          "as of %s. See https://www.chromestatus.com/features/5030265697075200"
+          " for more details.", milestoneString(M59));
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();
