@@ -91,15 +91,12 @@ static void applyClipRects(const ClipRectsContext& context,
     if (box.isPositioned())
       clipRects.setPosClipRect(
           intersection(newOverflowClip, clipRects.posClipRect()));
-    if (box.isLayoutView() || box.hasTransformRelatedProperty())
+    if (box.canContainFixedPositionObjects())
       clipRects.setFixedClipRect(
           intersection(newOverflowClip, clipRects.fixedClipRect()));
-    if (box.styleRef().containsPaint()) {
+    if (box.styleRef().containsPaint())
       clipRects.setPosClipRect(
           intersection(newOverflowClip, clipRects.posClipRect()));
-      clipRects.setFixedClipRect(
-          intersection(newOverflowClip, clipRects.fixedClipRect()));
-    }
   }
   if (box.hasClip()) {
     LayoutRect newClip = box.clipRect(offset);
