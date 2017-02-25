@@ -295,7 +295,8 @@ void RenderWidgetHostViewChildFrame::Destroy() {
 
   host_->SetView(nullptr);
   host_ = nullptr;
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+
+  delete this;
 }
 
 void RenderWidgetHostViewChildFrame::SetTooltipText(

@@ -239,10 +239,11 @@ void RenderWidgetHostViewGuest::RenderProcessGone(
 }
 
 void RenderWidgetHostViewGuest::Destroy() {
-  RenderWidgetHostViewChildFrame::Destroy();
-
   if (platform_view_)  // The platform view might have been destroyed already.
     platform_view_->Destroy();
+
+  // RenderWidgetHostViewChildFrame::Destroy destroys this object.
+  RenderWidgetHostViewChildFrame::Destroy();
 }
 
 gfx::Size RenderWidgetHostViewGuest::GetPhysicalBackingSize() const {
