@@ -90,7 +90,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   const KURL& url() const;
   void setURL(const KURL& url);
 
-  void removeCredentials();
+  void removeUserAndPassFromURL();
 
   WebCachePolicy getCachePolicy() const;
   void setCachePolicy(WebCachePolicy);

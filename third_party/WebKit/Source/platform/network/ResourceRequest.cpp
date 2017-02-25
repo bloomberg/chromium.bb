@@ -183,7 +183,7 @@ void ResourceRequest::setURL(const KURL& url) {
   m_url = url;
 }
 
-void ResourceRequest::removeCredentials() {
+void ResourceRequest::removeUserAndPassFromURL() {
   if (m_url.user().isEmpty() && m_url.pass().isEmpty())
     return;
 

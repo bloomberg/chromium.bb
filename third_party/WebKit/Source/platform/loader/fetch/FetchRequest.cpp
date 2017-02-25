@@ -119,7 +119,7 @@ void FetchRequest::setCrossOriginAccessControl(
                                        : ClientDidNotRequestCredentials;
 
   // TODO: Credentials should be removed only when the request is cross origin.
-  m_resourceRequest.removeCredentials();
+  m_resourceRequest.removeUserAndPassFromURL();
 
   if (origin)
     m_resourceRequest.setHTTPOrigin(origin);

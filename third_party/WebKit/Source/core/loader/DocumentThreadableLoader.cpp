@@ -349,7 +349,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
   ResourceRequest crossOriginRequest(request);
   ResourceLoaderOptions crossOriginOptions(m_resourceLoaderOptions);
 
-  crossOriginRequest.removeCredentials();
+  crossOriginRequest.removeUserAndPassFromURL();
 
   crossOriginRequest.setAllowStoredCredentials(effectiveAllowCredentials() ==
                                                AllowStoredCredentials);
