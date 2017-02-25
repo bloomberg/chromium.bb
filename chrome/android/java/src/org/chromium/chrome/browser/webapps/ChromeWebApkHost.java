@@ -15,6 +15,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.GooglePlayInstallState;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -27,7 +28,7 @@ public class ChromeWebApkHost {
     private static final String TAG = "ChromeWebApkHost";
 
     /** Whether installing WebAPks from Google Play is possible. */
-    private static Boolean sCanUseGooglePlayInstall;
+    private static Integer sGooglePlayInstallState;
 
     private static Boolean sEnabledForTesting;
 
@@ -57,34 +58,39 @@ public class ChromeWebApkHost {
     }
 
     /**
-     * Initializes {@link sCanUseGooglePlayInstall}. It checks whether:
+     * Initializes {@link sGooglePlayInstallState}. It checks whether:
      * 1) WebAPKs are enabled.
      * 2) Google Play Service is available on the device.
      * 3) Google Play install is enabled by Chrome.
      * 4) Google Play is up-to-date and with gServices flags turned on.
-     * It calls the Google Play Install API to update {@link sCanUseGooglePlayInstall}
+     * It calls the Google Play Install API to update {@link sGooglePlayInstallState}
      * asynchronously.
      */
-    public static void initCanUseGooglePlayToInstallWebApk() {
-        if (!isGooglePlayInstallEnabledByChromeFeature()
-                || !ExternalAuthUtils.getInstance().canUseGooglePlayServices(
-                        ContextUtils.getApplicationContext(),
-                        new UserRecoverableErrorHandler.Silent())) {
-            sCanUseGooglePlayInstall = false;
+    public static void initGooglePlayInstallState() {
+        if (!isGooglePlayInstallEnabledByChromeFeature()) {
+            sGooglePlayInstallState = GooglePlayInstallState.DISABLED_BY_VARIATIONS;
+            return;
+        }
+
+        if (!ExternalAuthUtils.getInstance().canUseGooglePlayServices(
+                    ContextUtils.getApplicationContext(),
+                    new UserRecoverableErrorHandler.Silent())) {
+            sGooglePlayInstallState = GooglePlayInstallState.NO_PLAY_SERVICES;
             return;
         }
 
         ChromeApplication application = (ChromeApplication) ContextUtils.getApplicationContext();
         GooglePlayWebApkInstallDelegate delegate = application.getGooglePlayWebApkInstallDelegate();
         if (delegate == null) {
-            sCanUseGooglePlayInstall = false;
+            sGooglePlayInstallState = GooglePlayInstallState.DISABLED_OTHER;
             return;
         }
 
         Callback<Boolean> callback = new Callback<Boolean>() {
             @Override
             public void onResult(Boolean success) {
-                sCanUseGooglePlayInstall = success;
+                sGooglePlayInstallState = success ? GooglePlayInstallState.SUPPORTED
+                                                  : GooglePlayInstallState.DISABLED_BY_PLAY;
             }
         };
         delegate.canInstallWebApk(callback);
@@ -96,11 +102,7 @@ public class ChromeWebApkHost {
      * calls the Google Play Install API to update {@link sCanUseGooglePlayInstall} asynchronously.
      */
     public static boolean canUseGooglePlayToInstallWebApk() {
-        if (sCanUseGooglePlayInstall == null) {
-            sCanUseGooglePlayInstall = false;
-            initCanUseGooglePlayToInstallWebApk();
-        }
-        return sCanUseGooglePlayInstall;
+        return getGooglePlayInstallState() == GooglePlayInstallState.SUPPORTED;
     }
 
     /**
@@ -120,6 +122,15 @@ public class ChromeWebApkHost {
     private static boolean canInstallWebApk() {
         return isEnabled()
                 && (canUseGooglePlayToInstallWebApk() || nativeCanInstallFromUnknownSources());
+    }
+
+    @CalledByNative
+    private static int getGooglePlayInstallState() {
+        if (sGooglePlayInstallState == null) {
+            sGooglePlayInstallState = GooglePlayInstallState.DISABLED_OTHER;
+            initGooglePlayInstallState();
+        }
+        return sGooglePlayInstallState;
     }
 
     /**

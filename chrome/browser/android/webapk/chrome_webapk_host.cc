@@ -27,6 +27,13 @@ bool ChromeWebApkHost::CanInstallWebApk() {
 }
 
 // static
+GooglePlayInstallState ChromeWebApkHost::GetGooglePlayInstallState() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return static_cast<GooglePlayInstallState>(
+      Java_ChromeWebApkHost_getGooglePlayInstallState(env));
+}
+
+// static
 jboolean CanUseGooglePlayToInstallWebApk(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& clazz) {

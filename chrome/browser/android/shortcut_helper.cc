@@ -18,6 +18,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
+#include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -77,6 +78,10 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
   if (info.display == blink::WebDisplayModeStandalone ||
       info.display == blink::WebDisplayModeFullscreen) {
     AddWebappWithSkBitmap(info, webapp_id, icon_bitmap, splash_image_callback);
+    GooglePlayInstallState state =
+        ChromeWebApkHost::GetGooglePlayInstallState();
+    if (state != GooglePlayInstallState::SUPPORTED)
+      webapk::TrackGooglePlayInstallState(state);
     return;
   }
   AddShortcutWithSkBitmap(info, webapp_id, icon_bitmap);
@@ -90,6 +95,12 @@ void ShortcutHelper::InstallWebApkWithSkBitmap(
     const WebApkInstaller::FinishCallback& callback) {
   WebApkInstallService::Get(browser_context)
       ->InstallAsync(info, icon_bitmap, callback);
+  // Don't record metric for users who install WebAPKs via "unsigned sources"
+  // flow.
+  if (ChromeWebApkHost::GetGooglePlayInstallState() ==
+      GooglePlayInstallState::SUPPORTED) {
+    webapk::TrackGooglePlayInstallState(GooglePlayInstallState::SUPPORTED);
+  }
 }
 
 // static

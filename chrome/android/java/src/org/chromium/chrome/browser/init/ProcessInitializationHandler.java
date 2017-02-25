@@ -260,7 +260,7 @@ public class ProcessInitializationHandler {
         DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
             @Override
             public void run() {
-                ChromeWebApkHost.initCanUseGooglePlayToInstallWebApk();
+                ChromeWebApkHost.initGooglePlayInstallState();
             }
         });
     }
