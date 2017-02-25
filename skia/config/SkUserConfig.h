@@ -254,10 +254,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // Updating to a correct SkPMColor lerp will require layout test rebaselines.
 #define SK_SUPPORT_LEGACY_BROKEN_LERP
 
-#ifndef    SK_SUPPORT_LEGACY_AAA
-#   define SK_SUPPORT_LEGACY_AAA
-#endif
-
 // ===== End Chrome-specific definitions =====
 
 #endif
