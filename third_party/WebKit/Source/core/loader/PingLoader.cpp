@@ -525,9 +525,14 @@ void PingLoader::sendViolationReport(LocalFrame* frame,
                                      ViolationReportType type) {
   ResourceRequest request(reportURL);
   request.setHTTPMethod(HTTPNames::POST);
-  request.setHTTPContentType(type == ContentSecurityPolicyViolationReport
-                                 ? "application/csp-report"
-                                 : "application/json");
+  switch (type) {
+    case ContentSecurityPolicyViolationReport:
+      request.setHTTPContentType("application/csp-report");
+      break;
+    case XSSAuditorViolationReport:
+      request.setHTTPContentType("application/xss-auditor-report");
+      break;
+  }
   request.setHTTPBody(std::move(report));
   finishPingRequestInitialization(request, frame,
                                   WebURLRequest::RequestContextCSPReport);
