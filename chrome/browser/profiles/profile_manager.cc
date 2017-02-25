@@ -115,6 +115,10 @@
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/first_run/first_run.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -975,7 +979,11 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
                                    supervised_user_id);
   }
 #if !defined(OS_ANDROID)
-  if (profile->IsNewProfile())
+  // TODO(pmonette): Fix IsNewProfile() to handle the case where the profile is
+  // new even if the "Preferences" file already existed (For example: The
+  // master_preferences file is dumped into the default profile on first run,
+  // before profile creation).
+  if (profile->IsNewProfile() || first_run::IsChromeFirstRun())
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
 #endif
 }
