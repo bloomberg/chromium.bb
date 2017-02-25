@@ -276,20 +276,9 @@ void NativeThemeWin::Paint(cc::PaintCanvas* canvas,
                                          extra.menu_item);
       return;
     default:
-      break;
+      PaintIndirect(canvas, part, state, rect, extra);
+      return;
   }
-
-  HDC surface = skia::GetNativeDrawingContext(canvas);
-
-  // When drawing the task manager or the bookmark editor, we draw into an
-  // offscreen buffer, where we can use OS-specific drawing routines for
-  // UI features like scrollbars. However, we need to set up that buffer,
-  // and then read it back when it's done and blit it onto the screen.
-
-  if (surface)
-    PaintDirect(canvas, surface, part, state, rect, extra);
-  else
-    PaintIndirect(canvas, part, state, rect, extra);
 }
 
 NativeThemeWin::NativeThemeWin()
@@ -677,9 +666,12 @@ void NativeThemeWin::PaintIndirect(SkCanvas* destination_canvas,
                                    const gfx::Rect& rect,
                                    const ExtraParams& extra) const {
   // TODO(asvitkine): This path is pretty inefficient - for each paint operation
-  //                  it creates a new offscreen bitmap Skia canvas. This can
-  //                  be sped up by doing it only once per part/state and
-  //                  keeping a cache of the resulting bitmaps.
+  // it creates a new offscreen bitmap Skia canvas. This can be sped up by doing
+  // it only once per part/state and keeping a cache of the resulting bitmaps.
+  //
+  // TODO(enne): This could also potentially be sped up for software raster
+  // by moving these draw ops into PaintRecord itself and then moving the
+  // PaintDirect code to be part of the raster for PaintRecord.
 
   // If this process doesn't have access to GDI, we'd need to use shared memory
   // segment instead but that is not supported right now.
