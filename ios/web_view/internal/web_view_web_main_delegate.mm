@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/internal/criwv_web_main_delegate.h"
+#import "ios/web_view/internal/web_view_web_main_delegate.h"
 
 #include "base/memory/ptr_util.h"
-#import "ios/web_view/internal/criwv_web_client.h"
+#import "ios/web_view/internal/web_view_web_client.h"
 #import "ios/web_view/public/cwv_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -14,13 +14,13 @@
 
 namespace ios_web_view {
 
-CRIWVWebMainDelegate::CRIWVWebMainDelegate(id<CWVDelegate> delegate)
+WebViewWebMainDelegate::WebViewWebMainDelegate(id<CWVDelegate> delegate)
     : delegate_(delegate) {}
 
-CRIWVWebMainDelegate::~CRIWVWebMainDelegate() {}
+WebViewWebMainDelegate::~WebViewWebMainDelegate() = default;
 
-void CRIWVWebMainDelegate::BasicStartupComplete() {
-  web_client_ = base::MakeUnique<CRIWVWebClient>(delegate_);
+void WebViewWebMainDelegate::BasicStartupComplete() {
+  web_client_ = base::MakeUnique<WebViewWebClient>(delegate_);
   web::SetWebClient(web_client_.get());
 }
 

@@ -10,8 +10,8 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
-#include "ios/web_view/internal/criwv_browser_state.h"
 #include "ios/web_view/internal/pref_names.h"
+#include "ios/web_view/internal/web_view_browser_state.h"
 
 namespace {
 
@@ -52,10 +52,10 @@ CRIWVTranslateAcceptLanguagesFactory::GetInstance() {
 // static
 translate::TranslateAcceptLanguages*
 CRIWVTranslateAcceptLanguagesFactory::GetForBrowserState(
-    CRIWVBrowserState* state) {
+    WebViewBrowserState* browser_state) {
   TranslateAcceptLanguagesService* service =
       static_cast<TranslateAcceptLanguagesService*>(
-          GetInstance()->GetServiceForBrowserState(state, true));
+          GetInstance()->GetServiceForBrowserState(browser_state, true));
   return &service->accept_languages();
 }
 
@@ -69,10 +69,10 @@ CRIWVTranslateAcceptLanguagesFactory::~CRIWVTranslateAcceptLanguagesFactory() {}
 std::unique_ptr<KeyedService>
 CRIWVTranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  CRIWVBrowserState* criwv_browser_state =
-      CRIWVBrowserState::FromBrowserState(context);
+  WebViewBrowserState* browser_state =
+      WebViewBrowserState::FromBrowserState(context);
   return base::MakeUnique<TranslateAcceptLanguagesService>(
-      criwv_browser_state->GetPrefs());
+      browser_state->GetPrefs());
 }
 
 }  // namespace ios_web_view

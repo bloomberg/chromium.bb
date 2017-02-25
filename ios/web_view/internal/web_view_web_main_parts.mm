@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/internal/criwv_web_main_parts.h"
+#import "ios/web_view/internal/web_view_web_main_parts.h"
 
 #include "base/base_paths.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
-#include "ios/web_view/internal/criwv_browser_state.h"
+#include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_delegate.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -19,13 +19,13 @@
 
 namespace ios_web_view {
 
-CRIWVWebMainParts::CRIWVWebMainParts(id<CWVDelegate> delegate) {
+WebViewWebMainParts::WebViewWebMainParts(id<CWVDelegate> delegate) {
   delegate_ = delegate;
 }
 
-CRIWVWebMainParts::~CRIWVWebMainParts() {}
+WebViewWebMainParts::~WebViewWebMainParts() = default;
 
-void CRIWVWebMainParts::PreMainMessageLoopRun() {
+void WebViewWebMainParts::PreMainMessageLoopRun() {
   // Initialize resources.
   l10n_util::OverrideLocaleWithCocoaLocale();
   ui::ResourceBundle::InitSharedInstanceWithLocale(
@@ -36,8 +36,8 @@ void CRIWVWebMainParts::PreMainMessageLoopRun() {
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_file, ui::SCALE_FACTOR_NONE);
 
-  browser_state_ = base::MakeUnique<CRIWVBrowserState>(false);
-  off_the_record_browser_state_ = base::MakeUnique<CRIWVBrowserState>(true);
+  browser_state_ = base::MakeUnique<WebViewBrowserState>(false);
+  off_the_record_browser_state_ = base::MakeUnique<WebViewBrowserState>(true);
 
   // Initialize translate.
   translate::TranslateDownloadManager* download_manager =

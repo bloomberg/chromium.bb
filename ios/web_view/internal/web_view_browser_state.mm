@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web_view/internal/criwv_browser_state.h"
+#include "ios/web_view/internal/web_view_browser_state.h"
 
 #include <memory>
 
@@ -18,8 +18,8 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "ios/web/public/web_thread.h"
-#include "ios/web_view/internal/criwv_url_request_context_getter.h"
 #include "ios/web_view/internal/pref_names.h"
+#include "ios/web_view/internal/web_view_url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,11 +32,11 @@ const char kPreferencesFilename[] = FILE_PATH_LITERAL("Preferences");
 
 namespace ios_web_view {
 
-CRIWVBrowserState::CRIWVBrowserState(bool off_the_record)
+WebViewBrowserState::WebViewBrowserState(bool off_the_record)
     : web::BrowserState(), off_the_record_(off_the_record) {
   CHECK(PathService::Get(base::DIR_APP_DATA, &path_));
 
-  request_context_getter_ = new CRIWVURLRequestContextGetter(
+  request_context_getter_ = new WebViewURLRequestContextGetter(
       GetStatePath(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE),
@@ -58,32 +58,32 @@ CRIWVBrowserState::CRIWVBrowserState(bool off_the_record)
   prefs_ = factory.Create(pref_registry.get());
 }
 
-CRIWVBrowserState::~CRIWVBrowserState() {}
+WebViewBrowserState::~WebViewBrowserState() = default;
 
-PrefService* CRIWVBrowserState::GetPrefs() {
+PrefService* WebViewBrowserState::GetPrefs() {
   DCHECK(prefs_);
   return prefs_.get();
 }
 
 // static
-CRIWVBrowserState* CRIWVBrowserState::FromBrowserState(
+WebViewBrowserState* WebViewBrowserState::FromBrowserState(
     web::BrowserState* browser_state) {
-  return static_cast<CRIWVBrowserState*>(browser_state);
+  return static_cast<WebViewBrowserState*>(browser_state);
 }
 
-bool CRIWVBrowserState::IsOffTheRecord() const {
+bool WebViewBrowserState::IsOffTheRecord() const {
   return off_the_record_;
 }
 
-base::FilePath CRIWVBrowserState::GetStatePath() const {
+base::FilePath WebViewBrowserState::GetStatePath() const {
   return path_;
 }
 
-net::URLRequestContextGetter* CRIWVBrowserState::GetRequestContext() {
+net::URLRequestContextGetter* WebViewBrowserState::GetRequestContext() {
   return request_context_getter_.get();
 }
 
-void CRIWVBrowserState::RegisterPrefs(
+void WebViewBrowserState::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* pref_registry) {
   // TODO(crbug.com/679895): Find a good value for the kAcceptLanguages pref.
   // TODO(crbug.com/679895): Pass this value to the network stack somehow, for

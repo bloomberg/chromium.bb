@@ -8,10 +8,11 @@
 
 #include "base/location.h"
 #import "base/mac/bind_objc_block.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "ios/web/public/app/web_main.h"
 #include "ios/web/public/web_thread.h"
-#import "ios/web_view/internal/criwv_web_main_delegate.h"
+#import "ios/web_view/internal/web_view_web_main_delegate.h"
 #import "ios/web_view/public/cwv_delegate.h"
 #import "ios/web_view/public/cwv_web_view.h"
 #import "ios/web_view/public/cwv_web_view_configuration.h"
@@ -26,7 +27,7 @@ CWV* g_criwv = nil;
 }
 
 @interface CWV () {
-  std::unique_ptr<ios_web_view::CRIWVWebMainDelegate> _webMainDelegate;
+  std::unique_ptr<ios_web_view::WebViewWebMainDelegate> _webMainDelegate;
   std::unique_ptr<web::WebMain> _webMain;
 }
 
@@ -59,9 +60,10 @@ CWV* g_criwv = nil;
   self = [super init];
   if (self) {
     _delegate = delegate;
-    _webMainDelegate.reset(new ios_web_view::CRIWVWebMainDelegate(_delegate));
+    _webMainDelegate =
+        base::MakeUnique<ios_web_view::WebViewWebMainDelegate>(_delegate);
     web::WebMainParams params(_webMainDelegate.get());
-    _webMain.reset(new web::WebMain(params));
+    _webMain = base::MakeUnique<web::WebMain>(params);
   }
   return self;
 }

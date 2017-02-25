@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_CLIENT_H_
-#define IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_CLIENT_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_WEB_VIEW_WEB_CLIENT_H_
+#define IOS_WEB_VIEW_INTERNAL_WEB_VIEW_WEB_CLIENT_H_
 
 #include <memory>
 #include "base/compiler_specific.h"
@@ -12,15 +12,14 @@
 @protocol CWVDelegate;
 
 namespace ios_web_view {
-class CRIWVBrowserState;
-class CRIWVWebMainParts;
+class WebViewBrowserState;
+class WebViewWebMainParts;
 
-// CWV-specific implementation of WebClient.  Delegates some functionality to
-// CWVDelegate.
-class CRIWVWebClient : public web::WebClient {
+// WebView implementation of WebClient.
+class WebViewWebClient : public web::WebClient {
  public:
-  explicit CRIWVWebClient(id<CWVDelegate> delegate);
-  ~CRIWVWebClient() override;
+  explicit WebViewWebClient(id<CWVDelegate> delegate);
+  ~WebViewWebClient() override;
 
   // WebClient implementation.
   web::WebMainParts* CreateWebMainParts() override;
@@ -28,20 +27,20 @@ class CRIWVWebClient : public web::WebClient {
   std::string GetUserAgent(bool desktop_user_agent) const override;
 
   // Normal browser state associated with the receiver.
-  CRIWVBrowserState* browser_state() const;
+  WebViewBrowserState* browser_state() const;
   // Off the record browser state  associated with the receiver.
-  CRIWVBrowserState* off_the_record_browser_state() const;
+  WebViewBrowserState* off_the_record_browser_state() const;
 
  private:
   // This object's delegate.
   __weak id<CWVDelegate> delegate_;
 
   // The WebMainParts created by |CreateWebMainParts()|.
-  CRIWVWebMainParts* web_main_parts_;
+  WebViewWebMainParts* web_main_parts_;
 
-  DISALLOW_COPY_AND_ASSIGN(CRIWVWebClient);
+  DISALLOW_COPY_AND_ASSIGN(WebViewWebClient);
 };
 
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_CLIENT_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_WEB_VIEW_WEB_CLIENT_H_

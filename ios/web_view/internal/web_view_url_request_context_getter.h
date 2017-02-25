@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_CRIWV_URL_REQUEST_CONTEXT_GETTER_H_
-#define IOS_WEB_VIEW_INTERNAL_CRIWV_URL_REQUEST_CONTEXT_GETTER_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_WEB_VIEW_URL_REQUEST_CONTEXT_GETTER_H_
+#define IOS_WEB_VIEW_INTERNAL_WEB_VIEW_URL_REQUEST_CONTEXT_GETTER_H_
 
 #include <memory>
 #include "base/compiler_specific.h"
@@ -23,10 +23,10 @@ class URLRequestContextStorage;
 
 namespace ios_web_view {
 
-// CWV-specific implementation of URLRequestContextGetter.
-class CRIWVURLRequestContextGetter : public net::URLRequestContextGetter {
+// WebView implementation of URLRequestContextGetter.
+class WebViewURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
-  CRIWVURLRequestContextGetter(
+  WebViewURLRequestContextGetter(
       const base::FilePath& base_path,
       const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner,
@@ -38,7 +38,7 @@ class CRIWVURLRequestContextGetter : public net::URLRequestContextGetter {
       const override;
 
  protected:
-  ~CRIWVURLRequestContextGetter() override;
+  ~WebViewURLRequestContextGetter() override;
 
  private:
   base::FilePath base_path_;
@@ -53,9 +53,9 @@ class CRIWVURLRequestContextGetter : public net::URLRequestContextGetter {
   std::unique_ptr<net::TransportSecurityPersister>
       transport_security_persister_;
 
-  DISALLOW_COPY_AND_ASSIGN(CRIWVURLRequestContextGetter);
+  DISALLOW_COPY_AND_ASSIGN(WebViewURLRequestContextGetter);
 };
 
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_INTERNAL_CRIWV_URL_REQUEST_CONTEXT_GETTER_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_WEB_VIEW_URL_REQUEST_CONTEXT_GETTER_H_

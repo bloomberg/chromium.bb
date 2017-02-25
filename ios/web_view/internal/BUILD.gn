@@ -9,18 +9,6 @@ source_set("internal") {
   ]
 
   sources = [
-    "criwv_browser_state.h",
-    "criwv_browser_state.mm",
-    "criwv_network_delegate.cc",
-    "criwv_network_delegate.h",
-    "criwv_url_request_context_getter.h",
-    "criwv_url_request_context_getter.mm",
-    "criwv_web_client.h",
-    "criwv_web_client.mm",
-    "criwv_web_main_delegate.h",
-    "criwv_web_main_delegate.mm",
-    "criwv_web_main_parts.h",
-    "criwv_web_main_parts.mm",
     "cwv.mm",
     "cwv_web_view.mm",
     "cwv_web_view_configuration.mm",
@@ -28,6 +16,18 @@ source_set("internal") {
     "cwv_website_data_store_internal.h",
     "pref_names.cc",
     "pref_names.h",
+    "web_view_browser_state.h",
+    "web_view_browser_state.mm",
+    "web_view_network_delegate.cc",
+    "web_view_network_delegate.h",
+    "web_view_url_request_context_getter.h",
+    "web_view_url_request_context_getter.mm",
+    "web_view_web_client.h",
+    "web_view_web_client.mm",
+    "web_view_web_main_delegate.h",
+    "web_view_web_main_delegate.mm",
+    "web_view_web_main_parts.h",
+    "web_view_web_main_parts.mm",
   ]
   deps = [
     "//base",

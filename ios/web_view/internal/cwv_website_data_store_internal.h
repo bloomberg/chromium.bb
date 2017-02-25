@@ -8,14 +8,14 @@
 #import "ios/web_view/public/cwv_website_data_store.h"
 
 namespace ios_web_view {
-class CRIWVBrowserState;
+class WebViewBrowserState;
 }  // namespace ios_web_view
 
 @interface CWVWebsiteDataStore ()
 
 // The browser state associated with this website data store.
 @property(nonatomic, readonly, nonnull)
-    ios_web_view::CRIWVBrowserState* browserState;
+    ios_web_view::WebViewBrowserState* browserState;
 
 @end
 

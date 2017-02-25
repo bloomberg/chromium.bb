@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_CRIWV_NETWORK_DELEGATE_H_
-#define IOS_WEB_VIEW_INTERNAL_CRIWV_NETWORK_DELEGATE_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_WEB_VIEW_NETWORK_DELEGATE_H_
+#define IOS_WEB_VIEW_INTERNAL_WEB_VIEW_NETWORK_DELEGATE_H_
 
 #include "base/macros.h"
 #include "net/base/network_delegate_impl.h"
 
 namespace ios_web_view {
 
-// CWV-specific implementation of NetworkDelegate.
-class CRIWVNetworkDelegate : public net::NetworkDelegateImpl {
+// WebView implementation of NetworkDelegate.
+class WebViewNetworkDelegate : public net::NetworkDelegateImpl {
  public:
-  CRIWVNetworkDelegate();
-  ~CRIWVNetworkDelegate() override;
+  WebViewNetworkDelegate();
+  ~WebViewNetworkDelegate() override;
 
  private:
   // net::NetworkDelegate implementation.
@@ -53,9 +53,9 @@ class CRIWVNetworkDelegate : public net::NetworkDelegateImpl {
   bool OnCanAccessFile(const net::URLRequest& request,
                        const base::FilePath& path) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(CRIWVNetworkDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WebViewNetworkDelegate);
 };
 
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_INTERNAL_CRIWV_NETWORK_DELEGATE_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_WEB_VIEW_NETWORK_DELEGATE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_CRIWV_BROWSER_STATE_H_
-#define IOS_WEB_VIEW_INTERNAL_CRIWV_BROWSER_STATE_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_WEB_VIEW_BROWSER_STATE_H_
+#define IOS_WEB_VIEW_INTERNAL_WEB_VIEW_BROWSER_STATE_H_
 
 #include <memory>
 
@@ -19,13 +19,14 @@ class PrefRegistrySyncable;
 
 namespace ios_web_view {
 
-class CRIWVURLRequestContextGetter;
+class WebViewURLRequestContextGetter;
 
-// CWV implementation of BrowserState.  Can only be called from the UI thread.
-class CRIWVBrowserState : public web::BrowserState {
+// WebView implementation of BrowserState.  Can only be used only on the UI
+// thread.
+class WebViewBrowserState : public web::BrowserState {
  public:
-  explicit CRIWVBrowserState(bool off_the_record);
-  ~CRIWVBrowserState() override;
+  explicit WebViewBrowserState(bool off_the_record);
+  ~WebViewBrowserState() override;
 
   // web::BrowserState implementation.
   bool IsOffTheRecord() const override;
@@ -35,8 +36,9 @@ class CRIWVBrowserState : public web::BrowserState {
   // Returns the associated PrefService.
   PrefService* GetPrefs();
 
-  // Converts from web::BrowserState to CRIWVBrowserState.
-  static CRIWVBrowserState* FromBrowserState(web::BrowserState* browser_state);
+  // Converts from web::BrowserState to WebViewBrowserState.
+  static WebViewBrowserState* FromBrowserState(
+      web::BrowserState* browser_state);
 
  private:
   // Registers the preferences for this BrowserState.
@@ -49,14 +51,14 @@ class CRIWVBrowserState : public web::BrowserState {
   bool off_the_record_;
 
   // The request context getter for this BrowserState object.
-  scoped_refptr<CRIWVURLRequestContextGetter> request_context_getter_;
+  scoped_refptr<WebViewURLRequestContextGetter> request_context_getter_;
 
   // The PrefService associated with this BrowserState.
   std::unique_ptr<PrefService> prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(CRIWVBrowserState);
+  DISALLOW_COPY_AND_ASSIGN(WebViewBrowserState);
 };
 
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_INTERNAL_CRIWV_BROWSER_STATE_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_WEB_VIEW_BROWSER_STATE_H_

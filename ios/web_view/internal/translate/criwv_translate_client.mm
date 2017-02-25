@@ -19,10 +19,10 @@
 #include "components/translate/core/browser/translate_step.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
-#include "ios/web_view/internal/criwv_browser_state.h"
 #include "ios/web_view/internal/pref_names.h"
 #include "ios/web_view/internal/translate/criwv_translate_accept_languages_factory.h"
 #import "ios/web_view/internal/translate/criwv_translate_manager_impl.h"
+#include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_translate_delegate.h"
 #include "url/gurl.h"
 
@@ -102,7 +102,7 @@ translate::TranslateDriver* CRIWVTranslateClient::GetTranslateDriver() {
 
 PrefService* CRIWVTranslateClient::GetPrefs() {
   DCHECK(web_state());
-  return CRIWVBrowserState::FromBrowserState(web_state()->GetBrowserState())
+  return WebViewBrowserState::FromBrowserState(web_state()->GetBrowserState())
       ->GetPrefs();
 }
 
@@ -117,7 +117,8 @@ translate::TranslateAcceptLanguages*
 CRIWVTranslateClient::GetTranslateAcceptLanguages() {
   translate::TranslateAcceptLanguages* accept_languages =
       CRIWVTranslateAcceptLanguagesFactory::GetForBrowserState(
-          CRIWVBrowserState::FromBrowserState(web_state()->GetBrowserState()));
+          WebViewBrowserState::FromBrowserState(
+              web_state()->GetBrowserState()));
   DCHECK(accept_languages);
   return accept_languages;
 }

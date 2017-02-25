@@ -20,7 +20,7 @@ class TranslateAcceptLanguages;
 
 namespace ios_web_view {
 
-class CRIWVBrowserState;
+class WebViewBrowserState;
 
 // TranslateAcceptLanguagesFactory is a way to associate a
 // TranslateAcceptLanguages instance to a BrowserState.
@@ -28,7 +28,7 @@ class CRIWVTranslateAcceptLanguagesFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   static translate::TranslateAcceptLanguages* GetForBrowserState(
-      CRIWVBrowserState* browser_state);
+      WebViewBrowserState* browser_state);
   static CRIWVTranslateAcceptLanguagesFactory* GetInstance();
 
  private:

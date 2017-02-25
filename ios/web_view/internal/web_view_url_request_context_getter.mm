@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web_view/internal/criwv_url_request_context_getter.h"
+#include "ios/web_view/internal/web_view_url_request_context_getter.h"
 
 #include <utility>
 
@@ -15,7 +15,7 @@
 #import "ios/net/cookies/cookie_store_ios_persistent.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/web_thread.h"
-#include "ios/web_view/internal/criwv_network_delegate.h"
+#include "ios/web_view/internal/web_view_network_delegate.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
@@ -43,7 +43,7 @@
 
 namespace ios_web_view {
 
-CRIWVURLRequestContextGetter::CRIWVURLRequestContextGetter(
+WebViewURLRequestContextGetter::WebViewURLRequestContextGetter(
     const base::FilePath& base_path,
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner,
@@ -55,16 +55,16 @@ CRIWVURLRequestContextGetter::CRIWVURLRequestContextGetter(
       proxy_config_service_(new net::ProxyConfigServiceIOS),
       net_log_(new net::NetLog()) {}
 
-CRIWVURLRequestContextGetter::~CRIWVURLRequestContextGetter() {}
+WebViewURLRequestContextGetter::~WebViewURLRequestContextGetter() = default;
 
-net::URLRequestContext* CRIWVURLRequestContextGetter::GetURLRequestContext() {
+net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   if (!url_request_context_) {
     url_request_context_.reset(new net::URLRequestContext());
     url_request_context_->set_net_log(net_log_.get());
     DCHECK(!network_delegate_.get());
-    network_delegate_.reset(new CRIWVNetworkDelegate);
+    network_delegate_ = base::MakeUnique<WebViewNetworkDelegate>();
     url_request_context_->set_network_delegate(network_delegate_.get());
 
     storage_.reset(
@@ -159,7 +159,7 @@ net::URLRequestContext* CRIWVURLRequestContextGetter::GetURLRequestContext() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-CRIWVURLRequestContextGetter::GetNetworkTaskRunner() const {
+WebViewURLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
 }
 

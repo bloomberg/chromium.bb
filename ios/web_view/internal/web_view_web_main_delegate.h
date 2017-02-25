@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_MAIN_DELEGATE_H_
-#define IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_MAIN_DELEGATE_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_WEB_VIEW_WEB_MAIN_DELEGATE_H_
+#define IOS_WEB_VIEW_INTERNAL_WEB_VIEW_WEB_MAIN_DELEGATE_H_
 
 #include <memory>
 #include "base/macros.h"
@@ -12,13 +12,13 @@
 @protocol CWVDelegate;
 
 namespace ios_web_view {
-class CRIWVWebClient;
+class WebViewWebClient;
 
-// CWV-specific implementation of WebMainDelegate.
-class CRIWVWebMainDelegate : public web::WebMainDelegate {
+// WebView implementation of WebMainDelegate.
+class WebViewWebMainDelegate : public web::WebMainDelegate {
  public:
-  explicit CRIWVWebMainDelegate(id<CWVDelegate> delegate);
-  ~CRIWVWebMainDelegate() override;
+  explicit WebViewWebMainDelegate(id<CWVDelegate> delegate);
+  ~WebViewWebMainDelegate() override;
 
   // WebMainDelegate implementation.
   void BasicStartupComplete() override;
@@ -28,11 +28,11 @@ class CRIWVWebMainDelegate : public web::WebMainDelegate {
   __weak id<CWVDelegate> delegate_;
 
   // The content and web clients registered by this object.
-  std::unique_ptr<CRIWVWebClient> web_client_;
+  std::unique_ptr<WebViewWebClient> web_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(CRIWVWebMainDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WebViewWebMainDelegate);
 };
 
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_MAIN_DELEGATE_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_WEB_VIEW_WEB_MAIN_DELEGATE_H_
