@@ -62,7 +62,7 @@ void AppendFirstSerializationTestPicture(scoped_refptr<DisplayItemList> list,
   PaintCanvas* canvas = recorder.beginRecording(SkRect::MakeXYWH(
       offset.x(), offset.y(), layer_size.width(), layer_size.height()));
   canvas->translate(offset.x(), offset.y());
-  canvas->drawRectCoords(0.f, 0.f, 4.f, 4.f, red_paint);
+  canvas->drawRect(SkRect::MakeWH(4, 4), red_paint);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       kVisualRect, recorder.finishRecordingAsPicture());
 }
@@ -84,8 +84,8 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   PaintCanvas* canvas =
       recorder.beginRecording(gfx::RectFToSkRect(recording_rect));
   canvas->translate(offset.x(), offset.y());
-  canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
-  canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_flags);
+  canvas->drawRect(SkRect::MakeLTRB(0.f, 0.f, 60.f, 60.f), red_paint);
+  canvas->drawRect(SkRect::MakeLTRB(50.f, 50.f, 75.f, 75.f), blue_flags);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       kVisualRect, recorder.finishRecordingAsPicture());
   list->Finalize();
@@ -98,12 +98,14 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   expected_bitmap.installPixels(info, expected_pixels, info.minRowBytes());
   PaintCanvas expected_canvas(expected_bitmap);
   expected_canvas.clipRect(gfx::RectToSkRect(layer_rect));
-  expected_canvas.drawRectCoords(0.f + offset.x(), 0.f + offset.y(),
-                                 60.f + offset.x(), 60.f + offset.y(),
-                                 red_paint);
-  expected_canvas.drawRectCoords(50.f + offset.x(), 50.f + offset.y(),
-                                 75.f + offset.x(), 75.f + offset.y(),
-                                 blue_flags);
+  expected_canvas.drawRect(
+      SkRect::MakeLTRB(0.f + offset.x(), 0.f + offset.y(), 60.f + offset.x(),
+                       60.f + offset.y()),
+      red_paint);
+  expected_canvas.drawRect(
+      SkRect::MakeLTRB(50.f + offset.x(), 50.f + offset.y(), 75.f + offset.x(),
+                       75.f + offset.y()),
+      blue_flags);
 
   EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
 }
@@ -123,7 +125,7 @@ TEST(DisplayItemListTest, ClipItem) {
   PaintCanvas* canvas =
       recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect));
   canvas->translate(first_offset.x(), first_offset.y());
-  canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
+  canvas->drawRect(SkRect::MakeWH(60, 60), red_paint);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       kVisualRect, recorder.finishRecordingAsPicture());
 
@@ -136,7 +138,7 @@ TEST(DisplayItemListTest, ClipItem) {
                                    gfx::SizeF(layer_rect.size()));
   canvas = recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect));
   canvas->translate(second_offset.x(), second_offset.y());
-  canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_flags);
+  canvas->drawRect(SkRect::MakeLTRB(50.f, 50.f, 75.f, 75.f), blue_flags);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       kVisualRect, recorder.finishRecordingAsPicture());
 
@@ -152,13 +154,15 @@ TEST(DisplayItemListTest, ClipItem) {
   expected_bitmap.installPixels(info, expected_pixels, info.minRowBytes());
   PaintCanvas expected_canvas(expected_bitmap);
   expected_canvas.clipRect(gfx::RectToSkRect(layer_rect));
-  expected_canvas.drawRectCoords(0.f + first_offset.x(), 0.f + first_offset.y(),
-                                 60.f + first_offset.x(),
-                                 60.f + first_offset.y(), red_paint);
+  expected_canvas.drawRect(
+      SkRect::MakeLTRB(0.f + first_offset.x(), 0.f + first_offset.y(),
+                       60.f + first_offset.x(), 60.f + first_offset.y()),
+      red_paint);
   expected_canvas.clipRect(gfx::RectToSkRect(clip_rect));
-  expected_canvas.drawRectCoords(
-      50.f + second_offset.x(), 50.f + second_offset.y(),
-      75.f + second_offset.x(), 75.f + second_offset.y(), blue_flags);
+  expected_canvas.drawRect(
+      SkRect::MakeLTRB(50.f + second_offset.x(), 50.f + second_offset.y(),
+                       75.f + second_offset.x(), 75.f + second_offset.y()),
+      blue_flags);
 
   EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
 }
@@ -178,7 +182,7 @@ TEST(DisplayItemListTest, TransformItem) {
   PaintCanvas* canvas =
       recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect));
   canvas->translate(first_offset.x(), first_offset.y());
-  canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
+  canvas->drawRect(SkRect::MakeWH(60, 60), red_paint);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       kVisualRect, recorder.finishRecordingAsPicture());
 
@@ -191,7 +195,7 @@ TEST(DisplayItemListTest, TransformItem) {
                                    gfx::SizeF(layer_rect.size()));
   canvas = recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect));
   canvas->translate(second_offset.x(), second_offset.y());
-  canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_flags);
+  canvas->drawRect(SkRect::MakeLTRB(50.f, 50.f, 75.f, 75.f), blue_flags);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       kVisualRect, recorder.finishRecordingAsPicture());
 
@@ -207,13 +211,15 @@ TEST(DisplayItemListTest, TransformItem) {
   expected_bitmap.installPixels(info, expected_pixels, info.minRowBytes());
   PaintCanvas expected_canvas(expected_bitmap);
   expected_canvas.clipRect(gfx::RectToSkRect(layer_rect));
-  expected_canvas.drawRectCoords(0.f + first_offset.x(), 0.f + first_offset.y(),
-                                 60.f + first_offset.x(),
-                                 60.f + first_offset.y(), red_paint);
+  expected_canvas.drawRect(
+      SkRect::MakeLTRB(0.f + first_offset.x(), 0.f + first_offset.y(),
+                       60.f + first_offset.x(), 60.f + first_offset.y()),
+      red_paint);
   expected_canvas.setMatrix(transform.matrix());
-  expected_canvas.drawRectCoords(
-      50.f + second_offset.x(), 50.f + second_offset.y(),
-      75.f + second_offset.x(), 75.f + second_offset.y(), blue_flags);
+  expected_canvas.drawRect(
+      SkRect::MakeLTRB(50.f + second_offset.x(), 50.f + second_offset.y(),
+                       75.f + second_offset.x(), 75.f + second_offset.y()),
+      blue_flags);
 
   EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
 }
@@ -256,9 +262,10 @@ TEST(DisplayItemListTest, FilterItem) {
 
     PaintCanvas* canvas = recorder.beginRecording(
         SkRect::MakeXYWH(0, 0, layer_rect.width(), layer_rect.height()));
-    canvas->drawRectCoords(filter_bounds.x(), filter_bounds.y(),
-                           filter_bounds.right(), filter_bounds.bottom(),
-                           red_paint);
+    canvas->drawRect(
+        SkRect::MakeLTRB(filter_bounds.x(), filter_bounds.y(),
+                         filter_bounds.right(), filter_bounds.bottom()),
+        red_paint);
     list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
         ToNearestRect(filter_bounds), recorder.finishRecordingAsPicture());
   }

@@ -2641,6 +2641,12 @@ bool IsSoftwareRenderer<SoftwareRendererWithExpandedViewport>() {
   return true;
 }
 
+void draw_point_color(SkCanvas* canvas, SkScalar x, SkScalar y, SkColor color) {
+  SkPaint paint;
+  paint.setColor(color);
+  canvas->drawPoint(x, y, paint);
+}
+
 // If we disable image filtering, then a 2x2 bitmap should appear as four
 // huge sharp squares.
 TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
@@ -2661,10 +2667,10 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(2, 2);
   ASSERT_NE(surface, nullptr);
   SkCanvas* canvas = surface->getCanvas();
-  canvas->drawPoint(0, 0, SK_ColorGREEN);
-  canvas->drawPoint(0, 1, SK_ColorBLUE);
-  canvas->drawPoint(1, 0, SK_ColorBLUE);
-  canvas->drawPoint(1, 1, SK_ColorGREEN);
+  draw_point_color(canvas, 0, 0, SK_ColorGREEN);
+  draw_point_color(canvas, 0, 1, SK_ColorBLUE);
+  draw_point_color(canvas, 1, 0, SK_ColorBLUE);
+  draw_point_color(canvas, 1, 1, SK_ColorGREEN);
 
   std::unique_ptr<FakeRecordingSource> recording =
       FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
@@ -2710,10 +2716,10 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(2, 2);
   ASSERT_NE(surface, nullptr);
   SkCanvas* canvas = surface->getCanvas();
-  canvas->drawPoint(0, 0, SK_ColorGREEN);
-  canvas->drawPoint(0, 1, SK_ColorBLUE);
-  canvas->drawPoint(1, 0, SK_ColorBLUE);
-  canvas->drawPoint(1, 1, SK_ColorGREEN);
+  draw_point_color(canvas, 0, 0, SK_ColorGREEN);
+  draw_point_color(canvas, 0, 1, SK_ColorBLUE);
+  draw_point_color(canvas, 1, 0, SK_ColorBLUE);
+  draw_point_color(canvas, 1, 1, SK_ColorGREEN);
 
   std::unique_ptr<FakeRecordingSource> recording =
       FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
@@ -2754,10 +2760,10 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
   {
     SkAutoLockPixels lock(bitmap);
     SkCanvas canvas(bitmap);
-    canvas.drawPoint(0, 0, SK_ColorGREEN);
-    canvas.drawPoint(0, 1, SK_ColorBLUE);
-    canvas.drawPoint(1, 0, SK_ColorBLUE);
-    canvas.drawPoint(1, 1, SK_ColorGREEN);
+    draw_point_color(&canvas, 0, 0, SK_ColorGREEN);
+    draw_point_color(&canvas, 0, 1, SK_ColorBLUE);
+    draw_point_color(&canvas, 1, 0, SK_ColorBLUE);
+    draw_point_color(&canvas, 1, 1, SK_ColorGREEN);
   }
 
   gfx::Size tile_size(2, 2);
@@ -2805,10 +2811,10 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
   {
     SkAutoLockPixels lock(bitmap);
     SkCanvas canvas(bitmap);
-    canvas.drawPoint(0, 0, SK_ColorGREEN);
-    canvas.drawPoint(0, 1, SK_ColorBLUE);
-    canvas.drawPoint(1, 0, SK_ColorBLUE);
-    canvas.drawPoint(1, 1, SK_ColorGREEN);
+    draw_point_color(&canvas, 0, 0, SK_ColorGREEN);
+    draw_point_color(&canvas, 0, 1, SK_ColorBLUE);
+    draw_point_color(&canvas, 1, 0, SK_ColorBLUE);
+    draw_point_color(&canvas, 1, 1, SK_ColorGREEN);
   }
 
   gfx::Size tile_size(2, 2);
@@ -2857,10 +2863,10 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
   {
     SkAutoLockPixels lock(bitmap);
     SkCanvas canvas(bitmap);
-    canvas.drawPoint(0, 0, SK_ColorGREEN);
-    canvas.drawPoint(0, 1, SK_ColorBLUE);
-    canvas.drawPoint(1, 0, SK_ColorBLUE);
-    canvas.drawPoint(1, 1, SK_ColorGREEN);
+    draw_point_color(&canvas, 0, 0, SK_ColorGREEN);
+    draw_point_color(&canvas, 0, 1, SK_ColorBLUE);
+    draw_point_color(&canvas, 1, 0, SK_ColorBLUE);
+    draw_point_color(&canvas, 1, 1, SK_ColorGREEN);
   }
 
   gfx::Size tile_size(2, 2);

@@ -217,9 +217,8 @@ void GradientPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
       p, colors_.get(), pos_.get(), count_, SkShader::kClamp_TileMode)));
   flags.setStyle(cc::PaintFlags::kFill_Style);
 
-  canvas->sk_canvas()->drawRectCoords(SkIntToScalar(0), SkIntToScalar(0),
-                                      SkIntToScalar(size.width()),
-                                      SkIntToScalar(size.height()), flags);
+  canvas->sk_canvas()->drawRect(SkRect::MakeIWH(size.width(), size.height()),
+                                flags);
 }
 
 // ImagePainter ---------------------------------------------------------------

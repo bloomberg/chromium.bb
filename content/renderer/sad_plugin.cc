@@ -28,8 +28,7 @@ void PaintSadPlugin(blink::WebCanvas* webcanvas,
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setColor(SK_ColorBLACK);
-  canvas->drawRectCoords(0, 0, SkIntToScalar(width), SkIntToScalar(height),
-                         flags);
+  canvas->drawRect(SkRect::MakeIWH(width, height), flags);
   canvas->drawBitmap(
       sad_plugin_bitmap,
       SkIntToScalar(std::max(0, (width - sad_plugin_bitmap.width()) / 2)),
