@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <set>
+#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -457,10 +458,10 @@ void ModuleEnumerator::ReportThirdPartyMetrics() {
   size_t third_party_loaded = 0;
   size_t third_party_not_loaded = 0;
   for (const auto& module : *enumerated_modules_) {
-    if (module.cert_info.type != ModuleDatabase::NO_CERTIFICATE) {
+    if (module.cert_info.type != CertificateType::NO_CERTIFICATE) {
       ++signed_modules;
 
-      if (module.cert_info.type == ModuleDatabase::CERTIFICATE_IN_CATALOG)
+      if (module.cert_info.type == CertificateType::CERTIFICATE_IN_CATALOG)
         ++catalog_modules;
 
       // The first time this certificate is encountered it will be inserted

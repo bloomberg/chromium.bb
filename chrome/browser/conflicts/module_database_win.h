@@ -6,12 +6,15 @@
 #define CHROME_BROWSER_CONFLICTS_MODULE_DATABASE_WIN_H_
 
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/conflicts/module_info_win.h"
 #include "content/public/common/process_type.h"
 
 // A class that keeps track of all modules loaded across Chrome processes.
@@ -22,23 +25,7 @@
 // be set as the process-wide singleton via SetInstance.
 class ModuleDatabase {
  public:
-  // Used as a unique identifier for a module in a ModuleSet.
-  using ModuleId = int;
-
-  // The type of certificate found for the module.
-  enum CertificateType {
-    // The module is not signed.
-    NO_CERTIFICATE,
-    // The module is signed and the certificate is in the module.
-    CERTIFICATE_IN_FILE,
-    // The module is signed and the certificate is in an external catalog.
-    CERTIFICATE_IN_CATALOG,
-  };
-
   // Structures for maintaining information about modules.
-  struct ModuleInfoKey;
-  struct CertificateInfo;
-  struct ModuleInfoData;
   using ModuleMap = std::map<ModuleInfoKey, ModuleInfoData>;
   using ModuleInfo = ModuleMap::value_type;
 
@@ -170,95 +157,6 @@ class ModuleDatabase {
   base::WeakPtrFactory<ModuleDatabase> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleDatabase);
-};
-
-// Maintains information about a module. Modules are permanent once added to
-// the ModuleSet, so this structure grows monotonically. In practice this is
-// not an issue as the modules themselves are vastly bigger than the minor
-// amount of metadata tracked here.
-
-// This is the constant portion of the module information, and acts as the key
-// in a std::map.
-struct ModuleDatabase::ModuleInfoKey {
-  ModuleInfoKey(const base::FilePath& module_path,
-                uint32_t module_size,
-                uint32_t module_time_date_stamp,
-                uint32_t module_id);
-
-  // Less-than operator allowing this object to be used in std::map.
-  bool operator<(const ModuleInfoKey& mi) const;
-
-  // Full path to the module on disk. Part of the key for a ModuleInfo.
-  base::FilePath module_path;
-
-  // The module size. Part of the key for a ModuleInfo. This is taken from
-  // SizeOfImage from the module's IMAGE_OPTIONAL_HEADER.
-  uint32_t module_size;
-
-  // The module time date stamp. Part of the key for a ModuleInfo. Taken from
-  // TimeDateStamp from the module's IMAGE_FILE_HEADER.
-  uint32_t module_time_date_stamp;
-
-  // The ID of this module. This is a strictly incrementing value, and is used
-  // to tie a module to the list of running processes in which it is found.
-  // It is not part of the key for the module, but it is immutable. This is
-  // simply the index of the module in the insertion order.
-  ModuleId module_id;
-};
-
-// Information about the certificate of a file.
-struct ModuleDatabase::CertificateInfo {
-  CertificateInfo();
-
-  // The type of signature encountered.
-  CertificateType type;
-
-  // Path to the file containing the certificate. Empty if |type| is
-  // NO_CERTIFICATE.
-  base::FilePath path;
-
-  // The "Subject" name of the certificate. This is the signer (ie,
-  // "Google Inc." or "Microsoft Inc.").
-  base::string16 subject;
-};
-
-// This is the mutable portion of the module information, and is the storage
-// type in a std::map.
-struct ModuleDatabase::ModuleInfoData {
-  ModuleInfoData();
-  ModuleInfoData(const ModuleInfoData& others);
-  ~ModuleInfoData();
-
-  // Set of all process types in which this module has been seen (may not be
-  // currently present in a process of that type). This is a conversion of
-  // ProcessType enumeration to a bitfield. See "ProcessTypeToBit" and
-  // "BitIndexToProcessType" for details.
-  uint32_t process_types;
-
-  // The following pieces of information are determined via a detailed
-  // inspection of the module. This is relatively expensive and uses blocking
-  // IO, so is performed in a background task.
-
-  // The module path, not including the basename. This is cleaned and normalized
-  // so that common paths are converted to their environment variable mappings
-  // (ie, %systemroot%). This makes i18n localized paths easily comparable.
-  base::string16 location;
-
-  // The basename of the module.
-  base::string16 basename;
-
-  // The name of the product the module belongs to.
-  base::string16 product_name;
-
-  // The module file description.
-  base::string16 description;
-
-  // The module version. This is usually in the form a.b.c.d (where a, b, c and
-  // d are integers), but may also have fewer than 4 components.
-  base::string16 version;
-
-  // The certificate info for the module.
-  CertificateInfo certificate_info;
 };
 
 // Information about a running process. This ties modules in a ModuleSet to

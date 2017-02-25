@@ -289,9 +289,10 @@ ModuleDatabase::ModuleInfo* ModuleDatabase::FindOrCreateModuleInfo(
     uint32_t module_time_date_stamp) {
   auto result = modules_.emplace(
       std::piecewise_construct,
-      std::forward_as_tuple(ModuleInfoKey(
-          module_path, module_size, module_time_date_stamp, modules_.size())),
-      std::forward_as_tuple(ModuleInfoData()));
+      std::forward_as_tuple(module_path, module_size, module_time_date_stamp,
+                            modules_.size()),
+      std::forward_as_tuple());
+
   return &(*result.first);
 }
 
@@ -319,39 +320,6 @@ void ModuleDatabase::DeleteProcessInfo(uint32_t process_id,
   ProcessInfoKey key(process_id, creation_time, content::PROCESS_TYPE_UNKNOWN);
   processes_.erase(key);
 }
-
-// ModuleDatabase::ModuleInfoKey -----------------------------------------------
-
-ModuleDatabase::ModuleInfoKey::ModuleInfoKey(const base::FilePath& module_path,
-                                             uint32_t module_size,
-                                             uint32_t module_time_date_stamp,
-                                             uint32_t module_id)
-    : module_path(module_path),
-      module_size(module_size),
-      module_time_date_stamp(module_time_date_stamp),
-      module_id(module_id) {}
-
-bool ModuleDatabase::ModuleInfoKey::operator<(const ModuleInfoKey& mik) const {
-  // The key consists of the triplet of
-  // (module_path, module_size, module_time_date_stamp).
-  // Use the std::tuple lexicographic comparison operator.
-  return std::make_tuple(module_path, module_size, module_time_date_stamp) <
-         std::make_tuple(mik.module_path, mik.module_size,
-                         mik.module_time_date_stamp);
-}
-
-// ModuleDatabase::CertificateInfo ---------------------------------------------
-
-ModuleDatabase::CertificateInfo::CertificateInfo() : type(NO_CERTIFICATE) {}
-
-// ModuleDatabase::ModuleInfoData ----------------------------------------------
-
-ModuleDatabase::ModuleInfoData::ModuleInfoData() : process_types(0) {}
-
-ModuleDatabase::ModuleInfoData::ModuleInfoData(const ModuleInfoData& others) =
-    default;
-
-ModuleDatabase::ModuleInfoData::~ModuleInfoData() = default;
 
 // ModuleDatabase::ProcessInfoKey ----------------------------------------------
 

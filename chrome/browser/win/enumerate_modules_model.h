@@ -68,12 +68,6 @@ class ModuleEnumerator {
     NOTIFY_USER   = 1 << 5,
   };
 
-  // Which Windows OS is affected.
-  enum OperatingSystem {
-    ALL          = -1,
-    XP           = 1 << 0,
-  };
-
   // The structure we populate when enumerating modules.
   struct Module {
     Module();
@@ -108,7 +102,7 @@ class ModuleEnumerator {
     // The duplicate count within each category of modules.
     int duplicate_count;
     // The certificate info for the module.
-    ModuleDatabase::CertificateInfo cert_info;
+    CertificateInfo cert_info;
   };
 
   // A vector typedef of all modules enumerated.
@@ -258,7 +252,7 @@ class EnumerateModulesModel {
     ACTION_BUBBLE_SHOWN = 0,
     ACTION_BUBBLE_LEARN_MORE,
     ACTION_MENU_LEARN_MORE,
-    ACTION_BOUNDARY, // Must be the last value.
+    ACTION_BOUNDARY,  // Must be the last value.
   };
 
   // Observer class used to determine when a scan has completed and when any

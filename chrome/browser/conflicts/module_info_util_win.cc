@@ -4,12 +4,17 @@
 
 #include "chrome/browser/conflicts/module_info_util_win.h"
 
+#include <windows.h>
+
 #include <tlhelp32.h>
 #include <wincrypt.h>
 #include <wintrust.h>
 
 // This must be after wincrypt and wintrust.
 #include <mscat.h>
+
+#include <memory>
+#include <vector>
 
 #include "base/scoped_generic.h"
 #include "base/win/scoped_handle.h"
@@ -146,7 +151,7 @@ using ScopedCryptCATCatalogContext =
 // Extracts the subject name and catalog path if the provided file is present in
 // a catalog file.
 void GetCatalogCertificateInfo(const base::FilePath& filename,
-                               ModuleDatabase::CertificateInfo* cert_info) {
+                               CertificateInfo* certificate_info) {
   // Get a crypt context for signature verification.
   ScopedCryptCATContext context;
   {
@@ -202,30 +207,34 @@ void GetCatalogCertificateInfo(const base::FilePath& filename,
   if (subject.empty())
     return;
 
-  cert_info->type = ModuleDatabase::CERTIFICATE_IN_CATALOG;
-  cert_info->path = catalog_path;
-  cert_info->subject = subject;
+  certificate_info->type = CertificateType::CERTIFICATE_IN_CATALOG;
+  certificate_info->path = catalog_path;
+  certificate_info->subject = subject;
 }
 
 }  // namespace
 
+// ModuleDatabase::CertificateInfo ---------------------------------------------
+
+CertificateInfo::CertificateInfo() : type(CertificateType::NO_CERTIFICATE) {}
+
 // Extracts information about the certificate of the given file, if any is
 // found.
 void GetCertificateInfo(const base::FilePath& filename,
-                        ModuleDatabase::CertificateInfo* cert_info) {
-  DCHECK_EQ(ModuleDatabase::NO_CERTIFICATE, cert_info->type);
-  DCHECK(cert_info->path.empty());
-  DCHECK(cert_info->subject.empty());
+                        CertificateInfo* certificate_info) {
+  DCHECK_EQ(CertificateType::NO_CERTIFICATE, certificate_info->type);
+  DCHECK(certificate_info->path.empty());
+  DCHECK(certificate_info->subject.empty());
 
-  GetCatalogCertificateInfo(filename, cert_info);
-  if (cert_info->type == ModuleDatabase::CERTIFICATE_IN_CATALOG)
+  GetCatalogCertificateInfo(filename, certificate_info);
+  if (certificate_info->type == CertificateType::CERTIFICATE_IN_CATALOG)
     return;
 
   base::string16 subject = GetSubjectNameInFile(filename);
   if (subject.empty())
     return;
 
-  cert_info->type = ModuleDatabase::CERTIFICATE_IN_FILE;
-  cert_info->path = filename;
-  cert_info->subject = subject;
+  certificate_info->type = CertificateType::CERTIFICATE_IN_FILE;
+  certificate_info->path = filename;
+  certificate_info->subject = subject;
 }

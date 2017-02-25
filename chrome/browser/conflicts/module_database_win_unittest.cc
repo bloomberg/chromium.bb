@@ -62,7 +62,6 @@ constexpr uintptr_t kGoodAddress2 = 0x05000000u;
 class TestModuleDatabase : ModuleDatabase {
  public:
   // Types.
-  using ModuleDatabase::ModuleId;
   using ModuleDatabase::ModuleLoadAddresses;
 
   // Constants.
@@ -102,7 +101,7 @@ class ModuleDatabaseTest : public testing::Test {
   // Counts the occurrences of the given |module_id| in the given collection of
   // |load_addresses|.
   static size_t ModuleIdCount(
-      ModuleDatabase::ModuleId module_id,
+      ModuleId module_id,
       const ModuleDatabase::ModuleLoadAddresses& load_addresses) {
     return std::count_if(
         load_addresses.begin(), load_addresses.end(),
@@ -280,7 +279,7 @@ TEST_F(ModuleDatabaseTest, LoadAddressVectorStressTest) {
 
     // Generate a shuffled list of IDs. This will be the insertion order.
     // More insertions than elements will occur so that rewrites occur.,
-    std::vector<TMD::ModuleId> ids(11 * n / 10);
+    std::vector<ModuleId> ids(11 * n / 10);
     for (size_t i = 0; i < 11 * n / 10; ++i)
       ids[i] = i % n;
     std::random_shuffle(ids.begin(), ids.end());
