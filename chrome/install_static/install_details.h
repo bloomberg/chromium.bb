@@ -104,6 +104,11 @@ class InstallDetails {
     return payload_->mode->supported_multi_install;
   }
 
+  // Returns the resource id of this mode's main application icon.
+  int32_t app_icon_resource_id() const {
+    return payload_->mode->app_icon_resource_id;
+  }
+
   // The install's update channel, or an empty string if the brand does not
   // integrate with Google Update.
   std::wstring channel() const {

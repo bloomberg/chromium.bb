@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/install_static/install_modes.h"
 
 namespace install_static {
@@ -35,6 +36,7 @@ const InstallConstants kInstallModes[] = {
         ChannelStrategy::UNSUPPORTED,
         true,  // Supports system-level installs.
         true,  // Supported multi-install.
+        IDR_MAINFRAME,
     },
     // clang-format on
 };

@@ -19,6 +19,7 @@ static_library("install_static_util") {
   ]
 
   sources = [
+    "../app/chrome_dll_resource.h",
     "install_constants.h",
     "install_details.cc",
     "install_details.h",

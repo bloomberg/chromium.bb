@@ -9,6 +9,8 @@
 #ifndef CHROME_INSTALL_STATIC_INSTALL_CONSTANTS_H_
 #define CHROME_INSTALL_STATIC_INSTALL_CONSTANTS_H_
 
+#include <stdint.h>
+
 namespace install_static {
 
 // Identifies different strategies for determining an update channel.
@@ -69,6 +71,9 @@ struct InstallConstants {
 
   // True if this mode supported the now-deprecated multi-install.
   bool supported_multi_install;
+
+  // The resource id of this mode's main application icon.
+  int16_t app_icon_resource_id;
 };
 
 }  // namespace install_static

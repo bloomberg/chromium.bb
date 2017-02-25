@@ -4,27 +4,18 @@
 
 #include "chrome/browser/win/app_icon.h"
 
-#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/install_static/install_details.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image_family.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/installer/util/install_util.h"
-#endif
-
 namespace {
 
 // Returns the resource id of the application icon.
 int GetAppIconResourceId() {
-  int icon_id = IDR_MAINFRAME;
-#if defined(GOOGLE_CHROME_BUILD)
-  if (InstallUtil::IsChromeSxSProcess())
-    icon_id = IDR_SXS;
-#endif
-  return icon_id;
+  return install_static::InstallDetails::Get().app_icon_resource_id();
 }
 
 }  // namespace

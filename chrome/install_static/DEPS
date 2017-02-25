@@ -3,6 +3,8 @@ include_rules = [
   "-base",
   # Nothing from chrome.
   "-chrome",
+  # For the app icon resource indices.
+  "+chrome/app/chrome_dll_resource.h",
   # Anything from this dir.
   "+chrome/install_static",
   # All registry access should go through nt_registry.
