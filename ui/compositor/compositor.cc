@@ -33,6 +33,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/compositor_vsync_manager.h"
@@ -162,7 +163,8 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
 
   settings.enable_color_correct_rendering =
       command_line->HasSwitch(cc::switches::kEnableColorCorrectRendering) ||
-      command_line->HasSwitch(cc::switches::kEnableTrueColorRendering);
+      command_line->HasSwitch(cc::switches::kEnableTrueColorRendering) ||
+      command_line->HasSwitch(switches::kEnableHDROutput);
   settings.renderer_settings.enable_color_correct_rendering =
       settings.enable_color_correct_rendering;
 
@@ -352,8 +354,14 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
 }
 
 void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHDROutput)) {
+    color_space_ = gfx::ColorSpace::CreateSCRGBLinear();
+  } else {
+    color_space_ = color_space;
+  }
+  // TODO(Hubbe): Should maybe be color_space_, but currently that crashes skia.
   host_->SetDeviceColorSpace(color_space);
-  color_space_ = color_space;
   // Color space is reset when the output surface is lost, so this must also be
   // updated then.
   // TODO(fsamuel): Get rid of this.

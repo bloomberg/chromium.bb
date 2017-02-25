@@ -11,6 +11,7 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
@@ -34,15 +35,19 @@ ChildWindowSurfaceWin::ChildWindowSurfaceWin(
 EGLConfig ChildWindowSurfaceWin::GetConfig() {
   if (!config_) {
     int alpha_size = alpha_ ? 8 : EGL_DONT_CARE;
+    int bits_per_channel = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                               switches::kEnableHDROutput)
+                               ? 16
+                               : 8;
 
     EGLint config_attribs[] = {EGL_ALPHA_SIZE,
                                alpha_size,
                                EGL_BLUE_SIZE,
-                               8,
+                               bits_per_channel,
                                EGL_GREEN_SIZE,
-                               8,
+                               bits_per_channel,
                                EGL_RED_SIZE,
-                               8,
+                               bits_per_channel,
                                EGL_RENDERABLE_TYPE,
                                EGL_OPENGL_ES2_BIT,
                                EGL_SURFACE_TYPE,

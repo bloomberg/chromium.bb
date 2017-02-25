@@ -85,6 +85,7 @@ component("compositor") {
     "//cc/surfaces:surfaces",
     "//gpu/command_buffer/common",
     "//skia",
+    "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",

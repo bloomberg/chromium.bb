@@ -168,7 +168,8 @@ static const char* const kSwitchNames[] = {
     switches::kGpuTestingGLRenderer,
     switches::kGpuTestingGLVersion,
     switches::kDisableGpuDriverBugWorkarounds,
-    switches::kUsePassthroughCmdDecoder};
+    switches::kUsePassthroughCmdDecoder,
+    switches::kEnableHDROutput};
 
 enum GPUProcessLifetimeEvent {
   LAUNCHED,

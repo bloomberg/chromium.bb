@@ -6,6 +6,7 @@ include_rules = [
   "+skia/ext/refptr.h",
   "+third_party/khronos/GLES2/gl2.h",
   "+third_party/skia",
+  "+ui/base",
   "+ui/gfx",
   "+ui/gl",
 ]
