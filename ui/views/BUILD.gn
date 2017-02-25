@@ -913,6 +913,7 @@ source_set("views_unittests_sources") {
     "//base:i18n",
     "//base/test:test_support",
     "//cc",
+    "//cc/paint",
     "//services/ui/public/interfaces",
     "//skia",
     "//testing/gtest",

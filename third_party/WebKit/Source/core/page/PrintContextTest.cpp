@@ -37,7 +37,7 @@ class MockPrintContext : public PrintContext {
   }
 };
 
-class MockCanvas : public PaintCanvas {
+class MockCanvas : public SkCanvas {
  public:
   enum OperationType { DrawRect, DrawPoint };
 
@@ -46,7 +46,7 @@ class MockCanvas : public PaintCanvas {
     SkRect rect;
   };
 
-  MockCanvas() : PaintCanvas(kPageWidth, kPageHeight) {}
+  MockCanvas() : SkCanvas(kPageWidth, kPageHeight) {}
 
   void onDrawAnnotation(const SkRect& rect,
                         const char key[],
@@ -88,7 +88,7 @@ class PrintContextTest : public RenderingTest {
     document().body()->setInnerHTML(bodyContent);
   }
 
-  void printSinglePage(PaintCanvas& canvas) {
+  void printSinglePage(MockCanvas& canvas) {
     IntRect pageRect(0, 0, kPageWidth, kPageHeight);
     printContext().begin(pageRect.width(), pageRect.height());
     document().view()->updateAllLifecyclePhases();
