@@ -56,7 +56,7 @@ void ThreadedMessagingProxyBase::initializeWorkerThread(
 
   m_loaderProxy = WorkerLoaderProxy::create(this);
   m_workerThread = createWorkerThread(originTime);
-  m_workerThread->start(std::move(startupData));
+  m_workerThread->start(std::move(startupData), getParentFrameTaskRunners());
   workerThreadCreated();
 }
 

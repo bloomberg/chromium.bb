@@ -19,7 +19,6 @@ class MODULES_EXPORT CompositorWorkerThread final
   static std::unique_ptr<CompositorWorkerThread> create(
       PassRefPtr<WorkerLoaderProxy>,
       InProcessWorkerObjectProxy&,
-      ParentFrameTaskRunners*,
       double timeOrigin);
   ~CompositorWorkerThread() override;
 
@@ -34,7 +33,6 @@ class MODULES_EXPORT CompositorWorkerThread final
  private:
   CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>,
                          InProcessWorkerObjectProxy&,
-                         ParentFrameTaskRunners*,
                          double timeOrigin);
 
   InProcessWorkerObjectProxy& m_workerObjectProxy;

@@ -43,8 +43,7 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
  public:
   static std::unique_ptr<ServiceWorkerThread> create(
       PassRefPtr<WorkerLoaderProxy>,
-      WorkerReportingProxy&,
-      ParentFrameTaskRunners*);
+      WorkerReportingProxy&);
   ~ServiceWorkerThread() override;
 
   WorkerBackingThread& workerBackingThread() override {
@@ -57,9 +56,7 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
       std::unique_ptr<WorkerThreadStartupData>) override;
 
  private:
-  ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy>,
-                      WorkerReportingProxy&,
-                      ParentFrameTaskRunners*);
+  ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
   std::unique_ptr<WorkerBackingThread> m_workerBackingThread;
 };
 

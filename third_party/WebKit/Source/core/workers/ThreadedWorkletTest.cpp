@@ -23,11 +23,9 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
  public:
   ThreadedWorkletThreadForTest(
       WorkerLoaderProxyProvider* workerLoaderProxyProvider,
-      WorkerReportingProxy& workerReportingProxy,
-      ParentFrameTaskRunners* parentFrameTaskRunners)
+      WorkerReportingProxy& workerReportingProxy)
       : WorkerThread(WorkerLoaderProxy::create(workerLoaderProxyProvider),
-                     workerReportingProxy,
-                     parentFrameTaskRunners) {}
+                     workerReportingProxy) {}
   ~ThreadedWorkletThreadForTest() override{};
 
   WorkerBackingThread& workerBackingThread() override {
@@ -95,8 +93,7 @@ class ThreadedWorkletMessagingProxyForTest
     m_mockWorkerLoaderProxyProvider =
         WTF::makeUnique<MockWorkerLoaderProxyProvider>();
     m_workerThread = WTF::makeUnique<ThreadedWorkletThreadForTest>(
-        m_mockWorkerLoaderProxyProvider.get(), workletObjectProxy(),
-        getParentFrameTaskRunners());
+        m_mockWorkerLoaderProxyProvider.get(), workletObjectProxy());
     ThreadedWorkletThreadForTest::ensureSharedBackingThread();
   }
 
@@ -116,12 +113,15 @@ class ThreadedWorkletMessagingProxyForTest
     WorkerClients* workerClients = nullptr;
     Vector<String> originTrialTokens;
     std::unique_ptr<WorkerSettings> workerSettings = nullptr;
-    m_workerThread->start(WorkerThreadStartupData::create(
-        scriptURL, "fake user agent", "// fake source code",
-        std::move(cachedMetaData), DontPauseWorkerGlobalScopeOnStart,
-        &contentSecurityPolicyHeaders, referrerPolicy, m_securityOrigin.get(),
-        workerClients, WebAddressSpaceLocal, &originTrialTokens,
-        std::move(workerSettings), WorkerV8Settings::Default()));
+    m_workerThread->start(
+        WorkerThreadStartupData::create(
+            scriptURL, "fake user agent", "// fake source code",
+            std::move(cachedMetaData), DontPauseWorkerGlobalScopeOnStart,
+            &contentSecurityPolicyHeaders, referrerPolicy,
+            m_securityOrigin.get(), workerClients, WebAddressSpaceLocal,
+            &originTrialTokens, std::move(workerSettings),
+            WorkerV8Settings::Default()),
+        getParentFrameTaskRunners());
     workerInspectorProxy()->workerThreadCreated(
         toDocument(getExecutionContext()), m_workerThread.get(), scriptURL);
   }

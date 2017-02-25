@@ -14,23 +14,19 @@ namespace blink {
 
 std::unique_ptr<AnimationWorkletThread> AnimationWorkletThread::create(
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    WorkerReportingProxy& workerReportingProxy,
-    ParentFrameTaskRunners* parentFrameTaskRunners) {
+    WorkerReportingProxy& workerReportingProxy) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("animation-worklet"),
                "AnimationWorkletThread::create");
   DCHECK(isMainThread());
-  return WTF::wrapUnique(
-      new AnimationWorkletThread(std::move(workerLoaderProxy),
-                                 workerReportingProxy, parentFrameTaskRunners));
+  return WTF::wrapUnique(new AnimationWorkletThread(
+      std::move(workerLoaderProxy), workerReportingProxy));
 }
 
 AnimationWorkletThread::AnimationWorkletThread(
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    WorkerReportingProxy& workerReportingProxy,
-    ParentFrameTaskRunners* parentFrameTaskRunners)
+    WorkerReportingProxy& workerReportingProxy)
     : AbstractAnimationWorkletThread(std::move(workerLoaderProxy),
-                                     workerReportingProxy,
-                                     parentFrameTaskRunners) {}
+                                     workerReportingProxy) {}
 
 AnimationWorkletThread::~AnimationWorkletThread() {}
 

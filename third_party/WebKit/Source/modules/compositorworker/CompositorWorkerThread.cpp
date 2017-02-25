@@ -16,24 +16,20 @@ namespace blink {
 std::unique_ptr<CompositorWorkerThread> CompositorWorkerThread::create(
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
     InProcessWorkerObjectProxy& workerObjectProxy,
-    ParentFrameTaskRunners* parentFrameTaskRunners,
     double timeOrigin) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "CompositorWorkerThread::create");
   ASSERT(isMainThread());
   return WTF::wrapUnique(new CompositorWorkerThread(
-      std::move(workerLoaderProxy), workerObjectProxy, parentFrameTaskRunners,
-      timeOrigin));
+      std::move(workerLoaderProxy), workerObjectProxy, timeOrigin));
 }
 
 CompositorWorkerThread::CompositorWorkerThread(
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
     InProcessWorkerObjectProxy& workerObjectProxy,
-    ParentFrameTaskRunners* parentFrameTaskRunners,
     double timeOrigin)
     : AbstractAnimationWorkletThread(std::move(workerLoaderProxy),
-                                     workerObjectProxy,
-                                     parentFrameTaskRunners),
+                                     workerObjectProxy),
       m_workerObjectProxy(workerObjectProxy),
       m_timeOrigin(timeOrigin) {}
 

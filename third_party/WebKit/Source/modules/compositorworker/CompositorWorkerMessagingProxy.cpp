@@ -20,7 +20,6 @@ CompositorWorkerMessagingProxy::~CompositorWorkerMessagingProxy() {}
 std::unique_ptr<WorkerThread>
 CompositorWorkerMessagingProxy::createWorkerThread(double originTime) {
   return CompositorWorkerThread::create(loaderProxy(), workerObjectProxy(),
-                                        getParentFrameTaskRunners(),
                                         originTime);
 }
 

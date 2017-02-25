@@ -90,13 +90,14 @@ class AnimationWorkletThreadTest : public ::testing::Test {
 
   std::unique_ptr<AnimationWorkletThread> createAnimationWorkletThread() {
     std::unique_ptr<AnimationWorkletThread> thread =
-        AnimationWorkletThread::create(nullptr, *m_reportingProxy,
-                                       ParentFrameTaskRunners::create(nullptr));
-    thread->start(WorkerThreadStartupData::create(
-        KURL(ParsedURLString, "http://fake.url/"), "fake user agent", "",
-        nullptr, DontPauseWorkerGlobalScopeOnStart, nullptr, "",
-        m_securityOrigin.get(), nullptr, WebAddressSpaceLocal, nullptr, nullptr,
-        WorkerV8Settings::Default()));
+        AnimationWorkletThread::create(nullptr, *m_reportingProxy);
+    thread->start(
+        WorkerThreadStartupData::create(
+            KURL(ParsedURLString, "http://fake.url/"), "fake user agent", "",
+            nullptr, DontPauseWorkerGlobalScopeOnStart, nullptr, "",
+            m_securityOrigin.get(), nullptr, WebAddressSpaceLocal, nullptr,
+            nullptr, WorkerV8Settings::Default()),
+        ParentFrameTaskRunners::create(nullptr));
     return thread;
   }
 

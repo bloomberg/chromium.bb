@@ -119,11 +119,9 @@ class MockWorkerThreadLifecycleObserver final
 class WorkerThreadForTest : public WorkerThread {
  public:
   WorkerThreadForTest(WorkerLoaderProxyProvider* mockWorkerLoaderProxyProvider,
-                      WorkerReportingProxy& mockWorkerReportingProxy,
-                      ParentFrameTaskRunners* parentFrameTaskRunners)
+                      WorkerReportingProxy& mockWorkerReportingProxy)
       : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider),
-                     mockWorkerReportingProxy,
-                     parentFrameTaskRunners),
+                     mockWorkerReportingProxy),
         m_workerBackingThread(
             WorkerBackingThread::createForTest("Test thread")) {}
 
@@ -138,7 +136,8 @@ class WorkerThreadForTest : public WorkerThread {
       std::unique_ptr<WorkerThreadStartupData>) override;
 
   void startWithSourceCode(SecurityOrigin* securityOrigin,
-                           const String& source) {
+                           const String& source,
+                           ParentFrameTaskRunners* parentFrameTaskRunners) {
     std::unique_ptr<Vector<CSPHeaderAndType>> headers =
         WTF::makeUnique<Vector<CSPHeaderAndType>>();
     CSPHeaderAndType headerAndType("contentSecurityPolicy",
@@ -148,10 +147,11 @@ class WorkerThreadForTest : public WorkerThread {
     WorkerClients* clients = nullptr;
 
     start(WorkerThreadStartupData::create(
-        KURL(ParsedURLString, "http://fake.url/"), "fake user agent", source,
-        nullptr, DontPauseWorkerGlobalScopeOnStart, headers.get(), "",
-        securityOrigin, clients, WebAddressSpaceLocal, nullptr, nullptr,
-        WorkerV8Settings::Default()));
+              KURL(ParsedURLString, "http://fake.url/"), "fake user agent",
+              source, nullptr, DontPauseWorkerGlobalScopeOnStart, headers.get(),
+              "", securityOrigin, clients, WebAddressSpaceLocal, nullptr,
+              nullptr, WorkerV8Settings::Default()),
+          parentFrameTaskRunners);
   }
 
   void waitForInit() {

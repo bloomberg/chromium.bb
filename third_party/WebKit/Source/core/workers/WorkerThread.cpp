@@ -104,13 +104,15 @@ WorkerThread::~WorkerThread() {
   exitCodeHistogram.count(static_cast<int>(m_exitCode));
 }
 
-void WorkerThread::start(std::unique_ptr<WorkerThreadStartupData> startupData) {
+void WorkerThread::start(std::unique_ptr<WorkerThreadStartupData> startupData,
+                         ParentFrameTaskRunners* parentFrameTaskRunners) {
   DCHECK(isMainThread());
 
   if (m_requestedToStart)
     return;
 
   m_requestedToStart = true;
+  m_parentFrameTaskRunners = parentFrameTaskRunners;
   workerBackingThread().backingThread().postTask(
       BLINK_FROM_HERE, crossThreadBind(&WorkerThread::initializeOnWorkerThread,
                                        crossThreadUnretained(this),
@@ -284,14 +286,12 @@ bool WorkerThread::isForciblyTerminated() {
 }
 
 WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-                           WorkerReportingProxy& workerReportingProxy,
-                           ParentFrameTaskRunners* parentFrameTaskRunners)
+                           WorkerReportingProxy& workerReportingProxy)
     : m_workerThreadId(getNextWorkerThreadId()),
       m_forcibleTerminationDelayInMs(kForcibleTerminationDelayInMs),
       m_inspectorTaskRunner(WTF::makeUnique<InspectorTaskRunner>()),
       m_workerLoaderProxy(workerLoaderProxy),
       m_workerReportingProxy(workerReportingProxy),
-      m_parentFrameTaskRunners(parentFrameTaskRunners),
       m_shutdownEvent(WTF::wrapUnique(
           new WaitableEvent(WaitableEvent::ResetPolicy::Manual,
                             WaitableEvent::InitialState::NonSignaled))),

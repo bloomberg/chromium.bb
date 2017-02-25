@@ -38,12 +38,10 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
  public:
   DedicatedWorkerThreadForTest(
       WorkerLoaderProxyProvider* workerLoaderProxyProvider,
-      InProcessWorkerObjectProxy& workerObjectProxy,
-      ParentFrameTaskRunners* parentFrameTaskRunners)
+      InProcessWorkerObjectProxy& workerObjectProxy)
       : DedicatedWorkerThread(
             WorkerLoaderProxy::create(workerLoaderProxyProvider),
             workerObjectProxy,
-            parentFrameTaskRunners,
             monotonicallyIncreasingTime()) {
     m_workerBackingThread = WorkerBackingThread::createForTest("Test thread");
   }
@@ -96,8 +94,7 @@ class InProcessWorkerMessagingProxyForTest
     m_mockWorkerLoaderProxyProvider =
         WTF::makeUnique<MockWorkerLoaderProxyProvider>();
     m_workerThread = WTF::wrapUnique(new DedicatedWorkerThreadForTest(
-        m_mockWorkerLoaderProxyProvider.get(), workerObjectProxy(),
-        getParentFrameTaskRunners()));
+        m_mockWorkerLoaderProxyProvider.get(), workerObjectProxy()));
     m_mockWorkerThreadLifecycleObserver = new MockWorkerThreadLifecycleObserver(
         m_workerThread->getWorkerThreadLifecycleContext());
     EXPECT_CALL(*m_mockWorkerThreadLifecycleObserver,
@@ -119,13 +116,15 @@ class InProcessWorkerMessagingProxyForTest
     CSPHeaderAndType headerAndType("contentSecurityPolicy",
                                    ContentSecurityPolicyHeaderTypeReport);
     headers->push_back(headerAndType);
-    workerThread()->start(WorkerThreadStartupData::create(
-        scriptURL, "fake user agent", source, nullptr /* cachedMetaData */,
-        DontPauseWorkerGlobalScopeOnStart, headers.get(),
-        "" /* referrerPolicy */, m_securityOrigin.get(),
-        nullptr /* workerClients */, WebAddressSpaceLocal,
-        nullptr /* originTrialTokens */, nullptr /* workerSettings */,
-        WorkerV8Settings::Default()));
+    workerThread()->start(
+        WorkerThreadStartupData::create(
+            scriptURL, "fake user agent", source, nullptr /* cachedMetaData */,
+            DontPauseWorkerGlobalScopeOnStart, headers.get(),
+            "" /* referrerPolicy */, m_securityOrigin.get(),
+            nullptr /* workerClients */, WebAddressSpaceLocal,
+            nullptr /* originTrialTokens */, nullptr /* workerSettings */,
+            WorkerV8Settings::Default()),
+        getParentFrameTaskRunners());
 
     workerInspectorProxy()->workerThreadCreated(
         toDocument(getExecutionContext()), m_workerThread.get(), scriptURL);

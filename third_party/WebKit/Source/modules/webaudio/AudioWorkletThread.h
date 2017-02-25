@@ -23,8 +23,7 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
  public:
   static std::unique_ptr<AudioWorkletThread> create(
       PassRefPtr<WorkerLoaderProxy>,
-      WorkerReportingProxy&,
-      ParentFrameTaskRunners*);
+      WorkerReportingProxy&);
   ~AudioWorkletThread() override;
 
   WorkerBackingThread& workerBackingThread() override;
@@ -47,9 +46,7 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
   bool isOwningBackingThread() const override { return false; }
 
  private:
-  AudioWorkletThread(PassRefPtr<WorkerLoaderProxy>,
-                     WorkerReportingProxy&,
-                     ParentFrameTaskRunners*);
+  AudioWorkletThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 };
 
 }  // namespace blink

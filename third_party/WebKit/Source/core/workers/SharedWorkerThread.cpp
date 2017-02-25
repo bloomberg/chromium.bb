@@ -41,21 +41,16 @@ namespace blink {
 std::unique_ptr<SharedWorkerThread> SharedWorkerThread::create(
     const String& name,
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    WorkerReportingProxy& workerReportingProxy,
-    ParentFrameTaskRunners* parentFrameTaskRunners) {
-  return WTF::wrapUnique(
-      new SharedWorkerThread(name, std::move(workerLoaderProxy),
-                             workerReportingProxy, parentFrameTaskRunners));
+    WorkerReportingProxy& workerReportingProxy) {
+  return WTF::wrapUnique(new SharedWorkerThread(
+      name, std::move(workerLoaderProxy), workerReportingProxy));
 }
 
 SharedWorkerThread::SharedWorkerThread(
     const String& name,
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    WorkerReportingProxy& workerReportingProxy,
-    ParentFrameTaskRunners* parentFrameTaskRunners)
-    : WorkerThread(std::move(workerLoaderProxy),
-                   workerReportingProxy,
-                   parentFrameTaskRunners),
+    WorkerReportingProxy& workerReportingProxy)
+    : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy),
       m_workerBackingThread(WorkerBackingThread::create("SharedWorker Thread")),
       m_name(name.isolatedCopy()) {}
 

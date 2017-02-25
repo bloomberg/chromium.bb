@@ -108,16 +108,17 @@ class CompositorWorkerThreadTest : public ::testing::Test {
 
   std::unique_ptr<CompositorWorkerThread> createCompositorWorker() {
     std::unique_ptr<CompositorWorkerThread> workerThread =
-        CompositorWorkerThread::create(nullptr, *m_objectProxy,
-                                       m_parentFrameTaskRunners.get(), 0);
+        CompositorWorkerThread::create(nullptr, *m_objectProxy, 0);
     WorkerClients* clients = WorkerClients::create();
     provideCompositorWorkerProxyClientTo(clients,
                                          new TestCompositorWorkerProxyClient);
-    workerThread->start(WorkerThreadStartupData::create(
-        KURL(ParsedURLString, "http://fake.url/"), "fake user agent",
-        "//fake source code", nullptr, DontPauseWorkerGlobalScopeOnStart,
-        nullptr, "", m_securityOrigin.get(), clients, WebAddressSpaceLocal,
-        nullptr, nullptr, WorkerV8Settings::Default()));
+    workerThread->start(
+        WorkerThreadStartupData::create(
+            KURL(ParsedURLString, "http://fake.url/"), "fake user agent",
+            "//fake source code", nullptr, DontPauseWorkerGlobalScopeOnStart,
+            nullptr, "", m_securityOrigin.get(), clients, WebAddressSpaceLocal,
+            nullptr, nullptr, WorkerV8Settings::Default()),
+        m_parentFrameTaskRunners.get());
     return workerThread;
   }
 

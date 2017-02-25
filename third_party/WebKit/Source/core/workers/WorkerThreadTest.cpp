@@ -45,9 +45,8 @@ class WorkerThreadTest : public ::testing::Test {
     m_reportingProxy = WTF::makeUnique<MockWorkerReportingProxy>();
     m_securityOrigin =
         SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
-    m_workerThread = WTF::wrapUnique(
-        new WorkerThreadForTest(m_loaderProxyProvider.get(), *m_reportingProxy,
-                                ParentFrameTaskRunners::create(nullptr)));
+    m_workerThread = WTF::wrapUnique(new WorkerThreadForTest(
+        m_loaderProxyProvider.get(), *m_reportingProxy));
     m_lifecycleObserver = new MockWorkerThreadLifecycleObserver(
         m_workerThread->getWorkerThreadLifecycleContext());
   }
@@ -58,15 +57,17 @@ class WorkerThreadTest : public ::testing::Test {
   }
 
   void start() {
-    m_workerThread->startWithSourceCode(m_securityOrigin.get(),
-                                        "//fake source code");
+    m_workerThread->startWithSourceCode(
+        m_securityOrigin.get(), "//fake source code",
+        ParentFrameTaskRunners::create(nullptr));
   }
 
   void startWithSourceCodeNotToFinish() {
     // Use a JavaScript source code that makes an infinite loop so that we
     // can catch some kind of issues as a timeout.
-    m_workerThread->startWithSourceCode(m_securityOrigin.get(),
-                                        "while(true) {}");
+    m_workerThread->startWithSourceCode(
+        m_securityOrigin.get(), "while(true) {}",
+        ParentFrameTaskRunners::create(nullptr));
   }
 
   void setForcibleTerminationDelayInMs(long long forcibleTerminationDelayInMs) {
@@ -282,7 +283,8 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           m_securityOrigin.get(), nullptr, /* workerClients */
           WebAddressSpaceLocal, nullptr /* originTrialToken */,
           nullptr /* WorkerSettings */, WorkerV8Settings::Default());
-  m_workerThread->start(std::move(startupData));
+  m_workerThread->start(std::move(startupData),
+                        ParentFrameTaskRunners::create(nullptr));
 
   // Used to wait for worker thread termination in a debugger task on the
   // worker thread.

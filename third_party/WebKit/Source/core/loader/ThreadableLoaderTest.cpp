@@ -239,12 +239,13 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
     m_securityOrigin = document().getSecurityOrigin();
     m_parentFrameTaskRunners =
         ParentFrameTaskRunners::create(&m_dummyPageHolder->frame());
-    m_workerThread = WTF::wrapUnique(new WorkerThreadForTest(
-        this, *m_mockWorkerReportingProxy, m_parentFrameTaskRunners.get()));
+    m_workerThread = WTF::wrapUnique(
+        new WorkerThreadForTest(this, *m_mockWorkerReportingProxy));
 
     expectWorkerLifetimeReportingCalls();
     m_workerThread->startWithSourceCode(m_securityOrigin.get(),
-                                        "//fake source code");
+                                        "//fake source code",
+                                        m_parentFrameTaskRunners.get());
     m_workerThread->waitForInit();
   }
 

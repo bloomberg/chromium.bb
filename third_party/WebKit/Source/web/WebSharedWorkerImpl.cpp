@@ -412,14 +412,13 @@ void WebSharedWorkerImpl::onScriptLoaderFinished() {
   m_parentFrameTaskRunners = ParentFrameTaskRunners::create(nullptr);
 
   m_loaderProxy = WorkerLoaderProxy::create(this);
-  m_workerThread = SharedWorkerThread::create(m_name, m_loaderProxy, *this,
-                                              m_parentFrameTaskRunners.get());
+  m_workerThread = SharedWorkerThread::create(m_name, m_loaderProxy, *this);
   InspectorInstrumentation::scriptImported(m_loadingDocument,
                                            m_mainScriptLoader->identifier(),
                                            m_mainScriptLoader->script());
   m_mainScriptLoader.clear();
 
-  workerThread()->start(std::move(startupData));
+  workerThread()->start(std::move(startupData), m_parentFrameTaskRunners.get());
   m_workerInspectorProxy->workerThreadCreated(toDocument(m_loadingDocument),
                                               workerThread(), m_url);
   m_client->workerScriptLoaded();

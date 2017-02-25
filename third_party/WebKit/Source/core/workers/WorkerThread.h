@@ -106,7 +106,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   virtual ~WorkerThread();
 
   // Called on the main thread.
-  void start(std::unique_ptr<WorkerThreadStartupData>);
+  void start(std::unique_ptr<WorkerThreadStartupData>, ParentFrameTaskRunners*);
   void terminate();
 
   // Called on the main thread. Internally calls terminateInternal() and wait
@@ -175,9 +175,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   }
 
  protected:
-  WorkerThread(PassRefPtr<WorkerLoaderProxy>,
-               WorkerReportingProxy&,
-               ParentFrameTaskRunners*);
+  WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 
   // Factory method for creating a new worker context for the thread.
   // Called on the worker thread.
