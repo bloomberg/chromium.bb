@@ -370,7 +370,7 @@ def v8_value_to_local_cpp_variadic_value(method, argument, index, return_promise
     }
 
 
-def v8_value_to_local_cpp_value(method, argument, index, return_promise=False, restricted_float=False):
+def v8_value_to_local_cpp_value(method, argument, index, return_promise=False):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
@@ -378,8 +378,7 @@ def v8_value_to_local_cpp_value(method, argument, index, return_promise=False, r
         return v8_value_to_local_cpp_variadic_value(method, argument, index, return_promise)
     return idl_type.v8_value_to_local_cpp_value(extended_attributes, 'info[%s]' % index,
                                                 name, index=index, declare_variable=False,
-                                                use_exception_state=method.returns_promise,
-                                                restricted_float=restricted_float)
+                                                use_exception_state=method.returns_promise)
 
 
 ################################################################################

@@ -545,7 +545,7 @@ def v8_conversion_is_trivial(idl_type):
 IdlType.v8_conversion_is_trivial = property(v8_conversion_is_trivial)
 
 
-def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate, restricted_float=False):
+def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate):
     if idl_type.name == 'void':
         return ''
 
@@ -620,13 +620,14 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
 
 
 # FIXME: this function should be refactored, as this takes too many flags.
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True, isolate='info.GetIsolate()', bailout_return_value=None, use_exception_state=False, restricted_float=False):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True,
+                                isolate='info.GetIsolate()', bailout_return_value=None, use_exception_state=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
 
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, raw_type=True)
     idl_type = idl_type.preprocessed_type
 
-    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate, restricted_float=restricted_float)
+    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate)
 
     # Optional expression that returns a value to be assigned to the local variable.
     assign_expression = None

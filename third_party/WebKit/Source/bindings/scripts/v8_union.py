@@ -150,5 +150,5 @@ def member_context(member, interfaces_info):
         'type_name': member.name,
         'v8_value_to_local_cpp_value': member.v8_value_to_local_cpp_value(
             {}, 'v8Value', 'cppValue', isolate='isolate',
-            use_exception_state=True, restricted_float=True),
+            use_exception_state=True)
     }
