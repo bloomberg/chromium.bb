@@ -5352,7 +5352,7 @@ static void build_head_cdfs(const aom_prob *pdf_model,
                             const aom_prob *blockz_model,
                             aom_cdf_prob cdf_head[ENTROPY_TOKENS + 1]) {
   int i, p, p1, p2, phead[6], prob_NZ, prob_EOB_1, prob_EOB_2p, prob_NEOB_1,
-      prob_NEOB_2p, sum = 0;
+      prob_NEOB_2p;
   int prob8_blocknz;
 
   assert(pdf_model[2] != 0);
@@ -5412,7 +5412,6 @@ static void build_head_cdfs(const aom_prob *pdf_model,
     phead[i] = (prob8_blocknz * phead[i] + 128) >> 8;
   }
 
-  sum = phead[0];
   for (i = 1; i < 5; ++i) {
     p = AOMMAX(1, AOMMIN(CDF_PROB_TOP - (5 - i) - cdf_head[i - 1], phead[i]));
     cdf_head[i] = cdf_head[i - 1] + p;
