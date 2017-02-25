@@ -6,3 +6,5 @@ per-file *contextual_search*=mdjones@chromium.org
 per-file *contextual_search*=twellington@chromium.org
 
 per-file *crushed_sprite*=twellington@chromium.org
+
+# COMPONENT: UI>Browser>Mobile
