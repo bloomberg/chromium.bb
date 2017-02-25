@@ -1,0 +1,63 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 8, 784, 18],
+          "reason": "forced by layout"
+        }
+      ]
+    },
+    {
+      "name": "LayoutInline (relative positioned) DIV id='block'",
+      "position": [68, 7],
+      "bounds": [374, 19],
+      "drawsContent": true,
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutInline (relative positioned) DIV id='block'",
+          "rect": [0, 0, 374, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [1, 1, 372, 17],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline (relative positioned) DIV id='block'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'When this layer moves it shouldn't generate a repaint rect.'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

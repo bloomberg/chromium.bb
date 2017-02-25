@@ -1,0 +1,427 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [913, 235],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 913, 235],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 8, 897, 219],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 8, 897, 214],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [313, 0, 600, 500],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 600, 500],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [313, 235, 600, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [491, 8, 414, 484],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [491, 8, 414, 484],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'AAAA'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'BBBB'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'CCCC'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'DDDD'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'EEEE'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'FFFF'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'GGGG'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'HHHH'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'IIII JJJJ'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'KKKK'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'LLLL'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'MMMM'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'NNNN'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [913, 235],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [200, 0, 913, 235],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 913, 235],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 913, 235],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [208, 8, 897, 219],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 8, 897, 219],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [208, 8, 897, 214],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 8, 897, 214],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [513, 235, 600, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [513, 235, 400, 15],
+          "reason": "scroll"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'AAAA'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'BBBB'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'CCCC'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'DDDD'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'EEEE'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'FFFF'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'GGGG'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'HHHH'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'IIII JJJJ'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'KKKK'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'LLLL'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'MMMM'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'NNNN'",
+      "reason": "bounds change"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [400, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 913, 235],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [-513, 0, 913, 235],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [-505, 8, 897, 219],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [-505, 8, 897, 214],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 400, 600],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 235, 400, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [47, 8, 345, 584],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [47, 8, 345, 565],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'AAAA BBBB CCCC'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'DDDD EEEE FFFF'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'KKKK LLLL MMMM'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'NNNN'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [400, 0, 400, 600],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [447, 8, 345, 584],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [47, 8, 345, 584],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [447, 8, 345, 565],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [47, 8, 345, 565],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'AAAA BBBB CCCC'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'DDDD EEEE FFFF'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'KKKK LLLL MMMM'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'NNNN'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

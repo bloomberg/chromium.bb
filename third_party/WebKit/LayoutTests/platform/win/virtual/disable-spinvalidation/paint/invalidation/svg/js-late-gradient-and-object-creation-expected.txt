@@ -1,0 +1,122 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [0, 15, 759, 362],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 247, 759, 130],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 247, 759, 130],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 130, 596, 130],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 130, 596, 130],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 15, 449, 127],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 15, 449, 127],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGResourceLinearGradient linearGradient id='fillLinearGradient'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGGradientStop stop",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGGradientStop stop",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGResourceLinearGradient linearGradient id='strokeLinearGradient'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGGradientStop stop",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='content'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Gradient on fill'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Gradient on stroke'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Gradient on fill/stroke'",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+
