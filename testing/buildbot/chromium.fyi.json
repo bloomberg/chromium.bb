@@ -308,15 +308,6 @@
         },
         "test": "unit_tests"
       }
-    ],
-    "scripts": [
-      {
-        "args": [
-          "content_browsertests"
-        ],
-        "name": "count_filtered_tests_content_browsertests",
-        "script": "count_filtered_tests.py"
-      }
     ]
   },
   "CFI Linux": {
