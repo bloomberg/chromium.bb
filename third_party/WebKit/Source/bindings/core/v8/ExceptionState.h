@@ -104,6 +104,12 @@ class CORE_EXPORT ExceptionState {
     }
   }
 
+  void throwDOMException(ExceptionCode, const char* message);
+  void throwRangeError(const char* message);
+  void throwSecurityError(const char* sanitizedMessage,
+                          const char* unsanitizedMessage = nullptr);
+  void throwTypeError(const char* message);
+
   virtual void throwDOMException(ExceptionCode, const String& message);
   virtual void throwRangeError(const String& message);
   virtual void throwSecurityError(const String& sanitizedMessage,

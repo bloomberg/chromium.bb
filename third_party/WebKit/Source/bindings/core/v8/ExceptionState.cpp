@@ -37,6 +37,23 @@
 
 namespace blink {
 
+void ExceptionState::throwDOMException(ExceptionCode ec, const char* message) {
+  throwDOMException(ec, String(message));
+}
+
+void ExceptionState::throwRangeError(const char* message) {
+  throwRangeError(String(message));
+}
+
+void ExceptionState::throwSecurityError(const char* sanitizedMessage,
+                                        const char* unsanitizedMessage) {
+  throwSecurityError(String(sanitizedMessage), String(unsanitizedMessage));
+}
+
+void ExceptionState::throwTypeError(const char* message) {
+  throwTypeError(String(message));
+}
+
 void ExceptionState::throwDOMException(ExceptionCode ec,
                                        const String& message) {
   // SecurityError is thrown via ::throwSecurityError, and _careful_
