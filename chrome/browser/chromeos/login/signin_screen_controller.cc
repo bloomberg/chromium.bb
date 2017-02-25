@@ -23,7 +23,7 @@ SignInScreenController::SignInScreenController(
   DCHECK(!instance_);
   instance_ = this;
 
-  gaia_screen_->SetScreenHandler(oobe_ui_->GetGaiaScreenView());
+  gaia_screen_->set_view(oobe_ui_->GetGaiaScreenView());
   std::string display_type = oobe_ui->display_type();
   user_selection_screen_.reset(new ChromeUserSelectionScreen(display_type));
   user_selection_screen_->SetLoginDisplayDelegate(login_display_delegate);
@@ -91,7 +91,6 @@ void SignInScreenController::CheckUserStatus(const AccountId& account_id) {
 void SignInScreenController::SetWebUIHandler(
     LoginDisplayWebUIHandler* webui_handler) {
   webui_handler_ = webui_handler;
-  gaia_screen_->SetLegacyHandler(webui_handler_);
   user_selection_screen_->SetHandler(webui_handler_);
 }
 

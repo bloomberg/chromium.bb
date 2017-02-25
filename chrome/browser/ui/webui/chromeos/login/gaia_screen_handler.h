@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
+#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -31,6 +32,7 @@ class SigninScreenHandlerDelegate;
 
 // A class that handles WebUI hooks in Gaia screen.
 class GaiaScreenHandler : public BaseScreenHandler,
+                          public GaiaView,
                           public NetworkPortalDetector::Observer {
  public:
   enum FrameState {
@@ -45,11 +47,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
       const scoped_refptr<NetworkStateInformer>& network_state_informer);
   ~GaiaScreenHandler() override;
 
-  // Decides whether an auth extension should be pre-loaded. If it should,
-  // pre-loads it.
-  void MaybePreloadAuthExtension();
-
-  void DisableRestrictiveProxyCheckForTest();
+  // GaiaView:
+  void MaybePreloadAuthExtension() override;
+  void DisableRestrictiveProxyCheckForTest() override;
 
  private:
   // TODO (antrim@): remove this dependency.

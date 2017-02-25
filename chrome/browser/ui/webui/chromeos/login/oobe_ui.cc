@@ -472,7 +472,7 @@ OobeUI::GetSupervisedUserCreationScreenView() {
   return supervised_user_creation_screen_view_;
 }
 
-GaiaScreenHandler* OobeUI::GetGaiaScreenView() {
+GaiaView* OobeUI::GetGaiaScreenView() {
   return gaia_screen_handler_;
 }
 

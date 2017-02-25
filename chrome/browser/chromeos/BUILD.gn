@@ -804,6 +804,7 @@ source_set("chromeos") {
     "login/screens/eula_view.h",
     "login/screens/gaia_screen.cc",
     "login/screens/gaia_screen.h",
+    "login/screens/gaia_view.h",
     "login/screens/hid_detection_screen.cc",
     "login/screens/hid_detection_screen.h",
     "login/screens/hid_detection_view.h",

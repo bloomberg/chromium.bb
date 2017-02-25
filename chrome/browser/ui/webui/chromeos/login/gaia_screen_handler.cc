@@ -240,6 +240,33 @@ GaiaScreenHandler::~GaiaScreenHandler() {
     network_portal_detector_->RemoveObserver(this);
 }
 
+void GaiaScreenHandler::MaybePreloadAuthExtension() {
+  VLOG(1) << "MaybePreloadAuthExtension";
+
+  if (!network_portal_detector_) {
+    NetworkPortalDetectorImpl* detector = new NetworkPortalDetectorImpl(
+        g_browser_process->system_request_context(), false);
+    detector->set_portal_test_url(GURL(kRestrictiveProxyURL));
+    network_portal_detector_.reset(detector);
+    network_portal_detector_->AddObserver(this);
+    network_portal_detector_->Enable(true);
+  }
+
+  // If cookies clearing was initiated or |dns_clear_task_running_| then auth
+  // extension showing has already been initiated and preloading is pointless.
+  if (signin_screen_handler_->ShouldLoadGaia() && !gaia_silent_load_ &&
+      !cookies_cleared_ && !dns_clear_task_running_ &&
+      network_state_informer_->state() == NetworkStateInformer::ONLINE) {
+    gaia_silent_load_ = true;
+    gaia_silent_load_network_ = network_state_informer_->network_path();
+    LoadAuthExtension(true /* force */, false /* offline */);
+  }
+}
+
+void GaiaScreenHandler::DisableRestrictiveProxyCheckForTest() {
+  disable_restrictive_proxy_check_for_test_ = true;
+}
+
 void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
@@ -893,31 +920,6 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   }
 }
 
-void GaiaScreenHandler::MaybePreloadAuthExtension() {
-  VLOG(1) << "MaybePreloadAuthExtension";
-
-  if (!network_portal_detector_) {
-    NetworkPortalDetectorImpl* detector = new NetworkPortalDetectorImpl(
-        g_browser_process->system_request_context(), false);
-    detector->set_portal_test_url(GURL(kRestrictiveProxyURL));
-    network_portal_detector_.reset(detector);
-    network_portal_detector_->AddObserver(this);
-    network_portal_detector_->Enable(true);
-  }
-
-  // If cookies clearing was initiated or |dns_clear_task_running_| then auth
-  // extension showing has already been initiated and preloading is pointless.
-  if (signin_screen_handler_->ShouldLoadGaia() &&
-      !gaia_silent_load_ &&
-      !cookies_cleared_ &&
-      !dns_clear_task_running_ &&
-      network_state_informer_->state() == NetworkStateInformer::ONLINE) {
-    gaia_silent_load_ = true;
-    gaia_silent_load_network_ = network_state_informer_->network_path();
-    LoadAuthExtension(true /* force */, false /* offline */);
-  }
-}
-
 void GaiaScreenHandler::ShowWhitelistCheckFailedError() {
   base::DictionaryValue params;
   params.SetBoolean("enterpriseManaged",
@@ -972,10 +974,6 @@ SigninScreenHandlerDelegate* GaiaScreenHandler::Delegate() {
 bool GaiaScreenHandler::IsRestrictiveProxy() const {
   return !disable_restrictive_proxy_check_for_test_ &&
          !IsOnline(captive_portal_status_);
-}
-
-void GaiaScreenHandler::DisableRestrictiveProxyCheckForTest() {
-  disable_restrictive_proxy_check_for_test_ = true;
 }
 
 }  // namespace chromeos

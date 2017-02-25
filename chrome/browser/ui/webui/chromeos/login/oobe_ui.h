@@ -41,6 +41,7 @@ class EnrollmentScreenView;
 class EulaView;
 class ErrorScreen;
 class ErrorScreenHandler;
+class GaiaView;
 class GaiaScreenHandler;
 class HIDDetectionView;
 class HostPairingScreenView;
@@ -116,7 +117,7 @@ class OobeUI : public content::WebUIController,
   ControllerPairingScreenView* GetControllerPairingScreenView();
   HostPairingScreenView* GetHostPairingScreenView();
   DeviceDisabledScreenView* GetDeviceDisabledScreenView();
-  GaiaScreenHandler* GetGaiaScreenView();
+  GaiaView* GetGaiaScreenView();
   UserBoardView* GetUserBoardView();
 
   // ShutdownPolicyHandler::Delegate
