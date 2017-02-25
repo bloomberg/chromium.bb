@@ -293,6 +293,46 @@ static bool GetDefaultOutputDevice(AudioDeviceID* device) {
   return GetDefaultDevice(device, false);
 }
 
+// Returns the total number of channels on a device; regardless of what the
+// device's preferred rendering layout looks like. Should only be used for the
+// channel count when a device has more than kMaxConcurrentChannels.
+static bool GetDeviceTotalChannelCount(AudioDeviceID device,
+                                       AudioObjectPropertyScope scope,
+                                       int* channels) {
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
+  CHECK(channels);
+
+  // Get the stream configuration of the device in an AudioBufferList (with the
+  // buffer pointers set to nullptr) which describes the list of streams and the
+  // number of channels in each stream.
+  AudioObjectPropertyAddress pa = {kAudioDevicePropertyStreamConfiguration,
+                                   scope, kAudioObjectPropertyElementMaster};
+
+  UInt32 size;
+  OSStatus result = AudioObjectGetPropertyDataSize(device, &pa, 0, 0, &size);
+  if (result != noErr || !size)
+    return false;
+
+  std::unique_ptr<uint8_t[]> list_storage(new uint8_t[size]);
+  AudioBufferList* buffer_list =
+      reinterpret_cast<AudioBufferList*>(list_storage.get());
+
+  result = AudioObjectGetPropertyData(device, &pa, 0, 0, &size, buffer_list);
+  if (result != noErr)
+    return false;
+
+  // Determine number of channels based on the AudioBufferList.
+  // |mNumberBuffers] is the  number of interleaved channels in the buffer.
+  // If the number is 1, the buffer is noninterleaved.
+  *channels = 0;
+  for (UInt32 i = 0; i < buffer_list->mNumberBuffers; ++i)
+    *channels += buffer_list->mBuffers[i].mNumberChannels;
+
+  DVLOG(1) << (scope == kAudioDevicePropertyScopeInput ? "Input" : "Output")
+           << " total channels: " << *channels;
+  return true;
+}
+
 class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
  public:
   AudioPowerObserver()
@@ -401,41 +441,77 @@ bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
                                         int* channels) {
   DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   CHECK(channels);
-  const bool is_input = (scope == kAudioDevicePropertyScopeInput);
-  DVLOG(1) << "GetDeviceChannels(id=0x" << std::hex << device
-           << ", is_input=" << is_input << ")";
 
-  // Get the stream configuration of the device in an AudioBufferList (with the
-  // buffer pointers set to NULL) which describes the list of streams and the
-  // number of channels in each stream.
-  AudioObjectPropertyAddress pa;
-  pa.mSelector = kAudioDevicePropertyStreamConfiguration;
-  pa.mScope = scope;
-  pa.mElement = kAudioObjectPropertyElementMaster;
+  // If the device has more channels than possible for layouts to express, use
+  // the total count of channels on the device; as of this writing, macOS will
+  // only return up to 8 channels in any layout. To allow WebAudio to work with
+  // > 8 channel devices, we must use the total channel count instead of the
+  // channel count of the preferred layout.
+  if (GetDeviceTotalChannelCount(device, scope, channels) &&
+      *channels > kMaxConcurrentChannels) {
+    return true;
+  }
 
+  AudioObjectPropertyAddress pa = {kAudioDevicePropertyPreferredChannelLayout,
+                                   scope, kAudioObjectPropertyElementMaster};
   UInt32 size;
   OSStatus result = AudioObjectGetPropertyDataSize(device, &pa, 0, 0, &size);
   if (result != noErr || !size)
     return false;
 
-  std::unique_ptr<uint8_t[]> list_storage(new uint8_t[size]);
-  AudioBufferList& buffer_list =
-      *reinterpret_cast<AudioBufferList*>(list_storage.get());
-
-  result = AudioObjectGetPropertyData(device, &pa, 0, 0, &size, &buffer_list);
+  std::unique_ptr<uint8_t[]> layout_storage(new uint8_t[size]);
+  AudioChannelLayout* layout =
+      reinterpret_cast<AudioChannelLayout*>(layout_storage.get());
+  result = AudioObjectGetPropertyData(device, &pa, 0, 0, &size, layout);
   if (result != noErr)
     return false;
 
-  // Determine number of channels based on the AudioBufferList.
-  // |mNumberBuffers] is the  number of interleaved channels in the buffer.
-  // If the number is 1, the buffer is noninterleaved.
-  // TODO(henrika): add UMA stats to track utilized hardware configurations.
-  int num_channels = 0;
-  for (UInt32 i = 0; i < buffer_list.mNumberBuffers; ++i) {
-    num_channels += buffer_list.mBuffers[i].mNumberChannels;
+  // We don't want to have to know about all channel layout tags, so force OSX
+  // to give us the channel descriptions from the bitmap or tag if necessary.
+  const AudioChannelLayoutTag tag = layout->mChannelLayoutTag;
+  if (tag != kAudioChannelLayoutTag_UseChannelDescriptions) {
+    const bool is_bitmap = tag == kAudioChannelLayoutTag_UseChannelBitmap;
+    const AudioFormatPropertyID fa =
+        is_bitmap ? kAudioFormatProperty_ChannelLayoutForBitmap
+                  : kAudioFormatProperty_ChannelLayoutForTag;
+
+    if (is_bitmap) {
+      result = AudioFormatGetPropertyInfo(fa, sizeof(UInt32),
+                                          &layout->mChannelBitmap, &size);
+    } else {
+      result = AudioFormatGetPropertyInfo(fa, sizeof(AudioChannelLayoutTag),
+                                          &tag, &size);
+    }
+    if (result != noErr || !size)
+      return false;
+
+    layout_storage.reset(new uint8_t[size]);
+    layout = reinterpret_cast<AudioChannelLayout*>(layout_storage.get());
+    if (is_bitmap) {
+      result = AudioFormatGetProperty(fa, sizeof(UInt32),
+                                      &layout->mChannelBitmap, &size, layout);
+    } else {
+      result = AudioFormatGetProperty(fa, sizeof(AudioChannelLayoutTag), &tag,
+                                      &size, layout);
+    }
+    if (result != noErr)
+      return false;
   }
-  *channels = num_channels;
-  DVLOG(1) << "#channels: " << *channels;
+
+  // There is no channel info for stereo, assume so for mono as well.
+  if (layout->mNumberChannelDescriptions <= 2) {
+    *channels = layout->mNumberChannelDescriptions;
+  } else {
+    *channels = 0;
+    for (UInt32 i = 0; i < layout->mNumberChannelDescriptions; ++i) {
+      if (layout->mChannelDescriptions[i].mChannelLabel !=
+          kAudioChannelLabel_Unknown)
+        (*channels)++;
+    }
+  }
+
+  DVLOG(1) << (scope == kAudioDevicePropertyScopeInput ? "Input" : "Output")
+           << " channels: " << *channels;
   return true;
 }
 

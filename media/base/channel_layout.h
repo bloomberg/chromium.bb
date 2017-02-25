@@ -129,6 +129,10 @@ enum Channels {
   CHANNELS_MAX = SIDE_RIGHT, // Must always equal the largest value ever logged.
 };
 
+// The maximum number of concurrently active channels for all possible layouts.
+// ChannelLayoutToChannelCount() will never return a value higher than this.
+constexpr int kMaxConcurrentChannels = 8;
+
 // Returns the expected channel position in an interleaved stream.  Values of -1
 // mean the channel at that index is not used for that layout.  Values range
 // from 0 to ChannelLayoutToChannelCount(layout) - 1.
