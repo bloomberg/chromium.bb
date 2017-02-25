@@ -764,12 +764,14 @@ void PrecacheFetcher::OnManifestFetchComplete(int64_t host_visits,
     PrecacheManifest manifest;
 
     if (ParseProtoFromFetchResponse(*source.network_url_fetcher(), &manifest)) {
-      const int32_t len =
-          std::min(manifest.resource_size(),
-                   unfinished_work_->config_settings().top_resources_count());
       const base::Optional<std::vector<bool>> resource_bitset =
           GetResourceBitset(manifest, experiment_id_);
-      for (int i = 0; i < len; ++i) {
+      const int32_t included_resources_max =
+          unfinished_work_->config_settings().top_resources_count();
+      int32_t included_resources = 0;
+      for (int i = 0; i < manifest.resource_size() &&
+                      included_resources < included_resources_max;
+           ++i) {
         if ((!resource_bitset.has_value() || resource_bitset.value()[i]) &&
             manifest.resource(i).has_url()) {
           GURL url(manifest.resource(i).url());
@@ -777,8 +779,10 @@ void PrecacheFetcher::OnManifestFetchComplete(int64_t host_visits,
             double weight = ResourceWeight(
                 unfinished_work_->config_settings().resource_weight_function(),
                 manifest.resource(i).weight_ratio(), host_visits);
-            if (weight >= unfinished_work_->config_settings().min_weight())
+            if (weight >= unfinished_work_->config_settings().min_weight()) {
               resources_to_rank_.emplace_back(url, source.referrer(), weight);
+              ++included_resources;
+            }
           }
         }
       }

@@ -1094,6 +1094,65 @@ TEST_F(PrecacheFetcherTest, TopResourcesCount) {
   histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
 }
 
+TEST_F(PrecacheFetcherTest, TopResourcesCount_ResourceBitset) {
+  SetDefaultFlags();
+
+  std::unique_ptr<PrecacheUnfinishedWork> unfinished_work(
+      new PrecacheUnfinishedWork());
+  unfinished_work->set_start_time(base::Time::UnixEpoch().ToInternalValue());
+  unfinished_work->add_top_host()->set_hostname("good-manifest.com");
+
+  PrecacheConfigurationSettings config;
+  config.set_top_resources_count(2);
+
+  PrecacheManifest good_manifest;
+  good_manifest.add_resource()->set_url("http://good-manifest.com/retrieved");
+  good_manifest.add_resource()->set_url("http://good-manifest.com/skipped");
+  good_manifest.add_resource()->set_url("http://good-manifest.com/retrieved");
+  good_manifest.add_resource()->set_url("http://good-manifest.com/skipped");
+  good_manifest.add_resource()->set_url("http://good-manifest.com/retrieved");
+  (*good_manifest.mutable_experiments()
+        ->mutable_resources_by_experiment_group())[kExperimentID]
+      .set_deprecated_bitset(0b10101);
+
+  factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(),
+                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  factory_.SetFakeResponse(GURL(kGoodManifestURL),
+                           good_manifest.SerializeAsString(), net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+  factory_.SetFakeResponse(GURL("http://good-manifest.com/retrieved"), "good",
+                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+  base::HistogramTester histogram;
+
+  {
+    PrecacheFetcher precache_fetcher(
+        request_context_.get(), GURL(), std::string(),
+        std::move(unfinished_work), kExperimentID,
+        precache_database_.GetWeakPtr(), task_runner(), &precache_delegate_);
+    precache_fetcher.Start();
+
+    base::RunLoop().RunUntilIdle();
+
+    // Destroy the PrecacheFetcher after it has finished, to record metrics.
+  }
+
+  std::vector<GURL> expected_requested_urls;
+  expected_requested_urls.emplace_back(kConfigURL);
+  expected_requested_urls.emplace_back(kGoodManifestURL);
+  expected_requested_urls.emplace_back("http://good-manifest.com/retrieved");
+  expected_requested_urls.emplace_back("http://good-manifest.com/retrieved");
+
+  EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
+
+  EXPECT_TRUE(precache_delegate_.was_on_done_called());
+
+  histogram.ExpectUniqueSample("Precache.Fetch.PercentCompleted", 100, 1);
+  histogram.ExpectUniqueSample("Precache.Fetch.ResponseBytes.Total",
+                               url_callback_.total_response_bytes(), 1);
+  histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
+}
+
 // MaxBytesPerResource is impossible to test with net::FakeURLFetcherFactory:
 //
 // - The PrecacheFetcher::Fetcher's max_bytes logic only applies to network
