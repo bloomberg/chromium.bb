@@ -7,6 +7,7 @@
 
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_units.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -46,10 +47,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
 
   NGConstraintSpaceBuilder& SetMarginStrut(const NGMarginStrut& margin_strut);
 
-  NGConstraintSpaceBuilder& SetBfcOffset(const NGLogicalOffset& offset) {
-    bfc_offset_ = offset;
-    return *this;
-  }
+  NGConstraintSpaceBuilder& SetBfcOffset(const NGLogicalOffset& offset);
+
+  NGConstraintSpaceBuilder& SetClearanceOffset(
+      const WTF::Optional<LayoutUnit>& clearance_offset);
 
   // Creates a new constraint space. This may be called multiple times, for
   // example the constraint space will be different for a child which:
@@ -84,6 +85,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
   NGMarginStrut margin_strut_;
   NGLogicalOffset bfc_offset_;
   std::shared_ptr<NGExclusions> exclusions_;
+  WTF::Optional<LayoutUnit> clearance_offset_;
 };
 
 }  // namespace blink

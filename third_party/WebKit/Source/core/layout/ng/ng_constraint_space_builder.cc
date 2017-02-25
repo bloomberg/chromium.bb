@@ -71,6 +71,18 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetMarginStrut(
   return *this;
 }
 
+NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetBfcOffset(
+    const NGLogicalOffset& offset) {
+  bfc_offset_ = offset;
+  return *this;
+}
+
+NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetClearanceOffset(
+    const WTF::Optional<LayoutUnit>& clearance_offset) {
+  clearance_offset_ = clearance_offset;
+  return *this;
+}
+
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsFixedSizeInline(
     bool is_fixed_size_inline) {
   is_fixed_size_inline_ = is_fixed_size_inline;
@@ -153,11 +165,13 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
     }
   }
 
-  // Exclusions do not pass the formatting context boundary.
+  // Reset things that do not pass the Formatting Context boundary.
   std::shared_ptr<NGExclusions> exclusions(
       is_new_fc_ ? std::make_shared<NGExclusions>() : exclusions_);
   NGLogicalOffset bfc_offset = is_new_fc_ ? NGLogicalOffset() : bfc_offset_;
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
+  WTF::Optional<LayoutUnit> clearance_offset =
+      is_new_fc_ ? WTF::nullopt : clearance_offset_;
 
   if (is_in_parallel_flow) {
     return new NGConstraintSpace(
@@ -169,7 +183,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-        margin_strut, bfc_offset, exclusions);
+        margin_strut, bfc_offset, exclusions, clearance_offset);
   }
   return new NGConstraintSpace(
       out_writing_mode, static_cast<TextDirection>(text_direction_),
@@ -179,7 +193,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace(
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-      margin_strut, bfc_offset, exclusions);
+      margin_strut, bfc_offset, exclusions, clearance_offset);
 }
 
 }  // namespace blink

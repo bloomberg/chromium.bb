@@ -27,7 +27,8 @@ NGConstraintSpace::NGConstraintSpace(
     bool is_new_fc,
     const NGMarginStrut& margin_strut,
     const NGLogicalOffset& bfc_offset,
-    const std::shared_ptr<NGExclusions>& exclusions)
+    const std::shared_ptr<NGExclusions>& exclusions,
+    const WTF::Optional<LayoutUnit>& clearance_offset)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),
       initial_containing_block_size_(initial_containing_block_size),
@@ -45,7 +46,8 @@ NGConstraintSpace::NGConstraintSpace(
       direction_(static_cast<unsigned>(direction)),
       margin_strut_(margin_strut),
       bfc_offset_(bfc_offset),
-      exclusions_(exclusions) {}
+      exclusions_(exclusions),
+      clearance_offset_(clearance_offset) {}
 
 NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
@@ -129,12 +131,17 @@ void NGConstraintSpace::Subtract(const NGBoxFragment*) {
 }
 
 String NGConstraintSpace::ToString() const {
-  return String::format("Offset: %s,%s Size: %sx%s MarginStrut: %s",
-                        bfc_offset_.inline_offset.toString().ascii().data(),
-                        bfc_offset_.block_offset.toString().ascii().data(),
-                        AvailableSize().inline_size.toString().ascii().data(),
-                        AvailableSize().block_size.toString().ascii().data(),
-                        margin_strut_.ToString().ascii().data());
+  return String::format(
+      "Offset: %s,%s Size: %sx%s MarginStrut: %s"
+      " Clearance: %s",
+      bfc_offset_.inline_offset.toString().ascii().data(),
+      bfc_offset_.block_offset.toString().ascii().data(),
+      AvailableSize().inline_size.toString().ascii().data(),
+      AvailableSize().block_size.toString().ascii().data(),
+      margin_strut_.ToString().ascii().data(),
+      clearance_offset_.has_value()
+          ? clearance_offset_.value().toString().ascii().data()
+          : "none");
 }
 
 }  // namespace blink

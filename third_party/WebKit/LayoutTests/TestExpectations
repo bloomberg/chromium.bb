@@ -155,8 +155,9 @@ crbug.com/693510 compositing/reflections/nested-reflection-animated.html [ Failu
 # LayoutNG - is a new layout system for Blink.
 
 #### css2.1/20110323
-#### Passed: 109
-#### Skipped: 300
+#### Passed: 108
+#### Skipped: 301
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/margin-collapse-027.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-002.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-zero-height-wrap-001.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-zero-height-wrap-002.htm [ Skip ]
@@ -581,8 +582,9 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-change-composited-scro
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-siblings.html [ Skip ]
 
 #### fast/block/float
-#### Passed: 56
-#### Skipped: 150
+#### Passed: 57
+#### Skipped: 151
+crbug.com/635619 virtual/layout_ng/fast/block/float/max-width-clear-float-with-overflow-hidden.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Skip ]

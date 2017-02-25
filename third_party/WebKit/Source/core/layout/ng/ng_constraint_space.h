@@ -112,6 +112,10 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGLogicalOffset BfcOffset() const { return bfc_offset_; }
 
+  WTF::Optional<LayoutUnit> ClearanceOffset() const {
+    return clearance_offset_;
+  }
+
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   String ToString() const;
@@ -134,7 +138,8 @@ class CORE_EXPORT NGConstraintSpace final
                     bool is_new_fc,
                     const NGMarginStrut& margin_strut,
                     const NGLogicalOffset& bfc_offset,
-                    const std::shared_ptr<NGExclusions>& exclusions);
+                    const std::shared_ptr<NGExclusions>& exclusions,
+                    const WTF::Optional<LayoutUnit>& clearance_offset);
 
   NGPhysicalSize InitialContainingBlockSize() const {
     return initial_containing_block_size_;
@@ -166,6 +171,7 @@ class CORE_EXPORT NGConstraintSpace final
   NGMarginStrut margin_strut_;
   NGLogicalOffset bfc_offset_;
   const std::shared_ptr<NGExclusions> exclusions_;
+  WTF::Optional<LayoutUnit> clearance_offset_;
 };
 
 inline std::ostream& operator<<(std::ostream& stream,

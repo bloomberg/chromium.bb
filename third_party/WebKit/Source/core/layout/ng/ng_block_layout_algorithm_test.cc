@@ -2096,5 +2096,83 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionEmptyBlocksInNewBfc) {
               empty_block2->Offset());
 }
 
+// Verifies that we can correctly position blocks with clearance and
+// intruding floats.
+TEST_F(NGBlockLayoutAlgorithmTest,
+       PositionBlocksWithClearanceAndIntrudingFloats) {
+  setBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body { margin: 80px; }
+    #left-float {
+      background: green;
+      float: left;
+      width: 50px;
+      height: 50px;
+    }
+    #right-float {
+      background: red;
+      float: right;
+      margin: 0 80px 0 10px;
+      width: 50px;
+      height: 80px;
+    }
+    #block1 {
+      outline: purple solid;
+      height: 30px;
+      margin: 130px 0 20px 0;
+    }
+    #zero {
+     margin-top: 30px;
+    }
+    #container-clear {
+      clear: left;
+      outline: orange solid;
+    }
+    #clears-right {
+      clear: right;
+      height: 20px;
+      background: lightblue;
+    }
+    </style>
+
+    <div id="left-float"></div>
+    <div id="right-float"></div>
+    <div id="block1"></div>
+    <div id="container-clear">
+      <div id="zero"></div>
+      <div id="clears-right"></div>
+    </div>
+  )HTML");
+
+  // Run LayoutNG algorithm.
+  RefPtr<NGPhysicalBoxFragment> html_fragment;
+  std::tie(html_fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
+      document().getElementsByTagName("html")->item(0));
+  auto* body_fragment =
+      toNGPhysicalBoxFragment(html_fragment->Children()[0].get());
+  ASSERT_EQ(2UL, body_fragment->Children().size());
+
+  // Verify #container-clear block
+  auto* container_clear_fragment =
+      toNGPhysicalBoxFragment(body_fragment->Children()[1].get());
+  // 60 = block1's height 30 + std::max(block1's margin 20, zero's margin 30)
+  EXPECT_THAT(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(60)),
+              container_clear_fragment->Offset());
+  Element* container_clear = document().getElementById("container-clear");
+  // 190 = block1's margin 130 + block1's height 30 +
+  //       std::max(block1's margin 20, zero's margin 30)
+  EXPECT_THAT(container_clear->offsetTop(), 190);
+
+  // Verify #clears-right block
+  ASSERT_EQ(2UL, container_clear_fragment->Children().size());
+  auto* clears_right_fragment =
+      toNGPhysicalBoxFragment(container_clear_fragment->Children()[1].get());
+  // 20 = right-float's block end offset (130 + 80) -
+  //      container_clear->offsetTop() 190
+  EXPECT_THAT(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(20)),
+              clears_right_fragment->Offset());
+}
+
 }  // namespace
 }  // namespace blink

@@ -41,52 +41,46 @@ bool ShouldShrinkToFit(const NGConstraintSpace& parent_space,
          child_style.isFloating() || !is_in_parallel_flow;
 }
 
-// Updates the fragment's BFC offset if it's not already set.
-void UpdateFragmentBfcOffset(const NGLogicalOffset& offset,
-                             NGFragmentBuilder* builder) {
-  if (!builder->BfcOffset())
-    builder->SetBfcOffset(offset);
+// Returns max of 2 {@code WTF::Optional} values.
+template <typename T>
+WTF::Optional<T> OptionalMax(const WTF::Optional<T>& value1,
+                             const WTF::Optional<T>& value2) {
+  if (value1 && value2) {
+    return std::max(value1.value(), value2.value());
+  } else if (value1) {
+    return value1;
+  }
+  return value2;
 }
 
-// Adjusts content_size to respect the CSS "clear" property.
-// Picks up the maximum between left/right exclusions and content_size depending
-// on the value of style.clear() property.
-void AdjustToClearance(const std::shared_ptr<NGExclusions>& exclusions,
-                       const ComputedStyle& style,
-                       const NGLogicalOffset& from_offset,
-                       LayoutUnit* content_size) {
-  DCHECK(content_size) << "content_size cannot be null here";
+WTF::Optional<LayoutUnit> GetClearanceOffset(
+    const std::shared_ptr<NGExclusions>& exclusions,
+    const ComputedStyle& style) {
   const NGExclusion* right_exclusion = exclusions->last_right_float;
   const NGExclusion* left_exclusion = exclusions->last_left_float;
 
-  LayoutUnit left_block_end_offset = *content_size;
+  WTF::Optional<LayoutUnit> left_offset;
   if (left_exclusion) {
-    left_block_end_offset = std::max(
-        left_exclusion->rect.BlockEndOffset() - from_offset.block_offset,
-        *content_size);
+    left_offset = left_exclusion->rect.BlockEndOffset();
   }
-  LayoutUnit right_block_end_offset = *content_size;
+  WTF::Optional<LayoutUnit> right_offset;
   if (right_exclusion) {
-    right_block_end_offset = std::max(
-        right_exclusion->rect.BlockEndOffset() - from_offset.block_offset,
-        *content_size);
+    right_offset = right_exclusion->rect.BlockEndOffset();
   }
 
   switch (style.clear()) {
     case EClear::kNone:
-      return;  // nothing to do here.
+      return WTF::nullopt;  // nothing to do here.
     case EClear::kLeft:
-      *content_size = left_block_end_offset;
-      break;
+      return left_offset;
     case EClear::kRight:
-      *content_size = right_block_end_offset;
-      break;
+      return right_offset;
     case EClear::kBoth:
-      *content_size = std::max(left_block_end_offset, right_block_end_offset);
-      break;
+      return OptionalMax<LayoutUnit>(left_offset, right_offset);
     default:
       ASSERT_NOT_REACHED();
   }
+  return WTF::nullopt;
 }
 
 // Creates an exclusion from the fragment that will be placed in the provided
@@ -356,6 +350,18 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
   return {inline_offset, block_offset};
 }
 
+void NGBlockLayoutAlgorithm::UpdateFragmentBfcOffset(
+    const NGLogicalOffset& offset) {
+  if (!builder_->BfcOffset()) {
+    NGLogicalOffset bfc_offset = offset;
+    if (ConstraintSpace().ClearanceOffset()) {
+      bfc_offset.block_offset = std::max(
+          ConstraintSpace().ClearanceOffset().value(), offset.block_offset);
+    }
+    builder_->SetBfcOffset(bfc_offset);
+  }
+}
+
 RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   WTF::Optional<MinAndMaxContentSizes> sizes;
   if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style()))
@@ -417,7 +423,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   //   border/padding between them.
   if (border_and_padding_.block_start) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
-    UpdateFragmentBfcOffset(curr_bfc_offset_, builder_.get());
+    UpdateFragmentBfcOffset(curr_bfc_offset_);
     curr_margin_strut_ = NGMarginStrut();
   }
 
@@ -425,7 +431,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // If a new formatting context hits the if branch above then the BFC offset is
   // still {} as the margin strut from the constraint space must also be empty.
   if (ConstraintSpace().IsNewFormattingContext()) {
-    UpdateFragmentBfcOffset(curr_bfc_offset_, builder_.get());
+    UpdateFragmentBfcOffset(curr_bfc_offset_);
     DCHECK_EQ(builder_->BfcOffset().value(), NGLogicalOffset());
     DCHECK_EQ(curr_margin_strut_, NGMarginStrut());
   }
@@ -485,7 +491,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // Non-empty blocks always know their position in space:
   if (block_size) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
-    UpdateFragmentBfcOffset(curr_bfc_offset_, builder_.get());
+    UpdateFragmentBfcOffset(curr_bfc_offset_);
     PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
                           builder_.get());
   }
@@ -577,7 +583,7 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
     bfc_offset.value().block_offset += curr_margin_strut_.Sum();
   }
   if (bfc_offset) {
-    UpdateFragmentBfcOffset(curr_bfc_offset_, builder_.get());
+    UpdateFragmentBfcOffset(curr_bfc_offset_);
     PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
                           builder_.get());
   }
@@ -799,14 +805,12 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() {
   space_builder_->SetFragmentainerSpaceAvailable(space_available);
 
   // Clearance :
-  // - Collapse margins
-  // - Update curr_bfc_offset and parent BFC offset if needed.
-  // - Position all pending floats as position is known now.
-  // TODO(glebl): Fix the use case with clear: left and an intruding right.
-  // https://software.hixie.ch/utilities/js/live-dom-viewer/saved/4847
+  // - *Always* collapse margins and update *container*'s BFC offset.
+  // - Position all pending floats since the fragment's BFC offset is known.
+  // - Set the clearance offset on the constraint space's builder.
   if (current_child_style.clear() != EClear::kNone) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
-    UpdateFragmentBfcOffset(curr_bfc_offset_, builder_.get());
+    UpdateFragmentBfcOffset(curr_bfc_offset_);
     // Only collapse margins if it's an adjoining block with clearance.
     if (!content_size_) {
       curr_margin_strut_ = NGMarginStrut();
@@ -814,8 +818,9 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() {
     }
     PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
                           builder_.get());
-    AdjustToClearance(constraint_space_->Exclusions(), current_child_style,
-                      builder_->BfcOffset().value(), &content_size_);
+    WTF::Optional<LayoutUnit> clearance_offset = GetClearanceOffset(
+        constraint_space_->Exclusions(), current_child_style);
+    space_builder_->SetClearanceOffset(clearance_offset);
   }
 
   // Set estimated BFC offset to the next child's constraint space.
@@ -841,5 +846,4 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() {
   return space_builder_->ToConstraintSpace(
       FromPlatformWritingMode(current_child_style.getWritingMode()));
 }
-
 }  // namespace blink

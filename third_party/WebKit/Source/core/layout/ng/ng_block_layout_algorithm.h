@@ -101,6 +101,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   NGLogicalOffset CalculateLogicalOffset(
       const WTF::Optional<NGLogicalOffset>& known_fragment_offset);
 
+  // Updates the fragment's BFC offset if it's not already set.
+  void UpdateFragmentBfcOffset(const NGLogicalOffset& offset);
+
   NGLogicalOffset GetChildSpaceOffset() const {
     return NGLogicalOffset(border_and_padding_.inline_start, content_size_);
   }

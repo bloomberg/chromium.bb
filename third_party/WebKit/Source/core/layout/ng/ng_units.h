@@ -120,6 +120,11 @@ struct CORE_EXPORT NGPhysicalOffset {
   }
 };
 
+CORE_EXPORT inline std::ostream& operator<<(std::ostream& os,
+                                            const NGPhysicalOffset& value) {
+  return os << value.ToString();
+}
+
 struct CORE_EXPORT NGPhysicalSize {
   NGPhysicalSize() {}
   NGPhysicalSize(LayoutUnit width, LayoutUnit height)
