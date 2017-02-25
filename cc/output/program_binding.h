@@ -32,7 +32,9 @@ class ProgramBindingBase {
   bool Init(gpu::gles2::GLES2Interface* context,
             const std::string& vertex_shader,
             const std::string& fragment_shader);
-  bool Link(gpu::gles2::GLES2Interface* context);
+  bool Link(gpu::gles2::GLES2Interface* context,
+            const std::string& vertex_source,
+            const std::string& fragment_source);
   void Cleanup(gpu::gles2::GLES2Interface* context);
 
   unsigned program() const { return program_; }
@@ -403,9 +405,10 @@ class Program : public ProgramBindingBase {
     if (IsContextLost(context_provider->ContextGL()))
       return;
 
-    if (!ProgramBindingBase::Init(context_provider->ContextGL(),
-                                  vertex_shader_.GetShaderString(),
-                                  fragment_shader_.GetShaderString())) {
+    std::string vertex_source = vertex_shader_.GetShaderString();
+    std::string fragment_source = fragment_shader_.GetShaderString();
+    if (!ProgramBindingBase::Init(context_provider->ContextGL(), vertex_source,
+                                  fragment_source)) {
       DCHECK(IsContextLost(context_provider->ContextGL()));
       return;
     }
@@ -417,7 +420,7 @@ class Program : public ProgramBindingBase {
                           program_, &base_uniform_index);
 
     // Link after binding uniforms
-    if (!Link(context_provider->ContextGL())) {
+    if (!Link(context_provider->ContextGL(), vertex_source, fragment_source)) {
       DCHECK(IsContextLost(context_provider->ContextGL()));
       return;
     }
