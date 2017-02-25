@@ -479,7 +479,7 @@ TEST_F(VisibleSelectionTest, updateIfNeededWithShadowHost) {
   document().updateStyleAndLayout();
 
   // Simulates to restore selection from undo stack.
-  selection.updateIfNeeded();
+  selection = createVisibleSelection(selection.asSelection());
   EXPECT_EQ(Position(sample->firstChild(), 0), selection.start());
 }
 

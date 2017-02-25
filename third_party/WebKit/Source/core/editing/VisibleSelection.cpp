@@ -724,19 +724,6 @@ Element* VisibleSelectionTemplate<Strategy>::rootEditableElement() const {
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::updateIfNeeded() {
-  Document* document = m_base.document();
-  if (!document)
-    return;
-  DCHECK(!document->needsLayoutTreeUpdate());
-  const bool hasTrailingWhitespace = m_hasTrailingWhitespace;
-  validate(m_granularity);
-  if (!hasTrailingWhitespace)
-    return;
-  appendTrailingWhitespace();
-}
-
-template <typename Strategy>
 static bool equalSelectionsAlgorithm(
     const VisibleSelectionTemplate<Strategy>& selection1,
     const VisibleSelectionTemplate<Strategy>& selection2) {

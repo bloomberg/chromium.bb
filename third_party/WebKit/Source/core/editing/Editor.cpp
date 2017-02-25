@@ -926,9 +926,7 @@ static VisibleSelection correctedVisibleSelection(
       !passedSelection.extent().isConnected())
     return VisibleSelection();
   DCHECK(!passedSelection.base().document()->needsLayoutTreeUpdate());
-  VisibleSelection correctedSelection = passedSelection;
-  correctedSelection.updateIfNeeded();
-  return correctedSelection;
+  return createVisibleSelection(passedSelection.asSelection());
 }
 
 void Editor::unappliedEditing(UndoStep* cmd) {

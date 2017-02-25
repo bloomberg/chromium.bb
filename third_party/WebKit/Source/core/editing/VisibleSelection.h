@@ -138,8 +138,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
 
   DECLARE_TRACE();
 
-  void updateIfNeeded();
-
 #ifndef NDEBUG
   void showTreeForThis() const;
 #endif
