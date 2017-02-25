@@ -112,7 +112,14 @@ SerializedScriptValue::SerializedScriptValue()
     : m_externallyAllocatedMemory(0) {}
 
 SerializedScriptValue::SerializedScriptValue(const String& wireData)
-    : m_dataString(wireData.isolatedCopy()), m_externallyAllocatedMemory(0) {}
+    : m_externallyAllocatedMemory(0) {
+  size_t byteLength = wireData.length() * 2;
+  m_dataBuffer.reset(static_cast<uint8_t*>(WTF::Partitions::bufferMalloc(
+      byteLength, "SerializedScriptValue buffer")));
+  m_dataBufferSize = byteLength;
+  wireData.copyTo(reinterpret_cast<UChar*>(m_dataBuffer.get()), 0,
+                  wireData.length());
+}
 
 SerializedScriptValue::~SerializedScriptValue() {
   // If the allocated memory was not registered before, then this class is
@@ -132,9 +139,6 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::nullValue() {
 }
 
 String SerializedScriptValue::toWireString() const {
-  if (!m_dataString.isNull())
-    return m_dataString;
-
   // Add the padding '\0', but don't put it in |m_dataBuffer|.
   // This requires direct use of uninitialized strings, though.
   UChar* destination;
@@ -151,36 +155,18 @@ String SerializedScriptValue::toWireString() const {
 void SerializedScriptValue::toWireBytes(Vector<char>& result) const {
   DCHECK(result.isEmpty());
 
-  if (m_dataString.isNull()) {
-    size_t wireSizeBytes = (m_dataBufferSize + 1) & ~1;
-    result.resize(wireSizeBytes);
+  size_t wireSizeBytes = (m_dataBufferSize + 1) & ~1;
+  result.resize(wireSizeBytes);
 
-    const UChar* src = reinterpret_cast<UChar*>(m_dataBuffer.get());
-    UChar* dst = reinterpret_cast<UChar*>(result.data());
-    for (size_t i = 0; i < m_dataBufferSize / 2; i++)
-      dst[i] = htons(src[i]);
-
-    // This is equivalent to swapping the byte order of the two bytes (x, 0),
-    // depending on endianness.
-    if (m_dataBufferSize % 2)
-      dst[wireSizeBytes / 2 - 1] = m_dataBuffer[m_dataBufferSize - 1] << 8;
-
-    return;
-  }
-
-  size_t length = m_dataString.length();
-  result.resize(length * sizeof(UChar));
+  const UChar* src = reinterpret_cast<UChar*>(m_dataBuffer.get());
   UChar* dst = reinterpret_cast<UChar*>(result.data());
+  for (size_t i = 0; i < m_dataBufferSize / 2; i++)
+    dst[i] = htons(src[i]);
 
-  if (m_dataString.is8Bit()) {
-    const LChar* src = m_dataString.characters8();
-    for (size_t i = 0; i < length; i++)
-      dst[i] = htons(static_cast<UChar>(src[i]));
-  } else {
-    const UChar* src = m_dataString.characters16();
-    for (size_t i = 0; i < length; i++)
-      dst[i] = htons(src[i]);
-  }
+  // This is equivalent to swapping the byte order of the two bytes (x, 0),
+  // depending on endianness.
+  if (m_dataBufferSize % 2)
+    dst[wireSizeBytes / 2 - 1] = m_dataBuffer[m_dataBufferSize - 1] << 8;
 }
 
 static void accumulateArrayBuffersForAllWorlds(
