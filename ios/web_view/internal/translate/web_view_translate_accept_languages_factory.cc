@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web_view/internal/translate/criwv_translate_accept_languages_factory.h"
+#include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
@@ -37,21 +37,21 @@ TranslateAcceptLanguagesService::TranslateAcceptLanguagesService(
     PrefService* prefs)
     : accept_languages_(prefs, prefs::kAcceptLanguages) {}
 
-TranslateAcceptLanguagesService::~TranslateAcceptLanguagesService() {}
+TranslateAcceptLanguagesService::~TranslateAcceptLanguagesService() = default;
 
 }  // namespace
 
 namespace ios_web_view {
 
 // static
-CRIWVTranslateAcceptLanguagesFactory*
-CRIWVTranslateAcceptLanguagesFactory::GetInstance() {
-  return base::Singleton<CRIWVTranslateAcceptLanguagesFactory>::get();
+WebViewTranslateAcceptLanguagesFactory*
+WebViewTranslateAcceptLanguagesFactory::GetInstance() {
+  return base::Singleton<WebViewTranslateAcceptLanguagesFactory>::get();
 }
 
 // static
 translate::TranslateAcceptLanguages*
-CRIWVTranslateAcceptLanguagesFactory::GetForBrowserState(
+WebViewTranslateAcceptLanguagesFactory::GetForBrowserState(
     WebViewBrowserState* browser_state) {
   TranslateAcceptLanguagesService* service =
       static_cast<TranslateAcceptLanguagesService*>(
@@ -59,15 +59,16 @@ CRIWVTranslateAcceptLanguagesFactory::GetForBrowserState(
   return &service->accept_languages();
 }
 
-CRIWVTranslateAcceptLanguagesFactory::CRIWVTranslateAcceptLanguagesFactory()
+WebViewTranslateAcceptLanguagesFactory::WebViewTranslateAcceptLanguagesFactory()
     : BrowserStateKeyedServiceFactory(
           "TranslateAcceptLanguagesService",
           BrowserStateDependencyManager::GetInstance()) {}
 
-CRIWVTranslateAcceptLanguagesFactory::~CRIWVTranslateAcceptLanguagesFactory() {}
+WebViewTranslateAcceptLanguagesFactory::
+    ~WebViewTranslateAcceptLanguagesFactory() {}
 
 std::unique_ptr<KeyedService>
-CRIWVTranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
+WebViewTranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   WebViewBrowserState* browser_state =
       WebViewBrowserState::FromBrowserState(context);

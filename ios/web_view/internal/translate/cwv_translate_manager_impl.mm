@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/internal/translate/criwv_translate_manager_impl.h"
+#import "ios/web_view/internal/translate/cwv_translate_manager_impl.h"
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
 
-@implementation CRIWVTranslateManagerImpl {
+@implementation CWVTranslateManagerImpl {
   std::unique_ptr<translate::TranslateUIDelegate> _translateUIDelegate;
 }
 

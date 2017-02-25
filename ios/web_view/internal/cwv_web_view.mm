@@ -18,7 +18,7 @@
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #import "ios/web_view/internal/cwv_website_data_store_internal.h"
-#import "ios/web_view/internal/translate/criwv_translate_client.h"
+#import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_web_view_configuration.h"
 #import "ios/web_view/public/cwv_web_view_delegate.h"
@@ -63,7 +63,7 @@
     _webState->SetDelegate(_webStateDelegate.get());
 
     // Initialize Translate.
-    ios_web_view::CRIWVTranslateClient::CreateForWebState(_webState.get());
+    ios_web_view::WebViewTranslateClient::CreateForWebState(_webState.get());
   }
   return self;
 }
@@ -143,8 +143,8 @@
   _delegate = delegate;
 
   // Set up the translate delegate.
-  ios_web_view::CRIWVTranslateClient* translateClient =
-      ios_web_view::CRIWVTranslateClient::FromWebState(_webState.get());
+  ios_web_view::WebViewTranslateClient* translateClient =
+      ios_web_view::WebViewTranslateClient::FromWebState(_webState.get());
   id<CWVTranslateDelegate> translateDelegate = nil;
   if ([_delegate respondsToSelector:@selector(translateDelegate)])
     translateDelegate = [_delegate translateDelegate];

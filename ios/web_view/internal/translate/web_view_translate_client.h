@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_TRANSLATE_CRIWV_TRANSLATE_CLIENT_H_
-#define IOS_WEB_VIEW_INTERNAL_TRANSLATE_CRIWV_TRANSLATE_CLIENT_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_TRANSLATE_WEB_VIEW_TRANSLATE_CLIENT_H_
+#define IOS_WEB_VIEW_INTERNAL_TRANSLATE_WEB_VIEW_TRANSLATE_CLIENT_H_
 
 #include <memory>
 #include <string>
@@ -30,23 +30,23 @@ class WebState;
 
 namespace ios_web_view {
 
-class CRIWVTranslateClient
+class WebViewTranslateClient
     : public translate::TranslateClient,
       public web::WebStateObserver,
-      public web::WebStateUserData<CRIWVTranslateClient> {
+      public web::WebStateUserData<WebViewTranslateClient> {
  public:
   // Sets the delegate passed by the embedder.
-  // |delegate| is assumed to outlive this CRIWVTranslateClient.
+  // |delegate| is assumed to outlive this WebViewTranslateClient.
   void set_translate_delegate(id<CWVTranslateDelegate> delegate) {
     delegate_ = delegate;
   }
 
  private:
-  friend class web::WebStateUserData<CRIWVTranslateClient>;
+  friend class web::WebStateUserData<WebViewTranslateClient>;
 
-  // The lifetime of CRIWVTranslateClient is managed by WebStateUserData.
-  explicit CRIWVTranslateClient(web::WebState* web_state);
-  ~CRIWVTranslateClient() override;
+  // The lifetime of WebViewTranslateClient is managed by WebStateUserData.
+  explicit WebViewTranslateClient(web::WebState* web_state);
+  ~WebViewTranslateClient() override;
 
   // TranslateClient implementation.
   translate::TranslateDriver* GetTranslateDriver() override;
@@ -74,9 +74,9 @@ class CRIWVTranslateClient
   // Delegate provided by the embedder.
   id<CWVTranslateDelegate> delegate_;  // Weak.
 
-  DISALLOW_COPY_AND_ASSIGN(CRIWVTranslateClient);
+  DISALLOW_COPY_AND_ASSIGN(WebViewTranslateClient);
 };
 
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_INTERNAL_TRANSLATE_CRIWV_TRANSLATE_CLIENT_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_TRANSLATE_WEB_VIEW_TRANSLATE_CLIENT_H_

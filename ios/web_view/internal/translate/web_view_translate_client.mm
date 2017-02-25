@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/internal/translate/criwv_translate_client.h"
+#import "ios/web_view/internal/translate/web_view_translate_client.h"
 
 #include <vector>
 
@@ -20,17 +20,17 @@
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web_view/internal/pref_names.h"
-#include "ios/web_view/internal/translate/criwv_translate_accept_languages_factory.h"
-#import "ios/web_view/internal/translate/criwv_translate_manager_impl.h"
+#import "ios/web_view/internal/translate/cwv_translate_manager_impl.h"
+#include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_translate_delegate.h"
 #include "url/gurl.h"
 
-DEFINE_WEB_STATE_USER_DATA_KEY(ios_web_view::CRIWVTranslateClient);
+DEFINE_WEB_STATE_USER_DATA_KEY(ios_web_view::WebViewTranslateClient);
 
 namespace ios_web_view {
 
-CRIWVTranslateClient::CRIWVTranslateClient(web::WebState* web_state)
+WebViewTranslateClient::WebViewTranslateClient(web::WebState* web_state)
     : web::WebStateObserver(web_state),
       translate_manager_(base::MakeUnique<translate::TranslateManager>(
           this,
@@ -39,17 +39,17 @@ CRIWVTranslateClient::CRIWVTranslateClient(web::WebState* web_state)
                         web_state->GetNavigationManager(),
                         translate_manager_.get()) {}
 
-CRIWVTranslateClient::~CRIWVTranslateClient() {}
+WebViewTranslateClient::~WebViewTranslateClient() = default;
 
 // TranslateClient implementation:
 
-std::unique_ptr<infobars::InfoBar> CRIWVTranslateClient::CreateInfoBar(
+std::unique_ptr<infobars::InfoBar> WebViewTranslateClient::CreateInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
   NOTREACHED();
   return nullptr;
 }
 
-void CRIWVTranslateClient::ShowTranslateUI(
+void WebViewTranslateClient::ShowTranslateUI(
     translate::TranslateStep step,
     const std::string& source_language,
     const std::string& target_language,
@@ -68,8 +68,8 @@ void CRIWVTranslateClient::ShowTranslateUI(
     return;
   }
 
-  base::scoped_nsobject<CRIWVTranslateManagerImpl> criwv_manager(
-      [[CRIWVTranslateManagerImpl alloc]
+  base::scoped_nsobject<CWVTranslateManagerImpl> criwv_manager(
+      [[CWVTranslateManagerImpl alloc]
           initWithTranslateManager:translate_manager_.get()
                     sourceLanguage:source_language
                     targetLanguage:target_language]);
@@ -96,48 +96,48 @@ void CRIWVTranslateClient::ShowTranslateUI(
   [delegate_ translateStepChanged:criwv_step manager:criwv_manager.get()];
 }
 
-translate::TranslateDriver* CRIWVTranslateClient::GetTranslateDriver() {
+translate::TranslateDriver* WebViewTranslateClient::GetTranslateDriver() {
   return &translate_driver_;
 }
 
-PrefService* CRIWVTranslateClient::GetPrefs() {
+PrefService* WebViewTranslateClient::GetPrefs() {
   DCHECK(web_state());
   return WebViewBrowserState::FromBrowserState(web_state()->GetBrowserState())
       ->GetPrefs();
 }
 
 std::unique_ptr<translate::TranslatePrefs>
-CRIWVTranslateClient::GetTranslatePrefs() {
+WebViewTranslateClient::GetTranslatePrefs() {
   DCHECK(web_state());
   return base::MakeUnique<translate::TranslatePrefs>(
       GetPrefs(), prefs::kAcceptLanguages, nullptr);
 }
 
 translate::TranslateAcceptLanguages*
-CRIWVTranslateClient::GetTranslateAcceptLanguages() {
+WebViewTranslateClient::GetTranslateAcceptLanguages() {
   translate::TranslateAcceptLanguages* accept_languages =
-      CRIWVTranslateAcceptLanguagesFactory::GetForBrowserState(
+      WebViewTranslateAcceptLanguagesFactory::GetForBrowserState(
           WebViewBrowserState::FromBrowserState(
               web_state()->GetBrowserState()));
   DCHECK(accept_languages);
   return accept_languages;
 }
 
-int CRIWVTranslateClient::GetInfobarIconID() const {
+int WebViewTranslateClient::GetInfobarIconID() const {
   NOTREACHED();
   return 0;
 }
 
-bool CRIWVTranslateClient::IsTranslatableURL(const GURL& url) {
+bool WebViewTranslateClient::IsTranslatableURL(const GURL& url) {
   return !url.is_empty() && !url.SchemeIs(url::kFtpScheme);
 }
 
-void CRIWVTranslateClient::ShowReportLanguageDetectionErrorUI(
+void WebViewTranslateClient::ShowReportLanguageDetectionErrorUI(
     const GURL& report_url) {
   NOTREACHED();
 }
 
-void CRIWVTranslateClient::WebStateDestroyed() {
+void WebViewTranslateClient::WebStateDestroyed() {
   // Translation process can be interrupted.
   // Destroying the TranslateManager now guarantees that it never has to deal
   // with nullptr WebState.

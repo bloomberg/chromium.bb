@@ -9,12 +9,12 @@ source_set("translate") {
   ]
 
   sources = [
-    "criwv_translate_accept_languages_factory.cc",
-    "criwv_translate_accept_languages_factory.h",
-    "criwv_translate_client.h",
-    "criwv_translate_client.mm",
-    "criwv_translate_manager_impl.h",
-    "criwv_translate_manager_impl.mm",
+    "cwv_translate_manager_impl.h",
+    "cwv_translate_manager_impl.mm",
+    "web_view_translate_accept_languages_factory.cc",
+    "web_view_translate_accept_languages_factory.h",
+    "web_view_translate_client.h",
+    "web_view_translate_client.mm",
   ]
   deps = [
     "//base",
