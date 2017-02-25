@@ -27,11 +27,18 @@ class OfflinerStub : public Offliner {
 
   bool cancel_called() { return cancel_called_; }
 
+  void reset_cancel_called() { cancel_called_ = false; }
+
+  bool HandleTimeout(const SavePageRequest& request) override;
+
+  void enable_snapshot_on_last_retry() { snapshot_on_last_retry_ = true; }
+
  private:
   CompletionCallback callback_;
   bool disable_loading_;
   bool enable_callback_;
   bool cancel_called_;
+  bool snapshot_on_last_retry_;
 };
 
 }  // namespace offline_pages

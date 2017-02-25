@@ -37,6 +37,7 @@ class PrerenderingOffliner : public Offliner {
   bool LoadAndSave(const SavePageRequest& request,
                    const CompletionCallback& callback) override;
   void Cancel() override;
+  bool HandleTimeout(const SavePageRequest& request) override;
 
   // Allows a loader to be injected for testing. This may only be done once
   // and must be called before any of the Offliner interface methods are called.
@@ -78,6 +79,8 @@ class PrerenderingOffliner : public Offliner {
 
   // Not owned.
   content::BrowserContext* browser_context_;
+  // Not owned.
+  const OfflinerPolicy* policy_;
   // Not owned.
   OfflinePageModel* offline_page_model_;
   // Lazily created.

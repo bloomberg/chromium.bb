@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/offline_pages/core/background/offliner.h"
+#include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/prefs/pref_service.h"
@@ -39,7 +40,9 @@ class MockPrerenderingLoader : public PrerenderingLoader {
       : PrerenderingLoader(browser_context),
         can_prerender_(true),
         mock_loading_(false),
-        mock_loaded_(false) {}
+        mock_loaded_(false),
+        mock_is_lowbar_met_(false),
+        start_snapshot_called_(false) {}
   ~MockPrerenderingLoader() override {}
 
   bool LoadPage(const GURL& url,
@@ -58,6 +61,9 @@ class MockPrerenderingLoader : public PrerenderingLoader {
 
   bool IsIdle() override { return !mock_loading_ && !mock_loaded_; }
   bool IsLoaded() override { return mock_loaded_; }
+  bool IsLowbarMet() override { return mock_is_lowbar_met_; }
+
+  void StartSnapshot() override { start_snapshot_called_ = true; }
 
   void CompleteLoadingAsFailed() {
     DCHECK(mock_loading_);
@@ -92,11 +98,17 @@ class MockPrerenderingLoader : public PrerenderingLoader {
 
   void DisablePrerendering() { can_prerender_ = false; }
   const LoadPageCallback& load_page_callback() { return load_page_callback_; }
+  void set_is_lowbar_met(bool is_lowbar_met) {
+    mock_is_lowbar_met_ = is_lowbar_met;
+  }
+  bool start_snapshot_called() { return start_snapshot_called_; }
 
  private:
   bool can_prerender_;
   bool mock_loading_;
   bool mock_loaded_;
+  bool mock_is_lowbar_met_;
+  bool start_snapshot_called_;
   LoadPageCallback load_page_callback_;
   ProgressCallback progress_callback_;
 
@@ -166,6 +178,7 @@ class PrerenderingOfflinerTest : public testing::Test {
   MockOfflinePageModel* model() { return model_; }
   bool completion_callback_called() { return completion_callback_called_; }
   Offliner::RequestStatus request_status() { return request_status_; }
+  OfflinerPolicy* policy() { return policy_; }
 
  private:
   void OnCompletion(const SavePageRequest& request,
@@ -179,6 +192,7 @@ class PrerenderingOfflinerTest : public testing::Test {
   MockOfflinePageModel* model_;
   bool completion_callback_called_;
   Offliner::RequestStatus request_status_;
+  OfflinerPolicy* policy_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderingOfflinerTest);
 };
@@ -192,7 +206,8 @@ PrerenderingOfflinerTest::~PrerenderingOfflinerTest() {}
 
 void PrerenderingOfflinerTest::SetUp() {
   model_ = new MockOfflinePageModel();
-  offliner_.reset(new PrerenderingOffliner(profile(), nullptr, model_));
+  policy_ = new OfflinerPolicy();
+  offliner_.reset(new PrerenderingOffliner(profile(), policy_, model_));
   std::unique_ptr<MockPrerenderingLoader> mock_loader(
       new MockPrerenderingLoader(nullptr));
   loader_ = mock_loader.get();
@@ -401,6 +416,72 @@ TEST_F(PrerenderingOfflinerTest, ForegroundTransitionIgnoredOnHighEndDevice) {
 
   // Loader still loading since not low-end device.
   EXPECT_FALSE(loader()->IsIdle());
+}
+
+TEST_F(PrerenderingOfflinerTest, HandleTimeoutWithLowbarAndCompletedTriesMet) {
+  offliner()->SetLowEndDeviceForTesting(false);
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  request.set_completed_attempt_count(policy()->GetMaxCompletedTries() - 1);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+  loader()->set_is_lowbar_met(true);
+  EXPECT_TRUE(offliner()->HandleTimeout(request));
+  EXPECT_TRUE(loader()->start_snapshot_called());
+}
+
+TEST_F(PrerenderingOfflinerTest,
+       HandleTimeoutWithLowbarAndCompletedTriesMetLowEndDevice) {
+  offliner()->SetLowEndDeviceForTesting(true);
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  request.set_completed_attempt_count(policy()->GetMaxCompletedTries() - 1);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+  loader()->set_is_lowbar_met(true);
+  EXPECT_TRUE(offliner()->HandleTimeout(request));
+  EXPECT_TRUE(loader()->start_snapshot_called());
+}
+
+TEST_F(PrerenderingOfflinerTest,
+       HandleTimeoutCompletedTriesMetWithoutLowbarMet) {
+  offliner()->SetLowEndDeviceForTesting(false);
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  request.set_completed_attempt_count(policy()->GetMaxCompletedTries() - 1);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+  loader()->set_is_lowbar_met(false);
+  EXPECT_FALSE(offliner()->HandleTimeout(request));
+  EXPECT_FALSE(loader()->start_snapshot_called());
+}
+
+TEST_F(PrerenderingOfflinerTest, HandleTimeoutWithLowbarAndStartedTriesMet) {
+  offliner()->SetLowEndDeviceForTesting(false);
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  request.set_started_attempt_count(policy()->GetMaxStartedTries() - 1);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+  loader()->set_is_lowbar_met(true);
+  EXPECT_TRUE(offliner()->HandleTimeout(request));
+  EXPECT_TRUE(loader()->start_snapshot_called());
+}
+
+TEST_F(PrerenderingOfflinerTest, HandleTimeoutWithOnlyLowbarMet) {
+  offliner()->SetLowEndDeviceForTesting(false);
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+  loader()->set_is_lowbar_met(true);
+  EXPECT_FALSE(offliner()->HandleTimeout(request));
+  EXPECT_FALSE(loader()->start_snapshot_called());
 }
 
 }  // namespace offline_pages

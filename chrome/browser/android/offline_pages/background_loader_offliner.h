@@ -38,6 +38,7 @@ class BackgroundLoaderOffliner : public Offliner,
   bool LoadAndSave(const SavePageRequest& request,
                    const CompletionCallback& callback) override;
   void Cancel() override;
+  bool HandleTimeout(const SavePageRequest& request) override;
 
   // WebContentsObserver implementation.
   void DidStopLoading() override;

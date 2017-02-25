@@ -79,7 +79,8 @@ Offliner::RequestStatus ClassifyFinalStatus(
 PrerenderingLoader::PrerenderingLoader(content::BrowserContext* browser_context)
     : state_(State::IDLE),
       snapshot_controller_(nullptr),
-      browser_context_(browser_context) {
+      browser_context_(browser_context),
+      is_lowbar_met_(false) {
   adapter_.reset(new PrerenderAdapter(this));
 }
 
@@ -159,11 +160,14 @@ void PrerenderingLoader::OnPrerenderDomContentLoaded() {
   if (!adapter_->GetWebContents()) {
     // Without a WebContents object at this point, we are done.
     HandleLoadingStopped();
-  } else if (kConsiderDclForSnapshot) {
-    // Inform SnapshotController of DomContentLoaded event so it can
-    // determine when to consider it really LOADED (e.g., some multiple
-    // second delay from this event).
-    snapshot_controller_->DocumentAvailableInMainFrame();
+  } else {
+    is_lowbar_met_ = true;
+    if (kConsiderDclForSnapshot) {
+      // Inform SnapshotController of DomContentLoaded event so it can
+      // determine when to consider it really LOADED (e.g., some multiple
+      // second delay from this event).
+      snapshot_controller_->DocumentAvailableInMainFrame();
+    }
   }
 }
 
@@ -180,6 +184,10 @@ void PrerenderingLoader::OnPrerenderNetworkBytesChanged(int64_t bytes) {
 void PrerenderingLoader::StartSnapshot() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   HandleLoadEvent();
+}
+
+bool PrerenderingLoader::IsLowbarMet() {
+  return is_lowbar_met_;
 }
 
 void PrerenderingLoader::HandleLoadEvent() {
@@ -251,6 +259,7 @@ void PrerenderingLoader::HandleLoadingStopped() {
   snapshot_controller_.reset(nullptr);
   session_contents_.reset(nullptr);
   state_ = State::IDLE;
+  is_lowbar_met_ = false;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(load_done_callback_, request_status, nullptr));
 }
@@ -262,6 +271,7 @@ void PrerenderingLoader::CancelPrerender() {
   snapshot_controller_.reset(nullptr);
   session_contents_.reset(nullptr);
   state_ = State::IDLE;
+  is_lowbar_met_ = false;
 }
 
 }  // namespace offline_pages

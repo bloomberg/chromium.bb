@@ -79,6 +79,9 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
   // SnapshotController::Client implementation:
   void StartSnapshot() override;
 
+  // Returns true if the lowbar of snapshotting a page is met.
+  virtual bool IsLowbarMet();
+
  private:
   // State of the loader (only one request may be active at a time).
   enum class State {
@@ -123,6 +126,9 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
 
   // Callback to call when we know more bytes have loaded from the network.
   ProgressCallback progress_callback_;
+
+  // True if the lowbar of snapshotting a page is met.
+  bool is_lowbar_met_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderingLoader);
 };

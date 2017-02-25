@@ -171,6 +171,10 @@ class RequestCoordinatorTest : public testing::Test {
     offliner_->enable_callback(enable);
   }
 
+  void EnableSnapshotOnLastRetry() {
+    offliner_->enable_snapshot_on_last_retry();
+  }
+
   void SetEffectiveConnectionTypeForTest(net::EffectiveConnectionType type) {
     network_quality_provider_->SetEffectiveConnectionTypeForTest(type);
   }
@@ -248,6 +252,8 @@ class RequestCoordinatorTest : public testing::Test {
   }
 
   bool OfflinerWasCanceled() const { return offliner_->cancel_called(); }
+
+  void ResetOfflinerWasCanceled() { offliner_->reset_cancel_called(); }
 
   ObserverStub observer() { return observer_; }
 
@@ -1072,7 +1078,8 @@ TEST_F(RequestCoordinatorTest, EnableForOffliner) {
   EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE, observer().state());
 }
 
-TEST_F(RequestCoordinatorTest, WatchdogTimeoutForScheduledProcessing) {
+TEST_F(RequestCoordinatorTest,
+       WatchdogTimeoutForScheduledProcessingNoLastSnapshot) {
   // Build a request to use with the pre-renderer, and put it on the queue.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
                                          base::Time::Now(), kUserRequested);
@@ -1112,7 +1119,8 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeoutForScheduledProcessing) {
   EXPECT_TRUE(OfflinerWasCanceled());
 }
 
-TEST_F(RequestCoordinatorTest, WatchdogTimeoutForImmediateProcessing) {
+TEST_F(RequestCoordinatorTest,
+       WatchdogTimeoutForImmediateProcessingNoLastSnapshot) {
   // Ensure that the new request does not finish - we simulate it being
   // in progress by asking it to skip making the completion callback.
   EnableOfflinerCallback(false);
@@ -1430,6 +1438,108 @@ TEST_F(RequestCoordinatorTest,
   PumpLoop();
 
   EXPECT_TRUE(is_busy());
+}
+
+TEST_F(RequestCoordinatorTest, SnapshotOnLastTryForScheduledProcessing) {
+  // Build a request to use with the pre-renderer, and put it on the queue.
+  offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
+                                         base::Time::Now(), kUserRequested);
+  // Set request to allow one more completed attempt. So that the next try would
+  // be the last retry.
+  int max_tries = coordinator()->policy()->GetMaxCompletedTries();
+  request.set_completed_attempt_count(max_tries - 1);
+  coordinator()->queue()->AddRequest(
+      request,
+      base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                 base::Unretained(this)));
+  PumpLoop();
+
+  // Ensure that the new request does not finish - we simulate it being
+  // in progress by asking it to skip making the completion callback.
+  // Also make snapshot on last retry happen in this case.
+  EnableOfflinerCallback(false);
+  EnableSnapshotOnLastRetry();
+
+  // Sending the request to the offliner.
+  EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      waiting_callback()));
+  PumpLoop();
+
+  // Advance the mock clock far enough to cause a watchdog timeout
+  AdvanceClockBy(base::TimeDelta::FromSeconds(
+      coordinator()
+          ->policy()
+          ->GetSinglePageTimeLimitWhenBackgroundScheduledInSeconds() +
+      1));
+  PumpLoop();
+
+  // Wait for timeout to expire.  Use a TaskRunner with a DelayedTaskRunner
+  // which won't time out immediately, so the watchdog thread doesn't kill valid
+  // tasks too soon.
+  WaitForCallback();
+  PumpLoop();
+
+  // Check the offliner didn't get a cancel and the result was success.
+  EXPECT_FALSE(OfflinerWasCanceled());
+  EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::SUCCESS,
+            observer().last_status());
+  EXPECT_TRUE(observer().completed_called());
+}
+
+TEST_F(RequestCoordinatorTest, SnapshotOnLastTryForImmediateProcessing) {
+  // Ensure that the new request does not finish - we simulate it being
+  // in progress by asking it to skip making the completion callback.
+  EnableOfflinerCallback(false);
+
+  EXPECT_NE(coordinator()->SavePageLater(
+                kUrl1, kClientId1, kUserRequested,
+                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
+            0);
+
+  // Repeat the timeout for MaxCompleteTries - 1 times in order to increase the
+  // completed tries on this request.
+  int max_tries = coordinator()->policy()->GetMaxCompletedTries();
+  for (int i = 0; i < max_tries - 1; i++) {
+    PumpLoop();
+    // Reset states.
+    ResetOfflinerWasCanceled();
+    observer().Clear();
+
+    // Verify that the request is being processed.
+    EXPECT_TRUE(coordinator()->is_busy());
+
+    // Advance the mock clock 1 second more than the watchdog timeout.
+    AdvanceClockBy(base::TimeDelta::FromSeconds(
+        coordinator()
+            ->policy()
+            ->GetSinglePageTimeLimitForImmediateLoadInSeconds() +
+        1));
+    PumpLoop();
+
+    // Verify the request timed out.
+    EXPECT_TRUE(OfflinerWasCanceled());
+    EXPECT_TRUE(observer().changed_called());
+  }
+
+  // Reset states.
+  ResetOfflinerWasCanceled();
+  observer().Clear();
+  // Make snapshot on last retry happen.
+  EnableSnapshotOnLastRetry();
+
+  // Advance the mock clock 1 second more than the watchdog timeout.
+  AdvanceClockBy(base::TimeDelta::FromSeconds(
+      coordinator()
+          ->policy()
+          ->GetSinglePageTimeLimitForImmediateLoadInSeconds() +
+      1));
+  PumpLoop();
+
+  // The last time would trigger the snapshot on last retry and succeed.
+  EXPECT_FALSE(OfflinerWasCanceled());
+  EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::SUCCESS,
+            observer().last_status());
+  EXPECT_TRUE(observer().completed_called());
 }
 
 }  // namespace offline_pages

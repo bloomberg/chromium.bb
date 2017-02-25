@@ -504,6 +504,8 @@ void RequestCoordinator::StopProcessing(Offliner::RequestStatus stop_status) {
 void RequestCoordinator::HandleWatchdogTimeout() {
   Offliner::RequestStatus watchdog_status =
       Offliner::REQUEST_COORDINATOR_TIMED_OUT;
+  if (offliner_->HandleTimeout(*active_request_.get()))
+    return;
   StopPrerendering(watchdog_status);
   TryNextRequest(!kStartOfProcessing);
 }

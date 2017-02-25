@@ -11,7 +11,10 @@
 namespace offline_pages {
 
 OfflinerStub::OfflinerStub()
-    : disable_loading_(false), enable_callback_(false), cancel_called_(false) {}
+    : disable_loading_(false),
+      enable_callback_(false),
+      cancel_called_(false),
+      snapshot_on_last_retry_(false) {}
 
 OfflinerStub::~OfflinerStub() {}
 
@@ -33,6 +36,16 @@ bool OfflinerStub::LoadAndSave(const SavePageRequest& request,
 
 void OfflinerStub::Cancel() {
   cancel_called_ = true;
+}
+
+bool OfflinerStub::HandleTimeout(const SavePageRequest& request) {
+  if (snapshot_on_last_retry_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(callback_, request, Offliner::RequestStatus::SAVED));
+    return true;
+  }
+  return false;
 }
 
 }  // namespace offline_pages

@@ -10,6 +10,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offliner_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/downloads/download_ui_adapter.h"
@@ -27,6 +28,7 @@ PrerenderingOffliner::PrerenderingOffliner(
     const OfflinerPolicy* policy,
     OfflinePageModel* offline_page_model)
     : browser_context_(browser_context),
+      policy_(policy),
       offline_page_model_(offline_page_model),
       pending_request_(nullptr),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()),
@@ -218,6 +220,20 @@ void PrerenderingOffliner::Cancel() {
     GetOrCreateLoader()->StopLoading();
     // TODO(dougarnett): Consider ability to cancel SavePage request.
   }
+}
+
+bool PrerenderingOffliner::HandleTimeout(const SavePageRequest& request) {
+  if (pending_request_) {
+    DCHECK(request.request_id() == pending_request_->request_id());
+    if (GetOrCreateLoader()->IsLowbarMet() &&
+        (request.started_attempt_count() + 1 >= policy_->GetMaxStartedTries() ||
+         request.completed_attempt_count() + 1 >=
+             policy_->GetMaxCompletedTries())) {
+      GetOrCreateLoader()->StartSnapshot();
+      return true;
+    }
+  }
+  return false;
 }
 
 void PrerenderingOffliner::SetLoaderForTesting(

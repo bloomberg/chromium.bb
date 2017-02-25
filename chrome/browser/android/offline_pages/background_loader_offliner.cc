@@ -123,6 +123,12 @@ void BackgroundLoaderOffliner::Cancel() {
   ResetState();
 }
 
+bool BackgroundLoaderOffliner::HandleTimeout(const SavePageRequest& request) {
+  // TODO(romax) Decide if we want to also take a snapshot on the last timeout
+  // for the background loader offliner.
+  return false;
+}
+
 void BackgroundLoaderOffliner::DidStopLoading() {
   if (!pending_request_.get()) {
     DVLOG(1) << "DidStopLoading called even though no pending request.";

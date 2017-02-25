@@ -75,6 +75,10 @@ class Offliner {
   // CompletionCallback.
   virtual void Cancel() = 0;
 
+  // Handles timeout scenario. Returns true if lowbar is met and try to do a
+  // snapshot of the current webcontents.
+  virtual bool HandleTimeout(const SavePageRequest& request) = 0;
+
   // TODO(dougarnett): add policy support methods.
 };
 
