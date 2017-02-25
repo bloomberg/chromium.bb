@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 
@@ -64,8 +65,39 @@ ChromeOmniboxNavigationObserver::ChromeOmniboxNavigationObserver(
       load_state_(LOAD_NOT_SEEN),
       fetch_state_(FETCH_NOT_COMPLETE) {
   if (alternate_nav_match_.destination_url.is_valid()) {
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("omnibox_navigation_observer", R"(
+          semantics {
+            sender: "Omnibox"
+            description:
+              "Certain omnibox inputs, e.g. single words, may either be search "
+              "queries or attempts to navigate to intranet hostnames. When "
+              "such a hostname is not in the user's history, a background "
+              "request is made to see if it is navigable.  If so, the browser "
+              "will display a prompt on the search results page asking if the "
+              "user wished to navigate instead of searching."
+            trigger:
+              "User attempts to search for a string that is plausibly a "
+              "navigable hostname but is not in the local history."
+            data:
+              "None. However, the hostname itself is a string the user "
+              "searched for, and thus can expose data about the user's "
+              "searches."
+            destination: WEBSITE
+          }
+          policy {
+            cookies_allowed: true
+            cookies_store: "user"
+            setting: "This feature cannot be disabled in settings."
+            policy_exception_justification:
+              "By disabling DefaultSearchProviderEnabled, one can disable "
+              "default search, and once users can't search, they can't hit "
+              "this. More fine-grained policies are requested to be "
+              "implemented (crbug.com/81226)."
+          })");
     fetcher_ = net::URLFetcher::Create(alternate_nav_match_.destination_url,
-                                       net::URLFetcher::HEAD, this);
+                                       net::URLFetcher::HEAD, this,
+                                       traffic_annotation);
     fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
     fetcher_->SetStopOnRedirect(true);
   }
