@@ -61,7 +61,7 @@ TEST_F(WaylandKeyboardTest, Keypress) {
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsKeyEvent());
 
-  auto key_event = event->AsKeyEvent();
+  auto* key_event = event->AsKeyEvent();
   EXPECT_EQ(ui::VKEY_A, key_event->key_code());
   EXPECT_EQ(ET_KEY_PRESSED, key_event->type());
 

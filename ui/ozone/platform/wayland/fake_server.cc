@@ -29,7 +29,7 @@ void DestroyResource(wl_client* client, wl_resource* resource) {
 // wl_compositor
 
 void CreateSurface(wl_client* client, wl_resource* resource, uint32_t id) {
-  auto compositor =
+  auto* compositor =
       static_cast<MockCompositor*>(wl_resource_get_user_data(resource));
   wl_resource* surface_resource = wl_resource_create(
       client, &wl_surface_interface, wl_resource_get_version(resource), id);
@@ -96,7 +96,7 @@ void GetXdgSurface(wl_client* client,
                    wl_resource* resource,
                    uint32_t id,
                    wl_resource* surface_resource) {
-  auto surface =
+  auto* surface =
       static_cast<MockSurface*>(wl_resource_get_user_data(surface_resource));
   if (surface->xdg_surface) {
     wl_resource_post_error(resource, XDG_SHELL_ERROR_ROLE,
@@ -127,7 +127,7 @@ const struct xdg_shell_interface xdg_shell_impl = {
 // wl_seat
 
 void GetPointer(wl_client* client, wl_resource* resource, uint32_t id) {
-  auto seat = static_cast<MockSeat*>(wl_resource_get_user_data(resource));
+  auto* seat = static_cast<MockSeat*>(wl_resource_get_user_data(resource));
   wl_resource* pointer_resource = wl_resource_create(
       client, &wl_pointer_interface, wl_resource_get_version(resource), id);
   if (!pointer_resource) {
@@ -138,7 +138,7 @@ void GetPointer(wl_client* client, wl_resource* resource, uint32_t id) {
 }
 
 void GetKeyboard(wl_client* client, wl_resource* resource, uint32_t id) {
-  auto seat = static_cast<MockSeat*>(wl_resource_get_user_data(resource));
+  auto* seat = static_cast<MockSeat*>(wl_resource_get_user_data(resource));
   wl_resource* keyboard_resource = wl_resource_create(
       client, &wl_keyboard_interface, wl_resource_get_version(resource), id);
   if (!keyboard_resource) {
@@ -228,7 +228,7 @@ ServerObject::~ServerObject() {
 
 // static
 void ServerObject::OnResourceDestroyed(wl_resource* resource) {
-  auto obj = static_cast<ServerObject*>(wl_resource_get_user_data(resource));
+  auto* obj = static_cast<ServerObject*>(wl_resource_get_user_data(resource));
   obj->resource_ = nullptr;
 }
 
@@ -292,7 +292,7 @@ void Global::Bind(wl_client* client,
                   void* data,
                   uint32_t version,
                   uint32_t id) {
-  auto global = static_cast<Global*>(data);
+  auto* global = static_cast<Global*>(data);
   wl_resource* resource = wl_resource_create(
       client, global->interface_, std::min(version, global->version_), id);
   if (!resource) {
@@ -308,7 +308,7 @@ void Global::Bind(wl_client* client,
 
 // static
 void Global::OnResourceDestroyed(wl_resource* resource) {
-  auto global = static_cast<Global*>(wl_resource_get_user_data(resource));
+  auto* global = static_cast<Global*>(wl_resource_get_user_data(resource));
   if (global->resource_ == resource)
     global->resource_ = nullptr;
 }

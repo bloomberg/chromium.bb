@@ -292,7 +292,7 @@ void WindowManager::OnDisplaysAquired(
   windows_.clear();
 
   gfx::Point origin;
-  for (auto display : displays) {
+  for (auto* display : displays) {
     if (!display->native_mode()) {
       LOG(ERROR) << "Display " << display->display_id()
                  << " doesn't have a native mode";
