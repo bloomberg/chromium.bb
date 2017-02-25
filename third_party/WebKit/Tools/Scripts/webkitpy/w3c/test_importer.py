@@ -377,7 +377,7 @@ class TestImporter(object):
         ] + ['--cc=' + email_address for email_address in directory_owners])
 
     def get_directory_owners(self):
-        """Returns a list of email addresses of owners of changed tests."""
+        """Returns a mapping of email addresses to owners of changed tests."""
         _log.info('Gathering directory owners emails to CC.')
         changed_files = self.host.git().changed_files()
         extractor = DirectoryOwnersExtractor(self.fs)
@@ -385,6 +385,11 @@ class TestImporter(object):
         return extractor.list_owners(changed_files)
 
     def _cl_description(self, directory_owners):
+        """Returns a CL description string.
+
+        Args:
+            directory_owners: A dict of tuples of owner names to lists of directories.
+        """
         description = self.check_run(['git', 'log', '-1', '--format=%B'])
         build_link = current_build_link(self.host)
         if build_link:
@@ -403,9 +408,9 @@ class TestImporter(object):
     @staticmethod
     def _format_directory_owners(directory_owners):
         message_lines = ['Directory owners for changes in this CL:']
-        for owner, directories in sorted(directory_owners.items()):
-            message_lines.append(owner + ':')
-            message_lines.extend(['  ' + d for d in directories])
+        for owner_tuple, directories in sorted(directory_owners.items()):
+            message_lines.append(', '.join(owner_tuple) + ':')
+            message_lines.extend('  ' + d for d in directories)
         return '\n'.join(message_lines)
 
     def fetch_new_expectations_and_baselines(self):

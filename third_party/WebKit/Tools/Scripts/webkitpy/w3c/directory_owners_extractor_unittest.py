@@ -37,9 +37,9 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
 
     def test_list_owners(self):
         self.extractor.owner_map = {
-            'external/wpt/foo': ['a@chromium.org'],
+            'external/wpt/foo': ['a@chromium.org', 'c@chromium.org'],
             'external/wpt/bar': ['b@chromium.org'],
-            'external/wpt/baz': ['a@chromium.org'],
+            'external/wpt/baz': ['a@chromium.org', 'c@chromium.org'],
         }
         self.filesystem.files = {
             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/x/y.html': '',
@@ -54,7 +54,7 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
         ]
         self.assertEqual(
             self.extractor.list_owners(changed_files),
-            {'a@chromium.org': ['external/wpt/foo', 'external/wpt/baz']})
+            {('a@chromium.org', 'c@chromium.org'): ['external/wpt/foo', 'external/wpt/baz']})
 
     def test_extract_owner_positive_cases(self):
         self.assertEqual(self.extractor.extract_owners('## Owners: foo@chromium.org'), ['foo@chromium.org'])

@@ -62,7 +62,8 @@ class DirectoryOwnersExtractor(object):
             changed_files: A list of file paths relative to the repository root.
 
         Returns:
-            A dict mapping owner email addresses to lists of owned directories.
+            A dict mapping tuples of owner email addresses to lists of
+            owned directories.
         """
         tests = [self.finder.layout_test_name(path) for path in changed_files]
         tests = [t for t in tests if t is not None]
@@ -71,6 +72,5 @@ class DirectoryOwnersExtractor(object):
             owned_tests = [t for t in tests if t.startswith(directory)]
             if not owned_tests:
                 continue
-            for owner in owners:
-                email_map[owner].append(directory)
+            email_map[tuple(owners)].append(directory)
         return email_map

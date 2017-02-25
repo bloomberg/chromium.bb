@@ -116,18 +116,18 @@ class TestImporterTest(LoggingTestCase):
         host.executive = MockExecutive(output='Last commit message\n\n')
         importer = TestImporter(host)
         description = importer._cl_description(directory_owners={
-            'someone@chromium.org': ['external/wpt/foo', 'external/wpt/bar'],
-            'someone-else@chromium.org': ['external/wpt/baz'],
+            ('someone@chromium.org',): ['external/wpt/foo', 'external/wpt/bar'],
+            ('x@chromium.org', 'y@chromium.org'): ['external/wpt/baz'],
         })
         self.assertEqual(
             description,
             ('Last commit message\n\n'
              'Directory owners for changes in this CL:\n'
-             'someone-else@chromium.org:\n'
-             '  external/wpt/baz\n'
              'someone@chromium.org:\n'
              '  external/wpt/foo\n'
-             '  external/wpt/bar\n\n'
+             '  external/wpt/bar\n'
+             'x@chromium.org, y@chromium.org:\n'
+             '  external/wpt/baz\n\n'
              'TBR=qyearsley@chromium.org\n'
              'NOEXPORT=true'))
 
@@ -173,7 +173,7 @@ class TestImporterTest(LoggingTestCase):
         git.changed_files = lambda: ['third_party/WebKit/LayoutTests/external/wpt/foo/x.html']
         host.git = lambda: git
         importer = TestImporter(host)
-        self.assertEqual(importer.get_directory_owners(), {'someone@chromium.org': ['external/wpt/foo']})
+        self.assertEqual(importer.get_directory_owners(), {('someone@chromium.org',): ['external/wpt/foo']})
 
     def test_get_directory_owners_no_changed_files(self):
         host = MockHost()
