@@ -40,8 +40,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
 
   scoped_refptr<gl::GLSurface> surface;
-  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
-      gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
     std::unique_ptr<gfx::VSyncProvider> vsync_provider;
 
     if (IsGpuVSyncSignalSupported())
@@ -49,19 +48,26 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     else
       vsync_provider.reset(new gl::VSyncProviderWin(surface_handle));
 
-    if (base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays)) {
-      scoped_refptr<DirectCompositionSurfaceWin> egl_surface =
-          make_scoped_refptr(
-              new DirectCompositionSurfaceWin(delegate, surface_handle));
-      if (!egl_surface->Initialize(std::move(vsync_provider)))
-        return nullptr;
-      surface = egl_surface;
+    if (gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
+      if (base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays)) {
+        scoped_refptr<DirectCompositionSurfaceWin> egl_surface =
+            make_scoped_refptr(
+                new DirectCompositionSurfaceWin(delegate, surface_handle));
+        if (!egl_surface->Initialize(std::move(vsync_provider)))
+          return nullptr;
+        surface = egl_surface;
+      } else {
+        scoped_refptr<ChildWindowSurfaceWin> egl_surface = make_scoped_refptr(
+            new ChildWindowSurfaceWin(delegate, surface_handle));
+        if (!egl_surface->Initialize(std::move(vsync_provider)))
+          return nullptr;
+        surface = egl_surface;
+      }
     } else {
-      scoped_refptr<ChildWindowSurfaceWin> egl_surface = make_scoped_refptr(
-          new ChildWindowSurfaceWin(delegate, surface_handle));
-      if (!egl_surface->Initialize(std::move(vsync_provider)))
+      surface = gl::init::CreateNativeViewGLSurfaceEGL(
+          surface_handle, std::move(vsync_provider));
+      if (!surface)
         return nullptr;
-      surface = egl_surface;
     }
   } else {
     surface = gl::init::CreateViewGLSurface(surface_handle);

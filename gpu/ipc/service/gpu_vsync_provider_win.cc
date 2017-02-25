@@ -190,11 +190,12 @@ void GpuVSyncWorker::WaitForVSyncOnThread() {
     OpenAdapter(monitor_info.szDevice);
   }
 
-  if (WaitForVBlankEvent()) {
-    vsync_provider_->GetVSyncParameters(
-        base::Bind(&GpuVSyncWorker::SendVSyncUpdate, base::Unretained(this),
-                   base::TimeTicks::Now()));
-  }
+  // Crash if WaitForVBlankEvent fails to avoid spinning the loop.
+  CHECK(WaitForVBlankEvent());
+
+  vsync_provider_->GetVSyncParameters(
+      base::Bind(&GpuVSyncWorker::SendVSyncUpdate, base::Unretained(this),
+                 base::TimeTicks::Now()));
 
   Reschedule();
 }
@@ -209,7 +210,7 @@ void GpuVSyncWorker::SendVSyncUpdate(base::TimeTicks now,
     // be up to 2-3 vsync cycles in the past or in the future.
     // The adjustment formula was suggested here:
     // http://www.vsynctester.com/firefoxisbroken.html
-    base::TimeDelta adjustment =
+    adjustment =
         ((now - timestamp + interval / 8) % interval + interval) % interval -
         interval / 8;
     timestamp = now - adjustment;
