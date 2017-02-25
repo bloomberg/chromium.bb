@@ -32,7 +32,16 @@ void FragmentPositionUpdated(const NGPhysicalFragment& fragment) {
 
   DCHECK(layout_box->parent()) << "Should be called on children only.";
 
-  layout_box->setX(fragment.LeftOffset());
+  // LegacyLayout flips vertical-rl horizontal coordinates before paint.
+  // NGLayout flips X location for LegacyLayout compatibility.
+  LayoutBlock* containing_block = layout_box->containingBlock();
+  if (containing_block->styleRef().isFlippedBlocksWritingMode()) {
+    LayoutUnit container_width = containing_block->size().width();
+    layout_box->setX(container_width - fragment.LeftOffset() -
+                     fragment.Width());
+  } else {
+    layout_box->setX(fragment.LeftOffset());
+  }
   layout_box->setY(fragment.TopOffset());
 }
 
