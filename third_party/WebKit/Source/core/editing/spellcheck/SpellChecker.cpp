@@ -76,12 +76,16 @@ bool isPositionInTextArea(const Position& position) {
 static bool isSpellCheckingEnabledFor(const Position& position) {
   if (position.isNull())
     return false;
-  // TODO(tkent): The following password type check should be done in
-  // HTMLElement::spellcheck(). crbug.com/371567
   if (TextControlElement* textControl = enclosingTextControl(position)) {
-    if (isHTMLInputElement(textControl) &&
-        toHTMLInputElement(textControl)->type() == InputTypeNames::password)
-      return false;
+    if (isHTMLInputElement(textControl)) {
+      HTMLInputElement& input = toHTMLInputElement(*textControl);
+      // TODO(tkent): The following password type check should be done in
+      // HTMLElement::spellcheck(). crbug.com/371567
+      if (input.type() == InputTypeNames::password)
+        return false;
+      if (!input.isFocusedElementInDocument())
+        return false;
+    }
   }
   if (HTMLElement* element =
           Traversal<HTMLElement>::firstAncestorOrSelf(*position.anchorNode())) {
