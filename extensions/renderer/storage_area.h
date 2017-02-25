@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_RENDERER_STORAGE_AREA_H_
 #define EXTENSIONS_RENDERER_STORAGE_AREA_H_
 
-#include <map>
 #include <string>
 
 #include "base/macros.h"
@@ -18,7 +17,6 @@ class Arguments;
 
 namespace extensions {
 class APIRequestHandler;
-class APISignature;
 class APITypeReferenceMap;
 
 // Implementation of the storage.StorageArea custom type used in the
@@ -41,21 +39,11 @@ class StorageArea {
                           gin::Arguments* arguments);
 
  private:
-  // Returns the schema associated with the specified function.
-  // TODO(devlin): Other custom types will need this, too; move it out of here
-  // when more exist.
-  const APISignature& GetFunctionSchema(base::StringPiece api_name,
-                                        base::StringPiece type_name,
-                                        base::StringPiece function_name);
-
   APIRequestHandler* request_handler_;
 
   const APITypeReferenceMap* type_refs_;
 
   std::string name_;
-
-  // TODO(devlin): See GetFunctionSchema.
-  std::map<std::string, std::unique_ptr<APISignature>> signatures_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageArea);
 };

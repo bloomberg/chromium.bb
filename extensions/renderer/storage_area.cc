@@ -6,11 +6,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
 #include "extensions/common/api/storage.h"
-#include "extensions/common/extension_api.h"
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/api_signature.h"
+#include "extensions/renderer/api_type_reference_map.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -193,9 +192,12 @@ void StorageArea::HandleFunctionCall(const std::string& method_name,
   std::unique_ptr<base::ListValue> converted_arguments;
   v8::Local<v8::Function> callback;
   std::string error;
-  if (!GetFunctionSchema("storage", "storage.StorageArea", method_name)
-           .ParseArgumentsToJSON(context, argument_list, *type_refs_,
-                                 &converted_arguments, &callback, &error)) {
+  const APISignature* signature = type_refs_->GetTypeMethodSignature(
+      base::StringPrintf("%s.%s", "storage.StorageArea", method_name.c_str()));
+  DCHECK(signature);
+  if (!signature->ParseArgumentsToJSON(context, argument_list, *type_refs_,
+                                       &converted_arguments, &callback,
+                                       &error)) {
     arguments->ThrowTypeError("Invalid invocation");
     return;
   }
@@ -204,52 +206,6 @@ void StorageArea::HandleFunctionCall(const std::string& method_name,
   request_handler_->StartRequest(context, "storage." + method_name,
                                  std::move(converted_arguments), callback,
                                  v8::Local<v8::Function>());
-}
-
-const APISignature& StorageArea::GetFunctionSchema(
-    base::StringPiece api_name,
-    base::StringPiece type_name,
-    base::StringPiece function_name) {
-  std::string full_name = base::StringPrintf(
-      "%s.%s.%s", api_name.data(), type_name.data(), function_name.data());
-  auto iter = signatures_.find(full_name);
-  if (iter != signatures_.end())
-    return *iter->second;
-
-  const base::DictionaryValue* full_schema =
-      ExtensionAPI::GetSharedInstance()->GetSchema(api_name.as_string());
-  const base::ListValue* types = nullptr;
-  CHECK(full_schema->GetList("types", &types));
-  const base::DictionaryValue* type_schema = nullptr;
-  for (const auto& type : *types) {
-    const base::DictionaryValue* type_dict = nullptr;
-    CHECK(type->GetAsDictionary(&type_dict));
-    std::string id;
-    CHECK(type_dict->GetString("id", &id));
-    if (id == type_name) {
-      type_schema = type_dict;
-      break;
-    }
-  }
-  CHECK(type_schema);
-  const base::ListValue* type_functions = nullptr;
-  CHECK(type_schema->GetList("functions", &type_functions));
-  const base::ListValue* parameters = nullptr;
-  for (const auto& function : *type_functions) {
-    const base::DictionaryValue* function_dict = nullptr;
-    CHECK(function->GetAsDictionary(&function_dict));
-    std::string name;
-    CHECK(function_dict->GetString("name", &name));
-    if (name == function_name) {
-      CHECK(function_dict->GetList("parameters", &parameters));
-      break;
-    }
-  }
-  CHECK(parameters);
-  auto signature = base::MakeUnique<APISignature>(*parameters);
-  const auto* raw_signature = signature.get();
-  signatures_[full_name] = std::move(signature);
-  return *raw_signature;
 }
 
 }  // namespace extensions

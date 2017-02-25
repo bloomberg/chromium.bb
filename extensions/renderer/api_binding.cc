@@ -185,6 +185,23 @@ APIBinding::APIBinding(const std::string& api_name,
         }
       }
       type_refs->AddSpec(id, std::move(argument_spec));
+      // Some types, like storage.StorageArea, have functions associated with
+      // them. Cache the function signatures in the type map.
+      const base::ListValue* type_functions = nullptr;
+      if (type_dict->GetList("functions", &type_functions)) {
+        for (const auto& func : *type_functions) {
+          const base::DictionaryValue* func_dict = nullptr;
+          CHECK(func->GetAsDictionary(&func_dict));
+          std::string function_name;
+          CHECK(func_dict->GetString("name", &function_name));
+
+          const base::ListValue* params = nullptr;
+          CHECK(func_dict->GetList("parameters", &params));
+          type_refs->AddTypeMethodSignature(
+              base::StringPrintf("%s.%s", id.c_str(), function_name.c_str()),
+              base::MakeUnique<APISignature>(*params));
+        }
+      }
     }
   }
 
