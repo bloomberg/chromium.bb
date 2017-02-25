@@ -30,6 +30,7 @@
 #include "jni/WebApkInstaller_jni.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
@@ -556,7 +557,8 @@ void WebApkInstaller::DownloadWebApk(const base::FilePath& output_path,
       download_url, output_path, true, request_context_getter_,
       base::Bind(&WebApkInstaller::OnWebApkDownloaded,
                  weak_ptr_factory_.GetWeakPtr(), output_path, download_url,
-                 retry_if_fails)));
+                 retry_if_fails),
+      NO_TRAFFIC_ANNOTATION_YET));
 }
 
 void WebApkInstaller::OnWebApkDownloaded(const base::FilePath& file_path,

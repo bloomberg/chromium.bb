@@ -20,13 +20,16 @@ using net::URLFetcher;
 
 const int kNumRetries = 1;
 
-FileDownloader::FileDownloader(const GURL& url,
-                               const base::FilePath& path,
-                               bool overwrite,
-                               net::URLRequestContextGetter* request_context,
-                               const DownloadFinishedCallback& callback)
+FileDownloader::FileDownloader(
+    const GURL& url,
+    const base::FilePath& path,
+    bool overwrite,
+    net::URLRequestContextGetter* request_context,
+    const DownloadFinishedCallback& callback,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : callback_(callback),
-      fetcher_(URLFetcher::Create(url, URLFetcher::GET, this)),
+      fetcher_(
+          URLFetcher::Create(url, URLFetcher::GET, this, traffic_annotation)),
       local_path_(path),
       weak_ptr_factory_(this) {
   fetcher_->SetRequestContext(request_context);

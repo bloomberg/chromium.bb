@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
@@ -42,7 +43,8 @@ class FileDownloader : public net::URLFetcherDelegate {
                  const base::FilePath& path,
                  bool overwrite,
                  net::URLRequestContextGetter* request_context,
-                 const DownloadFinishedCallback& callback);
+                 const DownloadFinishedCallback& callback,
+                 const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~FileDownloader() override;
 
   static bool IsSuccess(Result result) { return result != FAILED; }
