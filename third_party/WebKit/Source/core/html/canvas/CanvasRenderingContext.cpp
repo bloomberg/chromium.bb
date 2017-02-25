@@ -33,9 +33,13 @@
 
 constexpr const char* kLegacyCanvasColorSpaceName = "legacy-srgb";
 constexpr const char* kSRGBCanvasColorSpaceName = "srgb";
-constexpr const char* kLinearRGBCanvasColorSpaceName = "linear-rgb";
-constexpr const char* kRec2020CanvasColorSpaceName = "rec-2020";
+constexpr const char* kRec2020CanvasColorSpaceName = "rec2020";
 constexpr const char* kP3CanvasColorSpaceName = "p3";
+
+constexpr const char* kRGBA8CanvasPixelFormatName = "8-8-8-8";
+constexpr const char* kRGB10A2CanvasPixelFormatName = "10-10-10-2";
+constexpr const char* kRGBA12CanvasPixelFormatName = "12-12-12-12";
+constexpr const char* kF16CanvasPixelFormatName = "float16";
 
 namespace blink {
 
@@ -46,22 +50,34 @@ CanvasRenderingContext::CanvasRenderingContext(
     : m_canvas(canvas),
       m_offscreenCanvas(offscreenCanvas),
       m_colorSpace(kLegacyCanvasColorSpace),
+      m_pixelFormat(kRGBA8CanvasPixelFormat),
+      m_linearPixelMath(false),
       m_creationAttributes(attrs) {
   if (RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() &&
       RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-    if (m_creationAttributes.colorSpace() == kSRGBCanvasColorSpaceName)
-      m_colorSpace = kSRGBCanvasColorSpace;
-    else if (m_creationAttributes.colorSpace() ==
-             kLinearRGBCanvasColorSpaceName)
-      m_colorSpace = kLinearRGBCanvasColorSpace;
-    else if (m_creationAttributes.colorSpace() == kRec2020CanvasColorSpaceName)
+    // Set the default color space to SRGB and continue
+    m_colorSpace = kSRGBCanvasColorSpace;
+    if (m_creationAttributes.colorSpace() == kRec2020CanvasColorSpaceName)
       m_colorSpace = kRec2020CanvasColorSpace;
     else if (m_creationAttributes.colorSpace() == kP3CanvasColorSpaceName)
       m_colorSpace = kP3CanvasColorSpace;
+
+    // For now, we only support RGBA8 (for SRGB) and F16 (for all). Everything
+    // else falls back to SRGB + RGBA8.
+    if (m_creationAttributes.pixelFormat() == kF16CanvasPixelFormatName) {
+      m_pixelFormat = kF16CanvasPixelFormat;
+      m_linearPixelMath = true;
+    } else {
+      m_colorSpace = kSRGBCanvasColorSpace;
+      m_pixelFormat = kRGBA8CanvasPixelFormat;
+    }
   }
-  // Make m_creationAttributes reflect the effective colorSpace rather than the
-  // requested one
+
+  // Make m_creationAttributes reflect the effective colorSpace, pixelFormat and
+  // linearPixelMath rather than the requested one.
   m_creationAttributes.setColorSpace(colorSpaceAsString());
+  m_creationAttributes.setPixelFormat(pixelFormatAsString());
+  m_creationAttributes.setLinearPixelMath(linearPixelMath());
 }
 
 WTF::String CanvasRenderingContext::colorSpaceAsString() const {
@@ -70,8 +86,6 @@ WTF::String CanvasRenderingContext::colorSpaceAsString() const {
       return kLegacyCanvasColorSpaceName;
     case kSRGBCanvasColorSpace:
       return kSRGBCanvasColorSpaceName;
-    case kLinearRGBCanvasColorSpace:
-      return kLinearRGBCanvasColorSpaceName;
     case kRec2020CanvasColorSpace:
       return kRec2020CanvasColorSpaceName;
     case kP3CanvasColorSpace:
@@ -81,13 +95,29 @@ WTF::String CanvasRenderingContext::colorSpaceAsString() const {
   return "";
 }
 
+WTF::String CanvasRenderingContext::pixelFormatAsString() const {
+  switch (m_pixelFormat) {
+    case kRGBA8CanvasPixelFormat:
+      return kRGBA8CanvasPixelFormatName;
+    case kRGB10A2CanvasPixelFormat:
+      return kRGB10A2CanvasPixelFormatName;
+    case kRGBA12CanvasPixelFormat:
+      return kRGBA12CanvasPixelFormatName;
+    case kF16CanvasPixelFormat:
+      return kF16CanvasPixelFormatName;
+  };
+  CHECK(false);
+  return "";
+}
+
 gfx::ColorSpace CanvasRenderingContext::gfxColorSpace() const {
   switch (m_colorSpace) {
     case kLegacyCanvasColorSpace:
-    case kSRGBCanvasColorSpace:
       return gfx::ColorSpace::CreateSRGB();
-    case kLinearRGBCanvasColorSpace:
-      return gfx::ColorSpace::CreateSCRGBLinear();
+    case kSRGBCanvasColorSpace:
+      if (m_pixelFormat == kF16CanvasPixelFormat)
+        return gfx::ColorSpace::CreateSCRGBLinear();
+      return gfx::ColorSpace::CreateSRGB();
     case kRec2020CanvasColorSpace:
       return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
                              gfx::ColorSpace::TransferID::IEC61966_2_1);
@@ -117,14 +147,9 @@ ColorBehavior CanvasRenderingContext::colorBehaviorForMediaDrawnToCanvas()
 }
 
 SkColorType CanvasRenderingContext::colorType() const {
-  switch (m_colorSpace) {
-    case kLinearRGBCanvasColorSpace:
-    case kRec2020CanvasColorSpace:
-    case kP3CanvasColorSpace:
-      return kRGBA_F16_SkColorType;
-    default:
-      return kN32_SkColorType;
-  }
+  if (m_pixelFormat == kF16CanvasPixelFormat)
+    return kRGBA_F16_SkColorType;
+  return kN32_SkColorType;
 }
 
 void CanvasRenderingContext::dispose() {

@@ -1,0 +1,15 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[PermissiveDictionaryConversion]
+dictionary CanvasRenderingContext2DSettings {
+    boolean alpha = true;
+
+    // TODO(crbug.com/637288): Do we keep "legacy-srgb" as the default?
+    // Must decide before shipping.
+    [RuntimeEnabled=ExperimentalCanvasFeatures] CanvasColorSpace colorSpace = "legacy-srgb";
+    [RuntimeEnabled=ExperimentalCanvasFeatures] CanvasPixelFormat pixelFormat = "8-8-8-8";
+    [RuntimeEnabled=ExperimentalCanvasFeatures] boolean linearPixelMath = false;
+};
+

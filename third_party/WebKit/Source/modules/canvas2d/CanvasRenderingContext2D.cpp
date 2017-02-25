@@ -967,9 +967,11 @@ WebLayer* CanvasRenderingContext2D::platformLayer() const {
 }
 
 void CanvasRenderingContext2D::getContextAttributes(
-    Canvas2DContextAttributes& attrs) const {
-  attrs.setAlpha(creationAttributes().alpha());
-  attrs.setColorSpace(colorSpaceAsString());
+    CanvasRenderingContext2DSettings& settings) const {
+  settings.setAlpha(creationAttributes().alpha());
+  settings.setColorSpace(colorSpaceAsString());
+  settings.setPixelFormat(pixelFormatAsString());
+  settings.setLinearPixelMath(linearPixelMath());
 }
 
 void CanvasRenderingContext2D::drawFocusIfNeeded(Element* element) {

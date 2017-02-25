@@ -35,7 +35,7 @@
 #include "core/svg/SVGResourceClient.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/BaseRenderingContext2D.h"
-#include "modules/canvas2d/Canvas2DContextAttributes.h"
+#include "modules/canvas2d/CanvasRenderingContext2DSettings.h"
 #include "modules/canvas2d/CanvasRenderingContext2DState.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/heap/GarbageCollected.h"
@@ -123,7 +123,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void strokeText(const String& text, double x, double y, double maxWidth);
   TextMetrics* measureText(const String& text);
 
-  void getContextAttributes(Canvas2DContextAttributes&) const;
+  void getContextAttributes(CanvasRenderingContext2DSettings&) const;
 
   void drawFocusIfNeeded(Element*);
   void drawFocusIfNeeded(Path2D*, Element*);

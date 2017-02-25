@@ -97,6 +97,8 @@ PassRefPtr<Image> FakeImageSource::getSourceImageForCanvas(
 
 //============================================================================
 
+enum LinearPixelMathState { LinearPixelMathDisabled, LinearPixelMathEnabled };
+
 class CanvasRenderingContext2DTest : public ::testing::Test {
  protected:
   CanvasRenderingContext2DTest();
@@ -119,7 +121,9 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
     return canvasElement().buffer()->getGPUMemoryUsage();
   }
 
-  void createContext(OpacityMode, String colorSpace = String());
+  void createContext(OpacityMode,
+                     String colorSpace = String(),
+                     LinearPixelMathState = LinearPixelMathDisabled);
   ScriptState* getScriptState() {
     return ScriptState::forMainWorld(m_canvasElement->frame());
   }
@@ -174,13 +178,20 @@ CanvasRenderingContext2DTest::CanvasRenderingContext2DTest()
       m_opaqueBitmap(IntSize(10, 10), OpaqueBitmap),
       m_alphaBitmap(IntSize(10, 10), TransparentBitmap) {}
 
-void CanvasRenderingContext2DTest::createContext(OpacityMode opacityMode,
-                                                 String colorSpace) {
+void CanvasRenderingContext2DTest::createContext(
+    OpacityMode opacityMode,
+    String colorSpace,
+    LinearPixelMathState linearPixelMathState) {
   String canvasType("2d");
   CanvasContextCreationAttributes attributes;
   attributes.setAlpha(opacityMode == NonOpaque);
-  if (!colorSpace.isEmpty())
+  if (!colorSpace.isEmpty()) {
     attributes.setColorSpace(colorSpace);
+    if (linearPixelMathState == LinearPixelMathEnabled) {
+      attributes.setPixelFormat("float16");
+      attributes.setLinearPixelMath(true);
+    }
+  }
   m_canvasElement->getCanvasRenderingContext(canvasType, attributes);
 }
 
@@ -1211,7 +1222,7 @@ TEST_F(CanvasRenderingContext2DTest,
       ColorBehavior::globalTargetColorSpace();
   ColorBehavior::setGlobalTargetColorSpaceForTesting(AdobeRGBColorSpace());
 
-  createContext(NonOpaque, "linear-rgb");
+  createContext(NonOpaque, "srgb", LinearPixelMathEnabled);
   ColorBehavior behavior = context2d()->drawImageColorBehavior();
   EXPECT_TRUE(behavior.isTransformToTargetColorSpace());
   EXPECT_TRUE(gfx::ColorSpace::CreateSCRGBLinear() ==

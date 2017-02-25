@@ -1,0 +1,59 @@
+<script src="../../../../../resources/testharness.js"></script>
+<script src="../../../../../resources/testharnessreport.js"></script>
+
+<script>
+
+var testScenarios = [
+    ["Test default context creation parameters", {}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+
+    ["Test CanvasColorSpace value srgb", {colorSpace: "srgb"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test CanvasColorSpace value rec2020", {colorSpace: "rec2020"},  {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test CanvasColorSpace value p3", {colorSpace: "p3"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+
+    ["Test CanvasPixelFormat value 8-8-8-8", {pixelFormat: "8-8-8-8"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test CanvasPixelFormat value 10-10-10-2", {pixelFormat: "10-10-10-2"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test CanvasPixelFormat value 12-12-12-12", {pixelFormat: "12-12-12-12"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test CanvasPixelFormat value float16", {pixelFormat: "float16"}, {colorSpace: "srgb", pixelFormat: "float16", linearPixelMath: true}],
+
+    ["Test supported CanvasColorSpace and CanvasPixelFormat combination: srgb/8-8-8-8", {colorSpace: "srgb", pixelFormat: "8-8-8-8"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test not-supported CanvasColorSpace and CanvasPixelFormat combination: srgb/10-10-10-2", {colorSpace: "srgb", pixelFormat: "10-10-10-2"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test not-supported CanvasColorSpace and CanvasPixelFormat combination: srgb/12-12-12-12", {colorSpace: "srgb", pixelFormat: "12-12-12-12"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test supported CanvasColorSpace and CanvasPixelFormat combination: srgb/float16", {colorSpace: "srgb", pixelFormat: "float16"}, {colorSpace: "srgb", pixelFormat: "float16", linearPixelMath: true}],
+
+    ["Test not-supported CanvasColorSpace and CanvasPixelFormat combination: rec2020/8-8-8-8", {colorSpace: "rec2020", pixelFormat: "8-8-8-8"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test not-supported CanvasColorSpace and CanvasPixelFormat combination: rec2020/10-10-10-2", {colorSpace: "rec2020", pixelFormat: "10-10-10-2"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test not-supported CanvasColorSpace and CanvasPixelFormat combination: rec2020/12-12-12-12", {colorSpace: "rec2020", pixelFormat: "12-12-12-12"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test supported CanvasColorSpace and CanvasPixelFormat combination: rec2020/float16", {colorSpace: "rec2020", pixelFormat: "float16"}, {colorSpace: "rec2020", pixelFormat: "float16", linearPixelMath: true}],
+
+    ["Test not-supported CanvasColorSpace and CanvasPixelFormat combination: p3/8-8-8-8", {colorSpace: "p3", pixelFormat: "8-8-8-8"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test not-supported CanvasColorSpace and CanvasPixelFormat combination: p3/10-10-10-2", {colorSpace: "p3", pixelFormat: "10-10-10-2"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test not-supported CanvasColorSpace and CanvasPixelFormat combination: p3/12-12-12-12", {colorSpace: "p3", pixelFormat: "12-12-12-12"}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test supported CanvasColorSpace and CanvasPixelFormat combination: p3/float16", {colorSpace: "p3", pixelFormat: "float16"}, {colorSpace: "p3", pixelFormat: "float16", linearPixelMath: true}],
+
+    ["Test parameter linearPixelMath srgb/8-8-8-8/false", {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test parameter linearPixelMath srgb/8-8-8-8/true", {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: true}, {colorSpace: "srgb", pixelFormat: "8-8-8-8", linearPixelMath: false}],
+    ["Test parameter linearPixelMath srgb/float16/false", {colorSpace: "srgb", pixelFormat: "float16", linearPixelMath: false}, {colorSpace: "srgb", pixelFormat: "float16", linearPixelMath: true}],
+    ["Test parameter linearPixelMath srgb/float16/true", {colorSpace: "srgb", pixelFormat: "float16", linearPixelMath: true}, {colorSpace: "srgb", pixelFormat: "float16", linearPixelMath: true}],
+
+    ["Test parameter linearPixelMath rec2020/float16/false", {colorSpace: "rec2020", pixelFormat: "float16", linearPixelMath: false}, {colorSpace: "rec2020", pixelFormat: "float16", linearPixelMath: true}],
+    ["Test parameter linearPixelMath rec2020/float16/true", {colorSpace: "rec2020", pixelFormat: "float16", linearPixelMath: true}, {colorSpace: "rec2020", pixelFormat: "float16", linearPixelMath: true}],
+
+    ["Test parameter linearPixelMath p3/float16/false", {colorSpace: "p3", pixelFormat: "float16", linearPixelMath: false}, {colorSpace: "p3", pixelFormat: "float16", linearPixelMath: true}],
+    ["Test parameter linearPixelMath p3/float16/true", {colorSpace: "p3", pixelFormat: "float16", linearPixelMath: true}, {colorSpace: "p3", pixelFormat: "float16", linearPixelMath: true}],
+];
+
+function runTestScenario(contextCreationParameters, expectedContextAttributes) {
+    console.log(contextCreationParameters);
+    var canvas = document. createElement('canvas');
+    var ctx = canvas.getContext('2d', contextCreationParameters);
+    var contextAttributes = ctx.getContextAttributes();
+    console.log(contextAttributes);
+    console.log(expectedContextAttributes);
+    assert_equals(contextAttributes.colorSpace, expectedContextAttributes.colorSpace);
+    assert_equals(contextAttributes.pixelFormat, expectedContextAttributes.pixelFormat);
+    assert_equals(contextAttributes.linearPixelMath, expectedContextAttributes.linearPixelMath);
+}
+
+generate_tests(runTestScenario, testScenarios);
+</script>
+
