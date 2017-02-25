@@ -191,6 +191,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 
 void AddAboutStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
+    {"aboutProductLogoAlt", IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
     {"aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM},
 #if defined(OS_CHROMEOS)
     {"aboutProductTitle", IDS_PRODUCT_OS_NAME},
