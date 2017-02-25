@@ -78,6 +78,12 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
     }
 
     @Override
+    public String getCurrentUrl() {
+        // TODO(yusufo) : Consider using this for all calls from getTab() for accessing url.
+        return getTab() != null ? getTab().getUrl() : null;
+    }
+
+    @Override
     public NewTabPage getNewTabPageForCurrentTab() {
         Tab currentTab = getTab();
         if (currentTab != null && currentTab.getNativePage() instanceof NewTabPage) {

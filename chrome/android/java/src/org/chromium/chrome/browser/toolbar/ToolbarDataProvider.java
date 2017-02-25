@@ -17,6 +17,11 @@ public interface ToolbarDataProvider {
     Tab getTab();
 
     /**
+     * @return The current url for the current tab.
+     */
+    String getCurrentUrl();
+
+    /**
      * @return The NewTabPage shown for the current Tab or null if one is not being shown.
      */
     NewTabPage getNewTabPageForCurrentTab();

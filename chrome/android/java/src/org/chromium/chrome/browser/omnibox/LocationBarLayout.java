@@ -1060,7 +1060,7 @@ public class LocationBarLayout extends FrameLayout
         if (mNativeInitialized && mBottomSheet == null && mUrlHasFocus && currentTab != null
                 && !currentTab.isIncognito()) {
             mAutocomplete.startZeroSuggest(currentTab.getProfile(), mUrlBar.getQueryText(),
-                    currentTab.getUrl(), mUrlFocusedFromFakebox);
+                    mToolbarDataProvider.getCurrentUrl(), mUrlFocusedFromFakebox);
         }
     }
 

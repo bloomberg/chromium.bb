@@ -135,6 +135,11 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             }
 
             @Override
+            public String getCurrentUrl() {
+                return null;
+            }
+
+            @Override
             public String getText() {
                 return null;
             }
