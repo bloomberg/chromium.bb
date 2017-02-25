@@ -54,4 +54,8 @@ message PrecacheUnfinishedWork {
   // session start time. The start time is the time just before when top hosts
   // are requested.
   optional int64 start_time = 8;
+
+  // The minimum resource weight that has been fetched so far. Populated only if
+  // global ranking is enabled.
+  optional double min_weight_fetched = 10;
 };

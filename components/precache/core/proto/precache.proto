@@ -20,6 +20,12 @@ message PrecacheResource {
   // How important this resource is for the host. It ranges from 0.0 to 1.0.
   // Higher values mean more important.
   optional double weight_ratio = 3;
+
+  // How important this resource is for the client; a combination of
+  // weight_ratio and TopHost.visits. Populated only in PrecacheUnfinishedWork.
+  // This is a non-negative number, with higher being more important. Its value
+  // depends on PrecacheConfigurationSettings.resource_weight_function.
+  optional double weight = 4;
 };
 
 message PrecacheManifestId {

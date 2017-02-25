@@ -440,6 +440,11 @@ void PrecacheFetcher::RecordCompletionStatistics(
   UMA_HISTOGRAM_CUSTOM_COUNTS("Precache.Fetch.ResponseBytes.Network",
                               unfinished_work.network_bytes(), 1,
                               kMaxResponseBytes, 100);
+
+  if (unfinished_work.has_min_weight_fetched()) {
+    UMA_HISTOGRAM_COUNTS_1000("Precache.Fetch.MinWeight",
+                              unfinished_work.min_weight_fetched() * 1000);
+  }
 }
 
 // static
@@ -479,10 +484,8 @@ PrecacheFetcher::PrecacheFetcher(
   // keeping track of the current resource index.
   for (const auto& resource : unfinished_work->resource()) {
     if (resource.has_url() && resource.has_top_host_name()) {
-      // Weight doesn't matter, as the resources have already been sorted by
-      // this point.
-      resources_to_fetch_.emplace_back(GURL(resource.url()),
-                                       resource.top_host_name(), 0);
+      resources_to_fetch_.emplace_back(
+          GURL(resource.url()), resource.top_host_name(), resource.weight());
     }
   }
   unfinished_work_ = std::move(unfinished_work);
@@ -510,11 +513,13 @@ std::unique_ptr<PrecacheUnfinishedWork> PrecacheFetcher::CancelPrecaching() {
     auto* new_resource = unfinished_work_->add_resource();
     new_resource->set_url(resource.url.spec());
     new_resource->set_top_host_name(resource.referrer);
+    new_resource->set_weight(resource.weight);
   }
   for (const auto& resource : resources_to_fetch_) {
     auto* new_resource = unfinished_work_->add_resource();
     new_resource->set_url(resource.url.spec());
     new_resource->set_top_host_name(resource.referrer);
+    new_resource->set_weight(resource.weight);
   }
   top_hosts_fetching_.clear();
   top_hosts_to_fetch_.clear();
@@ -582,9 +587,8 @@ void PrecacheFetcher::StartNextManifestFetches() {
   }
 }
 
-void PrecacheFetcher::NotifyDone(
-    size_t remaining_manifest_urls_to_fetch,
-    size_t remaining_resource_urls_to_fetch) {
+void PrecacheFetcher::NotifyDone(size_t remaining_manifest_urls_to_fetch,
+                                 size_t remaining_resource_urls_to_fetch) {
   RecordCompletionStatistics(*unfinished_work_,
                              remaining_manifest_urls_to_fetch,
                              remaining_resource_urls_to_fetch);
@@ -839,9 +843,19 @@ void PrecacheFetcher::OnResourceFetchComplete(const Fetcher& source) {
                  source.url(), source.referrer(), base::Time::Now(),
                  source.was_cached(), source.response_bytes()));
 
-  resources_fetching_.remove_if([&source](const ResourceInfo& resource) {
-    return resource.url == source.url();
-  });
+  auto resource =
+      std::find_if(resources_fetching_.begin(), resources_fetching_.end(),
+                   [&source](const ResourceInfo& resource) {
+                     return resource.url == source.url();
+                   });
+  if (resource != resources_fetching_.end()) {
+    if (unfinished_work_->config_settings().global_ranking() &&
+        (!unfinished_work_->has_min_weight_fetched() ||
+         resource->weight < unfinished_work_->min_weight_fetched()))
+      unfinished_work_->set_min_weight_fetched(resource->weight);
+
+    resources_fetching_.erase(resource);
+  }
 
   pool_.Delete(source);
 

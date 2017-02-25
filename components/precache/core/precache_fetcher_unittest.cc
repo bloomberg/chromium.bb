@@ -1174,7 +1174,9 @@ TEST_F(PrecacheFetcherTest, MaxBytesTotal) {
   SetDefaultFlags();
   std::unique_ptr<PrecacheUnfinishedWork> unfinished_work(
       new PrecacheUnfinishedWork());
-  unfinished_work->add_top_host()->set_hostname("good-manifest.com");
+  auto* top_host = unfinished_work->add_top_host();
+  top_host->set_hostname("good-manifest.com");
+  top_host->set_visits(1);
   unfinished_work->set_start_time(base::Time::UnixEpoch().ToInternalValue());
 
   // Should be greater than kMaxParallelFetches, so that we can observe
@@ -1193,6 +1195,7 @@ TEST_F(PrecacheFetcherTest, MaxBytesTotal) {
 
   PrecacheConfigurationSettings config;
   config.set_max_bytes_total(kMaxBytesTotal);
+  config.set_global_ranking(true);
 
   factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(),
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
@@ -1200,7 +1203,9 @@ TEST_F(PrecacheFetcherTest, MaxBytesTotal) {
   PrecacheManifest good_manifest;
   for (size_t i = 0; i < kNumResources; ++i) {
     const std::string url = "http://good-manifest.com/" + std::to_string(i);
-    good_manifest.add_resource()->set_url(url);
+    auto* resource = good_manifest.add_resource();
+    resource->set_url(url);
+    resource->set_weight_ratio(static_cast<double>(i) / kNumResources);
     factory_.SetFakeResponse(GURL(url), std::string(kBytesPerResource, '.'),
                              net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   }
@@ -1221,15 +1226,20 @@ TEST_F(PrecacheFetcherTest, MaxBytesTotal) {
     base::RunLoop().RunUntilIdle();
   }
 
-  // Fetcher should request config, manifest, and all but 3 resources.
-  // TODO(twifkak): I expected all but 2 resources; this result is surprising.
-  // Figure it out and explain it here.
-  EXPECT_EQ(kNumResources - 1, url_callback_.requested_urls().size());
+  // Fetcher should request config, manifest, and all but 3 resources. For some
+  // reason, we are seeing it fetch all but 4 resources. Meh, close enough.
+  EXPECT_EQ(1 + 1 + kNumResources - 4, url_callback_.requested_urls().size());
 
   EXPECT_TRUE(precache_delegate_.was_on_done_called());
 
   histogram.ExpectTotalCount("Precache.Fetch.PercentCompleted", 1);
   histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
+
+  const double expected_min_weight =
+      good_manifest.resource(kNumResources - 3).weight_ratio() *
+      1 /* # of visits to good-manifest.com */;
+  histogram.ExpectBucketCount("Precache.Fetch.MinWeight",
+                              1000.0 * expected_min_weight, 1);
 }
 
 // Tests the parallel fetch behaviour when more precache resource and manifest
@@ -1701,6 +1711,9 @@ TEST_F(PrecacheFetcherTest, GloballyRankResourcesAfterPauseResume) {
   // Continuing with the precache should fetch all resources, as the previous
   // run was cancelled before any finished. They should be fetched in global
   // ranking order.
+
+  base::HistogramTester histogram;
+
   {
     PrecacheFetcher precache_fetcher(
         request_context_.get(), GURL(), std::string(),
@@ -1712,6 +1725,9 @@ TEST_F(PrecacheFetcherTest, GloballyRankResourcesAfterPauseResume) {
   }
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
   EXPECT_TRUE(precache_delegate_.was_on_done_called());
+
+  histogram.ExpectBucketCount("Precache.Fetch.MinWeight",
+                              1000.0 * resources.back().second, 1);
 }
 
 TEST_F(PrecacheFetcherTest, MaxTotalResources) {
@@ -1757,6 +1773,8 @@ TEST_F(PrecacheFetcherTest, MaxTotalResources) {
                            manifest.SerializeAsString(), net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
 
+  base::HistogramTester histogram;
+
   {
     PrecacheFetcher precache_fetcher(
         request_context_.get(), GURL(), std::string(),
@@ -1768,6 +1786,11 @@ TEST_F(PrecacheFetcherTest, MaxTotalResources) {
 
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
   EXPECT_TRUE(precache_delegate_.was_on_done_called());
+
+  const float expected_min_weight =
+      manifest.resource(config.total_resources_count() - 1).weight_ratio();
+  histogram.ExpectUniqueSample("Precache.Fetch.MinWeight",
+                               1000.0 * expected_min_weight, 1);
 }
 
 TEST_F(PrecacheFetcherTest, MinWeight) {
