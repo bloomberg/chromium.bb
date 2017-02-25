@@ -61,7 +61,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/feature_switch.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/button_menu_item_model.h"
@@ -697,8 +696,7 @@ bool AppMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
 // - Learn about the browser and global customisation e.g. settings, help.
 // - Browser relaunch, quit.
 void AppMenuModel::Build() {
-  if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled())
-    CreateActionToolbarOverflowMenu();
+  CreateActionToolbarOverflowMenu();
 
   AddItem(IDC_VIEW_INCOMPATIBILITIES,
       l10n_util::GetStringUTF16(IDS_VIEW_INCOMPATIBILITIES));
