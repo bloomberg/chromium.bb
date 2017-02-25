@@ -9,6 +9,7 @@ mojom("interfaces") {
     "accelerator_controller.mojom",
     "ash_window_type.mojom",
     "cast_config.mojom",
+    "constants.mojom",
     "locale.mojom",
     "media.mojom",
     "new_window.mojom",

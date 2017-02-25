@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -83,7 +84,7 @@ TEST_F(WindowManagerTest, OpenWindow) {
 
   WindowTreeClientDelegate window_tree_delegate;
 
-  connector()->Connect("ash");
+  connector()->Connect(mojom::kServiceName);
 
   // Connect to mus and create a new top level window. The request goes to
   // |ash|, but is async.

@@ -6,6 +6,10 @@
 
 #include "base/command_line.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/interfaces/constants.mojom.h"  // nogncheck
+#endif
+
 namespace mash {
 namespace common {
 
@@ -18,8 +22,13 @@ std::string GetWindowManagerServiceName() {
             kWindowManagerSwitch);
     return service_name;
   }
-  // TODO(beng): move this constant to a mojom file in //ash.
-  return "ash";
+#if defined(OS_CHROMEOS)
+  return ash::mojom::kServiceName;
+#else
+  LOG(FATAL)
+      << "You must specify a window manager e.g. --window-manager=simple_wm";
+  return std::string();
+#endif
 }
 
 }  // namespace common

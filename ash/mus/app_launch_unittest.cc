@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -33,7 +34,7 @@ class AppLaunchTest : public service_manager::test::ServiceTest {
 };
 
 TEST_F(AppLaunchTest, TestQuickLaunch) {
-  connector()->Connect("ash");
+  connector()->Connect(mojom::kServiceName);
   connector()->Connect(mash::quick_launch::mojom::kServiceName);
 
   ui::mojom::WindowServerTestPtr test_interface;
