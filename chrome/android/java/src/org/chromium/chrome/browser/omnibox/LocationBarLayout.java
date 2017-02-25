@@ -1819,11 +1819,6 @@ public class LocationBarLayout extends FrameLayout
         }
     }
 
-    /** TODO(dfalcantara): Revisit after M58. */
-    protected boolean allowsEmptySearchQueries() {
-        return false;
-    }
-
     /**
      * Sets the query string in the omnibox (ensuring the URL bar has focus and triggering
      * autocomplete for the specified query) as if the user typed it.
@@ -1831,7 +1826,7 @@ public class LocationBarLayout extends FrameLayout
      * @param query The query to be set in the omnibox.
      */
     public void setSearchQuery(final String query) {
-        if (!allowsEmptySearchQueries() && TextUtils.isEmpty(query)) return;
+        if (TextUtils.isEmpty(query)) return;
 
         if (!mNativeInitialized) {
             mDeferredNativeRunnables.add(new Runnable() {
