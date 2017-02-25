@@ -31,7 +31,8 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
     DownloadItem::DownloadState state,
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
-    bool opened)
+    bool opened,
+    const std::vector<DownloadItem::ReceivedSlice>& received_slices)
     : guid(guid),
       id(id),
       current_path(current_path),
@@ -51,7 +52,8 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
       state(state),
       danger_type(danger_type),
       interrupt_reason(interrupt_reason),
-      opened(opened) {}
+      opened(opened),
+      received_slices(received_slices) {}
 
 MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
     const CreateDownloadItemAdapter& rhs)
@@ -73,7 +75,8 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
       state(rhs.state),
       danger_type(rhs.danger_type),
       interrupt_reason(rhs.interrupt_reason),
-      opened(rhs.opened) {}
+      opened(rhs.opened),
+      received_slices(rhs.received_slices) {}
 
 MockDownloadManager::CreateDownloadItemAdapter::~CreateDownloadItemAdapter() {}
 
@@ -90,7 +93,8 @@ bool MockDownloadManager::CreateDownloadItemAdapter::operator==(
       etag == rhs.etag && last_modified == rhs.last_modified &&
       received_bytes == rhs.received_bytes && total_bytes == rhs.total_bytes &&
       state == rhs.state && danger_type == rhs.danger_type &&
-      interrupt_reason == rhs.interrupt_reason && opened == rhs.opened);
+      interrupt_reason == rhs.interrupt_reason && opened == rhs.opened &&
+      received_slices == rhs.received_slices);
 }
 
 MockDownloadManager::MockDownloadManager() {}
@@ -126,12 +130,13 @@ DownloadItem* MockDownloadManager::CreateDownloadItem(
     DownloadItem::DownloadState state,
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
-    bool opened) {
+    bool opened,
+    const std::vector<DownloadItem::ReceivedSlice>& received_slices) {
   CreateDownloadItemAdapter adapter(
       guid, id, current_path, target_path, url_chain, referrer_url, site_url,
       tab_url, tab_referrer_url, mime_type, original_mime_type, start_time,
       end_time, etag, last_modified, received_bytes, total_bytes, hash, state,
-      danger_type, interrupt_reason, opened);
+      danger_type, interrupt_reason, opened, received_slices);
   return MockCreateDownloadItem(adapter);
 }
 

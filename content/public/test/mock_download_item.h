@@ -88,6 +88,8 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(AllDataSaved, bool());
   MOCK_CONST_METHOD0(GetTotalBytes, int64_t());
   MOCK_CONST_METHOD0(GetReceivedBytes, int64_t());
+  MOCK_CONST_METHOD0(GetReceivedSlices,
+                     const std::vector<DownloadItem::ReceivedSlice>&());
   MOCK_CONST_METHOD0(GetStartTime, base::Time());
   MOCK_CONST_METHOD0(GetEndTime, base::Time());
   MOCK_METHOD0(CanShowInFolder, bool());

@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/content/browser/download_constants_utils.h"
+#include "components/history/content/browser/download_conversions.h"
 
 #include "base/logging.h"
 #include "components/history/core/browser/download_constants.h"
@@ -122,6 +122,26 @@ uint32_t ToContentDownloadId(DownloadId id) {
 DownloadId ToHistoryDownloadId(uint32_t id) {
   DCHECK_NE(id, content::DownloadItem::kInvalidId);
   return static_cast<DownloadId>(id);
+}
+
+std::vector<content::DownloadItem::ReceivedSlice> ToContentReceivedSlices(
+    const std::vector<DownloadSliceInfo>& slice_infos) {
+  std::vector<content::DownloadItem::ReceivedSlice> result;
+
+  for (const auto& slice_info : slice_infos)
+    result.emplace_back(slice_info.offset, slice_info.received_bytes);
+
+  return result;
+}
+
+std::vector<DownloadSliceInfo> GetHistoryDownloadSliceInfos(
+    const content::DownloadItem& item) {
+  std::vector<DownloadSliceInfo> result;
+
+  for (const auto& slice : item.GetReceivedSlices())
+    result.emplace_back(item.GetId(), slice.offset, slice.received_bytes);
+
+  return result;
 }
 
 }  // namespace history

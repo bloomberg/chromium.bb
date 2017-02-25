@@ -51,30 +51,32 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Constructing from persistent store:
   // |net_log| is constructed externally for our use.
-  DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                   const std::string& guid,
-                   uint32_t id,
-                   const base::FilePath& current_path,
-                   const base::FilePath& target_path,
-                   const std::vector<GURL>& url_chain,
-                   const GURL& referrer_url,
-                   const GURL& site_url,
-                   const GURL& tab_url,
-                   const GURL& tab_referrer_url,
-                   const std::string& mime_type,
-                   const std::string& original_mime_type,
-                   const base::Time& start_time,
-                   const base::Time& end_time,
-                   const std::string& etag,
-                   const std::string& last_modified,
-                   int64_t received_bytes,
-                   int64_t total_bytes,
-                   const std::string& hash,
-                   DownloadItem::DownloadState state,
-                   DownloadDangerType danger_type,
-                   DownloadInterruptReason interrupt_reason,
-                   bool opened,
-                   const net::NetLogWithSource& net_log);
+  DownloadItemImpl(
+      DownloadItemImplDelegate* delegate,
+      const std::string& guid,
+      uint32_t id,
+      const base::FilePath& current_path,
+      const base::FilePath& target_path,
+      const std::vector<GURL>& url_chain,
+      const GURL& referrer_url,
+      const GURL& site_url,
+      const GURL& tab_url,
+      const GURL& tab_referrer_url,
+      const std::string& mime_type,
+      const std::string& original_mime_type,
+      const base::Time& start_time,
+      const base::Time& end_time,
+      const std::string& etag,
+      const std::string& last_modified,
+      int64_t received_bytes,
+      int64_t total_bytes,
+      const std::string& hash,
+      DownloadItem::DownloadState state,
+      DownloadDangerType danger_type,
+      DownloadInterruptReason interrupt_reason,
+      bool opened,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
+      const net::NetLogWithSource& net_log);
 
   // Constructing for a regular download.
   // |net_log| is constructed externally for our use.
@@ -150,6 +152,8 @@ class CONTENT_EXPORT DownloadItemImpl
   bool AllDataSaved() const override;
   int64_t GetTotalBytes() const override;
   int64_t GetReceivedBytes() const override;
+  const std::vector<DownloadItem::ReceivedSlice>& GetReceivedSlices()
+      const override;
   base::Time GetStartTime() const override;
   base::Time GetEndTime() const override;
   bool CanShowInFolder() override;
@@ -673,6 +677,9 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Server's ETAG for the file.
   std::string etag_;
+
+  // The data slices that have been received so far.
+  std::vector<DownloadItem::ReceivedSlice> received_slices_;
 
   // Net log to use for this download.
   const net::NetLogWithSource net_log_;

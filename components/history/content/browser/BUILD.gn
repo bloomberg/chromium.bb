@@ -6,8 +6,8 @@ static_library("browser") {
   sources = [
     "content_visit_delegate.cc",
     "content_visit_delegate.h",
-    "download_constants_utils.cc",
-    "download_constants_utils.h",
+    "download_conversions.cc",
+    "download_conversions.h",
     "history_context_helper.cc",
     "history_context_helper.h",
     "history_database_helper.cc",
@@ -29,6 +29,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "content_history_backend_db_unittest.cc",
+    "download_conversions_unittest.cc",
   ]
   deps = [
     ":browser",

@@ -326,6 +326,13 @@ int64_t FakeDownloadItem::GetReceivedBytes() const {
   return 1;
 }
 
+const std::vector<DownloadItem::ReceivedSlice>&
+FakeDownloadItem::GetReceivedSlices() const {
+  NOTREACHED();
+  static const std::vector<DownloadItem::ReceivedSlice> slices;
+  return slices;
+}
+
 bool FakeDownloadItem::CanShowInFolder() {
   NOTREACHED();
   return true;

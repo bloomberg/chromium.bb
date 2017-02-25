@@ -63,6 +63,7 @@ public:
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log) = 0;
 
   virtual DownloadItemImpl* CreateActiveItem(

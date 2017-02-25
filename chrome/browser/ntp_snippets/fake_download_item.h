@@ -107,6 +107,8 @@ class FakeDownloadItem : public content::DownloadItem {
   bool AllDataSaved() const override;
   int64_t GetTotalBytes() const override;
   int64_t GetReceivedBytes() const override;
+  const std::vector<DownloadItem::ReceivedSlice>& GetReceivedSlices()
+      const override;
   bool CanShowInFolder() override;
   bool CanOpenDownload() override;
   bool ShouldOpenFileBasedOnExtension() override;

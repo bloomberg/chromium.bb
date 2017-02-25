@@ -1,14 +1,15 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CONTENT_BROWSER_DOWNLOAD_CONSTANTS_UTILS_H_
-#define COMPONENTS_HISTORY_CONTENT_BROWSER_DOWNLOAD_CONSTANTS_UTILS_H_
+#ifndef COMPONENTS_HISTORY_CONTENT_BROWSER_DOWNLOAD_CONVERSIONS_H_
+#define COMPONENTS_HISTORY_CONTENT_BROWSER_DOWNLOAD_CONVERSIONS_H_
 
 #include <stdint.h>
 
 #include <string>
 
+#include "components/history/core/browser/download_slice_info.h"
 #include "components/history/core/browser/download_types.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -44,6 +45,17 @@ DownloadInterruptReason ToHistoryDownloadInterruptReason(
 // for kInvalidDownloadId).
 uint32_t ToContentDownloadId(DownloadId id);
 DownloadId ToHistoryDownloadId(uint32_t id);
+
+// Utility function to convert a history::DownloadSliceInfo vector into a
+// vector of content::DownloadItem::ReceivedSlice.
+std::vector<content::DownloadItem::ReceivedSlice> ToContentReceivedSlices(
+    const std::vector<DownloadSliceInfo>& slice_infos);
+
+// Construct a vector of history::DownloadSliceInfo from a
+// content::DownloadItem object.
+std::vector<DownloadSliceInfo> GetHistoryDownloadSliceInfos(
+    const content::DownloadItem& item);
+
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CONTENT_BROWSER_DOWNLOAD_CONSTANTS_UTILS_H_
+#endif  // COMPONENTS_HISTORY_CONTENT_BROWSER_DOWNLOAD_CONVERSIONS_H_

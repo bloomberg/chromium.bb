@@ -150,7 +150,8 @@ class DownloadsCounterTest : public InProcessBrowserTest,
         state,
         danger,
         reason,
-        false);
+        false,
+        std::vector<content::DownloadItem::ReceivedSlice>());
 
     return guid;
   }

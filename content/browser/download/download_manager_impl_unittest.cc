@@ -102,6 +102,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                          DOWNLOAD_INTERRUPT_REASON_NONE,
                          false,
+                         std::vector<DownloadItem::ReceivedSlice>(),
                          net::NetLogWithSource()) {}
   virtual ~MockDownloadItemImpl() {}
 
@@ -268,6 +269,7 @@ class MockDownloadItemFactory
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log) override;
   DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
@@ -340,6 +342,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened,
+    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log) {
   DCHECK(items_.find(download_id) == items_.end());
   MockDownloadItemImpl* result =
@@ -723,7 +726,8 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
       base::Time::Now(), std::string(), std::string(), 10, 10, std::string(),
       DownloadItem::INTERRUPTED, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false);
+      DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false,
+      std::vector<DownloadItem::ReceivedSlice>());
   ASSERT_TRUE(persisted_item);
 
   ASSERT_EQ(persisted_item, download_manager_->GetDownloadByGuid(kGuid));

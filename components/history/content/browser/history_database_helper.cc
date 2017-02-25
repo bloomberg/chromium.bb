@@ -5,7 +5,7 @@
 #include "components/history/content/browser/history_database_helper.h"
 
 #include "base/files/file_path.h"
-#include "components/history/content/browser/download_constants_utils.h"
+#include "components/history/content/browser/download_conversions.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 

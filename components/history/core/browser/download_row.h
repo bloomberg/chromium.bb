@@ -138,6 +138,8 @@ struct DownloadRow {
   std::string by_ext_id;
   std::string by_ext_name;
 
+  // Data slices that have been downloaded so far. The slices must be ordered
+  // by their offset.
   std::vector<DownloadSliceInfo> download_slice_info;
 };
 

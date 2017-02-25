@@ -103,7 +103,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       content::DownloadItem::DownloadState state,
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
-      bool opened) override;
+      bool opened,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
   int InProgressCount() const override;
   int NonMaliciousInProgressCount() const override;
   BrowserContext* GetBrowserContext() const override;

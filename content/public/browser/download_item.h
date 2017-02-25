@@ -102,6 +102,21 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
     virtual ~Observer() {}
   };
 
+  // A slice of the target file that has been received so far, used when
+  // parallel downloading is enabled. Slices should have different offsets
+  // so that they don't overlap.
+  struct CONTENT_EXPORT ReceivedSlice {
+    ReceivedSlice(int64_t offset, int64_t received_bytes)
+        : offset(offset), received_bytes(received_bytes) {}
+
+    bool operator==(const ReceivedSlice& rhs) const {
+      return offset == rhs.offset && received_bytes == rhs.received_bytes;
+    }
+
+    int64_t offset;
+    int64_t received_bytes;
+  };
+
   ~DownloadItem() override {}
 
   // Observation ---------------------------------------------------------------
@@ -348,6 +363,10 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // Total number of bytes that have been received and written to the download
   // file.
   virtual int64_t GetReceivedBytes() const = 0;
+
+  // Return the slices that have been received so far, ordered by their offset.
+  // This is only used when parallel downloading is enabled.
+  virtual const std::vector<ReceivedSlice>& GetReceivedSlices() const = 0;
 
   // Time the download was first started. This timestamp is always valid and
   // doesn't change.

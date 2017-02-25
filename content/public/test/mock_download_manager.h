@@ -52,29 +52,32 @@ class MockDownloadManager : public DownloadManager {
     DownloadDangerType danger_type;
     DownloadInterruptReason interrupt_reason;
     bool opened;
+    std::vector<DownloadItem::ReceivedSlice> received_slices;
 
-    CreateDownloadItemAdapter(const std::string& guid,
-                              uint32_t id,
-                              const base::FilePath& current_path,
-                              const base::FilePath& target_path,
-                              const std::vector<GURL>& url_chain,
-                              const GURL& referrer_url,
-                              const GURL& site_url,
-                              const GURL& tab_url,
-                              const GURL& tab_refererr_url,
-                              const std::string& mime_type,
-                              const std::string& original_mime_type,
-                              const base::Time& start_time,
-                              const base::Time& end_time,
-                              const std::string& etag,
-                              const std::string& last_modified,
-                              int64_t received_bytes,
-                              int64_t total_bytes,
-                              const std::string& hash,
-                              DownloadItem::DownloadState state,
-                              DownloadDangerType danger_type,
-                              DownloadInterruptReason interrupt_reason,
-                              bool opened);
+    CreateDownloadItemAdapter(
+        const std::string& guid,
+        uint32_t id,
+        const base::FilePath& current_path,
+        const base::FilePath& target_path,
+        const std::vector<GURL>& url_chain,
+        const GURL& referrer_url,
+        const GURL& site_url,
+        const GURL& tab_url,
+        const GURL& tab_refererr_url,
+        const std::string& mime_type,
+        const std::string& original_mime_type,
+        const base::Time& start_time,
+        const base::Time& end_time,
+        const std::string& etag,
+        const std::string& last_modified,
+        int64_t received_bytes,
+        int64_t total_bytes,
+        const std::string& hash,
+        DownloadItem::DownloadState state,
+        DownloadDangerType danger_type,
+        DownloadInterruptReason interrupt_reason,
+        bool opened,
+        const std::vector<DownloadItem::ReceivedSlice>& received_slices);
     // Required by clang compiler.
     CreateDownloadItemAdapter(const CreateDownloadItemAdapter& rhs);
     ~CreateDownloadItemAdapter();
@@ -112,28 +115,30 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
 
   // Redirects to mock method to get around gmock 10 argument limit.
-  DownloadItem* CreateDownloadItem(const std::string& guid,
-                                   uint32_t id,
-                                   const base::FilePath& current_path,
-                                   const base::FilePath& target_path,
-                                   const std::vector<GURL>& url_chain,
-                                   const GURL& referrer_url,
-                                   const GURL& site_url,
-                                   const GURL& tab_url,
-                                   const GURL& tab_refererr_url,
-                                   const std::string& mime_type,
-                                   const std::string& original_mime_type,
-                                   const base::Time& start_time,
-                                   const base::Time& end_time,
-                                   const std::string& etag,
-                                   const std::string& last_modified,
-                                   int64_t received_bytes,
-                                   int64_t total_bytes,
-                                   const std::string& hash,
-                                   DownloadItem::DownloadState state,
-                                   DownloadDangerType danger_type,
-                                   DownloadInterruptReason interrupt_reason,
-                                   bool opened) override;
+  DownloadItem* CreateDownloadItem(
+      const std::string& guid,
+      uint32_t id,
+      const base::FilePath& current_path,
+      const base::FilePath& target_path,
+      const std::vector<GURL>& url_chain,
+      const GURL& referrer_url,
+      const GURL& site_url,
+      const GURL& tab_url,
+      const GURL& tab_refererr_url,
+      const std::string& mime_type,
+      const std::string& original_mime_type,
+      const base::Time& start_time,
+      const base::Time& end_time,
+      const std::string& etag,
+      const std::string& last_modified,
+      int64_t received_bytes,
+      int64_t total_bytes,
+      const std::string& hash,
+      DownloadItem::DownloadState state,
+      DownloadDangerType danger_type,
+      DownloadInterruptReason interrupt_reason,
+      bool opened,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
 
   MOCK_METHOD1(MockCreateDownloadItem,
                DownloadItem*(CreateDownloadItemAdapter adapter));

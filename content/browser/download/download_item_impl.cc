@@ -121,30 +121,32 @@ const uint32_t DownloadItem::kInvalidId = 0;
 const int DownloadItemImpl::kMaxAutoResumeAttempts = 5;
 
 // Constructor for reading from the history service.
-DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                                   const std::string& guid,
-                                   uint32_t download_id,
-                                   const base::FilePath& current_path,
-                                   const base::FilePath& target_path,
-                                   const std::vector<GURL>& url_chain,
-                                   const GURL& referrer_url,
-                                   const GURL& site_url,
-                                   const GURL& tab_url,
-                                   const GURL& tab_refererr_url,
-                                   const std::string& mime_type,
-                                   const std::string& original_mime_type,
-                                   const base::Time& start_time,
-                                   const base::Time& end_time,
-                                   const std::string& etag,
-                                   const std::string& last_modified,
-                                   int64_t received_bytes,
-                                   int64_t total_bytes,
-                                   const std::string& hash,
-                                   DownloadItem::DownloadState state,
-                                   DownloadDangerType danger_type,
-                                   DownloadInterruptReason interrupt_reason,
-                                   bool opened,
-                                   const net::NetLogWithSource& net_log)
+DownloadItemImpl::DownloadItemImpl(
+    DownloadItemImplDelegate* delegate,
+    const std::string& guid,
+    uint32_t download_id,
+    const base::FilePath& current_path,
+    const base::FilePath& target_path,
+    const std::vector<GURL>& url_chain,
+    const GURL& referrer_url,
+    const GURL& site_url,
+    const GURL& tab_url,
+    const GURL& tab_refererr_url,
+    const std::string& mime_type,
+    const std::string& original_mime_type,
+    const base::Time& start_time,
+    const base::Time& end_time,
+    const std::string& etag,
+    const std::string& last_modified,
+    int64_t received_bytes,
+    int64_t total_bytes,
+    const std::string& hash,
+    DownloadItem::DownloadState state,
+    DownloadDangerType danger_type,
+    DownloadInterruptReason interrupt_reason,
+    bool opened,
+    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
+    const net::NetLogWithSource& net_log)
     : guid_(base::ToUpperASCII(guid)),
       download_id_(download_id),
       target_path_(target_path),
@@ -170,6 +172,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       hash_(hash),
       last_modified_time_(last_modified),
       etag_(etag),
+      received_slices_(received_slices),
       net_log_(net_log),
       weak_ptr_factory_(this) {
   delegate_->Attach();
@@ -722,6 +725,11 @@ int64_t DownloadItemImpl::GetTotalBytes() const {
 
 int64_t DownloadItemImpl::GetReceivedBytes() const {
   return received_bytes_;
+}
+
+const std::vector<DownloadItem::ReceivedSlice>&
+DownloadItemImpl::GetReceivedSlices() const {
+  return received_slices_;
 }
 
 base::Time DownloadItemImpl::GetStartTime() const {

@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "components/history/content/browser/download_constants_utils.h"
+#include "components/history/content/browser/download_conversions.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_service.h"
@@ -235,7 +235,8 @@ class DownloadHistoryTest : public testing::Test {
           history::ToContentDownloadState(row.state),
           history::ToContentDownloadDangerType(row.danger_type),
           history::ToContentDownloadInterruptReason(row.interrupt_reason),
-          row.opened);
+          row.opened,
+          history::ToContentReceivedSlices(row.download_slice_info));
       EXPECT_CALL(manager(), MockCreateDownloadItem(adapter))
         .WillOnce(DoAll(
             InvokeWithoutArgs(
@@ -347,7 +348,8 @@ class DownloadHistoryTest : public testing::Test {
              "abc", 100, 100, state,
              content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
              content::DOWNLOAD_INTERRUPT_REASON_NONE, false, std::string(),
-             std::string(), info);
+             std::string(), std::vector<content::DownloadItem::ReceivedSlice>(),
+             info);
   }
 
   void InitItem(const std::string& guid,
@@ -373,6 +375,8 @@ class DownloadHistoryTest : public testing::Test {
                 bool opened,
                 const std::string& by_extension_id,
                 const std::string& by_extension_name,
+                const std::vector<content::DownloadItem::ReceivedSlice>&
+                    received_slices,
                 history::DownloadRow* info) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -433,6 +437,8 @@ class DownloadHistoryTest : public testing::Test {
         .WillRepeatedly(ReturnRefOfCopy(last_modified));
     EXPECT_CALL(item(index), GetReceivedBytes())
         .WillRepeatedly(Return(received_bytes));
+    EXPECT_CALL(item(index), GetReceivedSlices())
+        .WillRepeatedly(ReturnRefOfCopy(received_slices));
     EXPECT_CALL(item(index), GetTotalBytes())
         .WillRepeatedly(Return(total_bytes));
     EXPECT_CALL(item(index), GetState()).WillRepeatedly(Return(state));
@@ -451,6 +457,9 @@ class DownloadHistoryTest : public testing::Test {
     new extensions::DownloadedByExtension(
         &item(index), by_extension_id, by_extension_name);
 #endif
+
+    info->download_slice_info = history::GetHistoryDownloadSliceInfos(
+        item(index));
 
     std::vector<content::DownloadItem*> items;
     for (size_t i = 0; i < items_.size(); ++i) {
@@ -689,6 +698,16 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Update) {
   // received_bytes
   EXPECT_CALL(item(0), GetReceivedBytes()).WillRepeatedly(Return(101));
   info.received_bytes = 101;
+  item(0).NotifyObserversDownloadUpdated();
+  ExpectDownloadUpdated(info, false);
+
+  // received slices
+  std::vector<content::DownloadItem::ReceivedSlice> slices;
+  slices.push_back(content::DownloadItem::ReceivedSlice(0, 100));
+  slices.push_back(content::DownloadItem::ReceivedSlice(1000, 500));
+  EXPECT_CALL(item(0), GetReceivedSlices()).WillRepeatedly(
+      ReturnRefOfCopy(slices));
+  info.download_slice_info = history::GetHistoryDownloadSliceInfos(item(0));
   item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info, false);
 

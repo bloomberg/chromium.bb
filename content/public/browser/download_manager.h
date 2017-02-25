@@ -150,7 +150,8 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       DownloadItem::DownloadState state,
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
-      bool opened) = 0;
+      bool opened,
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices) = 0;
 
   // The number of in progress (including paused) downloads.
   // Performance note: this loops over all items. If profiling finds that this
