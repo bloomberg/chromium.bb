@@ -33,22 +33,28 @@ Before you can make changes to PATTS, the first thing you need to run
 (from the chroot) is call cros_workon with two relevant ebuilds:
 
 ```
-cros_workon --board=$BOARD start chromeos-assets
+cros_workon --board=$BOARD start chromiumos-assets
 cros_workon --board=$BOARD start common-assets
 ```
 
-Next, make sure you're in the platform/assets directory and run
-```repo start``` and create a branch.
+From outside the root, from anywhere under your top-level ```<repo-dir>```, pull down the relevant sources:
 
 ```
-cd platform/assets
+repo sync
+```
+
+Again, outside the root, make sure you're in the ```<repo-dir>/src/platform/assets``` directory and run
+```repo start``` to create a branch:
+
+```
+cd src/platform/assets
 repo start <branch_name> .
 ```
 
 
 The PATTS data files can be found in this directory:
 
-```platform/assets/speech_synthesis/patts```
+```src/platform/assets/speech_synthesis/patts```
 
 When updating the files, the native client files (nexe) need to be zipped.
 
