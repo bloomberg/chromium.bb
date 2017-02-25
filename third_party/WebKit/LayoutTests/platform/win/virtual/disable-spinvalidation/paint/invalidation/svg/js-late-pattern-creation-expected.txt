@@ -1,0 +1,63 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [33, 23, 624, 189],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [33, 23, 624, 189],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [16, 25, 18, 25],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [8, 12, 17, 26],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGText text",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Pattern on fill'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGResourcePattern pattern id='dynPattern'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

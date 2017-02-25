@@ -10,11 +10,6 @@
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [508, 28, 80, 20],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [508, 28, 80, 20],
-          "reason": "style change"
         }
       ]
     }

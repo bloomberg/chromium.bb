@@ -1,0 +1,145 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 63, 307, 377],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 63, 307, 377],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 63, 307, 377],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 63, 307, 377],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 63, 307, 377],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 63, 307, 377],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 63, 307, 377],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 63, 307, 377],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan id='modify'",
+          "rect": [10, 63, 307, 377],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [10, 63, 307, 377],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGText text",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan id='modify'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'PA'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'SS'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox ' '",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox ' '",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

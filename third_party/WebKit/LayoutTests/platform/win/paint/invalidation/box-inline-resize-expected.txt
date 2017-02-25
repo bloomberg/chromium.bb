@@ -30,11 +30,6 @@
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 84, 32, 67],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutImage IMG id='foo'",
-          "rect": [8, 84, 32, 32],
-          "reason": "forced by layout"
         }
       ]
     }

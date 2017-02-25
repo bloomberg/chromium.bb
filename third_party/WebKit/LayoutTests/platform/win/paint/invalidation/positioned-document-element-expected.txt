@@ -13,33 +13,13 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) HTML class='changed'",
-          "rect": [0, 0, 800, 50],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [8, 16, 784, 18],
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow (positioned) HTML class='changed'",
-          "rect": [100, 100, 452, 50],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [108, 116, 436, 18],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [108, 116, 436, 17],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 16, 436, 17],
           "reason": "forced by layout"
         }
       ]

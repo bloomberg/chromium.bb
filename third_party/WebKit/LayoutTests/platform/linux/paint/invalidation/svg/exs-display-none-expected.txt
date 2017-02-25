@@ -12,31 +12,6 @@
           "reason": "became visible"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [50, 50, 561, 82],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [50, 50, 561, 82],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [50, 50, 561, 82],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [50, 50, 561, 82],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan id='tspan'",
-          "rect": [50, 50, 561, 82],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGText text id='text'",
           "rect": [50, 50, 561, 82],
           "reason": "layoutObject insertion"

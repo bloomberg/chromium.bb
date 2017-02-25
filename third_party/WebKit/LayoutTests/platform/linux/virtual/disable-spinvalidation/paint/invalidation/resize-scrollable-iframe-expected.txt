@@ -1,0 +1,97 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 108, 784, 305],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutIFrame IFRAME id='iframe'",
+          "rect": [8, 108, 300, 300],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [8, 193, 285, 200],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [8, 393, 285, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [93, 108, 200, 285],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [8, 193, 85, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [293, 108, 15, 285],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [93, 108, 15, 85],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [293, 393, 15, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [93, 193, 15, 15],
+          "reason": "scroll"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutIFrame IFRAME id='iframe'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    }
+  ]
+}
+

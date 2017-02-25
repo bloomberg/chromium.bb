@@ -25,26 +25,6 @@
           "object": "LayoutInline (relative positioned) SPAN",
           "rect": [8, 120, 100, 103],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 220, 100, 100],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 220, 100, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 200, 100, 100],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 200, 100, 100],
-          "reason": "bounds change"
         }
       ]
     }

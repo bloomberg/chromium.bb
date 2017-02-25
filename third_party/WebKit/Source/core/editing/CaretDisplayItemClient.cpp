@@ -181,9 +181,8 @@ void CaretDisplayItemClient::invalidatePaintInPreviousLayoutBlock(
                                                       context);
   if (!isImmediateFullPaintInvalidationReason(
           layoutBlockPaintInvalidationReason)) {
-    objectInvalidator.invalidatePaintUsingContainer(
-        *context.paintInvalidationContainer, m_previousVisualRect,
-        PaintInvalidationCaret);
+    objectInvalidator.invalidatePaintRectangleWithContext(
+        m_previousVisualRect, PaintInvalidationCaret);
   }
 
   context.paintingLayer->setNeedsRepaint();

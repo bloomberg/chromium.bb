@@ -112,8 +112,12 @@ class ObjectPaintInvalidatorWithContext : public ObjectPaintInvalidator {
                             const LayoutRect& oldVisualRect,
                             const LayoutRect& newVisualRect);
 
+  void invalidatePaintRectangleWithContext(const LayoutRect&,
+                                           PaintInvalidationReason);
+
  private:
   void invalidateSelectionIfNeeded(PaintInvalidationReason);
+  bool parentFullyInvalidatedOnSameBacking();
 
   const PaintInvalidatorContext& m_context;
 };

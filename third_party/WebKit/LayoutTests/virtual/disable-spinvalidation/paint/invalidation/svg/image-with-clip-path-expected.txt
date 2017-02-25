@@ -1,0 +1,110 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect id='r'",
+          "rect": [0, 0, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r'",
+          "rect": [0, 0, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGContainer g id='g'",
+          "rect": [20, 20, 60, 60],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGContainer g id='g'",
+          "rect": [20, 20, 60, 60],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGImage image",
+          "rect": [20, 20, 60, 60],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGImage image",
+          "rect": [20, 20, 60, 60],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGContainer g id='g'",
+          "rect": [175, 25, 50, 50],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGImage image",
+          "rect": [175, 25, 50, 50],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGRect rect id='r'",
+          "rect": [175, 25, 50, 50],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGContainer g id='g'",
+          "rect": [0, 0, 10, 10],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGImage image",
+          "rect": [0, 0, 10, 10],
+          "reason": "subtree"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGContainer g id='g'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer defs",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGResourceClipper clipPath id='p'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGRect rect id='r'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGImage image",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGContainer g id='g'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer defs",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGResourceClipper clipPath id='p'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGRect rect id='r'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGImage image",
+      "reason": "subtree"
+    }
+  ]
+}
+

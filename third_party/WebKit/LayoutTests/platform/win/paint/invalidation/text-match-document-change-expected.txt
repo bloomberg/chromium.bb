@@ -17,11 +17,6 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [18, 128, 84, 17],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [295, 102, 15, 400],
           "reason": "scroll"

@@ -12,11 +12,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [11, 11, 28, 13],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='div'",
           "rect": [8, 288, 10, 20],
           "reason": "bounds change"

@@ -1,0 +1,75 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV",
+          "rect": [108, 8, 100, 100],
+          "reason": "background obscuration change"
+        },
+        {
+          "object": "LayoutBlockFlow SPAN id='t2' class='blue'",
+          "rect": [108, 8, 100, 100],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 100, 100],
+          "reason": "background obscuration change"
+        },
+        {
+          "object": "LayoutBlockFlow SPAN id='t1'",
+          "rect": [8, 8, 100, 100],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "background obscuration change"
+    },
+    {
+      "object": "LayoutBlockFlow SPAN id='t1'",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV",
+      "reason": "background obscuration change"
+    },
+    {
+      "object": "LayoutBlockFlow SPAN id='t2' class='blue'",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

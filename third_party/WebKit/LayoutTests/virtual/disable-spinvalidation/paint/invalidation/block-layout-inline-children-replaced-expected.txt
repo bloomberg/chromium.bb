@@ -1,0 +1,37 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='target' class='target'",
+          "rect": [0, 116, 402, 152],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [151, 117, 100, 100],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='target' class='target'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

@@ -15,11 +15,6 @@
           "object": "LayoutInline SPAN id='test'",
           "rect": [5, 163, 98, 41],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 166, 92, 35],
-          "reason": "full"
         }
       ]
     }

@@ -1,0 +1,67 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 100, 100, 300],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inline-block-2' class='item'",
+          "rect": [0, 200, 100, 100],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inline-block-1' class='item'",
+          "rect": [0, 100, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inline-block-2' class='item'",
+          "rect": [0, 100, 100, 100],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBR BR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inline-block-1' class='item'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inline-block-2' class='item'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "location change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "location change"
+    }
+  ]
+}
+

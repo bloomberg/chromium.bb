@@ -10,11 +10,6 @@
           "object": "LayoutListItem (positioned) LI",
           "rect": [8, 64, 214, 237],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [8, 64, 214, 232],
-          "reason": "forced by layout"
         }
       ]
     }

@@ -1,0 +1,78 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTable (positioned) TABLE",
+          "rect": [0, 0, 200, 200],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [0, 0, 200, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
+          "rect": [100, 100, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTableCell (anonymous)",
+          "rect": [100, 100, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTableCell TD id='moveMe' class='fixed'",
+          "rect": [100, 100, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='green'",
+          "rect": [0, 100, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='green'",
+          "rect": [0, 100, 100, 100],
+          "reason": "layoutObject removal"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='green'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableCell TD id='moveMe' class='fixed'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTable (positioned) TABLE",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell (anonymous)",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='green'",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

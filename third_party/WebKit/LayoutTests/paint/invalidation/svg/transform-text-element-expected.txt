@@ -7,18 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [8, 58, 400, 100],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [8, 58, 400, 100],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [8, 8, 400, 100],
           "reason": "subtree"
         },
         {

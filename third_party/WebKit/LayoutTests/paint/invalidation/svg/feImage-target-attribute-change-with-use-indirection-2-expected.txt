@@ -15,11 +15,6 @@
           "object": "LayoutSVGContainer use id='use'",
           "rect": [0, 0, 100, 100],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRect rect id='rect'",
-          "rect": [0, 0, 100, 100],
-          "reason": "location change"
         }
       ]
     }

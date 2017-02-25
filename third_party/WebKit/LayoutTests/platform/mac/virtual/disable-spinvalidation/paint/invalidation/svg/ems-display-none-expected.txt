@@ -1,0 +1,102 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [50, 54, 571, 86],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [50, 54, 571, 86],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [50, 54, 571, 86],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [50, 54, 571, 86],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [50, 54, 571, 86],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan id='tspan'",
+          "rect": [50, 54, 571, 86],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text id='text'",
+          "rect": [50, 54, 571, 86],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutSVGText text id='text'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan id='tspan'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Two lines of text should be visible.'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox ' '",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Two lines of text should be visible.'",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

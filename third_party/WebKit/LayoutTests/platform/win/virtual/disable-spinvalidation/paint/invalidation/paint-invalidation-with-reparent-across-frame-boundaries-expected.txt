@@ -1,0 +1,59 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='inner-target'",
+          "rect": [8, 184, 784, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-target'",
+          "rect": [18, 18, 284, 18],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [18, 18, 23, 17],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 184, 23, 17],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='inner-target'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'abc'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-target'",
+      "reason": "layoutObject removal"
+    }
+  ]
+}
+

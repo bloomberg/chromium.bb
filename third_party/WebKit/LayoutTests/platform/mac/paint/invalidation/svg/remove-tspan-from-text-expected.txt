@@ -9,37 +9,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 62, 306, 258],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 306, 258],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 306, 258],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 306, 258],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 62, 306, 258],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [10, 62, 306, 258],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [10, 62, 306, 258],
-          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGTSpan tspan id='remove'",

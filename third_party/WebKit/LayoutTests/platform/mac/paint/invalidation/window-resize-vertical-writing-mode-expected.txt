@@ -17,11 +17,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [8, 8, 897, 214],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [313, 0, 600, 500],
           "reason": "bounds change"
@@ -38,11 +33,6 @@
         },
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [491, 8, 414, 484],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [491, 8, 414, 484],
           "reason": "forced by layout"
         }
@@ -279,11 +269,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [-505, 8, 897, 214],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [0, 0, 400, 600],
           "reason": "bounds change"
@@ -296,11 +281,6 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [47, 8, 345, 584],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [47, 8, 345, 565],
           "reason": "forced by layout"
         }
       ]
@@ -370,16 +350,6 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [47, 8, 345, 584],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [447, 8, 345, 565],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [47, 8, 345, 565],
           "reason": "forced by layout"
         }
       ]

@@ -1,0 +1,72 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTextControl TEXTAREA id='editor'",
+          "rect": [7, 7, 183, 40],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [9, 11, 179, 16],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [11, 11, 175, 16],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutTextControl TEXTAREA id='editor'",
+          "rect": [9, 30, 164, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutTextControl TEXTAREA id='editor'",
+          "rect": [173, 30, 15, 15],
+          "reason": "scroll"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTextControl TEXTAREA id='editor'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutTextControl TEXTAREA id='editor'",
+      "reason": "scroll"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "Caret",
+      "reason": "caret"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox '------------------------------------------------------------'",
+      "reason": "subtree"
+    }
+  ]
+}
+

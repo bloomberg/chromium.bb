@@ -1,0 +1,101 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [18, 148, 200, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [18, 110, 200, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutInline SPAN id='outer'",
+          "rect": [16, 108, 88, 59],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutInline SPAN id='outer'",
+          "rect": [16, 146, 88, 21],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [18, 148, 84, 17],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [18, 110, 84, 17],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline SPAN id='outer'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'CONTENTS'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline SPAN id='outer'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'CONTENTS'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline SPAN id='outer'",
+      "reason": "style change"
+    }
+  ]
+}
+

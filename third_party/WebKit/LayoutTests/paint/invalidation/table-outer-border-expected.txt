@@ -39,27 +39,12 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [15, 15, 117, 134],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [15, 15, 117, 134],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutTableRow TR",
           "rect": [15, 82, 117, 67],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [15, 82, 117, 67],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [15, 15, 117, 67],
-          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableRow TR",

@@ -17,16 +17,6 @@
           "reason": "became visible"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [16, 40, 784, 168],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [16, 40, 784, 168],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [16, 40, 784, 168],
           "reason": "style change"

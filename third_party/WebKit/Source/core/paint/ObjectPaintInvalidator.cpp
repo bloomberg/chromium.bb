@@ -455,15 +455,54 @@ void ObjectPaintInvalidatorWithContext::fullyInvalidatePaint(
   // the other.
   if (!newVisualRect.contains(oldVisualRect)) {
     LayoutRect invalidationRect = oldVisualRect;
-    invalidatePaintUsingContainer(*m_context.paintInvalidationContainer,
-                                  invalidationRect, reason);
+    invalidatePaintRectangleWithContext(invalidationRect, reason);
 
     if (invalidationRect.contains(newVisualRect))
       return;
   }
 
-  invalidatePaintUsingContainer(*m_context.paintInvalidationContainer,
-                                newVisualRect, reason);
+  invalidatePaintRectangleWithContext(newVisualRect, reason);
+}
+
+bool ObjectPaintInvalidatorWithContext::parentFullyInvalidatedOnSameBacking() {
+  if (!m_object.parent() || !m_context.parentContext)
+    return false;
+
+  if (!isImmediateFullPaintInvalidationReason(
+          m_object.parent()->fullPaintInvalidationReason()))
+    return false;
+
+  // Parent and child should have the same paint invalidation container.
+  if (m_context.parentContext->paintInvalidationContainer !=
+      m_context.paintInvalidationContainer)
+    return false;
+
+  // Both parent and child are contents of the paint invalidation container,
+  // so they are on the same backing.
+  if (m_object.parent() != m_context.paintInvalidationContainer)
+    return true;
+
+  // If the paint invalidation container (i.e. parent) uses composited
+  // scrolling, parent and child might be on different backing (scrolling
+  // container vs scrolling contents).
+  return !m_context.paintInvalidationContainer->usesCompositedScrolling();
+}
+
+void ObjectPaintInvalidatorWithContext::invalidatePaintRectangleWithContext(
+    const LayoutRect& rect,
+    PaintInvalidationReason reason) {
+  if (rect.isEmpty())
+    return;
+
+  // If the parent has fully invalidated and its visual rect covers this object
+  // on the same backing, skip the invalidation.
+  if (parentFullyInvalidatedOnSameBacking() &&
+      (m_context.parentContext->oldVisualRect.contains(rect) ||
+       m_context.parentContext->newVisualRect.contains(rect)))
+    return;
+
+  invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, rect,
+                                reason);
 }
 
 DISABLE_CFI_PERF

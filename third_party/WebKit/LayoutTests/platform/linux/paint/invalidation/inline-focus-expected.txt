@@ -17,11 +17,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [0, 36, 395, 19],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutInline A id='link'",
           "rect": [585, -1, 216, 234],
           "reason": "style change"

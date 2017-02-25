@@ -18,18 +18,8 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [234, 15, 300, 50],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [234, 15, 50, 50],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [9, 9, 13, 59],
-          "reason": "forced by layout"
         }
       ]
     }

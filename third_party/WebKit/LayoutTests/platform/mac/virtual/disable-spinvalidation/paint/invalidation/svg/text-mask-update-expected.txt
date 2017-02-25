@@ -1,0 +1,77 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 2, 46, 23],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [10, 2, 46, 23],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGText text id='text1'",
+          "rect": [10, 2, 46, 23],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 32, 43, 23],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text id='text2'",
+          "rect": [10, 32, 43, 23],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [10, 32, 43, 18],
+          "reason": "full"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text id='text1'",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text id='text2'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "full"
+    }
+  ]
+}
+

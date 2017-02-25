@@ -12,19 +12,9 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutSVGContainer use",
-          "rect": [27, 67, 364, 364],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGPath path",
           "rect": [27, 67, 364, 364],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [27, 67, 364, 364],
-          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
@@ -37,19 +27,9 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGContainer use",
-          "rect": [13, 205, 92, 91],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGPath path",
           "rect": [13, 205, 92, 91],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [13, 205, 92, 91],
-          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGViewportContainer svg id='gamesBorder'",

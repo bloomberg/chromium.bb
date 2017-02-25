@@ -1,0 +1,131 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTable TABLE id='table'",
+          "rect": [8, 8, 132, 149],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTable TABLE id='table' class='green'",
+          "rect": [8, 8, 132, 149],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 75, 132, 82],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 75, 132, 82],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 8, 132, 82],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 8, 132, 82],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [15, 15, 117, 134],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [15, 15, 117, 134],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [15, 82, 117, 67],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [15, 82, 117, 67],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [15, 15, 117, 67],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [15, 15, 117, 67],
+          "reason": "layoutObject removal"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTable TABLE id='table'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTable TABLE id='table' class='green'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

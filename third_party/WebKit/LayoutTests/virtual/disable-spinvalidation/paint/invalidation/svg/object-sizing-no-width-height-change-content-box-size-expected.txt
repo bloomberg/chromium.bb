@@ -1,0 +1,69 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow div id='contentBox'",
+          "rect": [8, 8, 402, 402],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutEmbeddedObject object",
+          "rect": [9, 9, 400, 400],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [9, 9, 400, 400],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 9, 400, 400],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [169, 169, 80, 80],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [89, 189, 40, 40],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow div id='contentBox'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutEmbeddedObject object",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGEllipse circle",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

@@ -19,11 +19,6 @@
         {
           "object": "LayoutText #text",
           "rect": [0, 5, 15, 15],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [0, 5, 15, 15],
           "reason": "layoutObject removal"
         }
       ]

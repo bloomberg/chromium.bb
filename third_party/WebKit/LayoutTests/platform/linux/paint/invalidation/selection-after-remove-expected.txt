@@ -15,21 +15,6 @@
           "object": "LayoutText #text",
           "rect": [39, 79, 146, 99],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [67, 158, 39, 20],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [70, 79, 36, 19],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [39, 79, 32, 19],
-          "reason": "forced by layout"
         }
       ]
     }

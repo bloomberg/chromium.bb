@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 2, 46, 23],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [10, 2, 46, 23],
           "reason": "style change"

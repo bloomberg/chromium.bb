@@ -12,16 +12,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutSVGContainer use",
-          "rect": [9, 69, 400, 400],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [9, 69, 400, 400],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
           "rect": [9, 69, 400, 400],
           "reason": "bounds change"

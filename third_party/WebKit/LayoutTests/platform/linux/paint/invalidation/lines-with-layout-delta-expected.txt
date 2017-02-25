@@ -10,11 +10,6 @@
           "object": "LayoutBlockFlow (floating) DIV id='target'",
           "rect": [8, 58, 200, 20],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 58, 37, 19],
-          "reason": "full"
         }
       ]
     }

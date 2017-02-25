@@ -1,0 +1,76 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [0, 34, 800, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [0, 0, 800, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 34, 429, 17],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutInline A id='link'",
+          "rect": [585, -1, 216, 234],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 0, 40, 17],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline A id='link'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Home'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow P",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'crbug.com/424078: ensure inline elements get their outline painted'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

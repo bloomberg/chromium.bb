@@ -1,0 +1,73 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow H2",
+          "rect": [40, 103, 113, 29],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [40, 103, 113, 29],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow H2",
+          "rect": [8, 103, 113, 29],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 103, 113, 29],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 84, 32, 68],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutImage IMG id='foo'",
+          "rect": [8, 84, 32, 32],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutImage IMG id='foo'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow H2",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'Chromium'",
+      "reason": "bounds change"
+    }
+  ]
+}
+

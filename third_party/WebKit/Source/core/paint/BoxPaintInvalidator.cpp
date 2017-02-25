@@ -66,11 +66,11 @@ bool BoxPaintInvalidator::incrementallyInvalidatePaint(
   if (rightDelta.isEmpty() && bottomDelta.isEmpty())
     return false;
 
-  ObjectPaintInvalidator objectPaintInvalidator(m_box);
-  objectPaintInvalidator.invalidatePaintUsingContainer(
-      *m_context.paintInvalidationContainer, rightDelta, reason);
-  objectPaintInvalidator.invalidatePaintUsingContainer(
-      *m_context.paintInvalidationContainer, bottomDelta, reason);
+  ObjectPaintInvalidatorWithContext objectPaintInvalidator(m_box, m_context);
+  objectPaintInvalidator.invalidatePaintRectangleWithContext(rightDelta,
+                                                             reason);
+  objectPaintInvalidator.invalidatePaintRectangleWithContext(bottomDelta,
+                                                             reason);
   return true;
 }
 

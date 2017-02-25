@@ -10,11 +10,6 @@
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 800, 600],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutEmbeddedObject OBJECT",
-          "rect": [0, 0, 402, 202],
-          "reason": "style change"
         }
       ]
     }

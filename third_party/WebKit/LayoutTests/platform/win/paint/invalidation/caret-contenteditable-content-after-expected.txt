@@ -27,16 +27,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [8, 44, 23, 17],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 44, 16, 17],
-          "reason": "full"
-        },
-        {
           "object": "LayoutTextFragment (anonymous)",
           "rect": [30, 44, 9, 17],
           "reason": "forced by layout"
@@ -60,11 +50,6 @@
           "object": "LayoutTextFragment (anonymous)",
           "rect": [15, 44, 9, 17],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 44, 8, 17],
-          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTextFragment (anonymous)",

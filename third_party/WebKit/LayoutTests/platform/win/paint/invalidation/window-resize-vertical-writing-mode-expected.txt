@@ -40,11 +40,6 @@
           "object": "LayoutBlockFlow BODY",
           "rect": [491, 8, 414, 484],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [493, 8, 411, 484],
-          "reason": "forced by layout"
         }
       ]
     }

@@ -25,16 +25,6 @@
           "object": "LayoutInline SPAN id='outer'",
           "rect": [16, 146, 88, 21],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [18, 148, 84, 17],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [18, 110, 84, 17],
-          "reason": "forced by layout"
         }
       ]
     }

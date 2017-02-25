@@ -7,29 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [200, 186, 256, 17],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan id='ts'",
-          "rect": [200, 186, 256, 17],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [200, 186, 256, 17],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [20, 6, 256, 17],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan id='ts'",
-          "rect": [20, 6, 256, 17],
-          "reason": "full"
         },
         {
           "object": "LayoutSVGText text",

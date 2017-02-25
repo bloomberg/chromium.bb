@@ -12,11 +12,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [16, 39, 784, 174],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [16, 39, 784, 174],
           "reason": "style change"

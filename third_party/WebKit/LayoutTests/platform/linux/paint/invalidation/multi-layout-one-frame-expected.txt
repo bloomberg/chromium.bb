@@ -15,16 +15,6 @@
           "object": "LayoutBlockFlow DIV id='inner-editor'",
           "rect": [10, 11, 150, 16],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [168, 11, 53, 16],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [10, 11, 53, 16],
-          "reason": "full"
         }
       ]
     }

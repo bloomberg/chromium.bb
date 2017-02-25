@@ -1,0 +1,41 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [1059, 585],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTableCell TH id='target'",
+          "rect": [8, 68, 840, 190],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [10, 68, 836, 190],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TH id='target'",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'Col 1'",
+      "reason": "style change"
+    }
+  ]
+}
+

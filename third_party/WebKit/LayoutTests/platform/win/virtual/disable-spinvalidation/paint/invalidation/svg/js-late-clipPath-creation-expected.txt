@@ -1,0 +1,63 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [16, 40, 784, 168],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [16, 40, 784, 168],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [16, 40, 784, 168],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [0, 0, 334, 500],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGContainer g id='content'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Clipped. INVISIBLE.'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGResourceClipper clipPath id='dynClip'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

@@ -12,11 +12,6 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 8, 306, 300],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutTableRow TR",
           "rect": [8, 8, 306, 300],
           "reason": "subtree"

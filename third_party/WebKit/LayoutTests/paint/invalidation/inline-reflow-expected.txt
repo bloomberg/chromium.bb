@@ -12,11 +12,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [0, 0, 300, 200],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='div2' class='container'",
           "rect": [0, 300, 300, 20],
           "reason": "forced by layout"
@@ -24,16 +19,6 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='div1' class='container'",
           "rect": [0, 0, 200, 300],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [0, 0, 200, 300],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [0, 300, 180, 20],
           "reason": "forced by layout"
         }
       ]

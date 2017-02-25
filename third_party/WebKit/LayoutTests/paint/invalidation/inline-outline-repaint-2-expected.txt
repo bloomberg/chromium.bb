@@ -10,11 +10,6 @@
           "object": "LayoutInline SPAN",
           "rect": [210, -5, 50, 20],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [215, 0, 40, 10],
-          "reason": "style change"
         }
       ]
     }

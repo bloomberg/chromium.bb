@@ -40,11 +40,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [8, 508, 31, 17],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [285, 500, 15, 150],
           "reason": "scroll"

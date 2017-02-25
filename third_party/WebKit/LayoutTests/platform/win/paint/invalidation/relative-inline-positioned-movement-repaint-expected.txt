@@ -24,11 +24,6 @@
           "object": "LayoutInline (relative positioned) DIV id='block'",
           "rect": [0, 0, 374, 19],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [1, 1, 372, 17],
-          "reason": "forced by layout"
         }
       ]
     }

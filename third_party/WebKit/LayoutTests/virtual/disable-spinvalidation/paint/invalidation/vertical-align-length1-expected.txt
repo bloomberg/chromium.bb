@@ -1,0 +1,65 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 800, 154],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [20, 0, 100, 100],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='other'",
+          "rect": [120, 130, 20, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='other'",
+          "rect": [120, 100, 20, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='other'",
+          "rect": [0, 130, 20, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='other'",
+          "rect": [0, 100, 20, 20],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='other'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='other'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

@@ -16,28 +16,6 @@ paint invalidations[
         selectorPart : undefined
         type : "StyleRecalcInvalidationTracking"
     }
-    {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html:10}
-        changedAttribute : undefined
-        changedClass : undefined
-        changedId : undefined
-        changedPseudo : undefined
-        extraData : ""
-        nodeName : "DIV id='testElement'"
-        selectorPart : undefined
-        type : "StyleRecalcInvalidationTracking"
-    }
-    {
-        cause : {reason: Style changed, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html:11}
-        changedAttribute : undefined
-        changedClass : undefined
-        changedId : undefined
-        changedPseudo : undefined
-        extraData : undefined
-        nodeName : "DIV id='testElement'"
-        selectorPart : undefined
-        type : "LayoutInvalidationTracking"
-    }
 ]
 
 Running: testSubframe

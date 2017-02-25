@@ -1,0 +1,98 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [16, 42, 784, 170],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [16, 42, 784, 170],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [16, 42, 784, 170],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [16, 42, 784, 170],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [16, 42, 784, 170],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [16, 42, 784, 170],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [0, 0, 334, 500],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGContainer g id='content'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Clipped. INVISIBLE.'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='content'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Clipped. INVISIBLE.'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGResourceClipper clipPath id='dynClip'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

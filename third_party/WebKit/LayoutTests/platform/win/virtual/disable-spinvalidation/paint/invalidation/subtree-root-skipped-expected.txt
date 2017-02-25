@@ -1,0 +1,50 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [10, 11, 169, 16],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [10, 11, 35, 16],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='div'",
+          "rect": [8, 288, 10, 20],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='div'",
+      "reason": "bounds change"
+    }
+  ]
+}
+

@@ -1,0 +1,105 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 114, 200, 90],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 78, 198, 54],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutInline SPAN id='t'",
+          "rect": [115, 84, 37, 48],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [115, 114, 37, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutInline SPAN id='t'",
+          "rect": [38, 132, 36, 18],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [38, 132, 36, 18],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Cras faucibus. Nunc'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'adipiscing, enim in scelerisque'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'convallis,\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'augue '",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline SPAN id='t'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'purus'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox ' eleifend'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'lacus, at sagittis eros leo'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'pulvinar velit. Integer'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'sollicitudin nisi ut urna blandit'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'convallis.'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

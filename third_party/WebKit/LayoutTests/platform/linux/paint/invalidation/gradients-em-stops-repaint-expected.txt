@@ -10,26 +10,6 @@
           "object": "LayoutBlockFlow DIV class='em-units'",
           "rect": [8, 8, 784, 147],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='box4' class='box'",
-          "rect": [344, 18, 302, 122],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='box3' class='box'",
-          "rect": [18, 18, 302, 122],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='indicator'",
-          "rect": [345, 19, 240, 20],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [330, 135, 4, 19],
-          "reason": "forced by layout"
         }
       ]
     }

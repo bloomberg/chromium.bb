@@ -1,0 +1,105 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='firstLine'",
+          "rect": [8, 8, 100, 200],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 208, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='root'",
+          "rect": [8, 208, 100, 100],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 108, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 49, 98, 117],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 49, 8, 17],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='root'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='root'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='firstLine'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "location change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "location change"
+    }
+  ]
+}
+

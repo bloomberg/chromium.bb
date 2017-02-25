@@ -1,0 +1,69 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [50, 10, 36, 36],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [50, 10, 30, 30],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [50, 10, 30, 30],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [10, 10, 30, 30],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [10, 10, 30, 30],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [0, 10, 30, 30],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

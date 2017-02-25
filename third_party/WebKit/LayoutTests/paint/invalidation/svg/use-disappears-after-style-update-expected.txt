@@ -14,11 +14,6 @@
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [50, 10, 30, 30],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect id='rect'",
-          "rect": [50, 10, 30, 30],
           "reason": "layoutObject removal"
         },
         {

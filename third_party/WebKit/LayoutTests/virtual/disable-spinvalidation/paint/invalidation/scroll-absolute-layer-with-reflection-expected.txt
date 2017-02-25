@@ -1,0 +1,51 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
+          "rect": [250, 230, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
+          "rect": [250, 230, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative reflected'",
+          "rect": [250, 230, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='green'",
+          "rect": [250, 230, 100, 100],
+          "reason": "subtree"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='relative reflected'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='green'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
+      "reason": "subtree"
+    }
+  ]
+}
+

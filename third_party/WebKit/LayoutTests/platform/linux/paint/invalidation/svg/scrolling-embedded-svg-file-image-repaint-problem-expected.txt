@@ -20,26 +20,6 @@
           "object": "LayoutText #text",
           "rect": [435, 1012, 173, 19],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutInline A",
-          "rect": [384, 1011, 47, 21],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [385, 1012, 45, 19],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [429, 1012, 7, 19],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [379, 1012, 7, 19],
-          "reason": "forced by layout"
         }
       ]
     }

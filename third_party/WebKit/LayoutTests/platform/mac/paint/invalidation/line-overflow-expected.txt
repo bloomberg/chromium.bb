@@ -22,19 +22,9 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [115, 114, 37, 18],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutInline SPAN id='t'",
           "rect": [38, 132, 36, 18],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [38, 132, 36, 18],
-          "reason": "forced by layout"
         }
       ]
     }

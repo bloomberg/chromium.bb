@@ -27,19 +27,9 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [10, 94, 728, 90],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [10, 94, 728, 90],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [18, 102, 712, 74],
-          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutImage IMG",

@@ -12,28 +12,13 @@
           "reason": "became visible"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 246, 753, 134],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [0, 246, 753, 134],
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 129, 596, 135],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [0, 129, 596, 135],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 14, 443, 131],
           "reason": "layoutObject insertion"
         },
         {

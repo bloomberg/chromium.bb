@@ -1,0 +1,50 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [90, 116, 64, 17],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text id='status'",
+          "rect": [90, 116, 64, 17],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [90, 116, 44, 17],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text id='status'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Passed'",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

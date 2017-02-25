@@ -22,66 +22,6 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 114, 194, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 114, 194, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 114, 194, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 114, 194, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 114, 194, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 14, 194, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 14, 194, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 14, 194, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 14, 194, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 14, 194, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGForeignObject foreignObject",
-          "rect": [210, 13, 100, 100],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGForeignObject foreignObject",
-          "rect": [210, 113, 100, 87],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [210, 113, 100, 46],
           "reason": "subtree"
@@ -92,32 +32,12 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [310, 114, 92, 46],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [310, 114, 92, 46],
           "reason": "subtree"
         },
         {
-          "object": "LayoutSVGViewportContainer svg",
-          "rect": [310, 114, 92, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [310, 14, 92, 46],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutSVGText text",
-          "rect": [310, 14, 92, 46],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg",
           "rect": [310, 14, 92, 46],
           "reason": "subtree"
         },
@@ -137,47 +57,7 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 3, 6, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 3, 6, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 3, 6, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 3, 6, 2],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutSVGText text",
-          "rect": [0, 3, 6, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGForeignObject foreignObject",
-          "rect": [6, 3, 4, 4],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [9, 3, 4, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [9, 3, 4, 2],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg",
           "rect": [9, 3, 4, 2],
           "reason": "subtree"
         },
@@ -202,47 +82,7 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutSVGForeignObject foreignObject",
-          "rect": [0, 0, 1, 1],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 1, 1],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 1, 1],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 1, 1],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [0, 0, 1, 1],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 0, 1, 1],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutSVGText text",
-          "rect": [0, 0, 1, 1],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 0, 1, 1],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg",
           "rect": [0, 0, 1, 1],
           "reason": "subtree"
         },

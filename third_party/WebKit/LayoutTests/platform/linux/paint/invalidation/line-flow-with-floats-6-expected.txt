@@ -30,11 +30,6 @@
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 363, 48, 65],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [28, 363, 20, 20],
-          "reason": "layoutObject insertion"
         }
       ]
     }

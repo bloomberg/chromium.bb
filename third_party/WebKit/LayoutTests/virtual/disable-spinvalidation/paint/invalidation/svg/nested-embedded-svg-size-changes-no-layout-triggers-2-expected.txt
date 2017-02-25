@@ -1,0 +1,144 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 800, 600],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutEmbeddedObject OBJECT",
+          "rect": [0, 0, 402, 202],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [1, 1, 400, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutEmbeddedObject OBJECT",
+          "rect": [1, 1, 400, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 285, 135],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutEmbeddedObject OBJECT",
+          "rect": [0, 0, 285, 135],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 135, 285, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [211, 11, 180, 180],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [11, 11, 180, 180],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [10, 10, 180, 125],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [210, 10, 75, 125],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [285, 0, 15, 135],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [285, 135, 15, 15],
+          "reason": "scroll"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutEmbeddedObject OBJECT",
+      "reason": "style change"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutEmbeddedObject OBJECT",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    }
+  ]
+}
+

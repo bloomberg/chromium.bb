@@ -12,11 +12,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutImage IMG id='target'",
-          "rect": [48, 100, 100, 100],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutListMarker (anonymous)",
           "rect": [30, 185, 7, 19],
           "reason": "forced by layout"

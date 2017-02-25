@@ -20,12 +20,13 @@ struct PaintPropertyTreeBuilderContext;
 struct PaintInvalidatorContext {
   PaintInvalidatorContext(
       const PaintPropertyTreeBuilderContext& treeBuilderContext)
-      : treeBuilderContext(treeBuilderContext) {}
+      : treeBuilderContext(treeBuilderContext), parentContext(nullptr) {}
 
   PaintInvalidatorContext(
       const PaintPropertyTreeBuilderContext& treeBuilderContext,
       const PaintInvalidatorContext& parentContext)
       : treeBuilderContext(treeBuilderContext),
+        parentContext(&parentContext),
         forcedSubtreeInvalidationFlags(
             parentContext.forcedSubtreeInvalidationFlags),
         paintInvalidationContainer(parentContext.paintInvalidationContainer),
@@ -39,6 +40,7 @@ struct PaintInvalidatorContext {
                                                       LayoutRect&) const;
 
   const PaintPropertyTreeBuilderContext& treeBuilderContext;
+  const PaintInvalidatorContext* parentContext;
 
   enum ForcedSubtreeInvalidationFlag {
     ForcedSubtreeInvalidationChecking = 1 << 0,

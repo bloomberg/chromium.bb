@@ -29,16 +29,6 @@
         {
           "object": "LayoutSVGContainer use",
           "rect": [210, 58, 44, 37],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGContainer use",
-          "rect": [210, 58, 44, 37],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGContainer use",
-          "rect": [210, 58, 44, 37],
           "reason": "layoutObject removal"
         },
         {
@@ -54,21 +44,6 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [210, 58, 44, 37],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [210, 58, 44, 37],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [210, 58, 44, 37],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [210, 58, 44, 37],
           "reason": "layoutObject removal"
         },
         {
@@ -80,21 +55,6 @@
           "object": "LayoutSVGInlineText #text",
           "rect": [210, 58, 44, 37],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutSVGText text id='use_text'",
-          "rect": [210, 58, 44, 37],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGText text id='use_text'",
-          "rect": [210, 58, 44, 37],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGText text id='use_text'",
-          "rect": [210, 58, 44, 37],
-          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text id='use_text'",

@@ -17,21 +17,6 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGContainer svg:use id='use'",
-          "rect": [33, 33, 50, 50],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRoot svg:svg id='svg'",
-          "rect": [33, 33, 50, 50],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='symbol'",
-          "rect": [33, 33, 50, 50],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
           "rect": [7, 7, 27, 27],
           "reason": "subtree"

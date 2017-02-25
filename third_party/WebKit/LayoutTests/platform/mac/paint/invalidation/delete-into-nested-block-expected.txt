@@ -33,11 +33,6 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 119, 32, 19],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [8, 137, 28, 19],
           "reason": "layoutObject removal"
         },

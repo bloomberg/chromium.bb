@@ -12,28 +12,8 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutEmbeddedObject object",
-          "rect": [9, 9, 400, 400],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [9, 9, 400, 400],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutSVGRoot svg",
           "rect": [9, 9, 400, 400],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [169, 169, 80, 80],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [89, 189, 40, 40],
           "reason": "forced by layout"
         }
       ]

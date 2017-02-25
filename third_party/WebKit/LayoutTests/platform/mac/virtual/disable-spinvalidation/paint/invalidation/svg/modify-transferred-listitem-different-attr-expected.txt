@@ -1,0 +1,71 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [23, 8, 85, 24],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text id='target'",
+          "rect": [23, 8, 85, 24],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [58, 45, 50, 27],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text id='source'",
+          "rect": [58, 45, 50, 27],
+          "reason": "full"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGText text id='target'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'A'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox ' B C'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGText text id='source'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'X Y Z'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

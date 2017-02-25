@@ -1,0 +1,311 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 182, 110, 76],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [12, 186, 102, 68],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 96, 101, 76],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTable TABLE id='t'",
+          "rect": [8, 10, 97, 76],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutTableCell TD id='d2'",
+          "rect": [22, 210, 96, 20],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [12, 100, 93, 68],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 316, 87, 28],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 268, 87, 28],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 144, 87, 28],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 96, 87, 28],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD id='d3'",
+          "rect": [22, 296, 87, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD id='d'",
+          "rect": [22, 124, 87, 20],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 297, 77, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 125, 77, 18],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 317, 51, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 145, 51, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 277, 43, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 105, 43, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 211, 34, 18],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [79, 268, 30, 76],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 210, 14, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 124, 14, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [17, 211, 4, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [17, 125, 4, 18],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableCell TD id='d'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableCell TD id='d2'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTable TABLE id='t'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Lorem'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'sit amet'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Lorem'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableCell TD id='d3'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'ipsum dolor'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'sit amet'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

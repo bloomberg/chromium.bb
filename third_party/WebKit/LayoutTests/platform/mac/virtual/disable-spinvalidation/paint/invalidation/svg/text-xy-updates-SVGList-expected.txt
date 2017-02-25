@@ -1,0 +1,51 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [808, 620],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [208, 14, 170, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text id='ttt'",
+          "rect": [208, 14, 170, 18],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [18, 194, 170, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text id='ttt'",
+          "rect": [18, 194, 170, 18],
+          "reason": "full"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGText text id='ttt'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Passes, if text is at 200x20'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+
