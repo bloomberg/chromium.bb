@@ -157,15 +157,11 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext() {
   DCHECK(m_executionContext &&
          m_executionContext->securityContext().getSecurityOrigin());
 
+  setupSelf(*m_executionContext->securityContext().getSecurityOrigin());
 
   // If we're in a Document, set mixed content checking and sandbox
   // flags, then dump all the parsing error messages, then poke at histograms.
   if (Document* document = this->document()) {
-    // We use the origin of the document's base URL in order to deal correctly
-    // with things like 'about:srcdoc' and 'about:blank', which look to their
-    // parents for a reasonable URL.
-    setupSelf(*SecurityOrigin::create(document->baseURL()));
-
     if (m_sandboxMask != SandboxNone) {
       UseCounter::count(document, UseCounter::SandboxViaCSP);
       document->enforceSandboxFlags(m_sandboxMask);
@@ -190,9 +186,6 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext() {
       if (policy->allowDynamic())
         UseCounter::count(*document, UseCounter::CSPWithStrictDynamic);
     }
-  } else {
-    // If we're not in a document, set up 'self' with the Worker's origin:
-    setupSelf(*m_executionContext->securityContext().getSecurityOrigin());
   }
 
   // We disable 'eval()' even in the case of report-only policies, and rely on
