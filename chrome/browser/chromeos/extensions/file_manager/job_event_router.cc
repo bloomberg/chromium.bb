@@ -48,7 +48,7 @@ void JobEventRouter::OnJobUpdated(const drive::JobInfo& job_info) {
 
   // Add new job info.
   UpdateBytes(job_info);
-  drive_jobs_[job_info.job_id] = make_linked_ptr(new drive::JobInfo(job_info));
+  drive_jobs_[job_info.job_id] = base::MakeUnique<drive::JobInfo>(job_info);
 
   ScheduleDriveFileTransferEvent(
       job_info, file_manager_private::TRANSFER_STATE_IN_PROGRESS,

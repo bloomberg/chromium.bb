@@ -13,7 +13,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -82,7 +81,7 @@ class JobEventRouter : public drive::JobListObserver {
   base::TimeDelta event_delay_;
 
   // Set of job that are in the job schedular.
-  std::map<drive::JobID, linked_ptr<drive::JobInfo>> drive_jobs_;
+  std::map<drive::JobID, std::unique_ptr<drive::JobInfo>> drive_jobs_;
 
   // Job info of pending event. |ScheduleDriveFileTransferEvent| registers
   // timeout callback to dispatch this.

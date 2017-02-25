@@ -324,9 +324,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
       extensions::SOURCE_NETWORK);
 
   file_manager::VolumeManager::Get(browser()->profile())
-      ->AddVolumeForTesting(
-          make_linked_ptr(file_manager::Volume::CreateForProvidedFileSystem(
-              info, file_manager::MOUNT_CONTEXT_AUTO)));
+      ->AddVolumeForTesting(file_manager::Volume::CreateForProvidedFileSystem(
+          info, file_manager::MOUNT_CONTEXT_AUTO));
 
   // We will call fileManagerPrivate.unmountVolume once. To test that method, we
   // check that UnmountPath is really called with the same value.
