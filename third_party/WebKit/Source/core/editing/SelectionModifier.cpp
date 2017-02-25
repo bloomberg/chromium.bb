@@ -562,24 +562,6 @@ static bool isBoundary(TextGranularity granularity) {
          granularity == DocumentBoundary;
 }
 
-static void setSelectionEnd(VisibleSelection* selection,
-                            const VisiblePosition& newEnd) {
-  if (selection->isBaseFirst()) {
-    selection->setExtent(newEnd);
-    return;
-  }
-  selection->setBase(newEnd);
-}
-
-static void setSelectionStart(VisibleSelection* selection,
-                              const VisiblePosition& newStart) {
-  if (selection->isBaseFirst()) {
-    selection->setBase(newStart);
-    return;
-  }
-  selection->setExtent(newStart);
-}
-
 bool SelectionModifier::modify(EAlteration alter,
                                SelectionDirection direction,
                                TextGranularity granularity) {
@@ -663,8 +645,10 @@ bool SelectionModifier::modify(EAlteration alter,
         // starting with the caret in the middle of a word and then
         // word-selecting forward, leaving the caret in the same place where it
         // was, instead of directly selecting to the end of the word.
-        VisibleSelection newSelection = m_selection;
-        newSelection.setExtent(position);
+        const VisibleSelection& newSelection = createVisibleSelection(
+            SelectionInDOMTree::Builder(m_selection.asSelection())
+                .extend(position.deepEquivalent())
+                .build());
         if (m_selection.isBaseFirst() != newSelection.isBaseFirst())
           position = m_selection.visibleBase();
       }
@@ -678,17 +662,39 @@ bool SelectionModifier::modify(EAlteration alter,
                .behavior()
                .shouldAlwaysGrowSelectionWhenExtendingToBoundary() ||
           m_selection.isCaret() || !isBoundary(granularity)) {
-        m_selection.setExtent(position);
+        m_selection = createVisibleSelection(
+            SelectionInDOMTree::Builder()
+                .collapse(m_selection.base())
+                .extend(position.deepEquivalent())
+                .setIsDirectional(m_selection.isDirectional())
+                .build());
       } else {
         TextDirection textDirection = directionOfEnclosingBlock();
         if (direction == DirectionForward ||
             (textDirection == TextDirection::kLtr &&
              direction == DirectionRight) ||
             (textDirection == TextDirection::kRtl &&
-             direction == DirectionLeft))
-          setSelectionEnd(&m_selection, position);
-        else
-          setSelectionStart(&m_selection, position);
+             direction == DirectionLeft)) {
+          m_selection = createVisibleSelection(
+              SelectionInDOMTree::Builder()
+                  .collapse(m_selection.isBaseFirst()
+                                ? m_selection.base()
+                                : position.deepEquivalent())
+                  .extend(m_selection.isBaseFirst() ? position.deepEquivalent()
+                                                    : m_selection.extent())
+                  .setIsDirectional(m_selection.isDirectional())
+                  .build());
+        } else {
+          m_selection = createVisibleSelection(
+              SelectionInDOMTree::Builder()
+                  .collapse(m_selection.isBaseFirst()
+                                ? position.deepEquivalent()
+                                : m_selection.base())
+                  .extend(m_selection.isBaseFirst() ? m_selection.extent()
+                                                    : position.deepEquivalent())
+                  .setIsDirectional(m_selection.isDirectional())
+                  .build());
+        }
       }
       break;
   }
@@ -787,9 +793,13 @@ bool SelectionModifier::modifyWithPageGranularity(EAlteration alter,
               .setIsDirectional(m_selection.isDirectional())
               .build());
       break;
-    case FrameSelection::AlterationExtend:
-      m_selection.setExtent(result);
+    case FrameSelection::AlterationExtend: {
+      m_selection = createVisibleSelection(SelectionInDOMTree::Builder()
+                                               .collapse(m_selection.base())
+                                               .extend(result.deepEquivalent())
+                                               .build());
       break;
+    }
   }
 
   m_selection.setIsDirectional(shouldAlwaysUseDirectionalSelection(frame()) ||
