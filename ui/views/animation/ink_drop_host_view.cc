@@ -127,7 +127,9 @@ InkDropHostView::~InkDropHostView() {
 
 void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   old_paint_to_layer_ = layer() != nullptr;
-  SetPaintToLayer();
+  if (!old_paint_to_layer_)
+    SetPaintToLayer();
+
   layer()->SetFillsBoundsOpaquely(false);
   ink_drop_mask_ = CreateInkDropMask();
   if (ink_drop_mask_)
