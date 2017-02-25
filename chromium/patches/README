@@ -107,10 +107,6 @@ Current patches:
     Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and
     av_clip_intp2_arm() due to compilation failure.
 
-  Changes to libavutil/cpu.c
-    Switch to compat/atomics/win32/stdatomic.h for win32, since it doesn't
-    provide stdatomic.h .
-
   Changes to libavutil/mem.c
     Enable av_max_alloc(0) to remove alloc size bound.
 
