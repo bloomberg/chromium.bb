@@ -2321,19 +2321,8 @@ crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-c
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
 crbug.com/511177 external/csswg-test/css-grid-1/grid-layout-properties.html [ Failure ]
-# TODO(rego): Skipping tests related to "Implied Minimum Size of Grid Items"
-# because the test suite needs to be updated after the CSS WG resolves
-# the following issue: https://github.com/w3c/csswg-drafts/issues/283
-# See crbug.com/666940 for more details.
-crbug.com/666940 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-001.xht [ Skip ]
-crbug.com/666940 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-002.xht [ Skip ]
-crbug.com/666940 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-003.xht [ Skip ]
-crbug.com/666940 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-004.xht [ Skip ]
-crbug.com/666940 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-005.xht [ Skip ]
-crbug.com/666940 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-006.xht [ Skip ]
-crbug.com/666940 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-007.xht [ Skip ]
-crbug.com/666940 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-008.xht [ Skip ]
-crbug.com/666940 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-009.xht [ Skip ]
+crbug.com/555027 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-007.xht [ Failure ]
+crbug.com/555027 external/csswg-test/css-grid-1/grid-items/grid-minimum-size-grid-items-009.xht [ Failure ]
 
 # TODO(chrishall): this is a temporary mediation step as part of the P0 issue crbug.com/657646
 # this is not meant to be here for more than a few days (from 2016-11-03 SYD)
