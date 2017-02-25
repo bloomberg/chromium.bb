@@ -1555,7 +1555,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     const int tu_num_h_y = (max_4x4_h_y + tx_sz_y - 1) / tx_sz_y;
     const int tu_num_w_c = (max_4x4_w_c + tx_sz_c - 1) / tx_sz_c;
     const int tu_num_h_c = (max_4x4_h_c + tx_sz_c - 1) / tx_sz_c;
-    const int tu_num_y = tu_num_w_y * tu_num_h_y;
     const int tu_num_c = tu_num_w_c * tu_num_h_c;
 
     if (!is_inter_block(mbmi)) {

@@ -86,7 +86,6 @@ void av1_foreach_transformed_block_interleave(
   const int tu_num_h_y = (max_4x4_h_y + tx_sz_y - 1) / tx_sz_y;
   const int tu_num_w_c = (max_4x4_w_c + tx_sz_c - 1) / tx_sz_c;
   const int tu_num_h_c = (max_4x4_h_c + tx_sz_c - 1) / tx_sz_c;
-  const int tu_num_y = tu_num_w_y * tu_num_h_y;
   const int tu_num_c = tu_num_w_c * tu_num_h_c;
 
   int tu_idx_c = 0;
