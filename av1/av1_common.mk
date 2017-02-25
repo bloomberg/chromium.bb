@@ -33,7 +33,7 @@ AV1_COMMON_SRCS-yes += common/filter.c
 AV1_COMMON_SRCS-yes += common/idct.h
 AV1_COMMON_SRCS-yes += common/idct.c
 AV1_COMMON_SRCS-yes += common/thread_common.h
-AV1_COMMON_SRCS-($CONFIG_LV_MAP) += common/txb_common.h
+AV1_COMMON_SRCS-$(CONFIG_LV_MAP) += common/txb_common.h
 AV1_COMMON_SRCS-yes += common/mv.h
 AV1_COMMON_SRCS-yes += common/onyxc_int.h
 AV1_COMMON_SRCS-yes += common/pred_common.h
@@ -107,7 +107,6 @@ AV1_COMMON_SRCS-yes += common/odintrin.h
 ifeq ($(CONFIG_PVQ),yes)
 # PVQ from daala
 AV1_COMMON_SRCS-yes += common/pvq.c
-AV1_COMMON_SRCS-yes += common/pvq.h
 AV1_COMMON_SRCS-yes += common/partition.c
 AV1_COMMON_SRCS-yes += common/partition.h
 AV1_COMMON_SRCS-yes += common/zigzag4.c
@@ -122,6 +121,9 @@ AV1_COMMON_SRCS-yes += common/pvq_state.h
 AV1_COMMON_SRCS-yes += common/laplace_tables.c
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/pvq_sse4.c
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/pvq_sse4.h
+endif
+ifneq ($(findstring yes,$(CONFIG_PVQ)$(CONFIG_DAALA_DIST)),)
+AV1_COMMON_SRCS-yes += common/pvq.h
 endif
 
 ifneq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
