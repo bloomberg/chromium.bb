@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DAYDREAM_VIEW;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_WEBVR_SUPPORTED;
 
 import android.support.test.filters.SmallTest;
 
@@ -44,6 +45,7 @@ import java.util.concurrent.TimeoutException;
  * which can then grab the results and pass/fail the instrumentation test.
  */
 @CommandLineFlags.Add("enable-webvr")
+@Restriction(RESTRICTION_TYPE_WEBVR_SUPPORTED)
 public class WebVrTest extends ChromeTabbedActivityTestBase {
     private static final String TAG = "WebVrTest";
     private static final String TEST_DIR = "chrome/test/data/android/webvr_instrumentation";

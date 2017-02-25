@@ -5,6 +5,7 @@
 package org.chromium.chrome.test;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -113,6 +114,12 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
             }
         }
 
+        private boolean supportsWebVr() {
+            // WebVR support is tied to VR Services support, which is currently only on N+
+            // TODO(bsheedy): Change this to >= N when the SDK supports it
+            return Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
+        }
+
         @Override
         protected boolean restrictionApplies(String restriction) {
             if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_PHONE)
@@ -153,6 +160,20 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
                     ChromeRestriction.RESTRICTION_TYPE_DAYDREAM_VIEW)
                     && !isDaydreamViewPaired()) {
                 return true;
+            }
+            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_WEBVR_SUPPORTED)
+                    || TextUtils.equals(
+                               restriction, ChromeRestriction.RESTRICTION_TYPE_WEBVR_UNSUPPORTED)) {
+                boolean webvrSupported = supportsWebVr();
+                if (TextUtils.equals(
+                            restriction, ChromeRestriction.RESTRICTION_TYPE_WEBVR_SUPPORTED)
+                        && !webvrSupported) {
+                    return true;
+                } else if (TextUtils.equals(restriction,
+                                   ChromeRestriction.RESTRICTION_TYPE_WEBVR_UNSUPPORTED)
+                        && webvrSupported) {
+                    return true;
+                }
             }
             return false;
         }
