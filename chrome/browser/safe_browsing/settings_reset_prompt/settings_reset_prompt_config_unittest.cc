@@ -22,6 +22,10 @@ const char kTrialName[] = "trial";
 const char kDomainHash[] =
     "0a79eaf6adb7b1e60d3fa548aa63105f525a00448efbb59ee965b9351a90ac31";
 
+bool IsPromptEnabled() {
+  return base::FeatureList::IsEnabled(kSettingsResetPrompt);
+}
+
 // Test class that initializes a ScopedFeatureList so that all tests
 // start off with all features disabled.
 class SettingsResetPromptConfigTest : public ::testing::Test {
@@ -49,15 +53,8 @@ class SettingsResetPromptConfigTest : public ::testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(SettingsResetPromptConfigTest, IsPromptEnabled) {
-  EXPECT_FALSE(SettingsResetPromptConfig::IsPromptEnabled());
-
-  SetFeatureParams(GetDefaultFeatureParams());
-  EXPECT_TRUE(SettingsResetPromptConfig::IsPromptEnabled());
-}
-
 TEST_F(SettingsResetPromptConfigTest, Create) {
-  ASSERT_FALSE(SettingsResetPromptConfig::IsPromptEnabled());
+  ASSERT_FALSE(IsPromptEnabled());
 
   // |Create()| should return nullptr when feature is not enabled.
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
@@ -65,7 +62,7 @@ TEST_F(SettingsResetPromptConfigTest, Create) {
   // |Create()| should return false when feature is enabled, but parameters are
   // |missing.
   scoped_feature_list_.InitAndEnableFeature(kSettingsResetPrompt);
-  ASSERT_TRUE(SettingsResetPromptConfig::IsPromptEnabled());
+  ASSERT_TRUE(IsPromptEnabled());
   EXPECT_FALSE(SettingsResetPromptConfig::Create());
   SetFeatureParams(Parameters());
   EXPECT_FALSE(SettingsResetPromptConfig::Create());

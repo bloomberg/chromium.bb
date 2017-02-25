@@ -54,37 +54,47 @@ class SettingsResetPromptModel {
       std::unique_ptr<BrandcodedDefaultSettings> default_settings,
       std::unique_ptr<ProfileResetter> profile_resetter);
 
-  ~SettingsResetPromptModel();
+  virtual ~SettingsResetPromptModel();
 
+  Profile* profile() const;
   SettingsResetPromptConfig* config() const;
 
   // Returns true if reset is enabled for any settings type.
-  bool ShouldPromptForReset() const;
+  virtual bool ShouldPromptForReset() const;
   // Resets the settings whose reset states are set to |RESET_REQUIRED| as
   // returned by the methods below. Should be called only on the UI
   // thread. |done_callback| will called from the UI thread when the reset
   // operation has been completed.
   //
   // NOTE: Can only be called once during the lifetime of this object.
-  void PerformReset(const base::Closure& done_callback);
+  virtual void PerformReset(const base::Closure& done_callback);
 
-  GURL homepage() const;
-  ResetState homepage_reset_state() const;
+  virtual GURL homepage() const;
+  virtual ResetState homepage_reset_state() const;
 
-  GURL default_search() const;
-  ResetState default_search_reset_state() const;
+  virtual GURL default_search() const;
+  virtual ResetState default_search_reset_state() const;
 
   // Returns list of all current startup URLs. Returns empty list if session
   // startup is set to show the NTP or restore last session.
-  const std::vector<GURL>& startup_urls() const;
+  virtual const std::vector<GURL>& startup_urls() const;
   // Returns the list of all startup URLs that have a match in the prompt
   // config. This is a subset of the URLs returned by |startup_urls()|.
-  const std::vector<GURL>& startup_urls_to_reset() const;
-  ResetState startup_urls_reset_state() const;
+  virtual const std::vector<GURL>& startup_urls_to_reset() const;
+  virtual ResetState startup_urls_reset_state() const;
 
   // Returns a map of extension ID -> ExtensionInfo for all extensions that will
   // be disabled.
-  const ExtensionMap& extensions_to_disable() const;
+  virtual const ExtensionMap& extensions_to_disable() const;
+
+ protected:
+  // Exposed for mocking in tests.
+  SettingsResetPromptModel(
+      Profile* profile,
+      std::unique_ptr<SettingsResetPromptConfig> prompt_config,
+      std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot,
+      std::unique_ptr<BrandcodedDefaultSettings> default_settings,
+      std::unique_ptr<ProfileResetter> profile_resetter);
 
  private:
   static void OnSettingsFetched(
@@ -92,13 +102,6 @@ class SettingsResetPromptModel {
       std::unique_ptr<SettingsResetPromptConfig> prompt_config,
       SettingsResetPromptModel::CreateCallback callback,
       std::unique_ptr<BrandcodedDefaultSettings> default_settings);
-
-  SettingsResetPromptModel(
-      Profile* profile,
-      std::unique_ptr<SettingsResetPromptConfig> prompt_config,
-      std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot,
-      std::unique_ptr<BrandcodedDefaultSettings> default_settings,
-      std::unique_ptr<ProfileResetter> profile_resetter);
 
   void InitHomepageData();
   void InitDefaultSearchData();

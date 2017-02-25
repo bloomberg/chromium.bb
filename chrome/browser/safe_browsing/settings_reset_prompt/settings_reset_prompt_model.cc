@@ -176,6 +176,10 @@ SettingsResetPromptModel::CreateForTesting(
 
 SettingsResetPromptModel::~SettingsResetPromptModel() {}
 
+Profile* SettingsResetPromptModel::profile() const {
+  return profile_;
+}
+
 SettingsResetPromptConfig* SettingsResetPromptModel::config() const {
   return prompt_config_.get();
 }

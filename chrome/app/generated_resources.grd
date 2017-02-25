@@ -8061,14 +8061,14 @@ I don't think this site should be blocked!
       <message name="IDS_SETTINGS_RESET_PROMPT_HOMEPAGE_SETTING_NAME" desc="The text referring to Chrome's homepage setting. This will be displayed in a bulleted list of settings when informing the user that some of their settings may have been modified by unwanted software or extensions.">
         Homepage
       </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_MULTIPLE_SETTINGS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset the settings that were shown in a list and that may have been modified by unwanted software or extensions.">
+      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_MULTIPLE_SETTINGS_NO_EXTENSIONS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset the settings that were shown in a list and that may have been modified by unwanted software or extensions.">
         Do you want to restore these settings to their original defaults?
       </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_SINGLE_EXTENSION" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown to inform the user about the number of extensions that will be disabled as part of the reset operation.">
-        This will also disable one extension.
+      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_MULTIPLE_SETTINGS_ONE_EXTENSION" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset the settings that were shown in a list and that may have been modified by unwanted software or extensions. Also informs the user about the number of extensions that will disabled.">
+        Do you want to restore these settings to their original defaults? This will also disable one extension.
       </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_MULTIPLE_EXTENSIONS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown to inform the user about the number of extensions that will be disabled as part of the reset operation.">
-        This will also disable <ph name="NUM_EXTENSIONS">$1<ex>3</ex></ph> extensions.
+      <message name="IDS_SETTINGS_RESET_PROMPT_ACTION_EXPLANATION_FOR_MULTIPLE_SETTINGS_MULTIPLE_EXTENSIONS" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is shown at the bottom of the dialog when asking if the user wants to reset the settings that were shown in a list and that may have been modified by unwanted software or extensions. Also informs the user about the number of extensions that will disabled.">
+        Do you want to restore these settings to their original defaults? This will also disable <ph name="NUM_EXTENSIONS">$1<ex>3</ex></ph> extensions.
       </message>
       <message name="IDS_SETTINGS_RESET_PROMPT_DETAILS_SECTION_SETTINGS_EXPLANATION" desc="The settings reset dialog asks users if they want to restore some of their settings to their original default values. This text is displayed in the details section of the dialog before listing the current values of the settings that will be reset if the user clicks the accept button.">
         The following settings will be restored to their default values.

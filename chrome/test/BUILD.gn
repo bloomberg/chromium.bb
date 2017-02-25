@@ -2556,7 +2556,10 @@ test("browser_tests") {
       }
     }
     if (is_win) {
-      sources += [ "../browser/extensions/api/networking_private/networking_private_credentials_getter_browsertest.cc" ]
+      sources += [
+        "../browser/extensions/api/networking_private/networking_private_credentials_getter_browsertest.cc",
+        "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
+      ]
     }
     if (is_mac || is_win) {
       sources += [

@@ -17,6 +17,8 @@ namespace safe_browsing {
 
 struct ExtensionInfo {
   explicit ExtensionInfo(const extensions::Extension* extension);
+  // Convenience constructor for tests.
+  ExtensionInfo(const extensions::ExtensionId& id, const std::string& name);
   ~ExtensionInfo();
 
   extensions::ExtensionId id;

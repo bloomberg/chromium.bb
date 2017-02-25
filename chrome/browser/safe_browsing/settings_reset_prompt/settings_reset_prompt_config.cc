@@ -25,18 +25,14 @@ namespace {
 
 constexpr char kSettingsResetPromptFeatureName[] = "SettingsResetPrompt";
 
+bool IsPromptEnabled() {
+  return base::FeatureList::IsEnabled(kSettingsResetPrompt);
+}
+
 }  // namespace.
 
 const base::Feature kSettingsResetPrompt{kSettingsResetPromptFeatureName,
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-// static
-bool SettingsResetPromptConfig::IsPromptEnabled() {
-  // TODO(alito): Add prefs to local state to track when the user was
-  // last prompted and ensure that we only prompt once per reset prompt
-  // wave.
-  return base::FeatureList::IsEnabled(kSettingsResetPrompt);
-}
 
 // static
 std::unique_ptr<SettingsResetPromptConfig> SettingsResetPromptConfig::Create() {

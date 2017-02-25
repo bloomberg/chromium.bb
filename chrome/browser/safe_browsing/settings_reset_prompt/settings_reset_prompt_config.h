@@ -19,15 +19,12 @@ class GURL;
 
 namespace safe_browsing {
 
-// Exposed for testing.
 extern const base::Feature kSettingsResetPrompt;
 
 // Encapsulates the state of the reset prompt experiment as well as
 // associated data.
 class SettingsResetPromptConfig {
  public:
-  // Returns true if the settings reset prompt study is enabled.
-  static bool IsPromptEnabled();
   // Factory method for creating instances of SettingsResetPromptConfig.
   // Returns nullptr if |IsPromptEnabled()| is false or if something is wrong
   // with the config parameters.

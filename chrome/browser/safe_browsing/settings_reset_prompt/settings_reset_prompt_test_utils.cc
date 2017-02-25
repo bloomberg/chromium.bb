@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_model.h"

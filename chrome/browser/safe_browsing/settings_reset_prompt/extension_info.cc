@@ -14,6 +14,10 @@ ExtensionInfo::ExtensionInfo(const extensions::Extension* extension) {
   name = extension->name();
 }
 
+ExtensionInfo::ExtensionInfo(const extensions::ExtensionId& id,
+                             const std::string& name)
+    : id(id), name(name) {}
+
 ExtensionInfo::~ExtensionInfo() {}
 
 }  // namespace safe_browsing
