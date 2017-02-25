@@ -266,6 +266,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool hasCacheControlNoStoreHeader() const;
   bool mustReloadDueToVaryHeader(const ResourceRequest& newRequest) const;
 
+  // For investigating https://crbug.com/692856.
+  bool hasRevalidated() const { return m_hasRevalidated; }
+
   bool isEligibleForIntegrityCheck(SecurityOrigin*) const;
 
   void setIntegrityMetadata(const IntegrityMetadataSet& metadata) {
@@ -459,6 +462,12 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool m_needsSynchronousCacheHit;
   bool m_linkPreload;
   bool m_isRevalidating;
+
+  // For investigating https://crbug.com/692856.
+  // Indicates whether at least one revalidation is done for |this|.
+  // Used for assertions only.
+  bool m_hasRevalidated = false;
+
   bool m_isAlive;
   bool m_isAddRemoveClientProhibited;
   bool m_isRevalidationStartForbidden = false;

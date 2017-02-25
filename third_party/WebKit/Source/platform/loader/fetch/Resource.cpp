@@ -568,6 +568,7 @@ void Resource::setRevalidatingRequest(const ResourceRequest& request) {
   DCHECK(!request.isNull());
   CHECK(!m_isRevalidationStartForbidden);
   m_isRevalidating = true;
+  m_hasRevalidated = true;
   m_resourceRequest = request;
   m_status = ResourceStatus::NotStarted;
 }
