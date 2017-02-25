@@ -12,6 +12,7 @@
 #include "components/arc/instance_holder.h"
 #include "components/exo/wm_helper.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/accessibility/ax_host_delegate.h"
 
 namespace views {
 
@@ -31,7 +32,8 @@ class ArcAccessibilityHelperBridge
     : public ArcService,
       public mojom::AccessibilityHelperHost,
       public InstanceHolder<mojom::AccessibilityHelperInstance>::Observer,
-      public exo::WMHelper::ActivationObserver {
+      public exo::WMHelper::ActivationObserver,
+      public ui::AXHostDelegate {
  public:
   explicit ArcAccessibilityHelperBridge(ArcBridgeService* bridge_service);
   ~ArcAccessibilityHelperBridge() override;
@@ -50,6 +52,9 @@ class ArcAccessibilityHelperBridge
   // exo::WMHelper::ActivationObserver overrides.
   void OnWindowActivated(aura::Window* gained_active,
                          aura::Window* lost_active) override;
+
+  // AXHostDelegate overrides.
+  void PerformAction(const ui::AXActionData& data) override;
 
   mojo::Binding<mojom::AccessibilityHelperHost> binding_;
 

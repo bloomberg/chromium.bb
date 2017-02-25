@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "components/exo/wm_helper.h"
-#include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/aura/window.h"
 
 namespace {
@@ -89,8 +88,8 @@ bool GetStringProperty(arc::mojom::AccessibilityNodeInfoData* node,
 
 namespace arc {
 
-AXTreeSourceArc::AXTreeSourceArc()
-    : tree_id_(ui::AXTreeIDRegistry::GetInstance()->CreateID()),
+AXTreeSourceArc::AXTreeSourceArc(int32_t id)
+    : tree_id_(id),
       current_tree_serializer_(new AXTreeArcSerializer(this)),
       root_id_(-1),
       focused_node_id_(-1) {}

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -13,7 +14,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -39,6 +39,8 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_host_delegate.h"
+#include "ui/accessibility/ax_tree_id_registry.h"
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
@@ -154,25 +156,6 @@ bool CanRequestAutomation(const Extension* extension,
   return extension->permissions_data()->CanAccessPage(extension, url, tab_id,
                                                       &unused_error);
 }
-
-// Helper class that implements an action adapter for a |RenderFrameHost|.
-class RenderFrameHostActionAdapter : public AutomationActionAdapter {
- public:
-  explicit RenderFrameHostActionAdapter(content::RenderFrameHost* rfh)
-      : rfh_(rfh) {}
-
-  virtual ~RenderFrameHostActionAdapter() {}
-
-  // AutomationActionAdapter implementation.
-  void PerformAction(const ui::AXActionData& data) override {
-    rfh_->AccessibilityPerformAction(data);
-  }
-
- private:
-  content::RenderFrameHost* rfh_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostActionAdapter);
-};
 
 }  // namespace
 
@@ -345,6 +328,63 @@ ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
+AutomationInternalPerformActionFunction::ConvertToAXActionData(
+    api::automation_internal::PerformAction::Params* params,
+    ui::AXActionData* action) {
+  action->target_node_id = params->args.automation_node_id;
+  switch (params->args.action_type) {
+    case api::automation_internal::ACTION_TYPE_DODEFAULT:
+      action->action = ui::AX_ACTION_DO_DEFAULT;
+      break;
+    case api::automation_internal::ACTION_TYPE_FOCUS:
+      action->action = ui::AX_ACTION_FOCUS;
+      break;
+    case api::automation_internal::ACTION_TYPE_GETIMAGEDATA: {
+      api::automation_internal::GetImageDataParams get_image_data_params;
+      EXTENSION_FUNCTION_VALIDATE(
+          api::automation_internal::GetImageDataParams::Populate(
+              params->opt_args.additional_properties, &get_image_data_params));
+      action->action = ui::AX_ACTION_GET_IMAGE_DATA;
+      action->target_rect = gfx::Rect(0, 0, get_image_data_params.max_width,
+                                      get_image_data_params.max_height);
+      break;
+    }
+    case api::automation_internal::ACTION_TYPE_MAKEVISIBLE:
+      action->action = ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE;
+      break;
+    case api::automation_internal::ACTION_TYPE_SETSELECTION: {
+      api::automation_internal::SetSelectionParams selection_params;
+      EXTENSION_FUNCTION_VALIDATE(
+          api::automation_internal::SetSelectionParams::Populate(
+              params->opt_args.additional_properties, &selection_params));
+      action->anchor_node_id = params->args.automation_node_id;
+      action->anchor_offset = selection_params.anchor_offset;
+      action->focus_node_id = selection_params.focus_node_id;
+      action->focus_offset = selection_params.focus_offset;
+      action->action = ui::AX_ACTION_SET_SELECTION;
+      break;
+    }
+    case api::automation_internal::ACTION_TYPE_SHOWCONTEXTMENU: {
+      action->action = ui::AX_ACTION_SHOW_CONTEXT_MENU;
+      break;
+    }
+    case api::automation_internal::ACTION_TYPE_SETACCESSIBILITYFOCUS: {
+      action->action = ui::AX_ACTION_SET_ACCESSIBILITY_FOCUS;
+      break;
+    }
+    case api::automation_internal::
+        ACTION_TYPE_SETSEQUENTIALFOCUSNAVIGATIONSTARTINGPOINT: {
+      action->action =
+          ui::AX_ACTION_SET_SEQUENTIAL_FOCUS_NAVIGATION_STARTING_POINT;
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
 AutomationInternalPerformActionFunction::Run() {
   const AutomationInfo* automation_info = AutomationInfo::Get(extension());
   EXTENSION_FUNCTION_VALIDATE(automation_info && automation_info->interact);
@@ -352,11 +392,14 @@ AutomationInternalPerformActionFunction::Run() {
   using api::automation_internal::PerformAction::Params;
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  if (params->args.tree_id == api::automation::kDesktopTreeID) {
+  ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
+  ui::AXHostDelegate* delegate =
+      registry->GetHostDelegate(params->args.tree_id);
+  if (delegate) {
 #if defined(USE_AURA)
-    return RouteActionToAdapter(params.get(),
-                                AutomationManagerAura::GetInstance());
+    ui::AXActionData data;
+    ConvertToAXActionData(params.get(), &data);
+    delegate->PerformAction(data);
 #else
     NOTREACHED();
     return RespondNow(Error("Unexpected action on desktop automation tree;"
@@ -397,76 +440,11 @@ AutomationInternalPerformActionFunction::Run() {
     session->Suspend(content::MediaSession::SuspendType::SYSTEM);
     return RespondNow(NoArguments());
   }
-
-  RenderFrameHostActionAdapter adapter(rfh);
-  return RouteActionToAdapter(params.get(), &adapter);
-}
-
-ExtensionFunction::ResponseAction
-AutomationInternalPerformActionFunction::RouteActionToAdapter(
-    api::automation_internal::PerformAction::Params* params,
-    AutomationActionAdapter* adapter) {
-  ui::AXActionData action;
-  action.target_node_id = params->args.automation_node_id;
-  switch (params->args.action_type) {
-    case api::automation_internal::ACTION_TYPE_DODEFAULT:
-      action.action = ui::AX_ACTION_DO_DEFAULT;
-      adapter->PerformAction(action);
-      break;
-    case api::automation_internal::ACTION_TYPE_FOCUS:
-      action.action = ui::AX_ACTION_FOCUS;
-      adapter->PerformAction(action);
-      break;
-    case api::automation_internal::ACTION_TYPE_GETIMAGEDATA: {
-      api::automation_internal::GetImageDataParams get_image_data_params;
-      EXTENSION_FUNCTION_VALIDATE(
-          api::automation_internal::GetImageDataParams::Populate(
-              params->opt_args.additional_properties, &get_image_data_params));
-      action.action = ui::AX_ACTION_GET_IMAGE_DATA;
-      action.target_rect = gfx::Rect(
-          0, 0, get_image_data_params.max_width,
-          get_image_data_params.max_height);
-      adapter->PerformAction(action);
-      break;
-    }
-    case api::automation_internal::ACTION_TYPE_MAKEVISIBLE:
-      action.action = ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE;
-      adapter->PerformAction(action);
-      break;
-    case api::automation_internal::ACTION_TYPE_SETSELECTION: {
-      api::automation_internal::SetSelectionParams selection_params;
-      EXTENSION_FUNCTION_VALIDATE(
-          api::automation_internal::SetSelectionParams::Populate(
-              params->opt_args.additional_properties, &selection_params));
-      action.anchor_node_id = params->args.automation_node_id;
-      action.anchor_offset = selection_params.anchor_offset;
-      action.focus_node_id = selection_params.focus_node_id;
-      action.focus_offset = selection_params.focus_offset;
-      action.action = ui::AX_ACTION_SET_SELECTION;
-      adapter->PerformAction(action);
-      break;
-    }
-    case api::automation_internal::ACTION_TYPE_SHOWCONTEXTMENU: {
-      action.action = ui::AX_ACTION_SHOW_CONTEXT_MENU;
-      adapter->PerformAction(action);
-      break;
-    }
-    case api::automation_internal::ACTION_TYPE_SETACCESSIBILITYFOCUS: {
-      action.action = ui::AX_ACTION_SET_ACCESSIBILITY_FOCUS;
-      adapter->PerformAction(action);
-      break;
-    }
-    case api::automation_internal::
-        ACTION_TYPE_SETSEQUENTIALFOCUSNAVIGATIONSTARTINGPOINT: {
-      action.action =
-          ui::AX_ACTION_SET_SEQUENTIAL_FOCUS_NAVIGATION_STARTING_POINT;
-      adapter->PerformAction(action);
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-  return RespondNow(NoArguments());
+  ui::AXActionData data;
+  ExtensionFunction::ResponseAction result =
+      ConvertToAXActionData(params.get(), &data);
+  rfh->AccessibilityPerformAction(data);
+  return result;
 }
 
 ExtensionFunction::ResponseAction
@@ -505,14 +483,12 @@ AutomationInternalQuerySelectorFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (params->args.tree_id == api::automation::kDesktopTreeID) {
-    return RespondNow(
-        Error("domQuerySelector queries may not be used on the desktop."));
-  }
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromAXTreeID(params->args.tree_id);
-  if (!rfh)
-    return RespondNow(Error("domQuerySelector query sent on destroyed tree."));
+  if (!rfh) {
+    return RespondNow(
+        Error("domQuerySelector query sent on non-web or destroyed tree."));
+  }
 
   content::WebContents* contents =
       content::WebContents::FromRenderFrameHost(rfh);

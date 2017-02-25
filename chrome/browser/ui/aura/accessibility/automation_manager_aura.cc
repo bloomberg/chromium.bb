@@ -6,18 +6,18 @@
 
 #include <stddef.h>
 
-#include <vector>
-
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/api/automation_api_constants.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
@@ -142,7 +142,9 @@ void AutomationManagerAura::OnChildWindowRemoved(
 }
 
 AutomationManagerAura::AutomationManagerAura()
-    : enabled_(false), processing_events_(false) {}
+    : AXHostDelegate(extensions::api::automation::kDesktopTreeID),
+      enabled_(false),
+      processing_events_(false) {}
 
 AutomationManagerAura::~AutomationManagerAura() {
 }

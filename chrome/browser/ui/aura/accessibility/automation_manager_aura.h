@@ -8,10 +8,13 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
+#include "ui/accessibility/ax_host_delegate.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 
@@ -35,7 +38,7 @@ using AuraAXTreeSerializer =
                          ui::AXTreeData>;
 
 // Manages a tree of automation nodes.
-class AutomationManagerAura : public extensions::AutomationActionAdapter,
+class AutomationManagerAura : public ui::AXHostDelegate,
                               views::AXAuraObjCache::Delegate {
  public:
   // Get the single instance of this class.
@@ -54,7 +57,7 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter,
 
   void HandleAlert(content::BrowserContext* context, const std::string& text);
 
-  // AutomationActionAdapter implementation.
+  // AXHostDelegate implementation.
   void PerformAction(const ui::AXActionData& data) override;
 
   // views::AXAuraObjCache::Delegate implementation.
@@ -62,7 +65,7 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter,
 
  protected:
   AutomationManagerAura();
-  virtual ~AutomationManagerAura();
+  ~AutomationManagerAura() override;
 
  private:
   friend struct base::DefaultSingletonTraits<AutomationManagerAura>;

@@ -32,6 +32,7 @@ class FocusStealer : public views::View {
   // views::View overrides.
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID, id_);
+    node_data->role = ui::AX_ROLE_CLIENT;
   }
 
  private:
@@ -95,7 +96,7 @@ void ArcAccessibilityHelperBridge::OnInstanceReady() {
           chromeos::switches::kEnableChromeVoxArcSupport)) {
     instance->SetFilter(arc::mojom::AccessibilityFilterType::ALL);
     if (!tree_source_) {
-      tree_source_.reset(new AXTreeSourceArc());
+      tree_source_.reset(new AXTreeSourceArc(tree_id()));
       focus_stealer_.reset(new FocusStealer(tree_source_->tree_id()));
       exo::WMHelper::GetInstance()->AddActivationObserver(this);
     }
@@ -157,6 +158,21 @@ void ArcAccessibilityHelperBridge::OnWindowActivated(
     focus_stealer_->RequestFocus();
     view->NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);
   }
+}
+
+void ArcAccessibilityHelperBridge::PerformAction(const ui::AXActionData& data) {
+  arc::mojom::AccessibilityActionType mojo_action;
+  switch (data.action) {
+    case ui::AX_ACTION_DO_DEFAULT:
+      mojo_action = arc::mojom::AccessibilityActionType::CLICK;
+      break;
+    default:
+      return;
+  }
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->accessibility_helper(), PerformAction);
+  instance->PerformAction(data.target_node_id, mojo_action);
 }
 
 }  // namespace arc

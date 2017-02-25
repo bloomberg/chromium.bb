@@ -17,6 +17,8 @@ component("accessibility") {
   sources = [
     "ax_action_data.cc",
     "ax_action_data.h",
+    "ax_host_delegate.cc",
+    "ax_host_delegate.h",
     "ax_node.cc",
     "ax_node.h",
     "ax_node_data.cc",

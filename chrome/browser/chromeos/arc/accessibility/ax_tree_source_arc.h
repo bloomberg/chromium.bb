@@ -30,7 +30,7 @@ class AXTreeSourceArc
                               ui::AXNodeData,
                               ui::AXTreeData> {
  public:
-  AXTreeSourceArc();
+  explicit AXTreeSourceArc(int32_t tree_id);
   ~AXTreeSourceArc() override;
 
   // Notify automation of an accessibility event.

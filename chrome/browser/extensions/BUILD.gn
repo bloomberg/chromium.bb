@@ -72,7 +72,6 @@ static_library("extensions") {
     "api/autofill_private/autofill_private_event_router_factory.h",
     "api/autofill_private/autofill_util.cc",
     "api/autofill_private/autofill_util.h",
-    "api/automation_internal/automation_action_adapter.h",
     "api/automation_internal/automation_event_router.cc",
     "api/automation_internal/automation_event_router.h",
     "api/automation_internal/automation_internal_api.cc",
