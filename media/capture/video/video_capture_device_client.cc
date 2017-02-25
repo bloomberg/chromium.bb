@@ -333,6 +333,15 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
   }
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return Buffer();
+
+  if (!base::ContainsValue(buffer_ids_known_by_receiver_, buffer_id)) {
+    receiver_->OnNewBufferHandle(
+        buffer_id,
+        base::MakeUnique<BufferPoolBufferHandleProvider>(buffer_pool_,
+                                                         buffer_id));
+    buffer_ids_known_by_receiver_.push_back(buffer_id);
+  }
+
   return MakeBufferStruct(buffer_pool_, buffer_id, frame_feedback_id);
 }
 
@@ -355,11 +364,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
     gfx::Rect visible_rect,
     const VideoFrameMetadata& additional_metadata) {
   DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
-
-  if (!base::ContainsValue(buffer_ids_known_by_receiver_, buffer.id)) {
-    receiver_->OnNewBufferHandle(buffer.id, std::move(buffer.handle_provider));
-    buffer_ids_known_by_receiver_.push_back(buffer.id);
-  }
 
   VideoFrameMetadata metadata;
   metadata.MergeMetadataFrom(&additional_metadata);
