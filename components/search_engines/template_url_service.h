@@ -227,7 +227,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   void RegisterOmniboxKeyword(const std::string& extension_id,
                               const std::string& extension_name,
                               const std::string& keyword,
-                              const std::string& template_url_string);
+                              const std::string& template_url_string,
+                              const base::Time& extension_install_time);
 
   // Returns the set of URLs describing the keywords. The elements are owned
   // by TemplateURLService and should not be deleted.
@@ -413,8 +414,13 @@ class TemplateURLService : public WebDataServiceConsumer,
                            DontUpdateKeywordSearchForNonReplaceable);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, ChangeGoogleBaseValue);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, MergeDeletesUnusedProviders);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, AddExtensionKeyword);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, AddOmniboxExtensionKeyword);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, ExtensionsWithSameKeywords);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest,
+                           CheckEnginesWithSameKeywords);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, LastVisitedTimeUpdate);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest,
+                           RepairPrepopulatedSearchEngines);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, UniquifyKeyword);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
                            IsLocalTemplateURLBetter);
@@ -479,6 +485,15 @@ class TemplateURLService : public WebDataServiceConsumer,
   class LessWithPrefix;
 
   void Init(const Initializer* initializers, int num_initializers);
+
+  // Given two engines with the same keyword, returns which should take
+  // precedence.  While normal engines must all have distinct keywords,
+  // extension-controlled and omnibox API engines may have the same keywords as
+  // each other or as normal engines.  In these cases, omnibox API engines
+  // override extension-controlled engines, which override normal engines; if
+  // there is still a conflict after this, the most recently-added extension
+  // wins.
+  TemplateURL* BestEngineForKeyword(TemplateURL* engine1, TemplateURL* engine2);
 
   // Removes |template_url| from various internal maps
   // (|keyword_to_turl_and_length_|, |keyword_domain_to_turl_and_length_|,
@@ -705,9 +720,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURL* FindTemplateURLForExtension(const std::string& extension_id,
                                            TemplateURL::Type type);
 
-  // Finds the extension-supplied TemplateURL that matches |data|, if any.
-  TemplateURL* FindMatchingExtensionTemplateURL(const TemplateURLData& data,
-                                                TemplateURL::Type type);
+  // Finds any NORMAL_CONTROLLED_BY_EXTENSION engine that matches |data| and
+  // wants to be default. Returns nullptr if not found.
+  TemplateURL* FindMatchingDefaultExtensionTemplateURL(
+      const TemplateURLData& data);
 
   // Finds the most recently-installed NORMAL_CONTROLLED_BY_EXTENSION engine
   // that supports replacement and wants to be default, if any. Notifies the

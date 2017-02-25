@@ -219,7 +219,8 @@ void OmniboxAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
       if (url_service_->loaded()) {
         url_service_->RegisterOmniboxKeyword(
             extension->id(), extension->name(), keyword,
-            GetTemplateURLStringForExtension(extension->id()));
+            GetTemplateURLStringForExtension(extension->id()),
+            ExtensionPrefs::Get(profile_)->GetInstallTime(extension->id()));
       } else {
         pending_extensions_.insert(extension);
       }
@@ -247,11 +248,11 @@ gfx::Image OmniboxAPI::GetOmniboxIcon(const std::string& extension_id) {
 void OmniboxAPI::OnTemplateURLsLoaded() {
   // Register keywords for pending extensions.
   template_url_sub_.reset();
-  for (PendingExtensions::const_iterator i(pending_extensions_.begin());
-       i != pending_extensions_.end(); ++i) {
+  for (const auto* i : pending_extensions_) {
     url_service_->RegisterOmniboxKeyword(
-        (*i)->id(), (*i)->name(), OmniboxInfo::GetKeyword(*i),
-        GetTemplateURLStringForExtension((*i)->id()));
+        i->id(), i->name(), OmniboxInfo::GetKeyword(i),
+        GetTemplateURLStringForExtension(i->id()),
+        ExtensionPrefs::Get(profile_)->GetInstallTime(i->id()));
   }
   pending_extensions_.clear();
 }

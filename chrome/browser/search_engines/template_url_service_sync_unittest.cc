@@ -418,7 +418,8 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataWithExtension) {
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com"));
   std::string fake_id("blahblahblah");
   std::string fake_url = std::string(kOmniboxScheme) + "://" + fake_id;
-  model()->RegisterOmniboxKeyword(fake_id, "unittest", "key3", fake_url);
+  model()->RegisterOmniboxKeyword(fake_id, "unittest", "key3", fake_url,
+                                  Time());
   syncer::SyncDataList all_sync_data =
       model()->GetAllSyncData(syncer::SEARCH_ENGINES);
 
@@ -1076,14 +1077,14 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithLocalExtensions) {
 
   // Add some extension keywords locally.
   model()->RegisterOmniboxKeyword("extension1", "unittest", "keyword1",
-                                  "http://extension1");
+                                  "http://extension1", Time());
   TemplateURL* extension1 =
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1"));
   ASSERT_TRUE(extension1);
   EXPECT_EQ(0U, processor()->change_list_size());
 
   model()->RegisterOmniboxKeyword("extension2", "unittest", "keyword2",
-                                  "http://extension2");
+                                  "http://extension2", Time());
   TemplateURL* extension2 =
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2"));
   ASSERT_TRUE(extension2);
@@ -1099,17 +1100,11 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithLocalExtensions) {
     CreateTestTemplateURL(ASCIIToUTF16("keyword2"), "http://bbb.com")));
   model()->ProcessSyncChanges(FROM_HERE, changes);
 
-  EXPECT_FALSE(model()->GetTemplateURLForHost("aaa.com") == NULL);
+  EXPECT_TRUE(model()->GetTemplateURLForHost("aaa.com"));
+  EXPECT_TRUE(model()->GetTemplateURLForHost("bbb.com"));
   EXPECT_EQ(extension1,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1")));
-  TemplateURL* url_for_keyword2 =
-      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2"));
-  EXPECT_NE(extension2, url_for_keyword2);
-  EXPECT_EQ("http://bbb.com", url_for_keyword2->url());
-
-  EXPECT_EQ(extension1,
-            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1")));
-  EXPECT_EQ(model()->GetTemplateURLForHost("bbb.com"),
+  EXPECT_EQ(extension2,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2")));
 }
 
