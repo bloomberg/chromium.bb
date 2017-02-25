@@ -4,13 +4,13 @@
 
 # pylint: disable=import-error,print-statement,relative-import,protected-access
 
-"""Unit tests for code_generator_web_module.py."""
+"""Unit tests for code_generator_web_agent_api.py."""
 
 import unittest
 
-from code_generator_web_module import InterfaceContextBuilder
-from code_generator_web_module import STRING_INCLUDE_PATH
-from code_generator_web_module import TypeResolver
+from code_generator_web_agent_api import InterfaceContextBuilder
+from code_generator_web_agent_api import STRING_INCLUDE_PATH
+from code_generator_web_agent_api import TypeResolver
 from idl_definitions import IdlAttribute
 from idl_definitions import IdlOperation
 from idl_types import IdlType
@@ -44,6 +44,7 @@ class IdlTestingHelper(object):
         for class_name, path in classes_to_paths.iteritems():
             result[class_name] = {'include_path': path}
         return result
+
 
 class TypeResolverTest(unittest.TestCase):
 
@@ -116,7 +117,6 @@ class InterfaceContextBuilderTest(unittest.TestCase):
             'code_generator': 'test',
             'header_includes': set(['platform/heap/Handle.h']),
         }, builder.build())
-
 
     def test_add_attribute(self):
         helper = IdlTestingHelper()
