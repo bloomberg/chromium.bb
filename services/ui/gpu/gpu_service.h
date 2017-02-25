@@ -76,13 +76,6 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
  private:
   friend class GpuMain;
 
-  gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferFromeHandle(
-      gfx::GpuMemoryBufferHandle buffer_handle,
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      int client_id);
-
   gpu::SyncPointManager* sync_point_manager() { return sync_point_manager_; }
 
   gpu::gles2::MailboxManager* mailbox_manager() {
