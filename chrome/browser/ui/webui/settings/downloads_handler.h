@@ -10,7 +10,10 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+
+class Profile;
 
 namespace settings {
 
@@ -18,23 +21,36 @@ namespace settings {
 class DownloadsHandler : public SettingsPageUIHandler,
                          public ui::SelectFileDialog::Listener {
  public:
-  DownloadsHandler();
+  explicit DownloadsHandler(Profile* profile);
   ~DownloadsHandler() override;
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override {}
-  void OnJavascriptDisallowed() override {}
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
  private:
+  friend class DownloadsHandlerTest;
+  FRIEND_TEST_ALL_PREFIXES(DownloadsHandlerTest, AutoOpenDownloads);
+
+  // Callback for the "initializeDownloads" message. This starts observers and
+  // retrieves the current browser state.
+  void HandleInitialize(const base::ListValue* args);
+
+  void SendAutoOpenDownloadsToJavascript();
+
+  // Callback for the "selectDownloadLocation" message. This will prompt the
+  // user for a destination folder using platform-specific APIs.
+  void HandleSelectDownloadLocation(const base::ListValue* args);
+
   // SelectFileDialog::Listener implementation.
   void FileSelected(const base::FilePath& path,
                     int index,
                     void* params) override;
 
-  // Callback for the "selectDownloadLocation" message. This will prompt the
-  // user for a destination folder using platform-specific APIs.
-  void HandleSelectDownloadLocation(const base::ListValue* args);
+  Profile* profile_;
+
+  PrefChangeRegistrar pref_registrar_;
 
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
 

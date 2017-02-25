@@ -93,7 +93,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   AddSettingsPageUIHandler(base::MakeUnique<BrowserLifetimeHandler>());
   AddSettingsPageUIHandler(base::MakeUnique<ClearBrowsingDataHandler>(web_ui));
   AddSettingsPageUIHandler(base::MakeUnique<CookiesViewHandler>());
-  AddSettingsPageUIHandler(base::MakeUnique<DownloadsHandler>());
+  AddSettingsPageUIHandler(base::MakeUnique<DownloadsHandler>(profile));
   AddSettingsPageUIHandler(base::MakeUnique<ExtensionControlHandler>());
   AddSettingsPageUIHandler(base::MakeUnique<FontHandler>(web_ui));
   AddSettingsPageUIHandler(base::MakeUnique<ImportDataHandler>());

@@ -12,6 +12,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -21,8 +22,7 @@ using base::UserMetricsAction;
 
 namespace settings {
 
-DownloadsHandler::DownloadsHandler() {
-}
+DownloadsHandler::DownloadsHandler(Profile* profile) : profile_(profile) {}
 
 DownloadsHandler::~DownloadsHandler() {
   // There may be pending file dialogs, we need to tell them that we've gone
@@ -33,14 +33,44 @@ DownloadsHandler::~DownloadsHandler() {
 
 void DownloadsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
+      "initializeDownloads",
+      base::Bind(&DownloadsHandler::HandleInitialize, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "selectDownloadLocation",
       base::Bind(&DownloadsHandler::HandleSelectDownloadLocation,
                  base::Unretained(this)));
 }
 
+void DownloadsHandler::OnJavascriptAllowed() {
+  pref_registrar_.Init(profile_->GetPrefs());
+  pref_registrar_.Add(
+      prefs::kDownloadExtensionsToOpen,
+      base::Bind(&DownloadsHandler::SendAutoOpenDownloadsToJavascript,
+                 base::Unretained(this)));
+}
+
+void DownloadsHandler::OnJavascriptDisallowed() {
+  pref_registrar_.RemoveAll();
+}
+
+void DownloadsHandler::HandleInitialize(const base::ListValue* args) {
+  AllowJavascript();
+  SendAutoOpenDownloadsToJavascript();
+}
+
+void DownloadsHandler::SendAutoOpenDownloadsToJavascript() {
+  content::DownloadManager* manager =
+      content::BrowserContext::GetDownloadManager(profile_);
+  bool auto_open_downloads =
+      manager && DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed();
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("auto-open-downloads-changed"),
+                         base::FundamentalValue(auto_open_downloads));
+}
+
 void DownloadsHandler::HandleSelectDownloadLocation(
     const base::ListValue* args) {
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  PrefService* pref_service = profile_->GetPrefs();
   select_folder_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   ui::SelectFileDialog::FileTypeInfo info;
@@ -57,7 +87,7 @@ void DownloadsHandler::FileSelected(const base::FilePath& path,
                                     int index,
                                     void* params) {
   content::RecordAction(UserMetricsAction("Options_SetDownloadDirectory"));
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  PrefService* pref_service = profile_->GetPrefs();
   pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, path);
   pref_service->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
 }
