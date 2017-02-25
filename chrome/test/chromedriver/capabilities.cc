@@ -612,7 +612,7 @@ PerfLoggingPrefs::~PerfLoggingPrefs() {}
 Capabilities::Capabilities()
     : android_use_running_app(false),
       detach(false),
-      force_devtools_screenshot(false),
+      force_devtools_screenshot(true),
       page_load_strategy(PageLoadStrategy::kNormal),
       network_emulation_enabled(false) {}
 
