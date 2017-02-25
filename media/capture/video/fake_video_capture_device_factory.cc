@@ -13,10 +13,19 @@
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
 
-namespace media {
 namespace {
 
 static const size_t kDepthDeviceIndex = 1;
+static const char kDepthDeviceId[] = "/dev/video1";
+
+media::VideoPixelFormat GetPixelFormatFromDeviceId(
+    const std::string& device_id) {
+  return (device_id == kDepthDeviceId) ? media::PIXEL_FORMAT_Y16
+                                       : media::PIXEL_FORMAT_I420;
+}
+}
+
+namespace media {
 
 // Cap the frame rate command line input to reasonable values.
 static const float kFakeCaptureMinFrameRate = 5.0f;
@@ -26,17 +35,6 @@ static const float kFakeCaptureDefaultFrameRate = 20.0f;
 // Cap the device count command line input to reasonable values.
 static const int kFakeCaptureMinDeviceCount = 1;
 static const int kFakeCaptureMaxDeviceCount = 10;
-
-FakeVideoCaptureDeviceMaker::PixelFormat GetPixelFormatFromDeviceId(
-    const std::string& device_id) {
-  if (device_id == "/dev/video1")
-    return FakeVideoCaptureDeviceMaker::PixelFormat::Y16;
-  if (device_id == "/dev/video2")
-    return FakeVideoCaptureDeviceMaker::PixelFormat::MJPEG;
-  return FakeVideoCaptureDeviceMaker::PixelFormat::I420;
-}
-
-}  // anonymous namespace
 
 FakeVideoCaptureDeviceFactory::FakeVideoCaptureDeviceFactory()
     : number_of_devices_(1),
@@ -53,19 +51,8 @@ std::unique_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::CreateDevice(
   for (int n = 0; n < number_of_devices_; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
     if (device_descriptor.device_id.compare(possible_id) == 0) {
-      FakeVideoCaptureDeviceMaker::PixelFormat pixel_format =
-          GetPixelFormatFromDeviceId(possible_id);
-      FakeVideoCaptureDeviceMaker::DeliveryMode delivery_mode = delivery_mode_;
-      if (delivery_mode ==
-              FakeVideoCaptureDeviceMaker::DeliveryMode::
-                  USE_CLIENT_PROVIDED_BUFFERS &&
-          pixel_format == FakeVideoCaptureDeviceMaker::PixelFormat::MJPEG) {
-        // Incompatible options. Fall back to using internal buffers.
-        delivery_mode = FakeVideoCaptureDeviceMaker::DeliveryMode::
-            USE_DEVICE_INTERNAL_BUFFERS;
-      }
       return FakeVideoCaptureDeviceMaker::MakeInstance(
-          pixel_format, delivery_mode, frame_rate_);
+          GetPixelFormatFromDeviceId(possible_id), delivery_mode_, frame_rate_);
     }
   }
   return std::unique_ptr<VideoCaptureDevice>();
@@ -113,8 +100,8 @@ void FakeVideoCaptureDeviceFactory::GetSupportedFormats(
 
   ParseCommandLine();
 
-  const VideoPixelFormat pixel_format = static_cast<VideoPixelFormat>(
-      GetPixelFormatFromDeviceId(device_descriptor.device_id));
+  const VideoPixelFormat pixel_format =
+      GetPixelFormatFromDeviceId(device_descriptor.device_id);
   const VideoPixelStorage pixel_storage = PIXEL_STORAGE_CPU;
   std::vector<gfx::Size> supported_sizes;
   FakeVideoCaptureDeviceMaker::GetSupportedSizes(&supported_sizes);
