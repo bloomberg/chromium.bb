@@ -143,6 +143,9 @@ std::unique_ptr<base::Value> PopulateObject(id value) {
 }
 
 NSArray* BuildAllAttributesArray() {
+  // Note: clang-format tries to put multiple attributes on one line,
+  // but we prefer to have one per line for readability.
+  // clang-format off
   NSArray* array = [NSArray arrayWithObjects:
       NSAccessibilityRoleDescriptionAttribute,
       NSAccessibilityTitleAttribute,
@@ -167,6 +170,7 @@ NSArray* BuildAllAttributesArray() {
       @"AXARIASetSize",
       @"AXARIAPosInSet",
       NSAccessibilityColumnIndexRangeAttribute,
+      @"AXDOMIdentifier",
       @"AXDropEffects",
       NSAccessibilityEnabledAttribute,
       NSAccessibilityExpandedAttribute,
@@ -189,6 +193,8 @@ NSArray* BuildAllAttributesArray() {
       @"AXVisited",
       @"AXLinkedUIElements",
       nil];
+  // clang-format off
+
   return [array retain];
 }
 

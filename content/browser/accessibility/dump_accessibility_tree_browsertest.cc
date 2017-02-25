@@ -1183,6 +1183,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputWeek) {
   RunHtmlTest(FILE_PATH_LITERAL("input-week.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityId) {
+  RunHtmlTest(FILE_PATH_LITERAL("id.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityIns) {
   RunHtmlTest(FILE_PATH_LITERAL("ins.html"));
 }

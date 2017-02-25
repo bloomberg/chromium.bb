@@ -60,6 +60,7 @@ NSString* const NSAccessibilityARIARowCountAttribute = @"AXARIARowCount";
 NSString* const NSAccessibilityARIARowIndexAttribute = @"AXARIARowIndex";
 NSString* const NSAccessibilityARIASetSizeAttribute = @"AXARIASetSize";
 NSString* const NSAccessibilityAccessKeyAttribute = @"AXAccessKey";
+NSString* const NSAccessibilityDOMIdentifierAttribute = @"AXDOMIdentifier";
 NSString* const NSAccessibilityDropEffectsAttribute = @"AXDropEffects";
 NSString* const NSAccessibilityGrabbedAttribute = @"AXGrabbed";
 NSString* const NSAccessibilityInvalidAttribute = @"AXInvalid";
@@ -552,6 +553,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
       {NSAccessibilityDisclosureLevelAttribute, @"disclosureLevel"},
       {NSAccessibilityDisclosedRowsAttribute, @"disclosedRows"},
       {NSAccessibilityDropEffectsAttribute, @"dropEffects"},
+      {NSAccessibilityDOMIdentifierAttribute, @"domIdentifier"},
       {NSAccessibilityEnabledAttribute, @"enabled"},
       {NSAccessibilityEndTextMarkerAttribute, @"endTextMarker"},
       {NSAccessibilityExpandedAttribute, @"expanded"},
@@ -940,6 +942,17 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   std::string dropEffects;
   if (browserAccessibility_->GetHtmlAttribute("aria-dropeffect", &dropEffects))
     return base::SysUTF8ToNSString(dropEffects);
+
+  return nil;
+}
+
+- (NSString*)domIdentifier {
+  if (![self instanceActive])
+    return nil;
+
+  std::string id;
+  if (browserAccessibility_->GetHtmlAttribute("id", &id))
+    return base::SysUTF8ToNSString(id);
 
   return nil;
 }
@@ -2553,6 +2566,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
       arrayWithObjects:NSAccessibilityAccessKeyAttribute,
                        NSAccessibilityChildrenAttribute,
                        NSAccessibilityDescriptionAttribute,
+                       NSAccessibilityDOMIdentifierAttribute,
                        NSAccessibilityEnabledAttribute,
                        NSAccessibilityEndTextMarkerAttribute,
                        NSAccessibilityFocusedAttribute,
