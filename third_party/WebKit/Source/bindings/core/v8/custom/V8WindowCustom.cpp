@@ -51,6 +51,7 @@
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Location.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -60,7 +61,6 @@
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "platform/LayoutTestSupport.h"
 #include "wtf/Assertions.h"
 
