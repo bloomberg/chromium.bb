@@ -38,6 +38,7 @@
 #include "core/frame/FrameClient.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/CSPDirectiveList.h"
 #include "core/frame/csp/CSPSource.h"
@@ -47,7 +48,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -326,7 +326,7 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(
 }
 
 void ContentSecurityPolicy::reportAccumulatedHeaders(
-    FrameLoaderClient* client) const {
+    LocalFrameClient* client) const {
   // Notify the embedder about headers that have accumulated before the
   // navigation got committed.  See comments in
   // addAndReportPolicyFromHeaderValue for more details and context.

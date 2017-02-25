@@ -50,6 +50,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
@@ -64,7 +65,6 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
@@ -260,7 +260,7 @@ inline float parentTextZoomFactor(LocalFrame* frame) {
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
-LocalFrame* LocalFrame::create(FrameLoaderClient* client,
+LocalFrame* LocalFrame::create(LocalFrameClient* client,
                                FrameHost* host,
                                FrameOwner* owner,
                                InterfaceProvider* interfaceProvider,
@@ -438,7 +438,7 @@ void LocalFrame::detach(FrameDetachType type) {
 
   client()->willBeDetached();
   // Notify ScriptController that the frame is closing, since its cleanup ends
-  // up calling back to FrameLoaderClient via WindowProxy.
+  // up calling back to LocalFrameClient via WindowProxy.
   script().clearForClose();
   setView(nullptr);
 
@@ -849,7 +849,7 @@ bool LocalFrame::shouldThrottleRendering() const {
   return view() && view()->shouldThrottleRendering();
 }
 
-inline LocalFrame::LocalFrame(FrameLoaderClient* client,
+inline LocalFrame::LocalFrame(LocalFrameClient* client,
                               FrameHost* host,
                               FrameOwner* owner,
                               InterfaceProvider* interfaceProvider,
@@ -892,8 +892,8 @@ void LocalFrame::scheduleVisualUpdateUnlessThrottled() {
   page()->animator().scheduleVisualUpdate(this);
 }
 
-FrameLoaderClient* LocalFrame::client() const {
-  return static_cast<FrameLoaderClient*>(Frame::client());
+LocalFrameClient* LocalFrame::client() const {
+  return static_cast<LocalFrameClient*>(Frame::client());
 }
 
 PluginData* LocalFrame::pluginData() const {

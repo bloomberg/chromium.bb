@@ -30,11 +30,13 @@
 
 #include "core/frame/VisualViewport.h"
 
+#include <memory>
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/PageScaleConstraints.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RootFrameViewport.h"
@@ -42,7 +44,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -57,7 +58,6 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebScrollbarLayer.h"
-#include <memory>
 
 namespace blink {
 
