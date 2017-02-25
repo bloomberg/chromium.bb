@@ -31,31 +31,34 @@ void CupsPrintJobNotificationManager::OnPrintJobCreated(CupsPrintJob* job) {
 }
 
 void CupsPrintJobNotificationManager::OnPrintJobStarted(CupsPrintJob* job) {
-  DCHECK(base::ContainsKey(notification_map_, job));
-  notification_map_[job]->OnPrintJobStatusUpdated();
+  UpdateNotification(job);
 }
 
 void CupsPrintJobNotificationManager::OnPrintJobUpdated(CupsPrintJob* job) {
-  DCHECK(base::ContainsKey(notification_map_, job));
-  notification_map_[job]->OnPrintJobStatusUpdated();
+  UpdateNotification(job);
 }
 
 void CupsPrintJobNotificationManager::OnPrintJobSuspended(CupsPrintJob* job) {
-  DCHECK(base::ContainsKey(notification_map_, job));
-  notification_map_[job]->OnPrintJobStatusUpdated();
+  UpdateNotification(job);
 }
 
 void CupsPrintJobNotificationManager::OnPrintJobResumed(CupsPrintJob* job) {
-  DCHECK(base::ContainsKey(notification_map_, job));
-  notification_map_[job]->OnPrintJobStatusUpdated();
+  UpdateNotification(job);
 }
 
 void CupsPrintJobNotificationManager::OnPrintJobDone(CupsPrintJob* job) {
-  DCHECK(base::ContainsKey(notification_map_, job));
-  notification_map_[job]->OnPrintJobStatusUpdated();
+  UpdateNotification(job);
 }
 
 void CupsPrintJobNotificationManager::OnPrintJobError(CupsPrintJob* job) {
+  UpdateNotification(job);
+}
+
+void CupsPrintJobNotificationManager::OnPrintJobCancelled(CupsPrintJob* job) {
+  UpdateNotification(job);
+}
+
+void CupsPrintJobNotificationManager::UpdateNotification(CupsPrintJob* job) {
   DCHECK(base::ContainsKey(notification_map_, job));
   notification_map_[job]->OnPrintJobStatusUpdated();
 }

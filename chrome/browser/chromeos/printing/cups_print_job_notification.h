@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTING_CUPS_PRINT_JOB_NOTIFICATION_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTING_CUPS_PRINT_JOB_NOTIFICATION_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 
@@ -58,6 +62,10 @@ class CupsPrintJobNotification {
   // is true, then prevent the following print job progress update after close,
   // and only show the print job done or failed notification.
   bool closed_in_middle_ = false;
+
+  // If this is true, the user cancelled the job using the cancel button and
+  // should not be notified of events.
+  bool cancelled_by_user_ = false;
 
   // Maintains a list of button actions according to the print job's current
   // status.
