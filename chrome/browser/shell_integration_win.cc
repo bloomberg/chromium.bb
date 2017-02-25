@@ -731,14 +731,8 @@ base::string16 GetAppModelIdForProfile(const base::string16& app_name,
 base::string16 GetChromiumModelIdForProfile(
     const base::FilePath& profile_path) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-    return dist->GetBaseAppId();
-  }
   return GetAppModelIdForProfile(
-      ShellUtil::GetBrowserModelId(dist,
-                                   InstallUtil::IsPerUserInstall(chrome_exe)),
+      ShellUtil::GetBrowserModelId(dist, InstallUtil::IsPerUserInstall()),
       profile_path);
 }
 
@@ -771,7 +765,7 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
       path, false,  // not recursive
       base::FileEnumerator::FILES, FILE_PATH_LITERAL("*.lnk"));
 
-  bool is_per_user_install = InstallUtil::IsPerUserInstall(chrome_exe);
+  bool is_per_user_install = InstallUtil::IsPerUserInstall();
 
   int shortcuts_migrated = 0;
   base::FilePath target_path;
@@ -868,34 +862,6 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
     }
   }
   return shortcuts_migrated;
-}
-
-base::FilePath GetStartMenuShortcut(const base::FilePath& chrome_exe) {
-  static const int kFolderIds[] = {
-    base::DIR_COMMON_START_MENU,
-    base::DIR_START_MENU,
-  };
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  const base::string16 shortcut_name(dist->GetShortcutName() +
-                                     installer::kLnkExt);
-  base::FilePath programs_folder;
-  base::FilePath shortcut;
-
-  // Check both the common and the per-user Start Menu folders for system-level
-  // installs.
-  size_t folder = InstallUtil::IsPerUserInstall(chrome_exe) ? 1 : 0;
-  for (; folder < arraysize(kFolderIds); ++folder) {
-    if (!PathService::Get(kFolderIds[folder], &programs_folder)) {
-      NOTREACHED();
-      continue;
-    }
-
-    shortcut = programs_folder.Append(shortcut_name);
-    if (base::PathExists(shortcut))
-      return shortcut;
-  }
-
-  return base::FilePath();
 }
 
 }  // namespace win

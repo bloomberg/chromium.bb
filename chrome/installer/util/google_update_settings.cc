@@ -188,10 +188,9 @@ bool GetUpdatePolicyFromDword(
 
 }  // namespace
 
+// TODO(grt): Remove this now that it has no added value.
 bool GoogleUpdateSettings::IsSystemInstall() {
-  // TODO(grt): Remove this unused argument.
-  base::FilePath unused;
-  return !InstallUtil::IsPerUserInstall(unused);
+  return !InstallUtil::IsPerUserInstall();
 }
 
 bool GoogleUpdateSettings::GetCollectStatsConsent() {

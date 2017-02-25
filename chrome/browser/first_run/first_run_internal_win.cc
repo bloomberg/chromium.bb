@@ -112,10 +112,7 @@ void DoPostImportPlatformSpecificTasks(Profile* /* profile */) {
   // making sure shortcuts are created promptly to avoid annoying the user by
   // re-creating shortcuts they previously deleted.
   static const int64_t kTiggerActiveSetupDelaySeconds = 5;
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-  } else if (!InstallUtil::IsPerUserInstall(chrome_exe)) {
+  if (!InstallUtil::IsPerUserInstall()) {
     content::BrowserThread::GetBlockingPool()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&InstallUtil::TriggerActiveSetupCommand),
@@ -132,7 +129,7 @@ bool IsFirstRunSentinelPresent() {
   // from the application directory to the user data directory.
   base::FilePath exe_path;
   if (PathService::Get(base::DIR_EXE, &exe_path) &&
-      InstallUtil::IsPerUserInstall(exe_path)) {
+      InstallUtil::IsPerUserInstall()) {
     base::FilePath legacy_sentinel = exe_path.Append(chrome::kFirstRunSentinel);
     if (base::PathExists(legacy_sentinel)) {
       // Copy the file instead of moving it to avoid breaking developer builds

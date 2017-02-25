@@ -4,8 +4,6 @@
 
 #include "chrome/browser/component_updater/component_updater_utils.h"
 
-#include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "build/build_config.h"
 #if defined(OS_WIN)
 #include "chrome/installer/util/install_util.h"
@@ -15,9 +13,7 @@ namespace component_updater {
 
 bool IsPerUserInstall() {
 #if defined(OS_WIN)
-  base::FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
-  return InstallUtil::IsPerUserInstall(exe_path);
+  return InstallUtil::IsPerUserInstall();
 #else
   return true;
 #endif

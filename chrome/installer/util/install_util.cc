@@ -271,7 +271,7 @@ void InstallUtil::AddInstallerResultItems(
   }
 }
 
-bool InstallUtil::IsPerUserInstall(const base::FilePath& /* exe_path */) {
+bool InstallUtil::IsPerUserInstall() {
   return !install_static::InstallDetails::Get().system_level();
 }
 

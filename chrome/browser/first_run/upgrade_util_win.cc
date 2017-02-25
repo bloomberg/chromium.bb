@@ -109,13 +109,10 @@ bool IsUpdatePendingRestart() {
 bool SwapNewChromeExeIfPresent() {
   if (!IsUpdatePendingRestart())
     return false;
-  base::FilePath cur_chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &cur_chrome_exe))
-    return false;
 
   // If this is a system-level install, ask Google Update to launch an elevated
   // process to rename Chrome executables.
-  if (!InstallUtil::IsPerUserInstall(cur_chrome_exe))
+  if (!InstallUtil::IsPerUserInstall())
     return InvokeGoogleUpdateForRename();
 
   // If this is a user-level install, directly launch a process to rename Chrome

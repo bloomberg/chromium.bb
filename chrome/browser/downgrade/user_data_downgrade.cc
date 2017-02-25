@@ -103,16 +103,10 @@ void DeleteMovedUserData(const base::FilePath& user_data_dir,
   DeleteAllRenamedUserDirectories(disk_cache_dir);
 }
 
-enum InstallLevel { SYSTEM_INSTALL, USER_INSTALL, UNKNOWN };
+enum InstallLevel { SYSTEM_INSTALL, USER_INSTALL };
 
 InstallLevel GetInstallLevel() {
-  base::FilePath cur_chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &cur_chrome_exe))
-    return UNKNOWN;
-  if (InstallUtil::IsPerUserInstall(cur_chrome_exe))
-    return USER_INSTALL;
-  else
-    return SYSTEM_INSTALL;
+  return InstallUtil::IsPerUserInstall() ? USER_INSTALL : SYSTEM_INSTALL;
 }
 
 }  // namespace
@@ -127,8 +121,6 @@ void MoveUserDataForFirstRunAfterDowngrade() {
   if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return;
   InstallLevel install_level = GetInstallLevel();
-  if (install_level == UNKNOWN)
-    return;
   base::Version current_version(chrome::kChromeVersion);
   base::Version downgrade_version = InstallUtil::GetDowngradeVersion(
       install_level == SYSTEM_INSTALL, BrowserDistribution::GetDistribution());
@@ -182,8 +174,7 @@ bool IsMSIInstall() {
   InstallLevel install_level = GetInstallLevel();
   base::win::RegKey key;
   DWORD is_msi = 3;
-  return install_level != UNKNOWN &&
-         key.Open((install_level == SYSTEM_INSTALL) ? HKEY_LOCAL_MACHINE
+  return key.Open((install_level == SYSTEM_INSTALL) ? HKEY_LOCAL_MACHINE
                                                     : HKEY_CURRENT_USER,
                   BrowserDistribution::GetDistribution()->GetStateKey().c_str(),
                   KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&

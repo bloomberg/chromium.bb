@@ -28,8 +28,7 @@ void UpdateDefaultBrowserBeaconForPath(const base::FilePath& chrome_exe);
 
 // Updates the last was default or first not default beacon for the current user
 // based on |default_state|.
-void UpdateDefaultBrowserBeaconWithState(const base::FilePath& chrome_exe,
-                                         BrowserDistribution* distribution,
+void UpdateDefaultBrowserBeaconWithState(BrowserDistribution* distribution,
                                          ShellUtil::DefaultState default_state);
 
 // Updates the last OS upgrade beacon for the install.

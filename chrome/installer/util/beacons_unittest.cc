@@ -8,8 +8,6 @@
 #include <tuple>
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
-#include "base/path_service.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -164,8 +162,6 @@ class DefaultBrowserBeaconTest
     scoped_install_details_ =
         base::MakeUnique<install_static::ScopedInstallDetails>(system_install_,
                                                                mode_index);
-    chrome_exe_ = GetChromePath();
-
     // Override the registry so that tests can freely push state to it.
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
@@ -173,38 +169,15 @@ class DefaultBrowserBeaconTest
         registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
 
     // Ensure that IsPerUserInstall returns the proper value.
-    ASSERT_EQ(!system_install_, InstallUtil::IsPerUserInstall(chrome_exe_));
+    ASSERT_EQ(!system_install_, InstallUtil::IsPerUserInstall());
 
     distribution_ = BrowserDistribution::GetDistribution();
   }
 
   bool system_install_ = false;
-  base::FilePath chrome_exe_;
   BrowserDistribution* distribution_ = nullptr;
 
  private:
-  base::FilePath GetChromePath() const {
-    base::FilePath chrome_exe;
-    int dir_key = base::DIR_LOCAL_APP_DATA;
-
-    if (system_install_) {
-#if defined(_WIN64)
-      static const int kSystemKey = base::DIR_PROGRAM_FILESX86;
-#else
-      static const int kSystemKey = base::DIR_PROGRAM_FILES;
-#endif
-      dir_key = kSystemKey;
-    }
-    PathService::Get(dir_key, &chrome_exe);
-    if (*install_static::kCompanyPathName)
-      chrome_exe = chrome_exe.Append(install_static::kCompanyPathName);
-    chrome_exe = chrome_exe.Append(
-        base::string16(install_static::kProductPathName)
-            .append(install_static::InstallDetails::Get().install_suffix()));
-    chrome_exe = chrome_exe.Append(installer::kInstallBinaryDir);
-    return chrome_exe.Append(installer::kChromeExe);
-  }
-
   std::unique_ptr<install_static::ScopedInstallDetails> scoped_install_details_;
   registry_util::RegistryOverrideManager registry_override_manager_;
 };
@@ -220,32 +193,27 @@ TEST_P(DefaultBrowserBeaconTest, All) {
   ASSERT_TRUE(first_not_default->Get().is_null());
 
   // Chrome is not default.
-  UpdateDefaultBrowserBeaconWithState(chrome_exe_, distribution_,
-                                      ShellUtil::NOT_DEFAULT);
+  UpdateDefaultBrowserBeaconWithState(distribution_, ShellUtil::NOT_DEFAULT);
   ASSERT_TRUE(last_was_default->Get().is_null());
   ASSERT_FALSE(first_not_default->Get().is_null());
 
   // Then it is.
-  UpdateDefaultBrowserBeaconWithState(chrome_exe_, distribution_,
-                                      ShellUtil::IS_DEFAULT);
+  UpdateDefaultBrowserBeaconWithState(distribution_, ShellUtil::IS_DEFAULT);
   ASSERT_FALSE(last_was_default->Get().is_null());
   ASSERT_TRUE(first_not_default->Get().is_null());
 
   // It still is.
-  UpdateDefaultBrowserBeaconWithState(chrome_exe_, distribution_,
-                                      ShellUtil::IS_DEFAULT);
+  UpdateDefaultBrowserBeaconWithState(distribution_, ShellUtil::IS_DEFAULT);
   ASSERT_FALSE(last_was_default->Get().is_null());
   ASSERT_TRUE(first_not_default->Get().is_null());
 
   // Now it's not again.
-  UpdateDefaultBrowserBeaconWithState(chrome_exe_, distribution_,
-                                      ShellUtil::NOT_DEFAULT);
+  UpdateDefaultBrowserBeaconWithState(distribution_, ShellUtil::NOT_DEFAULT);
   ASSERT_FALSE(last_was_default->Get().is_null());
   ASSERT_FALSE(first_not_default->Get().is_null());
 
   // And it still isn't.
-  UpdateDefaultBrowserBeaconWithState(chrome_exe_, distribution_,
-                                      ShellUtil::NOT_DEFAULT);
+  UpdateDefaultBrowserBeaconWithState(distribution_, ShellUtil::NOT_DEFAULT);
   ASSERT_FALSE(last_was_default->Get().is_null());
   ASSERT_FALSE(first_not_default->Get().is_null());
 }

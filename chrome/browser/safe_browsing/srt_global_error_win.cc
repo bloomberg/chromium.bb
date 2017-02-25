@@ -93,7 +93,7 @@ void MaybeExecuteSRTFromBlockingPool(
       base::FilePath chrome_exe_path;
       PathService::Get(base::FILE_EXE, &chrome_exe_path);
       srt_command_line.AppendSwitchPath(kChromeExePathSwitch, chrome_exe_path);
-      if (!InstallUtil::IsPerUserInstall(chrome_exe_path))
+      if (!InstallUtil::IsPerUserInstall())
         srt_command_line.AppendSwitch(kChromeSystemInstallSwitch);
 
       if (metrics_enabled) {

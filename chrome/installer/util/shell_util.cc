@@ -360,8 +360,8 @@ void GetChromeProgIdEntries(BrowserDistribution* dist,
   app_info.command_line = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
   // For user-level installs: entries for the app id will be in HKCU; thus we
   // do not need a suffix on those entries.
-  app_info.app_id = ShellUtil::GetBrowserModelId(
-      dist, InstallUtil::IsPerUserInstall(chrome_exe));
+  app_info.app_id =
+      ShellUtil::GetBrowserModelId(dist, InstallUtil::IsPerUserInstall());
 
   // TODO(grt): http://crbug.com/75152 Write a reference to a localized
   // resource for name, description, and company.
@@ -675,7 +675,7 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
   // Failing that, read the path to setup.exe from Chrome's ClientState key,
   // which is the canonical location of the installer for all types of installs
   // (see AddUninstallShortcutWorkItems).
-  const bool is_per_user = InstallUtil::IsPerUserInstall(chrome_exe);
+  const bool is_per_user = InstallUtil::IsPerUserInstall();
   if (!base::PathExists(exe_path)) {
     RegKey key(is_per_user ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE,
                dist->GetStateKey().c_str(), KEY_QUERY_VALUE | KEY_WOW64_32KEY);
@@ -849,7 +849,7 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
 bool GetInstallationSpecificSuffix(BrowserDistribution* dist,
                                    const base::FilePath& chrome_exe,
                                    base::string16* suffix) {
-  if (!InstallUtil::IsPerUserInstall(chrome_exe) ||
+  if (!InstallUtil::IsPerUserInstall() ||
       QuickIsChromeRegistered(dist, chrome_exe, base::string16(),
                               CONFIRM_SHELL_REGISTRATION)) {
     // No suffix on system-level installs and user-level installs already
@@ -1000,10 +1000,9 @@ base::win::ShortcutProperties TranslateShortcutProperties(
 
 // Cleans up an old verb (run) we used to register in
 // <root>\Software\Classes\Chrome<.suffix>\.exe\shell\run on Windows 8.
-void RemoveRunVerbOnWindows8(BrowserDistribution* dist,
-                             const base::FilePath& chrome_exe) {
+void RemoveRunVerbOnWindows8(BrowserDistribution* dist) {
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    bool is_per_user_install = InstallUtil::IsPerUserInstall(chrome_exe);
+    bool is_per_user_install = InstallUtil::IsPerUserInstall();
     HKEY root_key = DetermineRegistrationRoot(is_per_user_install);
     // There's no need to rollback, so forgo the usual work item lists and just
     // remove the key from the registry.
@@ -1683,7 +1682,7 @@ base::string16 ShellUtil::GetCurrentInstallationSuffix(
   //   2) Username (old-style).
   //   3) Unsuffixed (even worse).
   base::string16 tested_suffix;
-  if (InstallUtil::IsPerUserInstall(chrome_exe) &&
+  if (InstallUtil::IsPerUserInstall() &&
       (!GetUserSpecificRegistrySuffix(&tested_suffix) ||
        !QuickIsChromeRegistered(dist, chrome_exe, tested_suffix,
                                 CONFIRM_PROGID_REGISTRATION)) &&
@@ -1802,7 +1801,7 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultStateFromPath(
   static const wchar_t* const kChromeProtocols[] = { L"http", L"https" };
   DefaultState default_state = ProbeProtocolHandlers(
       chrome_exe, kChromeProtocols, arraysize(kChromeProtocols));
-  UpdateDefaultBrowserBeaconWithState(chrome_exe, distribution, default_state);
+  UpdateDefaultBrowserBeaconWithState(distribution, default_state);
   return default_state;
 }
 
@@ -2071,9 +2070,9 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
     return false;
   }
 
-  RemoveRunVerbOnWindows8(dist, chrome_exe);
+  RemoveRunVerbOnWindows8(dist);
 
-  bool user_level = InstallUtil::IsPerUserInstall(chrome_exe);
+  bool user_level = InstallUtil::IsPerUserInstall();
   HKEY root = DetermineRegistrationRoot(user_level);
 
   // Look only in HKLM for system-level installs (otherwise, if a user-level
@@ -2155,7 +2154,7 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
     return false;
   }
 
-  bool user_level = InstallUtil::IsPerUserInstall(chrome_exe);
+  bool user_level = InstallUtil::IsPerUserInstall();
   HKEY root = DetermineRegistrationRoot(user_level);
 
   // Look only in HKLM for system-level installs (otherwise, if a user-level

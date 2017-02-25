@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/string16.h"
@@ -146,13 +145,8 @@ bool UninstallGoogleUpdate(bool system_install) {
 }
 
 void ElevateIfNeededToReenableUpdates() {
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-    return;
-  }
   installer::ProductState product_state;
-  const bool system_install = !InstallUtil::IsPerUserInstall(chrome_exe);
+  const bool system_install = !InstallUtil::IsPerUserInstall();
   if (!product_state.Initialize(system_install))
     return;
   base::FilePath exe_path(product_state.GetSetupPath());

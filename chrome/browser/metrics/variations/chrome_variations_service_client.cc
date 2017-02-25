@@ -13,9 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
-#include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -57,12 +55,7 @@ void ClearGoogleUpdateRegistryLabels() {
 
   // Note that all registry operations are done here on the UI thread as there
   // are no threading restrictions on them.
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED() << "Failed to get chrome exe path";
-    return;
-  }
-  const bool is_system_install = !InstallUtil::IsPerUserInstall(chrome_exe);
+  const bool is_system_install = !InstallUtil::IsPerUserInstall();
 
   // Read the current bits from the registry.
   base::string16 registry_labels;

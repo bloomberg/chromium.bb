@@ -92,8 +92,7 @@ bool IsElevationRequiredForSystemLevelUpdates() {
 GoogleUpdateErrorCode CanUpdateCurrentChrome(
     const base::FilePath& chrome_exe_path,
     bool system_level_install) {
-  DCHECK_NE(InstallUtil::IsPerUserInstall(chrome_exe_path),
-            system_level_install);
+  DCHECK_NE(InstallUtil::IsPerUserInstall(), system_level_install);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::FilePath user_exe_path = installer::GetChromeInstallPath(false, dist);
   base::FilePath machine_exe_path = installer::GetChromeInstallPath(true, dist);
@@ -504,7 +503,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     if (!PathService::Get(base::DIR_EXE, &chrome_exe))
       NOTREACHED();
 
-    system_level_install_ = !InstallUtil::IsPerUserInstall(chrome_exe);
+    system_level_install_ = !InstallUtil::IsPerUserInstall();
 
     // Make sure ATL is initialized in this module.
     ui::win::CreateATLModuleIfNeeded();

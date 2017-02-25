@@ -18,7 +18,7 @@ enum OutcomeCodes {
   DIAG_RECON_PRE_WINDOW_XP_SP2,
 
   // InstallTypeTest
-  DIAG_RECON_INSTALL_PATH_PROVIDER,
+  DIAG_RECON_INSTALL_PATH_PROVIDER_OBSOLETE,  // Retained to preserve numbering.
 
   // VersionTest
   DIAG_RECON_NO_VERSION,

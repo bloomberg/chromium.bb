@@ -21,10 +21,9 @@ void UpdateDefaultBrowserBeaconForPath(const base::FilePath& chrome_exe) {
 }
 
 void UpdateDefaultBrowserBeaconWithState(
-    const base::FilePath& chrome_exe,
     BrowserDistribution* distribution,
     ShellUtil::DefaultState default_state) {
-  const bool system_install = !InstallUtil::IsPerUserInstall(chrome_exe);
+  const bool system_install = !InstallUtil::IsPerUserInstall();
   const AppRegistrationData& registration_data =
       distribution->GetAppRegistrationData();
   switch (default_state) {

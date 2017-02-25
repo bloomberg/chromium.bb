@@ -82,9 +82,6 @@ void MigrateTaskbarPins();
 int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
                                    const base::FilePath& path);
 
-// Returns the path to the Start Menu shortcut for the given Chrome.
-base::FilePath GetStartMenuShortcut(const base::FilePath& chrome_exe);
-
 }  // namespace win
 }  // namespace shell_integration
 

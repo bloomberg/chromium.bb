@@ -90,12 +90,7 @@ class InstallTypeTest : public DiagnosticsTest {
 
   bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
 #if defined(OS_WIN)
-    base::FilePath chrome_exe;
-    if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-      RecordFailure(DIAG_RECON_INSTALL_PATH_PROVIDER, "Path provider failure");
-      return false;
-    }
-    user_level_ = InstallUtil::IsPerUserInstall(chrome_exe);
+    user_level_ = InstallUtil::IsPerUserInstall();
     const char* type = user_level_ ? "User Level" : "System Level";
     std::string install_type(type);
 #else

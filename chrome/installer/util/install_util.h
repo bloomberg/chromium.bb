@@ -86,9 +86,9 @@ class InstallUtil {
   // Returns true if this installation path is per user, otherwise returns false
   // (per machine install, meaning: the exe_path contains the path to Program
   // Files).
-  // TODO(grt): remove |exe_path| and consider replacing all callers with
-  // direct use of InstallDetails.
-  static bool IsPerUserInstall(const base::FilePath& exe_path);
+  // TODO(grt): consider replacing all callers with direct use of
+  // InstallDetails.
+  static bool IsPerUserInstall();
 
   // Returns true if this is running setup process for Chrome SxS (as
   // indicated by the presence of --chrome-sxs on the command line) or if this
