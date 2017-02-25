@@ -416,11 +416,16 @@ void WASAPIAudioOutputStream::Run() {
   }
 
   if (playing && error) {
+    LOG(ERROR) << "WASAPI rendering failed.";
+
     // Stop audio rendering since something has gone wrong in our main thread
     // loop. Note that, we are still in a "started" state, hence a Stop() call
     // is required to join the thread properly.
     audio_client_->Stop();
-    PLOG(ERROR) << "WASAPI rendering failed.";
+
+    // Notify clients that something has gone wrong and that this stream should
+    // be destroyed instead of reused in the future.
+    source_->OnError(this);
   }
 
   // Disable MMCSS.
