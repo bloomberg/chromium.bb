@@ -38,7 +38,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
     : views::ImageButton(nullptr),
       is_showing_app_list_(false),
       draw_background_as_active_(false),
-      background_alpha_(0),
+      background_color_(kShelfDefaultBaseColor),
       listener_(listener),
       shelf_view_(shelf_view),
       wm_shelf_(wm_shelf) {
@@ -78,8 +78,8 @@ void AppListButton::OnAppListDismissed() {
   wm_shelf_->UpdateAutoHideState();
 }
 
-void AppListButton::SetBackgroundAlpha(int alpha) {
-  background_alpha_ = alpha;
+void AppListButton::UpdateShelfItemBackground(SkColor color) {
+  background_color_ = color;
   SchedulePaint();
 }
 
@@ -165,7 +165,7 @@ void AppListButton::PaintMd(gfx::Canvas* canvas) {
 
   // Paint the circular background.
   cc::PaintFlags bg_flags;
-  bg_flags.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
+  bg_flags.setColor(background_color_);
   bg_flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
   bg_flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(circle_center, kAppListButtonRadius, bg_flags);

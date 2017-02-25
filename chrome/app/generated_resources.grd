@@ -5605,6 +5605,30 @@ Keep your key file in a safe place. You will need it to create new versions of y
           </message>
       </if>
       <if expr="use_ash">
+        <message name="IDS_FLAGS_ASH_SHELF_COLOR" desc="Title of the flag which specifies the shelf coloring in Chrome OS system UI.">
+          Shelf Color in Chrome OS system UI
+        </message>
+        <message name="IDS_FLAGS_ASH_SHELF_COLOR_DESCRIPTION" desc="Description of the flag which specifies the shelf coloring in Chrome OS system UI.">
+          Specify the Shelf Color scheme in Chrome OS system UI
+        </message>
+        <message name="IDS_FLAGS_ASH_SHELF_COLOR_LIGHT_VIBRANT" desc="A shelf coloring style to be used by Chrome OS UI.">
+          Light &amp; Vibrant
+        </message>
+        <message name="IDS_FLAGS_ASH_SHELF_COLOR_NORMAL_VIBRANT" desc="A shelf coloring style to be used by Chrome OS UI.">
+          Normal &amp; Vibrant
+        </message>
+        <message name="IDS_FLAGS_ASH_SHELF_COLOR_DARK_VIBRANT" desc="A shelf coloring style to be used by Chrome OS UI.">
+          Dark &amp; Vibrant
+        </message>
+        <message name="IDS_FLAGS_ASH_SHELF_COLOR_LIGHT_MUTED" desc="A shelf coloring style to be used by Chrome OS UI.">
+          Light &amp; Muted
+        </message>
+        <message name="IDS_FLAGS_ASH_SHELF_COLOR_NORMAL_MUTED" desc="A shelf coloring style to be used by Chrome OS UI.">
+          Normal &amp; Muted
+        </message>
+        <message name="IDS_FLAGS_ASH_SHELF_COLOR_DARK_MUTED" desc="A shelf coloring style to be used by Chrome OS UI.">
+          Dark &amp; Muted
+        </message>
         <message name="IDS_FLAGS_ASH_MAXIMIZE_MODE_WINDOW_BACKDROP_NAME" desc="Title for the flag which can be used for window backdrops in TouchView.">
           Window backdrops in TouchView
         </message>

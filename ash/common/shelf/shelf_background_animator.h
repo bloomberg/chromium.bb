@@ -10,9 +10,11 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
+#include "ash/common/wallpaper/wallpaper_controller_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
 namespace gfx {
@@ -24,6 +26,7 @@ namespace ash {
 enum class AnimationChangeType;
 class ShelfBackgroundAnimatorObserver;
 class ShelfBackgroundAnimatorTestApi;
+class WallpaperController;
 class WmShelf;
 
 // Central controller for the Shelf and Dock opacity animations.
@@ -38,12 +41,18 @@ class WmShelf;
 //    2. Overlay for the SHELF_BACKGROUND_OVERLAP and SHELF_BACKGROUND_MAXIMIZED
 //       states.
 class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
-                                           public gfx::AnimationDelegate {
+                                           public gfx::AnimationDelegate,
+                                           public WallpaperControllerObserver {
  public:
+  // The maximum alpha value that can be used.
+  static const int kMaxAlpha = SK_AlphaOPAQUE;
+
   // Initializes this with the given |background_type|. This will observe the
-  // |wm_shelf| for background type changes if |wm_shelf| is not null.
+  // |wm_shelf| for background type changes and the |wallpaper_controller| for
+  // wallpaper changes if not null.
   ShelfBackgroundAnimator(ShelfBackgroundType background_type,
-                          WmShelf* wm_shelf);
+                          WmShelf* wm_shelf,
+                          WallpaperController* wallpaper_controller);
   ~ShelfBackgroundAnimator() override;
 
   ShelfBackgroundType target_background_type() const {
@@ -58,7 +67,7 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
   void NotifyObserver(ShelfBackgroundAnimatorObserver* observer);
 
   // Conditionally animates the background to the specified |background_type|
-  // and notifies observers of the new background parameters (e.g. alpha).
+  // and notifies observers of the new background parameters (e.g. color).
   // If |change_type| is BACKGROUND_CHANGE_IMMEDIATE then the
   // observers will only receive one notification with the final background
   // state, otherwise the observers will be notified multiple times in order to
@@ -80,6 +89,10 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
   void OnBackgroundTypeChanged(ShelfBackgroundType background_type,
                                AnimationChangeType change_type) override;
 
+  // WallpaperControllerObserver:
+  void OnWallpaperDataChanged() override;
+  void OnWallpaperColorsChanged() override;
+
  private:
   friend class ShelfBackgroundAnimatorTestApi;
 
@@ -90,29 +103,26 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
     AnimationValues();
     ~AnimationValues();
 
-    int current_alpha() const { return current_alpha_; }
+    SkColor current_color() const { return current_color_; }
+    SkColor target_color() const { return target_color_; }
 
-    // Updates the current values based on |t| value between 0 and 1.
+    // Updates the |current_color_| based on |t| value between 0 and 1.
     void UpdateCurrentValues(double t);
 
-    // Set the target values and assign the current values to the initial
-    // values.
-    void SetTargetValues(int target_alpha);
+    // Set the target color and assign the current color to the initial color.
+    void SetTargetValues(SkColor target_color);
 
     // Returns true if the initial values of |this| equal the target values of
     // |other|.
     bool InitialValuesEqualTargetValuesOf(const AnimationValues& other) const;
 
    private:
-    int initial_alpha_ = 0;
-    int current_alpha_ = 0;
-    int target_alpha_ = 0;
+    SkColor initial_color_ = SK_ColorTRANSPARENT;
+    SkColor current_color_ = SK_ColorTRANSPARENT;
+    SkColor target_color_ = SK_ColorTRANSPARENT;
 
     DISALLOW_COPY_AND_ASSIGN(AnimationValues);
   };
-
-  // The maximum alpha value that can be used.
-  static const int kMaxAlpha = 255;
 
   // Helper function used by PaintBackground() to animate the background.
   void AnimateBackground(ShelfBackgroundType background_type,
@@ -148,6 +158,9 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
 
   // The shelf to observe for changes to the shelf background type, can be null.
   WmShelf* wm_shelf_;
+
+  // The wallpaper controller to observe for changes and to extract colors from.
+  WallpaperController* wallpaper_controller_;
 
   // The background type that this is animating towards or has reached.
   ShelfBackgroundType target_background_type_ = SHELF_BACKGROUND_DEFAULT;

@@ -126,7 +126,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   void UpdateBubbleViewArrow(views::TrayBubbleView* bubble_view);
 
   // ShelfBackgroundAnimatorObserver:
-  void UpdateShelfItemBackground(int alpha) override;
+  void UpdateShelfItemBackground(SkColor color) override;
 
   // Updates the visibility of this tray's separator.
   void set_separator_visibility(bool visible) { separator_visible_ = visible; }

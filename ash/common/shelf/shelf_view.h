@@ -16,6 +16,7 @@
 #include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/common/shelf/shelf_tooltip_manager.h"
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -157,7 +158,7 @@ class ASH_EXPORT ShelfView : public views::View,
                                bool canceled);
 
   // Updates the background for the shelf items.
-  void UpdateShelfItemBackground(int alpha);
+  void UpdateShelfItemBackground(SkColor color);
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {

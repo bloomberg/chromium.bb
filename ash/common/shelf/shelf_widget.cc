@@ -62,7 +62,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void OnBoundsChanged(const gfx::Rect& old_bounds) override;
 
   // ShelfBackgroundAnimatorObserver:
-  void UpdateShelfBackground(int alpha) override;
+  void UpdateShelfBackground(SkColor color) override;
 
  private:
   ShelfWidget* shelf_widget_;
@@ -89,7 +89,6 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   set_allow_deactivate_on_esc(true);
   opaque_background_.SetColor(SK_ColorBLACK);
   opaque_background_.SetBounds(GetLocalBounds());
-  opaque_background_.SetOpacity(0.0f);
   opaque_foreground_.SetColor(SK_ColorBLACK);
   opaque_foreground_.SetBounds(GetLocalBounds());
   opaque_foreground_.SetOpacity(0.0f);
@@ -125,9 +124,8 @@ void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
   opaque_foreground_.SetBounds(GetLocalBounds());
 }
 
-void ShelfWidget::DelegateView::UpdateShelfBackground(int alpha) {
-  const float kMaxAlpha = 255.0f;
-  opaque_background_.SetOpacity(alpha / kMaxAlpha);
+void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
+  opaque_background_.SetColor(color);
 }
 
 ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
@@ -135,7 +133,9 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
       status_area_widget_(nullptr),
       delegate_view_(new DelegateView(this)),
       shelf_view_(nullptr),
-      background_animator_(SHELF_BACKGROUND_DEFAULT, wm_shelf_),
+      background_animator_(SHELF_BACKGROUND_DEFAULT,
+                           wm_shelf_,
+                           WmShell::Get()->wallpaper_controller()),
       activating_as_fallback_(false) {
   DCHECK(wm_shelf_);
   background_animator_.AddObserver(this);
@@ -346,9 +346,9 @@ void ShelfWidget::OnWidgetActivationChanged(views::Widget* widget,
     delegate_view_->GetFocusManager()->ClearFocus();
 }
 
-void ShelfWidget::UpdateShelfItemBackground(int alpha) {
+void ShelfWidget::UpdateShelfItemBackground(SkColor color) {
   if (shelf_view_)
-    shelf_view_->UpdateShelfItemBackground(alpha);
+    shelf_view_->UpdateShelfItemBackground(color);
 }
 
 void ShelfWidget::WillDeleteShelfLayoutManager() {

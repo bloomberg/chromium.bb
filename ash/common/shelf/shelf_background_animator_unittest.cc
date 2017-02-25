@@ -9,6 +9,8 @@
 #include "ash/animation/animation_change_type.h"
 #include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
+#include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -19,39 +21,53 @@
 namespace ash {
 namespace {
 
-const int kMaxAlpha = 255;
+static auto kMaxAlpha = ShelfBackgroundAnimator::kMaxAlpha;
 
-// A valid alpha value that is distinct from any final animation state values.
-// Used to check if alpha values are changed during animations.
-const int kDummyAlpha = 111;
+// A valid color value that is distinct from any final animation state values.
+// Used to check if color values are changed during animations.
+const SkColor kDummyColor = SK_ColorBLUE;
 
-// Observer that caches alpha values for the last observation.
+// Observer that caches color values for the last observation.
 class TestShelfBackgroundObserver : public ShelfBackgroundAnimatorObserver {
  public:
   TestShelfBackgroundObserver() {}
   ~TestShelfBackgroundObserver() override {}
 
-  int background_alpha() const { return background_alpha_; }
+  SkColor background_color() const { return background_color_; }
 
-  int item_background_alpha() const { return item_background_alpha_; }
+  // Convenience function to get the alpha value from |background_color_|.
+  int GetBackgroundAlpha() const;
+
+  SkColor item_background_color() const { return item_background_color_; }
+
+  // Convenience function to get the alpha value from |item_background_color_|.
+  int GetItemBackgroundAlpha() const;
 
   // ShelfBackgroundObserver:
-  void UpdateShelfBackground(int alpha) override;
-  void UpdateShelfItemBackground(int alpha) override;
+  void UpdateShelfBackground(SkColor color) override;
+  void UpdateShelfItemBackground(SkColor color) override;
 
  private:
-  int background_alpha_ = 0;
-  int item_background_alpha_ = 0;
+  int background_color_ = SK_ColorTRANSPARENT;
+  int item_background_color_ = SK_ColorTRANSPARENT;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfBackgroundObserver);
 };
 
-void TestShelfBackgroundObserver::UpdateShelfBackground(int alpha) {
-  background_alpha_ = alpha;
+int TestShelfBackgroundObserver::GetBackgroundAlpha() const {
+  return SkColorGetA(background_color_);
 }
 
-void TestShelfBackgroundObserver::UpdateShelfItemBackground(int alpha) {
-  item_background_alpha_ = alpha;
+int TestShelfBackgroundObserver::GetItemBackgroundAlpha() const {
+  return SkColorGetA(item_background_color_);
+}
+
+void TestShelfBackgroundObserver::UpdateShelfBackground(SkColor color) {
+  background_color_ = color;
+}
+
+void TestShelfBackgroundObserver::UpdateShelfItemBackground(SkColor color) {
+  item_background_color_ = color;
 }
 
 }  // namespace
@@ -91,8 +107,8 @@ class ShelfBackgroundAnimatorTest : public testing::Test {
       ShelfBackgroundType background_type,
       AnimationChangeType change_type = AnimationChangeType::IMMEDIATE);
 
-  // Set all of the alpha values for the |observer_|.
-  void SetAlphaValuesOnObserver(int alpha);
+  // Set all of the color values for the |observer_|.
+  void SetColorValuesOnObserver(SkColor color);
 
   // Completes all the animations.
   void CompleteAnimations();
@@ -119,7 +135,7 @@ void ShelfBackgroundAnimatorTest::SetUp() {
   task_runner_handle_.reset(new base::ThreadTaskRunnerHandle(task_runner_));
 
   animator_.reset(
-      new ShelfBackgroundAnimator(SHELF_BACKGROUND_DEFAULT, nullptr));
+      new ShelfBackgroundAnimator(SHELF_BACKGROUND_DEFAULT, nullptr, nullptr));
   animator_->AddObserver(&observer_);
 
   test_api_.reset(new ShelfBackgroundAnimatorTestApi(animator_.get()));
@@ -131,9 +147,9 @@ void ShelfBackgroundAnimatorTest::PaintBackground(
   animator_->PaintBackground(background_type, change_type);
 }
 
-void ShelfBackgroundAnimatorTest::SetAlphaValuesOnObserver(int alpha) {
-  observer_.UpdateShelfBackground(alpha);
-  observer_.UpdateShelfItemBackground(alpha);
+void ShelfBackgroundAnimatorTest::SetColorValuesOnObserver(SkColor color) {
+  observer_.UpdateShelfBackground(color);
+  observer_.UpdateShelfItemBackground(color);
 }
 
 void ShelfBackgroundAnimatorTest::CompleteAnimations() {
@@ -160,32 +176,32 @@ TEST_F(ShelfBackgroundAnimatorTest, BackgroundTypesWhenAnimatingToSameTarget) {
 TEST_F(ShelfBackgroundAnimatorTest,
        MultipleAnimateCallsToSameTargetAreIgnored) {
   PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
-  SetAlphaValuesOnObserver(kDummyAlpha);
+  SetColorValuesOnObserver(kDummyColor);
   animator_->PaintBackground(SHELF_BACKGROUND_DEFAULT,
                              AnimationChangeType::ANIMATE);
   CompleteAnimations();
 
-  EXPECT_NE(observer_.background_alpha(), kDummyAlpha);
-  EXPECT_NE(observer_.item_background_alpha(), kDummyAlpha);
+  EXPECT_NE(observer_.background_color(), kDummyColor);
+  EXPECT_NE(observer_.item_background_color(), kDummyColor);
 
-  SetAlphaValuesOnObserver(kDummyAlpha);
+  SetColorValuesOnObserver(kDummyColor);
   animator_->PaintBackground(SHELF_BACKGROUND_DEFAULT,
                              AnimationChangeType::ANIMATE);
   CompleteAnimations();
 
-  EXPECT_EQ(observer_.background_alpha(), kDummyAlpha);
-  EXPECT_EQ(observer_.item_background_alpha(), kDummyAlpha);
+  EXPECT_EQ(observer_.background_color(), kDummyColor);
+  EXPECT_EQ(observer_.item_background_color(), kDummyColor);
 }
 
 // Verify observers are updated with the current values when they are added.
 TEST_F(ShelfBackgroundAnimatorTest, ObserversUpdatedWhenAdded) {
   animator_->RemoveObserver(&observer_);
-  SetAlphaValuesOnObserver(kDummyAlpha);
+  SetColorValuesOnObserver(kDummyColor);
 
   animator_->AddObserver(&observer_);
 
-  EXPECT_NE(observer_.background_alpha(), kDummyAlpha);
-  EXPECT_NE(observer_.item_background_alpha(), kDummyAlpha);
+  EXPECT_NE(observer_.background_color(), kDummyColor);
+  EXPECT_NE(observer_.item_background_color(), kDummyColor);
 }
 
 // Verify the alpha values for the SHELF_BACKGROUND_DEFAULT state.
@@ -193,8 +209,8 @@ TEST_F(ShelfBackgroundAnimatorTest, DefaultBackground) {
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
 
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, animator_->target_background_type());
-  EXPECT_EQ(0, observer_.background_alpha());
-  EXPECT_EQ(kShelfTranslucentAlpha, observer_.item_background_alpha());
+  EXPECT_EQ(0, observer_.GetBackgroundAlpha());
+  EXPECT_EQ(kShelfTranslucentAlpha, observer_.GetItemBackgroundAlpha());
 }
 
 // Verify the alpha values for the SHELF_BACKGROUND_OVERLAP state.
@@ -202,8 +218,8 @@ TEST_F(ShelfBackgroundAnimatorTest, OverlapBackground) {
   PaintBackground(SHELF_BACKGROUND_OVERLAP);
 
   EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, animator_->target_background_type());
-  EXPECT_EQ(kShelfTranslucentAlpha, observer_.background_alpha());
-  EXPECT_EQ(0, observer_.item_background_alpha());
+  EXPECT_EQ(kShelfTranslucentAlpha, observer_.GetBackgroundAlpha());
+  EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
 }
 
 // Verify the alpha values for the SHELF_BACKGROUND_MAXIMIZED state.
@@ -211,8 +227,8 @@ TEST_F(ShelfBackgroundAnimatorTest, MaximizedBackground) {
   PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
 
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, animator_->target_background_type());
-  EXPECT_EQ(kMaxAlpha, observer_.background_alpha());
-  EXPECT_EQ(0, observer_.item_background_alpha());
+  EXPECT_EQ(kMaxAlpha, observer_.GetBackgroundAlpha());
+  EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
 }
 
 TEST_F(ShelfBackgroundAnimatorTest,
@@ -266,24 +282,24 @@ TEST_F(ShelfBackgroundAnimatorTest,
        AnimationProgressesToTargetWhenStoppingUnfinishedAnimator) {
   PaintBackground(SHELF_BACKGROUND_OVERLAP, AnimationChangeType::ANIMATE);
 
-  EXPECT_NE(kShelfTranslucentAlpha, observer_.background_alpha());
-  EXPECT_NE(0, observer_.item_background_alpha());
+  EXPECT_NE(kShelfTranslucentAlpha, observer_.GetBackgroundAlpha());
+  EXPECT_NE(0, observer_.GetItemBackgroundAlpha());
 
   test_api_->animator()->Stop();
 
-  EXPECT_EQ(kShelfTranslucentAlpha, observer_.background_alpha());
-  EXPECT_EQ(0, observer_.item_background_alpha());
+  EXPECT_EQ(kShelfTranslucentAlpha, observer_.GetBackgroundAlpha());
+  EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
 }
 
 // Verify observers are always notified, even when alpha values don't change.
 TEST_F(ShelfBackgroundAnimatorTest,
        ObserversAreNotifiedWhenSnappingToSameTargetBackground) {
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
-  SetAlphaValuesOnObserver(kDummyAlpha);
+  SetColorValuesOnObserver(kDummyColor);
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
 
-  EXPECT_NE(observer_.background_alpha(), kDummyAlpha);
-  EXPECT_NE(observer_.item_background_alpha(), kDummyAlpha);
+  EXPECT_NE(observer_.background_color(), kDummyColor);
+  EXPECT_NE(observer_.item_background_color(), kDummyColor);
 }
 
 }  // namespace ash

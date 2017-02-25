@@ -35,7 +35,7 @@ OverflowButton::OverflowButton(ShelfView* shelf_view, WmShelf* wm_shelf)
       bottom_image_(nullptr),
       shelf_view_(shelf_view),
       wm_shelf_(wm_shelf),
-      background_alpha_(0) {
+      background_color_(kShelfDefaultBaseColor) {
   DCHECK(shelf_view_);
   if (MaterialDesignController::IsShelfMaterial()) {
     SetInkDropMode(InkDropMode::ON);
@@ -71,8 +71,8 @@ void OverflowButton::OnOverflowBubbleHidden() {
     SchedulePaint();
 }
 
-void OverflowButton::SetBackgroundAlpha(int alpha) {
-  background_alpha_ = alpha;
+void OverflowButton::UpdateShelfItemBackground(SkColor color) {
+  background_color_ = color;
   SchedulePaint();
 }
 
@@ -121,7 +121,7 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas,
   if (MaterialDesignController::IsShelfMaterial()) {
     cc::PaintFlags flags;
     flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
-    flags.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
+    flags.setColor(background_color_);
     canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius, flags);
   } else {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();

@@ -76,6 +76,15 @@ const char kAshForceEnablePalette[] = "ash-force-enable-palette";
 const char kAshHideNotificationsForFactory[] =
     "ash-hide-notifications-for-factory";
 
+// Enables the shelf color to be derived from the wallpaper.
+const char kAshShelfColor[] = "ash-shelf-color";
+const char kAshShelfColorLightMuted[] = "light_muted";
+const char kAshShelfColorLightVibrant[] = "light_vibrant";
+const char kAshShelfColorNormalMuted[] = "normal_muted";
+const char kAshShelfColorNormalVibrant[] = "normal_vibrant";
+const char kAshShelfColorDarkMuted[] = "dark_muted";
+const char kAshShelfColorDarkVibrant[] = "dark_vibrant";
+
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
 

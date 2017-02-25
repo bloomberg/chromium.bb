@@ -4,6 +4,9 @@
 
 component("wallpaper") {
   sources = [
+    "wallpaper_color_calculator.cc",
+    "wallpaper_color_calculator.h",
+    "wallpaper_color_calculator_observer.h",
     "wallpaper_files_id.cc",
     "wallpaper_files_id.h",
     "wallpaper_layout.h",
@@ -39,6 +42,7 @@ component("wallpaper") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "wallpaper_color_calculator_unittest.cc",
     "wallpaper_resizer_unittest.cc",
   ]
 

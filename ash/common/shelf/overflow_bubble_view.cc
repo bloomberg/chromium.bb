@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_lookup.h"
@@ -50,10 +49,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   set_arrow(GetBubbleArrow());
   set_mirror_arrow_in_rtl(false);
   set_background(NULL);
-  SkColor color = MaterialDesignController::IsShelfMaterial()
-                      ? kShelfBaseColor
-                      : SkColorSetA(kShelfBaseColor, kShelfTranslucentAlpha);
-  set_color(color);
+  set_color(kShelfDefaultBaseColor);
   set_margins(gfx::Insets(kPadding, kPadding, kPadding, kPadding));
   // Overflow bubble should not get focus. If it get focus when it is shown,
   // active state item is changed to running state.

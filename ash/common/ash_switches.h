@@ -32,6 +32,13 @@ ASH_EXPORT extern const char kAshEnableTouchView[];
 ASH_EXPORT extern const char kAshEnableMirroredScreen[];
 ASH_EXPORT extern const char kAshForceEnablePalette[];
 ASH_EXPORT extern const char kAshHideNotificationsForFactory[];
+ASH_EXPORT extern const char kAshShelfColor[];
+ASH_EXPORT extern const char kAshShelfColorLightMuted[];
+ASH_EXPORT extern const char kAshShelfColorLightVibrant[];
+ASH_EXPORT extern const char kAshShelfColorNormalMuted[];
+ASH_EXPORT extern const char kAshShelfColorNormalVibrant[];
+ASH_EXPORT extern const char kAshShelfColorDarkMuted[];
+ASH_EXPORT extern const char kAshShelfColorDarkVibrant[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 

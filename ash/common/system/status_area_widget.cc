@@ -181,15 +181,15 @@ void StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
     status_area_widget_delegate_->SetPaneFocusAndFocusDefault();
 }
 
-void StatusAreaWidget::UpdateShelfItemBackground(int alpha) {
-  web_notification_tray_->UpdateShelfItemBackground(alpha);
-  system_tray_->UpdateShelfItemBackground(alpha);
-  virtual_keyboard_tray_->UpdateShelfItemBackground(alpha);
-  logout_button_tray_->UpdateShelfItemBackground(alpha);
-  ime_menu_tray_->UpdateShelfItemBackground(alpha);
+void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
+  web_notification_tray_->UpdateShelfItemBackground(color);
+  system_tray_->UpdateShelfItemBackground(color);
+  virtual_keyboard_tray_->UpdateShelfItemBackground(color);
+  logout_button_tray_->UpdateShelfItemBackground(color);
+  ime_menu_tray_->UpdateShelfItemBackground(color);
   if (palette_tray_)
-    palette_tray_->UpdateShelfItemBackground(alpha);
-  overview_button_tray_->UpdateShelfItemBackground(alpha);
+    palette_tray_->UpdateShelfItemBackground(color);
+  overview_button_tray_->UpdateShelfItemBackground(color);
 }
 
 void StatusAreaWidget::AddSystemTray() {

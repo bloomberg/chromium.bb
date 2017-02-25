@@ -96,7 +96,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // ShelfBackgroundAnimatorObserver overrides:
-  void UpdateShelfItemBackground(int alpha) override;
+  void UpdateShelfItemBackground(SkColor color) override;
 
   // ShelfLayoutManagerObserver overrides:
   void WillDeleteShelfLayoutManager() override;

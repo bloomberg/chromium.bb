@@ -43,9 +43,9 @@ extern const int kShelfItemInset;
 // Animation duration for switching black shelf and dock background on and off.
 ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
 
-// The base color of the shelf to which different alpha values are applied
-// based on the desired shelf opacity level.
-ASH_EXPORT extern const SkColor kShelfBaseColor;
+// The default base color of the shelf to which different alpha values are
+// applied based on the desired shelf opacity level.
+ASH_EXPORT extern const SkColor kShelfDefaultBaseColor;
 
 // Highlight color used for shelf button activated states.
 // TODO(bruthig|mohsen): Use of this color is temporary. Draw the active state

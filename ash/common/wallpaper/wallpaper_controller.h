@@ -15,8 +15,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "components/wallpaper/wallpaper_color_calculator_observer.h"
 #include "components/wallpaper/wallpaper_layout.h"
+#include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {
@@ -24,6 +27,7 @@ class TaskRunner;
 }
 
 namespace wallpaper {
+class WallpaperColorCalculator;
 class WallpaperResizer;
 }
 
@@ -35,7 +39,9 @@ class WallpaperControllerObserver;
 class ASH_EXPORT WallpaperController
     : public NON_EXPORTED_BASE(mojom::WallpaperController),
       public WmDisplayObserver,
-      public ShellObserver {
+      public ShellObserver,
+      public wallpaper::WallpaperResizerObserver,
+      public wallpaper::WallpaperColorCalculatorObserver {
  public:
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
 
@@ -49,6 +55,8 @@ class ASH_EXPORT WallpaperController
   // Add/Remove observers.
   void AddObserver(WallpaperControllerObserver* observer);
   void RemoveObserver(WallpaperControllerObserver* observer);
+
+  SkColor prominent_color() const { return prominent_color_; }
 
   // Provides current image on the wallpaper, or empty gfx::ImageSkia if there
   // is no image, e.g. wallpaper is none.
@@ -107,7 +115,19 @@ class ASH_EXPORT WallpaperController
   void SetWallpaper(const SkBitmap& wallpaper,
                     wallpaper::WallpaperLayout layout) override;
 
+  // WallpaperResizerObserver:
+  void OnWallpaperResized() override;
+
+  // WallpaperColorCalculatorObserver:
+  void OnColorCalculationComplete() override;
+
  private:
+  // Returns true if the shelf should be colored based on the wallpaper's
+  // prominent color. |luma| and |saturation| are output parameters.
+  static bool GetProminentColorProfile(
+      color_utils::LumaRange* luma,
+      color_utils::SaturationRange* saturation);
+
   // Creates a WallpaperWidgetController for |root_window|.
   void InstallDesktopController(WmWindow* root_window);
 
@@ -125,6 +145,13 @@ class ASH_EXPORT WallpaperController
   // wallpaper cahce or not.
   void UpdateWallpaper(bool clear_cache);
 
+  // Sets |prominent_color_| and notifies the observers if there is a change.
+  void SetProminentColor(SkColor color);
+
+  // If enabled, will initiates an asynchronous task to extract colors from the
+  // wallpaper. If an existing calculation is in progress it is destroyed.
+  void CalculateWallpaperColors();
+
   bool locked_;
 
   WallpaperMode wallpaper_mode_;
@@ -138,6 +165,13 @@ class ASH_EXPORT WallpaperController
   base::ObserverList<WallpaperControllerObserver> observers_;
 
   std::unique_ptr<wallpaper::WallpaperResizer> current_wallpaper_;
+
+  // Asynchronous task to extract colors from the wallpaper.
+  std::unique_ptr<wallpaper::WallpaperColorCalculator> color_calculator_;
+
+  // The prominent color extracted from the current wallpaper.
+  // SK_ColorTRANSPARENT is used by default or if extracting colors fails.
+  SkColor prominent_color_;
 
   gfx::Size current_max_display_size_;
 

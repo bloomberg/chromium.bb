@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {
@@ -29,8 +30,8 @@ class ASH_EXPORT AppListButton : public views::ImageButton {
 
   bool draw_background_as_active() const { return draw_background_as_active_; }
 
-  // Sets alpha value of the background and schedules a paint.
-  void SetBackgroundAlpha(int alpha);
+  // Updates background and schedules a paint.
+  void UpdateShelfItemBackground(SkColor color);
 
  protected:
   // views::ImageButton overrides:
@@ -73,8 +74,8 @@ class ASH_EXPORT AppListButton : public views::ImageButton {
   // the application list.
   bool draw_background_as_active_;
 
-  // Alpha value used to paint the background.
-  int background_alpha_;
+  // Color used to paint the background.
+  SkColor background_color_;
 
   InkDropButtonListener* listener_;
   ShelfView* shelf_view_;

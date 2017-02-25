@@ -4,6 +4,10 @@
 
 #include "ash/common/wallpaper/wallpaper_controller.h"
 
+#include <string>
+#include <utility>
+
+#include "ash/common/ash_switches.h"
 #include "ash/common/wallpaper/wallpaper_controller_observer.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wallpaper/wallpaper_view.h"
@@ -13,14 +17,18 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/task_runner.h"
+#include "components/wallpaper/wallpaper_color_calculator.h"
 #include "components/wallpaper/wallpaper_resizer.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
 namespace {
 
 // How long to wait reloading the wallpaper after the display size has changed.
@@ -28,10 +36,41 @@ const int kWallpaperReloadDelayMs = 100;
 
 }  // namespace
 
+// static
+bool WallpaperController::GetProminentColorProfile(
+    color_utils::LumaRange* luma,
+    color_utils::SaturationRange* saturation) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshShelfColor)) {
+    return false;
+  }
+
+  *luma = color_utils::LumaRange::NORMAL;
+  *saturation = color_utils::SaturationRange::VIBRANT;
+
+  const std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAshShelfColor);
+  if (switch_value.find("light") != std::string::npos)
+    *luma = color_utils::LumaRange::LIGHT;
+  else if (switch_value.find("normal") != std::string::npos)
+    *luma = color_utils::LumaRange::NORMAL;
+  else if (switch_value.find("dark") != std::string::npos)
+    *luma = color_utils::LumaRange::DARK;
+
+  if (switch_value.find("vibrant") != std::string::npos)
+    *saturation = color_utils::SaturationRange::VIBRANT;
+  else if (switch_value.find("muted") != std::string::npos)
+    *saturation = color_utils::SaturationRange::MUTED;
+
+  return true;
+}
+
 WallpaperController::WallpaperController(
     const scoped_refptr<base::TaskRunner>& task_runner)
     : locked_(false),
       wallpaper_mode_(WALLPAPER_NONE),
+      prominent_color_(SK_ColorTRANSPARENT),
       wallpaper_reload_delay_(kWallpaperReloadDelayMs),
       task_runner_(task_runner) {
   WmShell::Get()->AddDisplayObserver(this);
@@ -39,6 +78,10 @@ WallpaperController::WallpaperController(
 }
 
 WallpaperController::~WallpaperController() {
+  if (current_wallpaper_)
+    current_wallpaper_->RemoveObserver(this);
+  if (color_calculator_)
+    color_calculator_->RemoveObserver(this);
   WmShell::Get()->RemoveDisplayObserver(this);
   WmShell::Get()->RemoveShellObserver(this);
 }
@@ -82,6 +125,7 @@ void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
 
   current_wallpaper_.reset(new wallpaper::WallpaperResizer(
       image, GetMaxDisplaySizeInNative(), layout, task_runner_));
+  current_wallpaper_->AddObserver(this);
   current_wallpaper_->StartResize();
 
   for (auto& observer : observers_)
@@ -91,6 +135,7 @@ void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
 }
 
 void WallpaperController::CreateEmptyWallpaper() {
+  SetProminentColor(SK_ColorTRANSPARENT);
   current_wallpaper_.reset();
   wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
@@ -205,6 +250,16 @@ void WallpaperController::SetWallpaper(const SkBitmap& wallpaper,
   SetWallpaperImage(gfx::ImageSkia::CreateFrom1xBitmap(wallpaper), layout);
 }
 
+void WallpaperController::OnWallpaperResized() {
+  CalculateWallpaperColors();
+}
+
+void WallpaperController::OnColorCalculationComplete() {
+  const SkColor color = color_calculator_->prominent_color();
+  color_calculator_.reset();
+  SetProminentColor(color);
+}
+
 void WallpaperController::InstallDesktopController(WmWindow* root_window) {
   WallpaperWidgetController* component = nullptr;
   int container_id = GetWallpaperContainerId(locked_);
@@ -271,6 +326,31 @@ int WallpaperController::GetWallpaperContainerId(bool locked) {
 void WallpaperController::UpdateWallpaper(bool clear_cache) {
   current_wallpaper_.reset();
   WmShell::Get()->wallpaper_delegate()->UpdateWallpaper(clear_cache);
+}
+
+void WallpaperController::SetProminentColor(SkColor color) {
+  if (prominent_color_ == color)
+    return;
+
+  prominent_color_ = color;
+  for (auto& observer : observers_)
+    observer.OnWallpaperColorsChanged();
+}
+
+void WallpaperController::CalculateWallpaperColors() {
+  color_utils::LumaRange luma;
+  color_utils::SaturationRange saturation;
+  if (!GetProminentColorProfile(&luma, &saturation))
+    return;
+
+  if (color_calculator_)
+    color_calculator_->RemoveObserver(this);
+
+  color_calculator_ = base::MakeUnique<wallpaper::WallpaperColorCalculator>(
+      GetWallpaper(), luma, saturation, task_runner_);
+  color_calculator_->AddObserver(this);
+  if (!color_calculator_->StartCalculation())
+    SetProminentColor(SK_ColorTRANSPARENT);
 }
 
 }  // namespace ash

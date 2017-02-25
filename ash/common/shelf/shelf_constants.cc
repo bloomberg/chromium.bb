@@ -14,7 +14,7 @@ const int kWorkspaceAreaVisibleInset = 2;
 const int kWorkspaceAreaAutoHideInset = 5;
 const int kShelfAutoHideSize = 3;
 const int kShelfItemInset = 3;
-const SkColor kShelfBaseColor = SK_ColorBLACK;
+const SkColor kShelfDefaultBaseColor = SK_ColorBLACK;
 const SkColor kShelfButtonActivatedHighlightColor =
     SkColorSetA(SK_ColorWHITE, 100);
 const SkColor kShelfInkDropBaseColor = SK_ColorWHITE;

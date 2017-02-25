@@ -389,6 +389,24 @@ const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
     switches::kTopChromeMDMaterialHybrid },
 };
 
+#if defined(USE_ASH)
+const FeatureEntry::Choice kAshShelfColorChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_FLAGS_ASH_SHELF_COLOR_LIGHT_VIBRANT, ash::switches::kAshShelfColor,
+     ash::switches::kAshShelfColorLightVibrant},
+    {IDS_FLAGS_ASH_SHELF_COLOR_NORMAL_VIBRANT, ash::switches::kAshShelfColor,
+     ash::switches::kAshShelfColorNormalVibrant},
+    {IDS_FLAGS_ASH_SHELF_COLOR_DARK_VIBRANT, ash::switches::kAshShelfColor,
+     ash::switches::kAshShelfColorDarkVibrant},
+    {IDS_FLAGS_ASH_SHELF_COLOR_LIGHT_MUTED, ash::switches::kAshShelfColor,
+     ash::switches::kAshShelfColorLightMuted},
+    {IDS_FLAGS_ASH_SHELF_COLOR_NORMAL_MUTED, ash::switches::kAshShelfColor,
+     ash::switches::kAshShelfColorNormalMuted},
+    {IDS_FLAGS_ASH_SHELF_COLOR_DARK_MUTED, ash::switches::kAshShelfColor,
+     ash::switches::kAshShelfColorDarkMuted},
+};
+#endif  // USE_ASH
+
 #if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
@@ -1050,6 +1068,9 @@ const FeatureEntry kFeatureEntries[] = {
         IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_DESCRIPTION, kOsCrOS,
         SINGLE_VALUE_TYPE(ash::switches::kAshEnableMirroredScreen),
     },
+    {"ash-shelf-color", IDS_FLAGS_ASH_SHELF_COLOR,
+     IDS_FLAGS_ASH_SHELF_COLOR_DESCRIPTION, kOsCrOS,
+     MULTI_VALUE_TYPE(kAshShelfColorChoices)},
 #endif  // USE_ASH
 #if defined(OS_CHROMEOS)
     {"material-design-ink-drop-animation-speed",

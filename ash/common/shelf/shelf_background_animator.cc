@@ -10,7 +10,9 @@
 #include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/color_utils.h"
 
 namespace ash {
 
@@ -19,35 +21,39 @@ ShelfBackgroundAnimator::AnimationValues::AnimationValues() {}
 ShelfBackgroundAnimator::AnimationValues::~AnimationValues() {}
 
 void ShelfBackgroundAnimator::AnimationValues::UpdateCurrentValues(double t) {
-  current_alpha_ =
-      gfx::Tween::IntValueBetween(t, initial_alpha_, target_alpha_);
+  current_color_ =
+      gfx::Tween::ColorValueBetween(t, initial_color_, target_color_);
 }
 
 void ShelfBackgroundAnimator::AnimationValues::SetTargetValues(
-    int target_alpha) {
-  DCHECK_LE(target_alpha, kMaxAlpha);
-  DCHECK_GE(target_alpha, 0);
-  initial_alpha_ = current_alpha_;
-  target_alpha_ = target_alpha;
+    SkColor target_color) {
+  initial_color_ = current_color_;
+  target_color_ = target_color;
 }
 
 bool ShelfBackgroundAnimator::AnimationValues::InitialValuesEqualTargetValuesOf(
     const AnimationValues& other) const {
-  return initial_alpha_ == other.target_alpha_;
+  return initial_color_ == other.target_color_;
 }
 
 ShelfBackgroundAnimator::ShelfBackgroundAnimator(
     ShelfBackgroundType background_type,
-    WmShelf* wm_shelf)
-    : wm_shelf_(wm_shelf) {
+    WmShelf* wm_shelf,
+    WallpaperController* wallpaper_controller)
+    : wm_shelf_(wm_shelf), wallpaper_controller_(wallpaper_controller) {
+  if (wallpaper_controller_)
+    wallpaper_controller_->AddObserver(this);
   if (wm_shelf_)
     wm_shelf_->AddObserver(this);
+
   // Initialize animators so that adding observers get notified with consistent
   // values.
   AnimateBackground(background_type, AnimationChangeType::IMMEDIATE);
 }
 
 ShelfBackgroundAnimator::~ShelfBackgroundAnimator() {
+  if (wallpaper_controller_)
+    wallpaper_controller_->RemoveObserver(this);
   if (wm_shelf_)
     wm_shelf_->RemoveObserver(this);
 }
@@ -65,8 +71,8 @@ void ShelfBackgroundAnimator::RemoveObserver(
 
 void ShelfBackgroundAnimator::NotifyObserver(
     ShelfBackgroundAnimatorObserver* observer) {
-  observer->UpdateShelfBackground(shelf_background_values_.current_alpha());
-  observer->UpdateShelfItemBackground(item_background_values_.current_alpha());
+  observer->UpdateShelfBackground(shelf_background_values_.current_color());
+  observer->UpdateShelfItemBackground(item_background_values_.current_color());
 }
 
 void ShelfBackgroundAnimator::PaintBackground(
@@ -98,6 +104,12 @@ void ShelfBackgroundAnimator::AnimationCanceled(
   SetAnimationValues(animator_->IsShowing() ? 1.0 : 0.0);
   // Animations are only cancelled when they are being pre-empted so we don't
   // destroy the |animator_| because it may be re-used immediately.
+}
+
+void ShelfBackgroundAnimator::OnWallpaperDataChanged() {}
+
+void ShelfBackgroundAnimator::OnWallpaperColorsChanged() {
+  AnimateBackground(target_background_type_, AnimationChangeType::ANIMATE);
 }
 
 void ShelfBackgroundAnimator::OnBackgroundTypeChanged(
@@ -191,25 +203,35 @@ void ShelfBackgroundAnimator::GetTargetValues(
     ShelfBackgroundType background_type,
     AnimationValues* shelf_background_values,
     AnimationValues* item_background_values) const {
-  int target_shelf_background = 0;
-  int target_shelf_item_background = 0;
+  int target_shelf_background_alpha = 0;
+  int target_shelf_item_background_alpha = 0;
 
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
-      target_shelf_background = 0;
-      target_shelf_item_background = kShelfTranslucentAlpha;
+      target_shelf_background_alpha = 0;
+      target_shelf_item_background_alpha = kShelfTranslucentAlpha;
       break;
     case SHELF_BACKGROUND_OVERLAP:
-      target_shelf_background = kShelfTranslucentAlpha;
-      target_shelf_item_background = 0;
+      target_shelf_background_alpha = kShelfTranslucentAlpha;
+      target_shelf_item_background_alpha = 0;
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
-      target_shelf_background = kMaxAlpha;
-      target_shelf_item_background = 0;
+      target_shelf_background_alpha = kMaxAlpha;
+      target_shelf_item_background_alpha = 0;
       break;
   }
-  shelf_background_values->SetTargetValues(target_shelf_background);
-  item_background_values->SetTargetValues(target_shelf_item_background);
+
+  SkColor target_color = wallpaper_controller_
+                             ? wallpaper_controller_->prominent_color()
+                             : kShelfDefaultBaseColor;
+
+  if (target_color == SK_ColorTRANSPARENT)
+    target_color = kShelfDefaultBaseColor;
+
+  shelf_background_values->SetTargetValues(
+      SkColorSetA(target_color, target_shelf_background_alpha));
+  item_background_values->SetTargetValues(
+      SkColorSetA(target_color, target_shelf_item_background_alpha));
 }
 
 void ShelfBackgroundAnimator::SetAnimationValues(double t) {

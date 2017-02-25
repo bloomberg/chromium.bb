@@ -117,11 +117,11 @@ class TrayBackground : public views::Background {
   TrayBackground(TrayBackgroundView* tray_background_view, bool draws_active)
       : tray_background_view_(tray_background_view),
         draws_active_(draws_active),
-        alpha_(0) {}
+        color_(SK_ColorTRANSPARENT) {}
 
   ~TrayBackground() override {}
 
-  void set_alpha(int alpha) { alpha_ = alpha; }
+  void set_color(SkColor color) { color_ = color; }
 
  private:
   WmShelf* GetShelf() const { return tray_background_view_->shelf(); }
@@ -129,7 +129,7 @@ class TrayBackground : public views::Background {
   void PaintMaterial(gfx::Canvas* canvas, views::View* view) const {
     cc::PaintFlags background_flags;
     background_flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
-    background_flags.setColor(SkColorSetA(kShelfBaseColor, alpha_));
+    background_flags.setColor(color_);
     gfx::Insets insets =
         GetMirroredBackgroundInsets(GetShelf()->GetAlignment());
     gfx::Rect bounds = view->GetLocalBounds();
@@ -205,7 +205,7 @@ class TrayBackground : public views::Background {
   // is removed (see https://crbug.com/614453).
   bool draws_active_;
 
-  int alpha_;
+  SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBackground);
 };
@@ -514,9 +514,9 @@ void TrayBackgroundView::UpdateBubbleViewArrow(
   // Nothing to do here.
 }
 
-void TrayBackgroundView::UpdateShelfItemBackground(int alpha) {
+void TrayBackgroundView::UpdateShelfItemBackground(SkColor color) {
   if (background_) {
-    background_->set_alpha(alpha);
+    background_->set_color(color);
     SchedulePaint();
   }
 }

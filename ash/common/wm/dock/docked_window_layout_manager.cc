@@ -56,7 +56,9 @@ class DockedBackgroundWidget : public views::Widget,
   explicit DockedBackgroundWidget(DockedWindowLayoutManager* manager)
       : manager_(manager),
         alignment_(DOCKED_ALIGNMENT_NONE),
-        background_animator_(SHELF_BACKGROUND_DEFAULT, nullptr),
+        background_animator_(SHELF_BACKGROUND_DEFAULT,
+                             nullptr,
+                             WmShell::Get()->wallpaper_controller()),
         opaque_background_(ui::LAYER_SOLID_COLOR),
         visible_background_type_(manager_->shelf()->GetBackgroundType()),
         visible_background_change_type_(AnimationChangeType::IMMEDIATE) {
@@ -86,9 +88,8 @@ class DockedBackgroundWidget : public views::Widget,
   }
 
   // ShelfBackgroundAnimatorObserver:
-  void UpdateShelfBackground(int alpha) override {
-    const float kMaxAlpha = 255.0f;
-    opaque_background_.SetOpacity(alpha / kMaxAlpha);
+  void UpdateShelfBackground(SkColor color) override {
+    opaque_background_.SetColor(color);
   }
 
   // WmShelfObserver:
