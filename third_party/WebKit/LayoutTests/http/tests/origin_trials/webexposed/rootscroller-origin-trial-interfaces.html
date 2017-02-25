@@ -10,9 +10,6 @@ generate_token.py  http://127.0.0.1:8000 RootScroller --expire-timestamp=2000000
 <script src="../../resources/origin-trials-helper.js"></script>
 <script>
 test(t => {
-  var interfaces =
-      OriginTrialsHelper.get_interface_names(this, ['Document'],
-                                             {'Document':'rootScroller'});
-  console.log('Interfaces in document\n' + interfaces);
-}, "RootScroller related interfaces in Origin-Trial enabled document.");
+  OriginTrialsHelper.check_properties(this, {'Document': ['rootScroller']});
+}, "RootScroller related properties on interfaces in Origin-Trial enabled document.");
 </script>

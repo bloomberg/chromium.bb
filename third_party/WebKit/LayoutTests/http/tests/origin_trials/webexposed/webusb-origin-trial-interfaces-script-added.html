@@ -6,50 +6,38 @@
 <script src="../../resources/origin-trials-helper.js"></script>
 <script>
 // Generate token with the command:
-// generate_token.py  http://127.0.0.1:8000 WebUSB --expire-timestamp=2000000000
-var old_trial_token = "Ak+Acw9/y+acA5hzmO0vOifI2G0n6g1+CiHBlyMOjjspFsPlTfvvI0nQBLCUlDkXkMQzSXzB97JmRaNNjpSyVQ0AAABOeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViVVNCIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9";
 // generate_token.py  http://127.0.0.1:8000 WebUSB2 --expire-timestamp=2000000000
-var token = "AmgWWAL+v07ElzPwp9oXvY1ldvKTbMlEUFopboMutESil7WUfQNVdYFUzfai6GRq5MndTa+ln+w1gLlRw8VshwAAAABPeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViVVNCMiIsICJleHBpcnkiOiAyMDAwMDAwMDAwfQ==";
+let token = "AmgWWAL+v07ElzPwp9oXvY1ldvKTbMlEUFopboMutESil7WUfQNVdYFUzfai6GRq5MndTa+ln+w1gLlRw8VshwAAAABPeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViVVNCMiIsICJleHBpcnkiOiAyMDAwMDAwMDAwfQ==";
+
+let properties_to_check = {'Navigator': ['usb']};
+let interfaces_to_check = ['USBAlternateInterface',
+    'USBConfiguration',
+    'USBConnectionEvent',
+    'USBDevice',
+    'USBEndpoint',
+    'USBInTransferResult',
+    'USBInterface',
+    'USBIsochronousInTransferPacket',
+    'USBIsochronousInTransferResult',
+    'USBIsochronousOutTransferPacket',
+    'USBIsochronousOutTransferResult',
+    'USBOutTransferResult'];
 
 test(t => {
-  var interfaces =
-      OriginTrialsHelper.get_interface_names(this,
-        ['Navigator',
-         'USBAlternateInterface',
-         'USBConfiguration',
-         'USBConnectionEvent',
-         'USBDevice',
-         'USBEndpoint',
-         'USBInTransferResult',
-         'USBInterface',
-         'USBIsochronousInTransferPacket',
-         'USBIsochronousInTransferResult',
-         'USBIsochronousOutTransferPacket',
-         'USBIsochronousOutTransferResult',
-         'USBOutTransferResult'],
-        {'Navigator': ['usb']});
-  console.log('Interfaces before adding trial token\n' + interfaces);
+  OriginTrialsHelper.check_properties_missing(this, properties_to_check);
+}, "WebUSB related properties on interfaces before adding trial token via script.");
+
+test(t => {
+  OriginTrialsHelper.check_interfaces_missing(this, interfaces_to_check);
 }, "WebUSB related interfaces before adding trial token via script.");
 
 OriginTrialsHelper.add_token(token);
 
 test(t => {
-  var interfaces =
-      OriginTrialsHelper.get_interface_names(this,
-        ['Navigator',
-         'USBAlternateInterface',
-         'USBConfiguration',
-         'USBConnectionEvent',
-         'USBDevice',
-         'USBEndpoint',
-         'USBInTransferResult',
-         'USBInterface',
-         'USBIsochronousInTransferPacket',
-         'USBIsochronousInTransferResult',
-         'USBIsochronousOutTransferPacket',
-         'USBIsochronousOutTransferResult',
-         'USBOutTransferResult'],
-        {'Navigator': ['usb']});
-  console.log('Interfaces after adding trial token\n' + interfaces);
+  OriginTrialsHelper.check_properties(this, properties_to_check);
+}, "WebUSB related properties on interfaces after adding trial token via script.");
+
+test(t => {
+  OriginTrialsHelper.check_interfaces(this, interfaces_to_check);
 }, "WebUSB related interfaces after adding trial token via script.");
 </script>

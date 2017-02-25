@@ -10,10 +10,9 @@ generate_token.py  http://127.0.0.1:8000 ImageCapture --expire-timestamp=2000000
 <script src="../../resources/origin-trials-helper.js"></script>
 <script>
 test(t => {
-  var interfaces =
-      OriginTrialsHelper.get_interface_names(this, ['ImageCapture',
-                                                    'MediaSettingsRange',
-                                                    'PhotoCapabilities']);
-  console.log('Interfaces in document\n' + interfaces);
+  OriginTrialsHelper.check_interfaces(this,
+    ['ImageCapture',
+     'MediaSettingsRange',
+     'PhotoCapabilities']);
 }, "ImageCapture related interfaces in Origin-Trial enabled document.");
 </script>

@@ -2,30 +2,37 @@
 // LayoutTests that are checking members exposed to script by origin trials.
 //
 // The current available methods are:
-// get_interface_names:
-//   Report on the existence of the given interface names on the global object,
-//   listing all the properties found for each interface. The properties can be
-//   filtered by providing a list of desired property names. As well, it can
-//   report on properties of the global object itself, by giving 'global' as one
-//   of the interface names.
+// check_properties:
+//   Tests for the existence of the given property names, on the given interface
+//   names, on the global object. As well, it can test for properties of the
+//   global object itself, by giving 'global' as the interface name.
 // Example:
-//   OriginTrialsHelper.get_interface_names(
+//   OriginTrialsHelper.check_properties(
 //     this,
-//     ['ForeignFetchEvent', 'InstallEvent', 'global'],
-//     {'InstallEvent':['registerForeignFetch'], 'global':['onforeignfetch']}));
+//     {'InstallEvent':['registerForeignFetch'], 'global':['onforeignfetch']});
 //
-// check_interfaces_in_sw:
-//   Collects the results of calling get_interface_names() in a service worker.
-//   Use in a promise test to output the results.
+// check_properties_missing:
+//   Tests that the given property names do not exist on the global object. That
+//   is, tests for the opposite of check_properties().
 // Example:
-//   promise_test(t => {
-//     var script = 'path/to/script/calling/get_interface_names()'
-//     var scope = 'matching scope'
-//     return OriginTrialsHelper.check_interfaces_in_sw(t, script, scope)
-//        .then(message => {
-//          console.log('Interfaces in Service Worker - origin trial enabled.\n'
-//                      + message);
-//        });
+//   OriginTrialsHelper.check_properties_missing(
+//     this,
+//     {'InstallEvent':['registerForeignFetch'], 'global':['onforeignfetch']});
+//
+// check_interfaces:
+//   Tests for the existence of the given interface names, on the global object.
+// Example:
+//   OriginTrialsHelper.check_interfaces(
+//     this,
+//     ['USBAlternateInterface', 'USBConfiguration']);
+//
+// check_interfaces_missing:
+//   Tests that the given interface names do not exist on the global object.
+//   That is, tests for the opposite of check_interfaces().
+// Example:
+//   OriginTrialsHelper.check_interfaces_missing(
+//     this,
+//     ['USBAlternateInterface', 'USBConfiguration']);
 //
 // add_token:
 //   Adds a trial token to the document, to enable a trial via script
@@ -35,100 +42,56 @@
 
 var OriginTrialsHelper = (function() {
   return {
-    get_interface_names:
-        (global_object, interface_names,
-         opt_property_filters) => {
-          var property_filters = opt_property_filters || {};
-          var result = [];
-          function collect_property_info(object, property_name, output) {
-            var descriptor =
-                Object.getOwnPropertyDescriptor(object, property_name);
-            if ('value' in descriptor) {
-              if (typeof descriptor.value === 'function') {
-                output.push('    method ' + property_name);
-              } else {
-                output.push('    attribute ' + property_name);
-              }
-            } else {
-              if (descriptor.get) {
-                output.push('    getter ' + property_name);
-              }
-              if (descriptor.set) {
-                output.push('    setter ' + property_name);
-              }
-            }
+    check_properties_impl: (global_object, property_filters, should_exist) => {
+      let interface_names = Object.getOwnPropertyNames(property_filters).sort();
+      interface_names.forEach(function(interface_name) {
+        let interface_prototype;
+        if (interface_name === 'global') {
+          interface_prototype = global_object;
+        } else {
+          let interface_object = global_object[interface_name];
+          if (interface_object) {
+            interface_prototype = interface_object.prototype;
           }
-          interface_names.sort();
-          interface_names.forEach(function(interface_name) {
-            var use_global = false;
-            var interface_object;
-            if (interface_name === 'global') {
-              use_global = true;
-              interface_object = global_object;
-            } else {
-              interface_object = global_object[interface_name];
-            }
-            if (interface_object === undefined) {
-              return;
-            }
-            var interface_prototype;
-            var display_name;
-            if (use_global) {
-              interface_prototype = interface_object;
-              display_name = 'global object';
-            } else {
-              interface_prototype = interface_object.prototype;
-              display_name = 'interface ' + interface_name;
-            }
-            result.push(display_name);
-            var property_names =
-                Object.getOwnPropertyNames(interface_prototype);
-            var match_property_names = property_filters[interface_name];
-            if (match_property_names) {
-              property_names = property_names.filter(
-                  name => { return match_property_names.indexOf(name) >= 0; });
-            }
-            var property_strings = [];
-            property_names.forEach(function(property_name) {
-              collect_property_info(
-                  interface_prototype, property_name, property_strings);
-            });
-            result.push.apply(result, property_strings.sort());
-          });
-          return result.join('\n');
-        },
+        }
+        assert_true(interface_prototype !== undefined, 'Interface ' + interface_name + ' not found');
+        property_filters[interface_name].forEach(function(property_name) {
+          assert_equals(interface_prototype.hasOwnProperty(property_name),
+              should_exist,
+              'Property ' + property_name + ' exists on ' + interface_name);
+        });
+      });
+    },
 
-         check_interfaces_in_sw:
-             (t, script, scope) => {
-               var worker;
-               var message;
-               var registration;
-               return service_worker_unregister_and_register(t, script, scope)
-                   .then(reg => {
-                     registration = reg;
-                     worker = registration.installing;
-                     return wait_for_state(t, worker, 'activated');
-                   })
-                   .then(_ => {
-                     var saw_message = new Promise(resolve => {
-                       navigator.serviceWorker.onmessage =
-                           e => { resolve(e.data); };
-                     });
-                     worker.postMessage('');
-                     return saw_message;
-                   })
-                   .then(msg => {
-                     message = msg;
-                     return registration.unregister();
-                   })
-                   .then(_ => { return message; });
-             },
+    check_properties: (global_object, property_filters) => {
+      OriginTrialsHelper.check_properties_impl(global_object, property_filters, true);
+    },
 
-         add_token: (token_string) => {
-           var tokenElement = document.createElement('meta');
-           tokenElement.httpEquiv = 'origin-trial';
-           tokenElement.content = token_string;
-           document.head.appendChild(tokenElement);
-         }
+    check_properties_missing: (global_object, property_filters) => {
+      OriginTrialsHelper.check_properties_impl(global_object, property_filters, false);
+    },
+
+    check_interfaces_impl: (global_object, interface_names, should_exist) => {
+      interface_names.sort();
+      interface_names.forEach(function(interface_name) {
+        assert_equals(global_object.hasOwnProperty(interface_name), should_exist,
+          'Interface ' + interface_name + ' exists on provided object');
+      });
+    },
+
+    check_interfaces: (global_object, interface_names) => {
+      OriginTrialsHelper.check_interfaces_impl(global_object, interface_names, true);
+    },
+
+    check_interfaces_missing: (global_object, interface_names) => {
+      OriginTrialsHelper.check_interfaces_impl(global_object, interface_names, false);
+    },
+
+    add_token: (token_string) => {
+      var tokenElement = document.createElement('meta');
+      tokenElement.httpEquiv = 'origin-trial';
+      tokenElement.content = token_string;
+      document.head.appendChild(tokenElement);
+    }
   }
 })();
