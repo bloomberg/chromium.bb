@@ -57,7 +57,7 @@ void InspectorWorkerAgent::restore() {
 
 Response InspectorWorkerAgent::disable() {
   if (autoAttachEnabled()) {
-    disconnectFromAllProxies();
+    disconnectFromAllProxies(false);
     m_instrumentingAgents->removeInspectorWorkerAgent(this);
   }
   m_state->setBoolean(WorkerAgentState::autoAttach, false);
@@ -77,7 +77,7 @@ Response InspectorWorkerAgent::setAutoAttach(bool autoAttach,
     m_instrumentingAgents->addInspectorWorkerAgent(this);
     connectToAllProxies();
   } else {
-    disconnectFromAllProxies();
+    disconnectFromAllProxies(true);
     m_instrumentingAgents->removeInspectorWorkerAgent(this);
   }
   return Response::OK();
@@ -135,9 +135,12 @@ void InspectorWorkerAgent::connectToAllProxies() {
   }
 }
 
-void InspectorWorkerAgent::disconnectFromAllProxies() {
-  for (auto& idProxy : m_connectedProxies)
+void InspectorWorkerAgent::disconnectFromAllProxies(bool reportToFrontend) {
+  for (auto& idProxy : m_connectedProxies) {
+    if (reportToFrontend)
+      frontend()->detachedFromTarget(idProxy.key);
     idProxy.value->disconnectFromInspector(this);
+  }
   m_connectedProxies.clear();
 }
 

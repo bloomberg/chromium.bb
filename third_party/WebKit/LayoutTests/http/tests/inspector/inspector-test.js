@@ -451,9 +451,10 @@ InspectorTest.waitForUISourceCodeRemoved = function(callback)
     }
 }
 
+InspectorTest._mockTargetId = 1;
 InspectorTest.createMockTarget = function(name, capabilities, dontAttachToMain)
 {
-    return SDK.targetManager.createTarget(name, capabilities || SDK.Target.Capability.AllForTests, params => new SDK.StubConnection(params), dontAttachToMain ? null : InspectorTest.mainTarget);
+    return SDK.targetManager.createTarget('mock-target-' + InspectorTest._mockTargetId++, name, capabilities || SDK.Target.Capability.AllForTests, params => new SDK.StubConnection(params), dontAttachToMain ? null : InspectorTest.mainTarget);
 }
 
 InspectorTest.assertGreaterOrEqual = function(a, b, message)

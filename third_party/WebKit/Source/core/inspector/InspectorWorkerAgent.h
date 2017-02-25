@@ -71,7 +71,7 @@ class CORE_EXPORT InspectorWorkerAgent final
  private:
   bool autoAttachEnabled();
   void connectToAllProxies();
-  void disconnectFromAllProxies();
+  void disconnectFromAllProxies(bool reportToFrontend);
   void connectToProxy(WorkerInspectorProxy*, bool waitingForDebugger);
 
   // WorkerInspectorProxy::PageInspector implementation.

@@ -39,7 +39,7 @@ InspectorTest._pageCapabilities =
 InspectorTest.createMockTarget = function(id, debuggerModelConstructor, capabilities)
 {
     capabilities = capabilities || InspectorTest._pageCapabilities;
-    var target = InspectorTest.testTargetManager.createTarget("mock-target-" + id, capabilities & (~SDK.Target.Capability.JS), (params) => new SDK.StubConnection(params), null);
+    var target = InspectorTest.testTargetManager.createTarget("mock-target-" + id, "mock-target-" + id, capabilities & (~SDK.Target.Capability.JS), (params) => new SDK.StubConnection(params), null);
     target._capabilitiesMask = capabilities;
     target._inspectedURL = InspectorTest.mainTarget.inspectedURL();
     target.resourceTreeModel = target.model(SDK.ResourceTreeModel);
