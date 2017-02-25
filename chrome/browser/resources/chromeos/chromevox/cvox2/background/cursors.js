@@ -83,7 +83,7 @@ cursors.Cursor = function(node, index) {
   while (nodeWalker) {
     this.ancestry_.push(nodeWalker);
     nodeWalker = nodeWalker.parent;
-    if (nodeWalker && AutomationPredicate.root(nodeWalker))
+    if (nodeWalker && nodeWalker.role == RoleType.WINDOW)
       break;
   }
 };
