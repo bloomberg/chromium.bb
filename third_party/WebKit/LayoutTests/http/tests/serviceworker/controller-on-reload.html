@@ -15,7 +15,7 @@ promise_test(function(t) {
       .then(function(f) {
           frame = f;
           return frame.contentWindow.navigator.serviceWorker.register(
-              'resources/empty-worker.js', {scope: scope});
+              'empty-worker.js', {scope: 'blank.html'});
         })
       .then(function(registration) {
           return wait_for_state(t, registration.installing, 'activated');

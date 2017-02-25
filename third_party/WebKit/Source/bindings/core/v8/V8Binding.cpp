@@ -770,18 +770,6 @@ ExecutionContext* currentExecutionContext(v8::Isolate* isolate) {
   return toExecutionContext(isolate->GetCurrentContext());
 }
 
-ExecutionContext* enteredExecutionContext(v8::Isolate* isolate) {
-  ExecutionContext* context = toExecutionContext(isolate->GetEnteredContext());
-  if (!context) {
-    // We don't always have an entered execution context, for example during
-    // microtask callbacks from V8 (where the entered context may be the
-    // DOM-in-JS context). In that case, we fall back to the current context.
-    context = currentExecutionContext(isolate);
-    ASSERT(context);
-  }
-  return context;
-}
-
 Frame* toFrameIfNotDetached(v8::Local<v8::Context> context) {
   DOMWindow* window = toDOMWindow(context);
   if (window && window->isCurrentlyDisplayedInFrame())

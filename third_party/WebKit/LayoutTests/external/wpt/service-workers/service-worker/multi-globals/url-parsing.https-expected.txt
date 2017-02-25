@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL register should use the relevant global of the object it was called on to resolve the script URL and the default scope URL assert_equals: the script URL should be parsed against the relevant global expected "https://web-platform.test:8444/service-workers/service-worker/multi-globals/relevant/test-sw.js" but got "https://web-platform.test:8444/service-workers/service-worker/multi-globals/test-sw.js"
-PASS register should use the relevant global of the object it was called on to resolve the script URL and the given scope URL 
-FAIL getRegistration should use the relevant global of the object it was called on to resolve the script URL assert_equals: the retrieved registration's scope should be equal to the original's scope expected "https://web-platform.test:8444/service-workers/service-worker/multi-globals/relevant/" but got "https://web-platform.test:8444/service-workers/service-worker/multi-globals/"
-Harness: the test ran to completion.
-

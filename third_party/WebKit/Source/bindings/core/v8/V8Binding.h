@@ -976,7 +976,6 @@ CORE_EXPORT ExecutionContext* toExecutionContext(v8::Local<v8::Context>);
 CORE_EXPORT void registerToExecutionContextForModules(
     ExecutionContext* (*toExecutionContextForModules)(v8::Local<v8::Context>));
 CORE_EXPORT ExecutionContext* currentExecutionContext(v8::Isolate*);
-CORE_EXPORT ExecutionContext* enteredExecutionContext(v8::Isolate*);
 
 // Returns a V8 context associated with a ExecutionContext and a
 // DOMWrapperWorld.  This method returns an empty context if there is no frame
