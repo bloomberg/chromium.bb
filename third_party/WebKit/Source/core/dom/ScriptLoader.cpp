@@ -832,6 +832,7 @@ void ScriptLoader::execute() {
 void ScriptLoader::pendingScriptFinished(PendingScript* pendingScript) {
   DCHECK(!m_willBeParserExecuted);
   DCHECK_EQ(m_pendingScript, pendingScript);
+  DCHECK_EQ(pendingScript->resource(), m_resource);
 
   // We do not need this script in the memory cache. The primary goals of
   // sending this fetch request are to let the third party server know
@@ -852,9 +853,7 @@ void ScriptLoader::pendingScriptFinished(PendingScript* pendingScript) {
     return;
   }
 
-  DCHECK_EQ(pendingScript->resource(), m_resource);
-
-  if (m_resource->errorOccurred()) {
+  if (errorOccurred()) {
     contextDocument->scriptRunner()->notifyScriptLoadError(this,
                                                            m_asyncExecType);
     detachPendingScript();
