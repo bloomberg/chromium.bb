@@ -8,8 +8,8 @@ WebApkInfo::WebApkInfo(std::string short_name,
                        std::string package_name,
                        int shell_apk_version,
                        int version_code)
-    : short_name(short_name),
-      package_name(package_name),
+    : short_name(std::move(short_name)),
+      package_name(std::move(package_name)),
       shell_apk_version(shell_apk_version),
       version_code(version_code) {}
 
