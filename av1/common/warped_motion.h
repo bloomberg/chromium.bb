@@ -27,7 +27,7 @@
 #if CONFIG_WARPED_MOTION
 #define SAMPLES_PER_NEIGHBOR 4
 #define SAMPLES_ARRAY_SIZE ((2 * MAX_MIB_SIZE + 2) * SAMPLES_PER_NEIGHBOR * 2)
-#define DEFAULT_WMTYPE ROTZOOM
+#define DEFAULT_WMTYPE AFFINE
 #endif  // CONFIG_WARPED_MOTION
 
 const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3][8];
@@ -86,16 +86,6 @@ void av1_warp_plane(WarpedMotionParams *wm,
                     int p_height, int p_stride, int subsampling_x,
                     int subsampling_y, int x_scale, int y_scale, int ref_frm);
 
-// Integerize model into the WarpedMotionParams structure
-void av1_integerize_model(const double *model, TransformationType wmtype,
-                          WarpedMotionParams *wm);
-
-int find_translation(const int np, double *pts1, double *pts2, double *mat);
-int find_rotzoom(const int np, double *pts1, double *pts2, double *mat);
-int find_affine(const int np, double *pts1, double *pts2, double *mat);
-int find_hortrapezoid(const int np, double *pts1, double *pts2, double *mat);
-int find_vertrapezoid(const int np, double *pts1, double *pts2, double *mat);
-int find_homography(const int np, double *pts1, double *pts2, double *mat);
-int find_projection(const int np, double *pts1, double *pts2,
+int find_projection(const int np, int *pts1, int *pts2,
                     WarpedMotionParams *wm_params);
 #endif  // AV1_COMMON_WARPED_MOTION_H_

@@ -515,7 +515,7 @@ void av1_update_mv_context(const MACROBLOCKD *xd, MODE_INFO *mi,
 
 #if CONFIG_WARPED_MOTION
 int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
-                double *pts, double *pts_inref);
+                int *pts, int *pts_inref);
 #endif  // CONFIG_WARPED_MOTION
 
 #ifdef __cplusplus
