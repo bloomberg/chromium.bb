@@ -42,12 +42,11 @@
 namespace blink {
 
 void DOMWindowFileSystem::webkitRequestFileSystem(
-    DOMWindow& windowArg,
+    LocalDOMWindow& window,
     int type,
     long long size,
     FileSystemCallback* successCallback,
     ErrorCallback* errorCallback) {
-  LocalDOMWindow& window = toLocalDOMWindow(windowArg);
   if (!window.isCurrentlyDisplayedInFrame())
     return;
 
@@ -82,11 +81,10 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
 }
 
 void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
-    DOMWindow& windowArg,
+    LocalDOMWindow& window,
     const String& url,
     EntryCallback* successCallback,
     ErrorCallback* errorCallback) {
-  LocalDOMWindow& window = toLocalDOMWindow(windowArg);
   if (!window.isCurrentlyDisplayedInFrame())
     return;
 

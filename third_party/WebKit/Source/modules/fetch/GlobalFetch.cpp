@@ -79,8 +79,8 @@ class GlobalFetchImpl final
 GlobalFetch::ScopedFetcher::~ScopedFetcher() {}
 
 GlobalFetch::ScopedFetcher* GlobalFetch::ScopedFetcher::from(
-    DOMWindow& window) {
-  return GlobalFetchImpl<LocalDOMWindow>::from(toLocalDOMWindow(window),
+    LocalDOMWindow& window) {
+  return GlobalFetchImpl<LocalDOMWindow>::from(window,
                                                window.getExecutionContext());
 }
 
@@ -93,7 +93,7 @@ GlobalFetch::ScopedFetcher* GlobalFetch::ScopedFetcher::from(
 DEFINE_TRACE(GlobalFetch::ScopedFetcher) {}
 
 ScriptPromise GlobalFetch::fetch(ScriptState* scriptState,
-                                 DOMWindow& window,
+                                 LocalDOMWindow& window,
                                  const RequestInfo& input,
                                  const Dictionary& init,
                                  ExceptionState& exceptionState) {

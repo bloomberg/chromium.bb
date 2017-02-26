@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Performance.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/PerformanceObserver.h"
 
@@ -30,7 +31,8 @@ void V8PerformanceObserver::constructorCustom(
   v8::Local<v8::Object> wrapper = info.Holder();
 
   Performance* performance = nullptr;
-  DOMWindow* window = toDOMWindow(wrapper->CreationContext());
+  LocalDOMWindow* window =
+      toLocalDOMWindow(toDOMWindow(wrapper->CreationContext()));
   if (!window) {
     V8ThrowException::throwTypeError(
         info.GetIsolate(),

@@ -35,8 +35,8 @@ DOMWindowPerformance& DOMWindowPerformance::from(LocalDOMWindow& window) {
 }
 
 // static
-Performance* DOMWindowPerformance::performance(DOMWindow& window) {
-  return from(toLocalDOMWindow(window)).performance();
+Performance* DOMWindowPerformance::performance(LocalDOMWindow& window) {
+  return from(window).performance();
 }
 
 Performance* DOMWindowPerformance::performance() {

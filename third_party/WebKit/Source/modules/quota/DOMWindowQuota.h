@@ -37,7 +37,6 @@
 namespace blink {
 
 class DeprecatedStorageInfo;
-class DOMWindow;
 class LocalDOMWindow;
 
 class DOMWindowQuota final : public GarbageCollected<DOMWindowQuota>,
@@ -46,7 +45,7 @@ class DOMWindowQuota final : public GarbageCollected<DOMWindowQuota>,
 
  public:
   static DOMWindowQuota& from(LocalDOMWindow&);
-  static DeprecatedStorageInfo* webkitStorageInfo(DOMWindow&);
+  static DeprecatedStorageInfo* webkitStorageInfo(LocalDOMWindow&);
   DeprecatedStorageInfo* webkitStorageInfo() const;
 
   DECLARE_TRACE();

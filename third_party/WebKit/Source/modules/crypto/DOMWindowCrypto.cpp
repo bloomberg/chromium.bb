@@ -52,8 +52,8 @@ DOMWindowCrypto& DOMWindowCrypto::from(LocalDOMWindow& window) {
   return *supplement;
 }
 
-Crypto* DOMWindowCrypto::crypto(DOMWindow& window) {
-  return DOMWindowCrypto::from(toLocalDOMWindow(window)).crypto();
+Crypto* DOMWindowCrypto::crypto(LocalDOMWindow& window) {
+  return DOMWindowCrypto::from(window).crypto();
 }
 
 Crypto* DOMWindowCrypto::crypto() const {

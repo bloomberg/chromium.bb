@@ -10,14 +10,14 @@
 namespace blink {
 
 class IDBFactory;
-class DOMWindow;
+class LocalDOMWindow;
 class WorkerGlobalScope;
 
 class GlobalIndexedDB {
   STATIC_ONLY(GlobalIndexedDB);
 
  public:
-  static IDBFactory* indexedDB(DOMWindow&);
+  static IDBFactory* indexedDB(LocalDOMWindow&);
   static IDBFactory* indexedDB(WorkerGlobalScope&);
 };
 

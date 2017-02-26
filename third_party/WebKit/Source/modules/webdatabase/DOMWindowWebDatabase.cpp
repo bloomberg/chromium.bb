@@ -37,14 +37,13 @@
 
 namespace blink {
 
-Database* DOMWindowWebDatabase::openDatabase(DOMWindow& windowArg,
+Database* DOMWindowWebDatabase::openDatabase(LocalDOMWindow& window,
                                              const String& name,
                                              const String& version,
                                              const String& displayName,
                                              unsigned estimatedSize,
                                              DatabaseCallback* creationCallback,
                                              ExceptionState& exceptionState) {
-  LocalDOMWindow& window = toLocalDOMWindow(windowArg);
   if (!window.isCurrentlyDisplayedInFrame())
     return nullptr;
 

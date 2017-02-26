@@ -29,8 +29,8 @@ WindowPaintWorklet& WindowPaintWorklet::from(LocalDOMWindow& window) {
 }
 
 // static
-Worklet* WindowPaintWorklet::paintWorklet(DOMWindow& window) {
-  return from(toLocalDOMWindow(window)).paintWorklet();
+Worklet* WindowPaintWorklet::paintWorklet(LocalDOMWindow& window) {
+  return from(window).paintWorklet();
 }
 
 PaintWorklet* WindowPaintWorklet::paintWorklet() {

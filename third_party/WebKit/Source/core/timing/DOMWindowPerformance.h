@@ -6,14 +6,13 @@
 #define DOMWindowPerformance_h
 
 #include "core/CoreExport.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class DOMWindow;
+class LocalDOMWindow;
 class Performance;
 
 class CORE_EXPORT DOMWindowPerformance final
@@ -24,7 +23,7 @@ class CORE_EXPORT DOMWindowPerformance final
 
  public:
   static DOMWindowPerformance& from(LocalDOMWindow&);
-  static Performance* performance(DOMWindow&);
+  static Performance* performance(LocalDOMWindow&);
 
   DECLARE_TRACE();
 

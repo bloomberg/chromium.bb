@@ -32,16 +32,16 @@
 
 namespace blink {
 
-class DOMWindow;
 class Database;
 class DatabaseCallback;
 class ExceptionState;
+class LocalDOMWindow;
 
 class DOMWindowWebDatabase {
   STATIC_ONLY(DOMWindowWebDatabase);
 
  public:
-  static Database* openDatabase(DOMWindow&,
+  static Database* openDatabase(LocalDOMWindow&,
                                 const String& name,
                                 const String& version,
                                 const String& displayName,

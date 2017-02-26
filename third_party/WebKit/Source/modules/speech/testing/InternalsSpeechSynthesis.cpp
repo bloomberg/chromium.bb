@@ -31,7 +31,7 @@
 #include "InternalsSpeechSynthesis.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/testing/Internals.h"
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 #include "modules/speech/SpeechSynthesis.h"
@@ -43,8 +43,15 @@ void InternalsSpeechSynthesis::enableMockSpeechSynthesizer(
     ScriptState* scriptState,
     Internals&,
     DOMWindow* window) {
-  SpeechSynthesis* synthesis =
-      DOMWindowSpeechSynthesis::speechSynthesis(scriptState, *window);
+  // TODO(dcheng): Performing a local/remote check is an anti-pattern. However,
+  // it is necessary here since |window| is an argument passed from Javascript,
+  // and the Window interface is accessible cross origin. The long-term fix is
+  // to make the Internals object per-context, so |window| doesn't need to
+  // passed as an argument.
+  if (!window->isLocalDOMWindow())
+    return;
+  SpeechSynthesis* synthesis = DOMWindowSpeechSynthesis::speechSynthesis(
+      scriptState, toLocalDOMWindow(*window));
   if (!synthesis)
     return;
 

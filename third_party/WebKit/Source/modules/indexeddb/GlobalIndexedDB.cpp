@@ -52,9 +52,8 @@ class GlobalIndexedDBImpl final
 
 }  // namespace
 
-IDBFactory* GlobalIndexedDB::indexedDB(DOMWindow& window) {
-  return GlobalIndexedDBImpl<LocalDOMWindow>::from(toLocalDOMWindow(window))
-      .idbFactory(toLocalDOMWindow(window));
+IDBFactory* GlobalIndexedDB::indexedDB(LocalDOMWindow& window) {
+  return GlobalIndexedDBImpl<LocalDOMWindow>::from(window).idbFactory(window);
 }
 
 IDBFactory* GlobalIndexedDB::indexedDB(WorkerGlobalScope& worker) {

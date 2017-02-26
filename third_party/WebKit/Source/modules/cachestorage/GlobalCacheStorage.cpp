@@ -82,11 +82,11 @@ class GlobalCacheStorageImpl final
 
 }  // namespace
 
-CacheStorage* GlobalCacheStorage::caches(DOMWindow& window,
+CacheStorage* GlobalCacheStorage::caches(LocalDOMWindow& window,
                                          ExceptionState& exceptionState) {
   return GlobalCacheStorageImpl<LocalDOMWindow>::from(
-             toLocalDOMWindow(window), window.getExecutionContext())
-      .caches(toLocalDOMWindow(window), exceptionState);
+             window, window.getExecutionContext())
+      .caches(window, exceptionState);
 }
 
 CacheStorage* GlobalCacheStorage::caches(WorkerGlobalScope& worker,

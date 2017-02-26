@@ -14,7 +14,7 @@ class WindowGetComputedStyle {
   STATIC_ONLY(WindowGetComputedStyle);
 
  public:
-  static StylePropertyMap* getComputedStyleMap(const DOMWindow&,
+  static StylePropertyMap* getComputedStyleMap(const LocalDOMWindow&,
                                                Element* element,
                                                const String& pseudoElement) {
     DCHECK(element);

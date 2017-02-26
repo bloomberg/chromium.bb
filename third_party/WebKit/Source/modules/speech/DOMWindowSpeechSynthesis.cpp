@@ -59,9 +59,8 @@ DOMWindowSpeechSynthesis& DOMWindowSpeechSynthesis::from(
 // static
 SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis(
     ScriptState* scriptState,
-    DOMWindow& window) {
-  return DOMWindowSpeechSynthesis::from(toLocalDOMWindow(window))
-      .speechSynthesis(scriptState);
+    LocalDOMWindow& window) {
+  return DOMWindowSpeechSynthesis::from(window).speechSynthesis(scriptState);
 }
 
 SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis(

@@ -31,14 +31,12 @@
 #ifndef DOMWindowCrypto_h
 #define DOMWindowCrypto_h
 
-#include "core/frame/LocalDOMWindow.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class Crypto;
-class DOMWindow;
 class LocalDOMWindow;
 
 class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>,
@@ -47,7 +45,7 @@ class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>,
 
  public:
   static DOMWindowCrypto& from(LocalDOMWindow&);
-  static Crypto* crypto(DOMWindow&);
+  static Crypto* crypto(LocalDOMWindow&);
   Crypto* crypto() const;
 
   DECLARE_TRACE();

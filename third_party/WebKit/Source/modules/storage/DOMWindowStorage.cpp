@@ -42,15 +42,15 @@ DOMWindowStorage& DOMWindowStorage::from(LocalDOMWindow& window) {
 }
 
 // static
-Storage* DOMWindowStorage::sessionStorage(DOMWindow& window,
+Storage* DOMWindowStorage::sessionStorage(LocalDOMWindow& window,
                                           ExceptionState& exceptionState) {
-  return from(toLocalDOMWindow(window)).sessionStorage(exceptionState);
+  return from(window).sessionStorage(exceptionState);
 }
 
 // static
-Storage* DOMWindowStorage::localStorage(DOMWindow& window,
+Storage* DOMWindowStorage::localStorage(LocalDOMWindow& window,
                                         ExceptionState& exceptionState) {
-  return from(toLocalDOMWindow(window)).localStorage(exceptionState);
+  return from(window).localStorage(exceptionState);
 }
 
 Storage* DOMWindowStorage::sessionStorage(
