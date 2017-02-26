@@ -74,8 +74,6 @@ struct wl_client {
 	struct wl_event_source *source;
 	struct wl_display *display;
 	struct wl_resource *display_resource;
-	uint32_t id_count;
-	uint32_t mask;
 	struct wl_list link;
 	struct wl_map objects;
 	struct wl_priv_signal destroy_signal;
