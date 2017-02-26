@@ -114,19 +114,18 @@ bool DecodeStringMessage(const base::string16& encoded_data,
 
   const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&encoded_data[0]);
   const uint8_t* end = ptr + num_bytes;
-
   uint8_t tag;
-  if (!ReadUint8(&ptr, end, &tag) || tag != kVersionTag)
-    return false;
 
-  uint32_t version;
-  if (!ReadUint32(&ptr, end, &version))
-    return false;
-
+  // Discard any leading version and padding tags.
+  // There may be more than one version, due to Blink and V8 having separate
+  // version tags.
   do {
     if (!ReadUint8(&ptr, end, &tag))
       return false;
-  } while (tag == kPaddingTag);
+    uint32_t version;
+    if (tag == kVersionTag && !ReadUint32(&ptr, end, &version))
+      return false;
+  } while (tag == kVersionTag || tag == kPaddingTag);
 
   switch (tag) {
     case kOneByteStringTag: {

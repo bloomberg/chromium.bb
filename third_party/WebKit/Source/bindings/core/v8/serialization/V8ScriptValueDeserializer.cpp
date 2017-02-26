@@ -23,6 +23,34 @@
 
 namespace blink {
 
+namespace {
+
+// The "Blink-side" serialization version, which defines how Blink will behave
+// during the serialization process. The serialization format has two
+// "envelopes": an outer one controlled by Blink and an inner one by V8.
+//
+// They are formatted as follows:
+// [version tag] [Blink version] [version tag] [v8 version] ...
+//
+// Before version 16, there was only a single envelope and the version number
+// for both parts was always equal.
+//
+// See also V8ScriptValueDeserializer.cpp.
+const uint32_t kMinVersionForSeparateEnvelope = 16;
+
+// Check whether the data has a separate Blink envelope.
+// This works even when the version becomes two bytes, because every
+// "continuation byte" in varint encoding is at least 0x80, which is larger than
+// kMinVersionForSeparateEnveloped.
+bool hasSeparateEnvelope(SerializedScriptValue* serializedScriptValue) {
+  const uint8_t* rawData = serializedScriptValue->data();
+  const size_t length = serializedScriptValue->dataLengthInBytes();
+  return length >= 2 && rawData[0] == VersionTag &&
+         rawData[1] >= kMinVersionForSeparateEnvelope;
+}
+
+}  // namespace
+
 V8ScriptValueDeserializer::V8ScriptValueDeserializer(
     RefPtr<ScriptState> scriptState,
     RefPtr<SerializedScriptValue> serializedScriptValue)
@@ -46,11 +74,23 @@ v8::Local<v8::Value> V8ScriptValueDeserializer::deserialize() {
   v8::TryCatch tryCatch(isolate);
   v8::Local<v8::Context> context = m_scriptState->context();
 
+  if (hasSeparateEnvelope(m_serializedScriptValue.get())) {
+    SerializationTag expectedVersionTag;
+    if (!readTag(&expectedVersionTag) || !readUint32(&m_version))
+      return v8::Null(isolate);
+    DCHECK_EQ(expectedVersionTag, VersionTag);
+    DCHECK_GE(m_version, kMinVersionForSeparateEnvelope);
+  }
+
   bool readHeader;
   if (!m_deserializer.ReadHeader(context).To(&readHeader))
     return v8::Null(isolate);
   DCHECK(readHeader);
-  m_version = m_deserializer.GetWireFormatVersion();
+
+  // If there was no Blink envelope earlier, Blink shares the wire format
+  // version from the V8 header.
+  if (!m_version)
+    m_version = m_deserializer.GetWireFormatVersion();
 
   // Prepare to transfer the provided transferables.
   transfer();

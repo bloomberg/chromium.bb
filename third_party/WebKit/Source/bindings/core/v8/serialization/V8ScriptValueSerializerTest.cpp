@@ -217,7 +217,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageData) {
   EXPECT_EQ(200, newImageData->data()->data()[0]);
 }
 
-TEST(V8ScriptValueSerializerTest, DecodeImageData) {
+TEST(V8ScriptValueSerializerTest, DecodeImageDataV9) {
   // Backward compatibility with existing serialized ImageData objects must be
   // maintained. Add more cases if the format changes; don't remove tests for
   // old versions.
@@ -225,6 +225,21 @@ TEST(V8ScriptValueSerializerTest, DecodeImageData) {
   ScriptState* scriptState = scope.getScriptState();
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x23, 0x02, 0x01, 0x08, 0xc8,
+                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scriptState, input).deserialize();
+  ASSERT_TRUE(V8ImageData::hasInstance(result, scope.isolate()));
+  ImageData* newImageData = V8ImageData::toImpl(result.As<v8::Object>());
+  EXPECT_EQ(IntSize(2, 1), newImageData->size());
+  EXPECT_EQ(8u, newImageData->data()->length());
+  EXPECT_EQ(200, newImageData->data()->data()[0]);
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeImageDataV16) {
+  V8TestingScope scope;
+  ScriptState* scriptState = scope.getScriptState();
+  RefPtr<SerializedScriptValue> input =
+      serializedValue({0xff, 0x10, 0xff, 0x0c, 0x23, 0x02, 0x01, 0x08, 0xc8,
                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializer(scriptState, input).deserialize();
