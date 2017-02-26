@@ -2254,7 +2254,6 @@ crbug.com/626703 external/wpt/web-animations/timing-model/animations/set-the-tar
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
 crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash ]
-crbug.com/626703 external/wpt/webvtt/api/VTTCue/align.html [ Crash Pass Timeout ]
 
 # Manual tests that have not been automated.
 crbug.com/626703 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Timeout ]
