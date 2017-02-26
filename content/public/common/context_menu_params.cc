@@ -20,7 +20,6 @@ ContextMenuParams::ContextMenuParams()
       y(0),
       has_image_contents(true),
       media_flags(0),
-      misspelling_hash(0),
       spellcheck_enabled(false),
       is_editable(false),
       writing_direction_default(

@@ -53,7 +53,6 @@ class OpenWithMenuObserver : public RenderViewContextMenuObserver,
   bool IsCommandIdChecked(int command_id) override;
   bool IsCommandIdEnabled(int command_id) override;
   void ExecuteCommand(int command_id) override;
-  void OnMenuCancel() override {}
 
   // ash::OpenWithItems::Delegate overrides:
   void ModelChanged(const std::vector<ash::LinkHandlerInfo>& handlers) override;

@@ -3371,8 +3371,8 @@ HitTestResult WebViewImpl::coreHitTestResultAt(
   return hitTestResultForRootFramePos(pointInRootFrame);
 }
 
-void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers) {
-  Vector<uint32_t> result;
+void WebViewImpl::spellingMarkerOffsetsForTest(WebVector<unsigned>* offsets) {
+  Vector<unsigned> result;
   for (Frame* frame = m_page->mainFrame(); frame;
        frame = frame->tree().traverseNext()) {
     if (!frame->isLocalFrame())
@@ -3380,9 +3380,9 @@ void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers) {
     const DocumentMarkerVector& documentMarkers =
         toLocalFrame(frame)->document()->markers().markers();
     for (size_t i = 0; i < documentMarkers.size(); ++i)
-      result.push_back(documentMarkers[i]->hash());
+      result.push_back(documentMarkers[i]->startOffset());
   }
-  markers->assign(result);
+  offsets->assign(result);
 }
 
 void WebViewImpl::removeSpellingMarkersUnderWords(

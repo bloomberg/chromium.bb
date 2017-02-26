@@ -140,10 +140,8 @@ void SpellCheckerClientImpl::requestCheckingOfString(
   if (!m_webView->spellCheckClient())
     return;
   const String& text = request->data().text();
-  const Vector<uint32_t>& markers = request->data().markers();
-  const Vector<unsigned>& markerOffsets = request->data().offsets();
   m_webView->spellCheckClient()->requestCheckingOfText(
-      text, markers, markerOffsets, new WebTextCheckingCompletionImpl(request));
+      text, new WebTextCheckingCompletionImpl(request));
 }
 
 void SpellCheckerClientImpl::cancelAllPendingRequests() {

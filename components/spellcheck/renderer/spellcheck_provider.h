@@ -19,7 +19,6 @@
 
 class RenderView;
 class SpellCheck;
-class SpellCheckMarker;
 struct SpellCheckResult;
 
 namespace blink {
@@ -45,10 +44,8 @@ class SpellCheckProvider
   // checker, which is available on the browser process. The function does not
   // have special handling for partial words, as Blink guarantees that no
   // request is made when typing in the middle of a word.
-  void RequestTextChecking(
-      const base::string16& text,
-      blink::WebTextCheckingCompletion* completion,
-      const std::vector<SpellCheckMarker>& markers);
+  void RequestTextChecking(const base::string16& text,
+                           blink::WebTextCheckingCompletion* completion);
 
   // The number of ongoing IPC requests.
   size_t pending_text_request_size() const {
@@ -86,8 +83,6 @@ class SpellCheckProvider
 
   void requestCheckingOfText(
       const blink::WebString& text,
-      const blink::WebVector<uint32_t>& markers,
-      const blink::WebVector<unsigned>& marker_offsets,
       blink::WebTextCheckingCompletion* completion) override;
 
   void cancelAllPendingRequests() override;

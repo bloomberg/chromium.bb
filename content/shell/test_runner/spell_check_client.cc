@@ -60,8 +60,6 @@ void SpellCheckClient::checkSpelling(
 
 void SpellCheckClient::requestCheckingOfText(
     const blink::WebString& text,
-    const blink::WebVector<uint32_t>& markers,
-    const blink::WebVector<unsigned>& marker_offsets,
     blink::WebTextCheckingCompletion* completion) {
   if (!enabled_ || text.isEmpty()) {
     if (completion) {

@@ -594,8 +594,7 @@ static void addMarker(Document* document,
                       DocumentMarker::MarkerType type,
                       int location,
                       int length,
-                      const String& description,
-                      uint32_t hash) {
+                      const String& description) {
   DCHECK_GT(length, 0);
   DCHECK_GE(location, 0);
   const EphemeralRange& rangeToMark =
@@ -605,8 +604,7 @@ static void addMarker(Document* document,
   if (!isSpellCheckingEnabledFor(rangeToMark.endPosition()))
     return;
   document->markers().addMarker(rangeToMark.startPosition(),
-                                rangeToMark.endPosition(), type, description,
-                                hash);
+                                rangeToMark.endPosition(), type, description);
 }
 
 void SpellChecker::markAndReplaceFor(
@@ -695,7 +693,7 @@ void SpellChecker::markAndReplaceFor(
           continue;
         addMarker(frame().document(), paragraph.checkingRange(),
                   DocumentMarker::Spelling, resultLocation, resultLength,
-                  result.replacement, result.hash);
+                  result.replacement);
         continue;
 
       case TextDecorationTypeGrammar:
@@ -711,17 +709,8 @@ void SpellChecker::markAndReplaceFor(
             continue;
           addMarker(frame().document(), paragraph.checkingRange(),
                     DocumentMarker::Grammar, resultLocation + detail.location,
-                    detail.length, result.replacement, result.hash);
+                    detail.length, result.replacement);
         }
-        continue;
-
-      case TextDecorationTypeInvisibleSpellcheck:
-        if (resultLocation < paragraph.checkingStart() ||
-            resultLocation + resultLength > spellingRangeEndOffset)
-          continue;
-        addMarker(frame().document(), paragraph.checkingRange(),
-                  DocumentMarker::InvisibleSpellcheck, resultLocation,
-                  resultLength, result.replacement, result.hash);
         continue;
     }
     NOTREACHED();

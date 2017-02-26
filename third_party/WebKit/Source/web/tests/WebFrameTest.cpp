@@ -6252,27 +6252,23 @@ TEST_P(ParameterizedWebFrameTest,
 
 class SpellCheckClient : public WebSpellCheckClient {
  public:
-  explicit SpellCheckClient(uint32_t hash = 0)
-      : m_numberOfTimesChecked(0), m_hash(hash) {}
+  SpellCheckClient() : m_numberOfTimesChecked(0) {}
   virtual ~SpellCheckClient() {}
   void requestCheckingOfText(const WebString&,
-                             const WebVector<uint32_t>&,
-                             const WebVector<unsigned>&,
                              WebTextCheckingCompletion* completion) override {
     ++m_numberOfTimesChecked;
     Vector<WebTextCheckingResult> results;
     const int misspellingStartOffset = 1;
     const int misspellingLength = 8;
-    results.push_back(WebTextCheckingResult(
-        WebTextDecorationTypeSpelling, misspellingStartOffset,
-        misspellingLength, WebString(), m_hash));
+    results.push_back(WebTextCheckingResult(WebTextDecorationTypeSpelling,
+                                            misspellingStartOffset,
+                                            misspellingLength, WebString()));
     completion->didFinishCheckingText(results);
   }
   int numberOfTimesChecked() const { return m_numberOfTimesChecked; }
 
  private:
   int m_numberOfTimesChecked;
-  uint32_t m_hash;
 };
 
 TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
@@ -6369,44 +6365,17 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
   document->execCommand("InsertText", false, " wellcome ", exceptionState);
   EXPECT_FALSE(exceptionState.hadException());
 
-  WebVector<uint32_t> documentMarkers1;
-  webViewHelper.webView()->spellingMarkers(&documentMarkers1);
-  EXPECT_EQ(1U, documentMarkers1.size());
+  WebVector<unsigned> offsets1;
+  webViewHelper.webView()->spellingMarkerOffsetsForTest(&offsets1);
+  EXPECT_EQ(1U, offsets1.size());
 
   Vector<String> words;
   words.push_back("wellcome");
   frame->removeSpellingMarkersUnderWords(words);
 
-  WebVector<uint32_t> documentMarkers2;
-  webViewHelper.webView()->spellingMarkers(&documentMarkers2);
-  EXPECT_EQ(0U, documentMarkers2.size());
-}
-
-TEST_P(ParameterizedWebFrameTest, MarkerHashIdentifiers) {
-  registerMockedHttpURLLoad("spell.html");
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
-
-  static const uint32_t kHash = 42;
-  SpellCheckClient spellcheck(kHash);
-  webViewHelper.webView()->setSpellCheckClient(&spellcheck);
-
-  WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
-  Document* document = frame->frame()->document();
-  Element* element = document->getElementById("data");
-
-  webViewHelper.webView()->settings()->setEditingBehavior(
-      WebSettings::EditingBehaviorWin);
-
-  element->focus();
-  NonThrowableExceptionState exceptionState;
-  document->execCommand("InsertText", false, "wellcome.", exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
-
-  WebVector<uint32_t> documentMarkers;
-  webViewHelper.webView()->spellingMarkers(&documentMarkers);
-  EXPECT_EQ(1U, documentMarkers.size());
-  EXPECT_EQ(kHash, documentMarkers[0]);
+  WebVector<unsigned> offsets2;
+  webViewHelper.webView()->spellingMarkerOffsetsForTest(&offsets2);
+  EXPECT_EQ(0U, offsets2.size());
 }
 
 class StubbornSpellCheckClient : public WebSpellCheckClient {
@@ -6416,8 +6385,6 @@ class StubbornSpellCheckClient : public WebSpellCheckClient {
 
   virtual void requestCheckingOfText(
       const WebString&,
-      const WebVector<uint32_t>&,
-      const WebVector<unsigned>&,
       WebTextCheckingCompletion* completion) override {
     m_completion = completion;
   }
@@ -6434,10 +6401,6 @@ class StubbornSpellCheckClient : public WebSpellCheckClient {
   void kick() { kick(1, 8, WebTextDecorationTypeSpelling); }
 
   void kickGrammar() { kick(1, 8, WebTextDecorationTypeGrammar); }
-
-  void kickInvisibleSpellcheck() {
-    kick(1, 8, WebTextDecorationTypeInvisibleSpellcheck);
-  }
 
  private:
   void kick(int misspellingStartOffset,
@@ -6480,9 +6443,9 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition) {
 
   spellcheck.kick();
 
-  WebVector<uint32_t> documentMarkers;
-  webViewHelper.webView()->spellingMarkers(&documentMarkers);
-  EXPECT_EQ(0U, documentMarkers.size());
+  WebVector<unsigned> offsets;
+  webViewHelper.webView()->spellingMarkerOffsetsForTest(&offsets);
+  EXPECT_EQ(0U, offsets.size());
 }
 
 // This test verifies that cancelling spelling request does not cause a
@@ -6533,9 +6496,7 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers) {
                                 DocumentMarker::Spelling);
   document->markers().addMarker(range.startPosition(), range.endPosition(),
                                 DocumentMarker::Grammar);
-  document->markers().addMarker(range.startPosition(), range.endPosition(),
-                                DocumentMarker::InvisibleSpellcheck);
-  EXPECT_EQ(3U, document->markers().markers().size());
+  EXPECT_EQ(2U, document->markers().markers().size());
 
   spellcheck.kickNoResults();
   EXPECT_EQ(0U, document->markers().markers().size());
@@ -6576,12 +6537,6 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
 
   document->execCommand("InsertText", false, "wellcome ", exceptionState);
   EXPECT_FALSE(exceptionState.hadException());
-
-  spellcheck.kickInvisibleSpellcheck();
-  ASSERT_EQ(1U, document->markers().markers().size());
-  ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
-  EXPECT_EQ(DocumentMarker::InvisibleSpellcheck,
-            document->markers().markers()[0]->type());
 }
 
 class TestAccessInitialDocumentWebFrameClient

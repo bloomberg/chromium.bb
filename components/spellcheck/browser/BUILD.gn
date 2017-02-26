@@ -8,16 +8,8 @@ if (is_android) {
 
 source_set("browser") {
   sources = [
-    "feedback.cc",
-    "feedback.h",
-    "feedback_sender.cc",
-    "feedback_sender.h",
-    "misspelling.cc",
-    "misspelling.h",
     "pref_names.cc",
     "pref_names.h",
-    "spellcheck_action.cc",
-    "spellcheck_action.h",
     "spellcheck_dictionary.h",
     "spellcheck_host_metrics.cc",
     "spellcheck_host_metrics.h",
@@ -30,8 +22,6 @@ source_set("browser") {
     "spellchecker_session_bridge_android.h",
     "spelling_service_client.cc",
     "spelling_service_client.h",
-    "word_trimmer.cc",
-    "word_trimmer.h",
   ]
 
   public_deps = [
@@ -61,13 +51,8 @@ source_set("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "feedback_sender_unittest.cc",
-    "feedback_unittest.cc",
-    "misspelling_unittest.cc",
-    "spellcheck_action_unittest.cc",
     "spellcheck_host_metrics_unittest.cc",
     "spellcheck_platform_mac_unittest.cc",
-    "word_trimmer_unittest.cc",
   ]
 
   deps = [

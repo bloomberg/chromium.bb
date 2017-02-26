@@ -130,7 +130,6 @@ class SpellCheck : public content::RenderThreadObserver,
    void OnCustomDictionaryChanged(const std::set<std::string>& words_added,
                                   const std::set<std::string>& words_removed);
   void OnEnableSpellCheck(bool enable);
-  void OnRequestDocumentMarkers();
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Posts delayed spellcheck task and clear it if any.

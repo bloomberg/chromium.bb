@@ -1395,7 +1395,6 @@ void AXNodeObject::markers(Vector<DocumentMarker::MarkerType>& markerTypes,
         markerRanges.push_back(
             AXRange(marker->startOffset(), marker->endOffset()));
         break;
-      case DocumentMarker::InvisibleSpellcheck:
       case DocumentMarker::Composition:
         // No need for accessibility to know about these marker types.
         break;

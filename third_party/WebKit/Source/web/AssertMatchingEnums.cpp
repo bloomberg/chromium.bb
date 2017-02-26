@@ -653,8 +653,6 @@ STATIC_ASSERT_ENUM(WebFileErrorPathExists, FileError::kPathExistsErr);
 
 STATIC_ASSERT_ENUM(WebTextDecorationTypeSpelling, TextDecorationTypeSpelling);
 STATIC_ASSERT_ENUM(WebTextDecorationTypeGrammar, TextDecorationTypeGrammar);
-STATIC_ASSERT_ENUM(WebTextDecorationTypeInvisibleSpellcheck,
-                   TextDecorationTypeInvisibleSpellcheck);
 
 STATIC_ASSERT_ENUM(WebStorageQuotaErrorNotSupported, NotSupportedError);
 STATIC_ASSERT_ENUM(WebStorageQuotaErrorInvalidModification,

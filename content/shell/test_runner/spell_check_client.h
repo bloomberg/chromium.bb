@@ -48,8 +48,6 @@ class SpellCheckClient : public blink::WebSpellCheckClient {
       blink::WebVector<blink::WebString>* optional_suggestions) override;
   void requestCheckingOfText(
       const blink::WebString& text,
-      const blink::WebVector<uint32_t>& markers,
-      const blink::WebVector<unsigned>& marker_offsets,
       blink::WebTextCheckingCompletion* completion) override;
   void cancelAllPendingRequests() override;
 

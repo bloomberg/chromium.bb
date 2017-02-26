@@ -66,11 +66,7 @@ class SpellCheckRequest final : public TextCheckingRequest {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  SpellCheckRequest(Range* checkingRange,
-                    const String&,
-                    const Vector<uint32_t>& documentMarkersInRange,
-                    const Vector<unsigned>& documentMarkerOffsets,
-                    int requestNumber);
+  SpellCheckRequest(Range* checkingRange, const String&, int requestNumber);
 
   Member<SpellCheckRequester> m_requester;
   Member<Range> m_checkingRange;

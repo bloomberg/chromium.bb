@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "components/spellcheck/common/spellcheck_bdict_language.h"
-#include "components/spellcheck/common/spellcheck_marker.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "ipc/ipc_message_macros.h"
@@ -27,12 +26,6 @@ IPC_STRUCT_TRAITS_BEGIN(SpellCheckResult)
   IPC_STRUCT_TRAITS_MEMBER(location)
   IPC_STRUCT_TRAITS_MEMBER(length)
   IPC_STRUCT_TRAITS_MEMBER(replacement)
-  IPC_STRUCT_TRAITS_MEMBER(hash)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(SpellCheckMarker)
-  IPC_STRUCT_TRAITS_MEMBER(hash)
-  IPC_STRUCT_TRAITS_MEMBER(offset)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(SpellCheckBDictLanguage)
@@ -56,15 +49,6 @@ IPC_MESSAGE_CONTROL2(SpellCheckMsg_Init,
 IPC_MESSAGE_CONTROL2(SpellCheckMsg_CustomDictionaryChanged,
                      std::set<std::string> /* words_added */,
                      std::set<std::string> /* words_removed */)
-
-// Request a list of all document markers in the renderer for spelling service
-// feedback.
-IPC_MESSAGE_CONTROL0(SpellCheckMsg_RequestDocumentMarkers)
-
-// Send a list of document markers in the renderer to the spelling service
-// feedback sender.
-IPC_MESSAGE_CONTROL1(SpellCheckHostMsg_RespondDocumentMarkers,
-                     std::vector<uint32_t> /* document marker identifiers */)
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 // Sends text-check results from the Spelling service when the service finishes
@@ -109,11 +93,10 @@ IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_NotifyChecked,
 // Asks the Spelling service to check text. When the service finishes checking
 // the input text, it sends a SpellingCheckMsg_RespondSpellingService with
 // text-check results.
-IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_CallSpellingService,
+IPC_MESSAGE_CONTROL3(SpellCheckHostMsg_CallSpellingService,
                      int /* route_id for response */,
                      int /* request identifier given by WebKit */,
-                     base::string16 /* sentence */,
-                     std::vector<SpellCheckMarker> /* markers */)
+                     base::string16 /* sentence */)
 #endif
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
@@ -135,11 +118,10 @@ IPC_SYNC_MESSAGE_CONTROL1_1(SpellCheckHostMsg_FillSuggestionList,
                             base::string16 /* word */,
                             std::vector<base::string16> /* suggestions */)
 
-IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_RequestTextCheck,
+IPC_MESSAGE_CONTROL3(SpellCheckHostMsg_RequestTextCheck,
                      int /* route_id for response */,
                      int /* request identifier given by WebKit */,
-                     base::string16 /* sentence */,
-                     std::vector<SpellCheckMarker> /* markers */)
+                     base::string16 /* sentence */)
 
 IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_ToggleSpellCheck,
                     bool /* enabled */,

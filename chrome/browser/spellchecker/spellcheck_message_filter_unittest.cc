@@ -13,7 +13,6 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/spellcheck/common/spellcheck_marker.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -38,12 +37,11 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void OnTextCheckComplete(int route_id,
                            int identifier,
-                           const std::vector<SpellCheckMarker>& markers,
                            bool success,
                            const base::string16& text,
                            const std::vector<SpellCheckResult>& results) {
-    SpellCheckMessageFilter::OnTextCheckComplete(
-        route_id, identifier, markers, success, text, results);
+    SpellCheckMessageFilter::OnTextCheckComplete(route_id, identifier, success,
+                                                 text, results);
   }
 #endif
 
@@ -63,7 +61,6 @@ TEST(SpellCheckMessageFilterTest, TestOverrideThread) {
   static const uint32_t kSpellcheckMessages[] = {
     SpellCheckHostMsg_RequestDictionary::ID,
     SpellCheckHostMsg_NotifyChecked::ID,
-    SpellCheckHostMsg_RespondDocumentMarkers::ID,
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
     SpellCheckHostMsg_CallSpellingService::ID,
 #endif
@@ -86,7 +83,6 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTestCustomDictionary) {
   static const std::string kCustomWord = "Helllo";
   static const int kRouteId = 0;
   static const int kCallbackId = 0;
-  static const std::vector<SpellCheckMarker> kMarkers;
   static const base::string16 kText = base::ASCIIToUTF16("Helllo warld.");
   static const bool kSuccess = true;
   static const SpellCheckResult::Decoration kDecoration =
@@ -104,8 +100,7 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTestCustomDictionary) {
   scoped_refptr<TestingSpellCheckMessageFilter> filter(
       new TestingSpellCheckMessageFilter);
   filter->GetSpellcheckService()->GetCustomDictionary()->AddWord(kCustomWord);
-  filter->OnTextCheckComplete(
-      kRouteId, kCallbackId, kMarkers, kSuccess, kText, results);
+  filter->OnTextCheckComplete(kRouteId, kCallbackId, kSuccess, kText, results);
   EXPECT_EQ(static_cast<size_t>(1), filter->sent_messages.size());
 
   SpellCheckMsg_RespondSpellingService::Param params;
@@ -135,8 +130,8 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTest) {
 
   scoped_refptr<TestingSpellCheckMessageFilter> filter(
       new TestingSpellCheckMessageFilter);
-  filter->OnTextCheckComplete(1, 1, std::vector<SpellCheckMarker>(),
-      true,  base::ASCIIToUTF16("Helllo walrd"), results);
+  filter->OnTextCheckComplete(1, 1, true, base::ASCIIToUTF16("Helllo walrd"),
+                              results);
   EXPECT_EQ(static_cast<size_t>(1), filter->sent_messages.size());
 
   SpellCheckMsg_RespondSpellingService::Param params;

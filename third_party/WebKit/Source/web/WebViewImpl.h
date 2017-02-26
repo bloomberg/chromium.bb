@@ -236,7 +236,7 @@ class WEB_EXPORT WebViewImpl final
   WebHitTestResult hitTestResultAt(const WebPoint&) override;
   WebHitTestResult hitTestResultForTap(const WebPoint&,
                                        const WebSize&) override;
-  void spellingMarkers(WebVector<uint32_t>* markers) override;
+  void spellingMarkerOffsetsForTest(WebVector<unsigned>* offsets) override;
   void removeSpellingMarkersUnderWords(
       const WebVector<WebString>& words) override;
   unsigned long createUniqueIdentifierForRequest() override;

@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/spellcheck/browser/spelling_service_client.h"
-#include "components/spellcheck/common/spellcheck_marker.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "content/public/browser/browser_message_filter.h"
 
@@ -47,8 +46,7 @@ class SpellCheckMessageFilterPlatform : public content::BrowserMessageFilter {
   void OnUpdateSpellingPanelWithMisspelledWord(const base::string16& word);
   void OnRequestTextCheck(int route_id,
                           int identifier,
-                          const base::string16& text,
-                          std::vector<SpellCheckMarker> markers);
+                          const base::string16& text);
 
   int ToDocumentTag(int route_id);
   void RetireDocumentTag(int route_id);

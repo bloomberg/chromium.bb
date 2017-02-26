@@ -120,9 +120,6 @@ struct CONTENT_EXPORT ContextMenuParams {
   // |dictionary_suggestions| list.
   base::string16 misspelled_word;
 
-  // The identifier of the misspelling under the cursor, if any.
-  uint32_t misspelling_hash;
-
   // Suggested replacements for a misspelled word under the cursor.
   // This vector gets populated in the render process host
   // by intercepting ViewHostMsg_ContextMenu in ResourceMessageFilter

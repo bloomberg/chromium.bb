@@ -45,8 +45,7 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
   bool Send(IPC::Message* message) override;
   void OnCallSpellingService(int route_id,
                              int identifier,
-                             const base::string16& text,
-                             const std::vector<SpellCheckMarker>& markers);
+                             const base::string16& text);
   void ResetResult();
 
   void SetLastResults(

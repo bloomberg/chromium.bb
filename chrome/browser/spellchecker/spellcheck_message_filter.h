@@ -14,7 +14,6 @@
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/browser_message_filter.h"
 
-class SpellCheckMarker;
 class SpellcheckService;
 struct SpellCheckResult;
 
@@ -36,19 +35,16 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
 
   void OnSpellCheckerRequestDictionary();
   void OnNotifyChecked(const base::string16& word, bool misspelled);
-  void OnRespondDocumentMarkers(const std::vector<uint32_t>& markers);
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void OnCallSpellingService(int route_id,
                              int identifier,
-                             const base::string16& text,
-                             std::vector<SpellCheckMarker> markers);
+                             const base::string16& text);
 
   // A callback function called when the Spelling service finishes checking
   // text. Sends the given results to a renderer.
   void OnTextCheckComplete(
       int route_id,
       int identifier,
-      const std::vector<SpellCheckMarker>& markers,
       bool success,
       const base::string16& text,
       const std::vector<SpellCheckResult>& results);
@@ -59,11 +55,9 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
   // OnTextCheckComplete. When this function is called before we receive a
   // response for the previous request, this function cancels the previous
   // request and sends a new one.
-  void CallSpellingService(
-      const base::string16& text,
-      int route_id,
-      int identifier,
-      const std::vector<SpellCheckMarker>& markers);
+  void CallSpellingService(const base::string16& text,
+                           int route_id,
+                           int identifier);
 #endif
 
   // Can be overridden for testing.

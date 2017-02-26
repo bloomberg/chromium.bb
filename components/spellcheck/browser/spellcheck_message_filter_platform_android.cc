@@ -74,8 +74,7 @@ void SpellCheckMessageFilterPlatform::OnUpdateSpellingPanelWithMisspelledWord(
 void SpellCheckMessageFilterPlatform::OnRequestTextCheck(
     int route_id,
     int identifier,
-    const base::string16& text,
-    std::vector<SpellCheckMarker> markers) {
+    const base::string16& text) {
   DCHECK(!text.empty());
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

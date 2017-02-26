@@ -52,7 +52,6 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   bool IsCommandIdChecked(int command_id) override;
   bool IsCommandIdEnabled(int command_id) override;
   void ExecuteCommand(int command_id) override;
-  void OnMenuCancel() override;
 
   // A callback function called when the Spelling service finishes checking a
   // misspelled word.
@@ -91,10 +90,6 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   // The misspelled word. When we choose the "Add to dictionary" item, we add
   // this word to the custom-word dictionary.
   base::string16 misspelled_word_;
-
-  // The hash identifier for the misspelled word. Used for collecting user
-  // feedback to spellcheck suggestions.
-  uint32_t misspelling_hash_;
 
   // The string representing the result of this call. This string is a
   // suggestion when this call finished successfully. Otherwise it is error

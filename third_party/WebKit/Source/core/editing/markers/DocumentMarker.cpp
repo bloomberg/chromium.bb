@@ -132,15 +132,13 @@ inline TextCompositionMarkerDetails* toTextCompositionMarkerDetails(
 DocumentMarker::DocumentMarker(MarkerType type,
                                unsigned startOffset,
                                unsigned endOffset,
-                               const String& description,
-                               uint32_t hash)
+                               const String& description)
     : m_type(type),
       m_startOffset(startOffset),
       m_endOffset(endOffset),
       m_details(description.isEmpty()
                     ? nullptr
-                    : DocumentMarkerDescription::create(description)),
-      m_hash(hash) {}
+                    : DocumentMarkerDescription::create(description)) {}
 
 DocumentMarker::DocumentMarker(unsigned startOffset,
                                unsigned endOffset,
@@ -148,8 +146,7 @@ DocumentMarker::DocumentMarker(unsigned startOffset,
     : m_type(DocumentMarker::TextMatch),
       m_startOffset(startOffset),
       m_endOffset(endOffset),
-      m_details(DocumentMarkerTextMatch::create(activeMatch)),
-      m_hash(0) {}
+      m_details(DocumentMarkerTextMatch::create(activeMatch)) {}
 
 DocumentMarker::DocumentMarker(unsigned startOffset,
                                unsigned endOffset,
@@ -161,15 +158,13 @@ DocumentMarker::DocumentMarker(unsigned startOffset,
       m_endOffset(endOffset),
       m_details(TextCompositionMarkerDetails::create(underlineColor,
                                                      thick,
-                                                     backgroundColor)),
-      m_hash(0) {}
+                                                     backgroundColor)) {}
 
 DocumentMarker::DocumentMarker(const DocumentMarker& marker)
     : m_type(marker.type()),
       m_startOffset(marker.startOffset()),
       m_endOffset(marker.endOffset()),
-      m_details(marker.details()),
-      m_hash(marker.hash()) {}
+      m_details(marker.details()) {}
 
 void DocumentMarker::shiftOffsets(int delta) {
   m_startOffset += delta;

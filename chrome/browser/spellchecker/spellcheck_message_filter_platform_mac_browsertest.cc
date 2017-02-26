@@ -49,8 +49,8 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterPlatformMacBrowserTest,
   scoped_refptr<TestingSpellCheckMessageFilter> target(
       new TestingSpellCheckMessageFilter(run_loop.QuitWhenIdleClosure()));
 
-  SpellCheckHostMsg_RequestTextCheck to_be_received(
-      123, 456, base::UTF8ToUTF16("zz."), std::vector<SpellCheckMarker>());
+  SpellCheckHostMsg_RequestTextCheck to_be_received(123, 456,
+                                                    base::UTF8ToUTF16("zz."));
   target->OnMessageReceived(to_be_received);
 
   run_loop.Run();

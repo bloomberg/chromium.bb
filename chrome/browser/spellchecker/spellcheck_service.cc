@@ -16,7 +16,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "components/spellcheck/browser/feedback_sender.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/browser/spellcheck_host_metrics.h"
 #include "components/spellcheck/browser/spellcheck_platform.h"
@@ -83,15 +82,6 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   single_dictionary_pref.SetValue("");
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
-  std::string language_code;
-  std::string country_code;
-  spellcheck::GetISOLanguageCountryCodeFromLocale(
-      first_of_dictionaries, &language_code, &country_code);
-  feedback_sender_.reset(new spellcheck::FeedbackSender(
-      content::BrowserContext::GetDefaultStoragePartition(context)->
-            GetURLRequestContext(),
-      language_code, country_code));
-
   pref_change_registrar_.Add(
       spellcheck::prefs::kSpellCheckDictionaries,
       base::Bind(&SpellcheckService::OnSpellCheckDictionariesChanged,
@@ -117,7 +107,6 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
                  content::NotificationService::AllSources());
 
   LoadHunspellDictionaries();
-  UpdateFeedbackSenderState();
 }
 
 SpellcheckService::~SpellcheckService() {
@@ -244,10 +233,6 @@ SpellcheckService::GetHunspellDictionaries() {
   return hunspell_dictionaries_;
 }
 
-spellcheck::FeedbackSender* SpellcheckService::GetFeedbackSender() {
-  return feedback_sender_.get();
-}
-
 bool SpellcheckService::LoadExternalDictionary(std::string language,
                                                std::string locale,
                                                std::string path,
@@ -327,7 +312,6 @@ void SpellcheckService::OnSpellCheckDictionariesChanged() {
   // If there are hunspell dictionaries, then fire off notifications to the
   // renderers after the dictionaries are finished loading.
   LoadHunspellDictionaries();
-  UpdateFeedbackSenderState();
 
   // If there are no hunspell dictionaries to load, then immediately let the
   // renderers know the new state.
@@ -340,7 +324,6 @@ void SpellcheckService::OnUseSpellingServiceChanged() {
       spellcheck::prefs::kSpellCheckUseSpellingService);
   if (metrics_)
     metrics_->RecordSpellingServiceStats(enabled);
-  UpdateFeedbackSenderState();
 }
 
 void SpellcheckService::OnAcceptLanguagesChanged() {
@@ -365,21 +348,4 @@ void SpellcheckService::OnAcceptLanguagesChanged() {
   }
 
   dictionaries_pref.SetValue(filtered_dictionaries);
-}
-
-void SpellcheckService::UpdateFeedbackSenderState() {
-  std::string feedback_language;
-  if (!hunspell_dictionaries_.empty())
-    feedback_language = hunspell_dictionaries_.front()->GetLanguage();
-  std::string language_code;
-  std::string country_code;
-  spellcheck::GetISOLanguageCountryCodeFromLocale(
-      feedback_language, &language_code, &country_code);
-  feedback_sender_->OnLanguageCountryChange(language_code, country_code);
-  if (SpellingServiceClient::IsAvailable(
-          context_, SpellingServiceClient::SPELLCHECK)) {
-    feedback_sender_->StartFeedbackCollection();
-  } else {
-    feedback_sender_->StopFeedbackCollection();
-  }
 }

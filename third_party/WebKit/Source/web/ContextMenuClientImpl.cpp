@@ -107,8 +107,7 @@ static bool IsWhiteSpaceOrPunctuation(UChar c) {
 }
 
 static String selectMisspellingAsync(LocalFrame* selectedFrame,
-                                     String& description,
-                                     uint32_t& hash) {
+                                     String& description) {
   VisibleSelection selection =
       selectedFrame->selection().computeVisibleSelectionInDOMTreeDeprecated();
   if (selection.isNone())
@@ -122,7 +121,6 @@ static String selectMisspellingAsync(LocalFrame* selectedFrame,
   if (markers.size() != 1)
     return String();
   description = markers[0]->description();
-  hash = markers[0]->hash();
 
   // Cloning a range fails only for invalid ranges.
   Range* markerRange = selectionRange->cloneRange();
@@ -320,10 +318,7 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
     // user right-clicks a mouse on a word, Chrome just needs to find a
     // spelling marker on the word instead of spellchecking it.
     String description;
-    uint32_t hash = 0;
-    data.misspelledWord =
-        selectMisspellingAsync(selectedFrame, description, hash);
-    data.misspellingHash = hash;
+    data.misspelledWord = selectMisspellingAsync(selectedFrame, description);
     if (description.length()) {
       Vector<String> suggestions;
       description.split('\n', suggestions);

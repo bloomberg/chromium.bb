@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/spellcheck/common/spellcheck_marker.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck_provider_test.h"
@@ -32,8 +31,7 @@ void FakeMessageArrival(
 TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
   FakeTextCheckingCompletion completion;
 
-  provider_.RequestTextChecking(base::ASCIIToUTF16("hello "), &completion,
-                                std::vector<SpellCheckMarker>());
+  provider_.RequestTextChecking(base::ASCIIToUTF16("hello "), &completion);
   EXPECT_EQ(completion.completion_count_, 0U);
   EXPECT_EQ(provider_.messages_.size(), 1U);
   EXPECT_EQ(provider_.pending_text_request_size(), 1U);
@@ -51,11 +49,9 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
 
 TEST_F(SpellCheckProviderMacTest, TwoRoundtripSuccess) {
   FakeTextCheckingCompletion completion1;
-  provider_.RequestTextChecking(base::ASCIIToUTF16("hello "), &completion1,
-                                std::vector<SpellCheckMarker>());
+  provider_.RequestTextChecking(base::ASCIIToUTF16("hello "), &completion1);
   FakeTextCheckingCompletion completion2;
-  provider_.RequestTextChecking(base::ASCIIToUTF16("bye "), &completion2,
-                                std::vector<SpellCheckMarker>());
+  provider_.RequestTextChecking(base::ASCIIToUTF16("bye "), &completion2);
 
   EXPECT_EQ(completion1.completion_count_, 0U);
   EXPECT_EQ(completion2.completion_count_, 0U);

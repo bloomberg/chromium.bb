@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/spellcheck/common/spellcheck_marker.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck.h"
@@ -34,8 +33,6 @@ static_assert(int(blink::WebTextDecorationTypeSpelling) ==
               int(SpellCheckResult::SPELLING), "mismatching enums");
 static_assert(int(blink::WebTextDecorationTypeGrammar) ==
               int(SpellCheckResult::GRAMMAR), "mismatching enums");
-static_assert(int(blink::WebTextDecorationTypeInvisibleSpellcheck) ==
-              int(SpellCheckResult::INVISIBLE), "mismatching enums");
 
 SpellCheckProvider::SpellCheckProvider(
     content::RenderView* render_view,
@@ -56,8 +53,7 @@ SpellCheckProvider::~SpellCheckProvider() {
 
 void SpellCheckProvider::RequestTextChecking(
     const base::string16& text,
-    WebTextCheckingCompletion* completion,
-    const std::vector<SpellCheckMarker>& markers) {
+    WebTextCheckingCompletion* completion) {
   // Ignore invalid requests.
   if (text.empty() || !HasWordCharacters(text, 0)) {
     completion->didCancelCheckingText();
@@ -79,16 +75,11 @@ void SpellCheckProvider::RequestTextChecking(
   // over IPC or return an empty result if the checker is not
   // available.
   Send(new SpellCheckHostMsg_RequestTextCheck(
-      routing_id(),
-      text_check_completions_.Add(completion),
-      text,
-      markers));
+      routing_id(), text_check_completions_.Add(completion), text));
 #else
   Send(new SpellCheckHostMsg_CallSpellingService(
-      routing_id(),
-      text_check_completions_.Add(completion),
-      base::string16(text),
-      markers));
+      routing_id(), text_check_completions_.Add(completion),
+      base::string16(text)));
 #endif  // !USE_BROWSER_SPELLCHECKER
 }
 
@@ -150,15 +141,8 @@ void SpellCheckProvider::checkSpelling(
 
 void SpellCheckProvider::requestCheckingOfText(
     const WebString& text,
-    const WebVector<uint32_t>& markers,
-    const WebVector<unsigned>& marker_offsets,
     WebTextCheckingCompletion* completion) {
-  std::vector<SpellCheckMarker> spellcheck_markers;
-  for (size_t i = 0; i < markers.size(); ++i) {
-    spellcheck_markers.push_back(
-        SpellCheckMarker(markers[i], marker_offsets[i]));
-  }
-  RequestTextChecking(text.utf16(), completion, spellcheck_markers);
+  RequestTextChecking(text.utf16(), completion);
   UMA_HISTOGRAM_COUNTS("SpellCheck.api.async", text.length());
 }
 

@@ -9,7 +9,6 @@ source_set("common") {
     "spellcheck_common.h",
     "spellcheck_features.cc",
     "spellcheck_features.h",
-    "spellcheck_marker.h",
     "spellcheck_message_generator.cc",
     "spellcheck_message_generator.h",
     "spellcheck_messages.h",

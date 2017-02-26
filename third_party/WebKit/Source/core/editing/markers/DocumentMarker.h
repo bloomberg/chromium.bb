@@ -44,7 +44,6 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     SpellingMarkerIndex = 0,
     GrammarMarkerIndex,
     TextMatchMarkerIndex,
-    InvisibleSpellcheckMarkerIndex,
     CompositionMarkerIndex,
     MarkerTypeIndexesCount
   };
@@ -53,7 +52,6 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     Spelling = 1 << SpellingMarkerIndex,
     Grammar = 1 << GrammarMarkerIndex,
     TextMatch = 1 << TextMatchMarkerIndex,
-    InvisibleSpellcheck = 1 << InvisibleSpellcheckMarkerIndex,
     Composition = 1 << CompositionMarkerIndex,
   };
 
@@ -80,9 +78,7 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
 
   class AllMarkers : public MarkerTypes {
    public:
-    AllMarkers()
-        : MarkerTypes(Spelling | Grammar | TextMatch | InvisibleSpellcheck |
-                      Composition) {}
+    AllMarkers() : MarkerTypes(Spelling | Grammar | TextMatch | Composition) {}
   };
 
   class MisspellingMarkers : public MarkerTypes {
@@ -92,15 +88,13 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
 
   class SpellCheckClientMarkers : public MarkerTypes {
    public:
-    SpellCheckClientMarkers()
-        : MarkerTypes(Spelling | Grammar | InvisibleSpellcheck) {}
+    SpellCheckClientMarkers() : MarkerTypes(Spelling | Grammar) {}
   };
 
   DocumentMarker(MarkerType,
                  unsigned startOffset,
                  unsigned endOffset,
-                 const String& description,
-                 uint32_t hash);
+                 const String& description);
   DocumentMarker(unsigned startOffset, unsigned endOffset, bool activeMatch);
   DocumentMarker(unsigned startOffset,
                  unsigned endOffset,
@@ -113,7 +107,6 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   MarkerType type() const { return m_type; }
   unsigned startOffset() const { return m_startOffset; }
   unsigned endOffset() const { return m_endOffset; }
-  uint32_t hash() const { return m_hash; }
 
   const String& description() const;
   bool activeMatch() const;
@@ -145,7 +138,6 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   unsigned m_startOffset;
   unsigned m_endOffset;
   Member<DocumentMarkerDetails> m_details;
-  uint32_t m_hash;
 };
 
 using DocumentMarkerVector = HeapVector<Member<DocumentMarker>>;

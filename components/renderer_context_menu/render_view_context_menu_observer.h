@@ -100,9 +100,6 @@ class RenderViewContextMenuObserver {
 
   // Called when a user selects the specified context-menu item.
   virtual void ExecuteCommand(int command_id) {}
-
-  // Called when a user closes the context menu without selecting any items.
-  virtual void OnMenuCancel() {}
 };
 
 #endif  // COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_

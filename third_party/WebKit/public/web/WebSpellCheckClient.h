@@ -56,8 +56,6 @@ class WebSpellCheckClient {
   // returned by passed completion object.
   virtual void requestCheckingOfText(
       const WebString& textToCheck,
-      const WebVector<uint32_t>& markersInText,
-      const WebVector<unsigned>& markerOffsets,
       WebTextCheckingCompletion* completionCallback) {}
 
   // Clear all stored references to requests, so that it will not become a

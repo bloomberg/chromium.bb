@@ -365,7 +365,7 @@ class WebView : protected WebWidget {
                                                const WebSize& tapArea) = 0;
 
   // Retrieves a list of spelling markers.
-  virtual void spellingMarkers(WebVector<uint32_t>* markers) = 0;
+  virtual void spellingMarkerOffsetsForTest(WebVector<unsigned>* offsets) = 0;
   virtual void removeSpellingMarkersUnderWords(
       const WebVector<WebString>& words) = 0;
 

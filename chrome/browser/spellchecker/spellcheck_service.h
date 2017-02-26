@@ -36,10 +36,6 @@ class NotificationDetails;
 class NotificationSource;
 }
 
-namespace spellcheck {
-class FeedbackSender;
-}
-
 // Encapsulates the browser side spellcheck service. There is one of these per
 // profile and each is created by the SpellCheckServiceFactory.  The
 // SpellcheckService maintains any per-profile information about spellcheck.
@@ -115,9 +111,6 @@ class SpellcheckService : public KeyedService,
   const std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>&
   GetHunspellDictionaries();
 
-  // Returns the instance of the spelling service feedback sender.
-  spellcheck::FeedbackSender* GetFeedbackSender();
-
   // Load a dictionary from a given path. Format specifies how the dictionary
   // is stored. Return value is true if successful.
   bool LoadExternalDictionary(std::string language,
@@ -171,10 +164,6 @@ class SpellcheckService : public KeyedService,
   // prefs::kAcceptLanguages.
   void OnAcceptLanguagesChanged();
 
-  // Enables the feedback sender if spelling server is available and enabled.
-  // Otherwise disables the feedback sender.
-  void UpdateFeedbackSenderState();
-
   PrefChangeRegistrar pref_change_registrar_;
   content::NotificationRegistrar registrar_;
 
@@ -187,8 +176,6 @@ class SpellcheckService : public KeyedService,
 
   std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>
       hunspell_dictionaries_;
-
-  std::unique_ptr<spellcheck::FeedbackSender> feedback_sender_;
 
   base::WeakPtrFactory<SpellcheckService> weak_ptr_factory_;
 
