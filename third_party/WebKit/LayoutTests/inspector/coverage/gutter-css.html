@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+<script src="coverage-test.js"></script>
+
+<link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
+<script>
+
+var initialize_Coverage = function() {
+    InspectorTest.preloadModule("coverage");
+}
+
+async function test()
+{
+    var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
+
+    coverageView._toggleRecording(true);
+    UI.viewManager.showView("coverage");
+    coverageView._toggleRecording(false);
+    await InspectorTest.addSnifferPromise(Coverage.CoverageView.prototype, "_updateGutter");
+    await InspectorTest.sourceDecorated("highlight-in-source.css");
+
+    var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-coverage-unused-marker"),
+                                         e => e.parentElement.previousSibling.textContent);
+    InspectorTest.addResult(lines);
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<p id="id">PASS</p>
+<body onload="runTest()">
+<p>Tests the coverage highlight in sources after the recording finishes.</p>
+</body>
+</html>
