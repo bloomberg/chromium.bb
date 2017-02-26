@@ -25,20 +25,16 @@ function test()
          InspectorTest.evaluateWithTimeline("performActions()", onTimelineRecorded);
     });
 
-    function clickValueLink(event, row)
+    async function clickValueLink(event, row)
     {
         var model = UI.panels.timeline._performanceModel.timelineModel();
-        Timeline.TimelineUIUtils.buildTraceEventDetails(event, model, new Components.Linkifier(), true, onDetailsContentReady);
-
-        function onDetailsContentReady(element)
-        {
-            var rows = element.querySelectorAll(".timeline-details-view-row");
-            for (var i = 0; i < rows.length; ++i) {
-                if (rows[i].firstChild.textContent.indexOf(row) !== -1) {
-                    rows[i].lastChild.firstChild.shadowRoot.lastChild.click();
-                    return;
-                }
-            }
+        var element = await Timeline.TimelineUIUtils.buildTraceEventDetails(event, model, new Components.Linkifier(), true);
+        var rows = element.querySelectorAll(".timeline-details-view-row");
+        for (var i = 0; i < rows.length; ++i) {
+            if (rows[i].firstChild.textContent.indexOf(row) !== -1) {
+	        rows[i].lastChild.firstChild.shadowRoot.lastChild.click();
+	        return;
+	    }
         }
     }
 
