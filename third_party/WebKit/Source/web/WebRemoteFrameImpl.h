@@ -75,7 +75,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
       int argc,
       v8::Local<v8::Value> argv[]) override;
   v8::Local<v8::Context> mainWorldScriptContext() const override;
-  v8::Local<v8::Context> deprecatedMainWorldScriptContext() const override;
   void reload(WebFrameLoadType) override;
   void reloadWithOverrideURL(const WebURL& overrideUrl,
                              WebFrameLoadType) override;
@@ -156,13 +155,11 @@ class WEB_EXPORT WebRemoteFrameImpl final
       WebInsecureRequestPolicy) const override;
   void setReplicatedPotentiallyTrustworthyUniqueOrigin(bool) const override;
   void dispatchLoadEventOnFrameOwner() const override;
-
   void didStartLoading() override;
   void didStopLoading() override;
-
   bool isIgnoredForHitTest() const override;
-
   void willEnterFullscreen() override;
+  v8::Local<v8::Object> globalProxy() const override;
 
   void setHasReceivedUserGesture() override;
 

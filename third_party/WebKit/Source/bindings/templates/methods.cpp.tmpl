@@ -78,12 +78,22 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   }
   {% endif %}
 
-  {% if 'scriptState' in function_call %}
+  {% set log_activity = world_suffix in method.activity_logging_world_list %}
+  {% if 'scriptState' in function_call or log_activity %}
   {% if method.is_static %}
   ScriptState* scriptState = ScriptState::forFunctionObject(info);
   {% else %}
   ScriptState* scriptState = ScriptState::forReceiverObject(info);
   {% endif %}
+  {% endif %}
+
+  {% if log_activity %}
+  V8PerContextData* contextData = scriptState->perContextData();
+  if (contextData && contextData->activityLogger()) {
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "{{interface_name}}", "{{method.name}}");
+    Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
+    contextData->activityLogger()->logMethod("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data());
+  }
   {% endif %}
 
   {% if method.is_custom_element_callbacks %}
@@ -511,19 +521,6 @@ void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(cons
   Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
   {% endif %}
   {% endif %}{# not method.overloads #}
-  {% if world_suffix in method.activity_logging_world_list %}
-  {% if method.is_static %}
-  ScriptState* scriptState = ScriptState::forFunctionObject(info);
-  {% else %}
-  ScriptState* scriptState = ScriptState::forReceiverObject(info);
-  {% endif %}
-  V8PerContextData* contextData = scriptState->perContextData();
-  if (contextData && contextData->activityLogger()) {
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "{{interface_name}}", "{{method.name}}");
-    Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
-    contextData->activityLogger()->logMethod("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data());
-  }
-  {% endif %}
   {% if method.is_ce_reactions %}
   CEReactionsScope ceReactionsScope;
   {% endif %}

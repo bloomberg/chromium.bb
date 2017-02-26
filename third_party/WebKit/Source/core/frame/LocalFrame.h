@@ -122,6 +122,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void printNavigationWarning(const String&) override;
   bool prepareForCommit() override;
   void didChangeVisibilityState() override;
+  WindowProxyManagerBase* getWindowProxyManager() const override;
 
   void detachChildren();
   void documentAttached();
@@ -234,8 +235,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
              InterfaceProvider*,
              InterfaceRegistry*);
 
-  // Internal Frame helper overrides:
-  WindowProxyManagerBase* getWindowProxyManager() const override;
   // Intentionally private to prevent redundant checks when the type is
   // already LocalFrame.
   bool isLocalFrame() const override { return true; }

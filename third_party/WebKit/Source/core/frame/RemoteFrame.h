@@ -41,6 +41,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   void printNavigationWarning(const String&) override {}
   bool prepareForCommit() override;
   bool shouldClose() override;
+  WindowProxyManagerBase* getWindowProxyManager() const override;
 
   // FIXME: Remove this method once we have input routing in the browser
   // process. See http://crbug.com/339659.
@@ -60,9 +61,6 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
  private:
   RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
-
-  // Internal Frame helper overrides:
-  WindowProxyManagerBase* getWindowProxyManager() const override;
 
   // Intentionally private to prevent redundant checks when the type is
   // already RemoteFrame.
