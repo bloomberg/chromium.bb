@@ -33,12 +33,15 @@
 interface SVGGraphicsElement : SVGElement {
     [Measure] readonly attribute SVGAnimatedTransformList transform;
 
-    [MeasureAs=SVGLocatableNearestViewportElement] readonly attribute SVGElement nearestViewportElement;
-    [MeasureAs=SVGLocatableFarthestViewportElement] readonly attribute SVGElement farthestViewportElement;
-
     [ImplementedAs=getBBoxFromJavascript] SVGRect getBBox();
     [ImplementedAs=getCTMFromJavascript] SVGMatrix getCTM();
     [ImplementedAs=getScreenCTMFromJavascript] SVGMatrix getScreenCTM();
+
+    // The following two properties existed on SVGLocatable in SVG
+    // 1.1, but was removed in SVG2.
+    // https://www.w3.org/TR/SVG11/types.html#InterfaceSVGLocatable
+    [MeasureAs=SVGLocatableNearestViewportElement] readonly attribute SVGElement nearestViewportElement;
+    [MeasureAs=SVGLocatableFarthestViewportElement] readonly attribute SVGElement farthestViewportElement;
 };
 
 SVGGraphicsElement implements SVGTests;
