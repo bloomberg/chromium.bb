@@ -159,8 +159,9 @@ static void adjustStyleForFirstLetter(ComputedStyle& style) {
   style.setPosition(EPosition::kStatic);
 }
 
-void StyleAdjuster::adjustStyleForAlignment(ComputedStyle& style,
-                                            const ComputedStyle& parentStyle) {
+void StyleAdjuster::adjustStyleForAlignment(
+    ComputedStyle& style,
+    const ComputedStyle& layoutParentStyle) {
   // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto'
   // flag to not just mean 'auto' prior to running the StyleAdjuster but also
   // mean 'normal' after running it.
@@ -169,25 +170,25 @@ void StyleAdjuster::adjustStyleForAlignment(ComputedStyle& style,
   // 'auto' computes to the the inherited value.  Otherwise, 'auto' computes to
   // 'normal'.
   if (style.justifyItemsPosition() == ItemPositionAuto) {
-    if (parentStyle.justifyItemsPositionType() == LegacyPosition)
-      style.setJustifyItems(parentStyle.justifyItems());
+    if (layoutParentStyle.justifyItemsPositionType() == LegacyPosition)
+      style.setJustifyItems(layoutParentStyle.justifyItems());
   }
 
   // The 'auto' keyword computes the computed value of justify-items on the
   // parent (minus any legacy keywords), or 'normal' if the box has no parent.
   if (style.justifySelfPosition() == ItemPositionAuto) {
-    if (parentStyle.justifyItemsPositionType() == LegacyPosition)
-      style.setJustifySelfPosition(parentStyle.justifyItemsPosition());
-    else if (parentStyle.justifyItemsPosition() != ItemPositionAuto)
-      style.setJustifySelf(parentStyle.justifyItems());
+    if (layoutParentStyle.justifyItemsPositionType() == LegacyPosition)
+      style.setJustifySelfPosition(layoutParentStyle.justifyItemsPosition());
+    else if (layoutParentStyle.justifyItemsPosition() != ItemPositionAuto)
+      style.setJustifySelf(layoutParentStyle.justifyItems());
   }
 
   // The 'auto' keyword computes the computed value of align-items on the parent
   // or 'normal' if the box has no parent.
   if (style.alignSelfPosition() == ItemPositionAuto &&
-      parentStyle.alignItemsPosition() !=
+      layoutParentStyle.alignItemsPosition() !=
           ComputedStyle::initialDefaultAlignment().position())
-    style.setAlignSelf(parentStyle.alignItems());
+    style.setAlignSelf(layoutParentStyle.alignItems());
 }
 
 static void adjustStyleForHTMLElement(ComputedStyle& style,
@@ -506,7 +507,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
     if (isSVGTextElement(*element))
       style.clearMultiCol();
   }
-  adjustStyleForAlignment(style, parentStyle);
+  adjustStyleForAlignment(style, layoutParentStyle);
 }
 
 }  // namespace blink

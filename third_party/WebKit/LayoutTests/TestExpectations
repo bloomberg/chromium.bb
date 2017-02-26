@@ -2164,8 +2164,6 @@ crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/asyn
 crbug.com/626703 [ Win ] external/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-001.xht [ Failure ]
 crbug.com/626703 [ Win ] external/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-003.xht [ Failure ]
 crbug.com/626703 [ Win ] external/csswg-test/css-flexbox-1/flexbox_flex-natural-mixed-basis-auto.html [ Failure ]
-crbug.com/626703 external/csswg-test/css-display-3/display-contents-alignment-001.html [ Failure ]
-crbug.com/626703 external/csswg-test/css-display-3/display-contents-alignment-002.html [ Failure ]
 crbug.com/626703 external/csswg-test/css-rhythm-1/line-height-step-basic-001.html [ Failure ]
 crbug.com/626703 external/csswg-test/css-rhythm-1/line-height-step-boundary-001.html [ Failure ]
 crbug.com/626703 external/csswg-test/css-rhythm-1/line-height-step-ruby-001.html [ Failure ]
