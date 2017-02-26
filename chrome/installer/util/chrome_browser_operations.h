@@ -17,10 +17,6 @@ class ChromeBrowserOperations : public ProductOperations {
 
   void AddKeyFiles(std::vector<base::FilePath>* key_files) const override;
 
-  void AppendProductFlags(base::CommandLine* cmd_line) const override;
-
-  void AppendRenameFlags(base::CommandLine* cmd_line) const override;
-
   void AddDefaultShortcutProperties(
       BrowserDistribution* dist,
       const base::FilePath& target_exe,

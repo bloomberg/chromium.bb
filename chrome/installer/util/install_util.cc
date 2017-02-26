@@ -427,6 +427,13 @@ void InstallUtil::ComposeCommandLine(const base::string16& program,
       base::CommandLine::FromString(L"\"" + program + L"\" " + arguments);
 }
 
+void InstallUtil::AppendModeSwitch(base::CommandLine* command_line) {
+  const install_static::InstallDetails& install_details =
+      install_static::InstallDetails::Get();
+  if (*install_details.install_switch())
+    command_line->AppendSwitch(install_details.install_switch());
+}
+
 // static
 base::string16 InstallUtil::GetCurrentDate() {
   static const wchar_t kDateFormat[] = L"yyyyMMdd";

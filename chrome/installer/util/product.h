@@ -65,12 +65,6 @@ class Product {
   // See ProductOperations::AddKeyFiles.
   void AddKeyFiles(std::vector<base::FilePath>* key_files) const;
 
-  // See ProductOperations::AppendProductFlags.
-  void AppendProductFlags(base::CommandLine* command_line) const;
-
-  // See ProductOperations::AppendRenameFlags.
-  void AppendRenameFlags(base::CommandLine* command_line) const;
-
   // See ProductOperations::AddDefaultShortcutProperties.
   void AddDefaultShortcutProperties(
       const base::FilePath& target_exe,

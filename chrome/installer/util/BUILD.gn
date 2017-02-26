@@ -55,8 +55,6 @@ static_library("with_no_strings") {
     sources = [
       "chrome_browser_operations.cc",
       "chrome_browser_operations.h",
-      "chrome_browser_sxs_operations.cc",
-      "chrome_browser_sxs_operations.h",
       "compat_checks.cc",
       "compat_checks.h",
       "delete_after_reboot_helper.cc",

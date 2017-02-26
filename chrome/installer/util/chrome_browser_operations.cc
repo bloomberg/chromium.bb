@@ -5,7 +5,6 @@
 #include "chrome/installer/util/chrome_browser_operations.h"
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
@@ -18,15 +17,7 @@ namespace installer {
 void ChromeBrowserOperations::AddKeyFiles(
     std::vector<base::FilePath>* key_files) const {
   DCHECK(key_files);
-  key_files->push_back(base::FilePath(installer::kChromeDll));
-}
-
-void ChromeBrowserOperations::AppendProductFlags(
-    base::CommandLine* cmd_line) const {
-}
-
-void ChromeBrowserOperations::AppendRenameFlags(
-    base::CommandLine* cmd_line) const {
+  key_files->push_back(base::FilePath(kChromeDll));
 }
 
 // Modifies a ShortcutProperties object by adding default values to
@@ -60,8 +51,8 @@ void ChromeBrowserOperations::LaunchUserExperiment(
     InstallStatus status,
     bool system_level) const {
   base::CommandLine base_command(setup_path);
-  AppendProductFlags(&base_command);
-  installer::LaunchBrowserUserExperiment(base_command, status, system_level);
+  InstallUtil::AppendModeSwitch(&base_command);
+  LaunchBrowserUserExperiment(base_command, status, system_level);
 }
 
 }  // namespace installer

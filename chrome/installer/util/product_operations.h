@@ -13,10 +13,6 @@
 
 class BrowserDistribution;
 
-namespace base {
-class CommandLine;
-}
-
 namespace installer {
 
 
@@ -35,14 +31,6 @@ class ProductOperations {
   // function does not return a full path to the key file(s), only (a) file
   // name(s).
   virtual void AddKeyFiles(std::vector<base::FilePath>* key_files) const = 0;
-
-  // Given a command line, appends the set of product-specific flags. These are
-  // required for product-specific uninstall commands, but are of use for any
-  // invocation of setup.exe for the product.
-  virtual void AppendProductFlags(base::CommandLine* cmd_line) const = 0;
-
-  // Given a command line, appends the set of product-specific rename flags.
-  virtual void AppendRenameFlags(base::CommandLine* cmd_line) const = 0;
 
   // Modifies a ShellUtil::ShortcutProperties object by assigning default values
   // to unintialized members.

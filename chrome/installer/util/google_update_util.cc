@@ -15,7 +15,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
@@ -157,8 +156,7 @@ void ElevateIfNeededToReenableUpdates() {
 
   base::CommandLine cmd(exe_path);
   cmd.AppendSwitch(installer::switches::kReenableAutoupdates);
-  installer::Product product(BrowserDistribution::GetDistribution());
-  product.AppendProductFlags(&cmd);
+  InstallUtil::AppendModeSwitch(&cmd);
   if (system_install)
     cmd.AppendSwitch(installer::switches::kSystemLevel);
   if (product_state.uninstall_command().HasSwitch(

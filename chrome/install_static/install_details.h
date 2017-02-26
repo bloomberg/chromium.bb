@@ -69,6 +69,9 @@ class InstallDetails {
   // than one of its secondary modes (e.g., canary Chrome).
   bool is_primary_mode() const { return install_mode_index() == 0; }
 
+  // Returns the installer command-line switch that selects the current mode.
+  const char* install_switch() const { return payload_->mode->install_switch; }
+
   // The mode's install suffix (e.g., " SxS" for canary Chrome), or an empty
   // string for a brand's primary install mode.
   const wchar_t* install_suffix() const {

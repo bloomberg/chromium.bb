@@ -8,11 +8,11 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/launch.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/chrome_browser_operations.h"
-#include "chrome/installer/util/chrome_browser_sxs_operations.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/product_operations.h"
@@ -23,9 +23,7 @@ namespace installer {
 
 Product::Product(BrowserDistribution* distribution)
     : distribution_(distribution),
-      operations_(InstallUtil::IsChromeSxSProcess()
-                      ? new ChromeBrowserSxSOperations()
-                      : new ChromeBrowserOperations()) {}
+      operations_(base::MakeUnique<ChromeBrowserOperations>()) {}
 
 Product::~Product() {
 }
@@ -101,14 +99,6 @@ bool Product::SetMsiMarker(bool system_install, bool set) const {
 
 void Product::AddKeyFiles(std::vector<base::FilePath>* key_files) const {
   operations_->AddKeyFiles(key_files);
-}
-
-void Product::AppendProductFlags(base::CommandLine* command_line) const {
-  operations_->AppendProductFlags(command_line);
-}
-
-void Product::AppendRenameFlags(base::CommandLine* command_line) const {
-  operations_->AppendRenameFlags(command_line);
 }
 
 void Product::AddDefaultShortcutProperties(
