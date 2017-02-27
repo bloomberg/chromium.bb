@@ -492,24 +492,8 @@ SkColor GetBorderColor(const char* css_selector) {
   return surface.GetAveragePixelValue(true);
 }
 
-ScopedStyleContext GetSelectedStyleContext(const char* css_selector) {
+SkColor GetSelectionBgColor(const char* css_selector) {
   auto context = GetStyleContextFromCss(css_selector);
-  if (GtkVersionCheck(3, 20)) {
-    context = AppendCssNodeToStyleContext(context, "#selection");
-  } else {
-    GtkStateFlags state = gtk_style_context_get_state(context);
-    state = static_cast<GtkStateFlags>(state | GTK_STATE_FLAG_SELECTED);
-    gtk_style_context_set_state(context, state);
-  }
-  return context;
-}
-
-SkColor GetSelectedTextColor(const char* css_selector) {
-  return GetFgColorFromStyleContext(GetSelectedStyleContext(css_selector));
-}
-
-SkColor GetSelectedBgColor(const char* css_selector) {
-  auto context = GetSelectedStyleContext(css_selector);
   if (GtkVersionCheck(3, 20))
     return GetBgColorFromStyleContext(context);
   // This is verbatim how Gtk gets the selection color on versions before 3.20.

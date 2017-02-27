@@ -842,10 +842,14 @@ void GtkUi::LoadGtkValues() {
   if (SkColorGetA(location_bar_border))
     colors_[ThemeProperties::COLOR_LOCATION_BAR_BORDER] = location_bar_border;
 
-  inactive_selection_bg_color_ =
-      GetSelectedBgColor("GtkTextView#textview.view:backdrop");
+  inactive_selection_bg_color_ = GetSelectionBgColor(
+      GtkVersionCheck(3, 20) ? "GtkTextView#textview.view:backdrop "
+                               "#text:backdrop #selection:backdrop"
+                             : "GtkTextView:selected:backdrop");
   inactive_selection_fg_color_ =
-      GetSelectedTextColor("GtkTextView#textview.view:backdrop");
+      GetFgColor(GtkVersionCheck(3, 20) ? "GtkTextView#textview.view:backdrop "
+                                          "#text:backdrop #selection:backdrop"
+                                        : "GtkTextView:selected:backdrop");
 
   SkColor toolbar_button_border =
       GetBorderColor("GtkToolbar#toolbar GtkButton#button");

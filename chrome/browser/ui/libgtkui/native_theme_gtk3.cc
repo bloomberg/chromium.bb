@@ -143,9 +143,11 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_LabelDisabledColor:
       return GetFgColor("GtkLabel:disabled");
     case ui::NativeTheme::kColorId_LabelTextSelectionColor:
-      return GetSelectedTextColor("GtkLabel");
+      return GetFgColor(GtkVersionCheck(3, 20) ? "GtkLabel #selection"
+                                               : "GtkLabel:selected");
     case ui::NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
-      return GetSelectedBgColor("GtkLabel");
+      return GetSelectionBgColor(GtkVersionCheck(3, 20) ? "GtkLabel #selection"
+                                                        : "GtkLabel:selected");
 
     // Link
     case ui::NativeTheme::kColorId_LinkDisabled:
@@ -223,17 +225,28 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // Textfield
     case ui::NativeTheme::kColorId_TextfieldDefaultColor:
-      return GetFgColor("GtkTextView#textview.view");
+      return GetFgColor(GtkVersionCheck(3, 20)
+                            ? "GtkTextView#textview.view #text"
+                            : "GtkTextView");
     case ui::NativeTheme::kColorId_TextfieldDefaultBackground:
-      return GetBgColor("GtkTextView#textview.view");
+      return GetBgColor(GtkVersionCheck(3, 20) ? "GtkTextView#textview.view"
+                                               : "GtkTextView");
     case ui::NativeTheme::kColorId_TextfieldReadOnlyColor:
-      return GetFgColor("GtkTextView#textview.view:disabled");
+      return GetFgColor(GtkVersionCheck(3, 20)
+                            ? "GtkTextView#textview.view:disabled #text"
+                            : "GtkTextView:disabled");
     case ui::NativeTheme::kColorId_TextfieldReadOnlyBackground:
-      return GetBgColor("GtkTextView#textview.view:disabled");
+      return GetBgColor(GtkVersionCheck(3, 20)
+                            ? "GtkTextView#textview.view:disabled"
+                            : "GtkTextView:disabled");
     case ui::NativeTheme::kColorId_TextfieldSelectionColor:
-      return GetSelectedTextColor("GtkTextView#textview.view");
+      return GetFgColor(GtkVersionCheck(3, 20)
+                            ? "GtkTextView#textview.view #text #selection"
+                            : "GtkTextView:selected");
     case ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
-      return GetSelectedBgColor("GtkTextView#textview.view");
+      return GetSelectionBgColor(
+          GtkVersionCheck(3, 20) ? "GtkTextView#textview.view #text #selection"
+                                 : "GtkTextView:selected");
 
     // Tooltips
     case ui::NativeTheme::kColorId_TooltipBackground:

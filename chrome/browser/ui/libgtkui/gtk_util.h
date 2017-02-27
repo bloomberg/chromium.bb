@@ -217,8 +217,9 @@ SkColor GetBgColor(const char* css_selector);
 // returns the average color.
 SkColor GetBorderColor(const char* css_selector);
 
-SkColor GetSelectedTextColor(const char* css_selector);
-SkColor GetSelectedBgColor(const char* css_selector);
+// On Gtk3.20 or later, behaves like GetBgColor.  Otherwise, returns
+// the background-color property.
+SkColor GetSelectionBgColor(const char* css_selector);
 
 // Get the color of the GtkSeparator specified by |css_selector|.
 SkColor GetSeparatorColor(const char* css_selector);
