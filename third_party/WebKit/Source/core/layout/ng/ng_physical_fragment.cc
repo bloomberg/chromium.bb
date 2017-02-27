@@ -29,4 +29,9 @@ void NGPhysicalFragment::destroy() const {
     delete static_cast<const NGPhysicalBoxFragment*>(this);
 }
 
+const ComputedStyle& NGPhysicalFragment::Style() const {
+  DCHECK(layout_object_);
+  return layout_object_->styleRef();
+}
+
 }  // namespace blink

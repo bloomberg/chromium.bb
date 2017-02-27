@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class ComputedStyle;
 class LayoutObject;
 class NGBreakToken;
 
@@ -78,6 +79,10 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
 
   NGBreakToken* BreakToken() const { return break_token_; }
 
+  const ComputedStyle& Style() const;
+
+  // GetLayoutObject should only be used when necessary for compatibility
+  // with LegacyLayout.
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
   bool IsPlaced() const { return is_placed_; }
