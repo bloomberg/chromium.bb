@@ -2561,3 +2561,5 @@ crbug.com/694467 fast/text/line-break-8bit-after-16bit.html [ Pass Failure ]
 # Sheriff failures 2017-02-23
 crbug.com/695352 [ Mac ] virtual/threaded/compositing/visibility/overlays-persist-on-navigation.html [ Pass Crash ]
 
+# Sheriff failures 2017-02-27
+crbug.com/696398 [ Win7 ] virtual/disable-spinvalidation/paint/invalidation/svg/scrolling-embedded-svg-file-image-repaint-problem.html [ Failure ]
