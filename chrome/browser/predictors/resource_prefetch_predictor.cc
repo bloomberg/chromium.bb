@@ -171,10 +171,9 @@ void ReportPrefetchAccuracy(
 }
 
 void ReportPredictionAccuracy(
-    const std::vector<GURL>& predicted_urls,
+    const ResourcePrefetchPredictor::Prediction& prediction,
     const ResourcePrefetchPredictor::PageRequestSummary& summary) {
-  DCHECK(!predicted_urls.empty());
-
+  const std::vector<GURL>& predicted_urls = prediction.subresource_urls;
   if (predicted_urls.empty() || summary.subresource_requests.empty())
     return;
 
@@ -195,6 +194,26 @@ void ReportPredictionAccuracy(
   size_t recall_percentage =
       (100 * correctly_predicted_count) / actual_urls_set.size();
 
+  using RedirectStatus = ResourcePrefetchPredictor::RedirectStatus;
+  RedirectStatus redirect_status;
+  if (summary.main_frame_url == summary.initial_url) {
+    // The actual navigation wasn't redirected.
+    redirect_status = prediction.is_redirected
+                          ? RedirectStatus::NO_REDIRECT_BUT_PREDICTED
+                          : RedirectStatus::NO_REDIRECT;
+  } else {
+    if (prediction.is_redirected) {
+      std::string main_frame_key = prediction.is_host
+                                       ? summary.main_frame_url.host()
+                                       : summary.main_frame_url.spec();
+      redirect_status = main_frame_key == prediction.main_frame_key
+                            ? RedirectStatus::REDIRECT_CORRECTLY_PREDICTED
+                            : RedirectStatus::REDIRECT_WRONG_PREDICTED;
+    } else {
+      redirect_status = RedirectStatus::REDIRECT_NOT_PREDICTED;
+    }
+  }
+
   UMA_HISTOGRAM_PERCENTAGE(
       internal::kResourcePrefetchPredictorPrecisionHistogram,
       precision_percentage);
@@ -202,6 +221,9 @@ void ReportPredictionAccuracy(
                            recall_percentage);
   UMA_HISTOGRAM_COUNTS_100(internal::kResourcePrefetchPredictorCountHistogram,
                            predicted_urls.size());
+  UMA_HISTOGRAM_ENUMERATION(
+      internal::kResourcePrefetchPredictorRedirectStatusHistogram,
+      static_cast<int>(redirect_status), static_cast<int>(RedirectStatus::MAX));
 }
 
 }  // namespace
@@ -449,6 +471,13 @@ ResourcePrefetchPredictor::PageRequestSummary::PageRequestSummary(
 
 ResourcePrefetchPredictor::PageRequestSummary::~PageRequestSummary() {}
 
+ResourcePrefetchPredictor::Prediction::Prediction() = default;
+
+ResourcePrefetchPredictor::Prediction::Prediction(
+    const ResourcePrefetchPredictor::Prediction& other) = default;
+
+ResourcePrefetchPredictor::Prediction::~Prediction() = default;
+
 ////////////////////////////////////////////////////////////////////////////////
 // ResourcePrefetchPredictor.
 
@@ -569,14 +598,14 @@ void ResourcePrefetchPredictor::StartPrefetching(const GURL& url,
   if (!config_.IsPrefetchingEnabledForOrigin(profile_, origin))
     return;
 
-  std::vector<GURL> subresource_urls;
-  if (!GetPrefetchData(url, &subresource_urls))
+  ResourcePrefetchPredictor::Prediction prediction;
+  if (!GetPrefetchData(url, &prediction))
     return;
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ResourcePrefetcherManager::MaybeAddPrefetch,
-                 prefetch_manager_, url, subresource_urls));
+                 prefetch_manager_, url, prediction.subresource_urls));
 }
 
 void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
@@ -709,13 +738,13 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
   std::unique_ptr<PageRequestSummary> summary = std::move(nav_it->second);
   inflight_navigations_.erase(nav_it);
 
-  const GURL& main_frame_url = nav_id_without_timing_info.main_frame_url;
-  std::vector<GURL> predicted_urls;
-  bool has_data = GetPrefetchData(main_frame_url, &predicted_urls);
+  const GURL& initial_url = summary->initial_url;
+  ResourcePrefetchPredictor::Prediction prediction;
+  bool has_data = GetPrefetchData(initial_url, &prediction);
   if (has_data)
-    ReportPredictionAccuracy(predicted_urls, *summary);
+    ReportPredictionAccuracy(prediction, *summary);
 
-  auto it = prefetcher_stats_.find(main_frame_url);
+  auto it = prefetcher_stats_.find(initial_url);
   if (it != prefetcher_stats_.end()) {
     const std::vector<URLRequestSummary>& summaries =
         summary->subresource_requests;
@@ -744,8 +773,11 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
   }
 }
 
-bool ResourcePrefetchPredictor::GetPrefetchData(const GURL& main_frame_url,
-                                                std::vector<GURL>* urls) const {
+bool ResourcePrefetchPredictor::GetPrefetchData(
+    const GURL& main_frame_url,
+    ResourcePrefetchPredictor::Prediction* prediction) const {
+  std::vector<GURL>* urls =
+      prediction ? &prediction->subresource_urls : nullptr;
   DCHECK(!urls || urls->empty());
 
   // Fetch URLs based on a redirect endpoint for URL/host first.
@@ -753,23 +785,47 @@ bool ResourcePrefetchPredictor::GetPrefetchData(const GURL& main_frame_url,
   if (GetRedirectEndpoint(main_frame_url.spec(), *url_redirect_table_cache_,
                           &redirect_endpoint) &&
       PopulatePrefetcherRequest(redirect_endpoint, *url_table_cache_, urls)) {
+    if (prediction) {
+      prediction->is_host = false;
+      prediction->is_redirected = true;
+      prediction->main_frame_key = redirect_endpoint;
+    }
     return true;
   }
 
   if (GetRedirectEndpoint(main_frame_url.host(), *host_redirect_table_cache_,
                           &redirect_endpoint) &&
       PopulatePrefetcherRequest(redirect_endpoint, *host_table_cache_, urls)) {
+    if (prediction) {
+      prediction->is_host = true;
+      prediction->is_redirected = true;
+      prediction->main_frame_key = redirect_endpoint;
+    }
     return true;
   }
 
   // Fallback to fetching URLs based on the incoming URL/host.
   if (PopulatePrefetcherRequest(main_frame_url.spec(), *url_table_cache_,
                                 urls)) {
+    if (prediction) {
+      prediction->is_host = false;
+      prediction->is_redirected = false;
+      prediction->main_frame_key = main_frame_url.spec();
+    }
     return true;
   }
 
-  return PopulatePrefetcherRequest(main_frame_url.host(), *host_table_cache_,
-                                   urls);
+  if (PopulatePrefetcherRequest(main_frame_url.host(), *host_table_cache_,
+                                urls)) {
+    if (prediction) {
+      prediction->is_host = true;
+      prediction->is_redirected = false;
+      prediction->main_frame_key = main_frame_url.host();
+    }
+    return true;
+  }
+
+  return false;
 }
 
 bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(

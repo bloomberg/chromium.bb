@@ -59,6 +59,8 @@ constexpr char kResourcePrefetchPredictorPrefetchHitsSize[] =
     "ResourcePrefetchPredictor.PrefetchHitsSizeKB";
 constexpr char kResourcePrefetchPredictorPrefetchMissesSize[] =
     "ResourcePrefetchPredictor.PrefetchMissesSizeKB";
+constexpr char kResourcePrefetchPredictorRedirectStatusHistogram[] =
+    "ResourcePrefetchPredictor.RedirectStatus";
 }  // namespace internal
 
 class TestObserver;
@@ -138,6 +140,31 @@ class ResourcePrefetchPredictor
     // Stores all subresource requests within a single navigation, from initial
     // main frame request to navigation completion.
     std::vector<URLRequestSummary> subresource_requests;
+  };
+
+  // Stores a result of prediction. Essentially, |subresource_urls| is main
+  // result and other fields are used for diagnosis and histograms reporting.
+  struct Prediction {
+    Prediction();
+    Prediction(const Prediction& other);
+    ~Prediction();
+
+    bool is_host;
+    bool is_redirected;
+    std::string main_frame_key;
+    std::vector<GURL> subresource_urls;
+  };
+
+  // Used for reporting redirect prediction success/failure in histograms.
+  // NOTE: This enumeration is used in histograms, so please do not add entries
+  // in the middle.
+  enum class RedirectStatus {
+    NO_REDIRECT,
+    NO_REDIRECT_BUT_PREDICTED,
+    REDIRECT_NOT_PREDICTED,
+    REDIRECT_WRONG_PREDICTED,
+    REDIRECT_CORRECTLY_PREDICTED,
+    MAX
   };
 
   ResourcePrefetchPredictor(const ResourcePrefetchPredictorConfig& config,
@@ -278,10 +305,11 @@ class ResourcePrefetchPredictor
   void OnNavigationComplete(const NavigationID& nav_id_without_timing_info);
 
   // Returns true iff there is PrefetchData that can be used for a
-  // |main_frame_url| and fills |urls| with resources that need to be
-  // prefetched. |urls| pointer may be equal nullptr to get return value only.
+  // |main_frame_url| and fills |prediction| with resources that need to be
+  // prefetched. |prediction| pointer may be equal nullptr to get return value
+  // only.
   bool GetPrefetchData(const GURL& main_frame_url,
-                       std::vector<GURL>* urls) const;
+                       Prediction* prediction) const;
 
   // Returns true iff the |data_map| contains PrefetchData that can be used
   // for a |main_frame_key| and fills |urls| with resources that need to be
