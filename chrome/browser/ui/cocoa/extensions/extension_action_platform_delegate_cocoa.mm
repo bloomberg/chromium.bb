@@ -77,7 +77,7 @@ void ExtensionActionPlatformDelegateCocoa::ShowPopup(
   [ExtensionPopupController host:std::move(host)
                        inBrowser:controller_->browser()
                       anchoredAt:GetPopupPoint()
-                   arrowLocation:info_bubble::kTopRight
+                   arrowLocation:info_bubble::kTopTrailing
                          devMode:devMode];
 }
 

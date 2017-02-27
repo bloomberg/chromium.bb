@@ -213,7 +213,7 @@ bool IsInternalURL(const GURL& url) {
   if ((self = [super initWithWindow:window.get()
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
-    [[self bubble] setArrowLocation:info_bubble::kTopLeft];
+    [[self bubble] setArrowLocation:info_bubble::kTopLeading];
 
     // Create the container view that uses flipped coordinates.
     NSRect contentFrame = NSMakeRect(0, 0, [self defaultWindowWidth], 300);

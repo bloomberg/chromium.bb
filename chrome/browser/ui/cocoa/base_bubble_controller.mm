@@ -114,7 +114,7 @@
                                                                   self));
   }
 
-  [bubble_ setArrowLocation:info_bubble::kTopRight];
+  [bubble_ setArrowLocation:info_bubble::kTopTrailing];
 }
 
 - (void)dealloc {
@@ -411,11 +411,13 @@
                                   info_bubble::kBubbleArrowWidth / 2.0, 0);
       offsets = [[parentWindow_ contentView] convertSize:offsets toView:nil];
       switch ([bubble_ arrowLocation]) {
-        case info_bubble::kTopRight:
-          origin.x -= NSWidth([window frame]) - offsets.width;
+        case info_bubble::kTopTrailing:
+          origin.x -=
+              isRTL ? offsets.width : NSWidth([window frame]) - offsets.width;
           break;
-        case info_bubble::kTopLeft:
-          origin.x -= offsets.width;
+        case info_bubble::kTopLeading:
+          origin.x -=
+              isRTL ? NSWidth([window frame]) - offsets.width : offsets.width;
           break;
         case info_bubble::kNoArrow:
         // FALLTHROUGH.
@@ -431,7 +433,7 @@
       // edge aligns with the anchor. If the arrow is to the left then there's
       // nothing to do because the left edge is already aligned with the left
       // edge of the anchor.
-      if ([bubble_ arrowLocation] == info_bubble::kTopRight) {
+      if ([bubble_ arrowLocation] == info_bubble::kTopTrailing) {
         origin.x -= NSWidth([window frame]);
       }
       break;

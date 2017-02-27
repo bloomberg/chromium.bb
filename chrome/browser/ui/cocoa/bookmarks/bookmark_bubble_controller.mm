@@ -144,7 +144,7 @@ using bookmarks::BookmarkNode;
       [BrowserWindowController browserWindowControllerForWindow:parentWindow];
 
   InfoBubbleView* bubble = self.bubble;
-  [bubble setArrowLocation:info_bubble::kTopRight];
+  [bubble setArrowLocation:info_bubble::kTopTrailing];
 
   // Insure decent positioning even in the absence of a browser controller,
   // which will occur for some unit tests.

@@ -494,7 +494,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
   // Add "?" icon with tooltip.
   storageTooltip_.reset([[AutofillTooltipController alloc]
-      initWithArrowLocation:info_bubble::kTopRight]);
+      initWithArrowLocation:info_bubble::kTopTrailing]);
   [storageTooltip_ setImage:ui::ResourceBundle::GetSharedInstance()
                                 .GetNativeImageNamed(IDR_AUTOFILL_TOOLTIP_ICON)
                                 .ToNSImage()];

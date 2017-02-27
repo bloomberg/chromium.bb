@@ -118,7 +118,7 @@
         browserWindowControllerForWindow:[self parentWindow]];
     anchorPoint = [controller locationBarBridge]->GetBubblePointForDecoration(
         [self decorationForBubble]);
-    arrow = info_bubble::kTopRight;
+    arrow = info_bubble::kTopTrailing;
   } else {
     // Center the bubble if there's no location bar.
     NSRect contentFrame = [[[self parentWindow] contentView] frame];

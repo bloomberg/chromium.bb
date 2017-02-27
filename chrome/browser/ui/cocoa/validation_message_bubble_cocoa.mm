@@ -47,7 +47,7 @@ anchoredAt:(NSPoint)anchorPoint
   if ((self = [super initWithWindow:window.get()
                        parentWindow:parentWindow
                          anchoredAt:anchorPoint])) {
-    [[self bubble] setArrowLocation:info_bubble::kTopLeft];
+    [[self bubble] setArrowLocation:info_bubble::kTopLeading];
     self.shouldOpenAsKeyWindow = NO;
 
     NSView* contentView = [ValidationMessageBubbleController

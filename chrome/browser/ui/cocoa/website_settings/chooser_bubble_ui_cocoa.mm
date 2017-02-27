@@ -246,7 +246,8 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 }
 
 - (info_bubble::BubbleArrowLocation)getExpectedArrowLocation {
-  return [self hasLocationBar] ? info_bubble::kTopLeft : info_bubble::kNoArrow;
+  return [self hasLocationBar] ? info_bubble::kTopLeading
+                               : info_bubble::kNoArrow;
 }
 
 - (NSWindow*)getExpectedParentWindow {

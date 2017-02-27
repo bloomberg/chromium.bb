@@ -479,7 +479,7 @@ const NSInteger kFullscreenLeftOffset = 40;
 }
 
 - (info_bubble::BubbleArrowLocation)getExpectedArrowLocation {
-  return info_bubble::kTopLeft;
+  return info_bubble::kTopLeading;
 }
 
 - (NSWindow*)getExpectedParentWindow {

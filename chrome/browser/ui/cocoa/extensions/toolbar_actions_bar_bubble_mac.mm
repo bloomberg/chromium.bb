@@ -87,7 +87,7 @@ CGFloat kMinWidth = 320.0;
 
     ui::NativeTheme* nativeTheme = ui::NativeTheme::GetInstanceForNativeUi();
     [[self bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
-    [[self bubble] setArrowLocation:info_bubble::kTopRight];
+    [[self bubble] setArrowLocation:info_bubble::kTopTrailing];
     [[self bubble] setBackgroundColor:
         skia::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
             ui::NativeTheme::kColorId_DialogBackground))];

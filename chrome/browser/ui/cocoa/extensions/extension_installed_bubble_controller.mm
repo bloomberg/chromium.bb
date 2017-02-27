@@ -285,9 +285,9 @@ std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
   if (installedBubble_ &&
       installedBubble_->anchor_position() ==
           ExtensionInstalledBubble::ANCHOR_OMNIBOX) {
-    [self.bubble setArrowLocation:info_bubble::kTopLeft];
+    [self.bubble setArrowLocation:info_bubble::kTopLeading];
   } else {
-    [self.bubble setArrowLocation:info_bubble::kTopRight];
+    [self.bubble setArrowLocation:info_bubble::kTopTrailing];
   }
 
   // Set appropriate icon, resizing if necessary.

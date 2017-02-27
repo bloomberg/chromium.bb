@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
 
 @implementation InfoBubbleView
@@ -17,7 +18,7 @@
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
-    arrowLocation_ = info_bubble::kTopLeft;
+    arrowLocation_ = info_bubble::kTopLeading;
     alignment_ = info_bubble::kAlignArrowToAnchor;
     cornerFlags_ = info_bubble::kRoundedAllCorners;
     backgroundColor_.reset([[NSColor whiteColor] retain]);
@@ -64,14 +65,17 @@
                         bottomRightCornerRadius:bottomRadius];
 
   // Add the bubble arrow.
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
   CGFloat dX = 0;
+  CGFloat leftOffset = info_bubble::kBubbleArrowXOffset;
+  CGFloat rightOffset = NSWidth(bounds) - info_bubble::kBubbleArrowXOffset -
+                        info_bubble::kBubbleArrowWidth;
   switch (arrowLocation_) {
-    case info_bubble::kTopLeft:
-      dX = info_bubble::kBubbleArrowXOffset;
+    case info_bubble::kTopLeading:
+      dX = isRTL ? rightOffset : leftOffset;
       break;
-    case info_bubble::kTopRight:
-      dX = NSWidth(bounds) - info_bubble::kBubbleArrowXOffset -
-          info_bubble::kBubbleArrowWidth;
+    case info_bubble::kTopTrailing:
+      dX = isRTL ? leftOffset : rightOffset;
       break;
     case info_bubble::kTopCenter:
       dX = NSMidX(bounds) - info_bubble::kBubbleArrowWidth / 2.0;
@@ -103,12 +107,15 @@
   CGFloat tipXOffset =
       info_bubble::kBubbleArrowXOffset + info_bubble::kBubbleArrowWidth / 2.0;
   CGFloat xOffset = 0.0;
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+  CGFloat leftOffset = NSMaxX(bounds) - tipXOffset;
+  CGFloat rightOffset = NSMinX(bounds) + tipXOffset;
   switch(arrowLocation_) {
-    case info_bubble::kTopRight:
-      xOffset = NSMaxX(bounds) - tipXOffset;
+    case info_bubble::kTopTrailing:
+      xOffset = isRTL ? rightOffset : leftOffset;
       break;
-    case info_bubble::kTopLeft:
-      xOffset = NSMinX(bounds) + tipXOffset;
+    case info_bubble::kTopLeading:
+      xOffset = isRTL ? leftOffset : rightOffset;
       break;
     case info_bubble::kTopCenter:
       xOffset = NSMidX(bounds);

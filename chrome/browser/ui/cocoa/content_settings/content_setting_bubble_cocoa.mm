@@ -791,7 +791,7 @@ const ContentTypeToNibPath kNibPaths[] = {
   ContentSettingSimpleBubbleModel* simple_bubble =
       contentSettingBubbleModel_->AsSimpleBubbleModel();
 
-  [[self bubble] setArrowLocation:info_bubble::kTopRight];
+  [[self bubble] setArrowLocation:info_bubble::kTopTrailing];
 
   // Adapt window size to bottom buttons. Do this before all other layouting.
   if (simple_bubble && !simple_bubble->bubble_content().manage_text.empty())

@@ -165,7 +165,7 @@ class BaseBubbleControllerTest : public CocoaTest {
 // Test that kAlignEdgeToAnchorEdge and a left bubble arrow correctly aligns the
 // left edge of the buble to the anchor point.
 TEST_F(BaseBubbleControllerTest, LeftAlign) {
-  [[controller_ bubble] setArrowLocation:info_bubble::kTopLeft];
+  [[controller_ bubble] setArrowLocation:info_bubble::kTopLeading];
   [[controller_ bubble] setAlignment:info_bubble::kAlignEdgeToAnchorEdge];
   [controller_ showWindow:nil];
 
@@ -181,7 +181,7 @@ TEST_F(BaseBubbleControllerTest, LeftAlign) {
 // Test that kAlignEdgeToAnchorEdge and a right bubble arrow correctly aligns
 // the right edge of the buble to the anchor point.
 TEST_F(BaseBubbleControllerTest, RightAlign) {
-  [[controller_ bubble] setArrowLocation:info_bubble::kTopRight];
+  [[controller_ bubble] setArrowLocation:info_bubble::kTopTrailing];
   [[controller_ bubble] setAlignment:info_bubble::kAlignEdgeToAnchorEdge];
   [controller_ showWindow:nil];
 
@@ -197,7 +197,7 @@ TEST_F(BaseBubbleControllerTest, RightAlign) {
 // Test that kAlignArrowToAnchor and a left bubble arrow correctly aligns
 // the bubble arrow to the anchor point.
 TEST_F(BaseBubbleControllerTest, AnchorAlignLeftArrow) {
-  [[controller_ bubble] setArrowLocation:info_bubble::kTopLeft];
+  [[controller_ bubble] setArrowLocation:info_bubble::kTopLeading];
   [[controller_ bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
   [controller_ showWindow:nil];
 
@@ -214,7 +214,7 @@ TEST_F(BaseBubbleControllerTest, AnchorAlignLeftArrow) {
 // Test that kAlignArrowToAnchor and a right bubble arrow correctly aligns
 // the bubble arrow to the anchor point.
 TEST_F(BaseBubbleControllerTest, AnchorAlignRightArrow) {
-  [[controller_ bubble] setArrowLocation:info_bubble::kTopRight];
+  [[controller_ bubble] setArrowLocation:info_bubble::kTopTrailing];
   [[controller_ bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
   [controller_ showWindow:nil];
 
@@ -248,7 +248,7 @@ TEST_F(BaseBubbleControllerTest, AnchorAlignCenterArrow) {
 // ensures offscreen initialization is done using correct screen metrics.
 TEST_F(BaseBubbleControllerTest, PositionedBeforeShow) {
   // Verify default alignment settings, used when initialized in SetUp().
-  EXPECT_EQ(info_bubble::kTopRight, [[controller_ bubble] arrowLocation]);
+  EXPECT_EQ(info_bubble::kTopTrailing, [[controller_ bubble] arrowLocation]);
   EXPECT_EQ(info_bubble::kAlignArrowToAnchor, [[controller_ bubble] alignment]);
 
   // Verify the default frame (positioned relative to the test_window() origin).
