@@ -337,12 +337,6 @@ static CSSValue* consumeFontFeatureSettings(CSSParserTokenRange& range) {
   return settings;
 }
 
-static CSSValue* consumeWebkitHighlight(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueNone)
-    return consumeIdent(range);
-  return consumeString(range);
-}
-
 static CSSIdentifierValue* consumeFontVariantCSS21(CSSParserTokenRange& range) {
   return consumeIdent<CSSValueNormal, CSSValueSmallCaps>(range);
 }
@@ -2056,8 +2050,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     return cssPropertyDesc.parseSingleValue(m_range, m_context);
 
   switch (property) {
-    case CSSPropertyWebkitHighlight:
-      return consumeWebkitHighlight(m_range);
     case CSSPropertyFontFeatureSettings:
       return consumeFontFeatureSettings(m_range);
     case CSSPropertyFontFamily:
