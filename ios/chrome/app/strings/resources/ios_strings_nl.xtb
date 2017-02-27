@@ -150,7 +150,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="3638472932233958418">Webpagina's vooraf laden</translation>
 <translation id="3691593122358196899">Bladwijzer gemaakt in <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Indien ingeschakeld, bevat de omnibox suggesties voor webpagina's die worden uitgezonden door apparaten bij jou in de buurt.</translation>
-<translation id="3706658020782046159">Selecteer een verzendadres om verzendmethoden en vereisten te bekijken.</translation>
 <translation id="3738139272394829648">Tikken om te zoeken</translation>
 <translation id="3771033907050503522">Incognitotabbladen</translation>
 <translation id="3783017676699494206">Afbeelding opslaan</translation>
@@ -211,12 +210,10 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Kaart toevoegen...</translation>
 <translation id="5228579091201413441">Synchronisatie inschakelen</translation>
-<translation id="5230733896359313003">Verzendadres</translation>
 <translation id="5244474230056479698">Synchroniseren met <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Weergeven</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5327248766486351172">Naam</translation>
-<translation id="5332219387342487447">Verzendmethode</translation>
 <translation id="5388358297987318779">Afbeelding openen</translation>
 <translation id="5409365236829784218">Er zijn geen applicaties geïnstalleerd waarmee dit bestand kan worden geopend.</translation>
 <translation id="54401264925851789">Paginabeveiligingsinfo</translation>
@@ -343,7 +340,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7671141431838911305">INSTALLEER</translation>
-<translation id="7682287625158474539">Verzendadres</translation>
 <translation id="7765158879357617694">Verplaatsen</translation>
 <translation id="7769602470925380267">Accepteren en uitloggen</translation>
 <translation id="7772032839648071052">Bevestig de wachtwoordzin</translation>

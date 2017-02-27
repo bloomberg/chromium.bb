@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteration (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">I-load ang larawan</translation>
 <translation id="1029317248976101138">I-zoom</translation>
-<translation id="1029595648591494741">Subukan ang "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="1030173864176315846">Matagumpay na na-print ang <ph name="PAGE_NUMBER" /> (na) pahina sa <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Preview ng paglo-load</translation>
 <translation id="1031573127485938293">Magtanong (ayon sa patakaran)</translation>
@@ -1833,7 +1832,6 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Mga Limitasyon sa Patakaran ng Certificate</translation>
 <translation id="335985608243443814">Mag-browse...</translation>
 <translation id="3360297538363969800">Hindi nakapag-print. Pakisuri ang iyong printer at subukang muli.</translation>
-<translation id="3361481787422913716">Tingnan ang mga setting ng ulat</translation>
 <translation id="336497260564123876">Na-save ang password. Upang mailagay ang iyong mga password sa lahat ng iyong device, mag-sign in sa Chrome.</translation>
 <translation id="3367813778245106622">Mag-sign in muli upang simulan ang pag-sync</translation>
 <translation id="3368922792935385530">Nakakonekta</translation>
@@ -2009,7 +2007,6 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">I-type ang code na ito sa "<ph name="DEVICE_NAME" />" upang ipares:</translation>
 <translation id="3588662957555259973">* Larawan sa Profile sa Google</translation>
 <translation id="3590194807845837023">I-unlock ang Profile at Ilunsad Muli</translation>
-<translation id="3590559774363307859">Na-save ang password. Maaari mo itong i-access at ang lahat ng iyong <ph name="SAVED_PASSWORDS_LINK" /> mula sa iyong browser.</translation>
 <translation id="3592260987370335752">&amp;Matuto nang higit pa</translation>
 <translation id="359283478042092570">Ilagay</translation>
 <translation id="3593965109698325041">Mga Limitasyon sa Pangalan ng Certificate</translation>
@@ -2835,7 +2832,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4764865176798926079">Nagsimula ang domContentLoaded ng pangunahing frame at ang lahat ng pinagkukunan ng mga pag-load bago ang domContentLoaded (binalewala ang iframes).</translation>
 <translation id="4768332406694066911">Mayroon kang mga certificate mula sa mga organisasyong ito na tutukoy sa iyo</translation>
 <translation id="4768698601728450387">I-crop ang larawan</translation>
-<translation id="4773696473262035477">Maaari mo itong i-access at ang lahat ng iyong <ph name="SAVED_PASSWORDS_LINK" /> mula sa anumang browser.</translation>
 <translation id="4776917500594043016">Password para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4780321648949301421">I-save ang Page Bilang...</translation>
@@ -5390,7 +5386,6 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Hindi nakalista ang extension na ito sa <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> at maaaring naidagdag nang hindi mo nalalaman.</translation>
 <translation id="8261387128019234107">Magdagdag ng account para kay <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Ang mga ito ay maaaring:</translation>
 <translation id="8261506727792406068">Burahin</translation>
 <translation id="8261580862248730866">Mga exception ng mikropono</translation>
 <translation id="8261673729476082470">Nagba-back up ng <ph name="FILE_COUNT" /> (na) larawan sa <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

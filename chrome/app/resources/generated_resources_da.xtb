@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Translitteration (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Indlæs billede</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1029595648591494741">Vil du prøve "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="1030173864176315846">Udskrev <ph name="PAGE_NUMBER" /> sider til <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Indlæser eksempel</translation>
 <translation id="1031573127485938293">Spørg (i henhold til politik)</translation>
@@ -1831,7 +1830,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Begrænsninger for certifikatpolitik</translation>
 <translation id="335985608243443814">Gennemse...</translation>
 <translation id="3360297538363969800">Udskrivning mislykkedes. Kontrollér din printer, og prøv igen.</translation>
-<translation id="3361481787422913716">Se rapportindstillinger</translation>
 <translation id="336497260564123876">Adgangskoden er gemt. Log ind på Chrome for at se dine adgangskoder på alle dine enheder.</translation>
 <translation id="3367813778245106622">Log ind igen for at starte synkroniseringen</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
@@ -2007,7 +2005,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Indtast denne kode på enheden "<ph name="DEVICE_NAME" />" for at parre:</translation>
 <translation id="3588662957555259973">* Google-profilbillede</translation>
 <translation id="3590194807845837023">Lås profilen op, og genstart</translation>
-<translation id="3590559774363307859">Adgangskoden er gemt. Du kan se den og alle dine <ph name="SAVED_PASSWORDS_LINK" /> fra en hvilken som helst browser.</translation>
 <translation id="3592260987370335752">&amp;Få flere oplysninger</translation>
 <translation id="359283478042092570">Indtast</translation>
 <translation id="3593965109698325041">Begrænsninger for certifikatnavn</translation>
@@ -2831,7 +2828,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4764865176798926079">Hovedrammens domContentLoaded og alle ressourcer, der blev hentet, begyndte før domContentLoaded (iframes ignoreres).</translation>
 <translation id="4768332406694066911">Du har certifikater fra disse organisationer, der identificerer dig</translation>
 <translation id="4768698601728450387">Beskær billede</translation>
-<translation id="4773696473262035477">Du kan få adgang til den og alle dine <ph name="SAVED_PASSWORDS_LINK" /> fra enhver browser.</translation>
 <translation id="4776917500594043016">Adgangskode for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4780321648949301421">Gem side som...</translation>
@@ -3618,7 +3614,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5818003990515275822">Koreansk</translation>
 <translation id="5819442873484330149">Hangul 3-sæt (endelig)</translation>
 <translation id="5819484510464120153">Opret a&amp;ppgenveje...</translation>
-<translation id="5822320845790250510">Gennemtving aktivering af styluspennefunktioner</translation>
+<translation id="5822320845790250510">Gennemtving aktivering af funktioner til styluspenne</translation>
 <translation id="5826507051599432481">Kaldenavn (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828228029189342317">Du har valgt, at visse filtyper skal åbnes automatisk efter download.</translation>
@@ -5383,7 +5379,6 @@ Beregner resterende tid</translation>
 <translation id="8260864402787962391">Mus</translation>
 <translation id="8261378640211443080">Denne udvidelse er ikke anført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> og er muligvis blevet tilføjet, uden at du vidste det.</translation>
 <translation id="8261387128019234107">Tilføj konto for <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">De kan:</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8261580862248730866">Mikrofonundtagelser</translation>
 <translation id="8261673729476082470">Sikkerhedskopierer <ph name="FILE_COUNT" /> billeder til <ph name="BEGIN_LINK" />Google Drev<ph name="END_LINK" /></translation>

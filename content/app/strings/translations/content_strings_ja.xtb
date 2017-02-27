@@ -91,7 +91,7 @@
 <translation id="4812940957355064477">数字を入力してください。</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> 件選択</translation>
 <translation id="4992066212339426712">ミュートを解除</translation>
-<translation id="49969490063480558">「<ph name="ATSIGN" />」に続く文字列を入力してください。「<ph name="INVALIDADDRESS" />」は完全なメール アドレスではありません。</translation>
+<translation id="49969490063480558">「<ph name="INVALIDADDRESS" />」は完全なメールアドレスではありません。「<ph name="ATSIGN" />」に続く文字列を入力してください。</translation>
 <translation id="5034860022980953847">プログレスバー</translation>
 <translation id="5048533449481078685">リスト マーカー</translation>
 <translation id="5117590920725113268">次の月を表示</translation>

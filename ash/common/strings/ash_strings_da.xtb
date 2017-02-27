@@ -77,7 +77,6 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="3147142846278915599">Starter (synkronisering af apps...)</translation>
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3157169093162779309">Aktivér låsning af rotation</translation>
-<translation id="3164154768979021380">Lukker tilstanden Tilsluttet dockingstation</translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="3335772982573114336">Ny note</translation>
 <translation id="3364721542077212959">Penneværktøjer</translation>
@@ -143,7 +142,6 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="5548285847212963613">Udvidelsen "<ph name="EXTENSION_NAME" />" kan hjælpe med at oprette forbindelse til dette netværk.</translation>
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> d. <ph name="DATE" /></translation>
-<translation id="5759815399269068793">Du kan fortsætte med at bruge din <ph name="DEVICE_TYPE" />, mens den er sluttet til en ekstern skærm, selv når den er klappet sammen.</translation>
 <translation id="5777841717266010279">Vil du afslutte skærmdeling?</translation>
 <translation id="57838592816432529">Slå lyden fra</translation>
 <translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID" />.
@@ -213,7 +211,6 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> understøtter ikke <ph name="SPECIFIED_RESOLUTION" />. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emojipalet</translation>
-<translation id="7573962313813535744">Tilstanden Tilsluttet dockingstation</translation>
 <translation id="7581273696622423628">Deltag i undersøgelsen</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7649070708921625228">Hjælp</translation>

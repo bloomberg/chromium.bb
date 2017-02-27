@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">‏نویسه‌گردانی (vanakkam ← ‏வணக்கம்)</translation>
 <translation id="1026822031284433028">بارگیری تصویر</translation>
 <translation id="1029317248976101138">بزرگ‌نمایی</translation>
-<translation id="1029595648591494741">«<ph name="EXTENSION_NAME" />» را امتحان می‌کنید؟</translation>
 <translation id="1030173864176315846">باموفقیت <ph name="PAGE_NUMBER" /> صفحه در <ph name="PRINTER_NAME" /> چاپ شد</translation>
 <translation id="1031362278801463162">بارگیری پیش‌نمایش</translation>
 <translation id="1031573127485938293">درخواست (توسط خط‌مشی)</translation>
@@ -1829,7 +1828,6 @@
 <translation id="3359256513598016054">محدودیت‌های سیاست گواهی</translation>
 <translation id="335985608243443814">مرور...</translation>
 <translation id="3360297538363969800">چاپ ناموفق بود. لطفاً چاپگرتان را بررسی کنید و دوباره امتحان کنید.</translation>
-<translation id="3361481787422913716">مشاهده تنظیمات گزارش</translation>
 <translation id="336497260564123876">‏گذرواژه ذخیره شد. برای اینکه گذرواژه‌هایتان را در همه دستگاه‌هایتان دریافت کنید، در Chrome وارد سیستم شوید.</translation>
 <translation id="3367813778245106622">دوباره به سیستم وارد شوید یا همگام‌سازی را شروع کنید</translation>
 <translation id="3368922792935385530">متصل</translation>
@@ -2005,7 +2003,6 @@
 <translation id="358796204584394954">برای مرتبط کردن، این کد را در «<ph name="DEVICE_NAME" />» تایپ کنید:</translation>
 <translation id="3588662957555259973">‏* عکس نمایهٔ Google</translation>
 <translation id="3590194807845837023">باز کردن قفل نمایه و راه‌اندازی مجدد</translation>
-<translation id="3590559774363307859">گذرواژه ذخیره شد. می‌توانید از هر مرورگری به آن و همه <ph name="SAVED_PASSWORDS_LINK" /> خودتان دسترسی داشته باشید.</translation>
 <translation id="3592260987370335752">&amp;بیشتر بیاموزید</translation>
 <translation id="359283478042092570">ورود</translation>
 <translation id="3593965109698325041">محدودیتهای نام گواهی</translation>
@@ -2829,7 +2826,6 @@
 <translation id="4764865176798926079">‏بارگیری‌های همه منابع و domContentLoaded قاب اصلی قبل از domContentLoaded شروع شد (iframeها نادیده گرفته شدند).</translation>
 <translation id="4768332406694066911">گواهی‌هایی از این سازمان‌ها دارید که هویت شما را شناسایی می‌کنند</translation>
 <translation id="4768698601728450387">برش تصویر</translation>
-<translation id="4773696473262035477">می‌توانید از هر مرورگری به این گذرواژه و همه <ph name="SAVED_PASSWORDS_LINK" /> خود دسترسی داشته باشید.</translation>
 <translation id="4776917500594043016">گذرواژه <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">بزرگ‌نمایی</translation>
 <translation id="4780321648949301421">ذخیره صفحه به‌عنوان...</translation>
@@ -5382,7 +5378,6 @@
 <translation id="8260864402787962391">ماوس</translation>
 <translation id="8261378640211443080">این برنامه‌افزودنی در <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست نشده است و ممکن است بدون اطلاع شما اضافه شده باشد.</translation>
 <translation id="8261387128019234107">افزودن حساب برای <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">آن‌ها می‌توانند:</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8261580862248730866">استثناهای میکروفون</translation>
 <translation id="8261673729476082470">‏در حال پشتیبان گرفتن از <ph name="FILE_COUNT" /> عکس در <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

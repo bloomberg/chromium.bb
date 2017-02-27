@@ -17,6 +17,7 @@
 <translation id="1434626383986940139">Приложения Chrome Canary</translation>
 <translation id="1457721931618994305">Выполняется обновление Google Chrome...</translation>
 <translation id="1469002951682717133">Панель запуска приложений Chrome</translation>
+<translation id="1475773083554142432">Chrome добавит его к другим сохраненным паролям (<ph name="SAVED_PASSWORD_LINK" />) и запомнит для следующих визитов.</translation>
 <translation id="1480489203462860648">Запустить Chrome (уже установлен)</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
 <translation id="1587223624401073077">Google Chrome использует камеру.</translation>
@@ -115,7 +116,6 @@
 <translation id="4458285410772214805">Чтобы изменения вступили в силу, выполните вход еще раз.</translation>
 <translation id="4458462641685292929">Google Chrome выполняет другую операцию. Повторите попытку позже.</translation>
 <translation id="4480040274068703980">Не удалось синхронизировать данные из-за ошибки входа в аккаунт.</translation>
-<translation id="4519152997629025674">Для более качественной работы Google Chrome может использовать <ph name="BEGIN_LINK" />веб-сервисы<ph name="END_LINK" />. При необходимости вы можете отключить их.</translation>
 <translation id="4561051373932531560">В Google Chrome вы можете нажать на любой номер телефона и позвонить на него через Skype!</translation>
 <translation id="4567424176335768812">Вы вошли с помощью аккаунта <ph name="USER_EMAIL_ADDRESS" />. Ваши закладки, история и другие настройки теперь доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="4631713731678262610">Не показывать в меню Google Chrome</translation>
@@ -138,7 +138,6 @@
 <translation id="5028489144783860647">Google Chrome не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
 <translation id="5037239767309817516">Чтобы изменения вступили в силу, закройте все окна Google Chrome и перезапустите браузер.</translation>
 <translation id="5132929315877954718">Широкий выбор приложений, игр, расширений и тем для Google Chrome.</translation>
-<translation id="5148419164691878332">Chrome добавит его к другим сохраненным паролям Google (<ph name="SAVED_PASSWORDS_LINK" />) и запомнит для следующих визитов.</translation>
 <translation id="5170938038195470297">Использовать этот профиль невозможно, так как он был создан в более новой версии Google Chrome. Некоторые функции могут быть недоступны. Укажите другой каталог профиля или установите более новую версию Chrome.</translation>
 <translation id="5176234269072261959">Отправьте отчет о текущих настройках Google Chrome и помогите усовершенствовать работу браузера.</translation>
 <translation id="5193136243808726294">Chrome OS не может открыть эту страницу</translation>
@@ -255,6 +254,7 @@
 <translation id="8547799825197623713">Панель запуска Chrome Canary</translation>
 <translation id="8556340503434111824">Доступна новая версия Google Chrome, которая стала еще быстрее.</translation>
 <translation id="8568392309447938879">Для работы с приложениями необходимо выполнить вход в Chrome. Это обеспечит синхронизацию приложений, закладок, истории, паролей и настроек, сохраненных на всех ваших устройствах.</translation>
+<translation id="8606668294522778825">Для более качественной работы Google Chrome может использовать веб-сервисы. При необходимости вы можете отключить их. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome не отвечает. Перезапустить сейчас?</translation>
 <translation id="8667808506758191620">На устройстве <ph name="DEVICE_TYPE" /> используется последняя версия Chromium OS.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>

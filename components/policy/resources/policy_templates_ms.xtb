@@ -1301,6 +1301,11 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           Untuk melihat contoh pola, lawati http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Buka senarai URL</translation>
 <translation id="4680961954980851756">Dayakan Auto Isi</translation>
+<translation id="4722399051042571387">Jika palsu, pengguna tidak akan dapat menetapkan PIN yang lemah dan mudah diteka.
+
+          Beberapa contoh PIN yang lemah: PIN yang mengandungi hanya satu angka (1111), PIN dengan nombor yang ditokok 1 (1234), PIN dengan nombor yang ditolak 1 (4321) dan PIN yang biasa digunakan.
+
+          Secara lalai, jika PIN dianggap lemah, pengguna akan mendapat amaran dan bukannya ralat.</translation>
 <translation id="4723829699367336876">Dayakan penyusuran tembok api daripada klien akses jauh</translation>
 <translation id="4725528134735324213">Dayakan Perkhidmatan Sandaran Android</translation>
 <translation id="4733471537137819387">Dasar berkaitan pengesahan HTTP bersepadu.</translation>
@@ -1514,13 +1519,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Apabila nilai dasar ini ditetapkan dan bukan 0, maka pengguna tunjuk cara yang log masuk pada masa ini akan dilog keluar secara automatik selepas berlalunya tempoh tidak aktif yang ditentukan.
 
       Nilai dasar ini harus ditetapkan dalam milisaat.</translation>
-<translation id="5506213378070007377">Maklumat tentang status Android dihantar kembali ke
-      pelayan.
-
-      Jika dasar ini ditetapkan kepada palsu, maklumat status tidak akan dilaporkan.
-      Jika ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, maklumat status akan dilaporkan.
-
-      Dasar ini hanya dipakai jika apl Android didayakan.</translation>
 <translation id="5511702823008968136">Dayakan Bar Penanda Halaman</translation>
 <translation id="5512418063782665071">URL halaman utama</translation>
 <translation id="5523812257194833591">Sesi terbuka untuk log masuk automatik selepas kelewatan.
@@ -1880,6 +1878,13 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           Jika anda memilih untuk mengesan pelayan proksi secara automatik, URL skrip "http://wpad/wpad.dat" akan diberikan kepada apl Android. Tiada bahagian protokol autokesan proksi yang lain akan digunakan.
 
           Jika anda memilih untuk menggunakan skrip proksi .pac, URL skrip akan diberikan kepada apl Android.</translation>
+<translation id="6435127182262044446">Tetapan ini mengawal panjang maksimum PIN.
+
+          Jika nilai tetapan ini 0 ke bawah, maka tiada panjang maksimum ditetapkan dan pengguna boleh menetapkan panjang PIN pilihan mereka.
+
+          Jika tetapan ini kurang daripada PinUnlockMinimumLength tetapi lebih besar daripada 0, panjang maksimum adalah sama dengan panjang minimum.
+
+          Secara lalai, tetapan ini ditetapkan kepada tiada panjang maksimum.</translation>
 <translation id="6467433935902485842">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk menjalankan pemalam.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultPluginsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
@@ -2838,6 +2843,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Pengendali protokol yang didaftarkan oleh dasar digabungkan dengan protokol yang didaftarkan oleh pengguna dan kedua-duanya tersedia untuk digunakan. Pengguna boleh mengatasi pengendali protokol yang dipasang oleh dasar dengan memasang pengendali lalai baharu tetapi tidak boleh mengalih keluar pengendali protokol yang didaftarkan oleh dasar.</translation>
 <translation id="913195841488580904">Sekat akses kepada senarai URL</translation>
 <translation id="9135033364005346124">Dayakan proksi <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="9136253551939494882">Senarai putih yang mengawal mod buka kunci pantas yang boleh dikonfigurasi dan digunakan oleh pengguna untuk membuka kunci skrin kunci.
+
+          Nilai ini merupakan satu senarai rentetan; entri senarai yang sah ialah: "semua", "PIN". Penambahan "semua" pada senarai bermakna setiap mod buka kunci pantas tersedia kepada pengguna, termasuk mod yang dilaksanakan pada masa depan. Jika tidak, hanya mod buka kunci pantas yang ada dalam senarai akan tersedia.
+
+          Sebagai contoh, untuk membenarkan setiap mod buka kunci pantas, gunakan ["semua"]. Untuk membenarkan buka kunci dengan PIN sahaja, gunakan ["PIN"]. Untuk melumpuhkan semua mod buka kunci pantas, gunakan [].
+
+          Secara lalai, tiada mod buka kunci pantas tersedia untuk peranti yang diurus.</translation>
 <translation id="9147029539363974059">Hantar log sistem ke pelayan pengurusan, untuk membolehkan
       pentadbir memantau log sistem.
 
@@ -2853,6 +2865,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan dan pengguna akan dapat menggunakan mod inkognito.</translation>
 <translation id="915194831143859291">Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, <ph name="PRODUCT_OS_NAME" /> akan membenarkan pengguna mematikan peranti.
       Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan mencetus but semula apabila pengguna mematikan peranti. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kejadian bagi butang matikan dalam UI oleh butang but semula. Jika pengguna mematikan peranti menggunakan butang kuasa, peranti tidak akan but semula secara automatik, walaupun dasar didayakan.</translation>
+<translation id="917887642534332939">Tetapan ini mengawal panjang minimum PIN.
+
+          Panjang minimum mutlak PIN ialah 1; nilai yang kurang daripada 1 akan dikendalikan sebagai 1.
+
+          Panjang minimum PIN lalai dan disyorkan ialah 6 digit.</translation>
 <translation id="9187743794267626640">Lumpuhkan pelekapan storan luaran</translation>
 <translation id="9197740283131855199">Peratusan yang digunakan untuk menskala kelewatan pemalapan skrin jika pengguna menjadi aktif selepas pemalapan</translation>
 <translation id="9200828125069750521">Parameter untuk URL imej yang menggunakan POST</translation>

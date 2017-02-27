@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteration (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Load Image</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1029595648591494741">Try "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="1030173864176315846">Successfully printed <ph name="PAGE_NUMBER" /> pages to <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Loading preview</translation>
 <translation id="1031573127485938293">Ask (by policy)</translation>
@@ -1832,7 +1831,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Certificate Policy Constraints</translation>
 <translation id="335985608243443814">Browse...</translation>
 <translation id="3360297538363969800">Printing failed. Please check your printer and try again.</translation>
-<translation id="3361481787422913716">View report settings</translation>
 <translation id="336497260564123876">Password saved. To get your passwords on all your devices, sign in to Chrome.</translation>
 <translation id="3367813778245106622">Sign in again to start sync</translation>
 <translation id="3368922792935385530">Connected</translation>
@@ -2008,7 +2006,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Type this code on "<ph name="DEVICE_NAME" />" to pair:</translation>
 <translation id="3588662957555259973">* Google Profile photo</translation>
 <translation id="3590194807845837023">Unlock Profile and Relaunch</translation>
-<translation id="3590559774363307859">Password saved. You can access it and all your <ph name="SAVED_PASSWORDS_LINK" /> from any browser.</translation>
 <translation id="3592260987370335752">&amp;Learn more</translation>
 <translation id="359283478042092570">Enter</translation>
 <translation id="3593965109698325041">Certificate Name Constraints</translation>
@@ -2833,7 +2830,6 @@ Press any key to continue exploring.</translation>
 <translation id="4764865176798926079">Main frame's domContentLoaded and all resources loads started before domContentLoaded (iframes ignored).</translation>
 <translation id="4768332406694066911">You have certificates from these organisations that identify you</translation>
 <translation id="4768698601728450387">Crop image</translation>
-<translation id="4773696473262035477">You can access it and all your <ph name="SAVED_PASSWORDS_LINK" /> from any browser.</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4780321648949301421">Save Page As...</translation>
@@ -5386,7 +5382,6 @@ Calculating remaining time</translation>
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">This extension is not listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="8261387128019234107">Add account for <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">They can:</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8261580862248730866">Microphone exceptions</translation>
 <translation id="8261673729476082470">Backing up <ph name="FILE_COUNT" /> photos to <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

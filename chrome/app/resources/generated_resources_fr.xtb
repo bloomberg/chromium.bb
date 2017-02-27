@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Translittération (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Charger l'image</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1029595648591494741">Essayer "<ph name="EXTENSION_NAME" />" ?</translation>
 <translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> pages ont été imprimées sur <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Chargement de l'aperçu...</translation>
 <translation id="1031573127485938293">Demander (via des règles)</translation>
@@ -234,7 +233,7 @@
 <translation id="1327074568633507428">Imprimante connectée à Google Cloud Print</translation>
 <translation id="1327977588028644528">Passerelle</translation>
 <translation id="1330145147221172764">Activer le clavier à l'écran</translation>
-<translation id="1331977651797684645">C'était moi</translation>
+<translation id="1331977651797684645">C'était moi.</translation>
 <translation id="1335011841716483297">&amp;Télécharger le lien…</translation>
 <translation id="1337036551624197047">Clavier tchèque</translation>
 <translation id="1338950911836659113">Suppression en cours...</translation>
@@ -1831,7 +1830,6 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Contraintes des stratégies de certificat</translation>
 <translation id="335985608243443814">Parcourir...</translation>
 <translation id="3360297538363969800">Échec de l'impression. Veuillez vérifier votre imprimante, puis réessayer.</translation>
-<translation id="3361481787422913716">Afficher les paramètres de signalement</translation>
 <translation id="336497260564123876">Mot de passe enregistré. Connectez-vous à Chrome pour synchroniser vos mots de passe sur tous vos appareils.</translation>
 <translation id="3367813778245106622">Connectez-vous de nouveau à votre compte pour démarrer la synchronisation.</translation>
 <translation id="3368922792935385530">Connecté</translation>
@@ -2007,7 +2005,6 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Saisissez ce code sur "<ph name="DEVICE_NAME" />" pour l'associer :</translation>
 <translation id="3588662957555259973">* Photo du profil Google</translation>
 <translation id="3590194807845837023">Déverrouiller le profil et relancer</translation>
-<translation id="3590559774363307859">Le mot de passe a bien été enregistré. Vous pouvez y accéder, ainsi qu'à tous vos <ph name="SAVED_PASSWORDS_LINK" />, dans n'importe quel navigateur.</translation>
 <translation id="3592260987370335752">&amp;En savoir plus</translation>
 <translation id="359283478042092570">Se connecter</translation>
 <translation id="3593965109698325041">Contraintes de nom du certificat</translation>
@@ -2831,7 +2828,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4764865176798926079">domContentLoaded du frame principal et tous les chargements de ressources qui ont commencé avant domContentLoaded (iFrame ignorés).</translation>
 <translation id="4768332406694066911">Certains certificats provenant de ces organisations vous identifient.</translation>
 <translation id="4768698601728450387">Recadrer l'image</translation>
-<translation id="4773696473262035477">Vous pouvez y accéder, ainsi qu'à tous vos <ph name="SAVED_PASSWORDS_LINK" />, dans n'importe quel navigateur.</translation>
 <translation id="4776917500594043016">Mot de passe de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4780321648949301421">Enregistrer la page sous...</translation>
@@ -5385,7 +5381,6 @@ Calcul de la durée restante</translation>
 <translation id="8260864402787962391">Souris</translation>
 <translation id="8261378640211443080">Cette extension n'est pas répertoriée sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et a pu être ajoutée à votre insu.</translation>
 <translation id="8261387128019234107">Ajouter un compte pour <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Elles peuvent :</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8261580862248730866">Exceptions relatives au micro</translation>
 <translation id="8261673729476082470">Sauvegarde de <ph name="FILE_COUNT" /> photos sur <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> en cours…</translation>

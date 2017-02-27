@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Translitterasjon (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Last inn bildet</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1029595648591494741">Vil du prøve <ph name="EXTENSION_NAME" />?</translation>
 <translation id="1030173864176315846">Skrev ut <ph name="PAGE_NUMBER" /> sider på <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Laster inn forhåndsvisning</translation>
 <translation id="1031573127485938293">Spør (i henhold til retningslinjer)</translation>
@@ -646,7 +645,7 @@
 <translation id="1828901632669367785">Skriv ut ved hjelp av systemdialog</translation>
 <translation id="1829192082282182671">Zoom &amp;ut</translation>
 <translation id="1830550083491357902">Ikke pålogget</translation>
-<translation id="1830859579140328145">Slå av/på alternativet for kalibrering av berøringsskjerm i innstillingene for Material Design</translation>
+<translation id="1830859579140328145">Slå av/på alternativet for kalibrering av berøringsskjerm i innstillingene for «material design»</translation>
 <translation id="1832511806131704864">Telefonendring oppdatert</translation>
 <translation id="1834560242799653253">Retning:</translation>
 <translation id="1835339313324024">Smart implementering av det virtuelle tastaturet</translation>
@@ -1826,7 +1825,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Retningslinjebegrensninger for sertifikat</translation>
 <translation id="335985608243443814">Bla gjennom</translation>
 <translation id="3360297538363969800">Utskriften mislyktes. Kontrollér skriveren og prøv på nytt.</translation>
-<translation id="3361481787422913716">Se rapportinnstillingene</translation>
 <translation id="336497260564123876">Passordet er lagret. For å få passordene dine på alle enhetene dine, logg på Chrome.</translation>
 <translation id="3367813778245106622">Logg på igjen for å starte synkroniseringen</translation>
 <translation id="3368922792935385530">Tilkoblet</translation>
@@ -2002,7 +2000,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Skriv inn denne koden på «<ph name="DEVICE_NAME" />» for å koble til:</translation>
 <translation id="3588662957555259973">*Google-profilbilde</translation>
 <translation id="3590194807845837023">Lås opp profilen og start på nytt</translation>
-<translation id="3590559774363307859">Passordet er lagret. Du finner det og alle dine <ph name="SAVED_PASSWORDS_LINK" /> fra en hvilken som helst nettleser.</translation>
 <translation id="3592260987370335752">&amp;Les mer</translation>
 <translation id="359283478042092570">Angi</translation>
 <translation id="3593965109698325041">Begrensninger for sertifikatnavn</translation>
@@ -2825,7 +2822,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4764865176798926079">Hovedrammens domContentLoaded og alle ressursinnlastninger som startet før domContentLoaded (iframe-elementer er ignorert).</translation>
 <translation id="4768332406694066911">Du har sertifikater som identifiserer deg, fra disse organisasjonene</translation>
 <translation id="4768698601728450387">Beskjær bilde</translation>
-<translation id="4773696473262035477">Du kan få tilgang til det og alle <ph name="SAVED_PASSWORDS_LINK" /> fra enhver nettleser.</translation>
 <translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4780321648949301421">L&amp;agre side som</translation>
@@ -5365,7 +5361,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8260864402787962391">Mus</translation>
 <translation id="8261378640211443080">Denne utvidelsen er ikke oppført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og kan ha blitt lagt uten at du har vært klar over det.</translation>
 <translation id="8261387128019234107">Legg til konto for <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">De får følgende tilgang:</translation>
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8261580862248730866">Mikrofonunntak</translation>
 <translation id="8261673729476082470">Sikkerhetskopierer <ph name="FILE_COUNT" /> bilder til <ph name="BEGIN_LINK" />Google Disk<ph name="END_LINK" /></translation>

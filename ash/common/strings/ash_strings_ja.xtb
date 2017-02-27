@@ -77,7 +77,6 @@
 <translation id="3147142846278915599">ランチャー（アプリを同期中...）</translation>
 <translation id="315116470104423982">モバイル データ</translation>
 <translation id="3157169093162779309">回転ロックを有効にする</translation>
-<translation id="3164154768979021380">ドッキング モードを終了しています</translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="3335772982573114336">新しいメモ</translation>
 <translation id="3364721542077212959">タッチペン ツール</translation>
@@ -143,7 +142,6 @@
 <translation id="5548285847212963613">拡張機能「<ph name="EXTENSION_NAME" />」はこのネットワークへの接続をサポートします。</translation>
 <translation id="5571066253365925590">Bluetooth オン</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> (<ph name="SHORT_WEEKDAY" />)</translation>
-<translation id="5759815399269068793">外付けのディスプレイを接続している間は、カバーを閉じても <ph name="DEVICE_TYPE" /> を使い続けることができます。</translation>
 <translation id="5777841717266010279">画面の共有を解除しますか？</translation>
 <translation id="57838592816432529">ミュート</translation>
 <translation id="5825747213122829519">入力方法を <ph name="INPUT_METHOD_ID" /> に変更しました。
@@ -213,7 +211,6 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION" /> に変更されました</translation>
 <translation id="7562368315689366235">絵文字パレット</translation>
-<translation id="7573962313813535744">ドッキング モード</translation>
 <translation id="7581273696622423628">アンケートに答える</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7649070708921625228">ヘルプ</translation>

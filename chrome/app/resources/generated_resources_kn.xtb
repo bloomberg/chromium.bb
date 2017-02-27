@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">ಲಿಪ್ಯಂತರಣ (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">ಚಿತ್ರ ಲೋಡ್ ಮಾಡು</translation>
 <translation id="1029317248976101138">ಝೂಮ್</translation>
-<translation id="1029595648591494741">"<ph name="EXTENSION_NAME" />" ಪ್ರಯತ್ನಿಸುವುದೇ?</translation>
 <translation id="1030173864176315846"><ph name="PRINTER_NAME" /> ನಲ್ಲಿ <ph name="PAGE_NUMBER" /> ಪುಟಗಳನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಮುದ್ರಿಸಲಾಗಿದೆ</translation>
 <translation id="1031362278801463162">ಪೂರ್ವವೀಕ್ಷಣೆ ಲೋಡ್ ಆಗುತ್ತಿದೆ</translation>
 <translation id="1031573127485938293">ಕೇಳು (ನೀತಿಯ ಮೂಲಕ)</translation>
@@ -1831,7 +1830,6 @@
 <translation id="3359256513598016054">ಪ್ರಮಾಣಪತ್ರ ನೀತಿ ನಿರ್ಬಂಧಗಳು</translation>
 <translation id="335985608243443814">ಬ್ರೌಸ್...</translation>
 <translation id="3360297538363969800">ಮುದ್ರಣ ವಿಫಲಗೊಂಡಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಮುದ್ರಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="3361481787422913716">ವರದಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="336497260564123876">ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಲಾಗಿದೆ. ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು Chrome ಗೆ ಸೈನ್‌ ಇನ್‌ ಮಾಡಿ.</translation>
 <translation id="3367813778245106622">ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು ಮತ್ತೊಮ್ಮೆ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="3368922792935385530">ಸಂಪರ್ಕಿಸಲಾಗಿದೆ</translation>
@@ -2007,7 +2005,6 @@
 <translation id="358796204584394954">"<ph name="DEVICE_NAME" />" ಗೆ ಜೋಡಿ ಮಾಡಲು ಈ ಕೋಡ್ ಅನ್ನು ಟೈಪ್ ಮಾಡಿ:</translation>
 <translation id="3588662957555259973">* Google ಪ್ರೊಫೈಲ್ ಫೋಟೋ</translation>
 <translation id="3590194807845837023">ಪ್ರೊಫೈಲ್ ಅನ್‌ಲಾಕ್ ಮಾಡು ಹಾಗೂ ಮರುಪ್ರಾರಂಭಿಸು</translation>
-<translation id="3590559774363307859">ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಲಾಗಿದೆ. ನೀವು ಯಾವುದೇ ಬ್ರೌಸರ್‌ನಿಂದ ಇದನ್ನು  ಮತ್ತು ನಿಮ್ಮ ಎಲ್ಲಾ <ph name="SAVED_PASSWORDS_LINK" /> ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಬಹುದು.</translation>
 <translation id="3592260987370335752">&amp;ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="359283478042092570">Enter</translation>
 <translation id="3593965109698325041">ಪ್ರಮಾಣಪತ್ರ ಹೆಸರು ನಿರ್ಬಂಧಗಳು</translation>
@@ -2832,7 +2829,6 @@
 <translation id="4764865176798926079">ಮುಖ್ಯ ಫ್ರೇಮ್‌ನ domContentLoaded ಮತ್ತು ಎಲ್ಲಾ ಸಂಪನ್ಮೂಲಗಳ ಲೋಡ್‌ಗಳು domContentLoaded (iframes ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ) ಗೂ ಮೊದಲು ಪ್ರಾರಂಭಗೊಂಡಿದೆ.</translation>
 <translation id="4768332406694066911">ನಿಮ್ಮನ್ನು ಗುರುತಿಸುವ ಈ ಸಂಸ್ಥೆಗಳ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ನೀವು ಹೊಂದಿರುವಿರಿ</translation>
 <translation id="4768698601728450387">ಚಿತ್ರವನ್ನು ಕ್ರಾಪ್ ಮಾಡು</translation>
-<translation id="4773696473262035477">ನೀವು ಯಾವುದೇ ಬ್ರೌಸರ್‌ನಿಂದ ಅದನ್ನು ಮತ್ತು ನಿಮ್ಮ ಎಲ್ಲಾ <ph name="SAVED_PASSWORDS_LINK" /> ಗಳನ್ನು ಪ್ರವೇಶಿಸಬಹುದು.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> ಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="4779083564647765204">ಝೂಮ್</translation>
 <translation id="4780321648949301421">ಇದರಂತೆ ಪುಟವನ್ನು ಉಳಿಸು...</translation>
@@ -5386,7 +5382,6 @@
 <translation id="8260864402787962391">ಮೌಸ್</translation>
 <translation id="8261378640211443080">ಈ ವಿಸ್ತರಣೆಯನ್ನು <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ನಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡಲಾಗಿಲ್ಲ ಮತ್ತು ಇದು ನಿಮಗೆ ಅರಿವಿಲ್ಲದಂತೆ ಸೇರಿಸಿರಬಹುದು.</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> ಗಾಗಿ ಖಾತೆಯನ್ನು ಸೇರಿಸು</translation>
-<translation id="8261490674758214762">ಅವರಿಗೆ ಸಾಧ್ಯ:</translation>
 <translation id="8261506727792406068">ಅಳಿಸು</translation>
 <translation id="8261580862248730866">ಮೈಕ್ರೊಫೋನ್ ವಿನಾಯಿತಿಗಳು</translation>
 <translation id="8261673729476082470"><ph name="BEGIN_LINK" />Google ಡ್ರೈವ್<ph name="END_LINK" /> ಗೆ <ph name="FILE_COUNT" /> ಫೋಟೋಗಳನ್ನು ಬ್ಯಾಕಪ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>

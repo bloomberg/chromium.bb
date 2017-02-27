@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">음역(vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">이미지 로드</translation>
 <translation id="1029317248976101138">확대</translation>
-<translation id="1029595648591494741">'<ph name="EXTENSION_NAME" />'을(를) 사용해 보시겠습니까?</translation>
 <translation id="1030173864176315846"><ph name="PRINTER_NAME" />에서 <ph name="PAGE_NUMBER" />페이지 인쇄함</translation>
 <translation id="1031362278801463162">미리보기 로드 중</translation>
 <translation id="1031573127485938293">정책에 의한 요청</translation>
@@ -351,7 +350,7 @@
 <translation id="1470719357688513792">새 쿠키 설정은 페이지를 새로고침한 다음에 적용됩니다.</translation>
 <translation id="1470811252759861213">모든 컴퓨터에서 확장 프로그램을 사용하려면 <ph name="SIGN_IN_LINK" />에 로그인하세요.</translation>
 <translation id="14720830734893704">가상 키보드 지원을 사용합니다.</translation>
-<translation id="1473539320840569129">첨부된 스타일러스 기기가 없더라도 실행기 및 설정의 스타일러스 섹션에 스타일러스 도구를 강제로 표시합니다.</translation>
+<translation id="1473539320840569129">스타일러스 기기가 없더라도 실행기 및 설정의 스타일러스 섹션에 스타일러스 도구를 강제로 표시합니다.</translation>
 <translation id="1474079335130556426">Push API에 백그라운드 모드를 사용 설정합니다. 이렇게 하면 Push API에서 Chrome이 필요할 때 마지막 창이 닫힌 후에도 Chrome이 계속 실행되고 OS 시작 시 Chrome을 실행합니다.</translation>
 <translation id="1474339897586437869">'<ph name="FILENAME" />'이(가) 업로드되지 않았습니다. Google 드라이브에 충분한 여유 공간이 없습니다.</translation>
 <translation id="1475502736924165259">모든 기타 카테고리에 맞지 않는 인증서가 등록되어 있습니다.</translation>
@@ -1833,7 +1832,6 @@
 <translation id="3359256513598016054">인증서 정책 제약조건</translation>
 <translation id="335985608243443814">찾아보기...</translation>
 <translation id="3360297538363969800">인쇄에 실패했습니다. 프린터를 확인한 후 다시 시도해 주세요.</translation>
-<translation id="3361481787422913716">보고서 설정 보기</translation>
 <translation id="336497260564123876">비밀번호가 저장되었습니다. 모든 기기에서 비밀번호를 사용하려면 Chrome에 로그인하세요.</translation>
 <translation id="3367813778245106622">다시 로그인하여 동기화 시작</translation>
 <translation id="3368922792935385530">연결됨</translation>
@@ -2009,7 +2007,6 @@
 <translation id="358796204584394954">'<ph name="DEVICE_NAME" />'에서 이 코드를 입력하여 다음을 페어링:</translation>
 <translation id="3588662957555259973">* Google 프로필 사진</translation>
 <translation id="3590194807845837023">프로필 잠금 해제 및 다시 시작</translation>
-<translation id="3590559774363307859">비밀번호가 저장되었습니다. 어느 브라우저에서나 비밀번호와 모든 <ph name="SAVED_PASSWORDS_LINK" />에 액세스할 수 있습니다.</translation>
 <translation id="3592260987370335752">자세히 알아보기(&amp;L)</translation>
 <translation id="359283478042092570">로그인</translation>
 <translation id="3593965109698325041">인증서 이름 제약조건</translation>
@@ -2833,7 +2830,6 @@
 <translation id="4764865176798926079">메인 프레임의 domContentLoaded 및 모든 리소스 로드가 domContentLoaded(iframe 무시됨) 전에 시작됩니다.</translation>
 <translation id="4768332406694066911">다음 기관에 사용자의 신원을 확인하는 인증서가 있습니다.</translation>
 <translation id="4768698601728450387">이미지 자르기</translation>
-<translation id="4773696473262035477">어느 브라우저에서나 비밀번호와 모든 <ph name="SAVED_PASSWORDS_LINK" />에 액세스할 수 있습니다.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />의 비밀번호</translation>
 <translation id="4779083564647765204">글꼴 크기</translation>
 <translation id="4780321648949301421">페이지를 다른 이름으로 저장...</translation>
@@ -3833,7 +3829,7 @@
 <translation id="6112952769866305444">사용자 수정, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
 <translation id="6115424132962100663">돌아가려면 |<ph name="SHORTCUT" />| 키를 누르세요.</translation>
 <translation id="6116921718742659598">언어 및 입력 설정 변경</translation>
-<translation id="6119435854984171040">일부 콘텐츠 서비스는 보호된 콘텐츠에 대한 액세스 승인 목적으로 고유 식별자를 사용합니다.</translation>
+<translation id="6119435854984171040">일부 콘텐츠 서비스는 보호된 콘텐츠에 액세스할 수 있도록 고유 식별자를 사용합니다.</translation>
 <translation id="6120205520491252677">이 페이지를 시작 화면에 고정...</translation>
 <translation id="6122081475643980456">인터넷 연결이 제어되고 있습니다.</translation>
 <translation id="6122875415561139701">기기(<ph name="DEVICE_NAME" />)에서 쓰기 작업이 허용되지 않습니다.</translation>
@@ -5386,7 +5382,6 @@
 <translation id="8260864402787962391">마우스</translation>
 <translation id="8261378640211443080">이 확장 프로그램은 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않으며 사용자 모르게 추가되었을 수 있습니다.</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" />에 계정 추가</translation>
-<translation id="8261490674758214762">가능한 대상:</translation>
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8261580862248730866">마이크 예외</translation>
 <translation id="8261673729476082470">사진 <ph name="FILE_COUNT" />장을 <ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 백업하는 중</translation>

@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">音译(vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">加载图片</translation>
 <translation id="1029317248976101138">缩放</translation>
-<translation id="1029595648591494741">要试用“<ph name="EXTENSION_NAME" />”吗？</translation>
 <translation id="1030173864176315846">已通过“<ph name="PRINTER_NAME" />”成功打印了 <ph name="PAGE_NUMBER" /> 个页面</translation>
 <translation id="1031362278801463162">正在加载预览</translation>
 <translation id="1031573127485938293">询问（依照政策）</translation>
@@ -1825,7 +1824,6 @@
 <translation id="3359256513598016054">证书政策约束</translation>
 <translation id="335985608243443814">浏览...</translation>
 <translation id="3360297538363969800">打印失败。请检查您的打印机，然后重试。</translation>
-<translation id="3361481787422913716">查看报告设置</translation>
 <translation id="336497260564123876">密码已保存。要将您的密码同步到您的所有设备上，请登录 Chrome。</translation>
 <translation id="3367813778245106622">重新登录以开始同步</translation>
 <translation id="3368922792935385530">已连接</translation>
@@ -2001,7 +1999,6 @@
 <translation id="358796204584394954">请在“<ph name="DEVICE_NAME" />”上输入以下代码进行配对：</translation>
 <translation id="3588662957555259973">* Google 个人资料照片</translation>
 <translation id="3590194807845837023">解锁个人资料并重新启动</translation>
-<translation id="3590559774363307859">密码已保存。您可以通过任意浏览器获取此密码以及您所有的<ph name="SAVED_PASSWORDS_LINK" />。</translation>
 <translation id="3592260987370335752">了解详情(&amp;L)</translation>
 <translation id="359283478042092570">输入</translation>
 <translation id="3593965109698325041">证书名称约束</translation>
@@ -2822,7 +2819,6 @@
 <translation id="4764865176798926079">主框架的 domContentLoaded 以及在 domContentLoaded 之前开始的所有资源加载操作（忽略 iframe）。</translation>
 <translation id="4768332406694066911">您有以下组织发给您的身份证书</translation>
 <translation id="4768698601728450387">裁剪图片</translation>
-<translation id="4773696473262035477">您可以通过任意浏览器获取此密码以及您所有的<ph name="SAVED_PASSWORDS_LINK" />。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密码</translation>
 <translation id="4779083564647765204">缩放</translation>
 <translation id="4780321648949301421">页面存储为...</translation>
@@ -5356,7 +5352,6 @@
 <translation id="8260864402787962391">鼠标</translation>
 <translation id="8261378640211443080">该扩展程序未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中，并可能是在您不知情的情况下添加的。</translation>
 <translation id="8261387128019234107">为<ph name="PROFILE_NAME" />添加帐号</translation>
-<translation id="8261490674758214762">这些程序可以：</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8261580862248730866">麦克风例外情况</translation>
 <translation id="8261673729476082470">正在将 <ph name="FILE_COUNT" /> 张照片备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" /></translation>

@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Unukuzi wa mfumo wa kuandika (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Pakia Picha</translation>
 <translation id="1029317248976101138">Kuza</translation>
-<translation id="1029595648591494741">Ungependa kujaribu "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="1030173864176315846">Imechapisha kurasa <ph name="PAGE_NUMBER" /> kwenye <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Inapakia nakala ya kuchungulia</translation>
 <translation id="1031573127485938293">Uliza (kulingana na sera)</translation>
@@ -351,7 +350,7 @@
 <translation id="1470719357688513792">Mipangilio mipya ya kidakuzi itaanza kutumika baada ya kupakia upya ukurasa.</translation>
 <translation id="1470811252759861213">Ili upate viendelezi vyako kwenye kompyuta zako zote, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="14720830734893704">Washa utumiaji wa kibodi isiyo bayana.</translation>
-<translation id="1473539320840569129">Hulazimisha kuonyesha menyu ya zana za stylus katika rafu na rafu na sehemu ya stylus katika mipangilio, hata kama hakuna kifaa cha stylus kilichounganishwa.</translation>
+<translation id="1473539320840569129">Hulazimisha kuonyesha menyu ya zana za stylus katika rafu na sehemu ya stylus katika mipangilio, hata kama hakuna kifaa cha stylus kilichounganishwa.</translation>
 <translation id="1474079335130556426">Washa kipengele cha hali ya chini chini ya API ya Push. Hii huruhusu Chrome kuendelea kutekeleza baada ya dirisha la mwisho kufungwa, na kufungua Mfumo wa Uendeshaji unapoanzishwa, ikiwa API ya Push inaihitaji.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" haikupakiwa. Hakuna nafasi ya kutosha katika Hifadhi yako ya Google.</translation>
 <translation id="1475502736924165259">Una vyeti kwenye faili ambavyo havilangani na aina nyingine yoyote</translation>
@@ -1193,7 +1192,7 @@ Sidhani ikiwa tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="2580924999637585241">Jumla: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Muda mrefu</translation>
 <translation id="2581475589551312226">Hifadhi nakala na urejeshe data ya programu ya Google Play kwenye Hifadhi ya Google kiotomatiki. <ph name="BEGIN_LINK1" />Pata Maelezo zaidi<ph name="END_LINK1" /></translation>
-<translation id="2581601588594682520">Ipe folda jina jingine</translation>
+<translation id="2581601588594682520">Ipe Folda Jina Jingine</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Jukwaa <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2585116156172706706">Kiendelezi hiki huenda kiliongezwa pasipo ridhaa yako.</translation>
 <translation id="2585300050980572691">Mipangilio chaguo-msingi ya utafutaji</translation>
@@ -1826,7 +1825,6 @@ Kutoka <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Vizuizi vya Sera ya Vyeti</translation>
 <translation id="335985608243443814">Vinjari...</translation>
 <translation id="3360297538363969800">Uchapishaji umeshindwa. Tafadhali angalia printa yako na ujaribu tena.</translation>
-<translation id="3361481787422913716">Angalia mipangilio ya ripoti</translation>
 <translation id="336497260564123876">Nenosiri limehifadhiwa. Ili upate manenosiri yako kwenye vifaa vyako vyote, ingia katika Chrome.</translation>
 <translation id="3367813778245106622">Ingia tena katika akaunti ili uanze kusawazisha</translation>
 <translation id="3368922792935385530">Umeunganishwa</translation>
@@ -2002,7 +2000,6 @@ Kutoka <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Charaza msimbo huu kwenye "<ph name="DEVICE_NAME" />" ili kuoanisha:</translation>
 <translation id="3588662957555259973">* Picha ya Wasifu kwenye Google</translation>
 <translation id="3590194807845837023">Fungua Wasifu na Uzindue tena</translation>
-<translation id="3590559774363307859">Nenosiri limehifadhiwa. Unaweza kulifikia na <ph name="SAVED_PASSWORDS_LINK" /> yako yote kutoka kwenye kivinjari chochote.</translation>
 <translation id="3592260987370335752">&amp;Pata maelezo zaidi</translation>
 <translation id="359283478042092570">Ingia</translation>
 <translation id="3593965109698325041">Vizuizi vya Jina la Cheti</translation>
@@ -2824,7 +2821,6 @@ Bonyeza kitufe chochote ili kuendelea kuchunguza.</translation>
 <translation id="4764865176798926079">domContentLoaded ya fremu kuu na vipakiwa vya rasilimali zote vilianza kabla ya domContentLoaded (iframe zimepuuzwa).</translation>
 <translation id="4768332406694066911">Una vyeti kutoka kwenye mashirika haya vinavyokutambua</translation>
 <translation id="4768698601728450387">Pogoa picha</translation>
-<translation id="4773696473262035477">Unaweza kulifikia na <ph name="SAVED_PASSWORDS_LINK" /> yako yote kutoka kwenye kivinjari chochote.</translation>
 <translation id="4776917500594043016">Nenosiri la <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Kuza</translation>
 <translation id="4780321648949301421">Hifadhi Ukurasa Kama...</translation>
@@ -4383,7 +4379,7 @@ Tumia kipengele hiki kwa akaunti unazoamini pekee.</translation>
 <translation id="6878261347041253038">Kibodi ya Kidevanagari (Fonetiki)</translation>
 <translation id="6880587130513028875">Picha zimezuiwa kwenye ukurasa huu.</translation>
 <translation id="6883209331334683549">Usaidizi wa <ph name="PRODUCT_NAME" /></translation>
-<translation id="6883319974225028188">Lo! Mfumo umeshindwa kuhifadhi usanidi wa kifaa.</translation>
+<translation id="6883319974225028188">Lo! Mfumo umeshindwa kuhifadhi mipangilio ya kifaa.</translation>
 <translation id="6885771755599377173">Onyesho la Kuchungulia la Maelezo ya Mfumo</translation>
 <translation id="6886871292305414135">Fungua kiungo katika &amp;kichupo kipya</translation>
 <translation id="6892667837507098565">Uwekaji wa safu za picha wa GPU</translation>
@@ -5379,7 +5375,6 @@ Inakokotoa muda unaosalia</translation>
 <translation id="8260864402787962391">Kipanya</translation>
 <translation id="8261378640211443080">Kiendelezi hiki hakijaorodheshwa katika <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na huenda kiliongezwa pasipo ridhaa yako.</translation>
 <translation id="8261387128019234107">Ongeza akaunti ya <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Vinaweza:</translation>
 <translation id="8261506727792406068">Futa</translation>
 <translation id="8261580862248730866">Maikrofoni zisizofuata kanuni</translation>
 <translation id="8261673729476082470">Inahifadhi nakala ya picha <ph name="FILE_COUNT" /> kwenye <ph name="BEGIN_LINK" />Hifadhi ya Google<ph name="END_LINK" /></translation>
@@ -5987,7 +5982,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa baina ya maeneo-kazi.</tr
 <translation id="9100765901046053179">Mipangilio ya kina</translation>
 <translation id="910077499156148110">Ongeza kighairi cha tovuti</translation>
 <translation id="9101691533782776290">Zindua programu</translation>
-<translation id="9102610709270966160">Washa Kiendelezi</translation>
+<translation id="9102610709270966160">Ruhusu Kiendelezi</translation>
 <translation id="9103001804464916031">{NUM_DOWNLOAD,plural, =1{Kipakuliwa Kinaendelea}other{Vipakuliwa Vinaendelea}}</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9106577689055281370">Betri

@@ -150,7 +150,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3638472932233958418">Web Sayfalarını Önceden Yükle</translation>
 <translation id="3691593122358196899">Yer işareti <ph name="FOLDER_TITLE" /> klasörüne eklendi</translation>
 <translation id="3692781555820666866">Özellik etkinleştirildiğinde, yakınınızdaki cihazların yayınladığı web sayfalarına ilişkin öneriler çok amaçlı adres çubuğunda görünür.</translation>
-<translation id="3706658020782046159">Gönderim yöntemlerini ve gereksinimleri kontrol etmek için bir gönderim adresi seçin.</translation>
 <translation id="3738139272394829648">Dokun ve Ara</translation>
 <translation id="3771033907050503522">Gizli Sekmeler</translation>
 <translation id="3783017676699494206">Resmi Kaydet</translation>
@@ -211,12 +210,10 @@ Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak 
 <translation id="5197255632782567636">İnternet</translation>
 <translation id="5198972191746488848">Kart Ekle...</translation>
 <translation id="5228579091201413441">Senkronizasyonu etkinleştir</translation>
-<translation id="5230733896359313003">Gönderim Adresi</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> hesabıyla senkronize ediliyor</translation>
 <translation id="5300589172476337783">Göster</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="5327248766486351172">Ad</translation>
-<translation id="5332219387342487447">Gönderim Yöntemi</translation>
 <translation id="5388358297987318779">Resmi Aç</translation>
 <translation id="5409365236829784218">Bu dosyayı açabilecek yüklü uygulama yok.</translation>
 <translation id="54401264925851789">Sayfa Güvenlik Bilgileri</translation>
@@ -343,7 +340,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7671141431838911305">YÜKLE</translation>
-<translation id="7682287625158474539">Sevkiyat</translation>
 <translation id="7765158879357617694">Taşı</translation>
 <translation id="7769602470925380267">Kabul et ve oturumu kapat</translation>
 <translation id="7772032839648071052">Parolayı onayla</translation>

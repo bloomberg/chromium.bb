@@ -1306,6 +1306,11 @@
           Exempel på mönster finns på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Öppna följande sidor</translation>
 <translation id="4680961954980851756">Aktivera Autofyll</translation>
+<translation id="4722399051042571387">Om inställningen har konfigurerats som falsk kan inte användare ange pinkoder som är osäkra och lätta att gissa.
+
+          Exempel på osäkra pinkoder är pinkoder som genomgående innehåller samma siffra (1111), pinkoder med sifferföljder i stigande (1234) eller fallande (4321) ordning och pinkoder som är vanliga.
+
+          Som standard får användare ett varningsmeddelande i stället för ett felmeddelande om pinkoden anses vara osäker.</translation>
 <translation id="4723829699367336876">Aktivera brandväggspassage från fjärråtkomstklient</translation>
 <translation id="4725528134735324213">Aktivera säkerhetskopieringstjänsten för Android</translation>
 <translation id="4733471537137819387">Policyer som gäller integrerad HTTP-autentisering</translation>
@@ -1522,12 +1527,6 @@
       När värdet för den här policyn är angiven och inte är 0 kommer den nuvarande inloggade demoanvändaren att loggas ut automatiskt när en viss tid av inaktivitet har gått.
 
       Policyvärdet ska anges i millisekunder.</translation>
-<translation id="5506213378070007377">Android-statusrapporter skickas till servern.
-
-      Om principen har ställts in på falskt skickas ingen statusinformation.
-      Om principen har ställts in på sant eller lämnats utan värde skickas statusinformation.
-
-      Principen gäller bara om Android-appar har aktiverats.</translation>
 <translation id="5511702823008968136">Aktivera bokmärkesfältet</translation>
 <translation id="5512418063782665071">Webbadress för startsida</translation>
 <translation id="5523812257194833591">En offentlig session för att logga in automatiskt efter en fördröjning.
@@ -1886,6 +1885,13 @@
           Med alternativet Identifiera proxyserver automatiskt får Android-apparna tillgång till skriptadressen http://wpad/wpad.dat. Ingen annan del av protokollet för automatisk proxyidentifiering används. 
 
           Med alternativet PAC-proxyskript får Android-apparna tillgång till skriptadressen.</translation>
+<translation id="6435127182262044446">Med den här inställningen styr du hur lång en pinkod får vara.
+
+          Om noll eller lägre konfigureras för den här inställningen finns det ingen maxlängd och användare kan ange hur långa pinkoder som helst.
+
+          Om lägre än PinUnlockMinimumLength men högre än noll anges för inställningen är maxlängden samma som minimilängden.
+
+          Den här inställningen har som standard ingen maxlängd.</translation>
 <translation id="6467433935902485842">Policyn gör att du kan ange en lista med webbadressmönster som definierar webbplatser som inte får köra plugin-program.
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser från policyn DefaultPluginsSetting om den har ställts in, eller användarens personliga konfiguration om den inte har det.</translation>
@@ -2844,6 +2850,13 @@
           Protokollhanterare som registreras av policyn slås ihop med de som registreras av användaren och båda går att använda. Användare kan åsidosätta protokollhanterarna som har installerats av policyn genom att installera en ny standardhanterare, men användare kan inte ta bort en protokollhanterare som har registrerats av policyn.</translation>
 <translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>
 <translation id="9135033364005346124">Aktivera <ph name="CLOUD_PRINT_NAME" />-proxy</translation>
+<translation id="9136253551939494882">En vitlista över vilka snabbupplåsningslägen användaren kan konfigurera och använda för att låsa upp låsskärmen.
+
+          Värdet är en lista över strängar som ska vara antingen Alla eller Pinkod. Genom att lägga till Alla i listan blir alla snabbupplåsningslägen tillgängliga för användaren, även de som läggs till i framtiden. I annat fall blir endast snabbupplåsningslägena i listan tillgängliga.
+
+          Om du vill tillåta alla snabbupplåsningslägen använder du [alla]. I de fall du vill tillåta endast upplåsning med pinkod använder du [pinkod]. Med [] inaktiverar du alla snabbupplåsningslägen.
+
+          Som standard är inga snabbupplåsningslägen tillgängliga för hanterade enheter.</translation>
 <translation id="9147029539363974059">Skickar systemloggar till hanteringsservern så att administratörer kan
       övervaka systemloggarna.
 
@@ -2859,6 +2872,11 @@
       Om policyn inte ställs in aktiveras inställningen och användaren kan använda inkognitoläge.</translation>
 <translation id="915194831143859291">Om policyn är inställd på falskt eller inte har konfigurerats tillåter <ph name="PRODUCT_OS_NAME" /> att användaren stänger av enheten.
       Om policyn är inställd på sant utlöser <ph name="PRODUCT_OS_NAME" /> en omstart när användaren stänger av enheten. <ph name="PRODUCT_OS_NAME" /> ersätter alla förekomster av avstängningsknappar i gränssnittet med omstartsknappar. Om användaren stänger av enheten med strömbrytaren startas den inte om automatiskt även om policyn är aktiverad.</translation>
+<translation id="917887642534332939">Med den här inställningen styr du hur kort en pinkod får vara.
+
+          Det lägsta antalet siffror en pinkod får bestå av är en siffra. Alla värden lägre än detta behandlas som en siffra.
+
+          Som standard är sex siffror minimilängden för pinkoder. Det är även den rekommenderade minimilängden.</translation>
 <translation id="9187743794267626640">Inaktivera montering av extern lagring</translation>
 <translation id="9197740283131855199">Procentsats med vilken fördröjningen av dämpningen av skärmen ska skalanpassas om användaren gör något efter dämpningen</translation>
 <translation id="9200828125069750521">Parametrar för bildwebbadresser som använder POST</translation>

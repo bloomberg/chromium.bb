@@ -148,7 +148,6 @@
 <translation id="3638472932233958418">โหลดหน้าเว็บล่วงหน้า</translation>
 <translation id="3691593122358196899">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_TITLE" /> แล้ว</translation>
 <translation id="3692781555820666866">เมื่อเปิดใช้ แถบอเนกประสงค์จะรวมคำแนะนำการเผยแพร่หน้าเว็บจากอุปกรณ์ใกล้เคียง</translation>
-<translation id="3706658020782046159">เลือกที่อยู่สำหรับจัดส่งเพื่อตรวจสอบวิธีจัดส่งและข้อกำหนด</translation>
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
 <translation id="3771033907050503522">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="3783017676699494206">บันทึกภาพ</translation>
@@ -209,12 +208,10 @@
 <translation id="5197255632782567636">อินเทอร์เน็ต</translation>
 <translation id="5198972191746488848">เพิ่มบัตร...</translation>
 <translation id="5228579091201413441">เปิดใช้การซิงค์</translation>
-<translation id="5230733896359313003">ที่อยู่ในการจัดส่ง</translation>
 <translation id="5244474230056479698">กำลังซิงค์กับ <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5327248766486351172">ชื่อ</translation>
-<translation id="5332219387342487447">วิธีการจัดส่ง</translation>
 <translation id="5388358297987318779">เปิดภาพ</translation>
 <translation id="5409365236829784218">ไม่ได้ติดตั้งแอปพลิเคชันที่สามารถเปิดไฟล์นี้</translation>
 <translation id="54401264925851789">ข้อมูลเกี่ยวกับการรักษาความปลอดภัยของหน้าเว็บ</translation>
@@ -341,7 +338,6 @@
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7671141431838911305">ติดตั้ง</translation>
-<translation id="7682287625158474539">จัดส่ง</translation>
 <translation id="7765158879357617694">ย้าย</translation>
 <translation id="7769602470925380267">ยอมรับและออกจากระบบ</translation>
 <translation id="7772032839648071052">ยืนยันข้อความรหัสผ่าน</translation>

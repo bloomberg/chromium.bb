@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">በቋንቋ ፊደል መጻፍ (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">ምስል አክል</translation>
 <translation id="1029317248976101138">ማጉሊያ</translation>
-<translation id="1029595648591494741">«<ph name="EXTENSION_NAME" />»ን ይሞክሩ?</translation>
 <translation id="1030173864176315846">በተሳካ ሁኔታ <ph name="PAGE_NUMBER" /> ገጾችን ወደ <ph name="PRINTER_NAME" /> ታትሟል</translation>
 <translation id="1031362278801463162">ቅድመ-እይታን በመጫን ላይ</translation>
 <translation id="1031573127485938293">ጠይቅ (በመመሪያ)</translation>
@@ -1832,7 +1831,6 @@
 <translation id="3359256513598016054">የሰርቲፊኬት መመሪያ እገዳዎች</translation>
 <translation id="335985608243443814">አስስ…</translation>
 <translation id="3360297538363969800">ማተም አልተሳካም። እባክዎ አታሚዎን ይፈትሹትና እንደገና ይሞክሩ።</translation>
-<translation id="3361481787422913716">የሪፖርት ቅንብሮችን ይመልከቱ</translation>
 <translation id="336497260564123876">የይለፍ ቃል ተቀምጧል። የእርስዎን የይለፍ ቃሎች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ Chrome በመለያ ይግቡ።</translation>
 <translation id="3367813778245106622">ስምረትን ለመጀመር እንደገና ይግቡ</translation>
 <translation id="3368922792935385530">ተያይዟል</translation>
@@ -2008,7 +2006,6 @@
 <translation id="358796204584394954">ለማጣመር ይህን ኮድ በ«<ph name="DEVICE_NAME" />» ላይ ይተይቡ፦</translation>
 <translation id="3588662957555259973">* የGoogle መገለጫ ፎቶ</translation>
 <translation id="3590194807845837023">መገለጫ አስፈክትና ዳግም አስጀምር</translation>
-<translation id="3590559774363307859">የይለፍ ቃል ተቀምጧል። ከማናቸውም አሳሽ ላይ እሱን እና ከሁሉም የእርስዎ <ph name="SAVED_PASSWORDS_LINK" /> ላይ ሊደርሱበት ይችላሉ።</translation>
 <translation id="3592260987370335752">&amp;ተጨማሪ ይወቁ</translation>
 <translation id="359283478042092570">አስገባ</translation>
 <translation id="3593965109698325041">የሰርቲፊኬት ስም እገዳዎች</translation>
@@ -2831,7 +2828,6 @@
 <translation id="4764865176798926079">የዋናው ክፈፍ domContentLoaded እና ሁሉም ግብዓቶች ጭነቶች ከdomContentLoaded በፊት ተጀምረዋል (iframes ችላ ተብለዋል)።</translation>
 <translation id="4768332406694066911">እርስዎን የሚለዩ ከእነዚህ ድርጅቶች የመጡ የዕውቅና ማረጋገጫዎች አለዎት</translation>
 <translation id="4768698601728450387">ምስል ይከርክሙ</translation>
-<translation id="4773696473262035477">እሱን እና ሁሉንም የእርስዎን <ph name="SAVED_PASSWORDS_LINK" /> ከማናቸውም አሳሽ ላይ ሊደርሱባቸው ይችላሉ።</translation>
 <translation id="4776917500594043016">የ<ph name="USER_EMAIL_ADDRESS" /> ይለፍ ቃል</translation>
 <translation id="4779083564647765204">ማጉሊያ</translation>
 <translation id="4780321648949301421">ገጽ አስቀምጥ እንደ…</translation>
@@ -5389,7 +5385,6 @@ nil</translation>
 <translation id="8260864402787962391">መዳፊት</translation>
 <translation id="8261378640211443080">ይህ ቅጥያ በ<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ውስጥ ያልተጠቀሰ ሲሆን እርስዎ ሳያውቁት የታከለ ሊሆን ይችላል።</translation>
 <translation id="8261387128019234107">ለ<ph name="PROFILE_NAME" /> መለያ አክል</translation>
-<translation id="8261490674758214762">እነዚህን ማድረግ ይችላሉ፦</translation>
 <translation id="8261506727792406068">ሰርዝ</translation>
 <translation id="8261580862248730866">የማይክሮፎን ለየት ያሉ</translation>
 <translation id="8261673729476082470"><ph name="FILE_COUNT" /> ፎቶዎችን ወደ <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> በምትኬ በማስቀመጥ ላይ</translation>

@@ -1006,7 +1006,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="3915395663995367577">URL untuk proxy file .pac</translation>
 <translation id="3926940573869375969">Mengonfigurasi tata letak keyboard yang diizinkan di layar login <ph name="PRODUCT_OS_NAME" />.
 
-      Jika kebijakan ini disetel ke daftar pengenal metode masukan, metode masukan yang diberikan akan tersedia di layar login. Metode masukan pertama yang diberikan telah dipilih sebelumnya. Sementara pod pengguna difokuskan pada layar login, metode masukan yang terakhir kali digunakan oleh pengguna akan tersedia, selain dari metode masukan yang diberikan oleh kebijakan ini.  Jika kebijakan ini tidak disetel, metode masukan pada layar login akan diambil dari lokal yang menampilkan layar login.  Pengenal metode masukan akan mengabaikan nilai yang tidak valid.</translation>
+      Jika kebijakan ini disetel ke daftar pengenal metode masukan, metode masukan yang diberikan akan tersedia di layar login. Metode masukan pertama yang diberikan telah dipilih sebelumnya. Walaupun pod pengguna difokuskan pada layar login, metode masukan yang terakhir kali digunakan oleh pengguna akan tersedia, selain dari metode masukan yang diberikan oleh kebijakan ini.  Jika kebijakan ini tidak disetel, metode masukan pada layar login akan diambil dari lokal yang menampilkan layar login.  Pengenal metode masukan akan mengabaikan nilai yang tidak valid.</translation>
 <translation id="3939893074578116847">Kirimkan paket jaringan ke server pengelolaan untuk memantau status online,
       untuk memungkinkan server mendeteksi jika perangkat sedang offline.
 
@@ -1229,6 +1229,11 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Untuk melihat contoh pola, buka https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Buka daftar URL</translation>
 <translation id="4680961954980851756">Aktifkan IsiOtomatis</translation>
+<translation id="4722399051042571387">Jika "false", pengguna tidak dapat menyetel PIN yang lemah dan mudah ditebak.
+
+          Beberapa contoh PIN yang lemah: PIN yang hanya berisi satu digit (1111), berurutan (1234), berurutan terbalik (4321), dan yang umum digunakan.
+
+          Secara default, pengguna akan mendapatkan peringatan, tetapi bukan pesan error, jika PIN dianggap lemah.</translation>
 <translation id="4723829699367336876">Mengaktifkan firewall traversal dari klien akses jarak jauh</translation>
 <translation id="4725528134735324213">Aktifkan Android Backup Service</translation>
 <translation id="4733471537137819387">Kebijakan yang terkait dengan autentikasi HTTP terintegrasi.</translation>
@@ -1418,13 +1423,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Saat nilai kebijakan ini disetel dan tidak 0, maka pengguna demo yang saat ini telah masuk akan dikeluarkan secara otomatis setelah waktu tidak aktif selama durasi yang ditentukan telah habis.
 
       Nilai kebijakan sebaiknya ditentukan dalam milidetik.</translation>
-<translation id="5506213378070007377">Informasi tentang status Android dikirim kembali ke
-      server.
-
-      Jika kebijakan ini disetel ke false, tidak ada informasi status yang dilaporkan.
-      Jika disetel ke true atau tidak disetel, informasi status akan dilaporkan.
-
-      Kebijakan ini hanya berlaku jika aplikasi Android diaktifkan.</translation>
 <translation id="5511702823008968136">Aktifkan Bilah Bookmark</translation>
 <translation id="5512418063782665071">URL beranda</translation>
 <translation id="5523812257194833591">Sesi publik untuk masuk secara otomatis setelah penundaan.
@@ -1762,6 +1760,13 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Jika Anda memilih untuk mendeteksi server proxy secara otomatis, URL skrip "http://wpad/wpad.dat" akan diberikan pada aplikasi Android. Tidak ada bagian lain dari protokol deteksi proxy otomatis yang digunakan.
 
           Jika Anda memilih untuk menggunakan skrip proxy .pac, URL skrip akan diberikan pada aplikasi Android.</translation>
+<translation id="6435127182262044446">Setelan ini mengontrol panjang PIN maksimum.
+
+          Jika konfigurasi setelan ini adalah 0 atau lebih kecil, panjang maksimumnya tidak ditetapkan dan pengguna dapat menyetel panjang PIN sesuai keinginan.
+
+          Jika setelan ini lebih kecil dari PinUnlockMinimumLength namun lebih besar dari 0, panjang maksimumnya sama dengan panjang minimum.
+
+          Setelan ini secara default tidak menetapkan panjang maksimum.</translation>
 <translation id="6467433935902485842">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menjalankan plugin. Jika kebijakan ini dibiarkan tidak disetel, nilai default global akan digunakan untuk semua situs baik dari kebijakan 'DefaultPluginsSetting' jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="6473334971332473690">Memungkinkan Smart Lock digunakan di perangkat <ph name="PRODUCT_OS_NAME" />.
 
@@ -2659,6 +2664,13 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Penangan protokol yang didaftarkan oleh kebijakan digabung dengan penangan protokol yang didaftarkan oleh pengguna dan keduanya tersedia untuk digunakan. Pengguna dapat mengganti penangan protokol yang dipasang oleh kebijakan dengan memasang penangan default baru, namun pengguna tidak dapat membuang penangan protokol yang didaftarkan oleh kebijakan.</translation>
 <translation id="913195841488580904">Cekal akses ke daftar URL</translation>
 <translation id="9135033364005346124">Mengaktifkan proxy <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="9136253551939494882">Daftar yang diizinkan mengontrol mode buka kunci cepat mana yang dapat dikonfigurasi dan digunakan oleh pengguna untuk membuka layar kunci.
+
+          Nilai ini adalah daftar string; daftar entri validnya adalah: "semua", "PIN". menambahkan "semua" ke daftar menandakan bahwa setiap mode buka kunci cepat tersedia bagi pengguna, termasuk yang diterapkan di masa mendatang. Jika tidak, hanya mode buka kunci cepat dalam daftar yang akan tersedia.
+
+          Misalnya, untuk mengizinkan setiap mode buka kunci, gunakan ["semua"]. Untuk hanya mengizinkan buka kunci dengan PIN, gunakan ["PIN"]. Untuk menonaktifkan semua mode buka kunci cepat, gunakan [].
+
+          Secara default, tidak ada mode buka kunci cepat untuk perangkat yang dikelola.</translation>
 <translation id="9147029539363974059">Mengirim log sistem ke server pengelolaan, untuk memungkinkan
       admin memantau log sistem.
 
@@ -2667,6 +2679,11 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="9150416707757015439">Kebijakan ini sudah tidak digunakan lagi. Gunakan IncognitoModeAvailability sebagai gantinya. Aktifkan mode Penyamaran di <ph name="PRODUCT_NAME" />. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat membuka laman web dalam mode penyamaran. Jika setelan ini dinonaktifkan, pengguna tidak dapat membuka laman web dalam mode penyamaran. Jika kebijakan ini dibiarkan tanpa disetel, kebijakan ini akan diaktifkan dan pengguna akan dapat menggunakan mode penyamaran.</translation>
 <translation id="915194831143859291">Jika kebijakan ini disetel ke False atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan memungkinkan pengguna menonaktifkan perangkat.
       Jika kebijakan ini disetel ke True, <ph name="PRODUCT_OS_NAME" /> akan memicu boot ulang ketika pengguna mematikan perangkat. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kemunculan tombol matikan di antarmuka pengguna dengan tombol boot ulang. Jika pengguna mematikan perangkat menggunakan tombol daya, perangkat tidak otomatis melakukan boot ulang, meskipun kebijakan ini diaktifkan.</translation>
+<translation id="917887642534332939">Setelan ini mengontrol panjang PIN minimum.
+
+          Panjang PIN minimum aslinya adalah 1; nilai yang kurang dari 1 tetap dianggap sebagai 1.
+
+          Panjang PIN minimum default dan yang direkomendasikan adalah 6 digit.</translation>
 <translation id="9187743794267626640">Menonaktifkan pemasangan penyimpanan eksternal</translation>
 <translation id="9197740283131855199">Persentase yang digunakan untuk menskalakan penundaan layar redup jika pengguna aktif setelah peredupan</translation>
 <translation id="9200828125069750521">Parameter untuk URL gambar yang menggunakan POST</translation>

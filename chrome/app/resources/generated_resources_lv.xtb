@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliterācija (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Ielādēt attēlu</translation>
 <translation id="1029317248976101138">Tālummaiņa</translation>
-<translation id="1029595648591494741">Vai izmēģināsiet “<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="1030173864176315846">Veiksmīgi izdrukātas <ph name="PAGE_NUMBER" /> lapas no <ph name="PRINTER_NAME" />.</translation>
 <translation id="1031362278801463162">Notiek priekšskatījuma ielāde</translation>
 <translation id="1031573127485938293">Vaicāt (atbilstoši politikai)</translation>
@@ -1833,7 +1832,6 @@ no <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Sertifikātu politikas ierobežojumi</translation>
 <translation id="335985608243443814">Pārlūkot...</translation>
 <translation id="3360297538363969800">Drukāšana neizdevās. Lūdzu, pārbaudiet printeri un mēģiniet vēlreiz.</translation>
-<translation id="3361481787422913716">Skatīt pārskata iestatījumus</translation>
 <translation id="336497260564123876">Parole saglabāta. Lai paroles būtu pieejamas visās jūsu ierīcēs, pierakstieties pārlūkā Chrome.</translation>
 <translation id="3367813778245106622">Lai sāktu sinhronizēšanu, pierakstieties vēlreiz</translation>
 <translation id="3368922792935385530">pievienots</translation>
@@ -2009,7 +2007,6 @@ no <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Lai izveidotu savienojumu pārī, ierīcē “<ph name="DEVICE_NAME" />” ievadiet šo kodu:</translation>
 <translation id="3588662957555259973">* Google profila fotoattēls</translation>
 <translation id="3590194807845837023">Atbloķēt profilu un restartēt</translation>
-<translation id="3590559774363307859">Parole ir saglabāta. Šai parolei un sarakstam “<ph name="SAVED_PASSWORDS_LINK" />” varat piekļūt jebkurā pārlūkā.</translation>
 <translation id="3592260987370335752">&amp;Uzziniet vairāk</translation>
 <translation id="359283478042092570">Ievadīt</translation>
 <translation id="3593965109698325041">Sertifikāta nosaukuma ierobežojumi</translation>
@@ -2834,7 +2831,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="4764865176798926079">Galvenā ietvara domContentLoaded un visu resursu ielāde sākta pirms domContentLoaded (ignorēts: iframes).</translation>
 <translation id="4768332406694066911">Jums ir sertifikāti no šīm organizācijām, kas jūs identificē</translation>
 <translation id="4768698601728450387">Apgriezt attēlu</translation>
-<translation id="4773696473262035477">Šai parolei, kā arī visām savām <ph name="SAVED_PASSWORDS_LINK" /> varat piekļūt no jebkura pārlūka.</translation>
 <translation id="4776917500594043016">Parole e-pasta adresei <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Tālummaiņa</translation>
 <translation id="4780321648949301421">Saglabāt lapu kā...</translation>
@@ -5387,7 +5383,6 @@ Tiek rēķināts atlikušais laiks</translation>
 <translation id="8260864402787962391">Pele</translation>
 <translation id="8261378640211443080">Šis paplašinājums nav norādīts vietnē <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> un, iespējams, tika pievienots, jums nezinot.</translation>
 <translation id="8261387128019234107">Pievienot kontu šim lietotājam: <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Var:</translation>
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8261580862248730866">Mikrofona izņēmumi</translation>
 <translation id="8261673729476082470">Notiek <ph name="FILE_COUNT" /> fotoattēlu dublēšana <ph name="BEGIN_LINK" />Google diskā<ph name="END_LINK" /></translation>

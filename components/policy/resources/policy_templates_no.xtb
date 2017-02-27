@@ -1029,7 +1029,7 @@
 <translation id="3915395663995367577">Nettadresse til en .pac-fil for proxy-tjener</translation>
 <translation id="3926940573869375969">Konfigurerer hvilke tastaturoppsett som tillates på påloggingsskjermen for <ph name="PRODUCT_OS_NAME" />.
 
-      Hvis denne regelen er angitt som en liste over identifikatorer for inndatametoder, er de angitte inndatametodene tilgjengelige på påloggingsskjermen. Den første angitte inndatametoden blir forhåndsvalgt. Når brukerkapselen er fokusert på påloggingsskjermen, blir den inndatametoden det er lengst siden brukeren brukte, tilgjengelig – i tillegg til inndatametodene som spesifiseres av denne regelen. Hvis denne regelen ikke er spesifisert, blir inndatametodene på påloggingsskjermen avledet fra lokaliteten påloggingsskjermen vises med. Verdier som ikke er gyldige identifikatorer for inndatametoder, blir ignorert.</translation>
+      Hvis denne regelen er angitt til en liste med identifikatorer for inndatametoder, er de angitte inndatametodene tilgjengelige på påloggingsskjermen. Den første angitte inndatametoden blir forhåndsvalgt. Når brukerkapselen er fokusert på påloggingsskjermen, blir den inndatametoden det er lengst siden brukeren brukte, tilgjengelig – i tillegg til inndatametodene som spesifiseres av denne regelen. Hvis denne regelen ikke er spesifisert, blir inndatametodene på påloggingsskjermen avledet fra lokaliteten påloggingsskjermen vises med. Verdier som ikke er gyldige identifikatorer for inndatametoder, blir ignorert.</translation>
 <translation id="3939893074578116847">Send nettverkspakker til administreringstjeneren for å overvåke nettstatusen, slik at
       tjeneren kan oppdage om enheten er uten nett.
 
@@ -1267,6 +1267,11 @@
           Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
 <translation id="4680961954980851756">Aktiver Autofyll</translation>
+<translation id="4722399051042571387">Hvis denne regelen er angitt som «false» (usann), kan ikke brukerne angi PIN-koder som er svake og enkle å gjette.
+
+          Her er noen eksempler på svake PIN-koder: PIN-koder som bare består av det samme tallet (1111), PIN-koder som består av tall i stigende eller synkende rekkefølge (1234 eller 4321) og vanlig brukte PIN-koder.
+
+          Som standard ser brukerne en advarsel – ikke en feilmelding – hvis PIN-koden anses som svak.</translation>
 <translation id="4723829699367336876">Aktiver kryssing av brannmur fra ekstern tilgangsklient</translation>
 <translation id="4725528134735324213">Slå på Android Backup Service</translation>
 <translation id="4733471537137819387">Retningslinjer knyttet til integrert HTTP-autentisering.</translation>
@@ -1473,13 +1478,6 @@
       Når verdien for denne retningslinjen er angitt og ikke er 0, blir demo-brukeren som for tiden er pålogget, automatisk logget av etter at angitt periode for inaktivitet er passert.
 
       Retningslinjeverdien må spesifiseres i millisekunder.</translation>
-<translation id="5506213378070007377">Informasjon om Android-statusen sendes tilbake til
-      tjeneren.
-
-      Hvis regelen er angitt som «false» (usann), blir ingen statusinformasjon rapportert.
-      Hvis angitt som «true» (sann), eller hvis ikke noe angis, blir statusinformasjon sendt.
-
-      Denne regelen gjelder bare hvis Android-apper er slått på.</translation>
 <translation id="5511702823008968136">Aktiver bokmerkerad</translation>
 <translation id="5512418063782665071">Nettadresse for startside</translation>
 <translation id="5523812257194833591">Automatisk pålogging til offentlig økt etter en gitt tid.
@@ -1837,6 +1835,13 @@
           Hvis du velger å finne proxy-tjeneren automatisk, får Android-apper skriptnettadressen «http://wpad/wpad.dat». Ingen annen del av protokollen for automatisk gjenkjennelse brukes.
 
           Hvis du velger PAC-skript for proxy-tjenere, får Android-apper skriptnettadressen.</translation>
+<translation id="6435127182262044446">Denne innstillingen kontrollerer maksimumslengden for PIN-koder.
+
+          Hvis instillingen er konfigurert til 0 eller mindre, finnes det ingen maksimumslengde. Da kan brukerne angi så lange PIN-koder de vil.
+
+          Hvis innstillingen er konfigurert til mindre enn «PinUnlockMinimumLength» (minimumlengde for PIN-koder for opplåsing), men mer enn 0, er maksimumslengden den samme som minimumslengden.
+
+          Som standard er det ikke valgt noen maksimumslengde i denne innstillingen.</translation>
 <translation id="6467433935902485842">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som ikke får kjøre programtillegg. Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultPluginsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke brukes.</translation>
 <translation id="6473334971332473690">Tillater bruk av Smart Lock på <ph name="PRODUCT_OS_NAME" />-enheter.
 
@@ -2775,6 +2780,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Protokollbehandlere som registreres via denne innstillingen, slås sammen med de som er registrert av brukeren, og begge er tilgjengelige for bruk. Brukeren kan overstyre protokollbehandlerne som innstillingen har installert, ved å installere en ny standardbehandler, men kan ikke fjerne en protokollbehandler som er registrert via en innstilling.</translation>
 <translation id="913195841488580904">Blokker tilgang til en liste over nettadresser</translation>
 <translation id="9135033364005346124">Aktiver mellomtjener for <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="9136253551939494882">Denne godkjenningslisten kontrollerer hvilke moduser for hurtigopplåsing brukerne kan konfigurere og bruke til å låse opp låseskjermen.
+
+          Denne verdien er en liste med strenger. De gyldige listeoppføringene er «all» (alle) og «PIN». Hvis du legger til «all» i listen, blir alle modusene for hurtigopplåsing tilgjengelige for brukerne – inkludert moduser som implementeres i fremtiden. Hvis du ikke gjør det, er bare de modusene for hurtigopplåsing som finnes i listen, tilgjengelige.
+
+          Hvis du for eksempel vil tillate alle modusene for hurtigopplåsing, bruker du [«all»]. Hvis du bare vil tillate PIN-opplåsing, bruker du [«PIN»]. Hvis du vil slå av alle modusene for hurtigopplåsing, bruker du [].
+
+          Som standard er ingen moduser for hurtigopplåsing tilgjengelige for administrerte enheter.</translation>
 <translation id="9147029539363974059">Sender systemlogger til administrasjonstjeneren for å la administratorer
       overvåke systemloggene.
 
@@ -2790,6 +2802,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne retningslinjen ikke angis, vil dette aktiveres, og brukeren vil kunne bruke inkognitomodus.</translation>
 <translation id="915194831143859291">Hvis denne regelen settes til usann eller ikke konfigureres, kan brukerne slå av enhetene sine i <ph name="PRODUCT_OS_NAME" />.
       Hvis denne regelen settes til sann, gjør <ph name="PRODUCT_OS_NAME" /> at enhetene starter på nytt når brukerne slår dem av. Alle «slå av»-knappene i <ph name="PRODUCT_OS_NAME" />-brukergrensesnittet blir byttet ut med «start på nytt»-knapper. Hvis brukerne slår av enhetene med den fysiske av/på-knappen, starter de ikke på nytt – selv om regelen er slått på.</translation>
+<translation id="917887642534332939">Denne innstillingen kontrollerer minimumslengden for PIN-koder.
+
+          Den minste mulige lengden for PIN-koder er 1. Verdier som er mindre enn 1, behandles som 1.
+
+          Standard og anbefalt lengde for PIN-koder er 6 sifre.</translation>
 <translation id="9187743794267626640">Deaktiver bruk av ekstern lagring</translation>
 <translation id="9197740283131855199">Prosentandelen det skaleres etter for å justere forsinkelse i skjermdemping, hvis brukeren har blitt aktiv igjen etter demping</translation>
 <translation id="9200828125069750521">Parametere for bildenettadresser som bruker POST</translation>

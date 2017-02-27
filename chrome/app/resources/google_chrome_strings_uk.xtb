@@ -17,6 +17,7 @@
 <translation id="1434626383986940139">Програми Chrome для версії Canary</translation>
 <translation id="1457721931618994305">Оновлення Google Chrome...</translation>
 <translation id="1469002951682717133">Панель запуску програм Chrome</translation>
+<translation id="1475773083554142432">Chrome додасть його в <ph name="SAVED_PASSWORD_LINK" /> і запам’ятає для наступного разу.</translation>
 <translation id="1480489203462860648">Уже встановлено. Спробуйте</translation>
 <translation id="1553358976309200471">Оновити Chrome</translation>
 <translation id="1587223624401073077">Google Chrome використовує вашу камеру.</translation>
@@ -115,7 +116,6 @@
 <translation id="4458285410772214805">Щоб зміна почала діяти, вийдіть і ввійдіть знову.</translation>
 <translation id="4458462641685292929">У Google Chrome виконується інша операція. Спробуйте пізніше.</translation>
 <translation id="4480040274068703980">ОС Chrome не вдалося синхронізувати ваші дані через помилку входу.</translation>
-<translation id="4519152997629025674">Google Chrome може покращувати веб-перегляд за допомогою <ph name="BEGIN_LINK" />веб-служб<ph name="END_LINK" />. Ви можете будь-коли вимкнути ці служби.</translation>
 <translation id="4561051373932531560">Google Chrome дозволяє натиснути номер телефону в Інтернеті та здійснити виклик через Skype.</translation>
 <translation id="4567424176335768812">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS" />. Ваші закладки, історія й інші налаштування будуть доступні на всіх пристроях, на яких ви ввійдете в цей обліковий запис.</translation>
 <translation id="4631713731678262610">Сховати в меню Chrome</translation>
@@ -138,7 +138,6 @@
 <translation id="5028489144783860647">Google Chrome не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
 <translation id="5037239767309817516">Щоб зміна почала діяти, закрийте всі вікна Google Chrome і перезапустіть веб-переглядач.</translation>
 <translation id="5132929315877954718">Знаходьте чудові додатки, ігри, розширення й теми для Google Chrome.</translation>
-<translation id="5148419164691878332">Chrome додасть його в <ph name="SAVED_PASSWORDS_LINK" /> і запам’ятає для наступного разу.</translation>
 <translation id="5170938038195470297">Ваш профіль не можна використати, оскільки його створено в новішій версії Google Chrome. Деякі функції можуть бути недоступними. Укажіть інший каталог профілю чи скористайтеся новішою версією Chrome.</translation>
 <translation id="5176234269072261959">Допоможіть покращити Chrome, надсилаючи звіти про поточні налаштування.</translation>
 <translation id="5193136243808726294">Неможливо відкрити цю сторінку в ОС Google Chrome.</translation>
@@ -255,6 +254,7 @@
 <translation id="8547799825197623713">Панель запуску програм Chrome для версії Canary</translation>
 <translation id="8556340503434111824">Доступна нова версія Google Chrome – швидша, ніж будь-коли.</translation>
 <translation id="8568392309447938879">Щоб користуватися програмами, потрібно ввійти в Chrome. Це дозволяє веб-переглядачу Chrome синхронізувати ваші програми, закладки, історію, паролі й інші налаштування на різних пристроях.</translation>
+<translation id="8606668294522778825">Google Chrome може покращувати веб-перегляд за допомогою веб-служб. Ви можете вимкнути ці служби. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome не відповідає. Перезапустити зараз?</translation>
 <translation id="8667808506758191620">Ваш пристрій <ph name="DEVICE_TYPE" /> оновлено.</translation>
 <translation id="8669527147644353129">Помічник Google Chrome</translation>

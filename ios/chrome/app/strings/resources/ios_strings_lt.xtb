@@ -150,7 +150,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="3638472932233958418">Iš anksto įk. tinkl.</translation>
 <translation id="3691593122358196899">Sukurta „<ph name="FOLDER_TITLE" />“ žymė</translation>
 <translation id="3692781555820666866">Kai įgalinta, „omnibox“ juosta apims netoli jūsų esančių įrenginių tinklalapių transliacijos pasiūlymus.</translation>
-<translation id="3706658020782046159">Norėdami peržiūrėti pristatymo metodus ir reikalavimus, pasirinkite pristatymo adresą.</translation>
 <translation id="3738139272394829648">Paieška palietus</translation>
 <translation id="3771033907050503522">Inkognito skirt.</translation>
 <translation id="3783017676699494206">Išsaugoti vaizdą</translation>
@@ -211,12 +210,10 @@ Duomenys užšifruoti naudojant slaptafrazę. Įveskite ją, kad pradėtumėte s
 <translation id="5197255632782567636">Internetas</translation>
 <translation id="5198972191746488848">Pridėti kortelę...</translation>
 <translation id="5228579091201413441">Įgalinti sinchronizavimą</translation>
-<translation id="5230733896359313003">Pristatymo adresas</translation>
 <translation id="5244474230056479698">Sinchronizavimas su <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5327248766486351172">Pavadinimas</translation>
-<translation id="5332219387342487447">Pristatymo metodas</translation>
 <translation id="5388358297987318779">Atidaryti vaizdą</translation>
 <translation id="5409365236829784218">Nėra įdiegtų pr., kurias naudojant galima atidaryti failą.</translation>
 <translation id="54401264925851789">Puslapio saugos informacija</translation>
@@ -343,7 +340,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7649070708921625228">Žinynas</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7671141431838911305">ĮDIEGTI</translation>
-<translation id="7682287625158474539">Pristatymas</translation>
 <translation id="7765158879357617694">Perkelti</translation>
 <translation id="7769602470925380267">Sutikti ir atsijungti</translation>
 <translation id="7772032839648071052">Patvirtinti slaptafrazę</translation>

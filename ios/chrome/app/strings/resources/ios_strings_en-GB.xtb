@@ -150,7 +150,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">When enabled, the omnibox will include suggestions for web pages broadcast by devices near you.</translation>
-<translation id="3706658020782046159">Select a delivery address to check delivery methods and requirements.</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
 <translation id="3783017676699494206">Save Image</translation>
@@ -211,12 +210,10 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Add Card...</translation>
 <translation id="5228579091201413441">Enable sync</translation>
-<translation id="5230733896359313003">Delivery Address</translation>
 <translation id="5244474230056479698">Syncing to <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Show</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5327248766486351172">Name</translation>
-<translation id="5332219387342487447">Delivery Method</translation>
 <translation id="5388358297987318779">Open Image</translation>
 <translation id="5409365236829784218">There are no applications installed that can open this file.</translation>
 <translation id="54401264925851789">Page Security Info</translation>
@@ -343,7 +340,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7671141431838911305">INSTALL</translation>
-<translation id="7682287625158474539">Shipping</translation>
 <translation id="7765158879357617694">Move</translation>
 <translation id="7769602470925380267">Accept and sign out</translation>
 <translation id="7772032839648071052">Confirm passphrase</translation>

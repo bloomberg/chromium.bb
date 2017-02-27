@@ -150,7 +150,6 @@
 <translation id="3638472932233958418">웹페이지 미리 로드하기</translation>
 <translation id="3691593122358196899">북마크를 <ph name="FOLDER_TITLE" />에 추가함</translation>
 <translation id="3692781555820666866">이 기능을 사용하도록 설정한 경우 내 주변에 있는 기기에서 브로드캐스트하는 웹페이지가 검색주소창에 추천 항목으로 표시됩니다.</translation>
-<translation id="3706658020782046159">배송 방법과 요건을 확인할 수 있도록 배송지 주소를 선택하세요.</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3771033907050503522">시크릿 탭</translation>
 <translation id="3783017676699494206">이미지 저장</translation>
@@ -211,12 +210,10 @@
 <translation id="5197255632782567636">인터넷</translation>
 <translation id="5198972191746488848">카드 추가...</translation>
 <translation id="5228579091201413441">동기화 사용</translation>
-<translation id="5230733896359313003">배송지 주소</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" />에 동기화</translation>
 <translation id="5300589172476337783">표시</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5327248766486351172">이름</translation>
-<translation id="5332219387342487447">배송 방법</translation>
 <translation id="5388358297987318779">이미지 열기</translation>
 <translation id="5409365236829784218">이 파일을 열 수 있는 애플리케이션이 설치되어 있지 않습니다.</translation>
 <translation id="54401264925851789">페이지 보안 정보</translation>
@@ -343,7 +340,6 @@
 <translation id="7649070708921625228">도움말</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7671141431838911305">설치</translation>
-<translation id="7682287625158474539">배송</translation>
 <translation id="7765158879357617694">이동</translation>
 <translation id="7769602470925380267">동의 및 로그아웃</translation>
 <translation id="7772032839648071052">암호 확인</translation>

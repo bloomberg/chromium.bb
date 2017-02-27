@@ -91,7 +91,7 @@
 <translation id="4812940957355064477">Anna numero.</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> valittu</translation>
 <translation id="4992066212339426712">Poista mykistys</translation>
-<translation id="49969490063480558">Lisää <ph name="ATSIGN" />-osaa seuraava osa. <ph name="INVALIDADDRESS" /> on puutteellinen.</translation>
+<translation id="49969490063480558">Kirjoita loppuun asti osoite, joka alkaa <ph name="ATSIGN" />. <ph name="INVALIDADDRESS" /> on vielä kesken.</translation>
 <translation id="5034860022980953847">etenemisen osoitin</translation>
 <translation id="5048533449481078685">luettelon merkitsijä</translation>
 <translation id="5117590920725113268">Näytä seuraava kuukausi</translation>

@@ -1223,6 +1223,11 @@
           如需模式範例，請參閱 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="467449052039111439">開啟網址清單</translation>
 <translation id="4680961954980851756">啟用自動填入</translation>
+<translation id="4722399051042571387">如果設為 False，使用者將無法設定系統判定強度不足而容易被破解的 PIN。
+
+          以下列舉強度不足的 PIN：完全由相同數字組成的 PIN (例如 1111)，由公差為正負 1 的等差數列組成的 PIN (例如 1234 和 4321)，以及屬於常見字元組合的 PIN。
+
+          在預設情況下，當使用者輸入的 PIN 強度不足時，系統會顯示警告訊息 (而非錯誤訊息)。</translation>
 <translation id="4723829699367336876">允許遠端存取用戶端穿越防火牆</translation>
 <translation id="4725528134735324213">啟用 Android 備份服務</translation>
 <translation id="4733471537137819387">與整合 HTTP 驗證相關的政策。</translation>
@@ -1412,13 +1417,6 @@
       如果這項政策設為 0 以外的值，則系統會在指定的閒置時間過後，自動登出目前登入示範模式的使用者。
 
       該政策的指定值單位為毫秒。</translation>
-<translation id="5506213378070007377">將 Android 狀態的相關資訊傳回
-      伺服器。
-
-      如果將這項政策設為 false，系統將不會回報狀態資訊。
-      如果設為 true 或不予設定，則會回報狀態資訊。
-
-      必須啟用 Android 應用程式才適用這項政策。</translation>
 <translation id="5511702823008968136">啟用書籤列</translation>
 <translation id="5512418063782665071">首頁網址</translation>
 <translation id="5523812257194833591">要在延遲時間過後自動登入的公開工作階段。
@@ -1755,6 +1753,13 @@
           如果選擇自動偵測 Proxy 伺服器，系統會提供指令碼網址「http://wpad/wpad.dat」給 Android 應用程式 (不會使用 Proxy 自動偵測通訊協定的其他部分)。
 
           如果選擇 .pac Proxy 指令碼，系統會提供該指令碼網址給 Android 應用程式。</translation>
+<translation id="6435127182262044446">這項設定可控制 PIN 的長度上限。
+
+          如果將這項設定設為 0 以下的數字，表示沒有長度上限；使用者可以任意設定 PIN (不限長度)。
+
+          如果將這項設定設為介於 0 和 PinUnlockMinimumLength 之間的數字，表示長度上下限相同。
+
+          這項設定預設沒有長度上限。</translation>
 <translation id="6467433935902485842">允許您設定網址模式清單，指定不可以執行外掛程式的網站。如未設定這項政策，系統會從「DefaultPluginsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="6473334971332473690">允許在 <ph name="PRODUCT_OS_NAME" /> 裝置上使用 Smart Lock。
 
@@ -2613,6 +2618,13 @@
           由政策註冊的通訊協定處理常式會與由使用者註冊的通訊協定處理常式合併，兩者皆可供使用。使用者可以安裝新的預設處理常式來覆寫由政策安裝的通訊協定處理常式，但無法移除由政策註冊的通訊協定處理常式。</translation>
 <translation id="913195841488580904">禁止存取清單中的網址</translation>
 <translation id="9135033364005346124">啟用 <ph name="CLOUD_PRINT_NAME" /> Proxy</translation>
+<translation id="9136253551939494882">控制使用者可以設定及使用哪些快速解鎖模式來解除螢幕鎖定的許可清單。
+
+          值為字串清單；有效的清單項目包括「all」和「PIN」。如果在清單中新增「all」，使用者就能使用所有快速解鎖模式 (包括日後實作的模式)；反之，使用者將只能使用清單中列出的快速解鎖模式。
+
+          也就是說，如要允許所有快速解鎖模式，請使用 [all]；如果只想允許 PIN 解鎖，請使用 [PIN]；如要停用所有快速解鎖模式，請將清單保留空白。
+
+          在預設情況下，使用者無法在受管理的裝置上使用任何快速解鎖模式。</translation>
 <translation id="9147029539363974059">將系統紀錄傳送到管理伺服器，
       讓管理員監控系統紀錄。
 
@@ -2621,6 +2633,11 @@
 <translation id="9150416707757015439">這項政策已被取代，請改用 IncognitoModeAvailability。在「<ph name="PRODUCT_NAME" />」中啟用無痕模式。如果這項設定已啟用或尚未設定，使用者皆可在無痕模式中開啟網頁。如果這項設定已停用，使用者就無法在無痕模式中開啟網頁。如果未設定這項政策，系統會啟用這項設定，且使用者可以使用無痕模式。</translation>
 <translation id="915194831143859291">如果將這項政策設為 False 或不予設定，<ph name="PRODUCT_OS_NAME" /> 會允許使用者關閉裝置。
       如果將這項政策設為 True，<ph name="PRODUCT_OS_NAME" /> 會在使用者關閉裝置時觸發重新啟動程序。此外，<ph name="PRODUCT_OS_NAME" /> 會將使用者介面中的所有關機按鈕改成重新啟動按鈕。如果使用者使用電源按鈕關閉裝置，即使您已啟用這項政策，裝置仍然不會自動重新啟動。</translation>
+<translation id="917887642534332939">這項設定可控制 PIN 的長度下限。
+
+          PIN 長度的絕對下限是 1；低於 1 的值會被視為 1 來處理。
+
+          預設和建議使用的 PIN 長度下限都是 6 碼。</translation>
 <translation id="9187743794267626640">停用外部儲存裝置掛載功能</translation>
 <translation id="9197740283131855199">使用者在螢幕調暗後繼續使用裝置時的螢幕調暗時間延長百分比</translation>
 <translation id="9200828125069750521">使用 POST 的圖片網址參數</translation>

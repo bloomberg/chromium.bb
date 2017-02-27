@@ -500,7 +500,7 @@
 
       Se esta política estiver definida como Falso, será apresentada uma mensagem de erro em vez de um pedido de configuração da rede.</translation>
 <translation id="2498238926436517902">Ocultar automaticamente a prateleira sempre</translation>
-<translation id="2503514368596117142">Configure políticas para o Google Cast, uma funcionalidade que permite aos utilizadores enviar o conteúdo de separadores, de sites ou do ambiente de trabalho a partir do navegador para sistemas de som e ecrãs remotos.</translation>
+<translation id="2503514368596117142">Configura políticas para o Google Cast, uma funcionalidade que permite aos utilizadores enviar o conteúdo de separadores, de sites ou do ambiente de trabalho a partir do navegador para sistemas de som e ecrãs remotos.</translation>
 <translation id="2514328368635166290">Especifica o URL do ícone favorito do fornecedor de pesquisas predefinido. Esta política é opcional. Se não for definida, não será apresentado qualquer ícone para o fornecedor de pesquisas. Esta política aplica-se apenas se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2516525961735516234">Especifica se a atividade do vídeo afeta a gestão da energia.
 
@@ -1226,6 +1226,11 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Para obter exemplos de padrões, consulte https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Abrir uma lista de URLs</translation>
 <translation id="4680961954980851756">Ativar Preenchimento Automático</translation>
+<translation id="4722399051042571387">Se esta definição estiver configurada como falsa, os utilizadores não podem definir PINs fracos e fáceis de adivinhar.
+
+          Alguns exemplo de PINs fracos: PINs apenas com um dígito (1111), PINs cujos dígitos aumentam 1 valor (1234), PINs cujos dígitos diminuem 1 valor (4321) e PINs muito comuns.
+
+          Por predefinição, os utilizadores recebem um aviso, e não um erro, se o PIN for considerado fraco.</translation>
 <translation id="4723829699367336876">Ativar firewall transversal do cliente de acesso remoto</translation>
 <translation id="4725528134735324213">Ativar o Android Backup Service</translation>
 <translation id="4733471537137819387">Políticas relacionadas com a autenticação HTTP integrada</translation>
@@ -1415,15 +1420,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Quando o valor desta política estiver definido e não for 0, o utilizador de demonstração com sessão iniciada atualmente verá a sua sessão terminada uma vez decorrido o tempo de inatividade especificado.
 
       O valor da política deverá ser especificado em milissegundos.</translation>
-<translation id="5506213378070007377">As informações sobre o estado do Android são enviadas novamente para o
-      servidor.
-
-      Se a política estiver definida como falsa, não são comunicadas quaisquer 
-      informações de estado.
-      Se definida como verdadeira ou não for definida, são comunicadas informações
-      do estado.
-
-      Esta política aplica-se apenas se as aplicações Android estiverem ativadas.</translation>
 <translation id="5511702823008968136">Ativar Barra de Marcadores</translation>
 <translation id="5512418063782665071">URL da página inicial</translation>
 <translation id="5523812257194833591">O início automático de uma sessão pública após um atraso.
@@ -1765,6 +1761,13 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Se escolher detetar automaticamente o servidor proxy, é fornecido o URL "http://wpad/wpad.dat" do script às aplicações Android. Não é utilizada mais nenhuma parte do protocolo de deteção automática do proxy.
 
           Se escolher utilizar um script de proxy .pac, o URL do script é fornecido às aplicações Android.</translation>
+<translation id="6435127182262044446">Esta definição controla o comprimento máximo de um PIN.
+
+          Se esta definição for 0 ou inferior, não existe um comprimento máximo e o utilizador pode definir um PIN com o tamanho que pretender.
+
+          Se esta definição for inferior à política PinUnlockMinimumLength, mas superior a 0, o comprimento máximo é igual ao comprimento mínimo.
+
+          A predefinição é a não existência de um comprimento máximo.</translation>
 <translation id="6467433935902485842">Permite definir uma lista de padrões de URL que especificam os Web sites não autorizados a executar plug-ins. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultPluginsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="6473334971332473690">Permite que o Smart Lock seja utilizado em dispositivos do <ph name="PRODUCT_OS_NAME" />.
 
@@ -2408,7 +2411,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       O objetivo é remover esta substituição no futuro.</translation>
 <translation id="8285435910062771358">Lupa em ecrã inteiro ativada</translation>
-<translation id="8288199156259560552">Ativar o Serviço de localização da Google do Android</translation>
+<translation id="8288199156259560552">Ativar os serviços de localização da Google para aplicações Android</translation>
 <translation id="8294750666104911727">Normalmente, as páginas com X-UA-Compatible definido como chrome=1 serão processadas em <ph name="PRODUCT_FRAME_NAME" />, independentemente da política "ChromeFrameRendererSettings".
 
           Se ativar esta definição, não serão procuradas metatags nas páginas.
@@ -2663,6 +2666,13 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Os controladores de protocolos registados pela política são unidos com os que são registados pelo utilizador e ambos estão disponíveis para utilização. O utilizador pode substituir os controladores de protocolos instalados pela política ao instalar um novo controlador predefinido, mas não pode remover um controlador de protocolos registado pela política.</translation>
 <translation id="913195841488580904">Bloquear o acesso a uma lista de URLs</translation>
 <translation id="9135033364005346124">Ativar proxy <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="9136253551939494882">Uma lista de autorizações que controla os modos de desbloqueio rápido que o utilizador pode configurar e utilizar para desbloquear o ecrã de bloqueio.
+
+          Este valor é uma lista de strings. As entradas de lista válidas são: "all" e "PIN". A adição de "all" à lista significa que todos os modos de desbloqueio rápido estão disponíveis para o utilizador, incluindo os implementados futuramente. Caso contrário, apenas estão disponíveis os modos de desbloqueio rápido existentes na lista.
+
+          Por exemplo, para permitir todos os modos de desbloqueio rápido, utilize ["all"]. Para permitir apenas o desbloqueio por PIN, utilize ["PIN"]. Para desativar todos os modos de desbloqueio rápido, utilize [].
+
+          Por predefinição, não estão disponíveis modos de desbloqueio rápido para dispositivos geridos.</translation>
 <translation id="9147029539363974059">Enviar registos do sistema para o servidor de gestão para permitir aos
       administradores monitorizar esses registos.
 
@@ -2671,6 +2681,11 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="9150416707757015439">Esta política está obsoleta. Em alternativa, utilize IncognitoModeAvailability. Ativa o modo de navegação anónima no <ph name="PRODUCT_NAME" />. Se esta definição estiver ativada ou não estiver configurada, os utilizadores podem abrir páginas Web no modo de navegação anónima. Se esta definição estiver desativada, os utilizadores não podem abrir páginas Web no modo de navegação anónima. Se deixar esta política por definir, a definição estará ativada e o utilizador poderá utilizar o modo de navegação anónima.</translation>
 <translation id="915194831143859291">Se esta política estiver definida como falsa ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> permite ao utilizador encerrar o dispositivo.
       Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> aciona um reinício quando o utilizador encerrar o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de encerramento na IU por botões de reinício. Se o utilizador encerrar o dispositivo através do botão ligar/desligar, este não reinicia automaticamente, mesmo que a política esteja ativada.</translation>
+<translation id="917887642534332939">Esta definição controla o comprimento mínimo de um PIN.
+
+          O comprimento mínimo absoluto de um PIN é 1. Os valores inferiores a 1 são tratados como 1.
+
+          A predefinição e o comprimento mínimo recomendado de um PIN são 6 dígitos.</translation>
 <translation id="9187743794267626640">Desativar a montagem do armazenamento externo</translation>
 <translation id="9197740283131855199">Percentagem que determina a escala do atraso do esbatimento do ecrã se o utilizador se tornar ativo depois do esbatimento</translation>
 <translation id="9200828125069750521">Parâmetros do URL de imagem que utilize POST</translation>

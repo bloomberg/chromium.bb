@@ -988,7 +988,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="3915395663995367577">URL d'un fitxer .pac d'un servidor intermediari</translation>
 <translation id="3926940573869375969">Configura els dissenys de teclat que s'admeten a la pantalla d'inici de sessió de <ph name="PRODUCT_OS_NAME" />.
 
-      Si aquesta política es defineix en una llista d'identificadors de mètodes d'introducció, els mètodes d'introducció indicats estaran disponibles a la pantalla d'inici de sessió. Es preseleccionarà el primer mètode d'introducció de la llista. L'agrupació d’un usuari es mostrarà al centre de la pantalla d'inici de sessió, però també es mostrarà el mètode d'introducció que l'usuari ha fet servir fa més temps, a més dels mètodes d'introducció indicats per aquesta política. Si aquesta política no es defineix, els mètodes d'introducció de la pantalla d'inici de sessió es derivaran de la configuració regional en què es mostri la pantalla d'inici de sessió. S'ignoraran els valors que no siguin identificadors vàlids del mètode d'introducció.</translation>
+      Si aquesta política es defineix en una llista d'identificadors de mètodes d'introducció, els mètodes d'introducció indicats estaran disponibles a la pantalla d'inici de sessió. Es preseleccionarà el primer mètode d'introducció de la llista. La selecció d'usuaris es mostrarà al centre de la pantalla d'inici de sessió, però també es mostrarà el mètode d'introducció que l'usuari ha fet servir més recentment, a més dels mètodes d'introducció indicats per aquesta política. Si aquesta política no es defineix, els mètodes d'introducció de la pantalla d'inici de sessió es derivaran de la configuració regional en què es mostri la pantalla d'inici de sessió. S'ignoraran els valors que no siguin identificadors vàlids del mètode d'introducció.</translation>
 <translation id="3939893074578116847">Envia paquets de xarxa al servidor de gestió per supervisar l'estat en línia, de manera que el servidor pugui detectar si el dispositiu no té connexió.
 
       Si aquesta política s'estableix en "true", s'envien paquets de xarxa de supervisió (anomenats <ph name="HEARTBEATS_TERM" />).
@@ -1211,6 +1211,11 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Per veure patrons d'exemple, consulteu l'enllaç https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Obre una llista d'URL</translation>
 <translation id="4680961954980851756">Activa l'emplenament automàtic</translation>
+<translation id="4722399051042571387">Si s'estableix com a "false", els usuaris no podran definir codis PIN poc segurs i fàcils d'esbrinar.
+
+          Exemples de codis PIN poc segurs: codis PIN que només continguin un sol dígit repetit diverses vegades (1111), codis PIN consecutius que augmentin d'un en un (1234) o que disminueixin d'un en un (4321) i codis PIN que s'utilitzin de manera habitual.
+
+          De manera predeterminada, els usuaris rebran un advertiment, no un error, si es considera que el PIN és poc segur.</translation>
 <translation id="4723829699367336876">Activa que es pugui travessar el tallafoc des d'un client d'accés remot</translation>
 <translation id="4725528134735324213">Activa Android Backup Service</translation>
 <translation id="4733471537137819387">Les polítiques relacionades amb l'autenticació HTTP integrada.</translation>
@@ -1397,12 +1402,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
       Si s'estableix el valor d'aquesta política en un valor diferent a 0, la sessió de l'usuari de la demostració que tingui iniciada la sessió actualment es tancarà automàticament després d'un període d'inactivitat d'una durada determinada.
 
       El valor de la política s'ha d'especificar en mil·lisegons.</translation>
-<translation id="5506213378070007377">Envia al servidor informació sobre l'estat d'Android.
-
-      Si la política s'estableix en "false", no s'envia informació d'estat.
-      Si s'estableix en "true" o es deixa sense establir, s'envia informació d'estat.
-
-      Aquesta política només s'aplica si les aplicacions per a Android estan activades.</translation>
 <translation id="5511702823008968136">Activa la barra d'adreces d'interès</translation>
 <translation id="5512418063782665071">URL de la pàgina d'inici</translation>
 <translation id="5523812257194833591">Sessió pública per iniciar la sessió automàticament després d'un retard.
@@ -1736,6 +1735,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si decideixes detectar automàticament el servidor intermediari, es proporcionarà l'URL de script "http://wpad/wpad.dat" a les aplicacions per a Android. No s'utilitzarà cap altra part del protocol de detecció automàtica del servidor intermediari.
 
           Si decideixes fer servir un script de servidor intermediari .pac, es proporcionarà l'URL de script a les aplicacions per a Android.</translation>
+<translation id="6435127182262044446">Aquesta opció de configuració controla la longitud màxima que pot tenir un PIN.
+
+          Si es configura en 0 o una xifra inferior, no hi ha cap longitud màxima i l'usuari pot definir un PIN tan llarg com vulgui.
+
+          Si es configura en un valor inferior a PinUnlockMinimumLength però superior a 0, la longitud màxima és igual que la mínima.
+
+          El valor predeterminat d'aquesta opció de configuració és sense longitud màxima.</translation>
 <translation id="6467433935902485842">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès executar els connectors. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPluginsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="6473334971332473690">Permet que s'utilitzi Smart Lock en dispositius <ph name="PRODUCT_OS_NAME" />.
 
@@ -2610,6 +2616,13 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
           Els gestors de protocol registrats amb la política es combinen amb els que ha registrat l'usuari i tots dos es poden fer servir. L'usuari pot substituir els gestors de protocol que s'han instal·lat amb la política si instal·la un nou gestor de protocol predeterminat, però no pot suprimir un gestor de protocol que s'hagi registrat amb la política.</translation>
 <translation id="913195841488580904">Bloqueja l'accés a una llista d'URL</translation>
 <translation id="9135033364005346124">Activa el servidor intermediari <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="9136253551939494882">Una llista blanca en què es controlen quins modes de desbloqueig ràpid pot configurar l'usuari per desbloquejar la pantalla de bloqueig.
+
+          Aquest valor està format per una llista de cadenes; les entrades vàlides de la llista són: "all", "PIN". En afegir "all" a la llista, significa que l'usuari pot utilitzar tots els modes de desbloqueig ràpid, inclosos els que s'implementin en el futur. En cas contrari, només podrà utilitzar els modes de desbloqueig ràpid que apareguin a la llista.
+
+          Per exemple, per permetre tots els modes de desbloqueig ràpid, feu servir ["all"]. Per permetre només el desbloqueig amb PIN, utilitzeu ["PIN"]. Per desactivar tots els modes de desbloqueig ràpid, feu servir [].
+
+          De manera predeterminada, no es pot utilitzar cap mode de desbloqueig ràpid en els dispositius gestionats.</translation>
 <translation id="9147029539363974059">Envia registres del sistema al servidor de gestió, perquè
       els administradors puguin supervisar-los.
 
@@ -2618,6 +2631,11 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="9150416707757015439">Aquesta política està obsoleta. En lloc seu, utilitzeu IncognitoModeAvailability. Activa el mode d'incògnit a <ph name="PRODUCT_NAME" />. Si aquest paràmetre està activat o no està configurat, els usuaris podran obrir pàgines web en mode d'incògnit. Si està desactivat, els usuaris no podran obrir pàgines web en mode d'incògnit. Si no es defineix aquesta política, aquest paràmetre s'activarà i l'usuari podrà utilitzar el mode d'incògnit.</translation>
 <translation id="915194831143859291">Si aquesta política s'estableix en false o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà que l'usuari apagui el dispositiu.
       Si aquesta política s'estableix en true, <ph name="PRODUCT_OS_NAME" /> reiniciarà el dispositiu quan l'usuari l'apagui. És a dir, <ph name="PRODUCT_OS_NAME" /> substitueix tots els botons d'apagat de la interfície d'usuari per botons de reinici. Per tant, si l'usuari apaga el dispositiu amb el botó d'engegada, es reiniciarà de manera automàtica, encara que la política estigui activada.</translation>
+<translation id="917887642534332939">Aquesta opció de configuració controla la longitud mínima que pot tenir un PIN.
+
+          La longitud mínima absoluta del PIN és d'1 dígit; els valors inferiors a 1 es tracten com a 1.
+
+          La longitud mínima recomanada i predeterminada del PIN és de 6 dígits.</translation>
 <translation id="9187743794267626640">Desactivació del muntatge d'emmagatzematge extern</translation>
 <translation id="9197740283131855199">Percentatge que permet ajustar el temps d'espera d'inactivitat de la pantalla si l'usuari passa a estar actiu després de la inactivitat.</translation>
 <translation id="9200828125069750521">Paràmetres de l'URL de la imatge que utilitza POST</translation>

@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Транслітерація (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Завантажити зображення</translation>
 <translation id="1029317248976101138">Збільшити</translation>
-<translation id="1029595648591494741">Спробувати <ph name="EXTENSION_NAME" />?</translation>
 <translation id="1030173864176315846">На принтері "<ph name="PRINTER_NAME" />" надруковано стільки сторінок: <ph name="PAGE_NUMBER" /></translation>
 <translation id="1031362278801463162">Завантаження попереднього перегляду</translation>
 <translation id="1031573127485938293">Запитувати (згідно з правилом)</translation>
@@ -1831,7 +1830,6 @@
 <translation id="3359256513598016054">Обмеження політики сертифіката</translation>
 <translation id="335985608243443814">Переглянути...</translation>
 <translation id="3360297538363969800">Помилка друку. Перевірте принтер і повторіть спробу.</translation>
-<translation id="3361481787422913716">Переглянути налаштування звіту</translation>
 <translation id="336497260564123876">Пароль збережено. Увійдіть в обліковий запис Chrome, щоб синхронізувати паролі на всіх пристроях.</translation>
 <translation id="3367813778245106622">Увійдіть знову, щоб почати синхронізацію</translation>
 <translation id="3368922792935385530">Підключено</translation>
@@ -2007,7 +2005,6 @@
 <translation id="358796204584394954">Введіть цей код на пристрої <ph name="DEVICE_NAME" />, щоб підключити:</translation>
 <translation id="3588662957555259973">* Фото профілю Google</translation>
 <translation id="3590194807845837023">Розблокувати профіль і перезапустити</translation>
-<translation id="3590559774363307859">Пароль збережено. Він і всі ваші <ph name="SAVED_PASSWORDS_LINK" /> доступні в будь-якому веб-переглядачі.</translation>
 <translation id="3592260987370335752">&amp;Докладніше</translation>
 <translation id="359283478042092570">Увійти</translation>
 <translation id="3593965109698325041">Обмеження імені сертифіката</translation>
@@ -2832,7 +2829,6 @@
 <translation id="4764865176798926079">Правило domContentLoaded для основного фрейму та всі завантаження ресурсів, початі до domContentLoaded (компоненти iframe ігноруються).</translation>
 <translation id="4768332406694066911">Вас ідентифікують сертифікати від цих організацій</translation>
 <translation id="4768698601728450387">Обрізати зображення</translation>
-<translation id="4773696473262035477">Він і всі ваші <ph name="SAVED_PASSWORDS_LINK" /> доступні в будь-якому веб-переглядачі.</translation>
 <translation id="4776917500594043016">Пароль користувача  <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Збільшити</translation>
 <translation id="4780321648949301421">Зберегти сторінку як...</translation>
@@ -5385,7 +5381,6 @@
 <translation id="8260864402787962391">Миша</translation>
 <translation id="8261378640211443080">Це розширення встановлено не із сайту <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />. Можливо, його було додано без вашого відома.</translation>
 <translation id="8261387128019234107">Додати обліковий запис у профіль <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Можуть:</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8261580862248730866">Винятки для мікрофона</translation>
 <translation id="8261673729476082470">Імпортування <ph name="FILE_COUNT" /> фото на <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" /></translation>

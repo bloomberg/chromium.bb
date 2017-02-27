@@ -150,7 +150,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="3638472932233958418">Přednačítat stránky</translation>
 <translation id="3691593122358196899">Záložka přidána do složky <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Pokud je tento příznak aktivován, bude omnibox zahrnovat návrhy webových stránek, které jsou vysílány zařízeními v okolí.</translation>
-<translation id="3706658020782046159">Chcete-li zobrazit způsoby dopravy a požadavky, vyberte dodací adresu.</translation>
 <translation id="3738139272394829648">Vyhledání klepnutím</translation>
 <translation id="3771033907050503522">Anonymní karty</translation>
 <translation id="3783017676699494206">Uložit obrázek</translation>
@@ -211,12 +210,10 @@ Vaše data jsou šifrována pomocí heslové fráze pro synchronizaci. Chcete-li
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Přidat kartu...</translation>
 <translation id="5228579091201413441">Aktivace synchronizace</translation>
-<translation id="5230733896359313003">Dodací adresa</translation>
 <translation id="5244474230056479698">Údaje se synchronizují do účtu <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5327248766486351172">Název</translation>
-<translation id="5332219387342487447">Způsob dopravy</translation>
 <translation id="5388358297987318779">Otevřít obrázek</translation>
 <translation id="5409365236829784218">Nemáte nainstalovanou žádnou aplikaci, která by tento soubor uměla otevřít.</translation>
 <translation id="54401264925851789">Informace o zabezpečení stránky</translation>
@@ -343,7 +340,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7671141431838911305">INSTALOVAT</translation>
-<translation id="7682287625158474539">Doprava</translation>
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="7769602470925380267">Přijmout a odhlásit se</translation>
 <translation id="7772032839648071052">Potvrďte heslovou frázi</translation>

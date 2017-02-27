@@ -77,7 +77,6 @@
 <translation id="3147142846278915599">启动器（正在同步应用…）</translation>
 <translation id="315116470104423982">移动数据</translation>
 <translation id="3157169093162779309">启用旋转锁定</translation>
-<translation id="3164154768979021380">正在退出停靠模式</translation>
 <translation id="3294437725009624529">访客</translation>
 <translation id="3335772982573114336">新建记事</translation>
 <translation id="3364721542077212959">触控笔工具</translation>
@@ -143,7 +142,6 @@
 <translation id="5548285847212963613">扩展程序“<ph name="EXTENSION_NAME" />”可帮助连接到此网络。</translation>
 <translation id="5571066253365925590">蓝牙已启用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
-<translation id="5759815399269068793"><ph name="DEVICE_TYPE" /> 连接到外接显示器时，即使合上盖子，也可继续使用。</translation>
 <translation id="5777841717266010279">要停止屏幕共享吗？</translation>
 <translation id="57838592816432529">静音</translation>
 <translation id="5825747213122829519">您的输入法已更改为“<ph name="INPUT_METHOD_ID" />”。
@@ -213,7 +211,6 @@
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />不支持<ph name="SPECIFIED_RESOLUTION" />。分辨率已改为<ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">表情符号面板</translation>
-<translation id="7573962313813535744">停靠模式</translation>
 <translation id="7581273696622423628">参与调查</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
 <translation id="7649070708921625228">帮助</translation>

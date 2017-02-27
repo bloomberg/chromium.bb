@@ -48,7 +48,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय हो रहा है</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया दुबारा पूछें कि यह पासकुंजी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">कोई त्रुटि आई</translation>
+<translation id="2475982808118771221">कोई गड़बड़ी आई</translation>
 <translation id="2509468283778169019">CAPS LOCK चालू है</translation>
 <translation id="2532589005999780174">उच्च कंट्रास्ट मोड</translation>
 <translation id="2700058918926273959">सत्र <ph name="SESSION_TIME_REMAINING" /> में समाप्त होने वाला है. आप प्रस्थान कर जाएंगे.</translation>
@@ -77,7 +77,6 @@
 <translation id="3147142846278915599">लॉन्‍चर (ऐप्‍स समन्‍वयित किए जा रहे हैं...)</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="3157169093162779309">रोटेशन लॉक को सक्षम करें</translation>
-<translation id="3164154768979021380">डॉक किया गया मोड से बाहर निकाला जा रहा है</translation>
 <translation id="3294437725009624529">अतिथि</translation>
 <translation id="3335772982573114336">नया नोट</translation>
 <translation id="3364721542077212959">स्टाइलस टूल</translation>
@@ -143,7 +142,6 @@
 <translation id="5548285847212963613">"<ph name="EXTENSION_NAME" />" एक्‍सटेंशन इस नेटवर्क से कनेक्‍ट करने में सहायता कर सकता है.</translation>
 <translation id="5571066253365925590">ब्लूटूथ सक्षम किया गया</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
-<translation id="5759815399269068793">आप अपने <ph name="DEVICE_TYPE" /> का उपयोग करना तब भी जारी रख सकते हैं जब यह किसी बाहरी स्क्रीन से कनेक्ट किया हुआ हो, भले ही उसका लिड बंद हो.</translation>
 <translation id="5777841717266010279">स्‍क्रीन साझाकरण बंद करें?</translation>
 <translation id="57838592816432529">आवाज़ बंद करें</translation>
 <translation id="5825747213122829519">आपकी इनपुट विधि <ph name="INPUT_METHOD_ID" /> में बदल गई है.
@@ -212,7 +210,6 @@
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> का समर्थन नहीं करता. रिज़ॉल्यूशन को <ph name="FALLBACK_RESOLUTION" /> में बदल दिया गया था</translation>
 <translation id="7562368315689366235">इमोजी पैलेट</translation>
-<translation id="7573962313813535744">डॉक मोड</translation>
 <translation id="7581273696622423628">सर्वेक्षण में भाग लें</translation>
 <translation id="7593891976182323525">Search या Shift</translation>
 <translation id="7649070708921625228">सहायता</translation>

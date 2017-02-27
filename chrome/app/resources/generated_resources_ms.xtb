@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Pengalihan huruf (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Muatkan Imej</translation>
 <translation id="1029317248976101138">Zum</translation>
-<translation id="1029595648591494741">Cuba "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="1030173864176315846">Berjaya mencetak <ph name="PAGE_NUMBER" /> halaman pada <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Memuatkan pratonton</translation>
 <translation id="1031573127485938293">Tanya (oleh dasar)</translation>
@@ -1832,7 +1831,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Kekangan Dasar Sijil</translation>
 <translation id="335985608243443814">Semak imbas...</translation>
 <translation id="3360297538363969800">Pencetakan gagal. Sila periksa pencetak anda dan cuba lagi.</translation>
-<translation id="3361481787422913716">Lihat tetapan laporan</translation>
 <translation id="336497260564123876">Kata laluan disimpan. Log masuk ke Chrome untuk mendapatkan kata laluan pada semua peranti anda.</translation>
 <translation id="3367813778245106622">Log masuk semula untuk memulakan penyegerakan</translation>
 <translation id="3368922792935385530">Disambungkan</translation>
@@ -2008,7 +2006,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Taip kod ini pada "<ph name="DEVICE_NAME" />" untuk digandingkan:</translation>
 <translation id="3588662957555259973">* Foto Profil Google</translation>
 <translation id="3590194807845837023">Buka Profil dan Lancarkan Semula</translation>
-<translation id="3590559774363307859">Kata laluan disimpan. Anda boleh mengaksesnya dan semua <ph name="SAVED_PASSWORDS_LINK" /> anda daripada mana-mana penyemak imbas.</translation>
 <translation id="3592260987370335752">&amp;Ketahui lebih lanjut</translation>
 <translation id="359283478042092570">Masuk</translation>
 <translation id="3593965109698325041">Kekangan Nama Sijil</translation>
@@ -2832,7 +2829,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4764865176798926079">domContentLoaded bingkai utama dan pemuatan semua sumber bermula sebelum domContentLoaded (iframe diabaikan).</translation>
 <translation id="4768332406694066911">Anda mempunyai sijil daripada organisasi ini yang mengenal pasti anda</translation>
 <translation id="4768698601728450387">Pangkas imej</translation>
-<translation id="4773696473262035477">Anda boleh mengaksesnya dan semua <ph name="SAVED_PASSWORDS_LINK" /> anda dari mana-mana penyemak imbas.</translation>
 <translation id="4776917500594043016">Kata laluan untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Zum</translation>
 <translation id="4780321648949301421">Simpan Halaman Sebagai...</translation>
@@ -5384,7 +5380,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8260864402787962391">Tetikus</translation>
 <translation id="8261378640211443080">Sambungan ini tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
 <translation id="8261387128019234107">Tambah akaun untuk <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Item boleh:</translation>
 <translation id="8261506727792406068">Padam</translation>
 <translation id="8261580862248730866">Pengecualian mikrofon</translation>
 <translation id="8261673729476082470">Menyandarkan <ph name="FILE_COUNT" /> foto pada <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

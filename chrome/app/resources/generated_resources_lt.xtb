@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteracija (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Įkelti vaizdą</translation>
 <translation id="1029317248976101138">Keisti mastelį</translation>
-<translation id="1029595648591494741">Išbandyti „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="1030173864176315846">Puslapiai (<ph name="PAGE_NUMBER" />) sėkmingai išspausdinti spausdintuvu „<ph name="PRINTER_NAME" />“</translation>
 <translation id="1031362278801463162">Įkeliama peržiūra</translation>
 <translation id="1031573127485938293">Klausti (atsižvelgiant į politiką)</translation>
@@ -1832,7 +1831,6 @@ Iš <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Sertifikato politikos apribojimai</translation>
 <translation id="335985608243443814">Naršyti...</translation>
 <translation id="3360297538363969800">Spausdinti nepavyko. Patikrinkite spausdintuvą ir bandykite dar kartą.</translation>
-<translation id="3361481787422913716">Peržiūrėti ataskaitos nustatymus</translation>
 <translation id="336497260564123876">Slaptažodis išsaugotas. Jei norite naudoti slaptažodžius visuose savo įrenginiuose, prisijunkite prie „Chrome“.</translation>
 <translation id="3367813778245106622">Prisijunkite dar kartą, kad pradėtumėte sinchronizavimą</translation>
 <translation id="3368922792935385530">Prijungta</translation>
@@ -2008,7 +2006,6 @@ Iš <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Įveskite šį kodą įrenginyje „<ph name="DEVICE_NAME" />“, kad jį susietumėte:</translation>
 <translation id="3588662957555259973">* „Google“ profilio nuotrauka</translation>
 <translation id="3590194807845837023">Atrakinti profilį ir paleisti iš naujo</translation>
-<translation id="3590559774363307859">Slaptažodis išsaugotas. Jį ir visus <ph name="SAVED_PASSWORDS_LINK" /> galite pasiekti naudodami bet kurią naršyklę.</translation>
 <translation id="3592260987370335752">&amp;Sužinokite daugiau</translation>
 <translation id="359283478042092570">Įvesti</translation>
 <translation id="3593965109698325041">Sertifikato pavadinimo apribojimai</translation>
@@ -2833,7 +2830,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="4764865176798926079">Pagrindinio rėmelio „domContentLoaded“ ir visos išteklių įkeltys pradėtos prieš „domContentLoaded“ („iframe“ nepaisomi).</translation>
 <translation id="4768332406694066911">Turite jus identifikuojančius sertifikatus iš šių organizacijų</translation>
 <translation id="4768698601728450387">Apkirpti vaizdą</translation>
-<translation id="4773696473262035477">Jį ir visus <ph name="SAVED_PASSWORDS_LINK" /> galite pasiekti iš bet kurios naršyklės..</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> slaptažodis</translation>
 <translation id="4779083564647765204">Keisti mastelį</translation>
 <translation id="4780321648949301421">Išsaugoti puslapį kaip...</translation>
@@ -5389,7 +5385,6 @@ likęs akumuliatoriaus laikas</translation>
 <translation id="8260864402787962391">Pelė</translation>
 <translation id="8261378640211443080">Šio plėtinio nėra „<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />“ sąraše. Jis galėjo būti pridėtas be jūsų žinios.</translation>
 <translation id="8261387128019234107">Pridėti profiliui „<ph name="PROFILE_NAME" />“ skirtą paskyrą</translation>
-<translation id="8261490674758214762">Leidžiama:</translation>
 <translation id="8261506727792406068">Panaikinti</translation>
 <translation id="8261580862248730866">Mikrofono išimtys</translation>
 <translation id="8261673729476082470">Kuriamos atsarginės nuotraukų (<ph name="FILE_COUNT" />) kopijos <ph name="BEGIN_LINK" />„Google“ diske<ph name="END_LINK" /></translation>

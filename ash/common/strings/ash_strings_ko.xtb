@@ -77,7 +77,6 @@
 <translation id="3147142846278915599">런처(앱 동기화 중...)</translation>
 <translation id="315116470104423982">모바일 데이터</translation>
 <translation id="3157169093162779309">회전 잠금 사용</translation>
-<translation id="3164154768979021380">고정 모드 종료 중</translation>
 <translation id="3294437725009624529">손님</translation>
 <translation id="3335772982573114336">새 메모</translation>
 <translation id="3364721542077212959">스타일러스 도구</translation>
@@ -143,7 +142,6 @@
 <translation id="5548285847212963613">확장 프로그램('<ph name="EXTENSION_NAME" />')을 사용하여 이 네트워크에 연결할 수 있습니다.</translation>
 <translation id="5571066253365925590">블루투스를 사용함</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> <ph name="SHORT_WEEKDAY" /></translation>
-<translation id="5759815399269068793">외부 디스플레이에 연결되어 있는 동안에는 덮개가 닫혀 있더라도 <ph name="DEVICE_TYPE" />을(를) 계속 사용할 수 있습니다.</translation>
 <translation id="5777841717266010279">화면 공유를 중단하시겠습니까?</translation>
 <translation id="57838592816432529">음소거</translation>
 <translation id="5825747213122829519">입력 방법이 <ph name="INPUT_METHOD_ID" />(으)로 변경되었습니다.
@@ -213,7 +211,6 @@
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="7562368315689366235">그림 이모티콘 팔레트</translation>
-<translation id="7573962313813535744">고정 모드</translation>
 <translation id="7581273696622423628">설문조사 참여</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7649070708921625228">도움말</translation>

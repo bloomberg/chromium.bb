@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">การทับศัพท์ (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">โหลดภาพ</translation>
 <translation id="1029317248976101138">ซูม</translation>
-<translation id="1029595648591494741">ลองใช้ "<ph name="EXTENSION_NAME" />" ดูไหม</translation>
 <translation id="1030173864176315846">พิมพ์ <ph name="PAGE_NUMBER" /> หน้าไปยัง <ph name="PRINTER_NAME" /> สำเร็จแล้ว</translation>
 <translation id="1031362278801463162">กำลังโหลดหน้าตัวอย่าง</translation>
 <translation id="1031573127485938293">ขอ (โดยนโยบาย)</translation>
@@ -1831,7 +1830,6 @@
 <translation id="3359256513598016054">ข้อจำกัดนโยบายใบรับรอง</translation>
 <translation id="335985608243443814">เรียกดู...</translation>
 <translation id="3360297538363969800">การพิมพ์ล้มเหลว โปรดตรวจสอบเครื่องพิมพ์และลองอีกครั้ง</translation>
-<translation id="3361481787422913716">ดูการตั้งค่ารายงาน</translation>
 <translation id="336497260564123876">บันทึกรหัสผ่านแล้ว ลงชื่อเข้าใช้ Chrome เพื่อรับรหัสผ่านในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="3367813778245106622">ลงชื่อเข้าใช้อีกครั้งเพื่อเริ่มซิงค์</translation>
 <translation id="3368922792935385530">เชื่อมต่อแล้ว</translation>
@@ -2007,7 +2005,6 @@
 <translation id="358796204584394954">พิมพ์รหัสนี้บน "<ph name="DEVICE_NAME" />" เพื่อจับคู่:</translation>
 <translation id="3588662957555259973">* รูปโปรไฟล์ Google</translation>
 <translation id="3590194807845837023">ปลดล็อกโปรไฟล์และเปิดใหม่</translation>
-<translation id="3590559774363307859">บันทึกรหัสผ่านแล้ว คุณสามารถเข้าถึงรหัสผ่านและ <ph name="SAVED_PASSWORDS_LINK" /> ทั้งหมดได้จากเบราว์เซอร์ใดก็ได้</translation>
 <translation id="3592260987370335752">&amp;เรียนรู้เพิ่มเติม</translation>
 <translation id="359283478042092570">ป้อน</translation>
 <translation id="3593965109698325041">ข้อจำกัดของชื่อใบรับรอง</translation>
@@ -2832,7 +2829,6 @@
 <translation id="4764865176798926079">การโหลด domContentLoaded ของเฟรมหลักและแหล่งข้อมูลทั้งหมดเริ่มขึ้นก่อน domContentLoaded (ไม่สนใจ iframe)</translation>
 <translation id="4768332406694066911">คุณมีใบรับรองจากองค์กรเหล่านี้ซึ่งระบุถึงตัวคุณ</translation>
 <translation id="4768698601728450387">ตัดภาพ</translation>
-<translation id="4773696473262035477">คุณสามารถเข้าถึงรหัสผ่านและ <ph name="SAVED_PASSWORDS_LINK" /> ทั้งหมดได้จากเบราว์เซอร์ใดก็ได้</translation>
 <translation id="4776917500594043016">รหัสผ่านของ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">ซูม</translation>
 <translation id="4780321648949301421">บันทึกหน้าเป็น...</translation>
@@ -5034,7 +5030,7 @@
 <translation id="7788668840732459509">ตำแหน่ง:</translation>
 <translation id="7791543448312431591">เพิ่ม</translation>
 <translation id="7792012425874949788">เกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
-<translation id="7792189849306326819">เมนูการเลือกภาษา ภาษาที่เลือกอยู่ในขณะนี้คือ <ph name="LANGUAGE" /></translation>
+<translation id="7792189849306326819">เมนูการเลือกภาษา ภาษาที่เลือกอยู่ในขณะนี้คือ<ph name="LANGUAGE" /></translation>
 <translation id="7792388396321542707">หยุดการแชร์</translation>
 <translation id="7794058097940213561">ฟอร์แมตอุปกรณ์</translation>
 <translation id="779798319486679958">เลือกประเภทแบบอักษร</translation>
@@ -5384,7 +5380,6 @@
 <translation id="8260864402787962391">เมาส์</translation>
 <translation id="8261378640211443080">ส่วนขยายนี้ไม่ได้ระบุไว้ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> และอาจถูกเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
 <translation id="8261387128019234107">เพิ่มบัญชีสำหรับ <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">แอปพลิเคชันและส่วนขยายสามารถ:</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8261580862248730866">ข้อยกเว้นของไมโครโฟน</translation>
 <translation id="8261673729476082470">กำลังสำรองรูปภาพ <ph name="FILE_COUNT" /> รูปไปยัง <ph name="BEGIN_LINK" />Google ไดรฟ์<ph name="END_LINK" /></translation>

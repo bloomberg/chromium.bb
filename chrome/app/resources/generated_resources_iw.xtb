@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">‏תעתוק (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">טען תמונה</translation>
 <translation id="1029317248976101138">התקרב</translation>
-<translation id="1029595648591494741">רוצה לנסות את "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> עמודים הודפסו בהצלחה ב-<ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">טוען תצוגה מקדימה</translation>
 <translation id="1031573127485938293">שאל (לפי מדיניות)</translation>
@@ -1825,7 +1824,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3359256513598016054">מגבלות מדיניות אישורים </translation>
 <translation id="335985608243443814">דפדף...</translation>
 <translation id="3360297538363969800">ההדפסה נכשלה. בדוק את המדפסת ונסה שוב.</translation>
-<translation id="3361481787422913716">הצג את הגדרות הדיווח</translation>
 <translation id="336497260564123876">‏הסיסמה נשמרה. כדי לקבל את הסיסמאות שלך בכל המכשירים, היכנס ל-Chrome.</translation>
 <translation id="3367813778245106622">היכנס שוב כדי להתחיל בסנכרון</translation>
 <translation id="3368922792935385530">מחובר</translation>
@@ -2001,7 +1999,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="358796204584394954">הקלד את הקוד הזה ב-"<ph name="DEVICE_NAME" />" כדי לבצע התאמה:</translation>
 <translation id="3588662957555259973">‏* תמונת פרופיל Google</translation>
 <translation id="3590194807845837023">בטל נעילת פרופיל והפעל מחדש</translation>
-<translation id="3590559774363307859">הסיסמה נשמרה. תוכל לגשת אליה ולכל <ph name="SAVED_PASSWORDS_LINK" /> שלך מכל דפדפן.</translation>
 <translation id="3592260987370335752">למידע נוסף</translation>
 <translation id="359283478042092570">הזן</translation>
 <translation id="3593965109698325041">מגבלות שם אישור </translation>
@@ -2826,7 +2823,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4764865176798926079">‏domContentLoaded של המסגרת הראשית וכל טעינות המשאבים שהחלו לפני domContentLoaded (מסגרות iframe לא מובאות בחשבון).</translation>
 <translation id="4768332406694066911">יש לך אישורים מארגונים אלה שמזהים אותך</translation>
 <translation id="4768698601728450387">חתוך תמונה</translation>
-<translation id="4773696473262035477">תוכל לגשת אליה ולכל <ph name="SAVED_PASSWORDS_LINK" /> שלך מכל דפדפן.</translation>
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">מרחק מתצוגה</translation>
 <translation id="4780321648949301421">שמור דף כ...</translation>
@@ -5370,7 +5366,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8260864402787962391">עכבר</translation>
 <translation id="8261378640211443080">התוסף הזה לא רשום ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוסף ללא ידיעתך.</translation>
 <translation id="8261387128019234107">הוסף חשבון עבור <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">יכולים:</translation>
 <translation id="8261506727792406068">מחק</translation>
 <translation id="8261580862248730866">חריגי מצלמה</translation>
 <translation id="8261673729476082470">‏מגבה <ph name="FILE_COUNT" /> תמונות ב-<ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

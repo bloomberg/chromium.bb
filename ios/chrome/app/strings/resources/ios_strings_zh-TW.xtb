@@ -150,7 +150,6 @@
 <translation id="3638472932233958418">預先載入網頁</translation>
 <translation id="3691593122358196899">已將書籤加入「<ph name="FOLDER_TITLE" />」</translation>
 <translation id="3692781555820666866">啟用後，網址列的建議項目會包含附近裝置播送的網頁。</translation>
-<translation id="3706658020782046159">選取運送地址即可查看運送方式和需求條件。</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3783017676699494206">儲存圖片</translation>
@@ -211,12 +210,10 @@
 <translation id="5197255632782567636">網際網路</translation>
 <translation id="5198972191746488848">新增信用卡...</translation>
 <translation id="5228579091201413441">啟用同步功能</translation>
-<translation id="5230733896359313003">運送地址</translation>
 <translation id="5244474230056479698">同步到 <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5327248766486351172">名稱</translation>
-<translation id="5332219387342487447">運送方式</translation>
 <translation id="5388358297987318779">開啟圖片</translation>
 <translation id="5409365236829784218">未安裝可開啟這個檔案的應用程式。</translation>
 <translation id="54401264925851789">網頁安全性資訊</translation>
@@ -343,7 +340,6 @@
 <translation id="7649070708921625228">說明</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7671141431838911305">安裝</translation>
-<translation id="7682287625158474539">寄送地址</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7769602470925380267">接受並登出</translation>
 <translation id="7772032839648071052">確認通關密語</translation>

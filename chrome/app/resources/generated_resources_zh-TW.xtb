@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">音譯 (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">載入圖片</translation>
 <translation id="1029317248976101138">縮放</translation>
-<translation id="1029595648591494741">您要試用「<ph name="EXTENSION_NAME" />」嗎？</translation>
 <translation id="1030173864176315846">已成功透過「<ph name="PRINTER_NAME" />」列印 <ph name="PAGE_NUMBER" /> 頁</translation>
 <translation id="1031362278801463162">正在載入預覽畫面</translation>
 <translation id="1031573127485938293">詢問 (依政策)</translation>
@@ -1831,7 +1830,6 @@
 <translation id="3359256513598016054">憑證原則限制</translation>
 <translation id="335985608243443814">瀏覽...</translation>
 <translation id="3360297538363969800">列印失敗。請檢查您的印表機，然後再試一次。</translation>
-<translation id="3361481787422913716">查看報告設定</translation>
 <translation id="336497260564123876">已儲存密碼。如要在所有裝置上使用密碼，請登入 Chrome。</translation>
 <translation id="3367813778245106622">如要開始同步處理，請重新登入</translation>
 <translation id="3368922792935385530">已連線</translation>
@@ -2007,7 +2005,6 @@
 <translation id="358796204584394954">在「<ph name="DEVICE_NAME" />」上輸入此代碼即可配對：</translation>
 <translation id="3588662957555259973">* Google 個人資料相片</translation>
 <translation id="3590194807845837023">解除鎖定設定檔並重新啟動</translation>
-<translation id="3590559774363307859">密碼已儲存。您可以透過任何瀏覽器存取該密碼和您的所有 <ph name="SAVED_PASSWORDS_LINK" />。</translation>
 <translation id="3592260987370335752">瞭解詳情(&amp;L)</translation>
 <translation id="359283478042092570">輸入</translation>
 <translation id="3593965109698325041">憑證名稱限制</translation>
@@ -2829,7 +2826,6 @@
 <translation id="4764865176798926079">主頁框的 domContentLoaded 和 domContentLoaded 之前開始載入的所有資源 (略過 iframe)。</translation>
 <translation id="4768332406694066911">您有這些機構核發給您的憑證</translation>
 <translation id="4768698601728450387">裁剪圖片</translation>
-<translation id="4773696473262035477">您可以透過任何瀏覽器存取該密碼和您的所有 <ph name="SAVED_PASSWORDS_LINK" />。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
 <translation id="4779083564647765204">縮放</translation>
 <translation id="4780321648949301421">另存網頁...</translation>
@@ -5376,7 +5372,6 @@
 <translation id="8260864402787962391">滑鼠</translation>
 <translation id="8261378640211443080">這個擴充功能未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中，可能在您不知情的情況下加入瀏覽器。</translation>
 <translation id="8261387128019234107">為 <ph name="PROFILE_NAME" /> 新增帳戶</translation>
-<translation id="8261490674758214762">可用權限：</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8261580862248730866">麥克風例外狀況</translation>
 <translation id="8261673729476082470">正在將 <ph name="FILE_COUNT" /> 張相片備份到 <ph name="BEGIN_LINK" />Google 雲端硬碟<ph name="END_LINK" /></translation>

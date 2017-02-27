@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Chuyển ngữ (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Tải hình ảnh</translation>
 <translation id="1029317248976101138">Thu phóng</translation>
-<translation id="1029595648591494741">Dùng thử "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="1030173864176315846">Đã in thành công <ph name="PAGE_NUMBER" /> trang tới <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Đang tải chế độ xem trước</translation>
 <translation id="1031573127485938293">Yêu cầu (bởi chính sách)</translation>
@@ -1833,7 +1832,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Giới hạn Chính sách của Chứng chỉ</translation>
 <translation id="335985608243443814">Duyệt qua...</translation>
 <translation id="3360297538363969800">Không in được. Vui lòng kiểm tra máy in và thử lại.</translation>
-<translation id="3361481787422913716">Xem cài đặt báo cáo</translation>
 <translation id="336497260564123876">Đã lưu mật khẩu. Để nhận mật khẩu trên mọi thiết bị của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="3367813778245106622">Đăng nhập lại để bắt đầu đồng bộ hóa</translation>
 <translation id="3368922792935385530">Đã kết nối</translation>
@@ -2009,7 +2007,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Nhập mã này vào "<ph name="DEVICE_NAME" />" để ghép nối:</translation>
 <translation id="3588662957555259973">* Ảnh hồ sơ trên Google</translation>
 <translation id="3590194807845837023">Mở khóa cấu hình và chạy lại</translation>
-<translation id="3590559774363307859">Đã lưu mật khẩu. Bạn có thể truy cập mật khẩu và tất cả <ph name="SAVED_PASSWORDS_LINK" /> của mình từ bất kỳ trình duyệt nào.</translation>
 <translation id="3592260987370335752">&amp;Tìm hiểu thêm</translation>
 <translation id="359283478042092570">Nhập</translation>
 <translation id="3593965109698325041">Ràng buộc Tên của Chứng chỉ</translation>
@@ -2834,7 +2831,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4764865176798926079">domContentLoaded của khung chính và tất cả các lượt tải tài nguyên đã bắt đầu trước domContentLoaded (iframe bị bỏ qua).</translation>
 <translation id="4768332406694066911">Bạn có các chứng chỉ từ những tổ chức nhận dạng bạn sau đây</translation>
 <translation id="4768698601728450387">Cắt hình ảnh</translation>
-<translation id="4773696473262035477">Bạn có thể truy cập mật khẩu này và tất cả <ph name="SAVED_PASSWORDS_LINK" /> của mình từ mọi trình duyệt.</translation>
 <translation id="4776917500594043016">Mật khẩu cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Thu phóng</translation>
 <translation id="4780321648949301421">Lưu trang làm...</translation>
@@ -5388,7 +5384,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8260864402787962391">Chuột</translation>
 <translation id="8261378640211443080">Tiện ích này không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> và có thể đã được thêm mà bạn không biết.</translation>
 <translation id="8261387128019234107">Thêm tài khoản cho <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Các tiện ích/ứng dụng này có thể:</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8261580862248730866">Ngoại lệ đối với micrô</translation>
 <translation id="8261673729476082470">Đang sao lưu <ph name="FILE_COUNT" /> ảnh vào <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

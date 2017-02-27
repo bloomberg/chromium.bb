@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">లిప్యంతరీకరణ (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">చిత్రాన్ని లోడ్ చేయండి</translation>
 <translation id="1029317248976101138">జూమ్ చెయ్యి:</translation>
-<translation id="1029595648591494741">"<ph name="EXTENSION_NAME" />"ను ప్రయత్నించాలా?</translation>
 <translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> పేజీలు <ph name="PRINTER_NAME" />కి విజయవంతంగా ముద్రించబడ్డాయి</translation>
 <translation id="1031362278801463162">పరిదృశ్యం లోడ్ అవుతోంది</translation>
 <translation id="1031573127485938293">అడగాలి (విధానం ద్వారా)</translation>
@@ -1831,7 +1830,6 @@
 <translation id="3359256513598016054">సర్టిఫికెట్ విధాన పరిమితులు</translation>
 <translation id="335985608243443814">బ్రౌజ్ చెయ్యి...</translation>
 <translation id="3360297538363969800">ముద్రణ విఫలమైంది. దయచేసి మీ ప్రింటర్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</translation>
-<translation id="3361481787422913716">నివేదిక సెట్టింగ్‌లను వీక్షించండి</translation>
 <translation id="336497260564123876">పాస్‌వర్డ్ సేవ్ చేయబడింది. మీ పాస్‌వర్డ్‌లను మీ అన్ని పరికరాల్లో పొందడానికి, Chromeకి సైన్ ఇన్ చేయండి.</translation>
 <translation id="3367813778245106622">సమకాలీకరణను ప్రారంభించడానికి మళ్లీ సైన్ ఇన్ చేయండి</translation>
 <translation id="3368922792935385530">కనెక్ట్ అయింది</translation>
@@ -2007,7 +2005,6 @@
 <translation id="358796204584394954">జత చేయడానికి "<ph name="DEVICE_NAME" />"లో ఈ కోడ్‌ను టైప్ చేయండి:</translation>
 <translation id="3588662957555259973">* Google ప్రొఫైల్ ఫోటో</translation>
 <translation id="3590194807845837023">ప్రొఫైల్‌ని అన్‌లాక్ చేసి, మళ్లీ లాంచ్ చేయి</translation>
-<translation id="3590559774363307859">పాస్‌వర్డ్ సేవ్ చేయబడింది. మీరు ఏ బ్రౌజర్ నుండైనా దీన్ని మరియు మీ అన్ని <ph name="SAVED_PASSWORDS_LINK" />ను ప్రాప్యత చేయవచ్చు.</translation>
 <translation id="3592260987370335752">&amp;మరింత తెలుసుకోండి</translation>
 <translation id="359283478042092570">నమోదు చేయి</translation>
 <translation id="3593965109698325041">సర్టిఫికెట్ పేరు పరిమితులు</translation>
@@ -2832,7 +2829,6 @@
 <translation id="4764865176798926079">ప్రధాన ఫ్రేమ్ యొక్క domContentLoaded మరియు అన్ని వనరుల లోడ్‌లు domContentLoadedకి (iframes విస్మరించబడుతుంది) ముందే ప్రారంభించబడతాయి.</translation>
 <translation id="4768332406694066911">మిమ్మల్ని గుర్తించే ఈ సంస్థల నుండి మీకు ప్రమాణపత్రాలు ఉన్నాయి</translation>
 <translation id="4768698601728450387">చిత్రాన్ని కత్తిరించు</translation>
-<translation id="4773696473262035477">మీరు ఏదైనా బ్రౌజర్ నుండి దీన్ని మరియు మీ అన్ని <ph name="SAVED_PASSWORDS_LINK" />ను ప్రాప్యత చేయవచ్చు.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> కోసం పాస్‌వర్డ్</translation>
 <translation id="4779083564647765204">జూమ్ చెయ్యి</translation>
 <translation id="4780321648949301421">ఇలా పేజీని సేవ్ చేయి...</translation>
@@ -5381,7 +5377,6 @@
 <translation id="8260864402787962391">మౌస్</translation>
 <translation id="8261378640211443080">ఈ పొడిగింపు <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />లో జాబితా చేయబడలేదు మరియు మీకు తెలియకుండానే జోడించబడి ఉండవచ్చు.</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> కోసం ఖాతాను జోడించు</translation>
-<translation id="8261490674758214762">ఇవి వీటిని చేయగలవు:</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8261580862248730866">మైక్రోఫోన్ మినహాయింపులు</translation>
 <translation id="8261673729476082470"><ph name="FILE_COUNT" /> ఫోటోలను <ph name="BEGIN_LINK" />Google డిస్క్<ph name="END_LINK" />కి బ్యాకప్ చేస్తోంది</translation>

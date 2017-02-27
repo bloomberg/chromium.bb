@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Μεταγραφή (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Φόρτωση εικόνας</translation>
 <translation id="1029317248976101138">Μεγέθυνση</translation>
-<translation id="1029595648591494741">Δοκιμή της επέκτασης "<ph name="EXTENSION_NAME" />";</translation>
 <translation id="1030173864176315846">Εκτυπώθηκαν με επιτυχία <ph name="PAGE_NUMBER" /> σελίδες στον εκτυπωτή <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Φόρτωση προεπισκόπησης</translation>
 <translation id="1031573127485938293">Να γίνεται ερώτηση (από την πολιτική)</translation>
@@ -1839,7 +1838,6 @@
 <translation id="3359256513598016054">Περιορισμοί πολιτικής πιστοποιητικού</translation>
 <translation id="335985608243443814">Περιήγηση...</translation>
 <translation id="3360297538363969800">Η εκτύπωση απέτυχε. Ελέγξτε τον εκτυπωτή σας και δοκιμάστε ξανά.</translation>
-<translation id="3361481787422913716">Προβολή ρυθμίσεων αναφοράς</translation>
 <translation id="336497260564123876">Ο κωδικός πρόσβασης αποθηκεύτηκε. Για να εμφανίζονται οι κωδικοί πρόσβασης σε όλες τις συσκευές σας, συνδεθείτε στο Chrome.</translation>
 <translation id="3367813778245106622">Συνδεθείτε ξανά για να ξεκινήσετε τον συγχρονισμό</translation>
 <translation id="3368922792935385530">Σε σύνδεση</translation>
@@ -2016,7 +2014,6 @@
 <translation id="358796204584394954">Πληκτρολογήστε αυτόν τον κωδικό στη συσκευή "<ph name="DEVICE_NAME" />" για να κάνετε σύζευξη:</translation>
 <translation id="3588662957555259973">* Φωτογραφία προφίλ Google</translation>
 <translation id="3590194807845837023">Ξεκλείδωμα προφίλ και επανεκκίνηση</translation>
-<translation id="3590559774363307859">Ο κωδικός πρόσβασης αποθηκεύτηκε. Μπορείτε να αποκτήσετε πρόσβαση σε αυτόν και σε όλους τους <ph name="SAVED_PASSWORDS_LINK" /> από οποιοδήποτε πρόγραμμα περιήγησης.</translation>
 <translation id="3592260987370335752">&amp;Μάθετε περισσότερα</translation>
 <translation id="359283478042092570">Είσοδος</translation>
 <translation id="3593965109698325041">Περιορισμοί ονόματος πιστοποιητικού</translation>
@@ -2843,7 +2840,6 @@
 <translation id="4764865176798926079">Το domContentLoaded του κύριου πλαισίου και όλες οι φορτώσεις πόρων που ξεκίνησαν πριν από το domContentLoaded (με παράβλεψη iframe).</translation>
 <translation id="4768332406694066911">Διαθέτετε πιστοποιητικά από αυτούς τους οργανισμούς που σας προσδιορίζουν</translation>
 <translation id="4768698601728450387">Περικοπή εικόνας</translation>
-<translation id="4773696473262035477">Μπορείτε να δείτε αυτόν τον κωδικό πρόσβασής σας, αλλά και όλους τους υπόλοιπους <ph name="SAVED_PASSWORDS_LINK" /> από οποιοδήποτε πρόγραμμα περιήγησης.</translation>
 <translation id="4776917500594043016">Κωδικός πρόσβασης για <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Μεγέθυνση</translation>
 <translation id="4780321648949301421">Αποθήκευση σελίδας &amp;ως...</translation>
@@ -5407,7 +5403,6 @@
 <translation id="8260864402787962391">Ποντίκι</translation>
 <translation id="8261378640211443080">Αυτή η επέκταση δεν αναφέρεται στο <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> και ενδέχεται να έχει προστεθεί εν αγνοία σας.</translation>
 <translation id="8261387128019234107">Προσθήκη λογαριασμού για το προφίλ <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Έχουν τις εξής δυνατότητες:</translation>
 <translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8261580862248730866">Εξαιρέσεις μικροφώνου</translation>
 <translation id="8261673729476082470">Δημιουργία αντιγράφων ασφαλείας για <ph name="FILE_COUNT" /> φωτογραφίες στο <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

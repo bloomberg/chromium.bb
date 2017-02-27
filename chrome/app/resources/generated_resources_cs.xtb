@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Přepis (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Načíst obrázek</translation>
 <translation id="1029317248976101138">Lupa</translation>
-<translation id="1029595648591494741">Chcete vyzkoušet rozšíření <ph name="EXTENSION_NAME" />?</translation>
 <translation id="1030173864176315846">Na tiskárně <ph name="PRINTER_NAME" /> byl úspěšně vytisknut tento počet stránek: <ph name="PAGE_NUMBER" /></translation>
 <translation id="1031362278801463162">Načítání náhledu</translation>
 <translation id="1031573127485938293">Zeptat se (podle zásad)</translation>
@@ -1830,7 +1829,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3359256513598016054">Omezení zásad certifikátu</translation>
 <translation id="335985608243443814">Procházet...</translation>
 <translation id="3360297538363969800">Tisk se nezdařil. Zkontrolujte tiskárnu a zkuste to znovu.</translation>
-<translation id="3361481787422913716">Zobrazit nastavení zprávy</translation>
 <translation id="336497260564123876">Heslo bylo uloženo. Chcete-li hesla synchronizovat do všech svých zařízení, přihlaste se do Chromu.</translation>
 <translation id="3367813778245106622">Chcete-li zahájit synchronizaci, znovu se přihlaste.</translation>
 <translation id="3368922792935385530">Připojeno</translation>
@@ -2006,7 +2004,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="358796204584394954">V zařízení „<ph name="DEVICE_NAME" />“ zadejte tento kód:</translation>
 <translation id="3588662957555259973">* Profilová fotografie Google</translation>
 <translation id="3590194807845837023">Odemknout profil a spustit znovu</translation>
-<translation id="3590559774363307859">Heslo bylo uloženo. Toto heslo i ostatní <ph name="SAVED_PASSWORDS_LINK" /> můžete zobrazit v libovolném prohlížeči.</translation>
 <translation id="3592260987370335752">&amp;Další informace</translation>
 <translation id="359283478042092570">Vstoupit</translation>
 <translation id="3593965109698325041">Omezení názvu certifikátu</translation>
@@ -2829,7 +2826,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4764865176798926079">Událost domContentLoaded hlavního rámce a načítání všech zdrojů zahájeno před událostí domContentLoaded (prvky iframe jsou ignorovány).</translation>
 <translation id="4768332406694066911">Od následujících organizací máte certifikáty, které vás identifikují</translation>
 <translation id="4768698601728450387">Ořezat obrázek</translation>
-<translation id="4773696473262035477">Toto heslo i ostatní <ph name="SAVED_PASSWORDS_LINK" /> můžete zobrazit v libovolném prohlížeči.</translation>
 <translation id="4776917500594043016">Heslo pro účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Lupa</translation>
 <translation id="4780321648949301421">Uložit stránku jako...</translation>
@@ -3754,7 +3750,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016551720757758985">Potvrďte obnovení pomocí funkce Powerwash a návrat k předchozí verzi aplikace</translation>
 <translation id="6016809788585079594">Ještě jednou a naposledy řekněte „Ok Google“</translation>
-<translation id="6016972670657536680">Tlačítko pro výběr jazyka a klávesnice. Aktuálně je vybrán jazyk <ph name="LANGUAGE" />.</translation>
+<translation id="6016972670657536680">Tlačítko pro výběr jazyka a klávesnice. Aktuálně je vybrána <ph name="LANGUAGE" />.</translation>
 <translation id="6017225534417889107">Změnit...</translation>
 <translation id="6017981840202692187">Přidat do aplikací</translation>
 <translation id="6019169947004469866">Oříznout</translation>
@@ -5024,7 +5020,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7788668840732459509">Pozice:</translation>
 <translation id="7791543448312431591">Přidat</translation>
 <translation id="7792012425874949788">Při přihlašování se něco pokazilo</translation>
-<translation id="7792189849306326819">Nabídka výběru jazyka. Aktuálně je vybrán jazyk <ph name="LANGUAGE" />.</translation>
+<translation id="7792189849306326819">Nabídka výběru jazyka. Aktuálně je vybrána <ph name="LANGUAGE" />.</translation>
 <translation id="7792388396321542707">Ukončit sdílení</translation>
 <translation id="7794058097940213561">Formátovat zařízení</translation>
 <translation id="779798319486679958">Vyberte typy písem</translation>
@@ -5375,7 +5371,6 @@ Výpočet zbývajícího času</translation>
 <translation id="8260864402787962391">Myš</translation>
 <translation id="8261378640211443080">Toto rozšíření není uvedeno na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohlo být přidáno bez vašeho vědomí.</translation>
 <translation id="8261387128019234107">Přidat účet pro profil <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Mohou:</translation>
 <translation id="8261506727792406068">Vymazat</translation>
 <translation id="8261580862248730866">Výjimky mikrofonu</translation>
 <translation id="8261673729476082470">Probíhá zálohování <ph name="FILE_COUNT" /> fotek na <ph name="BEGIN_LINK" />Disk Google<ph name="END_LINK" /></translation>

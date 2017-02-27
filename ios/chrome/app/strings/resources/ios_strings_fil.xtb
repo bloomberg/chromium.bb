@@ -150,7 +150,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="3638472932233958418">Mag-preload ng Mga Webpage</translation>
 <translation id="3691593122358196899">Na-bookmark sa <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Kapag naka-enable, magkakaroon ang omnibox ng mga suhestyon para sa mga web page na bino-broadcast ng mga device na malapit sa iyo.</translation>
-<translation id="3706658020782046159">Pumili ng address sa pagpapadala upang makita ang mga paraan ng at kinakailangan sa pagpapadala.</translation>
 <translation id="3738139272394829648">Pindutin upang Hanapin</translation>
 <translation id="3771033907050503522">Mga Tab na Incognito</translation>
 <translation id="3783017676699494206">I-save ang Larawan</translation>
@@ -211,12 +210,10 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upa
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Magdagdag ng Card...</translation>
 <translation id="5228579091201413441">I-enable ang pag-sync</translation>
-<translation id="5230733896359313003">Address na Padadalhan</translation>
 <translation id="5244474230056479698">Sini-sync sa <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Ipakita</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5327248766486351172">Pangalan</translation>
-<translation id="5332219387342487447">Pamamaraan ng Pagpapadala</translation>
 <translation id="5388358297987318779">Buksan ang Larawan</translation>
 <translation id="5409365236829784218">Walang naka-install na app na makakapagbukas ng file na ito.</translation>
 <translation id="54401264925851789">Impormasyon sa Seguridad ng Pahina</translation>
@@ -343,7 +340,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7649070708921625228">Tulong</translation>
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7671141431838911305">INSTALL</translation>
-<translation id="7682287625158474539">Pagpapadala</translation>
 <translation id="7765158879357617694">Ilipat</translation>
 <translation id="7769602470925380267">Tanggapin at mag-sign out</translation>
 <translation id="7772032839648071052">Kumpirmahin ang passphrase</translation>

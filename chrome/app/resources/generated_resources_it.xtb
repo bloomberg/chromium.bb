@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Traslitterazione (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Carica immagine</translation>
 <translation id="1029317248976101138">Dimensioni dei caratteri</translation>
-<translation id="1029595648591494741">Provare "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> pagine stampate con <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Caricamento anteprima in corso</translation>
 <translation id="1031573127485938293">Chiedi (in base alle norme)</translation>
@@ -1828,7 +1827,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3359256513598016054">Vincoli criteri certificati</translation>
 <translation id="335985608243443814">Sfoglia...</translation>
 <translation id="3360297538363969800">Errore di stampa. Controlla la stampante e riprova.</translation>
-<translation id="3361481787422913716">Visualizza le impostazioni segnalate</translation>
 <translation id="336497260564123876">Password salvata. Accedi a Chrome per trovare le tue password su tutti i dispositivi.</translation>
 <translation id="3367813778245106622">Accedi nuovamente per avviare la sincronizzazione</translation>
 <translation id="3368922792935385530">Connessa</translation>
@@ -2004,7 +2002,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="358796204584394954">Digita questo codice in "<ph name="DEVICE_NAME" />" per accoppiare:</translation>
 <translation id="3588662957555259973">* Foto profilo Google</translation>
 <translation id="3590194807845837023">Sblocca il profilo e riavvia</translation>
-<translation id="3590559774363307859">Password salvata. Puoi accedere a questa password e a tutte le tue <ph name="SAVED_PASSWORDS_LINK" /> da qualsiasi browser.</translation>
 <translation id="3592260987370335752">&amp;Ulteriori informazioni</translation>
 <translation id="359283478042092570">Entra</translation>
 <translation id="3593965109698325041">Vincoli nomi certificati</translation>
@@ -2633,7 +2630,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Tastiera Dvorak USA</translation>
 <translation id="4481249487722541506">Carica estensione non pacchettizzata...</translation>
-<translation id="4481530544597605423">Dispositivi non accoppiati</translation>
+<translation id="4481530544597605423">Dispositivi disaccoppiati</translation>
 <translation id="4487088045714738411">Tastiera belga</translation>
 <translation id="4492190037599258964">Risultati di ricerca per "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495419450179050807">Non visualizzare in questa pagina</translation>
@@ -2826,7 +2823,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4764865176798926079">Il caricamento di domContentLoaded e di tutte le risorse per il frame principale è iniziato prima di domContentLoaded (iframe ignorati).</translation>
 <translation id="4768332406694066911">Hai certificati da queste organizzazioni che ti identificano</translation>
 <translation id="4768698601728450387">Ritaglia immagine</translation>
-<translation id="4773696473262035477">Puoi accedere a questa password e a tutte le tue <ph name="SAVED_PASSWORDS_LINK" /> da qualsiasi browser.</translation>
 <translation id="4776917500594043016">Password per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Dimensioni dei caratteri</translation>
 <translation id="4780321648949301421">Salva pagina con nome...</translation>
@@ -5369,7 +5365,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Questa estensione non è elencata nel <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e potrebbe essere stata aggiunta a tua insaputa.</translation>
 <translation id="8261387128019234107">Aggiungi account per <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Possono:</translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8261580862248730866">Eccezioni microfono</translation>
 <translation id="8261673729476082470">Backup di <ph name="FILE_COUNT" /> foto su <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> in corso</translation>

@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteración (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Cargar imagen</translation>
 <translation id="1029317248976101138">Acercar</translation>
-<translation id="1029595648591494741">¿Quieres probar "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="1030173864176315846">Se han impreso <ph name="PAGE_NUMBER" /> páginas en <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Cargando vista previa</translation>
 <translation id="1031573127485938293">Preguntar (por política)</translation>
@@ -1832,7 +1831,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3359256513598016054">Restricciones de políticas de certificados</translation>
 <translation id="335985608243443814">Examinar...</translation>
 <translation id="3360297538363969800">Se ha producido un error al imprimir. Comprueba la impresora y vuelve a intentarlo.</translation>
-<translation id="3361481787422913716">Ver configuración del informe</translation>
 <translation id="336497260564123876">Se ha guardado la contraseña. Inicia sesión en Chrome para acceder a tus contraseñas desde todos tus dispositivos.</translation>
 <translation id="3367813778245106622">Vuelve a iniciar sesión para que comience la sincronización</translation>
 <translation id="3368922792935385530">Con conexión</translation>
@@ -2008,7 +2006,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="358796204584394954">Escribe este código en el dispositivo <ph name="DEVICE_NAME" /> para vincularlo:</translation>
 <translation id="3588662957555259973">* Foto de perfil de Google</translation>
 <translation id="3590194807845837023">Desbloquear perfil y volver a iniciar</translation>
-<translation id="3590559774363307859">Contraseña guardada. Puedes acceder a esta y a todas tus <ph name="SAVED_PASSWORDS_LINK" /> desde cualquier navegador.</translation>
 <translation id="3592260987370335752">&amp;Más información</translation>
 <translation id="359283478042092570">Acceder</translation>
 <translation id="3593965109698325041">Restricciones de nombres de certificado</translation>
@@ -2832,7 +2829,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4764865176798926079">El evento domContentLoaded del marco principal y todas las cargas de recursos iniciadas antes que este evento (se ignoran los iframes).</translation>
 <translation id="4768332406694066911">Tienes certificados de estas organizaciones que te identifican</translation>
 <translation id="4768698601728450387">Recortar imagen</translation>
-<translation id="4773696473262035477">Puedes acceder a esta contraseña y a todas las <ph name="SAVED_PASSWORDS_LINK" /> desde cualquier navegador.</translation>
 <translation id="4776917500594043016">Contraseña de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Acercar/alejar</translation>
 <translation id="4780321648949301421">Guardar página como...</translation>
@@ -3469,7 +3465,7 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="5587341999787829537">No permitas que un iframe se desplace al contexto de navegación de nivel superior a menos que tengan el mismo origen o que el iframe esté procesando un gesto del usuario.</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Cargando aplicaciones...</translation>
-<translation id="5592595402373377407">Todavía no hay datos suficientes disponibles.</translation>
+<translation id="5592595402373377407">Todavía no hay suficientes datos disponibles.</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5604324414379907186">Mostrar siempre la barra de marcadores</translation>
@@ -5380,7 +5376,6 @@ Calculando el tiempo restante</translation>
 <translation id="8260864402787962391">Ratón</translation>
 <translation id="8261378640211443080">Esta extensión no aparece en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y se podría haber añadido sin tu conocimiento.</translation>
 <translation id="8261387128019234107">Añadir cuenta de <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Pueden:</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8261580862248730866">Excepciones de micrófono</translation>
 <translation id="8261673729476082470">Realizando copia de seguridad de <ph name="FILE_COUNT" /> fotos en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

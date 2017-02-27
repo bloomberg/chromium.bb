@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">लिप्यंतरण (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">प्रतिमा लोड करा</translation>
 <translation id="1029317248976101138">झूम करा</translation>
-<translation id="1029595648591494741">"<ph name="EXTENSION_NAME" />" वापरून पहायचे?</translation>
 <translation id="1030173864176315846"><ph name="PRINTER_NAME" /> वर <ph name="PAGE_NUMBER" /> पृष्ठे यशस्वीरित्या मुद्रित केले</translation>
 <translation id="1031362278801463162">पूर्वावलोकन लोड करत आहे</translation>
 <translation id="1031573127485938293">विचारा (धोरणानुसार)</translation>
@@ -351,7 +350,7 @@
 <translation id="1470719357688513792">नवीन कुकी सेटिंग्ज हे पृष्ठ रीलोड केल्यानंतर प्रभावी होतील.</translation>
 <translation id="1470811252759861213">आपल्या सर्व संगणकांवर आपले विस्तार प्राप्त करण्यासाठी, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="14720830734893704">व्हर्च्युअल कीबोर्ड समर्थन सक्षम करा.</translation>
-<translation id="1473539320840569129">शेल्फमधील लेखणी साधने मेनू आणि सेटिंग्जमधील लेखणी विभागाच्या प्रदर्शनाची सक्ती करते, अगदी कोणतेही संलग्न केलेले लेखणी डिव्हाइस नसले तरी देखील.</translation>
+<translation id="1473539320840569129">शेल्फमध्ये लेखणी साधने मेनू आणि सेटिंग्जमध्ये लेखणी विभागाच्या प्रदर्शनाची सक्ती करते, कोणतेही संलग्न केलेले लेखणी डिव्हाइस नसले तरी देखील.</translation>
 <translation id="1474079335130556426">Push API साठी पार्श्वभूमी मोड सक्षम करा. हे अखरेची विंडो बंद केल्यानंतर आणि OS प्रारंभ लाँच करताना Push API ला आवश्‍यक असल्यास, Chrome ला सुरु राहण्‍याची अनुमती देते.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" अपलोड केली नाही. आपल्या Google ड्राइव्हमध्ये पर्याप्त स्थान नाही.</translation>
 <translation id="1475502736924165259">आपल्याकडे फाईलवर प्रमाणपत्रे आहेत जी अन्य कोणत्याही श्रेणींसाठी योग्य नाहीत</translation>
@@ -648,7 +647,7 @@
 <translation id="1828901632669367785">सिस्टम संवाद वापरून मुद्रित करा…</translation>
 <translation id="1829192082282182671">झूम &amp;कमी करा</translation>
 <translation id="1830550083491357902">साइन इन केलेले नाही</translation>
-<translation id="1830859579140328145">सामग्री डिझाइन सेटिंग्जमध्ये टचस्क्रीनचे मापन करण्याचा पर्याय सक्षम/अक्षम करा</translation>
+<translation id="1830859579140328145">सामग्री डिझाइन सेटिंग्जमध्ये टचस्क्रीनचे कॅलिब्रेशन करण्याचा पर्याय सक्षम/अक्षम करा</translation>
 <translation id="1832511806131704864">फोन बदल अद्यतनित झाला</translation>
 <translation id="1834560242799653253">पूर्वाभिमुखता:</translation>
 <translation id="1835339313324024">व्हर्च्युअल कीबोर्डचे स्मार्ट उपयोजन</translation>
@@ -1193,7 +1192,7 @@
 <translation id="2580924999637585241">एकूण: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">दीर्घ</translation>
 <translation id="2581475589551312226">Google ड्राइव्हवर Play अॅप डेटाचा स्वयंचलितपणे बॅक अप घ्या आणि तो पुनर्संचयित करा. <ph name="BEGIN_LINK1" />अधिक जाणून घ्या<ph name="END_LINK1" /></translation>
-<translation id="2581601588594682520">फोल्डर पुर्ननामित  करा</translation>
+<translation id="2581601588594682520">फोल्डर पुर्ननामित करा</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (प्लॅटफॉर्म <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2585116156172706706">हा विस्‍तार कदाचित आपल्‍या माहिती शिवाय जोडला गेला आहे.</translation>
 <translation id="2585300050980572691">डीफॉल्ट शोध सेटिंग्ज</translation>
@@ -1826,7 +1825,6 @@
 <translation id="3359256513598016054">प्रमाणपत्र धोरण प्रतिबंध</translation>
 <translation id="335985608243443814">ब्राउझ करा...</translation>
 <translation id="3360297538363969800">मुद्रण अयशस्वी. कृपया आपला प्रिंटर तपासा आणि पुन्हा प्रयत्न करा.</translation>
-<translation id="3361481787422913716">अहवाल सेटिंग्ज पहा</translation>
 <translation id="336497260564123876">संकेतशब्द जतन केला. आपल्या सर्व डिव्हाइसवर आपले संकेतशब्द मिळविण्यासाठी, Chrome मध्ये साइन इन करा.</translation>
 <translation id="3367813778245106622">संकालन प्रारंभ करण्‍यासाठी पुन्हा साइन इन करा</translation>
 <translation id="3368922792935385530">कनेक्ट केले</translation>
@@ -2002,7 +2000,6 @@
 <translation id="358796204584394954">जोडण्यासाठी "<ph name="DEVICE_NAME" />" वर हा कोड टाइप करा:</translation>
 <translation id="3588662957555259973">* Google प्रोफाइल फोटो</translation>
 <translation id="3590194807845837023">प्रोफाईल अनलॉक करा आणि रीलाँच करा</translation>
-<translation id="3590559774363307859">संकेतशब्द जतन केला. आपण कोणत्याही ब्राउझरवरून त्यावर आणि आपल्या सर्व <ph name="SAVED_PASSWORDS_LINK" /> वर प्रवेश करू शकता.</translation>
 <translation id="3592260987370335752">&amp;अधिक जाणून घ्या</translation>
 <translation id="359283478042092570">प्रविष्ट करा</translation>
 <translation id="3593965109698325041">प्रमाणपत्र नाव प्रतिबंध</translation>
@@ -2624,7 +2621,7 @@
 <translation id="4475552974751346499">डाउनलोड शोधा</translation>
 <translation id="4476590490540813026">व्यायामपटू</translation>
 <translation id="4477219268485577442">बल्गेरियन ध्वन्यात्मक</translation>
-<translation id="4477812269697070260">कोणतेही जोडणी केलेले डिव्हाइस नाहीत</translation>
+<translation id="4477812269697070260">कोणतेही जोडणी केलेले डिव्हाइस नाहीत.</translation>
 <translation id="4478664379124702289">म्हणून दु&amp;वा जतन करा...</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
 <translation id="4479812471636796472">यूएस दवोराक कीबोर्ड</translation>
@@ -2824,7 +2821,6 @@
 <translation id="4764865176798926079">domContentLoaded (iframes ignored) पूर्वी मुख्य फ्रेमचे domContentLoaded आणि सर्व संसाधने लोड होण्यास प्रारंभ झाला.</translation>
 <translation id="4768332406694066911">आपल्‍याकडे या संस्थांकडील प्रमाणपत्रे आहेत जी आपल्‍याला ओळखतात</translation>
 <translation id="4768698601728450387">प्रतिमा क्रॉप करा</translation>
-<translation id="4773696473262035477">आपण  कोणत्याही ब्राऊझर वरून यात आणि आपल्या सर्व <ph name="SAVED_PASSWORDS_LINK" /> मध्ये प्रवेश करू शकता.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> साठी संकेतशब्द</translation>
 <translation id="4779083564647765204">झूम</translation>
 <translation id="4780321648949301421">पृष्ठ या रूपात जतन करा...</translation>
@@ -3392,7 +3388,7 @@
 <translation id="5495466433285976480">आपल्या पुढील रीस्टार्टनंतर हे सर्व स्थानिक वापरकर्ते, फायली, डेटा आणि अन्य सेटिंग्ज काढेल. सर्व वापरकर्त्यांना पुन्हा साइन इन करण्याची आवश्यकता असेल.</translation>
 <translation id="5496587651328244253">संयोजित करा</translation>
 <translation id="549673810209994709">हे पृष्‍ठ भाषांतरित केले जाऊ शकले नाही.</translation>
-<translation id="5499313591153584299">ही फाईल आपल्या संगणकासाठी हानीकारक ठरू शकते.</translation>
+<translation id="5499313591153584299">ही फाईल आपल्या संगणकासाठी हानिकारक ठरू शकते.</translation>
 <translation id="5500122897333236901">आइसलँडिक</translation>
 <translation id="5502500733115278303">Firefox कडून आयातीत</translation>
 <translation id="5507756662695126555">अस्वीकार नसलेले</translation>
@@ -4323,7 +4319,7 @@
 <translation id="6797493596609571643">अरेरे, काहीतरी चूक झाली.</translation>
 <translation id="6798780071646309401">कॅप्स लॉक चालू आहे</translation>
 <translation id="6798954102094737107">प्लगिन: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6801435275744557998">टचस्क्रीनचे मापन करा</translation>
+<translation id="6801435275744557998">टचस्क्रीन कॅलिब्रेट करा</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">सर्व बुकमार्क &amp;नवीन विंडोमध्ये उघडा</translation>
 <translation id="6805647936811177813">कृपया <ph name="HOST_NAME" /> वरून क्लायंट प्रमाणपत्र आयात करण्यासाठी <ph name="TOKEN_NAME" />  वर साइन इन करा. </translation>
@@ -5375,7 +5371,6 @@
 <translation id="8260864402787962391">माउस</translation>
 <translation id="8261378640211443080"><ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्ये हा विस्तार सूचीबद्ध केला नाही आणि कदाचित आपल्या माहिती शिवाय जोडला गेला आहे.</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> साठी खाते जोडा</translation>
-<translation id="8261490674758214762">ते करू शकतात:</translation>
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8261580862248730866">मायक्रोफोन अपवाद</translation>
 <translation id="8261673729476082470"><ph name="BEGIN_LINK" />Google ड्राइव्ह<ph name="END_LINK" /> वर <ph name="FILE_COUNT" /> फोटोंचा बॅकअप घेत आहे</translation>
@@ -6047,7 +6042,7 @@
 <translation id="9179348476548754105">संकेतशब्द व्यवस्थापक केवळ व्यवहारिक पुनर्प्रमाणिकरण पृष्ठांसाठी संकालन क्रेडेन्शियल करिता स्वयंभरण कसे हाताळतो.</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_DOMAIN" /> वरून <ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184146175870444618">फ्लिंग दरम्यान स्पर्श करून प्रारंभ करणारे आणि प्रथम स्पर्श करून हलवणारे प्रति स्क्रोल इव्हेंट ऐकणार्‍यांना निष्क्रिय म्हणून हाताळण्यासाठी सक्ती करते.</translation>
-<translation id="9185358268467915502">सक्षम केले असल्यास, वापरकर्ता chrome://md-settings/display मध्ये प्रदर्शित होणार्‍या टचस्क्रीनचे मापन करू शकतो.</translation>
+<translation id="9185358268467915502">सक्षम केले असल्यास, वापरकर्ता chrome://md-settings/display मध्ये प्रदर्शित होणारी टचस्क्रीन कॅलिब्रेट करू शकतो.</translation>
 <translation id="9186729806195986201">पूर्वी स्‍थापित केलेल्या <ph name="IDS_SHORT_PRODUCT_NAME" /> च्या आवृत्तीवर परत देखील या.</translation>
 <translation id="9187210477874601037">डोमेनशी मशीन जोडण्‍यात अयशस्वी झाले. हे कदाचित सर्व्हर वरील आपल्या खात्यासाठी असलेल्या अपुर्‍या विशेषाधिकारांमुळे असू शकते.</translation>
 <translation id="9187651461283037651">Chrome VR सक्षम करा.</translation>

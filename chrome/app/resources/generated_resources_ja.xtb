@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">文字変換（vanakkam → வணக்கம்）</translation>
 <translation id="1026822031284433028">画像を読み込む</translation>
 <translation id="1029317248976101138">ズーム</translation>
-<translation id="1029595648591494741">「<ph name="EXTENSION_NAME" />」を試しますか？</translation>
 <translation id="1030173864176315846"><ph name="PRINTER_NAME" /> で <ph name="PAGE_NUMBER" /> ページの印刷が完了しました</translation>
 <translation id="1031362278801463162">プレビューを読み込んでいます</translation>
 <translation id="1031573127485938293">確認（ポリシーで管理）</translation>
@@ -1832,7 +1831,6 @@
 <translation id="3359256513598016054">証明書ポリシーの制約</translation>
 <translation id="335985608243443814">参照...</translation>
 <translation id="3360297538363969800">印刷できませんでした。プリンタを確認してもう一度お試しください。</translation>
-<translation id="3361481787422913716">レポート設定を表示</translation>
 <translation id="336497260564123876">パスワードを保存しました。お使いのどの端末でも同じパスワードを使用するには、Chrome にログインします。</translation>
 <translation id="3367813778245106622">同期を開始するにはもう一度ログインします</translation>
 <translation id="3368922792935385530">接続済み</translation>
@@ -2008,7 +2006,6 @@
 <translation id="358796204584394954">ペア設定するには「<ph name="DEVICE_NAME" />」で次のコードを入力してください:</translation>
 <translation id="3588662957555259973">* Google プロフィール写真</translation>
 <translation id="3590194807845837023">プロフィールのロックを解除して再起動</translation>
-<translation id="3590559774363307859">パスワードを保存しました。どのブラウザからでも、このパスワードと <ph name="SAVED_PASSWORDS_LINK" />すべてにアクセスできます。</translation>
 <translation id="3592260987370335752">詳細(&amp;L)</translation>
 <translation id="359283478042092570">ログイン</translation>
 <translation id="3593965109698325041">証明書名の制約</translation>
@@ -2833,9 +2830,8 @@
 <translation id="4764865176798926079">メインフレームの domContentLoaded と、domContentLoaded より前に開始したすべてのリソースの読み込み（iframe を無視）。</translation>
 <translation id="4768332406694066911">次の機関から発行された、あなたを識別する証明書があります</translation>
 <translation id="4768698601728450387">画像の切り取り</translation>
-<translation id="4773696473262035477">どのブラウザからでも、このパスワードと <ph name="SAVED_PASSWORDS_LINK" />すべてにアクセスできます。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> のパスワード</translation>
-<translation id="4779083564647765204">拡大/縮小</translation>
+<translation id="4779083564647765204">ズーム</translation>
 <translation id="4780321648949301421">ページを別名で保存...</translation>
 <translation id="4780374166989101364">試験運用版の拡張機能 API を有効にします。試験運用版の API を使用した拡張機能は、拡張機能ギャラリーにはアップロードできませんのでご注意ください。</translation>
 <translation id="4781787911582943401">画面を拡大</translation>
@@ -5388,7 +5384,6 @@
 <translation id="8260864402787962391">マウス</translation>
 <translation id="8261378640211443080">この拡張機能は <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供されていません。知らないうちに追加された可能性があります。</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> のアカウントを追加</translation>
-<translation id="8261490674758214762">次の権限にアクセス可能:</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8261580862248730866">マイクの例外</translation>
 <translation id="8261673729476082470"><ph name="FILE_COUNT" /> 枚の写真を <ph name="BEGIN_LINK" />Google ドライブ<ph name="END_LINK" />にバックアップ中です</translation>

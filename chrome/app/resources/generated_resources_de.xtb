@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteration (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Bild laden</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1029595648591494741">"<ph name="EXTENSION_NAME" />" testen?</translation>
 <translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> Seiten wurden über <ph name="PRINTER_NAME" /> ausgedruckt</translation>
 <translation id="1031362278801463162">Vorschau wird geladen...</translation>
 <translation id="1031573127485938293">Nachfragen (gemäß Richtlinien)</translation>
@@ -1827,7 +1826,6 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Beschränkungen für Zertifikatrichtlinien</translation>
 <translation id="335985608243443814">Durchsuchen...</translation>
 <translation id="3360297538363969800">Fehler beim Drucken. Bitte überprüfen Sie Ihren Drucker und versuchen Sie es erneut.</translation>
-<translation id="3361481787422913716">Berichteinstellungen anzeigen</translation>
 <translation id="336497260564123876">Passwort gespeichert. Melden Sie sich in Chrome an, um Ihr Passwort auf allen Ihren Geräten zu nutzen.</translation>
 <translation id="3367813778245106622">Melden Sie sich nochmals an, um die Synchronisierung zu starten</translation>
 <translation id="3368922792935385530">Verbunden</translation>
@@ -2003,7 +2001,6 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Geben Sie zur Kopplung diesen Code auf "<ph name="DEVICE_NAME" />" ein:</translation>
 <translation id="3588662957555259973">* Google Profile-Foto</translation>
 <translation id="3590194807845837023">Profil entsperren und Chrome neu starten</translation>
-<translation id="3590559774363307859">Das Passwort wurde gespeichert. <ph name="SAVED_PASSWORDS_LINK" /> können Sie von jedem Browser aus aufrufen.</translation>
 <translation id="3592260987370335752">&amp;Weitere Informationen</translation>
 <translation id="359283478042092570">Anmelden</translation>
 <translation id="3593965109698325041">Beschränkungen für Zertifikatsnamen</translation>
@@ -2825,7 +2822,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4764865176798926079">domContentLoaded in Hauptframe und alle Ressourcen-Ladevorgänge vor domContentLoaded gestartet (iframes ignoriert).</translation>
 <translation id="4768332406694066911">Ihr Name ist in den Zertifikaten folgender Organisationen angegeben</translation>
 <translation id="4768698601728450387">Bild zuschneiden</translation>
-<translation id="4773696473262035477"><ph name="SAVED_PASSWORDS_LINK" /> können Sie von jedem Browser aus aufrufen.</translation>
 <translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Zoomen</translation>
 <translation id="4780321648949301421">Seite speichern unter...</translation>
@@ -4869,7 +4865,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="7559719679815339381">Die Kiosk-App wird gerade aktualisiert, bitte warten. Entfernen Sie den USB-Stick nicht.</translation>
 <translation id="7561196759112975576">Immer</translation>
 <translation id="7561276213638531222">Nutzung von Proxies für freigegebene Netzwerke bestätigen</translation>
-<translation id="7563991800558061108">Zur Behebung dieses Problems müssen Sie sich auf der Anmeldeseite in Ihrem
+<translation id="7563991800558061108">Wenn Sie dieses Problems beheben möchten, müssen Sie sich auf der Anmeldeseite in Ihrem
     Google-Konto anmelden. Sie können sich dann aus Ihrem Google-Konto abmelden
     und erneut versuchen, einen betreuten Nutzer zu erstellen.</translation>
 <translation id="756445078718366910">Browserfenster öffnen</translation>
@@ -5377,7 +5373,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8260864402787962391">Maus</translation>
 <translation id="8261378640211443080">Diese Erweiterung ist nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt und wurde möglicherweise ohne Ihr Wissen hinzugefügt.</translation>
 <translation id="8261387128019234107">Konto für <ph name="PROFILE_NAME" /> hinzufügen</translation>
-<translation id="8261490674758214762">Sie können:</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8261580862248730866">Mikrofonausnahmen</translation>
 <translation id="8261673729476082470">Sicherung von <ph name="FILE_COUNT" /> Fotos auf <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

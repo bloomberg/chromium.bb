@@ -150,7 +150,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3638472932233958418">Tải trước trang web</translation>
 <translation id="3691593122358196899">Đã đánh dấu trang vào <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Khi được bật, thanh địa chỉ sẽ bao gồm đề xuất cho những trang web mà các thiết bị ở gần bạn truyền phát.</translation>
-<translation id="3706658020782046159">Chọn địa chỉ giao hàng để kiểm tra các yêu cầu và phương thức giao hàng.</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
 <translation id="3771033907050503522">Tab ẩn danh</translation>
 <translation id="3783017676699494206">Lưu hình ảnh</translation>
@@ -211,12 +210,10 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Thêm thẻ...</translation>
 <translation id="5228579091201413441">Bật đồng bộ hóa</translation>
-<translation id="5230733896359313003">Địa chỉ giao hàng</translation>
 <translation id="5244474230056479698">Đồng bộ hóa với <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Hiển thị</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5327248766486351172">Tên</translation>
-<translation id="5332219387342487447">Phương thức giao hàng</translation>
 <translation id="5388358297987318779">Mở hình ảnh</translation>
 <translation id="5409365236829784218">Không có ứng dụng nào được cài đặt có thể mở tệp này.</translation>
 <translation id="54401264925851789">Thông tin bảo mật trang</translation>
@@ -343,7 +340,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7671141431838911305">CÀI ĐẶT</translation>
-<translation id="7682287625158474539">Địa chỉ gửi hàng</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7769602470925380267">Chấp nhận và đăng xuất</translation>
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>

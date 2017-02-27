@@ -150,7 +150,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3638472932233958418">Webseiten vorabladen</translation>
 <translation id="3691593122358196899">Als Lesezeichen in "<ph name="FOLDER_TITLE" />" gespeichert</translation>
 <translation id="3692781555820666866">Wenn Physical Web aktiviert ist, enthält die Omnibox Vorschläge für Webseiten, die von Geräten in Ihrer Nähe übertragen werden.</translation>
-<translation id="3706658020782046159">Wählen Sie eine Versandadresse aus, um die Versandmethoden und -anforderungen zu sehen.</translation>
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
 <translation id="3771033907050503522">Inkognito-Tabs</translation>
 <translation id="3783017676699494206">Bild speichern</translation>
@@ -211,12 +210,10 @@ Ihre Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie 
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Karte hinzufügen...</translation>
 <translation id="5228579091201413441">Synchronisierung aktivieren</translation>
-<translation id="5230733896359313003">Versandadresse</translation>
 <translation id="5244474230056479698">Mit <ph name="EMAIL" /> synchronisieren</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5327248766486351172">Name</translation>
-<translation id="5332219387342487447">Versandart</translation>
 <translation id="5388358297987318779">Bild öffnen</translation>
 <translation id="5409365236829784218">Es sind keine Apps inst., die diese Datei öffnen können.</translation>
 <translation id="54401264925851789">Sicherheitsinformationen zur Seite</translation>
@@ -343,7 +340,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7671141431838911305">Installieren</translation>
-<translation id="7682287625158474539">Versand</translation>
 <translation id="7765158879357617694">Verschieben</translation>
 <translation id="7769602470925380267">Akzeptieren und abmelden</translation>
 <translation id="7772032839648071052">Passphrase bestätigen</translation>

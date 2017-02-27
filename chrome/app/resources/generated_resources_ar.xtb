@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">‏التحويل الصوتي (فاناكام ← வணக்கம்)</translation>
 <translation id="1026822031284433028">تحميل صورة</translation>
 <translation id="1029317248976101138">تكبير/تصغير</translation>
-<translation id="1029595648591494741">هل تريد تجربة "<ph name="EXTENSION_NAME" />"؟</translation>
 <translation id="1030173864176315846">تم بنجاح طباعة <ph name="PAGE_NUMBER" /> من الصفحات على <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">تحميل المعاينة</translation>
 <translation id="1031573127485938293">الطلب (وفقًا للسياسة)</translation>
@@ -351,7 +350,7 @@
 <translation id="1470719357688513792">ستسري إعدادات ملفات تعريف الارتباط بعد إعادة تحميل الصفحة.</translation>
 <translation id="1470811252759861213">للحصول على الإضافات على جميع أجهزة الكمبيوتر، <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="14720830734893704">تمكين إتاحة لوحة المفاتيح الظاهرية.</translation>
-<translation id="1473539320840569129">يفرض عرض قائمة أدوات قلم الشاشة في الرف وقسم قلم الشاشة في الإعدادات، حتى إذا لم يكن هناك أي جهاز قلم شاشة مرفق.</translation>
+<translation id="1473539320840569129">يفرض عرض قائمة أدوات قلم الشاشة في الرّف وقسم قلم الشاشة في الإعدادات، حتى إذا لم يكن هناك أي جهاز قلم شاشة مرفق.</translation>
 <translation id="1474079335130556426">‏تمكين وضع الخلفية لواجهة برمجة تطبيقات Push. يسمح هذا لـ Chrome بمتابعة التشغيل بعد إغلاق آخر نافذة، وبالإطلاق عند بدء تشغيل نظام التشغيل، إذا كانت واجهة برمجة تطبيقات Push تحتاج إليه.</translation>
 <translation id="1474339897586437869">‏لم يتم تحميل "<ph name="FILENAME" />". حيث لا توجد لديك مساحة فارغة كافية في Google Drive.</translation>
 <translation id="1475502736924165259">لديك شهادات في الملف لا تندرج تحت أي فئة من الفئات الأخرى</translation>
@@ -633,7 +632,7 @@
 <translation id="1803133642364907127">التحقق من محتوى الإضافة</translation>
 <translation id="1803545009660609783">إعادة التشكيل</translation>
 <translation id="1807938677607439181">كل الملفات</translation>
-<translation id="1809734401532861917">إضافة الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى إلى <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="1809734401532861917">إضافة الإشارات المرجعية، والسّجل، وكلمات المرور، والإعدادات الأخرى إلى <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1810107444790159527">مربع قائمة</translation>
 <translation id="1810764548349082891">لا تتوفر معاينة</translation>
 <translation id="1812631533912615985">إزالة تثبيت علامات التبويب</translation>
@@ -650,7 +649,7 @@
 <translation id="1828901632669367785">مربع حوار الطباعة باستخدام النظام…</translation>
 <translation id="1829192082282182671">ت&amp;صغير</translation>
 <translation id="1830550083491357902">لم يتم تسجيل الدخول</translation>
-<translation id="1830859579140328145">تمكين/تعطيل خيار معايرة الشاشة التي تعمل باللمس في إعدادات التصميم متعدد الأبعاد</translation>
+<translation id="1830859579140328145">تمكين/تعطيل خيار معايرة الشاشة التي تعمل باللمس في إعدادات التصميم متعدّد الأبعاد</translation>
 <translation id="1832511806131704864">تم تحديث تغيير الهاتف</translation>
 <translation id="1834560242799653253">توجيه:</translation>
 <translation id="1835339313324024">النشر الذكي للوحة المفاتيح الظاهرية</translation>
@@ -1829,7 +1828,6 @@
 <translation id="3359256513598016054">القيود على سياسة الشهادة</translation>
 <translation id="335985608243443814">تصفَّح...</translation>
 <translation id="3360297538363969800">أخفقت الطباعة. يُرجى التحقق من الطابعة وإعادة المحاولة.</translation>
-<translation id="3361481787422913716">عرض إعدادات التقرير</translation>
 <translation id="336497260564123876">‏تم حفظ كلمة المرور. للحصول على كلمات المرور على جميع أجهزتك، سجِّل الدخول إلى Chrome.</translation>
 <translation id="3367813778245106622">تسجيل الدخول مرة أخرى لبدء المزامنة</translation>
 <translation id="3368922792935385530">متصل</translation>
@@ -2005,7 +2003,6 @@
 <translation id="358796204584394954">اكتب هذه الشفرة في "<ph name="DEVICE_NAME" />" لإقرانه:</translation>
 <translation id="3588662957555259973">‏* صورة الملف الشخصي في Google</translation>
 <translation id="3590194807845837023">إلغاء قفل الملف الشخصي، وإعادة التشغيل من جديد</translation>
-<translation id="3590559774363307859">تم حفظ كلمة المرور. يمكنك الوصول إليها وجميع <ph name="SAVED_PASSWORDS_LINK" /> من أي متصفح.</translation>
 <translation id="3592260987370335752">&amp;مزيد من المعلومات</translation>
 <translation id="359283478042092570">الدخول</translation>
 <translation id="3593965109698325041">قيود اسم الشهادة</translation>
@@ -2827,7 +2824,6 @@
 <translation id="4764865176798926079">‏domContentLoaded للإطار الرئيسي وعمليات تحميل كل الموارد بدأت قبل domContentLoaded (تم تجاهل إطارات iframe).</translation>
 <translation id="4768332406694066911">لديك شهادات تحدد هويتك من هذه المؤسسات</translation>
 <translation id="4768698601728450387">اقتصاص الصورة</translation>
-<translation id="4773696473262035477">يمكنك الوصول إليها وكل <ph name="SAVED_PASSWORDS_LINK" /> من أي متصفح.</translation>
 <translation id="4776917500594043016">كلمة مرور <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">تكبير/تصغير</translation>
 <translation id="4780321648949301421">حفظ صفحة باسم...</translation>
@@ -3826,7 +3822,7 @@
 <translation id="6112952769866305444">تعديل شخص، <ph name="PROFILE_NAME" />، <ph name="USERNAME" /></translation>
 <translation id="6115424132962100663">اضغط على |<ph name="SHORTCUT" />| للرجوع</translation>
 <translation id="6116921718742659598">تغيير إعدادات اللغة والإدخال</translation>
-<translation id="6119435854984171040">تستخدم بعض خدمات المحتوى المُعرّفات الفريدة لأغراض تتعلق بالسماح بالدخول إلى المحتوى المحمي.</translation>
+<translation id="6119435854984171040">تستخدم بعض خدمات المحتوى المُعرّفات الفريدة لأغراض تتعلق بالسماح بالدخول إلى المحتوى المحمّي.</translation>
 <translation id="6120205520491252677">جارٍ إضافة هذه الصفحة إلى شاشة البدء...</translation>
 <translation id="6122081475643980456">يتم التحكم في اتصال الإنترنت التابع لك</translation>
 <translation id="6122875415561139701">لا يُسمح بعملية الكتابة على: "<ph name="DEVICE_NAME" />".</translation>
@@ -5381,7 +5377,6 @@
 <translation id="8260864402787962391">الماوس</translation>
 <translation id="8261378640211443080">هذه الإضافة غير مدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> وربما تمت إضافتها بدون علمك.</translation>
 <translation id="8261387128019234107">إضافة حساب لـ <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">يمكنها:</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8261580862248730866">استثناءات ميكروفون</translation>
 <translation id="8261673729476082470">‏جارٍ نسخ <ph name="FILE_COUNT" /> من الصور احتياطيًا في <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

@@ -150,7 +150,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="3638472932233958418">Već učitane stranice</translation>
 <translation id="3691593122358196899">Oznaka dodana u mapu <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Kada je ta značajka omogućena, višenamjenski okvir uključit će prijedloge za web-stranice koje emitiraju uređaji u vašoj blizini.</translation>
-<translation id="3706658020782046159">Odaberite adresu za dostavu da biste provjerili načine i zahtjeve za dostavu.</translation>
 <translation id="3738139272394829648">Dodirnite za pretraživanje</translation>
 <translation id="3771033907050503522">Anonimne kartice</translation>
 <translation id="3783017676699494206">Spremi sliku</translation>
@@ -211,12 +210,10 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Dodaj karticu...</translation>
 <translation id="5228579091201413441">Omogući sinkronizaciju</translation>
-<translation id="5230733896359313003">Adresa za dostavu</translation>
 <translation id="5244474230056479698">Sinkronizacija s računom <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="5327248766486351172">Naziv</translation>
-<translation id="5332219387342487447">Način otpreme</translation>
 <translation id="5388358297987318779">Otvori sliku</translation>
 <translation id="5409365236829784218">Nema instalirane aplikacije za otvaranje ove datoteke.</translation>
 <translation id="54401264925851789">Informacije o sigurnosti stranice</translation>
@@ -343,7 +340,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7649070708921625228">Pomoć</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7671141431838911305">INSTALIRANJE</translation>
-<translation id="7682287625158474539">Dostava</translation>
 <translation id="7765158879357617694">Pomakni</translation>
 <translation id="7769602470925380267">Prihvati i odjavi se</translation>
 <translation id="7772032839648071052">Potvrdi zaporku</translation>

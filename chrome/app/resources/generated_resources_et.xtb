@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteratsioon (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Kujutise laadimine</translation>
 <translation id="1029317248976101138">Suumi</translation>
-<translation id="1029595648591494741">Kas proovida laiendust „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="1030173864176315846">Printer <ph name="PRINTER_NAME" /> printis <ph name="PAGE_NUMBER" /> lehte</translation>
 <translation id="1031362278801463162">Eelvaate laadimine</translation>
 <translation id="1031573127485938293">Küsi (reegliga)</translation>
@@ -1832,7 +1831,6 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Sertifikaadi eeskirjade piirangud</translation>
 <translation id="335985608243443814">Sirvi...</translation>
 <translation id="3360297538363969800">Printimine ebaõnnestus. Kontrollige printerit ja proovige uuesti.</translation>
-<translation id="3361481787422913716">Kuva aruandeseaded</translation>
 <translation id="336497260564123876">Parool salvestati. Paroolide hankimiseks kõigisse oma seadmetesse logige Chrome'i sisse.</translation>
 <translation id="3367813778245106622">Sünkroonimise alustamiseks logige uuesti sisse</translation>
 <translation id="3368922792935385530">Ühendatud</translation>
@@ -2008,7 +2006,6 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Sisestage seadmes „<ph name="DEVICE_NAME" />” sidumiseks see kood:</translation>
 <translation id="3588662957555259973">* Google'i profiilifoto</translation>
 <translation id="3590194807845837023">Ava profiil ja taaskäivita</translation>
-<translation id="3590559774363307859">Parool salvestati. Saate selle ja kõik oma <ph name="SAVED_PASSWORDS_LINK" /> avada igas brauseris.</translation>
 <translation id="3592260987370335752">&amp;Lisateave</translation>
 <translation id="359283478042092570">Sisestusklahv</translation>
 <translation id="3593965109698325041">Sertifikaadi nimepiirangud</translation>
@@ -2832,7 +2829,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4764865176798926079">Põhiraami domContentLoaded ja kõigi ressursside laadimine algas enne domContentLoaded (iframe'e eirati).</translation>
 <translation id="4768332406694066911">Teil on nende organisatsioonide sertifikaadid, mis teid tuvastavad</translation>
 <translation id="4768698601728450387">Kujutise kärpimine</translation>
-<translation id="4773696473262035477">Saate selle ja kõik oma <ph name="SAVED_PASSWORDS_LINK" /> avada igas brauseris.</translation>
 <translation id="4776917500594043016">Kasutaja <ph name="USER_EMAIL_ADDRESS" /> parool</translation>
 <translation id="4779083564647765204">Suumi</translation>
 <translation id="4780321648949301421">Salvesta leht &amp;nimega...</translation>
@@ -5384,7 +5380,6 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8260864402787962391">Hiir</translation>
 <translation id="8261378640211443080">Seda laiendust ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja te ei pruugi selle lisamisest teadlik olla.</translation>
 <translation id="8261387128019234107">Lisa konto profiilile <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Need võivad:</translation>
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="8261580862248730866">Mikrofonierandid</translation>
 <translation id="8261673729476082470"><ph name="FILE_COUNT" /> foto varundamine teenuses <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

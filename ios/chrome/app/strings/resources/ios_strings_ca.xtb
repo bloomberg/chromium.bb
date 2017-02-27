@@ -150,7 +150,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="3638472932233958418">Càrrega prèvia de pàgines web</translation>
 <translation id="3691593122358196899">Adreça d'interès afegida a <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Quan s'activi, l'omnibox inclourà suggeriments de pàgines web emeses pels dispositius que tinguis a prop.</translation>
-<translation id="3706658020782046159">Selecciona una adreça d'enviament per veure els mètodes d'enviament i els requisits.</translation>
 <translation id="3738139272394829648">Toca per cercar</translation>
 <translation id="3771033907050503522">Pestanyes d'incògnit</translation>
 <translation id="3783017676699494206">Desa la imatge</translation>
@@ -211,12 +210,10 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Afegeix una targeta…</translation>
 <translation id="5228579091201413441">Activa la sincronització</translation>
-<translation id="5230733896359313003">Adreça d'enviament</translation>
 <translation id="5244474230056479698">S'està sincronitzant amb <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5327248766486351172">Nom</translation>
-<translation id="5332219387342487447">Mètode d'enviament</translation>
 <translation id="5388358297987318779">Obre una imatge</translation>
 <translation id="5409365236829784218">Cap aplicació instal·lada no pot obrir el fitxer.</translation>
 <translation id="54401264925851789">Informació de seguretat de la pàgina</translation>
@@ -343,7 +340,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7671141431838911305">INSTAL·LA</translation>
-<translation id="7682287625158474539">Enviament</translation>
 <translation id="7765158879357617694">Desplaça</translation>
 <translation id="7769602470925380267">Accepta i tanca la sessió</translation>
 <translation id="7772032839648071052">Confirmeu la frase de contrasenya</translation>

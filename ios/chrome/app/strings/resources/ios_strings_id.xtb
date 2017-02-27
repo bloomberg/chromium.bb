@@ -150,7 +150,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3638472932233958418">Pramuat Halaman Web</translation>
 <translation id="3691593122358196899">Dibookmark ke <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Jika diaktifkan, omnibox akan menyertakan saran untuk laman web yang disiarkan oleh perangkat di sekitar Anda.</translation>
-<translation id="3706658020782046159">Pilih alamat pengiriman untuk memeriksa metode dan persyaratan pengiriman.</translation>
 <translation id="3738139272394829648">Sentuh untuk Menelusuri</translation>
 <translation id="3771033907050503522">Tab Penyamaran</translation>
 <translation id="3783017676699494206">Simpan Gambar</translation>
@@ -211,12 +210,10 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi. Masukkan frasa sandi untuk
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Tambahkan Kartu...</translation>
 <translation id="5228579091201413441">Aktifkan sinkronisasi</translation>
-<translation id="5230733896359313003">Alamat Pengiriman</translation>
 <translation id="5244474230056479698">Menyinkronkan dengan <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Tampilkan</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5327248766486351172">Nama</translation>
-<translation id="5332219387342487447">Metode Pengiriman</translation>
 <translation id="5388358297987318779">Buka Gambar</translation>
 <translation id="5409365236829784218">Tidak ada aplikasi terpasang yang dapat membuka file ini.</translation>
 <translation id="54401264925851789">Informasi Keamanan Laman</translation>
@@ -343,7 +340,6 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7671141431838911305">PASANG</translation>
-<translation id="7682287625158474539">Pengiriman</translation>
 <translation id="7765158879357617694">Pindahkan</translation>
 <translation id="7769602470925380267">Terima dan keluar</translation>
 <translation id="7772032839648071052">Konfirmasi frasa sandi</translation>

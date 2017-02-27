@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">લિવ્યંતરણ (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">છબી લોડ કરો</translation>
 <translation id="1029317248976101138">ઝૂમ કરો</translation>
-<translation id="1029595648591494741">"<ph name="EXTENSION_NAME" />" નો પ્રયાસ કરીએ?</translation>
 <translation id="1030173864176315846"><ph name="PRINTER_NAME" /> પર <ph name="PAGE_NUMBER" /> પૃષ્ઠ સફળતાપૂર્વક છાપ્યાં</translation>
 <translation id="1031362278801463162">પૂર્વાવલોકન લોડ કરી રહ્યું છે</translation>
 <translation id="1031573127485938293">પૂછો (નીતિ દ્વારા)</translation>
@@ -1827,7 +1826,6 @@
 <translation id="3359256513598016054">પ્રમાણપત્ર નીતિની મર્યાદાઓ</translation>
 <translation id="335985608243443814">બ્રાઉઝ કરો...</translation>
 <translation id="3360297538363969800">છાપવાનું નિષ્ફળ થયું. કૃપા કરીને તમારું પ્રિન્ટર તપાસો અને ફરી પ્રયાસ કરો.</translation>
-<translation id="3361481787422913716">જાણ કરવાની સેટિંગ્સ જુઓ</translation>
 <translation id="336497260564123876">પાસવર્ડ સાચવ્યો. તમારા સમગ્ર ઉપકરણો પર તમારા પાસવર્ડ્સ મેળવવા માટે, Chrome માં સાઇન ઇન કરો.</translation>
 <translation id="3367813778245106622">સમન્વયન શરૂ કરવા માટે ફરીથી સાઇન ઇન કરો</translation>
 <translation id="3368922792935385530">કનેક્ટેડ</translation>
@@ -2003,7 +2001,6 @@
 <translation id="358796204584394954">જોડી બનાવવા માટે "<ph name="DEVICE_NAME" />" પર આ કોડ લખો:</translation>
 <translation id="3588662957555259973">* Google પ્રોફાઇલ ફોટો</translation>
 <translation id="3590194807845837023">પ્રોફાઇલ અનલૉક કરો અને ફરીથી લોંચ કરો</translation>
-<translation id="3590559774363307859">પાસવર્ડ સાચવ્યો. તમે તેને અને તમારા બધા <ph name="SAVED_PASSWORDS_LINK" /> ને કોઈપણ બ્રાઉઝરથી ઍક્સેસ કરી શકો છો.</translation>
 <translation id="3592260987370335752">&amp;વધુ જાણો</translation>
 <translation id="359283478042092570">Enter</translation>
 <translation id="3593965109698325041">પ્રમાણપત્રના નામની મર્યાદાઓ</translation>
@@ -2828,7 +2825,6 @@
 <translation id="4764865176798926079">domContentLoaded (iframes અવગણવામાં આવી) ની પહેલાં મુખ્ય ફ્રેમની domContentLoaded અને તમામ સંસાધનો લોડ થવાનો પ્રારંભ થયો.</translation>
 <translation id="4768332406694066911">તમારી પાસે આ સંસ્થાઓના પ્રમાણપત્ર છે કે જે તમને ઓળખે છે</translation>
 <translation id="4768698601728450387">છબી કાપો</translation>
-<translation id="4773696473262035477">તમે તેને અને તમારા બધા <ph name="SAVED_PASSWORDS_LINK" /> ને કોઇપણ બ્રાઉઝરથી ઍક્સેસ કરી શકો છો.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> માટેનો પાસવર્ડ </translation>
 <translation id="4779083564647765204">ઝૂમ કરો</translation>
 <translation id="4780321648949301421">પૃષ્ઠ આ રીતે સાચવો...</translation>
@@ -5376,7 +5372,6 @@
 <translation id="8260864402787962391">માઉસ</translation>
 <translation id="8261378640211443080">આ એક્સટેન્શન <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> માં સૂચિબદ્ધ નથી અને તમારી જાણ વિના ઉમેરવામાં આવ્યું હોઈ શકે છે.</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> માટે એકાઉન્ટ ઉમેરો</translation>
-<translation id="8261490674758214762">તેઓ આ કરી શકે છે:</translation>
 <translation id="8261506727792406068">કાઢી નાખો</translation>
 <translation id="8261580862248730866">માઇક્રોફોન અપવાદો</translation>
 <translation id="8261673729476082470"><ph name="BEGIN_LINK" />Google ડ્રાઇવ<ph name="END_LINK" /> પર <ph name="FILE_COUNT" /> ફોટાનો બેક અપ લઈ રહ્યાં છે</translation>

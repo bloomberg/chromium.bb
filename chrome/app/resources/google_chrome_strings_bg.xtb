@@ -17,6 +17,7 @@
 <translation id="1434626383986940139">Приложения в ранната версия на Chrome</translation>
 <translation id="1457721931618994305">Google Chrome се актуализира...</translation>
 <translation id="1469002951682717133">Стартов панел с приложения за Chrome</translation>
+<translation id="1475773083554142432">Chrome ще съхрани това при <ph name="SAVED_PASSWORD_LINK" /> и ще си го спомни следващия път, когато ви е необходимо.</translation>
 <translation id="1480489203462860648">Изпробвайте браузъра – вече е инсталиран</translation>
 <translation id="1553358976309200471">Актуализиране на Chrome</translation>
 <translation id="1587223624401073077">Google Chrome използва камерата ви.</translation>
@@ -117,7 +118,6 @@
 <translation id="4458285410772214805">Моля, излезте от профила си и влезте отново, за да влезе в сила тази промяна.</translation>
 <translation id="4458462641685292929">Извършва се друго действие, свързано с Google Chrome. Моля, опитайте отново по-късно.</translation>
 <translation id="4480040274068703980">Chrome OS не можа да синхронизира данните ви поради грешка при влизане в профила.</translation>
-<translation id="4519152997629025674">Google Chrome може да използва <ph name="BEGIN_LINK" />уеб услуги<ph name="END_LINK" />, за да подобри сърфирането ви. В състояние сте да ги деактивирате по всяко време.</translation>
 <translation id="4561051373932531560">Google Chrome ви позволява да кликнете върху телефонен номер в мрежата и да се обадите до него със Skype!</translation>
 <translation id="4567424176335768812">Влезли сте като <ph name="USER_EMAIL_ADDRESS" />. Сега имате достъп до отметките, историята и другите си настройки на всички устройства, на които сте влезли.</translation>
 <translation id="4631713731678262610">Скриване в менюто на Chrome</translation>
@@ -140,7 +140,6 @@
 <translation id="5028489144783860647">Google Chrome не можа да синхронизира данните ви. Моля, актуализирайте пропуска си за синхронизиране.</translation>
 <translation id="5037239767309817516">Моля, затворете всички прозорци на Google Chrome и го стартирайте отново, за да влезе в сила промяната.</translation>
 <translation id="5132929315877954718">Открийте отлични приложения, игри, разширения и теми за Google Chrome.</translation>
-<translation id="5148419164691878332">Chrome ще съхрани това при <ph name="SAVED_PASSWORDS_LINK" /> и ще си го спомни следващия път, когато ви е необходимо.</translation>
 <translation id="5170938038195470297">Потребителският ви профил не може да се използва, защото е от по-нова версия на Google Chrome. Някои функции може да не са налице. Моля, посочете друга директория в потребителския профил или използвайте по-нова версия на Chrome.</translation>
 <translation id="5176234269072261959">Помогнете за подобряването на Chrome, като подадете сигнал за текущите настройки.</translation>
 <translation id="5193136243808726294">Google Chrome OS не може да отвори тази страница.</translation>
@@ -257,6 +256,7 @@
 <translation id="8547799825197623713">Стартов панел за приложения в ранната версия на Chrome</translation>
 <translation id="8556340503434111824">Налице е нова версия на Google Chrome, която е по-бърза от всякога.</translation>
 <translation id="8568392309447938879">Трябва да сте влезли в Chrome, за да използвате приложения. Това разрешава на браузъра да синхронизира на устройствата вашите приложения, отметки, история, пароли и други настройки.</translation>
+<translation id="8606668294522778825">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви. Ако искате, можете да ги деактивирате. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome блокира. Да се стартира ли отново сега?</translation>
 <translation id="8667808506758191620">Устройството ви <ph name="DEVICE_TYPE" /> е актуално.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>

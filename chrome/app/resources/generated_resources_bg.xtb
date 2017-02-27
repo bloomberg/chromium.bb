@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Транслитерация (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Зареждане на изображението</translation>
 <translation id="1029317248976101138">Промяна на мащаба</translation>
-<translation id="1029595648591494741">Искате ли да изпробвате <ph name="EXTENSION_NAME" />?</translation>
 <translation id="1030173864176315846">Успешно отпечатахте <ph name="PAGE_NUMBER" /> страници на „<ph name="PRINTER_NAME" />“</translation>
 <translation id="1031362278801463162">Визуализацията се зарежда</translation>
 <translation id="1031573127485938293">Извеждане на запитване (чрез правило)</translation>
@@ -1828,7 +1827,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3359256513598016054">Ограничения на правилата за сертификата</translation>
 <translation id="335985608243443814">Преглед...</translation>
 <translation id="3360297538363969800">Отпечатването не бе успешно. Моля, проверете принтера си и опитайте отново.</translation>
-<translation id="3361481787422913716">Преглед на настройките, включени в сигнала</translation>
 <translation id="336497260564123876">Паролата е запазена. Влезте в Chrome, за да получите паролите си на всичките си устройства.</translation>
 <translation id="3367813778245106622">Влезте в профила си отново, за да започне синхронизирането</translation>
 <translation id="3368922792935385530">Установена е връзка</translation>
@@ -2004,7 +2002,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="358796204584394954">За сдвояване въведете този код на <ph name="DEVICE_NAME" />:</translation>
 <translation id="3588662957555259973">* Снимка на потребителския профил в Google</translation>
 <translation id="3590194807845837023">Отключване на потребителския профил и повторно стартиране</translation>
-<translation id="3590559774363307859">Паролата бе запазена. Тя и всичките ви <ph name="SAVED_PASSWORDS_LINK" /> са достъпни от всеки браузър.</translation>
 <translation id="3592260987370335752">&amp;Научете повече</translation>
 <translation id="359283478042092570">Влизане</translation>
 <translation id="3593965109698325041">Ограничения за името на сертификата</translation>
@@ -2632,7 +2629,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479812471636796472">Американска (Дворак) клавиатура</translation>
 <translation id="4481249487722541506">Зареждане на разпакетирано разширение...</translation>
-<translation id="4481530544597605423">Раздвоени устройства</translation>
+<translation id="4481530544597605423">Несдвоени устройства</translation>
 <translation id="4487088045714738411">Белгийска клавиатура</translation>
 <translation id="4492190037599258964">Резултати от търсенето на „<ph name="SEARCH_STRING" />“</translation>
 <translation id="4495419450179050807">Да не се показва на тази страница</translation>
@@ -2828,7 +2825,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4764865176798926079">domContentLoaded за главната рамка и всички зареждания на ресурси, започнати преди domContentLoaded (вложените рамки се пренебрегват).</translation>
 <translation id="4768332406694066911">Имате идентифициращи ви сертификати от тези организации</translation>
 <translation id="4768698601728450387">Подрязване на изображението</translation>
-<translation id="4773696473262035477">Тя и всичките ви <ph name="SAVED_PASSWORDS_LINK" /> са достъпни от всеки браузър.</translation>
 <translation id="4776917500594043016">Парола за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Промяна на мащаба</translation>
 <translation id="4780321648949301421">Запазване на страницата като...</translation>
@@ -5381,7 +5377,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="8260864402787962391">Мишка</translation>
 <translation id="8261378640211443080">Това разширение не е посочено в <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
 <translation id="8261387128019234107">Добавяне на профил за <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Те вече имат възможност за:</translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8261580862248730866">Изключения за микрофона</translation>
 <translation id="8261673729476082470">На <ph name="FILE_COUNT" /> снимки се създават резервни копия в <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" /></translation>

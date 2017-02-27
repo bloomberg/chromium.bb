@@ -26,9 +26,9 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2482878487686419369">सूचना</translation>
 <translation id="2497284189126895209">सर्व फाइल</translation>
-<translation id="2522350507219695259">मापन करणे पूर्ण झाले</translation>
+<translation id="2522350507219695259">कॅलिब्रेशन पूर्ण झाले</translation>
 <translation id="252373100621549798">अज्ञात प्रदर्शन</translation>
-<translation id="2583543531130364912">आपल्या टचस्क्रीनचे मापन करा</translation>
+<translation id="2583543531130364912">आपली टचस्क्रीन कॅलिब्रेट करा</translation>
 <translation id="2666092431469916601">शीर्ष</translation>
 <translation id="2743387203779672305">क्लिपबोर्डवर कॉपी करा</translation>
 <translation id="2803313416453193357">फोल्डर उघडा</translation>
@@ -87,7 +87,7 @@
 <translation id="6394627529324717982">स्वल्पविराम</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 सेकंदापूर्वी}one{# सेकंदापूर्वी}other{# सेकंदांपूर्वी}}</translation>
 <translation id="6528179044667508675">व्यत्यय आणू नका</translation>
-<translation id="6612467943526193239">मापनातून बाहेर पडण्‍यासाठी Esc दाबा.</translation>
+<translation id="6612467943526193239">कॅलिब्रेशनमधून बाहेर पडण्‍यासाठी Esc दाबा.</translation>
 <translation id="6620110761915583480">फाइल जतन करा</translation>
 <translation id="6699343763173986273">मीडिया पुढील ट्रॅक</translation>
 <translation id="6786750046913594791">फोल्डर बंद करा</translation>

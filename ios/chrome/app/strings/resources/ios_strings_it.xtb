@@ -150,7 +150,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3638472932233958418">Precarica pagine web</translation>
 <translation id="3691593122358196899">Preferito aggiunto in: <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Quando è attivo, la omnibox include suggerimenti relativi alle pagine web trasmesse dai dispositivi nelle vicinanze.</translation>
-<translation id="3706658020782046159">Seleziona un indirizzo di spedizione per verificare i metodi di spedizione e i requisiti.</translation>
 <translation id="3738139272394829648">Tocca per cercare</translation>
 <translation id="3771033907050503522">Schede di navigazione in incognito</translation>
 <translation id="3783017676699494206">Salva immagine</translation>
@@ -211,12 +210,10 @@ I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inserisc
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Aggiungi carta...</translation>
 <translation id="5228579091201413441">Abilita sincronizzazione</translation>
-<translation id="5230733896359313003">Indirizzo di spedizione</translation>
 <translation id="5244474230056479698">Sincronizzazione con <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="5327248766486351172">Nome</translation>
-<translation id="5332219387342487447">Modalità di spedizione</translation>
 <translation id="5388358297987318779">Apri immagine</translation>
 <translation id="5409365236829784218">Non ci sono applicazioni installate in grado di aprire questo file.</translation>
 <translation id="54401264925851789">Info sicurezza pagina</translation>
@@ -343,7 +340,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7671141431838911305">INSTALLA</translation>
-<translation id="7682287625158474539">Spedizione</translation>
 <translation id="7765158879357617694">Sposta</translation>
 <translation id="7769602470925380267">Accetta ed esci</translation>
 <translation id="7772032839648071052">Conferma passphrase</translation>

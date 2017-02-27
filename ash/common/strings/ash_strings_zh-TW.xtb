@@ -77,7 +77,6 @@
 <translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
 <translation id="315116470104423982">行動數據</translation>
 <translation id="3157169093162779309">啟用旋轉鎖定</translation>
-<translation id="3164154768979021380">退出停駐模式</translation>
 <translation id="3294437725009624529">訪客</translation>
 <translation id="3335772982573114336">新增記事</translation>
 <translation id="3364721542077212959">觸控筆工具</translation>
@@ -143,7 +142,6 @@
 <translation id="5548285847212963613">「<ph name="EXTENSION_NAME" />」擴充功能可協助連線至這個網路。</translation>
 <translation id="5571066253365925590">藍牙已啟用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
-<translation id="5759815399269068793"><ph name="DEVICE_TYPE" /> 連接外接螢幕時仍可持續使用 (即使蓋上機蓋)。</translation>
 <translation id="5777841717266010279">停止共用螢幕？</translation>
 <translation id="57838592816432529">靜音</translation>
 <translation id="5825747213122829519">您的輸入法已變更為 <ph name="INPUT_METHOD_ID" />。
@@ -213,7 +211,6 @@
 <translation id="7510334386202674593">Ctrl + Shift + L 鍵</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> 不支援 <ph name="SPECIFIED_RESOLUTION" />，解析度已變更為 <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">表情符號面板</translation>
-<translation id="7573962313813535744">停駐模式</translation>
 <translation id="7581273696622423628">填寫問卷</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7649070708921625228">說明</translation>

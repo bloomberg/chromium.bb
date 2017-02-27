@@ -1241,6 +1241,11 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
           Du kan se eksempler på mønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Åbn en liste over webadresser</translation>
 <translation id="4680961954980851756">Aktiver AutoFyld</translation>
+<translation id="4722399051042571387">Hvis den er angivet til falsk, kan brugerne ikke angive pinkoder, der er svage og nemme at gætte.
+
+          Eksempler på svage pinkoder: Pinkoder, der kun indeholder ét tal (1111), pinkoder, der stiger med ét tal ad gangen (1234), pinkoder, der falder med ét tal ad gangen (4321), og pinkoder, der er meget almindelige.
+
+          Som standard får brugerne en advarsel, ikke en fejl, hvis pinkoden anses for at være svag.</translation>
 <translation id="4723829699367336876">Aktiver gennemgang af firewall fra fjernklient</translation>
 <translation id="4725528134735324213">Aktivér Android-tjenesten til sikkerhedskopiering</translation>
 <translation id="4733471537137819387">Politikker i forbindelse med integreret HTTP-godkendelse.</translation>
@@ -1431,13 +1436,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Når værdien af ​​denne politik er indstillet og ikke er 0, logges den demobruger, der i øjeblikket er logget på, automatisk ud, når vedkommende har været inaktiv i en angivet tidsperiode.
 
       Politikkens værdi bør angives i millisekunder.</translation>
-<translation id="5506213378070007377">Oplysninger om status for Android sendes tilbage til
-      serveren.
-
-      Hvis politikken er indstillet til falsk, rapporteres der ikke nogen statusoplysninger.
-      Hvis den er indstillet til sand eller ikke er indstillet, rapporteres der statusoplysninger.
-
-      Denne politik gælder kun, hvis Android-apps er aktiverede.</translation>
 <translation id="5511702823008968136">Aktiver bogmærkelinje</translation>
 <translation id="5512418063782665071">Startsidens webadresse</translation>
 <translation id="5523812257194833591">Automatisk login på en offentlig session efter en forsinkelse.
@@ -1768,6 +1766,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Hvis du vælger at registrere proxyserveren automatisk, oplyses scriptwebadressen "http://wpad/wpad.dat" til Android-apps. Ingen andre dele af protokollen for automatisk registrering af proxy anvendes.
 
           Hvis du vælger at bruge et .pac-proxyscript, oplyses scriptwebadressen til Android-apps.</translation>
+<translation id="6435127182262044446">Denne indstilling styrer, hvor lang en pinkode kan være.
+
+          Hvis indstillingen er 0 eller derunder, er der ingen maksimal længde, og brugeren kan indstille en pinkode, der er så lang som ønsket.
+
+          Hvis indstillingen er mindre end værdien af PinUnlockMinimumLength, men større end 0, er den maksimale længde den samme som minimumslængden.
+
+          Denne indstilling er som standard angivet til ingen maksimal længde.</translation>
 <translation id="6467433935902485842">Giver dig mulighed for at oprette en liste over webstedsmønstre, der angiver websites, som ikke har tilladelse til at køre plugins. Hvis denne politik ikke angives, anvendes den globale standardværdi for alle websites, enten fra politikken "DefaultPluginsSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
 <translation id="6473334971332473690">Tillader, at Smart Lock kan bruges på <ph name="PRODUCT_OS_NAME" />-enheder.
 
@@ -2662,6 +2667,13 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
           De protokolhandlere, der er registreret via politikker, flettes med dem, der er registreret af brugeren, og begge er tilgængelige og kan anvendes. Brugeren kan tilsidesætte protokolhandlere, der er installeret via en politik, ved at installere en ny standardhandler, men kan ikke fjerne en protokolhandler, der er registreret via en politik.</translation>
 <translation id="913195841488580904">Bloker adgang til en liste over webadresser</translation>
 <translation id="9135033364005346124">Aktiver <ph name="CLOUD_PRINT_NAME" />-proxyen</translation>
+<translation id="9136253551939494882">En hvidliste, der styrer, hvilke tilstande for hurtig oplåsning brugeren kan konfigurere og bruge til at låse låseskærmen op.
+
+          Denne værdi er en liste med strenge. Gyldige poster på listen er: "all", "PIN". Hvis du føjer "all" til listen, betyder det, at alle tilstande for hurtig oplåsning er tilgængelige for brugeren, også dem, der eventuelt implementeres i fremtiden. Ellers er det kun de tilstande for hurtig oplåsning, der er på listen, som er tilgængelige.
+
+          Brug f.eks. ["all"] for at tillade alle tilstande for hurtig oplåsning. Brug ["PIN"] for kun at tillade oplåsning med pinkode. Brug [] for at deaktivere alle tilstande for hurtig oplåsning.
+
+          Som standard er ingen tilstande for hurtig oplåsning tilgængelige på administrerede enheder.</translation>
 <translation id="9147029539363974059">Send systemlogfiler til administrationsserveren for at tillade,
       at administratorer overvåger systemlogfilerne.
 
@@ -2670,6 +2682,11 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="9150416707757015439">Denne politik er udfaset. Brug i stedet IncognitoModeAvailability. Aktiverer inkognitotilstand i <ph name="PRODUCT_NAME" />. Hvis denne indstilling er aktiveret eller ikke er konfigureret, kan brugerne åbne websider i inkognitotilstand. Hvis denne indstilling er deaktiveret, kan brugerne ikke åbne websider i inkognitotilstand. Hvis denne politik ikke er angivet, vil dette blive aktiveret, så brugeren kan bruge inkognitotilstand.</translation>
 <translation id="915194831143859291">Hvis denne politik er angivet til Falsk eller ikke er konfigureret, tillader <ph name="PRODUCT_OS_NAME" />, at brugeren lukker enheden ned.
       Hvis denne politik er angivet til Sand, udløser <ph name="PRODUCT_OS_NAME" /> en genstart, når brugeren lukker enheden ned. <ph name="PRODUCT_OS_NAME" /> erstatter alle forekomster af Luk-knapper i grænsefladen med genstartsknapper. Hvis brugeren lukker enheden ved hjælp af afbryderknappen, genstartes den ikke automatisk, selvom politikken er aktiveret.</translation>
+<translation id="917887642534332939">Denne indstilling styrer minimumlængden på pinkoder.
+
+          Den absolutte minimumlængde på pinkoder er 1. Værdier under 1 behandles som 1.
+
+          Standardlængden, som også er den anbefalede minimumlængde på pinkoder, er seks cifre.</translation>
 <translation id="9187743794267626640">Deaktiver isætning af eksternt lager</translation>
 <translation id="9197740283131855199">Den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, hvis brugeren bliver aktiv efter nedtoningen</translation>
 <translation id="9200828125069750521">Parametre for billedets webadresse, som anvender POST</translation>

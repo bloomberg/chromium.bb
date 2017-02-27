@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliterație (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Încarcă imaginea</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1029595648591494741">Încercați „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="1030173864176315846">S-au printat <ph name="PAGE_NUMBER" /> pagini folosind <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Se încarcă previzualizarea</translation>
 <translation id="1031573127485938293">Solicită (gestionată de politică)</translation>
@@ -1831,7 +1830,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Limitări ale politicii pentru certificate</translation>
 <translation id="335985608243443814">Răsfoiește...</translation>
 <translation id="3360297538363969800">Printarea a eșuat. Verificați imprimanta și încercați din nou.</translation>
-<translation id="3361481787422913716">Vezi setările din raport</translation>
 <translation id="336497260564123876">Parola a fost salvată. Pentru a accesa parolele pe toate dispozitivele, conectează-te la Chrome.</translation>
 <translation id="3367813778245106622">Conectează-te din nou pentru a începe sincronizarea</translation>
 <translation id="3368922792935385530">Conectată</translation>
@@ -2007,7 +2005,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Pentru a conecta, introduceți acest cod pe „<ph name="DEVICE_NAME" />”:</translation>
 <translation id="3588662957555259973">* fotografie de profil Google</translation>
 <translation id="3590194807845837023">Deblocați profilul și relansați Chrome</translation>
-<translation id="3590559774363307859">Parola a fost salvată. O poți accesa împreună cu toate <ph name="SAVED_PASSWORDS_LINK" /> din orice browser.</translation>
 <translation id="3592260987370335752">&amp;Aflați mai multe</translation>
 <translation id="359283478042092570">Accesați</translation>
 <translation id="3593965109698325041">Limitări privind numele certificatului</translation>
@@ -2832,7 +2829,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4764865176798926079">domContentLoaded din cadrul principal și toate încărcările de resurse începute înainte de domContentLoaded (cadrele iframe sunt ignorate).</translation>
 <translation id="4768332406694066911">Ai certificate de la aceste organizații care te identifică</translation>
 <translation id="4768698601728450387">Decupează imaginea</translation>
-<translation id="4773696473262035477">O poți accesa și poți accesa toate <ph name="SAVED_PASSWORDS_LINK" /> din orice browser.</translation>
 <translation id="4776917500594043016">Parolă pentru <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4780321648949301421">Salvează pagina ca...</translation>
@@ -4391,7 +4387,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="6878261347041253038">Tastatură devanagari (Fonetică)</translation>
 <translation id="6880587130513028875">Imaginile au fost blocate pe această pagină.</translation>
 <translation id="6883209331334683549">Ajutor <ph name="PRODUCT_NAME" /></translation>
-<translation id="6883319974225028188">Hopa!  Sistemul nu a putut salva configurarea dispozitivului.</translation>
+<translation id="6883319974225028188">Hopa! Sistemul nu a putut salva configurarea dispozitivului.</translation>
 <translation id="6885771755599377173">Previzualizarea informațiilor de sistem</translation>
 <translation id="6886871292305414135">Deschide linkul într-o filă &amp;nouă</translation>
 <translation id="6892667837507098565">Rasterizare la nivel de GPU</translation>
@@ -5383,7 +5379,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Această extensie nu este inclusă în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și este posibil să fi fost adăugată fără știrea dvs.</translation>
 <translation id="8261387128019234107">Adăugați un cont pentru <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Acestea pot să:</translation>
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8261580862248730866">Excepții pentru microfon</translation>
 <translation id="8261673729476082470">Se face backup pentru <ph name="FILE_COUNT" /> fotografii pe <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

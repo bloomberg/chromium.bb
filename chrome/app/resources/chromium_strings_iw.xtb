@@ -14,7 +14,6 @@
 <translation id="1502360822835740515">‏הגדר את Chromium בתור דפדפן ברירת המחדל</translation>
 <translation id="151962892725702025">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך מפני שסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="1559451348202814456">‏ייתכן ש-Chromium לא יפעל כראוי כי כבר אין בו תמיכה במערכת Mac OS X בגרסאות 10.6, 10.7 ו-10.8.</translation>
-<translation id="1644918877723739397">‏Chromium ישמור את הסיסמה הזו ב-<ph name="SAVED_PASSWORD_LINK" /> ויזכור אותה בפעם הבאה שתזדקק לה.</translation>
 <translation id="1653828314016431939">אישור - הפעל מחדש כעת</translation>
 <translation id="1668054258064581266">‏לאחר הסרת החשבון שלך מ-Chromeium, ייתכן שתידרש לטעון מחדש את הכרטיסיות הפתוחות שלך כדי שההסרה תיושם בפועל.</translation>
 <translation id="1688750314291223739">‏הגדר סנכרון כדי לשמור את תכונות הדפדפן המותאמות אישית שלך באינטרנט ולגשת אליהן מ-Chromium בכל מחשב.</translation>
@@ -49,6 +48,7 @@
 <translation id="2587578672395088481">‏כדי להחיל עדכון זה, יש להפעיל מחדש את Chromium OS.</translation>
 <translation id="2605472041568654097">‏עזור לשפר את Chromium על ידי דיווח על ההגדרות הנוכחיות.</translation>
 <translation id="2636877269779209383">‏Chromium זקוק לגישה אל המצלמה כדי לשתף אותה עם האתר הזה.</translation>
+<translation id="2647554856022461007">‏Chromium עשוי להשתמש בשירותי אינטרנט לשיפור חוויית הגלישה. ניתן להשבית את השירותים האלה. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">‏במהלך ההתקנה ארעה שגיאה של מערכת ההפעלה. הורד שוב את Chromium.</translation>
 <translation id="2685838254101182273">‏Chromium הפסיק לעדכן את הגרסה הזו של מערכת ההפעלה שלך וכבר אינו תומך בה.</translation>
 <translation id="2711502716910134313">‏כרטיסייה של Chromium</translation>
@@ -146,6 +146,7 @@
 <translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5906655207909574370">העדכון כמעט הושלם! הפעל מחדש את המכשיר כדי לסיים את העדכון.</translation>
+<translation id="5942225298871134766">‏Chromium ישמור את הסיסמה הזו ב-<ph name="SAVED_PASSWORD_LINK" /> ויזכור אותה בפעם הבאה שתזדקק לה.</translation>
 <translation id="5942520288919337908">‏<ph name="EXTENSION_NAME" /> נוסף ל-‏Chromium‏.</translation>
 <translation id="59625444380784159">‏פרטים מאנשי הקשר שלך יכולים לעזור לך למלא טפסים במהירות רבה יותר ב-Chromium.</translation>
 <translation id="5987687638152509985">‏עדכן את Chromium כדי להתחיל את הסנכרון</translation>
@@ -187,7 +188,6 @@
 <translation id="705851970750939768">‏עדכן את Chromium‏</translation>
 <translation id="7066436765290594559">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה לסנכרון.</translation>
 <translation id="707471633328071618">‏Google Payments (‏הועתק ל-Chromium)</translation>
-<translation id="7090955637699162649">‏Chromium יכול להשתמש ב<ph name="BEGIN_LINK" />שירותי האינטרנט<ph name="END_LINK" /> לשיפור חוויית הגלישה. תוכל להשבית את השירותים האלו בכל עת.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{‏הפעולה תמחק לצמיתות פריט אחד מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}two{‏הפעולה תמחק לצמיתות שני פריטים מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}many{‏הפעולה תמחק לצמיתות $1 פריטים מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}other{‏הפעולה תמחק לצמיתות $1 פריטים מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}}</translation>
 <translation id="7138853919861947730">‏Chromium עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
 <translation id="7162152143154757523">‏Chromium יכול לספק בדיקת איות חכמה יותר על ידי שליחת הטקסט שאתה מקליד בדפדפן אל שרתי Google. כך אתה יכול להשתמש באותה טכנולוגיה של בדיקת איות שבה נעשה שימוש בחיפוש Google.</translation>

@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Átírás (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Kép betöltése</translation>
 <translation id="1029317248976101138">Nagyítás</translation>
-<translation id="1029595648591494741">Kipróbálja a következőt: „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="1030173864176315846">Sikeresen nyomtatott <ph name="PAGE_NUMBER" /> oldalt a(z) <ph name="PRINTER_NAME" /> segítségével</translation>
 <translation id="1031362278801463162">Előnézet betöltése</translation>
 <translation id="1031573127485938293">Kérdezzen rá (a házirend alapján)</translation>
@@ -1832,7 +1831,6 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Tanúsítvány-irányelvi megkötések</translation>
 <translation id="335985608243443814">Tallózás...</translation>
 <translation id="3360297538363969800">A nyomtatás sikertelen. Ellenőrizze a nyomtatót, majd próbálja újra.</translation>
-<translation id="3361481787422913716">Jelentésbeállítások megtekintése</translation>
 <translation id="336497260564123876">Jelszó mentve. Ha az összes eszközén szeretné elérni jelszavait, jelentkezzen be a Chrome-ba.</translation>
 <translation id="3367813778245106622">A szinkronizálás megkezdéséhez jelentkezzen be újra</translation>
 <translation id="3368922792935385530">Kapcsolódva</translation>
@@ -2008,7 +2006,6 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Írja be ezt a kódot a(z) „<ph name="DEVICE_NAME" />” eszközön a párosításhoz:</translation>
 <translation id="3588662957555259973">* Google-profil fotó</translation>
 <translation id="3590194807845837023">Profil feloldása és újraindítás</translation>
-<translation id="3590559774363307859">Jelszó mentve. Bármelyik böngészőből elérheti ezt és a(z) <ph name="SAVED_PASSWORDS_LINK" /> közül az összes többit.</translation>
 <translation id="3592260987370335752">&amp;További információ</translation>
 <translation id="359283478042092570">Bejelentkezés</translation>
 <translation id="3593965109698325041">Tanúsítvány nevének megkötései</translation>
@@ -2832,7 +2829,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4764865176798926079">A fő keret domContentLoaded eseménye és az összes forrás betöltése elkezdődött a domContentLoaded előtt (iframe-ek figyelmen kívül hagyva).</translation>
 <translation id="4768332406694066911">Ezektől a szervezetektől olyan tanúsítványai vannak, amelyek azonosítják</translation>
 <translation id="4768698601728450387">Kép kivágása</translation>
-<translation id="4773696473262035477">Bármely böngészőből elérheti ezt és a(z) <ph name="SAVED_PASSWORDS_LINK" /> közül az összes többit.</translation>
 <translation id="4776917500594043016">A(z) <ph name="USER_EMAIL_ADDRESS" /> fiókhoz tartozó jelszó</translation>
 <translation id="4779083564647765204">Nagyítás</translation>
 <translation id="4780321648949301421">Oldal mentése &amp;másként...</translation>
@@ -5384,7 +5380,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8260864402787962391">Egér</translation>
 <translation id="8261378640211443080">A bővítmény nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származik, és előfordulhat, hogy az Ön tudta nélkül lett telepítve.</translation>
 <translation id="8261387128019234107">Fiók hozzáadása a következőhöz: <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Megtehetik a következőket:</translation>
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="8261580862248730866">Mikrofonnal kapcsolatos kivételek</translation>
 <translation id="8261673729476082470"><ph name="FILE_COUNT" /> fotó biztonsági mentésének végrehajtása folyamatban van a <ph name="BEGIN_LINK" />Google Drive-on<ph name="END_LINK" /></translation>

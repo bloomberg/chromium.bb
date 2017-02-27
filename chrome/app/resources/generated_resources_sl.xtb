@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Prečrkovanje (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Naloži sliko</translation>
 <translation id="1029317248976101138">Povečaj</translation>
-<translation id="1029595648591494741">Želite preskusiti razširitev »<ph name="EXTENSION_NAME" />«?</translation>
 <translation id="1030173864176315846">S tiskalnikom <ph name="PRINTER_NAME" /> je bilo uspešno natisnjenih toliko strani: <ph name="PAGE_NUMBER" /></translation>
 <translation id="1031362278801463162">Nalaganje predogleda</translation>
 <translation id="1031573127485938293">Zahteva (pravilnik)</translation>
@@ -1833,7 +1832,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Omejitve pravilnika potrdila</translation>
 <translation id="335985608243443814">Prebrskaj ...</translation>
 <translation id="3360297538363969800">Tiskanje ni uspelo. Preverite tiskalnik in poskusite znova.</translation>
-<translation id="3361481787422913716">Ogled nastavitev poročil</translation>
 <translation id="336497260564123876">Geslo je shranjeno. Če želite dostopati do gesel v vseh napravah, se prijavite v Chrome.</translation>
 <translation id="3367813778245106622">Prijavite se znova, če želite začeti sinhronizacijo</translation>
 <translation id="3368922792935385530">Povezano</translation>
@@ -2009,7 +2007,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Če želite začeti seznanjanje, v napravo »<ph name="DEVICE_NAME" />« vnesite to kodo:</translation>
 <translation id="3588662957555259973">* Fotografija profila Google</translation>
 <translation id="3590194807845837023">Odkleni profil in zaženi znova</translation>
-<translation id="3590559774363307859">Geslo je shranjeno. S katerim koli brskalnikom lahko dostopate do tega gesla in teh: <ph name="SAVED_PASSWORDS_LINK" />.</translation>
 <translation id="3592260987370335752">Več o tem</translation>
 <translation id="359283478042092570">Vnesite</translation>
 <translation id="3593965109698325041">Omejitve imena potrdila</translation>
@@ -2834,7 +2831,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="4764865176798926079">Dogodek »domContentLoaded« in vsa nalaganja sredstev so se začeli pred dogodkom »domContentLoaded« (elementi »iframe« so prezrti).</translation>
 <translation id="4768332406694066911">Imate potrdila teh organizacij, ki vas identificirajo</translation>
 <translation id="4768698601728450387">Obreži sliko</translation>
-<translation id="4773696473262035477">Iz katerega koli brskalnika lahko dostopate do tega gesla in teh: <ph name="SAVED_PASSWORDS_LINK" />.</translation>
 <translation id="4776917500594043016">Geslo za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Povečaj</translation>
 <translation id="4780321648949301421">Shrani stran &amp;kot ...</translation>
@@ -4332,7 +4328,7 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="6797493596609571643">Ojoj, prišlo je do napake.</translation>
 <translation id="6798780071646309401">zaklepanje velikih črk je vklopljeno</translation>
 <translation id="6798954102094737107">Vtičnik: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6801435275744557998">Umerjanje zaslon na dotik</translation>
+<translation id="6801435275744557998">Umerjanje zaslona na dotik</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Vse zaznamke odpri v &amp;novem oknu</translation>
 <translation id="6805647936811177813">Prijavite se v <ph name="TOKEN_NAME" />, če želite uvoziti potrdilo odjemalca s spletnega mesta <ph name="HOST_NAME" />.</translation>
@@ -5386,7 +5382,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8260864402787962391">Miška</translation>
 <translation id="8261378640211443080">Ta razširitev ni navedena v storitvi <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> in je bila morda dodana brez vaše vednosti.</translation>
 <translation id="8261387128019234107">Dodaj račun za <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Lahko:</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8261580862248730866">Izjeme za mikrofon</translation>
 <translation id="8261673729476082470">Varnostno kopiranje toliko fotografij v <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>

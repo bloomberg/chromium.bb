@@ -150,7 +150,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="3638472932233958418">Pirmsiel. tīm. lapas</translation>
 <translation id="3691593122358196899">Grāmatzīme saglabāta mapē <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Ja šī opcija ir iespējota, universālajā lodziņā tiek rādīti tīmekļa lapu ieteikumi, ko apraida tuvumā esošas ierīces.</translation>
-<translation id="3706658020782046159">Atlasiet piegādes adresi, lai skatītu piegādes veidus un prasības.</translation>
 <translation id="3738139272394829648">Meklēšana pieskaroties</translation>
 <translation id="3771033907050503522">Inkognito režīma cilnes</translation>
 <translation id="3783017676699494206">Saglabāt attēlu</translation>
@@ -211,12 +210,10 @@ Jūsu dati ir šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi. Lai s�
 <translation id="5197255632782567636">Internets</translation>
 <translation id="5198972191746488848">Pievienot karti...</translation>
 <translation id="5228579091201413441">Iespējot sinhronizāciju</translation>
-<translation id="5230733896359313003">Piegādes adrese</translation>
 <translation id="5244474230056479698">Sinhronizēšana ar <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5327248766486351172">Nosaukums</translation>
-<translation id="5332219387342487447">Piegādes veids</translation>
 <translation id="5388358297987318779">Atvērt attēlu</translation>
 <translation id="5409365236829784218">Nav instalēta neviena lietotne, ar kuru atvērt šo failu.</translation>
 <translation id="54401264925851789">Lapas drošības informācija</translation>
@@ -343,7 +340,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7671141431838911305">INSTALĒT</translation>
-<translation id="7682287625158474539">Piegāde</translation>
 <translation id="7765158879357617694">Pārvietot</translation>
 <translation id="7769602470925380267">Piekrist un izrakstīties</translation>
 <translation id="7772032839648071052">Apstipriniet ieejas frāzi</translation>

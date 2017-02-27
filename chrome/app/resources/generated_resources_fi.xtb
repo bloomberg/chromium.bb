@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Translitterointi (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Lataa kuva</translation>
 <translation id="1029317248976101138">Lähennä</translation>
-<translation id="1029595648591494741">Haluatko kokeilla sovellusta <ph name="EXTENSION_NAME" />?</translation>
 <translation id="1030173864176315846">Tulostettu <ph name="PAGE_NUMBER" /> sivua tulostimeen <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Ladataan esikatselua</translation>
 <translation id="1031573127485938293">Kysy (käytännön määrittämä)</translation>
@@ -1832,7 +1831,6 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Varmennekäytännön rajoitteet</translation>
 <translation id="335985608243443814">Selaa...</translation>
 <translation id="3360297538363969800">Tulostus epäonnistui. Tarkista tulostin ja yritä uudelleen.</translation>
-<translation id="3361481787422913716">Näytä raporttiasetukset</translation>
 <translation id="336497260564123876">Salasana tallennettiin. Kirjaudu sisään Chromeen, niin voit käyttää salasanojasi kaikilla laitteillasi.</translation>
 <translation id="3367813778245106622">Aloita synkronointi kirjautumalla uudelleen sisään.</translation>
 <translation id="3368922792935385530">Yhdistetty</translation>
@@ -2008,7 +2006,6 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Kirjoita tämä laitteessa <ph name="DEVICE_NAME" /> oleva koodi, jos haluat muodostaa laiteparin:</translation>
 <translation id="3588662957555259973">* Google-profiilin valokuva</translation>
 <translation id="3590194807845837023">Poista profiilin lukitus ja käynnistä uudelleen</translation>
-<translation id="3590559774363307859">Salasana tallennettiin. Voit käyttää sitä ja muita <ph name="SAVED_PASSWORDS_LINK" /> millä tahansa selaimella.</translation>
 <translation id="3592260987370335752">&amp;Lisätietoja</translation>
 <translation id="359283478042092570">Sisään</translation>
 <translation id="3593965109698325041">Varmenteen nimirajoitukset</translation>
@@ -2826,7 +2823,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4764865176798926079">Pääkehyksen domContentLoaded-tapahtuma, kaikkien resurssien lataaminen aloitettu ennen domContentLoaded-tapahtumaa (iframeja ei huomioida).</translation>
 <translation id="4768332406694066911">Sinulla on varmenteita seuraavilta sinut tunnistavilta organisaatioilta</translation>
 <translation id="4768698601728450387">Rajaa kuva</translation>
-<translation id="4773696473262035477">Voit käyttää sitä ja muita <ph name="SAVED_PASSWORDS_LINK" /> millä tahansa selaimella.</translation>
 <translation id="4776917500594043016">Osoitteen <ph name="USER_EMAIL_ADDRESS" /> salasana</translation>
 <translation id="4779083564647765204">Lähennä</translation>
 <translation id="4780321648949301421">Tallenna sivu nimellä...</translation>
@@ -5375,7 +5371,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8260864402787962391">Hiiri</translation>
 <translation id="8261378640211443080">Tätä laajennusta ei löydy kohteesta <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, ja se on voitu lisätä ilman lupaasi.</translation>
 <translation id="8261387128019234107">Lisää tili henkilölle <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Ne voivat:</translation>
 <translation id="8261506727792406068">Poista</translation>
 <translation id="8261580862248730866">Mikrofonin poikkeukset</translation>
 <translation id="8261673729476082470">Varmuuskopioidaan <ph name="FILE_COUNT" /> valokuvaa <ph name="BEGIN_LINK" />Google Driveen<ph name="END_LINK" />.</translation>

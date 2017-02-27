@@ -1286,6 +1286,11 @@ Ja šī politika nav iestatīta, lietotājs var izmantot jebkuru sistēmā insta
           Šablonu piemērus skatiet šeit: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Atvērt vietrāžu URL sarakstu</translation>
 <translation id="4680961954980851756">Iespējo automātisko aizpildi</translation>
+<translation id="4722399051042571387">Ja ir konfigurēta vērtība “false”, tiek novērsta nedrošu un viegli uzminamu PIN iestatīšana.
+
+          Piemēram, nedroši ir tādi PIN, kuros ir vienādi cipari (1111), četri cipari pēc kārtas augošā secībā (1234), četri cipari pēc kārtas dilstošā secībā (4321) vai izplatīta ciparu kombinācija.
+
+          Pēc noklusējuma, ievadot nedrošu PIN, lietotājiem tiek parādīts tikai brīdinājums, nevis kļūdas ziņojums.</translation>
 <translation id="4723829699367336876">Ugunsmūra apvada iespējošana no attālās piekļuves klienta</translation>
 <translation id="4725528134735324213">Iespējot pakalpojumu Android Backup Service</translation>
 <translation id="4733471537137819387">Ar integrēto HTTP autentifikāciju saistītās politikas</translation>
@@ -1502,13 +1507,6 @@ Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, pārlūkā 
       Ja ir iestatīta šīs politikas vērtība un tā nav 0, lietotājam, kas pašlaik ir pieteicies demonstrācijā, automātiski tiks veikta atteikšanās, tiklīdz būs pagājis noteiktais neaktivitātes laiks.
 
       Politikas vērtība ir jānorāda milisekundēs.</translation>
-<translation id="5506213378070007377">Informācija par Android statusu tiek nosūtīta atpakaļ uz
-      serveri.
-
-      Ja politikai ir iestatīta vērtība “Nepatiesa”, netiek ziņota statusa informācija.
-      Ja ir iestatīta vērtība “Patiesa” vai politika nav iestatīta, tiek ziņota statusa informācija.
-
-      Šī politika ir spēkā tikai tad, ja ir iespējotas Android lietotnes.</translation>
 <translation id="5511702823008968136">Iespējo grāmatzīmju joslu</translation>
 <translation id="5512418063782665071">Sākumlapas URL</translation>
 <translation id="5523812257194833591">Publiska sesija, kurā pēc aizkaves veikt automātisku pieteikšanos.
@@ -1836,6 +1834,13 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
           Ja izvēlēsieties automātiski noteikt starpniekserveri, Android lietotnēm tiks nodrošināts skripta URL http://wpad/wpad.dat. Netiks izmantota neviena cita daļa no automātiskās noteikšanas protokola.
 
           Ja izvēlēsieties izmantot .pac starpniekservera skriptu, Android lietotnēm tiks nodrošināts skripta URL.</translation>
+<translation id="6435127182262044446">Ar šo iestatījumu tiek kontrolēts PIN maksimālais garums.
+
+          Ja iestatījuma vērtība ir 0 vai mazāka vērtība, nav noteikts maksimālais garums un lietotājs var iestatīt jebkāda garuma PIN.
+
+          Ja šī iestatījuma vērtība ir mazāka nekā vērtība PinUnlockMinimumLength, taču lielāka nekā 0, maksimālais garums ir tāds pats kā minimālais garums.
+
+          Pēc noklusējuma maksimālais garums nav noteikts.</translation>
 <translation id="6467433935902485842">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts izpildīt spraudņus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultPluginsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -2795,6 +2800,13 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
           Politikas reģistrētie protokolu apdarinātāji tiek apvienoti ar lietotāja reģistrētajiem, un tie visi ir pieejami lietošanai. Lietotājs var ignorēt politikas instalētos protokolu apdarinātājus, instalējot jaunu noklusējuma apdarinātāju, bet nevar noņemt politikas reģistrētu protokola apdarinātāju.</translation>
 <translation id="913195841488580904">Bloķēt piekļuvi vietrāžu URL sarakstam</translation>
 <translation id="9135033364005346124">Iespējo <ph name="CLOUD_PRINT_NAME" /> starpniekserveri</translation>
+<translation id="9136253551939494882">Baltais saraksts, ar kuru tiek kontrolēts, kurus ātrās atbloķēšanas režīmus lietotājs var konfigurēt un lietot, lai atbloķētu bloķēšanas ekrānu.
+
+          Vērtība ir virkņu saraksts. Derīgi saraksta ierakstu piemēri: "all" (visi) un "PIN". Pievienojot sarakstam vērtību "all", lietotājam ir pieejami visi ātrās atbloķēšanas režīmi un būs pieejami arī tādi režīmi, kas tiks ieviesti vēlāk. Pretējā gadījumā ir pieejami tikai sarakstā norādītie ātrās atbloķēšanas režīmi.
+
+          Piemēram, lai atļautu visus ātrās atbloķēšanas režīmus, norādiet vērtību ["all"]. Lai atļautu tikai PIN atbloķēšanu, norādiet vērtību ["PIN"]. Lai atspējotu visus ātrās atbloķēšanas režīmus, norādiet vērtību [].
+
+          Pēc noklusējuma pārvaldītās ierīcēs nav pieejami ātrās atbloķēšanas režīmi.</translation>
 <translation id="9147029539363974059">Sūta sistēmas žurnālus uz pārvaldības serveri, lai ļautu
       administratoriem uzraudzīt sistēmas žurnālus.
 
@@ -2810,6 +2822,11 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja šī politika nav iestatīta, tā tiks iespējota un lietotājs varēs lietot inkognito režīmu.</translation>
 <translation id="915194831143859291">Ja šai politikai ir iestatīta vērtība Nepatiesa vai ja politika nav konfigurēta, lietotājs var izslēgt <ph name="PRODUCT_OS_NAME" /> ierīci.
       Ja šai politikai ir iestatīta vērtība Patiesa, lietotājam izslēdzot ierīci, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiek aktivizēta atkārtotā palaišana. <ph name="PRODUCT_OS_NAME" /> aizstāj visas lietotāja saskarnē esošās izslēgšanas pogas ar atkārtotas palaišanas pogām. Ja lietotājs izslēdz ierīci, izmantojot barošanas pogu, ierīce tiek automātiski atkārtoti palaista, pat ja ir iespējota politika.</translation>
+<translation id="917887642534332939">Ar šo iestatījumu tiek kontrolēts PIN minimālais garums.
+
+          Absolūtais PIN minimālais garums ir 1. Mazākas vērtības tiek apstrādātas kā vērtība 1.
+
+          Noklusējuma PIN minimālais garums, ko ieteicams izmantot, ir 6 cipari.</translation>
 <translation id="9187743794267626640">Ārējas krātuves uzstādīšanas atspējošana</translation>
 <translation id="9197740283131855199">Aizkaves līdz ekrāna aptumšošanai norādīšana procentos, ja lietotājs ir aktīvs pēc aptumšošanas</translation>
 <translation id="9200828125069750521">Tā attēla URL parametri, kurā tiek izmantota metode POST</translation>

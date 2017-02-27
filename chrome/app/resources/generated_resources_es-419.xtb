@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteración (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Cargar imagen</translation>
 <translation id="1029317248976101138">Zoom</translation>
-<translation id="1029595648591494741">¿Deseas probar "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="1030173864176315846">Se imprimieron <ph name="PAGE_NUMBER" /> páginas en <ph name="PRINTER_NAME" /> de forma correcta</translation>
 <translation id="1031362278801463162">Cargando vista previa</translation>
 <translation id="1031573127485938293">Preguntar (por política)</translation>
@@ -351,7 +350,7 @@
 <translation id="1470719357688513792">La nueva configuración de cookie se hará efectiva cuando vuelvas a cargar la página.</translation>
 <translation id="1470811252759861213">Para usar tus extensiones en todas tus computadoras, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="14720830734893704">Permite habilitar la compatibilidad con el teclado virtual.</translation>
-<translation id="1473539320840569129">Fuerza la visualización del menú de herramientas de la pluma stylus en la biblioteca y la sección "Stylus" en la configuración, incluso si no se conectó ningún dispositivo de este tipo.</translation>
+<translation id="1473539320840569129">Fuerza la visualización del menú de herramientas de la pluma stylus en la biblioteca y la sección correspondiente en la configuración, incluso si no se conectó ningún dispositivo de este tipo.</translation>
 <translation id="1474079335130556426">Habilita el modo en segundo plano para la API de Push. Permite que Chrome continúe ejecutándose después de que la última ventana se cierra y que arranque al iniciarse el SO, si la API de Push lo necesita.</translation>
 <translation id="1474339897586437869">No se cargó "<ph name="FILENAME" />". No hay suficiente espacio libre en Google Drive.</translation>
 <translation id="1475502736924165259">Tienes certificados archivados que no coinciden con ninguna de las demás categorías</translation>
@@ -1828,7 +1827,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Restricciones de directivas para certificados</translation>
 <translation id="335985608243443814">Navegar...</translation>
 <translation id="3360297538363969800">Se produjo un error al imprimir. Revisa la impresora y vuelve a intentarlo.</translation>
-<translation id="3361481787422913716">Ver las opciones de configuración del informe</translation>
 <translation id="336497260564123876">Se guardó la contraseña. Para obtener tus contraseñas en todos tus dispositivos, accede a Chrome.</translation>
 <translation id="3367813778245106622">Volver a acceder para iniciar la sincronización</translation>
 <translation id="3368922792935385530">Conectado</translation>
@@ -2004,7 +2002,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Escribe este código en el dispositivo "<ph name="DEVICE_NAME" />" para sincronizar:</translation>
 <translation id="3588662957555259973">* Foto de perfil de Google</translation>
 <translation id="3590194807845837023">Desbloquear perfil y volver a iniciar</translation>
-<translation id="3590559774363307859">Se guardó la contraseña. Puedes acceder a ella, al igual que a todas tus <ph name="SAVED_PASSWORDS_LINK" />, desde cualquier navegador.</translation>
 <translation id="3592260987370335752">&amp;Más información</translation>
 <translation id="359283478042092570">Ingresar</translation>
 <translation id="3593965109698325041">Restricciones para el nombre del certificado</translation>
@@ -2829,7 +2826,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4764865176798926079">domContentLoaded y todas las cargas de recursos que comenzaron antes de domContentLoaded (marcos incorporados ignorados)</translation>
 <translation id="4768332406694066911">Tienes certificados de esas organizaciones que te identifican</translation>
 <translation id="4768698601728450387">Recortar imagen</translation>
-<translation id="4773696473262035477">Puedes acceder a la contraseña y a todas tus <ph name="SAVED_PASSWORDS_LINK" /> desde cualquier navegador.</translation>
 <translation id="4776917500594043016">Contraseña para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4780321648949301421">Guardar página como...</translation>
@@ -3617,7 +3613,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5818003990515275822">Coreano</translation>
 <translation id="5819442873484330149">Hangul de triple alternancia (final)</translation>
 <translation id="5819484510464120153">Crear acce&amp;sos directos a aplicaciones...</translation>
-<translation id="5822320845790250510">Forzar la habilitación de las funciones con la pluma stylus</translation>
+<translation id="5822320845790250510">Forzar la habilitación de las funciones de la pluma stylus</translation>
 <translation id="5826507051599432481">Nombre común (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828228029189342317">Has elegido abrir ciertos tipos de archivo automáticamente después de la descarga.</translation>
@@ -5381,7 +5377,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Esta extensión no figura en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y es posible que se haya agregado sin tu conocimiento.</translation>
 <translation id="8261387128019234107">Agregar cuenta para <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Pueden:</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8261580862248730866">Excepciones del micrófono</translation>
 <translation id="8261673729476082470">Guardando copia de seguridad de <ph name="FILE_COUNT" /> fotos en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>

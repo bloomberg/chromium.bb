@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Prepis (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Načítať obrázok</translation>
 <translation id="1029317248976101138">Lupa</translation>
-<translation id="1029595648591494741">Chcete skúsiť rozšírenie <ph name="EXTENSION_NAME" />?</translation>
 <translation id="1030173864176315846">Na tlačiarni <ph name="PRINTER_NAME" /> bol úspešne vytlačený tento počet stránok: <ph name="PAGE_NUMBER" /></translation>
 <translation id="1031362278801463162">Načítava sa ukážka</translation>
 <translation id="1031573127485938293">Opýtať sa (na základe pravidla)</translation>
@@ -351,7 +350,7 @@
 <translation id="1470719357688513792">Nové nastavenia súborov cookie sa použijú po obnovení stránky.</translation>
 <translation id="1470811252759861213">Ak chcete získať záložky na všetkých počítačoch, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="14720830734893704">Povolí podporu virtuálnej klávesnice.</translation>
-<translation id="1473539320840569129">Vynúti zobrazenie ponuky nástrojov dotykového pera na poličky a sekcie dotykového pera v nastaveniach a to aj v prípade, ak nie je pripojené žiadne dotykové pero.</translation>
+<translation id="1473539320840569129">Vynúti zobrazenie ponuky nástrojov dotykového pera na poličky a sekcie dotykového pera v nastaveniach, a to aj v prípade, ak nie je pripojené žiadne dotykové pero.</translation>
 <translation id="1474079335130556426">Povoľte režim na pozadí pre rozhranie Push API. Prehliadaču Chrome týmto povolíte, aby zostal spustený aj po zatvorení posledného okna a tiež aby sa aktivoval pri spustení operačného systému, ak ho rozhranie Push API potrebuje.</translation>
 <translation id="1474339897586437869">Súbor <ph name="FILENAME" /> nebol nahraný. Na Disku Google nemáte dostatok voľného miesta.</translation>
 <translation id="1475502736924165259">V súbore máte certifikáty, ktoré sa nedajú zaradiť do žiadnej z iných kategórií:</translation>
@@ -1833,7 +1832,6 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3359256513598016054">Obmedzenia certifikačnej politiky</translation>
 <translation id="335985608243443814">Prehliadať...</translation>
 <translation id="3360297538363969800">Tlač zlyhala. Skontrolujte tlačiareň a skúste to znova.</translation>
-<translation id="3361481787422913716">Zobraziť nastavenia prehľadu</translation>
 <translation id="336497260564123876">Heslo bolo uložené. Ak chcete mať svoje heslá na všetkých zariadeniach, prihláste sa do Chromu.</translation>
 <translation id="3367813778245106622">Ak chcete spustiť synchronizáciu, znova sa prihláste</translation>
 <translation id="3368922792935385530">Pripojené</translation>
@@ -2009,7 +2007,6 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="358796204584394954">Na zariadení „<ph name="DEVICE_NAME" />“ zadajte tento kód:</translation>
 <translation id="3588662957555259973">* Profilová fotografia Google</translation>
 <translation id="3590194807845837023">Odomknúť profil a spustiť znova</translation>
-<translation id="3590559774363307859">Heslo bolo uložené. K tomuto heslu a všetkým ďalším <ph name="SAVED_PASSWORDS_LINK" /> môžete pristupovať z ľubovoľného prehliadača.</translation>
 <translation id="3592260987370335752">&amp;Viac informácií</translation>
 <translation id="359283478042092570">Vstúpiť</translation>
 <translation id="3593965109698325041">Obmedzenia názvu certifikátu</translation>
@@ -2834,7 +2831,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="4764865176798926079">Načítanie prvku domContentLoaded hlavného rámca a všetkých zdrojov sa začalo pred prvkom domContentLoaded (prvky iframe sú ignorované).</translation>
 <translation id="4768332406694066911">Máte certifikáty z týchto organizácií, ktoré vás identifikujú</translation>
 <translation id="4768698601728450387">Orezať obrázok</translation>
-<translation id="4773696473262035477">K tomuto heslu a všetkým ďalším <ph name="SAVED_PASSWORDS_LINK" /> môžete pristupovať z ľubovoľného prehliadača.</translation>
 <translation id="4776917500594043016">Heslo pre účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Lupa</translation>
 <translation id="4780321648949301421">Uložiť stránku ako...</translation>
@@ -3834,7 +3830,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6112952769866305444">Upraviť osobu <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
 <translation id="6115424132962100663">Ak chcete prejsť späť, stlačte |<ph name="SHORTCUT" />|</translation>
 <translation id="6116921718742659598">Zmeniť nastavenia jazyka a vstupu</translation>
-<translation id="6119435854984171040">Niektoré obsahové služby používajú jedinečné identifikátory na autorizáciu prístupu k chránenému obsahu.</translation>
+<translation id="6119435854984171040">Niektoré obsahové služby používajú jedinečné identifikátory na autorizáciu prístupu ku chránenému obsahu.</translation>
 <translation id="6120205520491252677">Pripnúť túto stránku na Úvodnú obrazovku...</translation>
 <translation id="6122081475643980456">Vaše internetové pripojenie je ovládané</translation>
 <translation id="6122875415561139701">Operácia zápisu je na zariadení <ph name="DEVICE_NAME" /> zakázaná.</translation>
@@ -5386,7 +5382,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8260864402787962391">Myš</translation>
 <translation id="8261378640211443080">Toto rozšírenie nedodáva <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohlo byť pridané bez vášho vedomia.</translation>
 <translation id="8261387128019234107">Pridať účet k profilu <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Môžu:</translation>
 <translation id="8261506727792406068">Odstrániť</translation>
 <translation id="8261580862248730866">Výnimky pre mikrofón</translation>
 <translation id="8261673729476082470">Fotky (<ph name="FILE_COUNT" />) sa zálohujú na <ph name="BEGIN_LINK" />Disk Google<ph name="END_LINK" /></translation>

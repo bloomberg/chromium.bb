@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Harf çevirisi (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Resim Yükle</translation>
 <translation id="1029317248976101138">Yakınlaştır</translation>
-<translation id="1029595648591494741">"<ph name="EXTENSION_NAME" />" denensin mi?</translation>
 <translation id="1030173864176315846"><ph name="PAGE_NUMBER" /> sayfa <ph name="PRINTER_NAME" /> adlı yazıcıda başarıyla yazdırıldı</translation>
 <translation id="1031362278801463162">Önizleme yükleniyor</translation>
 <translation id="1031573127485938293">Sor (politika tarafından)</translation>
@@ -351,7 +350,7 @@
 <translation id="1470719357688513792">Yeni çerez ayarları sayfa yeniden yüklendikten sonra etkinleşecek.</translation>
 <translation id="1470811252759861213">Uzantılarınızı tüm bilgisayarlarınızda kullanmak için <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="14720830734893704">Sanal klavye desteğini etkinleştirin.</translation>
-<translation id="1473539320840569129">Cihazda ekran kalemi olmasa bile rafta ekran kalemi araçları menüsünün ve ayarlarda ekran kalemi seçiminin görüntülenmesini sağlar.</translation>
+<translation id="1473539320840569129">Cihazda ekran kalemi olmasa bile rafta ekran kalemi araçları menüsünün ve ayarlarda ekran kalemi bölümünün görüntülenmesini sağlar.</translation>
 <translation id="1474079335130556426">Push API'sı için arka plan modunu etkinleştirin. Bu mod, Chrome'un, son pencere kapatıldıktan sonra çalışmaya devam etmesine ve Push API'sı ihtiyaç duyarsa OS başlatılırken açılmasına olanak tanır.</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" yüklenmedi. Google Drive'ınızda yeterli boş alan yok.</translation>
 <translation id="1475502736924165259">Dosyanızda diğer kategorilerin hiçbirine uymayan sertifikalar var</translation>
@@ -1832,7 +1831,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3359256513598016054">Sertifika Politikası Kısıtlamaları</translation>
 <translation id="335985608243443814">Göz at...</translation>
 <translation id="3360297538363969800">Yazdırma işlemi başarısız oldu. Lütfen yazıcınızı kontrol edin ve tekrar deneyin.</translation>
-<translation id="3361481787422913716">Rapor ayarlarını görüntüle</translation>
 <translation id="336497260564123876">Şifre kaydedildi. Şifrelerinize tüm cihazlarınızda ulaşmak için Chrome'da oturum açın.</translation>
 <translation id="3367813778245106622">Senkronizasyonu başlatmak için tekrar oturum açın</translation>
 <translation id="3368922792935385530">Bağlı</translation>
@@ -2008,7 +2006,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="358796204584394954">Eşlemek için "<ph name="DEVICE_NAME" />" cihazında şu kodu yazın:</translation>
 <translation id="3588662957555259973">* Google Profil fotoğrafı</translation>
 <translation id="3590194807845837023">Profilin Kilidini Aç ve Tekrar Başlat</translation>
-<translation id="3590559774363307859">Şifre kaydedildi. Bu şifreye ve tüm <ph name="SAVED_PASSWORDS_LINK" /> öğelerinize herhangi bir tarayıcıdan erişebilirsiniz.</translation>
 <translation id="3592260987370335752">&amp;Daha fazla bilgi edinin</translation>
 <translation id="359283478042092570">Gir</translation>
 <translation id="3593965109698325041">Sertifika Adı Kısıtlamaları</translation>
@@ -2833,7 +2830,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4764865176798926079">Ana çerçeveye ait domContentLoaded ve domContentLoaded öncesinde başlatılan tüm kaynak yükleri (iframe'ler yoksayılır).</translation>
 <translation id="4768332406694066911">Sizi tanımlayan şu kuruluşlardan sertifikalarınız var</translation>
 <translation id="4768698601728450387">Resmi kırp</translation>
-<translation id="4773696473262035477">Bu şifreye ve <ph name="SAVED_PASSWORDS_LINK" /> içinde kaydedilenlerin tümüne herhangi bir tarayıcıdan erişebilirsiniz.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> için şifre</translation>
 <translation id="4779083564647765204">Yakınlaştır</translation>
 <translation id="4780321648949301421">Sayfayı Farklı Kaydet...</translation>
@@ -5387,7 +5383,6 @@ Kalan süre hesaplanıyor</translation>
 <translation id="8260864402787962391">Fare</translation>
 <translation id="8261378640211443080">Bu uzantı <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmiyor ve bilginiz dışında eklenmiş olabilir.</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> için hesap ekle</translation>
-<translation id="8261490674758214762">Şunları yapabilirler:</translation>
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8261580862248730866">Mikrofon istisnaları</translation>
 <translation id="8261673729476082470"><ph name="FILE_COUNT" /> fotoğraf <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />'a yedekleniyor</translation>

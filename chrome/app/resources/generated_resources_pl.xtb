@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Transliteracja (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Wczytaj obraz</translation>
 <translation id="1029317248976101138">Powiększ</translation>
-<translation id="1029595648591494741">Wypróbować „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="1030173864176315846">Wydrukowano <ph name="PAGE_NUMBER" /> str. na: <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Wczytuję podgląd</translation>
 <translation id="1031573127485938293">Pytaj (zgodnie z zasadami)</translation>
@@ -1831,7 +1830,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3359256513598016054">Ograniczenia zasad certyfikatu</translation>
 <translation id="335985608243443814">Przeglądaj...</translation>
 <translation id="3360297538363969800">Drukowanie nie udało się. Sprawdź swoją drukarkę i spróbuj ponownie.</translation>
-<translation id="3361481787422913716">Wyświetl ustawienia raportowania</translation>
 <translation id="336497260564123876">Hasło zostało zapisane. Aby korzystać ze swoich haseł na wszystkich urządzeniach, zaloguj się w Chrome.</translation>
 <translation id="3367813778245106622">Zaloguj się ponownie, by rozpocząć synchronizację</translation>
 <translation id="3368922792935385530">Połączone</translation>
@@ -2007,7 +2005,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="358796204584394954">Aby sparować, wpisz ten kod na urządzeniu „<ph name="DEVICE_NAME" />”:</translation>
 <translation id="3588662957555259973">* Zdjęcie z profilu Google</translation>
 <translation id="3590194807845837023">Odblokuj profil i uruchom ponownie</translation>
-<translation id="3590559774363307859">Hasło zostało zapisane. To hasło oraz wszystkie Twoje <ph name="SAVED_PASSWORDS_LINK" /> będą dostępne w każdej przeglądarce.</translation>
 <translation id="3592260987370335752">&amp;Więcej informacji</translation>
 <translation id="359283478042092570">Wpisz</translation>
 <translation id="3593965109698325041">Ograniczenia nazwy certyfikatu</translation>
@@ -2829,7 +2826,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4764865176798926079">Zdarzenie domContentLoaded głównej ramki i wczytanie wszystkich zasobów nastąpiło przed zdarzeniem domContentLoaded (elementy iframe zostały zignorowane).</translation>
 <translation id="4768332406694066911">Masz certyfikaty od tych organizacji potwierdzające Twoją tożsamość</translation>
 <translation id="4768698601728450387">Przytnij zdjęcie</translation>
-<translation id="4773696473262035477">To hasło oraz wszystkie Twoje <ph name="SAVED_PASSWORDS_LINK" /> będą dostępne w każdej przeglądarce.</translation>
 <translation id="4776917500594043016">Hasło dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Powiększ</translation>
 <translation id="4780321648949301421">Zapisz stronę jako...</translation>
@@ -5375,7 +5371,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8260864402787962391">Mysz</translation>
 <translation id="8261378640211443080">To rozszerzenie nie jest oferowane w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i mogło zostać dodane bez Twojej wiedzy.</translation>
 <translation id="8261387128019234107">Dodaj konto dla <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Mogą:</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8261580862248730866">Wyjątki dotyczące mikrofonu</translation>
 <translation id="8261673729476082470">Tworzenie kopii zapasowej <ph name="FILE_COUNT" /> zdjęć na <ph name="BEGIN_LINK" />Dysku Google<ph name="END_LINK" /></translation>

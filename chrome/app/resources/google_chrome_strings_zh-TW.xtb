@@ -17,6 +17,7 @@
 <translation id="1434626383986940139">Chrome Canary 應用程式</translation>
 <translation id="1457721931618994305">正在更新 Google Chrome...</translation>
 <translation id="1469002951682717133">Chrome 應用程式啟動器</translation>
+<translation id="1475773083554142432">Chrome 會使用「<ph name="SAVED_PASSWORD_LINK" />」儲存此密碼，讓您在下次需要使用時套用。</translation>
 <translation id="1480489203462860648">安裝完畢，馬上試試吧！</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1587223624401073077">Google Chrome 正在使用您的攝影機。</translation>
@@ -115,7 +116,6 @@
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
 <translation id="4458462641685292929">Google Chrome 正在執行另一項作業，請稍後再試。</translation>
 <translation id="4480040274068703980">登入時發生錯誤，因此 Chrome 作業系統無法同步處理您的資料。</translation>
-<translation id="4519152997629025674">Google Chrome 會使用<ph name="BEGIN_LINK" />網頁服務<ph name="END_LINK" />來改善瀏覽功能，當然您也可以隨時停用這些服務。</translation>
 <translation id="4561051373932531560">Google Chrome 可讓您按一下網頁上的電話號碼，隨即透過 Skype 撥打電話！</translation>
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入，可以在所有登入的裝置上使用您的書籤、紀錄和其他設定。</translation>
 <translation id="4631713731678262610">在 Chrome 選單中隱藏</translation>
@@ -138,7 +138,6 @@
 <translation id="5028489144783860647">Google Chrome 無法同步處理您的資料，請更新您的同步通關密語。</translation>
 <translation id="5037239767309817516">為了讓這項變更生效，請關閉所有 Google Chrome 視窗，並重新啟動瀏覽器。</translation>
 <translation id="5132929315877954718">幫您的 Google Chrome 物色各種實用有趣的應用程式、遊戲、擴充功能和主題。</translation>
-<translation id="5148419164691878332">Chrome 會將此密碼儲存在您的「<ph name="SAVED_PASSWORDS_LINK" />」中，讓您在下次需要使用時套用。</translation>
 <translation id="5170938038195470297">由於您的設定檔是來自較新版本的 Google Chrome，所以系統無法使用該檔案。這表示您可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Google Chrome。</translation>
 <translation id="5176234269072261959">只要回報目前的設定，就能助我們一臂之力，讓 Chrome 更臻完美。</translation>
 <translation id="5193136243808726294">Google Chrome 作業系統無法開啟這個網頁。</translation>
@@ -257,6 +256,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8547799825197623713">Chrome 應用程式啟動器 Canary 頻道</translation>
 <translation id="8556340503434111824">Google Chrome 推出全新版本，速度更勝以往。</translation>
 <translation id="8568392309447938879">您必須登入 Chrome 才能使用應用程式。在登入狀態下，Chrome 可同步處理您在多個裝置上的應用程式、書籤、紀錄、密碼和其他設定。</translation>
+<translation id="8606668294522778825">Google Chrome 可能會使用網路服務改善您的瀏覽體驗。不過，您可以選擇停用這些服務。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome 沒有回應，要立即重新啟動嗎？</translation>
 <translation id="8667808506758191620">您的 <ph name="DEVICE_TYPE" /> 已搭載最新版作業系統。</translation>
 <translation id="8669527147644353129">Google Chrome 小幫手</translation>

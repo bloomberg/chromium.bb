@@ -15,7 +15,6 @@
 <translation id="1023220960495960452">Транслитерација (vanakkam → வணக்கம்)</translation>
 <translation id="1026822031284433028">Учитај слику</translation>
 <translation id="1029317248976101138">Зумирај</translation>
-<translation id="1029595648591494741">Желите ли да испробате апликацију „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="1030173864176315846">Странице (<ph name="PAGE_NUMBER" />) су одштампане на штампачу <ph name="PRINTER_NAME" /></translation>
 <translation id="1031362278801463162">Учитавање прегледа</translation>
 <translation id="1031573127485938293">Питај (контролишу смернице)</translation>
@@ -1829,7 +1828,6 @@
 <translation id="3359256513598016054">Ограничења смерница сертификата</translation>
 <translation id="335985608243443814">Прегледај...</translation>
 <translation id="3360297538363969800">Штампање није успело. Проверите штампач и покушајте поново.</translation>
-<translation id="3361481787422913716">Прикажи подешавања извештаја</translation>
 <translation id="336497260564123876">Лозинка је сачувана. Да би вам лозинке биле доступне на свим уређајима, пријавите се у Chrome.</translation>
 <translation id="3367813778245106622">Пријавите се поново да бисте започели синхронизацију</translation>
 <translation id="3368922792935385530">Повезан</translation>
@@ -2005,7 +2003,6 @@
 <translation id="358796204584394954">Унесите овај кôд на „<ph name="DEVICE_NAME" />“ да бисте обавили упаривање:</translation>
 <translation id="3588662957555259973">* Слика Google профила</translation>
 <translation id="3590194807845837023">Откључај профил и поново покрени</translation>
-<translation id="3590559774363307859">Лозинка је сачувана. За њу као и за све <ph name="SAVED_PASSWORDS_LINK" /> приступ је могућ у било ком прегледачу.</translation>
 <translation id="3592260987370335752">&amp;Сазнајте више</translation>
 <translation id="359283478042092570">Унеси</translation>
 <translation id="3593965109698325041">Ограничења назива сертификата </translation>
@@ -2830,7 +2827,6 @@
 <translation id="4764865176798926079">domContentLoaded главног оквира и сва учитавања ресурса започета пре domContentLoaded (iframe-ови су игнорисани).</translation>
 <translation id="4768332406694066911">Имате сертификате следећих организација који вас идентификују</translation>
 <translation id="4768698601728450387">Исецање слике</translation>
-<translation id="4773696473262035477">За њу и све <ph name="SAVED_PASSWORDS_LINK" /> приступ је могућ у било ком прегледачу.</translation>
 <translation id="4776917500594043016">Лозинка за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4779083564647765204">Зумирање</translation>
 <translation id="4780321648949301421">Сачувај страницу као...</translation>
@@ -5379,7 +5375,6 @@
 <translation id="8260864402787962391">Миш</translation>
 <translation id="8261378640211443080"><ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не наводи овај додатак и он је можда додат без вашег знања.</translation>
 <translation id="8261387128019234107">Додај налог за <ph name="PROFILE_NAME" /></translation>
-<translation id="8261490674758214762">Могу да:</translation>
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8261580862248730866">Изузеци за микрофон</translation>
 <translation id="8261673729476082470">Праве се резервне копије слика (<ph name="FILE_COUNT" />) на <ph name="BEGIN_LINK" />Google диску<ph name="END_LINK" /></translation>

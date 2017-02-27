@@ -150,7 +150,6 @@
 <translation id="3638472932233958418">Попер.завантаж.стор.</translation>
 <translation id="3691593122358196899">Закладку збережено в папці "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3692781555820666866">Якщо ввімкнено, універсальне вікно пошуку включатиме пропозиції трансляції веб-сторінок пристроями поблизу.</translation>
-<translation id="3706658020782046159">Виберіть адресу доставки, щоб переглянути способи доставки та вимоги.</translation>
 <translation id="3738139272394829648">Пошук дотиком</translation>
 <translation id="3771033907050503522">Анонімні вкладки</translation>
 <translation id="3783017676699494206">Зберегти зображення</translation>
@@ -211,12 +210,10 @@
 <translation id="5197255632782567636">Інтернет</translation>
 <translation id="5198972191746488848">Додати картку…</translation>
 <translation id="5228579091201413441">Увімкнути синхронізацію</translation>
-<translation id="5230733896359313003">Адреса доставки</translation>
 <translation id="5244474230056479698">Синхронізація з обліковим записом <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5327248766486351172">Назва</translation>
-<translation id="5332219387342487447">Спосіб доставки</translation>
 <translation id="5388358297987318779">Відкрити зображення</translation>
 <translation id="5409365236829784218">Немає встановлених програм, які можуть відкрити цей файл.</translation>
 <translation id="54401264925851789">Відомості про безпеку сторінки</translation>
@@ -343,7 +340,6 @@
 <translation id="7649070708921625228">Довідка</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7671141431838911305">INSTALL</translation>
-<translation id="7682287625158474539">Адреса для надсилання</translation>
 <translation id="7765158879357617694">Перемістити</translation>
 <translation id="7769602470925380267">Прийняти та вийти</translation>
 <translation id="7772032839648071052">Підтвердити парольну фразу</translation>
