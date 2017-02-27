@@ -155,6 +155,10 @@ size_t RegisterChromeCrashKeys() {
     { kNumberOfUsers, kSmallSize },
     // Temporary for https://crbug.com/660960
     { kLastGoodCloseStack, kMediumSize },
+    // Temporary for https://crbug.com/629521
+    { "mmap_params", kSmallSize },
+    { "buffer_size", kSmallSize },
+    { "errno", kSmallSize },
 #endif
 #if defined(OS_MACOSX)
     { mac::kFirstNSException, kMediumSize },
