@@ -625,9 +625,6 @@ main(int argc, char *argv[]) {
   yaml_parser_t parser;
   yaml_event_t event;
 
-  int direction = 0;
-  int hyphenation = 0;
-
   file_name = argv[1];
   file = fopen(file_name, "rb");
   if (!file)
@@ -706,6 +703,9 @@ main(int argc, char *argv[]) {
 
     if (event.type != YAML_SCALAR_EVENT)
       yaml_error(YAML_SCALAR_EVENT, &event);
+    
+    int direction = 0;
+    int hyphenation = 0;
     if (!strcmp(event.data.scalar.value, "flags")) {
       yaml_event_delete(&event);
       read_flags(&parser, &direction, &hyphenation);
