@@ -360,7 +360,6 @@ source_set("common") {
     "//cc/ipc",
     "//cc/surfaces",
     "//components/discardable_memory/common",
-    "//components/payments:payment_app",
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//content:resources",
@@ -606,6 +605,7 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//components/leveldb/public/interfaces",
+    "//components/payments:payment_app",
     "//content/public/common:interfaces",
 
     # TODO(mcasas): remove the following dep after https://crbug.com/653994
