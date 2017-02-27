@@ -44,8 +44,14 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item,
                               public views::ButtonListener {
  public:
   // Does not take ownership of |card|, which  should not be null and should
-  // outlive this object.
-  explicit PaymentMethodListItem(autofill::CreditCard* card) : card_(card) {}
+  // outlive this object. |list| is the PaymentRequestItemList object that will
+  // own this.
+  PaymentMethodListItem(autofill::CreditCard* card,
+                        PaymentRequest* request,
+                        PaymentRequestItemList* list,
+                        bool selected)
+      : payments::PaymentRequestItemList::Item(request, list, selected),
+        card_(card) {}
   ~PaymentMethodListItem() override {}
 
  private:
@@ -72,6 +78,8 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item,
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                        0, views::GridLayout::USE_PREF, 0, 0);
 
+    columns->AddPaddingColumn(0, kPaymentRequestButtonSpacing);
+
     // A column for the card icon
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                        0, views::GridLayout::USE_PREF, 0, 0);
@@ -97,14 +105,20 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item,
     card_info_container->AddChildView(new views::Label(
         card_->GetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
                        g_browser_process->GetApplicationLocale())));
+    // TODO(anthonyvd): Add the "card is incomplete" label once the
+    // completedness logic is implemented.
     layout->AddView(card_info_container.release());
 
-    std::unique_ptr<views::ImageView> checkmark =
-        base::MakeUnique<views::ImageView>();
-    checkmark->set_can_process_events_within_subtree(false);
-    checkmark->SetImage(
+    checkmark_ = base::MakeUnique<views::ImageView>();
+    checkmark_->set_id(
+        static_cast<int>(DialogViewID::PAYMENT_METHOD_ITEM_CHECKMARK_VIEW));
+    checkmark_->set_owned_by_client();
+    checkmark_->set_can_process_events_within_subtree(false);
+    checkmark_->SetImage(
         gfx::CreateVectorIcon(views::kMenuCheckIcon, 0xFF609265));
-    layout->AddView(checkmark.release());
+    layout->AddView(checkmark_.get());
+    if (!selected())
+      checkmark_->SetVisible(false);
 
     std::unique_ptr<views::ImageView> card_icon_view =
         CreateCardIconView(card_->type());
@@ -114,10 +128,33 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item,
     return std::move(row);
   }
 
+  void SelectedStateChanged() override {
+    // This could be called before CreateItemView, so before |checkmark_| is
+    // instantiated.
+    if (checkmark_)
+      checkmark_->SetVisible(selected());
+
+    request()->set_selected_credit_card(card_);
+  }
+
   // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {}
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    if (IsComplete()) {
+      list()->SelectItem(this);
+    } else {
+      // TODO(anthonyvd): Display the editor, pre-populated with the data that
+      // already exists in |card|.
+    }
+  }
+
+  bool IsComplete() const {
+    // TODO(anthonyvd): Hook this up to the card completedness logic when it's
+    // implemented in PaymentRequest.
+    return true;
+  }
 
   autofill::CreditCard* card_;
+  std::unique_ptr<views::ImageView> checkmark_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodListItem);
 };
@@ -132,19 +169,28 @@ PaymentMethodViewController::PaymentMethodViewController(
       request->credit_cards();
 
   for (autofill::CreditCard* card : available_cards) {
-    payment_method_list_.AddItem(base::MakeUnique<PaymentMethodListItem>(card));
+    std::unique_ptr<PaymentMethodListItem> item =
+        base::MakeUnique<PaymentMethodListItem>(
+            card, request, &payment_method_list_,
+            card == request->selected_credit_card());
+    payment_method_list_.AddItem(std::move(item));
   }
 }
 
 PaymentMethodViewController::~PaymentMethodViewController() {}
 
 std::unique_ptr<views::View> PaymentMethodViewController::CreateView() {
+  std::unique_ptr<views::View> list_view =
+      payment_method_list_.CreateListView();
+  list_view->set_id(
+      static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
   return CreatePaymentView(
       CreateSheetHeaderView(
-          true, l10n_util::GetStringUTF16(
-                    IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME),
+          true,
+          l10n_util::GetStringUTF16(
+              IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME),
           this),
-      payment_method_list_.CreateListView());
+      std::move(list_view));
 }
 
 std::unique_ptr<views::View>

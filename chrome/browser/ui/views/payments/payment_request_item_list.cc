@@ -10,7 +10,10 @@
 
 namespace payments {
 
-PaymentRequestItemList::Item::Item() {}
+PaymentRequestItemList::Item::Item(PaymentRequest* request,
+                                   PaymentRequestItemList* list,
+                                   bool selected)
+    : request_(request), list_(list), selected_(selected) {}
 
 PaymentRequestItemList::Item::~Item() {}
 
@@ -23,13 +26,21 @@ views::View* PaymentRequestItemList::Item::GetItemView() {
   return item_view_.get();
 }
 
-PaymentRequestItemList::PaymentRequestItemList() {}
+void PaymentRequestItemList::Item::SetSelected(bool selected) {
+  selected_ = selected;
+  SelectedStateChanged();
+}
+
+PaymentRequestItemList::PaymentRequestItemList() : selected_item_(nullptr) {}
 
 PaymentRequestItemList::~PaymentRequestItemList() {}
 
 void PaymentRequestItemList::AddItem(
     std::unique_ptr<PaymentRequestItemList::Item> item) {
+  DCHECK_EQ(this, item->list());
   items_.push_back(std::move(item));
+  if (items_.back()->selected())
+    SelectItem(items_.back().get());
 }
 
 std::unique_ptr<views::View> PaymentRequestItemList::CreateListView() {
@@ -44,6 +55,27 @@ std::unique_ptr<views::View> PaymentRequestItemList::CreateListView() {
   }
 
   return content_view;
+}
+
+void PaymentRequestItemList::SelectItem(PaymentRequestItemList::Item* item) {
+  DCHECK_EQ(this, item->list());
+  if (selected_item_ == item)
+    return;
+
+  UnselectSelectedItem();
+
+  selected_item_ = item;
+  item->SetSelected(true);
+}
+
+void PaymentRequestItemList::UnselectSelectedItem() {
+  // It's possible that no item is currently selected, either during list
+  // creation or in the middle of the selection operation when the previously
+  // selected item has been deselected but the new one isn't selected yet.
+  if (selected_item_)
+    selected_item_->SetSelected(false);
+
+  selected_item_ = nullptr;
 }
 
 }  // namespace payments

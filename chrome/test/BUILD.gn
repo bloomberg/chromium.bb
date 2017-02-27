@@ -580,6 +580,7 @@ if (!is_android) {
         # TODO(crbug.com/679127): Investigate why these tests currently break
         # on Mac, and enable them.
         sources += [
+          "../browser/ui/views/payments/payment_method_view_controller_interactive_uitest.cc",
           "../browser/ui/views/payments/payment_request_credit_card_editor_interactive_uitest.cc",
           "../browser/ui/views/payments/payment_request_interactive_uitest.cc",
           "../browser/ui/views/payments/payment_request_interactive_uitest_base.cc",
@@ -4813,6 +4814,7 @@ test("unit_tests") {
       "../browser/ui/views/confirm_bubble_views_unittest.cc",
       "../browser/ui/views/global_error_bubble_view_unittest.cc",
       "../browser/ui/views/payments/credit_card_editor_view_controller_unittest.cc",
+      "../browser/ui/views/payments/payment_request_item_list_unittest.cc",
       "../browser/ui/views/payments/validating_textfield_unittest.cc",
       "../browser/ui/views/payments/view_stack_unittest.cc",
       "../browser/ui/views/website_settings/website_settings_popup_view_unittest.cc",

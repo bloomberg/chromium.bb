@@ -100,6 +100,10 @@ class PaymentRequest : payments::mojom::PaymentRequest {
   // card.
   autofill::CreditCard* selected_credit_card() { return selected_credit_card_; }
 
+  void set_selected_credit_card(autofill::CreditCard* credit_card) {
+    selected_credit_card_ = credit_card;
+  }
+
   autofill::PersonalDataManager* personal_data_manager() {
     return delegate_->GetPersonalDataManager();
   }

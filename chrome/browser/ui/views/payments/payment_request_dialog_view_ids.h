@@ -29,6 +29,10 @@ enum class DialogViewID : int {
   ORDER_SUMMARY_LINE_ITEM_2,
   ORDER_SUMMARY_LINE_ITEM_3,
 
+  // The following are views contained within the Payment Method Sheet.
+  PAYMENT_METHOD_SHEET_LIST_VIEW,
+  PAYMENT_METHOD_ITEM_CHECKMARK_VIEW,
+
   // Used to label the error labels with an offset, which gets added to
   // the Autofill type value they represent (for tests).
   ERROR_LABEL_OFFSET,

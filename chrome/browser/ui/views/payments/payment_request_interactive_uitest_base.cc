@@ -11,6 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
@@ -34,6 +36,9 @@
 #include "ui/views/controls/styled_label.h"
 
 namespace payments {
+
+PersonalDataLoadedObserverMock::PersonalDataLoadedObserverMock() {}
+PersonalDataLoadedObserverMock::~PersonalDataLoadedObserverMock() {}
 
 PaymentRequestInteractiveTestBase::PaymentRequestInteractiveTestBase(
     const std::string& test_file_path)
@@ -153,6 +158,12 @@ PaymentRequestInteractiveTestBase::GetPaymentRequests(
   return payment_requests_ptrs;
 }
 
+autofill::PersonalDataManager*
+PaymentRequestInteractiveTestBase::GetDataManager() {
+  return autofill::PersonalDataManagerFactory::GetForProfile(
+      Profile::FromBrowserContext(GetActiveWebContents()->GetBrowserContext()));
+}
+
 void PaymentRequestInteractiveTestBase::CreatePaymentRequestForTest(
     content::WebContents* web_contents,
     mojo::InterfaceRequest<payments::mojom::PaymentRequest> request) {
@@ -170,6 +181,12 @@ void PaymentRequestInteractiveTestBase::ClickOnDialogViewAndWait(
     DialogViewID view_id) {
   views::View* view =
       delegate_->dialog_view()->GetViewByID(static_cast<int>(view_id));
+  DCHECK(view);
+  ClickOnDialogViewAndWait(view);
+}
+
+void PaymentRequestInteractiveTestBase::ClickOnDialogViewAndWait(
+    views::View* view) {
   DCHECK(view);
   base::RunLoop run_loop;
   ui_test_utils::MoveMouseToCenterAndPress(

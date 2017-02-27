@@ -15,8 +15,10 @@
 #include "chrome/browser/ui/views/payments/test_chrome_payment_request_delegate.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/payments/payment_request.mojom.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace content {
@@ -31,6 +33,23 @@ namespace payments {
 
 enum class DialogViewID;
 class PaymentRequest;
+
+namespace {
+
+ACTION_P(QuitMessageLoop, loop) {
+  loop->Quit();
+}
+
+}  // namespace
+
+class PersonalDataLoadedObserverMock
+    : public autofill::PersonalDataManagerObserver {
+ public:
+  PersonalDataLoadedObserverMock();
+  ~PersonalDataLoadedObserverMock() override;
+
+  MOCK_METHOD0(OnPersonalDataChanged, void());
+};
 
 // Base class for any interactive PaymentRequest test that will need to open
 // the UI and interact with it.
@@ -68,12 +87,14 @@ class PaymentRequestInteractiveTestBase
   void OpenPaymentMethodScreen();
   void OpenCreditCardEditorScreen();
 
+  content::WebContents* GetActiveWebContents();
+
   // Convenience method to get a list of PaymentRequest associated with
   // |web_contents|.
   const std::vector<PaymentRequest*> GetPaymentRequests(
       content::WebContents* web_contents);
 
-  content::WebContents* GetActiveWebContents();
+  autofill::PersonalDataManager* GetDataManager();
 
   void CreatePaymentRequestForTest(
       content::WebContents* web_contents,
@@ -82,6 +103,7 @@ class PaymentRequestInteractiveTestBase
   // Click on a view from within the dialog and waits for an observed event
   // to be observed.
   void ClickOnDialogViewAndWait(DialogViewID view_id);
+  void ClickOnDialogViewAndWait(views::View* view);
 
   // Setting the |value| in the textfield of a given |type|.
   void SetEditorTextfieldValue(const base::string16& value,

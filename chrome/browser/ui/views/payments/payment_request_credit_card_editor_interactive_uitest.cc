@@ -12,12 +12,10 @@
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/payments/payment_request.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -26,19 +24,6 @@ namespace payments {
 namespace {
 
 const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
-
-ACTION_P(QuitMessageLoop, loop) {
-  loop->Quit();
-}
-
-class PersonalDataLoadedObserverMock
-    : public autofill::PersonalDataManagerObserver {
- public:
-  PersonalDataLoadedObserverMock() {}
-  virtual ~PersonalDataLoadedObserverMock() {}
-
-  MOCK_METHOD0(OnPersonalDataChanged, void());
-};
 
 }  // namespace
 
@@ -74,8 +59,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringValidData) {
                    autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
 
   // Verifying the data is in the DB.
-  autofill::PersonalDataManager* personal_data_manager =
-      GetPaymentRequests(GetActiveWebContents())[0]->personal_data_manager();
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
   personal_data_manager->AddObserver(&personal_data_observer_);
 
   ResetEventObserver(DialogEvent::BACK_NAVIGATION);
@@ -126,8 +110,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   EXPECT_FALSE(IsEditorComboboxInvalid(autofill::CREDIT_CARD_EXP_MONTH));
   EXPECT_FALSE(IsEditorComboboxInvalid(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
-  autofill::PersonalDataManager* personal_data_manager =
-      GetPaymentRequests(GetActiveWebContents())[0]->personal_data_manager();
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
   EXPECT_EQ(0u, personal_data_manager->GetCreditCards().size());
 }
 
@@ -196,8 +179,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   EXPECT_FALSE(IsEditorComboboxInvalid(autofill::CREDIT_CARD_EXP_MONTH));
   EXPECT_FALSE(IsEditorComboboxInvalid(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
-  autofill::PersonalDataManager* personal_data_manager =
-      GetPaymentRequests(GetActiveWebContents())[0]->personal_data_manager();
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
   EXPECT_EQ(0u, personal_data_manager->GetCreditCards().size());
 }
 
@@ -232,8 +214,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   EXPECT_FALSE(IsEditorComboboxInvalid(autofill::CREDIT_CARD_EXP_MONTH));
   EXPECT_FALSE(IsEditorComboboxInvalid(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
-  autofill::PersonalDataManager* personal_data_manager =
-      GetPaymentRequests(GetActiveWebContents())[0]->personal_data_manager();
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
   EXPECT_EQ(0u, personal_data_manager->GetCreditCards().size());
 }
 
@@ -274,8 +255,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
             GetErrorLabelForType(autofill::CREDIT_CARD_NUMBER));
 
   // Verifying the data is in the DB.
-  autofill::PersonalDataManager* personal_data_manager =
-      GetPaymentRequests(GetActiveWebContents())[0]->personal_data_manager();
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
   personal_data_manager->AddObserver(&personal_data_observer_);
 
   ResetEventObserver(DialogEvent::BACK_NAVIGATION);

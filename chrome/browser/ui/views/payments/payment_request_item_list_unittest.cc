@@ -1,0 +1,124 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/payments/payment_request_item_list.h"
+
+#include <algorithm>
+
+#include "base/memory/ptr_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/view.h"
+
+namespace payments {
+
+namespace {
+
+class TestListItem : public PaymentRequestItemList::Item {
+ public:
+  TestListItem(PaymentRequestItemList* list, bool selected)
+      : PaymentRequestItemList::Item(nullptr, list, selected),
+        selected_state_changed_calls_count_(0) {}
+
+  int selected_state_changed_calls_count() {
+    return selected_state_changed_calls_count_;
+  }
+
+ private:
+  std::unique_ptr<views::View> CreateItemView() override {
+    return base::MakeUnique<views::View>();
+  }
+
+  void SelectedStateChanged() override {
+    ++selected_state_changed_calls_count_;
+  }
+
+  int selected_state_changed_calls_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestListItem);
+};
+
+}  // namespace
+
+TEST(PaymentRequestItemListTest, TestAddItem) {
+  PaymentRequestItemList list;
+
+  std::unique_ptr<views::View> list_view = list.CreateListView();
+  EXPECT_FALSE(list_view->has_children());
+
+  std::vector<std::unique_ptr<TestListItem>> items;
+  items.push_back(base::MakeUnique<TestListItem>(&list, false));
+  items.push_back(base::MakeUnique<TestListItem>(&list, true));
+  items.push_back(base::MakeUnique<TestListItem>(&list, false));
+  items.push_back(base::MakeUnique<TestListItem>(&list, true));
+
+  // The unique_ptr objects will become owned by |list|, but the underlying
+  // pointers will be needed for assertions after the unique_ptr is moved.
+  std::vector<TestListItem*> item_pointers;
+  for (auto& item : items) {
+    item_pointers.push_back(item.get());
+    list.AddItem(std::move(item));
+  }
+
+  EXPECT_FALSE(item_pointers[0]->selected());
+  // Only one item should be selected at a time, so adding item at index 3 with
+  // |selected| set to true should have deselected item at index 1.
+  EXPECT_FALSE(item_pointers[1]->selected());
+  EXPECT_FALSE(item_pointers[2]->selected());
+  EXPECT_TRUE(item_pointers[3]->selected());
+
+  list_view = list.CreateListView();
+  EXPECT_EQ(4, list_view->child_count());
+}
+
+TEST(PaymentRequestItemListTest, TestSelectItemResultsInSingleItemSelected) {
+  PaymentRequestItemList list;
+
+  std::vector<std::unique_ptr<TestListItem>> items;
+  items.push_back(base::MakeUnique<TestListItem>(&list, false));
+  items.push_back(base::MakeUnique<TestListItem>(&list, false));
+  items.push_back(base::MakeUnique<TestListItem>(&list, false));
+
+  // The unique_ptr objects will become owned by |list|, but the underlying
+  // pointers will be needed for assertions after the unique_ptr is moved.
+  std::vector<TestListItem*> item_pointers;
+  for (auto& item : items) {
+    item_pointers.push_back(item.get());
+    list.AddItem(std::move(item));
+  }
+
+  // Only one item should be selected at once and items should have their
+  // SelectedStateChanged() function called when they are selected and when
+  // they are unselected.
+  list.SelectItem(item_pointers[0]);
+  EXPECT_TRUE(item_pointers[0]->selected());
+  EXPECT_EQ(1, item_pointers[0]->selected_state_changed_calls_count());
+
+  EXPECT_FALSE(item_pointers[1]->selected());
+  EXPECT_EQ(0, item_pointers[1]->selected_state_changed_calls_count());
+
+  EXPECT_FALSE(item_pointers[2]->selected());
+  EXPECT_EQ(0, item_pointers[2]->selected_state_changed_calls_count());
+
+  list.SelectItem(item_pointers[2]);
+  EXPECT_FALSE(item_pointers[0]->selected());
+  EXPECT_EQ(2, item_pointers[0]->selected_state_changed_calls_count());
+
+  EXPECT_FALSE(item_pointers[1]->selected());
+  EXPECT_EQ(0, item_pointers[1]->selected_state_changed_calls_count());
+
+  EXPECT_TRUE(item_pointers[2]->selected());
+  EXPECT_EQ(1, item_pointers[2]->selected_state_changed_calls_count());
+
+  list.SelectItem(item_pointers[1]);
+  EXPECT_FALSE(item_pointers[0]->selected());
+  EXPECT_EQ(2, item_pointers[0]->selected_state_changed_calls_count());
+
+  EXPECT_TRUE(item_pointers[1]->selected());
+  EXPECT_EQ(1, item_pointers[1]->selected_state_changed_calls_count());
+
+  EXPECT_FALSE(item_pointers[2]->selected());
+  EXPECT_EQ(2, item_pointers[2]->selected_state_changed_calls_count());
+}
+
+}  // namespace payments
