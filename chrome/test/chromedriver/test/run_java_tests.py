@@ -102,11 +102,13 @@ def _Run(java_tests_src_dir, test_filter,
                'webdriver.chrome.driver=' + os.path.abspath(chromedriver_path)]
   if chrome_path:
     if util.IsLinux() and not util.Is64Bit():
-      # Workaround for crbug.com/611886
+      # Workaround for crbug.com/611886 and
+      # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1695
       chrome_wrapper_path = os.path.join(test_dir, 'chrome-wrapper-no-sandbox')
       with open(chrome_wrapper_path, 'w') as f:
         f.write('#!/bin/sh\n')
-        f.write('exec %s --no-sandbox "$@"\n' % os.path.abspath(chrome_path))
+        f.write('exec %s --no-sandbox --disable-gpu "$@"\n' %
+            os.path.abspath(chrome_path))
       st = os.stat(chrome_wrapper_path)
       os.chmod(chrome_wrapper_path, st.st_mode | stat.S_IEXEC)
     else:
