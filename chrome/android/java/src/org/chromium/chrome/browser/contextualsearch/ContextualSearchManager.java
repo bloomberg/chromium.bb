@@ -944,8 +944,8 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         @Override
         public void onMainFrameNavigation(String url, boolean isExternalUrl, boolean isFailure) {
             if (isExternalUrl) {
-                if (ContextualSearchFieldTrial.isAmpAsSeparateTabEnabled() && mPolicy.isAmpUrl(url)
-                        && mSearchPanel.didTouchContent()) {
+                if (!ContextualSearchFieldTrial.isAmpAsSeparateTabDisabled()
+                        && mPolicy.isAmpUrl(url) && mSearchPanel.didTouchContent()) {
                     onExternalNavigation(url);
                 }
             } else {

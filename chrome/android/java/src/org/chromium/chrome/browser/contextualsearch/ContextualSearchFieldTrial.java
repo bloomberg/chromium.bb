@@ -81,7 +81,7 @@ public class ContextualSearchFieldTrial {
     @VisibleForTesting
     static final String ONLINE_DETECTION_DISABLED = "disable_online_detection";
 
-    private static final String ENABLE_AMP_AS_SEPARATE_TAB = "enable_amp_as_separate_tab";
+    private static final String DISABLE_AMP_AS_SEPARATE_TAB = "disable_amp_as_separate_tab";
 
     // Privacy-related flags
     private static final String ENABLE_SEND_HOME_COUNTRY = "enable_send_home_country";
@@ -109,7 +109,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sShouldHideContextualCardsData;
     private static Boolean sIsContextualCardsBarIntegrationEnabled;
     private static Boolean sIsOnlineDetectionDisabled;
-    private static Boolean sIsAmpAsSeparateTabEnabled;
+    private static Boolean sIsAmpAsSeparateTabDisabled;
     private static Boolean sContextualSearchSingleActionsEnabled;
     private static Boolean sCanSendHomeCountry;
     private static Boolean sContextualSearchUrlActionsEnabled;
@@ -367,13 +367,13 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * @return Whether to auto-promote clicks in the AMP carousel into a separate Tab.
+     * @return Whether to disable auto-promotion of clicks in the AMP carousel into a separate Tab.
      */
-    static boolean isAmpAsSeparateTabEnabled() {
-        if (sIsAmpAsSeparateTabEnabled == null) {
-            sIsAmpAsSeparateTabEnabled = getBooleanParam(ENABLE_AMP_AS_SEPARATE_TAB);
+    static boolean isAmpAsSeparateTabDisabled() {
+        if (sIsAmpAsSeparateTabDisabled == null) {
+            sIsAmpAsSeparateTabDisabled = getBooleanParam(DISABLE_AMP_AS_SEPARATE_TAB);
         }
-        return sIsAmpAsSeparateTabEnabled;
+        return sIsAmpAsSeparateTabDisabled;
     }
 
     // TODO(donnd): Remove once bar-integration is fully landed if still unused (native only).
