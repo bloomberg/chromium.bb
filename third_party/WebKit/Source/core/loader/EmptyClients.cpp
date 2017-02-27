@@ -127,7 +127,7 @@ std::unique_ptr<WebFrameScheduler> EmptyChromeClient::createFrameScheduler(
   return WTF::makeUnique<EmptyFrameScheduler>();
 }
 
-NavigationPolicy EmptyFrameLoaderClient::decidePolicyForNavigation(
+NavigationPolicy EmptyLocalFrameClient::decidePolicyForNavigation(
     const ResourceRequest&,
     DocumentLoader*,
     NavigationType,
@@ -138,11 +138,11 @@ NavigationPolicy EmptyFrameLoaderClient::decidePolicyForNavigation(
   return NavigationPolicyIgnore;
 }
 
-void EmptyFrameLoaderClient::dispatchWillSendSubmitEvent(HTMLFormElement*) {}
+void EmptyLocalFrameClient::dispatchWillSendSubmitEvent(HTMLFormElement*) {}
 
-void EmptyFrameLoaderClient::dispatchWillSubmitForm(HTMLFormElement*) {}
+void EmptyLocalFrameClient::dispatchWillSubmitForm(HTMLFormElement*) {}
 
-DocumentLoader* EmptyFrameLoaderClient::createDocumentLoader(
+DocumentLoader* EmptyLocalFrameClient::createDocumentLoader(
     LocalFrame* frame,
     const ResourceRequest& request,
     const SubstituteData& substituteData,
@@ -153,30 +153,30 @@ DocumentLoader* EmptyFrameLoaderClient::createDocumentLoader(
                                 clientRedirectPolicy);
 }
 
-LocalFrame* EmptyFrameLoaderClient::createFrame(const FrameLoadRequest&,
-                                                const AtomicString&,
-                                                HTMLFrameOwnerElement*) {
+LocalFrame* EmptyLocalFrameClient::createFrame(const FrameLoadRequest&,
+                                               const AtomicString&,
+                                               HTMLFrameOwnerElement*) {
   return nullptr;
 }
 
-Widget* EmptyFrameLoaderClient::createPlugin(HTMLPlugInElement*,
-                                             const KURL&,
-                                             const Vector<String>&,
-                                             const Vector<String>&,
-                                             const String&,
-                                             bool,
-                                             DetachedPluginPolicy) {
+Widget* EmptyLocalFrameClient::createPlugin(HTMLPlugInElement*,
+                                            const KURL&,
+                                            const Vector<String>&,
+                                            const Vector<String>&,
+                                            const String&,
+                                            bool,
+                                            DetachedPluginPolicy) {
   return nullptr;
 }
 
-std::unique_ptr<WebMediaPlayer> EmptyFrameLoaderClient::createWebMediaPlayer(
+std::unique_ptr<WebMediaPlayer> EmptyLocalFrameClient::createWebMediaPlayer(
     HTMLMediaElement&,
     const WebMediaPlayerSource&,
     WebMediaPlayerClient*) {
   return nullptr;
 }
 
-WebRemotePlaybackClient* EmptyFrameLoaderClient::createWebRemotePlaybackClient(
+WebRemotePlaybackClient* EmptyLocalFrameClient::createWebRemotePlaybackClient(
     HTMLMediaElement&) {
   return nullptr;
 }
@@ -186,12 +186,12 @@ void EmptyTextCheckerClient::requestCheckingOfString(TextCheckingRequest*) {}
 void EmptyTextCheckerClient::cancelAllPendingRequests() {}
 
 std::unique_ptr<WebServiceWorkerProvider>
-EmptyFrameLoaderClient::createServiceWorkerProvider() {
+EmptyLocalFrameClient::createServiceWorkerProvider() {
   return nullptr;
 }
 
 std::unique_ptr<WebApplicationCacheHost>
-EmptyFrameLoaderClient::createApplicationCacheHost(
+EmptyLocalFrameClient::createApplicationCacheHost(
     WebApplicationCacheHostClient*) {
   return nullptr;
 }

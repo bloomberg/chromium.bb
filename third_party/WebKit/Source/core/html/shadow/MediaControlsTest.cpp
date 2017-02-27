@@ -82,7 +82,7 @@ class MockWebRemotePlaybackClient : public WebRemotePlaybackClient {
       WebRemotePlaybackAvailability::Unknown;
 };
 
-class StubFrameLoaderClient : public EmptyFrameLoaderClient {
+class StubFrameLoaderClient : public EmptyLocalFrameClient {
  public:
   static StubFrameLoaderClient* create() { return new StubFrameLoaderClient; }
 

@@ -5,9 +5,13 @@
 #ifndef LayoutTestHelper_h
 #define LayoutTestHelper_h
 
+#include <gtest/gtest.h>
+#include <memory>
+
 #include "core/dom/Document.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/api/LayoutAPIShim.h"
@@ -15,12 +19,10 @@
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "wtf/Allocator.h"
-#include <gtest/gtest.h>
-#include <memory>
 
 namespace blink {
 
-class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
+class SingleChildFrameLoaderClient final : public EmptyLocalFrameClient {
  public:
   static SingleChildFrameLoaderClient* create() {
     return new SingleChildFrameLoaderClient();
@@ -28,7 +30,7 @@ class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_child);
-    EmptyFrameLoaderClient::trace(visitor);
+    EmptyLocalFrameClient::trace(visitor);
   }
 
   // FrameLoaderClient overrides:
@@ -45,7 +47,7 @@ class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
   Member<LocalFrame> m_child;
 };
 
-class FrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
+class FrameLoaderClientWithParent final : public EmptyLocalFrameClient {
  public:
   static FrameLoaderClientWithParent* create(LocalFrame* parent) {
     return new FrameLoaderClientWithParent(parent);
@@ -53,7 +55,7 @@ class FrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_parent);
-    EmptyFrameLoaderClient::trace(visitor);
+    EmptyLocalFrameClient::trace(visitor);
   }
 
   // FrameClient overrides:
@@ -75,7 +77,7 @@ class RenderingTest : public testing::Test {
   }
   virtual ChromeClient& chromeClient() const;
 
-  RenderingTest(FrameLoaderClient* = nullptr);
+  RenderingTest(LocalFrameClient* = nullptr);
 
  protected:
   void SetUp() override;

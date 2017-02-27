@@ -79,7 +79,7 @@ class StubWebMediaPlayer : public WebMediaPlayer {
   ReadyState m_readyState = ReadyStateHaveNothing;
 };
 
-class StubFrameLoaderClient : public EmptyFrameLoaderClient {
+class StubFrameLoaderClient : public EmptyLocalFrameClient {
  public:
   // FrameLoaderClient
   std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(

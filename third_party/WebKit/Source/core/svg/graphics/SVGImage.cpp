@@ -33,6 +33,7 @@
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
@@ -579,8 +580,8 @@ Image::SizeAvailability SVGImage::dataChanged(bool allDataReceived) {
     // types.
     EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
 
-    DEFINE_STATIC_LOCAL(FrameLoaderClient, dummyFrameLoaderClient,
-                        (EmptyFrameLoaderClient::create()));
+    DEFINE_STATIC_LOCAL(LocalFrameClient, dummyLocalFrameClient,
+                        (EmptyLocalFrameClient::create()));
 
     if (m_page) {
       toLocalFrame(m_page->mainFrame())
@@ -634,8 +635,7 @@ Image::SizeAvailability SVGImage::dataChanged(bool allDataReceived) {
     LocalFrame* frame = nullptr;
     {
       TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
-      frame =
-          LocalFrame::create(&dummyFrameLoaderClient, &page->frameHost(), 0);
+      frame = LocalFrame::create(&dummyLocalFrameClient, &page->frameHost(), 0);
       frame->setView(FrameView::create(*frame));
       frame->init();
     }

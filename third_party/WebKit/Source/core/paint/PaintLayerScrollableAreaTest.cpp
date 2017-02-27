@@ -33,7 +33,7 @@ class MockChromeClient : public EmptyChromeClient {
 class PaintLayerScrollableAreaTest : public RenderingTest {
  public:
   PaintLayerScrollableAreaTest()
-      : RenderingTest(EmptyFrameLoaderClient::create()),
+      : RenderingTest(EmptyLocalFrameClient::create()),
         m_chromeClient(new MockChromeClient) {}
 
   ~PaintLayerScrollableAreaTest() {

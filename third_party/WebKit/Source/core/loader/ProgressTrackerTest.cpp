@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class ProgressClient : public EmptyFrameLoaderClient {
+class ProgressClient : public EmptyLocalFrameClient {
  public:
   ProgressClient() : m_lastProgress(0.0) {}
 

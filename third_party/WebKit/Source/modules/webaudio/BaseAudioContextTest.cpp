@@ -27,7 +27,7 @@ namespace {
 
 const char* const kCrossOriginMetric = "WebAudio.Autoplay.CrossOrigin";
 
-class MockCrossOriginFrameLoaderClient final : public EmptyFrameLoaderClient {
+class MockCrossOriginFrameLoaderClient final : public EmptyLocalFrameClient {
  public:
   static MockCrossOriginFrameLoaderClient* create(Frame* parent) {
     return new MockCrossOriginFrameLoaderClient(parent);
@@ -35,7 +35,7 @@ class MockCrossOriginFrameLoaderClient final : public EmptyFrameLoaderClient {
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_parent);
-    EmptyFrameLoaderClient::trace(visitor);
+    EmptyLocalFrameClient::trace(visitor);
   }
 
   Frame* parent() const override { return m_parent.get(); }

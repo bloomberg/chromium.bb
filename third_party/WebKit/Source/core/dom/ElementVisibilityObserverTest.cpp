@@ -21,7 +21,7 @@ namespace {
 // alow callers to set the parent/top frames by calling |setParent|. It is used
 // in ElementVisibilityObserverTest in order to mock a RemoteFrame parent of a
 // LocalFrame.
-class StubFrameLoaderClient final : public EmptyFrameLoaderClient {
+class StubFrameLoaderClient final : public EmptyLocalFrameClient {
  public:
   Frame* parent() const override { return m_parent; }
   Frame* top() const override { return m_parent; }
@@ -30,7 +30,7 @@ class StubFrameLoaderClient final : public EmptyFrameLoaderClient {
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_parent);
-    EmptyFrameLoaderClient::trace(visitor);
+    EmptyLocalFrameClient::trace(visitor);
   }
 
  private:

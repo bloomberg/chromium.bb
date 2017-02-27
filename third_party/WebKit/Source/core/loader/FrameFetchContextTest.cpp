@@ -56,7 +56,7 @@
 
 namespace blink {
 
-class StubFrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
+class StubFrameLoaderClientWithParent final : public EmptyLocalFrameClient {
  public:
   static StubFrameLoaderClientWithParent* create(Frame* parent) {
     return new StubFrameLoaderClientWithParent(parent);
@@ -64,7 +64,7 @@ class StubFrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_parent);
-    EmptyFrameLoaderClient::trace(visitor);
+    EmptyLocalFrameClient::trace(visitor);
   }
 
   Frame* parent() const override { return m_parent.get(); }
@@ -75,9 +75,9 @@ class StubFrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
   Member<Frame> m_parent;
 };
 
-class MockFrameLoaderClient : public EmptyFrameLoaderClient {
+class MockFrameLoaderClient : public EmptyLocalFrameClient {
  public:
-  MockFrameLoaderClient() : EmptyFrameLoaderClient() {}
+  MockFrameLoaderClient() : EmptyLocalFrameClient() {}
   MOCK_METHOD1(didDisplayContentWithCertificateErrors, void(const KURL&));
   MOCK_METHOD2(dispatchDidLoadResourceFromMemoryCache,
                void(const ResourceRequest&, const ResourceResponse&));

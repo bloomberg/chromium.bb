@@ -79,7 +79,7 @@ class MockChromeClient : public EmptyChromeClient {
   MOCK_CONST_METHOD0(screenInfo, WebScreenInfo());
 };
 
-class StubFrameLoaderClient : public EmptyFrameLoaderClient {
+class StubFrameLoaderClient : public EmptyLocalFrameClient {
  public:
   static StubFrameLoaderClient* create() { return new StubFrameLoaderClient; }
 

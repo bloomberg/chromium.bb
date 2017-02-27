@@ -64,7 +64,7 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
   MOCK_METHOD1(setBufferingStrategy, void(BufferingStrategy));
 };
 
-class StubFrameLoaderClient : public EmptyFrameLoaderClient {
+class StubFrameLoaderClient : public EmptyLocalFrameClient {
  public:
   static StubFrameLoaderClient* create() { return new StubFrameLoaderClient; }
 

@@ -20,7 +20,7 @@ namespace blink {
 
 namespace {
 
-class PingFrameLoaderClient : public EmptyFrameLoaderClient {
+class PingFrameLoaderClient : public EmptyLocalFrameClient {
  public:
   void dispatchWillSendRequest(ResourceRequest& request) override {
     if (request.httpContentType() == "text/ping")

@@ -29,9 +29,11 @@
 #ifndef EmptyClients_h
 #define EmptyClients_h
 
+#include <memory>
+
 #include "core/CoreExport.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/RemoteFrameClient.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuClient.h"
 #include "core/page/EditorClient.h"
@@ -47,9 +49,8 @@
 #include "platform/text/TextCheckerClient.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebScreenInfo.h"
+#include "v8/include/v8.h"
 #include "wtf/Forward.h"
-#include <memory>
-#include <v8.h>
 
 /*
  This file holds empty Client stubs for use by WebCore.
@@ -235,12 +236,12 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
       BlameContext*) override;
 };
 
-class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
-  WTF_MAKE_NONCOPYABLE(EmptyFrameLoaderClient);
+class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
+  WTF_MAKE_NONCOPYABLE(EmptyLocalFrameClient);
 
  public:
-  static EmptyFrameLoaderClient* create() { return new EmptyFrameLoaderClient; }
-  ~EmptyFrameLoaderClient() override {}
+  static EmptyLocalFrameClient* create() { return new EmptyLocalFrameClient; }
+  ~EmptyLocalFrameClient() override {}
 
   bool hasWebView() const override { return true; }  // mainly for assertions
 
@@ -365,7 +366,7 @@ class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
       WebApplicationCacheHostClient*) override;
 
  protected:
-  EmptyFrameLoaderClient() {}
+  EmptyLocalFrameClient() {}
 };
 
 class CORE_EXPORT EmptyTextCheckerClient : public TextCheckerClient {

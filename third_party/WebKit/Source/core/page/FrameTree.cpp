@@ -116,7 +116,7 @@ Frame* FrameTree::parent() const {
 
 Frame* FrameTree::top() const {
   // FIXME: top() should never return null, so here are some hacks to deal
-  // with EmptyFrameLoaderClient and cases where the frame is detached
+  // with EmptyLocalFrameClient and cases where the frame is detached
   // already...
   if (!m_thisFrame->client())
     return m_thisFrame;

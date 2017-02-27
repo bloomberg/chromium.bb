@@ -20,7 +20,7 @@ class PaintLayerClipperTest : public ::testing::WithParamInterface<bool>,
  public:
   PaintLayerClipperTest()
       : ScopedSlimmingPaintV2ForTest(GetParam()),
-        RenderingTest(EmptyFrameLoaderClient::create()) {}
+        RenderingTest(EmptyLocalFrameClient::create()) {}
 
   void SetUp() override {
     LayoutTestSupport::setMockThemeEnabledForTest(true);

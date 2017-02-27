@@ -30,7 +30,7 @@ class PrePaintTreeWalkTest
   PrePaintTreeWalkTest()
       : ScopedSlimmingPaintV2ForTest(true),
         ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(EmptyFrameLoaderClient::create()) {}
+        RenderingTest(EmptyLocalFrameClient::create()) {}
 
   const TransformPaintPropertyNode* framePreTranslation() {
     FrameView* frameView = document().view();

@@ -28,6 +28,8 @@
 
 #include "web/InspectorOverlay.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8InspectorOverlayHost.h"
@@ -36,6 +38,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
@@ -50,13 +53,12 @@
 #include "platform/graphics/paint/CullRect.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
+#include "v8/include/v8.h"
 #include "web/ChromeClientImpl.h"
 #include "web/PageOverlay.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/AutoReset.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 
@@ -502,8 +504,8 @@ Page* InspectorOverlay::overlayPage() {
 
   ScriptForbiddenScope::AllowUserAgentScript allowScript;
 
-  DEFINE_STATIC_LOCAL(FrameLoaderClient, dummyFrameLoaderClient,
-                      (EmptyFrameLoaderClient::create()));
+  DEFINE_STATIC_LOCAL(LocalFrameClient, dummyLocalFrameClient,
+                      (EmptyLocalFrameClient::create()));
   Page::PageClients pageClients;
   fillWithEmptyClients(pageClients);
   DCHECK(!m_overlayChromeClient);
@@ -538,7 +540,7 @@ Page* InspectorOverlay::overlayPage() {
   // through some non-composited paint function.
   overlaySettings.setAcceleratedCompositingEnabled(false);
 
-  LocalFrame* frame = LocalFrame::create(&dummyFrameLoaderClient,
+  LocalFrame* frame = LocalFrame::create(&dummyLocalFrameClient,
                                          &m_overlayPage->frameHost(), 0);
   frame->setView(FrameView::create(*frame));
   frame->init();

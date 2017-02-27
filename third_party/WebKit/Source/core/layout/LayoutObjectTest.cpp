@@ -15,7 +15,7 @@ namespace blink {
 
 class LayoutObjectTest : public RenderingTest {
  public:
-  LayoutObjectTest() : RenderingTest(EmptyFrameLoaderClient::create()) {}
+  LayoutObjectTest() : RenderingTest(EmptyLocalFrameClient::create()) {}
 };
 
 TEST_F(LayoutObjectTest, LayoutDecoratedNameCalledWithPositionedObject) {

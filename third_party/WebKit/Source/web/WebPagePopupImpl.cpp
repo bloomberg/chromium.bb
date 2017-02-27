@@ -35,6 +35,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
@@ -305,10 +306,10 @@ bool WebPagePopupImpl::initializePage() {
       mainSettings.getScrollAnimatorEnabled());
 
   provideContextFeaturesTo(*m_page, WTF::makeUnique<PagePopupFeaturesClient>());
-  DEFINE_STATIC_LOCAL(FrameLoaderClient, emptyFrameLoaderClient,
-                      (EmptyFrameLoaderClient::create()));
+  DEFINE_STATIC_LOCAL(LocalFrameClient, emptyLocalFrameClient,
+                      (EmptyLocalFrameClient::create()));
   LocalFrame* frame =
-      LocalFrame::create(&emptyFrameLoaderClient, &m_page->frameHost(), 0);
+      LocalFrame::create(&emptyLocalFrameClient, &m_page->frameHost(), 0);
   frame->setPagePopupOwner(m_popupClient->ownerElement());
   frame->setView(FrameView::create(*frame));
   frame->init();

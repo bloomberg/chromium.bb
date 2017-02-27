@@ -103,9 +103,9 @@ TEST(MixedContentCheckerTest, ContextTypeForInspector) {
 
 namespace {
 
-class MockFrameLoaderClient : public EmptyFrameLoaderClient {
+class MockFrameLoaderClient : public EmptyLocalFrameClient {
  public:
-  MockFrameLoaderClient() : EmptyFrameLoaderClient() {}
+  MockFrameLoaderClient() : EmptyLocalFrameClient() {}
   MOCK_METHOD1(didDisplayContentWithCertificateErrors, void(const KURL&));
   MOCK_METHOD1(didRunContentWithCertificateErrors, void(const KURL&));
 };
