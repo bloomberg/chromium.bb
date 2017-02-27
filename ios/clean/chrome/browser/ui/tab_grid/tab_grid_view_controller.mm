@@ -9,7 +9,6 @@
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_collection_view_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_overlay_view.h"
 #import "ios/clean/chrome/browser/ui/actions/settings_actions.h"
@@ -19,6 +18,7 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/mdc_floating_button+cr_tab_grid.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_collection_view_layout.h"
+#import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_tab_cell.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/ui_stack_view+cr_tab_grid.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -73,8 +73,8 @@ const CGFloat kToolbarHeight = 64.0f;
   self.grid = grid;
   self.grid.dataSource = self;
   self.grid.delegate = self;
-  [self.grid registerClass:[TabSwitcherLocalSessionCell class]
-      forCellWithReuseIdentifier:[TabSwitcherLocalSessionCell identifier]];
+  [self.grid registerClass:[TabGridTabCell class]
+      forCellWithReuseIdentifier:[TabGridTabCell identifier]];
 
   [NSLayoutConstraint activateConstraints:@[
     [self.grid.topAnchor constraintEqualToAnchor:toolbar.bottomAnchor],
@@ -119,17 +119,25 @@ const CGFloat kToolbarHeight = 64.0f;
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(nonnull NSIndexPath*)indexPath {
-  TabSwitcherLocalSessionCell* cell =
-      base::mac::ObjCCastStrict<TabSwitcherLocalSessionCell>([collectionView
-          dequeueReusableCellWithReuseIdentifier:
-                              [TabSwitcherLocalSessionCell identifier]
+  TabGridTabCell* cell =
+      base::mac::ObjCCastStrict<TabGridTabCell>([collectionView
+          dequeueReusableCellWithReuseIdentifier:[TabGridTabCell identifier]
                                     forIndexPath:indexPath]);
   cell.delegate = self;
   [cell setSessionType:TabSwitcherSessionType::REGULAR_SESSION];
   [cell setAppearanceForTabTitle:[self.dataSource titleAtIndex:indexPath.item]
                          favicon:nil
                         cellSize:CGSizeZero];
+  [cell setSelected:(indexPath.item == [self.dataSource indexOfActiveTab])];
   return cell;
+}
+
+#pragma mark - UICollectionViewDelegate methods
+
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    shouldSelectItemAtIndexPath:(NSIndexPath*)indexPath {
+  // Prevent user selection of items.
+  return NO;
 }
 
 #pragma mark - ZoomTransitionDelegate methods
@@ -160,6 +168,13 @@ const CGFloat kToolbarHeight = 64.0f;
   NSInteger index = [self.grid numberOfItemsInSection:0];
   NSIndexPath* indexPath = [NSIndexPath indexPathForItem:index inSection:0];
   auto updateBlock = ^{
+    // Unselect current selected item.
+    NSInteger selectedIndex = [self.dataSource indexOfActiveTab];
+    NSIndexPath* selectedIndexPath =
+        [NSIndexPath indexPathForItem:selectedIndex inSection:0];
+    [self.grid reloadItemsAtIndexPaths:@[ selectedIndexPath ]];
+
+    // Create and show new tab.
     [self.tabCommandHandler createNewTabAtIndexPath:indexPath];
     [self.tabCommandHandler showTabAtIndexPath:indexPath];
     [self.grid insertItemsAtIndexPaths:@[ indexPath ]];
@@ -175,7 +190,15 @@ const CGFloat kToolbarHeight = 64.0f;
 }
 
 - (void)cellPressed:(UICollectionViewCell*)cell {
-  [self.tabCommandHandler showTabAtIndexPath:[self.grid indexPathForCell:cell]];
+  NSInteger selectedIndex = [self.dataSource indexOfActiveTab];
+  NSIndexPath* newSelectedIndexPath = [self.grid indexPathForCell:cell];
+  [self.tabCommandHandler showTabAtIndexPath:newSelectedIndexPath];
+  if (newSelectedIndexPath.item != selectedIndex) {
+    NSIndexPath* selectedIndexPath =
+        [NSIndexPath indexPathForItem:selectedIndex inSection:0];
+    [self.grid
+        reloadItemsAtIndexPaths:@[ selectedIndexPath, newSelectedIndexPath ]];
+  }
 }
 
 - (void)deleteButtonPressedForCell:(UICollectionViewCell*)cell {

@@ -11,12 +11,13 @@
 
 #import <UIKit/UIKit.h>
 
-// Placeholder cell implementation for use in the tab grid.
-// A square cell with rounded corners and a label placed in the center.
-@interface TabGridTabCell : UICollectionViewCell
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 
-// The label in the center of the tab cell.
-@property(nonatomic, readonly) UILabel* label;
+// Cell represents a tab for use in the tab grid. It has a title, favicon,
+// screenshot image, and close button. Cell selection is represented by a border
+// highlight in the tintColor.
+// PLACEHOLDER: Create custom implemementation rather than subclassing.
+@interface TabGridTabCell : TabSwitcherLocalSessionCell
 
 @end
 

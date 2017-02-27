@@ -48,4 +48,8 @@
   return [NSString stringWithFormat:@"Tab %" PRIdNS, index];
 }
 
+- (NSInteger)indexOfActiveTab {
+  return NSNotFound;
+}
+
 @end
