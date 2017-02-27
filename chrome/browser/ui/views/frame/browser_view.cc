@@ -268,6 +268,23 @@ void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
   }
 }
 
+bool GetGestureCommand(ui::GestureEvent* event, int* command) {
+  DCHECK(command);
+  *command = 0;
+#if defined(OS_MACOSX)
+  if (event->details().type() == ui::ET_GESTURE_SWIPE) {
+    if (event->details().swipe_left()) {
+      *command = IDC_BACK;
+      return true;
+    } else if (event->details().swipe_right()) {
+      *command = IDC_FORWARD;
+      return true;
+    }
+  }
+#endif  // OS_MACOSX
+  return false;
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1928,6 +1945,18 @@ void BrowserView::Layout() {
   // TODO(jamescook): Why was this in the middle of layout code?
   toolbar_->location_bar()->omnibox_view()->SetFocusBehavior(
       IsToolbarVisible() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
+}
+
+void BrowserView::OnGestureEvent(ui::GestureEvent* event) {
+  int command;
+  if (GetGestureCommand(event, &command) &&
+      chrome::IsCommandEnabled(browser(), command)) {
+    chrome::ExecuteCommandWithDisposition(
+        browser(), command, ui::DispositionFromEventFlags(event->flags()));
+    return;
+  }
+
+  ClientView::OnGestureEvent(event);
 }
 
 void BrowserView::ViewHierarchyChanged(

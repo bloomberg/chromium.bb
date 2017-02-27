@@ -436,6 +436,7 @@ class BrowserView : public BrowserWindow,
   // Overridden from views::View:
   const char* GetClassName() const override;
   void Layout() override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void ChildPreferredSizeChanged(View* child) override;

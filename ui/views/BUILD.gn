@@ -892,6 +892,7 @@ source_set("views_unittests_sources") {
     "view_model_utils_unittest.cc",
     "view_targeter_unittest.cc",
     "view_unittest.cc",
+    "view_unittest_mac.mm",
     "widget/native_widget_mac_accessibility_unittest.mm",
     "widget/native_widget_mac_unittest.mm",
     "widget/native_widget_unittest.cc",

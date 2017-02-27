@@ -832,6 +832,34 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   hostedView_->GetWidget()->OnScrollEvent(&event);
 }
 
+// Called when we get a three-finger swipe, and they're enabled in System
+// Preferences.
+- (void)swipeWithEvent:(NSEvent*)event {
+  if (!hostedView_)
+    return;
+
+  // themblsha: In my testing all three-finger swipes send only a single event
+  // with a value of +/-1 on either axis. Diagonal swipes are not handled by
+  // AppKit.
+
+  // We need to invert deltas in order to match GestureEventDetails's
+  // directions.
+  ui::GestureEventDetails swipeDetails(ui::ET_GESTURE_SWIPE, -[event deltaX],
+                                       -[event deltaY]);
+  swipeDetails.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  swipeDetails.set_touch_points(3);
+
+  gfx::PointF location = ui::EventLocationFromNative(event);
+  // Note this uses the default unique_touch_event_id of 0 (Swipe events do not
+  // support -[NSEvent eventNumber]). This doesn't seem like a real omission
+  // because the three-finger swipes are instant and can't be tracked anyway.
+  ui::GestureEvent gestureEvent(location.x(), location.y(),
+                                ui::EventFlagsFromNative(event),
+                                ui::EventTimeFromNative(event), swipeDetails);
+
+  hostedView_->GetWidget()->OnGestureEvent(&gestureEvent);
+}
+
 - (void)quickLookWithEvent:(NSEvent*)theEvent {
   if (!hostedView_)
     return;
