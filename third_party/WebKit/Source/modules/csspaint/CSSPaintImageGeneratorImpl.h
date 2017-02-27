@@ -9,7 +9,7 @@
 #include "core/css/CSSPaintImageGenerator.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

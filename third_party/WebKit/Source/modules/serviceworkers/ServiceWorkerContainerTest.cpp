@@ -5,6 +5,9 @@
 
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
 
+#include <memory>
+#include <utility>
+
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -24,11 +27,9 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "v8/include/v8.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
-#include <utility>
-#include <v8.h>
 
 namespace blink {
 namespace {

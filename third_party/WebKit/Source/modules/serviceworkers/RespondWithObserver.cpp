@@ -18,9 +18,9 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include "v8/include/v8.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
-#include <v8.h>
 
 namespace blink {
 namespace {

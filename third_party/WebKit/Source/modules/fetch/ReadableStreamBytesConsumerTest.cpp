@@ -4,6 +4,8 @@
 
 #include "modules/fetch/ReadableStreamBytesConsumer.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8GCController.h"
@@ -15,8 +17,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

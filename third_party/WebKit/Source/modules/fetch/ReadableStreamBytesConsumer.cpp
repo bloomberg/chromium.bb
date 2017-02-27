@@ -4,6 +4,10 @@
 
 #include "modules/fetch/ReadableStreamBytesConsumer.h"
 
+#include <string.h>
+
+#include <algorithm>
+
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -12,11 +16,9 @@
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/streams/ReadableStreamOperations.h"
+#include "v8/include/v8.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
-#include <algorithm>
-#include <string.h>
-#include <v8.h>
 
 namespace blink {
 

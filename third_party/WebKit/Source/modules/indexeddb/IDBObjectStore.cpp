@@ -27,8 +27,6 @@
 
 #include <memory>
 
-#include <v8.h>
-
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
@@ -49,6 +47,7 @@
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/indexeddb/WebIDBKey.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
+#include "v8/include/v8.h"
 
 using blink::WebBlobInfo;
 using blink::WebIDBCallbacks;

@@ -30,6 +30,8 @@
 
 #include "modules/indexeddb/IDBTransaction.h"
 
+#include <memory>
+
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
@@ -39,8 +41,7 @@
 #include "modules/indexeddb/MockWebIDBDatabase.h"
 #include "platform/SharedBuffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 namespace {

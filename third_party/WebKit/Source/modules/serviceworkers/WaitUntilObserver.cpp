@@ -14,8 +14,8 @@
 #include "platform/LayoutTestSupport.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
+#include "v8/include/v8.h"
 #include "wtf/Assertions.h"
-#include <v8.h>
 
 namespace blink {
 

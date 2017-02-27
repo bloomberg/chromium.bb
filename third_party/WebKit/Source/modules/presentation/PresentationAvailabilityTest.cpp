@@ -14,8 +14,8 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "v8/include/v8.h"
 #include "wtf/Vector.h"
-#include <v8.h>
 
 namespace blink {
 namespace {

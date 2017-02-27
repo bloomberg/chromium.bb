@@ -33,8 +33,7 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerError.h"
-
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

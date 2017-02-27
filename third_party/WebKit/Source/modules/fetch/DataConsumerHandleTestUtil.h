@@ -5,6 +5,8 @@
 #ifndef DataConsumerHandleTestUtil_h
 #define DataConsumerHandleTestUtil_h
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptState.h"
 #include "core/testing/NullExecutionContext.h"
 #include "gin/public/isolate_holder.h"
@@ -15,6 +17,9 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "public/platform/WebTraceLocation.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "v8/include/v8.h"
 #include "wtf/Deque.h"
 #include "wtf/Locker.h"
 #include "wtf/PtrUtil.h"
@@ -22,10 +27,6 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 
