@@ -13,6 +13,19 @@ cmake_minimum_required(VERSION 3.2)
 include(FindGit)
 include(FindPerl)
 
+# Generate the user config settings. This must occur before include of
+# aom_config_defaults.cmake (because it turns every config variable into a cache
+# variable with its own help string).
+get_cmake_property(cmake_cache_vars CACHE_VARIABLES)
+
+foreach(cache_var ${cmake_cache_vars})
+  get_property(cache_var_helpstring CACHE ${cache_var} PROPERTY HELPSTRING)
+  set(cmdline_helpstring  "No help, variable specified on the command line.")
+  if("${cache_var_helpstring}" STREQUAL "${cmdline_helpstring}")
+    set(AOM_CMAKE_CONFIG "${AOM_CMAKE_CONFIG} -D${cache_var}=${${cache_var}}")
+  endif ()
+endforeach()
+
 include("${AOM_ROOT}/build/cmake/aom_config_defaults.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_tests.cmake")
@@ -38,16 +51,7 @@ if (NOT AOM_TARGET_CPU)
   endif ()
 endif ()
 
-# Store the args passed to cmake, the generator used, and the target CPU.
-get_cmake_property(cmake_cache_vars CACHE_VARIABLES)
-foreach(cache_var ${cmake_cache_vars})
-  get_property(cache_var_helpstring CACHE ${cache_var} PROPERTY HELPSTRING)
-  if(cache_var_helpstring STREQUAL
-     "No help, variable specified on the command line.")
-   set(AOM_CMAKE_CONFIG "${AOM_CMAKE_CONFIG} -D${cache_var}=${${cache_var}}")
-  endif()
-endforeach()
-
+# Add generator and target to the config string.
 string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
 set(AOM_CMAKE_CONFIG "CMAKE_GENERATOR=${CMAKE_GENERATOR} ${AOM_CMAKE_CONFIG}")
 set(AOM_CMAKE_CONFIG "AOM_TARGET_CPU=${AOM_TARGET_CPU} ${AOM_CMAKE_CONFIG}")
