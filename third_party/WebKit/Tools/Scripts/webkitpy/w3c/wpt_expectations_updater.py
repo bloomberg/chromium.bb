@@ -279,8 +279,8 @@ class WPTExpectationsUpdater(object):
         for name in sorted(port_names):
             specifiers.append(self.host.builders.version_specifier_for_port_name(name))
         port = self.host.port_factory.get()
-        specifiers = self.simplify_specifiers(specifiers, port.configuration_specifier_macros())
         specifiers.extend(self.skipped_specifiers(test_name))
+        specifiers = self.simplify_specifiers(specifiers, port.configuration_specifier_macros())
         if not specifiers:
             return ''
         return '[ %s ]' % ' '.join(specifiers)

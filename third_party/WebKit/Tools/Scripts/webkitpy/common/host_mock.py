@@ -59,7 +59,7 @@ class MockHost(MockSystemHost):
 
         self.buildbot = MockBuildBot()
 
-        # Note: We're using a real PortFactory here.  Tests which don't wish to depend
+        # Note: We're using a real PortFactory here. Tests which don't wish to depend
         # on the list of known ports should override this with a MockPortFactory.
         self.port_factory = PortFactory(self)
 
