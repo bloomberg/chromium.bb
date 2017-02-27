@@ -100,6 +100,11 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
         media::PowerLineFrequency::FREQUENCY_60HZ,
     };
 
+    capabilities_.noise_reduction_capabilities = {
+        rtc::Optional<bool>(), rtc::Optional<bool>(true),
+        rtc::Optional<bool>(false),
+    };
+
     default_device_ = capabilities_.device_capabilities[0].get();
     low_res_device_ = capabilities_.device_capabilities[1].get();
     high_res_device_ = capabilities_.device_capabilities[2].get();
@@ -138,6 +143,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, Unconstrained) {
   EXPECT_EQ(default_device_->device_id, result.device_id);
   EXPECT_EQ(default_device_->facing_mode, result.facing_mode);
   EXPECT_EQ(*default_closest_format_, result.Format());
+  // Should select default settings for other constraints.
+  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
+            result.PowerLineFrequency());
+  EXPECT_EQ(rtc::Optional<bool>(), result.noise_reduction);
 }
 
 // The "Overconstrained" tests verify that failure of any single required
@@ -293,6 +302,34 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
             result.failed_constraint_name);
 }
 
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       OverconstrainedOnNoiseReduction) {
+  // Simulate a system that does not support noise reduction.
+  // Manually adding device capabilities because VideoDeviceCaptureCapabilities
+  // is move only.
+  VideoDeviceCaptureCapabilities capabilities;
+  ::mojom::VideoInputDeviceCapabilitiesPtr device =
+      ::mojom::VideoInputDeviceCapabilities::New();
+  device->device_id = kDeviceID1;
+  device->facing_mode = ::mojom::FacingMode::NONE;
+  device->formats = {
+      media::VideoCaptureFormat(gfx::Size(200, 200), 40.0f,
+                                media::PIXEL_FORMAT_I420),
+  };
+  capabilities.device_capabilities.push_back(std::move(device));
+  capabilities.power_line_capabilities = capabilities_.power_line_capabilities;
+  capabilities.noise_reduction_capabilities = {rtc::Optional<bool>(false)};
+
+  constraint_factory_.Reset();
+  constraint_factory_.basic().googNoiseReduction.setExact(true);
+  auto constraints = constraint_factory_.CreateWebMediaConstraints();
+  auto result =
+      SelectVideoDeviceCaptureSourceSettings(capabilities, constraints);
+  EXPECT_FALSE(result.HasValue());
+  EXPECT_EQ(constraint_factory_.basic().googNoiseReduction.name(),
+            result.failed_constraint_name);
+}
+
 // The "Mandatory" and "Ideal" tests check that various selection criteria work
 // for each individual constraint in the basic constraint set.
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryDeviceID) {
@@ -377,6 +414,22 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryPowerLineFrequency) {
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(power_line_frequency, result.PowerLineFrequency());
+    // The default device and settings closest to the default should be
+    // selected.
+    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_EQ(default_device_->facing_mode, result.facing_mode);
+    EXPECT_EQ(*default_closest_format_, result.Format());
+  }
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryNoiseReduction) {
+  constraint_factory_.Reset();
+  const bool kNoiseReductionValues[] = {true, false};
+  for (auto noise_reduction : kNoiseReductionValues) {
+    constraint_factory_.basic().googNoiseReduction.setExact(noise_reduction);
+    auto result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    EXPECT_EQ(noise_reduction, result.noise_reduction);
     // The default device and settings closest to the default should be
     // selected.
     EXPECT_EQ(default_device_->device_id, result.device_id);
@@ -1192,99 +1245,161 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
 // The "Advanced" tests check selection criteria involving advanced constraint
 // sets.
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedExactResolution) {
-  {
-    constraint_factory_.Reset();
-    blink::WebMediaTrackConstraintSet& advanced1 =
-        constraint_factory_.AddAdvanced();
-    advanced1.width.setExact(4000);
-    advanced1.height.setExact(4000);
-    blink::WebMediaTrackConstraintSet& advanced2 =
-        constraint_factory_.AddAdvanced();
-    advanced2.width.setExact(3000);
-    advanced2.height.setExact(3000);
-    auto result = SelectSettings();
-    // No device supports the advanced constraint sets.
-    // Tie-breaker rule that applies is closeness to default settings.
-    EXPECT_EQ(default_device_->device_id, result.device_id);
-    EXPECT_EQ(*default_closest_format_, result.Format());
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.width.setExact(4000);
+  advanced1.height.setExact(4000);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.width.setExact(3000);
+  advanced2.height.setExact(3000);
+  auto result = SelectSettings();
+  // No device supports the advanced constraint sets.
+  // Tie-breaker rule that applies is closeness to default settings.
+  EXPECT_EQ(default_device_->device_id, result.device_id);
+  EXPECT_EQ(*default_closest_format_, result.Format());
 
-    blink::WebMediaTrackConstraintSet& advanced3 =
-        constraint_factory_.AddAdvanced();
-    advanced3.width.setExact(1920);
-    advanced3.height.setExact(1080);
-    result = SelectSettings();
-    EXPECT_TRUE(result.HasValue());
-    // The high-res device natively supports the third advanced constraint set
-    // and should be selected.
-    // First tie-breaker rule that applies is support for advanced constraints
-    // that appear first. Second tie-breaker rule is custom distance to advanced
-    // constraint sets that appear first.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
-    EXPECT_EQ(1920, result.Width());
-    EXPECT_EQ(1080, result.Height());
+  blink::WebMediaTrackConstraintSet& advanced3 =
+      constraint_factory_.AddAdvanced();
+  advanced3.width.setExact(1920);
+  advanced3.height.setExact(1080);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The high-res device natively supports the third advanced constraint set
+  // and should be selected.
+  // First tie-breaker rule that applies is support for advanced constraints
+  // that appear first. Second tie-breaker rule is custom distance to advanced
+  // constraint sets that appear first.
+  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(1920, result.Width());
+  EXPECT_EQ(1080, result.Height());
 
-    blink::WebMediaTrackConstraintSet& advanced4 =
-        constraint_factory_.AddAdvanced();
-    advanced4.width.setExact(640);
-    advanced4.height.setExact(480);
-    result = SelectSettings();
-    EXPECT_TRUE(result.HasValue());
-    // First tie-breaker rule that applies is support for advanced constraints
-    // that appear first, which leaves out configurations that only support the
-    // fourth advanced constraint set in favor of configurations that support
-    // the third set.
-    // Second tie-breaker rule is custom distance to advanced constraint sets
-    // that appear first.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
-    EXPECT_EQ(1920, result.Width());
-    EXPECT_EQ(1080, result.Height());
+  blink::WebMediaTrackConstraintSet& advanced4 =
+      constraint_factory_.AddAdvanced();
+  advanced4.width.setExact(640);
+  advanced4.height.setExact(480);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // First tie-breaker rule that applies is support for advanced constraints
+  // that appear first, which leaves out configurations that only support the
+  // fourth advanced constraint set in favor of configurations that support
+  // the third set.
+  // Second tie-breaker rule is custom distance to advanced constraint sets
+  // that appear first.
+  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(1920, result.Width());
+  EXPECT_EQ(1080, result.Height());
 
-    constraint_factory_.basic().width.setIdeal(800);
-    constraint_factory_.basic().height.setIdeal(600);
-    result = SelectSettings();
-    EXPECT_TRUE(result.HasValue());
-    // The ideal value is supported by the same configuration, so nothing
-    // changes.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
-    EXPECT_EQ(1920, result.Width());
-    EXPECT_EQ(1080, result.Height());
+  constraint_factory_.basic().width.setIdeal(800);
+  constraint_factory_.basic().height.setIdeal(600);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The ideal value is supported by the same configuration, so nothing
+  // changes.
+  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(1920, result.Width());
+  EXPECT_EQ(1080, result.Height());
 
-    constraint_factory_.basic().width.setIdeal(2000);
-    constraint_factory_.basic().height.setIdeal(1500);
-    result = SelectSettings();
-    EXPECT_TRUE(result.HasValue());
-    // The closest configuration to the ideal resolution is the high-res device
-    // at the highest resolution.
-    EXPECT_EQ(high_res_device_->device_id, result.device_id);
-    EXPECT_EQ(*high_res_highest_format_, result.Format());
-  }
+  constraint_factory_.basic().width.setIdeal(2000);
+  constraint_factory_.basic().height.setIdeal(1500);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The closest configuration to the ideal resolution is the high-res device
+  // at the highest resolution.
+  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(*high_res_highest_format_, result.Format());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedResolutionAndFrameRate) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.width.setExact(1920);
+  advanced1.height.setExact(1080);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.frameRate.setExact(60.0);
+  blink::WebMediaTrackConstraintSet& advanced3 =
+      constraint_factory_.AddAdvanced();
+  advanced3.width.setExact(2304);
+  advanced3.height.setExact(1536);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The high-res device is the only one that satisfies the first advanced
+  // set. 2304x1536x10.0 satisfies sets 1 and 3, while 1920x1080x60.0
+  // satisfies sets 1, and 2. The latter must be selected, regardless of
+  // any other criteria.
+  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(1920, result.Width());
+  EXPECT_EQ(1080, result.Height());
+  EXPECT_EQ(60.0, result.FrameRate());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedNoiseReduction) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.width.setExact(640);
+  advanced1.height.setExact(480);
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.width.setExact(1920);
+  advanced2.height.setExact(1080);
+  advanced2.googNoiseReduction.setExact(false);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  EXPECT_EQ(high_res_device_->device_id, result.device_id);
+  EXPECT_EQ(1920, result.Width());
+  EXPECT_EQ(1080, result.Height());
+  EXPECT_TRUE(result.noise_reduction && !*result.noise_reduction);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryNoiseReduction) {
   {
     constraint_factory_.Reset();
     blink::WebMediaTrackConstraintSet& advanced1 =
         constraint_factory_.AddAdvanced();
-    advanced1.width.setExact(1920);
-    advanced1.height.setExact(1080);
+    advanced1.width.setMin(640);
+    advanced1.height.setMin(480);
+    advanced1.googNoiseReduction.setExact(true);
     blink::WebMediaTrackConstraintSet& advanced2 =
         constraint_factory_.AddAdvanced();
-    advanced2.frameRate.setExact(60.0);
-    blink::WebMediaTrackConstraintSet& advanced3 =
-        constraint_factory_.AddAdvanced();
-    advanced3.width.setExact(2304);
-    advanced3.height.setExact(1536);
+    advanced2.width.setMin(1920);
+    advanced2.height.setMin(1080);
+    advanced2.googNoiseReduction.setExact(false);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
-    // The high-res device is the only one that satisfies the first advanced
-    // set. 2304x1536x10.0 satisfies sets 1 and 3, while 1920x1080x60.0
-    // satisfies sets 1, and 2. The latter must be selected, regardless of
-    // any other criteria.
+    // The second advanced set cannot be satisfied because it contradicts the
+    // first set. The default device supports the first set and should be
+    // selected.
+    EXPECT_EQ(default_device_->device_id, result.device_id);
+    EXPECT_LE(640, result.Width());
+    EXPECT_LE(480, result.Height());
+    EXPECT_TRUE(result.noise_reduction && *result.noise_reduction);
+  }
+
+  // Same test without noise reduction
+  {
+    constraint_factory_.Reset();
+    blink::WebMediaTrackConstraintSet& advanced1 =
+        constraint_factory_.AddAdvanced();
+    advanced1.width.setMin(640);
+    advanced1.height.setMin(480);
+    blink::WebMediaTrackConstraintSet& advanced2 =
+        constraint_factory_.AddAdvanced();
+    advanced2.width.setMin(1920);
+    advanced2.height.setMin(1080);
+    auto result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    // Only the high-res device can satisfy the second advanced set.
     EXPECT_EQ(high_res_device_->device_id, result.device_id);
-    EXPECT_EQ(1920, result.Width());
-    EXPECT_EQ(1080, result.Height());
-    EXPECT_EQ(60.0, result.FrameRate());
+    EXPECT_LE(1920, result.Width());
+    EXPECT_LE(1080, result.Height());
+    // Should select default noise reduction setting.
+    EXPECT_TRUE(!result.noise_reduction);
   }
 }
 

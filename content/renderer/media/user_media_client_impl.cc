@@ -372,6 +372,9 @@ void UserMediaClientImpl::SelectVideoDeviceSourceSettings(
       media::PowerLineFrequency::FREQUENCY_DEFAULT,
       media::PowerLineFrequency::FREQUENCY_50HZ,
       media::PowerLineFrequency::FREQUENCY_60HZ};
+  capabilities.noise_reduction_capabilities = {rtc::Optional<bool>(),
+                                               rtc::Optional<bool>(true),
+                                               rtc::Optional<bool>(false)};
 
   base::PostTaskAndReplyWithResult(
       worker_task_runner_.get(), FROM_HERE,

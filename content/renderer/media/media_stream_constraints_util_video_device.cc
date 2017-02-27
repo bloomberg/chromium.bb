@@ -21,8 +21,8 @@ namespace {
 
 // Number of default settings to be used as final tie-breaking criteria for
 // settings that are equally good at satisfying constraints:
-// device ID, power-line frequency, resolution and frame rate.
-const int kNumDefaultDistanceEntries = 4;
+// device ID, power-line frequency, noise reduction, resolution and frame rate.
+const int kNumDefaultDistanceEntries = 5;
 
 // The default resolution to be preferred as tie-breaking criterion.
 const int kDefaultResolutionArea = MediaStreamVideoSource::kDefaultWidth *
@@ -60,11 +60,13 @@ struct VideoDeviceCaptureSourceSettings {
       const std::string& device_id,
       const media::VideoCaptureFormat& format,
       ::mojom::FacingMode facing_mode,
-      media::PowerLineFrequency power_line_frequency)
+      media::PowerLineFrequency power_line_frequency,
+      const rtc::Optional<bool>& noise_reduction)
       : device_id_(device_id),
         format_(format),
         facing_mode_(facing_mode),
-        power_line_frequency_(power_line_frequency) {}
+        power_line_frequency_(power_line_frequency),
+        noise_reduction_(noise_reduction) {}
 
   VideoDeviceCaptureSourceSettings(
       const VideoDeviceCaptureSourceSettings& other) = default;
@@ -99,12 +101,16 @@ struct VideoDeviceCaptureSourceSettings {
   media::PowerLineFrequency power_line_frequency() const {
     return power_line_frequency_;
   }
+  const rtc::Optional<bool>& noise_reduction() const {
+    return noise_reduction_;
+  }
 
  private:
   std::string device_id_;
   media::VideoCaptureFormat format_;
   ::mojom::FacingMode facing_mode_;
   media::PowerLineFrequency power_line_frequency_;
+  rtc::Optional<bool> noise_reduction_;
 };
 
 VideoDeviceCaptureSourceSelectionResult ResultFromSettings(
@@ -114,6 +120,7 @@ VideoDeviceCaptureSourceSelectionResult ResultFromSettings(
   result.capture_params.requested_format = settings.format();
   result.device_id = settings.device_id();
   result.facing_mode = settings.facing_mode();
+  result.noise_reduction = settings.noise_reduction();
   result.failed_constraint_name = nullptr;
 
   return result;
@@ -324,6 +331,25 @@ double PowerLineFrequencyConstraintSourceDistance(
   return 0.0;
 }
 
+// Returns a custom distance function suitable for the googNoiseReduction
+// constraint, given  a |constraint| and a candidate value |value|.
+// The distance is HUGE_VAL if |candidate_value| cannot satisfy |constraint|.
+// Otherwise, the distance is zero.
+double NoiseReductionConstraintSourceDistance(
+    const blink::BooleanConstraint& constraint,
+    const rtc::Optional<bool>& value,
+    const char** failed_constraint_name) {
+  if (!constraint.hasExact())
+    return 0.0;
+
+  if (value && *value == constraint.exact())
+    return 0.0;
+
+  if (failed_constraint_name)
+    *failed_constraint_name = constraint.name();
+  return HUGE_VAL;
+}
+
 // Returns a custom distance for constraints that depend on the device
 // characteristics that have a fixed value.
 double DeviceSourceDistance(
@@ -379,7 +405,10 @@ double CandidateSourceDistance(
                               failed_constraint_name) +
          PowerLineFrequencyConstraintSourceDistance(
              constraint_set.googPowerLineFrequency,
-             candidate.power_line_frequency(), failed_constraint_name);
+             candidate.power_line_frequency(), failed_constraint_name) +
+         NoiseReductionConstraintSourceDistance(
+             constraint_set.googNoiseReduction, candidate.noise_reduction(),
+             failed_constraint_name);
 }
 
 // Returns the fitness distance between |value| and |constraint|.
@@ -511,6 +540,21 @@ double PowerLineFrequencyConstraintFitnessDistance(
   return 1.0;
 }
 
+// Returns the fitness distance between |value| and |constraint| for the
+// googNoiseReduction constraint.
+// Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
+double NoiseReductionConstraintFitnessDistance(
+    const rtc::Optional<bool>& value,
+    const blink::BooleanConstraint& constraint) {
+  if (!constraint.hasIdeal())
+    return 0.0;
+
+  if (value && value == constraint.ideal())
+    return 0.0;
+
+  return 1.0;
+}
+
 // Returns the fitness distance between a settings candidate and a constraint
 // set. The returned value is the sum of the fitness distances between each
 // setting in |candidate| and the corresponding constraint in |constraint_set|.
@@ -534,6 +578,8 @@ double CandidateFitnessDistance(
                                              constraint_set.videoKind);
   fitness += PowerLineFrequencyConstraintFitnessDistance(
       candidate.GetPowerLineFrequency(), constraint_set.googPowerLineFrequency);
+  fitness += NoiseReductionConstraintFitnessDistance(
+      candidate.noise_reduction(), constraint_set.googNoiseReduction);
   fitness += ResolutionConstraintFitnessDistance(candidate.GetHeight(),
                                                  constraint_set.height);
   fitness += ResolutionConstraintFitnessDistance(candidate.GetWidth(),
@@ -590,6 +636,12 @@ void AppendDistanceFromDefault(
           ? 0.0
           : HUGE_VAL;
   distance_vector->push_back(power_line_frequency_distance);
+
+  // Prefer not having a specific noise-reduction value and let the lower-layers
+  // implementation choose a noise-reduction strategy.
+  double noise_reduction_distance =
+      candidate.noise_reduction() ? HUGE_VAL : 0.0;
+  distance_vector->push_back(noise_reduction_distance);
 
   // Prefer a resolution with area close to the default.
   int candidate_area = candidate.format().frame_size.GetArea();
@@ -692,52 +744,63 @@ VideoDeviceCaptureSourceSelectionResult SelectVideoDeviceCaptureSourceSettings(
         if (!std::isfinite(basic_power_line_frequency_distance))
           continue;
 
-        // The candidate satisfies the basic constraint set.
-        double candidate_basic_custom_distance =
-            basic_device_distance + basic_format_distance +
-            basic_power_line_frequency_distance;
-        DCHECK(std::isfinite(candidate_basic_custom_distance));
+        for (auto& noise_reduction :
+             capabilities.noise_reduction_capabilities) {
+          double basic_noise_reduction_distance =
+              NoiseReductionConstraintSourceDistance(
+                  constraints.basic().googNoiseReduction, noise_reduction,
+                  &failed_constraint_name);
+          if (!std::isfinite(basic_noise_reduction_distance))
+            continue;
 
-        // Temporary vector to save custom distances for advanced constraints.
-        // Custom distances must be added to the candidate distance vector after
-        // all the spec-mandated values.
-        DistanceVector advanced_custom_distance_vector;
-        VideoDeviceCaptureSourceSettings candidate(device->device_id, format,
-                                                   device->facing_mode,
-                                                   power_line_frequency);
-        DistanceVector candidate_distance_vector;
-        // First criteria for valid candidates is satisfaction of advanced
-        // constraint sets.
-        for (const auto& advanced : constraints.advanced()) {
-          double custom_distance =
-              CandidateSourceDistance(candidate, advanced, nullptr);
-          advanced_custom_distance_vector.push_back(custom_distance);
-          double spec_distance = std::isfinite(custom_distance) ? 0 : 1;
-          candidate_distance_vector.push_back(spec_distance);
-        }
+          // The candidate satisfies the basic constraint set.
+          double candidate_basic_custom_distance =
+              basic_device_distance + basic_format_distance +
+              basic_power_line_frequency_distance +
+              basic_noise_reduction_distance;
+          DCHECK(std::isfinite(candidate_basic_custom_distance));
 
-        // Second criterion is fitness distance.
-        candidate_distance_vector.push_back(
-            CandidateFitnessDistance(candidate, constraints.basic()));
+          // Temporary vector to save custom distances for advanced constraints.
+          // Custom distances must be added to the candidate distance vector
+          // after all the spec-mandated values.
+          DistanceVector advanced_custom_distance_vector;
+          VideoDeviceCaptureSourceSettings candidate(
+              device->device_id, format, device->facing_mode,
+              power_line_frequency, noise_reduction);
+          DistanceVector candidate_distance_vector;
+          // First criteria for valid candidates is satisfaction of advanced
+          // constraint sets.
+          for (const auto& advanced : constraints.advanced()) {
+            double custom_distance =
+                CandidateSourceDistance(candidate, advanced, nullptr);
+            advanced_custom_distance_vector.push_back(custom_distance);
+            double spec_distance = std::isfinite(custom_distance) ? 0 : 1;
+            candidate_distance_vector.push_back(spec_distance);
+          }
 
-        // Third criteria are custom distances to constraint sets.
-        candidate_distance_vector.push_back(candidate_basic_custom_distance);
-        std::copy(advanced_custom_distance_vector.begin(),
-                  advanced_custom_distance_vector.end(),
-                  std::back_inserter(candidate_distance_vector));
+          // Second criterion is fitness distance.
+          candidate_distance_vector.push_back(
+              CandidateFitnessDistance(candidate, constraints.basic()));
 
-        // Fourth criteria is native fitness distance.
-        candidate_distance_vector.push_back(
-            CandidateNativeFitnessDistance(candidate, constraints.basic()));
+          // Third criteria are custom distances to constraint sets.
+          candidate_distance_vector.push_back(candidate_basic_custom_distance);
+          std::copy(advanced_custom_distance_vector.begin(),
+                    advanced_custom_distance_vector.end(),
+                    std::back_inserter(candidate_distance_vector));
 
-        // Final criteria are custom distances to default settings.
-        AppendDistanceFromDefault(candidate, capabilities,
-                                  &candidate_distance_vector);
+          // Fourth criteria is native fitness distance.
+          candidate_distance_vector.push_back(
+              CandidateNativeFitnessDistance(candidate, constraints.basic()));
 
-        DCHECK_EQ(best_distance.size(), candidate_distance_vector.size());
-        if (candidate_distance_vector < best_distance) {
-          best_distance = candidate_distance_vector;
-          result = ResultFromSettings(candidate);
+          // Final criteria are custom distances to default settings.
+          AppendDistanceFromDefault(candidate, capabilities,
+                                    &candidate_distance_vector);
+
+          DCHECK_EQ(best_distance.size(), candidate_distance_vector.size());
+          if (candidate_distance_vector < best_distance) {
+            best_distance = candidate_distance_vector;
+            result = ResultFromSettings(candidate);
+          }
         }
       }
     }

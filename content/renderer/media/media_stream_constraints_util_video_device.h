@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.mojom.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/webrtc/base/optional.h"
 
 namespace blink {
 class WebString;
@@ -34,6 +35,7 @@ struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
   // Each field is independent of each other.
   std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> device_capabilities;
   std::vector<media::PowerLineFrequency> power_line_capabilities;
+  std::vector<rtc::Optional<bool>> noise_reduction_capabilities;
 };
 
 struct CONTENT_EXPORT VideoDeviceCaptureSourceSelectionResult {
@@ -69,6 +71,7 @@ struct CONTENT_EXPORT VideoDeviceCaptureSourceSelectionResult {
   std::string device_id;
   ::mojom::FacingMode facing_mode;
   media::VideoCaptureParams capture_params;
+  rtc::Optional<bool> noise_reduction;
 };
 
 // This function performs source and source-settings selection based on
@@ -130,9 +133,9 @@ struct CONTENT_EXPORT VideoDeviceCaptureSourceSelectionResult {
 //    ideal value and thus has worse fitness according to step 2, even if C3's
 //    native fitness is better than C1's and C2's.
 // 5. C1 is better than C2 if its settings are closer to certain default
-//    settings that include the device ID, power-line frequency, resolution, and
-//    frame rate, in that order. Note that there is no default facing mode or
-//    aspect ratio.
+//    settings that include the device ID, power-line frequency, noise
+//    reduction, resolution, and frame rate, in that order. Note that there is
+//    no default facing mode or aspect ratio.
 VideoDeviceCaptureSourceSelectionResult CONTENT_EXPORT
 SelectVideoDeviceCaptureSourceSettings(
     const VideoDeviceCaptureCapabilities& capabilities,
