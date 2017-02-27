@@ -27,8 +27,7 @@
 #include "bindings/core/v8/SharedPersistent.h"
 #include "core/CoreExport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

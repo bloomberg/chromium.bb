@@ -9,6 +9,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
+#include "v8/include/v8.h"
 #include "wtf/typed_arrays/Float32Array.h"
 #include "wtf/typed_arrays/Float64Array.h"
 #include "wtf/typed_arrays/Int16Array.h"
@@ -18,7 +19,6 @@
 #include "wtf/typed_arrays/Uint32Array.h"
 #include "wtf/typed_arrays/Uint8Array.h"
 #include "wtf/typed_arrays/Uint8ClampedArray.h"
-#include <v8.h>
 
 namespace blink {
 

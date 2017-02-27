@@ -23,6 +23,8 @@
 
 #include "core/loader/resource/ImageResource.h"
 
+#include <memory>
+
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/loader/resource/ImageResourceInfo.h"
 #include "platform/Histogram.h"
@@ -35,10 +37,9 @@
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
 #include "public/platform/Platform.h"
+#include "v8/include/v8.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 namespace {

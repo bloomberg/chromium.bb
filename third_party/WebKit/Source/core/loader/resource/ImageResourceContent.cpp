@@ -4,6 +4,8 @@
 
 #include "core/loader/resource/ImageResourceContent.h"
 
+#include <memory>
+
 #include "core/loader/resource/ImageResource.h"
 #include "core/loader/resource/ImageResourceInfo.h"
 #include "core/loader/resource/ImageResourceObserver.h"
@@ -15,10 +17,9 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/PlaceholderImage.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "v8/include/v8.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 namespace {

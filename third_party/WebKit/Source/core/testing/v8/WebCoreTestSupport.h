@@ -26,7 +26,7 @@
 #ifndef WebCoreTestSupport_h
 #define WebCoreTestSupport_h
 
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace WebCoreTestSupport {
 

@@ -45,7 +45,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

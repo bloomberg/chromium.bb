@@ -8,4 +8,7 @@ source_set("plugins") {
   sources = [
     "PluginView.h",
   ]
+  deps = [
+    "//v8",
+  ]
 }

@@ -4,6 +4,10 @@
 
 #include "core/inspector/InspectorTraceEvents.h"
 
+#include <inttypes.h>
+
+#include <memory>
+
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/animation/Animation.h"
@@ -32,12 +36,10 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
+#include "v8/include/v8-profiler.h"
+#include "v8/include/v8.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"
-#include <inttypes.h>
-#include <memory>
-#include <v8-profiler.h>
-#include <v8.h>
 
 namespace blink {
 

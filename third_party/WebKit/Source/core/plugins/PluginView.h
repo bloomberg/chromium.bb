@@ -31,8 +31,8 @@
 #include "core/CoreExport.h"
 #include "platform/Widget.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "v8/include/v8.h"
 #include "wtf/text/WTFString.h"
-#include <v8.h>
 
 namespace blink {
 class WebLayer;

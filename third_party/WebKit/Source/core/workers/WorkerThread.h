@@ -27,6 +27,8 @@
 #ifndef WorkerThread_h
 #define WorkerThread_h
 
+#include <memory>
+
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/ParentFrameTaskRunners.h"
@@ -36,11 +38,10 @@
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
+#include "v8/include/v8.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
 #include "wtf/PassRefPtr.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 

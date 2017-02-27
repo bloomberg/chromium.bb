@@ -26,6 +26,9 @@
 
 #include "core/testing/Internals.h"
 
+#include <deque>
+#include <memory>
+
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptFunction.h"
@@ -145,14 +148,12 @@
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
+#include "v8/include/v8.h"
 #include "wtf/InstanceCounter.h"
 #include "wtf/Optional.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
-#include <deque>
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 

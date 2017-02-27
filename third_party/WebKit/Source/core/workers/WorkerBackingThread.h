@@ -5,13 +5,14 @@
 #ifndef WorkerBackingThread_h
 #define WorkerBackingThread_h
 
+#include <memory>
+
 #include "core/CoreExport.h"
 #include "platform/heap/ThreadState.h"
+#include "v8/include/v8.h"
 #include "wtf/Forward.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/ThreadingPrimitives.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 

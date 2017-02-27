@@ -28,8 +28,9 @@
 #include "core/html/HTMLCanvasElement.h"
 
 #include <math.h>
-#include <v8.h>
+
 #include <memory>
+
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
@@ -79,6 +80,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
+#include "v8/include/v8.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/PtrUtil.h"
 
