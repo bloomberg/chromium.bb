@@ -116,6 +116,12 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
     border.allocN32Pixels(width, height);
     border.eraseColor(0);
 
+    cairo_surface_t* surface = cairo_image_surface_create_for_data(
+        static_cast<unsigned char*>(border.getAddr(0, 0)), CAIRO_FORMAT_ARGB32,
+        width, height, width * 4);
+    cairo_t* cr = cairo_create(surface);
+
+#if GTK_MAJOR_VERSION == 2
     // Create a temporary GTK button to snapshot
     GtkWidget* window = gtk_offscreen_window_new();
     GtkWidget* button = gtk_toggle_button_new();
@@ -133,12 +139,6 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
 
     gtk_widget_show_all(window);
 
-    cairo_surface_t* surface = cairo_image_surface_create_for_data(
-        static_cast<unsigned char*>(border.getAddr(0, 0)), CAIRO_FORMAT_ARGB32,
-        width, height, width * 4);
-    cairo_t* cr = cairo_create(surface);
-
-#if GTK_MAJOR_VERSION == 2
     if (focus_)
       GTK_WIDGET_SET_FLAGS(button, GTK_HAS_FOCUS);
 
@@ -161,8 +161,18 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
 
     g_object_unref(pixbuf);
     g_object_unref(pixmap);
+
+    gtk_widget_destroy(window);
 #else
-    GtkStyleContext* context = gtk_widget_get_style_context(button);
+    ScopedStyleContext context = GetStyleContextFromCss(
+        is_blue_ ? "GtkButton#button.default.suggested-action"
+                 : "GtkButton#button");
+    GtkStateFlags state_flags = StateToStateFlags(state_);
+    if (focus_) {
+      state_flags =
+          static_cast<GtkStateFlags>(state_flags | GTK_STATE_FLAG_FOCUSED);
+    }
+    gtk_style_context_set_state(context, state_flags);
     gtk_render_background(context, cr, 0, 0, width, height);
     gtk_render_frame(context, cr, 0, 0, width, height);
     if (focus_)
@@ -171,8 +181,6 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
 
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
-
-    gtk_widget_destroy(window);
 
     return gfx::ImageSkiaRep(border, scale);
   }

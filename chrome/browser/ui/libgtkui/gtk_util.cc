@@ -278,6 +278,23 @@ bool GtkVersionCheck(int major, int minor, int micro) {
     return false;
 }
 
+GtkStateFlags StateToStateFlags(ui::NativeTheme::State state) {
+  switch (state) {
+    case ui::NativeTheme::kDisabled:
+      return GTK_STATE_FLAG_INSENSITIVE;
+    case ui::NativeTheme::kHovered:
+      return GTK_STATE_FLAG_PRELIGHT;
+    case ui::NativeTheme::kNormal:
+      return GTK_STATE_FLAG_NORMAL;
+    case ui::NativeTheme::kPressed:
+      return static_cast<GtkStateFlags>(GTK_STATE_FLAG_PRELIGHT |
+                                        GTK_STATE_FLAG_ACTIVE);
+    default:
+      NOTREACHED();
+      return GTK_STATE_FLAG_NORMAL;
+  }
+}
+
 ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
                                                const std::string& css_node) {
   GtkWidgetPath* path =

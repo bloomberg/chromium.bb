@@ -177,6 +177,9 @@ inline void ScopedGObject<GtkStyleContext>::Unref() {
 typedef ScopedGObject<GtkStyleContext> ScopedStyleContext;
 typedef ScopedGObject<GtkCssProvider> ScopedCssProvider;
 
+// Converts ui::NativeTheme::State to GtkStateFlags.
+GtkStateFlags StateToStateFlags(ui::NativeTheme::State state);
+
 // If |context| is nullptr, creates a new top-level style context
 // specified by parsing |css_node|.  Otherwise, creates the child
 // context with |context| as the parent.

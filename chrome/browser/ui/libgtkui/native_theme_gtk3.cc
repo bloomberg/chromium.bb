@@ -63,23 +63,6 @@ void PaintWidget(cc::PaintCanvas* canvas,
       rect.y());
 }
 
-GtkStateFlags StateToStateFlags(NativeThemeGtk3::State state) {
-  switch (state) {
-    case NativeThemeGtk3::kDisabled:
-      return GTK_STATE_FLAG_INSENSITIVE;
-    case NativeThemeGtk3::kHovered:
-      return GTK_STATE_FLAG_PRELIGHT;
-    case NativeThemeGtk3::kNormal:
-      return GTK_STATE_FLAG_NORMAL;
-    case NativeThemeGtk3::kPressed:
-      return static_cast<GtkStateFlags>(GTK_STATE_FLAG_PRELIGHT |
-                                        GTK_STATE_FLAG_ACTIVE);
-    default:
-      NOTREACHED();
-      return GTK_STATE_FLAG_NORMAL;
-  }
-}
-
 SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
   const SkColor kPositiveTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
   const SkColor kNegativeTextColor = SkColorSetRGB(0xc5, 0x39, 0x29);
