@@ -428,6 +428,12 @@ void VideoCaptureDeviceAndroid::OnPhotoTaken(
   photo_callbacks_.erase(reference_it);
 }
 
+void VideoCaptureDeviceAndroid::OnStarted(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
+  if (client_)
+    client_->OnStarted();
+}
+
 void VideoCaptureDeviceAndroid::ConfigureForTesting() {
   Java_VideoCapture_setTestMode(AttachCurrentThread(), j_capture_);
 }

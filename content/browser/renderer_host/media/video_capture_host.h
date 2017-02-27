@@ -51,6 +51,7 @@ class CONTENT_EXPORT VideoCaptureHost
       int buffer_id,
       const media::mojom::VideoFrameInfoPtr& frame_info) override;
   void OnEnded(VideoCaptureControllerID id) override;
+  void OnStarted(VideoCaptureControllerID id) override;
 
   // mojom::VideoCaptureHost implementation
   void Start(int32_t device_id,

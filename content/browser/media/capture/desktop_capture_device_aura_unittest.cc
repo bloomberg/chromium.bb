@@ -25,6 +25,7 @@
 
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::AtMost;
 using ::testing::DoAll;
 using ::testing::Expectation;
 using ::testing::InvokeWithoutArgs;
@@ -56,6 +57,7 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   MOCK_METHOD2(OnError,
                void(const tracked_objects::Location& from_here,
                     const std::string& reason));
+  MOCK_METHOD0(OnStarted, void(void));
 
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
   Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
@@ -155,6 +157,9 @@ TEST_F(DesktopCaptureDeviceAuraTest, StartAndStop) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_, _)).Times(0);
+  // |STARTED| is reported asynchronously, which may not be received if capture
+  // is stopped immediately.
+  EXPECT_CALL(*client, OnStarted()).Times(AtMost(1));
 
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);

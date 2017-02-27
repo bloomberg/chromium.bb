@@ -187,6 +187,7 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
                void(const tracked_objects::Location& from_here,
                     const std::string& reason));
   MOCK_CONST_METHOD0(GetBufferPoolUtilization, double(void));
+  MOCK_METHOD0(OnStarted, void(void));
 };
 
 class V4L2CaptureDelegateTest : public ::testing::Test {
@@ -232,6 +233,7 @@ TEST_F(V4L2CaptureDelegateTest, CreateAndDestroyAndVerifyControls) {
     std::unique_ptr<MockVideoCaptureDeviceClient> client(
         new MockVideoCaptureDeviceClient());
     MockVideoCaptureDeviceClient* client_ptr = client.get();
+    EXPECT_CALL(*client_ptr, OnStarted());
     delegate_->AllocateAndStart(320 /* width */, 240 /* height */,
                                 10.0 /* frame_rate */, std::move(client));
 

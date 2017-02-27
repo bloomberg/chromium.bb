@@ -35,6 +35,7 @@ class CONTENT_EXPORT VideoFrameReceiverOnIOThread
   void OnBufferRetired(int buffer_id) override;
   void OnError() override;
   void OnLog(const std::string& message) override;
+  void OnStarted() override;
 
  private:
   base::WeakPtr<VideoFrameReceiver> receiver_;

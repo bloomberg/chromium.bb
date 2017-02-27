@@ -24,6 +24,7 @@ class MockReceiver : public mojom::Receiver {
                void(const media::mojom::VideoFramePtr* frame));
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnLog, void(const std::string&));
+  MOCK_METHOD0(OnStarted, void());
   MOCK_METHOD1(OnBufferDestroyed, void(int32_t));
 
  private:

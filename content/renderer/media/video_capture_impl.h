@@ -66,6 +66,14 @@ class CONTENT_EXPORT VideoCaptureImpl : public mojom::VideoCaptureObserver {
     video_capture_host_for_testing_ = service;
   }
 
+  // mojom::VideoCaptureObserver implementation.
+  void OnStateChanged(mojom::VideoCaptureState state) override;
+  void OnBufferCreated(int32_t buffer_id,
+                       mojo::ScopedSharedBufferHandle handle) override;
+  void OnBufferReady(int32_t buffer_id,
+                     media::mojom::VideoFrameInfoPtr info) override;
+  void OnBufferDestroyed(int32_t buffer_id) override;
+
  private:
   friend class VideoCaptureImplTest;
   friend class MockVideoCaptureImpl;
@@ -81,14 +89,6 @@ class CONTENT_EXPORT VideoCaptureImpl : public mojom::VideoCaptureObserver {
 
   using BufferFinishedCallback =
       base::Callback<void(double consumer_resource_utilization)>;
-
-  // mojom::VideoCaptureObserver implementation.
-  void OnStateChanged(mojom::VideoCaptureState state) override;
-  void OnBufferCreated(int32_t buffer_id,
-                       mojo::ScopedSharedBufferHandle handle) override;
-  void OnBufferReady(int32_t buffer_id,
-                     media::mojom::VideoFrameInfoPtr info) override;
-  void OnBufferDestroyed(int32_t buffer_id) override;
 
   // Sends an IPC message to browser process when all clients are done with the
   // buffer.

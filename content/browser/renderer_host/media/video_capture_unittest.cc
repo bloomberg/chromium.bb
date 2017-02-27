@@ -38,6 +38,7 @@
 
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::AtMost;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Mock;
@@ -244,7 +245,10 @@ class VideoCaptureTest : public testing::Test,
     params.requested_format = media::VideoCaptureFormat(
         gfx::Size(352, 288), 30, media::PIXEL_FORMAT_I420);
 
-    EXPECT_CALL(*this, OnStateChanged(mojom::VideoCaptureState::STARTED));
+    // |STARTED| is reported asynchronously, which may not be received if
+    // capture is stopped immediately.
+    EXPECT_CALL(*this, OnStateChanged(mojom::VideoCaptureState::STARTED))
+        .Times(AtMost(1));
     host_->Start(kDeviceId, opened_session_id_, params,
                  observer_binding_.CreateInterfacePtrAndBind());
 

@@ -347,6 +347,7 @@ void FileVideoCaptureDevice::OnAllocateAndStart(
 
   DVLOG(1) << "Opened video file " << capture_format_.frame_size.ToString()
            << ", fps: " << capture_format_.frame_rate;
+  client_->OnStarted();
 
   capture_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&FileVideoCaptureDevice::OnCaptureTask,

@@ -102,6 +102,7 @@ class MockClient : public VideoCaptureDevice::Client {
   MOCK_METHOD2(OnError,
                void(const tracked_objects::Location& from_here,
                     const std::string& reason));
+  MOCK_METHOD0(OnStarted, void(void));
 
   explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
       : frame_cb_(frame_cb) {}
@@ -294,6 +295,7 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
   for (const auto& resolution : resolutions_to_test) {
     auto client = CreateClient();
     EXPECT_CALL(*client, OnError(_, _)).Times(0);
+    EXPECT_CALL(*client, OnStarted());
 
     VideoCaptureParams capture_params;
     capture_params.requested_format.frame_size = resolution.first;
@@ -383,6 +385,7 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30.0;
+  EXPECT_CALL(*client_, OnStarted());
   device->AllocateAndStart(capture_params, std::move(client_));
 
   VideoCaptureDevice::GetPhotoCapabilitiesCallback scoped_get_callback(
@@ -494,6 +497,7 @@ TEST_F(FakeVideoCaptureDeviceTest, TakePhoto) {
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30.0;
+  EXPECT_CALL(*client_, OnStarted());
   device->AllocateAndStart(capture_params, std::move(client_));
 
   VideoCaptureDevice::TakePhotoCallback scoped_callback(
@@ -549,7 +553,9 @@ TEST_P(FakeVideoCaptureDeviceFactoryTest, FrameRateAndDeviceCount) {
     capture_params.requested_format.frame_rate = GetParam().expected_fps;
     capture_params.requested_format.pixel_format =
         GetParam().expected_pixel_formats[device_index];
-    device->AllocateAndStart(capture_params, CreateClient());
+    auto client = CreateClient();
+    EXPECT_CALL(*client, OnStarted());
+    device->AllocateAndStart(capture_params, std::move(client));
     WaitForCapturedFrame();
     EXPECT_EQ(1280, last_format().frame_size.width());
     EXPECT_EQ(720, last_format().frame_size.height());

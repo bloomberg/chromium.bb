@@ -42,6 +42,7 @@ class MockVideoCaptureController : public VideoFrameReceiver {
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnLog, void(const std::string& message));
   MOCK_METHOD1(OnBufferRetired, void(int buffer_id));
+  MOCK_METHOD0(OnStarted, void());
 
   void OnNewBufferHandle(
       int buffer_id,

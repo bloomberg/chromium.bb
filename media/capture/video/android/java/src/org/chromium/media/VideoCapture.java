@@ -224,4 +224,7 @@ public abstract class VideoCapture {
     // Method for VideoCapture implementations to send Photos back to.
     public native void nativeOnPhotoTaken(
             long nativeVideoCaptureDeviceAndroid, long callbackId, byte[] data);
+
+    // Method for VideoCapture implementations to report device started event.
+    public native void nativeOnStarted(long nativeVideoCaptureDeviceAndroid);
 }

@@ -12,5 +12,6 @@ interface Receiver {
   OnIncomingCapturedVideoFrame(media.mojom.VideoFrame frame);
   OnError();
   OnLog(string message);
+  OnStarted();
   OnBufferDestroyed(int32 buffer_id_to_drop);
 };

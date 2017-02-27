@@ -400,16 +400,24 @@ public class VideoCaptureCamera
             if (mIsRunning) {
                 return true;
             }
-            mIsRunning = true;
         } finally {
             mPreviewBufferLock.unlock();
         }
+
         setPreviewCallback(this);
         try {
             mCamera.startPreview();
         } catch (RuntimeException ex) {
             Log.e(TAG, "startCapture: Camera.startPreview: " + ex);
             return false;
+        }
+
+        mPreviewBufferLock.lock();
+        try {
+            nativeOnStarted(mNativeVideoCaptureDeviceAndroid);
+            mIsRunning = true;
+        } finally {
+            mPreviewBufferLock.unlock();
         }
         return true;
     }

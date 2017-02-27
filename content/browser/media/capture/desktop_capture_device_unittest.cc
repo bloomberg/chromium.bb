@@ -75,6 +75,7 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   MOCK_METHOD2(OnError,
                void(const tracked_objects::Location& from_here,
                     const std::string& reason));
+  MOCK_METHOD0(OnStarted, void(void));
 
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
   Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
@@ -303,6 +304,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_, _)).Times(0);
+  EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(SaveArg<1>(&frame_size), SaveArg<2>(&format),
@@ -340,6 +342,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_, _)).Times(0);
+  EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(WithArg<2>(Invoke(&format_checker,
@@ -384,6 +387,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeFixedAspectRatio) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_,_)).Times(0);
+  EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(WithArg<2>(Invoke(&format_checker,
@@ -432,6 +436,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_,_)).Times(0);
+  EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(WithArg<2>(Invoke(&format_checker,
@@ -482,6 +487,7 @@ TEST_F(DesktopCaptureDeviceTest, UnpackedFrame) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_,_)).Times(0);
+  EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),
@@ -529,6 +535,7 @@ TEST_F(DesktopCaptureDeviceTest, InvertedFrame) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_,_)).Times(0);
+  EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),

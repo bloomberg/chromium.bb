@@ -422,6 +422,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     return;
   }
 
+  client_->OnStarted();
   state_ = kCapturing;
 }
 

@@ -209,6 +209,9 @@ void DeckLinkCaptureDelegate::AllocateAndStart(
   if (decklink_input_local->StartStreams() != S_OK)
     SendErrorString(FROM_HERE, "Could not start capturing");
 
+  if (frame_receiver_)
+    frame_receiver_->ReportStarted();
+
   decklink_.swap(decklink_local);
   decklink_input_.swap(decklink_input_local);
 }
@@ -492,6 +495,13 @@ void VideoCaptureDeviceDeckLinkMac::SendLogString(const std::string& message) {
   base::AutoLock lock(lock_);
   if (client_)
     client_->OnLog(message);
+}
+
+void VideoCaptureDeviceDeckLinkMac::ReportStarted() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock lock(lock_);
+  if (client_)
+    client_->OnStarted();
 }
 
 void VideoCaptureDeviceDeckLinkMac::AllocateAndStart(

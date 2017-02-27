@@ -97,6 +97,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 return;
             }
             // Now wait for trigger on CrImageReaderListener.onImageAvailable();
+            nativeOnStarted(mNativeVideoCaptureDeviceAndroid);
             changeCameraStateAndNotify(CameraState.STARTED);
         }
 

@@ -91,6 +91,9 @@ class CAPTURE_EXPORT ThreadSafeCaptureOracle
   void ReportError(const tracked_objects::Location& from_here,
                    const std::string& reason);
 
+  // Signal device started to the client.
+  void ReportStarted();
+
   void OnConsumerReportingUtilization(int frame_number, double utilization);
 
  private:

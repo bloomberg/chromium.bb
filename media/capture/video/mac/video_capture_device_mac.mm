@@ -359,6 +359,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
     return;
   }
 
+  client_->OnStarted();
   state_ = kCapturing;
 }
 

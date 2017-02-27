@@ -57,4 +57,10 @@ void VideoFrameReceiverOnIOThread::OnLog(const std::string& message) {
       base::Bind(&VideoFrameReceiver::OnLog, receiver_, message));
 }
 
+void VideoFrameReceiverOnIOThread::OnStarted() {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&VideoFrameReceiver::OnStarted, receiver_));
+}
+
 }  // namespace content

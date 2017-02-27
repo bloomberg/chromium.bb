@@ -461,6 +461,16 @@ void VideoCaptureController::OnLog(const std::string& message) {
   MediaStreamManager::SendMessageToNativeLog("Video capture: " + message);
 }
 
+void VideoCaptureController::OnStarted() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (const auto& client : controller_clients_) {
+    if (client->session_closed)
+      continue;
+    client->event_handler->OnStarted(client->controller_id);
+  }
+}
+
 VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
     VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* handler,

@@ -37,6 +37,10 @@ void ReceiverMojoToMediaAdapter::OnLog(const std::string& message) {
   receiver_->OnLog(message);
 }
 
+void ReceiverMojoToMediaAdapter::OnStarted() {
+  receiver_->OnStarted();
+}
+
 void ReceiverMojoToMediaAdapter::OnBufferRetired(int buffer_id) {
   NOTIMPLEMENTED();
 }

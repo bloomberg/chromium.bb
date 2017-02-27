@@ -528,6 +528,7 @@ void OwnBufferFrameDeliverer::Initialize(
   device_state_ = device_state;
   buffer_.reset(new uint8_t[VideoFrame::AllocationSize(
       pixel_format, device_state_->format.frame_size)]);
+  client_->OnStarted();
 }
 
 void OwnBufferFrameDeliverer::Uninitialize() {
@@ -561,6 +562,7 @@ void ClientBufferFrameDeliverer::Initialize(
     const FakeDeviceState* device_state) {
   client_ = std::move(client);
   device_state_ = device_state;
+  client_->OnStarted();
 }
 
 void ClientBufferFrameDeliverer::Uninitialize() {

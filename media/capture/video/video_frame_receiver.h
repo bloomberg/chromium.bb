@@ -52,6 +52,7 @@ class CAPTURE_EXPORT VideoFrameReceiver {
 
   virtual void OnError() = 0;
   virtual void OnLog(const std::string& message) = 0;
+  virtual void OnStarted() = 0;
 };
 
 }  // namespace media

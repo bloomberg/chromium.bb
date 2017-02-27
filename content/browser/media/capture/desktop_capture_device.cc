@@ -186,6 +186,8 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
 
   desktop_capturer_->Start(this);
+  // Assume it will be always started successfully for now.
+  client_->OnStarted();
 
   CaptureFrameAndScheduleNext();
 }

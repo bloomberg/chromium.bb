@@ -136,6 +136,8 @@ void ScreenCaptureDeviceCore::CaptureStarted(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!success)
     Error(FROM_HERE, "Failed to start capture machine.");
+  else if (oracle_proxy_)
+    oracle_proxy_->ReportStarted();
 }
 
 ScreenCaptureDeviceCore::ScreenCaptureDeviceCore(
@@ -178,7 +180,7 @@ void ScreenCaptureDeviceCore::Error(const tracked_objects::Location& from_here,
   if (state_ == kIdle)
     return;
 
-  if (oracle_proxy_.get())
+  if (oracle_proxy_)
     oracle_proxy_->ReportError(from_here, reason);
 
   StopAndDeAllocate();

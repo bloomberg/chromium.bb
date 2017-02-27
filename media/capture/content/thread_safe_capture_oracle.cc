@@ -198,6 +198,12 @@ void ThreadSafeCaptureOracle::ReportError(
     client_->OnError(from_here, reason);
 }
 
+void ThreadSafeCaptureOracle::ReportStarted() {
+  base::AutoLock guard(lock_);
+  if (client_)
+    client_->OnStarted();
+}
+
 void ThreadSafeCaptureOracle::DidCaptureFrame(
     int frame_number,
     VideoCaptureDevice::Client::Buffer buffer,

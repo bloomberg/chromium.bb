@@ -418,6 +418,10 @@ void VideoCaptureDeviceClient::OnLog(const std::string& message) {
   receiver_->OnLog(message);
 }
 
+void VideoCaptureDeviceClient::OnStarted() {
+  receiver_->OnStarted();
+}
+
 double VideoCaptureDeviceClient::GetBufferPoolUtilization() const {
   return buffer_pool_->GetBufferPoolUtilization();
 }

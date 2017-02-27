@@ -101,6 +101,9 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
                     jlong callback_id,
                     const base::android::JavaParamRef<jbyteArray>& data);
 
+  // Implement org.chromium.media.VideoCapture.nativeOnStarted.
+  void OnStarted(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
   void ConfigureForTesting();
 
  private:

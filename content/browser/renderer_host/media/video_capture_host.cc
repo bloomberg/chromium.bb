@@ -108,6 +108,18 @@ void VideoCaptureHost::OnEnded(VideoCaptureControllerID controller_id) {
                  controller_id));
 }
 
+void VideoCaptureHost::OnStarted(VideoCaptureControllerID controller_id) {
+  DVLOG(1) << __func__;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (controllers_.find(controller_id) == controllers_.end())
+    return;
+
+  if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
+    device_id_to_observer_map_[controller_id]->OnStateChanged(
+        mojom::VideoCaptureState::STARTED);
+  }
+}
+
 void VideoCaptureHost::Start(int32_t device_id,
                              int32_t session_id,
                              const media::VideoCaptureParams& params,
@@ -294,11 +306,6 @@ void VideoCaptureHost::OnControllerAdded(
     }
     controllers_.erase(controller_id);
     return;
-  }
-
-  if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
-    device_id_to_observer_map_[device_id]->OnStateChanged(
-        mojom::VideoCaptureState::STARTED);
   }
 
   DCHECK(!it->second);

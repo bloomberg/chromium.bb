@@ -32,6 +32,7 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
   void OnBufferRetired(int buffer_id) override;
   void OnError() override;
   void OnLog(const std::string& message) override;
+  void OnStarted() override;
 
  private:
   mojom::ReceiverPtr receiver_;

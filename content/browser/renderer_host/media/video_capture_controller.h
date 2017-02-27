@@ -101,6 +101,7 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
   void OnBufferRetired(int buffer_id) override;
   void OnError() override;
   void OnLog(const std::string& message) override;
+  void OnStarted() override;
 
  private:
   struct ControllerClient;

@@ -68,6 +68,9 @@ class CAPTURE_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
   // Forwarder to VideoCaptureDevice::Client::OnLog().
   void SendLogString(const std::string& message);
 
+  // Forwarder to VideoCaptureDevice::Client::OnStarted().
+  void ReportStarted();
+
  private:
   // VideoCaptureDevice implementation.
   void AllocateAndStart(

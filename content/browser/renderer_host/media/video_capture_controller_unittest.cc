@@ -68,6 +68,7 @@ class MockVideoCaptureControllerEventHandler
   MOCK_METHOD2(DoBufferReady, void(VideoCaptureControllerID, const gfx::Size&));
   MOCK_METHOD1(DoEnded, void(VideoCaptureControllerID));
   MOCK_METHOD1(DoError, void(VideoCaptureControllerID));
+  MOCK_METHOD1(OnStarted, void(VideoCaptureControllerID));
 
   void OnError(VideoCaptureControllerID id) override { DoError(id); }
   void OnBufferCreated(VideoCaptureControllerID id,

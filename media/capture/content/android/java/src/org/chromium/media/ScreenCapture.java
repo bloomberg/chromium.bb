@@ -279,18 +279,18 @@ public class ScreenCapture extends Fragment {
     }
 
     @CalledByNative
-    public void startCapture() {
+    public boolean startCapture() {
         Log.d(TAG, "startCapture");
         synchronized (mCaptureStateLock) {
             if (mCaptureState != CaptureState.ALLOWED) {
                 Log.e(TAG, "startCapture() invoked without user permission.");
-                return;
+                return false;
             }
         }
         mMediaProjection = mMediaProjectionManager.getMediaProjection(mResultCode, mResultData);
         if (mMediaProjection == null) {
             Log.e(TAG, "mMediaProjection is null");
-            return;
+            return false;
         }
         mMediaProjection.registerCallback(new MediaProjectionCallback(), null);
 
@@ -309,6 +309,7 @@ public class ScreenCapture extends Fragment {
         createVirtualDisplay();
 
         changeCaptureStateAndNotify(CaptureState.STARTED);
+        return true;
     }
 
     @CalledByNative

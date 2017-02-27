@@ -150,6 +150,7 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
 class MockFrameObserver : public VideoCaptureControllerEventHandler {
  public:
   MOCK_METHOD1(OnError, void(VideoCaptureControllerID id));
+  MOCK_METHOD1(OnStarted, void(VideoCaptureControllerID id));
 
   void OnBufferCreated(VideoCaptureControllerID id,
                        mojo::ScopedSharedBufferHandle handle,
@@ -302,6 +303,7 @@ class VideoCaptureManagerTest : public testing::Test {
 TEST_F(VideoCaptureManagerTest, CreateAndClose) {
   InSequence s;
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+  EXPECT_CALL(*frame_observer_, OnStarted(_));
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
 
   int video_session_id = vcm_->Open(devices_.front());
@@ -319,6 +321,7 @@ TEST_F(VideoCaptureManagerTest, CreateAndCloseMultipleTimes) {
   InSequence s;
   for (int i = 1 ; i < 3 ; ++i) {
     EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, i));
+    EXPECT_CALL(*frame_observer_, OnStarted(_));
     EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, i));
     int video_session_id = vcm_->Open(devices_.front());
     VideoCaptureControllerID client_id = StartClient(video_session_id, true);
@@ -336,6 +339,7 @@ TEST_F(VideoCaptureManagerTest, CreateAndCloseMultipleTimes) {
 TEST_F(VideoCaptureManagerTest, CreateAndAbort) {
   InSequence s;
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+  EXPECT_CALL(*frame_observer_, OnStarted(_));
   EXPECT_CALL(*listener_, Aborted(MEDIA_DEVICE_VIDEO_CAPTURE, _));
 
   int video_session_id = vcm_->Open(devices_.front());
@@ -449,6 +453,7 @@ TEST_F(VideoCaptureManagerTest, ManipulateDeviceAndCheckCapabilities) {
   EXPECT_GT(supported_formats[1].frame_size.height(), 1);
   EXPECT_GT(supported_formats[1].frame_rate, 1);
 
+  EXPECT_CALL(*frame_observer_, OnStarted(_));
   VideoCaptureControllerID client_id = StartClient(video_session_id, true);
   base::RunLoop().RunUntilIdle();
   // After StartClient(), device's supported formats should stay the same.
@@ -515,6 +520,7 @@ TEST_F(VideoCaptureManagerTest,
   EXPECT_GT(supported_formats[1].frame_size.height(), 1);
   EXPECT_GT(supported_formats[1].frame_rate, 1);
 
+  EXPECT_CALL(*frame_observer_, OnStarted(_));
   VideoCaptureControllerID client_id = StartClient(video_session_id, true);
   base::RunLoop().RunUntilIdle();
   // After StartClient(), device's supported formats should stay the same.
@@ -561,6 +567,7 @@ TEST_F(VideoCaptureManagerTest, StartDeviceAndGetDeviceFormatInUse) {
   EXPECT_TRUE(vcm_->GetDeviceFormatsInUse(video_session_id, &formats_in_use));
   EXPECT_TRUE(formats_in_use.empty());
 
+  EXPECT_CALL(*frame_observer_, OnStarted(_));
   VideoCaptureControllerID client_id = StartClient(video_session_id, true);
   base::RunLoop().RunUntilIdle();
   // After StartClient(), |formats_in_use| should contain one valid format.
@@ -606,6 +613,7 @@ TEST_F(VideoCaptureManagerTest,
                                           &formats_in_use));
   EXPECT_TRUE(formats_in_use.empty());
 
+  EXPECT_CALL(*frame_observer_, OnStarted(_));
   VideoCaptureControllerID client_id = StartClient(video_session_id, true);
   base::RunLoop().RunUntilIdle();
   // After StartClient(), |formats_in_use| should contain one valid format.
@@ -691,6 +699,7 @@ TEST_F(VideoCaptureManagerTest, StartInvalidSession) {
 TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
   InSequence s;
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+  EXPECT_CALL(*frame_observer_, OnStarted(_));
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
 
   int video_session_id = vcm_->Open(devices_.front());
@@ -712,6 +721,7 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
 // scenarios.
 TEST_F(VideoCaptureManagerTest, PauseAndResumeClient) {
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+  EXPECT_CALL(*frame_observer_, OnStarted(_));
 
   const int video_session_id = vcm_->Open(devices_.front());
   const VideoCaptureControllerID client_id =
@@ -751,6 +761,7 @@ TEST_F(VideoCaptureManagerTest, PauseAndResumeClient) {
 TEST_F(VideoCaptureManagerTest, PauseAndResumeDevice) {
   InSequence s;
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+  EXPECT_CALL(*frame_observer_, OnStarted(_));
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
 
   int video_session_id = vcm_->Open(devices_.front());

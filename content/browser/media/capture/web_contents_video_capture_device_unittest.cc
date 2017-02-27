@@ -243,6 +243,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
                     int frame_feedback_id));
 
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
+  MOCK_METHOD0(OnStarted, void(void));
 
   media::VideoCaptureDevice::Client::Buffer ReserveOutputBuffer(
       const gfx::Size& dimensions,
@@ -345,9 +346,7 @@ class StubClientObserver {
 
   virtual ~StubClientObserver() {}
 
-  std::unique_ptr<media::VideoCaptureDevice::Client> PassClient() {
-    return std::move(client_);
-  }
+  std::unique_ptr<StubClient> PassClient() { return std::move(client_); }
 
   void SetIsExpectingFrames(bool expecting_frames) {
     expecting_frames_ = expecting_frames;
@@ -635,8 +634,9 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 TEST_F(WebContentsVideoCaptureDeviceTest,
        SafelyStartsUpAfterWebContentsHasGone) {
   ResetWebContents();
-  device()->AllocateAndStart(DefaultCaptureParams(),
-                             client_observer()->PassClient());
+  auto client = client_observer()->PassClient();
+  EXPECT_CALL(*client, OnStarted());
+  device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
   ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForError());
   device()->StopAndDeAllocate();
 }
@@ -648,8 +648,9 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
        RunsThenErrorsOutWhenWebContentsIsDestroyed) {
   // We'll simulate the tab being closed after the capture pipeline is up and
   // running.
-  device()->AllocateAndStart(DefaultCaptureParams(),
-                             client_observer()->PassClient());
+  auto client = client_observer()->PassClient();
+  EXPECT_CALL(*client, OnStarted());
+  device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
 
   // Do one capture to prove the tab is initially open and being captured
   // normally.
@@ -693,8 +694,9 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
        DeliversToCorrectClientAcrossRestarts) {
   // While the device is up-and-running, expect frame captures.
   client_observer()->SetIsExpectingFrames(true);
-  device()->AllocateAndStart(DefaultCaptureParams(),
-                             client_observer()->PassClient());
+  auto client = client_observer()->PassClient();
+  EXPECT_CALL(*client, OnStarted());
+  device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
   base::RunLoop().RunUntilIdle();
   test_view()->SetSolidColor(SK_ColorRED);
   SimulateDrawEvent();
@@ -718,7 +720,9 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
   // expect to see any frame captures.
   StubClientObserver observer2;
   observer2.SetIsExpectingFrames(true);
-  device()->AllocateAndStart(DefaultCaptureParams(), observer2.PassClient());
+  auto client2 = observer2.PassClient();
+  EXPECT_CALL(*client2, OnStarted());
+  device()->AllocateAndStart(DefaultCaptureParams(), std::move(client2));
   test_view()->SetSolidColor(SK_ColorBLUE);
   SimulateDrawEvent();
   ASSERT_NO_FATAL_FAILURE(observer2.WaitForNextColor(SK_ColorBLUE));
@@ -733,8 +737,9 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
 // consumer. The test will alternate between the RGB/SkBitmap and YUV/VideoFrame
 // capture paths.
 TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
-  device()->AllocateAndStart(DefaultCaptureParams(),
-                             client_observer()->PassClient());
+  auto client = client_observer()->PassClient();
+  EXPECT_CALL(*client, OnStarted());
+  device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
 
   for (int i = 0; i < 3; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration #%d", i));
@@ -770,7 +775,9 @@ TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_FixedAspectRatio) {
   auto capture_params = DefaultCaptureParams();
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
-  device()->AllocateAndStart(capture_params, client_observer()->PassClient());
+  auto client = client_observer()->PassClient();
+  EXPECT_CALL(*client, OnStarted());
+  device()->AllocateAndStart(capture_params, std::move(client));
 
   // Source size equals maximum size.  Expect delivered frames to be
   // kTestWidth by kTestHeight.
@@ -816,7 +823,9 @@ TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_AnyWithinLimits) {
   auto capture_params = DefaultCaptureParams();
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
-  device()->AllocateAndStart(capture_params, client_observer()->PassClient());
+  auto client = client_observer()->PassClient();
+  EXPECT_CALL(*client, OnStarted());
+  device()->AllocateAndStart(capture_params, std::move(client));
 
   // Source size equals maximum size.  Expect delivered frames to be
   // kTestWidth by kTestHeight.
@@ -887,7 +896,9 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
     capture_params.requested_format.frame_size = oddball_size;
     capture_params.resolution_change_policy = policy;
     StubClientObserver unused_observer;
-    device()->AllocateAndStart(capture_params, unused_observer.PassClient());
+    auto client = unused_observer.PassClient();
+    EXPECT_CALL(*client, OnStarted());
+    device()->AllocateAndStart(capture_params, std::move(client));
     base::RunLoop().RunUntilIdle();
 
     // Check that the preferred size of the WebContents matches the one provided
@@ -953,8 +964,9 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
 
 // Tests the Suspend/Resume() functionality.
 TEST_F(WebContentsVideoCaptureDeviceTest, SuspendsAndResumes) {
-  device()->AllocateAndStart(DefaultCaptureParams(),
-                             client_observer()->PassClient());
+  auto client = client_observer()->PassClient();
+  EXPECT_CALL(*client, OnStarted());
+  device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
 
   for (int i = 0; i < 3; ++i) {
     // Draw a RED frame and wait for a normal frame capture to occur.
@@ -987,8 +999,9 @@ TEST_F(WebContentsVideoCaptureDeviceTest, SuspendsAndResumes) {
 
 // Tests the RequestRefreshFrame() functionality.
 TEST_F(WebContentsVideoCaptureDeviceTest, ProvidesRefreshFrames) {
-  device()->AllocateAndStart(DefaultCaptureParams(),
-                             client_observer()->PassClient());
+  auto client = client_observer()->PassClient();
+  EXPECT_CALL(*client, OnStarted());
+  device()->AllocateAndStart(DefaultCaptureParams(), std::move(client));
 
   // Request a refresh frame before the first frame has been drawn.  This forces
   // a capture.

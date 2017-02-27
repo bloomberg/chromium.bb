@@ -75,7 +75,11 @@ class CAPTURE_EXPORT VideoCaptureDevice
   // Interface defining the methods that clients of VideoCapture must have. It
   // is actually two-in-one: clients may implement OnIncomingCapturedData() or
   // ReserveOutputBuffer() + OnIncomingCapturedVideoFrame(), or all of them.
-  // All clients must implement OnError().
+  // All methods may be called as soon as AllocateAndStart() of the
+  // corresponding VideoCaptureDevice is invoked. The methods for buffer
+  // reservation and frame delivery may be called from arbitrary threads but
+  // are guaranteed to be called non-concurrently. The status reporting methods
+  // (OnStarted, OnLog, OnError) may be called concurrently.
   class CAPTURE_EXPORT Client {
    public:
     // Struct bundling several parameters being passed between a
@@ -200,6 +204,9 @@ class CAPTURE_EXPORT VideoCaptureDevice
     // Returns the current buffer pool utilization, in the range 0.0 (no buffers
     // are in use by producers or consumers) to 1.0 (all buffers are in use).
     virtual double GetBufferPoolUtilization() const = 0;
+
+    // VideoCaptureDevice reports it's successfully started.
+    virtual void OnStarted() = 0;
   };
 
   ~VideoCaptureDevice() override;

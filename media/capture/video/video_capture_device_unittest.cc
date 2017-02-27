@@ -101,6 +101,7 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
                void(const tracked_objects::Location& from_here,
                     const std::string& reason));
   MOCK_CONST_METHOD0(GetBufferPoolUtilization, double(void));
+  MOCK_METHOD0(OnStarted, void(void));
 
   explicit MockVideoCaptureClient(
       base::Callback<void(const VideoCaptureFormat&)> frame_cb)
@@ -406,6 +407,7 @@ TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _)).Times(0);
+  EXPECT_CALL(*video_capture_client_, OnStarted());
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(width, height);
@@ -440,6 +442,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _)).Times(0);
+  EXPECT_CALL(*video_capture_client_, OnStarted());
 
   const gfx::Size input_size(640, 480);
   VideoCaptureParams capture_params;
@@ -520,6 +523,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _)).Times(0);
+  EXPECT_CALL(*video_capture_client_, OnStarted());
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(1280, 720);
@@ -566,6 +570,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _)).Times(0);
+  EXPECT_CALL(*video_capture_client_, OnStarted());
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(320, 240);
@@ -610,6 +615,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_GetPhotoCapabilities) {
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _)).Times(0);
+  EXPECT_CALL(*video_capture_client_, OnStarted());
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(320, 240);
