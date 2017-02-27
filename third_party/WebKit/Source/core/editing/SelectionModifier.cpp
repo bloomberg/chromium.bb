@@ -619,15 +619,13 @@ bool SelectionModifier::modify(EAlteration alter,
   // be the requested position type if there were no
   // xPosForVerticalArrowNavigation set.
   LayoutUnit x = lineDirectionPointForBlockDirectionNavigation(START);
-  m_selection.setIsDirectional(shouldAlwaysUseDirectionalSelection(frame()) ||
-                               alter == FrameSelection::AlterationExtend);
 
   switch (alter) {
     case FrameSelection::AlterationMove:
       m_selection = createVisibleSelection(
           SelectionInDOMTree::Builder()
               .collapse(position.toPositionWithAffinity())
-              .setIsDirectional(m_selection.isDirectional())
+              .setIsDirectional(shouldAlwaysUseDirectionalSelection(frame()))
               .build());
       break;
     case FrameSelection::AlterationExtend:
@@ -662,12 +660,12 @@ bool SelectionModifier::modify(EAlteration alter,
                .behavior()
                .shouldAlwaysGrowSelectionWhenExtendingToBoundary() ||
           m_selection.isCaret() || !isBoundary(granularity)) {
-        m_selection = createVisibleSelection(
-            SelectionInDOMTree::Builder()
-                .collapse(m_selection.base())
-                .extend(position.deepEquivalent())
-                .setIsDirectional(m_selection.isDirectional())
-                .build());
+        m_selection =
+            createVisibleSelection(SelectionInDOMTree::Builder()
+                                       .collapse(m_selection.base())
+                                       .extend(position.deepEquivalent())
+                                       .setIsDirectional(true)
+                                       .build());
       } else {
         TextDirection textDirection = directionOfEnclosingBlock();
         if (direction == DirectionForward ||
@@ -682,7 +680,7 @@ bool SelectionModifier::modify(EAlteration alter,
                                 : position.deepEquivalent())
                   .extend(m_selection.isBaseFirst() ? position.deepEquivalent()
                                                     : m_selection.extent())
-                  .setIsDirectional(m_selection.isDirectional())
+                  .setIsDirectional(true)
                   .build());
         } else {
           m_selection = createVisibleSelection(
@@ -692,7 +690,7 @@ bool SelectionModifier::modify(EAlteration alter,
                                 : m_selection.base())
                   .extend(m_selection.isBaseFirst() ? m_selection.extent()
                                                     : position.deepEquivalent())
-                  .setIsDirectional(m_selection.isDirectional())
+                  .setIsDirectional(true)
                   .build());
         }
       }
@@ -790,20 +788,18 @@ bool SelectionModifier::modifyWithPageGranularity(EAlteration alter,
       m_selection = createVisibleSelection(
           SelectionInDOMTree::Builder()
               .collapse(result.toPositionWithAffinity())
-              .setIsDirectional(m_selection.isDirectional())
+              .setIsDirectional(shouldAlwaysUseDirectionalSelection(frame()))
               .build());
       break;
     case FrameSelection::AlterationExtend: {
       m_selection = createVisibleSelection(SelectionInDOMTree::Builder()
                                                .collapse(m_selection.base())
                                                .extend(result.deepEquivalent())
+                                               .setIsDirectional(true)
                                                .build());
       break;
     }
   }
-
-  m_selection.setIsDirectional(shouldAlwaysUseDirectionalSelection(frame()) ||
-                               alter == FrameSelection::AlterationExtend);
 
   return true;
 }
