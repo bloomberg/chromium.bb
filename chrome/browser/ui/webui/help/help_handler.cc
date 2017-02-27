@@ -198,17 +198,6 @@ std::string ReadRegulatoryLabelText(const base::FilePath& path) {
     return contents;
   return std::string();
 }
-
-// Returns messages that applys to this eol status
-base::string16 GetEolMessage(update_engine::EndOfLifeStatus status) {
-  if (status == update_engine::EndOfLifeStatus::kSecurityOnly) {
-    return l10n_util::GetStringUTF16(IDS_ABOUT_PAGE_EOL_SECURITY_ONLY);
-
-  } else {
-    return l10n_util::GetStringUTF16(IDS_ABOUT_PAGE_EOL_EOL);
-  }
-}
-
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace
@@ -754,7 +743,8 @@ void HelpHandler::OnRegulatoryLabelTextRead(const std::string& text) {
 }
 
 void HelpHandler::OnEolStatus(update_engine::EndOfLifeStatus status) {
-  if (status == update_engine::EndOfLifeStatus::kSupported ||
+  // Security only state is no longer supported.
+  if (status == update_engine::EndOfLifeStatus::kSecurityOnly ||
       IsEnterpriseManaged()) {
     return;
   }
@@ -764,10 +754,9 @@ void HelpHandler::OnEolStatus(update_engine::EndOfLifeStatus status) {
         "help.HelpPage.updateEolMessage", base::StringValue("device_supported"),
         base::StringValue(""));
   } else {
-    base::string16 message = GetEolMessage(status);
     web_ui()->CallJavascriptFunctionUnsafe(
         "help.HelpPage.updateEolMessage", base::StringValue("device_endoflife"),
-        base::StringValue(message));
+        base::StringValue(l10n_util::GetStringUTF16(IDS_ABOUT_PAGE_EOL_EOL)));
   }
 }
 

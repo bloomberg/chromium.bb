@@ -116,8 +116,11 @@ void EolNotification::OnEolStatus(update_engine::EndOfLifeStatus status) {
       profile_->GetPrefs()->GetInteger(prefs::kEolStatus);
   profile_->GetPrefs()->SetInteger(prefs::kEolStatus, status_);
 
-  if (status_ == update_engine::EndOfLifeStatus::kSupported)
+  // Security only state is no longer supported.
+  if (status_ == update_engine::EndOfLifeStatus::kSupported ||
+      status_ == update_engine::EndOfLifeStatus::kSecurityOnly) {
     return;
+  }
 
   if (pre_eol_status != status_) {
     // If Eol status has changed, we should reset
@@ -129,11 +132,6 @@ void EolNotification::OnEolStatus(update_engine::EndOfLifeStatus status) {
       profile_->GetPrefs()->GetBoolean(prefs::kEolNotificationDismissed);
   if (user_dismissed_eol_notification)
     return;
-
-  // When device is in Security-Only state, only show notification the first
-  // time.
-  if (status_ == update_engine::EndOfLifeStatus::kSecurityOnly)
-    profile_->GetPrefs()->SetBoolean(prefs::kEolNotificationDismissed, true);
 
   Update();
 }
@@ -154,7 +152,8 @@ void EolNotification::Update() {
 
   Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
-      l10n_util::GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE), GetEolMessage(),
+      l10n_util::GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
+      l10n_util::GetStringUTF16(IDS_EOL_NOTIFICATION_EOL),
       gfx::Image(
           CreateVectorIcon(gfx::VectorIconId::EOL, kNotificationIconColor)),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
@@ -162,14 +161,6 @@ void EolNotification::Update() {
       base::string16(),  // display_source
       GURL(), kEolNotificationId, data, new EolNotificationDelegate(profile_));
   g_browser_process->notification_ui_manager()->Add(notification, profile_);
-}
-
-base::string16 EolNotification::GetEolMessage() {
-  if (status_ == update_engine::EndOfLifeStatus::kSecurityOnly) {
-    return l10n_util::GetStringUTF16(IDS_EOL_NOTIFICATION_SECURITY_ONLY);
-  } else {
-    return l10n_util::GetStringUTF16(IDS_EOL_NOTIFICATION_EOL);
-  }
 }
 
 }  // namespace chromeos
