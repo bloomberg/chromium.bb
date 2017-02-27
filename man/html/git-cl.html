@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
 <meta name="generator" content="AsciiDoc 8.6.9" />
-<title>git-upstream-diff(1)</title>
+<title>git-cl(1)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
 
@@ -741,12 +741,12 @@ asciidoc.install();
 <body class="manpage">
 <div id="header">
 <h1>
-git-upstream-diff(1) Manual Page
+git-cl(1) Manual Page
 </h1>
 <h2>NAME</h2>
 <div class="sectionbody">
-<p>git-upstream-diff -
-   Print a diff of the current branch, compared to its upstream.
+<p>git-cl -
+   Interact with code reviews on Gerrit and Rietveld
 </p>
 </div>
 </div>
@@ -755,7 +755,7 @@ git-upstream-diff(1) Manual Page
 <h2 id="_synopsis">SYNOPSIS</h2>
 <div class="sectionbody">
 <div class="verseblock">
-<pre class="content"><em>git upstream-diff</em> [--wordwise] [&lt;extra args for git-diff&gt;*]</pre>
+<pre class="content"><em>git cl &lt;subcommand&gt; [options]</em></pre>
 <div class="attribution">
 </div></div>
 </div>
@@ -763,33 +763,216 @@ git-upstream-diff(1) Manual Page
 <div class="sect1">
 <h2 id="_description">DESCRIPTION</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Shows a diff between your current branch and it&#8217;s upstream. This is <em>roughly</em> the
-same as:</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><code>git diff --patience -C -C HEAD@{upstream}  <b>&lt;1&gt;</b> <b>&lt;2&gt;</b></code></pre>
-</div></div>
-<div class="colist arabic"><ol>
-<li>
+<div class="paragraph"><p><code>git cl</code> is the home of all of the tools for interacting with changelists.</p></div>
+<div class="paragraph"><p>Run <code>git cl help &lt;subcommand&gt;</code> for a more detailed listing of that command
+and its options.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_subcommands">SUBCOMMANDS</h2>
+<div class="sectionbody">
+<div class="dlist"><dl>
+<dt class="hdlist1">
+archive
+</dt>
+<dd>
 <p>
-<code>-C -C</code> detects file copies/renames
+  archives and deletes branches associated with closed changelists
 </p>
-</li>
-<li>
+</dd>
+<dt class="hdlist1">
+baseurl
+</dt>
+<dd>
 <p>
-<code>--patience</code> uses the patience-diff algorithm, which tends to produce nicer
-  diffs in many cases.
+  gets or sets base-url for this branch
 </p>
-</li>
-</ol></div>
-<div class="paragraph"><p>The difference is that <code>HEAD@{upstream}</code> is actually the tagged merge base of
-your branch (See <a href="git-rebase-update.html">git-rebase-update(1)</a>). This means that if your upstream
-branch was rebased, but you haven&#8217;t yet rebased the current branch on top of it,
-you&#8217;ll still see an accurate diff compared to just diffing against
-<code>@{upstream}</code>.</p></div>
-<div class="paragraph"><p>The <code>--wordwise</code> option also allows <code>git-diff</code> to do word-by-word comparison
-in a semi-intelligent way. However, sometimes it can produce surprising results,
-so it is disabled by default.</p></div>
+</dd>
+<dt class="hdlist1">
+checkout
+</dt>
+<dd>
+<p>
+  checks out a branch associated with a given Rietveld or Gerrit issue
+</p>
+</dd>
+<dt class="hdlist1">
+comments
+</dt>
+<dd>
+<p>
+  shows or posts review comments for any changelist
+</p>
+</dd>
+<dt class="hdlist1">
+config
+</dt>
+<dd>
+<p>
+  edits configuration for this tree
+</p>
+</dd>
+<dt class="hdlist1">
+dcommit
+</dt>
+<dd>
+<p>
+  DEPRECATED: Used to commit the current changelist via git-svn
+</p>
+</dd>
+<dt class="hdlist1">
+description
+</dt>
+<dd>
+<p>
+  brings up the editor for the current CL&#8217;s description
+</p>
+</dd>
+<dt class="hdlist1">
+diff
+</dt>
+<dd>
+<p>
+  shows differences between local tree and last upload
+</p>
+</dd>
+<dt class="hdlist1">
+format
+</dt>
+<dd>
+<p>
+  runs auto-formatting tools (clang-format etc.) on the diff
+</p>
+</dd>
+<dt class="hdlist1">
+help
+</dt>
+<dd>
+<p>
+  prints list of commands or help for a specific command
+</p>
+</dd>
+<dt class="hdlist1">
+issue
+</dt>
+<dd>
+<p>
+  sets or displays the current code review issue number
+</p>
+</dd>
+<dt class="hdlist1">
+land
+</dt>
+<dd>
+<p>
+  commits the current changelist via git
+</p>
+</dd>
+<dt class="hdlist1">
+lint
+</dt>
+<dd>
+<p>
+  runs cpplint on the current changelist
+</p>
+</dd>
+<dt class="hdlist1">
+owners
+</dt>
+<dd>
+<p>
+  interactively find the owners for reviewing
+</p>
+</dd>
+<dt class="hdlist1">
+patch
+</dt>
+<dd>
+<p>
+  patches in a code review
+</p>
+</dd>
+<dt class="hdlist1">
+presubmit
+</dt>
+<dd>
+<p>
+  runs presubmit tests on the current changelist
+</p>
+</dd>
+<dt class="hdlist1">
+set-close
+</dt>
+<dd>
+<p>
+  closes the issue
+</p>
+</dd>
+<dt class="hdlist1">
+set-commit
+</dt>
+<dd>
+<p>
+  sets the commit bit to trigger the Commit Queue
+</p>
+</dd>
+<dt class="hdlist1">
+status
+</dt>
+<dd>
+<p>
+  show status of changelists
+</p>
+</dd>
+<dt class="hdlist1">
+tree
+</dt>
+<dd>
+<p>
+  shows the status of the tree
+</p>
+</dd>
+<dt class="hdlist1">
+try
+</dt>
+<dd>
+<p>
+  triggers try jobs using either BuildBucket or CQ dry run
+</p>
+</dd>
+<dt class="hdlist1">
+try-results
+</dt>
+<dd>
+<p>
+  prints info about try jobs associated with current CL
+</p>
+</dd>
+<dt class="hdlist1">
+upload
+</dt>
+<dd>
+<p>
+  uploads the current changelist to codereview
+</p>
+</dd>
+<dt class="hdlist1">
+upstream
+</dt>
+<dd>
+<p>
+  prints or sets the name of the upstream branch, if any
+</p>
+</dd>
+<dt class="hdlist1">
+web
+</dt>
+<dd>
+<p>
+  opens the current CL in the web browser
+</p>
+</dd>
+</dl></div>
 </div>
 </div>
 <div class="sect1">
@@ -797,86 +980,30 @@ so it is disabled by default.</p></div>
 <div class="sectionbody">
 <div class="dlist"><dl>
 <dt class="hdlist1">
---wordwise
+--version
 </dt>
 <dd>
 <p>
-  Print a colorized word-wise diff instead of a line-wise diff.
+  show program&#8217;s version number and exit
 </p>
 </dd>
 <dt class="hdlist1">
-&lt;extra args for git-diff&gt;
+-h, --help
 </dt>
 <dd>
 <p>
-  Extra arguments are included in the invocation of <a href="git-diff.html">git-diff(1)</a>. These
-  can be anything that <code>git-diff</code> normally takes.
-</p>
-<div class="openblock">
-<div class="content">
-<div class="dlist"><dl>
-<dt class="hdlist1">
-<code>--stat</code>
-</dt>
-<dd>
-<p>
-  This is particularly useful to show <em>which</em> files have been changed in
-  comparison to the upstream branch.
+  show this help message and exit
 </p>
 </dd>
 <dt class="hdlist1">
-<code>--staged</code>
+-v, --verbose
 </dt>
 <dd>
 <p>
-  Diff against the staged (cached) changes, instead of against the working
-  directory. This is <em>substantially</em> faster on large repos, but doesn&#8217;t take
-  into account unstaged changes (i.e. changes in your working copy which you
-  haven&#8217;t staged with <code>git add</code>).
-</p>
-</dd>
-<dt class="hdlist1">
-<code>-- &lt;filename patterns&gt;*</code>
-</dt>
-<dd>
-<p>
-  Restrict the diff to only show the diff for given files compared to the
-  upstream.
+  Use 2 times for more debugging info
 </p>
 </dd>
 </dl></div>
-</div></div>
-</dd>
-</dl></div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_configuration_variables">CONFIGURATION VARIABLES</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_depot_tools_upstream_diff_default_args">depot-tools.upstream-diff.default-args</h3>
-<div class="paragraph"><p>A list-configuration variable. Each instance of this config variable will be
-prepended to all invocations of <code>git upstream-diff</code>, as if you had passed them
-on the command line.</p></div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_suggested_aliases">SUGGESTED ALIASES</h2>
-<div class="sectionbody">
-<div class="paragraph"><p>Some common short-hand aliases. Feel free to add these to your <em>~/.gitconfig</em>
-file.</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><code>[alias]
-  git udiff = upstream-diff</code></pre>
-</div></div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_see_also">SEE ALSO</h2>
-<div class="sectionbody">
-<div class="paragraph"><p><a href="git-rebase-update.html">git-rebase-update(1)</a></p></div>
 </div>
 </div>
 <div class="sect1">
