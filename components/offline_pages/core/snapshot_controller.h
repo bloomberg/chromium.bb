@@ -66,8 +66,8 @@ class SnapshotController {
   SnapshotController(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       SnapshotController::Client* client,
-      size_t delay_after_document_available_ms,
-      size_t delay_after_document_on_load_completed_ms);
+      int64_t delay_after_document_available_ms,
+      int64_t delay_after_document_on_load_completed_ms);
   virtual ~SnapshotController();
 
   // Resets the 'session', returning controller to initial state.
@@ -88,8 +88,8 @@ class SnapshotController {
   // Invoked from WebContentObserver::DocumentOnLoadCompletedInMainFrame
   void DocumentOnLoadCompletedInMainFrame();
 
-  size_t GetDelayAfterDocumentAvailableForTest();
-  size_t GetDelayAfterDocumentOnLoadCompletedForTest();
+  int64_t GetDelayAfterDocumentAvailableForTest();
+  int64_t GetDelayAfterDocumentOnLoadCompletedForTest();
 
   PageQuality current_page_quality() const { return current_page_quality_; }
 
@@ -101,8 +101,8 @@ class SnapshotController {
   // Client owns this class.
   SnapshotController::Client* client_;
   SnapshotController::State state_;
-  size_t delay_after_document_available_ms_;
-  size_t delay_after_document_on_load_completed_ms_;
+  int64_t delay_after_document_available_ms_;
+  int64_t delay_after_document_on_load_completed_ms_;
 
   // The expected quality of a snapshot taken at the moment this value is
   // queried.

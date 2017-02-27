@@ -24,8 +24,11 @@ import java.util.Set;
  */
 @JNINamespace("offline_pages::android")
 public class OfflinePageBridge {
+    // These constants must be kept in sync with the constants defined in
+    // //components/offline_pages/core/client_namespace_constants.cc
     public static final String ASYNC_NAMESPACE = "async_loading";
     public static final String BOOKMARK_NAMESPACE = "bookmark";
+    public static final String LAST_N_NAMESPACE = "last_n";
     public static final String SHARE_NAMESPACE = "share";
 
     /**

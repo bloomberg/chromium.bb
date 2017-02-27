@@ -45,6 +45,10 @@ bool IsOfflinePagesAsyncDownloadEnabled();
 // to offline pages.
 bool ShouldUseNewBackgroundLoader();
 
+// Returns true if a command line for test has been set that shortens the
+// snapshot delay.
+bool ShouldUseTestingSnapshotDelay();
+
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_FEATURE_H_

@@ -84,7 +84,7 @@ TEST_F(SnapshotControllerTest, OnLoad) {
 }
 
 TEST_F(SnapshotControllerTest, OnDocumentAvailable) {
-  EXPECT_GT(controller()->GetDelayAfterDocumentAvailableForTest(), 0UL);
+  EXPECT_GT(controller()->GetDelayAfterDocumentAvailableForTest(), 0LL);
   // OnDOM should make snapshot after a delay.
   controller()->DocumentAvailableInMainFrame();
   PumpLoop();
