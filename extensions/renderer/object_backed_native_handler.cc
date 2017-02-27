@@ -57,8 +57,10 @@ void ObjectBackedNativeHandler::Router(
       !feature_name_value->IsString()) {
     ScriptContext* script_context =
         ScriptContextSet::GetContextByV8Context(context);
-    console::Error(script_context ? script_context->GetRenderFrame() : nullptr,
-                   "Extension view no longer exists");
+    console::AddMessage(
+        script_context ? script_context->GetRenderFrame() : nullptr,
+        content::CONSOLE_MESSAGE_LEVEL_ERROR,
+        "Extension view no longer exists");
     return;
   }
 

@@ -60,7 +60,8 @@ void Fatal(ScriptContext* context, const std::string& message) {
 
   ExtensionsClient* client = ExtensionsClient::Get();
   if (client->ShouldSuppressFatalErrors()) {
-    console::Error(context->GetRenderFrame(), full_message);
+    console::AddMessage(context->GetRenderFrame(),
+                        content::CONSOLE_MESSAGE_LEVEL_ERROR, full_message);
     client->RecordDidSuppressFatalError();
   } else {
     console::Fatal(context->GetRenderFrame(), full_message);
@@ -70,8 +71,9 @@ void Fatal(ScriptContext* context, const std::string& message) {
 void Warn(v8::Isolate* isolate, const std::string& message) {
   ScriptContext* script_context =
       ScriptContextSet::GetContextByV8Context(isolate->GetCurrentContext());
-  console::Warn(script_context ? script_context->GetRenderFrame() : nullptr,
-                message);
+  console::AddMessage(
+      script_context ? script_context->GetRenderFrame() : nullptr,
+      content::CONSOLE_MESSAGE_LEVEL_WARNING, message);
 }
 
 // Default exception handler which logs the exception.
