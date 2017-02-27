@@ -2029,8 +2029,6 @@ split_static_library("browser") {
       "safe_browsing/permission_reporter.h",
       "safe_browsing/ping_manager.cc",
       "safe_browsing/ping_manager.h",
-      "safe_browsing/protocol_manager_helper.cc",
-      "safe_browsing/protocol_manager_helper.h",
       "safe_browsing/safe_browsing_blocking_page.cc",
       "safe_browsing/safe_browsing_blocking_page.h",
       "safe_browsing/safe_browsing_navigation_observer.cc",

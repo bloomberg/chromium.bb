@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/safe_browsing/protocol_manager_helper.h"
+#include "components/safe_browsing_db/util.h"
 #include "extensions/browser/blacklist_state.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"

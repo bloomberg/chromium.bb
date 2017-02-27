@@ -16,6 +16,7 @@
 
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 
 class GURL;
@@ -166,6 +167,45 @@ bool GetListName(ListType list_id, std::string* list);
 // other lists.  We'll also always add a pattern for the empty path.
 void UrlToFullHashes(const GURL& url, bool include_whitelist_hashes,
                      std::vector<SBFullHash>* full_hashes);
+
+struct SafeBrowsingProtocolConfig {
+  SafeBrowsingProtocolConfig();
+  SafeBrowsingProtocolConfig(const SafeBrowsingProtocolConfig& other);
+  ~SafeBrowsingProtocolConfig();
+  std::string client_name;
+  std::string url_prefix;
+  std::string backup_connect_error_url_prefix;
+  std::string backup_http_error_url_prefix;
+  std::string backup_network_error_url_prefix;
+  std::string version;
+  bool disable_auto_update;
+};
+
+namespace ProtocolManagerHelper {
+
+// returns chrome version.
+std::string Version();
+
+// Composes a URL using |prefix|, |method| (e.g.: gethash, download, report).
+// |client_name| and |version|. When not empty, |additional_query| is
+// appended to the URL with an additional "&" in the front.
+std::string ComposeUrl(const std::string& prefix,
+                       const std::string& method,
+                       const std::string& client_name,
+                       const std::string& version,
+                       const std::string& additional_query);
+
+// Similar to above function, and appends "&ext=1" at the end of URL if
+// |is_extended_reporting| is true, otherwise, appends "&ext=0".
+std::string ComposeUrl(const std::string& prefix,
+                       const std::string& method,
+                       const std::string& client_name,
+                       const std::string& version,
+                       const std::string& additional_query,
+                       ExtendedReportingLevel reporting_level);
+
+}  // namespace ProtocolManagerHelper
+
 }  // namespace safe_browsing
 
 #endif  // COMPONENTS_SAFE_BROWSING_DB_UTIL_H_

@@ -181,11 +181,14 @@ static_library("util") {
     "util.h",
   ]
   public_deps = [
+    ":safe_browsing_prefs",
     ":v4_protocol_manager_util",
   ]
   deps = [
     "//base",
+    "//components/version_info:version_info",
     "//crypto",
+    "//google_apis:google_apis",
     "//net",
     "//url",
   ]

@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 
+#include "components/safe_browsing/base_ping_manager.h"
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/safe_browsing/ping_manager.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/log/net_log.h"
@@ -31,10 +31,9 @@ static const char kAppVer[] = "1.0";
 
 namespace safe_browsing {
 
-class SafeBrowsingPingManagerTest : public testing::Test {
+class BasePingManagerTest : public testing::Test {
  public:
-  SafeBrowsingPingManagerTest()
-      : net_log_(new net::TestNetLog()) {
+  BasePingManagerTest() : net_log_(new net::TestNetLog()) {
     net_log_with_source_ = net::NetLogWithSource::Make(
         net_log_.get(), net::NetLogSourceType::SAFE_BROWSING);
   }
@@ -44,30 +43,27 @@ class SafeBrowsingPingManagerTest : public testing::Test {
     std::string key = google_apis::GetAPIKey();
     if (!key.empty()) {
       key_param_ = base::StringPrintf(
-          "&key=%s",
-          net::EscapeQueryParamValue(key, true).c_str());
+          "&key=%s", net::EscapeQueryParamValue(key, true).c_str());
     }
 
     SafeBrowsingProtocolConfig config;
     config.client_name = kClient;
     config.url_prefix = kUrlPrefix;
-    ping_manager_.reset(new SafeBrowsingPingManager(NULL, config));
+    ping_manager_.reset(new BasePingManager(NULL, config));
     ping_manager_->version_ = kAppVer;
     ping_manager_->net_log_ = net_log_with_source_;
   }
 
-  SafeBrowsingPingManager* ping_manager()  {
-    return ping_manager_.get();
-  }
+  BasePingManager* ping_manager() { return ping_manager_.get(); }
 
   std::string key_param_;
   std::unique_ptr<net::TestNetLog> net_log_;
   net::NetLogWithSource net_log_with_source_;
   net::TestURLFetcherFactory fetcher_factory_;
-  std::unique_ptr<SafeBrowsingPingManager> ping_manager_;
+  std::unique_ptr<BasePingManager> ping_manager_;
 };
 
-TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
+TEST_F(BasePingManagerTest, TestSafeBrowsingHitUrl) {
   HitReport base_hp;
   base_hp.malicious_url = GURL("http://malicious.url.com");
   base_hp.page_url = GURL("http://page.url.com");
@@ -202,18 +198,20 @@ TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
   }
 }
 
-TEST_F(SafeBrowsingPingManagerTest, TestThreatDetailsUrl) {
-  EXPECT_EQ("https://prefix.com/foo/clientreport/malware?"
-            "client=unittest&appver=1.0&pver=1.0" + key_param_,
-            ping_manager()->ThreatDetailsUrl().spec());
+TEST_F(BasePingManagerTest, TestThreatDetailsUrl) {
+  EXPECT_EQ(
+      "https://prefix.com/foo/clientreport/malware?"
+      "client=unittest&appver=1.0&pver=1.0" +
+          key_param_,
+      ping_manager()->ThreatDetailsUrl().spec());
 }
 
-TEST_F(SafeBrowsingPingManagerTest, TestReportThreatDetails) {
+TEST_F(BasePingManagerTest, TestReportThreatDetails) {
   const std::string kThreatDetailsReportString = "Threat Details Report String";
   std::string encoded_threat_report = "";
   base::Base64Encode(kThreatDetailsReportString, &encoded_threat_report);
-  std::string expected_threat_details_url = ping_manager()->ThreatDetailsUrl()
-      .spec();
+  std::string expected_threat_details_url =
+      ping_manager()->ThreatDetailsUrl().spec();
   const int kRequestErrorCode = -123;
 
   // Start the report.
@@ -263,7 +261,7 @@ TEST_F(SafeBrowsingPingManagerTest, TestReportThreatDetails) {
   EXPECT_TRUE(end_entry.params->HasKey("source_dependency"));
 }
 
-TEST_F(SafeBrowsingPingManagerTest, TestReportSafeBrowsingHit) {
+TEST_F(BasePingManagerTest, TestReportSafeBrowsingHit) {
   const std::string kHitReportPostData = "Hit Report POST Data";
   std::string encoded_post_data = "";
   base::Base64Encode(kHitReportPostData, &encoded_post_data);
@@ -279,8 +277,8 @@ TEST_F(SafeBrowsingPingManagerTest, TestReportSafeBrowsingHit) {
   hp.is_subresource = true;
   hp.population_id = "foo bar";
   hp.post_data = kHitReportPostData;
-  std::string expected_hit_report_url = ping_manager()->SafeBrowsingHitUrl(hp)
-      .spec();
+  std::string expected_hit_report_url =
+      ping_manager()->SafeBrowsingHitUrl(hp).spec();
   const int kRequestErrorCode = -321;
 
   // Start the report.

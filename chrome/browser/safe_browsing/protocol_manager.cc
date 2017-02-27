@@ -166,7 +166,7 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
   // Set the backoff multiplier fuzz to a random value between 0 and 1.
   back_off_fuzz_ = static_cast<float>(base::RandDouble());
   if (version_.empty())
-    version_ = SafeBrowsingProtocolManagerHelper::Version();
+    version_ = ProtocolManagerHelper::Version();
 }
 
 // static
@@ -743,7 +743,7 @@ void SafeBrowsingProtocolManager::UpdateFinished(bool success, bool back_off) {
 
 GURL SafeBrowsingProtocolManager::UpdateUrl(
     ExtendedReportingLevel reporting_level) const {
-  std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
+  std::string url = ProtocolManagerHelper::ComposeUrl(
       url_prefix_, "downloads", client_name_, version_, additional_query_,
       reporting_level);
   return GURL(url);
@@ -754,7 +754,7 @@ GURL SafeBrowsingProtocolManager::BackupUpdateUrl(
   DCHECK(backup_update_reason >= 0 &&
          backup_update_reason < BACKUP_UPDATE_REASON_MAX);
   DCHECK(!backup_url_prefixes_[backup_update_reason].empty());
-  std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
+  std::string url = ProtocolManagerHelper::ComposeUrl(
       backup_url_prefixes_[backup_update_reason], "downloads", client_name_,
       version_, additional_query_);
   return GURL(url);
@@ -762,7 +762,7 @@ GURL SafeBrowsingProtocolManager::BackupUpdateUrl(
 
 GURL SafeBrowsingProtocolManager::GetHashUrl(
     ExtendedReportingLevel reporting_level) const {
-  std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
+  std::string url = ProtocolManagerHelper::ComposeUrl(
       url_prefix_, "gethash", client_name_, version_, additional_query_,
       reporting_level);
   return GURL(url);

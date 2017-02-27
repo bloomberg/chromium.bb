@@ -78,7 +78,6 @@
 #include "chrome/browser/safe_browsing/incident_reporting/resource_request_detector.h"
 #include "chrome/browser/safe_browsing/incident_reporting/variations_seed_signature_analyzer.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
-#include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #endif
 
 using content::BrowserThread;
@@ -522,7 +521,7 @@ SafeBrowsingService::GetV4ProtocolConfig() const {
   return V4ProtocolConfig(
       GetProtocolConfigClientName(),
       cmdline->HasSwitch(::switches::kDisableBackgroundNetworking),
-      google_apis::GetAPIKey(), SafeBrowsingProtocolManagerHelper::Version());
+      google_apis::GetAPIKey(), ProtocolManagerHelper::Version());
 }
 
 std::string SafeBrowsingService::GetProtocolConfigClientName() const {

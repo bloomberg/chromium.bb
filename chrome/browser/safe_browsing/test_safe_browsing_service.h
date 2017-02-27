@@ -8,7 +8,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
 #include "chrome/browser/safe_browsing/protocol_manager.h"
-#include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 
