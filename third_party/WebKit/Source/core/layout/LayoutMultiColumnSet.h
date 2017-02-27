@@ -149,7 +149,10 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   LayoutUnit logicalTopInFlowThread() const;
   LayoutUnit logicalBottomInFlowThread() const;
   LayoutUnit logicalHeightInFlowThread() const {
-    return logicalBottomInFlowThread() - logicalTopInFlowThread();
+    // Due to negative margins, logical bottom may actually end up above logical
+    // top, but we never want to return negative logical heights.
+    return (logicalBottomInFlowThread() - logicalTopInFlowThread())
+        .clampNegativeToZero();
   }
 
   // Return the amount of flow thread contents that the specified fragmentainer

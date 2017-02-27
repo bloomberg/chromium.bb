@@ -495,7 +495,13 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(
        walker = walker->nextSiblingMultiColumnSet()) {
     if (!walker->isPageLogicalHeightKnown())
       continue;
-    if (walker->logicalTopInFlowThread() == offset)
+    if (pageBoundaryRule == AssociateWithFormerPage) {
+      if (walker->logicalTopInFlowThread() < offset &&
+          walker->logicalBottomInFlowThread() >= offset)
+        return walker;
+    }
+    if (walker->logicalTopInFlowThread() <= offset &&
+        walker->logicalBottomInFlowThread() > offset)
       return walker;
     break;
   }
@@ -896,13 +902,8 @@ void LayoutMultiColumnFlowThread::skipColumnSpanner(
   LayoutMultiColumnSpannerPlaceholder* placeholder =
       layoutObject->spannerPlaceholder();
   LayoutBox* previousColumnBox = placeholder->previousSiblingMultiColumnBox();
-  if (previousColumnBox && previousColumnBox->isLayoutMultiColumnSet()) {
-    LayoutMultiColumnSet* columnSet = toLayoutMultiColumnSet(previousColumnBox);
-    // Negative margins may cause this.
-    if (logicalTopInFlowThread < columnSet->logicalTopInFlowThread())
-      logicalTopInFlowThread = columnSet->logicalTopInFlowThread();
-    columnSet->endFlow(logicalTopInFlowThread);
-  }
+  if (previousColumnBox && previousColumnBox->isLayoutMultiColumnSet())
+    toLayoutMultiColumnSet(previousColumnBox)->endFlow(logicalTopInFlowThread);
   LayoutBox* nextColumnBox = placeholder->nextSiblingMultiColumnBox();
   if (nextColumnBox && nextColumnBox->isLayoutMultiColumnSet()) {
     LayoutMultiColumnSet* nextSet = toLayoutMultiColumnSet(nextColumnBox);

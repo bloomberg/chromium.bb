@@ -37,6 +37,19 @@ MultiColumnFragmentainerGroup::blockOffsetInEnclosingFragmentationContext()
              ->blockOffsetInEnclosingFragmentationContext();
 }
 
+LayoutUnit MultiColumnFragmentainerGroup::logicalHeightInFlowThreadAt(
+    unsigned columnIndex) const {
+  if (!m_columnHeight)
+    return LayoutUnit();
+  LayoutUnit logicalTop = logicalTopInFlowThreadAt(columnIndex);
+  LayoutUnit logicalBottom = logicalTop + m_columnHeight;
+  if (logicalBottom > logicalBottomInFlowThread()) {
+    DCHECK_EQ(columnIndex + 1, actualColumnCount());
+    logicalBottom = logicalBottomInFlowThread();
+  }
+  return (logicalBottom - logicalTop).clampNegativeToZero();
+}
+
 void MultiColumnFragmentainerGroup::resetColumnHeight() {
   m_maxColumnHeight = calculateMaxColumnHeight();
 
@@ -369,19 +382,10 @@ LayoutUnit MultiColumnFragmentainerGroup::rebalanceColumnHeightIfNeeded()
 LayoutRect MultiColumnFragmentainerGroup::columnRectAt(
     unsigned columnIndex) const {
   LayoutUnit columnLogicalWidth = m_columnSet.pageLogicalWidth();
-  LayoutUnit columnLogicalHeight = m_columnHeight;
+  LayoutUnit columnLogicalHeight = logicalHeightInFlowThreadAt(columnIndex);
   LayoutUnit columnLogicalTop;
   LayoutUnit columnLogicalLeft;
   LayoutUnit columnGap = m_columnSet.columnGap();
-  LayoutUnit portionOutsideFlowThread =
-      logicalTopInFlowThread() + (columnIndex + 1) * columnLogicalHeight -
-      logicalBottomInFlowThread();
-  if (portionOutsideFlowThread > 0) {
-    // The last column may not be using all available space.
-    ASSERT(columnIndex + 1 == actualColumnCount());
-    columnLogicalHeight -= portionOutsideFlowThread;
-    ASSERT(columnLogicalHeight >= 0);
-  }
 
   if (m_columnSet.multiColumnFlowThread()->progressionIsInline()) {
     if (m_columnSet.style()->isLeftToRightDirection())
@@ -404,14 +408,7 @@ LayoutRect MultiColumnFragmentainerGroup::columnRectAt(
 LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionRectAt(
     unsigned columnIndex) const {
   LayoutUnit logicalTop = logicalTopInFlowThreadAt(columnIndex);
-  LayoutUnit logicalBottom = logicalTop + m_columnHeight;
-  if (logicalBottom > logicalBottomInFlowThread()) {
-    // The last column may not be using all available space.
-    ASSERT(columnIndex + 1 == actualColumnCount());
-    logicalBottom = logicalBottomInFlowThread();
-    ASSERT(logicalBottom >= logicalTop);
-  }
-  LayoutUnit portionLogicalHeight = logicalBottom - logicalTop;
+  LayoutUnit portionLogicalHeight = logicalHeightInFlowThreadAt(columnIndex);
   if (m_columnSet.isHorizontalWritingMode())
     return LayoutRect(LayoutUnit(), logicalTop, m_columnSet.pageLogicalWidth(),
                       portionLogicalHeight);
@@ -535,10 +532,9 @@ void MultiColumnFragmentainerGroup::columnIntervalForBlockRangeInFlowThread(
       std::max(logicalTopInFlowThread, this->logicalTopInFlowThread());
   logicalBottomInFlowThread =
       std::min(logicalBottomInFlowThread, this->logicalBottomInFlowThread());
-  ASSERT(logicalTopInFlowThread <= logicalBottomInFlowThread);
   firstColumn = columnIndexAtOffset(logicalTopInFlowThread,
                                     LayoutBox::AssociateWithLatterPage);
-  if (logicalBottomInFlowThread == logicalTopInFlowThread) {
+  if (logicalBottomInFlowThread <= logicalTopInFlowThread) {
     // Zero-height block range. There'll be one column in the interval. Set it
     // right away. This is important if we're at a column boundary, since
     // calling columnIndexAtOffset() with the end-exclusive bottom offset would

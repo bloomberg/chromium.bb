@@ -63,14 +63,19 @@ class MultiColumnFragmentainerGroup {
     return m_logicalBottomInFlowThread;
   }
   void setLogicalBottomInFlowThread(LayoutUnit logicalBottomInFlowThread) {
-    ASSERT(logicalBottomInFlowThread >= m_logicalTopInFlowThread);
     m_logicalBottomInFlowThread = logicalBottomInFlowThread;
   }
 
-  // The height of our flow thread portion
+  // The height of the flow thread portion for the entire fragmentainer group.
   LayoutUnit logicalHeightInFlowThread() const {
-    return m_logicalBottomInFlowThread - m_logicalTopInFlowThread;
+    // Due to negative margins, logical bottom may actually end up above logical
+    // top, but we never want to return negative logical heights.
+    return (m_logicalBottomInFlowThread - m_logicalTopInFlowThread)
+        .clampNegativeToZero();
   }
+  // The height of the flow thread portion for the specified fragmentainer.
+  // The last fragmentainer may not be using all available space.
+  LayoutUnit logicalHeightInFlowThreadAt(unsigned columnIndex) const;
 
   void resetColumnHeight();
   bool recalculateColumnHeight(LayoutMultiColumnSet&);
