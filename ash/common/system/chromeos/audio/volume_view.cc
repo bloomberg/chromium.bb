@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/audio/tray_audio_delegate.h"
@@ -17,35 +16,19 @@
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_shell.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/controls/separator.h"
 #include "ui/views/controls/slider.h"
-#include "ui/views/focus/focus_manager.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace {
-const int kVolumeImageWidth = 25;
-const int kVolumeImageHeight = 25;
-const int kSeparatorSize = 3;
-const int kSeparatorVerticalInset = 8;
-const int kBoxLayoutPadding = 2;
-
-// IDR_AURA_UBER_TRAY_VOLUME_LEVELS contains 5 images,
-// The one for mute is at the 0 index and the other
-// four are used for ascending volume levels.
-const int kVolumeLevels = 4;
 
 const gfx::VectorIcon* const kVolumeLevelIcons[] = {
     &ash::kSystemMenuVolumeMuteIcon,    // Muted.
@@ -72,10 +55,8 @@ class VolumeButton : public ButtonListenerActionableView {
         image_(TrayPopupUtils::CreateMainImageView()),
         image_index_(-1) {
     TrayPopupUtils::ConfigureContainer(TriView::Container::START, this);
-    SetFocusBehavior(FocusBehavior::ALWAYS);
     AddChildView(image_);
-    if (MaterialDesignController::IsSystemTrayMenuMaterial())
-      SetInkDropMode(InkDropMode::ON);
+    SetInkDropMode(InkDropMode::ON);
     Update();
 
     set_notify_enter_exit_on_child(true);
@@ -86,55 +67,27 @@ class VolumeButton : public ButtonListenerActionableView {
   void Update() {
     float level =
         static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f;
-    int volume_levels = MaterialDesignController::IsSystemTrayMenuMaterial()
-                            ? arraysize(kVolumeLevelIcons) - 1
-                            : kVolumeLevels;
+    int volume_levels = arraysize(kVolumeLevelIcons) - 1;
     int image_index =
         audio_delegate_->IsOutputAudioMuted()
             ? 0
             : (level == 1.0 ? volume_levels
                             : std::max(1, static_cast<int>(std::ceil(
                                               level * (volume_levels - 1)))));
-    if (image_index != image_index_) {
-      gfx::ImageSkia image_skia;
-      if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-        image_skia = gfx::CreateVectorIcon(*kVolumeLevelIcons[image_index],
-                                           kMenuIconColor);
-      } else {
-        gfx::Rect region(0, image_index * kVolumeImageHeight, kVolumeImageWidth,
-                         kVolumeImageHeight);
-        gfx::Image image =
-            ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                IDR_AURA_UBER_TRAY_VOLUME_LEVELS);
-        image_skia = gfx::ImageSkiaOperations::ExtractSubset(
-            *(image.ToImageSkia()), region);
-      }
-      image_->SetImage(&image_skia);
-      image_index_ = image_index;
-    }
+    gfx::ImageSkia image_skia =
+        gfx::CreateVectorIcon(*kVolumeLevelIcons[image_index], kMenuIconColor);
+    image_->SetImage(&image_skia);
+    image_index_ = image_index;
   }
 
  private:
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     node_data->SetName(
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_VOLUME_MUTE));
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VOLUME_MUTE));
     node_data->role = ui::AX_ROLE_TOGGLE_BUTTON;
     if (audio_delegate_->IsOutputAudioMuted())
       node_data->AddStateFlag(ui::AX_STATE_PRESSED);
-  }
-
-  // views::CustomButton:
-  void StateChanged(ButtonState old_state) override {
-    if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
-      if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
-        set_background(
-            views::Background::CreateSolidBackground(kHoverBackgroundColor));
-      }
-    } else {
-      set_background(nullptr);
-    }
   }
 
   system::TrayAudioDelegate* audio_delegate_;
@@ -153,10 +106,8 @@ VolumeView::VolumeView(SystemTrayItem* owner,
       more_button_(nullptr),
       icon_(nullptr),
       slider_(nullptr),
-      separator_(nullptr),
       device_type_(nullptr),
       is_default_view_(is_default_view) {
-  SetFocusBehavior(FocusBehavior::NEVER);
   SetLayoutManager(new views::FillLayout);
   AddChildView(tri_view_);
 
@@ -167,8 +118,7 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   slider_->SetValue(
       static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f);
   slider_->SetAccessibleName(
-      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_VOLUME));
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VOLUME));
   tri_view_->AddView(TriView::Container::CENTER, slider_);
 
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
@@ -182,41 +132,16 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   more_button_ = new ButtonListenerActionableView(
       owner_, TrayPopupInkDropStyle::INSET_BOUNDS, this);
   TrayPopupUtils::ConfigureContainer(TriView::Container::END, more_button_);
-  more_button_->SetFocusBehavior(FocusBehavior::NEVER);
-
-  device_type_ = TrayPopupUtils::CreateMoreImageView();
+  more_button_->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
   more_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       0, GetTrayConstant(TRAY_POPUP_ITEM_MORE_REGION_HORIZONTAL_INSET))));
+  tri_view_->AddView(TriView::Container::END, more_button_);
+
+  device_type_ = TrayPopupUtils::CreateMoreImageView();
+  device_type_->SetVisible(false);
   more_button_->AddChildView(device_type_);
 
-  views::ImageView* more_arrow = TrayPopupUtils::CreateMoreImageView();
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    more_arrow->SetImage(
-        gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));
-  } else {
-    more_arrow->SetImage(ui::ResourceBundle::GetSharedInstance()
-                             .GetImageNamed(IDR_AURA_UBER_TRAY_MORE)
-                             .ToImageSkia());
-  }
-  more_button_->AddChildView(more_arrow);
-
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    more_button_->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
-    tri_view_->AddView(TriView::Container::END, more_button_);
-  } else {
-    separator_ = new views::Separator();
-    separator_->SetColor(kButtonStrokeColor);
-    separator_->SetBorder(views::CreateEmptyBorder(kSeparatorVerticalInset, 0,
-                                                   kSeparatorVerticalInset,
-                                                   kBoxLayoutPadding));
-
-    TrayPopupItemContainer* more_container =
-        new TrayPopupItemContainer(separator_, true);
-    more_container->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-    more_container->AddChildView(more_button_);
-    tri_view_->AddView(TriView::Container::END, more_container);
-  }
+  more_button_->AddChildView(TrayPopupUtils::CreateMoreImageView());
 
   Update();
 }
@@ -254,24 +179,11 @@ void VolumeView::UpdateDeviceTypeAndMore() {
   if (!show_more)
     return;
 
-  bool target_visibility = false;
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    const gfx::VectorIcon& device_icon =
-        audio_delegate_->GetActiveOutputDeviceVectorIcon();
-    if (!device_icon.is_empty()) {
-      device_type_->SetImage(
-          gfx::CreateVectorIcon(device_icon, kMenuIconColor));
-      target_visibility = true;
-    }
-  } else {
-    int device_icon = audio_delegate_->GetActiveOutputDeviceIconId();
-    if (device_icon != system::TrayAudioDelegate::kNoAudioDeviceIcon) {
-      device_type_->SetImage(ui::ResourceBundle::GetSharedInstance()
-                                 .GetImageNamed(device_icon)
-                                 .ToImageSkia());
-      target_visibility = true;
-    }
-  }
+  const gfx::VectorIcon& device_icon =
+      audio_delegate_->GetActiveOutputDeviceVectorIcon();
+  const bool target_visibility = !device_icon.is_empty();
+  if (target_visibility)
+    device_type_->SetImage(gfx::CreateVectorIcon(device_icon, kMenuIconColor));
   if (device_type_->visible() != target_visibility) {
     device_type_->SetVisible(target_visibility);
     device_type_->InvalidateLayout();
@@ -329,24 +241,6 @@ void VolumeView::SliderValueChanged(views::Slider* sender,
       HandleVolumeDown(new_volume);
   }
   icon_->Update();
-}
-
-bool VolumeView::OnKeyPressed(const ui::KeyEvent& event) {
-  const views::FocusManager* focus_manager = GetFocusManager();
-  if (enabled() && is_default_view_ && event.key_code() == ui::VKEY_RETURN &&
-      focus_manager && focus_manager->GetFocusedView() == slider_) {
-    owner_->TransitionDetailedView();
-    return true;
-  }
-  return View::OnKeyPressed(event);
-}
-
-void VolumeView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // Separator's prefered size is based on set bounds. When an empty bounds is
-  // set on first layout this causes BoxLayout to ignore the separator. Reset
-  // its height on each bounds change so that it is laid out properly.
-  if (separator_)
-    separator_->SetSize(gfx::Size(kSeparatorSize, bounds().height()));
 }
 
 }  // namespace tray

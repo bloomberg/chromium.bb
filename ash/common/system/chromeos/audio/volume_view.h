@@ -13,7 +13,6 @@
 namespace views {
 class CustomButton;
 class ImageView;
-class Separator;
 class Slider;
 }
 
@@ -58,10 +57,6 @@ class VolumeView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::View:
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-
   SystemTrayItem* owner_;
   // The only immediate child view of |this|. All other view elements are added
   // to the |tri_view_| to handle layout.
@@ -70,7 +65,6 @@ class VolumeView : public views::View,
   views::CustomButton* more_button_;
   VolumeButton* icon_;
   views::Slider* slider_;
-  views::Separator* separator_;  // Not used in material design.
   views::ImageView* device_type_;
   bool is_default_view_;
 

@@ -85,7 +85,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_DATASAVER" file="cros/network/notification_datasaver.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_LTE" file="cros/network/notification_lte.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_MORE" file="cros/status/status_more.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE" file="cros/status/status_screenshare.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE_DARK" file="cros/status/status_screenshare_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="cros/status/status_shutdown.png" />
@@ -99,10 +98,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BLUETOOTH" file="cros/notification/notification_bluetooth_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_DISPLAY" file="cros/notification/display_notification_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER" file="cros/notification/notification_low_power_charger.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUDIO_BLUETOOTH" file="cros/status/status_audio_device_bluetooth.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUDIO_HDMI" file="cros/status/status_audio_device_hdmi.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUDIO_HEADPHONE" file="cros/status/status_audio_device_headphones.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUDIO_USB" file="cros/status/status_audio_device_usb.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BRIGHTNESS" file="cros/status/status_brightness.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BUBBLE_SESSION_LENGTH_LIMIT" file="cros/status/status_session_length_timer.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED" file="cros/network/status_cellular_disabled.png" />
@@ -127,8 +122,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="cros/network/status_wifi_enabled.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER" file="cros/network/status_wifi_enabled_hover.png" />
       </if>
-
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="cros/status/status_volume_dark.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM" file="common/window_header_shade_bottom_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />

@@ -9,11 +9,9 @@
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/memory/ptr_util.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -28,9 +26,6 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner)
       more_(TrayPopupUtils::CreateMoreImageView()) {
   AddChildView(tri_view_);
   SetLayoutManager(new views::FillLayout);
-
-  more_->SetImage(
-      gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));
 
   tri_view_->AddView(TriView::Container::START, icon_);
   tri_view_->AddView(TriView::Container::CENTER, label_);

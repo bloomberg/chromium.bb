@@ -15,8 +15,10 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -225,6 +227,8 @@ views::ImageView* TrayPopupUtils::CreateMoreImageView() {
       new FixedSizedImageView(GetTrayConstant(TRAY_POPUP_ITEM_MORE_IMAGE_SIZE),
                               GetTrayConstant(TRAY_POPUP_ITEM_MORE_IMAGE_SIZE));
   image->EnableCanvasFlippingForRTLUI(true);
+  image->SetImage(
+      gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));
   return image;
 }
 

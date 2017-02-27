@@ -30,11 +30,6 @@ class TrayAudioDelegate {
   // should be muted.
   virtual int GetOutputDefaultVolumeMuteLevel() = 0;
 
-  // Gets the non-MD icon to use for the active output device.
-  // TODO(mohsen): Remove this once material design is enabled by default. See
-  // https://crbug.com/614453.
-  virtual int GetActiveOutputDeviceIconId() = 0;
-
   // Gets the MD icon to use for the active output device.
   virtual const gfx::VectorIcon& GetActiveOutputDeviceVectorIcon() = 0;
 

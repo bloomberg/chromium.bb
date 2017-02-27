@@ -4,7 +4,6 @@
 
 #include "ash/common/system/chromeos/audio/tray_audio_delegate_chromeos.h"
 
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -24,23 +23,6 @@ int TrayAudioDelegateChromeOs::GetOutputDefaultVolumeMuteLevel() {
 
 int TrayAudioDelegateChromeOs::GetOutputVolumeLevel() {
   return CrasAudioHandler::Get()->GetOutputVolumePercent();
-}
-
-int TrayAudioDelegateChromeOs::GetActiveOutputDeviceIconId() {
-  chromeos::AudioDevice device;
-  if (!CrasAudioHandler::Get()->GetPrimaryActiveOutputDevice(&device))
-    return kNoAudioDeviceIcon;
-
-  if (device.type == chromeos::AUDIO_TYPE_HEADPHONE)
-    return IDR_AURA_UBER_TRAY_AUDIO_HEADPHONE;
-  else if (device.type == chromeos::AUDIO_TYPE_USB)
-    return IDR_AURA_UBER_TRAY_AUDIO_USB;
-  else if (device.type == chromeos::AUDIO_TYPE_BLUETOOTH)
-    return IDR_AURA_UBER_TRAY_AUDIO_BLUETOOTH;
-  else if (device.type == chromeos::AUDIO_TYPE_HDMI)
-    return IDR_AURA_UBER_TRAY_AUDIO_HDMI;
-  else
-    return kNoAudioDeviceIcon;
 }
 
 const gfx::VectorIcon&
