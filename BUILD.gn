@@ -235,8 +235,6 @@ group("both_gn_and_gyp") {
       "//gpu/khronos_glcts_support:khronos_glcts_test",
       "//jingle:jingle_unittests",
       "//net:hpack_example_generator",
-      "//net:hpack_fuzz_mutator",
-      "//net:hpack_fuzz_wrapper",
       "//ppapi:ppapi_unittests",
       "//ppapi/examples/2d",
       "//ppapi/examples/audio",
@@ -1044,7 +1042,6 @@ if (!is_ios && !is_android && !is_chromecast) {
     if (!is_win) {
       deps += [
         "//net:dns_fuzz_stub",
-        "//net:hpack_fuzz_wrapper",
         "//skia:filter_fuzz_stub",
       ]
     }

@@ -2699,38 +2699,6 @@ if (!is_ios && !is_android) {
     ]
   }
 
-  executable("hpack_fuzz_mutator") {
-    testonly = true
-    sources = [
-      "spdy/fuzzing/hpack_fuzz_mutator.cc",
-    ]
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-    deps = [
-      ":net",
-      "//base",
-      "//build/config/sanitizers:deps",
-      "//build/win:default_exe_manifest",
-    ]
-  }
-
-  executable("hpack_fuzz_wrapper") {
-    testonly = true
-    sources = [
-      "spdy/fuzzing/hpack_fuzz_wrapper.cc",
-    ]
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-    deps = [
-      ":net",
-      "//base",
-      "//build/config/sanitizers:deps",
-      "//build/win:default_exe_manifest",
-    ]
-  }
-
   if (use_v8_in_net) {
     executable("net_watcher") {
       testonly = true
