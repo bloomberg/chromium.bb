@@ -15,7 +15,6 @@ class UpdatingAppRegistrationData : public AppRegistrationData {
  public:
   explicit UpdatingAppRegistrationData(const base::string16& app_guid);
   ~UpdatingAppRegistrationData() override;
-  base::string16 GetAppGuid() const override;
   base::string16 GetStateKey() const override;
   base::string16 GetStateMediumKey() const override;
   base::string16 GetVersionKey() const override;

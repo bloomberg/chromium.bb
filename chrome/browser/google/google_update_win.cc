@@ -33,6 +33,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
@@ -562,15 +563,14 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
 
   // Get a reference to the Chrome app in the bundle.
   if (!app_) {
-    base::string16 app_guid =
-        BrowserDistribution::GetDistribution()->GetAppGuid();
-    DCHECK(!app_guid.empty());
+    const wchar_t* app_guid = install_static::GetAppGuid();
+    DCHECK(app_guid);
+    DCHECK(*app_guid);
 
     base::win::ScopedComPtr<IDispatch> dispatch;
     // It is common for this call to fail with APP_USING_EXTERNAL_UPDATER if
     // an auto update is in progress.
-    hresult = app_bundle_->createInstalledApp(
-        base::win::ScopedBstr(app_guid.c_str()));
+    hresult = app_bundle_->createInstalledApp(base::win::ScopedBstr(app_guid));
     if (FAILED(hresult))
       return hresult;
     // Move the IAppBundleWeb reference into a local now so that failures from

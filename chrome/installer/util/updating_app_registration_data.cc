@@ -11,10 +11,6 @@ UpdatingAppRegistrationData::UpdatingAppRegistrationData(
 
 UpdatingAppRegistrationData::~UpdatingAppRegistrationData() {}
 
-base::string16 UpdatingAppRegistrationData::GetAppGuid() const {
-  return app_guid_;
-}
-
 base::string16 UpdatingAppRegistrationData::GetStateKey() const {
   return base::string16(google_update::kRegPathClientState)
       .append(1, L'\\')

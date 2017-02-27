@@ -10,10 +10,6 @@ TestAppRegistrationData::TestAppRegistrationData() {
 TestAppRegistrationData::~TestAppRegistrationData() {
 }
 
-base::string16 TestAppRegistrationData::GetAppGuid() const {
-  return L"test_app_guid";
-}
-
 base::string16 TestAppRegistrationData::GetStateKey() const {
   return L"Software\\Chromium\\ClientState\\test_app_guid";
 }

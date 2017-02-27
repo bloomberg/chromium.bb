@@ -15,7 +15,6 @@ class NonUpdatingAppRegistrationData : public AppRegistrationData {
  public:
   explicit NonUpdatingAppRegistrationData(const base::string16& key_path);
   ~NonUpdatingAppRegistrationData() override;
-  base::string16 GetAppGuid() const override;
   base::string16 GetStateKey() const override;
   base::string16 GetStateMediumKey() const override;
   base::string16 GetVersionKey() const override;

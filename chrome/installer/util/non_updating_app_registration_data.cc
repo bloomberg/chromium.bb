@@ -9,10 +9,6 @@ NonUpdatingAppRegistrationData::NonUpdatingAppRegistrationData(
 
 NonUpdatingAppRegistrationData::~NonUpdatingAppRegistrationData() {}
 
-base::string16 NonUpdatingAppRegistrationData::GetAppGuid() const {
-  return base::string16();
-}
-
 base::string16 NonUpdatingAppRegistrationData::GetStateKey() const {
   return key_path_;
 }

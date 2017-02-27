@@ -92,10 +92,6 @@ const AppRegistrationData& BrowserDistribution::GetAppRegistrationData() const {
   return *app_reg_data_;
 }
 
-base::string16 BrowserDistribution::GetAppGuid() const {
-  return app_reg_data_->GetAppGuid();
-}
-
 base::string16 BrowserDistribution::GetStateKey() const {
   return app_reg_data_->GetStateKey();
 }

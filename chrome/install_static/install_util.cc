@@ -311,6 +311,10 @@ bool IsSystemInstall() {
   return InstallDetails::Get().system_level();
 }
 
+const wchar_t* GetAppGuid() {
+  return InstallDetails::Get().app_guid();
+}
+
 bool GetCollectStatsConsent() {
   bool enabled = true;
 

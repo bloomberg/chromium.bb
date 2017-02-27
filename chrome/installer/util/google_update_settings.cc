@@ -22,6 +22,7 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
@@ -552,7 +553,7 @@ bool GoogleUpdateSettings::WriteGoogleUpdateSystemClientKey(
 }
 
 GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
-    const base::string16& app_guid,
+    base::StringPiece16 app_guid,
     bool* is_overridden) {
   bool found_override = false;
   UpdatePolicy update_policy = kDefaultUpdatePolicy;
@@ -567,7 +568,7 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
           ERROR_SUCCESS) {
     DWORD value = 0;
     base::string16 app_update_override(kUpdateOverrideValuePrefix);
-    app_update_override.append(app_guid);
+    app_guid.AppendToString(&app_update_override);
     // First try to read and comprehend the app-specific override.
     found_override = (policy_key.ReadValueDW(app_update_override.c_str(),
                                              &value) == ERROR_SUCCESS &&
@@ -603,8 +604,8 @@ bool GoogleUpdateSettings::AreAutoupdatesEnabled() {
     return false;
   }
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  UpdatePolicy app_policy = GetAppUpdatePolicy(dist->GetAppGuid(), nullptr);
+  UpdatePolicy app_policy =
+      GetAppUpdatePolicy(install_static::GetAppGuid(), nullptr);
   return app_policy == AUTOMATIC_UPDATES || app_policy == AUTO_UPDATES_ONLY;
 #else  // defined(GOOGLE_CHROME_BUILD)
   // Chromium does not auto update.
@@ -634,8 +635,7 @@ bool GoogleUpdateSettings::ReenableAutoupdates() {
     // AUTOMATIC_UPDATES is marginally more likely to let a user update and this
     // code is only called when a stuck user asks for updates.
     base::string16 app_update_override(kUpdateOverrideValuePrefix);
-    app_update_override.append(
-        BrowserDistribution::GetDistribution()->GetAppGuid());
+    app_update_override.append(install_static::GetAppGuid());
     if (policy_key.ReadValueDW(app_update_override.c_str(), &value) !=
         ERROR_SUCCESS) {
       automatic_updates_allowed_by_overrides = false;
@@ -711,12 +711,9 @@ base::string16 GoogleUpdateSettings::GetDownloadPreference() {
 }
 
 void GoogleUpdateSettings::RecordChromeUpdatePolicyHistograms() {
-  const base::string16 app_guid =
-      BrowserDistribution::GetDistribution()->GetAppGuid();
-
   bool is_overridden = false;
-  const UpdatePolicy update_policy = GetAppUpdatePolicy(app_guid,
-                                                        &is_overridden);
+  const UpdatePolicy update_policy =
+      GetAppUpdatePolicy(install_static::GetAppGuid(), &is_overridden);
   UMA_HISTOGRAM_BOOLEAN("GoogleUpdate.UpdatePolicyIsOverridden", is_overridden);
   UMA_HISTOGRAM_ENUMERATION("GoogleUpdate.EffectivePolicy", update_policy,
                             UPDATE_POLICIES_COUNT);
@@ -849,9 +846,7 @@ bool GoogleUpdateSettings::GetUpdateDetailForGoogleUpdate(bool system_install,
 
 bool GoogleUpdateSettings::GetUpdateDetail(bool system_install,
                                            ProductData* data) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  return GetUpdateDetailForApp(system_install,
-                               dist->GetAppGuid().c_str(),
+  return GetUpdateDetailForApp(system_install, install_static::GetAppGuid(),
                                data);
 }
 

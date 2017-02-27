@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/install_static/install_details.h"
@@ -16,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::ElementsAre;
+using ::testing::StrCaseEq;
 
 namespace install_static {
 
@@ -340,6 +342,28 @@ class InstallStaticUtilTest
 
   DISALLOW_COPY_AND_ASSIGN(InstallStaticUtilTest);
 };
+
+TEST_P(InstallStaticUtilTest, GetAppGuid) {
+  // For brands that do not integrate with Omaha/Google Update, the app guid is
+  // an empty string.
+  if (!kUseGoogleUpdateIntegration) {
+    EXPECT_STREQ(L"", GetAppGuid());
+    return;
+  }
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // The app guids for the brand's install modes; parallel to kInstalLModes.
+  static constexpr const wchar_t* kAppGuids[] = {
+      L"{8A69D345-D564-463c-AFF1-A69D9E530F96}",  // Google Chrome.
+      L"{4EA16AC7-FD5A-47C3-875B-DBF4A2008C20}",  // Google Chrome SxS (Canary).
+  };
+  static_assert(arraysize(kAppGuids) == NUM_INSTALL_MODES,
+                "kAppGuids out of date.");
+  EXPECT_THAT(GetAppGuid(), StrCaseEq(kAppGuids[std::get<0>(GetParam())]));
+#else
+  FAIL() << "Not implemented.";
+#endif
+}
 
 TEST_P(InstallStaticUtilTest, UsageStatsAbsent) {
   EXPECT_FALSE(GetCollectStatsConsent());

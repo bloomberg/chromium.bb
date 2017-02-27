@@ -12,7 +12,6 @@
 class AppRegistrationData {
  public:
   virtual ~AppRegistrationData() {}
-  virtual base::string16 GetAppGuid() const = 0;
   virtual base::string16 GetStateKey() const = 0;
   virtual base::string16 GetStateMediumKey() const = 0;
   virtual base::string16 GetVersionKey() const = 0;

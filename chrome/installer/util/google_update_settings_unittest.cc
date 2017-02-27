@@ -20,6 +20,7 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -706,21 +707,19 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
 }
 
 TEST_F(GoogleUpdateSettingsTest, PerAppUpdatesDisabledByPolicy) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  EXPECT_TRUE(
-      SetUpdatePolicyForAppGuid(dist->GetAppGuid(),
-                                GoogleUpdateSettings::UPDATES_DISABLED));
+  const wchar_t* app_guid = install_static::GetAppGuid();
+  EXPECT_TRUE(SetUpdatePolicyForAppGuid(
+      app_guid, GoogleUpdateSettings::UPDATES_DISABLED));
   bool is_overridden = false;
   GoogleUpdateSettings::UpdatePolicy update_policy =
-      GoogleUpdateSettings::GetAppUpdatePolicy(dist->GetAppGuid(),
-                                               &is_overridden);
+      GoogleUpdateSettings::GetAppUpdatePolicy(app_guid, &is_overridden);
   EXPECT_TRUE(is_overridden);
   EXPECT_EQ(GoogleUpdateSettings::UPDATES_DISABLED, update_policy);
   EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled());
 
   EXPECT_TRUE(GoogleUpdateSettings::ReenableAutoupdates());
-  update_policy = GoogleUpdateSettings::GetAppUpdatePolicy(dist->GetAppGuid(),
-                                                           &is_overridden);
+  update_policy =
+      GoogleUpdateSettings::GetAppUpdatePolicy(app_guid, &is_overridden);
   // Should still have a policy but now that policy should explicitly enable
   // updates.
   EXPECT_TRUE(is_overridden);
@@ -731,10 +730,9 @@ TEST_F(GoogleUpdateSettingsTest, PerAppUpdatesDisabledByPolicy) {
 TEST_F(GoogleUpdateSettingsTest, PerAppUpdatesEnabledWithGlobalDisabled) {
   // Disable updates globally but enable them for Chrome (the app-specific
   // setting should take precedence).
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  EXPECT_TRUE(
-      SetUpdatePolicyForAppGuid(dist->GetAppGuid(),
-                                GoogleUpdateSettings::AUTOMATIC_UPDATES));
+  const wchar_t* app_guid = install_static::GetAppGuid();
+  EXPECT_TRUE(SetUpdatePolicyForAppGuid(
+      app_guid, GoogleUpdateSettings::AUTOMATIC_UPDATES));
   EXPECT_TRUE(SetGlobalUpdatePolicy(GoogleUpdateSettings::UPDATES_DISABLED));
 
   // Make sure we read this as still having updates enabled.
@@ -743,27 +741,26 @@ TEST_F(GoogleUpdateSettingsTest, PerAppUpdatesEnabledWithGlobalDisabled) {
   // Make sure that the reset action returns true and is a no-op.
   EXPECT_TRUE(GoogleUpdateSettings::ReenableAutoupdates());
   EXPECT_EQ(GoogleUpdateSettings::AUTOMATIC_UPDATES,
-            GetUpdatePolicyForAppGuid(dist->GetAppGuid()));
+            GetUpdatePolicyForAppGuid(app_guid));
   EXPECT_EQ(GoogleUpdateSettings::UPDATES_DISABLED, GetGlobalUpdatePolicy());
 }
 
 TEST_F(GoogleUpdateSettingsTest, GlobalUpdatesDisabledByPolicy) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  const wchar_t* app_guid = install_static::GetAppGuid();
   EXPECT_TRUE(SetGlobalUpdatePolicy(GoogleUpdateSettings::UPDATES_DISABLED));
   bool is_overridden = false;
 
   // The contract for GetAppUpdatePolicy states that |is_overridden| should be
   // set to false when updates are disabled on a non-app-specific basis.
   GoogleUpdateSettings::UpdatePolicy update_policy =
-      GoogleUpdateSettings::GetAppUpdatePolicy(dist->GetAppGuid(),
-                                               &is_overridden);
+      GoogleUpdateSettings::GetAppUpdatePolicy(app_guid, &is_overridden);
   EXPECT_FALSE(is_overridden);
   EXPECT_EQ(GoogleUpdateSettings::UPDATES_DISABLED, update_policy);
   EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled());
 
   EXPECT_TRUE(GoogleUpdateSettings::ReenableAutoupdates());
-  update_policy = GoogleUpdateSettings::GetAppUpdatePolicy(dist->GetAppGuid(),
-                                                           &is_overridden);
+  update_policy =
+      GoogleUpdateSettings::GetAppUpdatePolicy(app_guid, &is_overridden);
   // Policy should now be to enable updates, |is_overridden| should still be
   // false.
   EXPECT_FALSE(is_overridden);

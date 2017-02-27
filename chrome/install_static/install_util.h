@@ -54,6 +54,11 @@ template <typename T> inline void IgnoreUnused(T) {}
 // Returns true if Chrome is running at system level.
 bool IsSystemInstall();
 
+// Returns the app GUID with which Chrome is registered with Google Update, or
+// an empty string if this brand does not integrate with Google Update. This is
+// a simple convenience wrapper around InstallDetails.
+const wchar_t* GetAppGuid();
+
 // Returns true if usage stats collecting is enabled for this user for the
 // current executable.
 bool GetCollectStatsConsent();

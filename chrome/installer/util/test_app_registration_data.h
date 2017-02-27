@@ -11,7 +11,6 @@ class TestAppRegistrationData : public AppRegistrationData {
  public:
   TestAppRegistrationData();
   ~TestAppRegistrationData() override;
-  base::string16 GetAppGuid() const override;
   base::string16 GetStateKey() const override;
   base::string16 GetStateMediumKey() const override;
   base::string16 GetVersionKey() const override;

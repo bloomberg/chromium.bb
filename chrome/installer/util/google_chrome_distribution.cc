@@ -23,6 +23,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -147,7 +148,7 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
 }
 
 base::string16 GoogleChromeDistribution::GetActiveSetupGuid() {
-  return GetAppGuid();
+  return install_static::GetAppGuid();
 }
 
 base::string16 GoogleChromeDistribution::GetBaseAppName() {
@@ -203,7 +204,7 @@ std::string GoogleChromeDistribution::GetSafeBrowsingName() {
 base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   base::string16 sub_key(google_update::kRegPathClientState);
   sub_key.append(L"\\");
-  sub_key.append(GetAppGuid());
+  sub_key.append(install_static::GetAppGuid());
 
   base::win::RegKey client_state_key(
       root_key, sub_key.c_str(), KEY_READ | KEY_WOW64_32KEY);
@@ -280,9 +281,10 @@ base::string16 GoogleChromeDistribution::GetCommandExecuteImplClsid() {
 void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {
-  GoogleUpdateSettings::UpdateInstallStatus(system_install,
-      archive_type, InstallUtil::GetInstallReturnCode(install_status),
-      GetAppGuid());
+  GoogleUpdateSettings::UpdateInstallStatus(
+      system_install, archive_type,
+      InstallUtil::GetInstallReturnCode(install_status),
+      install_static::GetAppGuid());
 }
 
 bool GoogleChromeDistribution::ShouldSetExperimentLabels() {

@@ -30,6 +30,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
@@ -57,10 +58,8 @@ bool InvokeGoogleUpdateForRename() {
   if (!FAILED(ipl.CreateInstance(__uuidof(ProcessLauncherClass)))) {
     ULONG_PTR phandle = NULL;
     DWORD id = GetCurrentProcessId();
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    if (!FAILED(ipl->LaunchCmdElevated(dist->GetAppGuid().c_str(),
-                                       google_update::kRegRenameCmdField,
-                                       id,
+    if (!FAILED(ipl->LaunchCmdElevated(install_static::GetAppGuid(),
+                                       google_update::kRegRenameCmdField, id,
                                        &phandle))) {
       HANDLE handle = HANDLE(phandle);
       WaitForSingleObject(handle, INFINITE);
