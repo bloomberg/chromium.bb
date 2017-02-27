@@ -110,6 +110,98 @@ class ScopedPixelUnpackBufferOverride {
     GLint orig_binding_;
 };
 
+bool IsWebGLDrawBuffersSupported(GLenum depth_texture_internal_format,
+                                 GLenum depth_stencil_texture_internal_format) {
+  // This is called after we make sure GL_EXT_draw_buffers is supported.
+  GLint max_draw_buffers = 0;
+  GLint max_color_attachments = 0;
+  glGetIntegerv(GL_MAX_DRAW_BUFFERS, &max_draw_buffers);
+  glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &max_color_attachments);
+  if (max_draw_buffers < 4 || max_color_attachments < 4) {
+    return false;
+  }
+
+  GLint fb_binding = 0;
+  GLint tex_binding = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fb_binding);
+  glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex_binding);
+
+  GLuint fbo;
+  glGenFramebuffersEXT(1, &fbo);
+  glBindFramebufferEXT(GL_FRAMEBUFFER, fbo);
+
+  GLuint depth_stencil_texture = 0;
+  if (depth_stencil_texture_internal_format != GL_NONE) {
+    glGenTextures(1, &depth_stencil_texture);
+    glBindTexture(GL_TEXTURE_2D, depth_stencil_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, depth_stencil_texture_internal_format, 1, 1,
+                 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+  }
+
+  GLuint depth_texture = 0;
+  if (depth_texture_internal_format != GL_NONE) {
+    glGenTextures(1, &depth_texture);
+    glBindTexture(GL_TEXTURE_2D, depth_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, depth_texture_internal_format, 1, 1, 0,
+                 GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+  }
+
+  GLint max_allowed_buffers = std::min(max_draw_buffers, max_color_attachments);
+  std::vector<GLuint> colors(max_allowed_buffers, 0);
+  glGenTextures(max_allowed_buffers, colors.data());
+
+  bool result = true;
+  for (GLint i = 0; i < max_allowed_buffers; ++i) {
+    GLint color = colors[i];
+    glBindTexture(GL_TEXTURE_2D, color);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+                              GL_TEXTURE_2D, color, 0);
+    if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) !=
+        GL_FRAMEBUFFER_COMPLETE) {
+      result = false;
+      break;
+    }
+    if (depth_texture != 0) {
+      glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                GL_TEXTURE_2D, depth_texture, 0);
+      if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) !=
+          GL_FRAMEBUFFER_COMPLETE) {
+        result = false;
+        break;
+      }
+      glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                GL_TEXTURE_2D, 0, 0);
+    }
+    if (depth_stencil_texture != 0) {
+      // For ES 2.0 contexts DEPTH_STENCIL is not available natively, so we
+      // emulate it at the command buffer level for WebGL contexts.
+      glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                                GL_TEXTURE_2D, depth_stencil_texture, 0);
+      if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) !=
+          GL_FRAMEBUFFER_COMPLETE) {
+        result = false;
+        break;
+      }
+      glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                                GL_TEXTURE_2D, 0, 0);
+    }
+  }
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER, static_cast<GLuint>(fb_binding));
+  glDeleteFramebuffersEXT(1, &fbo);
+
+  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(tex_binding));
+  glDeleteTextures(1, &depth_texture);
+  glDeleteTextures(1, &depth_stencil_texture);
+  glDeleteTextures(colors.size(), colors.data());
+
+  DCHECK(glGetError() == GL_NO_ERROR);
+
+  return result;
+}
+
 }  // anonymous namespace.
 
 FeatureInfo::FeatureFlags::FeatureFlags() {}
@@ -462,6 +554,7 @@ void FeatureInfo::InitializeFeatures() {
   // get rid of it.
   //
   bool enable_depth_texture = false;
+  GLenum depth_texture_format = GL_NONE;
   if (!workarounds_.disable_depth_texture &&
       (extensions.Contains("GL_ARB_depth_texture") ||
        extensions.Contains("GL_OES_depth_texture") ||
@@ -472,6 +565,7 @@ void FeatureInfo::InitializeFeatures() {
     // This is because depth textures are filterable under linear mode in
     // ES2 + extension, but not in core ES3.
     enable_depth_texture = true;
+    depth_texture_format = GL_DEPTH_COMPONENT;
     feature_flags_.angle_depth_texture =
         extensions.Contains("GL_ANGLE_depth_texture");
   }
@@ -487,6 +581,7 @@ void FeatureInfo::InitializeFeatures() {
         GL_DEPTH_COMPONENT);
   }
 
+  GLenum depth_stencil_texture_format = GL_NONE;
   if (extensions.Contains("GL_EXT_packed_depth_stencil") ||
       extensions.Contains("GL_OES_packed_depth_stencil") ||
       gl_version_info_->is_es3 ||
@@ -494,6 +589,11 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_OES_packed_depth_stencil");
     feature_flags_.packed_depth24_stencil8 = true;
     if (enable_depth_texture) {
+      if (gl_version_info_->is_es3) {
+        depth_stencil_texture_format = GL_DEPTH24_STENCIL8;
+      } else {
+        depth_stencil_texture_format = GL_DEPTH_STENCIL;
+      }
       validators_.texture_internal_format.AddValue(GL_DEPTH_STENCIL);
       validators_.texture_format.AddValue(GL_DEPTH_STENCIL);
       validators_.pixel_type.AddValue(GL_UNSIGNED_INT_24_8);
@@ -998,10 +1098,14 @@ void FeatureInfo::InitializeFeatures() {
       extensions.Contains("GL_EXT_draw_buffers");
   bool can_emulate_es2_draw_buffers_on_es3_nv =
       gl_version_info_->is_es3 && extensions.Contains("GL_NV_draw_buffers");
-  bool have_es2_draw_buffers = !workarounds_.disable_ext_draw_buffers &&
-                               IsWebGL1OrES2Context() &&
-                               (have_es2_draw_buffers_vendor_agnostic ||
-                                can_emulate_es2_draw_buffers_on_es3_nv);
+  bool have_es2_draw_buffers =
+      !workarounds_.disable_ext_draw_buffers &&
+      (have_es2_draw_buffers_vendor_agnostic ||
+       can_emulate_es2_draw_buffers_on_es3_nv) &&
+      (context_type_ == CONTEXT_TYPE_OPENGLES2 ||
+       (context_type_ == CONTEXT_TYPE_WEBGL1 &&
+        IsWebGLDrawBuffersSupported(depth_texture_format,
+                                    depth_stencil_texture_format)));
   if (have_es2_draw_buffers) {
     AddExtensionString("GL_EXT_draw_buffers");
     feature_flags_.ext_draw_buffers = true;

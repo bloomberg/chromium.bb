@@ -45,8 +45,6 @@ class WebGLDrawBuffers final : public WebGLExtension {
 
  private:
   explicit WebGLDrawBuffers(WebGLRenderingContextBase*);
-
-  static bool satisfiesWebGLRequirements(WebGLRenderingContextBase*);
 };
 
 }  // namespace blink
