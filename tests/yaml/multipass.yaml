@@ -1,0 +1,8 @@
+# A back translation attribute rule at the start of a string is incorrectly resolved
+table: |
+  include tables/chardefs.cti
+  pass2 $l @123456
+flags: {testmode: backward}
+tests:
+  - - foo
+    - ===
