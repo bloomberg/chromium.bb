@@ -47,6 +47,9 @@ cr.define('extensions', function() {
     inspectItemView: assertNotReached,
 
     /** @param {string} id */
+    reloadItem: assertNotReached,
+
+    /** @param {string} id */
     repairItem: assertNotReached,
 
     /** @param {string} id */
@@ -135,7 +138,17 @@ cr.define('extensions', function() {
      * @private
      */
     onInspectTap_: function(e) {
-      this.delegate.inspectItemView(this.data.id, e.model.item);
+      this.delegate.inspectItemView(this.data.id, this.data.views[0]);
+    },
+
+    /** @private */
+    onExtraInspectTap_: function() {
+      this.fire('extension-item-show-details', {data: this.data});
+    },
+
+    /** @private */
+    onReloadTap_: function() {
+      this.delegate.reloadItem(this.data.id);
     },
 
     /** @private */
@@ -160,9 +173,34 @@ cr.define('extensions', function() {
       assertNotReached();  // FileNotFound.
     },
 
-    /** @private */
+    /**
+     * Returns true if the enable toggle should be shown.
+     * @return {boolean}
+     * @private
+     */
+    showEnableToggle_: function() {
+      return !this.isTerminated_() && !this.data.disableReasons.corruptInstall;
+    },
+
+    /**
+     * Returns true if the extension is in the terminated state.
+     * @return {boolean}
+     * @private
+     */
+    isTerminated_: function() {
+      return this.data.state ==
+          chrome.developerPrivate.ExtensionState.TERMINATED;
+    },
+
+    /**
+     * return {string}
+     * @private
+     */
     computeClasses_: function() {
-      return this.isEnabled_() ? 'enabled' : 'disabled';
+      var classes = this.isEnabled_() ? 'enabled' : 'disabled';
+      if (this.inDevMode)
+        classes += ' dev-mode';
+      return classes;
     },
 
     /**
@@ -194,10 +232,19 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {chrome.developerPrivate.ExtensionView} view
+     * @return {boolean}
      * @private
      */
-    computeInspectLabel_: function(view) {
+    computeInspectViewsHidden_: function() {
+      return !this.data.views || this.data.views.length == 0;
+    },
+
+    /**
+     * @return {string}
+     * @private
+     */
+    computeFirstInspectLabel_: function() {
+      var view = this.data.views[0];
       // Trim the "chrome-extension://<id>/".
       var url = new URL(view.url);
       var label = view.url;
@@ -210,7 +257,28 @@ cr.define('extensions', function() {
                (view.renderProcessId == -1 ?
                     ' ' + this.i18n('viewInactive') : '') +
                (view.isIframe ? ' ' + this.i18n('viewIframe') : '');
+      var index = this.data.views.indexOf(view);
+      assert(index >= 0);
+      if (index < this.data.views.length - 1)
+        label += ',';
       return label;
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    computeExtraViewsHidden_: function() {
+      return this.data.views.length <= 1;
+    },
+
+    /**
+     * @return {string}
+     * @private
+     */
+    computeExtraInspectLabel_: function() {
+      return loadTimeData.getStringF('itemInspectViewsExtra',
+                                     this.data.views.length - 1);
     },
 
     /**

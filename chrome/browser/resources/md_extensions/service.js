@@ -222,6 +222,11 @@ cr.define('extensions', function() {
     },
 
     /** @override */
+    reloadItem: function(id) {
+      chrome.developerPrivate.reload(id, {failQuietly: false});
+    },
+
+    /** @override */
     repairItem: function(id) {
       chrome.developerPrivate.repairExtension(id);
     },

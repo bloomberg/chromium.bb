@@ -131,6 +131,12 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("itemId", IDS_MD_EXTENSIONS_ITEM_ID);
   source->AddLocalizedString("itemInspectViews",
                              IDS_MD_EXTENSIONS_ITEM_INSPECT_VIEWS);
+  // NOTE: This text reads "<n> more". It's possible that it should be using
+  // a plural string instead. Unfortunately, this is non-trivial since we don't
+  // expose that capability to JS yet. Since we don't know it's a problem, use
+  // a simple placeholder for now.
+  source->AddLocalizedString("itemInspectViewsExtra",
+                             IDS_MD_EXTENSIONS_ITEM_INSPECT_VIEWS_EXTRA);
   source->AddLocalizedString("itemAllowIncognito",
                              IDS_MD_EXTENSIONS_ITEM_ALLOW_INCOGNITO);
   source->AddLocalizedString("itemDescriptionLabel",
@@ -167,6 +173,7 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("itemCorruptInstall",
                              IDS_EXTENSIONS_CORRUPTED_EXTENSION);
   source->AddLocalizedString("itemRepair", IDS_EXTENSIONS_REPAIR_CORRUPTED);
+  source->AddLocalizedString("itemReload", IDS_EXTENSIONS_RELOAD_TERMINATED);
   source->AddString(
       "itemSuspiciousInstall",
       l10n_util::GetStringFUTF16(
