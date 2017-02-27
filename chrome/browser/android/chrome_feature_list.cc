@@ -55,6 +55,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kImprovedA2HS,
     &kNoCreditCardAbort,
     &kNTPCondensedLayoutFeature,
+    &kNTPCondensedTileLayoutFeature,
     &kNTPFakeOmniboxTextFeature,
     &kNTPOfflinePagesFeature,
     &NTPShowGoogleGInOmniboxFeature,
@@ -137,6 +138,9 @@ const base::Feature kNTPFakeOmniboxTextFeature{
 
 const base::Feature kNTPCondensedLayoutFeature{
     "NTPCondensedLayout", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNTPCondensedTileLayoutFeature{
+    "NTPCondensedTileLayout", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

@@ -19,16 +19,18 @@ import org.chromium.chrome.browser.util.MathUtils;
  * A layout that arranges tiles in a grid.
  */
 public class TileGridLayout extends FrameLayout {
-    private static final int MAX_COLUMNS = 4;
+    private final int mVerticalSpacing;
+    private final int mMinHorizontalSpacing;
+    private final int mMaxHorizontalSpacing;
+    private final int mMaxWidth;
 
-    private int mVerticalSpacing;
-    private int mExtraVerticalSpacing;
-    private int mMinHorizontalSpacing;
-    private int mMaxHorizontalSpacing;
-    private int mMaxWidth;
     private int mMaxRows;
+    private int mMaxColumns;
+    private int mExtraVerticalSpacing;
 
     /**
+     * Constructor for inflating from XML.
+     *
      * @param context The view context in which this item will be shown.
      * @param attrs The attributes of the XML tag that is inflating the view.
      */
@@ -45,11 +47,17 @@ public class TileGridLayout extends FrameLayout {
     }
 
     /**
-     * Sets the maximum number of rows to display. Any items that don't fit within these rows will
-     * be hidden.
+     * Sets the maximum number of rows to display. Any items that don't fit will be hidden.
      */
     public void setMaxRows(int rows) {
         mMaxRows = rows;
+    }
+
+    /**
+     * Sets the maximum number of columns to display. Any items that don't fit will be hidden.
+     */
+    public void setMaxColumns(int columns) {
+        mMaxColumns = columns;
     }
 
     /**
@@ -105,7 +113,7 @@ public class TileGridLayout extends FrameLayout {
         int childWidth = getChildAt(0).getMeasuredWidth();
         int numColumns = MathUtils.clamp(
                 (gridWidth + mMinHorizontalSpacing) / (childWidth + mMinHorizontalSpacing), 1,
-                MAX_COLUMNS);
+                mMaxColumns);
 
         // Ensure column spacing isn't greater than mMaxHorizontalSpacing.
         int gridWidthMinusColumns = Math.max(0, gridWidth - numColumns * childWidth);

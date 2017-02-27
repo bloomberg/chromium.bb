@@ -107,11 +107,13 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
             super(LayoutInflater.from(parentView.getContext())
                             .inflate(R.layout.suggestions_site_tile_grid, parentView, false));
             mLayout = (TileGridLayout) itemView;
+            mLayout.setMaxRows(getMaxTileRows());
+            mLayout.setMaxColumns(MAX_TILE_COLUMNS);
         }
 
         public void onBindViewHolder(TileGroup tileGroup) {
-            mLayout.setMaxRows(getMaxTileRows());
-            tileGroup.renderTileViews(mLayout, /* trackLoadTasks = */ false);
+            tileGroup.renderTileViews(mLayout, /* trackLoadTasks = */ false,
+                    /* condensed = */ false);
         }
 
         public void updateIconView(Tile tile) {

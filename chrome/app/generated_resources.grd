@@ -14463,6 +14463,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_NTP_CONDENSED_LAYOUT_DESCRIPTION" desc="Description for the flag to enable the condensed New Tab Page layout." translateable="false">
         Show a condensed layout on the New Tab Page.
       </message>
+      <message name="IDS_FLAGS_NTP_CONDENSED_TILE_LAYOUT_NAME" desc="Name for the flag to enable the condensed tile layout on the New Tab Page." translateable="false">
+        Condensed NTP tile layout
+      </message>
+      <message name="IDS_FLAGS_NTP_CONDENSED_TILE_LAYOUT_DESCRIPTION" desc="Description for the flag to enable the condensed tile layout on the New Tab Page." translateable="false">
+        Show a condensed tile layout on the New Tab Page.
+      </message>
       <message name="IDS_FLAGS_NTP_GOOGLE_G_IN_OMNIBOX_NAME" desc="Name for the flag to show a Google G in the omnibox on the New Tab Page." translateable="false">
         Google G in New Tab Page omnibox
       </message>

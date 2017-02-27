@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -46,14 +48,43 @@ public class TileView extends FrameLayout {
      * after inflation.
      * @param tile The tile that holds the data to populate this view.
      * @param titleLines The number of text lines to use for the tile title.
+     * @param condensed Whether to use a condensed layout.
      */
-    public void initialize(Tile tile, int titleLines) {
+    public void initialize(Tile tile, int titleLines, boolean condensed) {
         mTitleView.setLines(titleLines);
         mUrl = tile.getUrl();
+
+        // TODO(mvanouwerkerk): Move this code to xml - https://crbug.com/695817.
+        if (condensed) {
+            Resources res = getResources();
+
+            setPadding(0, 0, 0, 0);
+            LayoutParams tileParams = (LayoutParams) getLayoutParams();
+            tileParams.width = res.getDimensionPixelOffset(R.dimen.tile_view_width_condensed);
+            setLayoutParams(tileParams);
+
+            LayoutParams iconParams = (LayoutParams) mIconView.getLayoutParams();
+            iconParams.setMargins(0,
+                    res.getDimensionPixelOffset(R.dimen.tile_view_icon_margin_top_condensed), 0, 0);
+            mIconView.setLayoutParams(iconParams);
+
+            View highlightView = findViewById(R.id.tile_view_highlight);
+            LayoutParams highlightParams = (LayoutParams) highlightView.getLayoutParams();
+            highlightParams.setMargins(0,
+                    res.getDimensionPixelOffset(R.dimen.tile_view_icon_margin_top_condensed), 0, 0);
+            highlightView.setLayoutParams(highlightParams);
+
+            LayoutParams titleParams = (LayoutParams) mTitleView.getLayoutParams();
+            titleParams.setMargins(0,
+                    res.getDimensionPixelOffset(R.dimen.tile_view_title_margin_top_condensed), 0,
+                    0);
+            mTitleView.setLayoutParams(titleParams);
+        }
+
         renderTile(tile);
     }
 
-    /** @return The url associated to this view. */
+    /** @return The url associated with this view. */
     public String getUrl() {
         return mUrl;
     }

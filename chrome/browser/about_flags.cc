@@ -585,6 +585,21 @@ const FeatureEntry::FeatureVariation kNTPSnippetsFeatureVariations[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kCondensedTileLayoutForSmallScreensEnabled[] =
+    {{"condensed_tile_layout_for_small_screens_enabled", "true"}};
+
+const FeatureEntry::FeatureParam kCondensedTileLayoutForLargeScreensEnabled[] =
+    {{"condensed_tile_layout_for_large_screens_enabled", "true"}};
+
+const FeatureEntry::FeatureVariation
+    kNTPCondensedTileLayoutFeatureVariations[] = {
+        {"(small screens)", kCondensedTileLayoutForSmallScreensEnabled,
+         arraysize(kCondensedTileLayoutForSmallScreensEnabled), nullptr},
+        {"(large screens)", kCondensedTileLayoutForLargeScreensEnabled,
+         arraysize(kCondensedTileLayoutForLargeScreensEnabled), nullptr}};
+#endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
 const FeatureEntry::Choice kUpdateMenuItemSummaryChoices[] = {
     {IDS_FLAGS_UPDATE_MENU_ITEM_NO_SUMMARY, "", ""},
     {IDS_FLAGS_UPDATE_MENU_ITEM_DEFAULT_SUMMARY,
@@ -1948,6 +1963,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-condensed-layout", IDS_FLAGS_NTP_CONDENSED_LAYOUT_NAME,
      IDS_FLAGS_NTP_CONDENSED_LAYOUT_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNTPCondensedLayoutFeature)},
+    {"ntp-condensed-tile-layout", IDS_FLAGS_NTP_CONDENSED_TILE_LAYOUT_NAME,
+     IDS_FLAGS_NTP_CONDENSED_TILE_LAYOUT_DESCRIPTION, kOsAndroid,
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+         chrome::android::kNTPCondensedTileLayoutFeature,
+         kNTPCondensedTileLayoutFeatureVariations,
+         ntp_snippets::kStudyName)},
     {"ntp-google-g-in-omnibox", IDS_FLAGS_NTP_GOOGLE_G_IN_OMNIBOX_NAME,
      IDS_FLAGS_NTP_GOOGLE_G_IN_OMNIBOX_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::NTPShowGoogleGInOmniboxFeature)},

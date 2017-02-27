@@ -104,7 +104,7 @@
         android:layout_weight="0"
         android:visibility="invisible" />
 
-    <!-- Site suggestion tiles -->
+    <!-- Site suggestion tile grid -->
     <org.chromium.chrome.browser.suggestions.TileGridLayout
         android:id="@+id/tile_grid_layout"
         android:layout_width="wrap_content"
@@ -116,7 +116,7 @@
         android:paddingTop="@dimen/tile_grid_layout_padding_top"
         android:paddingBottom="4dp" />
 
-    <!-- Site suggestions tile grid placeholder -->
+    <!-- Site suggestion tile grid placeholder -->
     <ViewStub
         android:id="@+id/tile_grid_placeholder_stub"
         android:layout_width="match_parent"

@@ -27,6 +27,7 @@ extern const base::Feature kImportantSitesInCBD;
 extern const base::Feature kImprovedA2HS;
 extern const base::Feature kNoCreditCardAbort;
 extern const base::Feature kNTPCondensedLayoutFeature;
+extern const base::Feature kNTPCondensedTileLayoutFeature;
 extern const base::Feature kNTPFakeOmniboxTextFeature;
 extern const base::Feature kNTPOfflinePagesFeature;
 extern const base::Feature NTPShowGoogleGInOmniboxFeature;

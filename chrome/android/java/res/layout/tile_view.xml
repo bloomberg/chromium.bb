@@ -12,39 +12,42 @@
     android:paddingStart="4dp"
     android:paddingEnd="4dp" >
 
+    <!-- The main icon. -->
     <ImageView
         android:id="@+id/tile_view_icon"
         android:layout_width="@dimen/tile_view_icon_size"
         android:layout_height="@dimen/tile_view_icon_size"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginTop="12dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/tile_view_icon_margin_top"
         android:contentDescription="@null" />
 
+    <!-- The offline badge. -->
     <org.chromium.chrome.browser.widget.TintedImageView
         android:id="@+id/offline_badge"
         android:layout_width="@dimen/tile_view_offline_badge_size"
         android:layout_height="@dimen/tile_view_offline_badge_size"
-        android:layout_marginStart="48dp"
+        android:layout_gravity="top|end"
         android:visibility="gone"
         android:background="@drawable/offline_badge_background"
         android:contentDescription="@string/accessibility_ntp_offline_badge"
         chrome:tint="@color/tile_view_offline_badge_tint"
         android:src="@drawable/offline_pin_round" />
 
+    <!-- The touch highlight. -->
     <View
+        android:id="@+id/tile_view_highlight"
         android:layout_width="@dimen/tile_view_icon_size"
         android:layout_height="@dimen/tile_view_icon_size"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginTop="12dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/tile_view_icon_margin_top"
         android:background="@drawable/tile_view_highlight" />
 
+    <!-- The title. -->
     <TextView
         android:id="@+id/tile_view_title"
-        android:layout_width="72dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="66dp"
+        android:layout_marginTop="@dimen/tile_view_title_margin_top"
         android:ellipsize="end"
         android:gravity="center_horizontal"
         android:lines="2"

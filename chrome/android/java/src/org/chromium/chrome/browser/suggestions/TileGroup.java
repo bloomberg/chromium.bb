@@ -242,8 +242,10 @@ public class TileGroup implements MostVisitedSites.Observer {
      * possible because view inflation and icon loading are slow.
      * @param tileGridLayout The layout to render the tile views into.
      * @param trackLoadTasks Whether to track load tasks.
+     * @param condensed Whether to use a condensed layout.
      */
-    public void renderTileViews(TileGridLayout tileGridLayout, boolean trackLoadTasks) {
+    public void renderTileViews(
+            TileGridLayout tileGridLayout, boolean trackLoadTasks, boolean condensed) {
         // Map the old tile views by url so they can be reused later.
         Map<String, TileView> oldTileViews = new HashMap<>();
         int childCount = tileGridLayout.getChildCount();
@@ -259,7 +261,8 @@ public class TileGroup implements MostVisitedSites.Observer {
         for (Tile tile : mTiles) {
             TileView tileView = oldTileViews.get(tile.getUrl());
             if (tileView == null) {
-                tileView = buildTileView(tile, tileGridLayout, trackLoadTasks, mTitleLinesCount);
+                tileView = buildTileView(
+                        tile, tileGridLayout, trackLoadTasks, mTitleLinesCount, condensed);
             } else {
                 tileView.updateIfDataChanged(tile);
             }
@@ -282,13 +285,14 @@ public class TileGroup implements MostVisitedSites.Observer {
      * @param parentView The parent of the new tile view.
      * @param trackLoadTask Whether to track a load task.
      * @param titleLines The number of text lines to use for each tile title.
+     * @param condensed Whether to use a condensed layout.
      * @return The new tile view.
      */
-    private TileView buildTileView(
-            Tile tile, ViewGroup parentView, boolean trackLoadTask, int titleLines) {
+    private TileView buildTileView(Tile tile, ViewGroup parentView, boolean trackLoadTask,
+            int titleLines, boolean condensed) {
         TileView tileView = (TileView) LayoutInflater.from(parentView.getContext())
                                     .inflate(R.layout.tile_view, parentView, false);
-        tileView.initialize(tile, titleLines);
+        tileView.initialize(tile, titleLines, condensed);
 
         // Note: It is important that the callbacks below don't keep a reference to the tile or
         // modify them as there is no guarantee that the same tile would be used to update the view.
