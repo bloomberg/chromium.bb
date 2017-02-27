@@ -83,6 +83,8 @@ class PasswordsModelDelegate {
 
   // Open a new tab, pointing to the Smart Lock help article.
   virtual void NavigateToSmartLockHelpPage() = 0;
+  // Open a new tab, pointing to passwords.google.com.
+  virtual void NavigateToPasswordManagerAccountDashboard() = 0;
   // Open a new tab, pointing to the password manager settings page.
   virtual void NavigateToPasswordManagerSettingsPage() = 0;
   // Starts the Chrome Sign in flow.

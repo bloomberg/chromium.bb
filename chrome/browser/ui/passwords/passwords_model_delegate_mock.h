@@ -38,6 +38,7 @@ class PasswordsModelDelegateMock
                                       password_manager::CredentialType));
   MOCK_METHOD0(NavigateToSmartLockPage, void());
   MOCK_METHOD0(NavigateToSmartLockHelpPage, void());
+  MOCK_METHOD0(NavigateToPasswordManagerAccountDashboard, void());
   MOCK_METHOD0(NavigateToPasswordManagerSettingsPage, void());
   MOCK_METHOD0(NavigateToChromeSignIn, void());
   MOCK_METHOD0(OnDialogHidden, void());

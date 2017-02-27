@@ -375,6 +375,13 @@ void ManagePasswordsBubbleModel::OnManageLinkClicked() {
   delegate_->NavigateToPasswordManagerSettingsPage();
 }
 
+void ManagePasswordsBubbleModel::
+    OnNavigateToPasswordManagerAccountDashboardLinkClicked() {
+  interaction_keeper_->set_dismissal_reason(
+      metrics_util::CLICKED_PASSWORDS_DASHBOARD);
+  delegate_->NavigateToPasswordManagerAccountDashboard();
+}
+
 void ManagePasswordsBubbleModel::OnBrandLinkClicked() {
   interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_BRAND_NAME);
   delegate_->NavigateToSmartLockHelpPage();
