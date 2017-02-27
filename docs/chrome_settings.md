@@ -1,4 +1,24 @@
-# What is chrome://settings?
+# Deprecation
+
+This doc refers to "options", the soon-to-be-deprecated version of
+chrome://settings being replaced by Material Design Settings.
+
+**Any new features and bug fixes should be contributed to MD Settings, found in
+the /settings/ directories (as opposed to the /options/ directories).**
+
+See: https://www.chromium.org/developers/updating-webui-for-material-design
+
+Note: As the soft launch begins, chrome://settings may start surfacing the
+Material Design settings page. The deprecated "options" page will be available
+during this time at chrome://settings-frame, but will eventually be removed.
+
+# Outdated
+
+The remainder of this doc has not been substantially updated in some time, but
+is generally correct. Contact /options/ OWNERS if you have questions, but see
+the deprecation notice above.
+
+## What is chrome://settings?
 
 Chrome (version 10 and above) uses WebUI settings by default for all platforms.
 Access it via the wrench menu ("Preferences" on Mac and Linux; "Options" on
