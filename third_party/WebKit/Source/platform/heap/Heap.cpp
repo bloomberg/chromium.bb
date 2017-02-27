@@ -152,7 +152,7 @@ ThreadHeap::ThreadHeap(ThreadState* threadState)
       m_freePagePool(WTF::wrapUnique(new PagePool)),
       m_markingStack(CallbackStack::create()),
       m_postMarkingCallbackStack(CallbackStack::create()),
-      m_globalWeakCallbackStack(CallbackStack::create()),
+      m_weakCallbackStack(CallbackStack::create()),
       m_ephemeronStack(CallbackStack::create()) {
   if (ThreadState::current()->isMainThread())
     s_mainThreadHeap = this;
@@ -248,12 +248,12 @@ bool ThreadHeap::popAndInvokePostMarkingCallback(Visitor* visitor) {
 void ThreadHeap::pushWeakCallback(void* closure, WeakCallback callback) {
   ASSERT(ThreadState::current()->isInGC());
 
-  CallbackStack::Item* slot = m_globalWeakCallbackStack->allocateEntry();
+  CallbackStack::Item* slot = m_weakCallbackStack->allocateEntry();
   *slot = CallbackStack::Item(closure, callback);
 }
 
-bool ThreadHeap::popAndInvokeGlobalWeakCallback(Visitor* visitor) {
-  if (CallbackStack::Item* item = m_globalWeakCallbackStack->pop()) {
+bool ThreadHeap::popAndInvokeWeakCallback(Visitor* visitor) {
+  if (CallbackStack::Item* item = m_weakCallbackStack->pop()) {
     item->call(visitor);
     return true;
   }
@@ -283,7 +283,7 @@ bool ThreadHeap::weakTableRegistered(const void* table) {
 void ThreadHeap::commitCallbackStacks() {
   m_markingStack->commit();
   m_postMarkingCallbackStack->commit();
-  m_globalWeakCallbackStack->commit();
+  m_weakCallbackStack->commit();
   m_ephemeronStack->commit();
 }
 
@@ -309,7 +309,7 @@ void ThreadHeap::registerMovingObjectCallback(MovableReference reference,
 void ThreadHeap::decommitCallbackStacks() {
   m_markingStack->decommit();
   m_postMarkingCallbackStack->decommit();
-  m_globalWeakCallbackStack->decommit();
+  m_weakCallbackStack->decommit();
   m_ephemeronStack->decommit();
 }
 
@@ -365,24 +365,24 @@ void ThreadHeap::postMarkingProcessing(Visitor* visitor) {
   ASSERT(m_markingStack->isEmpty());
 }
 
-void ThreadHeap::globalWeakProcessing(Visitor* visitor) {
-  TRACE_EVENT0("blink_gc", "ThreadHeap::globalWeakProcessing");
+void ThreadHeap::weakProcessing(Visitor* visitor) {
+  TRACE_EVENT0("blink_gc", "ThreadHeap::weakProcessing");
   double startTime = WTF::currentTimeMS();
 
   // Call weak callbacks on objects that may now be pointing to dead objects.
-  while (popAndInvokeGlobalWeakCallback(visitor)) {
+  while (popAndInvokeWeakCallback(visitor)) {
   }
 
   // It is not permitted to trace pointers of live objects in the weak
   // callback phase, so the marking stack should still be empty here.
   ASSERT(m_markingStack->isEmpty());
 
-  double timeForGlobalWeakProcessing = WTF::currentTimeMS() - startTime;
+  double timeForWeakProcessing = WTF::currentTimeMS() - startTime;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, globalWeakTimeHistogram,
+      CustomCountHistogram, weakProcessingTimeHistogram,
       new CustomCountHistogram("BlinkGC.TimeForGlobalWeakProcessing", 1,
                                10 * 1000, 50));
-  globalWeakTimeHistogram.count(timeForGlobalWeakProcessing);
+  weakProcessingTimeHistogram.count(timeForWeakProcessing);
 }
 
 void ThreadHeap::reportMemoryUsageHistogram() {

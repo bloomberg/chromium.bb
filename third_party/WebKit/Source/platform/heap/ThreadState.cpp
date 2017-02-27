@@ -1501,7 +1501,7 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
         heap().processMarkingStack(visitor.get());
 
         heap().postMarkingProcessing(visitor.get());
-        heap().globalWeakProcessing(visitor.get());
+        heap().weakProcessing(visitor.get());
       }
 
       double markingTimeInMilliseconds = WTF::currentTimeMS() - startTime;
