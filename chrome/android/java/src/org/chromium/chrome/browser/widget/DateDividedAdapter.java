@@ -16,6 +16,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.chromium.base.Log;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.ItemGroup;
 
@@ -276,6 +278,8 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     public static final int TYPE_DATE = 0;
     public static final int TYPE_NORMAL = 1;
     public static final int TYPE_SUBSECTION_HEADER = 2;
+
+    private static final String TAG = "DateDividedAdapter";
 
     private int mSize;
     private boolean mHasListHeader;
@@ -590,8 +594,19 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     /**
      * @param item The item to remove from the adapter.
      */
+    // #getGroupAt() asserts false before returning null, causing findbugs to complain about
+    // a redundant nullcheck even though getGroupAt can return null.
+    @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"})
     protected void removeItem(TimedItem item) {
-        ItemGroup group = getGroupAt(item.getPosition()).first;
+        Pair<ItemGroup, Integer> groupPair = getGroupAt(item.getPosition());
+        if (groupPair == null) {
+            Log.e(TAG,
+                    "Failed to find group for item during remove. Item position: "
+                            + item.getPosition() + ", total size: " + mSize);
+            return;
+        }
+
+        ItemGroup group = groupPair.first;
         group.removeItem(item);
         mSize--;
 
