@@ -98,11 +98,18 @@ binding.registerCustomHook(function(api) {
     }
   });
 
-  apiFunctions.setHandleRequest('fail', function(message) {
+  apiFunctions.setHandleRequest('fail', function failHandler(message) {
     chromeTest.log("(  FAILED  ) " + testName(currentTest));
 
     var stack = {};
-    Error.captureStackTrace(stack, chromeTest.fail);
+    // NOTE(devlin): captureStackTrace() populates a stack property of the
+    // passed-in object with the stack trace. The second parameter (failHandler)
+    // represents a function to serve as a relative point, and is removed from
+    // the trace (so that everything doesn't include failHandler in the trace
+    // itself). This (and other APIs) are documented here:
+    // https://github.com/v8/v8/wiki/Stack%20Trace%20API. If we wanted to be
+    // really fancy, there may be more sophisticated ways of doing this.
+    Error.captureStackTrace(stack, failHandler);
 
     if (!message)
       message = "FAIL (no message)";
