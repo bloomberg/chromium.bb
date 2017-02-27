@@ -8,5 +8,5 @@
 ] interface CSSTransformComponent {
     readonly attribute DOMString cssText;
     boolean is2D();
-    CSSMatrixTransformComponent asMatrix();
+    CSSMatrixComponent asMatrix();
 };

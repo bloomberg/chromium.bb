@@ -29,7 +29,7 @@ class CORE_EXPORT CSSPerspective : public CSSTransformComponent {
   TransformComponentType type() const override { return PerspectiveType; }
 
   // TODO: Implement asMatrix for CSSPerspective.
-  CSSMatrixTransformComponent* asMatrix() const override { return nullptr; }
+  CSSMatrixComponent* asMatrix() const override { return nullptr; }
 
   CSSFunctionValue* toCSSValue() const override;
 

@@ -5,7 +5,7 @@
 #ifndef CSSScale_h
 #define CSSScale_h
 
-#include "core/css/cssom/CSSMatrixTransformComponent.h"
+#include "core/css/cssom/CSSMatrixComponent.h"
 #include "core/css/cssom/CSSTransformComponent.h"
 
 namespace blink {
@@ -31,9 +31,9 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
     return m_is2D ? ScaleType : Scale3DType;
   }
 
-  CSSMatrixTransformComponent* asMatrix() const override {
-    return m_is2D ? CSSMatrixTransformComponent::scale(m_x, m_y)
-                  : CSSMatrixTransformComponent::scale3d(m_x, m_y, m_z);
+  CSSMatrixComponent* asMatrix() const override {
+    return m_is2D ? CSSMatrixComponent::scale(m_x, m_y)
+                  : CSSMatrixComponent::scale3d(m_x, m_y, m_z);
   }
 
   CSSFunctionValue* toCSSValue() const override;

@@ -6,7 +6,7 @@
 #define CSSSkew_h
 
 #include "core/css/cssom/CSSAngleValue.h"
-#include "core/css/cssom/CSSMatrixTransformComponent.h"
+#include "core/css/cssom/CSSMatrixComponent.h"
 #include "core/css/cssom/CSSTransformComponent.h"
 
 namespace blink {
@@ -29,8 +29,8 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
 
   TransformComponentType type() const override { return SkewType; }
 
-  CSSMatrixTransformComponent* asMatrix() const override {
-    return CSSMatrixTransformComponent::skew(m_ax->degrees(), m_ay->degrees());
+  CSSMatrixComponent* asMatrix() const override {
+    return CSSMatrixComponent::skew(m_ax->degrees(), m_ay->degrees());
   }
 
   CSSFunctionValue* toCSSValue() const override;

@@ -79,8 +79,8 @@ test(function() {
     var inputAsMatrix = input.asMatrix();
     assert_equals(inputAsMatrix.is2D(), input.is2D());
 
-    var expectedMatrix = input.is2D() ? new CSSMatrixTransformComponent(input.x, 0, 0, input.y, 0, 0) :
-        new CSSMatrixTransformComponent(input.x, 0, 0, 0, 0, input.y, 0, 0, 0, 0, input.z, 0, 0, 0, 0, 1);
+    var expectedMatrix = input.is2D() ? new CSSMatrixComponent(input.x, 0, 0, input.y, 0, 0) :
+        new CSSMatrixComponent(input.x, 0, 0, 0, 0, input.y, 0, 0, 0, 0, input.z, 0, 0, 0, 0, 1);
     for (var attribute in expectedMatrix) {
       if (typeof expectedMatrix[attribute] === "number") {
         assert_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute], EPSILON);

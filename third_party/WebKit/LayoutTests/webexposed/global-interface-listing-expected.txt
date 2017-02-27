@@ -527,7 +527,7 @@ interface CSSLengthValue : CSSStyleValue
     method divide
     method multiply
     method subtract
-interface CSSMatrixTransformComponent : CSSTransformComponent
+interface CSSMatrixComponent : CSSTransformComponent
     attribute @@toStringTag
     getter a
     getter b

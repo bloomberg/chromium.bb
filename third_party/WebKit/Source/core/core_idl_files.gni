@@ -68,7 +68,7 @@ core_idl_files = get_path_info([
                                  "css/cssom/CSSImageValue.idl",
                                  "css/cssom/CSSKeywordValue.idl",
                                  "css/cssom/CSSLengthValue.idl",
-                                 "css/cssom/CSSMatrixTransformComponent.idl",
+                                 "css/cssom/CSSMatrixComponent.idl",
                                  "css/cssom/CSSNumberValue.idl",
                                  "css/cssom/CSSPerspective.idl",
                                  "css/cssom/CSSPositionValue.idl",

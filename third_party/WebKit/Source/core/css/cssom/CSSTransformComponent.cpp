@@ -4,7 +4,7 @@
 
 #include "core/css/cssom/CSSTransformComponent.h"
 
-#include "core/css/cssom/CSSMatrixTransformComponent.h"
+#include "core/css/cssom/CSSMatrixComponent.h"
 #include "core/css/cssom/CSSPerspective.h"
 #include "core/css/cssom/CSSRotation.h"
 #include "core/css/cssom/CSSScale.h"
@@ -22,7 +22,7 @@ CSSTransformComponent* CSSTransformComponent::fromCSSValue(
   switch (functionValue.functionType()) {
     case CSSValueMatrix:
     case CSSValueMatrix3d:
-      return CSSMatrixTransformComponent::fromCSSValue(functionValue);
+      return CSSMatrixComponent::fromCSSValue(functionValue);
     case CSSValuePerspective:
       return CSSPerspective::fromCSSValue(functionValue);
     case CSSValueRotate:

@@ -40,7 +40,7 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   }
 
   // TODO: Implement asMatrix for CSSTranslation.
-  CSSMatrixTransformComponent* asMatrix() const override { return nullptr; }
+  CSSMatrixComponent* asMatrix() const override { return nullptr; }
 
   CSSFunctionValue* toCSSValue() const override;
 

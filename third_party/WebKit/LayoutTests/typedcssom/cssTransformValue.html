@@ -12,21 +12,21 @@ test(function() {
 
 test(function() {
   var transformArray = [new CSSScale(2,2),
-    new CSSMatrixTransformComponent(1,1,1,1,1,1), new CSSScale(5,6)];
+    new CSSMatrixComponent(1,1,1,1,1,1), new CSSScale(5,6)];
   var transformValue = new CSSTransformValue(transformArray);
   assert_true(transformValue.is2D());
 }, "is2D returns true for transformValues containing only 2D transformComponents");
 
 test(function() {
   var transformArray = [new CSSScale(2,2),
-    new CSSMatrixTransformComponent(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1), new CSSScale(5,6)];
+    new CSSMatrixComponent(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1), new CSSScale(5,6)];
   var transformValue = new CSSTransformValue(transformArray);
   assert_false(transformValue.is2D());
 }, "is2D returns false for transformValues containing both 2D and 3D transformComponents");
 
 test(function() {
   var transformArray = [new CSSScale(2,2),
-    new CSSMatrixTransformComponent(1,1,1,1,1,1), new CSSScale(5,6)];
+    new CSSMatrixComponent(1,1,1,1,1,1), new CSSScale(5,6)];
   var transformValue = new CSSTransformValue(transformArray);
 
   var newTransformArray = [];
@@ -35,7 +35,7 @@ test(function() {
   }
   assert_true(newTransformArray.length == 3);
   assert_true(newTransformArray[0] instanceof CSSScale);
-  assert_true(newTransformArray[1] instanceof CSSMatrixTransformComponent);
+  assert_true(newTransformArray[1] instanceof CSSMatrixComponent);
   assert_true(newTransformArray[2] instanceof CSSScale);
 }, "CSSTransformValue can iterate through all its all its transformComponent members");
 

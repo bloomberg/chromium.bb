@@ -39,7 +39,7 @@ CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138:     method divide
 CONSOLE MESSAGE: line 138:     method multiply
 CONSOLE MESSAGE: line 138:     method subtract
-CONSOLE MESSAGE: line 138: interface CSSMatrixTransformComponent : CSSTransformComponent
+CONSOLE MESSAGE: line 138: interface CSSMatrixComponent : CSSTransformComponent
 CONSOLE MESSAGE: line 138:     getter a
 CONSOLE MESSAGE: line 138:     getter b
 CONSOLE MESSAGE: line 138:     getter c

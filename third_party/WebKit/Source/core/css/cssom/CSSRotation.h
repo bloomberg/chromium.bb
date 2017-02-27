@@ -6,7 +6,7 @@
 #define CSSRotation_h
 
 #include "core/css/cssom/CSSAngleValue.h"
-#include "core/css/cssom/CSSMatrixTransformComponent.h"
+#include "core/css/cssom/CSSMatrixComponent.h"
 #include "core/css/cssom/CSSTransformComponent.h"
 
 namespace blink {
@@ -42,10 +42,10 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
     return m_is2D ? RotationType : Rotation3DType;
   }
 
-  CSSMatrixTransformComponent* asMatrix() const override {
-    return m_is2D ? CSSMatrixTransformComponent::rotate(m_angle->degrees())
-                  : CSSMatrixTransformComponent::rotate3d(m_angle->degrees(),
-                                                          m_x, m_y, m_z);
+  CSSMatrixComponent* asMatrix() const override {
+    return m_is2D ? CSSMatrixComponent::rotate(m_angle->degrees())
+                  : CSSMatrixComponent::rotate3d(m_angle->degrees(), m_x, m_y,
+                                                 m_z);
   }
 
   CSSFunctionValue* toCSSValue() const override;

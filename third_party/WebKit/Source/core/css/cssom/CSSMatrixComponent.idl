@@ -10,7 +10,7 @@
         double m41, double m42, double m43, double m44),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
-] interface CSSMatrixTransformComponent : CSSTransformComponent {
+] interface CSSMatrixComponent : CSSTransformComponent {
     readonly attribute double a;
     readonly attribute double b;
     readonly attribute double c;
