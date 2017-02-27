@@ -8771,7 +8771,7 @@ static int64_t handle_inter_mode(
 #endif  // CONFIG_DUAL_FILTER
 
       if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref,
-                          &mbmi->wm_params[0]) == 0) {
+                          &mbmi->wm_params[0], mi_row, mi_col) == 0) {
         int plane;
 #if CONFIG_AOM_HIGHBITDEPTH
         int use_hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;

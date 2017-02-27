@@ -1218,7 +1218,7 @@ void av1_warp_plane(WarpedMotionParams *wm,
 #define IDET_PREC_BITS 48
 #define IDET_WARPEDMODEL_DIFF_BITS (IDET_PREC_BITS - WARPEDMODEL_PREC_BITS)
 static int find_affine_int(const int np, int *pts1, int *pts2,
-                           WarpedMotionParams *wm) {
+                           WarpedMotionParams *wm, int mi_row, int mi_col) {
   int64_t A[3][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
   int64_t C[3][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
   int64_t Bx[3] = { 0, 0, 0 };
@@ -1227,7 +1227,7 @@ static int find_affine_int(const int np, int *pts1, int *pts2,
   int64_t Det, iDet;
   int i, off;
   // Offsets to make the values in the arrays smaller
-  const int ux = pts1[0], uy = pts1[1];
+  const int ux = mi_col * MI_SIZE * 8, uy = mi_row * MI_SIZE * 8;
   // Let source points (xi, yi) map to destimation points (xi', yi'),
   //     for i = 0, 1, 2, .... n-1
   // Then if  P = [x0, y0, 1,
@@ -1326,10 +1326,12 @@ static int find_affine_int(const int np, int *pts1, int *pts2,
 }
 
 int find_projection(const int np, int *pts1, int *pts2,
-                    WarpedMotionParams *wm_params) {
+                    WarpedMotionParams *wm_params, int mi_row, int mi_col) {
   int result = 1;
   switch (wm_params->wmtype) {
-    case AFFINE: result = find_affine_int(np, pts1, pts2, wm_params); break;
+    case AFFINE:
+      result = find_affine_int(np, pts1, pts2, wm_params, mi_row, mi_col);
+      break;
     default: assert(0 && "Invalid warped motion type!"); return 1;
   }
   if (result == 0) {
