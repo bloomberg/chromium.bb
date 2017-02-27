@@ -27,14 +27,17 @@ HpackEntry::HpackEntry(StringPiece name,
       time_added_(0) {}
 
 HpackEntry::HpackEntry(StringPiece name, StringPiece value)
-    : name_ref_(name), value_ref_(value), insertion_index_(0), type_(LOOKUP),
+    : name_ref_(name),
+      value_ref_(value),
+      insertion_index_(0),
+      type_(LOOKUP),
       time_added_(0) {}
 
-HpackEntry::HpackEntry()
-    : insertion_index_(0), type_(LOOKUP), time_added_(0) {}
+HpackEntry::HpackEntry() : insertion_index_(0), type_(LOOKUP), time_added_(0) {}
 
 HpackEntry::HpackEntry(const HpackEntry& other)
-    : insertion_index_(other.insertion_index_), type_(other.type_),
+    : insertion_index_(other.insertion_index_),
+      type_(other.type_),
       time_added_(0) {
   if (type_ == LOOKUP) {
     name_ref_ = other.name_ref_;

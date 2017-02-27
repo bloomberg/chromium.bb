@@ -26,7 +26,6 @@ HpackDecoder::HpackDecoder()
       size_updates_allowed_(true),
       incremental_decode_(false) {}
 
-
 HpackDecoder::~HpackDecoder() {}
 
 void HpackDecoder::ApplyHeaderTableSizeSetting(size_t size_setting) {
