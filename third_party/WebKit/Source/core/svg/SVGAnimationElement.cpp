@@ -253,24 +253,14 @@ float SVGAnimationElement::getSimpleDuration(
   return clampTo<float>(duration.value());
 }
 
-void SVGAnimationElement::beginElement() {
-  beginElementAt(0);
-}
-
 void SVGAnimationElement::beginElementAt(float offset) {
-  ASSERT(std::isfinite(offset));
-  SMILTime elapsed = this->elapsed();
-  addBeginTime(elapsed, elapsed + offset, SMILTimeWithOrigin::ScriptOrigin);
-}
-
-void SVGAnimationElement::endElement() {
-  endElementAt(0);
+  DCHECK(std::isfinite(offset));
+  addInstanceTime(Begin, elapsed() + offset, SMILTimeWithOrigin::ScriptOrigin);
 }
 
 void SVGAnimationElement::endElementAt(float offset) {
-  ASSERT(std::isfinite(offset));
-  SMILTime elapsed = this->elapsed();
-  addEndTime(elapsed, elapsed + offset, SMILTimeWithOrigin::ScriptOrigin);
+  DCHECK(std::isfinite(offset));
+  addInstanceTime(End, elapsed() + offset, SMILTimeWithOrigin::ScriptOrigin);
 }
 
 void SVGAnimationElement::updateAnimationMode() {

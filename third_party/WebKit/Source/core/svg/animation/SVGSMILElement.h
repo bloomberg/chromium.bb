@@ -127,13 +127,11 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  void addBeginTime(
-      SMILTime eventTime,
-      SMILTime endTime,
-      SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::ParserOrigin);
-  void addEndTime(
-      SMILTime eventTime,
-      SMILTime endTime,
+  enum BeginOrEnd { Begin, End };
+
+  void addInstanceTime(
+      BeginOrEnd,
+      SMILTime,
       SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::ParserOrigin);
 
   void setInactive() { m_activeState = Inactive; }
@@ -158,8 +156,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
                                SVGSMILElement* resultElement) = 0;
 
   bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
-
-  enum BeginOrEnd { Begin, End };
 
   SMILTime findInstanceTime(BeginOrEnd,
                             SMILTime minimumTime,
@@ -236,9 +232,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   void disconnectSyncBaseConditions();
   void disconnectEventBaseConditions();
-
-  // Event base timing
-  void handleConditionEvent(Event*, Condition*);
 
   void notifyDependentsIntervalChanged();
   void createInstanceTimesFromSyncbase(SVGSMILElement& syncbase);
