@@ -28,11 +28,11 @@
     // compositing
     attribute unrestricted double globalAlpha; // (default 1.0)
     attribute DOMString globalCompositeOperation; // (default source-over)
-    attribute DOMString filter;
+    [MeasureAs=Canvas2DFilter]attribute DOMString filter;
 
     // image smoothing
     attribute boolean imageSmoothingEnabled; // (default True)
-    attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
+    [MeasureAs=Canvas2DImageSmoothingQuality] attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
 
     // colors and styles
     attribute (DOMString or CanvasGradient or CanvasPattern) strokeStyle; // (default black)

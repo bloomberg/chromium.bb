@@ -231,7 +231,6 @@ class CORE_EXPORT UseCounter {
     DeprecatedWebKitRepeatingLinearGradient = 262,
     DeprecatedWebKitRadialGradient = 263,
     DeprecatedWebKitRepeatingRadialGradient = 264,
-    UnprefixedImageSmoothingEnabled = 268,
     // The above items are available in M34 branch.
 
     TextAutosizing = 274,
@@ -1459,6 +1458,13 @@ class CORE_EXPORT UseCounter {
     LocationOrigin = 1827,
     DocumentOrigin = 1828,
     SubtleCryptoOnlyStrictSecureContextCheckFailed = 1829,
+    Canvas2DFilter = 1830,
+    Canvas2DImageSmoothingQuality = 1831,
+    CanvasToBlob = 1832,
+    CanvasToDataURL = 1833,
+    OffscreenCanvasConvertToBlob = 1834,
+    SVGInCanvas2D = 1835,
+    SVGInWebGL = 1836,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

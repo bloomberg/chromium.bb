@@ -4912,9 +4912,13 @@ void WebGLRenderingContextBase::texImageHelperHTMLImageElement(
     return;
 
   RefPtr<Image> imageForRender = image->cachedImage()->getImage();
-  if (imageForRender && imageForRender->isSVGImage())
+  if (imageForRender && imageForRender->isSVGImage()) {
+    if (canvas()) {
+      UseCounter::count(canvas()->document(), UseCounter::SVGInWebGL);
+    }
     imageForRender = drawImageIntoBuffer(
         imageForRender.release(), image->width(), image->height(), funcName);
+  }
 
   TexImageFunctionType functionType;
   if (functionID == TexImage2D || functionID == TexImage3D)

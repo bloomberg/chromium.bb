@@ -645,6 +645,7 @@ PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(
 
   RefPtr<Image> sourceImage;
   if (cachedImage()->getImage()->isSVGImage()) {
+    UseCounter::count(document(), UseCounter::SVGInCanvas2D);
     SVGImage* svgImage = toSVGImage(cachedImage()->getImage());
     IntSize imageSize =
         roundedIntSize(svgImage->concreteObjectSize(defaultObjectSize));

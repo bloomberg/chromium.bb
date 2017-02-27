@@ -57,11 +57,11 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
     // compositing
     attribute unrestricted double globalAlpha; // (default 1.0)
     attribute DOMString globalCompositeOperation; // (default source-over)
-    attribute DOMString filter; // (default 'none')
+    [MeasureAs=Canvas2DFilter] attribute DOMString filter; // (default 'none')
 
     // image smoothing
-    [MeasureAs=UnprefixedImageSmoothingEnabled] attribute boolean imageSmoothingEnabled; // (default True)
-    attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
+    attribute boolean imageSmoothingEnabled; // (default True)
+    [MeasureAs=Canvas2DImageSmoothingQuality]attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
 
     // colors and styles (see also the CanvasDrawingStyles interface)
     attribute (DOMString or CanvasGradient or CanvasPattern) strokeStyle; // (default black)
