@@ -46,10 +46,9 @@ static INLINE void av1_update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
 
     rd_stats->txb_coeff_cost_map[plane][blk_row][blk_col] = txb_coeff_cost;
   }
-#endif
-
   assert(blk_row < TXB_COEFF_COST_MAP_SIZE);
   assert(blk_col < TXB_COEFF_COST_MAP_SIZE);
+#endif
 }
 #endif
 
