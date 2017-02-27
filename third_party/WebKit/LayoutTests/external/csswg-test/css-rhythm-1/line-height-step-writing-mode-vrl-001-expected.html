@@ -1,26 +1,29 @@
 <!DOCTYPE html>
-<title>CSS Rhythmic Sizing: line-height-step and ruby</title>
+<title>CSS Rhythmic Sizing: line-height-step in vertical-rl</title>
 <link rel="author" title="Koji Ishii" href="mailto:kojiishi@gmail.com">
 <style>
-div {
+.container {
   font-family: Ahem;
   font-size: 40px;
+  writing-mode: vertical-rl;
+  width: 5em;
 }
 .test, .ref {
   display: inline-block;
   vertical-align: top;
-  width: 5em;
 }
 .ref {
   line-height: 120px;
 }
 </style>
 <body>
-<p class="instructions">Test passes if left and right are the same.
-<div class="ref">
-  <div>X<ruby>XX<rt>XX</rt></ruby>X</div>
-</div>
-<div class="ref">
-  <div>X<ruby>XX<rt>XX</rt></ruby>X</div>
+<p class="instructions">Test passes if top and bottom are the same.
+<div class="container">
+  <div class="ref">
+    <div>XXXXX</div>
+  </div>
+  <div class="ref">
+    <div>XXXXX</div>
+  </div>
 </div>
 </body>
