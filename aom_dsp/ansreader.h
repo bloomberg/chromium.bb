@@ -73,10 +73,11 @@ static INLINE int rabs_read(struct AnsDecoder *ans, AnsP8 p0) {
   const unsigned quotient = state / ANS_P8_PRECISION;
   const unsigned remainder = state % ANS_P8_PRECISION;
   const int value = remainder >= p0;
+  const unsigned qp0 = quotient * p0;
   if (value)
-    state = quotient * (ANS_P8_PRECISION - p0) + remainder - p0;
+    state = state - qp0 - p0;
   else
-    state = quotient * p0 + remainder;
+    state = qp0 + remainder;
   ans->state = state;
   return value;
 }
