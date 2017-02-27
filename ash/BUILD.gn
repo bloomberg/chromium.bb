@@ -1218,6 +1218,23 @@ source_set("common_unittests") {
     "laser/laser_pointer_controller_unittest.cc",
     "laser/laser_pointer_points_unittest.cc",
     "laser/laser_segment_utils_unittest.cc",
+    "metrics/desktop_task_switch_metric_recorder_unittest.cc",
+    "metrics/task_switch_metrics_recorder_unittest.cc",
+    "metrics/task_switch_time_tracker_unittest.cc",
+    "metrics/user_metrics_recorder_unittest.cc",
+    "root_window_controller_unittest.cc",
+    "rotator/screen_rotation_animation_unittest.cc",
+    "screen_util_unittest.cc",
+    "shelf/shelf_layout_manager_unittest.cc",
+    "shelf/shelf_unittest.cc",
+    "shelf/shelf_view_unittest.cc",
+    "shelf/shelf_widget_unittest.cc",
+    "shell_unittest.cc",
+    "sticky_keys/sticky_keys_overlay_unittest.cc",
+    "sticky_keys/sticky_keys_unittest.cc",
+    "system/chromeos/power/power_event_observer_unittest.cc",
+    "system/chromeos/power/tablet_power_button_controller_unittest.cc",
+    "system/chromeos/power/video_activity_notifier_unittest.cc",
   ]
   deps = [
     "//ash",
@@ -1302,25 +1319,12 @@ test("ash_unittests") {
 
     # Specific to X11.
     "host/ash_window_tree_host_x11_unittest.cc",
+
+    # TODO: magnifier not supported in mash. http://crbug.com/647438.
     "magnifier/magnification_controller_unittest.cc",
     "magnifier/partial_magnification_controller_unittest.cc",
-    "metrics/desktop_task_switch_metric_recorder_unittest.cc",
-    "metrics/task_switch_metrics_recorder_unittest.cc",
-    "metrics/task_switch_time_tracker_unittest.cc",
-    "metrics/user_metrics_recorder_unittest.cc",
-    "root_window_controller_unittest.cc",
-    "rotator/screen_rotation_animation_unittest.cc",
-    "screen_util_unittest.cc",
-    "shelf/shelf_layout_manager_unittest.cc",
-    "shelf/shelf_unittest.cc",
-    "shelf/shelf_view_unittest.cc",
-    "shelf/shelf_widget_unittest.cc",
-    "shell_unittest.cc",
-    "sticky_keys/sticky_keys_overlay_unittest.cc",
-    "sticky_keys/sticky_keys_unittest.cc",
-    "system/chromeos/power/power_event_observer_unittest.cc",
-    "system/chromeos/power/tablet_power_button_controller_unittest.cc",
-    "system/chromeos/power/video_activity_notifier_unittest.cc",
+
+    # TODO: investigate failure in mash, http://crbug.com/695887.
     "system/chromeos/rotation/tray_rotation_lock_unittest.cc",
     "system/chromeos/screen_layout_observer_unittest.cc",
     "system/overview/overview_button_tray_unittest.cc",

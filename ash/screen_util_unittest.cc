@@ -6,6 +6,7 @@
 
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -105,6 +106,10 @@ TEST_F(ScreenUtilTest, ConvertRect) {
 }
 
 TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
+  // TODO: requires unified desktop mode. http://crbug.com/581462.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(

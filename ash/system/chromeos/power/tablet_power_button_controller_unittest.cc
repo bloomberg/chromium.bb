@@ -75,8 +75,11 @@ class TabletPowerButtonControllerTest : public AshTestBase {
 
   void TearDown() override {
     generator_ = nullptr;
+    const bool is_mash = WmShell::Get()->IsRunningInMash();
     AshTestBase::TearDown();
-    chromeos::DBusThreadManager::Shutdown();
+    // Mash shuts down dbus after each test.
+    if (!is_mash)
+      chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:
