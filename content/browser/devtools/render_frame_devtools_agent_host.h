@@ -14,6 +14,7 @@
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "net/base/net_errors.h"
 
 #if defined(OS_ANDROID)
 #include "ui/android/view_android.h"
@@ -37,6 +38,8 @@ class FrameTreeNode;
 class NavigationHandle;
 class NavigationThrottle;
 class RenderFrameHostImpl;
+struct BeginNavigationParams;
+struct CommonNavigationParams;
 
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public DevToolsAgentHostImpl,
@@ -49,6 +52,10 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static void OnBeforeNavigation(RenderFrameHost* current,
                                  RenderFrameHost* pending);
   static void OnBeforeNavigation(NavigationHandle* navigation_handle);
+  static void OnFailedNavigation(RenderFrameHost* host,
+                                 const CommonNavigationParams& common_params,
+                                 const BeginNavigationParams& begin_params,
+                                 net::Error error_code);
   static std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
   static bool IsNetworkHandlerEnabled(FrameTreeNode* frame_tree_node);
@@ -119,6 +126,9 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
                                   RenderFrameHost* new_host);
   void AboutToNavigate(NavigationHandle* navigation_handle);
+  void OnFailedNavigation(const CommonNavigationParams& common_params,
+                          const BeginNavigationParams& begin_params,
+                          net::Error error_code);
 
   void DispatchBufferedProtocolMessagesIfNecessary();
 

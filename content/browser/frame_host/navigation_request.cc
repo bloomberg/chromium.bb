@@ -583,8 +583,9 @@ void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
   TransferNavigationHandleOwnership(render_frame_host);
   render_frame_host->navigation_handle()->ReadyToCommitNavigation(
       render_frame_host);
-  render_frame_host->FailedNavigation(common_params_, request_params_,
-                                      has_stale_copy_in_cache, net_error);
+  render_frame_host->FailedNavigation(common_params_, begin_params_,
+                                      request_params_, has_stale_copy_in_cache,
+                                      net_error);
 }
 
 void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {

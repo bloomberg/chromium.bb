@@ -5,6 +5,7 @@
 #include <memory>
 #include "base/optional.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -225,12 +226,16 @@ class HttpDisabledByDefaultWhenMojoBindingsUsed : public EmbedderMojoTest,
   }
 
   void RunMojoTest() override {
+    base::RunLoop run_loop;
     devtools_client_->GetNetwork()->AddObserver(this);
-    devtools_client_->GetNetwork()->Enable();
-  }
-
-  GURL GetInitialUrl() const override {
-    return embedded_test_server()->GetURL("/page_one.html");
+    devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/page_one.html").spec());
   }
 
   void ReturnTestResult(const std::string& result) override {

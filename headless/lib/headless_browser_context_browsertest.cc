@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextProtocolHandler) {
       another_browser_context->CreateWebContentsBuilder()
           .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
           .Build();
-  EXPECT_TRUE(WaitForLoad(web_contents));
+  EXPECT_FALSE(WaitForLoad(web_contents));
   EXPECT_TRUE(EvaluateScript(web_contents, "document.body.innerHTML")
                   ->GetResult()
                   ->GetValue()

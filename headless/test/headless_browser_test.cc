@@ -11,7 +11,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "headless/lib/browser/headless_browser_impl.h"
+#include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/headless_content_main_delegate.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_devtools_client.h"
@@ -157,9 +159,12 @@ HeadlessBrowser::Options* HeadlessBrowserTest::options() const {
 }
 
 bool HeadlessBrowserTest::WaitForLoad(HeadlessWebContents* web_contents) {
-  SynchronousLoadObserver load_observer(this, web_contents);
-  RunAsynchronousTest();
-  return load_observer.navigation_succeeded();
+  HeadlessWebContentsImpl* web_contents_impl =
+      HeadlessWebContentsImpl::From(web_contents);
+  content::TestNavigationObserver observer(web_contents_impl->web_contents(),
+                                           1);
+  observer.Wait();
+  return observer.last_navigation_succeeded();
 }
 
 std::unique_ptr<runtime::EvaluateResult> HeadlessBrowserTest::EvaluateScript(

@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/json/json_reader.h"
+#include "base/run_loop.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -63,7 +64,11 @@ class HeadlessDevToolsClientNavigationTest
             .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
             .Build();
     devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
-    devtools_client_->GetPage()->Enable();
+    base::RunLoop run_loop;
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    run_loop.Run();
     devtools_client_->GetPage()->Navigate(std::move(params));
   }
 
@@ -156,8 +161,13 @@ class HeadlessDevToolsClientObserverTest
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
+    base::RunLoop run_loop;
     devtools_client_->GetNetwork()->AddObserver(this);
-    devtools_client_->GetNetwork()->Enable();
+    devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
+
     devtools_client_->GetPage()->Navigate(
         embedded_test_server()->GetURL("/hello.html").spec());
   }
@@ -192,6 +202,12 @@ class HeadlessDevToolsClientExperimentalTest
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
+    base::RunLoop run_loop;
+    devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
     // Check that experimental commands require parameter objects.
     devtools_client_->GetRuntime()
         ->GetExperimental()
@@ -205,8 +221,6 @@ class HeadlessDevToolsClientExperimentalTest
     devtools_client_->GetRuntime()->GetExperimental()->RunIfWaitingForDebugger(
         runtime::RunIfWaitingForDebuggerParams::Builder().Build());
 
-    devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
-    devtools_client_->GetPage()->Enable();
     devtools_client_->GetPage()->Navigate(
         embedded_test_server()->GetURL("/hello.html").spec());
   }
@@ -638,8 +652,12 @@ class HeadlessDevToolsNavigationControlTest
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
+    base::RunLoop run_loop;
     devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
-    devtools_client_->GetPage()->Enable();
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
     devtools_client_->GetPage()->GetExperimental()->SetControlNavigations(
         headless::page::SetControlNavigationsParams::Builder()
             .SetEnabled(true)
@@ -761,8 +779,12 @@ class HeadlessDevToolsMethodCallErrorTest
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
+    base::RunLoop run_loop;
     devtools_client_->GetPage()->AddObserver(this);
-    devtools_client_->GetPage()->Enable();
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
     devtools_client_->GetPage()->Navigate(
         embedded_test_server()->GetURL("/hello.html").spec());
   }
@@ -799,10 +821,14 @@ class HeadlessDevToolsNetworkBlockedUrlTest
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
+    base::RunLoop run_loop;
     devtools_client_->GetPage()->AddObserver(this);
     devtools_client_->GetPage()->Enable();
     devtools_client_->GetNetwork()->AddObserver(this);
-    devtools_client_->GetNetwork()->Enable();
+    devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
     devtools_client_->GetNetwork()->GetExperimental()->AddBlockedURL(
         network::AddBlockedURLParams::Builder()
             .SetUrl("dom_tree_test.css")

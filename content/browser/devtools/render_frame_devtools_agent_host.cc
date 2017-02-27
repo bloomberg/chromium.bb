@@ -382,6 +382,17 @@ void RenderFrameDevToolsAgentHost::OnBeforeNavigation(
 }
 
 // static
+void RenderFrameDevToolsAgentHost::OnFailedNavigation(
+    RenderFrameHost* host,
+    const CommonNavigationParams& common_params,
+    const BeginNavigationParams& begin_params,
+    net::Error error_code) {
+  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(host);
+  if (agent_host)
+    agent_host->OnFailedNavigation(common_params, begin_params, error_code);
+}
+
+// static
 std::unique_ptr<NavigationThrottle>
 RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(
     NavigationHandle* navigation_handle) {
@@ -718,6 +729,22 @@ void RenderFrameDevToolsAgentHost::AboutToNavigate(
   navigating_handles_.insert(navigation_handle);
   current_->Suspend();
   DCHECK(CheckConsistency());
+}
+
+void RenderFrameDevToolsAgentHost::OnFailedNavigation(
+    const CommonNavigationParams& common_params,
+    const BeginNavigationParams& begin_params,
+    net::Error error_code) {
+  DCHECK(IsBrowserSideNavigationEnabled());
+  if (!session())
+    return;
+
+  protocol::NetworkHandler* handler =
+      protocol::NetworkHandler::FromSession(session());
+  if (!handler)
+    return;
+
+  handler->NavigationFailed(common_params, begin_params, error_code);
 }
 
 void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(

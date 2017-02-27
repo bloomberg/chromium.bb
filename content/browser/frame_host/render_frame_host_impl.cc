@@ -2703,6 +2703,7 @@ void RenderFrameHostImpl::CommitNavigation(
 
 void RenderFrameHostImpl::FailedNavigation(
     const CommonNavigationParams& common_params,
+    const BeginNavigationParams& begin_params,
     const RequestNavigationParams& request_params,
     bool has_stale_copy_in_cache,
     int error_code) {
@@ -2716,6 +2717,9 @@ void RenderFrameHostImpl::FailedNavigation(
 
   Send(new FrameMsg_FailedNavigation(routing_id_, common_params, request_params,
                                      has_stale_copy_in_cache, error_code));
+
+  RenderFrameDevToolsAgentHost::OnFailedNavigation(
+      this, common_params, begin_params, static_cast<net::Error>(error_code));
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
