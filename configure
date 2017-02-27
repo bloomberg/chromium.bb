@@ -36,9 +36,6 @@ Advanced options:
   ${toggle_static_msvcrt}         use static MSVCRT (VS builds only)
   ${toggle_aom_highbitdepth}      enable 16-bit generic pixel pipeline (used by high bitdepth profiles)
   ${toggle_lowbitdepth}           enable 8-bit optimized pixel pipeline
-  ${toggle_better_hw_compatibility}
-                                  enable encoder to produce streams with better
-                                  hardware decoder compatibility
   ${toggle_av1}                  AV1 codec support
   ${toggle_internal_stats}        output of encoder internal stats for debug, if supported (encoders)
   ${toggle_postproc}              postprocessing
@@ -365,7 +362,6 @@ CONFIG_LIST="
     coefficient_range_checking
     lowbitdepth
     aom_highbitdepth
-    better_hw_compatibility
     experimental
     size_limit
     aom_qm
@@ -425,7 +421,6 @@ CMDLINE_SELECT="
     temporal_denoising
     av1_temporal_denoising
     coefficient_range_checking
-    better_hw_compatibility
     lowbitdepth
     aom_highbitdepth
     experimental
