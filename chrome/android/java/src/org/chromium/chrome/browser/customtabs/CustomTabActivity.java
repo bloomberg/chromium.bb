@@ -538,7 +538,9 @@ public class CustomTabActivity extends ChromeActivity {
         }
         RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebContentsStateOnLaunch",
                 webContentsStateOnLaunch, WEBCONTENTS_STATE_MAX);
-        if (webContents == null) webContents = WebContentsFactory.createWebContents(false, false);
+        if (webContents == null) {
+            webContents = WebContentsFactory.createWebContentsWithWarmRenderer(false, false);
+        }
         if (!mHasPrerendered) {
             customTabsConnection.resetPostMessageHandlerForSession(mSession, webContents);
         }
