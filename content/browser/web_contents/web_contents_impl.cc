@@ -4212,7 +4212,9 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
       delegate_->ShouldSuppressDialogs(this) ||
       !delegate_->GetJavaScriptDialogManager(this);
   if (suppress_this_message) {
-    rfhi->JavaScriptDialogClosed(reply_msg, true, base::string16(), true);
+    rfhi->JavaScriptDialogClosed(reply_msg, true, base::string16(),
+                                 /*is_before_unload_dialog=*/true,
+                                 /*dialog_was_suppressed=*/true);
     return;
   }
 
@@ -5150,15 +5152,17 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
       observer.BeforeUnloadDialogCancelled();
   }
 
-  is_showing_javascript_dialog_ = false;
-  is_showing_before_unload_dialog_ = false;
   if (rfh) {
     rfh->JavaScriptDialogClosed(reply_msg, success, user_input,
+                                is_showing_before_unload_dialog_,
                                 dialog_was_suppressed);
   } else {
     // Don't leak the sync IPC reply if the RFH or process is gone.
     delete reply_msg;
   }
+
+  is_showing_javascript_dialog_ = false;
+  is_showing_before_unload_dialog_ = false;
 }
 
 void WebContentsImpl::SetEncoding(const std::string& encoding) {

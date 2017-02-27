@@ -466,6 +466,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void JavaScriptDialogClosed(IPC::Message* reply_msg,
                               bool success,
                               const base::string16& user_input,
+                              bool is_before_unload_dialog,
                               bool dialog_was_suppressed);
 
   // Get the accessibility mode from the delegate and Send a message to the

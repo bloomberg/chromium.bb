@@ -1669,7 +1669,9 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
     JavaScriptDialogType dialog_type,
     IPC::Message* reply_msg) {
   if (!is_active()) {
-    JavaScriptDialogClosed(reply_msg, true, base::string16(), true);
+    JavaScriptDialogClosed(reply_msg, true, base::string16(),
+                           /*is_before_unload_dialog=*/false,
+                           /*dialog_was_suppressed=*/true);
     return;
   }
 
@@ -2605,9 +2607,10 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
     IPC::Message* reply_msg,
     bool success,
     const base::string16& user_input,
+    bool is_before_unload_dialog,
     bool dialog_was_suppressed) {
   GetProcess()->SetIgnoreInputEvents(false);
-  bool is_waiting = is_waiting_for_beforeunload_ack_ || IsWaitingForUnloadACK();
+  bool is_waiting = is_before_unload_dialog || IsWaitingForUnloadACK();
 
   // If we are executing as part of (before)unload event handling, we don't
   // want to use the regular hung_renderer_delay_ms_ if the user has agreed to
@@ -2617,7 +2620,7 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
     RendererUnresponsiveType type =
         RendererUnresponsiveType::RENDERER_UNRESPONSIVE_DIALOG_CLOSED;
     if (success) {
-      type = is_waiting_for_beforeunload_ack_
+      type = is_before_unload_dialog
                  ? RendererUnresponsiveType::RENDERER_UNRESPONSIVE_BEFORE_UNLOAD
                  : RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNLOAD;
     }
