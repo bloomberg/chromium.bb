@@ -31,8 +31,6 @@
 #ifndef WebFrameClient_h
 #define WebFrameClient_h
 
-#include <v8.h>
-#include "../platform/WebColor.h"
 #include "WebAXObject.h"
 #include "WebDOMMessageEvent.h"
 #include "WebDataSource.h"
@@ -49,6 +47,7 @@
 #include "WebSandboxFlags.h"
 #include "WebTextDirection.h"
 #include "public/platform/BlameContext.h"
+#include "public/platform/WebColor.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebContentSecurityPolicyStruct.h"
 #include "public/platform/WebEffectiveConnectionType.h"
@@ -64,6 +63,7 @@
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 

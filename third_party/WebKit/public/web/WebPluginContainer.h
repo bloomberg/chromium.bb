@@ -32,8 +32,8 @@
 #ifndef WebPluginContainer_h
 #define WebPluginContainer_h
 
-#include "../platform/WebCommon.h"
-#include <v8.h>
+#include "public/platform/WebCommon.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 

@@ -31,10 +31,10 @@
 #ifndef WebDOMActivityLogger_h
 #define WebDOMActivityLogger_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebString.h"
-#include "../platform/WebURL.h"
-#include <v8.h>
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 

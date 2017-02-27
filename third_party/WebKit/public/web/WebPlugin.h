@@ -32,14 +32,14 @@
 #ifndef WebPlugin_h
 #define WebPlugin_h
 
-#include "../platform/WebCanvas.h"
-#include "../platform/WebDragOperation.h"
-#include "../platform/WebFocusType.h"
-#include "../platform/WebString.h"
-#include "../platform/WebURL.h"
 #include "WebDragStatus.h"
 #include "WebInputMethodController.h"
-#include <v8.h>
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebDragOperation.h"
+#include "public/platform/WebFocusType.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 

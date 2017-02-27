@@ -31,6 +31,8 @@
 #ifndef WebServiceWorkerContextClient_h
 #define WebServiceWorkerContextClient_h
 
+#include <memory>
+
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsClaimCallbacks.h"
@@ -38,8 +40,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "public/web/WebDevToolsAgentClient.h"
-#include <memory>
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

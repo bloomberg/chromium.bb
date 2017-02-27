@@ -31,8 +31,8 @@
 #ifndef WebKit_h
 #define WebKit_h
 
-#include "../platform/Platform.h"
-#include <v8.h>
+#include "public/platform/Platform.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 

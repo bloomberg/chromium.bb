@@ -26,9 +26,9 @@
 #ifndef WebTestingSupport_h
 #define WebTestingSupport_h
 
-#include "../platform/WebCommon.h"
 #include "WebFrame.h"
-#include <v8.h>
+#include "public/platform/WebCommon.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
