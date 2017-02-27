@@ -12,7 +12,7 @@
       width: 200px;
       border: 1px solid black;
       background-color : red;
-      -webkit-transition: -webkit-transform 3s;
+      transition: transform 3s;
     }
     
   </style>
@@ -22,19 +22,19 @@
       var box = document.getElementById("box");
 
       window.setTimeout(function() {
-        box.style.webkitTransform = "translateX(" + window.innerWidth * 2.5 + "px)";
+        box.style.transform = "translateX(" + window.innerWidth * 2.5 + "px)";
       }, 3000);
       
       window.setTimeout(function() {
-        box.style.webkitTransform = "translateX(0px)";
+        box.style.transform = "translateX(0px)";
       }, 6000);
 
       window.setTimeout(function() {
-        box.style.webkitTransform = "translateX(" + window.innerWidth * 2.5 + "px)";
+        box.style.transform = "translateX(" + window.innerWidth * 2.5 + "px)";
       }, 9000);
 
       window.setTimeout(function() {
-        box.style.webkitTransform = "translateX(0px)";
+        box.style.transform = "translateX(0px)";
       }, 12000);
     }
     window.addEventListener('load', runTest, false)

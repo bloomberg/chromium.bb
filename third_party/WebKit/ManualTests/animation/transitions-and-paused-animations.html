@@ -11,7 +11,7 @@
       height: 200px;
       width: 200px;
       border: 1px solid black;
-      -webkit-transition: -webkit-transform 0.5s;
+      transition: transform 0.5s;
     }
     
     .moved {
@@ -25,14 +25,14 @@
       margin: 50px;
       background-color: blue;
       transform: translateZ(0);
-      -webkit-animation: fade 1s infinite linear alternate;
+      animation: fade 1s infinite linear alternate;
     }
     
     .moved .box {
-      -webkit-animation-play-state: paused;
+      animation-play-state: paused;
     }
     
-    @-webkit-keyframes fade {
+    @keyframes fade {
       from { transform: rotate(-20deg); }
       to   { transform: rotate(20deg);   }
     }

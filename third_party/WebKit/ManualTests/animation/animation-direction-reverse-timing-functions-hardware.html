@@ -16,30 +16,30 @@
     .animated {
       background-color: green;
       /* This timing function has value 0 at inputs of 1/3 and 2/3. Chosen because it's very asymmetric about x = y. */
-      -webkit-animation: move 3000000s 2 cubic-bezier(0.333333, 0.333333, 0.666666, -0.833333) forwards;
+      animation: move 3000000s 2 cubic-bezier(0.333333, 0.333333, 0.666666, -0.833333) forwards;
       margin-bottom: 4px;
     }
 
     .delay_zero {
-      -webkit-animation-delay: 0s;
+      animation-delay: 0s;
     }
     .delay_one_third {
-      -webkit-animation-delay: -1000000s;
+      animation-delay: -1000000s;
     }
     .delay_two_thirds {
-      -webkit-animation-delay: -2000000s;
+      animation-delay: -2000000s;
     }
     .delay_three_thirds {
-      -webkit-animation-delay: -3000000s;
+      animation-delay: -3000000s;
     }
     .delay_four_thirds {
-      -webkit-animation-delay: -4000000s;
+      animation-delay: -4000000s;
     }
     .delay_five_thirds {
-      -webkit-animation-delay: -5000000s;
+      animation-delay: -5000000s;
     }
     .delay_six_thirds {
-      -webkit-animation-delay: -6000000s;
+      animation-delay: -6000000s;
     }
 
     .expected {
@@ -59,19 +59,19 @@
     }
 
     #normal div {
-      -webkit-animation-direction: normal;
+      animation-direction: normal;
     }
     #alternate div {
-      -webkit-animation-direction: alternate;
+      animation-direction: alternate;
     }
     #reverse div {
-      -webkit-animation-direction: reverse;
+      animation-direction: reverse;
     }
     #alternate-reverse div {
-      -webkit-animation-direction: alternate-reverse;
+      animation-direction: alternate-reverse;
     }
     
-    @-webkit-keyframes move {
+    @keyframes move {
       from { transform: translateX(100px); }
       to   { transform: translateX(200px); }
     }

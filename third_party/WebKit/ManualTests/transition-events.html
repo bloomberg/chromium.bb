@@ -13,8 +13,8 @@
       margin: 10px;
       background-color: blue;
       z-index: 0;
-      -webkit-transition-property: left;
-      -webkit-transition-duration: 2s;
+      transition-property: left;
+      transition-duration: 2s;
       left: 0px;
     }
 
@@ -25,8 +25,8 @@
       margin: 10px;
       background-color: red;
       z-index: 0;
-      -webkit-transition-property: left;
-      -webkit-transition-duration: 2s;
+      transition-property: left;
+      transition-duration: 2s;
       left: 0px;
     }
 
@@ -43,7 +43,7 @@
     var switch1 = true;
     var switch2 = false;
     
-    document.addEventListener('webkitTransitionEnd', function(e) {
+    document.addEventListener('transitionend', function(e) {
       var id = "1";
       if (switch1) {
         id = "2";

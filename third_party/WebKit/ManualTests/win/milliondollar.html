@@ -12,9 +12,9 @@
     .grid {height: 1000px; width:1000px; position:relative;z-index:153;xoverflow:hidden;}
     .row {background:url(100grid_inv.png) #000;height: 100px; text-align: left; position:relative;width:1000px;z-index:10;}
     #lq {width:1000px;position:relative;z-index:0;text-align:left;}
-    .bz {-webkit-perspective: 1500;-webkit-perspective-origin: 50% 325px;}
-    .fc {-webkit-transform-style: preserve-3d;transform:  rotateY(0deg) ;opacity: 1.0;}
-    @-webkit-keyframes spin_3d {
+    .bz {perspective: 1500px;perspective-origin: 50% 325px;}
+    .fc {transform-style: preserve-3d;transform:  rotateY(0deg) ;opacity: 1.0;}
+    @keyframes spin_3d {
     0%    { transform: rotateY(0)       rotateZ(0); }
     33%   { transform: rotateY(-20deg)  rotateZ(-20deg); }
     65%   { transform: rotateY(20deg) rotateZ(20deg); }
@@ -25,7 +25,7 @@
         position: absolute;
         opacity:0.5;
         background-repeat:no-repeat;
-        -webkit-transition: -webkit-transform 0.3s, opacity 0s;-webkit-backface-visibility: visible;}
+        transition: transform 0.3s, opacity 0s;-webkit-backface-visibility: visible;}
 </style>
 
 <script type="text/javascript">
@@ -113,7 +113,7 @@ function loadBlocks() {
        return "<div class='a_cube'><div class='plane one' style='background-color: red;height:"+dw+"px;width:"+dw+"px;top:"+y1+"px;left:"+x1+"px;transform:rotateY(90deg) rotateZ(-90deg) translateX(0px) translateY(-"+(dw/2)+"px) translateZ("+(dw/2)+"px) translateY(0px);position:absolute;'></div><div class='plane two' style='background-color: blue;height:"+dw+"px;width:"+dw+"px;top:"+y1+"px;left:"+x1+"px;transform:rotateY(90deg) rotateX(180deg) rotateZ(-90deg) translateX(0px) translateY(-"+(dw/2)+"px) translateZ("+(dw/2)+"px) translateY(0px);position:absolute;'></div><div class='plane three' style='background-color: green;height:"+dw+"px;width:"+dw+"px;top:"+y1+"px;left:"+x1+"px;transform:rotateX(-90deg) translateX(0px) translateZ("+(dw/2)+"px) translateY(-"+(dw/2)+"px);position:absolute;'></div><div class='plane four' style='background-color: yellow;height:"+dw+"px;width:"+dw+"px;top:"+y1+"px;left:"+x1+"px;transform:rotateY(90deg) rotateX(90deg) rotateZ(-90deg) translateY(-"+(dw/2)+"px) translateX(0px) translateZ("+(dw/2)+"px) translateY(0px);position:absolute;'></div><div class='plane five' style='background-color: gray;height:"+dw+"px;width:"+dw+"px;top:"+y1+"px;left:"+x1+"px;transform:rotateY(0deg) translateX(0px) translateZ("+(dw)+"px) translateY(0px);position:absolute;'></div></div>";
     }
 
-    document.getElementById("grid").style.webkitAnimation = "spin_3d 36s infinite linear";
+    document.getElementById("grid").style.animation = "spin_3d 36s infinite linear";
 };
 
 </script>

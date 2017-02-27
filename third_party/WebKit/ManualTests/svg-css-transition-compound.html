@@ -32,7 +32,7 @@
     height: 60px;
     width: 60px;
     border: 1px dotted black;
-    -webkit-transform-origin: top left; /* to match SVG */
+    transform-origin: top left; /* to match SVG */
   }
 
   .final {
@@ -40,8 +40,8 @@
   }
   
   #target, #ref {
-    -webkit-transition-property: -webkit-transform;
-    -webkit-transition-duration: 1s;
+    transition-property: transform;
+    transition-duration: 1s;
   }   
 </style>
 
@@ -53,19 +53,19 @@
     var divElm = document.getElementById("ref");
 
     if (flag) {
-      svgElm.style.webkitTransform = "translate(75px, 25px) scale(2) rotate(45deg)";
-      divElm.style.webkitTransform = "translate(75px, 25px) scale(2) rotate(45deg)";
+      svgElm.style.transform = "translate(75px, 25px) scale(2) rotate(45deg)";
+      divElm.style.transform = "translate(75px, 25px) scale(2) rotate(45deg)";
     }
     else {
-      svgElm.style.webkitTransform = "translate(0px, 0px) scale(1) rotate(0deg)";
-      divElm.style.webkitTransform = "translate(0px, 0px) scale(1) rotate(0deg)";
+      svgElm.style.transform = "translate(0px, 0px) scale(1) rotate(0deg)";
+      divElm.style.transform = "translate(0px, 0px) scale(1) rotate(0deg)";
     }
     flag = !flag;
   }
 </script>
 </head>
 <body>
-  <h1>CSS Transition of "-webkit-trasform" property for SVG elements</h1>
+  <h1>CSS Transition of "trasform" property for SVG elements</h1>
 
   <p>The element below should transition when button is clicked</p> 
   <p>The SVG transition should be identical with the CSS one</p>

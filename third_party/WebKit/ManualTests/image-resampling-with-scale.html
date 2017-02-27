@@ -16,8 +16,8 @@ function doScaleTest() {
     image2.setAttribute('src', imgSrc);
     intervalId = setInterval(function() {
         scale += 0.001;
-        image1.style.webkitTransform = 'scale(' + scale + ')';
-        layer2.style.webkitTransform = 'scale(' + scale + ')';
+        image1.style.transform = 'scale(' + scale + ')';
+        layer2.style.transform = 'scale(' + scale + ')';
         if (scale > 1.5)
             window.clearInterval(intervalId);
     }, 10);

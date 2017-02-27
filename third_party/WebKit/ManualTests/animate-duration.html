@@ -22,22 +22,22 @@
      margin: 10px;
      background-color: blue;
      z-index: 0;
-     -webkit-animation-name: slide;
-     -webkit-animation-duration: 1s;
-     -webkit-animation-direction: alternate;
-     -webkit-animation-timing-function: ease-in-out;
-     -webkit-animation-iteration-count: infinite;
+     animation-name: slide;
+     animation-duration: 1s;
+     animation-direction: alternate;
+     animation-timing-function: ease-in-out;
+     animation-iteration-count: infinite;
    }  
 
    .one {
-     -webkit-animation-duration: 0s;
+     animation-duration: 0s;
    }
 
    .two {
-     -webkit-animation-duration: 0;
+     animation-duration: 0;
    }
    
-   @-webkit-keyframes slide {
+   @keyframes slide {
      from { transform: translateX(0);      }
      to   { transform: translateX(280px);  }
    }

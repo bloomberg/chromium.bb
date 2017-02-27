@@ -31,7 +31,7 @@
     height: 60px;
     width: 60px;
     border: 1px dotted black;
-    -webkit-transform-origin: top left; /* to match SVG */
+    transform-origin: top left; /* to match SVG */
   }
 
   .final {
@@ -39,14 +39,14 @@
   }
   
   #target, #ref {
-    -webkit-animation-name: bounce;
-    -webkit-animation-duration: 2s;
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-direction: alternate;
-    -webkit-animation-timing-function: ease-in-out;
+    animation-name: bounce;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-timing-function: ease-in-out;
   }
        
-  @-webkit-keyframes bounce {
+  @keyframes bounce {
     from {
       transform: translate(0px, 0px) scale(1) rotate(0deg);
     }
@@ -57,7 +57,7 @@
 </style>
 </head>
 <body>
-  <h1>CSS Animation of 'webkit-transform:' property for SVG</h1>
+  <h1>CSS Animation of 'transform:' property for SVG</h1>
 
   <p>The SVG animation should be identical with the CSS one</p>
 

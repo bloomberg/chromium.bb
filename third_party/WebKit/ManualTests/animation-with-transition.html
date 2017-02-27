@@ -10,17 +10,17 @@
       width: 200px;
       height: 200px;
       background-color: #696;
-      -webkit-transition: left 5s, top 5s;
+      transition: left 5s, top 5s;
     }
     
     .animate {
-      -webkit-animation-name: simple;
-      -webkit-animation-duration: 2s;
-      -webkit-animation-timing-function: linear;
-      -webkit-animation-fill-mode: backwards;
+      animation-name: simple;
+      animation-duration: 2s;
+      animation-timing-function: linear;
+      animation-fill-mode: backwards;
     }
     
-    @-webkit-keyframes simple {
+    @keyframes simple {
       50% {
         left: 300px;
       }

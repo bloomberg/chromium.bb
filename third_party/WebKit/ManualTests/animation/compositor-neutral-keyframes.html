@@ -7,26 +7,26 @@ div {
     background: blue;
     will-change: transform;
     left: 0px;
-    -webkit-animation-duration: 2s;
-    -webkit-animation-timing-function: linear;
-    -webkit-animation-iteration-count: 2;
+    animation-duration: 2s;
+    animation-timing-function: linear;
+    animation-iteration-count: 2;
 }
 
 .anim-left {
-    -webkit-animation-name: anim-left;
+    animation-name: anim-left;
     z-index: 100;
 }
 
 .anim-transform {
-    -webkit-animation-name: anim-transform;
+    animation-name: anim-transform;
     z-index: 200;
 }
 
-@-webkit-keyframes anim-left {
+@keyframes anim-left {
     100% { left: 300px; }
 }
 
-@-webkit-keyframes anim-transform {
+@keyframes anim-transform {
     100% { transform: translateX(300px); }
 }
 </style>

@@ -6,40 +6,40 @@ div {
     width: 100px;
     background: blue;
     transform: translateZ(0);
-    -webkit-animation-direction: alternate;
-    -webkit-animation-duration: 2s;
-    -webkit-animation-timing-function: linear;
-    -webkit-animation-iteration-count: 1;
-    -webkit-animation-delay: 1s;
+    animation-direction: alternate;
+    animation-duration: 2s;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+    animation-delay: 1s;
 }
 
 .fill-both {
-    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
 }
 
 .fill-none {
-    -webkit-animation-fill-mode: none;
+    animation-fill-mode: none;
 }
 
 .fill-forwards {
-    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
 }
 
 .fill-backwards {
-    -webkit-animation-fill-mode: backwards;
+    animation-fill-mode: backwards;
 }
 
 .anim-left {
-    -webkit-animation-name: anim-left;
+    animation-name: anim-left;
     z-index: 100;
 }
 
 .anim-transform {
-    -webkit-animation-name: anim-transform;
+    animation-name: anim-transform;
     z-index: 200;
 }
 
-@-webkit-keyframes anim-left {
+@keyframes anim-left {
     0% {
         left: 250px;
     }
@@ -48,7 +48,7 @@ div {
     }
 }
 
-@-webkit-keyframes anim-transform {
+@keyframes anim-transform {
     0% {
         transform: translateX(250px);
     }
