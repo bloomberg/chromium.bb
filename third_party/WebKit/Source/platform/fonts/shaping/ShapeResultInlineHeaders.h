@@ -98,6 +98,59 @@ struct ShapeResult::RunInfo {
     return sizeof(this) + m_glyphData.size() * sizeof(HarfBuzzRunGlyphData);
   }
 
+  // Iterates over, and applies the functor to all the glyphs in this run.
+  // Also tracks (and returns) a seeded total advance.
+  //
+  // Functor signature:
+  //
+  //   bool func(const HarfBuzzRunGlyphData& glyphData, float totalAdvance)
+  //
+  // where the returned bool signals whether iteration should continue (true)
+  // or stop (false).
+  template <typename Func>
+  float forEachGlyph(float initialAdvance, Func func) const {
+    float totalAdvance = initialAdvance;
+
+    for (const auto& glyphData : m_glyphData) {
+      if (!func(glyphData, totalAdvance))
+        break;
+      totalAdvance += glyphData.advance;
+    }
+
+    return totalAdvance;
+  }
+
+  // Same as the above, except it only applies the functor to glyphs in the
+  // specified range, and stops after the range.
+  template <typename Func>
+  float forEachGlyphInRange(float initialAdvance,
+                            unsigned from,
+                            unsigned to,
+                            unsigned indexOffset,
+                            Func func) const {
+    return forEachGlyph(
+        initialAdvance,
+        [&](const HarfBuzzRunGlyphData& glyphData, float totalAdvance) -> bool {
+          const uint16_t characterIndex =
+              m_startIndex + glyphData.characterIndex + indexOffset;
+
+          if (characterIndex < from) {
+            // Glyph out-of-range; before the range (and must continue
+            // accumulating advance) in LTR.
+            return !rtl();
+          }
+
+          if (characterIndex >= to) {
+            // Glyph out-of-range; before the range (and must continue
+            // accumulating advance) in RTL.
+            return rtl();
+          }
+
+          // Glyph in range; apply functor.
+          return func(glyphData, totalAdvance, characterIndex);
+        });
+  }
+
   RefPtr<SimpleFontData> m_fontData;
   hb_direction_t m_direction;
   hb_script_t m_script;

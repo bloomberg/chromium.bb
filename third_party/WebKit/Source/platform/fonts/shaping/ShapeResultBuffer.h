@@ -67,14 +67,13 @@ class PLATFORM_EXPORT ShapeResultBuffer {
 
   float fillFastHorizontalGlyphBuffer(GlyphBuffer*, const TextRun&) const;
 
-  template <TextDirection>
-  static float fillGlyphBufferForRun(GlyphBuffer*,
-                                     const ShapeResult::RunInfo*,
-                                     const TextRun&,
-                                     float initialAdvance,
-                                     unsigned from,
-                                     unsigned to,
-                                     unsigned runOffset);
+  static float fillGlyphBufferForResult(GlyphBuffer*,
+                                        const ShapeResult&,
+                                        const TextRun&,
+                                        float initialAdvance,
+                                        unsigned from,
+                                        unsigned to,
+                                        unsigned runOffset);
   static float fillGlyphBufferForTextEmphasisRun(GlyphBuffer*,
                                                  const ShapeResult::RunInfo*,
                                                  const TextRun&,

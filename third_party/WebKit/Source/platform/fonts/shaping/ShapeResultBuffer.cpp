@@ -89,36 +89,29 @@ inline unsigned countGraphemesInCluster(const UChar* str,
 
 }  // anonymous namespace
 
-template <TextDirection direction>
-float ShapeResultBuffer::fillGlyphBufferForRun(GlyphBuffer* glyphBuffer,
-                                               const ShapeResult::RunInfo* run,
-                                               const TextRun& textRun,
-                                               float initialAdvance,
-                                               unsigned from,
-                                               unsigned to,
-                                               unsigned runOffset) {
-  if (!run)
-    return 0;
-  float advanceSoFar = initialAdvance;
-  const unsigned numGlyphs = run->m_glyphData.size();
-  for (unsigned i = 0; i < numGlyphs; ++i) {
-    const HarfBuzzRunGlyphData& glyphData = run->m_glyphData[i];
-    uint16_t currentCharacterIndex =
-        run->m_startIndex + glyphData.characterIndex + runOffset;
-    if ((direction == TextDirection::kRtl && currentCharacterIndex >= to) ||
-        (direction == TextDirection::kLtr && currentCharacterIndex < from)) {
-      advanceSoFar += glyphData.advance;
-    } else if ((direction == TextDirection::kRtl &&
-                currentCharacterIndex >= from) ||
-               (direction == TextDirection::kLtr &&
-                currentCharacterIndex < to)) {
-      addGlyphToBuffer(glyphBuffer, advanceSoFar, run->m_direction,
-                       run->m_fontData.get(), glyphData, textRun,
-                       currentCharacterIndex);
-      advanceSoFar += glyphData.advance;
-    }
+float ShapeResultBuffer::fillGlyphBufferForResult(GlyphBuffer* glyphBuffer,
+                                                  const ShapeResult& result,
+                                                  const TextRun& textRun,
+                                                  float initialAdvance,
+                                                  unsigned from,
+                                                  unsigned to,
+                                                  unsigned runOffset) {
+  auto totalAdvance = initialAdvance;
+
+  for (const auto& run : result.m_runs) {
+    totalAdvance = run->forEachGlyphInRange(
+        totalAdvance, from, to, runOffset,
+        [&](const HarfBuzzRunGlyphData& glyphData, float totalAdvance,
+            uint16_t characterIndex) -> bool {
+
+          addGlyphToBuffer(glyphBuffer, totalAdvance, run->m_direction,
+                           run->m_fontData.get(), glyphData, textRun,
+                           characterIndex);
+          return true;
+        });
   }
-  return advanceSoFar - initialAdvance;
+
+  return totalAdvance;
 }
 
 float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
@@ -214,7 +207,7 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
 float ShapeResultBuffer::fillFastHorizontalGlyphBuffer(
     GlyphBuffer* glyphBuffer,
     const TextRun& textRun) const {
-  ASSERT(!hasVerticalOffsets());
+  DCHECK(!hasVerticalOffsets());
 
   float advance = 0;
 
@@ -223,23 +216,26 @@ float ShapeResultBuffer::fillFastHorizontalGlyphBuffer(
     const auto& wordResult = isLeftToRightDirection(textRun.direction())
                                  ? m_results[i]
                                  : m_results[m_results.size() - 1 - i];
-    ASSERT(!wordResult->hasVerticalOffsets());
+    DCHECK(!wordResult->hasVerticalOffsets());
 
     for (const auto& run : wordResult->m_runs) {
-      ASSERT(run);
-      ASSERT(HB_DIRECTION_IS_HORIZONTAL(run->m_direction));
+      DCHECK(run);
+      DCHECK(HB_DIRECTION_IS_HORIZONTAL(run->m_direction));
 
-      for (const auto& glyphData : run->m_glyphData) {
-        ASSERT(!glyphData.offset.height());
+      advance = run->forEachGlyph(
+          advance,
+          [&](const HarfBuzzRunGlyphData& glyphData,
+              float totalAdvance) -> bool {
+            DCHECK(!glyphData.offset.height());
 
-        if (!isSkipInkException(*glyphBuffer, textRun,
-                                characterIndex + glyphData.characterIndex)) {
-          glyphBuffer->add(glyphData.glyph, run->m_fontData.get(),
-                           advance + glyphData.offset.width());
-        }
-
-        advance += glyphData.advance;
-      }
+            if (!isSkipInkException(
+                    *glyphBuffer, textRun,
+                    characterIndex + glyphData.characterIndex)) {
+              glyphBuffer->add(glyphData.glyph, run->m_fontData.get(),
+                               totalAdvance + glyphData.offset.width());
+            }
+            return true;
+          });
     }
     characterIndex += wordResult->m_numCharacters;
   }
@@ -264,22 +260,15 @@ float ShapeResultBuffer::fillGlyphBuffer(GlyphBuffer* glyphBuffer,
     for (unsigned j = 0; j < m_results.size(); j++) {
       unsigned resolvedIndex = m_results.size() - 1 - j;
       const RefPtr<const ShapeResult>& wordResult = m_results[resolvedIndex];
-      for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
-        advance += fillGlyphBufferForRun<TextDirection::kRtl>(
-            glyphBuffer, wordResult->m_runs[i].get(), textRun, advance, from,
-            to, wordOffset - wordResult->numCharacters());
-      }
       wordOffset -= wordResult->numCharacters();
+      advance = fillGlyphBufferForResult(glyphBuffer, *wordResult, textRun,
+                                         advance, from, to, wordOffset);
     }
   } else {
     unsigned wordOffset = 0;
-    for (unsigned j = 0; j < m_results.size(); j++) {
-      const RefPtr<const ShapeResult>& wordResult = m_results[j];
-      for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
-        advance += fillGlyphBufferForRun<TextDirection::kLtr>(
-            glyphBuffer, wordResult->m_runs[i].get(), textRun, advance, from,
-            to, wordOffset);
-      }
+    for (const auto& wordResult : m_results) {
+      advance = fillGlyphBufferForResult(glyphBuffer, *wordResult, textRun,
+                                         advance, from, to, wordOffset);
       wordOffset += wordResult->numCharacters();
     }
   }
