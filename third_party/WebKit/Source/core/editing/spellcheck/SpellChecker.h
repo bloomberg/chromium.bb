@@ -69,7 +69,6 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   void didBeginEditing(Element*);
   void clearMisspellingsForMovingParagraphs(const VisibleSelection&);
   void markMisspellingsForMovingParagraphs(const VisibleSelection&);
-  void respondToChangedContents(const VisibleSelection&);
   void respondToChangedSelection(const Position& oldSelectionStart,
                                  FrameSelection::SetSelectionOptions);
   void replaceMisspelledRange(const String&);
@@ -93,9 +92,6 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   SpellCheckRequester& spellCheckRequester() const {
     return *m_spellCheckRequester;
   }
-  IdleSpellCheckCallback& idleSpellCheckCallback() const {
-    return *m_idleSpellCheckCallback;
-  }
 
   // The leak detector will report leaks should queued requests be posted
   // while it GCs repeatedly, as the requests keep their associated element
@@ -104,8 +100,6 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   // Hence allow the leak detector to effectively stop the spell checker to
   // ensure leak reporting stability.
   void prepareForLeakDetection();
-
-  void documentAttached(Document*);
 
  private:
   explicit SpellChecker(LocalFrame&);

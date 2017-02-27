@@ -514,7 +514,6 @@ void LocalFrame::documentAttached() {
   DCHECK(document());
   selection().documentAttached(document());
   inputMethodController().documentAttached(document());
-  spellChecker().documentAttached(document());
 }
 
 LocalDOMWindow* LocalFrame::domWindow() const {
