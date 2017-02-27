@@ -58,6 +58,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
 #include "gpu/ipc/service/switches.h"
 #include "ipc/ipc_channel_handle.h"
@@ -1021,6 +1022,11 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
   cmd_line->CopySwitchesFrom(
       browser_command_line, switches::kGLSwitchesCopiedFromGpuProcessHost,
       switches::kGLSwitchesCopiedFromGpuProcessHostNumSwitches);
+
+  std::vector<const char*> gpu_workarounds;
+  gpu::GpuDriverBugList::AppendAllWorkarounds(&gpu_workarounds);
+  cmd_line->CopySwitchesFrom(browser_command_line, gpu_workarounds.data(),
+                             gpu_workarounds.size());
 
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       cmd_line.get(), process_->GetData().id);

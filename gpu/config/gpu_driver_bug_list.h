@@ -28,6 +28,11 @@ class GPU_EXPORT GpuDriverBugList : public GpuControlList {
       std::set<int>* workarounds,
       const base::CommandLine& command_line);
 
+  // Append |workarounds| with the full list of workarounds.
+  // This is needed for correctly passing flags down from
+  // the browser process to the GPU process.
+  static void AppendAllWorkarounds(std::vector<const char*>* workarounds);
+
  private:
   GpuDriverBugList();
 

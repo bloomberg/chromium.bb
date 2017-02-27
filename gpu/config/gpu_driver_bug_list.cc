@@ -94,5 +94,16 @@ void GpuDriverBugList::AppendWorkaroundsFromCommandLine(
   }
 }
 
+// static
+void GpuDriverBugList::AppendAllWorkarounds(
+    std::vector<const char*>* workarounds) {
+  workarounds->resize(workarounds->size() +
+                      NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES);
+
+#define GPU_OP(type, name) workarounds->push_back(#name);
+  GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
+}
+
 }  // namespace gpu
 

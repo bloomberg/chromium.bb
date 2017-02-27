@@ -114,7 +114,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('GpuProcess_identify_active_gpu1', 'chrome:gpu'),
              ('GpuProcess_identify_active_gpu2', 'chrome:gpu'),
              ('GpuProcess_identify_active_gpu3', 'chrome:gpu'),
-             ('GpuProcess_identify_active_gpu4', 'chrome:gpu'))
+             ('GpuProcess_identify_active_gpu4', 'chrome:gpu'),
+             ('GpuProcess_disabling_workarounds_works', 'chrome:gpu'))
 
     # The earlier has_transparent_visuals_gpu_process and
     # no_transparent_visuals_gpu_process tests became no-ops in
@@ -505,6 +506,22 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._VerifyActiveAndInactiveGPUs(
       ['VENDOR = 0x10de, DEVICE= 0x0de1 *ACTIVE*'],
       [])
+
+  def _GpuProcess_disabling_workarounds_works(self, test_path):
+    # Hit exception from id 215 from kGpuDriverBugListJson.
+    self.RestartBrowserIfNecessaryWithArgs([
+      '--gpu-testing-vendor-id=0xbad9',
+      '--gpu-testing-device-id=0xbad9',
+      '--gpu-testing-secondary-vendor-ids=',
+      '--gpu-testing-secondary-device-ids=',
+      '--gpu-testing-gl-vendor=FakeVendor',
+      '--gpu-testing-gl-renderer=FakeRenderer',
+      '--use_gpu_driver_workaround_for_testing=0'])
+    self._Navigate(test_path)
+    workarounds, _ = (
+      self._CompareAndCaptureDriverBugWorkarounds())
+    if 'use_gpu_driver_workaround_for_testing' in workarounds:
+      self.fail('use_gpu_driver_workaround_for_testing erroneously present')
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
