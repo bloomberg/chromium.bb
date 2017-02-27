@@ -288,11 +288,10 @@ bool Frame::canNavigateWithoutFramebusting(const Frame& targetFrame,
       if (securityContext()->isSandboxed(SandboxTopNavigation) &&
           securityContext()->isSandboxed(
               SandboxTopNavigationByUserActivation)) {
-        // TODO(binlu): To add "or 'allow-top-navigation-by-user-activation'"
-        // to the reason below, once the new flag is shipped.
         reason =
             "The frame attempting navigation of the top-level window is "
-            "sandboxed, but the 'allow-top-navigation' flag is not set.";
+            "sandboxed, but the flag of 'allow-top-navigation' or "
+            "'allow-top-navigation-by-user-activation' is not set.";
         return false;
       }
       if (securityContext()->isSandboxed(SandboxTopNavigation) &&
