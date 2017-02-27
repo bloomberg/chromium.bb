@@ -24,8 +24,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   std::unique_ptr<web::TestLoadPageInfo> _loadPageInfo;
   // Arguments passed to |webStateDidDismissInterstitial:|.
   std::unique_ptr<web::TestDismissInterstitialInfo> _dismissInterstitialInfo;
-  // Arguments passed to |webStateDidChangeURLHash:|.
-  std::unique_ptr<web::TestChangeUrlHashInfo> _changeUrlHashInfo;
   // Arguments passed to |webStateDidChangeHistoryState:|.
   std::unique_ptr<web::TestChangeHistoryStateInfo> _changeHistoryStateInfo;
   // Arguments passed to |webState:didChangeLoadingProgress:|.
@@ -64,10 +62,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 
 - (web::TestDismissInterstitialInfo*)dismissInterstitialInfo {
   return _dismissInterstitialInfo.get();
-}
-
-- (web::TestChangeUrlHashInfo*)changeUrlHashInfo {
-  return _changeUrlHashInfo.get();
 }
 
 - (web::TestChangeHistoryStateInfo*)changeHistoryStateInfo {
@@ -134,11 +128,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   _dismissInterstitialInfo =
       base::MakeUnique<web::TestDismissInterstitialInfo>();
   _dismissInterstitialInfo->web_state = webState;
-}
-
-- (void)webStateDidChangeURLHash:(web::WebState*)webState {
-  _changeUrlHashInfo = base::MakeUnique<web::TestChangeUrlHashInfo>();
-  _changeUrlHashInfo->web_state = webState;
 }
 
 - (void)webStateDidChangeHistoryState:(web::WebState*)webState {

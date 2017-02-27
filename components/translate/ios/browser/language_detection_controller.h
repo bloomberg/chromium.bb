@@ -25,6 +25,7 @@ class DictionaryValue;
 }
 
 namespace web {
+class NavigationContext;
 class WebState;
 }
 
@@ -78,8 +79,7 @@ class LanguageDetectionController : public web::WebStateObserver {
   // web::WebStateObserver implementation:
   void PageLoaded(
       web::PageLoadCompletionStatus load_completion_status) override;
-  void UrlHashChanged() override;
-  void HistoryStateChanged() override;
+  void DidFinishNavigation(web::NavigationContext* navigation_context) override;
   void WebStateDestroyed() override;
 
   CallbackList language_detection_callbacks_;

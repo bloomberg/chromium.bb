@@ -90,24 +90,6 @@ TEST_F(WebStateObserverBridgeTest, InterstitialDismissed) {
   EXPECT_EQ(&test_web_state_, [observer_ dismissInterstitialInfo]->web_state);
 }
 
-// Tests |webState:webStateDidChangeURLHash:| forwarding.
-TEST_F(WebStateObserverBridgeTest, UrlHashChanged) {
-  ASSERT_FALSE([observer_ changeUrlHashInfo]);
-
-  bridge_->UrlHashChanged();
-  ASSERT_TRUE([observer_ changeUrlHashInfo]);
-  EXPECT_EQ(&test_web_state_, [observer_ changeUrlHashInfo]->web_state);
-}
-
-// Tests |webState:webStateDidChangeHistoryState:| forwarding.
-TEST_F(WebStateObserverBridgeTest, HistoryStateChanged) {
-  ASSERT_FALSE([observer_ changeHistoryStateInfo]);
-
-  bridge_->HistoryStateChanged();
-  ASSERT_TRUE([observer_ changeHistoryStateInfo]);
-  EXPECT_EQ(&test_web_state_, [observer_ changeHistoryStateInfo]->web_state);
-}
-
 // Tests |webState:didChangeLoadingProgress:| forwarding.
 TEST_F(WebStateObserverBridgeTest, LoadProgressChanged) {
   ASSERT_FALSE([observer_ changeLoadingProgressInfo]);

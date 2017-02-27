@@ -35,12 +35,6 @@ class GURL;
 // Invoked by WebStateObserverBridge::InterstitialDismissed.
 - (void)webStateDidDismissInterstitial:(web::WebState*)webState;
 
-// Invoked by WebStateObserverBridge::UrlHashChanged.
-- (void)webStateDidChangeURLHash:(web::WebState*)webState;
-
-// Invoked by WebStateObserverBridge::HistoryStateChanged.
-- (void)webStateDidChangeHistoryState:(web::WebState*)webState;
-
 // Invoked by WebStateObserverBridge::LoadProgressChanged.
 - (void)webState:(web::WebState*)webState
     didChangeLoadingProgress:(double)progress;
@@ -100,8 +94,6 @@ class WebStateObserverBridge : public web::WebStateObserver {
   void PageLoaded(
       web::PageLoadCompletionStatus load_completion_status) override;
   void InterstitialDismissed() override;
-  void UrlHashChanged() override;
-  void HistoryStateChanged() override;
   void LoadProgressChanged(double progress) override;
   void DocumentSubmitted(const std::string& form_name,
                          bool user_initiated) override;

@@ -80,14 +80,6 @@ class WebStateObserver {
   // Called when the interstitial is dismissed by the user.
   virtual void InterstitialDismissed() {}
 
-  // Called on URL hash change events.
-  // TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
-  virtual void UrlHashChanged() {}
-
-  // Called on history state change events.
-  // TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
-  virtual void HistoryStateChanged() {}
-
   // Notifies the observer that the page has made some progress loading.
   // |progress| is a value between 0.0 (nothing loaded) to 1.0 (page fully
   // loaded).

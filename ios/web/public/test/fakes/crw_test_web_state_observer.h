@@ -35,11 +35,6 @@ struct TestDismissInterstitialInfo {
   WebState* web_state;
 };
 
-// Arguments passed to |webStateDidChangeURLHash:|.
-struct TestChangeUrlHashInfo {
-  WebState* web_state;
-};
-
 // Arguments passed to |webStateDidChangeHistoryState:|.
 struct TestChangeHistoryStateInfo {
   WebState* web_state;
@@ -115,8 +110,6 @@ struct TestStartLoadingInfo {
 // Arguments passed to |webStateDidDismissInterstitial:|.
 @property(nonatomic, readonly)
     web::TestDismissInterstitialInfo* dismissInterstitialInfo;
-// Arguments passed to |webStateDidChangeURLHash:|.
-@property(nonatomic, readonly) web::TestChangeUrlHashInfo* changeUrlHashInfo;
 // Arguments passed to |webStateDidChangeHistoryState:|.
 @property(nonatomic, readonly)
     web::TestChangeHistoryStateInfo* changeHistoryStateInfo;

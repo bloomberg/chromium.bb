@@ -82,12 +82,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Called when a navigation is committed.
   void OnNavigationCommitted(const GURL& url);
 
-  // Notifies the observers that the URL hash of the current page changed.
-  void OnUrlHashChanged();
-
-  // Notifies the observers that the history state of the current page changed.
-  void OnHistoryStateChanged();
-
   // Notifies the observers that same page navigation did finish.
   void OnSamePageNavigation(const GURL& url);
 

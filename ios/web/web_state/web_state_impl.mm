@@ -193,16 +193,6 @@ void WebStateImpl::OnNavigationCommitted(const GURL& url) {
     observer.DidFinishNavigation(context.get());
 }
 
-void WebStateImpl::OnUrlHashChanged() {
-  for (auto& observer : observers_)
-    observer.UrlHashChanged();
-}
-
-void WebStateImpl::OnHistoryStateChanged() {
-  for (auto& observer : observers_)
-    observer.HistoryStateChanged();
-}
-
 void WebStateImpl::OnSamePageNavigation(const GURL& url) {
   std::unique_ptr<NavigationContext> context =
       NavigationContextImpl::CreateSamePageNavigationContext(this, url);

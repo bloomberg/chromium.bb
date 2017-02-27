@@ -67,18 +67,6 @@ void WebStateObserverBridge::InterstitialDismissed() {
     [observer_ webStateDidDismissInterstitial:web_state()];
 }
 
-void WebStateObserverBridge::UrlHashChanged() {
-  SEL selector = @selector(webStateDidChangeURLHash:);
-  if ([observer_ respondsToSelector:selector])
-    [observer_ webStateDidChangeURLHash:web_state()];
-}
-
-void WebStateObserverBridge::HistoryStateChanged() {
-  SEL selector = @selector(webStateDidChangeHistoryState:);
-  if ([observer_ respondsToSelector:selector])
-    [observer_ webStateDidChangeHistoryState:web_state()];
-}
-
 void WebStateObserverBridge::LoadProgressChanged(double progress) {
   SEL selector = @selector(webState:didChangeLoadingProgress:);
   if ([observer_ respondsToSelector:selector])

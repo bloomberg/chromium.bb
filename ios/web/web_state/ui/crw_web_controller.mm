@@ -2862,8 +2862,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     item->SetIsCreatedFromHashChange(true);
   }
 
-  // Notify the observers.
-  _webStateImpl->OnUrlHashChanged();
   return YES;
 }
 
@@ -2962,8 +2960,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       return;
     base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
     [strongSelf optOutScrollsToTopForSubviews];
-    // Notify the observers.
-    strongSelf.get()->_webStateImpl->OnHistoryStateChanged();
     [strongSelf didFinishNavigation];
   }];
   return YES;

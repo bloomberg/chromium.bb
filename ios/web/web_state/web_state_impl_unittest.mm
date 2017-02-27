@@ -127,7 +127,6 @@ class TestWebStateObserver : public WebStateObserver {
         navigation_item_changed_called_(false),
         navigation_item_committed_called_(false),
         page_loaded_called_with_success_(false),
-        url_hash_changed_called_(false),
         history_state_changed_called_(false),
         did_finish_navigation_called_(false),
         web_state_destroyed_called_(false) {}
@@ -149,7 +148,6 @@ class TestWebStateObserver : public WebStateObserver {
   bool page_loaded_called_with_success() const {
     return page_loaded_called_with_success_;
   }
-  bool url_hash_changed_called() const { return url_hash_changed_called_; }
   bool history_state_changed_called() const {
     return history_state_changed_called_;
   }
@@ -182,8 +180,6 @@ class TestWebStateObserver : public WebStateObserver {
     page_loaded_called_with_success_ =
         load_completion_status == PageLoadCompletionStatus::SUCCESS;
   }
-  void UrlHashChanged() override { url_hash_changed_called_ = true; }
-  void HistoryStateChanged() override { history_state_changed_called_ = true; }
   void WebStateDestroyed() override {
     EXPECT_TRUE(web_state()->IsBeingDestroyed());
     web_state_destroyed_called_ = true;
@@ -195,7 +191,6 @@ class TestWebStateObserver : public WebStateObserver {
   bool navigation_item_changed_called_;
   bool navigation_item_committed_called_;
   bool page_loaded_called_with_success_;
-  bool url_hash_changed_called_;
   bool history_state_changed_called_;
   bool did_finish_navigation_called_;
   bool web_state_destroyed_called_;
@@ -391,16 +386,6 @@ TEST_F(WebStateTest, ObserverTest) {
   EXPECT_FALSE(observer->page_loaded_called_with_success());
   web_state_->OnPageLoaded(GURL("http://test"), true);
   EXPECT_TRUE(observer->page_loaded_called_with_success());
-
-  // Test that UrlHashChanged() is called.
-  EXPECT_FALSE(observer->url_hash_changed_called());
-  web_state_->OnUrlHashChanged();
-  EXPECT_TRUE(observer->url_hash_changed_called());
-
-  // Test that HistoryStateChanged() is called.
-  EXPECT_FALSE(observer->history_state_changed_called());
-  web_state_->OnHistoryStateChanged();
-  EXPECT_TRUE(observer->history_state_changed_called());
 
   // Test that DidFinishNavigation() is called for same page navigations.
   EXPECT_FALSE(observer->did_finish_navigation_called());
