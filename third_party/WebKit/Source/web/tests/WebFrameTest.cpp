@@ -31,9 +31,10 @@
 #include "public/web/WebFrame.h"
 
 #include <stdarg.h>
-#include <v8.h>
+
 #include <map>
 #include <memory>
+
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
@@ -140,6 +141,7 @@
 #include "public/web/WebViewClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "v8/include/v8.h"
 #include "web/TextFinder.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"

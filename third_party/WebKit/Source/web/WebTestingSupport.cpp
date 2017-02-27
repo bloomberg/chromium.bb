@@ -29,7 +29,7 @@
 #include "bindings/modules/v8/V8WorkerInternalsPartial.h"
 #include "core/testing/v8/WebCoreTestSupport.h"
 #include "public/web/WebLocalFrame.h"
-#include <v8/include/v8.h>
+#include "v8/include/v8.h"
 
 namespace blink {
 

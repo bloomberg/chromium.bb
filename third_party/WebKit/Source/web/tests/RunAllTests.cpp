@@ -37,7 +37,7 @@
 #include "content/test/blink_test_environment.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/weborigin/SchemeRegistry.h"
-#include <v8.h>
+#include "v8/include/v8.h"
 
 namespace {
 

@@ -30,6 +30,8 @@
 
 #include "public/web/WebKit.h"
 
+#include <memory>
+
 #include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
@@ -44,14 +46,13 @@
 #include "platform/heap/Heap.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
+#include "v8/include/v8.h"
 #include "wtf/Assertions.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/WTF.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextEncoding.h"
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 
