@@ -11,8 +11,8 @@
 #ifndef WEBRTC_BASE_TASK_QUEUE_H_
 #define WEBRTC_BASE_TASK_QUEUE_H_
 
-#include <memory>
 #include <stdint.h>
+#include <memory>
 
 #include "base/macros.h"
 #include "third_party/webrtc/base/thread_annotations.h"
@@ -144,8 +144,16 @@ static std::unique_ptr<QueuedTask> NewClosure(const Closure& closure,
 // so assumptions about lifetimes of pending tasks should not be made.
 class LOCKABLE TaskQueue {
  public:
-  explicit TaskQueue(const char* queue_name);
-  // TODO(tommi): Implement move semantics?
+  // TaskQueue priority levels. On some platforms these will map to thread
+  // priorities, on others such as Mac and iOS, GCD queue priorities.
+  enum class Priority {
+    NORMAL = 0,
+    HIGH,
+    LOW,
+  };
+
+  explicit TaskQueue(const char* queue_name,
+                     Priority priority = Priority::NORMAL);
   ~TaskQueue();
 
   static TaskQueue* Current();

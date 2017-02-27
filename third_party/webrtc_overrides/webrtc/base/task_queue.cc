@@ -82,11 +82,25 @@ TaskQueue::WorkerThread::~WorkerThread() {
   DCHECK(!Thread::IsRunning());
 }
 
-TaskQueue::TaskQueue(const char* queue_name)
+TaskQueue::TaskQueue(const char* queue_name,
+                     Priority priority /*= Priority::NORMAL*/)
     : thread_(
           std::unique_ptr<WorkerThread>(new WorkerThread(queue_name, this))) {
   DCHECK(queue_name);
-  bool result = thread_->Start();
+  base::Thread::Options options;
+  switch (priority) {
+    case Priority::HIGH:
+      options.priority = base::ThreadPriority::REALTIME_AUDIO;
+      break;
+    case Priority::LOW:
+      options.priority = base::ThreadPriority::BACKGROUND;
+      break;
+    case Priority::NORMAL:
+    default:
+      options.priority = base::ThreadPriority::NORMAL;
+      break;
+  }
+  bool result = thread_->StartWithOptions(options);
   CHECK(result);
 }
 
