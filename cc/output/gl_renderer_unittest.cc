@@ -74,6 +74,7 @@ class GLRendererTest : public testing::Test {
 
 #define EXPECT_PROGRAM_VALID(program_binding)      \
   do {                                             \
+    ASSERT_TRUE(program_binding);                  \
     EXPECT_TRUE((program_binding)->program());     \
     EXPECT_TRUE((program_binding)->initialized()); \
   } while (false)
