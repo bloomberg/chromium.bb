@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/legacy_touch_event_queue.h"
+#include "content/browser/renderer_host/input/passthrough_touch_event_queue.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/common/content_constants_internal.h"
@@ -91,9 +92,15 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       wheel_event_queue_(this,
                          base::FeatureList::IsEnabled(
                              features::kTouchpadAndWheelScrollLatching)),
-      touch_event_queue_(new LegacyTouchEventQueue(this, config.touch_config)),
       gesture_event_queue_(this, this, config.gesture_config),
       device_scale_factor_(1.f) {
+  if (base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents))
+    touch_event_queue_.reset(
+        new PassthroughTouchEventQueue(this, config.touch_config));
+  else
+    touch_event_queue_.reset(
+        new LegacyTouchEventQueue(this, config.touch_config));
+
   DCHECK(sender);
   DCHECK(client);
   DCHECK(ack_handler);

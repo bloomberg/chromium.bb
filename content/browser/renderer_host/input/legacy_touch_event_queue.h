@@ -96,7 +96,7 @@ class CONTENT_EXPORT LegacyTouchEventQueue : public TouchEventQueue {
   }
 
  private:
-  friend class TouchEventQueueTest;
+  friend class LegacyTouchEventQueueTest;
 
   bool HasPendingAsyncTouchMoveForTesting() const;
   bool IsTimeoutRunningForTesting() const;
