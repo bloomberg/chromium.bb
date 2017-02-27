@@ -1,0 +1,62 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTextControl INPUT id='target'",
+          "rect": [7, 7, 70, 24],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [10, 11, 64, 16],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [10, 11, 64, 16],
+          "reason": "subtree"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutTextControl INPUT id='target'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'test test test'",
+      "reason": "subtree"
+    }
+  ]
+}
+

@@ -1,0 +1,46 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [2, 102, 102, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 192, 63, 19],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 142, 63, 19],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'MIDDLE'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

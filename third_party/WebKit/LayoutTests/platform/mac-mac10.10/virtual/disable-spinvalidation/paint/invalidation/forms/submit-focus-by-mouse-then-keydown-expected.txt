@@ -1,0 +1,50 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutButton INPUT",
+          "rect": [3, 4, 62, 29],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [16, 11, 36, 13],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [16, 11, 36, 13],
+          "reason": "subtree"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutButton INPUT",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'Submit'",
+      "reason": "subtree"
+    }
+  ]
+}
+

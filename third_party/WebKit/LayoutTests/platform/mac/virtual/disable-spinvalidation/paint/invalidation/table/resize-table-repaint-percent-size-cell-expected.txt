@@ -1,0 +1,105 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [0, 292, 106, 236],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [0, 100, 106, 190],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [0, 102, 106, 46],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [2, 52, 102, 238],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [2, 292, 102, 236],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [2, 102, 102, 46],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 401, 46, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 162, 46, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 116, 46, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 67, 46, 18],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'ROW1'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'ROW2'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+
