@@ -387,11 +387,29 @@ hb_font_t* HarfBuzzFace::getScaledFont(
   m_harfBuzzFontData->m_rangeSet = rangeSet;
   m_harfBuzzFontData->updateSimpleFontData(m_platformData);
 
-  // TODO crbug.com/674879 - Connect variation axis parameters to future
-  // HarfBuzz API here.
   ASSERT(m_harfBuzzFontData->m_simpleFontData);
   int scale = SkiaScalarToHarfBuzzPosition(m_platformData->size());
   hb_font_set_scale(m_unscaledFont, scale, scale);
+
+// TODO: crbug.com/696570 Remove this conditional
+// once HarfBuzz on CrOS is updated.
+#if HB_VERSION_ATLEAST(1, 4, 2)
+  SkTypeface* typeface = m_harfBuzzFontData->m_paint.getTypeface();
+  int axisCount = typeface->getVariationDesignPosition(nullptr, 0);
+  if (axisCount > 0) {
+    Vector<SkFontArguments::VariationPosition::Coordinate> axisValues;
+    axisValues.resize(axisCount);
+    typeface->getVariationDesignPosition(axisValues.data(), axisValues.size());
+    Vector<float> axisValuesFloat;
+    axisValuesFloat.resize(axisCount);
+    for (size_t i = 0; i < axisValues.size(); i++) {
+      axisValuesFloat[i] = axisValues[i].value;
+    }
+    hb_font_set_var_coords_design(m_unscaledFont, axisValuesFloat.data(),
+                                  axisValuesFloat.size());
+  }
+#endif
+
   return m_unscaledFont;
 }
 
