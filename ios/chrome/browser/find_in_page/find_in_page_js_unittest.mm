@@ -4,16 +4,19 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
+#import "ios/chrome/browser/find_in_page/find_in_page_model.h"
+#import "ios/chrome/browser/find_in_page/js_findinpage_manager.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
+#import "ios/web/public/web_state/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 
-// Unit tests for the models/resources/find_in_page.js JavaScript file.
+// Unit tests for the find_in_page.js JavaScript file.
 
 namespace {
 
@@ -63,7 +66,11 @@ class FindInPageJsTest : public ChromeWebTest {
   // Loads the given HTML, then loads the |findInPage| JavaScript.
   void LoadHtml(NSString* html) {
     ChromeWebTest::LoadHtml(html);
-    [findInPageController_ initFindInPage];
+
+    // Inject and initialize the find in page javascript.
+    [findInPageJsManager_ inject];
+    CGRect frame = [web_state()->GetWebViewProxy() bounds];
+    [findInPageJsManager_ setWidth:frame.size.width height:frame.size.height];
   }
 
   // Runs the given JavaScript and asserts that the result matches the given
@@ -94,15 +101,15 @@ class FindInPageJsTest : public ChromeWebTest {
 
   void SetUp() override {
     ChromeWebTest::SetUp();
-    mockDelegate_.reset([[OCMockObject
-        niceMockForProtocol:@protocol(FindInPageControllerDelegate)] retain]);
-    findInPageController_.reset([[FindInPageController alloc]
-        initWithWebState:web_state()
-                delegate:mockDelegate_]);
+    findInPageModel_.reset([[FindInPageModel alloc] init]);
+    findInPageJsManager_.reset([base::mac::ObjCCastStrict<JsFindinpageManager>(
+        [web_state()->GetJSInjectionReceiver()
+            instanceOfClass:[JsFindinpageManager class]]) retain]);
+    findInPageJsManager_.get().findInPageModel = findInPageModel_;
   }
 
-  base::scoped_nsobject<FindInPageController> findInPageController_;
-  base::scoped_nsobject<id> mockDelegate_;
+  base::scoped_nsobject<FindInPageModel> findInPageModel_;
+  base::scoped_nsobject<JsFindinpageManager> findInPageJsManager_;
 };
 
 // Performs a search, then calls |incrementIndex| to loop through the

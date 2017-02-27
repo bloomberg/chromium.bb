@@ -225,8 +225,6 @@ source_set("unit_tests_internal") {
     "chrome_web_client_unittest.mm",
     "error_page_generator_unittest.mm",
     "external_app_launcher_unittest.mm",
-    "find_in_page_js_unittest.mm",
-    "js_findinpage_manager_unittest.mm",
   ]
   deps = [
     ":test_support",

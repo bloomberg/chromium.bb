@@ -41,8 +41,27 @@ source_set("unit_tests") {
   ]
   deps = [
     ":find_in_page",
+    ":unit_tests_nonarc",
     "//base",
     "//ios/web",
     "//ios/web:test_support",
+    "//testing/gtest",
+  ]
+}
+
+source_set("unit_tests_nonarc") {
+  testonly = true
+  sources = [
+    "find_in_page_js_unittest.mm",
+    "js_findinpage_manager_unittest.mm",
+  ]
+  deps = [
+    ":find_in_page",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/browser/web:test_support",
+    "//ios/web",
+    "//ios/web:test_support",
+    "//testing/gtest",
   ]
 }
