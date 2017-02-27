@@ -408,7 +408,8 @@ public class MediaNotificationManager {
     /**
      * Shows the notification with media controls with the specified media info. Replaces/updates
      * the current notification if already showing. Does nothing if |mediaNotificationInfo| hasn't
-     * changed from the last one.
+     * changed from the last one. If |mediaNotificationInfo.isPaused| is true and the tabId
+     * mismatches |mMediaNotificationInfo.isPaused|, it is also no-op.
      *
      * @param applicationContext context to create the notification with
      * @param notificationInfo information to show in the notification
@@ -654,6 +655,10 @@ public class MediaNotificationManager {
 
     private void showNotification(MediaNotificationInfo mediaNotificationInfo) {
         if (mediaNotificationInfo.equals(mMediaNotificationInfo)) return;
+        if (mediaNotificationInfo.isPaused && mMediaNotificationInfo != null
+                && mediaNotificationInfo.tabId != mMediaNotificationInfo.tabId) {
+            return;
+        }
 
         mMediaNotificationInfo = mediaNotificationInfo;
         mContext.startService(createIntent(mContext));

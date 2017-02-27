@@ -103,8 +103,8 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
      * Test if a notification accepts the title update from another tab, using the following steps:
      *   1. set the title of mTab, start the media session, a notification should show up;
      *   2. stop the media session of mTab, the notification shall hide;
-     *   3. create newTab, set the title of mTab, start the media session of mTab,
-     *      a notification should show up;
+     *   3. create newTab, start the media session of newTab, a notification should show up,
+     *      set the title of newTab, the notification title should match newTab;
      *   4. change the title of newTab and then mTab to different names,
      *      the notification should have the title of newTab.
      */
@@ -120,6 +120,32 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
 
         simulateMediaSessionStateChanged(newTab, true, false);
         simulateUpdateTitle(newTab, "title3");
+        simulateUpdateTitle(mTab, "title2");
+        assertTitleMatches("title3");
+    }
+
+    /**
+     * Test for the notification should not update for a paused tab if it mismatches the current tab
+     * id:
+     *   1. set the title of mTab, start the media session, a notification should show up;
+     *   2. create newTab, start the media session of newTab, a notification should show up,
+     *      set the title of newTab, the notification will match the title;
+     *   3. stop the media session of mTab, and change its title, the notification should not
+     *      change.
+     */
+    @SmallTest
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    public void testPreferLastActiveTab() throws Throwable {
+        simulateMediaSessionStateChanged(mTab, true, false);
+        assertTitleMatches("title1");
+
+        Tab newTab = loadUrlInNewTab("about:blank");
+        assertNotNull(newTab);
+
+        simulateMediaSessionStateChanged(newTab, true, false);
+        simulateUpdateTitle(newTab, "title3");
+
+        simulateMediaSessionStateChanged(mTab, false, false);
         simulateUpdateTitle(mTab, "title2");
         assertTitleMatches("title3");
     }
