@@ -272,28 +272,22 @@ if (CONFIG_MOTION_VAR)
       "${AOM_ROOT}/aom_dsp/x86/obmc_variance_sse4.c")
 endif ()
 
-set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_dsp_common)
-
-if (CONFIG_DECODERS)
-  set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_dsp_decoder)
-endif ()
-if (CONFIG_ENCODERS)
-  set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_dsp_encoder)
-endif ()
-
 # Creates aom_dsp build targets. Must not be called until after libaom target
 # has been created.
 function (setup_aom_dsp_targets)
   add_library(aom_dsp_common OBJECT ${AOM_DSP_COMMON_SOURCES})
+  set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_dsp_common)
   target_sources(aom PUBLIC $<TARGET_OBJECTS:aom_dsp_common>)
 
   if (CONFIG_DECODERS)
     add_library(aom_dsp_decoder OBJECT ${AOM_DSP_DECODER_SOURCES})
+    set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_dsp_decoder)
     target_sources(aom PUBLIC $<TARGET_OBJECTS:aom_dsp_decoder>)
   endif ()
 
   if (CONFIG_ENCODERS)
     add_library(aom_dsp_encoder OBJECT ${AOM_DSP_ENCODER_SOURCES})
+    set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_dsp_encoder)
     target_sources(aom PUBLIC $<TARGET_OBJECTS:aom_dsp_encoder>)
   endif ()
 
