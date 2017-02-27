@@ -71,10 +71,13 @@ void DeleteProfileCallback(std::unique_ptr<ScopedKeepAlive> keep_alive,
 }  // namespace
 
 void OpenNewWindowForProfile(Profile* profile) {
-  if (signin::IsForceSigninEnabled()) {
-    ShowUserManager(base::Bind(&ShowSigninDialog, profile->GetPath()));
-  } else if (profiles::IsProfileLocked(profile->GetPath())) {
-    ShowUserManager(base::Bind(&ShowReauthDialog, GetProfileUserName(profile)));
+  if (profiles::IsProfileLocked(profile->GetPath())) {
+    if (signin::IsForceSigninEnabled()) {
+      ShowUserManager(base::Bind(&ShowSigninDialog, profile->GetPath()));
+    } else {
+      ShowUserManager(
+          base::Bind(&ShowReauthDialog, GetProfileUserName(profile)));
+    }
   } else {
     profiles::FindOrCreateNewWindowForProfile(
         profile, chrome::startup::IS_PROCESS_STARTUP,
