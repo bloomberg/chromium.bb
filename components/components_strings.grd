@@ -232,6 +232,12 @@
       <message name="IDS_OK" desc="Used for OK on buttons">
         OK
       </message>
+      <message name="IDS_ADD" desc="Used for Add on buttons">
+        Add
+      </message>
+      <message name="IDS_SAVE" desc="Used on a button to save information you are editing.">
+        Save
+      </message>
       <message name="IDS_NO_THANKS" desc="Used to dismiss various prompts.">
         No thanks
       </message>
