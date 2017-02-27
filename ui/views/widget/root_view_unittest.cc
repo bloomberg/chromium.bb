@@ -12,6 +12,7 @@
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_deletion_observer.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace views {
 namespace test {
@@ -538,6 +539,49 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatchFromChild) {
                              gfx::Point(15, 15), ui::EventTimeForNow(), 0, 0);
   root_view->OnMouseMoved(move_event2);
   EXPECT_FALSE(widget_deletion_observer.IsWidgetAlive());
+}
+
+namespace {
+class RootViewTestDialogDelegate : public DialogDelegateView {
+ public:
+  RootViewTestDialogDelegate() {}
+
+  int layout_count() const { return layout_count_; }
+
+  // DialogDelegateView:
+  gfx::Size GetPreferredSize() const override { return preferred_size_; }
+  void Layout() override {
+    EXPECT_EQ(size(), preferred_size_);
+    ++layout_count_;
+  }
+  int GetDialogButtons() const override {
+    return ui::DIALOG_BUTTON_NONE;  // Ensure buttons do not influence size.
+  }
+
+ private:
+  const gfx::Size preferred_size_ = gfx::Size(111, 111);
+
+  int layout_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(RootViewTestDialogDelegate);
+};
+}  // namespace
+
+// Ensure only one call to Layout() happens during Widget initialization, and
+// ensure it happens at the ContentView's preferred size.
+TEST_F(RootViewTest, SingleLayoutDuringInit) {
+  RootViewTestDialogDelegate* delegate = new RootViewTestDialogDelegate();
+  Widget* widget =
+      DialogDelegate::CreateDialogWidget(delegate, GetContext(), nullptr);
+  EXPECT_EQ(1, delegate->layout_count());
+  widget->CloseNow();
+
+  // Also test Aura desktop Widget codepaths.
+  views_delegate()->set_use_desktop_native_widgets(true);
+  delegate = new RootViewTestDialogDelegate();
+  widget = DialogDelegate::CreateDialogWidget(delegate, GetContext(), nullptr);
+  EXPECT_EQ(1, delegate->layout_count());
+  widget->CloseNow();
 }
 
 }  // namespace test

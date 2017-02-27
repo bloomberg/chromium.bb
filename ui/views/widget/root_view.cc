@@ -193,12 +193,6 @@ void RootView::SetContentsView(View* contents_view) {
   if (has_children())
     RemoveAllChildViews(true);
   AddChildView(contents_view);
-
-  // Force a layout now, since the attached hierarchy won't be ready for the
-  // containing window's bounds. Note that we call Layout directly rather than
-  // calling the widget's size changed handler, since the RootView's bounds may
-  // not have changed, which will cause the Layout not to be done otherwise.
-  Layout();
 }
 
 View* RootView::GetContentsView() {
