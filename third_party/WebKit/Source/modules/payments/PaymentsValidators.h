@@ -5,7 +5,7 @@
 #ifndef PaymentsValidators_h
 #define PaymentsValidators_h
 
-#include "components/payments/payment_request.mojom-blink.h"
+#include "components/payments/content/payment_request.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"

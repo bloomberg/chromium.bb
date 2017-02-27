@@ -1561,8 +1561,9 @@ split_static_library("ui") {
     deps += [
       "//chrome/browser/ui/views",
       "//components/constrained_window",
-      "//components/payments:payment_request_impl",
-      "//components/payments:payment_validation",
+      "//components/payments/content:payment_request_impl",
+      "//components/payments/content:payment_validation",
+      "//components/payments/core",
       "//services/ui/public/cpp/input_devices",
     ]
     allow_circular_includes_from += [ "//chrome/browser/ui/views" ]

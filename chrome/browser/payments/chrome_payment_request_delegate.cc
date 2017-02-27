@@ -8,7 +8,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "components/payments/payment_request_dialog.h"
+#include "components/payments/content/payment_request_dialog.h"
 #include "content/public/browser/web_contents.h"
 
 namespace payments {

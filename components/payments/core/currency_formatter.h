@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CURRENCY_FORMATTER_H_
-#define COMPONENTS_PAYMENTS_CURRENCY_FORMATTER_H_
+#ifndef COMPONENTS_PAYMENTS_CORE_CURRENCY_FORMATTER_H_
+#define COMPONENTS_PAYMENTS_CORE_CURRENCY_FORMATTER_H_
 
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "third_party/icu/source/common/unicode/locid.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/numfmt.h"
 
 namespace payments {
@@ -43,7 +43,9 @@ class CurrencyFormatter {
 
   // Returns the formatted currency code (<= 6 characters including ellipsis if
   // applicable).
-  std::string formatted_currency_code() { return formatted_currency_code_; }
+  const std::string& formatted_currency_code() const {
+    return formatted_currency_code_;
+  }
 
  private:
   const icu::Locale locale_;
@@ -56,4 +58,4 @@ class CurrencyFormatter {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_CURRENCY_FORMATTER_H_
+#endif  // COMPONENTS_PAYMENTS_CORE_CURRENCY_FORMATTER_H_

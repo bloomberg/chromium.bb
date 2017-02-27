@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/payments/address_normalizer.h"
+#include "components/payments/core/address_normalizer.h"
 
 namespace autofill {
 

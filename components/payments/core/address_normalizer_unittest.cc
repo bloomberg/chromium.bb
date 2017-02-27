@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/address_normalizer.h"
+#include "components/payments/core/address_normalizer.h"
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_scheduler.h"
@@ -18,6 +17,7 @@
 namespace payments {
 namespace {
 
+using ::autofill::AutofillProfile;
 using ::i18n::addressinput::NullStorage;
 using ::i18n::addressinput::Source;
 using ::i18n::addressinput::Storage;
@@ -47,6 +47,8 @@ class NormalizationDelegate : public AddressNormalizer::Delegate {
  private:
   bool normalized_called_;
   bool not_normalized_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(NormalizationDelegate);
 };
 
 // Used to load region rules for this test.
@@ -64,6 +66,9 @@ class ChromiumTestdataSource : public TestdataSource {
                         "{\"id\":\"data/US\",\"key\":\"US\",\"name\":\"UNITED "
                         "STATES\",\"lang\":\"en\",\"languages\":\"en\"}}"));
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromiumTestdataSource);
 };
 
 // A test subclass of the AddressNormalizer. Used to simulate rules not being
@@ -89,6 +94,8 @@ class TestAddressNormalizer : public AddressNormalizer {
 
  private:
   bool should_load_rules_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAddressNormalizer);
 };
 
 }  // namespace

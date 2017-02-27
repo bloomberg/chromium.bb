@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/android/payments_jni_registrar.h"
+#include "components/payments/content/android/payment_details_validation_android.h"
 
 #include <string>
 #include <utility>
 
-#include "components/payments/payment_details_validation.h"
-#include "components/payments/payment_request.mojom.h"
+#include "components/payments/content/payment_details_validation.h"
+#include "components/payments/content/payment_request.mojom.h"
 #include "jni/PaymentValidator_jni.h"
 
 namespace payments {

@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_ANDROID_CURRENCY_FORMATTER_ANDROID_H_
-#define COMPONENTS_PAYMENTS_ANDROID_CURRENCY_FORMATTER_ANDROID_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_ANDROID_CURRENCY_FORMATTER_ANDROID_H_
+#define COMPONENTS_PAYMENTS_CONTENT_ANDROID_CURRENCY_FORMATTER_ANDROID_H_
 
+#include <jni.h>
 #include <memory>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "components/payments/currency_formatter.h"
 
 namespace payments {
+
+class CurrencyFormatter;
 
 // Forwarding calls to payments::CurrencyFormatter.
 class CurrencyFormatterAndroid {
@@ -48,4 +50,4 @@ class CurrencyFormatterAndroid {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_ANDROID_CURRENCY_FORMATTER_ANDROID_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_ANDROID_CURRENCY_FORMATTER_ANDROID_H_

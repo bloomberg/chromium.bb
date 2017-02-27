@@ -1,9 +1,0 @@
-include_rules = [
-  "+components/autofill",
-  # TODO(crbug.com/679381): Move this to components/payments/content.
-  "+content/public/browser",
-
-  "+mojo/public/cpp",
-  "+third_party/libaddressinput", # For address i18n.
-  "+third_party/re2",
-]

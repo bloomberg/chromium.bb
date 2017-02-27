@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/payment_details_validation.h"
+#include "components/payments/content/payment_details_validation.h"
 
 #include <set>
 #include <vector>
 
-#include "components/payments/payment_request.mojom.h"
-#include "components/payments/payments_validators.h"
+#include "components/payments/content/payment_request.mojom.h"
+#include "components/payments/content/payments_validators.h"
 
+namespace payments {
 namespace {
 
 // Validates ShippingOption or PaymentItem, which happen to have identical
@@ -138,8 +139,6 @@ bool validatePaymentDetailsModifiers(
 }
 
 }  // namespace
-
-namespace payments {
 
 bool validatePaymentDetails(const mojom::PaymentDetailsPtr& details,
                             std::string* error_message) {

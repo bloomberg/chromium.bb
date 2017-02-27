@@ -26,36 +26,28 @@ mojom("payment_app") {
   ]
 }
 
-# TODO(crbug.com/679381): Create a layered component to that we can remove the
-# iOS check here (iOS strict DEPS checker doesn't like the //content dependency
-# below).
-if (!is_ios) {
-  static_library("payment_request_impl") {
-    sources = [
-      "payment_request.cc",
-      "payment_request.h",
-      "payment_request_delegate.h",
-      "payment_request_dialog.h",
-      "payment_request_web_contents_manager.cc",
-      "payment_request_web_contents_manager.h",
-    ]
+static_library("payment_request_impl") {
+  sources = [
+    "payment_request.cc",
+    "payment_request.h",
+    "payment_request_delegate.h",
+    "payment_request_dialog.h",
+    "payment_request_web_contents_manager.cc",
+    "payment_request_web_contents_manager.h",
+  ]
 
-    deps = [
-      ":payment_request",
-      ":payment_validation",
-      "//components/autofill/core/browser",
-      "//content/public/browser",
-      "//mojo/public/cpp/bindings",
-    ]
-  }
+  deps = [
+    ":payment_request",
+    ":payment_validation",
+    "//components/autofill/core/browser",
+    "//components/payments/core",
+    "//content/public/browser",
+    "//mojo/public/cpp/bindings",
+  ]
 }
 
 static_library("payment_validation") {
   sources = [
-    "address_normalizer.cc",
-    "address_normalizer.h",
-    "currency_formatter.cc",
-    "currency_formatter.h",
     "payment_details_validation.cc",
     "payment_details_validation.h",
     "payments_validators.cc",
@@ -66,12 +58,13 @@ static_library("payment_validation") {
     ":payment_request",
     "//base",
     "//components/autofill/core/browser",
-    "//third_party/re2:re2",
-    "//url:url",
+    "//components/payments/core",
+    "//third_party/re2",
+    "//url",
   ]
 
   public_deps = [
-    "//third_party/icu:icu",
+    "//third_party/icu",
     "//third_party/libaddressinput",
   ]
 }
@@ -79,8 +72,6 @@ static_library("payment_validation") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "address_normalizer_unittest.cc",
-    "currency_formatter_unittest.cc",
     "payments_validators_test.cc",
   ]
 
@@ -90,7 +81,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/autofill/core/browser",
     "//testing/gtest",
-    "//third_party/icu:icu",
+    "//third_party/icu",
     "//third_party/libaddressinput:test_support",
   ]
 }

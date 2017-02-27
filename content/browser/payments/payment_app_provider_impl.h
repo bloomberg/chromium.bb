@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "components/payments/payment_app.mojom.h"
+#include "components/payments/content/payment_app.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/payment_app_provider.h"
 

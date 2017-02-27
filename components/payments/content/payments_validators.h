@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_PAYMENTS_VALIDATORS_H_
-#define COMPONENTS_PAYMENTS_PAYMENTS_VALIDATORS_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENTS_VALIDATORS_H_
+#define COMPONENTS_PAYMENTS_CONTENT_PAYMENTS_VALIDATORS_H_
 
 #include <string>
 
-#include "components/payments/payment_request.mojom.h"
+#include "base/macros.h"
+#include "components/payments/content/payment_request.mojom.h"
 
 namespace payments {
 
@@ -22,38 +23,41 @@ class PaymentsValidators {
   // false if currency |code| is too long (greater than 2048).
   static bool isValidCurrencyCodeFormat(const std::string& code,
                                         const std::string& system,
-                                        std::string* optionalErrorMessage);
+                                        std::string* optional_error_message);
 
   // Returns true if |amount| is a valid currency code as defined in ISO 20022
   // CurrencyAnd30Amount.
   static bool isValidAmountFormat(const std::string& amount,
-                                  std::string* optionalErrorMessage);
+                                  std::string* optional_error_message);
 
   // Returns true if |code| is a valid ISO 3166 country code.
   static bool isValidCountryCodeFormat(const std::string& code,
-                                       std::string* optionalErrorMessage);
+                                       std::string* optional_error_message);
 
   // Returns true if |code| is a valid ISO 639 language code.
   static bool isValidLanguageCodeFormat(const std::string& code,
-                                        std::string* optionalErrorMessage);
+                                        std::string* optional_error_message);
 
   // Returns true if |code| is a valid ISO 15924 script code.
   static bool isValidScriptCodeFormat(const std::string& code,
-                                      std::string* optionalErrorMessage);
+                                      std::string* optional_error_message);
 
   // Returns true if the payment address is valid:
   //  - Has a valid region code
   //  - Has a valid language code, if any.
   //  - Has a valid script code, if any.
   // A script code should be present only if language code is present.
-  static bool isValidShippingAddress(const mojom::PaymentAddressPtr&,
-                                     std::string* optionalErrorMessage);
+  static bool isValidShippingAddress(const mojom::PaymentAddressPtr& address,
+                                     std::string* optional_error_message);
 
   // Returns false if |error| is too long (greater than 2048).
   static bool isValidErrorMsgFormat(const std::string& code,
-                                    std::string* optionalErrorMessage);
+                                    std::string* optional_error_message);
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PaymentsValidators);
 };
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_PAYMENTS_VALIDATORS_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_PAYMENTS_VALIDATORS_H_

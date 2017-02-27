@@ -6,7 +6,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_interactive_uitest_base.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/payments/payment_request.h"
+#include "components/payments/content/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {

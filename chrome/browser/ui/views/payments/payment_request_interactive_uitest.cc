@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_interactive_uitest_base.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/payments/payment_request.h"
-#include "components/payments/payment_request_web_contents_manager.h"
+#include "components/payments/content/payment_request.h"
+#include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/test/browser_test_utils.h"
 

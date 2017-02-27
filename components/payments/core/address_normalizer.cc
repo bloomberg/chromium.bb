@@ -2,29 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/address_normalizer.h"
+#include "components/payments/core/address_normalizer.h"
 
-#include <memory>
+#include <stddef.h>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/cancelable_callback.h"
+#include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/address_i18n.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
+namespace payments {
 namespace {
+
+using ::autofill::AutofillProfile;
 using ::i18n::addressinput::Source;
 using ::i18n::addressinput::Storage;
-}  // namespace
-
-namespace payments {
-
-namespace {
 
 class AddressNormalizationRequest : public AddressNormalizer::Request {
  public:

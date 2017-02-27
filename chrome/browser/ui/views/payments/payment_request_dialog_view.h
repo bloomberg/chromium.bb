@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
-#include "components/payments/payment_request_dialog.h"
+#include "components/payments/content/payment_request_dialog.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace payments {

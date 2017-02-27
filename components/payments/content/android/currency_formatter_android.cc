@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/android/currency_formatter_android.h"
+#include "components/payments/content/android/currency_formatter_android.h"
 
 #include "base/android/jni_string.h"
-#include "base/optional.h"
 #include "base/strings/string16.h"
-#include "components/payments/currency_formatter.h"
+#include "components/payments/core/currency_formatter.h"
 #include "jni/CurrencyFormatter_jni.h"
 
-using base::android::JavaParamRef;
-using base::android::ConvertJavaStringToUTF8;
-
 namespace payments {
+namespace {
+
+using ::base::android::JavaParamRef;
+using ::base::android::ConvertJavaStringToUTF8;
+
+}  // namespace
 
 CurrencyFormatterAndroid::CurrencyFormatterAndroid(
     JNIEnv* env,

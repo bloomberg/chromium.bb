@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
 #include "chrome/browser/ui/views/payments/shipping_list_view_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/payments/payment_request.h"
+#include "components/payments/content/payment_request.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/views/layout/fill_layout.h"
 

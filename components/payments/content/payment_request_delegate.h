@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_PAYMENT_REQUEST_DELEGATE_H_
-#define COMPONENTS_PAYMENTS_PAYMENT_REQUEST_DELEGATE_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_DELEGATE_H_
+#define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_DELEGATE_H_
 
 namespace autofill {
 class PersonalDataManager;
@@ -31,4 +31,4 @@ class PaymentRequestDelegate {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_PAYMENT_REQUEST_DELEGATE_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_DELEGATE_H_

@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/currency_formatter.h"
+#include "components/payments/core/currency_formatter.h"
 
-#include <memory>
-
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/icu/source/common/unicode/stringpiece.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
-#include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 
 namespace payments {

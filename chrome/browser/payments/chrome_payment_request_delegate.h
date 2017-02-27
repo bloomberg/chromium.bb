@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PAYMENTS_CHROME_PAYMENT_REQUEST_DELEGATE_H_
 
 #include "base/macros.h"
-#include "components/payments/payment_request_delegate.h"
+#include "components/payments/content/payment_request_delegate.h"
 
 namespace content {
 class WebContents;

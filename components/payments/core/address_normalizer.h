@@ -2,14 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_ADDRESS_NORMALIZER_H_
-#define COMPONENTS_PAYMENTS_ADDRESS_NORMALIZER_H_
+#ifndef COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZER_H_
+#define COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZER_H_
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 
-using autofill::AutofillProfile;
+namespace autofill {
+class AutofillProfile;
+}
+
+namespace i18n {
+namespace libadderssinput {
+class Source;
+class Storage;
+}
+}
 
 namespace payments {
 
@@ -78,4 +91,4 @@ class AddressNormalizer : public autofill::LoadRulesListener {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_ADDRESS_NORMALIZER_H_
+#endif  // COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZER_H_

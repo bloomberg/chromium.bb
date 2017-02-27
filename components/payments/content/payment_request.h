@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_PAYMENT_REQUEST_H_
-#define COMPONENTS_PAYMENTS_PAYMENT_REQUEST_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_H_
+#define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/payments/currency_formatter.h"
-#include "components/payments/payment_request.mojom.h"
-#include "components/payments/payment_request_delegate.h"
+#include "base/macros.h"
+#include "components/payments/content/payment_request.mojom.h"
+#include "components/payments/content/payment_request_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace autofill {
 class AutofillProfile;
 class CreditCard;
+class PersonalDataManager;
 }
 
 namespace content {
@@ -26,6 +26,7 @@ class WebContents;
 
 namespace payments {
 
+class CurrencyFormatter;
 class PaymentRequestWebContentsManager;
 
 class PaymentRequest : payments::mojom::PaymentRequest {
@@ -155,4 +156,4 @@ class PaymentRequest : payments::mojom::PaymentRequest {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_PAYMENT_REQUEST_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_H_

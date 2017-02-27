@@ -1370,7 +1370,7 @@ split_static_library("browser") {
   public_deps = [
     "//chrome/common",
     "//components/autofill/core/browser",
-    "//components/payments:payment_validation",
+    "//components/payments/core",
     "//components/sync",
     "//content/public/browser",
     "//sql",
@@ -1462,8 +1462,8 @@ split_static_library("browser") {
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/password_manager/sync/browser",
-    "//components/payments:payment_app",
-    "//components/payments:payment_request",
+    "//components/payments/content:payment_app",
+    "//components/payments/content:payment_request",
     "//components/policy:generated",
     "//components/policy/core/browser",
     "//components/policy/proto",
@@ -3038,7 +3038,7 @@ split_static_library("browser") {
       "//chrome/browser/android/webapk:proto",
       "//components/cdm/browser",
       "//components/data_usage/android",
-      "//components/payments/android:payments_jni",
+      "//components/payments/content/android",
       "//components/precache/content",
       "//components/precache/core",
       "//components/resources:components_resources",
@@ -3612,7 +3612,7 @@ split_static_library("browser") {
       "payments/payment_request_factory.cc",
       "payments/payment_request_factory.h",
     ]
-    deps += [ "//components/payments:payment_request_impl" ]
+    deps += [ "//components/payments/content:payment_request_impl" ]
   }
 
   if (is_linux || is_win) {

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_PAYMENT_DETAILS_VALIDATION_H_
-#define COMPONENTS_PAYMENTS_PAYMENT_DETAILS_VALIDATION_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_DETAILS_VALIDATION_H_
+#define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_DETAILS_VALIDATION_H_
 
 #include <string>
 
-#include "components/payments/payment_request.mojom.h"
+#include "components/payments/content/payment_request.mojom.h"
 
 namespace payments {
 
@@ -16,4 +16,4 @@ bool validatePaymentDetails(const mojom::PaymentDetailsPtr& details,
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_PAYMENT_DETAILS_VALIDATION_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_PAYMENT_DETAILS_VALIDATION_H_

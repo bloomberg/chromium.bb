@@ -2,24 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/payment_request.h"
+#include "components/payments/content/payment_request.h"
+
+#include <unordered_map>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "components/payments/payment_details_validation.h"
-#include "components/payments/payment_request_web_contents_manager.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/payments/content/payment_details_validation.h"
+#include "components/payments/content/payment_request_web_contents_manager.h"
+#include "components/payments/core/currency_formatter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
-using payments::mojom::BasicCardNetwork;
-
 namespace payments {
-
-namespace {
-
-// Identifier for the basic card payment method in the PaymentMethodData.
-const char* const kBasicCardMethodName = "basic-card";
-
-}  // namespace
 
 PaymentRequest::PaymentRequest(
     content::WebContents* web_contents,
@@ -40,7 +36,6 @@ PaymentRequest::PaymentRequest(
   // set_connection_error_with_reason_handler with Binding::CloseWithReason.
   binding_.set_connection_error_handler(base::Bind(
       &PaymentRequest::OnConnectionTerminated, base::Unretained(this)));
-
 }
 
 PaymentRequest::~PaymentRequest() {}
@@ -120,12 +115,12 @@ CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter(
 }
 
 const std::vector<autofill::AutofillProfile*>&
-    PaymentRequest::shipping_profiles() {
+PaymentRequest::shipping_profiles() {
   return shipping_profiles_;
 }
 
 const std::vector<autofill::AutofillProfile*>&
-    PaymentRequest::contact_profiles() {
+PaymentRequest::contact_profiles() {
   return contact_profiles_;
 }
 
@@ -180,6 +175,8 @@ void PaymentRequest::PopulateValidatedMethodData(
     return;
   }
 
+  // Identifier for the basic card payment method in the PaymentMethodData.
+  const char* const kBasicCardMethodName = "basic-card";
   std::set<std::string> card_networks{"amex",     "diners",     "discover",
                                       "jcb",      "mastercard", "mir",
                                       "unionpay", "visa"};
@@ -218,6 +215,7 @@ void PaymentRequest::PopulateValidatedMethodData(
         } else {
           // The merchant has specified a few basic card supported networks. Use
           // the mapping to transform to known basic-card types.
+          using ::payments::mojom::BasicCardNetwork;
           std::unordered_map<BasicCardNetwork, std::string> networks = {
               {BasicCardNetwork::AMEX, "amex"},
               {BasicCardNetwork::DINERS, "diners"},

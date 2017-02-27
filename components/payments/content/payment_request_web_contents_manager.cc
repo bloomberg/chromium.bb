@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/payment_request_web_contents_manager.h"
+#include "components/payments/content/payment_request_web_contents_manager.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "components/payments/payment_request_delegate.h"
+#include "base/memory/ptr_util.h"
+#include "components/payments/content/payment_request.h"
+#include "components/payments/content/payment_request_delegate.h"
+#include "content/public/browser/web_contents.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(payments::PaymentRequestWebContentsManager);
 
@@ -29,8 +31,8 @@ void PaymentRequestWebContentsManager::CreatePaymentRequest(
     content::WebContents* web_contents,
     std::unique_ptr<PaymentRequestDelegate> delegate,
     mojo::InterfaceRequest<payments::mojom::PaymentRequest> request) {
-  std::unique_ptr<PaymentRequest> new_request(new PaymentRequest(
-      web_contents, std::move(delegate), this, std::move(request)));
+  auto new_request = base::MakeUnique<PaymentRequest>(
+      web_contents, std::move(delegate), this, std::move(request));
   PaymentRequest* request_ptr = new_request.get();
   payment_requests_.insert(std::make_pair(request_ptr, std::move(new_request)));
 }

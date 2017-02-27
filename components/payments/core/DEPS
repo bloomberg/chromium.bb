@@ -1,0 +1,5 @@
+include_rules = [
+  "-content",
+  "+components/autofill/core",
+  "+third_party/libaddressinput",
+]

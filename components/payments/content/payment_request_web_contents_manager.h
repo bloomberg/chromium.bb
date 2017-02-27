@@ -5,15 +5,21 @@
 #ifndef COMPONENTS_PAYMENTS_PAYMENT_REQUEST_WEB_CONTENTS_MANAGER_H_
 #define COMPONENTS_PAYMENTS_PAYMENT_REQUEST_WEB_CONTENTS_MANAGER_H_
 
+#include <memory>
 #include <unordered_map>
 
-#include "components/payments/payment_request.h"
-#include "components/payments/payment_request.mojom.h"
+#include "base/macros.h"
+#include "components/payments/content/payment_request.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace payments {
 
+class PaymentRequest;
 class PaymentRequestDelegate;
 
 // This class owns the PaymentRequest associated with a given WebContents.
@@ -54,6 +60,8 @@ class PaymentRequestWebContentsManager
   // the requests themselves call DestroyRequest().
   std::unordered_map<PaymentRequest*, std::unique_ptr<PaymentRequest>>
       payment_requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestWebContentsManager);
 };
 
 }  // namespace payments
