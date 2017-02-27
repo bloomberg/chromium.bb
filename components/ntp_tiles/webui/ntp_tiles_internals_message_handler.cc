@@ -71,6 +71,14 @@ void NTPTilesInternalsMessageHandler::RegisterMessages(
 void NTPTilesInternalsMessageHandler::HandleRegisterForEvents(
     const base::ListValue* args) {
   if (!client_->SupportsNTPTiles()) {
+    base::DictionaryValue disabled;
+    disabled.SetBoolean("topSites", false);
+    disabled.SetBoolean("suggestionsService", false);
+    disabled.SetBoolean("popular", false);
+    disabled.SetBoolean("whitelist", false);
+    client_->CallJavascriptFunction(
+        "chrome.ntp_tiles_internals.receiveSourceInfo", disabled);
+    SendTiles(NTPTilesVector());
     return;
   }
   DCHECK(args->empty());
@@ -87,6 +95,7 @@ void NTPTilesInternalsMessageHandler::HandleUpdate(
   if (!client_->SupportsNTPTiles()) {
     return;
   }
+
   const base::DictionaryValue* dict = nullptr;
   DCHECK_EQ(1u, args->GetSize());
   args->GetDictionary(0, &dict);

@@ -6,8 +6,6 @@ cr.define('chrome.ntp_tiles_internals', function() {
   'use strict';
 
   var initialize = function() {
-    receiveSites({});
-
     $('submit-update').addEventListener('click', function(event) {
       event.preventDefault();
       chrome.send('update', [{
