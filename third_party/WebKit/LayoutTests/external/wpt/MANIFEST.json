@@ -379,6 +379,12 @@
      {}
     ]
    ],
+   "pointerevents/pointerevent_disabled_form_control-manual.html": [
+    [
+     "/pointerevents/pointerevent_disabled_form_control-manual.html",
+     {}
+    ]
+   ],
    "pointerevents/pointerevent_element_haspointercapture-manual.html": [
     [
      "/pointerevents/pointerevent_element_haspointercapture-manual.html",
@@ -76128,6 +76134,10 @@
   "pointerevents/pointerevent_constructor.html": [
    "0b247d3b7dfd047c217a78c59652a3c32df0fcfa",
    "testharness"
+  ],
+  "pointerevents/pointerevent_disabled_form_control-manual.html": [
+   "3f243b91d34f5ea8124a0ac78bf464ba67c75456",
+   "manual"
   ],
   "pointerevents/pointerevent_element_haspointercapture-manual.html": [
    "fd7ceeb1f55491c3082a0171951a9bc1489500cc",

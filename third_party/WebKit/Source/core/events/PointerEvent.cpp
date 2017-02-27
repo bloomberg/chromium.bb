@@ -83,9 +83,6 @@ PointerEvent& PointerEventDispatchMediator::event() const {
 
 DispatchEventResult PointerEventDispatchMediator::dispatchEvent(
     EventDispatcher& dispatcher) const {
-  if (isDisabledFormControl(&dispatcher.node()))
-    return DispatchEventResult::CanceledBeforeDispatch;
-
   if (event().type().isEmpty())
     return DispatchEventResult::NotCanceled;  // Shouldn't happen.
 
