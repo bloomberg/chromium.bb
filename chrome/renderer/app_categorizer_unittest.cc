@@ -34,32 +34,6 @@ const char* kBadChatAppURLs[] = {
   "https://talkgadget.evil.com/hangouts/foo"    // domain not whitelisted
 };
 
-const char* kPhotosAppURLs[] = {
-  "https://foo.plus.google.com",
-  "https://foo.plus.sandbox.google.com"
-};
-
-const char* kPhotosManifestURLs[] = {
-  "https://ssl.gstatic.com/photos/nacl/foo",
-  "https://ssl.gstatic.com/s2/oz/nacl/foo"
-};
-
-const char* kBadPhotosAppURLs[] = {
-  "https://plus.google.com/foo",
-  "https://plus.google.com/foo",
-  "https://plus.google.com/foo",
-  "http://plus.google.com/foo", // http scheme
-  "https://plus.evil.com/foo",  // domain not whitelisted
-};
-
-const char* kBadPhotosManifestURLs[] = {
-  "http://ssl.gstatic.com/photos/nacl/foo",         // http scheme
-  "https://lss.gstatic.com/photos/nacl/foo",        // bad hostname
-  "https://ssl.gstatic.com/wrong/photos/nacl/foo",  // bad path
-  "https://ssl.gstatic.com/photos/nacl/foo",
-  "https://ssl.gstatic.com/photos/nacl/foo",
-};
-
 }  // namespace
 
 TEST(AppCategorizerTest, IsHangoutsUrl) {
@@ -100,26 +74,5 @@ TEST(AppCategorizerTest, IsWhitelistedApp) {
     EXPECT_FALSE(AppCategorizer::IsWhitelistedApp(
         GURL("filesystem:https://meet.google.com/foo"),
         GURL("https://hangouts.google.com/hangouts/foo")));
-  }
-
-  // Photos app
-  {
-    EXPECT_EQ(arraysize(kPhotosAppURLs), arraysize(kPhotosManifestURLs));
-    for (size_t i = 0; i < arraysize(kPhotosAppURLs); ++i) {
-      EXPECT_TRUE(AppCategorizer::IsWhitelistedApp(
-          GURL(kPhotosManifestURLs[i]), GURL(kPhotosAppURLs[i])));
-    }
-    // The app/manifest two sides do not have any coorelation for the Photos app
-    for (size_t i = 0; i < arraysize(kPhotosAppURLs); ++i) {
-      EXPECT_TRUE(AppCategorizer::IsWhitelistedApp(
-          GURL(kPhotosManifestURLs[(i + 1) % arraysize(kPhotosAppURLs)]),
-          GURL(kPhotosAppURLs[i])));
-    }
-
-    EXPECT_EQ(arraysize(kBadPhotosAppURLs), arraysize(kBadPhotosManifestURLs));
-    for (size_t i = 0; i < arraysize(kBadPhotosAppURLs); ++i) {
-      EXPECT_FALSE(AppCategorizer::IsWhitelistedApp(
-          GURL(kBadPhotosManifestURLs[i]), GURL(kBadPhotosAppURLs[i])));
-    }
   }
 }

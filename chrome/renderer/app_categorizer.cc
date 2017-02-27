@@ -20,11 +20,6 @@ const char* const kPredefinedHangoutsDomains[] = {
   "plus.sandbox.google.com"
 };
 
-const char* const kPredefinedPlusDomains[] = {
-  "plus.google.com",
-  "plus.sandbox.google.com"
-};
-
 bool IsInWhitelistedDomain(
     const GURL& url, const char* const domains[], size_t number_of_domains) {
   for (size_t i = 0; i < number_of_domains; ++i) {
@@ -55,19 +50,6 @@ bool AppCategorizer::IsWhitelistedApp(
   if (!app_url.SchemeIsCryptographic())
     return false;
 
-  std::string manifest_url_path = manifest_url.path();
-  bool is_photo_app =
-      manifest_url.SchemeIsCryptographic() &&
-      manifest_url.DomainIs("ssl.gstatic.com") &&
-      (base::StartsWith(manifest_url_path, "/s2/oz/nacl/",
-                        base::CompareCase::SENSITIVE) ||
-       base::StartsWith(manifest_url_path, "/photos/nacl/",
-                        base::CompareCase::SENSITIVE)) &&
-      IsInWhitelistedDomain(
-          app_url,
-          kPredefinedPlusDomains,
-          arraysize(kPredefinedPlusDomains));
-
   bool is_hangouts_app =
       manifest_url.SchemeIsFileSystem() &&
       manifest_url.inner_url() != NULL &&
@@ -76,5 +58,5 @@ bool AppCategorizer::IsWhitelistedApp(
       (manifest_url.inner_url()->host() == app_url.host()) &&
       IsHangoutsUrl(app_url);
 
-  return is_photo_app || is_hangouts_app;
+  return is_hangouts_app;
 }
