@@ -77,10 +77,12 @@ void CheckerImageTracker::DidActivateSyncTree() {
 
 void CheckerImageTracker::DidFinishImageDecode(
     ImageId image_id,
-    ImageController::ImageDecodeRequestId request_id) {
+    ImageController::ImageDecodeRequestId request_id,
+    ImageController::ImageDecodeResult result) {
   TRACE_EVENT_ASYNC_END0("cc", "CheckerImageTracker::DeferImageDecode",
                          image_id);
 
+  DCHECK_NE(result, ImageController::ImageDecodeResult::DECODE_NOT_REQUIRED);
   DCHECK_NE(pending_image_decodes_.count(image_id), 0u);
   pending_image_decodes_.erase(image_id);
 

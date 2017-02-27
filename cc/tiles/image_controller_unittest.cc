@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/tiles/image_controller.h"
 #include "base/bind.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "cc/tiles/image_controller.h"
+#include "cc/test/skia_common.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -94,6 +95,13 @@ class TestableCache : public ImageDecodeCache {
   bool GetTaskForImageAndRef(const DrawImage& image,
                              const TracingInfo& tracing_info,
                              scoped_refptr<TileTask>* task) override {
+    // Return false for large images to mimic "won't fit in memory"
+    // behavior.
+    if (image.image() &&
+        image.image()->width() * image.image()->height() >= 1000 * 1000) {
+      return false;
+    }
+
     *task = task_to_use_;
     ++number_of_refs_;
     return true;
@@ -101,9 +109,7 @@ class TestableCache : public ImageDecodeCache {
   bool GetOutOfRasterDecodeTaskForImageAndRef(
       const DrawImage& image,
       scoped_refptr<TileTask>* task) override {
-    *task = task_to_use_;
-    ++number_of_refs_;
-    return true;
+    return GetTaskForImageAndRef(image, TracingInfo(), task);
   }
 
   void UnrefImage(const DrawImage& image) override {
@@ -132,15 +138,20 @@ class DecodeClient {
  public:
   DecodeClient() {}
   void Callback(const base::Closure& quit_closure,
-                ImageController::ImageDecodeRequestId id) {
+                ImageController::ImageDecodeRequestId id,
+                ImageController::ImageDecodeResult result) {
     id_ = id;
+    result_ = result;
     quit_closure.Run();
   }
 
   ImageController::ImageDecodeRequestId id() { return id_; }
+  ImageController::ImageDecodeResult result() { return result_; }
 
  private:
   ImageController::ImageDecodeRequestId id_ = 0;
+  ImageController::ImageDecodeResult result_ =
+      ImageController::ImageDecodeResult::FAILURE;
 };
 
 // A dummy task that does nothing.
@@ -218,8 +229,7 @@ int kDefaultTimeoutSeconds = 10;
 class ImageControllerTest : public testing::Test {
  public:
   ImageControllerTest() : task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-    bitmap_.allocN32Pixels(1, 1);
-    image_ = SkImage::MakeFromBitmap(bitmap_);
+    image_ = CreateDiscardableImage(gfx::Size(1, 1));
   }
   ~ImageControllerTest() override = default;
 
@@ -261,7 +271,6 @@ class ImageControllerTest : public testing::Test {
   scoped_refptr<WorkerTaskRunner> worker_task_runner_;
   TestableCache cache_;
   std::unique_ptr<ImageController> controller_;
-  SkBitmap bitmap_;
   sk_sp<const SkImage> image_;
 };
 
@@ -290,6 +299,43 @@ TEST_F(ImageControllerTest, QueueImageDecode) {
                      run_loop.QuitClosure()));
   RunOrTimeout(&run_loop);
   EXPECT_EQ(expected_id, decode_client.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::SUCCESS,
+            decode_client.result());
+}
+
+TEST_F(ImageControllerTest, QueueImageDecodeNonLazy) {
+  base::RunLoop run_loop;
+  DecodeClient decode_client;
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(1, 1);
+  sk_sp<const SkImage> image = SkImage::MakeFromBitmap(bitmap);
+
+  ImageController::ImageDecodeRequestId expected_id =
+      controller()->QueueImageDecode(
+          image,
+          base::Bind(&DecodeClient::Callback, base::Unretained(&decode_client),
+                     run_loop.QuitClosure()));
+  RunOrTimeout(&run_loop);
+  EXPECT_EQ(expected_id, decode_client.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::DECODE_NOT_REQUIRED,
+            decode_client.result());
+}
+
+TEST_F(ImageControllerTest, QueueImageDecodeTooLarge) {
+  base::RunLoop run_loop;
+  DecodeClient decode_client;
+
+  sk_sp<const SkImage> image = CreateDiscardableImage(gfx::Size(2000, 2000));
+  ImageController::ImageDecodeRequestId expected_id =
+      controller()->QueueImageDecode(
+          image,
+          base::Bind(&DecodeClient::Callback, base::Unretained(&decode_client),
+                     run_loop.QuitClosure()));
+  RunOrTimeout(&run_loop);
+  EXPECT_EQ(expected_id, decode_client.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::FAILURE,
+            decode_client.result());
 }
 
 TEST_F(ImageControllerTest, QueueImageDecodeMultipleImages) {
@@ -314,8 +360,14 @@ TEST_F(ImageControllerTest, QueueImageDecodeMultipleImages) {
                      run_loop.QuitClosure()));
   RunOrTimeout(&run_loop);
   EXPECT_EQ(expected_id1, decode_client1.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::SUCCESS,
+            decode_client1.result());
   EXPECT_EQ(expected_id2, decode_client2.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::SUCCESS,
+            decode_client2.result());
   EXPECT_EQ(expected_id3, decode_client3.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::SUCCESS,
+            decode_client3.result());
 }
 
 TEST_F(ImageControllerTest, QueueImageDecodeWithTask) {
@@ -360,8 +412,14 @@ TEST_F(ImageControllerTest, QueueImageDecodeMultipleImagesSameTask) {
                      run_loop.QuitClosure()));
   RunOrTimeout(&run_loop);
   EXPECT_EQ(expected_id1, decode_client1.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::SUCCESS,
+            decode_client1.result());
   EXPECT_EQ(expected_id2, decode_client2.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::SUCCESS,
+            decode_client2.result());
   EXPECT_EQ(expected_id3, decode_client3.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::SUCCESS,
+            decode_client3.result());
   EXPECT_TRUE(task->has_run());
   EXPECT_TRUE(task->HasCompleted());
 }
@@ -425,6 +483,8 @@ TEST_F(ImageControllerTest, QueueImageDecodeImageAlreadyLocked) {
                      run_loop2.QuitClosure()));
   RunOrTimeout(&run_loop2);
   EXPECT_EQ(expected_id2, decode_client2.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::SUCCESS,
+            decode_client2.result());
 }
 
 TEST_F(ImageControllerTest, QueueImageDecodeLockedImageControllerChange) {

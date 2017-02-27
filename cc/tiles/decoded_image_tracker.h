@@ -29,8 +29,11 @@ class CC_EXPORT DecodedImageTracker {
   DecodedImageTracker();
   ~DecodedImageTracker();
 
+  // Request that the given image be decoded. This issues a callback upon
+  // completion. The callback takes a bool indicating whether the decode was
+  // successful or not.
   void QueueImageDecode(sk_sp<const SkImage> image,
-                        const base::Closure& callback);
+                        const base::Callback<void(bool)>& callback);
   void NotifyFrameFinished();
 
  private:
@@ -41,8 +44,9 @@ class CC_EXPORT DecodedImageTracker {
     image_controller_ = controller;
   }
 
-  void ImageDecodeFinished(const base::Closure& callback,
-                           ImageController::ImageDecodeRequestId id);
+  void ImageDecodeFinished(const base::Callback<void(bool)>& callback,
+                           ImageController::ImageDecodeRequestId id,
+                           ImageController::ImageDecodeResult result);
 
   ImageController* image_controller_ = nullptr;
   std::vector<std::pair<ImageController::ImageDecodeRequestId, int>>

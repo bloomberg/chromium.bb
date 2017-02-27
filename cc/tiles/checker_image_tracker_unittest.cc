@@ -48,7 +48,9 @@ class TestImageController : public ImageController {
 
     // Post the callback asynchronously to match the behaviour in
     // ImageController.
-    worker_task_runner_->PostTask(FROM_HERE, base::Bind(callback, request_id));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, request_id, ImageDecodeResult::SUCCESS));
 
     return request_id;
   }

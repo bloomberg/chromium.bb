@@ -88,7 +88,10 @@ void ImageController::StopWorkerTasks() {
     // promise of having this image decoded. This is unfortunate, but it seems
     // like the least complexity to process an image decode controller becoming
     // nullptr.
-    request.callback.Run(id);
+    // TODO(vmpstr): We can move these back to |image_decode_queue_| instead
+    // and defer completion until we get a new cache and process the request
+    // again. crbug.com/693692.
+    request.callback.Run(id, ImageDecodeResult::FAILURE);
     if (request.need_unref)
       cache_->UnrefImage(request.draw_image);
   }
@@ -112,7 +115,9 @@ void ImageController::StopWorkerTasks() {
         request.task->DidComplete();
     }
     // Run the callback and unref the image.
-    request.callback.Run(id);
+    // TODO(vmpstr): We can regenerate the tasks for the new cache if we get
+    // one. crbug.com/693692.
+    request.callback.Run(id, ImageDecodeResult::FAILURE);
     cache_->UnrefImage(request.draw_image);
   }
   image_decode_queue_.clear();
@@ -179,14 +184,18 @@ ImageController::ImageDecodeRequestId ImageController::QueueImageDecode(
   ImageDecodeRequestId id = s_next_image_decode_queue_id_++;
 
   DCHECK(image);
+  bool is_image_lazy = image->isLazyGenerated();
   auto image_bounds = image->bounds();
   DrawImage draw_image(std::move(image), image_bounds, kNone_SkFilterQuality,
                        SkMatrix::I());
 
   // Get the tasks for this decode.
   scoped_refptr<TileTask> task;
-  bool need_unref =
-      cache_->GetOutOfRasterDecodeTaskForImageAndRef(draw_image, &task);
+  bool need_unref = false;
+  if (is_image_lazy) {
+    need_unref =
+        cache_->GetOutOfRasterDecodeTaskForImageAndRef(draw_image, &task);
+  }
   // If we don't need to unref this, we don't actually have a task.
   DCHECK(need_unref || !task);
 
@@ -263,6 +272,7 @@ void ImageController::ProcessNextImageDecodeOnWorkerThread() {
 
 void ImageController::ImageDecodeCompleted(ImageDecodeRequestId id) {
   ImageDecodedCallback callback;
+  ImageDecodeResult result = ImageDecodeResult::SUCCESS;
   {
     base::AutoLock hold(lock_);
 
@@ -270,6 +280,19 @@ void ImageController::ImageDecodeCompleted(ImageDecodeRequestId id) {
     DCHECK(request_it != requests_needing_completion_.end());
     id = request_it->first;
     ImageDecodeRequest& request = request_it->second;
+
+    // First, Determine the status of the decode. This has to happen here, since
+    // we conditionally move from the draw image below.
+    // Also note that if we don't need an unref for a lazy decoded images, it
+    // implies that we never attempted the decode. Some of the reasons for this
+    // would be that the image is of an empty size, or if the image doesn't fit
+    // into memory. In all cases, this implies that the decode was a failure.
+    if (!request.draw_image.image()->isLazyGenerated())
+      result = ImageDecodeResult::DECODE_NOT_REQUIRED;
+    else if (!request.need_unref)
+      result = ImageDecodeResult::FAILURE;
+    else
+      result = ImageDecodeResult::SUCCESS;
 
     // If we need to unref this decode, then we have to put it into the locked
     // images vector.
@@ -281,6 +304,7 @@ void ImageController::ImageDecodeCompleted(ImageDecodeRequestId id) {
       request.task->OnTaskCompleted();
       request.task->DidComplete();
     }
+
     // Finally, save the callback so we can run it without the lock, and erase
     // the request from |requests_needing_completion_|.
     callback = std::move(request.callback);
@@ -294,7 +318,7 @@ void ImageController::ImageDecodeCompleted(ImageDecodeRequestId id) {
                  base::Unretained(this)));
 
   // Finally run the requested callback.
-  callback.Run(id);
+  callback.Run(id, result);
 }
 
 ImageController::ImageDecodeRequest::ImageDecodeRequest() = default;

@@ -55,7 +55,8 @@ class CC_EXPORT CheckerImageTracker {
 
  private:
   void DidFinishImageDecode(ImageId image_id,
-                            ImageController::ImageDecodeRequestId request_id);
+                            ImageController::ImageDecodeRequestId request_id,
+                            ImageController::ImageDecodeResult result);
 
   // Returns true if the decode for |image| will be deferred to the image decode
   // service and it should be be skipped during raster.

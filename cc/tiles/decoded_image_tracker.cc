@@ -15,8 +15,9 @@ DecodedImageTracker::~DecodedImageTracker() {
     image_controller_->UnlockImageDecode(pair.first);
 }
 
-void DecodedImageTracker::QueueImageDecode(sk_sp<const SkImage> image,
-                                           const base::Closure& callback) {
+void DecodedImageTracker::QueueImageDecode(
+    sk_sp<const SkImage> image,
+    const base::Callback<void(bool)>& callback) {
   DCHECK(image_controller_);
   // Queue the decode in the image controller, but switch out the callback for
   // our own.
@@ -41,10 +42,15 @@ void DecodedImageTracker::NotifyFrameFinished() {
 }
 
 void DecodedImageTracker::ImageDecodeFinished(
-    const base::Closure& callback,
-    ImageController::ImageDecodeRequestId id) {
-  locked_images_.push_back(std::make_pair(id, kNumFramesToLock));
-  callback.Run();
+    const base::Callback<void(bool)>& callback,
+    ImageController::ImageDecodeRequestId id,
+    ImageController::ImageDecodeResult result) {
+  if (result == ImageController::ImageDecodeResult::SUCCESS)
+    locked_images_.push_back(std::make_pair(id, kNumFramesToLock));
+  bool decode_succeeded =
+      result == ImageController::ImageDecodeResult::SUCCESS ||
+      result == ImageController::ImageDecodeResult::DECODE_NOT_REQUIRED;
+  callback.Run(decode_succeeded);
 }
 
 }  // namespace cc

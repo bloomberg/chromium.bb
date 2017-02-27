@@ -22,8 +22,11 @@ namespace cc {
 
 class CC_EXPORT ImageController {
  public:
+  enum class ImageDecodeResult { SUCCESS, DECODE_NOT_REQUIRED, FAILURE };
+
   using ImageDecodeRequestId = uint64_t;
-  using ImageDecodedCallback = base::Callback<void(ImageDecodeRequestId)>;
+  using ImageDecodedCallback =
+      base::Callback<void(ImageDecodeRequestId, ImageDecodeResult)>;
   explicit ImageController(
       base::SequencedTaskRunner* origin_task_runner,
       scoped_refptr<base::SequencedTaskRunner> worker_task_runner);
