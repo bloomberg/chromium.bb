@@ -24,7 +24,6 @@
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/mus_types.h"
-#include "ui/aura/mus/mus_util.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"

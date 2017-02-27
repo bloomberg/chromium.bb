@@ -88,8 +88,6 @@ component("aura") {
     "mus/mus_mouse_location_updater.cc",
     "mus/mus_mouse_location_updater.h",
     "mus/mus_types.h",
-    "mus/mus_util.cc",
-    "mus/mus_util.h",
     "mus/os_exchange_data_provider_mus.cc",
     "mus/os_exchange_data_provider_mus.h",
     "mus/property_converter.cc",

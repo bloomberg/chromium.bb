@@ -160,7 +160,6 @@
 
 #if defined(USE_AURA)
 #include "content/public/common/service_manager_connection.h"
-#include "ui/aura/mus/mus_util.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)

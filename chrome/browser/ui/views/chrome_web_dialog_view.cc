@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
-#include "ui/aura/mus/mus_util.h"
 #endif  // defined(USE_ASH)
 
 namespace chrome {
@@ -47,10 +46,6 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
   // NOTE: The |parent| may be null, which will result in the default window
   // placement on Aura.
   params.parent = parent;
-#if defined(USE_ASH)
-  if (chrome::IsRunningInMash())
-    params.parent_mus = aura::GetMusWindow(parent);
-#endif  // defined(USE_ASH)
   return ShowWebDialogWidget(params, view);
 }
 
