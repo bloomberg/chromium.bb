@@ -638,9 +638,9 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 }
 #endif  // !CONFIG_VAR_TX || CONFIG_SUPER_TX
 
-static MB_MODE_INFO *set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
-                                 BLOCK_SIZE bsize, int mi_row, int mi_col,
-                                 int bw, int bh, int x_mis, int y_mis) {
+static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
+                        BLOCK_SIZE bsize, int mi_row, int mi_col, int bw,
+                        int bh, int x_mis, int y_mis) {
   const int offset = mi_row * cm->mi_stride + mi_col;
   int x, y;
   const TileInfo *const tile = &xd->tile;
@@ -674,7 +674,6 @@ static MB_MODE_INFO *set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif
 
   av1_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
-  return &xd->mi[0]->mbmi;
 }
 
 #if CONFIG_SUPERTX
@@ -1500,9 +1499,9 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   const int bh = mi_size_high[bsize];
   const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
   const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
-  MB_MODE_INFO *mbmi;
 
-  mbmi = set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
+  set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 
 #if CONFIG_DELTA_Q
   if (cm->delta_q_present_flag) {
