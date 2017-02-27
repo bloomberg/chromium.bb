@@ -106,7 +106,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void transpose();
 
-  void respondToChangedContents(const VisibleSelection& endingSelection);
+  void respondToChangedContents(const Position&);
 
   bool selectionStartHasStyle(CSSPropertyID, const String& value) const;
   TriState selectionHasStyle(CSSPropertyID, const String& value) const;

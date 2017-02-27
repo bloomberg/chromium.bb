@@ -733,9 +733,9 @@ bool Editor::canDeleteRange(const EphemeralRange& range) const {
   return hasEditableStyle(*startContainer) && hasEditableStyle(*endContainer);
 }
 
-void Editor::respondToChangedContents(const VisibleSelection& endingSelection) {
+void Editor::respondToChangedContents(const Position& position) {
   if (frame().settings() && frame().settings()->getAccessibilityEnabled()) {
-    Node* node = endingSelection.start().anchorNode();
+    Node* node = position.anchorNode();
     if (AXObjectCache* cache = frame().document()->existingAXObjectCache())
       cache->handleEditableTextContentChanged(node);
   }
@@ -916,7 +916,7 @@ void Editor::appliedEditing(CompositeEditCommand* cmd) {
     m_undoStack->registerUndoStep(m_lastEditCommand->ensureUndoStep());
   }
 
-  respondToChangedContents(newSelection);
+  respondToChangedContents(newSelection.start());
 }
 
 static VisibleSelection correctedVisibleSelection(
@@ -955,7 +955,7 @@ void Editor::unappliedEditing(UndoStep* cmd) {
 
   m_lastEditCommand = nullptr;
   m_undoStack->registerRedoStep(cmd);
-  respondToChangedContents(newSelection);
+  respondToChangedContents(newSelection.start());
 }
 
 void Editor::reappliedEditing(UndoStep* cmd) {
@@ -984,7 +984,7 @@ void Editor::reappliedEditing(UndoStep* cmd) {
 
   m_lastEditCommand = nullptr;
   m_undoStack->registerUndoStep(cmd);
-  respondToChangedContents(newSelection);
+  respondToChangedContents(newSelection.start());
 }
 
 Editor* Editor::create(LocalFrame& frame) {
