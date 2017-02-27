@@ -6,3 +6,12 @@ flags: {testmode: backward}
 tests:
   - - foo
     - ===
+
+# Back translation using pass rules that match characters wasn't working
+table: |
+  include tables/chardefs.cti
+  pass2 @123456 @135-135
+flags: {testmode: backward}
+tests:
+  - - f=
+    - foo
