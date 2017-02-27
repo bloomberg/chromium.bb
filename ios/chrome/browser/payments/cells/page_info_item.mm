@@ -11,7 +11,7 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kPageInfoFaviconImageViewId = @"kPageInfoFaviconImageViewId";
+NSString* const kPageInfoFaviconImageViewID = @"kPageInfoFaviconImageViewID";
 
 namespace {
 // Padding used on the top and bottom edges of the cell.
@@ -67,7 +67,7 @@ const CGFloat kHorizontalPadding = 16;
     // Favicon
     _pageFaviconView = [[UIImageView alloc] initWithFrame:CGRectZero];
     _pageFaviconView.translatesAutoresizingMaskIntoConstraints = NO;
-    _pageFaviconView.accessibilityIdentifier = kPageInfoFaviconImageViewId;
+    _pageFaviconView.accessibilityIdentifier = kPageInfoFaviconImageViewID;
     [self.contentView addSubview:_pageFaviconView];
 
     // Page title

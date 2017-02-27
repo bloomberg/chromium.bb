@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
+#import "ios/chrome/browser/payments/shipping_option_selection_view_controller_actions.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -29,8 +30,8 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kShippingOptionSelectionCollectionViewId =
-    @"kShippingOptionSelectionCollectionViewId";
+NSString* const kShippingOptionSelectionCollectionViewID =
+    @"kShippingOptionSelectionCollectionViewID";
 
 namespace {
 
@@ -48,9 +49,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface ShippingOptionSelectionViewController () {
-  __weak id<ShippingOptionSelectionViewControllerDelegate> _delegate;
-
+@interface ShippingOptionSelectionViewController ()<
+    ShippingOptionSelectionViewControllerActions> {
   // The PaymentRequest object owning an instance of web::PaymentRequest as
   // provided by the page invoking the Payment Request API. This is a weak
   // pointer and should outlive this class.
@@ -60,15 +60,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewTextItem* _selectedItem;
 }
 
-// Called when the user presses the return button.
-- (void)onReturn;
-
 @end
 
 @implementation ShippingOptionSelectionViewController
 
 @synthesize pending = _pending;
 @synthesize errorMessage = _errorMessage;
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
@@ -76,6 +74,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.title =
         payment_request_util::GetShippingOptionSelectorTitle(paymentRequest);
 
+    // Set up leading (return) button.
     UIBarButtonItem* returnButton =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
                                             target:nil
@@ -86,15 +85,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _paymentRequest = paymentRequest;
   }
   return self;
-}
-
-- (id<ShippingOptionSelectionViewControllerDelegate>)delegate {
-  return _delegate;
-}
-
-- (void)setDelegate:
-    (id<ShippingOptionSelectionViewControllerDelegate>)delegate {
-  _delegate = delegate;
 }
 
 - (void)onReturn {
@@ -156,7 +146,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.collectionView.accessibilityIdentifier =
-      kShippingOptionSelectionCollectionViewId;
+      kShippingOptionSelectionCollectionViewID;
 
   // Customize collection view settings.
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;

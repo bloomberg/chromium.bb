@@ -46,8 +46,8 @@ class AutofillProfile;
 
 // The delegate to be notified when the user selects a shipping address or
 // returns without selecting one.
-@property(nonatomic, weak) id<ShippingAddressSelectionViewControllerDelegate>
-    delegate;
+@property(nonatomic, weak)
+    id<ShippingAddressSelectionViewControllerDelegate> delegate;
 
 // Initializes this object with an instance of PaymentRequest which owns an
 // instance of web::PaymentRequest as provided by the page invoking the Payment

@@ -13,7 +13,7 @@
 #include "ios/web/public/payments/payment_request.h"
 
 // The accessibility identifiers of the cells in the collection view.
-extern NSString* const kPaymentItemsDisplayItemId;
+extern NSString* const kPaymentItemsDisplayItemID;
 
 @class PaymentItemsDisplayViewController;
 
@@ -38,8 +38,8 @@ extern NSString* const kPaymentItemsDisplayItemId;
 
 // The delegate to be notified when the user selects touches the return button
 // or the pay button.
-@property(nonatomic, weak) id<PaymentItemsDisplayViewControllerDelegate>
-    delegate;
+@property(nonatomic, weak)
+    id<PaymentItemsDisplayViewControllerDelegate> delegate;
 
 // Initializes this object with an instance of PaymentRequest which owns an
 // instance of web::PaymentRequest as provided by the page invoking the Payment

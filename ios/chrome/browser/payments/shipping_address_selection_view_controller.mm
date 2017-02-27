@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/payments/shipping_address_selection_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/strings/grit/components_strings.h"
@@ -12,6 +13,7 @@
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/cells/shipping_address_item.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
+#import "ios/chrome/browser/payments/shipping_address_selection_view_controller_actions.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -32,8 +34,8 @@ using payment_request_util::NameLabelFromAutofillProfile;
 using payment_request_util::AddressLabelFromAutofillProfile;
 using payment_request_util::PhoneNumberLabelFromAutofillProfile;
 
-NSString* const kShippingAddressSelectionCollectionViewId =
-    @"kShippingAddressSelectionCollectionViewId";
+NSString* const kShippingAddressSelectionCollectionViewID =
+    @"kShippingAddressSelectionCollectionViewID";
 
 namespace {
 
@@ -52,7 +54,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface ShippingAddressSelectionViewController () {
+@interface ShippingAddressSelectionViewController ()<
+    ShippingAddressSelectionViewControllerActions> {
   // The PaymentRequest object owning an instance of web::PaymentRequest as
   // provided by the page invoking the Payment Request API. This is a weak
   // pointer and should outlive this class.
@@ -61,9 +64,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // The currently selected item. May be nil.
   __weak ShippingAddressItem* _selectedItem;
 }
-
-// Called when the user presses the return button.
-- (void)onReturn;
 
 @end
 
@@ -79,6 +79,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.title =
         payment_request_util::GetShippingAddressSelectorTitle(paymentRequest);
 
+    // Set up leading (return) button.
     UIBarButtonItem* returnButton =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
                                             target:nil
@@ -154,7 +155,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.collectionView.accessibilityIdentifier =
-      kShippingAddressSelectionCollectionViewId;
+      kShippingAddressSelectionCollectionViewID;
 
   // Customize collection view settings.
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;

@@ -12,6 +12,7 @@
 #endif
 
 @interface PaymentMethodSelectionCoordinator ()
+
 @property(nonatomic, strong)
     PaymentMethodSelectionViewController* viewController;
 

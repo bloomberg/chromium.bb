@@ -11,6 +11,7 @@
 #include "components/payments/currency_formatter.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
+#import "ios/chrome/browser/payments/payment_items_display_view_controller_actions.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -25,9 +26,9 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kPaymentItemsDisplayCollectionViewId =
-    @"kPaymentItemsDisplayCollectionViewId";
-NSString* const kPaymentItemsDisplayItemId = @"kPaymentItemsDisplayItemId";
+NSString* const kPaymentItemsDisplayCollectionViewID =
+    @"kPaymentItemsDisplayCollectionViewID";
+NSString* const kPaymentItemsDisplayItemID = @"kPaymentItemsDisplayItemID";
 
 namespace {
 
@@ -45,7 +46,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface PaymentItemsDisplayViewController () {
+@interface PaymentItemsDisplayViewController ()<
+    PaymentItemsDisplayViewControllerActions> {
   MDCFlatButton* _payButton;
 
   // The PaymentRequest object owning an instance of web::PaymentRequest as
@@ -53,12 +55,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // pointer and should outlive this class.
   PaymentRequest* _paymentRequest;
 }
-
-// Called when the user presses the return button.
-- (void)onReturn;
-
-// Called when the user presses the pay button.
-- (void)onConfirm;
 
 @end
 
@@ -72,7 +68,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self setTitle:l10n_util::GetNSString(
                        IDS_IOS_PAYMENT_REQUEST_PAYMENT_ITEMS_TITLE)];
 
-    // Set up left (return) button.
+    // Set up leading (return) button.
     UIBarButtonItem* returnButton =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
                                             target:nil
@@ -81,7 +77,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_BACK)];
     [self navigationItem].leftBarButtonItem = returnButton;
 
-    // Set up right (pay) button.
+    // Set up trailing (pay) button.
     _payButton = [[MDCFlatButton alloc] init];
     [_payButton
         setTitle:l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_PAY_BUTTON)
@@ -144,7 +140,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Add the total entry.
   PriceItem* totalItem =
       [[PriceItem alloc] initWithType:ItemTypePaymentItemTotal];
-  totalItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;
+  totalItem.accessibilityIdentifier = kPaymentItemsDisplayItemID;
   totalItem.item =
       base::SysUTF16ToNSString(_paymentRequest->payment_details().total.label);
   payments::CurrencyFormatter* currencyFormatter =
@@ -162,7 +158,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
        _paymentRequest->payment_details().display_items) {
     PriceItem* paymentItemItem =
         [[PriceItem alloc] initWithType:ItemTypePaymentItem];
-    paymentItemItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;
+    paymentItemItem.accessibilityIdentifier = kPaymentItemsDisplayItemID;
     paymentItemItem.item = base::SysUTF16ToNSString(paymentItem.label);
     payments::CurrencyFormatter* currencyFormatter =
         _paymentRequest->GetOrCreateCurrencyFormatter();
@@ -176,7 +172,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.collectionView.accessibilityIdentifier =
-      kPaymentItemsDisplayCollectionViewId;
+      kPaymentItemsDisplayCollectionViewID;
 
   // Customize collection view settings.
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;

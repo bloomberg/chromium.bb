@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/payments/payment_request_manager.h"
 
+#include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
@@ -67,9 +68,6 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   // Observer for |_webState|.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 
-  // Object that manages JavaScript injection into the web view.
-  __weak JSPaymentRequestManager* _paymentRequestJsManager;
-
   // Boolean to track if the current WebState is enabled (JS callback is set
   // up).
   BOOL _webStateEnabled;
@@ -88,10 +86,17 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   // Timer used to periodically unblock the webview's JS event queue.
   NSTimer* _unblockEventQueueTimer;
 
-  // Timer used to close the UI if the page does not call
-  // PaymentResponse.complete() in a timely fashion.
+  // Timer used to complete the Payment Request flow and close the UI if the
+  // page does not call PaymentResponse.complete() in a timely fashion.
   NSTimer* _paymentResponseTimeoutTimer;
+
+  // Timer used to cancel the Payment Request flow and close the UI if the
+  // page does not settle the pending update promise in a timely fashion.
+  NSTimer* _updateEventTimeoutTimer;
 }
+
+// Object that manages JavaScript injection into the web view.
+@property(nonatomic, weak) JSPaymentRequestManager* paymentRequestJsManager;
 
 // Synchronous method executed by -asynchronouslyEnablePaymentRequest:
 - (void)doEnablePaymentRequest:(BOOL)enabled;
@@ -107,9 +112,14 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 // invocation was successful.
 - (BOOL)handleRequestShow:(const base::DictionaryValue&)message;
 
+// Called by |_paymentResponseTimeoutTimer|, invokes handleResponseComplete:
+// as if PaymentResponse.complete() was invoked with the default "unknown"
+// argument.
+- (BOOL)handleResponseComplete;
+
 // Handles invocations of PaymentResponse.complete(). Returns YES if the
 // invocation was successful.
-- (BOOL)handleResponseComplete;
+- (BOOL)handleResponseComplete:(const base::DictionaryValue&)message;
 
 // Handles invocations of PaymentRequestUpdateEvent.updateWith(). Returns YES if
 // the invocation was successful.
@@ -126,6 +136,13 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 // called with no arguments.
 - (void)setPaymentResponseTimeoutTimer;
 
+// Establishes a timer that dismisses the Payment Request UI when it times out.
+// Per the spec, implementations may choose to consider a timeout for the
+// promise provided with the PaymentRequestUpdateEvent.updateWith() call. If the
+// promise doesn't get settled in a reasonable amount of time, it is as if it
+// was rejected.
+- (void)setUpdateEventTimeoutTimer;
+
 @end
 
 @implementation PaymentRequestManager
@@ -133,6 +150,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 @synthesize enabled = _enabled;
 @synthesize webState = _webState;
 @synthesize browserState = _browserState;
+@synthesize paymentRequestJsManager = _paymentRequestJsManager;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
@@ -275,7 +293,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
     return [self handleRequestCancel];
   }
   if (command == "paymentRequest.responseComplete") {
-    return [self handleResponseComplete];
+    return [self handleResponseComplete:JSONCommand];
   }
   if (command == "paymentRequest.updatePaymentDetails") {
     return [self handleUpdatePaymentDetails:JSONCommand];
@@ -334,22 +352,58 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 
   [_unblockEventQueueTimer invalidate];
   [_paymentResponseTimeoutTimer invalidate];
+  [_updateEventTimeoutTimer invalidate];
 
-  [self cancelRequestWithErrorMessage:@"Request canceled by the page."];
+  __weak PaymentRequestManager* weakSelf = self;
+  ProceduralBlock callback = ^{
+    PaymentRequestManager* strongSelf = weakSelf;
+    // Early return if the manager has been deallocated.
+    if (!strongSelf)
+      return;
+    [strongSelf cancelRequestWithErrorMessage:@"Request canceled."];
+  };
+
+  [_paymentRequestCoordinator displayErrorWithCallback:callback];
 
   return YES;
 }
 
 - (BOOL)handleResponseComplete {
+  base::DictionaryValue command;
+  command.SetString("result", "unknown");
+  return [self handleResponseComplete:command];
+}
+
+- (BOOL)handleResponseComplete:(const base::DictionaryValue&)message {
   // TODO(crbug.com/602666): Check that there *is* a pending response here.
-  // TODO(crbug.com/602666): Indicate success or failure in the UI.
 
   [_unblockEventQueueTimer invalidate];
   [_paymentResponseTimeoutTimer invalidate];
+  [_updateEventTimeoutTimer invalidate];
 
-  [self dismissUI];
+  std::string result;
+  if (!message.GetString("result", &result)) {
+    DLOG(ERROR) << "JS message parameter 'result' is missing";
+    return NO;
+  }
 
-  [_paymentRequestJsManager resolveResponsePromiseWithCompletionHandler:nil];
+  __weak PaymentRequestManager* weakSelf = self;
+  ProceduralBlock callback = ^{
+    PaymentRequestManager* strongSelf = weakSelf;
+    // Early return if the manager has been deallocated.
+    if (!strongSelf)
+      return;
+    [strongSelf dismissUI];
+    [strongSelf.paymentRequestJsManager
+        resolveResponsePromiseWithCompletionHandler:nil];
+  };
+
+  // Display UI indicating failure if the value of |result| is "fail".
+  if (result == "fail") {
+    [_paymentRequestCoordinator displayErrorWithCallback:callback];
+  } else {
+    callback();
+  }
 
   return YES;
 }
@@ -358,6 +412,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   // TODO(crbug.com/602666): Check that there is already a pending request.
 
   [_unblockEventQueueTimer invalidate];
+  [_updateEventTimeoutTimer invalidate];
 
   const base::DictionaryValue* paymentDetailsData = nullptr;
   web::PaymentDetails paymentDetails;
@@ -393,6 +448,15 @@ const NSTimeInterval kTimeoutInterval = 60.0;
                                       repeats:NO];
 }
 
+- (void)setUpdateEventTimeoutTimer {
+  _updateEventTimeoutTimer =
+      [NSTimer scheduledTimerWithTimeInterval:kTimeoutInterval
+                                       target:self
+                                     selector:@selector(handleRequestCancel)
+                                     userInfo:nil
+                                      repeats:NO];
+}
+
 - (void)dismissUI {
   [_paymentRequestCoordinator stop];
   _paymentRequestCoordinator = nil;
@@ -419,7 +483,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 
 - (void)paymentRequestCoordinatorDidCancel:
     (PaymentRequestCoordinator*)coordinator {
-  [self cancelRequestWithErrorMessage:@"Request canceled by user."];
+  [self cancelRequestWithErrorMessage:@"Request canceled."];
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
@@ -436,6 +500,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   [_paymentRequestJsManager updateShippingAddress:shippingAddress
                                 completionHandler:nil];
   [self setUnblockEventQueueTimer];
+  [self setUpdateEventTimeoutTimer];
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
@@ -443,6 +508,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   [_paymentRequestJsManager updateShippingOption:shippingOption
                                completionHandler:nil];
   [self setUnblockEventQueueTimer];
+  [self setUpdateEventTimeoutTimer];
 }
 
 #pragma mark - CRWWebStateObserver methods

@@ -187,7 +187,8 @@ var SerializedPaymentResponse;
    * @param {!SerializedPaymentResponse} paymentResponseData
    * @return {window.PaymentResponse}
    */
-  var parsePaymentResponseData = function(paymentResponseData) {
+  __gCrWeb['paymentRequestManager'].parsePaymentResponseData = function(
+      paymentResponseData) {
     return new window.PaymentResponse(
         paymentResponseData['methodName'], paymentResponseData['details']);
   };
@@ -197,7 +198,7 @@ var SerializedPaymentResponse;
    * request in response to a user interaction.
    * @type {Event}
    */
-  var updateEvent = null;
+  __gCrWeb['paymentRequestManager'].updateEvent = null;
 
   /**
    * Handles invocation of updateWith() on the updateEvent object. Updates the
@@ -207,7 +208,7 @@ var SerializedPaymentResponse;
    * @param {?Promise<?window.PaymentDetails|undefined>|undefined}
    *     updateWithPromise
    */
-  var updateWith = function(updateWithPromise) {
+  __gCrWeb['paymentRequestManager'].updateWith = function(updateWithPromise) {
     // Check to see |updateWithPromise| is an instance of Promise.
     if (!updateWithPromise || !(updateWithPromise.then instanceof Function) ||
         !(updateWithPromise.catch instanceof Function)) {
@@ -226,7 +227,7 @@ var SerializedPaymentResponse;
           };
           __gCrWeb.message.invokeOnHost(message);
 
-          updateEvent = null;
+          __gCrWeb['paymentRequestManager'].updateEvent = null;
         })
         .catch(function() {
           var message = {
@@ -234,7 +235,7 @@ var SerializedPaymentResponse;
           };
           __gCrWeb.message.invokeOnHost(message);
 
-          updateEvent = null;
+          __gCrWeb['paymentRequestManager'].updateEvent = null;
         });
   };
 
@@ -256,7 +257,9 @@ var SerializedPaymentResponse;
 
     var paymentResponse = null;
     try {
-      paymentResponse = parsePaymentResponseData(paymentResponseData);
+      paymentResponse =
+          __gCrWeb['paymentRequestManager'].parsePaymentResponseData(
+              paymentResponseData);
     } catch (e) {
       __gCrWeb['paymentRequestManager'].rejectRequestPromise(
           'Internal PaymentRequest error: failed to parse PaymentResponse.');
@@ -268,6 +271,7 @@ var SerializedPaymentResponse;
         paymentResponse);
     __gCrWeb['paymentRequestManager'].requestPromiseResolver = null;
     __gCrWeb['paymentRequestManager'].pendingRequest = null;
+    __gCrWeb['paymentRequestManager'].updateEvent = null;
   };
 
   /**
@@ -285,6 +289,7 @@ var SerializedPaymentResponse;
     __gCrWeb['paymentRequestManager'].requestPromiseResolver.reject(message);
     __gCrWeb['paymentRequestManager'].requestPromiseResolver = null;
     __gCrWeb['paymentRequestManager'].pendingRequest = null;
+    __gCrWeb['paymentRequestManager'].updateEvent = null;
   };
 
   /**
@@ -329,7 +334,7 @@ var SerializedPaymentResponse;
 
     var pendingRequest = __gCrWeb['paymentRequestManager'].pendingRequest;
 
-    if (updateEvent) {
+    if (__gCrWeb['paymentRequestManager'].updateEvent) {
       __gCrWeb['paymentRequestManager'].rejectRequestPromise(
           'Internal PaymentRequest error: Only one update may take ' +
           'place at a time.');
@@ -337,15 +342,18 @@ var SerializedPaymentResponse;
 
     pendingRequest.shippingOption = shippingOptionID;
 
-    updateEvent = new Event(
+    __gCrWeb['paymentRequestManager'].updateEvent = new Event(
         'shippingoptionchange', {'bubbles': true, 'cancelable': false});
-    Object.defineProperty(updateEvent, 'updateWith', {value: updateWith});
+
+    Object.defineProperty(__gCrWeb['paymentRequestManager'].updateEvent,
+        'updateWith', {value: __gCrWeb['paymentRequestManager'].updateWith});
 
     // setTimeout() is used in order to return immediately. Otherwise the
     // dispatchEvent call waits for all event handlers to return, which could
     // cause a ReentryGuard failure.
     window.setTimeout(function() {
-      pendingRequest.dispatchEvent(updateEvent);
+      pendingRequest.dispatchEvent(
+          __gCrWeb['paymentRequestManager'].updateEvent);
     }, 0);
   };
 
@@ -363,7 +371,7 @@ var SerializedPaymentResponse;
 
     var pendingRequest = __gCrWeb['paymentRequestManager'].pendingRequest;
 
-    if (updateEvent) {
+    if (__gCrWeb['paymentRequestManager'].updateEvent) {
       __gCrWeb['paymentRequestManager'].rejectRequestPromise(
           'Internal PaymentRequest error: Only one update may take ' +
           'place at a time.');
@@ -371,15 +379,18 @@ var SerializedPaymentResponse;
 
     pendingRequest.shippingAddress = shippingAddress;
 
-    updateEvent = new Event(
+    __gCrWeb['paymentRequestManager'].updateEvent = new Event(
         'shippingaddresschange', {'bubbles': true, 'cancelable': false});
-    Object.defineProperty(updateEvent, 'updateWith', {value: updateWith});
+
+    Object.defineProperty(__gCrWeb['paymentRequestManager'].updateEvent,
+        'updateWith', {value: __gCrWeb['paymentRequestManager'].updateWith});
 
     // setTimeout() is used in order to return immediately. Otherwise the
     // dispatchEvent call waits for all event handlers to return, which could
     // cause a ReentryGuard failure.
     window.setTimeout(function() {
-      pendingRequest.dispatchEvent(updateEvent);
+      pendingRequest.dispatchEvent(
+          __gCrWeb['paymentRequestManager'].updateEvent);
     }, 0);
   };
 }());  // End of anonymous object
@@ -644,18 +655,37 @@ window.PaymentResponse = function(methodName, details) {
 };
 
 /**
+ * Contains the possible values for the string argument accepted by
+ * window.PaymentResponse.prototype.complete.
+ * @enum {string}
+ */
+var PaymentComplete = {
+  SUCCESS: 'success',
+  FAIL: 'fail',
+  UNKNOWN: 'unknown'
+};
+
+/**
  * Communicates the result of processing the payment.
- * @param {boolean} success Indicates whether processing succeeded.
+ * @param {PaymentComplete=} opt_result Indicates whether payment was
+ *     successfully processed.
  * @return {!Promise} A promise to notify the caller when the user interface has
  *     been closed.
  */
-window.PaymentResponse.prototype.complete = function(success) {
+window.PaymentResponse.prototype.complete = function(opt_result) {
+  if (opt_result != PaymentComplete.UNKNOWN &&
+      opt_result != PaymentComplete.SUCCESS &&
+      opt_result != PaymentComplete.FAIL) {
+    opt_result = PaymentComplete.UNKNOWN;
+  }
+
   if (!__gCrWeb['paymentRequestManager'].responsePromiseResolver) {
     throw new Error('Internal PaymentRequest error: No Promise to return.');
   }
 
   var message = {
-    'command': 'paymentRequest.responseComplete'
+    'command': 'paymentRequest.responseComplete',
+    'result': opt_result,
   };
   __gCrWeb.message.invokeOnHost(message);
 

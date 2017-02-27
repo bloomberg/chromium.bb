@@ -55,7 +55,7 @@ TEST(PaymentItemsDisplayCoordinatorTest, StartAndStop) {
 
 // Tests that calling the view controller delegate method which notifies the
 // coordinator that the user has confirmed the payment request invokes the
-// the corresponding coordinator delegate method.
+// corresponding coordinator delegate method.
 TEST(PaymentItemsDisplayCoordinatorTest, DidConfirm) {
   std::unique_ptr<PaymentRequest> payment_request =
       payment_request_test_util::CreateTestPaymentRequest();

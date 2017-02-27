@@ -7,11 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/ios/block_types.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/payments/payment_items_display_coordinator.h"
 #import "ios/chrome/browser/payments/payment_method_selection_coordinator.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#include "ios/chrome/browser/payments/payment_request_error_coordinator.h"
 #import "ios/chrome/browser/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/payments/shipping_address_selection_coordinator.h"
 #import "ios/chrome/browser/payments/shipping_option_selection_coordinator.h"
@@ -48,15 +50,11 @@ class ChromeBrowserState;
 // provided in the initializer.
 @interface PaymentRequestCoordinator
     : ChromeCoordinator<PaymentRequestViewControllerDelegate,
+                        PaymentRequestErrorCoordinatorDelegate,
                         PaymentItemsDisplayCoordinatorDelegate,
                         PaymentMethodSelectionCoordinatorDelegate,
                         ShippingAddressSelectionCoordinatorDelegate,
                         ShippingOptionSelectionCoordinatorDelegate>
-
-// Creates a Payment Request coordinator that will present UI on
-// |viewController| using data available from |personalDataManager|.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_DESIGNATED_INITIALIZER;
 
 // The PaymentRequest object owning an instance of web::PaymentRequest as
 // provided by the page invoking the Payment Request API. This pointer is not
@@ -88,6 +86,9 @@ class ChromeBrowserState;
 
 // Updates the payment details of the PaymentRequest and updates the UI.
 - (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails;
+
+// Displays an error message. Invokes |callback| when the message is dismissed.
+- (void)displayErrorWithCallback:(ProceduralBlock)callback;
 
 // Called when a credit card has been successfully unmasked.
 - (void)fullCardRequestDidSucceedWithCard:(const autofill::CreditCard&)card

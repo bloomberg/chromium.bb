@@ -46,8 +46,8 @@ class CreditCard;
 
 // The delegate to be notified when the user selects a payment method or returns
 // without selecting a payment method.
-@property(nonatomic, weak) id<PaymentMethodSelectionCoordinatorDelegate>
-    delegate;
+@property(nonatomic, weak)
+    id<PaymentMethodSelectionCoordinatorDelegate> delegate;
 
 @end
 

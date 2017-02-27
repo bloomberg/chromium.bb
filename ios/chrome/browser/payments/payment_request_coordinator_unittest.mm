@@ -87,13 +87,13 @@ TEST(PaymentRequestCoordinatorTest, StartAndStop) {
   [coordinator start];
   // Short delay to allow animation to complete.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1));
-  id persented_view_controller =
+  id presented_view_controller =
       [coordinator baseViewController].presentedViewController;
-  EXPECT_TRUE([persented_view_controller
+  EXPECT_TRUE([presented_view_controller
       isMemberOfClass:[UINavigationController class]]);
   UINavigationController* navigation_controller =
       base::mac::ObjCCastStrict<UINavigationController>(
-          persented_view_controller);
+          presented_view_controller);
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
   id view_controller = navigation_controller.visibleViewController;
   EXPECT_TRUE(

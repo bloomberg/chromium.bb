@@ -11,7 +11,7 @@
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 // The accessibility identifier for the favicon image view.
-extern NSString* const kPageInfoFaviconImageViewId;
+extern NSString* const kPageInfoFaviconImageViewID;
 
 // PageInfoItem is the model class corresponding to PageInfoCell.
 @interface PageInfoItem : CollectionViewItem

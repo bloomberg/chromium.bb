@@ -19,11 +19,13 @@
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -119,6 +121,7 @@ class FullCardRequester
 @implementation PaymentRequestCoordinator {
   UINavigationController* _navigationController;
   PaymentRequestViewController* _viewController;
+  PaymentRequestErrorCoordinator* _errorCoordinator;
   PaymentItemsDisplayCoordinator* _itemsDisplayCoordinator;
   ShippingAddressSelectionCoordinator* _shippingAddressSelectionCoordinator;
   ShippingOptionSelectionCoordinator* _shippingOptionSelectionCoordinator;
@@ -139,10 +142,6 @@ class FullCardRequester
 @synthesize pageTitle = _pageTitle;
 @synthesize pageHost = _pageHost;
 @synthesize delegate = _delegate;
-
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController {
-  return [super initWithBaseViewController:viewController];
-}
 
 - (void)start {
   _viewController = [[PaymentRequestViewController alloc]
@@ -170,8 +169,9 @@ class FullCardRequester
   _shippingAddressSelectionCoordinator = nil;
   _shippingOptionSelectionCoordinator = nil;
   _methodSelectionCoordinator = nil;
-  _navigationController = nil;
+  _errorCoordinator = nil;
   _viewController = nil;
+  _navigationController = nil;
 }
 
 - (void)sendPaymentResponse {
@@ -256,6 +256,15 @@ class FullCardRequester
   }
 }
 
+- (void)displayErrorWithCallback:(ProceduralBlock)callback {
+  _errorCoordinator = [[PaymentRequestErrorCoordinator alloc]
+      initWithBaseViewController:_navigationController];
+  [_errorCoordinator setCallback:callback];
+  [_errorCoordinator setDelegate:self];
+
+  [_errorCoordinator start];
+}
+
 #pragma mark - PaymentRequestViewControllerDelegate
 
 - (void)paymentRequestViewControllerDidCancel:
@@ -308,6 +317,19 @@ class FullCardRequester
   [_methodSelectionCoordinator setDelegate:self];
 
   [_methodSelectionCoordinator start];
+}
+
+#pragma mark - PaymentRequestErrorCoordinatorDelegate
+
+- (void)paymentRequestErrorCoordinatorDidDismiss:
+    (PaymentRequestErrorCoordinator*)coordinator {
+  ProceduralBlock callback = coordinator.callback;
+
+  [_errorCoordinator stop];
+  _errorCoordinator = nil;
+
+  if (callback)
+    callback();
 }
 
 #pragma mark - PaymentItemsDisplayCoordinatorDelegate

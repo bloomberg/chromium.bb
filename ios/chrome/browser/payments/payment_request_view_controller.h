@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #include "ios/web/public/payments/payment_request.h"
 
-extern NSString* const kPaymentRequestCollectionViewId;
+extern NSString* const kPaymentRequestCollectionViewID;
 
 @class PaymentRequestViewController;
 

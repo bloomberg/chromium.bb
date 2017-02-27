@@ -11,6 +11,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
+#import "ios/chrome/browser/payments/payment_method_selection_view_controller_actions.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
@@ -29,8 +30,8 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kPaymentMethodSelectionCollectionViewId =
-    @"kPaymentMethodSelectionCollectionViewId";
+NSString* const kPaymentMethodSelectionCollectionViewID =
+    @"kPaymentMethodSelectionCollectionViewID";
 
 namespace {
 
@@ -47,7 +48,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface PaymentMethodSelectionViewController () {
+@interface PaymentMethodSelectionViewController ()<
+    PaymentMethodSelectionViewControllerActions> {
   // The PaymentRequest object owning an instance of web::PaymentRequest as
   // provided by the page invoking the Payment Request API. This is a weak
   // pointer and should outlive this class.
@@ -56,9 +58,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // The currently selected item. May be nil.
   __weak PaymentMethodItem* _selectedItem;
 }
-
-// Called when the user presses the return button.
-- (void)onReturn;
 
 @end
 
@@ -71,6 +70,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self setTitle:l10n_util::GetNSString(
                        IDS_IOS_PAYMENT_REQUEST_METHOD_SELECTION_TITLE)];
 
+    // Set up leading (return) button.
     UIBarButtonItem* returnButton =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
                                             target:nil
@@ -130,7 +130,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.collectionView.accessibilityIdentifier =
-      kPaymentMethodSelectionCollectionViewId;
+      kPaymentMethodSelectionCollectionViewID;
 
   // Customize collection view settings.
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;

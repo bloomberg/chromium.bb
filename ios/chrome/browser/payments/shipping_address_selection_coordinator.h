@@ -47,8 +47,8 @@ class AutofillProfile;
 
 // The delegate to be notified when the user selects a shipping address or
 // returns without selecting one.
-@property(nonatomic, weak) id<ShippingAddressSelectionCoordinatorDelegate>
-    delegate;
+@property(nonatomic, weak)
+    id<ShippingAddressSelectionCoordinatorDelegate> delegate;
 
 // Stops the spinner and displays the error provided in the payment details.
 - (void)stopSpinnerAndDisplayError;

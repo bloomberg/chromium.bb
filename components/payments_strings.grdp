@@ -74,7 +74,7 @@
     Processing
   </message>
   <message name="IDS_PAYMENTS_ERROR_MESSAGE" desc="The text that informs the user that there is error in verifying and charging the payment." formatter_data="android_java">
-    There was an error processing your order.  Please check your account and try again.
+    There was an error processing your order. Please try again.
   </message>
   <message name="IDS_PAYMENTS_ADD_CONTACT" desc="Text on a button that lets a user add new contact details, like the user's full name, an email address or a phone number." formatter_data="android_java">
     Add contact info

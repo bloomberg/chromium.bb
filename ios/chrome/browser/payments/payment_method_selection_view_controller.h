@@ -40,8 +40,8 @@ class CreditCard;
 
 // The delegate to be notified when the user selects a payment method or chooses
 // to return without selecting one.
-@property(nonatomic, weak) id<PaymentMethodSelectionViewControllerDelegate>
-    delegate;
+@property(nonatomic, weak)
+    id<PaymentMethodSelectionViewControllerDelegate> delegate;
 
 // Initializes this object with an instance of PaymentRequest which owns an
 // instance of web::PaymentRequest as provided by the page invoking the Payment

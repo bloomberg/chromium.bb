@@ -44,8 +44,8 @@
 
 // The delegate to be notified when the user selects a shipping option or
 // returns without selecting one.
-@property(nonatomic, weak) id<ShippingOptionSelectionCoordinatorDelegate>
-    delegate;
+@property(nonatomic, weak)
+    id<ShippingOptionSelectionCoordinatorDelegate> delegate;
 
 // Stops the spinner and displays the error provided in the payment details.
 - (void)stopSpinnerAndDisplayError;

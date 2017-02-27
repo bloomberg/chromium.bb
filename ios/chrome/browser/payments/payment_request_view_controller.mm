@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/payments/cells/shipping_address_item.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
+#import "ios/chrome/browser/payments/payment_request_view_controller_actions.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
@@ -45,8 +46,8 @@ using payment_request_util::NameLabelFromAutofillProfile;
 using payment_request_util::AddressLabelFromAutofillProfile;
 using payment_request_util::PhoneNumberLabelFromAutofillProfile;
 
-NSString* const kPaymentRequestCollectionViewId =
-    @"kPaymentRequestCollectionViewId";
+NSString* const kPaymentRequestCollectionViewID =
+    @"kPaymentRequestCollectionViewID";
 
 namespace {
 
@@ -76,7 +77,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface PaymentRequestViewController () {
+@interface PaymentRequestViewController ()<
+    PaymentRequestViewControllerActions> {
   UIBarButtonItem* _cancelButton;
   MDCFlatButton* _payButton;
 
@@ -90,12 +92,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewTextItem* _selectedShippingOptionItem;
   PaymentMethodItem* _selectedPaymentMethodItem;
 }
-
-// Called when the user presses the cancel button.
-- (void)onCancel;
-
-// Called when the user presses the confirm button.
-- (void)onConfirm;
 
 @end
 
@@ -112,7 +108,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
     [self setTitle:l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_TITLE)];
 
-    // Set up left (cancel) button.
+    // Set up leading (cancel) button.
     _cancelButton = [[UIBarButtonItem alloc]
         initWithTitle:l10n_util::GetNSString(
                           IDS_IOS_PAYMENT_REQUEST_CANCEL_BUTTON)
@@ -127,7 +123,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CANCEL)];
     [self navigationItem].leftBarButtonItem = _cancelButton;
 
-    // Set up right (pay) button.
+    // Set up trailing (pay) button.
     _payButton = [[MDCFlatButton alloc] init];
     [_payButton
         setTitle:l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_PAY_BUTTON)
@@ -309,7 +305,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.collectionView.accessibilityIdentifier = kPaymentRequestCollectionViewId;
+  self.collectionView.accessibilityIdentifier = kPaymentRequestCollectionViewID;
 
   // Customize collection view settings.
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
