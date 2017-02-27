@@ -170,6 +170,7 @@ void HeadlessContentBrowserClient::GetQuotaSettings(
       callback);
 }
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 void HeadlessContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
@@ -180,6 +181,7 @@ void HeadlessContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     mappings->Share(kCrashDumpSignal, crash_signal_fd);
 #endif  // defined(HEADLESS_USE_BREAKPAD)
 }
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,

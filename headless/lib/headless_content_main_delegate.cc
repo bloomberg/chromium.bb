@@ -147,6 +147,7 @@ void HeadlessContentMainDelegate::InitCrashReporter(
   g_headless_crash_client.Pointer()->set_crash_dumps_dir(
       browser_->options()->crash_dumps_dir);
 
+#if !defined(OS_MACOSX)
   if (!browser_->options()->enable_crash_reporter) {
     DCHECK(!breakpad::IsCrashReporterEnabled());
     return;
@@ -155,6 +156,7 @@ void HeadlessContentMainDelegate::InitCrashReporter(
   if (process_type != switches::kZygoteProcess)
     breakpad::InitCrashReporter(process_type);
 #endif  // defined(HEADLESS_USE_BREAKPAD)
+#endif  // !defined(OS_MACOSX)
 }
 
 void HeadlessContentMainDelegate::PreSandboxStartup() {
@@ -168,7 +170,9 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
   if (command_line.HasSwitch(switches::kEnableLogging))
     InitLogging(command_line);
 #endif
+#if !defined(OS_MACOSX)
   InitCrashReporter(command_line);
+#endif
   InitializeResourceBundle();
 }
 
@@ -198,6 +202,7 @@ int HeadlessContentMainDelegate::RunProcess(
   return 0;
 }
 
+#if !defined(OS_MACOSX) && defined(OS_POSIX) && !defined(OS_ANDROID)
 void HeadlessContentMainDelegate::ZygoteForked() {
   const base::CommandLine& command_line(
       *base::CommandLine::ForCurrentProcess());
@@ -208,6 +213,7 @@ void HeadlessContentMainDelegate::ZygoteForked() {
   // bail out gracefully if the browser process hasn't enabled crash reporting.
   breakpad::InitCrashReporter(process_type);
 }
+#endif
 
 // static
 HeadlessContentMainDelegate* HeadlessContentMainDelegate::GetInstance() {

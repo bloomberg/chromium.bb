@@ -35,10 +35,13 @@ class HeadlessContentMainDelegate : public content::ContentMainDelegate {
   int RunProcess(
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;
-  void ZygoteForked() override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
 
   HeadlessBrowserImpl* browser() const { return browser_.get(); }
+
+#if !defined(OS_MACOSX) && defined(OS_POSIX) && !defined(OS_ANDROID)
+  void ZygoteForked() override;
+#endif
 
  private:
   friend class HeadlessBrowserTest;
