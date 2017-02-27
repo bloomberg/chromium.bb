@@ -63,7 +63,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
 
   SelectionType getSelectionType() const { return m_selectionType; }
 
-  void setAffinity(TextAffinity affinity) { m_affinity = affinity; }
   TextAffinity affinity() const { return m_affinity; }
 
   // TODO(yosin): To make |VisibleSelection| as immutable object, we should

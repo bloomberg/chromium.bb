@@ -739,14 +739,10 @@ bool SelectionModifier::modifyWithPageGranularity(EAlteration alter,
                                   m_selection.affinity());
       xPos = lineDirectionPointForBlockDirectionNavigation(
           direction == FrameSelection::DirectionUp ? START : END);
-      m_selection.setAffinity(direction == FrameSelection::DirectionUp
-                                  ? TextAffinity::Upstream
-                                  : TextAffinity::Downstream);
       break;
     case FrameSelection::AlterationExtend:
       pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
       xPos = lineDirectionPointForBlockDirectionNavigation(EXTENT);
-      m_selection.setAffinity(TextAffinity::Downstream);
       break;
   }
 
@@ -789,6 +785,9 @@ bool SelectionModifier::modifyWithPageGranularity(EAlteration alter,
           SelectionInDOMTree::Builder()
               .collapse(result.toPositionWithAffinity())
               .setIsDirectional(shouldAlwaysUseDirectionalSelection(frame()))
+              .setAffinity(direction == FrameSelection::DirectionUp
+                               ? TextAffinity::Upstream
+                               : TextAffinity::Downstream)
               .build());
       break;
     case FrameSelection::AlterationExtend: {
