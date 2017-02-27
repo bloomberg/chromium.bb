@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
-<div id=target style="display:inline-block"></div>
+<div id="target" style="display:inline-block">x</div>
 <script>
 var test = async_test('inline-block should run compositor animations');
 var anim = target.animate({transform: ['rotate(0deg)', 'rotate(180deg)']}, 100000);

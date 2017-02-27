@@ -34,6 +34,8 @@ class CompositedAnimationTestCommon {
   createStaticElements() {
     this.error = document.createElement('span');
     this.error.style.color = 'red';
+    // The element must have some painted content in order to be composited.
+    this.error.textContent = 'x';
     document.body.appendChild(this.error);
 
     this.wrapper = document.createElement('div');
