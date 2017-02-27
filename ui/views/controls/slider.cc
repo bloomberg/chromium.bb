@@ -243,14 +243,26 @@ void Slider::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
-  float new_value = value_;
-  if (event.key_code() == ui::VKEY_LEFT)
-    new_value -= keyboard_increment_;
-  else if (event.key_code() == ui::VKEY_RIGHT)
-    new_value += keyboard_increment_;
-  else
-    return false;
-  SetValueInternal(new_value, VALUE_CHANGED_BY_USER);
+  int direction = 1;
+  switch (event.key_code()) {
+    case ui::VKEY_LEFT:
+      direction = base::i18n::IsRTL() ? 1 : -1;
+      break;
+    case ui::VKEY_RIGHT:
+      direction = base::i18n::IsRTL() ? -1 : 1;
+      break;
+    case ui::VKEY_UP:
+      direction = 1;
+      break;
+    case ui::VKEY_DOWN:
+      direction = -1;
+      break;
+
+    default:
+      return false;
+  }
+  SetValueInternal(value_ + direction * keyboard_increment_,
+                   VALUE_CHANGED_BY_USER);
   return true;
 }
 

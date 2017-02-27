@@ -262,10 +262,8 @@ TEST_F(SliderTest, SliderValueForScrollGesture) {
   // Scroll below the minimum.
   slider()->SetValue(0.5);
   event_generator()->GestureScrollSequence(
-    gfx::Point(0.5 * max_x(), 0.5 * max_y()),
-    gfx::Point(0, 0),
-    base::TimeDelta::FromMilliseconds(10),
-    5 /* steps */);
+      gfx::Point(0.5 * max_x(), 0.5 * max_y()), gfx::Point(0, 0),
+      base::TimeDelta::FromMilliseconds(10), 5 /* steps */);
   EXPECT_EQ(0, slider()->value());
 
   // Scroll above the maximum.
@@ -278,10 +276,9 @@ TEST_F(SliderTest, SliderValueForScrollGesture) {
   // Scroll somewhere in the middle.
   slider()->SetValue(0.25);
   event_generator()->GestureScrollSequence(
-    gfx::Point(0.25 * max_x(), 0.25 * max_y()),
-    gfx::Point(0.75 * max_x(), 0.75 * max_y()),
-    base::TimeDelta::FromMilliseconds(10),
-    5 /* steps */);
+      gfx::Point(0.25 * max_x(), 0.25 * max_y()),
+      gfx::Point(0.75 * max_x(), 0.75 * max_y()),
+      base::TimeDelta::FromMilliseconds(10), 5 /* steps */);
   EXPECT_NEAR(0.75, slider()->value(), 0.03);
 }
 
@@ -295,6 +292,33 @@ TEST_F(SliderTest, SliderValueForKeyboard) {
 
   slider()->SetValue(value);
   event_generator()->PressKey(ui::VKEY_LEFT, 0);
+  EXPECT_LT(slider()->value(), value);
+
+  slider()->SetValue(value);
+  event_generator()->PressKey(ui::VKEY_UP, 0);
+  EXPECT_GT(slider()->value(), value);
+
+  slider()->SetValue(value);
+  event_generator()->PressKey(ui::VKEY_DOWN, 0);
+  EXPECT_LT(slider()->value(), value);
+
+  // RTL reverse left/right but not up/down.
+  base::i18n::SetICUDefaultLocale("he");
+  EXPECT_TRUE(base::i18n::IsRTL());
+
+  event_generator()->PressKey(ui::VKEY_RIGHT, 0);
+  EXPECT_LT(slider()->value(), value);
+
+  slider()->SetValue(value);
+  event_generator()->PressKey(ui::VKEY_LEFT, 0);
+  EXPECT_GT(slider()->value(), value);
+
+  slider()->SetValue(value);
+  event_generator()->PressKey(ui::VKEY_UP, 0);
+  EXPECT_GT(slider()->value(), value);
+
+  slider()->SetValue(value);
+  event_generator()->PressKey(ui::VKEY_DOWN, 0);
   EXPECT_LT(slider()->value(), value);
 }
 
