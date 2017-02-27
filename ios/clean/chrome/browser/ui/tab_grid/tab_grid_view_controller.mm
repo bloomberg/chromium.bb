@@ -85,7 +85,6 @@ const CGFloat kToolbarHeight = 64.0f;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-  [self.grid reloadData];
   self.floatingNewTabButton = [MDCFloatingButton cr_tabGridNewTabButton];
   [self.floatingNewTabButton
       setFrame:[MDCFloatingButton
