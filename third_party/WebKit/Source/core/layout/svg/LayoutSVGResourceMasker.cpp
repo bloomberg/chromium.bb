@@ -90,7 +90,7 @@ sk_sp<const PaintRecord> LayoutSVGResourceMasker::createPaintRecord(
     const LayoutObject* layoutObject = childElement.layoutObject();
     if (!layoutObject || layoutObject->styleRef().display() == EDisplay::None)
       continue;
-    SVGPaintContext::paintSubtree(builder.context(), layoutObject);
+    SVGPaintContext::paintResourceSubtree(builder.context(), layoutObject);
   }
 
   m_cachedPaintRecord = builder.endRecording();

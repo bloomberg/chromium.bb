@@ -212,7 +212,7 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::asPaintRecord(
                                         tileTransform);
     for (LayoutObject* child = patternLayoutObject->firstChild(); child;
          child = child->nextSibling())
-      SVGPaintContext::paintSubtree(builder.context(), child);
+      SVGPaintContext::paintResourceSubtree(builder.context(), child);
   }
 
   return builder.endRecording();

@@ -182,7 +182,7 @@ sk_sp<SkImageFilter> FEImage::createImageFilterForLayoutObject(
   {
     TransformRecorder transformRecorder(builder.context(), layoutObject,
                                         transform);
-    SVGPaintContext::paintSubtree(builder.context(), &layoutObject);
+    SVGPaintContext::paintResourceSubtree(builder.context(), &layoutObject);
   }
 
   return SkPictureImageFilter::Make(ToSkPicture(builder.endRecording()),

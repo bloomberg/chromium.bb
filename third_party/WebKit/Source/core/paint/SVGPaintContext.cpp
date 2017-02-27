@@ -218,8 +218,8 @@ bool SVGPaintContext::isIsolationInstalled() const {
   return false;
 }
 
-void SVGPaintContext::paintSubtree(GraphicsContext& context,
-                                   const LayoutObject* item) {
+void SVGPaintContext::paintResourceSubtree(GraphicsContext& context,
+                                           const LayoutObject* item) {
   DCHECK(item);
   DCHECK(!item->needsLayout());
 
