@@ -133,7 +133,7 @@ TEST_F(DisplayTest, CreateDisplay) {
   EXPECT_EQ("0,0 1024x768", display->root_window()->bounds().ToString());
 
   // Display should have a WM root window with the correct size too.
-  EXPECT_EQ(1u, display->num_window_manger_states());
+  EXPECT_EQ(1u, display->num_window_manager_states());
   WindowManagerDisplayRoot* root1 =
       display->GetWindowManagerDisplayRootForUser(kTestId1);
   ASSERT_NE(nullptr, root1);
@@ -154,13 +154,13 @@ TEST_F(DisplayTest, CreateDisplayBeforeWM) {
   EXPECT_EQ("0,0 1024x768", display->root_window()->bounds().ToString());
 
   // There should be no WM state for display yet.
-  EXPECT_EQ(0u, display->num_window_manger_states());
+  EXPECT_EQ(0u, display->num_window_manager_states());
   EXPECT_EQ(nullptr, display->GetWindowManagerDisplayRootForUser(kTestId1));
 
   AddWindowManager(window_server(), kTestId1);
 
   // After adding a WM display should have WM state and WM root for the display.
-  EXPECT_EQ(1u, display->num_window_manger_states());
+  EXPECT_EQ(1u, display->num_window_manager_states());
   WindowManagerDisplayRoot* root1 =
       display->GetWindowManagerDisplayRootForUser(kTestId1);
   ASSERT_NE(nullptr, root1);
@@ -174,14 +174,14 @@ TEST_F(DisplayTest, CreateDisplayWithTwoWindowManagers) {
   Display* display = display_manager()->GetDisplayById(display_id);
 
   // There should be only be one WM at this point.
-  ASSERT_EQ(1u, display->num_window_manger_states());
+  ASSERT_EQ(1u, display->num_window_manager_states());
   EXPECT_NE(nullptr, display->GetWindowManagerDisplayRootForUser(kTestId1));
   EXPECT_EQ(nullptr, display->GetWindowManagerDisplayRootForUser(kTestId2));
 
   AddWindowManager(window_server(), kTestId2);
 
   // There should now be two WMs.
-  ASSERT_EQ(2u, display->num_window_manger_states());
+  ASSERT_EQ(2u, display->num_window_manager_states());
   WindowManagerDisplayRoot* root1 =
       display->GetWindowManagerDisplayRootForUser(kTestId1);
   ASSERT_NE(nullptr, root1);
@@ -224,7 +224,7 @@ TEST_F(DisplayTest, Destruction) {
   AddWindowManager(window_server(), kTestId2);
   ASSERT_EQ(1u, display_manager()->displays().size());
   Display* display = display_manager()->GetDisplayById(display_id);
-  ASSERT_EQ(2u, display->num_window_manger_states());
+  ASSERT_EQ(2u, display->num_window_manager_states());
   // There should be two trees, one for each windowmanager.
   EXPECT_EQ(2u, window_server()->num_trees());
 
@@ -233,7 +233,7 @@ TEST_F(DisplayTest, Destruction) {
     // Destroy the tree associated with |state|. Should result in deleting
     // |state|.
     window_server()->DestroyTree(state->window_tree());
-    ASSERT_EQ(1u, display->num_window_manger_states());
+    ASSERT_EQ(1u, display->num_window_manager_states());
     EXPECT_FALSE(GetWindowManagerStateForUser(display, kTestId1));
     EXPECT_EQ(1u, display_manager()->displays().size());
     EXPECT_EQ(1u, window_server()->num_trees());

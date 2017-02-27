@@ -109,7 +109,7 @@ class Display : public PlatformDisplayDelegate,
         const_cast<const Display*>(this)->GetActiveWindowManagerDisplayRoot());
   }
   const WindowManagerDisplayRoot* GetActiveWindowManagerDisplayRoot() const;
-  size_t num_window_manger_states() const {
+  size_t num_window_manager_states() const {
     return window_manager_display_root_map_.size();
   }
 
