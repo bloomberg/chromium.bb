@@ -4,7 +4,21 @@
 
 package org.chromium.webview_ui_test.test.util;
 
+import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
+import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withChild;
+import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.hasItem;
+
 import android.content.Intent;
+import android.os.Build;
+import android.support.test.espresso.BaseLayerComponent;
+import android.support.test.espresso.DaggerBaseLayerComponent;
 import android.support.test.rule.ActivityTestRule;
 import android.webkit.WebView;
 
@@ -25,6 +39,7 @@ public class WebViewUiTestRule extends ActivityTestRule<WebViewUiTestActivity> {
 
     private WebViewSyncWrapper mSyncWrapper;
     private String mLayout;
+    private BaseLayerComponent mBaseLayerComponent;
 
     public WebViewUiTestRule(Class<WebViewUiTestActivity> activityClass) {
         super(activityClass);
@@ -80,5 +95,36 @@ public class WebViewUiTestRule extends ActivityTestRule<WebViewUiTestActivity> {
         } catch (InterruptedException e) {
             Assert.fail(e.getMessage());
         }
+    }
+
+    public boolean isActionBarDisplayed() {
+        if (mBaseLayerComponent == null) mBaseLayerComponent = DaggerBaseLayerComponent.create();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // For M and above
+            if (hasItem(withDecorView(withChild(allOf(
+                    withClassName(endsWith("PopupBackgroundView")),
+                    isCompletelyDisplayed())))).matches(
+                    mBaseLayerComponent.activeRootLister().listActiveRoots())) {
+                return true;
+            }
+        } else {
+            // For L
+            if (hasItem(withDecorView(hasDescendant(allOf(
+                    withClassName(endsWith("ActionMenuItemView")),
+                    isCompletelyDisplayed())))).matches(
+                    mBaseLayerComponent.activeRootLister().listActiveRoots())) {
+                return true;
+            }
+
+            // Paste option is a popup on L
+            if (hasItem(withDecorView(withChild(withText("Paste")))).matches(
+                    mBaseLayerComponent.activeRootLister().listActiveRoots())) {
+                return true;
+            }
+        }
+
+
+        return false;
     }
 }

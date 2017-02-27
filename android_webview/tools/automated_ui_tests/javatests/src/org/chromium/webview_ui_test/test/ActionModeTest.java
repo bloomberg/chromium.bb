@@ -41,16 +41,17 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
+import android.support.test.espresso.IdlingResource;
+import android.support.test.espresso.IdlingResource.ResourceCallback;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.PerformException;
 import android.support.test.espresso.Root;
-import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.action.GeneralClickAction;
 import android.support.test.espresso.action.GeneralLocation;
 import android.support.test.espresso.action.Press;
@@ -68,19 +69,17 @@ import junit.framework.AssertionFailedError;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Log;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.webview_ui_test.R;
 import org.chromium.webview_ui_test.WebViewUiTestActivity;
 import org.chromium.webview_ui_test.test.util.UseLayout;
 import org.chromium.webview_ui_test.test.util.WebViewUiTestRule;
-
-import java.lang.reflect.Method;
 
 /**
  * Tests for WebView ActionMode.
@@ -105,6 +104,8 @@ public class ActionModeTest {
     public WebViewUiTestRule mWebViewActivityRule =
             new WebViewUiTestRule(WebViewUiTestActivity.class);
 
+    private ActionBarIdlingResource mActionBarIdlingResource;
+
     @Before
     public void setUp() {
         mWebViewActivityRule.launchActivity();
@@ -114,21 +115,13 @@ public class ActionModeTest {
         onWebView(withId(R.id.webview))
                 .withElement(findElement(Locator.TAG_NAME, "p"))
                 .check(webMatches(getText(), containsString("Hello world")));
-        disableAnimation();
+        mActionBarIdlingResource = new ActionBarIdlingResource();
+        Espresso.registerIdlingResources(mActionBarIdlingResource);
     }
 
-    /**
-     * Only way to disable popup animations.
-     */
-    private void disableAnimation() {
-        try {
-            // This is a hidden method to disable animations.  It is also being used by CTS tests.
-            Method setDurationScale = ValueAnimator.class.getMethod(
-                    "setDurationScale", float.class);
-            setDurationScale.invoke(null, 0.0f);
-        } catch (Exception e) {
-            Log.e(TAG, "Couldn't disable animation", e);
-        }
+    @After
+    public void tearDown() {
+        Espresso.unregisterIdlingResources(mActionBarIdlingResource);
     }
 
     /**
@@ -138,9 +131,9 @@ public class ActionModeTest {
     @SmallTest
     @UseLayout("edittext_webview")
     public void testCopyPaste() {
-        onView(withId(R.id.webview)).perform(longClickOnLastWord());
+        longClickOnLastWord(R.id.webview);
         clickPopupAction(COPY_ACTION);
-        onView(withId(R.id.edittext)).perform(longClickOnLastWord());
+        longClickOnLastWord(R.id.edittext);
         clickPopupAction(PASTE_ACTION);
         onView(withId(R.id.edittext))
                 .check(matches(withText("world")));
@@ -153,10 +146,10 @@ public class ActionModeTest {
     @SmallTest
     @UseLayout("edittext_webview")
     public void testSelectAll() {
-        onView(withId(R.id.webview)).perform(longClickOnLastWord());
+        longClickOnLastWord(R.id.webview);
         clickPopupAction("Select all");
         clickPopupAction(COPY_ACTION);
-        onView(withId(R.id.edittext)).perform(longClickOnLastWord());
+        longClickOnLastWord(R.id.edittext);
         clickPopupAction(PASTE_ACTION);
         onView(withId(R.id.edittext))
                 .check(matches(withText("Hello world")));
@@ -173,7 +166,7 @@ public class ActionModeTest {
         intending(anyIntent())
                 .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, new Intent()));
 
-        onView(withId(R.id.webview)).perform(longClickOnLastWord());
+        longClickOnLastWord(R.id.webview);
         clickPopupAction(SHARE_ACTION);
 
         intended(allOf(hasAction(Intent.ACTION_CHOOSER),
@@ -194,7 +187,7 @@ public class ActionModeTest {
         Intents.init();
         intending(anyIntent())
                 .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, new Intent()));
-        onView(withId(R.id.webview)).perform(longClickOnLastWord());
+        longClickOnLastWord(R.id.webview);
         clickPopupAction(WEB_SEARCH_ACTION);
         intended(allOf(hasAction(Intent.ACTION_WEB_SEARCH),
                 hasExtras(allOf(hasEntry("com.android.browser.application_id",
@@ -213,7 +206,7 @@ public class ActionModeTest {
     public void testAssist() {
         // TODO(aluo): Get SdkSuppress to work with the test runner
         if (Build.VERSION.SDK_INT < 24) return;
-        onView(withId(R.id.webview)).perform(longClickOnLastWord());
+        longClickOnLastWord(R.id.webview);
         clickPopupAction(ASSIST_ACTION);
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         UiObject assistUi = device.findObject(new UiSelector().packageName(QUICK_SEARCH_BOX_PKG));
@@ -230,7 +223,7 @@ public class ActionModeTest {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             try {
                 // On L and lower, use the espresso DEFAULT root matcher if ActionBar is detected
-                onView(withClassName(endsWith("widget.ActionBarContextView")))
+                onView(withClassName(endsWith("ActionBarContextView")))
                         .check(matches(isDisplayed()));
                 rootMatcher = DEFAULT;
             } catch (NoMatchingViewException | AssertionFailedError e) {
@@ -241,27 +234,30 @@ public class ActionModeTest {
             // On M and above, can use the decoreView matcher
             rootMatcher = withDecorView(isEnabled());
         }
+
         try {
             onView(anyOf(withText(name), withContentDescription(name)))
                     .inRoot(rootMatcher)
                     .perform(click());
-        } catch (PerformException e) {
+        } catch (PerformException | NoMatchingViewException e) {
             // Take care of case when the item is in the overflow menu
             onView(withContentDescription(MORE_OPTIONS_ACTION))
-                    .inRoot(withDecorView(isEnabled()))
+                    .inRoot(rootMatcher)
                     .perform(click());
             onData(new MenuItemMatcher(equalTo(name))).inRoot(rootMatcher).perform(click());
         }
     }
 
     /**
-     * This view action clicks on center right of a view to select the last word
+     * Perform a view action that clicks on the last word and start the idling resource
+     * to wait for completion of the popup menu
      */
-    private static final ViewAction longClickOnLastWord() {
+    private final void longClickOnLastWord(int viewId) {
         // TODO(aluo): This function is not guaranteed to click on element. Change to
         // implementation that gets bounding box for elements using Javascript.
-        return actionWithAssertions(
-                new GeneralClickAction(Tap.LONG, GeneralLocation.CENTER_RIGHT, Press.FINGER));
+        onView(withId(viewId)).perform(actionWithAssertions(
+                new GeneralClickAction(Tap.LONG, GeneralLocation.CENTER_RIGHT, Press.FINGER)));
+        mActionBarIdlingResource.start();
     }
 
     /**
@@ -283,6 +279,40 @@ public class ActionModeTest {
         public void describeTo(Description description) {
             description.appendText("has MenuItem with title: ");
             description.appendDescriptionOf(mTitleMatcher);
+        }
+    }
+
+    private class ActionBarIdlingResource implements IdlingResource {
+        private boolean mActionStarting;
+        private ResourceCallback mResourceCallback;
+
+        ActionBarIdlingResource() {
+            mActionStarting = false;
+            mResourceCallback = null;
+        }
+
+        @Override
+        public String getName() {
+            return "ActionBarIdlingResource";
+        }
+
+        @Override
+        public boolean isIdleNow() {
+            if (!mActionStarting) return true;
+            if (mWebViewActivityRule.isActionBarDisplayed()) {
+                mActionStarting = false;
+                if (mResourceCallback != null) mResourceCallback.onTransitionToIdle();
+            }
+            return !mActionStarting;
+        }
+
+        @Override
+        public void registerIdleTransitionCallback(ResourceCallback callback) {
+            mResourceCallback = callback;
+        }
+
+        public void start() {
+            mActionStarting = true;
         }
     }
 }
