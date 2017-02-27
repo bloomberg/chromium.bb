@@ -104,18 +104,29 @@ static_library("test_support") {
 
     #"//chrome/app/theme:theme_resources",
     "//chrome/browser:test_support",
+    "//chrome/child",
     "//chrome/common:test_support",
+    "//chrome/renderer",
     "//chrome/renderer:test_support",
+    "//chrome/utility",
+    "//components/autofill/core/browser:test_support",
     "//components/bookmarks/test",
+    "//components/captive_portal:test_support",
     "//components/gcm_driver:test_support",
+    "//components/gcm_driver/crypto:test_support",
     "//components/gcm_driver/instance_id:test_support",
+    "//components/guest_view/browser:test_support",
     "//components/history/core/test:test",
+    "//components/infobars/core",
     "//components/metrics:test_support",
+    "//components/network_time:network_time_test_support",
+    "//components/offline_pages/core:test_support",
     "//components/omnibox/browser:test_support",
     "//components/password_manager/core/browser:test_support",
     "//components/prefs:test_support",
     "//components/rappor:test_support",
     "//components/search_engines:test_support",
+    "//components/sessions:test_support",
     "//components/signin/core/browser:test_support",
     "//components/sync",
     "//components/sync:test_support_driver",
@@ -123,12 +134,20 @@ static_library("test_support") {
     "//components/sync_sessions:test_support",
     "//components/toolbar:test_support",
     "//components/update_client:test_support",
+    "//components/web_resource:test_support",
     "//components/zoom:test_support",
     "//content/public/app:both",
+    "//content/public/child",
+    "//content/public/common",
+    "//content/public/renderer",
+    "//content/public/utility",
     "//content/test:test_support",
     "//extensions/features",
+    "//google_apis:test_support",
     "//gpu/ipc/service",
+    "//ipc:test_support",
     "//media:media_features",
+    "//media:test_support",
     "//net",
     "//net:test_support",
     "//pdf",
@@ -137,41 +156,18 @@ static_library("test_support") {
     "//skia",
     "//sql",
     "//sql:test_support",
+    "//sql:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/leveldatabase",
     "//third_party/zlib",
+    "//ui/base",
+    "//ui/events:events_base",
     "//ui/gfx:test_support",
+    "//ui/gl",
     "//ui/message_center:test_support",
   ]
 
-  if (!is_ios) {
-    public_deps += [
-      "//chrome/child",
-      "//chrome/renderer",
-      "//chrome/utility",
-      "//components/autofill/core/browser:test_support",
-      "//components/captive_portal:test_support",
-      "//components/gcm_driver/crypto:test_support",
-      "//components/guest_view/browser:test_support",
-      "//components/infobars/core",
-      "//components/network_time:network_time_test_support",
-      "//components/offline_pages/core:test_support",
-      "//components/sessions:test_support",
-      "//components/web_resource:test_support",
-      "//content/public/child",
-      "//content/public/common",
-      "//content/public/renderer",
-      "//content/public/utility",
-      "//google_apis:test_support",
-      "//ipc:test_support",
-      "//media:test_support",
-      "//sql:test_support",
-      "//third_party/leveldatabase",
-      "//ui/base",
-      "//ui/events:events_base",
-      "//ui/gl",
-    ]
-  }
   if (enable_plugins) {
     public_deps += [ "//ppapi/shared_impl" ]
   }
@@ -3477,86 +3473,73 @@ test("unit_tests") {
   defines = []
 
   deps = [
-    # NOTE: New dependencies should generally be added in the OS!="ios"
-    # dependencies block below, rather than here.
-    # Unit tests should only depend on:
-    # 1) everything that the chrome binaries depend on:
-    "//chrome:browser_dependencies",
-    "//chrome:child_dependencies",
-
-    # 2) test-specific support libraries:
     ":test_support",
     ":test_support_unit",
     "//base/test:test_support",
+    "//chrome:browser_dependencies",
+    "//chrome:child_dependencies",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//chrome/browser/ntp_snippets:test_support",
     "//chrome/common:test_support",
+    "//components/autofill/content/renderer:test_support",
     "//components/browser_sync:test_support",
+    "//components/component_updater:test_support",
     "//components/content_settings/core/test:test_support",
+    "//components/content_settings/core/test:test_support",
+    "//components/data_reduction_proxy/core/browser:test_support",
+    "//components/data_use_measurement/core",
+    "//components/metrics/proto",
+    "//components/ntp_snippets:test_support",
+    "//components/os_crypt:test_support",
     "//components/resources",
+    "//components/safe_browsing_db",
+    "//components/safe_browsing_db:test_database_manager",
+    "//components/safe_json:test_support",
+    "//components/spellcheck:build_features",
+    "//components/strings",
+    "//components/subresource_filter/core/browser:test_support",
     "//components/sync:test_support_driver",
     "//components/sync:test_support_model",
     "//components/sync_sessions:test_support",
     "//components/variations:test_support",
+    "//components/version_info:generate_version_info",
+    "//components/webdata_services:test_support",
+    "//content/app/resources",
     "//content/public/app:both",
     "//content/test:test_support",
+    "//courgette:courgette_lib",
     "//crypto:platform",
     "//crypto:test_support",
-    "//net",
-    "//net:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-
-    # 3) anything tests directly depend on
-    "//chrome:resources",
-    "//chrome:strings",
-    "//components/component_updater:test_support",
-    "//components/safe_browsing_db:test_database_manager",
-    "//components/spellcheck:build_features",
-    "//components/subresource_filter/core/browser:test_support",
-    "//components/version_info:generate_version_info",
-    "//courgette:courgette_lib",
+    "//device/base:mocks",
+    "//device/bluetooth:mocks",
+    "//device/usb:test_support",
     "//extensions/features",
     "//google_apis",
+    "//gpu:test_support",
     "//media:media_features",
+    "//media:test_support",
+    "//net",
+    "//net:test_support",
     "//ppapi/features",
     "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
     "//third_party/cacheinvalidation",
     "//third_party/icu",
+    "//third_party/leveldatabase",
+    "//third_party/libaddressinput",
+    "//third_party/libjingle",
+    "//third_party/libphonenumber",
     "//third_party/libxml",
+    "//third_party/webrtc/modules/desktop_capture",
     "//ui/base:test_support",
     "//ui/display:test_support",
     "//ui/gfx:test_support",
+    "//ui/gl",
     "//ui/resources",
+    "//v8",
   ]
-
-  if (!is_ios) {
-    deps += [
-      "//chrome/browser/ntp_snippets:test_support",
-      "//components/autofill/content/renderer:test_support",
-      "//components/content_settings/core/test:test_support",
-      "//components/data_reduction_proxy/core/browser:test_support",
-      "//components/data_use_measurement/core",
-      "//components/metrics/proto",
-      "//components/ntp_snippets:test_support",
-      "//components/os_crypt:test_support",
-      "//components/safe_browsing_db",
-      "//components/safe_json:test_support",
-      "//components/strings",
-      "//components/webdata_services:test_support",
-      "//content/app/resources",
-      "//device/base:mocks",
-      "//device/bluetooth:mocks",
-      "//device/usb:test_support",
-      "//gpu:test_support",
-      "//media:test_support",
-      "//third_party/leveldatabase",
-      "//third_party/libaddressinput",
-      "//third_party/libjingle",
-      "//third_party/libphonenumber",
-      "//third_party/webrtc/modules/desktop_capture",
-      "//ui/gl",
-      "//v8",
-    ]
-  }
 
   if (is_mac) {
     data_deps += [ "//chrome:chrome_framework" ]
@@ -3782,7 +3765,7 @@ test("unit_tests") {
     ]
   }
 
-  if (!is_ios && !is_android) {
+  if (!is_android) {
     sources += [
       "../browser/devtools/devtools_ui_bindings_unittest.cc",
       "../browser/download/download_dir_policy_handler_unittest.cc",
@@ -3809,7 +3792,7 @@ test("unit_tests") {
     sources += [ "../browser/webshare/share_service_impl_unittest.cc" ]
   }
 
-  if (is_ios || is_chromeos) {
+  if (is_chromeos) {
     sources -= [ "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc" ]
   }
   if (enable_background) {
@@ -4211,7 +4194,7 @@ test("unit_tests") {
       "../browser/ui/input_method/input_method_engine_unittest.cc",
     ]
   }
-  if (!is_android && !is_ios && !is_chromeos) {
+  if (!is_android && !is_chromeos) {
     sources += [
       "../browser/net/disk_cache_dir_policy_handler_unittest.cc",
       "//chrome/browser/profiles/profile_list_desktop_unittest.cc",
@@ -4713,7 +4696,7 @@ test("unit_tests") {
     # other things like the ui and startup tests. *shrug*
     ldflags = [ "-Wl,-ObjC" ]
   }
-  if (!is_mac && !is_ios) {
+  if (!is_mac) {
     deps += [
       "//chrome:packed_resources",
       "//chrome/tools/convert_dict:lib",
@@ -4783,7 +4766,7 @@ test("unit_tests") {
       sources -= [ "../browser/google/google_update_win_unittest.cc" ]
     }
   }
-  if (is_android || is_ios) {
+  if (is_android) {
     sources -= [
       "../browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc",
       "../browser/ui/sync/sync_promo_ui_unittest.cc",
@@ -4894,7 +4877,7 @@ test("unit_tests") {
       "../browser/supervised_user/supervised_user_whitelist_service_unittest.cc",
     ]
   }
-  if (enable_supervised_users && !is_android && !is_ios) {
+  if (enable_supervised_users && !is_android) {
     # TODO(bauerb): This code should be removed (on desktop) once child account
     # support has launched (https://crbug.com/505443).
     sources += [
@@ -5022,7 +5005,7 @@ if (!is_android) {
   }
 }
 
-if (!is_android && !is_ios && !is_chromecast) {
+if (!is_android && !is_chromecast) {
   test("performance_browser_tests") {
     sources = [
       "../app/chrome_version.rc.version",
