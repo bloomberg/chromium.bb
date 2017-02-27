@@ -56,6 +56,7 @@ blink_core_sources("loader") {
     "appcache/ApplicationCacheHost.cpp",
     "appcache/ApplicationCacheHost.h",
     "modulescript/ModuleScriptFetchRequest.h",
+    "modulescript/ModuleScriptLoaderClient.h",
     "private/CrossOriginPreflightResultCache.cpp",
     "private/CrossOriginPreflightResultCache.h",
     "private/FrameClientHintsPreferencesContext.cpp",
