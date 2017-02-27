@@ -41,10 +41,13 @@ from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 from webkitpy.w3c.test_parser import TestParser
 from webkitpy.w3c.test_converter import convert_for_webkit
 
-# Maximum length of import path starting from top of source repository.
+# Maximum length of import path relative to the upstream repository base.
 # This limit is here because the Windows builders cannot create paths that are
-# longer than the Windows max path length (260). See http://crbug.com/609871.
-MAX_PATH_LENGTH = 140
+# longer than the Windows max path length (260). If the absolute path to the
+# destination directory is up to 100 characters on Windows, then that would
+# give us 160 characters from the base of the upstream repo.
+# See: http://crbug.com/609871.
+MAX_PATH_LENGTH = 160
 
 _log = logging.getLogger(__name__)
 
