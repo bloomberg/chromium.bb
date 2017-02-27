@@ -15,3 +15,12 @@ flags: {testmode: backward}
 tests:
   - - f=
     - foo
+
+# Forward translation using pass rules that have characters wasn't working
+table: |
+  include tables/chardefs.cti
+  context "oo" @123456
+flags: {testmode: forward}
+tests:
+  - - foo
+    - f=
