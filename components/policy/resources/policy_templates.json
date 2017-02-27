@@ -1378,7 +1378,7 @@
       'id': 19,
       'caption': '''Specify a list of disabled plugins''',
       'tags': [],
-      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">$1<ex>DefaultPluginsSetting</ex></ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">$1<ex>AlwaysOpenPdfExternally</ex></ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
 
       Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -1408,7 +1408,7 @@
       'id': 78,
       'caption': '''Specify a list of enabled plugins''',
       'tags': ['system-security'],
-      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">$1<ex>DefaultPluginsSetting</ex></ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">$1<ex>AlwaysOpenPdfExternally</ex></ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
 
       Specifies a list of plugins that are enabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -1438,7 +1438,7 @@
       'id': 79,
       'caption': '''Specify a list of plugins that the user can enable or disable''',
       'tags': [],
-      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">$1<ex>DefaultPluginsSetting</ex></ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">$1<ex>AlwaysOpenPdfExternally</ex></ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
 
       Specifies a list of plugins that user can enable or disable in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
