@@ -181,7 +181,7 @@ class ThreadPostingTasks : public SimpleThread {
 
 using WaitBeforePostTask = ThreadPostingTasks::WaitBeforePostTask;
 
-void ShouldNotRunCallback() {
+void ShouldNotRun() {
   ADD_FAILURE() << "Ran a task that shouldn't run.";
 }
 
@@ -316,7 +316,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTaskAfterShutdown) {
   auto task_runner =
       CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam());
   task_tracker_.Shutdown();
-  EXPECT_FALSE(task_runner->PostTask(FROM_HERE, Bind(&ShouldNotRunCallback)));
+  EXPECT_FALSE(task_runner->PostTask(FROM_HERE, Bind(&ShouldNotRun)));
 }
 
 // Verify that a Task runs shortly after its delay expires.
@@ -348,10 +348,10 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTask) {
 // returns true when appropriate so this method complements it to get full
 // coverage of that method.
 TEST_P(TaskSchedulerWorkerPoolImplTest, SequencedRunsTasksOnCurrentThread) {
-  scoped_refptr<TaskRunner> task_runner(
-      CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam()));
-  scoped_refptr<SequencedTaskRunner> sequenced_task_runner(
-      worker_pool_->CreateSequencedTaskRunnerWithTraits(TaskTraits()));
+  auto task_runner =
+      CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam());
+  auto sequenced_task_runner =
+      worker_pool_->CreateSequencedTaskRunnerWithTraits(TaskTraits());
 
   WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
                          WaitableEvent::InitialState::NOT_SIGNALED);
