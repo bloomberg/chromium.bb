@@ -1,10 +1,9 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
 <script>
-    description("This test checks behavior of drawImage on a canvas that failed to allocate its backing store. This test passes by not crashing.");
+test(function(){
+
     var canvas1 = document.createElement("canvas");
     var ctx1 = canvas1.getContext('2d');
     var canvas2 = document.createElement("canvas");
@@ -13,6 +12,6 @@
     canvas2.height = 1000000;
     var ctx2 = canvas2.getContext('2d');
     ctx2.drawImage(canvas1, 0, 0);
+
+}, "This test checks behavior of drawImage on a canvas that failed to allocate its backing store. This test passes by not crashing.");
 </script>
-</body>
-</html>

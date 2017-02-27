@@ -1,17 +1,10 @@
-<!DOCTYPE HTML>
-<head>
-<title>Canvas test: drawFocusIfNeeded</title>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body style="padding: 0; margin: 0">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <canvas id="canvas" class="output" width="300" height="350">
     <button id="button1"></button>
     <button id="button2"></button>
 </canvas>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 var canvas = document.getElementById("canvas").getContext("2d");
 
 document.getElementById("button1").addEventListener('focus', function() {
@@ -28,17 +21,21 @@ document.getElementById("button1").addEventListener('focus', function() {
     canvas.drawFocusIfNeeded(document.getElementById("button2"));
 });
 
-document.getElementById("button1").focus();
+test(function(t) {
 
-// The top rect's focus ring is tied to button1, which is focused.
-// It should have an outline in some color other than the background color.
-var imageData = canvas.getImageData(49, 50, 1, 1);
-var data = imageData.data;
-shouldBe("data[0] != 0 || data[1] != 0 || data[2] != 0", "true");
-
-// The bottom rect"s focus ring is tied to button2, which is not focused.
-imageData = canvas.getImageData(49, 200, 1, 1);
-data = imageData.data;
-shouldBe("data[0] == 0 && data[1] == 0 && data[2] == 0", "true");
+    document.getElementById("button1").focus();
+    
+    // The top rect's focus ring is tied to button1, which is focused.
+    // It should have an outline in some color other than the background color.
+    var imageData = canvas.getImageData(49, 50, 1, 1);
+    var data = imageData.data;
+    assert_true(data[0] != 0 || data[1] != 0 || data[2] != 0);
+    
+    // The bottom rect"s focus ring is tied to button2, which is not focused.
+    imageData = canvas.getImageData(49, 200, 1, 1);
+    data = imageData.data;
+    assert_true(data[0] == 0 && data[1] == 0 && data[2] == 0);
+    
+}, 'Test that drawFocusIfNeeded does not crash on event.');
 </script>
 </body>

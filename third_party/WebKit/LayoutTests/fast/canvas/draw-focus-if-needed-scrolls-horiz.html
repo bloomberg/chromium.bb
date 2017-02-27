@@ -1,9 +1,6 @@
-<!DOCTYPE HTML>
-<head>
-<title>Canvas test: drawFocusIfNeeded scrolls</title>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body style="padding: 0; margin: 0">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
 <div style="width: 6500px;">
   <div style="float: left; border: 1px solid #000; width: 1000px; height: 300px">
       1000-pixel box
@@ -13,49 +10,50 @@
       <button id="right_button"></button>
   </canvas>
 </div>
+
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
+test(function(t) {
 
-var canvas = document.getElementById("canvas");
-var context = canvas.getContext("2d");
+    var canvas = document.getElementById("canvas");
+    var context = canvas.getContext("2d");
+  
+    var LEFT_BUTTON_X_POS = 50;
+    var RIGHT_BUTTON_X_POS = 4750;
 
-var LEFT_BUTTON_X_POS = 50;
-var RIGHT_BUTTON_X_POS = 4750;
+    function draw() {
+        context.beginPath();
+        context.rect(LEFT_BUTTON_X_POS, 50, 200, 100);
+        context.fillStyle = "#ccf";
+        context.fill();
+        context.drawFocusIfNeeded(document.getElementById("left_button"));
+    
+        context.beginPath();
+        context.rect(RIGHT_BUTTON_X_POS, 50, 200, 100);
+        context.fillStyle = "#fcc";
+        context.fill();
+        context.drawFocusIfNeeded(document.getElementById("right_button"));
+    }
 
-function draw() {
-    context.beginPath();
-    context.rect(LEFT_BUTTON_X_POS, 50, 200, 100);
-    context.fillStyle = "#ccf";
-    context.fill();
-    context.drawFocusIfNeeded(document.getElementById("left_button"));
+    document.getElementById("right_button").focus();
+    window.scrollTo(0, 0);
+    assert_true(window.pageXOffset == 0);
+    draw();
 
-    context.beginPath();
-    context.rect(RIGHT_BUTTON_X_POS, 50, 200, 100);
-    context.fillStyle = "#fcc";
-    context.fill();
-    context.drawFocusIfNeeded(document.getElementById("right_button"));
-}
+    var minXOffset = RIGHT_BUTTON_X_POS + canvas.offsetLeft - window.innerWidth;
+    var maxXOffset = RIGHT_BUTTON_X_POS + canvas.offsetLeft;
+    assert_true(window.pageXOffset >= minXOffset);
+    assert_true(maxXOffset >= window.pageXOffset);
 
-document.getElementById("right_button").focus();
-window.scrollTo(0, 0);
-shouldBe("window.pageXOffset", "0");
-draw();
+    document.getElementById("left_button").focus();
+    assert_true(window.pageXOffset >= minXOffset);
+    assert_true(maxXOffset >= window.pageXOffset);
 
-var minXOffset = RIGHT_BUTTON_X_POS + canvas.offsetLeft - window.innerWidth;
-var maxXOffset = RIGHT_BUTTON_X_POS + canvas.offsetLeft;
-shouldBeGreaterThanOrEqual("window.pageXOffset", "minXOffset");
-shouldBeGreaterThanOrEqual("maxXOffset", "window.pageXOffset");
+    draw();
+    minXOffset = LEFT_BUTTON_X_POS + canvas.offsetLeft - window.innerWidth;
+    maxXOffset = LEFT_BUTTON_X_POS + canvas.offsetLeft;
+    assert_true(window.pageXOffset >= minXOffset);
+    assert_true(maxXOffset >= window.pageXOffset);
 
-document.getElementById("left_button").focus();
-shouldBeGreaterThanOrEqual("window.pageXOffset", "minXOffset");
-shouldBeGreaterThanOrEqual("maxXOffset", "window.pageXOffset");
-
-draw();
-minXOffset = LEFT_BUTTON_X_POS + canvas.offsetLeft - window.innerWidth;
-maxXOffset = LEFT_BUTTON_X_POS + canvas.offsetLeft;
-shouldBeGreaterThanOrEqual("window.pageXOffset", "minXOffset");
-shouldBeGreaterThanOrEqual("maxXOffset", "window.pageXOffset");
-
+}, 'Canvas test: drawFocusIfNeeded scrolls');
 </script>
 </body>

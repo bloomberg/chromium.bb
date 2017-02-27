@@ -1,155 +1,153 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
 <script>
-    window.jsTestIsAsync = true;
-    description("This test checks behavior of valid arguments to Canvas::drawImage that use a valid source image.");
 
-    function ExpectedNotEnoughArgumentsMessage(num) {
-        return "\"TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only " + num + " present.\"";
-    }
-    var IndexSizeError = "IndexSizeError: Index or size was negative, or greater than the allowed value.";
+function ExpectedNotEnoughArgumentsMessage(num) {
+    return "\"TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only " + num + " present.\"";
+}
 
-    // Create image
-    var myImage = new Image();
-    var img_src = 'resources/apple.gif';
-    myImage.src = img_src;
-    myImage.onload = draw;
+var IndexSizeError = "IndexSizeError: Index or size was negative, or greater than the allowed value.";
 
-    var bitmap;
-    var ctx = document.createElement("canvas").getContext('2d');
-    function draw() {
-        // No arguments should get exception
-        shouldThrow("ctx.drawImage()", ExpectedNotEnoughArgumentsMessage(0));
+// Create image
+var myImage = new Image();
+var img_src = 'resources/apple.gif';
+myImage.src = img_src;
 
-        // image argument only should get exception
-        shouldThrow("ctx.drawImage(myImage)", ExpectedNotEnoughArgumentsMessage(1));
+var bitmap;
+var ctx = document.createElement("canvas").getContext('2d');
 
-        // image argument plus one number should get exception
-        shouldThrow("ctx.drawImage(myImage, 0)", ExpectedNotEnoughArgumentsMessage(2));
+function draw() {
+    // No arguments should get exception
+    assert_throws(null, function() {ctx.drawImage();}, ExpectedNotEnoughArgumentsMessage(0));
 
-        // image argument plus 2 numbers
-        shouldNotThrow("ctx.drawImage(myImage, 0, 0)");
+    // image argument only should get exception
+    assert_throws(null, function() {ctx.drawImage(myImage);}, ExpectedNotEnoughArgumentsMessage(1));
 
-        // image argument plus 4 numbers
-        shouldNotThrow("ctx.drawImage(myImage, 0, 0, 20, 20)");
+    // image argument plus one number should get exception
+    assert_throws(null, function() {ctx.drawImage(myImage, 0);}, ExpectedNotEnoughArgumentsMessage(2));
 
-        // image argument plus 8 numbers
-        shouldNotThrow("ctx.drawImage(myImage, 0, 0, 20, 20, 0, 0, 20, 20)");
+    // image argument plus 2 numbers
+    ctx.drawImage(myImage, 0, 0);
 
-        // image argument plus zero size
-        shouldNotThrow("ctx.drawImage(myImage, 0, 0, 0, 0)");
+    // image argument plus 4 numbers
+    ctx.drawImage(myImage, 0, 0, 20, 20);
 
-        // image argument plus 8 numbers, zero size
-        shouldNotThrow("ctx.drawImage(myImage, 0, 0, 20, 20, 0, 0, 0, 0)");
+    // image argument plus 8 numbers
+    ctx.drawImage(myImage, 0, 0, 20, 20, 0, 0, 20, 20);
 
-        // imageRect does not contain sourceRect on the left side
-        shouldNotThrow("ctx.drawImage(myImage, -10, 0, 52, 64, 0, 0, 20, 20)");
+    // image argument plus zero size
+    ctx.drawImage(myImage, 0, 0, 0, 0);
 
-        // imageRect does not contain sourceRect on the right side
-        shouldNotThrow("ctx.drawImage(myImage, 10, 0, 52, 64, 0, 0, 20, 20)");
+    // image argument plus 8 numbers, zero size
+    ctx.drawImage(myImage, 0, 0, 20, 20, 0, 0, 0, 0);
 
-        // imageRect does not contain sourceRect on top
-        shouldNotThrow("ctx.drawImage(myImage, 0, -10, 52, 64, 0, 0, 20, 20)");
+    // imageRect does not contain sourceRect on the left side
+    ctx.drawImage(myImage, -10, 0, 52, 64, 0, 0, 20, 20);
 
-        // imageRect does not contain sourceRect on bottom
-        shouldNotThrow("ctx.drawImage(myImage, 0, 10, 52, 64, 0, 0, 20, 20)");
+    // imageRect does not contain sourceRect on the right side
+    ctx.drawImage(myImage, 10, 0, 52, 64, 0, 0, 20, 20);
 
-        // sourceRect is bigger than imageSource on every side
-        shouldNotThrow("ctx.drawImage(myImage, -10, -10, 72, 84, 0, 0, 20, 20)");
+    // imageRect does not contain sourceRect on top
+    ctx.drawImage(myImage, 0, -10, 52, 64, 0, 0, 20, 20);
 
-        // negative size of source, imageRect does not contain sourceRect on the left side
-        shouldNotThrow("ctx.drawImage(myImage, 42, 64, -52, -64, 0, 0, 20, 20)");
+    // imageRect does not contain sourceRect on bottom
+    ctx.drawImage(myImage, 0, 10, 52, 64, 0, 0, 20, 20);
 
-        // negative size of source, imageRect does not contain sourceRect on the right side
-        shouldNotThrow("ctx.drawImage(myImage, 62, 64, -52, -64, 0, 0, 20, 20)");
+    // sourceRect is bigger than imageSource on every side
+    ctx.drawImage(myImage, -10, -10, 72, 84, 0, 0, 20, 20);
 
-        // negative size of source, imageRect does not contain sourceRect on top
-        shouldNotThrow("ctx.drawImage(myImage, 52, 54, -52, -64, 0, 0, 20, 20)");
+    // negative size of source, imageRect does not contain sourceRect on the left side
+    ctx.drawImage(myImage, 42, 64, -52, -64, 0, 0, 20, 20);
 
-        // negative size of source, imageRect does not contain sourceRect on bottom
-        shouldNotThrow("ctx.drawImage(myImage, 52, 74, -52, -64, 0, 0, 20, 20)");
+    // negative size of source, imageRect does not contain sourceRect on the right side
+    ctx.drawImage(myImage, 62, 64, -52, -64, 0, 0, 20, 20);
 
-        // negative size of source, imageRect does not contain sourceRect on every side
-        shouldNotThrow("ctx.drawImage(myImage, 62, 74, -72, -84, 0, 0, 20, 20)");
+    // negative size of source, imageRect does not contain sourceRect on top
+    ctx.drawImage(myImage, 52, 54, -52, -64, 0, 0, 20, 20);
 
-        // images with no src can be drawn
-        shouldNotThrow("ctx.drawImage(new Image(), 0, 0)");
-        shouldNotThrow("ctx.drawImage(new Image(), 0, 0, 20, 20)");
-        shouldNotThrow("ctx.drawImage(new Image(), 0, 0, 20, 20, 0, 0, 20, 20)");
+    // negative size of source, imageRect does not contain sourceRect on bottom
+    ctx.drawImage(myImage, 52, 74, -52, -64, 0, 0, 20, 20);
 
-        // images with no src exit early before IndexSizeError is thrown
-        shouldNotThrow("ctx.drawImage(new Image(), 0, 0)");
-        shouldNotThrow("ctx.drawImage(new Image(), 0, 0, 0, 20)");
-        shouldNotThrow("ctx.drawImage(new Image(), 0, 0, 0, 20, 0, 0, 20, 20)");
+    // negative size of source, imageRect does not contain sourceRect on every side
+    ctx.drawImage(myImage, 62, 74, -72, -84, 0, 0, 20, 20);
 
-        createImageBitmap(myImage).then(drawBitmap, function() {
-            testFailed("Promise was rejected.");
-            finishJSTest();
-        });
-    }
+    // images with no src can be drawn
+    ctx.drawImage(new Image(), 0, 0);
+    ctx.drawImage(new Image(), 0, 0, 20, 20);
+    ctx.drawImage(new Image(), 0, 0, 20, 20, 0, 0, 20, 20);
 
-    function drawBitmap(imageBitmap) {
-        bitmap = imageBitmap;
+    // images with no src exit early before IndexSizeError is thrown
+    ctx.drawImage(new Image(), 0, 0);
+    ctx.drawImage(new Image(), 0, 0, 0, 20);
+    ctx.drawImage(new Image(), 0, 0, 0, 20, 0, 0, 20, 20);
+}
 
-        // bitmap argument plus 2 numbers
-        shouldNotThrow("ctx.drawImage(bitmap, 0, 0)");
+function drawBitmap(imageBitmap) {
+    bitmap = imageBitmap;
 
-        // bitmap argument plus 4 numbers
-        shouldNotThrow("ctx.drawImage(bitmap, 0, 0, 20, 20)");
+    // bitmap argument plus 2 numbers
+    ctx.drawImage(bitmap, 0, 0);
 
-        // bitmap argument plus 8 numbers
-        shouldNotThrow("ctx.drawImage(bitmap, 0, 0, 20, 20, 0, 0, 20, 20)");
+    // bitmap argument plus 4 numbers
+    ctx.drawImage(bitmap, 0, 0, 20, 20);
 
-        // bitmap argument plus zero size
-        shouldNotThrow("ctx.drawImage(bitmap, 0, 0, 0, 0)");
+    // bitmap argument plus 8 numbers
+    ctx.drawImage(bitmap, 0, 0, 20, 20, 0, 0, 20, 20);
 
-        // bitmap argument plus 8 numbers, zero size
-        shouldNotThrow("ctx.drawImage(bitmap, 0, 0, 20, 20, 0, 0, 0, 0)");
+    // bitmap argument plus zero size
+    ctx.drawImage(bitmap, 0, 0, 0, 0);
 
-        // bitmap argument plus 8 numbers, negative size of source, zero size
-        shouldNotThrow("ctx.drawImage(bitmap, 20, 20, -20, 0, 0, 0, 20, 20)");
+    // bitmap argument plus 8 numbers, zero size
+    ctx.drawImage(bitmap, 0, 0, 20, 20, 0, 0, 0, 0);
 
-        // bitmap argument plus 8 numbers, negative size of destination, zero size
-        shouldNotThrow("ctx.drawImage(bitmap, 0, 0, 20, 0, 20, 20, -20, -20)");
+    // bitmap argument plus 8 numbers, negative size of source, zero size
+    ctx.drawImage(bitmap, 20, 20, -20, 0, 0, 0, 20, 20);
 
-        // bitmap argument plus 8 numbers, negative size of source and destination, zero size
-        shouldNotThrow("ctx.drawImage(bitmap, 20, 20, -20, 0, 20, 20, -20, -20)");
+    // bitmap argument plus 8 numbers, negative size of destination, zero size
+    ctx.drawImage(bitmap, 0, 0, 20, 0, 20, 20, -20, -20);
 
-        // imageRect does not contain sourceRect on the left side
-        shouldNotThrow("ctx.drawImage(bitmap, -10, 0, 52, 64, 0, 0, 20, 20)");
+    // bitmap argument plus 8 numbers, negative size of source and destination, zero size
+    ctx.drawImage(bitmap, 20, 20, -20, 0, 20, 20, -20, -20);
 
-        // imageRect does not contain sourceRect on the right side
-        shouldNotThrow("ctx.drawImage(bitmap, 10, 0, 52, 64, 0, 0, 20, 20)");
+    // imageRect does not contain sourceRect on the left side
+    ctx.drawImage(bitmap, -10, 0, 52, 64, 0, 0, 20, 20);
 
-        // imageRect does not contain sourceRect on top
-        shouldNotThrow("ctx.drawImage(bitmap, 0, -10, 52, 64, 0, 0, 20, 20)");
+    // imageRect does not contain sourceRect on the right side
+    ctx.drawImage(bitmap, 10, 0, 52, 64, 0, 0, 20, 20);
 
-        // imageRect does not contain sourceRect on bottom
-        shouldNotThrow("ctx.drawImage(bitmap, 0, 10, 52, 64, 0, 0, 20, 20)");
+    // imageRect does not contain sourceRect on top
+    ctx.drawImage(bitmap, 0, -10, 52, 64, 0, 0, 20, 20);
 
-        // sourceRect is bigger than imageSource on every side
-        shouldNotThrow("ctx.drawImage(bitmap, -10, -10, 72, 84, 0, 0, 20, 20)");
+    // imageRect does not contain sourceRect on bottom
+    ctx.drawImage(bitmap, 0, 10, 52, 64, 0, 0, 20, 20);
 
-        // negative size of source, imageRect does not contain sourceRect on the left side
-        shouldNotThrow("ctx.drawImage(bitmap, 42, 64, -52, -64, 0, 0, 20, 20)");
+    // sourceRect is bigger than imageSource on every side
+    ctx.drawImage(bitmap, -10, -10, 72, 84, 0, 0, 20, 20);
 
-        // negative size of source, imageRect does not contain sourceRect on the right side
-        shouldNotThrow("ctx.drawImage(bitmap, 62, 64, -52, -64, 0, 0, 20, 20)");
+    // negative size of source, imageRect does not contain sourceRect on the left side
+    ctx.drawImage(bitmap, 42, 64, -52, -64, 0, 0, 20, 20);
 
-        // negative size of source, imageRect does not contain sourceRect on top
-        shouldNotThrow("ctx.drawImage(bitmap, 52, 54, -52, -64, 0, 0, 20, 20)");
+    // negative size of source, imageRect does not contain sourceRect on the right side
+    ctx.drawImage(bitmap, 62, 64, -52, -64, 0, 0, 20, 20);
 
-        // negative size of source, imageRect does not contain sourceRect on bottom
-        shouldNotThrow("ctx.drawImage(bitmap, 52, 74, -52, -64, 0, 0, 20, 20)");
+    // negative size of source, imageRect does not contain sourceRect on top
+    ctx.drawImage(bitmap, 52, 54, -52, -64, 0, 0, 20, 20);
 
-        // negative size of source, imageRect does not contain sourceRect on every side
-        shouldNotThrow("ctx.drawImage(bitmap, 62, 74, -72, -84, 0, 0, 20, 20)");
+    // negative size of source, imageRect does not contain sourceRect on bottom
+    ctx.drawImage(bitmap, 52, 74, -52, -64, 0, 0, 20, 20);
 
-        finishJSTest();
-    }
+    // negative size of source, imageRect does not contain sourceRect on every side
+    ctx.drawImage(bitmap, 62, 74, -72, -84, 0, 0, 20, 20);
+}
+
+async_test(t => {
+        myImage.onload = function() {
+            t.step(draw);
+            createImageBitmap(myImage).then(t.step_func(function(image) {
+                drawBitmap(image);
+            }));
+            t.done();
+        }
+}, "This test checks behavior of valid arguments to Canvas::drawImage that use a valid source image.");
 </script>
-</body>
-</html>
