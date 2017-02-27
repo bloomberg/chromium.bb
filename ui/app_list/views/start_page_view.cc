@@ -202,7 +202,6 @@ int StartPageView::StartPageTilesContainer::DoUpdate() {
     search_result_tile_views_[i]->SetEnabled(true);
   }
 
-  Layout();
   parent()->Layout();
   // Add 1 to the results size to account for the all apps button.
   return display_results.size() + 1;
@@ -249,6 +248,7 @@ void StartPageView::StartPageTilesContainer::CreateAppsGrid(int apps_num) {
 
   // Add SearchResultTileItemViews to the container.
   int i = 0;
+  search_result_tile_views_.reserve(apps_num);
   for (; i < apps_num; ++i) {
     SearchResultTileItemView* tile_item =
         new SearchResultTileItemView(this, view_delegate_);
@@ -258,7 +258,7 @@ void StartPageView::StartPageTilesContainer::CreateAppsGrid(int apps_num) {
     AddChildView(tile_item);
     tile_item->SetParentBackgroundColor(kLabelBackgroundColor);
     tile_item->SetHoverStyle(TileItemView::HOVER_STYLE_ANIMATE_SHADOW);
-    search_result_tile_views_.push_back(tile_item);
+    search_result_tile_views_.emplace_back(tile_item);
   }
 
   // Also add a special "all apps" button to the end of the container.
@@ -294,7 +294,6 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
   AddChildView(custom_launcher_page_background_);
 
   tiles_container_->SetResults(view_delegate_->GetModel()->results());
-  Reset();
 }
 
 StartPageView::~StartPageView() {

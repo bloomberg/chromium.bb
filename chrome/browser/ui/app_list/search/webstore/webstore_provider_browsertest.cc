@@ -219,7 +219,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
                      size_t expected_result_size) {
     ASSERT_EQ(expected_result_size, webstore_provider_->results().size());
     for (size_t i = 0; i < expected_result_size; ++i) {
-      const SearchResult* result = webstore_provider_->results()[i];
+      const SearchResult* result = (webstore_provider_->results()[i]).get();
       // A search for an installed app will return a general webstore search
       // instead of an app in the webstore.
       if (!strcmp(expected_results[i].id, kWebstoreUrlPlaceholder)) {

@@ -44,7 +44,11 @@ using extensions::ExtensionRegistry;
 namespace {
 
 // The size of each step unlaunched apps should increase their relevance by.
-const double kUnlaunchedAppRelevanceStepSize = 0.0001;
+constexpr double kUnlaunchedAppRelevanceStepSize = 0.0001;
+
+// The minimum capacity we reserve in the Apps container which will be filled
+// with extensions and ARC apps, to avoid successive reallocation.
+constexpr size_t kMinimumReservedAppsContainerCapacity = 60U;
 }
 
 namespace app_list {
@@ -58,21 +62,31 @@ class AppSearchProvider::App {
       const base::Time& install_time)
       : data_source_(data_source),
         id_(id),
-        indexed_name_(base::UTF8ToUTF16(name)),
+        name_(base::UTF8ToUTF16(name)),
         last_launch_time_(last_launch_time),
         install_time_(install_time) {}
   ~App() {}
 
+  TokenizedString* GetTokenizedIndexedName() {
+    // Tokenizing a string is expensive. Don't pay the price for it at
+    // construction of every App, but rather, only when needed (i.e. when the
+    // query is not empty and cache the result.
+    if (!tokenized_indexed_name_)
+      tokenized_indexed_name_ = base::MakeUnique<TokenizedString>(name_);
+    return tokenized_indexed_name_.get();
+  }
+
   AppSearchProvider::DataSource* data_source() { return data_source_; }
   const std::string& id() const { return id_; }
-  const TokenizedString& indexed_name() const { return indexed_name_; }
+  const base::string16& name() const { return name_; }
   const base::Time& last_launch_time() const { return last_launch_time_; }
   const base::Time& install_time() const { return install_time_; }
 
  private:
   AppSearchProvider::DataSource* data_source_;
+  std::unique_ptr<TokenizedString> tokenized_indexed_name_;
   const std::string id_;
-  const TokenizedString indexed_name_;
+  const base::string16 name_;
   const base::Time last_launch_time_;
   const base::Time install_time_;
 
@@ -131,8 +145,8 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
       AppListControllerDelegate* list_controller,
       AppListItemList* top_level_item_list,
       bool is_recommended) override {
-    return std::unique_ptr<AppResult>(new ExtensionAppResult(
-        profile(), app_id, list_controller, is_recommended));
+    return base::MakeUnique<ExtensionAppResult>(
+        profile(), app_id, list_controller, is_recommended);
   }
 
   // extensions::ExtensionRegistryObserver overrides:
@@ -165,11 +179,10 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
         continue;
       }
 
-      std::unique_ptr<AppSearchProvider::App> app(new AppSearchProvider::App(
+      apps->emplace_back(base::MakeUnique<AppSearchProvider::App>(
           this, extension->id(), extension->short_name(),
           prefs->GetLastLaunchTime(extension->id()),
           prefs->GetInstallTime(extension->id())));
-      apps->push_back(std::move(app));
     }
   }
 
@@ -210,10 +223,9 @@ class ArcDataSource : public AppSearchProvider::DataSource,
       if (!app_info->launchable || !app_info->showInLauncher)
         continue;
 
-      std::unique_ptr<AppSearchProvider::App> app(new AppSearchProvider::App(
+      apps->emplace_back(base::MakeUnique<AppSearchProvider::App>(
           this, app_id, app_info->name, app_info->last_launch_time,
           app_info->install_time));
-      apps->push_back(std::move(app));
     }
   }
 
@@ -222,8 +234,8 @@ class ArcDataSource : public AppSearchProvider::DataSource,
       AppListControllerDelegate* list_controller,
       AppListItemList* top_level_item_list,
       bool is_recommended) override {
-    return std::unique_ptr<AppResult>(
-        new ArcAppResult(profile(), app_id, list_controller, is_recommended));
+    return base::MakeUnique<ArcAppResult>(profile(), app_id, list_controller,
+                                          is_recommended);
   }
 
   // ArcAppListPrefs::Observer overrides:
@@ -256,16 +268,12 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
       top_level_item_list_(top_level_item_list),
       clock_(std::move(clock)),
       update_results_factory_(this) {
-  data_sources_.push_back(
-      std::unique_ptr<DataSource>(new ExtensionDataSource(profile, this)));
+  data_sources_.emplace_back(
+      base::MakeUnique<ExtensionDataSource>(profile, this));
 #if defined(OS_CHROMEOS)
-  if (arc::IsArcAllowedForProfile(profile)) {
-    data_sources_.push_back(
-        std::unique_ptr<DataSource>(new ArcDataSource(profile, this)));
-  }
+  if (arc::IsArcAllowedForProfile(profile))
+    data_sources_.emplace_back(base::MakeUnique<ArcDataSource>(profile, this));
 #endif
-
-  RefreshApps();
 }
 
 AppSearchProvider::~AppSearchProvider() {}
@@ -273,12 +281,10 @@ AppSearchProvider::~AppSearchProvider() {}
 void AppSearchProvider::Start(bool /*is_voice_query*/,
                               const base::string16& query) {
   query_ = query;
-  ClearResults();
-
-  bool show_recommendations = query.empty();
+  const bool show_recommendations = query.empty();
   // Refresh list of apps to ensure we have the latest launch time information.
   // This will also cause the results to update.
-  if (show_recommendations)
+  if (show_recommendations || apps_.empty())
     RefreshApps();
 
   UpdateResults();
@@ -289,27 +295,29 @@ void AppSearchProvider::Stop() {
 
 void AppSearchProvider::RefreshApps() {
   apps_.clear();
-  for (auto& data_source : data_sources_) {
+  apps_.reserve(kMinimumReservedAppsContainerCapacity);
+  for (auto& data_source : data_sources_)
     data_source->AddApps(&apps_);
-  }
 }
 
 void AppSearchProvider::UpdateResults() {
-  const TokenizedString query_terms(query_);
-  bool show_recommendations = query_.empty();
-  ClearResults();
+  const bool show_recommendations = query_.empty();
 
+  // No need to clear the current results as we will swap them with
+  // |new_results| at the end.
+  SearchProvider::Results new_results;
+  const size_t apps_size = apps_.size();
+  new_results.reserve(apps_size);
   if (show_recommendations) {
     // Build a map of app ids to their position in the app list.
     std::map<std::string, size_t> id_to_app_list_index;
-    for (size_t i = 0; i < top_level_item_list_->item_count(); ++i) {
+    for (size_t i = 0; i < top_level_item_list_->item_count(); ++i)
       id_to_app_list_index[top_level_item_list_->item_at(i)->id()] = i;
-    }
 
     for (auto& app : apps_) {
       std::unique_ptr<AppResult> result = app->data_source()->CreateResult(
           app->id(), list_controller_, top_level_item_list_, true);
-      result->set_title(app->indexed_name().text());
+      result->set_title(app->name());
 
       // Use the app list order to tiebreak apps that have never been launched.
       // The apps that have been installed or launched recently should be
@@ -318,33 +326,36 @@ void AppSearchProvider::UpdateResults() {
                                   ? app->install_time()
                                   : app->last_launch_time();
       if (time.is_null()) {
-        auto it = id_to_app_list_index.find(app->id());
+        const auto& it = id_to_app_list_index.find(app->id());
         // If it's in a folder, it won't be in |id_to_app_list_index|. Rank
         // those as if they are at the end of the list.
-        size_t app_list_index =
-            it == id_to_app_list_index.end() ? apps_.size() : (*it).second;
-        if (app_list_index > apps_.size())
-          app_list_index = apps_.size();
+        const size_t app_list_index = (it == id_to_app_list_index.end())
+                                          ? apps_size
+                                          : std::min(apps_size, it->second);
 
         result->set_relevance(kUnlaunchedAppRelevanceStepSize *
-                              (apps_.size() - app_list_index));
+                              (apps_size - app_list_index));
       } else {
         result->UpdateFromLastLaunchedOrInstalledTime(clock_->Now(), time);
       }
-      Add(std::move(result));
+      new_results.emplace_back(std::move(result));
     }
   } else {
+    const TokenizedString query_terms(query_);
     for (auto& app : apps_) {
       std::unique_ptr<AppResult> result = app->data_source()->CreateResult(
           app->id(), list_controller_, top_level_item_list_, false);
       TokenizedStringMatch match;
-      if (!match.Calculate(query_terms, app->indexed_name()))
+      TokenizedString* indexed_name = app->GetTokenizedIndexedName();
+      if (!match.Calculate(query_terms, *indexed_name))
         continue;
 
-      result->UpdateFromMatch(app->indexed_name(), match);
-      Add(std::move(result));
+      result->UpdateFromMatch(*indexed_name, match);
+      new_results.emplace_back(std::move(result));
     }
   }
+
+  SwapResults(&new_results);
 
   update_results_factory_.InvalidateWeakPtrs();
 }

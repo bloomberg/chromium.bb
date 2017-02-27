@@ -73,9 +73,8 @@ class AppSearchProviderTest : public AppListTestBase {
 
     // Sort results by relevance.
     std::vector<SearchResult*> sorted_results;
-    std::copy(app_search_->results().begin(),
-              app_search_->results().end(),
-              std::back_inserter(sorted_results));
+    for (const auto& result : app_search_->results())
+      sorted_results.emplace_back(result.get());
     std::sort(sorted_results.begin(), sorted_results.end(), &MoreRelevant);
 
     std::string result_str;

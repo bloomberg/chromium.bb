@@ -16,7 +16,12 @@ SearchProvider::~SearchProvider() {
 }
 
 void SearchProvider::Add(std::unique_ptr<SearchResult> result) {
-  results_.push_back(std::move(result));
+  results_.emplace_back(std::move(result));
+  FireResultChanged();
+}
+
+void SearchProvider::SwapResults(Results* new_results) {
+  results_.swap(*new_results);
   FireResultChanged();
 }
 

@@ -16,8 +16,8 @@ namespace app_list {
 
 namespace {
 
-const int kLauncherSearchProviderQueryDelayInMs = 100;
-const int kLauncherSearchProviderMaxResults = 6;
+constexpr int kLauncherSearchProviderQueryDelayInMs = 100;
+constexpr int kLauncherSearchProviderMaxResults = 6;
 
 }  // namespace
 
@@ -64,11 +64,12 @@ void LauncherSearchProvider::SetSearchResults(
   extension_results_[extension_id] = std::move(results);
 
   // Update results with other extension results.
-  ClearResults();
+  SearchProvider::Results new_results;
   for (const auto& item : extension_results_) {
     for (const auto& result : item.second)
-      Add(result->Duplicate());
+      new_results.emplace_back(result->Duplicate());
   }
+  SwapResults(&new_results);
 }
 
 void LauncherSearchProvider::DelayQuery(const base::Closure& closure) {

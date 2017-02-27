@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
@@ -49,8 +48,6 @@ class APP_LIST_EXPORT SearchController {
   void AddProvider(size_t group_id, std::unique_ptr<SearchProvider> provider);
 
  private:
-  typedef ScopedVector<SearchProvider> Providers;
-
   // Invoked when the search results are changed.
   void OnResultsChanged();
 
@@ -60,6 +57,8 @@ class APP_LIST_EXPORT SearchController {
 
   // If true, the search results are shown on the launcher start page.
   bool query_for_recommendation_ = false;
+
+  using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
   std::unique_ptr<Mixer> mixer_;
   History* history_;  // KeyedService, not owned.

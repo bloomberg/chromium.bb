@@ -90,9 +90,9 @@ void ExtensionAppResult::Open(int event_flags) {
 }
 
 std::unique_ptr<SearchResult> ExtensionAppResult::Duplicate() const {
-  std::unique_ptr<SearchResult> copy(
-      new ExtensionAppResult(profile(), app_id(), controller(),
-                             display_type() == DISPLAY_RECOMMENDATION));
+  std::unique_ptr<SearchResult> copy = base::MakeUnique<ExtensionAppResult>(
+      profile(), app_id(), controller(),
+      display_type() == DISPLAY_RECOMMENDATION);
   copy->set_title(title());
   copy->set_title_tags(title_tags());
   copy->set_relevance(relevance());

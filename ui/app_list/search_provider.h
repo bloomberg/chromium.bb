@@ -6,10 +6,10 @@
 #define UI_APP_LIST_SEARCH_PROVIDER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"
 
@@ -19,8 +19,8 @@ class SearchResult;
 
 class APP_LIST_EXPORT SearchProvider {
  public:
-  typedef ScopedVector<SearchResult> Results;
-  typedef base::Closure ResultChangedCallback;
+  using Results = std::vector<std::unique_ptr<SearchResult>>;
+  using ResultChangedCallback = base::Closure;
 
   SearchProvider();
   virtual ~SearchProvider();
@@ -40,6 +40,12 @@ class APP_LIST_EXPORT SearchProvider {
  protected:
   // Interface for the derived class to generate search results.
   void Add(std::unique_ptr<SearchResult> result);
+
+  // Swaps the internal results with |new_results|.
+  // This is useful when multiple results will be added, and the notification is
+  // desired to be done only once when all results are added.
+  void SwapResults(Results* new_results);
+
   void ClearResults();
 
  private:

@@ -76,9 +76,10 @@ class SuggestionsSearchProviderTest : public AppListTestBase {
     suggestions_search_->Start(false, base::UTF8ToUTF16(query));
 
     // Sort results from most to least relevant.
-    std::vector<SearchResult*> sorted_results(
-        suggestions_search_->results().begin(),
-        suggestions_search_->results().end());
+    std::vector<SearchResult*> sorted_results;
+    sorted_results.reserve(suggestions_search_->results().size());
+    for (const auto& result : suggestions_search_->results())
+      sorted_results.emplace_back(result.get());
     std::sort(sorted_results.begin(), sorted_results.end(), &MostRelevant);
 
     std::string result_str;

@@ -38,9 +38,9 @@ void TokenizedString::Tokenize() {
     const size_t word_start = break_iter.prev();
     TermBreakIterator term_iter(word);
     while (term_iter.Advance()) {
-      tokens_.push_back(base::i18n::ToLower(term_iter.GetCurrentTerm()));
-      mappings_.push_back(gfx::Range(word_start + term_iter.prev(),
-                                    word_start + term_iter.pos()));
+      tokens_.emplace_back(base::i18n::ToLower(term_iter.GetCurrentTerm()));
+      mappings_.emplace_back(word_start + term_iter.prev(),
+                             word_start + term_iter.pos());
     }
   }
 }

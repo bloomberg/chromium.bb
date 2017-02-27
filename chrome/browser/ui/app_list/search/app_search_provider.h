@@ -28,7 +28,7 @@ class AppSearchProvider : public SearchProvider {
  public:
   class App;
   class DataSource;
-  typedef std::vector<std::unique_ptr<App>> Apps;
+  using Apps = std::vector<std::unique_ptr<App>>;
 
   AppSearchProvider(Profile* profile,
                     AppListControllerDelegate* list_controller,
