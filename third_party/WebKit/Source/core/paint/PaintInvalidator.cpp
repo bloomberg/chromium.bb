@@ -214,7 +214,16 @@ void PaintInvalidator::updatePaintingLayer(const LayoutObject& object,
   if (object.isLayoutBlockFlow() && toLayoutBlockFlow(object).containsFloats())
     context.paintingLayer->setNeedsPaintPhaseFloat();
 
-  if (&object == &context.paintingLayer->layoutObject())
+  // Table collapsed borders are painted in PaintPhaseDescendantBlockBackgrounds
+  // on the table's layer.
+  if (object.isTable()) {
+    const LayoutTable& table = toLayoutTable(object);
+    if (table.collapseBorders() && !table.collapsedBorders().isEmpty())
+      context.paintingLayer->setNeedsPaintPhaseDescendantBlockBackgrounds();
+  }
+
+  // The following flags are for descendants of the layer object only.
+  if (object == context.paintingLayer->layoutObject())
     return;
 
   if (object.styleRef().hasOutline())
@@ -225,12 +234,6 @@ void PaintInvalidator::updatePaintingLayer(const LayoutObject& object,
       || (object.hasOverflowClip() &&
           toLayoutBox(object).getScrollableArea()->hasOverflowControls())) {
     context.paintingLayer->setNeedsPaintPhaseDescendantBlockBackgrounds();
-  }
-
-  if (object.isTable()) {
-    const LayoutTable& table = toLayoutTable(object);
-    if (table.collapseBorders() && !table.collapsedBorders().isEmpty())
-      context.paintingLayer->setNeedsPaintPhaseDescendantBlockBackgrounds();
   }
 }
 
