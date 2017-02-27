@@ -348,8 +348,11 @@ void FrameView::dispose() {
     scrollingCoordinator->willDestroyScrollableArea(this);
 
   FrameHost* frameHost = m_frame->host();
-  DCHECK(frameHost);
-  frameHost->globalRootScrollerController().didDisposeScrollableArea(*this);
+  // TODO(dcheng): It's wrong that the frame can be detached before the
+  // FrameView. Figure out what's going on and fix FrameView to be disposed with
+  // the correct timing.
+  if (frameHost)
+    frameHost->globalRootScrollerController().didDisposeScrollableArea(*this);
 
   // We need to clear the RootFrameViewport's animator since it gets called
   // from non-GC'd objects and RootFrameViewport will still have a pointer to
