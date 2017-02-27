@@ -1465,6 +1465,8 @@ split_static_library("ui") {
       "views/chrome_constrained_window_views_client.h",
       "views/chrome_views_delegate.cc",
       "views/chrome_views_delegate.h",
+      "views/chrome_views_delegate_mac.cc",
+      "views/chrome_views_delegate_win.cc",
       "views/collected_cookies_views.cc",
       "views/collected_cookies_views.h",
       "views/confirm_bubble_views.cc",
@@ -1946,6 +1948,14 @@ split_static_library("ui") {
         "views/frame/immersive_mode_controller_ash.cc",
         "views/frame/immersive_mode_controller_ash.h",
         "views/tabs/window_finder_ash.cc",
+      ]
+    }
+
+    if (is_win || is_desktop_linux) {
+      sources += [
+        "views/chrome_views_delegate_linux.cc",
+        "views/native_widget_factory.cc",
+        "views/native_widget_factory.h",
       ]
     }
   }

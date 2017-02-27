@@ -51,14 +51,8 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
-#include "chrome/browser/ui/views/theme_profile_key.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#endif
-
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
-#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/native_widget_aura.h"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -380,104 +374,7 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
       return;
   }
 
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
-  bool use_non_toplevel_window =
-      params->parent &&
-#if defined(OS_WIN)
-      // Check the force_software_compositing flag only on Windows. If this
-      // flag is on, it means that the widget being created wants to use the
-      // software compositor which requires a top level window. We cannot have
-      // a mixture of compositors active in one view hierarchy.
-      !params->force_software_compositing &&
-#else
-      params->type != views::Widget::InitParams::TYPE_MENU &&
-#endif
-      params->type != views::Widget::InitParams::TYPE_TOOLTIP;
-
-#if defined(OS_WIN)
-  // On desktop Linux Chrome must run in an environment that supports a variety
-  // of window managers, some of which do not play nicely with parts of our UI
-  // that have specific expectations about window sizing and placement. For this
-  // reason windows opened as top level (!params.child) are always constrained
-  // by the browser frame, so we can position them correctly. This has some
-  // negative side effects, like dialogs being clipped by the browser frame, but
-  // the side effects are not as bad as the poor window manager interactions. On
-  // Windows however these WM interactions are not an issue, so we open windows
-  // requested as top_level as actual top level windows on the desktop.
-  use_non_toplevel_window = use_non_toplevel_window && params->child;
-
-  if (!ui::win::IsAeroGlassEnabled()) {
-    // If we don't have composition (either because Glass is not enabled or
-    // because it was disabled at the command line), anything that requires
-    // transparency will be broken with a toplevel window, so force the use of
-    // a non toplevel window.
-    if (params->opacity == views::Widget::InitParams::TRANSLUCENT_WINDOW &&
-        !params->force_software_compositing)
-      use_non_toplevel_window = true;
-  } else {
-    // If we're on Vista+ with composition enabled, then we can use toplevel
-    // windows for most things (they get blended via WS_EX_COMPOSITED, which
-    // allows for animation effects, but also exceeding the bounds of the parent
-    // window).
-    if (params->parent &&
-        params->type != views::Widget::InitParams::TYPE_CONTROL &&
-        params->type != views::Widget::InitParams::TYPE_WINDOW) {
-      // When we set this to false, we get a DesktopNativeWidgetAura from the
-      // default case (not handled in this function).
-      use_non_toplevel_window = false;
-    }
-  }
-#endif  // OS_WIN
-
-  if (!use_non_toplevel_window && !native_widget_factory().is_null()) {
-    params->native_widget = native_widget_factory().Run(*params, delegate);
-    return;
-  }
-#endif  // USE_AURA
-
-#if defined(OS_CHROMEOS) || defined(USE_ASH)
-  // When we are doing straight chromeos builds, we still need to handle the
-  // toplevel window case.
-  // There may be a few remaining widgets in Chrome OS that are not top level,
-  // but have neither a context nor a parent. Provide a fallback context so
-  // users don't crash. Developers will hit the DCHECK and should provide a
-  // context.
-  if (params->context)
-    params->context = params->context->GetRootWindow();
-  DCHECK(params->parent || params->context || !params->child)
-      << "Please provide a parent or context for this widget.";
-  if (!params->parent && !params->context)
-    params->context = ash::Shell::GetPrimaryRootWindow();
-#elif defined(USE_AURA)
-  // While the majority of the time, context wasn't plumbed through due to the
-  // existence of a global WindowParentingClient, if this window is toplevel,
-  // it's possible that there is no contextual state that we can use.
-  gfx::NativeWindow parent_or_context =
-      params->parent ? params->parent : params->context;
-  Profile* profile = nullptr;
-  if (parent_or_context)
-    profile = GetThemeProfileForWindow(parent_or_context);
-  aura::Window* window = nullptr;
-  if ((!params->parent && !params->context && !params->child) ||
-      !use_non_toplevel_window) {
-    views::DesktopNativeWidgetAura* native_widget =
-        new views::DesktopNativeWidgetAura(delegate);
-    params->native_widget = native_widget;
-    window = native_widget->GetNativeWindow();
-  } else {
-    views::NativeWidgetAura* native_widget =
-        new views::NativeWidgetAura(delegate);
-    if (params->parent) {
-      Profile* parent_profile = reinterpret_cast<Profile*>(
-          params->parent->GetNativeWindowProperty(Profile::kProfileKey));
-      native_widget->SetNativeWindowProperty(Profile::kProfileKey,
-                                             parent_profile);
-    }
-    params->native_widget = native_widget;
-    window = native_widget->GetNativeWindow();
-  }
-  SetThemeProfileForWindow(window, profile);
-#endif
+  params->native_widget = CreateNativeWidget(params, delegate);
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

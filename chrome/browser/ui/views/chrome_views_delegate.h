@@ -89,6 +89,10 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   views::Widget::InitParams::WindowOpacity GetOpacityForInitParams(
       const views::Widget::InitParams& params);
 
+  views::NativeWidget* CreateNativeWidget(
+      views::Widget::InitParams* params,
+      views::internal::NativeWidgetDelegate* delegate);
+
   // |ChromeViewsDelegate| exposes a |RefCounted|-like interface, but //chrome
   // uses |ScopedKeepAlive|s to manage lifetime. We manage an internal counter
   // to do that translation.
