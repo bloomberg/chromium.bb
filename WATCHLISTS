@@ -1542,6 +1542,7 @@
     'arc': ['elijahtaylor+arcwatch@chromium.org',
             'hidehiko+watch@chromium.org',
             'lhchavez+watch@chromium.org',
+            'victorhsieh+watch@chromium.org',
             'yusukes+watch@chromium.org'],
     'arc_auth': ['khmel+watch@chromium.org'],
     'arc_kiosk': ['poromov+watch@chromium.org'],
