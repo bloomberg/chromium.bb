@@ -81,6 +81,9 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
   if (!url_fetcher_customize_callback.is_null())
     url_fetcher_customize_callback.Run(url_fetcher_.get());
 
+  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                             net::LOAD_DO_NOT_SAVE_COOKIES |
+                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
   url_fetcher_->SetRequestContext(fetcher->request_context_.get());
   url_fetcher_->Start();
 }
