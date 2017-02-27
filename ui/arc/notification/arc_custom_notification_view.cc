@@ -189,9 +189,11 @@ class ArcCustomNotificationView::CloseButton : public views::ImageButton {
         message_center::kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
 
     // The sizes below are in DIPs.
-    constexpr int kPaddingFromBorder = 6;
-    SetBorder(views::CreateEmptyBorder(kPaddingFromBorder, kPaddingFromBorder,
-                                       kPaddingFromBorder, kPaddingFromBorder));
+    SetBorder(views::CreateEmptyBorder(
+        message_center::kControlButtonPaddingFromBorder,
+        message_center::kControlButtonPaddingFromBorder,
+        message_center::kControlButtonPaddingFromBorder,
+        message_center::kControlButtonPaddingFromBorder));
 
     SetImage(views::CustomButton::STATE_NORMAL, message_center::GetCloseIcon());
     set_animate_on_state_change(false);

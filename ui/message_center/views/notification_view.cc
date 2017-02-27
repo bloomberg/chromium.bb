@@ -52,9 +52,6 @@ namespace {
 // Dimensions.
 const int kProgressBarBottomPadding = 0;
 
-constexpr int kCloseIconTopPadding = 5;
-constexpr int kCloseIconRightPadding = 5;
-
 // static
 std::unique_ptr<views::Border> MakeEmptyBorder(int top,
                                                int left,
@@ -667,19 +664,23 @@ void NotificationView::CreateOrUpdateActionButtonViews(
 void NotificationView::CreateOrUpdateCloseButtonView(
     const Notification& notification) {
   if (!notification.pinned() && !close_button_) {
-    PaddedButton* close = new PaddedButton(this);
-    close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
-    close->SetNormalImage(IDR_NOTIFICATION_CLOSE);
-    close->SetHoveredImage(IDR_NOTIFICATION_CLOSE_HOVER);
-    close->SetPressedImage(IDR_NOTIFICATION_CLOSE_PRESSED);
-    close->set_animate_on_state_change(false);
-    close->SetAccessibleName(l10n_util::GetStringUTF16(
+    // TODO(yhanada): Make PaddedButton class support new type of icons after
+    // changing the icon of the settings button.
+    close_button_ = base::MakeUnique<views::ImageButton>(this);
+    close_button_->SetFocusForPlatform();
+    close_button_->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+        kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
+    close_button_->SetImage(views::Button::STATE_NORMAL, GetCloseIcon());
+    close_button_->SetBorder(views::CreateEmptyBorder(
+        kControlButtonPaddingFromBorder, kControlButtonPaddingFromBorder,
+        kControlButtonPaddingFromBorder, kControlButtonPaddingFromBorder));
+    close_button_->set_animate_on_state_change(false);
+    close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
-    close->SetTooltipText(l10n_util::GetStringUTF16(
+    close_button_->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
-    close->set_owned_by_client();
-    AddChildView(close);
-    close_button_.reset(close);
+    close_button_->set_owned_by_client();
+    AddChildView(close_button_.get());
   } else if (notification.pinned() && close_button_) {
     close_button_.reset();
   }

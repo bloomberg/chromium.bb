@@ -72,6 +72,8 @@ const int kTextRightPadding = 23;
 const int kTextLeftPadding = kNotificationIconSize + kIconToTextPadding;
 const int kContextMessageViewWidth =
     kNotificationWidth - kTextLeftPadding - kTextRightPadding;
+// Padding from boarder to icon image in control buttons.
+const int kControlButtonPaddingFromBorder = 6;
 
 // Text sizes.
 const int kTitleFontSize = 14;             // For title only.
