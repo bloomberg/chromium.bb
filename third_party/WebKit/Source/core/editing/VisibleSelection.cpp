@@ -650,9 +650,7 @@ void VisibleSelectionTemplate<
         // The selection crosses an Editing boundary.  This is a
         // programmer error in the editing code.  Happy debugging!
         NOTREACHED();
-        m_base = PositionTemplate<Strategy>();
-        m_extent = PositionTemplate<Strategy>();
-        validate();
+        *this = VisibleSelectionTemplate<Strategy>();
         return;
       }
       m_end = previous.deepEquivalent();
@@ -688,9 +686,7 @@ void VisibleSelectionTemplate<
         // The selection crosses an Editing boundary.  This is a
         // programmer error in the editing code.  Happy debugging!
         NOTREACHED();
-        m_base = PositionTemplate<Strategy>();
-        m_extent = PositionTemplate<Strategy>();
-        validate();
+        *this = VisibleSelectionTemplate<Strategy>();
         return;
       }
       m_start = next.deepEquivalent();
