@@ -714,8 +714,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if 'action' in hook:
         hooks_to_run.append(hook)
 
-    self._pre_deps_hooks = [self.GetHookAction(hook, []) for hook in
-                            local_scope.get('pre_deps_hooks', [])]
+    if self.recursion_limit:
+      self._pre_deps_hooks = [self.GetHookAction(hook, []) for hook in
+                              local_scope.get('pre_deps_hooks', [])]
 
     self.add_dependencies_and_close(deps_to_add, hooks_to_run)
     logging.info('ParseDepsFile(%s) done' % self.name)
