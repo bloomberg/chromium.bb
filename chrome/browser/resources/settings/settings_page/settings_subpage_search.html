@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 
@@ -31,6 +32,12 @@
         height: 24px;
         padding: 4px;
         width: 24px;
+      }
+
+      #searchIcon {
+        height: 16px;
+        padding: 4px;
+        width: 16px;
       }
 
       paper-input-container {
@@ -64,7 +71,7 @@
         -webkit-margin-start: 4px;
       }
     </style>
-    <paper-icon-button id="searchIcon" icon="cr:search"></paper-icon-button>
+    <iron-icon id="searchIcon" icon="cr:search"></iron-icon>
     <paper-input-container no-label-float>
       <label id="prompt">[[label]]</label>
       <input id="searchInput" type="search" on-search="onSearchTermSearch"
