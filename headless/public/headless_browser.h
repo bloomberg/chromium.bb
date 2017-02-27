@@ -128,6 +128,7 @@ struct HeadlessBrowser::Options {
 
   // Default per-context options, can be specialized on per-context basis.
 
+  std::string product_name_and_version;
   std::string user_agent;
 
   // Address of the HTTP/HTTPS proxy server to use. The system proxy settings
@@ -188,6 +189,8 @@ class HeadlessBrowser::Options::Builder {
 
   // Per-context settings.
 
+  Builder& SetProductNameAndVersion(
+      const std::string& product_name_and_version);
   Builder& SetUserAgent(const std::string& user_agent);
   Builder& SetProxyServer(const net::HostPortPair& proxy_server);
   Builder& SetHostResolverRules(const std::string& host_resolver_rules);

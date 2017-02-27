@@ -14,6 +14,10 @@ HeadlessContentClient::HeadlessContentClient(HeadlessBrowser::Options* options)
 
 HeadlessContentClient::~HeadlessContentClient() {}
 
+std::string HeadlessContentClient::GetProduct() const {
+  return options_->product_name_and_version;
+}
+
 std::string HeadlessContentClient::GetUserAgent() const {
   return options_->user_agent;
 }

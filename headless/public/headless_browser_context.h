@@ -106,6 +106,8 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   // By default |HeadlessBrowserContext| inherits the following options from
   // the browser instance. The methods below can be used to override these
   // settings. See HeadlessBrowser::Options for their meaning.
+  Builder& SetProductNameAndVersion(
+      const std::string& product_name_and_version);
   Builder& SetUserAgent(const std::string& user_agent);
   Builder& SetProxyServer(const net::HostPortPair& proxy_server);
   Builder& SetHostResolverRules(const std::string& host_resolver_rules);

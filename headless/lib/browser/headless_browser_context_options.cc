@@ -35,6 +35,12 @@ HeadlessBrowserContextOptions::HeadlessBrowserContextOptions(
     HeadlessBrowser::Options* options)
     : browser_options_(options) {}
 
+const std::string& HeadlessBrowserContextOptions::product_name_and_version()
+    const {
+  return ReturnOverriddenValue(product_name_and_version_,
+                               browser_options_->product_name_and_version);
+}
+
 const std::string& HeadlessBrowserContextOptions::user_agent() const {
   return ReturnOverriddenValue(user_agent_, browser_options_->user_agent);
 }

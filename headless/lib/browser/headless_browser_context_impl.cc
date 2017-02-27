@@ -320,6 +320,13 @@ HeadlessBrowserContext::Builder& HeadlessBrowserContext::Builder::SetUserAgent(
 }
 
 HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::SetProductNameAndVersion(
+    const std::string& product_name_and_version) {
+  options_->product_name_and_version_ = product_name_and_version;
+  return *this;
+}
+
+HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetProxyServer(
     const net::HostPortPair& proxy_server) {
   options_->proxy_server_ = proxy_server;

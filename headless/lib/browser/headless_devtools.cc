@@ -56,15 +56,14 @@ class TCPServerSocketFactory : public content::DevToolsSocketFactory {
 
 }  // namespace
 
-void StartLocalDevToolsHttpHandler(
-    HeadlessBrowser::Options* options) {
+void StartLocalDevToolsHttpHandler(HeadlessBrowser::Options* options) {
   const net::IPEndPoint& endpoint = options->devtools_endpoint;
   std::unique_ptr<content::DevToolsSocketFactory> socket_factory(
       new TCPServerSocketFactory(endpoint));
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(socket_factory), std::string(),
       options->user_data_dir,  // TODO(altimin): Figure a proper value for this.
-      base::FilePath(), std::string(), options->user_agent);
+      base::FilePath(), options->product_name_and_version, options->user_agent);
 }
 
 void StopLocalDevToolsHttpHandler() {

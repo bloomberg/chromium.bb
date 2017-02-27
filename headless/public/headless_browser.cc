@@ -7,17 +7,22 @@
 #include <utility>
 
 #include "content/public/common/user_agent.h"
+#include "headless/public/version.h"
 
 using Options = headless::HeadlessBrowser::Options;
 using Builder = headless::HeadlessBrowser::Options::Builder;
 
 namespace headless {
 
-// Product name for building the default user agent string.
 namespace {
+// Product name for building the default user agent string.
 const char kProductName[] = "HeadlessChrome";
 constexpr gfx::Size kDefaultWindowSize(800, 600);
+
+std::string GetProductNameAndVersion() {
+  return std::string(kProductName) + "/" + PRODUCT_VERSION;
 }
+}  // namespace
 
 Options::Options(int argc, const char** argv)
     : argc(argc),
@@ -26,7 +31,8 @@ Options::Options(int argc, const char** argv)
       single_process_mode(false),
       disable_sandbox(false),
       gl_implementation("osmesa"),
-      user_agent(content::BuildUserAgentFromProduct(kProductName)),
+      product_name_and_version(GetProductNameAndVersion()),
+      user_agent(content::BuildUserAgentFromProduct(product_name_and_version)),
       window_size(kDefaultWindowSize),
       incognito_mode(true),
       enable_crash_reporter(false) {}
@@ -42,6 +48,12 @@ Builder::Builder(int argc, const char** argv) : options_(argc, argv) {}
 Builder::Builder() : options_(0, nullptr) {}
 
 Builder::~Builder() {}
+
+Builder& Builder::SetProductNameAndVersion(
+    const std::string& product_name_and_version) {
+  options_.product_name_and_version = product_name_and_version;
+  return *this;
+}
 
 Builder& Builder::SetUserAgent(const std::string& user_agent) {
   options_.user_agent = user_agent;
