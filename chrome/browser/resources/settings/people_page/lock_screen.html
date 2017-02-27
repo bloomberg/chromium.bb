@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <div class="settings-box">
+      <div id="screenLockDiv" class="settings-box">
         <settings-toggle-button class="start"
             pref="{{prefs.settings.enable_screen_lock}}"
             label="$i18n{enableScreenlock}">
@@ -50,27 +50,29 @@
       </div>
 
       <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
-        <div class="settings-box">
-          <settings-toggle-button class="start"
-              pref="{{prefs.settings.enable_quick_unlock_fingerprint}}"
-              label="$i18n{lockScreenFingerprintEnable}">
-          </settings-toggle-button>
-        </div>
-        <iron-collapse
-            opened="[[prefs.settings.enable_quick_unlock_fingerprint.value]]">
-          <div class="settings-box continuation" on-tap="onEditFingerprints_"
-              actionable>
-            <div class="start">
-              $i18n{lockScreenEditFingerprints}
-              <div class="secondary" id="lockScreenEditFingerprintsSecondary">
-                [[getDescriptionText_(numFingerprints_)]]
-              </div>
-            </div>
-            <button class="subpage-arrow" is="paper-icon-button-light"
-                aria-label="$i18n{lockScreenEditFingerprints}"
-                aria-describedby="lockScreenEditFingerprintsSecondary"></button>
+        <div id="fingerprintDiv">
+          <div class="settings-box">
+            <settings-toggle-button class="start"
+                pref="{{prefs.settings.enable_quick_unlock_fingerprint}}"
+                label="$i18n{lockScreenFingerprintEnable}">
+            </settings-toggle-button>
           </div>
-        </iron-collapse>
+          <iron-collapse
+              opened="[[prefs.settings.enable_quick_unlock_fingerprint.value]]">
+            <div class="settings-box continuation" on-tap="onEditFingerprints_"
+                actionable>
+              <div class="start">
+                $i18n{lockScreenEditFingerprints}
+                <div class="secondary" id="lockScreenEditFingerprintsSecondary">
+                  [[getDescriptionText_(numFingerprints_)]]
+                </div>
+              </div>
+              <button class="subpage-arrow" is="paper-icon-button-light"
+                  aria-label="$i18n{lockScreenEditFingerprints}"
+                  aria-describedby="lockScreenEditFingerprintsSecondary"></button>
+            </div>
+          </iron-collapse>
+        </div>
       </template>
 
       <settings-password-prompt-dialog id="passwordPrompt"

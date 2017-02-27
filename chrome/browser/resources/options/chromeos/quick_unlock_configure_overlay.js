@@ -65,10 +65,15 @@ cr.define('options', function() {
       settings.navigateTo(settings.Route.LOCK_SCREEN);
       var lockScreen = document.querySelector('settings-lock-screen');
 
-      var checkbox =
-          lockScreen.root.querySelector(
-              'div.settings-box.single-column.screen-lock');
-      checkbox.hidden = true;
+      // On settings the screen lock is part of the lock screen, but on options
+      // it is already part of the sync page, so hide the lock screen version on
+      // options.
+      var screenLockDiv = lockScreen.root.querySelector('#screenLockDiv');
+      screenLockDiv.hidden = true;
+
+      // The fingerprint settings on options is always hidden.
+      var fingerprintDiv = lockScreen.root.querySelector('#fingerprintDiv');
+      fingerprintDiv.hidden = true;
 
       var passwordPrompt = lockScreen.root.
           querySelector('settings-password-prompt-dialog');
