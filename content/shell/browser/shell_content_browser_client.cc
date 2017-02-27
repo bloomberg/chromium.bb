@@ -37,7 +37,7 @@
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
-#include "grit/shell_resources.h"
+#include "content/shell/grit/shell_resources.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"

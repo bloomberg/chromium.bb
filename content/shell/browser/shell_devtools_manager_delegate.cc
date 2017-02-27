@@ -31,7 +31,7 @@
 #include "content/public/common/user_agent.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_content_client.h"
-#include "grit/shell_resources.h"
+#include "content/shell/grit/shell_resources.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/tcp_server_socket.h"

@@ -26,7 +26,7 @@ include_rules = [
   "+chrome/common/chrome_switches.h",
 
   # For default app icon.
-  "!grit/theme_resources.h",
+  "!chrome/grit/theme_resources.h",
 
   # Pieces of the extensions system that need to move to src/extensions.
   # See http://crbug.com/162530 for details.

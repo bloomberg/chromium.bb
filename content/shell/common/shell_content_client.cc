@@ -14,7 +14,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "content/shell/common/shell_switches.h"
-#include "grit/shell_resources.h"
+#include "content/shell/grit/shell_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
