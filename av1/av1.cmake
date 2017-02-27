@@ -150,6 +150,13 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/variance_tree.c"
     "${AOM_ROOT}/av1/encoder/variance_tree.h")
 
+if (CONFIG_PALETTE)
+  set(AOM_AV1_ENCODER_SOURCES
+      ${AOM_AV1_ENCODER_SOURCES}
+      "${AOM_ROOT}/av1/encoder/palette.c"
+      "${AOM_ROOT}/av1/encoder/palette.h")
+endif ()
+
 set(AOM_AV1_COMMON_SSE2_INTRIN
     # Requires CONFIG_GLOBAL_MOTION or CONFIG_WARPED_MOTION
     #"${AOM_ROOT}/av1/common/x86/warp_plane_sse2.c"
