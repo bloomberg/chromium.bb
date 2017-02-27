@@ -784,6 +784,14 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() {
   DCHECK(current_child_);
   if (current_child_->Type() == NGLayoutInputNode::kLegacyInline) {
     // TODO(kojii): Setup space_builder_ appropriately for inline child.
+
+    // Margins collapsing: Inline block.
+    curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
+    UpdateFragmentBfcOffset(curr_bfc_offset_);
+    PositionPendingFloats(curr_bfc_offset_.block_offset, ConstraintSpace(),
+                          builder_.get());
+    curr_margin_strut_ = {};
+
     return space_builder_->ToConstraintSpace(
         FromPlatformWritingMode(Style().getWritingMode()));
     // Calculate margins in parent's writing mode.

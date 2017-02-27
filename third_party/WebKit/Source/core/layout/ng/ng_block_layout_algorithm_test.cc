@@ -45,9 +45,11 @@ class NGBlockLayoutAlgorithmTest
  public:
   NGBlockLayoutAlgorithmTest() {
     RuntimeEnabledFeatures::setLayoutNGEnabled(true);
+    RuntimeEnabledFeatures::setLayoutNGInlineEnabled(true);
   }
   ~NGBlockLayoutAlgorithmTest() {
     RuntimeEnabledFeatures::setLayoutNGEnabled(false);
+    RuntimeEnabledFeatures::setLayoutNGInlineEnabled(false);
   }
 
  protected:
@@ -617,6 +619,37 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase5) {
   // 130 = vertical's width 30 +
   //       std::max(vertical's margin right 90, horizontal's margin-left 100)
   EXPECT_THAT(horizontal_fragment->LeftOffset(), LayoutUnit(130));
+}
+
+// Verifies that margins collapsing logic works with Layout Inline.
+TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsWithText) {
+  setBodyInnerHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        body {
+          margin: 10px;
+        }
+        p {
+          margin: 20px;
+        }
+      </style>
+      <p>Some text</p>
+    )HTML");
+  RefPtr<NGPhysicalBoxFragment> html_fragment;
+  std::tie(html_fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
+      document().getElementsByTagName("html")->item(0));
+
+  auto* body_fragment =
+      toNGPhysicalBoxFragment(html_fragment->Children()[0].get());
+  // 20 = std::max(body's margin, p's margin)
+  EXPECT_THAT(body_fragment->Offset(),
+              NGPhysicalOffset(LayoutUnit(10), LayoutUnit(20)));
+
+  auto* p_fragment =
+      toNGPhysicalBoxFragment(body_fragment->Children()[0].get());
+  // Collapsed margins with result = 0.
+  EXPECT_THAT(p_fragment->Offset(),
+              NGPhysicalOffset(LayoutUnit(20), LayoutUnit(0)));
 }
 
 // Verifies that the margin strut of a child with a different writing mode does
