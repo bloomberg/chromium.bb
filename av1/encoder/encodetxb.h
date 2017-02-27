@@ -16,6 +16,7 @@
 #include "av1/common/blockd.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/txb_common.h"
+#include "av1/encoder/block.h"
 #include "aom_dsp/bitwriter.h"
 #ifdef __cplusplus
 extern "C" {
