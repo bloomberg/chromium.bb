@@ -680,6 +680,9 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
       NSMakePoint(NSMidX(draggedButtonFrame),
                   NSMaxY([containerView_ bounds]) - NSMidY(draggedButtonFrame));
 
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    midPoint.x = NSWidth([containerView_ frame]) - midPoint.x;
+
   // Calculate the row index and the index in the row. We bound the latter
   // because the view can go farther right than the right-most icon in the last
   // row of the overflow menu.
@@ -719,6 +722,9 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
       NSRectFromCGRect(frameRect.ToCGRect());
   // We need to flip the y coordinate for Cocoa's view system.
   frame.origin.y = NSHeight([containerView_ frame]) - NSMaxY(frame);
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    frame.origin.x =
+        NSWidth([containerView_ frame]) - NSWidth(frame) - NSMinX(frame);
   return frame;
 }
 
