@@ -1101,7 +1101,7 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
         NetworkQualityEstimator::MetricUsage::
             DO_NOT_USE /* transport_rtt_metric */,
         NetworkQualityEstimator::MetricUsage::
-            MUST_BE_USED /* downstream_throughput_kbps_metric */,
+            USE_IF_AVAILABLE /* downstream_throughput_kbps_metric */,
         http_rtt, transport_rtt, downstream_throughput_kbps);
   }
   if (effective_connection_type_algorithm_ ==
