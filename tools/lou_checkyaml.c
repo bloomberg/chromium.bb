@@ -93,7 +93,7 @@ int translation_mode = 0;
 int errors = 0;
 int count = 0;
 
-static char** emph_classes = NULL;
+static char const** emph_classes = NULL;
 
 void
 simple_error (const char *msg, yaml_parser_t *parser, yaml_event_t *event) {
@@ -179,7 +179,7 @@ read_table (yaml_event_t *start_event, yaml_parser_t *parser) {
     }
     yaml_event_delete(&event);
   }
-  emph_classes = getEmphClasses(table); // get declared emphasis classes
+  emph_classes = lou_getEmphClasses(table); // get declared emphasis classes
   return table;
 }
 
@@ -753,8 +753,6 @@ main(int argc, char *argv[]) {
 
   yaml_parser_delete(&parser);
 
-  for (int i = 0; emph_classes[i]; i++)
-    free(emph_classes[i]);
   free(emph_classes);
   lou_free();
 

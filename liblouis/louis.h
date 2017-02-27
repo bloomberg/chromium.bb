@@ -601,11 +601,6 @@ widechar getCharFromDots(widechar d);
 void *liblouis_allocMem(AllocBuf buffer, int srcmax, int destmax);
 
 /**
- * Return the emphasis classes declared in tableList.
- */
-char **getEmphClasses(const char *tableList);
-
-/**
  * Hash function for character strings
  */
 int stringHash(const widechar *c);

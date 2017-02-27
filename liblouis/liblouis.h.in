@@ -201,6 +201,14 @@ int EXPORT_CALL lou_compileString(const char *tableList, const char *inString);
 formtype EXPORT_CALL lou_getTypeformForEmphClass(const char *tableList, const char *emphClass);
 
 /**
+ * Return the emphasis class names declared in tableList as a
+ * NULL-terminated array of strings. The array is acquired with malloc()
+ * and should be released with free(). The strings must not be released,
+ * and are no longer valid after lou_free() has been called.
+ */
+char const**EXPORT_CALL lou_getEmphClasses(const char *tableList);
+
+/**
  * Set the path used for searching for tables and liblouisutdml files.
  *
  * Overrides the installation path. */
