@@ -74,17 +74,6 @@ suite('ImportDataDialog', function() {
     };
   }
 
-  var prefs = {};
-  [
-    'import_history',
-    'import_bookmarks',
-    'import_saved_passwords',
-    'import_search_engine',
-    'import_autofill_form_data',
-  ].forEach(function(name) {
-    prefs[name] = createBooleanPref(name);
-  });
-
   var dialog = null;
 
   setup(function() {
@@ -93,7 +82,6 @@ suite('ImportDataDialog', function() {
     settings.ImportDataBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-import-data-dialog');
-    dialog.set('prefs', prefs);
     document.body.appendChild(dialog);
     return browserProxy.whenCalled('initializeImportDialog').then(function() {
       assertTrue(dialog.$.dialog.open);
@@ -118,21 +106,28 @@ suite('ImportDataDialog', function() {
   test('ImportButton', function() {
     assertFalse(dialog.$.import.disabled);
 
-    // Flip all prefs to false.
-    Object.keys(prefs).forEach(function(prefName) {
-      dialog.set('prefs.' + prefName + '.value', false);
+    var checkboxes = dialog.shadowRoot.querySelectorAll('paper-checkbox');
+    assertEquals(5, checkboxes.length);
+
+    checkboxes.forEach(function(checkbox) {
+      checkbox.checked = false;
     });
+    checkboxes[0].fire('change');
     assertTrue(dialog.$.import.disabled);
 
     // Change browser selection to "Import from Bookmarks HTML file".
     simulateBrowserProfileChange(1);
     assertTrue(dialog.$.import.disabled);
 
-    // Ensure everything except |import_bookmarks| is ignored.
-    dialog.set('prefs.import_history.value', true);
+    // Ensure everything except |favorites| is ignored.
+    var history = dialog.$$('#history');
+    history.checked = true;
+    history.fire('change');
     assertTrue(dialog.$.import.disabled);
 
-    dialog.set('prefs.import_bookmarks.value', true);
+    var favorites = dialog.$$('#favorites');
+    favorites.checked = true;
+    favorites.fire('change');
     assertFalse(dialog.$.import.disabled);
   });
 
@@ -175,7 +170,7 @@ suite('ImportDataDialog', function() {
   });
 
   test('ImportFromBrowserProfile', function() {
-    dialog.set('prefs.import_bookmarks.value', false);
+    dialog.$.favorites.checked = false;
 
     var expectedIndex = 0;
     simulateBrowserProfileChange(expectedIndex);

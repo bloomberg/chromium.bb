@@ -9,7 +9,7 @@
 Polymer({
   is: 'settings-import-data-dialog',
 
-  behaviors: [I18nBehavior, WebUIListenerBehavior, PrefsBehavior],
+  behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
     /** @private {!Array<!settings.BrowserProfile>} */
@@ -41,11 +41,10 @@ Polymer({
       type: Object,
       value: settings.ImportDataStatus,
     },
-  },
 
-  observers: [
-    'prefsChanged_(selected_, prefs.*)',
-  ],
+    /** @private */
+    showBookmarkSuccess_: Boolean,
+  },
 
   /** @private {?settings.ImportDataBrowserProxy} */
   browserProxy_: null,
@@ -69,22 +68,24 @@ Polymer({
         /** @param {settings.ImportDataStatus} importStatus */
         function(importStatus) {
           this.importStatus_ = importStatus;
+          if (this.hasImportStatus_(settings.ImportDataStatus.SUCCEEDED)) {
+            this.showBookmarkSuccess_ =
+                this.$.favorites.checked && this.selected_.favorites;
+          }
+
           if (this.hasImportStatus_(settings.ImportDataStatus.FAILED))
             this.closeDialog_();
         }.bind(this));
   },
 
   /** @private */
-  prefsChanged_: function() {
+  onCheckboxChange_: function() {
     this.noImportDataTypeSelected_ =
-        !(this.getPref('import_history').value && this.selected_.history) &&
-        !(this.getPref('import_bookmarks').value && this.selected_.favorites) &&
-        !(this.getPref('import_saved_passwords').value &&
-            this.selected_.passwords) &&
-        !(this.getPref('import_search_engine').value &&
-            this.selected_.search) &&
-        !(this.getPref('import_autofill_form_data').value &&
-            this.selected_.autofillFormData);
+        !(this.selected_.history && this.$.history.checked) &&
+        !(this.selected_.favorites && this.$.favorites.checked) &&
+        !(this.selected_.passwords && this.$.passwords.checked) &&
+        !(this.selected_.search && this.$.search.checked) &&
+        !(this.selected_.autofillFormData && this.$.autofillFormData.checked);
   },
 
   /**
@@ -115,6 +116,7 @@ Polymer({
   /** @private */
   onBrowserProfileSelectionChange_: function() {
     this.selected_ = this.browserProfiles_[this.$.browserSelect.selectedIndex];
+    this.onCheckboxChange_();
   },
 
   /** @private */
