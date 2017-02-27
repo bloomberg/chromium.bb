@@ -31,6 +31,7 @@
 #include "core/events/Event.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLContentElement.h"
@@ -41,7 +42,6 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/api/LayoutEmbeddedItem.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -525,9 +525,9 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url,
   } else {
     bool loadManually =
         document().isPluginDocument() && !document().containsPlugins();
-    FrameLoaderClient::DetachedPluginPolicy policy =
-        requireLayoutObject ? FrameLoaderClient::FailOnDetachedPlugin
-                            : FrameLoaderClient::AllowDetachedPlugin;
+    LocalFrameClient::DetachedPluginPolicy policy =
+        requireLayoutObject ? LocalFrameClient::FailOnDetachedPlugin
+                            : LocalFrameClient::AllowDetachedPlugin;
     Widget* widget = frame->loader().client()->createPlugin(
         this, url, paramNames, paramValues, mimeType, loadManually, policy);
     if (!widget) {

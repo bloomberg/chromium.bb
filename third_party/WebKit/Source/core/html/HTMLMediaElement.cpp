@@ -26,6 +26,7 @@
 
 #include "core/html/HTMLMediaElement.h"
 
+#include <limits>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptController.h"
@@ -43,6 +44,7 @@
 #include "core/events/Event.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -69,7 +71,6 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/NetworkStateNotifier.h"
 #include "platform/Histogram.h"
@@ -97,7 +98,6 @@
 #include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
-#include <limits>
 
 #ifndef BLINK_MEDIA_LOG
 #define BLINK_MEDIA_LOG DVLOG(3)
@@ -3915,8 +3915,8 @@ bool HTMLMediaElement::isAutoplayAllowedPerSettings() const {
   LocalFrame* frame = document().frame();
   if (!frame)
     return false;
-  FrameLoaderClient* frameLoaderClient = frame->loader().client();
-  return frameLoaderClient && frameLoaderClient->allowAutoplay(true);
+  LocalFrameClient* localFrameClient = frame->loader().client();
+  return localFrameClient && localFrameClient->allowAutoplay(true);
 }
 
 void HTMLMediaElement::setNetworkState(NetworkState state) {

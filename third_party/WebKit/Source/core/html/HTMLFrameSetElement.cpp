@@ -31,10 +31,10 @@
 #include "core/events/Event.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/layout/LayoutFrameSet.h"
-#include "core/loader/FrameLoaderClient.h"
 
 namespace blink {
 
