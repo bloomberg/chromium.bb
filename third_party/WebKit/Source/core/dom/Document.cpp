@@ -410,7 +410,6 @@ class Document::NetworkStateObserver final
       public NetworkStateNotifier::NetworkStateObserver,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(Document::NetworkStateObserver);
-  EAGERLY_FINALIZE();
 
  public:
   explicit NetworkStateObserver(Document& document)
@@ -419,9 +418,6 @@ class Document::NetworkStateObserver final
         this,
         TaskRunnerHelper::get(TaskType::Networking, getExecutionContext()));
   }
-
-  // We eagerly finalize, so it's safe to touch getExecutionContext() here.
-  ~NetworkStateObserver() { unregisterAsObserver(getExecutionContext()); }
 
   void onLineStateChange(bool onLine) override {
     AtomicString eventName =
@@ -438,8 +434,7 @@ class Document::NetworkStateObserver final
   }
 
   void unregisterAsObserver(ExecutionContext* context) {
-    if (!context)
-      return;
+    DCHECK(context);
     networkStateNotifier().removeOnLineObserver(
         this, TaskRunnerHelper::get(TaskType::Networking, context));
   }
@@ -539,8 +534,7 @@ Document::Document(const DocumentInit& initializer,
       m_nodeCount(0),
       m_wouldLoadReason(Created),
       m_passwordCount(0),
-      m_engagementLevel(mojom::blink::EngagementLevel::NONE),
-      m_networkStateObserver(new NetworkStateObserver(*this)) {
+      m_engagementLevel(mojom::blink::EngagementLevel::NONE) {
   if (m_frame) {
     DCHECK(m_frame->page());
     provideContextFeaturesToDocumentFrom(*this, *m_frame->page());
@@ -2450,6 +2444,11 @@ void Document::initialize() {
 
   if (view())
     view()->didAttachDocument();
+
+  // Observer(s) should not be initialized until the document is initialized /
+  // attached to a frame. Otherwise ContextLifecycleObserver::contextDestroyed
+  // wouldn't be fired.
+  m_networkStateObserver = new NetworkStateObserver(*this);
 }
 
 void Document::shutdown() {
