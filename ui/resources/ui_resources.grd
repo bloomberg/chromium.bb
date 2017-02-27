@@ -147,7 +147,6 @@
           <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE" file="common/notification_close.png"/>
           <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_HOVER" file="common/notification_close_hover.png"/>
           <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_PRESSED" file="common/notification_close_pressed.png"/>
-          <structure type="chrome_scaled_image" name="IDR_ARC_NOTIFICATION_CLOSE" file="common/arc_notification_close.png"/>
         </if>
         <if expr="desktop_linux and use_aura">
           <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_BUBBLE_CLOSE" file="common/notification_bubble_close.png"/>

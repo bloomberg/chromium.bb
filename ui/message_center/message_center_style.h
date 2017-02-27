@@ -12,6 +12,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center_export.h"
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace message_center {
 
 // Exported values /////////////////////////////////////////////////////////////
@@ -134,6 +138,9 @@ const int kMaxTitleLines = 2;
 const int kMessageCollapsedLineLimit = 2;
 const int kMessageExpandedLineLimit = 5;
 const int kContextMessageLineLimit = 1;
+
+// Icons.
+MESSAGE_CENTER_EXPORT gfx::ImageSkia GetCloseIcon();
 
 // Around notifications ////////////////////////////////////////////////////////
 

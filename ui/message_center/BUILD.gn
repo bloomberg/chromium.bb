@@ -5,6 +5,16 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
+import("//ui/vector_icons/vector_icons.gni")
+
+aggregate_vector_icons("message_center_vector_icons") {
+  icon_directory = "vector_icons"
+
+  icons = [
+    "notification_close_button.1x.icon",
+    "notification_close_button.icon",
+  ]
+}
 
 # TODO(msw|mukai|dewittj): Move ash-specific files: crbug.com/585175
 component("message_center") {
@@ -18,6 +28,7 @@ component("message_center") {
 
   if (!is_ios && !is_android) {
     deps += [
+      ":message_center_vector_icons",
       "//base:i18n",
       "//base/third_party/dynamic_annotations",
       "//components/url_formatter",
@@ -78,6 +89,8 @@ component("message_center") {
       "popup_timers_controller.cc",
       "popup_timers_controller.h",
     ]
+
+    sources += get_target_outputs(":message_center_vector_icons")
 
     if (is_win) {
       deps += [ "//ui/aura" ]

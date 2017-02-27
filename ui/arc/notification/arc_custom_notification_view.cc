@@ -189,17 +189,11 @@ class ArcCustomNotificationView::CloseButton : public views::ImageButton {
         message_center::kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
 
     // The sizes below are in DIPs.
-    constexpr int kPaddingFromBorder = 4;
-    constexpr int kImageSize = 16;
-    constexpr int kTouchExtendedPadding =
-        message_center::kControlButtonSize - kImageSize - kPaddingFromBorder;
-    SetBorder(
-        views::CreateEmptyBorder(kPaddingFromBorder, kTouchExtendedPadding,
-                                 kTouchExtendedPadding, kPaddingFromBorder));
+    constexpr int kPaddingFromBorder = 6;
+    SetBorder(views::CreateEmptyBorder(kPaddingFromBorder, kPaddingFromBorder,
+                                       kPaddingFromBorder, kPaddingFromBorder));
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    SetImage(views::CustomButton::STATE_NORMAL,
-             rb.GetImageSkiaNamed(IDR_ARC_NOTIFICATION_CLOSE));
+    SetImage(views::CustomButton::STATE_NORMAL, message_center::GetCloseIcon());
     set_animate_on_state_change(false);
     SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));

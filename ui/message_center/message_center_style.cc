@@ -6,6 +6,11 @@
 
 #include <algorithm>
 
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/message_center/vector_icons.h"
+
 namespace message_center {
 
 // Within a notification ///////////////////////////////////////////////////////
@@ -31,6 +36,13 @@ gfx::Size GetImageSizeForContainerSize(const gfx::Size& container_size,
   }
 
   return scaled_size;
+}
+
+// Icons.
+
+gfx::ImageSkia GetCloseIcon() {
+  return gfx::CreateVectorIcon(kNotificationCloseButtonIcon,
+                               gfx::kChromeIconGrey);
 }
 
 }  // namespace message_center
