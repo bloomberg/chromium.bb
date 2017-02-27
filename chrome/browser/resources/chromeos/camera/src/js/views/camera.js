@@ -528,8 +528,8 @@ camera.views.Camera = function(context, router) {
 
   // Sets dimensions of the input canvas for the effects' preview on the ribbon.
   // Keep in sync with CSS.
-  this.effectInputCanvas_.width = 80;
-  this.effectInputCanvas_.height = 80;
+  this.effectInputCanvas_.width = camera.views.Camera.EFFECT_CANVAS_SIZE;
+  this.effectInputCanvas_.height = camera.views.Camera.EFFECT_CANVAS_SIZE;
 
   // Handle the 'Take' button.
   document.querySelector('#take-picture').addEventListener(
@@ -606,6 +606,16 @@ camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES = 3;
  * @const
  */
 camera.views.Camera.RIBBON_HEAD_TRACKER_SKIP_FRAMES = 30;
+
+/**
+ * Width and height of the effect canvases in pixels.
+ * Keep in sync with CSS.
+ *
+ * @type {number}
+ * @const
+ */
+camera.views.Camera.EFFECT_CANVAS_SIZE = 80;
+
 
 camera.views.Camera.prototype = {
   __proto__: camera.View.prototype,
@@ -2280,15 +2290,12 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
         'resample-and-upload-preview-texture');
     if (this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
       var context = this.effectInputCanvas_.getContext('2d');
-      // Since the effect input canvas may have a different aspect ratio, cut
-      // the center of it.
-      var ratio =
-          this.effectInputCanvas_.width / this.effectInputCanvas_.height;
-      var scale = this.effectInputCanvas_.height / this.video_.height;
-      var sh = this.video_.height;
-      var sw = Math.round(this.video_.height * ratio);
-      var sy = 0;
+      // Since the effect input canvas is square, cut the center out of the
+      // original frame.
+      var sw = Math.min(this.video_.width, this.video_.height);
+      var sh = Math.min(this.video_.width, this.video_.height);
       var sx = Math.round(this.video_.width / 2 - sw / 2);
+      var sy = Math.round(this.video_.height / 2 - sh / 2);
       context.drawImage(this.video_,
                         sx,
                         sy,
@@ -2296,8 +2303,8 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
                         sh,
                         0,
                         0,
-                        this.effectInputCanvas_.width,
-                        this.effectInputCanvas_.height);
+                        camera.views.Camera.EFFECT_CANVAS_SIZE,
+                        camera.views.Camera.EFFECT_CANVAS_SIZE);
       this.effectCanvasTexture_.loadContentsOf(this.effectInputCanvas_);
     }
     finishMeasuring();
