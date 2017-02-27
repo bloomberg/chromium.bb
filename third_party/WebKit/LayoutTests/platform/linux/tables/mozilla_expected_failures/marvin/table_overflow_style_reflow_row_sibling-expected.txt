@@ -16,15 +16,15 @@ layer at (0,0) size 785x477
               LayoutText {#text} at (1,1) size 17x15
                 text run at (1,1) width 17: "bar"
               LayoutBR {BR} at (18,1) size 0x15
-              LayoutText {#text} at (1,17) size 18x15
-                text run at (1,17) width 18: "baz"
-              LayoutBR {BR} at (19,17) size 0x15
-              LayoutText {#text} at (1,33) size 18x15
-                text run at (1,33) width 18: "zap"
+              LayoutText {#text} at (1,17) size 19x15
+                text run at (1,17) width 19: "baz"
+              LayoutBR {BR} at (20,17) size 0x15
+              LayoutText {#text} at (1,33) size 19x15
+                text run at (1,33) width 19: "zap"
           LayoutTableRow {TR} at (0,110) size 198x113
             LayoutTableCell {TD} at (30,110) size 54x113 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 44x110
-                text run at (1,1) width 42: "foo"
+                text run at (1,1) width 43: "foo"
                 text run at (1,38) width 41: "bar"
                 text run at (1,75) width 44: "baz"
             LayoutTableCell {TD} at (114,169) size 54x54 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]

@@ -8,102 +8,102 @@
       "paintInvalidations": [
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 194, 103, 82],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 102, 95, 82],
+          "rect": [8, 194, 108, 82],
           "reason": "full"
         },
         {
           "object": "LayoutTableSection TBODY",
-          "rect": [12, 198, 95, 74],
+          "rect": [12, 198, 100, 74],
           "reason": "forced by layout"
         },
         {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 102, 99, 82],
+          "reason": "full"
+        },
+        {
           "object": "LayoutTable TABLE id='t'",
-          "rect": [8, 10, 91, 82],
+          "rect": [8, 10, 95, 82],
           "reason": "style change"
         },
         {
           "object": "LayoutTableCell TD id='d2'",
-          "rect": [22, 224, 89, 22],
+          "rect": [22, 224, 94, 22],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutTableSection TBODY",
-          "rect": [12, 106, 87, 74],
+          "rect": [12, 106, 91, 74],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [22, 338, 81, 30],
+          "rect": [22, 338, 85, 30],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [22, 286, 81, 30],
+          "rect": [22, 286, 85, 30],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [22, 154, 81, 30],
+          "rect": [22, 154, 85, 30],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [22, 102, 81, 30],
+          "rect": [22, 102, 85, 30],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD id='d3'",
-          "rect": [22, 316, 81, 22],
+          "rect": [22, 316, 85, 22],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD id='d'",
-          "rect": [22, 132, 81, 22],
+          "rect": [22, 132, 85, 22],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [23, 317, 71, 19],
+          "rect": [23, 317, 76, 19],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
-          "rect": [23, 133, 71, 19],
+          "rect": [23, 133, 76, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [23, 339, 46, 19],
+          "rect": [23, 339, 49, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [23, 155, 46, 19],
+          "rect": [23, 155, 49, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [23, 295, 40, 19],
+          "rect": [23, 295, 43, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [23, 111, 40, 19],
+          "rect": [23, 111, 43, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [23, 225, 32, 19],
+          "rect": [23, 225, 34, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutTable TABLE",
-          "rect": [74, 286, 29, 82],
+          "rect": [76, 286, 31, 82],
           "reason": "incremental"
         },
         {

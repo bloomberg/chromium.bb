@@ -4,8 +4,8 @@ layer at (0,0) size 785x1029 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1029.27
     LayoutBlockFlow {BODY} at (8,21.27) size 769x1000
       LayoutBlockFlow {H4} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 279x19
-          text run at (0,0) width 279: "Safari Fixed / Overflow Hidden Scroll Bug"
+        LayoutText {#text} at (0,0) size 287x19
+          text run at (0,0) width 287: "Safari Fixed / Overflow Hidden Scroll Bug"
       LayoutBlockFlow {PRE} at (0,41.27) size 769x0
       LayoutBlockFlow {PRE} at (0,41.27) size 769x528
         LayoutText {#text} at (0,0) size 264x528
@@ -75,147 +75,148 @@ layer at (0,0) size 785x1029 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (64,496) width 0: " "
           text run at (0,512) width 0: " "
       LayoutBlockFlow {P} at (0,585.27) size 769x20
-        LayoutText {#text} at (0,0) size 377x19
-          text run at (0,0) width 377: "When you scroll this page the following objects will be clipped:"
+        LayoutText {#text} at (0,0) size 401x19
+          text run at (0,0) width 401: "When you scroll this page the following objects will be clipped:"
       LayoutBlockFlow {P} at (0,621.27) size 769x20
-        LayoutText {#text} at (0,0) size 707x19
-          text run at (0,0) width 707: "- (relative objects and overflowHidden objects) inside (overflowHidden objects) inside (fixed objects) will be clipped;"
-      LayoutBlockFlow {P} at (0,657.27) size 769x20
         LayoutText {#text} at (0,0) size 739x19
-          text run at (0,0) width 739: "- (relative objects and overflowHidden objects and absolute objects) inside (fixed/overflowHidden objects) will be clipped;"
-      LayoutBlockFlow {P} at (0,693.27) size 769x40
-        LayoutText {#text} at (0,0) size 738x39
-          text run at (0,0) width 738: "Nice effect, but not what we want. Tested in Safari Version 2.0.4 (419.3), and WebKit Nightly Build Mon Nov 20 5:18:23"
-          text run at (0,20) width 74: "GMT 2006."
+          text run at (0,0) width 739: "- (relative objects and overflowHidden objects) inside (overflowHidden objects) inside (fixed objects) will be clipped;"
+      LayoutBlockFlow {P} at (0,657.27) size 769x40
+        LayoutText {#text} at (0,0) size 717x39
+          text run at (0,0) width 717: "- (relative objects and overflowHidden objects and absolute objects) inside (fixed/overflowHidden objects) will be"
+          text run at (0,20) width 50: "clipped;"
+      LayoutBlockFlow {P} at (0,713.27) size 769x40
+        LayoutText {#text} at (0,0) size 719x39
+          text run at (0,0) width 719: "Nice effect, but not what we want. Tested in Safari Version 2.0.4 (419.3), and WebKit Nightly Build Mon Nov 20"
+          text run at (0,20) width 128: "5:18:23 GMT 2006."
 layer at (305,149) size 162x348
   LayoutBlockFlow (positioned) {DIV} at (305,85) size 162x348 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 150x20
-      LayoutText {#text} at (0,0) size 45x19
-        text run at (0,0) width 45: "#fixed1"
+      LayoutText {#text} at (0,0) size 48x19
+        text run at (0,0) width 48: "#fixed1"
     LayoutBlockFlow {DIV} at (11,31) size 140x32 [border: (1px solid #999999)]
-      LayoutText {#text} at (6,6) size 46x19
-        text run at (6,6) width 46: "no style"
+      LayoutText {#text} at (6,6) size 49x19
+        text run at (6,6) width 49: "no style"
 layer at (316,254) size 140x74 clip at (317,255) size 138x72
   LayoutBlockFlow {DIV} at (11,105) size 140x74 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 128x20
-      LayoutText {#text} at (0,0) size 101x19
-        text run at (0,0) width 101: ".overflowHidden"
+      LayoutText {#text} at (0,0) size 108x19
+        text run at (0,0) width 108: ".overflowHidden"
     LayoutBlockFlow {DIV} at (11,31) size 118x32 [border: (1px solid #999999)]
-      LayoutText {#text} at (6,6) size 46x19
-        text run at (6,6) width 46: "no style"
+      LayoutText {#text} at (6,6) size 49x19
+        text run at (6,6) width 49: "no style"
 layer at (316,333) size 140x74 clip at (317,334) size 138x72
   LayoutBlockFlow {DIV} at (11,184) size 140x74 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 128x20
-      LayoutText {#text} at (0,0) size 101x19
-        text run at (0,0) width 101: ".overflowHidden"
+      LayoutText {#text} at (0,0) size 108x19
+        text run at (0,0) width 108: ".overflowHidden"
 layer at (316,412) size 140x74 clip at (317,413) size 138x72
   LayoutBlockFlow {DIV} at (11,263) size 140x74 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 128x20
-      LayoutText {#text} at (0,0) size 101x19
-        text run at (0,0) width 101: ".overflowHidden"
-layer at (327,443) size 118x32 clip at (328,444) size 116x30
+      LayoutText {#text} at (0,0) size 108x19
+        text run at (0,0) width 108: ".overflowHidden"
+layer at (327,443) size 118x32 clip at (328,444) size 116x30 scrollWidth 118
   LayoutBlockFlow {DIV} at (11,31) size 118x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 101x19
-      text run at (6,6) width 101: ".overflowHidden"
+    LayoutText {#text} at (6,6) size 108x19
+      text run at (6,6) width 108: ".overflowHidden"
 layer at (316,217) size 140x32
   LayoutBlockFlow (relative positioned) {DIV} at (11,68) size 140x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 47x19
-      text run at (6,6) width 47: ".relative"
-layer at (395,155) size 66x32
-  LayoutBlockFlow (positioned) {DIV} at (90,6) size 66x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 54x19
-      text run at (6,6) width 54: ".absolute"
+    LayoutText {#text} at (6,6) size 50x19
+      text run at (6,6) width 50: ".relative"
+layer at (393,155) size 68x32
+  LayoutBlockFlow (positioned) {DIV} at (88,6) size 68x32 [border: (1px solid #999999)]
+    LayoutText {#text} at (6,6) size 56x19
+      text run at (6,6) width 56: ".absolute"
 layer at (327,364) size 118x32
   LayoutBlockFlow (relative positioned) {DIV} at (11,31) size 118x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 47x19
-      text run at (6,6) width 47: ".relative"
-layer at (505,149) size 162x348 clip at (506,150) size 160x346
+    LayoutText {#text} at (6,6) size 50x19
+      text run at (6,6) width 50: ".relative"
+layer at (505,149) size 162x348 clip at (506,150) size 160x346 scrollWidth 161
   LayoutBlockFlow (positioned) {DIV} at (505,85) size 162x348 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 150x20
-      LayoutText {#text} at (0,0) size 146x19
-        text run at (0,0) width 146: "#fixed2.overflowHidden"
+      LayoutText {#text} at (0,0) size 156x19
+        text run at (0,0) width 156: "#fixed2.overflowHidden"
     LayoutBlockFlow {DIV} at (11,31) size 140x32 [border: (1px solid #999999)]
-      LayoutText {#text} at (6,6) size 46x19
-        text run at (6,6) width 46: "no style"
+      LayoutText {#text} at (6,6) size 49x19
+        text run at (6,6) width 49: "no style"
 layer at (516,254) size 140x74 clip at (517,255) size 138x72
   LayoutBlockFlow {DIV} at (11,105) size 140x74 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 128x20
-      LayoutText {#text} at (0,0) size 101x19
-        text run at (0,0) width 101: ".overflowHidden"
+      LayoutText {#text} at (0,0) size 108x19
+        text run at (0,0) width 108: ".overflowHidden"
     LayoutBlockFlow {DIV} at (11,31) size 118x32 [border: (1px solid #999999)]
-      LayoutText {#text} at (6,6) size 46x19
-        text run at (6,6) width 46: "no style"
+      LayoutText {#text} at (6,6) size 49x19
+        text run at (6,6) width 49: "no style"
 layer at (516,333) size 140x74 clip at (517,334) size 138x72
   LayoutBlockFlow {DIV} at (11,184) size 140x74 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 128x20
-      LayoutText {#text} at (0,0) size 101x19
-        text run at (0,0) width 101: ".overflowHidden"
+      LayoutText {#text} at (0,0) size 108x19
+        text run at (0,0) width 108: ".overflowHidden"
 layer at (516,412) size 140x74 clip at (517,413) size 138x72
   LayoutBlockFlow {DIV} at (11,263) size 140x74 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 128x20
-      LayoutText {#text} at (0,0) size 101x19
-        text run at (0,0) width 101: ".overflowHidden"
-layer at (527,443) size 118x32 clip at (528,444) size 116x30
+      LayoutText {#text} at (0,0) size 108x19
+        text run at (0,0) width 108: ".overflowHidden"
+layer at (527,443) size 118x32 clip at (528,444) size 116x30 scrollWidth 118
   LayoutBlockFlow {DIV} at (11,31) size 118x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 101x19
-      text run at (6,6) width 101: ".overflowHidden"
+    LayoutText {#text} at (6,6) size 108x19
+      text run at (6,6) width 108: ".overflowHidden"
 layer at (516,217) size 140x32
   LayoutBlockFlow (relative positioned) {DIV} at (11,68) size 140x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 47x19
-      text run at (6,6) width 47: ".relative"
-layer at (595,155) size 66x32
-  LayoutBlockFlow (positioned) {DIV} at (90,6) size 66x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 54x19
-      text run at (6,6) width 54: ".absolute"
+    LayoutText {#text} at (6,6) size 50x19
+      text run at (6,6) width 50: ".relative"
+layer at (593,155) size 68x32
+  LayoutBlockFlow (positioned) {DIV} at (88,6) size 68x32 [border: (1px solid #999999)]
+    LayoutText {#text} at (6,6) size 56x19
+      text run at (6,6) width 56: ".absolute"
 layer at (527,364) size 118x32
   LayoutBlockFlow (relative positioned) {DIV} at (11,31) size 118x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 47x19
-      text run at (6,6) width 47: ".relative"
+    LayoutText {#text} at (6,6) size 50x19
+      text run at (6,6) width 50: ".relative"
 layer at (705,149) size 162x390 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (705,85) size 162x390 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 150x20
-      LayoutText {#text} at (0,0) size 45x19
-        text run at (0,0) width 45: "#fixed3"
+      LayoutText {#text} at (0,0) size 48x19
+        text run at (0,0) width 48: "#fixed3"
 layer at (716,180) size 140x348 backgroundClip at (716,180) size 69x348 clip at (717,181) size 68x346
   LayoutBlockFlow {DIV} at (11,31) size 140x348 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 128x20
-      LayoutText {#text} at (0,0) size 101x19
-        text run at (0,0) width 101: ".overflowHidden"
+      LayoutText {#text} at (0,0) size 108x19
+        text run at (0,0) width 108: ".overflowHidden"
     LayoutBlockFlow {DIV} at (11,31) size 118x32 [border: (1px solid #999999)]
-      LayoutText {#text} at (6,6) size 46x19
-        text run at (6,6) width 46: "no style"
+      LayoutText {#text} at (6,6) size 49x19
+        text run at (6,6) width 49: "no style"
 layer at (727,285) size 118x74 backgroundClip at (727,285) size 58x74 clip at (728,286) size 57x72
   LayoutBlockFlow {DIV} at (11,105) size 118x74 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 106x20
-      LayoutText {#text} at (0,0) size 101x19
-        text run at (0,0) width 101: ".overflowHidden"
+      LayoutText {#text} at (0,0) size 108x19
+        text run at (0,0) width 108: ".overflowHidden"
     LayoutBlockFlow {DIV} at (11,31) size 96x32 [border: (1px solid #999999)]
-      LayoutText {#text} at (6,6) size 46x19
-        text run at (6,6) width 46: "no style"
+      LayoutText {#text} at (6,6) size 49x19
+        text run at (6,6) width 49: "no style"
 layer at (727,364) size 118x74 backgroundClip at (727,364) size 58x74 clip at (728,365) size 57x72
   LayoutBlockFlow {DIV} at (11,184) size 118x74 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 106x20
-      LayoutText {#text} at (0,0) size 101x19
-        text run at (0,0) width 101: ".overflowHidden"
+      LayoutText {#text} at (0,0) size 108x19
+        text run at (0,0) width 108: ".overflowHidden"
 layer at (727,443) size 118x74 backgroundClip at (727,443) size 58x74 clip at (728,444) size 57x72
   LayoutBlockFlow {DIV} at (11,263) size 118x74 [border: (1px solid #999999)]
     LayoutBlockFlow (anonymous) at (6,6) size 106x20
-      LayoutText {#text} at (0,0) size 101x19
-        text run at (0,0) width 101: ".overflowHidden"
-layer at (738,474) size 96x32 backgroundClip at (738,474) size 47x32 clip at (739,475) size 46x30 scrollWidth 111
+      LayoutText {#text} at (0,0) size 108x19
+        text run at (0,0) width 108: ".overflowHidden"
+layer at (738,474) size 96x32 backgroundClip at (738,474) size 47x32 clip at (739,475) size 46x30 scrollWidth 118
   LayoutBlockFlow {DIV} at (11,31) size 96x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 101x19
-      text run at (6,6) width 101: ".overflowHidden"
+    LayoutText {#text} at (6,6) size 108x19
+      text run at (6,6) width 108: ".overflowHidden"
 layer at (727,248) size 118x32 backgroundClip at (717,181) size 68x346 clip at (717,181) size 68x346
   LayoutBlockFlow (relative positioned) {DIV} at (11,68) size 118x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 47x19
-      text run at (6,6) width 47: ".relative"
-layer at (795,155) size 66x32 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow (positioned) {DIV} at (90,6) size 66x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 54x19
-      text run at (6,6) width 54: ".absolute"
+    LayoutText {#text} at (6,6) size 50x19
+      text run at (6,6) width 50: ".relative"
+layer at (793,155) size 68x32 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow (positioned) {DIV} at (88,6) size 68x32 [border: (1px solid #999999)]
+    LayoutText {#text} at (6,6) size 56x19
+      text run at (6,6) width 56: ".absolute"
 layer at (738,395) size 96x32 backgroundClip at (728,365) size 57x72 clip at (728,365) size 57x72
   LayoutBlockFlow (relative positioned) {DIV} at (11,31) size 96x32 [border: (1px solid #999999)]
-    LayoutText {#text} at (6,6) size 47x19
-      text run at (6,6) width 47: ".relative"
+    LayoutText {#text} at (6,6) size 50x19
+      text run at (6,6) width 50: ".relative"
 scrolled to 0,64

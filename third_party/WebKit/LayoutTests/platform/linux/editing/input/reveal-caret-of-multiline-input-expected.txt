@@ -4,8 +4,8 @@ layer at (0,0) size 800x207
   LayoutBlockFlow {HTML} at (0,0) size 800x207
     LayoutBlockFlow {BODY} at (8,8) size 784x191
       LayoutBlockFlow {DIV} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 568x19
-          text run at (0,0) width 568: "When the caret is scrolled out, on starting typing it must be brought to the center of the control."
+        LayoutText {#text} at (0,0) size 595x19
+          text run at (0,0) width 595: "When the caret is scrolled out, on starting typing it must be brought to the center of the control."
       LayoutBlockFlow (anonymous) at (0,20) size 784x171
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0

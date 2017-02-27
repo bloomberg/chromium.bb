@@ -4,30 +4,30 @@ layer at (0,0) size 800x160
   LayoutBlockFlow {HTML} at (0,0) size 800x160
     LayoutBlockFlow {BODY} at (8,16) size 784x128 [color=#008000]
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 184x19
-          text run at (0,0) width 184: "This sentence should be green."
+        LayoutText {#text} at (0,0) size 194x19
+          text run at (0,0) width 194: "This sentence should be green."
       LayoutBlockFlow {P} at (0,36) size 784x20 [color=#FFFFFF] [bgcolor=#008000]
-        LayoutText {#text} at (0,0) size 85x19
-          text run at (0,0) width 85: "This sentence "
+        LayoutText {#text} at (0,0) size 90x19
+          text run at (0,0) width 90: "This sentence "
         LayoutInline {SPAN} at (0,0) size 61x19
-          LayoutText {#text} at (85,0) size 61x19
-            text run at (85,0) width 61: "should be"
-        LayoutText {#text} at (146,0) size 96x19
-          text run at (146,0) width 96: " white on green."
+          LayoutText {#text} at (90,0) size 61x19
+            text run at (90,0) width 61: "should be"
+        LayoutText {#text} at (151,0) size 102x19
+          text run at (151,0) width 102: " white on green."
       LayoutBlockFlow {P} at (0,72) size 784x20 [color=#FFFFFF]
         LayoutInline {EM} at (0,0) size 34x19 [color=#008000]
           LayoutText {#text} at (0,0) size 34x19
             text run at (0,0) width 34: "PASS"
         LayoutText {#text} at (33,0) size 5x19
           text run at (33,0) width 5: " "
-        LayoutInline {STRONG} at (0,0) size 36x19
-          LayoutText {#text} at (37,0) size 36x19
-            text run at (37,0) width 36: "FAIL"
+        LayoutInline {STRONG} at (0,0) size 39x19
+          LayoutText {#text} at (37,0) size 39x19
+            text run at (37,0) width 39: "FAIL"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,108) size 784x20
-        LayoutText {#text} at (0,0) size 41x19
-          text run at (0,0) width 41: "PASS "
+        LayoutText {#text} at (0,0) size 42x19
+          text run at (0,0) width 42: "PASS "
         LayoutInline {DFN} at (0,0) size 33x19 [color=#FFFFFF]
-          LayoutText {#text} at (40,0) size 33x19
-            text run at (40,0) width 33: "FAIL"
+          LayoutText {#text} at (41,0) size 33x19
+            text run at (41,0) width 33: "FAIL"
         LayoutText {#text} at (0,0) size 0x0

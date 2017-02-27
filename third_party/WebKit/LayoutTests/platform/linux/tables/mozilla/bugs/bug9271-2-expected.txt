@@ -10,26 +10,26 @@ layer at (0,0) size 800x138
         LayoutTableSection {TBODY} at (1,1) size 782x48
           LayoutTableRow {TR} at (0,2) size 782x44
             LayoutTableCell {TD} at (2,2) size 128x44 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 111x39
-                text run at (2,2) width 111: "This is cell number"
+              LayoutText {#text} at (2,2) size 120x39
+                text run at (2,2) width 120: "This is cell number"
                 text run at (2,22) width 12: "0."
             LayoutTableCell {TD} at (132,2) size 128x44 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 111x39
-                text run at (2,2) width 111: "This is cell number"
+              LayoutText {#text} at (2,2) size 120x39
+                text run at (2,2) width 120: "This is cell number"
                 text run at (2,22) width 12: "1."
             LayoutTableCell {TD} at (262,2) size 128x44 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 111x39
-                text run at (2,2) width 111: "This is cell number"
+              LayoutText {#text} at (2,2) size 120x39
+                text run at (2,2) width 120: "This is cell number"
                 text run at (2,22) width 12: "2."
             LayoutTableCell {TD} at (392,2) size 128x44 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 111x39
-                text run at (2,2) width 111: "This is cell number"
+              LayoutText {#text} at (2,2) size 120x39
+                text run at (2,2) width 120: "This is cell number"
                 text run at (2,22) width 12: "3."
             LayoutTableCell {TD} at (522,2) size 128x44 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 111x39
-                text run at (2,2) width 111: "This is cell number"
+              LayoutText {#text} at (2,2) size 120x39
+                text run at (2,2) width 120: "This is cell number"
                 text run at (2,22) width 12: "4."
             LayoutTableCell {TD} at (652,2) size 128x44 [border: (1px inset #808080)] [r=0 c=5 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 111x39
-                text run at (2,2) width 111: "This is cell number"
+              LayoutText {#text} at (2,2) size 120x39
+                text run at (2,2) width 120: "This is cell number"
                 text run at (2,22) width 12: "5."

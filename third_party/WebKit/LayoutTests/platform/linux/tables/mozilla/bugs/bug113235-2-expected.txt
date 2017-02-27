@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x16
-        LayoutInline {FONT} at (0,0) size 707x16
-          LayoutText {#text} at (0,0) size 707x16
-            text run at (0,0) width 330: "This text node only exists once in the original document! "
-            text run at (330,0) width 304: "If it were a large collection of inlines, the page would "
-            text run at (634,0) width 73: "hang forever."
+        LayoutInline {FONT} at (0,0) size 715x16
+          LayoutText {#text} at (0,0) size 715x16
+            text run at (0,0) width 332: "This text node only exists once in the original document! "
+            text run at (332,0) width 307: "If it were a large collection of inlines, the page would "
+            text run at (639,0) width 76: "hang forever."
           LayoutInline {A} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,32.17) size 784x45.17
         LayoutBlockFlow {H2} at (0,0) size 784x25

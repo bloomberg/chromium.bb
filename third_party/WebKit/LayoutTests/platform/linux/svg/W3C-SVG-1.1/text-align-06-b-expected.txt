@@ -2,10 +2,10 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (0,4) size 467.56x371
-      LayoutSVGText {text} at (0,4) size 467.56x45 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,4) size 467.56x45
-          chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 31 width 467.57: "Test 'baseline-shift' (vertic.)"
+    LayoutSVGContainer {g} at (0,4) size 476.56x371
+      LayoutSVGText {text} at (0,4) size 476.56x45 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,4) size 476.56x45
+          chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 31 width 476.57: "Test 'baseline-shift' (vertic.)"
       LayoutSVGContainer {g} at (72.50,60) size 312.50x315
         LayoutSVGContainer {g} at (-17.50,0) size 312.50x315 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,60.00)}]
           LayoutSVGText {text} at (-17.50,0) size 42x175 contains 1 chunk(s)
@@ -61,7 +61,7 @@ layer at (0,0) size 480x360
                 chunk 1 (vertical) text run 1 at (249.50,245.00) startOffset 0 endOffset 1 height 35.00: "x"
             LayoutSVGInlineText {#text} at (242.50,280) size 35x35
               chunk 1 (vertical) text run 1 at (249.50,280.00) startOffset 0 endOffset 1 height 35.00: "t"
-    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 261x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.5 $"
+    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 264x46
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 264.00: "$Revision: 1.5 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

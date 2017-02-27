@@ -3,5 +3,5 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x20
   LayoutBlockFlow {test} at (0,0) size 800x20
     LayoutBlockFlow {address} at (0,0) size 800x20 [bgcolor=#00FF00]
-      LayoutText {#text} at (0,0) size 351x19
-        text run at (0,0) width 351: "This address element should have a green background."
+      LayoutText {#text} at (0,0) size 348x19
+        text run at (0,0) width 348: "This address element should have a green background."

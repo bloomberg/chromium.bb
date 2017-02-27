@@ -4,8 +4,8 @@ layer at (0,0) size 800x31
   LayoutBlockFlow {HTML} at (0,0) size 800x31
     LayoutBlockFlow {BODY} at (0,0) size 800x30 [bgcolor=#000000]
       LayoutBlockFlow {A} at (0,0) size 800x30 [color=#0000EE] [bgcolor=#FF0000]
-        LayoutText {#text} at (10,5) size 37x19
-          text run at (10,5) width 37: "Home"
+        LayoutText {#text} at (10,5) size 39x19
+          text run at (10,5) width 39: "Home"
 layer at (55,190) size 50x50
   LayoutBlockFlow (positioned) {IMG} at (55,190) size 50x50
 layer at (55,190) size 50x50 clip at (56,191) size 48x48

@@ -4,8 +4,8 @@ layer at (0,0) size 800x500
   LayoutBlockFlow {HTML} at (0,0) size 800x499.88
     LayoutBlockFlow {BODY} at (8,21.44) size 784x462.44
       LayoutBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 302x36
-          text run at (0,0) width 302: "Emoticons & Symbols"
+        LayoutText {#text} at (0,0) size 303x36
+          text run at (0,0) width 303: "Emoticons & Symbols"
       LayoutBlockFlow {PRE} at (0,58.44) size 784x368
         LayoutText {#text} at (0,0) size 416x368
           text run at (0,0) width 409: "U+1F60x \x{D83D}\x{DE00} \x{D83D}\x{DE01} \x{D83D}\x{DE02} \x{D83D}\x{DE03} \x{D83D}\x{DE04} \x{D83D}\x{DE05} \x{D83D}\x{DE06} \x{D83D}\x{DE07} \x{D83D}\x{DE08} \x{D83D}\x{DE09} \x{D83D}\x{DE0A} \x{D83D}\x{DE0B} \x{D83D}\x{DE0C} \x{D83D}\x{DE0D} \x{D83D}\x{DE0E} \x{D83D}\x{DE0F}"
@@ -54,5 +54,5 @@ layer at (0,0) size 800x500
           text run at (304,336) width 0: " "
           text run at (0,352) width 64: "        "
       LayoutBlockFlow {P} at (0,442.44) size 784x20
-        LayoutText {#text} at (0,0) size 450x19
-          text run at (0,0) width 450: "A seriers of emoticons, symbols and pictographs should be shown above1."
+        LayoutText {#text} at (0,0) size 470x19
+          text run at (0,0) width 470: "A seriers of emoticons, symbols and pictographs should be shown above1."

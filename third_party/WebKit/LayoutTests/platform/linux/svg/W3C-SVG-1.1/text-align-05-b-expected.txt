@@ -2,10 +2,10 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (5,4) size 452.56x321
-      LayoutSVGText {text} at (5,4) size 452.56x45 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (5,4) size 452.56x45
-          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 29 width 452.57: "Test 'text-anchor' (vertical)"
+    LayoutSVGContainer {g} at (5,4) size 460.56x321
+      LayoutSVGText {text} at (5,4) size 460.56x45 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (5,4) size 460.56x45
+          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 29 width 460.57: "Test 'text-anchor' (vertical)"
       LayoutSVGContainer {g} at (142.50,45) size 135x280
         LayoutSVGContainer {g} at (-17.50,-105) size 135x280 [transform={m=((1.00,0.00)(0.00,1.00)) t=(160.00,150.00)}]
           LayoutSVGContainer {g} at (-17.50,-3) size 35x178
@@ -34,7 +34,7 @@ layer at (0,0) size 480x360
                 chunk 1 (end anchor, vertical) text run 1 at (-10.50,-105.00) startOffset 0 endOffset 1 height 35.00: "e"
                 chunk 1 (end anchor, vertical) text run 2 at (-10.50,-70.00) startOffset 1 endOffset 2 height 35.00: "n"
                 chunk 1 (end anchor, vertical) text run 3 at (-10.50,-35.00) startOffset 2 endOffset 3 height 35.00: "d"
-    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 261x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.5 $"
+    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 264x46
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 264.00: "$Revision: 1.5 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

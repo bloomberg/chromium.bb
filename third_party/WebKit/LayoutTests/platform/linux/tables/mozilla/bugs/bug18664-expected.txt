@@ -4,16 +4,16 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576 [bgcolor=#999999]
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 437x19
-          text run at (0,0) width 398: "Problem: Tables inside a DIV get border=1 after moving the DIV. "
-          text run at (397,0) width 40: "If you "
-        LayoutInline {A} at (0,0) size 124x19 [color=#0000EE]
-          LayoutInline {B} at (0,0) size 124x19
-            LayoutText {#text} at (436,0) size 124x19
-              text run at (436,0) width 124: "remove the border"
-        LayoutText {#text} at (559,0) size 777x39
-          text run at (559,0) width 218: " attribute from the tables, the border"
-          text run at (0,20) width 102: "doesn't show up."
+        LayoutText {#text} at (0,0) size 460x19
+          text run at (0,0) width 418: "Problem: Tables inside a DIV get border=1 after moving the DIV. "
+          text run at (417,0) width 43: "If you "
+        LayoutInline {A} at (0,0) size 127x19 [color=#0000EE]
+          LayoutInline {B} at (0,0) size 127x19
+            LayoutText {#text} at (459,0) size 127x19
+              text run at (459,0) width 127: "remove the border"
+        LayoutText {#text} at (585,0) size 765x39
+          text run at (585,0) width 180: " attribute from the tables, the"
+          text run at (0,20) width 151: "border doesn't show up."
 layer at (70,70) size 173x60
   LayoutBlockFlow (positioned) {DIV} at (70,70) size 173x60
     LayoutTable {TABLE} at (0,0) size 173x20 [bgcolor=#CC6600]
@@ -31,8 +31,8 @@ layer at (70,70) size 173x60
             LayoutText {#text} at (0,0) size 4x19
               text run at (0,0) width 4: " "
           LayoutTableCell {TD} at (11,0) size 150x20 [bgcolor=#FF9900] [r=0 c=1 rs=1 cs=1]
-            LayoutText {#text} at (0,0) size 117x19
-              text run at (0,0) width 117: "Test, test and test..."
+            LayoutText {#text} at (0,0) size 119x19
+              text run at (0,0) width 119: "Test, test and test..."
           LayoutTableCell {TD} at (161,0) size 12x20 [bgcolor=#666666] [r=0 c=2 rs=1 cs=1]
             LayoutText {#text} at (0,0) size 4x19
               text run at (0,0) width 4: " "

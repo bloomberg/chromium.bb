@@ -3,13 +3,13 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutTable {TABLE} at (0,0) size 638x63
-        LayoutTableSection {TBODY} at (0,0) size 638x63
-          LayoutTableRow {TR} at (0,2) size 638x59
-            LayoutTableCell {TD} at (2,20) size 178x22 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 176x19
-                text run at (1,1) width 176: "Let's put some space in here!"
-            LayoutTableCell {TD} at (182,2) size 454x59 [r=0 c=1 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,0) size 644x63
+        LayoutTableSection {TBODY} at (0,0) size 644x63
+          LayoutTableRow {TR} at (0,2) size 644x59
+            LayoutTableCell {TD} at (2,20) size 184x22 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 182x19
+                text run at (1,1) width 182: "Let's put some space in here!"
+            LayoutTableCell {TD} at (188,2) size 454x59 [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (1,1) size 452x57
                 LayoutTableSection {TBODY} at (0,0) size 452x57
                   LayoutTableRow {TR} at (0,2) size 452x53

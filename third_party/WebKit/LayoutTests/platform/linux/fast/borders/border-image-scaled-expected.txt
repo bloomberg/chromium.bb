@@ -4,9 +4,9 @@ layer at (0,0) size 800x626 backgroundClip at (0,0) size 800x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 800x626
     LayoutBlockFlow {BODY} at (8,8) size 784x610
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 780x39
-          text run at (0,0) width 780: "The purpose of this test case is to illustrate the legacy behavior of -webkit-border-image. The specified border widths actually end"
-          text run at (0,20) width 595: "up becoming the real border widths. The border-image property in the specification doesn't do this."
+        LayoutText {#text} at (0,0) size 734x39
+          text run at (0,0) width 734: "The purpose of this test case is to illustrate the legacy behavior of -webkit-border-image. The specified border widths"
+          text run at (0,20) width 701: "actually end up becoming the real border widths. The border-image property in the specification doesn't do this."
       LayoutBlockFlow (anonymous) at (0,56) size 784x554
         LayoutBlockFlow {DIV} at (10,10) size 252x252 [border: (42px solid #000000) (60px solid #000000) (42px solid #000000)]
         LayoutText {#text} at (272,257) size 4x19

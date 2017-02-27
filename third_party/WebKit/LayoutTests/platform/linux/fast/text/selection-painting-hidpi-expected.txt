@@ -3,47 +3,47 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x36
   LayoutBlockFlow {HTML} at (0,0) size 800x36
     LayoutBlockFlow {BODY} at (8,8) size 784x20
-      LayoutBlockFlow {DIV} at (0,0) size 285x20
+      LayoutBlockFlow {DIV} at (0,0) size 298x20
+        LayoutInline {SPAN} at (0,0) size 37x19
+          LayoutText {#text} at (0,0) size 37x19
+            text run at (0,0) width 37: "There"
+        LayoutText {#text} at (37,0) size 4x19
+          text run at (37,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (41,0) size 42x19
+            text run at (41,0) width 42: "should"
+        LayoutText {#text} at (83,0) size 4x19
+          text run at (83,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 15x19
+          LayoutText {#text} at (87,0) size 15x19
+            text run at (87,0) width 15: "be"
+        LayoutText {#text} at (102,0) size 4x19
+          text run at (102,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 16x19
+          LayoutText {#text} at (106,0) size 16x19
+            text run at (106,0) width 16: "no"
+        LayoutText {#text} at (122,0) size 4x19
+          text run at (122,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 35x19
-          LayoutText {#text} at (0,0) size 35x19
-            text run at (0,0) width 35: "There"
-        LayoutText {#text} at (35,0) size 4x19
-          text run at (35,0) width 4: " "
+          LayoutText {#text} at (126,0) size 35x19
+            text run at (126,0) width 35: "white"
+        LayoutText {#text} at (161,0) size 4x19
+          text run at (161,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 29x19
+          LayoutText {#text} at (165,0) size 29x19
+            text run at (165,0) width 29: "gaps"
+        LayoutText {#text} at (194,0) size 4x19
+          text run at (194,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 53x19
+          LayoutText {#text} at (198,0) size 53x19
+            text run at (198,0) width 53: "between"
+        LayoutText {#text} at (251,0) size 4x19
+          text run at (251,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 39x19
-          LayoutText {#text} at (39,0) size 39x19
-            text run at (39,0) width 39: "should"
-        LayoutText {#text} at (78,0) size 4x19
-          text run at (78,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 15x19
-          LayoutText {#text} at (82,0) size 15x19
-            text run at (82,0) width 15: "be"
-        LayoutText {#text} at (97,0) size 4x19
-          text run at (97,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 15x19
-          LayoutText {#text} at (101,0) size 15x19
-            text run at (101,0) width 15: "no"
-        LayoutText {#text} at (116,0) size 4x19
-          text run at (116,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 32x19
-          LayoutText {#text} at (120,0) size 32x19
-            text run at (120,0) width 32: "white"
-        LayoutText {#text} at (152,0) size 4x19
-          text run at (152,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 28x19
-          LayoutText {#text} at (156,0) size 28x19
-            text run at (156,0) width 28: "gaps"
-        LayoutText {#text} at (184,0) size 4x19
-          text run at (184,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 51x19
-          LayoutText {#text} at (188,0) size 51x19
-            text run at (188,0) width 51: "between"
-        LayoutText {#text} at (239,0) size 4x19
-          text run at (239,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 38x19
-          LayoutText {#text} at (243,0) size 38x19
-            text run at (243,0) width 38: "words"
-        LayoutText {#text} at (281,0) size 4x19
-          text run at (281,0) width 4: "."
+          LayoutText {#text} at (255,0) size 39x19
+            text run at (255,0) width 39: "words"
+        LayoutText {#text} at (294,0) size 4x19
+          text run at (294,0) width 4: "."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
 selection start: position 0 of child 0 {#text} of child 1 {SPAN} of child 1 {DIV} of body

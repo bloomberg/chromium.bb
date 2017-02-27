@@ -9,8 +9,8 @@ layer at (0,0) size 800x428 layerType: foreground only
   LayoutBlockFlow {HTML} at (0,0) size 800x428
     LayoutBlockFlow {BODY} at (8,16) size 784x404
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 289x19
-          text run at (0,0) width 289: "Test passes if there is no red visible on the page."
+        LayoutText {#text} at (0,0) size 302x19
+          text run at (0,0) width 302: "Test passes if there is no red visible on the page."
       LayoutBlockFlow {DIV} at (0,116) size 784x288
         LayoutBlockFlow {DIV} at (0,0) size 528x144 [border: (24px solid #008000)]
           LayoutInline {SPAN} at (0,0) size 240x336 [bgcolor=#008000] [border: (24px solid #008000)]

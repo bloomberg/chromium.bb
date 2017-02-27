@@ -4,9 +4,9 @@ layer at (0,0) size 800x274
   LayoutBlockFlow {HTML} at (0,0) size 800x274
     LayoutBlockFlow {BODY} at (8,12) size 784x250
       LayoutBlockFlow {P} at (0,0) size 784x32
-        LayoutText {#text} at (0,0) size 774x31
-          text run at (0,0) width 774: "This test verifies that line height is determined solely by a box's primary font, not by its fallback fonts. The following two lines should have a solid, unbroken red"
-          text run at (0,16) width 79: "line below them:"
+        LayoutText {#text} at (0,0) size 779x31
+          text run at (0,0) width 779: "This test verifies that line height is determined solely by a box's primary font, not by its fallback fonts. The following two lines should have a solid, unbroken red line"
+          text run at (0,16) width 58: "below them:"
       LayoutBlockFlow {DIV} at (0,44) size 784x97
         LayoutBlockFlow {UL} at (0,0) size 567x97
           LayoutBlockFlow (floating) {LI} at (40,0) size 58x31 [border: none (1px solid #FF0000) none]

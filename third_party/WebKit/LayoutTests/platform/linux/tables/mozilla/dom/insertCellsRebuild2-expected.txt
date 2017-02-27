@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 205x19
-          text run at (0,0) width 205: "The 2 tables should look the same"
+        LayoutText {#text} at (0,0) size 214x19
+          text run at (0,0) width 214: "The 2 tables should look the same"
       LayoutTable {TABLE} at (0,20) size 120x82 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 118x80
           LayoutTableRow {TR} at (0,2) size 118x24
@@ -23,8 +23,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 23x19
                 text run at (2,2) width 23: "c21"
             LayoutTableCell {TD} at (31,28) size 27x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 19x19
-                text run at (2,2) width 19: "X1"
+              LayoutText {#text} at (2,2) size 20x19
+                text run at (2,2) width 20: "X1"
             LayoutTableCell {TD} at (60,41) size 27x24 [border: (1px inset #808080)] [r=1 c=2 rs=2 cs=1]
               LayoutText {#text} at (2,2) size 23x19
                 text run at (2,2) width 23: "c22"
@@ -57,8 +57,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 23x19
                 text run at (2,2) width 23: "c21"
             LayoutTableCell {TD} at (31,28) size 27x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 19x19
-                text run at (2,2) width 19: "X1"
+              LayoutText {#text} at (2,2) size 20x19
+                text run at (2,2) width 20: "X1"
             LayoutTableCell {TD} at (60,41) size 27x24 [border: (1px inset #808080)] [r=1 c=2 rs=2 cs=1]
               LayoutText {#text} at (2,2) size 23x19
                 text run at (2,2) width 23: "c22"

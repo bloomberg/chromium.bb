@@ -6,32 +6,32 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 769x39
-        text run at (0,0) width 769: "This tests whether certain NSResponder methods that should only operate on editable regions modify a selection that is not in an"
-        text run at (0,20) width 92: "editable region."
-      LayoutBR {BR} at (92,35) size 0x0
-      LayoutText {#text} at (0,40) size 80x19
-        text run at (0,40) width 80: "This is a para"
-      LayoutInline {SPAN} at (0,0) size 7x19 [color=#0000FF]
-        LayoutText {#text} at (80,40) size 7x19
-          text run at (80,40) width 7: "g"
-      LayoutText {#text} at (87,40) size 31x19
-        text run at (87,40) width 31: "raph."
-      LayoutBR {BR} at (118,55) size 0x0
-      LayoutText {#text} at (0,60) size 61x19
-        text run at (0,60) width 61: "Some text"
-      LayoutBR {BR} at (61,75) size 0x0
-      LayoutText {#text} at (0,80) size 61x19
-        text run at (0,80) width 61: "Some text"
-      LayoutBR {BR} at (61,95) size 0x0
-      LayoutText {#text} at (0,100) size 61x19
-        text run at (0,100) width 61: "Some text"
-      LayoutBR {BR} at (61,115) size 0x0
-      LayoutText {#text} at (0,120) size 61x19
-        text run at (0,120) width 61: "Some text"
-      LayoutBR {BR} at (61,135) size 0x0
-      LayoutText {#text} at (0,140) size 118x19
-        text run at (0,140) width 118: "This is a paragraph."
+      LayoutText {#text} at (0,0) size 772x39
+        text run at (0,0) width 772: "This tests whether certain NSResponder methods that should only operate on editable regions modify a selection that is not"
+        text run at (0,20) width 132: "in an editable region."
+      LayoutBR {BR} at (132,35) size 0x0
+      LayoutText {#text} at (0,40) size 84x19
+        text run at (0,40) width 84: "This is a para"
+      LayoutInline {SPAN} at (0,0) size 8x19 [color=#0000FF]
+        LayoutText {#text} at (84,40) size 8x19
+          text run at (84,40) width 8: "g"
+      LayoutText {#text} at (92,40) size 32x19
+        text run at (92,40) width 32: "raph."
+      LayoutBR {BR} at (124,55) size 0x0
+      LayoutText {#text} at (0,60) size 63x19
+        text run at (0,60) width 63: "Some text"
+      LayoutBR {BR} at (63,75) size 0x0
+      LayoutText {#text} at (0,80) size 63x19
+        text run at (0,80) width 63: "Some text"
+      LayoutBR {BR} at (63,95) size 0x0
+      LayoutText {#text} at (0,100) size 63x19
+        text run at (0,100) width 63: "Some text"
+      LayoutBR {BR} at (63,115) size 0x0
+      LayoutText {#text} at (0,120) size 63x19
+        text run at (0,120) width 63: "Some text"
+      LayoutBR {BR} at (63,135) size 0x0
+      LayoutText {#text} at (0,140) size 124x19
+        text run at (0,140) width 124: "This is a paragraph."
       LayoutText {#text} at (0,0) size 0x0
 selection start: position 11 of child 2 {#text} of body
 selection end:   position 1 of child 7 {BR} of body

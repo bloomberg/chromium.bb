@@ -4,8 +4,8 @@ layer at (0,0) size 800x524
   LayoutBlockFlow {HTML} at (0,0) size 800x524
     LayoutBlockFlow {BODY} at (8,16) size 784x500
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 621x19
-          text run at (0,0) width 621: "Test passes if the top left corner of each of the boxes is curved and if there is no red visible on the page."
+        LayoutText {#text} at (0,0) size 649x19
+          text run at (0,0) width 649: "Test passes if the top left corner of each of the boxes is curved and if there is no red visible on the page."
       LayoutTable {TABLE} at (0,36) size 310x464
         LayoutTableSection {TBODY} at (0,0) size 310x464
           LayoutTableRow {TR} at (0,2) size 310x152

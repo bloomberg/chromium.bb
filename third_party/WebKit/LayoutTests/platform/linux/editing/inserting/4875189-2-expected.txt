@@ -4,13 +4,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 744x19
-          text run at (0,0) width 416: "This tests for a bug when replacing the contents of a floating element. "
-          text run at (416,0) width 328: "Just its contents should be removed during the replace."
+        LayoutText {#text} at (0,0) size 784x19
+          text run at (0,0) width 441: "This tests for a bug when replacing the contents of a floating element. "
+          text run at (441,0) width 343: "Just its contents should be removed during the replace."
       LayoutBlockFlow {DIV} at (0,36) size 784x20
-        LayoutText {#text} at (274,0) size 223x19
-          text run at (274,0) width 223: "This shouldn't be in the bordered div."
-        LayoutBlockFlow (floating) {DIV} at (0,0) size 274.97x22 [border: (1px solid #0000FF)]
-          LayoutText {#text} at (1,1) size 273x19
-            text run at (1,1) width 273: "This should be in a floating blue bordered div."
+        LayoutText {#text} at (291,0) size 235x19
+          text run at (291,0) width 235: "This shouldn't be in the bordered div."
+        LayoutBlockFlow (floating) {DIV} at (0,0) size 291.97x22 [border: (1px solid #0000FF)]
+          LayoutText {#text} at (1,1) size 290x19
+            text run at (1,1) width 290: "This should be in a floating blue bordered div."
 caret: position 47 of child 0 {#text} of child 1 {DIV} of child 2 {DIV} of body

@@ -13,17 +13,17 @@
         },
         {
           "object": "LayoutInline SPAN id='target'",
-          "rect": [112, 108, 171, 104],
+          "rect": [112, 108, 179, 104],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [112, 193, 171, 19],
+          "rect": [112, 193, 179, 19],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [282, 108, 101, 100],
+          "rect": [290, 108, 101, 100],
           "reason": "forced by layout"
         },
         {

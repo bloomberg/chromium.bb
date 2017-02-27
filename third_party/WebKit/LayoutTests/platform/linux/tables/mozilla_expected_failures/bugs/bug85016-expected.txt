@@ -8,15 +8,15 @@ layer at (0,0) size 800x2108 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutImage {IMG} at (1,1) size 604x600
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,700) size 736x20
-        LayoutText {#text} at (0,0) size 506x19
-          text run at (0,0) width 506: "percentage height images in DIV with no height (red) in a DIV with no height (green)"
+        LayoutText {#text} at (0,0) size 541x19
+          text run at (0,0) width 541: "percentage height images in DIV with no height (red) in a DIV with no height (green)"
       LayoutBlockFlow {DIV} at (32,752) size 672x672 [border: (3px dotted #008000)]
         LayoutBlockFlow {DIV} at (35,35) size 602x602 [border: (1px solid #FF0000)]
           LayoutImage {IMG} at (1,1) size 882.34x600
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,1456) size 736x20
-        LayoutText {#text} at (0,0) size 443x19
-          text run at (0,0) width 443: "percentage height image in table cell (red), in a DIV with no height (green)"
+        LayoutText {#text} at (0,0) size 471x19
+          text run at (0,0) width 471: "percentage height image in table cell (red), in a DIV with no height (green)"
       LayoutBlockFlow {DIV} at (32,1508) size 672x536
         LayoutTable {TABLE} at (0,0) size 260x536 [border: (1px solid #FF0000)]
           LayoutTableSection {TBODY} at (1,1) size 258x534

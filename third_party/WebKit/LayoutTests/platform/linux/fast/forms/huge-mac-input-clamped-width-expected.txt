@@ -4,8 +4,8 @@ layer at (0,0) size 800x82
   LayoutBlockFlow {HTML} at (0,0) size 800x82
     LayoutBlockFlow {BODY} at (8,16) size 784x58
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 421x19
-          text run at (0,0) width 421: "Test passes if the input element is truncated beyond 10000px on Mac."
+        LayoutText {#text} at (0,0) size 438x19
+          text run at (0,0) width 438: "Test passes if the input element is truncated beyond 10000px on Mac."
       LayoutBlockFlow {FORM} at (0,36) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 10005x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0

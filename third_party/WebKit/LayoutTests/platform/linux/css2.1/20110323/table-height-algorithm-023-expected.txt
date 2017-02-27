@@ -4,20 +4,20 @@ layer at (0,0) size 800x160
   LayoutBlockFlow {HTML} at (0,0) size 800x160
     LayoutBlockFlow {BODY} at (8,16) size 784x136
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 365x19
-          text run at (0,0) width 365: "Test passes if the bottom of the \"Filler Text\" below is aligned."
-      LayoutTable {TABLE} at (0,36) size 343x100
-        LayoutTableSection {TBODY} at (0,0) size 343x100
-          LayoutTableRow {TR} at (0,2) size 343x96
-            LayoutTableCell {TD} at (2,27) size 54x18 [r=0 c=0 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (1,1) size 52x16
-                LayoutText {#text} at (0,0) size 52x15
-                  text run at (0,0) width 52: "Filler Text"
-            LayoutTableCell {TD} at (58,15) size 116x34 [r=0 c=1 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (1,1) size 114x32
-                LayoutText {#text} at (0,0) size 114x31
-                  text run at (0,0) width 114: "Filler Text"
-            LayoutTableCell {TD} at (176,2) size 165x50 [r=0 c=2 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (1,1) size 163x48
-                LayoutText {#text} at (0,1) size 163x46
-                  text run at (0,1) width 163: "Filler Text"
+        LayoutText {#text} at (0,0) size 388x19
+          text run at (0,0) width 388: "Test passes if the bottom of the \"Filler Text\" below is aligned."
+      LayoutTable {TABLE} at (0,36) size 355x100
+        LayoutTableSection {TBODY} at (0,0) size 355x100
+          LayoutTableRow {TR} at (0,2) size 355x96
+            LayoutTableCell {TD} at (2,27) size 59x18 [r=0 c=0 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (1,1) size 57x16
+                LayoutText {#text} at (0,0) size 57x15
+                  text run at (0,0) width 57: "Filler Text"
+            LayoutTableCell {TD} at (63,15) size 119x34 [r=0 c=1 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (1,1) size 117x32
+                LayoutText {#text} at (0,0) size 117x31
+                  text run at (0,0) width 117: "Filler Text"
+            LayoutTableCell {TD} at (184,2) size 169x50 [r=0 c=2 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (1,1) size 167x48
+                LayoutText {#text} at (0,1) size 167x46
+                  text run at (0,1) width 167: "Filler Text"

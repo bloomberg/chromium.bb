@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGText text id='ttt'",
-          "rect": [208, 13, 161, 19],
+          "rect": [208, 13, 166, 19],
           "reason": "full"
         },
         {
           "object": "LayoutSVGText text id='ttt'",
-          "rect": [18, 193, 161, 19],
+          "rect": [18, 193, 166, 19],
           "reason": "full"
         }
       ]

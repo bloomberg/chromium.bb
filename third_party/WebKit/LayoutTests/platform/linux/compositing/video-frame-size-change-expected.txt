@@ -4,8 +4,8 @@ layer at (0,0) size 800x245
   LayoutBlockFlow {HTML} at (0,0) size 800x245
     LayoutBlockFlow {BODY} at (8,16) size 784x221
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 457x19
-          text run at (0,0) width 457: "Tests decoding and rendering a video element that has a changing resolution."
+        LayoutText {#text} at (0,0) size 483x19
+          text run at (0,0) width 483: "Tests decoding and rendering a video element that has a changing resolution."
       LayoutBlockFlow (anonymous) at (0,36) size 784x185
         LayoutText {#text} at (320,165) size 4x19
           text run at (320,165) width 4: " "

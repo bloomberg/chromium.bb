@@ -40,11 +40,6 @@
           "object": "LayoutBlockFlow BODY",
           "rect": [505, 8, 426, 484],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [507, 7, 423, 471],
-          "reason": "forced by layout"
         }
       ]
     }
@@ -300,7 +295,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [39, 7, 352, 554],
+          "rect": [39, 7, 352, 563],
           "reason": "forced by layout"
         }
       ]
@@ -374,12 +369,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [439, 7, 352, 554],
+          "rect": [439, 7, 352, 563],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [39, 7, 352, 554],
+          "rect": [39, 7, 352, 563],
           "reason": "forced by layout"
         }
       ]

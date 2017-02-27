@@ -6,9 +6,9 @@ layer at (0,0) size 800x600
       LayoutTable {TABLE} at (0,0) size 756x556 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 754x554
           LayoutTableRow {TR} at (0,2) size 754x550
-            LayoutTableCell {TD} at (2,265) size 384x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,265) size 369x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 33x19
                 text run at (2,2) width 33: "FOO"
-            LayoutTableCell {TD} at (388,265) size 364x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 31x19
-                text run at (2,2) width 31: "BAR"
+            LayoutTableCell {TD} at (373,265) size 379x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 34x19
+                text run at (2,2) width 34: "BAR"

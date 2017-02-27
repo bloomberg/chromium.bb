@@ -4,8 +4,8 @@ layer at (0,0) size 800x105
   LayoutBlockFlow {HTML} at (0,0) size 800x105
     LayoutBlockFlow {BODY} at (8,16) size 784x81
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 133x19
-          text run at (0,0) width 133: "There must be no red."
+        LayoutText {#text} at (0,0) size 138x19
+          text run at (0,0) width 138: "There must be no red."
 layer at (8,52) size 45x45
   LayoutBlockFlow (relative positioned) {DIV} at (0,36) size 45x45
     LayoutBlockFlow {DIV} at (0,0) size 45x15 [border: none (15px solid #FF0000) none]

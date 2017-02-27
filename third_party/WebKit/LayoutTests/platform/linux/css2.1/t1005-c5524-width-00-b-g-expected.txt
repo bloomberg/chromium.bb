@@ -4,7 +4,7 @@ layer at (0,0) size 800x216
   LayoutBlockFlow {HTML} at (0,0) size 800x216
     LayoutBlockFlow {BODY} at (8,16) size 784x192
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 378x19
-          text run at (0,0) width 378: "The square below should be exactly 50 pixels high on the ruler."
+        LayoutText {#text} at (0,0) size 400x19
+          text run at (0,0) width 400: "The square below should be exactly 50 pixels high on the ruler."
       LayoutBlockFlow {DIV} at (0,36) size 784x156
         LayoutImage {IMG} at (45,0) size 50x50

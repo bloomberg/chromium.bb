@@ -7,8 +7,8 @@ layer at (0,0) size 800x46
         LayoutTableSection (anonymous) at (1,1) size 782x28
           LayoutTableRow {tr} at (0,2) size 782x24
             LayoutTableCell {td} at (2,2) size 388x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (94,2) size 200x19
-                text run at (94,2) width 200: "Cell text should be center aligned"
+              LayoutText {#text} at (89,2) size 210x19
+                text run at (89,2) width 210: "Cell text should be center aligned"
             LayoutTableCell {td} at (392,2) size 388x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (94,2) size 200x19
-                text run at (94,2) width 200: "Cell text should be center aligned"
+              LayoutText {#text} at (89,2) size 210x19
+                text run at (89,2) width 210: "Cell text should be center aligned"

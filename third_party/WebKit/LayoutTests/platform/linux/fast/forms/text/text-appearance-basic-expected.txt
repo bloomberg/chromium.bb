@@ -41,24 +41,24 @@ layer at (0,0) size 800x241
       LayoutBR {BR} at (575,189) size 0x19
 layer at (14,15) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 17x16
-      text run at (0,0) width 17: "foo"
+    LayoutText {#text} at (0,0) size 18x16
+      text run at (0,0) width 18: "foo"
 layer at (15,46) size 150x16
   LayoutBlockFlow {DIV} at (3,4) size 150x16
-    LayoutText {#text} at (0,0) size 17x16
-      text run at (0,0) width 17: "foo"
+    LayoutText {#text} at (0,0) size 18x16
+      text run at (0,0) width 18: "foo"
 layer at (182,46) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 17x16
-      text run at (0,0) width 17: "foo"
+    LayoutText {#text} at (0,0) size 18x16
+      text run at (0,0) width 18: "foo"
 layer at (14,77) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 17x16
-      text run at (0,0) width 17: "foo"
+    LayoutText {#text} at (0,0) size 18x16
+      text run at (0,0) width 18: "foo"
 layer at (14,107) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 17x16
-      text run at (0,0) width 17: "foo"
+    LayoutText {#text} at (0,0) size 18x16
+      text run at (0,0) width 18: "foo"
 layer at (14,143) size 176x19
   LayoutBlockFlow {DIV} at (2,3) size 176x19
     LayoutText {#text} at (0,0) size 22x18
@@ -77,5 +77,5 @@ layer at (17,194) size 225x24
       text run at (0,0) width 28: "foo"
 layer at (267,186) size 300x33
   LayoutBlockFlow {DIV} at (4,6) size 300x33
-    LayoutText {#text} at (0,0) size 37x32
-      text run at (0,0) width 37: "foo"
+    LayoutText {#text} at (0,0) size 38x32
+      text run at (0,0) width 38: "foo"

@@ -51,8 +51,8 @@ layer at (0,0) size 800x377
               LayoutText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "3.6"
       LayoutBlockFlow {P} at (0,139.27) size 784x20
-        LayoutText {#text} at (0,0) size 151x19
-          text run at (0,0) width 151: "cell 1.5 has rowspan=\"2\""
+        LayoutText {#text} at (0,0) size 160x19
+          text run at (0,0) width 160: "cell 1.5 has rowspan=\"2\""
       LayoutBlockFlow {H4} at (0,180.53) size 784x20
         LayoutText {#text} at (0,0) size 45x19
           text run at (0,0) width 45: "table 2"
@@ -98,5 +98,5 @@ layer at (0,0) size 800x377
               LayoutText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "3.6"
       LayoutBlockFlow {P} at (0,319.80) size 784x20
-        LayoutText {#text} at (0,0) size 228x19
-          text run at (0,0) width 228: "cell 1.5 has colspan=\"2\" rowspan=\"2\""
+        LayoutText {#text} at (0,0) size 243x19
+          text run at (0,0) width 243: "cell 1.5 has colspan=\"2\" rowspan=\"2\""

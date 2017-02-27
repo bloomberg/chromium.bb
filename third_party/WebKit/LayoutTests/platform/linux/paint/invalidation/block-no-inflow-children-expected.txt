@@ -7,8 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutText #text",
+          "rect": [0, 0, 63, 19],
+          "reason": "full"
+        },
+        {
           "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [0, 0, 58, 20],
+          "rect": [0, 0, 62, 20],
           "reason": "forced by layout"
         }
       ]

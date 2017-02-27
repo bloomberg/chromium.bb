@@ -23,7 +23,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [118, 52, 370, 19],
+          "rect": [124, 52, 383, 19],
           "reason": "forced by layout"
         },
         {

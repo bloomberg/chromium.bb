@@ -4,10 +4,10 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 781x39
-          text run at (0,0) width 298: "You should see identical rows of numbers below. "
-          text run at (297,0) width 484: "Every row should look exactly the same. If any objects are out of order, then the"
-          text run at (0,20) width 85: "test has failed."
+        LayoutText {#text} at (0,0) size 764x39
+          text run at (0,0) width 314: "You should see identical rows of numbers below. "
+          text run at (313,0) width 451: "Every row should look exactly the same. If any objects are out of order,"
+          text run at (0,20) width 143: "then the test has failed."
       LayoutDeprecatedFlexibleBox {DIV} at (0,56) size 784x200
         LayoutDeprecatedFlexibleBox {DIV} at (0,0) size 784x40
           LayoutBlockFlow {DIV} at (4,4) size 20x32 [border: (2px solid #000000)]

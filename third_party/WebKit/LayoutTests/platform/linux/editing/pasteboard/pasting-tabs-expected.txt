@@ -9,10 +9,10 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 725x39
-          text run at (0,0) width 611: "This tests copying plain text with tabs and pasting it into an editable region using paste and match tyle. "
-          text run at (611,0) width 114: "The tabs should be"
-          text run at (0,20) width 64: "preserved."
+        LayoutText {#text} at (0,0) size 766x39
+          text run at (0,0) width 647: "This tests copying plain text with tabs and pasting it into an editable region using paste and match tyle. "
+          text run at (647,0) width 119: "The tabs should be"
+          text run at (0,20) width 65: "preserved."
       LayoutBlockFlow (anonymous) at (0,56) size 784x36
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,92) size 784x20

@@ -4,7 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS getComputedStyle(horiz).height is "10px"
-PASS getComputedStyle(vertAuto).height is "380px"
+FAIL getComputedStyle(vertAuto).height should be 380px. Was 400px.
 PASS getComputedStyle(vertFixed).height is "100px"
 PASS successfullyParsed is true
 

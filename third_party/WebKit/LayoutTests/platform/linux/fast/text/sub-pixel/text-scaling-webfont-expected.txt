@@ -1,0 +1,68 @@
+FAIL Size of text does not scale smoothly, reported widths highlighted in red do not match reference row.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Font Size Scaling (WebFont, Latin)
+Size of the text should scale smoothly. Reported width should be within 0.02px of that of the highlighted reference row.
+Font SizeWidthNormalizedDiffContent
+10.00246.25295.500.00My faxed joke won a pager in the cable TV quiz show.
+10.25246.22288.26-7.24My faxed joke won a pager in the cable TV quiz show.
+10.50270.92309.6314.13My faxed joke won a pager in the cable TV quiz show.
+10.75270.89302.396.89My faxed joke won a pager in the cable TV quiz show.
+11.00270.88295.500.00My faxed joke won a pager in the cable TV quiz show.
+11.25270.84288.90-6.60My faxed joke won a pager in the cable TV quiz show.
+11.50295.55308.4012.90My faxed joke won a pager in the cable TV quiz show.
+11.75295.52301.806.30My faxed joke won a pager in the cable TV quiz show.
+12.00295.50295.500.00My faxed joke won a pager in the cable TV quiz show.
+12.25295.47289.44-6.06My faxed joke won a pager in the cable TV quiz show.
+12.50320.17307.3711.87My faxed joke won a pager in the cable TV quiz show.
+12.75320.16301.325.82My faxed joke won a pager in the cable TV quiz show.
+13.00320.13295.500.00My faxed joke won a pager in the cable TV quiz show.
+13.25320.09289.90-5.60My faxed joke won a pager in the cable TV quiz show.
+13.50344.80306.4910.99My faxed joke won a pager in the cable TV quiz show.
+13.75344.78300.905.40My faxed joke won a pager in the cable TV quiz show.
+14.00344.75295.500.00My faxed joke won a pager in the cable TV quiz show.
+14.25344.72290.29-5.21My faxed joke won a pager in the cable TV quiz show.
+14.50369.42305.7310.23My faxed joke won a pager in the cable TV quiz show.
+14.75369.41300.535.03My faxed joke won a pager in the cable TV quiz show.
+15.00369.38295.500.00My faxed joke won a pager in the cable TV quiz show.
+15.25369.34290.63-4.87My faxed joke won a pager in the cable TV quiz show.
+15.50394.05305.079.57My faxed joke won a pager in the cable TV quiz show.
+15.75394.03300.214.71My faxed joke won a pager in the cable TV quiz show.
+16.00394.00295.500.00My faxed joke won a pager in the cable TV quiz show.
+16.25393.97290.93-4.57My faxed joke won a pager in the cable TV quiz show.
+16.50418.67304.498.99My faxed joke won a pager in the cable TV quiz show.
+16.75418.66299.934.43My faxed joke won a pager in the cable TV quiz show.
+17.00418.63295.500.00My faxed joke won a pager in the cable TV quiz show.
+17.25418.59291.20-4.30My faxed joke won a pager in the cable TV quiz show.
+17.50443.30303.988.48My faxed joke won a pager in the cable TV quiz show.
+17.75443.28299.684.18My faxed joke won a pager in the cable TV quiz show.
+18.00443.25295.500.00My faxed joke won a pager in the cable TV quiz show.
+18.25443.22291.43-4.07My faxed joke won a pager in the cable TV quiz show.
+18.50467.92303.528.02My faxed joke won a pager in the cable TV quiz show.
+18.75467.91299.463.96My faxed joke won a pager in the cable TV quiz show.
+19.00467.88295.500.00My faxed joke won a pager in the cable TV quiz show.
+19.25467.84291.64-3.86My faxed joke won a pager in the cable TV quiz show.
+19.50492.55303.117.61My faxed joke won a pager in the cable TV quiz show.
+19.75492.53299.263.76My faxed joke won a pager in the cable TV quiz show.
+20.00492.50295.500.00My faxed joke won a pager in the cable TV quiz show.
+20.25492.48291.84-3.66My faxed joke won a pager in the cable TV quiz show.
+20.50517.17302.737.23My faxed joke won a pager in the cable TV quiz show.
+20.75517.16299.083.58My faxed joke won a pager in the cable TV quiz show.
+21.00517.13295.500.00My faxed joke won a pager in the cable TV quiz show.
+21.25517.11292.01-3.49My faxed joke won a pager in the cable TV quiz show.
+21.50541.80302.406.90My faxed joke won a pager in the cable TV quiz show.
+21.75541.78298.913.41My faxed joke won a pager in the cable TV quiz show.
+22.00541.75295.500.00My faxed joke won a pager in the cable TV quiz show.
+22.25541.73292.17-3.33My faxed joke won a pager in the cable TV quiz show.
+22.50566.42302.096.59My faxed joke won a pager in the cable TV quiz show.
+22.75566.41298.763.26My faxed joke won a pager in the cable TV quiz show.
+23.00566.38295.500.00My faxed joke won a pager in the cable TV quiz show.
+23.25566.36292.31-3.19My faxed joke won a pager in the cable TV quiz show.
+23.50591.05301.816.31My faxed joke won a pager in the cable TV quiz show.
+23.75591.03298.633.13My faxed joke won a pager in the cable TV quiz show.
+24.00591.00295.500.00My faxed joke won a pager in the cable TV quiz show.
+24.25590.98292.45-3.05My faxed joke won a pager in the cable TV quiz show.
+24.50615.67301.556.05My faxed joke won a pager in the cable TV quiz show.
+24.75615.66298.503.00My faxed joke won a pager in the cable TV quiz show.
+

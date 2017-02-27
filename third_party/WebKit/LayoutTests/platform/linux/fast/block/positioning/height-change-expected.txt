@@ -4,21 +4,21 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 202x19
-          text run at (0,0) width 202: "This tests for a regression against "
-        LayoutInline {I} at (0,0) size 738x39
-          LayoutInline {A} at (0,0) size 350x19 [color=#0000EE]
-            LayoutText {#text} at (202,0) size 350x19
-              text run at (202,0) width 350: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6881"
-          LayoutText {#text} at (551,0) size 738x39
-            text run at (551,0) width 5: " "
-            text run at (555,0) width 183: "Block with position:absolute"
-            text run at (0,20) width 590: "bottom:0 doesn't always move when height of containing block changes (affects Safari RSS)"
-        LayoutText {#text} at (590,20) size 4x19
-          text run at (590,20) width 4: "."
+        LayoutText {#text} at (0,0) size 212x19
+          text run at (0,0) width 212: "This tests for a regression against "
+        LayoutInline {I} at (0,0) size 743x39
+          LayoutInline {A} at (0,0) size 348x19 [color=#0000EE]
+            LayoutText {#text} at (212,0) size 348x19
+              text run at (212,0) width 348: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6881"
+          LayoutText {#text} at (559,0) size 743x39
+            text run at (559,0) width 5: " "
+            text run at (563,0) width 180: "Block with position:absolute"
+            text run at (0,20) width 579: "bottom:0 doesn't always move when height of containing block changes (affects Safari RSS)"
+        LayoutText {#text} at (579,20) size 4x19
+          text run at (579,20) width 4: "."
       LayoutBlockFlow {P} at (0,56) size 784x20
-        LayoutText {#text} at (0,0) size 527x19
-          text run at (0,0) width 527: "The squares below should have blue tops and green bottoms, not the other way around."
+        LayoutText {#text} at (0,0) size 550x19
+          text run at (0,0) width 550: "The squares below should have blue tops and green bottoms, not the other way around."
       LayoutBlockFlow {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,202) size 784x20
         LayoutBR {BR} at (0,0) size 0x19

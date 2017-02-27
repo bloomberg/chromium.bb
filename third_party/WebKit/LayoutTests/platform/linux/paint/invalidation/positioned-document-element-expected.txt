@@ -19,7 +19,7 @@
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [108, 116, 402, 20],
+          "rect": [108, 116, 424, 20],
           "reason": "forced by layout"
         }
       ]

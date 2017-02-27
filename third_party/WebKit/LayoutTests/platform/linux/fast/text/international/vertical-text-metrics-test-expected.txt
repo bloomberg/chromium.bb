@@ -10,10 +10,10 @@ string「あ、変っ！」。
 string「あ、変っ！」。
 string「あ、変っ！」。
 
-width=215
+width=217
 width=24
 width=24
-width=215
+width=217
 width=24
 width=24
 

@@ -4,8 +4,8 @@ layer at (0,0) size 785x6380 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x6380
     LayoutBlockFlow {BODY} at (8,8) size 769x6356
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 284x19
-          text run at (0,0) width 284: "Tests the resolved level of runs of neutral types."
+        LayoutText {#text} at (0,0) size 299x19
+          text run at (0,0) width 299: "Tests the resolved level of runs of neutral types."
       LayoutBlockFlow {DIV} at (0,36) size 769x3152
         LayoutBlockFlow {P} at (0,0) size 769x20
           LayoutText {#text} at (0,0) size 43x19
@@ -151,157 +151,157 @@ layer at (0,0) size 785x6380 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 26 RTL: "\x{202C}(^\x{62C}\x{62F}"
             text run at (26,0) width 7 RTL: "\x{202B}?"
         LayoutBlockFlow {P} at (0,1188) size 769x20
-          LayoutText {#text} at (0,0) size 60x19
+          LayoutText {#text} at (0,0) size 61x19
             text run at (0,0) width 44: "ab(^34"
             text run at (44,0) width 10 RTL: "\x{5E9}"
-            text run at (54,0) width 6: "z"
+            text run at (54,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1224) size 769x20
-          LayoutText {#text} at (0,0) size 60x19
+          LayoutText {#text} at (0,0) size 61x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "34"
             text run at (26,0) width 28 RTL: "\x{5D0}\x{5D1}(^"
-            text run at (54,0) width 6: "z"
+            text run at (54,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1260) size 769x20
-          LayoutText {#text} at (0,0) size 59x19
+          LayoutText {#text} at (0,0) size 60x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "34"
             text run at (26,0) width 27 RTL: "\x{627}\x{628}(^"
-            text run at (53,0) width 6: "z"
+            text run at (53,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1296) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
+          LayoutText {#text} at (0,0) size 77x19
             text run at (0,0) width 60: "ab12(^34"
             text run at (60,0) width 10 RTL: "\x{5E9}"
-            text run at (70,0) width 6: "z"
+            text run at (70,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1332) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
+          LayoutText {#text} at (0,0) size 77x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "34"
             text run at (26,0) width 13 RTL: "(^"
             text run at (39,0) width 16: "12"
             text run at (55,0) width 15 RTL: "\x{5D0}\x{5D1}"
-            text run at (70,0) width 6: "z"
+            text run at (70,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1368) size 769x20
-          LayoutText {#text} at (0,0) size 75x19
+          LayoutText {#text} at (0,0) size 76x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "34"
             text run at (26,0) width 13 RTL: "(^"
             text run at (39,0) width 16: "12"
             text run at (55,0) width 14 RTL: "\x{627}\x{628}"
-            text run at (69,0) width 6: "z"
+            text run at (69,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1404) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
+          LayoutText {#text} at (0,0) size 77x19
             text run at (0,0) width 15: "ab"
             text run at (15,0) width 16: "\x{661}\x{662}"
             text run at (31,0) width 29: "(^34"
             text run at (60,0) width 10 RTL: "\x{5E9}"
-            text run at (70,0) width 6: "z"
+            text run at (70,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1440) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
+          LayoutText {#text} at (0,0) size 77x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "34"
             text run at (26,0) width 13 RTL: "(^"
             text run at (39,0) width 16: "\x{661}\x{662}"
             text run at (55,0) width 15 RTL: "\x{5D0}\x{5D1}"
-            text run at (70,0) width 6: "z"
+            text run at (70,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1476) size 769x20
-          LayoutText {#text} at (0,0) size 75x19
+          LayoutText {#text} at (0,0) size 76x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "34"
             text run at (26,0) width 13 RTL: "(^"
             text run at (39,0) width 16: "\x{661}\x{662}"
             text run at (55,0) width 14 RTL: "\x{627}\x{628}"
-            text run at (69,0) width 6: "z"
+            text run at (69,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1512) size 769x20
-          LayoutText {#text} at (0,0) size 52x19
+          LayoutText {#text} at (0,0) size 53x19
             text run at (0,0) width 7: "\x{202A}?"
             text run at (7,0) width 29: "\x{202C}(^34"
             text run at (36,0) width 10 RTL: "\x{5E9}"
-            text run at (46,0) width 6: "z"
+            text run at (46,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1548) size 769x20
-          LayoutText {#text} at (0,0) size 52x19
+          LayoutText {#text} at (0,0) size 53x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "34"
             text run at (26,0) width 13 RTL: "\x{202C}(^"
             text run at (39,0) width 7 RTL: "\x{202B}?"
-            text run at (46,0) width 6: "z"
+            text run at (46,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1584) size 769x20
-          LayoutText {#text} at (0,0) size 60x19
+          LayoutText {#text} at (0,0) size 61x19
             text run at (0,0) width 28: "ab(^"
             text run at (28,0) width 10 RTL: "\x{5E9}"
             text run at (38,0) width 16: "\x{663}\x{664}"
-            text run at (54,0) width 6: "z"
+            text run at (54,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1620) size 769x20
-          LayoutText {#text} at (0,0) size 60x19
+          LayoutText {#text} at (0,0) size 61x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "\x{663}\x{664}"
             text run at (26,0) width 28 RTL: "\x{5D0}\x{5D1}(^"
-            text run at (54,0) width 6: "z"
+            text run at (54,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1656) size 769x20
-          LayoutText {#text} at (0,0) size 59x19
+          LayoutText {#text} at (0,0) size 60x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "\x{663}\x{664}"
             text run at (26,0) width 27 RTL: "\x{627}\x{628}(^"
-            text run at (53,0) width 6: "z"
+            text run at (53,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1692) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
+          LayoutText {#text} at (0,0) size 77x19
             text run at (0,0) width 44: "ab12(^"
             text run at (44,0) width 10 RTL: "\x{5E9}"
             text run at (54,0) width 16: "\x{663}\x{664}"
-            text run at (70,0) width 6: "z"
+            text run at (70,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1728) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
+          LayoutText {#text} at (0,0) size 77x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "\x{663}\x{664}"
             text run at (26,0) width 13 RTL: "(^"
             text run at (39,0) width 16: "12"
             text run at (55,0) width 15 RTL: "\x{5D0}\x{5D1}"
-            text run at (70,0) width 6: "z"
+            text run at (70,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1764) size 769x20
-          LayoutText {#text} at (0,0) size 75x19
+          LayoutText {#text} at (0,0) size 76x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "\x{663}\x{664}"
             text run at (26,0) width 13 RTL: "(^"
             text run at (39,0) width 16: "12"
             text run at (55,0) width 14 RTL: "\x{627}\x{628}"
-            text run at (69,0) width 6: "z"
+            text run at (69,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1800) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
+          LayoutText {#text} at (0,0) size 77x19
             text run at (0,0) width 15: "ab"
             text run at (15,0) width 10 RTL: "\x{5E9}"
             text run at (25,0) width 16: "\x{663}\x{664}"
             text run at (41,0) width 13 RTL: "(^"
             text run at (54,0) width 16: "\x{661}\x{662}"
-            text run at (70,0) width 6: "z"
+            text run at (70,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1836) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
+          LayoutText {#text} at (0,0) size 77x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "\x{663}\x{664}"
             text run at (26,0) width 13 RTL: "(^"
             text run at (39,0) width 16: "\x{661}\x{662}"
             text run at (55,0) width 15 RTL: "\x{5D0}\x{5D1}"
-            text run at (70,0) width 6: "z"
+            text run at (70,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1872) size 769x20
-          LayoutText {#text} at (0,0) size 75x19
+          LayoutText {#text} at (0,0) size 76x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "\x{663}\x{664}"
             text run at (26,0) width 13 RTL: "(^"
             text run at (39,0) width 16: "\x{661}\x{662}"
             text run at (55,0) width 14 RTL: "\x{627}\x{628}"
-            text run at (69,0) width 6: "z"
+            text run at (69,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1908) size 769x20
-          LayoutText {#text} at (0,0) size 52x19
+          LayoutText {#text} at (0,0) size 53x19
             text run at (0,0) width 7: "\x{202A}?"
             text run at (7,0) width 13: "\x{202C}(^"
             text run at (20,0) width 10 RTL: "\x{5E9}"
             text run at (30,0) width 16: "\x{663}\x{664}"
-            text run at (46,0) width 6: "z"
+            text run at (46,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1944) size 769x20
-          LayoutText {#text} at (0,0) size 52x19
+          LayoutText {#text} at (0,0) size 53x19
             text run at (0,0) width 10 RTL: "\x{5E9}"
             text run at (10,0) width 16: "\x{663}\x{664}"
             text run at (26,0) width 13 RTL: "\x{202C}(^"
             text run at (39,0) width 7 RTL: "\x{202B}?"
-            text run at (46,0) width 6: "z"
+            text run at (46,0) width 7: "z"
         LayoutBlockFlow {P} at (0,1980) size 769x20
           LayoutText {#text} at (0,0) size 33x19
             text run at (0,0) width 28: "ab(^"
@@ -644,158 +644,158 @@ layer at (0,0) size 785x6380 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 26 RTL: "\x{202C}(^\x{62C}\x{62F}"
             text run at (26,0) width 7 RTL: "\x{202B}?"
         LayoutBlockFlow {P} at (0,1188) size 769x20
-          LayoutText {#text} at (0,0) size 60x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 44: "ab(^34"
+          LayoutText {#text} at (0,0) size 61x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 44: "ab(^34"
         LayoutBlockFlow {P} at (0,1224) size 769x20
-          LayoutText {#text} at (0,0) size 60x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "34"
-            text run at (32,0) width 28 RTL: "\x{5D0}\x{5D1}(^"
+          LayoutText {#text} at (0,0) size 61x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "34"
+            text run at (33,0) width 28 RTL: "\x{5D0}\x{5D1}(^"
         LayoutBlockFlow {P} at (0,1260) size 769x20
-          LayoutText {#text} at (0,0) size 59x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "34"
-            text run at (32,0) width 27 RTL: "\x{627}\x{628}(^"
+          LayoutText {#text} at (0,0) size 60x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "34"
+            text run at (33,0) width 27 RTL: "\x{627}\x{628}(^"
         LayoutBlockFlow {P} at (0,1296) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 60: "ab12(^34"
+          LayoutText {#text} at (0,0) size 77x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 60: "ab12(^34"
         LayoutBlockFlow {P} at (0,1332) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "34"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 16: "12"
-            text run at (61,0) width 15 RTL: "\x{5D0}\x{5D1}"
+          LayoutText {#text} at (0,0) size 77x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "34"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 16: "12"
+            text run at (62,0) width 15 RTL: "\x{5D0}\x{5D1}"
         LayoutBlockFlow {P} at (0,1368) size 769x20
-          LayoutText {#text} at (0,0) size 75x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "34"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 16: "12"
-            text run at (61,0) width 14 RTL: "\x{627}\x{628}"
+          LayoutText {#text} at (0,0) size 76x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "34"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 16: "12"
+            text run at (62,0) width 14 RTL: "\x{627}\x{628}"
         LayoutBlockFlow {P} at (0,1404) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "34"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 31: "ab\x{661}\x{662}"
+          LayoutText {#text} at (0,0) size 77x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "34"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 31: "ab\x{661}\x{662}"
         LayoutBlockFlow {P} at (0,1440) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "34"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 16: "\x{661}\x{662}"
-            text run at (61,0) width 15 RTL: "\x{5D0}\x{5D1}"
+          LayoutText {#text} at (0,0) size 77x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "34"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 16: "\x{661}\x{662}"
+            text run at (62,0) width 15 RTL: "\x{5D0}\x{5D1}"
         LayoutBlockFlow {P} at (0,1476) size 769x20
-          LayoutText {#text} at (0,0) size 75x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "34"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 16: "\x{661}\x{662}"
-            text run at (61,0) width 14 RTL: "\x{627}\x{628}"
+          LayoutText {#text} at (0,0) size 76x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "34"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 16: "\x{661}\x{662}"
+            text run at (62,0) width 14 RTL: "\x{627}\x{628}"
         LayoutBlockFlow {P} at (0,1512) size 769x20
-          LayoutText {#text} at (0,0) size 52x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 7: "\x{202A}?"
-            text run at (23,0) width 29: "\x{202C}(^34"
+          LayoutText {#text} at (0,0) size 53x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 7: "\x{202A}?"
+            text run at (24,0) width 29: "\x{202C}(^34"
         LayoutBlockFlow {P} at (0,1548) size 769x20
-          LayoutText {#text} at (0,0) size 52x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "34"
-            text run at (32,0) width 13 RTL: "\x{202C}(^"
-            text run at (45,0) width 7 RTL: "\x{202B}?"
+          LayoutText {#text} at (0,0) size 53x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "34"
+            text run at (33,0) width 13 RTL: "\x{202C}(^"
+            text run at (46,0) width 7 RTL: "\x{202B}?"
         LayoutBlockFlow {P} at (0,1584) size 769x20
-          LayoutText {#text} at (0,0) size 60x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "\x{663}\x{664}"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 15: "ab"
+          LayoutText {#text} at (0,0) size 61x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "\x{663}\x{664}"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 15: "ab"
         LayoutBlockFlow {P} at (0,1620) size 769x20
-          LayoutText {#text} at (0,0) size 60x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "\x{663}\x{664}"
-            text run at (32,0) width 28 RTL: "\x{5D0}\x{5D1}(^"
+          LayoutText {#text} at (0,0) size 61x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "\x{663}\x{664}"
+            text run at (33,0) width 28 RTL: "\x{5D0}\x{5D1}(^"
         LayoutBlockFlow {P} at (0,1656) size 769x20
-          LayoutText {#text} at (0,0) size 59x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "\x{663}\x{664}"
-            text run at (32,0) width 27 RTL: "\x{627}\x{628}(^"
+          LayoutText {#text} at (0,0) size 60x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "\x{663}\x{664}"
+            text run at (33,0) width 27 RTL: "\x{627}\x{628}(^"
         LayoutBlockFlow {P} at (0,1692) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "\x{663}\x{664}"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 31: "ab12"
+          LayoutText {#text} at (0,0) size 77x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "\x{663}\x{664}"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 31: "ab12"
         LayoutBlockFlow {P} at (0,1728) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "\x{663}\x{664}"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 16: "12"
-            text run at (61,0) width 15 RTL: "\x{5D0}\x{5D1}"
+          LayoutText {#text} at (0,0) size 77x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "\x{663}\x{664}"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 16: "12"
+            text run at (62,0) width 15 RTL: "\x{5D0}\x{5D1}"
         LayoutBlockFlow {P} at (0,1764) size 769x20
-          LayoutText {#text} at (0,0) size 75x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "\x{663}\x{664}"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 16: "12"
-            text run at (61,0) width 14 RTL: "\x{627}\x{628}"
+          LayoutText {#text} at (0,0) size 76x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "\x{663}\x{664}"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 16: "12"
+            text run at (62,0) width 14 RTL: "\x{627}\x{628}"
         LayoutBlockFlow {P} at (0,1800) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "\x{663}\x{664}"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 31: "ab\x{661}\x{662}"
+          LayoutText {#text} at (0,0) size 77x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "\x{663}\x{664}"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 31: "ab\x{661}\x{662}"
         LayoutBlockFlow {P} at (0,1836) size 769x20
-          LayoutText {#text} at (0,0) size 76x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "\x{663}\x{664}"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 16: "\x{661}\x{662}"
-            text run at (61,0) width 15 RTL: "\x{5D0}\x{5D1}"
+          LayoutText {#text} at (0,0) size 77x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "\x{663}\x{664}"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 16: "\x{661}\x{662}"
+            text run at (62,0) width 15 RTL: "\x{5D0}\x{5D1}"
         LayoutBlockFlow {P} at (0,1872) size 769x20
-          LayoutText {#text} at (0,0) size 75x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "\x{663}\x{664}"
-            text run at (32,0) width 13 RTL: "(^"
-            text run at (45,0) width 16: "\x{661}\x{662}"
-            text run at (61,0) width 14 RTL: "\x{627}\x{628}"
+          LayoutText {#text} at (0,0) size 76x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "\x{663}\x{664}"
+            text run at (33,0) width 13 RTL: "(^"
+            text run at (46,0) width 16: "\x{661}\x{662}"
+            text run at (62,0) width 14 RTL: "\x{627}\x{628}"
         LayoutBlockFlow {P} at (0,1908) size 769x20
-          LayoutText {#text} at (0,0) size 52x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "\x{663}\x{664}"
-            text run at (32,0) width 13 RTL: "\x{202C}(^"
-            text run at (45,0) width 7: "\x{202A}?"
+          LayoutText {#text} at (0,0) size 53x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "\x{663}\x{664}"
+            text run at (33,0) width 13 RTL: "\x{202C}(^"
+            text run at (46,0) width 7: "\x{202A}?"
         LayoutBlockFlow {P} at (0,1944) size 769x20
-          LayoutText {#text} at (0,0) size 52x19
-            text run at (0,0) width 6: "z"
-            text run at (6,0) width 10 RTL: "\x{5E9}"
-            text run at (16,0) width 16: "\x{663}\x{664}"
-            text run at (32,0) width 13 RTL: "\x{202C}(^"
-            text run at (45,0) width 7 RTL: "\x{202B}?"
+          LayoutText {#text} at (0,0) size 53x19
+            text run at (0,0) width 7: "z"
+            text run at (7,0) width 10 RTL: "\x{5E9}"
+            text run at (17,0) width 16: "\x{663}\x{664}"
+            text run at (33,0) width 13 RTL: "\x{202C}(^"
+            text run at (46,0) width 7 RTL: "\x{202B}?"
         LayoutBlockFlow {P} at (0,1980) size 769x20
           LayoutText {#text} at (0,0) size 33x19
             text run at (0,0) width 0 RTL: "\x{202C}"

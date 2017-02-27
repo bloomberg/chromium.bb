@@ -4,39 +4,39 @@ layer at (0,0) size 785x5069 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x5069
     LayoutBlockFlow {BODY} at (8,8) size 769x5045
       LayoutBlockFlow (anonymous) at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 336x19
-          text run at (0,0) width 336: "This tests font choices and metrics for monospace fonts."
+        LayoutText {#text} at (0,0) size 351x19
+          text run at (0,0) width 351: "This tests font choices and metrics for monospace fonts."
       LayoutBlockFlow {P} at (0,36) size 769x140
-        LayoutInline {FONT} at (0,0) size 767x139
-          LayoutText {#text} at (0,0) size 51x19
-            text run at (0,0) width 51: "Monaco"
-          LayoutBR {BR} at (51,15) size 0x0
-          LayoutText {#text} at (0,20) size 767x39
-            text run at (0,20) width 767: "  ! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z [ \\ ]"
-            text run at (0,40) width 355: "^ _ ` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } > "
-          LayoutBR {BR} at (355,55) size 0x0
-          LayoutInline {B} at (0,0) size 766x39
-            LayoutText {#text} at (0,60) size 766x39
-              text run at (0,60) width 766: "  ! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
-              text run at (0,80) width 395: "[ \\ ] ^ _ ` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } > "
+        LayoutInline {FONT} at (0,0) size 769x139
+          LayoutText {#text} at (0,0) size 52x19
+            text run at (0,0) width 52: "Monaco"
+          LayoutBR {BR} at (52,15) size 0x0
+          LayoutText {#text} at (0,20) size 766x39
+            text run at (0,20) width 766: "  ! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z ["
+            text run at (0,40) width 386: "\\ ] ^ _ ` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } > "
+          LayoutBR {BR} at (386,55) size 0x0
+          LayoutInline {B} at (0,0) size 765x39
+            LayoutText {#text} at (0,60) size 765x39
+              text run at (0,60) width 765: "  ! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y"
+              text run at (0,80) width 422: "Z [ \\ ] ^ _ ` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } > "
           LayoutText {#text} at (0,0) size 0x0
           LayoutBR {BR} at (0,0) size 0x0
-          LayoutInline {I} at (0,0) size 763x39
-            LayoutText {#text} at (0,100) size 763x39
-              text run at (0,100) width 763: "  ! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z [ \\"
-              text run at (0,120) width 375: "] ^ _ ` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } >"
+          LayoutInline {I} at (0,0) size 769x39
+            LayoutText {#text} at (0,100) size 769x39
+              text run at (0,100) width 769: "  ! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z [ \\"
+              text run at (0,120) width 369: "] ^ _ ` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } >"
           LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,192) size 769x183
-        LayoutInline {FONT} at (0,0) size 750x182
+        LayoutInline {FONT} at (0,0) size 768x182
           LayoutText {#text} at (0,0) size 70x18
             text run at (0,0) width 70: "Courier"
           LayoutBR {BR} at (70,14) size 0x0
-          LayoutText {#text} at (0,18) size 750x54
-            text run at (0,18) width 750: "  ! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E"
-            text run at (0,36) width 750: "F G H I J K L M N O P Q R S T U V W X Y Z [ \\ ] ^ _ ` a b c d e f g h i j k"
-            text run at (0,54) width 380: "l m n o p q r s t u v w x y z { | } > "
-          LayoutBR {BR} at (380,68) size 0x0
+          LayoutText {#text} at (0,18) size 768x54
+            text run at (0,18) width 768: "  ! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F"
+            text run at (0,36) width 767: "G H I J K L M N O P Q R S T U V W X Y Z [ \\ ] ^ _ ` a b c d e f g h i j k l m"
+            text run at (0,54) width 337: "n o p q r s t u v w x y z { | } > "
+          LayoutBR {BR} at (337,68) size 0x0
           LayoutInline {B} at (0,0) size 750x54
             LayoutText {#text} at (0,72) size 750x54
               text run at (0,72) width 750: "  ! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E"
@@ -86,9 +86,9 @@ layer at (0,0) size 785x5069 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,160) size 32x16
             text run at (0,160) width 32: "))))"
           LayoutBR {BR} at (32,172) size 0x0
-          LayoutText {#text} at (0,176) size 32x16
-            text run at (0,176) width 32: "****"
-          LayoutBR {BR} at (32,188) size 0x0
+          LayoutText {#text} at (0,176) size 28x16
+            text run at (0,176) width 28: "****"
+          LayoutBR {BR} at (28,188) size 0x0
           LayoutText {#text} at (0,192) size 32x16
             text run at (0,192) width 32: "++++"
           LayoutBR {BR} at (32,204) size 0x0
@@ -236,9 +236,9 @@ layer at (0,0) size 785x5069 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,960) size 32x16
             text run at (0,960) width 32: "[[[["
           LayoutBR {BR} at (32,972) size 0x0
-          LayoutText {#text} at (0,976) size 32x16
-            text run at (0,976) width 32: "\\\\\\\\"
-          LayoutBR {BR} at (32,988) size 0x0
+          LayoutText {#text} at (0,976) size 28x16
+            text run at (0,976) width 28: "\\\\\\\\"
+          LayoutBR {BR} at (28,988) size 0x0
           LayoutText {#text} at (0,992) size 32x16
             text run at (0,992) width 32: "]]]]"
           LayoutBR {BR} at (32,1004) size 0x0

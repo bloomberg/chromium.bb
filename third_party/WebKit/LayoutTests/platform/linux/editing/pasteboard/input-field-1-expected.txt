@@ -9,8 +9,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 224x19
-          text run at (0,0) width 224: "This tests Copy/Paste of a input field."
+        LayoutText {#text} at (0,0) size 235x19
+          text run at (0,0) width 235: "This tests Copy/Paste of a input field."
       LayoutBlockFlow {DIV} at (0,36) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutTextControl {INPUT} at (154,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]

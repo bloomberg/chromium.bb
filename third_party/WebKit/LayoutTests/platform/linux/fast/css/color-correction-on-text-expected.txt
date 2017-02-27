@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 588x19
-          text run at (0,0) width 588: "The distinction below is subtle, but the middle \"H\" is color-corrected, and the first and last are not."
+        LayoutText {#text} at (0,0) size 618x19
+          text run at (0,0) width 618: "The distinction below is subtle, but the middle \"H\" is color-corrected, and the first and last are not."
       LayoutBlockFlow (anonymous) at (0,36) size 784x176
         LayoutInline {SPAN} at (0,0) size 117x170 [color=#008000]
           LayoutText {#text} at (0,3) size 117x170

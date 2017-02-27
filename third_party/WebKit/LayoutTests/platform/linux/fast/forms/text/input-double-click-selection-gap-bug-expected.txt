@@ -4,9 +4,9 @@ layer at (0,0) size 800x548
   LayoutBlockFlow {HTML} at (0,0) size 800x548
     LayoutBlockFlow {BODY} at (8,16) size 784x524
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 396x19
-          text run at (0,0) width 309: "The top table was resized while the field\x{2019}s contents "
-          text run at (308,0) width 88: "were selected."
+        LayoutText {#text} at (0,0) size 414x19
+          text run at (0,0) width 325: "The top table was resized while the field\x{2019}s contents "
+          text run at (324,0) width 90: "were selected."
       LayoutTable {TABLE} at (0,36) size 198x244
         LayoutTableSection {TBODY} at (0,0) size 198x244
           LayoutTableRow {TR} at (0,2) size 198x240
@@ -21,11 +21,11 @@ layer at (0,0) size 800x548
               LayoutText {#text} at (0,0) size 0x0
 layer at (32,166) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 39x16
-      text run at (0,0) width 39: "foo bar"
+    LayoutText {#text} at (0,0) size 40x16
+      text run at (0,0) width 40: "foo bar"
 layer at (32,410) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 39x16
-      text run at (0,0) width 39: "foo bar"
+    LayoutText {#text} at (0,0) size 40x16
+      text run at (0,0) width 40: "foo bar"
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of child 1 {TD} of child 0 {TR} of child 1 {TBODY} of child 3 {TABLE} of body
 selection end:   position 7 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of child 1 {TD} of child 0 {TR} of child 1 {TBODY} of child 3 {TABLE} of body

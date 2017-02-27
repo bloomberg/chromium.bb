@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 4: " "
           LayoutTableRow {TR} at (0,28) size 782x24
             LayoutTableCell {TD} at (2,28) size 155x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 23x19
-                text run at (2,2) width 23: "Old"
+              LayoutText {#text} at (2,2) size 24x19
+                text run at (2,2) width 24: "Old"
             LayoutTableCell {TD} at (159,28) size 621x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=7]
-              LayoutText {#text} at (2,2) size 40x19
-                text run at (2,2) width 40: "Check"
+              LayoutText {#text} at (2,2) size 41x19
+                text run at (2,2) width 41: "Check"

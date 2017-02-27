@@ -9,10 +9,10 @@ layer at (0,0) size 785x1432 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutTableSection {TBODY} at (2,2) size 565x46
             LayoutTableRow {TR} at (0,2) size 565x42
               LayoutTableCell {TD} at (2,2) size 561x42 [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (14,1) size 546x39
-                  text run at (14,1) width 546: "This is a table. It should sit on the same line as the float and wrap as needed to fit within the"
-                  text run at (438,21) width 4 RTL: "."
-                  text run at (442,21) width 118: "remaining line width"
+                LayoutText {#text} at (8,1) size 552x39
+                  text run at (8,1) width 552: "This is a table. It should sit on the same line as the float and wrap as needed to fit within"
+                  text run at (403,21) width 4 RTL: "."
+                  text run at (407,21) width 153: "the remaining line width"
       LayoutBlockFlow {DIV} at (0,200) size 769x200
         LayoutBlockFlow (floating) {DIV} at (569,0) size 200x200 [bgcolor=#FF0000]
       LayoutBlockFlow {DIV} at (0,408) size 769x200
@@ -24,10 +24,10 @@ layer at (0,0) size 785x1432 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutTableSection {TBODY} at (2,2) size 380x46
             LayoutTableRow {TR} at (0,2) size 380x42
               LayoutTableCell {TD} at (2,2) size 376x42 [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (21,1) size 354x39
-                  text run at (21,1) width 354: "This is a table. It should sit on the same line as the float and"
-                  text run at (61,21) width 4 RTL: "."
-                  text run at (65,21) width 310: "wrap as needed to fit within the remaining line width"
+                LayoutText {#text} at (2,1) size 373x39
+                  text run at (2,1) width 373: "This is a table. It should sit on the same line as the float and"
+                  text run at (39,21) width 4 RTL: "."
+                  text run at (43,21) width 332: "wrap as needed to fit within the remaining line width"
       LayoutBlockFlow {DIV} at (0,808) size 769x200
         LayoutBlockFlow (floating) {DIV} at (569,0) size 200x200 [bgcolor=#FF0000]
       LayoutBlockFlow {DIV} at (0,1016) size 769x200
@@ -38,14 +38,14 @@ layer at (0,0) size 785x1432 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (184.50,0) size 384.50x50 [bgcolor=#008000]
 layer at (8,208) size 569x59 clip at (25,210) size 550x40
   LayoutBlockFlow {DIV} at (0,0) size 569x59 [border: (2px solid #0000FF)]
-    LayoutText {#text} at (54,2) size 513x39
-      text run at (54,2) width 513: "This is an overflow:scroll region. It should sit on the same line as the float and wrap as"
-      text run at (305,22) width 4 RTL: "."
-      text run at (309,22) width 258: "needed to fit within the remaining line width"
+    LayoutText {#text} at (24,2) size 543x39
+      text run at (24,2) width 543: "This is an overflow:scroll region. It should sit on the same line as the float and wrap as"
+      text run at (284,22) width 4 RTL: "."
+      text run at (288,22) width 279: "needed to fit within the remaining line width"
 layer at (189,816) size 388x79 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (180.50,0) size 388.50x79 [border: (2px solid #0000FF)]
-    LayoutText {#text} at (20,2) size 369x59
-      text run at (20,2) width 367: "This is an overflow:scroll region. It should sit on the same line"
-      text run at (18,22) width 369: "as the float and wrap as needed to fit within the remaining line"
-      text run at (349,42) width 5 RTL: "."
-      text run at (353,42) width 34: "width"
+    LayoutText {#text} at (22,2) size 365x59
+      text run at (22,2) width 365: "This is an overflow:scroll region. It should sit on the same"
+      text run at (62,22) width 325: "line as the float and wrap as needed to fit within the"
+      text run at (252,42) width 5 RTL: "."
+      text run at (256,42) width 131: "remaining line width"

@@ -4,13 +4,13 @@ layer at (0,0) size 800x235
   LayoutBlockFlow {HTML} at (0,0) size 800x235
     LayoutBlockFlow {BODY} at (8,16) size 784x211
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 742x39
-          text run at (0,0) width 597: "Test passes if, when the text area below is focused for editing, the text insertion caret is either white "
-          text run at (596,0) width 146: "or some other color that"
-          text run at (0,20) width 213: "contrasts well with the background."
+        LayoutText {#text} at (0,0) size 776x39
+          text run at (0,0) width 627: "Test passes if, when the text area below is focused for editing, the text insertion caret is either white "
+          text run at (626,0) width 150: "or some other color that"
+          text run at (0,20) width 224: "contrasts well with the background."
       LayoutBlockFlow {P} at (0,56) size 784x20
-        LayoutText {#text} at (0,0) size 416x19
-          text run at (0,0) width 416: "The shape of the caret, and whether it flashes, are not part of the test."
+        LayoutText {#text} at (0,0) size 432x19
+          text run at (0,0) width 432: "The shape of the caret, and whether it flashes, are not part of the test."
       LayoutBlockFlow (anonymous) at (0,92) size 784x119
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0

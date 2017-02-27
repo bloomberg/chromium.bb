@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g",
-          "rect": [50, 50, 561, 82],
+          "rect": [50, 50, 572, 82],
           "reason": "became visible"
         },
         {
           "object": "LayoutSVGText text id='text'",
-          "rect": [50, 50, 561, 82],
+          "rect": [50, 50, 572, 82],
           "reason": "layoutObject insertion"
         }
       ]

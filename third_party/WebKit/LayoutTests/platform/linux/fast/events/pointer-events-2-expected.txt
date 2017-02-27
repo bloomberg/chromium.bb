@@ -4,27 +4,27 @@ layer at (0,0) size 800x176
   LayoutBlockFlow {HTML} at (0,0) size 800x175.88
     LayoutBlockFlow {BODY} at (8,21.44) size 784x138.44
       LayoutBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 757x36
-          text run at (0,0) width 757: "Testing the values of 'pointer-events' on HTML content"
+        LayoutText {#text} at (0,0) size 755x36
+          text run at (0,0) width 755: "Testing the values of 'pointer-events' on HTML content"
       LayoutBlockFlow {P} at (0,58.44) size 784x80
-        LayoutText {#text} at (0,0) size 779x79
-          text run at (0,0) width 542: "This test is expected to be run from within DumpRenderTree. If running manually, click on "
-          text run at (541,0) width 235: "the elements in the first column, making"
-          text run at (0,20) width 261: "sure the actual result (3rd column) matches "
-          text run at (261,20) width 518: "the expected result (2nd column). Repeat for click target (4th column), expected result"
-          text run at (0,40) width 80: "(5th column) "
-          text run at (80,40) width 495: "and actual result (6th column). Note: You should click on a yellow inline element if "
-          text run at (574,40) width 202: "one exists, otherwise anywhere in"
-          text run at (0,60) width 49: "the box."
+        LayoutText {#text} at (0,0) size 778x79
+          text run at (0,0) width 578: "This test is expected to be run from within DumpRenderTree. If running manually, click on "
+          text run at (577,0) width 201: "the elements in the first column,"
+          text run at (0,20) width 324: "making sure the actual result (3rd column) matches "
+          text run at (324,20) width 442: "the expected result (2nd column). Repeat for click target (4th column),"
+          text run at (0,40) width 183: "expected result (5th column) "
+          text run at (183,40) width 528: "and actual result (6th column). Note: You should click on a yellow inline element if "
+          text run at (710,40) width 67: "one exists,"
+          text run at (0,60) width 198: "otherwise anywhere in the box."
 layer at (10,140) size 300x100
   LayoutBlockFlow (positioned) {DIV} at (10,140) size 300x100
 layer at (10,140) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
 layer at (10,140) size 80x80
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
-    LayoutText {#text} at (0,0) size 68x39
-      text run at (0,0) width 48: "pointer-"
-      text run at (0,20) width 68: "events auto"
+    LayoutText {#text} at (0,0) size 71x39
+      text run at (0,0) width 49: "pointer-"
+      text run at (0,20) width 71: "events auto"
 layer at (110,140) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
     LayoutText {#text} at (0,0) size 16x19
@@ -39,26 +39,26 @@ layer at (10,240) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
 layer at (10,240) size 80x80
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
-    LayoutText {#text} at (0,0) size 71x39
-      text run at (0,0) width 48: "pointer-"
-      text run at (0,20) width 71: "events none"
+    LayoutText {#text} at (0,0) size 75x39
+      text run at (0,0) width 49: "pointer-"
+      text run at (0,20) width 75: "events none"
 layer at (110,240) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
-    LayoutText {#text} at (0,0) size 29x19
-      text run at (0,0) width 29: "none"
+    LayoutText {#text} at (0,0) size 31x19
+      text run at (0,0) width 31: "none"
 layer at (210,240) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (200,0) size 80x80
-    LayoutText {#text} at (0,0) size 29x19
-      text run at (0,0) width 29: "none"
+    LayoutText {#text} at (0,0) size 31x19
+      text run at (0,0) width 31: "none"
 layer at (10,340) size 300x100
   LayoutBlockFlow (positioned) {DIV} at (10,340) size 300x100
 layer at (10,340) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
 layer at (10,340) size 80x80
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
-    LayoutText {#text} at (0,0) size 69x39
-      text run at (0,0) width 53: "siblings -"
-      text run at (0,20) width 69: "auto on top"
+    LayoutText {#text} at (0,0) size 71x39
+      text run at (0,0) width 57: "siblings -"
+      text run at (0,20) width 71: "auto on top"
 layer at (10,340) size 80x80
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80
 layer at (110,340) size 80x80
@@ -75,9 +75,9 @@ layer at (10,440) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
 layer at (10,440) size 80x80
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
-    LayoutText {#text} at (0,0) size 72x39
-      text run at (0,0) width 53: "siblings -"
-      text run at (0,20) width 72: "none on top"
+    LayoutText {#text} at (0,0) size 75x39
+      text run at (0,0) width 57: "siblings -"
+      text run at (0,20) width 75: "none on top"
 layer at (10,440) size 80x80
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80
 layer at (110,440) size 80x80
@@ -96,9 +96,9 @@ layer at (10,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) 
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
 layer at (10,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
-    LayoutText {#text} at (0,0) size 79x39
-      text run at (0,0) width 79: "nested - auto"
-      text run at (0,20) width 31: "outer"
+    LayoutText {#text} at (0,0) size 80x39
+      text run at (0,0) width 80: "nested - auto"
+      text run at (0,20) width 32: "outer"
 layer at (110,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
     LayoutText {#text} at (0,0) size 16x19
@@ -115,9 +115,9 @@ layer at (340,140) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
 layer at (340,140) size 80x80
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
-    LayoutText {#text} at (0,0) size 64x39
+    LayoutText {#text} at (0,0) size 67x39
       text run at (0,0) width 49: "nested -"
-      text run at (0,20) width 64: "none outer"
+      text run at (0,20) width 67: "none outer"
 layer at (440,140) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
     LayoutText {#text} at (0,0) size 24x19
@@ -148,25 +148,25 @@ layer at (340,340) size 80x80
   LayoutImage (positioned) {IMG} at (0,0) size 80x80
 layer at (440,340) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
-    LayoutText {#text} at (0,0) size 29x19
-      text run at (0,0) width 29: "none"
+    LayoutText {#text} at (0,0) size 31x19
+      text run at (0,0) width 31: "none"
 layer at (540,340) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (200,0) size 80x80
-    LayoutText {#text} at (0,0) size 29x19
-      text run at (0,0) width 29: "none"
+    LayoutText {#text} at (0,0) size 31x19
+      text run at (0,0) width 31: "none"
 layer at (340,440) size 300x100
   LayoutBlockFlow (positioned) {DIV} at (340,440) size 300x100
 layer at (340,440) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
 layer at (340,440) size 80x80
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
-    LayoutInline {SPAN} at (0,0) size 30x19 [bgcolor=#FFFF00]
-      LayoutText {#text} at (0,0) size 30x19
-        text run at (0,0) width 30: "inline"
-    LayoutText {#text} at (30,0) size 72x59
-      text run at (30,0) width 24: " has"
-      text run at (0,20) width 72: "auto, parent"
-      text run at (0,40) width 29: "none"
+    LayoutInline {SPAN} at (0,0) size 35x19 [bgcolor=#FFFF00]
+      LayoutText {#text} at (0,0) size 35x19
+        text run at (0,0) width 35: "inline"
+    LayoutText {#text} at (35,0) size 74x59
+      text run at (35,0) width 25: " has"
+      text run at (0,20) width 74: "auto, parent"
+      text run at (0,40) width 31: "none"
 layer at (440,440) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
     LayoutText {#text} at (0,0) size 24x19
@@ -181,13 +181,13 @@ layer at (340,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0)
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
 layer at (340,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
-    LayoutInline {SPAN} at (0,0) size 30x19 [bgcolor=#FFFF00]
-      LayoutText {#text} at (0,0) size 30x19
-        text run at (0,0) width 30: "inline"
-    LayoutText {#text} at (30,0) size 75x59
-      text run at (30,0) width 24: " has"
-      text run at (0,20) width 75: "none, parent"
-      text run at (0,40) width 26: "auto"
+    LayoutInline {SPAN} at (0,0) size 35x19 [bgcolor=#FFFF00]
+      LayoutText {#text} at (0,0) size 35x19
+        text run at (0,0) width 35: "inline"
+    LayoutText {#text} at (35,0) size 78x59
+      text run at (35,0) width 25: " has"
+      text run at (0,20) width 78: "none, parent"
+      text run at (0,40) width 27: "auto"
 layer at (440,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
     LayoutText {#text} at (0,0) size 24x19

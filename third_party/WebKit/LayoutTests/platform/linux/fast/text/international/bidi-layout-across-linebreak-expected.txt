@@ -4,21 +4,21 @@ layer at (0,0) size 800x536
   LayoutBlockFlow {HTML} at (0,0) size 800x536
     LayoutBlockFlow {BODY} at (8,16) size 784x512
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 541x19
-          text run at (0,0) width 541: "The T column should match the R column. The H columns uses <br/> to force line breaks."
+        LayoutText {#text} at (0,0) size 571x19
+          text run at (0,0) width 571: "The T column should match the R column. The H columns uses <br/> to force line breaks."
       LayoutTable {TABLE} at (0,36) size 157x476 [border: none]
         LayoutTableSection {TBODY} at (0,0) size 156x475
           LayoutTableRow {TR} at (0,0) size 156x25
             LayoutTableCell {TD} at (0,10) size 33x4 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (33,0) size 45x25 [border: (1px solid #008000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (3,3) size 11x19
-                text run at (3,3) width 11: "H"
+              LayoutText {#text} at (3,3) size 12x19
+                text run at (3,3) width 12: "H"
             LayoutTableCell {TD} at (78,0) size 33x25 [border: (1px solid #008000)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (3,3) size 9x19
-                text run at (3,3) width 9: "T"
-            LayoutTableCell {TD} at (111,0) size 45x25 [border: (1px solid #008000)] [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (3,3) size 10x19
-                text run at (3,3) width 10: "R"
+                text run at (3,3) width 10: "T"
+            LayoutTableCell {TD} at (111,0) size 45x25 [border: (1px solid #008000)] [r=0 c=3 rs=1 cs=1]
+              LayoutText {#text} at (3,3) size 11x19
+                text run at (3,3) width 11: "R"
           LayoutTableRow {TR} at (0,25) size 156x45
             LayoutTableCell {TD} at (0,35) size 33x25 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (3,3) size 8x19

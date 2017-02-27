@@ -11,15 +11,15 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 778x26
                   LayoutTableRow {TR} at (0,2) size 778x22
                     LayoutTableCell {TD} at (2,2) size 774x22 [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (1,1) size 227x19
-                        text run at (1,1) width 227: "text below cant break out of this table"
+                      LayoutText {#text} at (1,1) size 236x19
+                        text run at (1,1) width 236: "text below cant break out of this table"
           LayoutTableRow {TR} at (0,32) size 784x48
             LayoutTableCell {TD} at (2,32) size 780x48 [r=1 c=0 rs=1 cs=1]
               LayoutTable {TABLE} at (1,1) size 778x46
                 LayoutTableSection {TBODY} at (0,0) size 778x46
                   LayoutTableRow {TR} at (0,2) size 778x42
                     LayoutTableCell {TD} at (2,2) size 774x42 [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (1,1) size 744x39
-                        text run at (1,1) width 508: "Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text "
-                        text run at (509,1) width 236: "Text Text Text Text Text Text Text Text"
-                        text run at (1,21) width 265: "Text Text Text Text Text Text Text Text Text"
+                      LayoutText {#text} at (1,1) size 762x39
+                        text run at (1,1) width 542: "Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text "
+                        text run at (543,1) width 220: "Text Text Text Text Text Text Text"
+                        text run at (1,21) width 315: "Text Text Text Text Text Text Text Text Text Text"

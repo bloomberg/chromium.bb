@@ -139,92 +139,92 @@ layer at (12,468) size 304x104 clip at (13,469) size 302x102 scrollWidth 601
   LayoutTableCell {TD} at (2,52) size 304x4 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,-18) size 300x20 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x20 [bgcolor=#008000]
-        LayoutText {#text} at (0,0) size 25x19
-          text run at (0,0) width 25: "Test"
+        LayoutText {#text} at (0,0) size 26x19
+          text run at (0,0) width 26: "Test"
 layer at (118,620) size 304x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (108,52) size 304x4 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,-18) size 300x20 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x20 [bgcolor=#008000]
-        LayoutText {#text} at (0,0) size 78x19
-          text run at (0,0) width 78: "Reverse Test"
+        LayoutText {#text} at (0,0) size 81x19
+          text run at (0,0) width 81: "Reverse Test"
 layer at (12,772) size 304x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (2,52) size 304x4 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,-18) size 300x20 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x20 [bgcolor=#008000]
-        LayoutText {#text} at (0,0) size 79x19
-          text run at (0,0) width 79: "Stacked Test"
+        LayoutText {#text} at (0,0) size 80x19
+          text run at (0,0) width 80: "Stacked Test"
 layer at (318,878) size 304x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (308,158) size 304x4 [bgcolor=#808080] [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,-18) size 300x20 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x20 [bgcolor=#008000]
-        LayoutText {#text} at (0,0) size 49x19
-          text run at (0,0) width 49: "Reverse"
+        LayoutText {#text} at (0,0) size 51x19
+          text run at (0,0) width 51: "Reverse"
 layer at (12,1030) size 604x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell {TD} at (2,42) size 604x24 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
 layer at (8,1482) size 300x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 600
   LayoutTableCell {DIV} at (0,40) size 300x20 [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (0,0) size 300x20
       LayoutBlockFlow {DIV} at (0,0) size 600x20 [bgcolor=#FFA500]
-        LayoutText {#text} at (0,0) size 133x19
-          text run at (0,0) width 133: "With display:table-cell"
+        LayoutText {#text} at (0,0) size 141x19
+          text run at (0,0) width 141: "With display:table-cell"
 layer at (10,1764) size 605x107 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell {TD} at (0,40) size 605x27 [bgcolor=#808080] [border: (3px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (4,4) size 600x20 [bgcolor=#FFFF00]
-      LayoutText {#text} at (0,0) size 206x19
-        text run at (0,0) width 206: "Test with border-collapse:collapse"
+      LayoutText {#text} at (0,0) size 214x19
+        text run at (0,0) width 214: "Test with border-collapse:collapse"
 layer at (10,1916) size 605x107 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell {TD} at (0,40) size 605x27 [border: (3px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (4,4) size 600x20 [bgcolor=#FFFF00]
-      LayoutText {#text} at (0,0) size 260x19
-        text run at (0,0) width 260: "Test with border-collapse:collapse no color"
+      LayoutText {#text} at (0,0) size 270x19
+        text run at (0,0) width 270: "Test with border-collapse:collapse no color"
 layer at (12,2070) size 304x99 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (2,42) size 304x19 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,-18) size 300x20 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x20 [bgcolor=#008000]
-        LayoutText {#text} at (0,0) size 140x19
-          text run at (0,0) width 140: "Test with overflow:auto"
+        LayoutText {#text} at (0,0) size 150x19
+          text run at (0,0) width 150: "Test with overflow:auto"
 layer at (12,2222) size 319x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (2,44) size 319x19 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,-18) size 300x20 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x20 [bgcolor=#008000]
-        LayoutText {#text} at (0,0) size 146x19
-          text run at (0,0) width 146: "Test with overflow:scroll"
+        LayoutText {#text} at (0,0) size 157x19
+          text run at (0,0) width 157: "Test with overflow:scroll"
 layer at (10,2372) size 362x102 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 601
   LayoutTableCell {TD} at (2,4) size 362x97 [bgcolor=#808080] [border: (30px solid #000000)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (31,31) size 300x20 [bgcolor=#00FF00]
       LayoutBlockFlow {DIV} at (0,0) size 600x20 [bgcolor=#008000]
-        LayoutText {#text} at (0,0) size 140x19
-          text run at (0,0) width 140: "Test with overflow:auto"
+        LayoutText {#text} at (0,0) size 150x19
+          text run at (0,0) width 150: "Test with overflow:auto"
 layer at (14,90) size 600x20
   LayoutBlockFlow (positioned) {DIV} at (14,90) size 600x20 [bgcolor=#00FFFF]
-    LayoutText {#text} at (0,0) size 195x19
-      text run at (0,0) width 195: "With absolute positioning on div."
+    LayoutText {#text} at (0,0) size 208x19
+      text run at (0,0) width 208: "With absolute positioning on div."
 layer at (14,206) size 600x20 transparent
   LayoutBlockFlow {DIV} at (2,2) size 600x20 [bgcolor=#00FFFF]
-    LayoutText {#text} at (0,0) size 121x19
-      text run at (0,0) width 121: "With opacity on div."
+    LayoutText {#text} at (0,0) size 128x19
+      text run at (0,0) width 128: "With opacity on div."
 layer at (12,316) size 604x104 clip at (13,317) size 602x102 transparent
   LayoutTableCell {TD} at (2,42) size 604x24 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,2) size 600x20 [bgcolor=#00FFFF]
-      LayoutText {#text} at (0,0) size 124x19
-        text run at (0,0) width 124: "With opacity on cell."
+      LayoutText {#text} at (0,0) size 131x19
+        text run at (0,0) width 131: "With opacity on cell."
 layer at (14,1072) size 600x20 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow (relative positioned) {DIV} at (2,2) size 600x20 [bgcolor=#FFA500]
-    LayoutText {#text} at (0,0) size 188x19
-      text run at (0,0) width 188: "With relative positioning on div."
+    LayoutText {#text} at (0,0) size 202x19
+      text run at (0,0) width 202: "With relative positioning on div."
 layer at (12,1182) size 604x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell (relative positioned) {TD} at (2,42) size 604x24 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,2) size 600x20 [bgcolor=#FFC0CB]
-      LayoutText {#text} at (0,0) size 191x19
-        text run at (0,0) width 191: "With relative positioning on cell."
+      LayoutText {#text} at (0,0) size 205x19
+        text run at (0,0) width 205: "With relative positioning on cell."
 layer at (112,1334) size 604x104 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutTableCell (relative positioned) {TD} at (2,42) size 604x24 [bgcolor=#808080] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (2,2) size 600x20 [bgcolor=#FFC0CB]
-      LayoutText {#text} at (0,0) size 272x19
-        text run at (0,0) width 272: "With relative positioning and an offset on cell."
+      LayoutText {#text} at (0,0) size 290x19
+        text run at (0,0) width 290: "With relative positioning and an offset on cell."
 layer at (108,1622) size 300x100 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 600
   LayoutTableCell (relative positioned) {DIV} at (0,40) size 300x20 [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (0,0) size 300x20
       LayoutBlockFlow {DIV} at (0,0) size 600x20 [bgcolor=#FFA500]
-        LayoutText {#text} at (0,0) size 261x19
-          text run at (0,0) width 261: "With display:table-cell + relative positioning"
+        LayoutText {#text} at (0,0) size 278x19
+          text run at (0,0) width 278: "With display:table-cell + relative positioning"

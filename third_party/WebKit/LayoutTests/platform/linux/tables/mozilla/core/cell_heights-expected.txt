@@ -15,14 +15,14 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 29: "80%"
       LayoutBlockFlow (anonymous) at (0,584) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
-      LayoutTable {TABLE} at (0,604) size 54x108 [bgcolor=#0000FF] [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 52x106
-          LayoutTableRow {TR} at (0,2) size 52x50
-            LayoutTableCell {TD} at (2,15) size 48x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 44x19
-                text run at (2,2) width 44: "row 50"
-          LayoutTableRow {TR} at (0,54) size 52x50
-            LayoutTableCell {TD} at (2,67) size 48x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,604) size 55x108 [bgcolor=#0000FF] [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 53x106
+          LayoutTableRow {TR} at (0,2) size 53x50
+            LayoutTableCell {TD} at (2,15) size 49x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 45x19
+                text run at (2,2) width 45: "row 50"
+          LayoutTableRow {TR} at (0,54) size 53x50
+            LayoutTableCell {TD} at (2,67) size 49x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "50"
       LayoutBlockFlow (anonymous) at (0,712) size 769x20
@@ -134,29 +134,29 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 29: "80%"
       LayoutBlockFlow (anonymous) at (0,3320) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
-      LayoutTable {TABLE} at (0,3340) size 100x584 [bgcolor=#FF0000] [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 98x582
-          LayoutTableRow {TR} at (0,2) size 98x266
-            LayoutTableCell {TD} at (2,257) size 30x24 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=1]
+      LayoutTable {TABLE} at (0,3340) size 103x584 [bgcolor=#FF0000] [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 101x582
+          LayoutTableRow {TR} at (0,2) size 101x266
+            LayoutTableCell {TD} at (2,257) size 31x24 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=1]
               LayoutText {#text} at (2,2) size 24x19
                 text run at (2,2) width 24: "500"
-            LayoutTableCell {TD} at (34,123) size 30x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 26x19
-                text run at (2,2) width 26: "auto"
-          LayoutTableRow {TR} at (0,270) size 98x266
-            LayoutTableCell {TD} at (34,391) size 30x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 26x19
-                text run at (2,2) width 26: "auto"
-            LayoutTableCell {TD} at (66,391) size 30x24 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 26x19
-                text run at (2,2) width 26: "auto"
-          LayoutTableRow {TR} at (0,538) size 98x42
-            LayoutTableCell {TD} at (2,547) size 30x24 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 26x19
-                text run at (2,2) width 26: "auto"
-            LayoutTableCell {TD} at (34,547) size 30x24 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 26x19
-                text run at (2,2) width 26: "auto"
+            LayoutTableCell {TD} at (35,123) size 31x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 27x19
+                text run at (2,2) width 27: "auto"
+          LayoutTableRow {TR} at (0,270) size 101x266
+            LayoutTableCell {TD} at (35,391) size 31x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 27x19
+                text run at (2,2) width 27: "auto"
+            LayoutTableCell {TD} at (68,391) size 31x24 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 27x19
+                text run at (2,2) width 27: "auto"
+          LayoutTableRow {TR} at (0,538) size 101x42
+            LayoutTableCell {TD} at (2,547) size 31x24 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 27x19
+                text run at (2,2) width 27: "auto"
+            LayoutTableCell {TD} at (35,547) size 31x24 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 27x19
+                text run at (2,2) width 27: "auto"
       LayoutBlockFlow (anonymous) at (0,3924) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,3944) size 53x406 [bgcolor=#FFA500] [border: (1px outset #808080)]

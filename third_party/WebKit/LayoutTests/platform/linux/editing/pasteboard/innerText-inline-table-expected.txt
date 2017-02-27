@@ -4,30 +4,30 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {DIV} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 469x19
-          text run at (0,0) width 469: "Checks that the text iterator is emitting a space before and after an inline table."
+        LayoutText {#text} at (0,0) size 490x19
+          text run at (0,0) width 490: "Checks that the text iterator is emitting a space before and after an inline table."
       LayoutBlockFlow {DIV} at (0,20) size 784x28
-        LayoutText {#text} at (0,8) size 28x19
-          text run at (0,8) width 28: "hello"
-        LayoutTable {TABLE} at (28,0) size 14x26
+        LayoutText {#text} at (0,8) size 31x19
+          text run at (0,8) width 31: "hello"
+        LayoutTable {TABLE} at (31,0) size 14x26
           LayoutTableSection {TBODY} at (0,0) size 14x26
             LayoutTableRow {TR} at (0,2) size 14x22
               LayoutTableCell {TD} at (2,2) size 10x22 [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 8x19
                   text run at (1,1) width 8: "1"
-        LayoutText {#text} at (42,8) size 35x19
-          text run at (42,8) width 35: "world"
+        LayoutText {#text} at (45,8) size 37x19
+          text run at (45,8) width 37: "world"
       LayoutBlockFlow {DIV} at (0,48) size 784x28
-        LayoutText {#text} at (0,8) size 24x19
-          text run at (0,8) width 24: "foo "
-        LayoutTable {TABLE} at (24,0) size 14x26
+        LayoutText {#text} at (0,8) size 25x19
+          text run at (0,8) width 25: "foo "
+        LayoutTable {TABLE} at (25,0) size 14x26
           LayoutTableSection {TBODY} at (0,0) size 14x26
             LayoutTableRow {TR} at (0,2) size 14x22
               LayoutTableCell {TD} at (2,2) size 10x22 [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 8x19
                   text run at (1,1) width 8: "2"
-        LayoutText {#text} at (38,8) size 24x19
-          text run at (38,8) width 24: " bar"
+        LayoutText {#text} at (39,8) size 24x19
+          text run at (39,8) width 24: " bar"
       LayoutBlockFlow {UL} at (0,92) size 784x20
         LayoutListItem {LI} at (40,0) size 744x20
           LayoutBlockFlow {PRE} at (0,0) size 744x20

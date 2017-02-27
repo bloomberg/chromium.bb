@@ -7,12 +7,12 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 639x19
-          text run at (0,0) width 639: "This test makes sure that content inside a list in an incoming fragment isn't pulled out of the list during paste."
+        LayoutText {#text} at (0,0) size 679x19
+          text run at (0,0) width 679: "This test makes sure that content inside a list in an incoming fragment isn't pulled out of the list during paste."
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutInline {B} at (0,0) size 249x19
-          LayoutText {#text} at (0,0) size 249x19
-            text run at (0,0) width 249: "You should see 'bar' inside a list item."
+        LayoutInline {B} at (0,0) size 252x19
+          LayoutText {#text} at (0,0) size 252x19
+            text run at (0,0) width 252: "You should see 'bar' inside a list item."
       LayoutBlockFlow {DIV} at (0,72) size 784x20
         LayoutBlockFlow {UL} at (0,0) size 784x20
           LayoutListItem {LI} at (40,0) size 744x20

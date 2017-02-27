@@ -19,27 +19,27 @@ layer at (13,65) size 756x522 clip at (16,68) size 750x501 scrollWidth 900
         LayoutTableSection {TBODY} at (0,0) size 900x166
           LayoutTableRow {TR} at (0,2) size 900x162
             LayoutTableCell {TD} at (2,2) size 896x162 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 38x19
-                text run at (1,1) width 38: "Line 1"
-              LayoutBR {BR} at (39,16) size 0x0
-              LayoutText {#text} at (1,21) size 38x19
-                text run at (1,21) width 38: "Line 2"
-              LayoutBR {BR} at (39,36) size 0x0
-              LayoutText {#text} at (1,41) size 38x19
-                text run at (1,41) width 38: "Line 3"
-              LayoutBR {BR} at (39,56) size 0x0
-              LayoutText {#text} at (1,61) size 38x19
-                text run at (1,61) width 38: "Line 4"
-              LayoutBR {BR} at (39,76) size 0x0
-              LayoutText {#text} at (1,81) size 38x19
-                text run at (1,81) width 38: "Line 5"
-              LayoutBR {BR} at (39,96) size 0x0
-              LayoutText {#text} at (1,101) size 38x19
-                text run at (1,101) width 38: "Line 6"
-              LayoutBR {BR} at (39,116) size 0x0
-              LayoutText {#text} at (1,121) size 38x19
-                text run at (1,121) width 38: "Line 7"
-              LayoutBR {BR} at (39,136) size 0x0
-              LayoutText {#text} at (1,141) size 38x19
-                text run at (1,141) width 38: "Line 8"
-              LayoutBR {BR} at (39,156) size 0x0
+              LayoutText {#text} at (1,1) size 41x19
+                text run at (1,1) width 41: "Line 1"
+              LayoutBR {BR} at (42,16) size 0x0
+              LayoutText {#text} at (1,21) size 41x19
+                text run at (1,21) width 41: "Line 2"
+              LayoutBR {BR} at (42,36) size 0x0
+              LayoutText {#text} at (1,41) size 41x19
+                text run at (1,41) width 41: "Line 3"
+              LayoutBR {BR} at (42,56) size 0x0
+              LayoutText {#text} at (1,61) size 41x19
+                text run at (1,61) width 41: "Line 4"
+              LayoutBR {BR} at (42,76) size 0x0
+              LayoutText {#text} at (1,81) size 41x19
+                text run at (1,81) width 41: "Line 5"
+              LayoutBR {BR} at (42,96) size 0x0
+              LayoutText {#text} at (1,101) size 41x19
+                text run at (1,101) width 41: "Line 6"
+              LayoutBR {BR} at (42,116) size 0x0
+              LayoutText {#text} at (1,121) size 41x19
+                text run at (1,121) width 41: "Line 7"
+              LayoutBR {BR} at (42,136) size 0x0
+              LayoutText {#text} at (1,141) size 41x19
+                text run at (1,141) width 41: "Line 8"
+              LayoutBR {BR} at (42,156) size 0x0

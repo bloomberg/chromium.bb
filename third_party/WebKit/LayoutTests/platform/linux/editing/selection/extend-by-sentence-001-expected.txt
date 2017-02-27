@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 0x0
           LayoutBlockFlow (anonymous) at (0,28) size 756x28
             LayoutBlockFlow {DOODAD} at (0,0) size 756x28
-              LayoutText {#text} at (0,0) size 116x27
-                text run at (0,0) width 116: "four five six"
+              LayoutText {#text} at (0,0) size 118x27
+                text run at (0,0) width 118: "four five six"
           LayoutBlockFlow (anonymous) at (0,56) size 756x0
             LayoutInline {FRIJOLE} at (0,0) size 0x0
 selection start: position 0 of child 0 {#text} of child 1 {DOODAD} of child 1 {FRIJOLE} of child 1 {FRIJOLE} of child 1 {DIV} of body

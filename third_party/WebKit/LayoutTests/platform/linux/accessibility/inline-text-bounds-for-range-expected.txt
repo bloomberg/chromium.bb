@@ -12,25 +12,25 @@ PASS appendedInlineText is text
 Testing bounds of word: The
 PASS axBounds.x is within 1 of 8
 PASS axBounds.y is within 1 of 8
-PASS axBounds.width is within 1 of 23
+PASS axBounds.width is within 1 of 25
 PASS axBounds.height is within 1 of 19
 
 Testing bounds of word: Hitchhiker
-PASS axBounds.x is within 1 of 35
+PASS axBounds.x is within 1 of 37
 PASS axBounds.y is within 1 of 8
-PASS axBounds.width is within 1 of 62
+PASS axBounds.width is within 1 of 67
 PASS axBounds.height is within 1 of 19
 
 Testing bounds of word: Guide
-PASS axBounds.x is within 1 of 110
+PASS axBounds.x is within 1 of 117
 PASS axBounds.y is within 1 of 8
-PASS axBounds.width is within 1 of 36
+PASS axBounds.width is within 1 of 39
 PASS axBounds.height is within 1 of 19
 
 Testing bounds of word: interstellar
 PASS axBounds.x is within 1 of 8
 PASS axBounds.y is within 1 of 48
-PASS axBounds.width is within 1 of 61
+PASS axBounds.width is within 1 of 65
 PASS axBounds.height is within 1 of 19
 PASS successfullyParsed is true
 

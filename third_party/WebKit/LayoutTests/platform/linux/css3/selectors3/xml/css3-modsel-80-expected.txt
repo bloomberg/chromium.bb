@@ -4,14 +4,14 @@ layer at (0,0) size 800x128
   LayoutBlockFlow {test} at (0,0) size 800x128
     LayoutBlockFlow {div} at (0,0) size 800x128
       LayoutBlockFlow {address} at (16,0) size 784x20 [bgcolor=#00FF00]
-        LayoutText {#text} at (0,0) size 336x19
-          text run at (0,0) width 336: "A first address that should have a green background"
+        LayoutText {#text} at (0,0) size 330x19
+          text run at (0,0) width 330: "A first address that should have a green background"
       LayoutBlockFlow {address} at (16,36) size 784x20 [bgcolor=#00FF00]
-        LayoutText {#text} at (0,0) size 354x19
-          text run at (0,0) width 354: "A second address that should have a green background"
+        LayoutText {#text} at (0,0) size 350x19
+          text run at (0,0) width 350: "A second address that should have a green background"
       LayoutBlockFlow {address} at (16,72) size 784x20
-        LayoutText {#text} at (0,0) size 260x19
-          text run at (0,0) width 260: "A third address with normal background"
+        LayoutText {#text} at (0,0) size 257x19
+          text run at (0,0) width 257: "A third address with normal background"
       LayoutBlockFlow (anonymous) at (0,108) size 800x20
-        LayoutText {#text} at (0,0) size 276x19
-          text run at (0,0) width 276: "This div should have three addresses above it."
+        LayoutText {#text} at (0,0) size 289x19
+          text run at (0,0) width 289: "This div should have three addresses above it."

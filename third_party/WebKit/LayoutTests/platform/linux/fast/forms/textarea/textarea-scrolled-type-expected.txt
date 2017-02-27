@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x141
-        LayoutText {#text} at (0,0) size 478x19
-          text run at (0,0) width 478: "This tests that typing in a scrolled textarea does not cause unnecessary scrolling."
-        LayoutBR {BR} at (478,15) size 0x0
+        LayoutText {#text} at (0,0) size 502x19
+          text run at (0,0) width 502: "This tests that typing in a scrolled textarea does not cause unnecessary scrolling."
+        LayoutBR {BR} at (502,15) size 0x0
         LayoutText {#text} at (179,121) size 4x19
           text run at (179,121) width 4: " "
         LayoutBR {BR} at (183,136) size 0x0

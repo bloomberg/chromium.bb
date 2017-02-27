@@ -4,8 +4,8 @@ layer at (0,0) size 800x338
   LayoutBlockFlow {HTML} at (0,0) size 800x338
     LayoutBlockFlow {BODY} at (8,16) size 784x314
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 391x19
-          text run at (0,0) width 391: "There six boxes below should look the same with no red present."
+        LayoutText {#text} at (0,0) size 409x19
+          text run at (0,0) width 409: "There six boxes below should look the same with no red present."
       LayoutTable {TABLE} at (0,36) size 416x278
         LayoutTableSection {TBODY} at (0,0) size 416x278
           LayoutTableRow {TR} at (0,2) size 416x136

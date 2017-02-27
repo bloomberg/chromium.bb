@@ -14,18 +14,18 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 341x19
-          text run at (0,0) width 341: "The selection range in the red box should look like this:   "
+        LayoutText {#text} at (0,0) size 361x19
+          text run at (0,0) width 361: "The selection range in the red box should look like this:   "
         LayoutInline {SPAN} at (0,0) size 97x19 [bgcolor=#AFDAFF]
-          LayoutText {#text} at (341,0) size 97x19
-            text run at (341,0) width 26: "abc "
-            text run at (390,0) width 8: "1"
-            text run at (414,0) width 24 RTL: "\x{5D0}\x{5D1}\x{5D2} "
-        LayoutText {#text} at (367,0) size 98x19
-          text run at (367,0) width 23 RTL: " \x{5D3}\x{5D4}\x{5D5}"
-          text run at (398,0) width 16: "23"
-          text run at (438,0) width 27: " def "
-        LayoutBR {BR} at (465,15) size 0x0
+          LayoutText {#text} at (361,0) size 97x19
+            text run at (361,0) width 26: "abc "
+            text run at (410,0) width 8: "1"
+            text run at (434,0) width 24 RTL: "\x{5D0}\x{5D1}\x{5D2} "
+        LayoutText {#text} at (387,0) size 99x19
+          text run at (387,0) width 23 RTL: " \x{5D3}\x{5D4}\x{5D5}"
+          text run at (418,0) width 16: "23"
+          text run at (458,0) width 28: " def "
+        LayoutBR {BR} at (486,15) size 0x0
         LayoutBR {BR} at (0,20) size 0x19
       LayoutBlockFlow {DIV} at (0,40) size 784x56 [border: (2px solid #FF0000)]
         LayoutInline {SPAN} at (0,0) size 184x27

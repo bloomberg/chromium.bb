@@ -6,9 +6,9 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x0
         LayoutInline {A} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutInline {A} at (0,0) size 146x19
-          LayoutText {#text} at (0,0) size 146x19
-            text run at (0,0) width 146: "You should see this text."
+        LayoutInline {A} at (0,0) size 154x19
+          LayoutText {#text} at (0,0) size 154x19
+            text run at (0,0) width 154: "You should see this text."
       LayoutTable {TABLE} at (0,36) size 4x4
         LayoutTableSection {TBODY} at (0,0) size 4x4
           LayoutTableRow {TR} at (0,2) size 4x0

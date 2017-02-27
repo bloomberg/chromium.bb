@@ -4,10 +4,10 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 526x19
-          text run at (0,0) width 526: "This tests for HIERARCHY_REQUEST_ERRs when calling Range::surroundContents."
+        LayoutText {#text} at (0,0) size 563x19
+          text run at (0,0) width 563: "This tests for HIERARCHY_REQUEST_ERRs when calling Range::surroundContents."
       LayoutBlockFlow {DIV} at (0,36) size 784x24 [border: (1px solid #0000FF)]
         LayoutBlockFlow {DIV} at (1,1) size 782x22 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,1) size 75x19
-            text run at (1,1) width 75: "Hello world."
+          LayoutText {#text} at (1,1) size 80x19
+            text run at (1,1) width 80: "Hello world."
       LayoutBlockFlow {UL} at (0,76) size 784x0

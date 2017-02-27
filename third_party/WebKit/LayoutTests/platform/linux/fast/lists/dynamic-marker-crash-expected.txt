@@ -11,8 +11,8 @@ layer at (0,0) size 800x90
               LayoutTextControl {INPUT} at (0,0) size 274x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutText {#text} at (0,0) size 0x0
           LayoutBlockFlow {P} at (0,38) size 744x20
-            LayoutText {#text} at (0,0) size 312x19
-              text run at (0,0) width 312: "There should be an input field above this line of text."
+            LayoutText {#text} at (0,0) size 332x19
+              text run at (0,0) width 332: "There should be an input field above this line of text."
 layer at (50,19) size 270x16
   LayoutBlockFlow {DIV} at (2,3) size 270x16
     LayoutText {#text} at (0,0) size 59x16

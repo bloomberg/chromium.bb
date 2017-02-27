@@ -4,25 +4,25 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 50x19
-          text run at (0,0) width 50: "Test for "
-        LayoutInline {I} at (0,0) size 588x19
-          LayoutInline {A} at (0,0) size 306x19 [color=#0000EE]
-            LayoutText {#text} at (49,0) size 306x19
-              text run at (49,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=12886"
-          LayoutText {#text} at (354,0) size 283x19
-            text run at (354,0) width 5: " "
-            text run at (358,0) width 279: "Crash with Scriptalicious javascript library"
-        LayoutText {#text} at (636,0) size 5x19
-          text run at (636,0) width 5: "."
+        LayoutText {#text} at (0,0) size 52x19
+          text run at (0,0) width 52: "Test for "
+        LayoutInline {I} at (0,0) size 579x19
+          LayoutInline {A} at (0,0) size 302x19 [color=#0000EE]
+            LayoutText {#text} at (51,0) size 302x19
+              text run at (51,0) width 302: "http://bugs.webkit.org/show_bug.cgi?id=12886"
+          LayoutText {#text} at (352,0) size 278x19
+            text run at (352,0) width 5: " "
+            text run at (356,0) width 274: "Crash with Scriptalicious javascript library"
+        LayoutText {#text} at (629,0) size 5x19
+          text run at (629,0) width 5: "."
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 286x19
-          text run at (0,0) width 286: "You should see two purple 100\x{D7}50 rectangles, "
-        LayoutInline {EM} at (0,0) size 22x19
-          LayoutText {#text} at (285,0) size 22x19
-            text run at (285,0) width 22: "not"
-        LayoutText {#text} at (306,0) size 150x19
-          text run at (306,0) width 150: " a checkerboard pattern."
+        LayoutText {#text} at (0,0) size 297x19
+          text run at (0,0) width 297: "You should see two purple 100\x{D7}50 rectangles, "
+        LayoutInline {EM} at (0,0) size 21x19
+          LayoutText {#text} at (296,0) size 21x19
+            text run at (296,0) width 21: "not"
+        LayoutText {#text} at (316,0) size 152x19
+          text run at (316,0) width 152: " a checkerboard pattern."
       LayoutTable {TABLE} at (0,72) size 100x300
         LayoutTableSection {TBODY} at (0,0) size 100x300
           LayoutTableRow {TR} at (0,0) size 100x150

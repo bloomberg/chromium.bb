@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 289x19
-          text run at (0,0) width 289: "Both rows should have the same width (725px)."
+        LayoutText {#text} at (0,0) size 303x19
+          text run at (0,0) width 303: "Both rows should have the same width (725px)."
       LayoutTable {TABLE} at (0,36) size 725x40
         LayoutTableSection {TBODY} at (0,0) size 725x40
           LayoutTableRow {TR} at (0,0) size 725x20

@@ -10,8 +10,8 @@ layer at (0,0) size 800x90
               LayoutText {#text} at (1,1) size 12x19
                 text run at (1,1) width 12: "H"
             LayoutTableCell {TH} at (18,2) size 14x22 [color=#FF0000] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,1) size 10x19
-                text run at (2,1) width 10: "E"
+              LayoutText {#text} at (1,1) size 12x19
+                text run at (1,1) width 12: "E"
             LayoutTableCell {TH} at (34,2) size 14x22 [color=#FF0000] [r=0 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 12x19
                 text run at (1,1) width 12: "A"
@@ -30,8 +30,8 @@ layer at (0,0) size 800x90
               LayoutText {#text} at (1,1) size 12x19
                 text run at (1,1) width 12: "O"
             LayoutTableCell {TH} at (50,0) size 14x22 [color=#0000FF] [r=0 c=3 rs=1 cs=1]
-              LayoutText {#text} at (2,1) size 10x19
-                text run at (2,1) width 10: "T"
+              LayoutText {#text} at (1,1) size 12x19
+                text run at (1,1) width 12: "T"
         LayoutTableSection {TBODY} at (0,26) size 66x24
           LayoutTableRow {TR} at (0,0) size 66x22
             LayoutTableCell {TD} at (2,0) size 14x22 [color=#008000] [r=0 c=0 rs=1 cs=1]
@@ -44,5 +44,5 @@ layer at (0,0) size 800x90
               LayoutText {#text} at (1,1) size 8x19
                 text run at (1,1) width 8: "d"
             LayoutTableCell {TD} at (50,0) size 14x22 [color=#008000] [r=0 c=3 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 7x19
-                text run at (1,1) width 7: "y"
+              LayoutText {#text} at (1,1) size 8x19
+                text run at (1,1) width 8: "y"

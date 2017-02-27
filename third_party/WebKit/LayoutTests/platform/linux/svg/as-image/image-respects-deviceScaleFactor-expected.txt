@@ -4,8 +4,8 @@ layer at (0,0) size 1600x1200
   LayoutBlockFlow {HTML} at (0,0) size 1600x1200
     LayoutBlockFlow {BODY} at (16,16) size 1568x1168
       LayoutBlockFlow {P} at (0,0) size 1568x37
-        LayoutText {#text} at (0,0) size 1028x36
-          text run at (0,0) width 1028: "This test passes if both of the circles have sharp edges when deviceScaleFactor=2."
+        LayoutText {#text} at (0,0) size 1049x36
+          text run at (0,0) width 1049: "This test passes if both of the circles have sharp edges when deviceScaleFactor=2."
       LayoutBlockFlow (anonymous) at (0,69) size 1568x265
         LayoutImage {IMG} at (0,0) size 256x256
         LayoutText {#text} at (256,228) size 8x36

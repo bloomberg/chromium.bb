@@ -18,12 +18,12 @@
         },
         {
           "object": "LayoutInline SPAN id='outer'",
-          "rect": [16, 108, 87, 63],
+          "rect": [16, 108, 90, 63],
           "reason": "style change"
         },
         {
           "object": "LayoutInline SPAN id='outer'",
-          "rect": [16, 148, 87, 23],
+          "rect": [16, 148, 90, 23],
           "reason": "style change"
         }
       ]

@@ -8,20 +8,20 @@ layer at (370,0) size 430x600
           LayoutTableSection {TBODY} at (5,5) size 176x312
             LayoutTableRow {TR} at (0,0) size 42x312
               LayoutTableCell {TD} at (0,0) size 42x312 [border: (5px solid #008000)] [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (6,6) size 19x32
-                  text run at (6,6) width 32: "Hello"
+                LayoutText {#text} at (6,6) size 19x35
+                  text run at (6,6) width 35: "Hello"
             LayoutTableRow {TR} at (42,0) size 62x312
               LayoutTableCell {TD} at (42,0) size 62x312 [border: (15px solid #0000FF)] [r=1 c=0 rs=1 cs=1]
-                LayoutText {#text} at (16,16) size 19x57
-                  text run at (16,16) width 57: "Goodbye"
+                LayoutText {#text} at (16,16) size 19x59
+                  text run at (16,16) width 59: "Goodbye"
             LayoutTableRow {TR} at (104,0) size 72x312
               LayoutTableCell {TD} at (104,0) size 72x312 [border: (25px solid #FF0000)] [r=2 c=0 rs=1 cs=1]
-                LayoutText {#text} at (26,26) size 19x57
-                  text run at (26,26) width 57: "Goodbye"
+                LayoutText {#text} at (26,26) size 19x59
+                  text run at (26,26) width 59: "Goodbye"
       LayoutBlockFlow {DIV} at (386,0) size 28x584 [border: (1px solid #008000)]
-        LayoutTable {TABLE} at (1,1) size 26x31 [border: (1px none #808080)]
-          LayoutTableSection {TBODY} at (1,1) size 24x29
-            LayoutTableRow {TR} at (0,0) size 24x29
-              LayoutTableCell {TD} at (0,0) size 24x29 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 19x25
-                  text run at (2,2) width 25: "Test"
+        LayoutTable {TABLE} at (1,1) size 26x32 [border: (1px none #808080)]
+          LayoutTableSection {TBODY} at (1,1) size 24x30
+            LayoutTableRow {TR} at (0,0) size 24x30
+              LayoutTableCell {TD} at (0,0) size 24x30 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (2,2) size 19x26
+                  text run at (2,2) width 26: "Test"

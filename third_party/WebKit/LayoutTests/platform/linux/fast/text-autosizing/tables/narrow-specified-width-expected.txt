@@ -4,11 +4,11 @@ layer at (0,0) size 800x157
   LayoutBlockFlow {HTML} at (0,0) size 800x157
     LayoutBlockFlow {BODY} at (0,0) size 800x156
       LayoutBlockFlow {DIV} at (0,0) size 600x36
-        LayoutText {#text} at (0,0) size 253x15
-          text run at (0,0) width 253: "Table autosizing tests - narrow-specified-width.html"
-        LayoutBR {BR} at (252,0) size 1x15
-        LayoutText {#text} at (0,16) size 247x15
-          text run at (0,16) width 247: "This test passes if none of the 6 cells are autosized."
+        LayoutText {#text} at (0,0) size 246x15
+          text run at (0,0) width 246: "Table autosizing tests - narrow-specified-width.html"
+        LayoutBR {BR} at (245,0) size 1x15
+        LayoutText {#text} at (0,16) size 240x15
+          text run at (0,16) width 240: "This test passes if none of the 6 cells are autosized."
       LayoutTable {TABLE} at (1,37) size 200x119 [border: none]
         LayoutTableSection {TBODY} at (0,0) size 199x118
           LayoutTableRow {TR} at (0,0) size 199x19

@@ -4,15 +4,15 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 512x19
-          text run at (0,0) width 232: "This tests for an infinite loop on Paste. "
-          text run at (232,0) width 280: "You should see 'Hello: ' and then an input field."
+        LayoutText {#text} at (0,0) size 544x19
+          text run at (0,0) width 245: "This tests for an infinite loop on Paste. "
+          text run at (245,0) width 299: "You should see 'Hello: ' and then an input field."
       LayoutBlockFlow {DIV} at (0,36) size 784x22
-        LayoutText {#text} at (0,1) size 32x19
-          text run at (0,1) width 32: "Hello"
-        LayoutTextControl {INPUT} at (32,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutText {#text} at (186,1) size 3x19
-          text run at (186,1) width 3: ":"
-layer at (42,47) size 150x16
+        LayoutText {#text} at (0,1) size 35x19
+          text run at (0,1) width 35: "Hello"
+        LayoutTextControl {INPUT} at (35,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (189,1) size 4x19
+          text run at (189,1) width 4: ":"
+layer at (45,47) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
 caret: position 1 of child 1 {INPUT} of child 2 {DIV} of body

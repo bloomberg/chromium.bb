@@ -85,18 +85,18 @@ layer at (0,0) size 785x5276 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x5275.88
     LayoutBlockFlow {BODY} at (8,21.44) size 769x5238.44
       LayoutBlockFlow {H1} at (0,0) size 769x37
-        LayoutText {#text} at (0,0) size 292x36
-          text run at (0,0) width 292: "Layered Presentation"
+        LayoutText {#text} at (0,0) size 293x36
+          text run at (0,0) width 293: "Layered Presentation"
       LayoutBlockFlow {P} at (0,58.44) size 769x20
-        LayoutText {#text} at (0,0) size 704x19
-          text run at (0,0) width 382: "Robert O'Callahan pointed out to me some mistakes in this test "
-          text run at (382,0) width 322: "that I have not yet had the time to examine or correct."
+        LayoutText {#text} at (0,0) size 733x19
+          text run at (0,0) width 398: "Robert O'Callahan pointed out to me some mistakes in this test "
+          text run at (398,0) width 335: "that I have not yet had the time to examine or correct."
       LayoutBlockFlow {P} at (0,94.44) size 769x20
-        LayoutText {#text} at (0,0) size 440x19
-          text run at (0,0) width 440: "In each of the following, 1 should be the top layer and 8 the bottom layer:"
+        LayoutText {#text} at (0,0) size 463x19
+          text run at (0,0) width 463: "In each of the following, 1 should be the top layer and 8 the bottom layer:"
       LayoutBlockFlow {P} at (0,4582.44) size 769x20
-        LayoutText {#text} at (0,0) size 329x19
-          text run at (0,0) width 329: "Using assumed default value of z-index (may not pass):"
+        LayoutText {#text} at (0,0) size 349x19
+          text run at (0,0) width 349: "Using assumed default value of z-index (may not pass):"
 layer at (24,152) size 620x620 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (relative positioned) {DIV} at (16,130.44) size 620x620 [border: (10px solid #000000)]
 layer at (84,212) size 200x200

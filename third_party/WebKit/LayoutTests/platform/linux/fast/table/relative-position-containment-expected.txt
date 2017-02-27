@@ -4,8 +4,8 @@ layer at (0,0) size 800x338
   LayoutBlockFlow {HTML} at (0,0) size 800x338
     LayoutBlockFlow {BODY} at (8,8) size 784x322
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 500x19
-          text run at (0,0) width 500: "Will be green if the relative positioned table cell properly acts as a containing block."
+        LayoutText {#text} at (0,0) size 526x19
+          text run at (0,0) width 526: "Will be green if the relative positioned table cell properly acts as a containing block."
       LayoutTable {TABLE} at (0,20) size 302x302 [border: (1px solid #000000)]
         LayoutTableSection {TBODY} at (1,1) size 300x300
           LayoutTableRow {TR} at (0,100) size 300x100

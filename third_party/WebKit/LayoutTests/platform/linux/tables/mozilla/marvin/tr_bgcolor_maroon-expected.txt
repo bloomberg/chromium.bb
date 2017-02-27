@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 282x19
-          text run at (0,0) width 282: "Table with one maroon row and one white row"
+        LayoutText {#text} at (0,0) size 297x19
+          text run at (0,0) width 297: "Table with one maroon row and one white row"
       LayoutTable {TABLE} at (0,36) size 118x56 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 116x54
           LayoutTableRow {TR} at (0,2) size 116x24 [bgcolor=#800000]

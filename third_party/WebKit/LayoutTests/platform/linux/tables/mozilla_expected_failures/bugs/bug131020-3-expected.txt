@@ -7,60 +7,60 @@ layer at (0,0) size 785x2362 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x197
           LayoutTableRow {TR} at (0,0) size 767x158
             LayoutTableCell {TD} at (0,0) size 767x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 154x19
-                text run at (1,1) width 154: "80% of table 200px table"
+              LayoutText {#text} at (1,1) size 158x19
+                text run at (1,1) width 158: "80% of table 200px table"
           LayoutTableRow {TR} at (0,158) size 767x39
             LayoutTableCell {TD} at (0,158) size 767x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 154x19
-                text run at (1,1) width 154: "20% of table 200px table"
+              LayoutText {#text} at (1,1) size 158x19
+                text run at (1,1) width 158: "20% of table 200px table"
       LayoutBlockFlow (anonymous) at (0,199) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,219) size 769x46 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x44
           LayoutTableRow {TR} at (0,0) size 767x22
             LayoutTableCell {TD} at (0,0) size 767x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 127x19
-                text run at (1,1) width 127: "80% of 200px tbody"
+              LayoutText {#text} at (1,1) size 130x19
+                text run at (1,1) width 130: "80% of 200px tbody"
           LayoutTableRow {TR} at (0,22) size 767x22
             LayoutTableCell {TD} at (0,22) size 767x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 127x19
-                text run at (1,1) width 127: "20% of 200px tbody"
+              LayoutText {#text} at (1,1) size 130x19
+                text run at (1,1) width 130: "20% of 200px tbody"
       LayoutBlockFlow (anonymous) at (0,265) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,285) size 769x46 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x44
           LayoutTableRow {TR} at (0,0) size 767x22
             LayoutTableCell {TD} at (0,0) size 767x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 127x19
-                text run at (1,1) width 127: "80% of 200px tbody"
+              LayoutText {#text} at (1,1) size 130x19
+                text run at (1,1) width 130: "80% of 200px tbody"
           LayoutTableRow {TR} at (0,22) size 767x22
             LayoutTableCell {TD} at (0,22) size 767x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 127x19
-                text run at (1,1) width 127: "20% of 200px tbody"
+              LayoutText {#text} at (1,1) size 130x19
+                text run at (1,1) width 130: "20% of 200px tbody"
       LayoutBlockFlow (anonymous) at (0,331) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,351) size 769x199 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x197
           LayoutTableRow {TR} at (0,0) size 767x158
             LayoutTableCell {TD} at (0,0) size 767x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 149x19
-                text run at (1,1) width 149: "row 80% of 200px table"
+              LayoutText {#text} at (1,1) size 153x19
+                text run at (1,1) width 153: "row 80% of 200px table"
           LayoutTableRow {TR} at (0,158) size 767x39
             LayoutTableCell {TD} at (0,158) size 767x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 149x19
-                text run at (1,1) width 149: "row 20% of 200px table"
+              LayoutText {#text} at (1,1) size 153x19
+                text run at (1,1) width 153: "row 20% of 200px table"
       LayoutBlockFlow (anonymous) at (0,550) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,570) size 769x46 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x44
           LayoutTableRow {TR} at (0,0) size 767x22
             LayoutTableCell {TD} at (0,0) size 767x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 155x19
-                text run at (1,1) width 155: "row 80% of 200px tbody"
+              LayoutText {#text} at (1,1) size 159x19
+                text run at (1,1) width 159: "row 80% of 200px tbody"
           LayoutTableRow {TR} at (0,22) size 767x22
             LayoutTableCell {TD} at (0,22) size 767x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 155x19
-                text run at (1,1) width 155: "row 20% of 200px tbody"
+              LayoutText {#text} at (1,1) size 159x19
+                text run at (1,1) width 159: "row 20% of 200px tbody"
       LayoutBlockFlow (anonymous) at (0,616) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,636) size 769x404 [bgcolor=#FFA500] [border: (1px outset #808080)]
@@ -71,16 +71,16 @@ layer at (0,0) size 785x2362 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutTableSection {TBODY} at (0,0) size 765x400
                   LayoutTableRow {TR} at (0,0) size 765x400
                     LayoutTableCell {TD} at (0,190) size 765x20 [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (0,0) size 11x19
-                        text run at (0,0) width 11: " x"
+                      LayoutText {#text} at (0,0) size 12x19
+                        text run at (0,0) width 12: " x"
               LayoutTable {TABLE} at (1,401) size 765x300
                 LayoutTableSection {TBODY} at (0,0) size 765x300
                   LayoutTableRow {TR} at (0,0) size 765x300
                     LayoutTableCell {TD} at (0,0) size 765x300 [bgcolor=#E0FFFF] [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (0,0) size 99x19
-                        text run at (0,0) width 71: "yuiyututuyu "
-                        text run at (71,0) width 28: "fesfe"
-                      LayoutBR {BR} at (99,15) size 0x0
+                      LayoutText {#text} at (0,0) size 110x19
+                        text run at (0,0) width 80: "yuiyututuyu "
+                        text run at (80,0) width 30: "fesfe"
+                      LayoutBR {BR} at (110,15) size 0x0
                       LayoutText {#text} at (0,20) size 4x19
                         text run at (0,20) width 4: " "
                       LayoutBR {BR} at (4,35) size 0x0
@@ -136,28 +136,28 @@ layer at (0,0) size 785x2362 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                         LayoutTableSection {TBODY} at (1,1) size 578x378
                           LayoutTableRow {TR} at (0,2) size 578x374
                             LayoutTableCell {TD} at (2,177) size 574x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                              LayoutText {#text} at (2,2) size 20x19
-                                text run at (2,2) width 20: "foo"
+                              LayoutText {#text} at (2,2) size 21x19
+                                text run at (2,2) width 21: "foo"
       LayoutBlockFlow (anonymous) at (0,1460) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
-      LayoutTable {TABLE} at (0,1480) size 58x24 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 56x22
-          LayoutTableRow {TR} at (0,0) size 56x11
-            LayoutTableCell {TD} at (0,0) size 56x22 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=1]
-              LayoutText {#text} at (1,1) size 54x19
-                text run at (1,1) width 54: "blah blah"
-          LayoutTableRow {TR} at (0,11) size 56x11
+      LayoutTable {TABLE} at (0,1480) size 62x24 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 60x22
+          LayoutTableRow {TR} at (0,0) size 60x11
+            LayoutTableCell {TD} at (0,0) size 60x22 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=1]
+              LayoutText {#text} at (1,1) size 58x19
+                text run at (1,1) width 58: "blah blah"
+          LayoutTableRow {TR} at (0,11) size 60x11
       LayoutBlockFlow (anonymous) at (0,1504) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,1524) size 602x364 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 600x362
           LayoutTableRow {TR} at (0,0) size 600x0
-            LayoutTableCell {TD} at (0,0) size 512x362 [bgcolor=#FFFFFF] [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=2]
+            LayoutTableCell {TD} at (0,0) size 502x362 [bgcolor=#FFFFFF] [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=2]
               LayoutImage {IMG} at (1,1) size 132x360
           LayoutTableRow {TR} at (0,0) size 600x362
-            LayoutTableCell {TD} at (512,170) size 88x22 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=6]
-              LayoutText {#text} at (66,1) size 21x19
-                text run at (66,1) width 21: "xxx"
+            LayoutTableCell {TD} at (502,170) size 98x22 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=6]
+              LayoutText {#text} at (73,1) size 24x19
+                text run at (73,1) width 24: "xxx"
       LayoutBlockFlow (anonymous) at (0,1888) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (10.50,1908) size 748x438 [bgcolor=#808080]
@@ -169,8 +169,8 @@ layer at (0,0) size 785x2362 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutTableRow {TR} at (0,0) size 732x422
                     LayoutTableCell {TD} at (0,0) size 732x422 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       LayoutBlockFlow (anonymous) at (1,1) size 730x20
-                        LayoutText {#text} at (0,0) size 7x19
-                          text run at (0,0) width 7: "x"
+                        LayoutText {#text} at (0,0) size 8x19
+                          text run at (0,0) width 8: "x"
                       LayoutTable {TABLE} at (1,21) size 730x100 [bgcolor=#FFFF00]
                         LayoutTableSection {TBODY} at (0,0) size 730x100
                           LayoutTableRow {TR} at (0,0) size 730x100
@@ -181,10 +181,10 @@ layer at (0,0) size 785x2362 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                         LayoutTableSection {TBODY} at (0,0) size 730x300
                           LayoutTableRow {TR} at (0,0) size 730x300
                             LayoutTableCell {TD} at (0,0) size 730x300 [bgcolor=#E0FFFF] [r=0 c=0 rs=1 cs=1]
-                              LayoutText {#text} at (0,0) size 103x19
-                                text run at (0,0) width 71: "yuiyututuyu "
-                                text run at (71,0) width 32: "fesf e"
-                              LayoutBR {BR} at (103,15) size 0x0
+                              LayoutText {#text} at (0,0) size 114x19
+                                text run at (0,0) width 80: "yuiyututuyu "
+                                text run at (80,0) width 34: "fesf e"
+                              LayoutBR {BR} at (114,15) size 0x0
                               LayoutText {#text} at (0,20) size 4x19
                                 text run at (0,20) width 4: " "
                               LayoutBR {BR} at (4,35) size 0x0

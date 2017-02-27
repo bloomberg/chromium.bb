@@ -20,7 +20,7 @@ layer at (0,0) size 800x600
             LayoutText {#text} at (0,0) size 54x26
               text run at (0,0) width 54: "three"
         LayoutBlockFlow {DIV} at (14,68) size 756x28
-          LayoutInline {I} at (0,0) size 42x27
-            LayoutText {#text} at (0,0) size 42x27
-              text run at (0,0) width 42: "four"
+          LayoutInline {I} at (0,0) size 40x27
+            LayoutText {#text} at (0,0) size 40x27
+              text run at (0,0) width 40: "four"
 caret: position 3 of child 0 {#text} of child 0 {B} of child 1 {DIV} of child 1 {DIV} of body

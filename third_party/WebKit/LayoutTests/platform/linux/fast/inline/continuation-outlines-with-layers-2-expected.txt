@@ -4,15 +4,15 @@ layer at (0,0) size 800x320
   LayoutBlockFlow {HTML} at (0,0) size 800x320
     LayoutBlockFlow {BODY} at (8,16) size 784x288
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 305x19
-          text run at (0,0) width 305: "This should be an unobscured fuzzy green polygon:"
+        LayoutText {#text} at (0,0) size 327x19
+          text run at (0,0) width 327: "This should be an unobscured fuzzy green polygon:"
       LayoutBlockFlow {DIV} at (0,36) size 784x100
         LayoutBlockFlow (anonymous) at (0,0) size 784x50
         LayoutBlockFlow (anonymous) at (0,50) size 784x50
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,152) size 784x20
-        LayoutText {#text} at (0,0) size 147x19
-          text run at (0,0) width 147: "This is just for reference:"
+        LayoutText {#text} at (0,0) size 156x19
+          text run at (0,0) width 156: "This is just for reference:"
       LayoutBlockFlow {DIV} at (0,188) size 784x100
         LayoutBlockFlow (anonymous) at (0,0) size 784x50
           LayoutInline {SPAN} at (0,0) size 160x50 [bgcolor=#FFFFFF]

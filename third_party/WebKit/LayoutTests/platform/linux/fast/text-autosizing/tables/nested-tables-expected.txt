@@ -4,37 +4,37 @@ layer at (0,0) size 800x325
   LayoutBlockFlow {HTML} at (0,0) size 800x325
     LayoutBlockFlow {BODY} at (0,0) size 800x324
       LayoutBlockFlow {DIV} at (0,0) size 600x36
-        LayoutText {#text} at (0,0) size 203x15
-          text run at (0,0) width 203: "Table autosizing tests - nested-tables.html"
-        LayoutBR {BR} at (202,0) size 1x15
-        LayoutText {#text} at (0,16) size 370x15
-          text run at (0,16) width 370: "This test passes if \"This text should not overlap itself\" doesn't overlap itself."
+        LayoutText {#text} at (0,0) size 196x15
+          text run at (0,0) width 196: "Table autosizing tests - nested-tables.html"
+        LayoutBR {BR} at (195,0) size 1x15
+        LayoutText {#text} at (0,16) size 358x15
+          text run at (0,16) width 358: "This test passes if \"This text should not overlap itself\" doesn't overlap itself."
       LayoutTable {TABLE} at (1,37) size 798x287 [border: none]
         LayoutTableSection {TBODY} at (0,0) size 797x286
           LayoutTableRow {TR} at (0,0) size 797x286
             LayoutTableCell {TD} at (0,0) size 797x286 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow (anonymous) at (2,2) size 794x210
-                LayoutText {#text} at (0,0) size 769x209
-                  text run at (0,0) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
-                  text run at (0,35) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
-                  text run at (0,70) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
-                  text run at (0,105) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
-                  text run at (0,140) width 769: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
-                  text run at (0,175) width 103: "Autosize"
-              LayoutTable {TABLE} at (3,213) size 94x71 [border: none]
-                LayoutTableSection {TBODY} at (0,0) size 93x70
-                  LayoutTableRow {TR} at (0,0) size 93x51
-                    LayoutTableCell {TD} at (0,0) size 93x51 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (2,2) size 43x15
-                        text run at (2,2) width 43: "This text"
-                      LayoutBR {BR} at (45,2) size 0x15
-                      LayoutText {#text} at (2,18) size 90x15
-                        text run at (2,18) width 90: "should not overlap"
-                      LayoutBR {BR} at (92,18) size 0x15
-                      LayoutText {#text} at (2,34) size 27x15
-                        text run at (2,34) width 27: "itself."
-                  LayoutTableRow {TR} at (0,51) size 93x19
-                    LayoutTableCell {TD} at (0,51) size 93x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+                LayoutText {#text} at (0,0) size 790x209
+                  text run at (0,0) width 790: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,35) width 790: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,70) width 790: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,105) width 790: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,140) width 790: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
+                  text run at (0,175) width 106: "Autosize"
+              LayoutTable {TABLE} at (3,213) size 92x71 [border: none]
+                LayoutTableSection {TBODY} at (0,0) size 91x70
+                  LayoutTableRow {TR} at (0,0) size 91x51
+                    LayoutTableCell {TD} at (0,0) size 91x51 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+                      LayoutText {#text} at (2,2) size 41x15
+                        text run at (2,2) width 41: "This text"
+                      LayoutBR {BR} at (43,2) size 0x15
+                      LayoutText {#text} at (2,18) size 88x15
+                        text run at (2,18) width 88: "should not overlap"
+                      LayoutBR {BR} at (90,18) size 0x15
+                      LayoutText {#text} at (2,34) size 26x15
+                        text run at (2,34) width 26: "itself."
+                  LayoutTableRow {TR} at (0,51) size 91x19
+                    LayoutTableCell {TD} at (0,51) size 91x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
                       LayoutBlockFlow {IMG} at (2,2) size 5x5
 layer at (6,310) size 5x5 clip at (7,311) size 3x3 scrollWidth 17 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,7) size 5x5 [border: (1px solid #C0C0C0)]

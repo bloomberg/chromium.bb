@@ -1,59 +1,53 @@
 Name: freetype2
 URL: git://git.sv.nongnu.org/freetype/freetype2.git
-Version: 2.4.8-1ubuntu2.3
-Security Critical: no
-License: BSD
-License File: NOT_SHIPPED
+Version: VER-2-7-1-updates
+Revision: e432ebf2e2c96e75f674af41f062d8b210de8491
+Security Critical: yes
+License: Custom license "inspired by the BSD, Artistic, and IJG (Independent
+         JPEG Group) licenses"
+License File: src/docs/FTL.TXT
+License Android Compatible: yes
 
 Description:
 
-This mirrors the version of Freetype2 that was distributed with Ubuntu Precise
-(Version 2.4.8, git hash 9d7f0957fbd10fdbabf9815e37857a910ad4f4ac, plus
-applicable debian/patches-freetype as seen in
-https://launchpad.net/ubuntu/lucid/+source/freetype ).
-
-To get the code and patches:
-
-sudo apt-add-repository -s "deb http://archive.ubuntu.com/ubuntu precise-security main"
-sudo apt-key update
-sudo apt-get update
-apt-get source -t precise freetype=2.4.8-1ubuntu2.3
-
-and then to apply the patches (quilt):
-
-cd freetype-2.4.8/
-./debian/rules patch
-
-The tree produced by this should match the tree in this repo on the
-chromium/ubuntu/precise branch.
+This version of Freetype is updated by checking out freetype from the above git
+URL, using the hash from "Revision:". Versions from 2.7.1 contain the level of
+OpenType font variations support that we require.
 
 The build files should approximate the output of
 
 make -Bn | rev | cut -d ' ' -f 1 | rev | grep "\.c$" | sort
 
-Currently the cache, validators, patent checker (no longer used), and bzip2
-are excluded.
+Currently the cache, patent checker (no longer used), bzip2 are excluded, as
+well as the following modules:
+t1cid_driver_class
+pfr_driver_class
+t42_driver_class
+winfnt_driver_class
+pcf_driver_class
 
-We link this library into DumpRenderTree so that we can run the layout tests
-on later versions of Ubuntu and still get the same font rendering so that
-we don't have to support two sets of pixel test baselines.
+base/ftotval.c
+base/ftpfr.c
+base/ftwinfnt.c
+cid/type1cid.c
+pcf/pcf.c
+pfr/pfr.c
+type42/type42.c
+winfonts/winfnt.c
 
 Freetype depends on two header files to be supplied by the user to specify
 how to build the library, ftconfig.h and ftmodule.h (or equivalent filenames
 as defined by the FT_CONFIG_CONFIG_H and FT_CONFIG_MODULES_H #defines).
 
-The versions in include/ were generated as follows (on a Precise machine):
+The versions in include/ were generated as follows:
 
-  % cd ext
+  % cd <dir-where-you-cloned-freetype-to>
   % bash autogen.sh
   % ./configure
   % cp objs/ftmodule.h ../include
   % cp builds/unix/ftconfig.h ../include
-  % git apply freetype2.patch
+  % git apply patches/freetype2_symbols_visbility.patch
 
-(Basically we use the stock list of modules, and define the FT_EXPORT
-and FT_EXPORT_DEF macros to work properly when building a linux shared lib.)
-
-This code is not considered security critical since it is only to be linked
-into test binaries! This should never be linked into chrome or any production
-code.
+Then we disable modules in include/ftmodule.h, then apply the symbols visibility
+patch to define the FT_EXPORT and FT_EXPORT_DEF macros to work properly when
+building a linux shared lib.

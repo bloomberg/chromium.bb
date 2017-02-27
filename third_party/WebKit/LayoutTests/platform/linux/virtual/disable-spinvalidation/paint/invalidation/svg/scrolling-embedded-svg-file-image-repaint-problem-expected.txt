@@ -13,22 +13,22 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [177, 1012, 203, 19],
+          "rect": [179, 1012, 202, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [435, 1012, 173, 19],
+          "rect": [435, 1012, 171, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutInline A",
-          "rect": [384, 1011, 47, 21],
+          "rect": [385, 1011, 46, 21],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [385, 1012, 45, 19],
+          "rect": [386, 1012, 44, 19],
           "reason": "forced by layout"
         },
         {
@@ -38,7 +38,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [379, 1012, 7, 19],
+          "rect": [380, 1012, 7, 19],
           "reason": "forced by layout"
         }
       ]

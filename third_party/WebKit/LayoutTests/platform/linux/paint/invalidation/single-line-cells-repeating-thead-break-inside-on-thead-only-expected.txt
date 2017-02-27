@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutTableCell TH id='target'",
-          "rect": [8, 72, 839, 190],
+          "rect": [8, 72, 840, 190],
           "reason": "style change"
         }
       ]

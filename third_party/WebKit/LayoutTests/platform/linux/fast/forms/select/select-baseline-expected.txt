@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 444x19
-        text run at (0,0) width 444: "This tests that empty select controls and buttons have the correct baseline."
-      LayoutBR {BR} at (444,15) size 0x0
+      LayoutText {#text} at (0,0) size 462x19
+        text run at (0,0) width 462: "This tests that empty select controls and buttons have the correct baseline."
+      LayoutBR {BR} at (462,15) size 0x0
       LayoutMenuList {SELECT} at (0,21) size 22x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow (anonymous) at (1,1) size 20x18
           LayoutText (anonymous) at (4,1) size 4x16

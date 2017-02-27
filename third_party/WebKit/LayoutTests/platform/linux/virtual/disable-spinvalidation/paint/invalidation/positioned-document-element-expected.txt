@@ -24,22 +24,22 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) HTML class='changed'",
-          "rect": [100, 100, 418, 52],
+          "rect": [100, 100, 440, 52],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [108, 116, 402, 20],
+          "rect": [108, 116, 424, 20],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [108, 116, 402, 19],
+          "rect": [108, 116, 424, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 16, 402, 19],
+          "rect": [8, 16, 424, 19],
           "reason": "forced by layout"
         }
       ]

@@ -27,59 +27,59 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (56,148) size 1x0
       LayoutBR {BR} at (56,184) size 1x0
       LayoutBR {BR} at (56,220) size 1x0
-      LayoutText {#text} at (0,224) size 471x19
-        text run at (0,224) width 471: "PASS: sel1 correctly set to selectedIndex 1 by sel1.options[1].selected = true."
-      LayoutBR {BR} at (470,239) size 1x0
-      LayoutText {#text} at (0,244) size 424x19
-        text run at (0,244) width 424: "PASS: sel2 correctly set to selectedIndex 1 by sel2.selectedIndex = 1."
-      LayoutBR {BR} at (423,259) size 1x0
-      LayoutText {#text} at (0,264) size 471x19
-        text run at (0,264) width 471: "PASS: sel3 correctly set to selectedIndex 1 by sel3.options[1].selected = true."
-      LayoutBR {BR} at (470,279) size 1x0
-      LayoutText {#text} at (0,284) size 424x19
-        text run at (0,284) width 424: "PASS: sel4 correctly set to selectedIndex 1 by sel4.selectedIndex = 1."
-      LayoutBR {BR} at (423,299) size 1x0
-      LayoutText {#text} at (0,304) size 471x19
-        text run at (0,304) width 471: "PASS: sel5 correctly set to selectedIndex 1 by sel5.options[1].selected = true."
-      LayoutBR {BR} at (470,319) size 1x0
-      LayoutText {#text} at (0,324) size 424x19
-        text run at (0,324) width 424: "PASS: sel6 correctly set to selectedIndex 1 by sel6.selectedIndex = 1."
-      LayoutBR {BR} at (423,339) size 1x0
-      LayoutText {#text} at (0,344) size 471x19
-        text run at (0,344) width 471: "PASS: sel7 correctly set to selectedIndex 1 by sel7.options[1].selected = true."
-      LayoutBR {BR} at (470,359) size 1x0
-      LayoutText {#text} at (0,364) size 424x19
-        text run at (0,364) width 424: "PASS: sel8 correctly set to selectedIndex 1 by sel8.selectedIndex = 1."
-      LayoutBR {BR} at (423,379) size 1x0
+      LayoutText {#text} at (0,224) size 485x19
+        text run at (0,224) width 485: "PASS: sel1 correctly set to selectedIndex 1 by sel1.options[1].selected = true."
+      LayoutBR {BR} at (484,239) size 1x0
+      LayoutText {#text} at (0,244) size 437x19
+        text run at (0,244) width 437: "PASS: sel2 correctly set to selectedIndex 1 by sel2.selectedIndex = 1."
+      LayoutBR {BR} at (436,259) size 1x0
+      LayoutText {#text} at (0,264) size 485x19
+        text run at (0,264) width 485: "PASS: sel3 correctly set to selectedIndex 1 by sel3.options[1].selected = true."
+      LayoutBR {BR} at (484,279) size 1x0
+      LayoutText {#text} at (0,284) size 437x19
+        text run at (0,284) width 437: "PASS: sel4 correctly set to selectedIndex 1 by sel4.selectedIndex = 1."
+      LayoutBR {BR} at (436,299) size 1x0
+      LayoutText {#text} at (0,304) size 485x19
+        text run at (0,304) width 485: "PASS: sel5 correctly set to selectedIndex 1 by sel5.options[1].selected = true."
+      LayoutBR {BR} at (484,319) size 1x0
+      LayoutText {#text} at (0,324) size 437x19
+        text run at (0,324) width 437: "PASS: sel6 correctly set to selectedIndex 1 by sel6.selectedIndex = 1."
+      LayoutBR {BR} at (436,339) size 1x0
+      LayoutText {#text} at (0,344) size 485x19
+        text run at (0,344) width 485: "PASS: sel7 correctly set to selectedIndex 1 by sel7.options[1].selected = true."
+      LayoutBR {BR} at (484,359) size 1x0
+      LayoutText {#text} at (0,364) size 437x19
+        text run at (0,364) width 437: "PASS: sel8 correctly set to selectedIndex 1 by sel8.selectedIndex = 1."
+      LayoutBR {BR} at (436,379) size 1x0
 layer at (8,88) size 56x36 clip at (9,89) size 39x34
   LayoutListBox {SELECT} at (0,80) size 56.02x36 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 39.02x17
-      LayoutText {#text} at (2,0) size 27x16
-        text run at (2,0) width 27: "FAIL"
+      LayoutText {#text} at (2,0) size 28x16
+        text run at (2,0) width 28: "FAIL"
     LayoutBlockFlow {OPTION} at (1,18) size 39.02x17 [bgcolor=#999999]
       LayoutText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "PASS"
 layer at (8,124) size 56x36 clip at (9,125) size 39x34
   LayoutListBox {SELECT} at (0,116) size 56.02x36 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 39.02x17
-      LayoutText {#text} at (2,0) size 27x16
-        text run at (2,0) width 27: "FAIL"
+      LayoutText {#text} at (2,0) size 28x16
+        text run at (2,0) width 28: "FAIL"
     LayoutBlockFlow {OPTION} at (1,18) size 39.02x17 [bgcolor=#999999]
       LayoutText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "PASS"
 layer at (8,160) size 56x36 clip at (9,161) size 39x34
   LayoutListBox {SELECT} at (0,152) size 56.02x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 39.02x17
-      LayoutText {#text} at (2,0) size 27x16
-        text run at (2,0) width 27: "FAIL"
+      LayoutText {#text} at (2,0) size 28x16
+        text run at (2,0) width 28: "FAIL"
     LayoutBlockFlow {OPTION} at (1,18) size 39.02x17 [color=#808080] [bgcolor=#999999]
       LayoutText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "PASS"
 layer at (8,196) size 56x36 clip at (9,197) size 39x34
   LayoutListBox {SELECT} at (0,188) size 56.02x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 39.02x17
-      LayoutText {#text} at (2,0) size 27x16
-        text run at (2,0) width 27: "FAIL"
+      LayoutText {#text} at (2,0) size 28x16
+        text run at (2,0) width 28: "FAIL"
     LayoutBlockFlow {OPTION} at (1,18) size 39.02x17 [color=#808080] [bgcolor=#999999]
       LayoutText {#text} at (2,0) size 35x16
         text run at (2,0) width 35: "PASS"

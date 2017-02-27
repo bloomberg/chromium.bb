@@ -9,10 +9,10 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (4,14) size 12x28 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
                 text run at (4,4) width 4: " "
-            LayoutTableCell {TD} at (20,14) size 687x28 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (4,4) size 61x19
-                text run at (4,4) width 61: "Top Story"
-            LayoutTableCell {TD} at (711,4) size 67x48 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (4,4) size 59x39
-                text run at (4,4) width 22: "Full"
-                text run at (4,24) width 59: "Coverage"
+            LayoutTableCell {TD} at (20,14) size 685x28 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (4,4) size 63x19
+                text run at (4,4) width 63: "Top Story"
+            LayoutTableCell {TD} at (709,4) size 69x48 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+              LayoutText {#text} at (4,4) size 61x39
+                text run at (4,4) width 25: "Full"
+                text run at (4,24) width 61: "Coverage"

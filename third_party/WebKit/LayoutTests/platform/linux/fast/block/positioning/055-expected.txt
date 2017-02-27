@@ -4,8 +4,8 @@ layer at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x600
     LayoutBlockFlow {BODY} at (8,8) size 769x584
       LayoutBlockFlow (anonymous) at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 115x19
-          text run at (0,0) width 115: "Content at the end."
+        LayoutText {#text} at (0,0) size 119x19
+          text run at (0,0) width 119: "Content at the end."
 layer at (8,8) size 769x0
   LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 769x0
 layer at (8,8) size 16x2400 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600

@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 327x19
-          text run at (0,0) width 327: "This tests that buttons don't honor table display styles. "
-        LayoutBR {BR} at (327,15) size 0x0
+        LayoutText {#text} at (0,0) size 342x19
+          text run at (0,0) width 342: "This tests that buttons don't honor table display styles. "
+        LayoutBR {BR} at (342,15) size 0x0
       LayoutButton {INPUT} at (0,20) size 93x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
         LayoutBlockFlow (anonymous) at (8,3) size 77x16
           LayoutText {#text} at (0,0) size 77x16
@@ -60,19 +60,19 @@ layer at (0,0) size 800x600
           text run at (348,125) width 4: " "
         LayoutBR {BR} at (352,140) size 0x0
         LayoutBR {BR} at (0,146) size 0x19
-        LayoutButton {INPUT} at (0,166) size 165x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          LayoutBlockFlow (anonymous) at (8,3) size 149x16
-            LayoutText {#text} at (0,0) size 149x16
-              text run at (0,0) width 149: "display: table-footer-group"
-        LayoutText {#text} at (165,167) size 4x19
-          text run at (165,167) width 4: " "
-        LayoutButton {INPUT} at (169,166) size 165x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          LayoutBlockFlow (anonymous) at (8,3) size 149x16
-            LayoutText {#text} at (0,0) size 149x16
-              text run at (0,0) width 149: "display: table-footer-group"
-        LayoutText {#text} at (334,167) size 4x19
-          text run at (334,167) width 4: " "
-        LayoutBR {BR} at (338,182) size 0x0
+        LayoutButton {INPUT} at (0,166) size 166x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,3) size 150x16
+            LayoutText {#text} at (0,0) size 150x16
+              text run at (0,0) width 150: "display: table-footer-group"
+        LayoutText {#text} at (166,167) size 4x19
+          text run at (166,167) width 4: " "
+        LayoutButton {INPUT} at (170,166) size 166x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          LayoutBlockFlow (anonymous) at (8,3) size 150x16
+            LayoutText {#text} at (0,0) size 150x16
+              text run at (0,0) width 150: "display: table-footer-group"
+        LayoutText {#text} at (336,167) size 4x19
+          text run at (336,167) width 4: " "
+        LayoutBR {BR} at (340,182) size 0x0
         LayoutBR {BR} at (0,188) size 0x19
         LayoutButton {INPUT} at (0,208) size 117x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,3) size 101x16

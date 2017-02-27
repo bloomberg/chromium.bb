@@ -38,37 +38,37 @@
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [30, 48, 7, 19],
+          "rect": [30, 48, 8, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [23, 48, 7, 19],
+          "rect": [23, 48, 8, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [23, 48, 7, 19],
+          "rect": [23, 48, 8, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [15, 48, 7, 19],
+          "rect": [15, 48, 8, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [15, 48, 7, 19],
+          "rect": [15, 48, 8, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 48, 7, 19],
+          "rect": [8, 48, 8, 19],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [8, 48, 7, 19],
+          "rect": [8, 48, 8, 19],
           "reason": "forced by layout"
         }
       ]

@@ -4,35 +4,36 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 56x19
-          text run at (0,0) width 56: "Tests for "
-        LayoutInline {I} at (0,0) size 712x19
-          LayoutInline {A} at (0,0) size 306x19 [color=#0000EE]
-            LayoutText {#text} at (55,0) size 306x19
-              text run at (55,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=13438"
-          LayoutText {#text} at (360,0) size 407x19
-            text run at (360,0) width 5: " "
-            text run at (364,0) width 403: "Run rounding makes word-break:break-all/word not functional"
-        LayoutText {#text} at (766,0) size 5x19
-          text run at (766,0) width 5: "."
+        LayoutText {#text} at (0,0) size 58x19
+          text run at (0,0) width 58: "Tests for "
+        LayoutInline {I} at (0,0) size 703x19
+          LayoutInline {A} at (0,0) size 302x19 [color=#0000EE]
+            LayoutText {#text} at (57,0) size 302x19
+              text run at (57,0) width 302: "http://bugs.webkit.org/show_bug.cgi?id=13438"
+          LayoutText {#text} at (358,0) size 402x19
+            text run at (358,0) width 5: " "
+            text run at (362,0) width 398: "Run rounding makes word-break:break-all/word not functional"
+        LayoutText {#text} at (759,0) size 5x19
+          text run at (759,0) width 5: "."
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 287x19
-          text run at (0,0) width 287: "Test that the preferred (maximum) width is right:"
+        LayoutText {#text} at (0,0) size 305x19
+          text run at (0,0) width 305: "Test that the preferred (maximum) width is right:"
       LayoutBlockFlow (anonymous) at (0,72) size 784x26
-        LayoutBlockFlow (floating) {DIV} at (0,0) size 557x26 [border: (3px solid #000000)]
-          LayoutText {#text} at (3,3) size 551x19
-            text run at (3,3) width 551: "The black border should fit tightly around this one line of text with no space after the period."
-        LayoutBR {BR} at (557,0) size 0x19
+        LayoutBlockFlow (floating) {DIV} at (0,0) size 587x26 [border: (3px solid #000000)]
+          LayoutText {#text} at (3,3) size 581x19
+            text run at (3,3) width 581: "The black border should fit tightly around this one line of text with no space after the period."
+        LayoutBR {BR} at (587,0) size 0x19
       LayoutBlockFlow {P} at (0,114) size 784x20
-        LayoutText {#text} at (0,0) size 366x19
-          text run at (0,0) width 366: "Test that text does not wrap too early due to rounding errors:"
+        LayoutText {#text} at (0,0) size 380x19
+          text run at (0,0) width 380: "Test that text does not wrap too early due to rounding errors:"
       LayoutBlockFlow {DIV} at (0,150) size 431x26 [border: (3px solid #000000)]
-        LayoutText {#text} at (3,3) size 315x19
-          text run at (3,3) width 315: "This text fits nicely on a single line of the given width."
+        LayoutText {#text} at (3,3) size 342x19
+          text run at (3,3) width 342: "This text fits nicely on a single line of the given width."
       LayoutBlockFlow {P} at (0,192) size 784x20
-        LayoutText {#text} at (0,0) size 220x19
-          text run at (0,0) width 220: "Test that text does not wrap too late:"
-      LayoutBlockFlow {DIV} at (0,228) size 597x26 [border: (3px solid #000000)]
-        LayoutText {#text} at (3,3) size 576x19
-          text run at (3,3) width 371: "J u s t a b u n c h o f l e t t e r s h e r e , n o t h i n g t o s e e . "
-          text run at (374,3) width 205: "Thisisonebigwordwhichisverylong."
+        LayoutText {#text} at (0,0) size 227x19
+          text run at (0,0) width 227: "Test that text does not wrap too late:"
+      LayoutBlockFlow {DIV} at (0,228) size 597x46 [border: (3px solid #000000)]
+        LayoutText {#text} at (3,3) size 586x39
+          text run at (3,3) width 383: "J u s t a b u n c h o f l e t t e r s h e r e , n o t h i n g t o s e e . "
+          text run at (386,3) width 203: "Thisisonebigwordwhichisverylo"
+          text run at (3,23) width 20: "ng."

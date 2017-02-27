@@ -6,13 +6,13 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {UL} at (0,0) size 784x60
         LayoutListItem {LI} at (40,0) size 744x20
           LayoutListMarker (anonymous) at (-14.50,7) size 7.50x7.50
-          LayoutText {#text} at (0,0) size 57x19
-            text run at (0,0) width 57: "Item One"
+          LayoutText {#text} at (0,0) size 59x19
+            text run at (0,0) width 59: "Item One"
         LayoutListItem {LI} at (40,20) size 744x20
           LayoutListMarker (anonymous) at (-14.50,7) size 7.50x7.50
-          LayoutText {#text} at (0,0) size 58x19
-            text run at (0,0) width 58: "Item Two"
+          LayoutText {#text} at (0,0) size 61x19
+            text run at (0,0) width 61: "Item Two"
         LayoutListItem {LI} at (40,40) size 744x20
           LayoutListMarker (anonymous) at (-14.50,7) size 7.50x7.50
-          LayoutText {#text} at (0,0) size 66x19
-            text run at (0,0) width 66: "Item Three"
+          LayoutText {#text} at (0,0) size 69x19
+            text run at (0,0) width 69: "Item Three"

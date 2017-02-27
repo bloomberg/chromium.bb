@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 450x500
-    LayoutSVGText {text} at (176.50,25) size 97x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (176.50,25) size 97x18
-        chunk 1 (middle anchor) text run 1 at (176.50,40.00) startOffset 0 endOffset 14 width 97.00: "Filter Regions"
+    LayoutSVGText {text} at (175,25) size 100x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (175,25) size 100x18
+        chunk 1 (middle anchor) text run 1 at (175.00,40.00) startOffset 0 endOffset 14 width 100.00: "Filter Regions"
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceFilter {filter} [id="filterRegion_0"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feFlood flood-color="#FF0000" flood-opacity="1.00"]
@@ -45,130 +45,130 @@ layer at (0,0) size 450x500
         LayoutSVGRect {rect} at (0,0) size 100x50 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
           [filter="filterRegion_0"] LayoutSVGResourceFilter {filter} at (-10,-5) size 120x60
         LayoutSVGRect {rect} at (-10,-5) size 120x60 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=-10.00] [y=-5.00] [width=120.00] [height=60.00]
-        LayoutSVGText {text} at (6.61,-20) size 76.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (6.61,-20) size 76.75x12
-            chunk 1 (middle anchor) text run 1 at (6.62,-10.00) startOffset 0 endOffset 14 width 76.76: "filterRegion_0"
+        LayoutSVGText {text} at (10.11,-20) size 69.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10.11,-20) size 69.75x12
+            chunk 1 (middle anchor) text run 1 at (10.12,-10.00) startOffset 0 endOffset 14 width 69.76: "filterRegion_0"
       LayoutSVGRect {rect} at (0,3000) size 20000000x25 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=3000.00] [width=20000000.00] [height=25.00]
         [filter="filterRegion_1"] LayoutSVGResourceFilter {filter} at (20,30) size 50x40
       LayoutSVGRect {rect} at (20,30) size 50x40 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=20.00] [y=30.00] [width=50.00] [height=40.00]
-      LayoutSVGText {text} at (6.61,15) size 76.75x12 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (6.61,15) size 76.75x12
-          chunk 1 (middle anchor) text run 1 at (6.62,25.00) startOffset 0 endOffset 14 width 76.76: "filterRegion_1"
+      LayoutSVGText {text} at (10.11,15) size 69.75x12 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10.11,15) size 69.75x12
+          chunk 1 (middle anchor) text run 1 at (10.12,25.00) startOffset 0 endOffset 14 width 69.76: "filterRegion_1"
       LayoutSVGContainer {g} at (0,15) size 20000000x3010 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,0.00)}]
         LayoutSVGRect {rect} at (0,3000) size 20000000x25 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=3000.00] [width=20000000.00] [height=25.00]
           [filter="filterRegion_2"] LayoutSVGResourceFilter {filter} at (20,30) size 50x40
         LayoutSVGRect {rect} at (25,35) size 45x35 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=25.00] [y=35.00] [width=45.00] [height=35.00]
-        LayoutSVGText {text} at (6.61,15) size 76.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (6.61,15) size 76.75x12
-            chunk 1 (middle anchor) text run 1 at (6.62,25.00) startOffset 0 endOffset 14 width 76.76: "filterRegion_2"
+        LayoutSVGText {text} at (10.11,15) size 69.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10.11,15) size 69.75x12
+            chunk 1 (middle anchor) text run 1 at (10.12,25.00) startOffset 0 endOffset 14 width 69.76: "filterRegion_2"
       LayoutSVGContainer {g} at (0,15) size 20000000x3010 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,0.00)}]
         LayoutSVGRect {rect} at (0,3000) size 20000000x25 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=3000.00] [width=20000000.00] [height=25.00]
           [filter="filterRegion_3"] LayoutSVGResourceFilter {filter} at (20,30) size 50x40
         LayoutSVGRect {rect} at (20,30) size 50x20 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=20.00] [y=30.00] [width=50.00] [height=20.00]
-        LayoutSVGText {text} at (6.61,15) size 76.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (6.61,15) size 76.75x12
-            chunk 1 (middle anchor) text run 1 at (6.62,25.00) startOffset 0 endOffset 14 width 76.76: "filterRegion_3"
+        LayoutSVGText {text} at (10.11,15) size 69.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10.11,15) size 69.75x12
+            chunk 1 (middle anchor) text run 1 at (10.12,25.00) startOffset 0 endOffset 14 width 69.76: "filterRegion_3"
       LayoutSVGContainer {g} at (0,15) size 20000000x3010 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,0.00)}]
         LayoutSVGRect {rect} at (0,3000) size 20000000x25 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=3000.00] [width=20000000.00] [height=25.00]
           [filter="filterRegion_4"] LayoutSVGResourceFilter {filter} at (20,30) size 50x40
         LayoutSVGRect {rect} at (20,30) size 25x40 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=20.00] [y=30.00] [width=25.00] [height=40.00]
-        LayoutSVGText {text} at (6.61,15) size 76.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (6.61,15) size 76.75x12
-            chunk 1 (middle anchor) text run 1 at (6.62,25.00) startOffset 0 endOffset 14 width 76.76: "filterRegion_4"
+        LayoutSVGText {text} at (10.11,15) size 69.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10.11,15) size 69.75x12
+            chunk 1 (middle anchor) text run 1 at (10.12,25.00) startOffset 0 endOffset 14 width 69.76: "filterRegion_4"
       LayoutSVGContainer {g} at (0,15) size 20000000x3010 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,75.00)}]
         LayoutSVGRect {rect} at (0,3000) size 20000000x25 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=3000.00] [width=20000000.00] [height=25.00]
           [filter="filterRegion_5"] LayoutSVGResourceFilter {filter} at (20,30) size 50x40
         LayoutSVGRect {rect} at (20,30) size 50x20 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=20.00] [y=30.00] [width=50.00] [height=20.00]
-        LayoutSVGText {text} at (6.61,15) size 76.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (6.61,15) size 76.75x12
-            chunk 1 (middle anchor) text run 1 at (6.62,25.00) startOffset 0 endOffset 14 width 76.76: "filterRegion_5"
+        LayoutSVGText {text} at (10.11,15) size 69.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10.11,15) size 69.75x12
+            chunk 1 (middle anchor) text run 1 at (10.12,25.00) startOffset 0 endOffset 14 width 69.76: "filterRegion_5"
       LayoutSVGContainer {g} at (0,3000) size 20000000x25 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,75.00)}]
         [filter="filterRegion_6"] LayoutSVGResourceFilter {filter} at (20,30) size 50x40
         LayoutSVGRect {rect} at (0,3000) size 20000000x25 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=3000.00] [width=20000000.00] [height=25.00]
-      LayoutSVGContainer {g} at (6.61,15) size 76.75x55 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,75.00)}]
+      LayoutSVGContainer {g} at (10.11,15) size 69.75x55 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,75.00)}]
         LayoutSVGRect {rect} at (20,30) size 40x40 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=20.00] [y=30.00] [width=40.00] [height=40.00]
-        LayoutSVGText {text} at (6.61,15) size 76.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (6.61,15) size 76.75x12
-            chunk 1 (middle anchor) text run 1 at (6.62,25.00) startOffset 0 endOffset 14 width 76.76: "filterRegion_6"
-      LayoutSVGContainer {g} at (-19.88,-30) size 89.75x57.50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,280.00)}]
+        LayoutSVGText {text} at (10.11,15) size 69.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10.11,15) size 69.75x12
+            chunk 1 (middle anchor) text run 1 at (10.12,25.00) startOffset 0 endOffset 14 width 69.76: "filterRegion_6"
+      LayoutSVGContainer {g} at (-15.88,-30) size 81.75x57.50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,280.00)}]
         LayoutSVGRect {rect} at (0,0) size 50x25 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=50.00] [height=25.00]
           [filter="filterRegion_2_0"] LayoutSVGResourceFilter {filter} at (-5,-2.50) size 60x30
         LayoutSVGRect {rect} at (-5,-2.50) size 60x30 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=-5.00] [y=-2.50] [width=60.00] [height=30.00]
-        LayoutSVGText {text} at (-19.88,-30) size 89.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-19.88,-30) size 89.75x12
-            chunk 1 (middle anchor) text run 1 at (-19.88,-20.00) startOffset 0 endOffset 16 width 89.76: "filterRegion_2_0"
+        LayoutSVGText {text} at (-15.88,-30) size 81.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-15.88,-30) size 81.75x12
+            chunk 1 (middle anchor) text run 1 at (-15.88,-20.00) startOffset 0 endOffset 16 width 81.76: "filterRegion_2_0"
       LayoutSVGContainer {g} at (20,30) size 50x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,160.00)}]
         [filter="filterRegion_2_1"] LayoutSVGResourceFilter {filter} at (-45,-50) size 540x600
         LayoutSVGRect {rect} at (20,30) size 50x40 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=30.00] [width=50.00] [height=40.00]
-      LayoutSVGContainer {g} at (0.11,15) size 89.75x55 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,160.00)}]
+      LayoutSVGContainer {g} at (4.11,15) size 81.75x55 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,160.00)}]
         LayoutSVGRect {rect} at (20,30) size 50x40 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=20.00] [y=30.00] [width=50.00] [height=40.00]
-        LayoutSVGText {text} at (0.11,15) size 89.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0.11,15) size 89.75x12
-            chunk 1 (middle anchor) text run 1 at (0.12,25.00) startOffset 0 endOffset 16 width 89.76: "filterRegion_2_1"
+        LayoutSVGText {text} at (4.11,15) size 81.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (4.11,15) size 81.75x12
+            chunk 1 (middle anchor) text run 1 at (4.12,25.00) startOffset 0 endOffset 16 width 81.76: "filterRegion_2_1"
       LayoutSVGContainer {g} at (20,30) size 50x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,160.00)}]
         LayoutSVGRect {rect} at (20,30) size 50x40 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=30.00] [width=50.00] [height=40.00]
           [filter="filterRegion_2_2"] LayoutSVGResourceFilter {filter} at (-45,-50) size 540x600
-      LayoutSVGContainer {g} at (0.11,15) size 89.75x55 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,160.00)}]
+      LayoutSVGContainer {g} at (4.11,15) size 81.75x55 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,160.00)}]
         LayoutSVGRect {rect} at (20,30) size 50x40 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=20.00] [y=30.00] [width=50.00] [height=40.00]
-        LayoutSVGText {text} at (0.11,15) size 89.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0.11,15) size 89.75x12
-            chunk 1 (middle anchor) text run 1 at (0.12,25.00) startOffset 0 endOffset 16 width 89.76: "filterRegion_2_2"
+        LayoutSVGText {text} at (4.11,15) size 81.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (4.11,15) size 81.75x12
+            chunk 1 (middle anchor) text run 1 at (4.12,25.00) startOffset 0 endOffset 16 width 81.76: "filterRegion_2_2"
       LayoutSVGContainer {g} at (20,30) size 50x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,160.00)}]
         [filter="filterRegion_2_3"] LayoutSVGResourceFilter {filter} at (-45,-50) size 540x600
         LayoutSVGRect {rect} at (20,30) size 50x40 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=30.00] [width=50.00] [height=40.00]
-      LayoutSVGContainer {g} at (0.11,15) size 89.75x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,160.00)}]
+      LayoutSVGContainer {g} at (4.11,15) size 81.75x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,160.00)}]
         LayoutSVGRect {rect} at (32.50,50) size 25x10 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=32.50] [y=50.00] [width=25.00] [height=10.00]
-        LayoutSVGText {text} at (0.11,15) size 89.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0.11,15) size 89.75x12
-            chunk 1 (middle anchor) text run 1 at (0.12,25.00) startOffset 0 endOffset 16 width 89.76: "filterRegion_2_3"
+        LayoutSVGText {text} at (4.11,15) size 81.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (4.11,15) size 81.75x12
+            chunk 1 (middle anchor) text run 1 at (4.12,25.00) startOffset 0 endOffset 16 width 81.76: "filterRegion_2_3"
       LayoutSVGContainer {g} at (20,30) size 50x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,160.00)}]
         [filter="filterRegion_2_4"] LayoutSVGResourceFilter {filter} at (-45,-50) size 540x600
         LayoutSVGRect {rect} at (20,30) size 50x40 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=30.00] [width=50.00] [height=40.00]
-      LayoutSVGContainer {g} at (0.11,15) size 89.75x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,160.00)}]
+      LayoutSVGContainer {g} at (4.11,15) size 81.75x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,160.00)}]
         LayoutSVGRect {rect} at (32.50,50) size 25x10 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=32.50] [y=50.00] [width=25.00] [height=10.00]
-        LayoutSVGText {text} at (0.11,15) size 89.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0.11,15) size 89.75x12
-            chunk 1 (middle anchor) text run 1 at (0.12,25.00) startOffset 0 endOffset 16 width 89.76: "filterRegion_2_4"
+        LayoutSVGText {text} at (4.11,15) size 81.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (4.11,15) size 81.75x12
+            chunk 1 (middle anchor) text run 1 at (4.12,25.00) startOffset 0 endOffset 16 width 81.76: "filterRegion_2_4"
       LayoutSVGContainer {g} at (20,30) size 50x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,245.00)}]
         [filter="filterRegion_2_5"] LayoutSVGResourceFilter {filter} at (20,30) size 50x40
         LayoutSVGRect {rect} at (20,30) size 50x40 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=30.00] [width=50.00] [height=40.00]
-      LayoutSVGContainer {g} at (0.11,15) size 89.75x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,245.00)}]
+      LayoutSVGContainer {g} at (4.11,15) size 81.75x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,245.00)}]
         LayoutSVGRect {rect} at (20,50) size 50x10 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=20.00] [y=50.00] [width=50.00] [height=10.00]
-        LayoutSVGText {text} at (0.11,15) size 89.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0.11,15) size 89.75x12
-            chunk 1 (middle anchor) text run 1 at (0.12,25.00) startOffset 0 endOffset 16 width 89.76: "filterRegion_2_5"
+        LayoutSVGText {text} at (4.11,15) size 81.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (4.11,15) size 81.75x12
+            chunk 1 (middle anchor) text run 1 at (4.12,25.00) startOffset 0 endOffset 16 width 81.76: "filterRegion_2_5"
       LayoutSVGContainer {g} at (0,0) size 450x450 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,330.00)}]
         [filter="filterRegion_3_1"] LayoutSVGResourceFilter {filter} at (-45,-45) size 540x540
         LayoutSVGRect {rect} at (0,0) size 450x450 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=450.00] [height=450.00]
-      LayoutSVGContainer {g} at (0.11,15) size 89.75x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,330.00)}]
+      LayoutSVGContainer {g} at (4.11,15) size 81.75x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,330.00)}]
         LayoutSVGRect {rect} at (20,30) size 20x25 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=20.00] [y=30.00] [width=20.00] [height=25.00]
-        LayoutSVGText {text} at (0.11,15) size 89.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0.11,15) size 89.75x12
-            chunk 1 (middle anchor) text run 1 at (0.12,25.00) startOffset 0 endOffset 16 width 89.76: "filterRegion_3_1"
+        LayoutSVGText {text} at (4.11,15) size 81.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (4.11,15) size 81.75x12
+            chunk 1 (middle anchor) text run 1 at (4.12,25.00) startOffset 0 endOffset 16 width 81.76: "filterRegion_3_1"
       LayoutSVGContainer {g} at (0,0) size 40x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(320.00,330.00)}]
         [filter="filterRegion_3_0"] LayoutSVGResourceFilter {filter} at (-4,-5) size 48x60
         LayoutSVGRect {rect} at (0,0) size 40x50 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=40.00] [height=50.00]
-      LayoutSVGContainer {g} at (-4,-5) size 93.86x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(320.00,330.00)}]
+      LayoutSVGContainer {g} at (-4,-5) size 89.86x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(320.00,330.00)}]
         LayoutSVGRect {rect} at (-4,-5) size 48x60 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=-4.00] [y=-5.00] [width=48.00] [height=60.00]
-        LayoutSVGText {text} at (0.11,15) size 89.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0.11,15) size 89.75x12
-            chunk 1 (middle anchor) text run 1 at (0.12,25.00) startOffset 0 endOffset 16 width 89.76: "filterRegion_3_0"
+        LayoutSVGText {text} at (4.11,15) size 81.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (4.11,15) size 81.75x12
+            chunk 1 (middle anchor) text run 1 at (4.12,25.00) startOffset 0 endOffset 16 width 81.76: "filterRegion_3_0"
       LayoutSVGContainer {g} at (50,40) size 50x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,330.00)}]
         [filter="filterRegion_3_2"] LayoutSVGResourceFilter {filter} at (0,0) size 100x80
         LayoutSVGRect {rect} at (50,40) size 50x40 [fill={[type=SOLID] [color=#000000]}] [x=50.00] [y=40.00] [width=50.00] [height=40.00]
       LayoutSVGContainer {g} at (0,0) size 100x80 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,330.00)}]
         LayoutSVGRect {rect} at (0,0) size 100x80 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=0.00] [y=0.00] [width=100.00] [height=80.00]
-        LayoutSVGText {text} at (0.11,15) size 89.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0.11,15) size 89.75x12
-            chunk 1 (middle anchor) text run 1 at (0.12,25.00) startOffset 0 endOffset 16 width 89.76: "filterRegion_3_2"
+        LayoutSVGText {text} at (4.11,15) size 81.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (4.11,15) size 81.75x12
+            chunk 1 (middle anchor) text run 1 at (4.12,25.00) startOffset 0 endOffset 16 width 81.76: "filterRegion_3_2"
       LayoutSVGContainer {g} at (50,40) size 50x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,330.00)}]
         [filter="filterRegion_3_3"] LayoutSVGResourceFilter {filter} at (25,20) size 37.50x30
         LayoutSVGRect {rect} at (50,40) size 50x40 [fill={[type=SOLID] [color=#000000]}] [x=50.00] [y=40.00] [width=50.00] [height=40.00]
-      LayoutSVGContainer {g} at (0.11,15) size 89.75x35 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,330.00)}]
+      LayoutSVGContainer {g} at (4.11,15) size 81.75x35 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,330.00)}]
         LayoutSVGRect {rect} at (25,20) size 37.50x30 [stroke={[type=SOLID] [color=#000000] [opacity=0.50]}] [x=25.00] [y=20.00] [width=37.50] [height=30.00]
-        LayoutSVGText {text} at (0.11,15) size 89.75x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0.11,15) size 89.75x12
-            chunk 1 (middle anchor) text run 1 at (0.12,25.00) startOffset 0 endOffset 16 width 89.76: "filterRegion_3_3"
+        LayoutSVGText {text} at (4.11,15) size 81.75x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (4.11,15) size 81.75x12
+            chunk 1 (middle anchor) text run 1 at (4.12,25.00) startOffset 0 endOffset 16 width 81.76: "filterRegion_3_3"
     LayoutSVGContainer {use} at (1,1) size 446x496
       LayoutSVGContainer {g} at (1,1) size 446x496
         LayoutSVGRect {rect} at (1,1) size 446x496 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]

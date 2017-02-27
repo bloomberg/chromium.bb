@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 472x19
-        text run at (0,0) width 472: "This tests that the display:none style will work on a search field's cancel button."
-      LayoutBR {BR} at (472,15) size 0x0
+      LayoutText {#text} at (0,0) size 499x19
+        text run at (0,0) width 499: "This tests that the display:none style will work on a search field's cancel button."
+      LayoutBR {BR} at (499,15) size 0x0
       LayoutTextControl {INPUT} at (0,20) size 156x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutFlexibleBox {DIV} at (3,3) size 150x16
           LayoutBlockFlow {DIV} at (0,0) size 150x16

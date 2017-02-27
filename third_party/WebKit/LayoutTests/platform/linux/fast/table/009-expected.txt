@@ -20,23 +20,23 @@ layer at (0,0) size 800x600
                                   LayoutImage {IMG} at (0,0) size 97x180
       LayoutBlockFlow {P} at (0,74) size 800x0
       LayoutBlockFlow (floating) {DIV} at (0,74) size 104x54 [border: (2px solid #FF0000)]
-        LayoutText {#text} at (2,2) size 79x59
-          text run at (2,2) width 79: "Here is some"
-          text run at (2,22) width 30: "text. "
-          text run at (32,22) width 48: "I should"
-          text run at (2,42) width 56: "overflow."
-        LayoutBR {BR} at (57,57) size 1x0
-        LayoutText {#text} at (2,62) size 89x19
-          text run at (2,62) width 89: "I will overflow."
-        LayoutBR {BR} at (90,77) size 1x0
-        LayoutText {#text} at (2,82) size 86x39
-          text run at (2,82) width 86: "I definitely will"
-          text run at (2,102) width 53: "overflow"
-        LayoutBR {BR} at (55,117) size 0x0
-        LayoutText {#text} at (2,122) size 63x39
-          text run at (2,122) width 63: "I promis. I"
-          text run at (2,142) width 59: "lvoerflow."
-        LayoutBR {BR} at (60,157) size 1x0
-        LayoutText {#text} at (2,162) size 40x19
-          text run at (2,162) width 40: "Really."
+        LayoutText {#text} at (2,2) size 82x59
+          text run at (2,2) width 82: "Here is some"
+          text run at (2,22) width 31: "text. "
+          text run at (33,22) width 51: "I should"
+          text run at (2,42) width 60: "overflow."
+        LayoutBR {BR} at (61,57) size 1x0
+        LayoutText {#text} at (2,62) size 97x19
+          text run at (2,62) width 97: "I will overflow."
+        LayoutBR {BR} at (98,77) size 1x0
+        LayoutText {#text} at (2,82) size 96x39
+          text run at (2,82) width 96: "I definitely will"
+          text run at (2,102) width 57: "overflow"
+        LayoutBR {BR} at (59,117) size 0x0
+        LayoutText {#text} at (2,122) size 65x39
+          text run at (2,122) width 65: "I promis. I"
+          text run at (2,142) width 64: "lvoerflow."
+        LayoutBR {BR} at (65,157) size 1x0
+        LayoutText {#text} at (2,162) size 44x19
+          text run at (2,162) width 44: "Really."
       LayoutBlockFlow {P} at (0,74) size 800x0

@@ -1813,21 +1813,21 @@ layer at (-3831,0) size 4631x600 backgroundClip at (0,0) size 800x600 clip at (0
             text run at (2448,0) width 256: "\x{306E}\x{4E8C}\x{4E09}\x{53E5}\x{306E}\x{306A}\x{304B}\x{306B}\x{3053}\x{3093}\x{306A}\x{306E}\x{304C}\x{3042}\x{308B}\x{3002}"
           LayoutBR {BR} at (2448,256) size 19x0
         LayoutBlockFlow {DIV} at (2468,32) size 100x472
-          LayoutText {#text} at (0,0) size 19x190
-            text run at (0,0) width 190: "\x{3000}\x{3000}We look before and after"
-          LayoutBR {BR} at (0,189) size 19x1
-          LayoutText {#text} at (20,0) size 19x224
-            text run at (20,0) width 224: "\x{3000}\x{3000}\x{3000}\x{3000}And pine for what is not:"
-          LayoutBR {BR} at (20,224) size 19x0
-          LayoutText {#text} at (40,0) size 19x169
-            text run at (40,0) width 169: "\x{3000}\x{3000}Our sincerest laughter"
-          LayoutBR {BR} at (40,169) size 19x0
-          LayoutText {#text} at (60,0) size 19x232
-            text run at (60,0) width 232: "\x{3000}\x{3000}\x{3000}\x{3000}With some pain is fraught;"
-          LayoutBR {BR} at (60,231) size 19x1
-          LayoutText {#text} at (80,0) size 19x342
-            text run at (80,0) width 342: "Our sweetest songs are those that tell of saddest thought."
-          LayoutBR {BR} at (80,342) size 19x0
+          LayoutText {#text} at (0,0) size 19x194
+            text run at (0,0) width 194: "\x{3000}\x{3000}We look before and after"
+          LayoutBR {BR} at (0,193) size 19x1
+          LayoutText {#text} at (20,0) size 19x234
+            text run at (20,0) width 234: "\x{3000}\x{3000}\x{3000}\x{3000}And pine for what is not:"
+          LayoutBR {BR} at (20,234) size 19x0
+          LayoutText {#text} at (40,0) size 19x176
+            text run at (40,0) width 176: "\x{3000}\x{3000}Our sincerest laughter"
+          LayoutBR {BR} at (40,176) size 19x0
+          LayoutText {#text} at (60,0) size 19x242
+            text run at (60,0) width 242: "\x{3000}\x{3000}\x{3000}\x{3000}With some pain is fraught;"
+          LayoutBR {BR} at (60,241) size 19x1
+          LayoutText {#text} at (80,0) size 19x355
+            text run at (80,0) width 355: "Our sweetest songs are those that tell of saddest thought."
+          LayoutBR {BR} at (80,355) size 19x0
         LayoutBlockFlow (anonymous) at (2568,0) size 1818x504
           LayoutText {#text} at (12,0) size 19x112
             text run at (12,0) width 112: "\x{300C}\x{524D}\x{3092}\x{307F}\x{3066}\x{306F}\x{3001}"

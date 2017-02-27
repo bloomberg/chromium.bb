@@ -9,8 +9,8 @@ layer at (0,0) size 800x192
             text run at (0,2) width 528: "Ahem_font_required_for_this_test."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 420x19
-          text run at (0,0) width 420: "There should be no red below, only a green square bordered in green."
+        LayoutText {#text} at (0,0) size 438x19
+          text run at (0,0) width 438: "There should be no red below, only a green square bordered in green."
       LayoutTable {TABLE} at (0,72) size 104x104
         LayoutTableSection {TBODY} at (0,0) size 104x104
           LayoutTableRow {TR} at (0,2) size 104x100

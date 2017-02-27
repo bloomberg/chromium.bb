@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           LayoutTableSection {TBODY} at (1,1) size 628x209
             LayoutTableRow {TR} at (0,0) size 628x24
               LayoutTableCell {TD} at (0,0) size 628x24 [border: (2px solid #FF0000)] [r=0 c=0 rs=1 cs=2]
-                LayoutText {#text} at (3,3) size 172x19
-                  text run at (3,3) width 172: "parent table, 1st row, 1st col"
+                LayoutText {#text} at (3,3) size 176x19
+                  text run at (3,3) width 176: "parent table, 1st row, 1st col"
             LayoutTableRow {TR} at (0,24) size 628x185
               LayoutTableCell {TD} at (0,24) size 143x185 [border: (1px solid #FF0000)] [r=1 c=0 rs=1 cs=1]
                 LayoutBlockFlow {FORM} at (3,2) size 139x165
@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
                     LayoutTableSection {TBODY} at (1,1) size 136x162
                       LayoutTableRow {TR} at (0,0) size 136x24
                         LayoutTableCell {TD} at (0,0) size 136x24 [border: (2px solid #00FF00)] [r=0 c=0 rs=1 cs=1]
-                          LayoutText {#text} at (3,3) size 22x19
-                            text run at (3,3) width 22: "text"
+                          LayoutText {#text} at (3,3) size 23x19
+                            text run at (3,3) width 23: "text"
                       LayoutTableRow {TR} at (0,24) size 136x37
                         LayoutTableCell {TD} at (0,24) size 136x37 [border: (1px solid #00FF00)] [r=1 c=0 rs=1 cs=1]
                           LayoutTable {TABLE} at (3,2) size 131x34 [border: (1px solid #FFFF00)]
@@ -32,8 +32,8 @@ layer at (0,0) size 800x600
                                   LayoutText {#text} at (0,0) size 0x0
                       LayoutTableRow {TR} at (0,61) size 136x23
                         LayoutTableCell {TD} at (0,61) size 136x23 [border: (1px solid #00FF00)] [r=2 c=0 rs=1 cs=1]
-                          LayoutText {#text} at (3,2) size 22x19
-                            text run at (3,2) width 22: "text"
+                          LayoutText {#text} at (3,2) size 23x19
+                            text run at (3,2) width 23: "text"
                       LayoutTableRow {TR} at (0,84) size 136x54
                         LayoutTableCell {TD} at (0,84) size 136x54 [border: (1px solid #00FF00)] [r=3 c=0 rs=1 cs=1]
                           LayoutBlockFlow (anonymous) at (3,2) size 131x0
@@ -42,22 +42,22 @@ layer at (0,0) size 800x600
                             LayoutTableSection {TBODY} at (1,1) size 128x48
                               LayoutTableRow {TR} at (0,0) size 128x24
                                 LayoutTableCell {TD} at (0,0) size 128x24 [border: (2px solid #FF00FF)] [r=0 c=0 rs=1 cs=1]
-                                  LayoutText {#text} at (3,3) size 50x19
-                                    text run at (3,3) width 50: "problem"
+                                  LayoutText {#text} at (3,3) size 52x19
+                                    text run at (3,3) width 52: "problem"
                               LayoutTableRow {TR} at (0,24) size 128x24
                                 LayoutTableCell {TD} at (0,24) size 128x24 [border: (1px solid #FF00FF)] [r=1 c=0 rs=1 cs=1]
-                                  LayoutText {#text} at (3,2) size 50x19
-                                    text run at (3,2) width 50: "problem"
+                                  LayoutText {#text} at (3,2) size 52x19
+                                    text run at (3,2) width 52: "problem"
                       LayoutTableRow {TR} at (0,138) size 136x24
                         LayoutTableCell {TD} at (0,138) size 136x24 [border: (1px solid #00FF00)] [r=4 c=0 rs=1 cs=1]
-                          LayoutText {#text} at (3,2) size 22x19
-                            text run at (3,2) width 22: "text"
+                          LayoutText {#text} at (3,2) size 23x19
+                            text run at (3,2) width 23: "text"
               LayoutTableCell {TD} at (143,24) size 485x32 [border: (1px solid #FF0000)] [r=1 c=1 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 481x28 [border: (1px solid #0000FF)]
                   LayoutTableSection {TBODY} at (1,1) size 478x25
                     LayoutTableRow {TR} at (0,0) size 478x25
                       LayoutTableCell {TD} at (0,0) size 478x25 [border: (2px solid #0000FF)] [r=0 c=0 rs=1 cs=1]
-                        LayoutText {#text} at (3,3) size 45x19
-                          text run at (3,3) width 45: "overlap"
+                        LayoutText {#text} at (3,3) size 47x19
+                          text run at (3,3) width 47: "overlap"
 layer at (99,71) size 96x16
   LayoutBlockFlow {DIV} at (2,3) size 96x16

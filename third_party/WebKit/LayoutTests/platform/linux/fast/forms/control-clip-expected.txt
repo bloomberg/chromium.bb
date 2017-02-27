@@ -4,12 +4,12 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 218x19
-          text run at (0,0) width 218: "Tests that buttons clip their contents."
+        LayoutText {#text} at (0,0) size 228x19
+          text run at (0,0) width 228: "Tests that buttons clip their contents."
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 727x19
-          text run at (0,0) width 459: "Each button below should have a yellow border and a black dashed outline. "
-          text run at (459,0) width 268: "Contents should overflow the yellow border."
+        LayoutText {#text} at (0,0) size 763x19
+          text run at (0,0) width 481: "Each button below should have a yellow border and a black dashed outline. "
+          text run at (481,0) width 282: "Contents should overflow the yellow border."
       LayoutBlockFlow {P} at (0,72) size 784x50
         LayoutButton {BUTTON} at (0,0) size 100x50 [bgcolor=#C0C0C0] [border: (2px outset #FFFF00)]
           LayoutBlockFlow (anonymous) at (12,12) size 76x204

@@ -12,17 +12,17 @@ layer at (0,0) size 800x356
             LayoutTableCell {TD} at (458,2) size 150x155 [r=0 c=3 rs=1 cs=1]
           LayoutTableRow {TR} at (0,316) size 610x22
             LayoutTableCell {TD} at (2,316) size 150x22 [r=2 c=0 rs=1 cs=1]
-              LayoutText {#text} at (59,1) size 32x19
-                text run at (59,1) width 32: "PNG"
+              LayoutText {#text} at (58,1) size 34x19
+                text run at (58,1) width 34: "PNG"
             LayoutTableCell {TD} at (154,316) size 150x22 [r=2 c=1 rs=1 cs=1]
-              LayoutText {#text} at (59,1) size 32x19
-                text run at (59,1) width 32: "SVG"
+              LayoutText {#text} at (58,1) size 34x19
+                text run at (58,1) width 34: "SVG"
             LayoutTableCell {TD} at (306,316) size 150x22 [r=2 c=2 rs=1 cs=1]
-              LayoutText {#text} at (59,1) size 32x19
-                text run at (59,1) width 32: "PNG"
+              LayoutText {#text} at (58,1) size 34x19
+                text run at (58,1) width 34: "PNG"
             LayoutTableCell {TD} at (458,316) size 150x22 [r=2 c=3 rs=1 cs=1]
-              LayoutText {#text} at (59,1) size 32x19
-                text run at (59,1) width 32: "SVG"
+              LayoutText {#text} at (58,1) size 34x19
+                text run at (58,1) width 34: "SVG"
 layer at (31,31) size 108x108 clip at (35,35) size 100x100 scrollHeight 105
   LayoutBlockFlow {DIV} at (21,21) size 108x108 [bgcolor=#FF0000] [border: (4px solid #008000)]
     LayoutImage {IMG} at (4,4) size 100x100

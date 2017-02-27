@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x573.28
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 540x19
-          text run at (0,0) width 540: "In this sample, the H3s should be nested. This matches Firefox, IE, and the HTML5 spec."
+        LayoutText {#text} at (0,0) size 565x19
+          text run at (0,0) width 565: "In this sample, the H3s should be nested. This matches Firefox, IE, and the HTML5 spec."
       LayoutBlockFlow {H3} at (0,38.72) size 784x301.97 [border: (2px solid #FF0000)]
         LayoutBlockFlow (anonymous) at (4,4) size 776x23
           LayoutInline {I} at (0,0) size 33x22
@@ -14,9 +14,9 @@ layer at (0,0) size 800x600
         LayoutBlockFlow (anonymous) at (4,48.89) size 776x227.19
           LayoutBlockFlow {H3} at (0,0) size 776x227.19 [border: (2px solid #FF0000)]
             LayoutBlockFlow (anonymous) at (4,4) size 768x26
-              LayoutInline {I} at (0,0) size 38x25
-                LayoutText {#text} at (0,0) size 38x25
-                  text run at (0,0) width 38: "Two"
+              LayoutInline {I} at (0,0) size 39x25
+                LayoutText {#text} at (0,0) size 39x25
+                  text run at (0,0) width 39: "Two"
             LayoutBlockFlow (anonymous) at (4,55.63) size 768x141.94
               LayoutBlockFlow {H3} at (0,0) size 768x141.94 [border: (2px solid #FF0000)]
                 LayoutBlockFlow (anonymous) at (4,4) size 760x31

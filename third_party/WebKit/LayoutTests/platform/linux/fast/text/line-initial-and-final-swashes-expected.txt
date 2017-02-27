@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 615x19
-          text run at (0,0) width 615: "The black text should be identical to, and overlap, the red text, so there should be no red pixels below."
+        LayoutText {#text} at (0,0) size 641x19
+          text run at (0,0) width 641: "The black text should be identical to, and overlap, the red text, so there should be no red pixels below."
       LayoutBlockFlow {DIV} at (0,36) size 784x196
         LayoutBlockFlow {DIV} at (0,0) size 784x170 [color=#FF0000]
           LayoutText {#text} at (0,3) size 272x164

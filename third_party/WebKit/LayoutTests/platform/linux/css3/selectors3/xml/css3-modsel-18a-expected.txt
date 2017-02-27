@@ -3,52 +3,52 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x144
   LayoutBlockFlow {test} at (0,0) size 800x144
     LayoutBlockFlow {p} at (0,16) size 800x20 [color=#000080]
-      LayoutText {#text} at (0,0) size 154x19
-        text run at (0,0) width 154: "The background color of "
-      LayoutInline {a} at (0,0) size 109x19 [color=#0000EE]
-        LayoutText {#text} at (154,0) size 74x19
-          text run at (154,0) width 74: "this anchor ("
+      LayoutText {#text} at (0,0) size 161x19
+        text run at (0,0) width 161: "The background color of "
+      LayoutInline {a} at (0,0) size 113x19 [color=#0000EE]
+        LayoutText {#text} at (161,0) size 78x19
+          text run at (161,0) width 78: "this anchor ("
         LayoutInline {strong} at (0,0) size 30x19
-          LayoutText {#text} at (228,0) size 30x19
-            text run at (228,0) width 30: "here"
-        LayoutText {#text} at (257,0) size 6x19
-          text run at (257,0) width 6: ")"
-      LayoutText {#text} at (262,0) size 366x19
-        text run at (262,0) width 366: " should turn to green when the pointing device hovers over it."
+          LayoutText {#text} at (239,0) size 30x19
+            text run at (239,0) width 30: "here"
+        LayoutText {#text} at (268,0) size 6x19
+          text run at (268,0) width 6: ")"
+      LayoutText {#text} at (273,0) size 388x19
+        text run at (273,0) width 388: " should turn to green when the pointing device hovers over it."
     LayoutBlockFlow {p} at (0,52) size 800x20 [color=#000080]
-      LayoutText {#text} at (0,0) size 154x19
-        text run at (0,0) width 154: "The background color of "
-      LayoutInline {a} at (0,0) size 109x19 [color=#FFFFFF] [bgcolor=#008000]
-        LayoutText {#text} at (154,0) size 74x19
-          text run at (154,0) width 74: "this anchor ("
+      LayoutText {#text} at (0,0) size 161x19
+        text run at (0,0) width 161: "The background color of "
+      LayoutInline {a} at (0,0) size 113x19 [color=#FFFFFF] [bgcolor=#008000]
+        LayoutText {#text} at (161,0) size 78x19
+          text run at (161,0) width 78: "this anchor ("
         LayoutInline {strong} at (0,0) size 30x19
-          LayoutText {#text} at (228,0) size 30x19
-            text run at (228,0) width 30: "here"
-        LayoutText {#text} at (257,0) size 6x19
-          text run at (257,0) width 6: ")"
-      LayoutText {#text} at (262,0) size 48x19
-        text run at (262,0) width 48: " should "
-      LayoutInline {strong} at (0,0) size 210x19
-        LayoutText {#text} at (309,0) size 210x19
-          text run at (309,0) width 210: "remain green when you hover it"
-      LayoutText {#text} at (518,0) size 5x19
-        text run at (518,0) width 5: "."
+          LayoutText {#text} at (239,0) size 30x19
+            text run at (239,0) width 30: "here"
+        LayoutText {#text} at (268,0) size 6x19
+          text run at (268,0) width 6: ")"
+      LayoutText {#text} at (273,0) size 51x19
+        text run at (273,0) width 51: " should "
+      LayoutInline {strong} at (0,0) size 217x19
+        LayoutText {#text} at (323,0) size 217x19
+          text run at (323,0) width 217: "remain green when you hover it"
+      LayoutText {#text} at (539,0) size 5x19
+        text run at (539,0) width 5: "."
     LayoutBlockFlow {p} at (0,88) size 800x40 [color=#000080]
-      LayoutText {#text} at (0,0) size 154x19
-        text run at (0,0) width 154: "The background color of "
-      LayoutInline {a} at (0,0) size 109x19 [color=#FFFFFF] [bgcolor=#008000]
-        LayoutText {#text} at (154,0) size 74x19
-          text run at (154,0) width 74: "this anchor ("
+      LayoutText {#text} at (0,0) size 161x19
+        text run at (0,0) width 161: "The background color of "
+      LayoutInline {a} at (0,0) size 113x19 [color=#FFFFFF] [bgcolor=#008000]
+        LayoutText {#text} at (161,0) size 78x19
+          text run at (161,0) width 78: "this anchor ("
         LayoutInline {strong} at (0,0) size 30x19
-          LayoutText {#text} at (228,0) size 30x19
-            text run at (228,0) width 30: "here"
-        LayoutText {#text} at (257,0) size 6x19
-          text run at (257,0) width 6: ")"
-      LayoutText {#text} at (262,0) size 48x19
-        text run at (262,0) width 48: " should "
-      LayoutInline {strong} at (0,0) size 352x19
-        LayoutText {#text} at (309,0) size 352x19
-          text run at (309,0) width 352: "remain green when the pointing device hovers over it"
-      LayoutText {#text} at (660,0) size 776x39
-        text run at (660,0) width 116: " (do not follow that"
-        text run at (0,20) width 30: "link)."
+          LayoutText {#text} at (239,0) size 30x19
+            text run at (239,0) width 30: "here"
+        LayoutText {#text} at (268,0) size 6x19
+          text run at (268,0) width 6: ")"
+      LayoutText {#text} at (273,0) size 51x19
+        text run at (273,0) width 51: " should "
+      LayoutInline {strong} at (0,0) size 359x19
+        LayoutText {#text} at (323,0) size 359x19
+          text run at (323,0) width 359: "remain green when the pointing device hovers over it"
+      LayoutText {#text} at (681,0) size 776x39
+        text run at (681,0) width 95: " (do not follow"
+        text run at (0,20) width 60: "that link)."

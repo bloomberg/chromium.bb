@@ -4,8 +4,8 @@ layer at (0,0) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x620
     LayoutBlockFlow {BODY} at (8,16) size 769x596
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 330x19
-          text run at (0,0) width 330: "Test overlay cast button rendering on light background."
+        LayoutText {#text} at (0,0) size 348x19
+          text run at (0,0) width 348: "Test overlay cast button rendering on light background."
       LayoutBlockFlow {DIV} at (0,36) size 769x293
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,329) size 769x267

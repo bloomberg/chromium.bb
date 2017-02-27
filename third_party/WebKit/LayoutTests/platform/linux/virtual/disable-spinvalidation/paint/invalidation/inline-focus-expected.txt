@@ -18,7 +18,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [0, 36, 395, 19],
+          "rect": [0, 36, 419, 19],
           "reason": "forced by layout"
         },
         {
@@ -28,7 +28,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [0, 0, 37, 19],
+          "rect": [0, 0, 39, 19],
           "reason": "forced by layout"
         }
       ]

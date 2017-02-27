@@ -4,19 +4,19 @@ layer at (0,0) size 800x168
   LayoutBlockFlow {test} at (0,0) size 800x168
     LayoutBlockFlow {div} at (0,16) size 800x94
       LayoutBlockFlow {p} at (0,0) size 800x20 [bgcolor=#00FF00]
-        LayoutText {#text} at (0,0) size 289x19
-          text run at (0,0) width 289: "This paragraph should have a green background"
-      LayoutTable {table} at (0,36) size 295x58
-        LayoutTableSection {tbody} at (0,0) size 295x58
-          LayoutTableRow {tr} at (0,2) size 295x54
-            LayoutTableCell {td} at (2,2) size 291x54 [r=0 c=0 rs=1 cs=1]
-              LayoutBlockFlow {p} at (1,17) size 289x20 [bgcolor=#00FF00]
-                LayoutText {#text} at (0,0) size 289x19
-                  text run at (0,0) width 289: "This paragraph should have a green background"
-    LayoutTable {table} at (0,110) size 215x58
-      LayoutTableSection {tbody} at (0,0) size 215x58
-        LayoutTableRow {tr} at (0,2) size 215x54
-          LayoutTableCell {td} at (2,2) size 211x54 [r=0 c=0 rs=1 cs=1]
-            LayoutBlockFlow {p} at (1,17) size 209x20
-              LayoutText {#text} at (0,0) size 209x19
-                text run at (0,0) width 209: "This paragraph should be unstyled."
+        LayoutText {#text} at (0,0) size 304x19
+          text run at (0,0) width 304: "This paragraph should have a green background"
+      LayoutTable {table} at (0,36) size 310x58
+        LayoutTableSection {tbody} at (0,0) size 310x58
+          LayoutTableRow {tr} at (0,2) size 310x54
+            LayoutTableCell {td} at (2,2) size 306x54 [r=0 c=0 rs=1 cs=1]
+              LayoutBlockFlow {p} at (1,17) size 304x20 [bgcolor=#00FF00]
+                LayoutText {#text} at (0,0) size 304x19
+                  text run at (0,0) width 304: "This paragraph should have a green background"
+    LayoutTable {table} at (0,110) size 227x58
+      LayoutTableSection {tbody} at (0,0) size 227x58
+        LayoutTableRow {tr} at (0,2) size 227x54
+          LayoutTableCell {td} at (2,2) size 223x54 [r=0 c=0 rs=1 cs=1]
+            LayoutBlockFlow {p} at (1,17) size 221x20
+              LayoutText {#text} at (0,0) size 221x19
+                text run at (0,0) width 221: "This paragraph should be unstyled."

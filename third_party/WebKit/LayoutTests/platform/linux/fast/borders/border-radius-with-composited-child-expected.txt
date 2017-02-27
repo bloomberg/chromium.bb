@@ -4,8 +4,8 @@ layer at (0,0) size 800x400
   LayoutBlockFlow {HTML} at (0,0) size 800x400
     LayoutBlockFlow {BODY} at (8,16) size 784x376
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 446x19
-          text run at (0,0) width 446: "Below there should be a solid green circle with a black border and no red."
+        LayoutText {#text} at (0,0) size 465x19
+          text run at (0,0) width 465: "Below there should be a solid green circle with a black border and no red."
       LayoutBlockFlow (anonymous) at (0,36) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
 layer at (8,172) size 220x220 clip at (18,182) size 200x200 scrollWidth 250 scrollHeight 250

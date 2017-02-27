@@ -16,10 +16,10 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,0) size 352x22
             LayoutTableCell {TD} at (0,0) size 348x22 [bgcolor=#006666] [r=0 c=0 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 13x16
-              LayoutInline {FONT} at (0,0) size 143x21 [color=#FFFFFF]
-                LayoutInline {B} at (0,0) size 143x21
-                  LayoutText {#text} at (13,0) size 143x21
-                    text run at (13,0) width 143: "Rugged Laptops"
+              LayoutInline {FONT} at (0,0) size 142x21 [color=#FFFFFF]
+                LayoutInline {B} at (0,0) size 142x21
+                  LayoutText {#text} at (13,0) size 142x21
+                    text run at (13,0) width 142: "Rugged Laptops"
             LayoutTableCell {TD} at (348,4) size 4x18 [r=0 c=1 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 4x18
           LayoutTableRow {TR} at (0,22) size 352x4
@@ -34,10 +34,10 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,0) size 352x22
             LayoutTableCell {TD} at (0,0) size 348x22 [bgcolor=#006666] [r=0 c=0 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 13x16
-              LayoutInline {FONT} at (0,0) size 143x21 [color=#FFFFFF]
-                LayoutInline {B} at (0,0) size 143x21
-                  LayoutText {#text} at (13,0) size 143x21
-                    text run at (13,0) width 143: "Rugged Laptops"
+              LayoutInline {FONT} at (0,0) size 142x21 [color=#FFFFFF]
+                LayoutInline {B} at (0,0) size 142x21
+                  LayoutText {#text} at (13,0) size 142x21
+                    text run at (13,0) width 142: "Rugged Laptops"
             LayoutTableCell {TD} at (348,4) size 4x18 [r=0 c=1 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 4x18
           LayoutTableRow {TR} at (0,22) size 352x20

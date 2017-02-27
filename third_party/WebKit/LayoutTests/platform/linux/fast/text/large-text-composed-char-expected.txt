@@ -4,8 +4,8 @@ layer at (0,0) size 800x8486 backgroundClip at (0,0) size 800x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 800x8486
     LayoutBlockFlow {BODY} at (8,8) size 784x8465
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 634x19
-          text run at (0,0) width 634: "The text below consists of composed characters. There shouldn't be any errors (e and ' visible separately)"
+        LayoutText {#text} at (0,0) size 659x19
+          text run at (0,0) width 659: "The text below consists of composed characters. There shouldn't be any errors (e and ' visible separately)"
       LayoutBlockFlow {PRE} at (0,33) size 784x8432
         LayoutText {#text} at (0,0) size 1056x2688
           text run at (0,0) width 1056: "e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301} e\x{301} e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301} e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301} e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}e\x{301}"

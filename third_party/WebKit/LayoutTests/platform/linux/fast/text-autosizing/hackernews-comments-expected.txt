@@ -11,65 +11,65 @@ layer at (0,0) size 785x944 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutTable {TABLE} at (0,0) size 653x20
                   LayoutTableSection {TBODY} at (2,2) size 649x16
                     LayoutTableRow {TR} at (0,0) size 649x16
-                      LayoutTableCell {TD} at (0,0) size 54x16 [r=0 c=0 rs=1 cs=1]
-                        LayoutText {#text} at (0,0) size 50x16
-                          text run at (0,0) width 50: "[image]"
-                      LayoutTableCell {TD} at (54,0) size 546x16 [r=0 c=1 rs=1 cs=1]
-                        LayoutInline {SPAN} at (0,0) size 387x16
+                      LayoutTableCell {TD} at (0,0) size 57x16 [r=0 c=0 rs=1 cs=1]
+                        LayoutText {#text} at (0,0) size 53x16
+                          text run at (0,0) width 53: "[image]"
+                      LayoutTableCell {TD} at (57,0) size 541x16 [r=0 c=1 rs=1 cs=1]
+                        LayoutInline {SPAN} at (0,0) size 390x16
                           LayoutText {#text} at (0,0) size 0x0
-                          LayoutInline {B} at (0,0) size 133x16
+                          LayoutInline {B} at (0,0) size 135x16
                             LayoutText {#text} at (0,0) size 0x0
-                            LayoutInline {A} at (0,0) size 129x16 [color=#0000EE]
-                              LayoutText {#text} at (0,0) size 129x16
-                                text run at (0,0) width 129: "Script Kiddy News"
-                            LayoutText {#text} at (129,0) size 4x16
-                              text run at (129,0) width 4: " "
-                          LayoutText {#text} at (133,0) size 254x16
-                            text run at (133,0) width 254: "new | comments | ask | jobs | submit"
+                            LayoutInline {A} at (0,0) size 131x16 [color=#0000EE]
+                              LayoutText {#text} at (0,0) size 131x16
+                                text run at (0,0) width 131: "Script Kiddy News"
+                            LayoutText {#text} at (131,0) size 4x16
+                              text run at (131,0) width 4: " "
+                          LayoutText {#text} at (135,0) size 255x16
+                            text run at (135,0) width 255: "new | comments | ask | jobs | submit"
                         LayoutText {#text} at (0,0) size 0x0
-                      LayoutTableCell {TD} at (600,0) size 49x16 [r=0 c=2 rs=1 cs=1]
-                        LayoutInline {SPAN} at (0,0) size 30x16
-                          LayoutText {#text} at (15,0) size 30x16
-                            text run at (15,0) width 30: "login"
+                      LayoutTableCell {TD} at (598,0) size 51x16 [r=0 c=2 rs=1 cs=1]
+                        LayoutInline {SPAN} at (0,0) size 32x16
+                          LayoutText {#text} at (15,0) size 32x16
+                            text run at (15,0) width 32: "login"
                         LayoutText {#text} at (0,0) size 0x0
             LayoutTableRow {TR} at (0,20) size 653x10
             LayoutTableRow {TR} at (0,30) size 653x880
               LayoutTableCell {TD} at (0,30) size 653x880 [r=2 c=0 rs=1 cs=1]
-                LayoutTable {TABLE} at (0,0) size 402x58
-                  LayoutTableSection {TBODY} at (0,0) size 402x58
-                    LayoutTableRow {TR} at (0,2) size 402x18
-                      LayoutTableCell {TD} at (2,2) size 52x18 [r=0 c=0 rs=1 cs=1]
-                        LayoutBlockFlow {CENTER} at (1,1) size 50x16
-                          LayoutText {#text} at (0,0) size 50x16
-                            text run at (0,0) width 50: "[image]"
-                      LayoutTableCell {TD} at (56,2) size 344x18 [r=0 c=1 rs=1 cs=1]
-                        LayoutInline {A} at (0,0) size 196x16 [color=#0000EE]
-                          LayoutText {#text} at (1,1) size 196x16
-                            text run at (1,1) width 196: "Chromium is the best browser"
-                        LayoutText {#text} at (197,1) size 5x16
-                          text run at (197,1) width 5: " "
-                        LayoutInline {SPAN} at (0,0) size 141x16
-                          LayoutText {#text} at (202,1) size 141x16
-                            text run at (202,1) width 141: "(google.com/chrome)"
+                LayoutTable {TABLE} at (0,0) size 416x58
+                  LayoutTableSection {TBODY} at (0,0) size 416x58
+                    LayoutTableRow {TR} at (0,2) size 416x18
+                      LayoutTableCell {TD} at (2,2) size 55x18 [r=0 c=0 rs=1 cs=1]
+                        LayoutBlockFlow {CENTER} at (1,1) size 53x16
+                          LayoutText {#text} at (0,0) size 53x16
+                            text run at (0,0) width 53: "[image]"
+                      LayoutTableCell {TD} at (59,2) size 355x18 [r=0 c=1 rs=1 cs=1]
+                        LayoutInline {A} at (0,0) size 203x16 [color=#0000EE]
+                          LayoutText {#text} at (1,1) size 203x16
+                            text run at (1,1) width 203: "Chromium is the best browser"
+                        LayoutText {#text} at (204,1) size 5x16
+                          text run at (204,1) width 5: " "
+                        LayoutInline {SPAN} at (0,0) size 145x16
+                          LayoutText {#text} at (209,1) size 145x16
+                            text run at (209,1) width 145: "(google.com/chrome)"
                         LayoutText {#text} at (0,0) size 0x0
-                    LayoutTableRow {TR} at (0,22) size 402x18
-                      LayoutTableCell {TD} at (2,30) size 52x2 [r=1 c=0 rs=1 cs=1]
-                      LayoutTableCell {TD} at (56,22) size 344x18 [r=1 c=1 rs=1 cs=1]
+                    LayoutTableRow {TR} at (0,22) size 416x18
+                      LayoutTableCell {TD} at (2,30) size 55x2 [r=1 c=0 rs=1 cs=1]
+                      LayoutTableCell {TD} at (59,22) size 355x18 [r=1 c=1 rs=1 cs=1]
                         LayoutInline {SPAN} at (0,0) size 69x16
                           LayoutText {#text} at (1,1) size 69x16
                             text run at (1,1) width 69: "999 points"
                         LayoutText {#text} at (70,1) size 26x16
                           text run at (70,1) width 26: " by "
-                        LayoutInline {A} at (0,0) size 22x16 [color=#0000EE]
-                          LayoutText {#text} at (95,1) size 22x16
-                            text run at (95,1) width 22: "pdr"
-                        LayoutText {#text} at (116,1) size 189x16
-                          text run at (116,1) width 89: " 4 hours ago "
-                          text run at (204,1) width 101: "| 74 comments"
-                    LayoutTableRow {TR} at (0,42) size 402x10
-                    LayoutTableRow {TR} at (0,54) size 402x2
-                      LayoutTableCell {TD} at (2,54) size 52x2 [r=3 c=0 rs=1 cs=1]
-                      LayoutTableCell {TD} at (56,54) size 344x2 [r=3 c=1 rs=1 cs=1]
+                        LayoutInline {A} at (0,0) size 23x16 [color=#0000EE]
+                          LayoutText {#text} at (95,1) size 23x16
+                            text run at (95,1) width 23: "pdr"
+                        LayoutText {#text} at (117,1) size 191x16
+                          text run at (117,1) width 90: " 4 hours ago "
+                          text run at (206,1) width 102: "| 74 comments"
+                    LayoutTableRow {TR} at (0,42) size 416x10
+                    LayoutTableRow {TR} at (0,54) size 416x2
+                      LayoutTableCell {TD} at (2,54) size 55x2 [r=3 c=0 rs=1 cs=1]
+                      LayoutTableCell {TD} at (59,54) size 355x2 [r=3 c=1 rs=1 cs=1]
                 LayoutBlockFlow (anonymous) at (0,58) size 653x32
                   LayoutBR {BR} at (0,0) size 0x16
                   LayoutBR {BR} at (0,16) size 0x16
@@ -81,18 +81,18 @@ layer at (0,0) size 785x944 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                           LayoutTableSection {TBODY} at (0,0) size 647x408
                             LayoutTableRow {TR} at (0,2) size 647x404
                               LayoutTableCell {TD} at (2,203) size 2x2 [r=0 c=0 rs=1 cs=1]
-                              LayoutTableCell {TD} at (6,2) size 52x18 [r=0 c=1 rs=1 cs=1]
-                                LayoutBlockFlow {CENTER} at (1,1) size 50x16
-                                  LayoutText {#text} at (0,0) size 50x16
-                                    text run at (0,0) width 50: "[image]"
-                              LayoutTableCell {TD} at (60,2) size 585x404 [r=0 c=2 rs=1 cs=1]
-                                LayoutBlockFlow {DIV} at (1,3) size 583x32
+                              LayoutTableCell {TD} at (6,2) size 55x18 [r=0 c=1 rs=1 cs=1]
+                                LayoutBlockFlow {CENTER} at (1,1) size 53x16
+                                  LayoutText {#text} at (0,0) size 53x16
+                                    text run at (0,0) width 53: "[image]"
+                              LayoutTableCell {TD} at (63,2) size 582x404 [r=0 c=2 rs=1 cs=1]
+                                LayoutBlockFlow {DIV} at (1,3) size 580x32
                                   LayoutInline {SPAN} at (0,0) size 434x32
                                     LayoutText {#text} at (0,0) size 434x32
                                       text run at (0,0) width 365: "longcomment 3 hours ago "
                                       text run at (365,0) width 69: "| link"
                                   LayoutText {#text} at (0,0) size 0x0
-                                LayoutBlockFlow (anonymous) at (1,25) size 583x320
+                                LayoutBlockFlow (anonymous) at (1,25) size 580x320
                                   LayoutBR {BR} at (0,0) size 0x32
                                   LayoutInline {SPAN} at (0,0) size 560x288
                                     LayoutText {#text} at (0,0) size 0x0
@@ -109,7 +109,7 @@ layer at (0,0) size 785x944 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                                         text run at (0,288) width 459: "blah blah blah blah blah blah blah"
                                     LayoutText {#text} at (0,0) size 0x0
                                   LayoutText {#text} at (0,0) size 0x0
-                                LayoutBlockFlow {P} at (1,358) size 583x32
+                                LayoutBlockFlow {P} at (1,358) size 580x32
                                   LayoutInline {FONT} at (0,0) size 68x32
                                     LayoutText {#text} at (0,0) size 68x32
                                       text run at (0,0) width 68: "reply"
@@ -121,19 +121,19 @@ layer at (0,0) size 785x944 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                             LayoutTableRow {TR} at (0,2) size 647x180
                               LayoutTableCell {TD} at (2,91) size 322x2 [r=0 c=0 rs=1 cs=1]
                                 LayoutBlockFlow {DIV} at (1,1) size 320x0
-                              LayoutTableCell {TD} at (326,2) size 52x18 [r=0 c=1 rs=1 cs=1]
-                                LayoutBlockFlow {CENTER} at (1,1) size 50x16
-                                  LayoutText {#text} at (0,0) size 50x16
-                                    text run at (0,0) width 50: "[image]"
-                              LayoutTableCell {TD} at (380,2) size 265x180 [r=0 c=2 rs=1 cs=1]
-                                LayoutBlockFlow {DIV} at (1,3) size 263x64
+                              LayoutTableCell {TD} at (326,2) size 55x18 [r=0 c=1 rs=1 cs=1]
+                                LayoutBlockFlow {CENTER} at (1,1) size 53x16
+                                  LayoutText {#text} at (0,0) size 53x16
+                                    text run at (0,0) width 53: "[image]"
+                              LayoutTableCell {TD} at (383,2) size 262x180 [r=0 c=2 rs=1 cs=1]
+                                LayoutBlockFlow {DIV} at (1,3) size 260x64
                                   LayoutInline {SPAN} at (0,0) size 246x64
                                     LayoutText {#text} at (0,0) size 246x64
                                       text run at (0,0) width 201: "deepnested 37"
                                       text run at (0,32) width 177: "minutes ago "
                                       text run at (177,32) width 69: "| link"
                                   LayoutText {#text} at (0,0) size 0x0
-                                LayoutBlockFlow (anonymous) at (1,57) size 263x64
+                                LayoutBlockFlow (anonymous) at (1,57) size 260x64
                                   LayoutBR {BR} at (0,0) size 0x32
                                   LayoutInline {SPAN} at (0,0) size 259x32
                                     LayoutText {#text} at (0,0) size 0x0
@@ -142,23 +142,23 @@ layer at (0,0) size 785x944 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                                         text run at (0,32) width 259: "Haskell is the best."
                                     LayoutText {#text} at (0,0) size 0x0
                                   LayoutText {#text} at (0,0) size 0x0
-                                LayoutBlockFlow {P} at (1,134) size 263x32
+                                LayoutBlockFlow {P} at (1,134) size 260x32
                                   LayoutInline {FONT} at (0,0) size 68x32
                                     LayoutText {#text} at (0,0) size 68x32
                                       text run at (0,0) width 68: "reply"
                                   LayoutText {#text} at (0,0) size 0x0
                     LayoutTableRow {TR} at (0,602) size 653x154
                       LayoutTableCell {TD} at (2,602) size 649x154 [r=2 c=0 rs=1 cs=1]
-                        LayoutTable {TABLE} at (1,1) size 551x152
-                          LayoutTableSection {TBODY} at (0,0) size 551x152
-                            LayoutTableRow {TR} at (0,2) size 551x148
+                        LayoutTable {TABLE} at (1,1) size 554x152
+                          LayoutTableSection {TBODY} at (0,0) size 554x152
+                            LayoutTableRow {TR} at (0,2) size 554x148
                               LayoutTableCell {TD} at (2,75) size 42x2 [r=0 c=0 rs=1 cs=1]
                                 LayoutBlockFlow {DIV} at (1,1) size 40x0
-                              LayoutTableCell {TD} at (46,2) size 52x18 [r=0 c=1 rs=1 cs=1]
-                                LayoutBlockFlow {CENTER} at (1,1) size 50x16
-                                  LayoutText {#text} at (0,0) size 50x16
-                                    text run at (0,0) width 50: "[image]"
-                              LayoutTableCell {TD} at (100,2) size 449x148 [r=0 c=2 rs=1 cs=1]
+                              LayoutTableCell {TD} at (46,2) size 55x18 [r=0 c=1 rs=1 cs=1]
+                                LayoutBlockFlow {CENTER} at (1,1) size 53x16
+                                  LayoutText {#text} at (0,0) size 53x16
+                                    text run at (0,0) width 53: "[image]"
+                              LayoutTableCell {TD} at (103,2) size 449x148 [r=0 c=2 rs=1 cs=1]
                                 LayoutBlockFlow {DIV} at (1,3) size 447x32
                                   LayoutInline {SPAN} at (0,0) size 447x32
                                     LayoutText {#text} at (0,0) size 447x32

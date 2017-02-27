@@ -4,14 +4,14 @@ layer at (0,0) size 785x945 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x945.03
     LayoutBlockFlow {BODY} at (8,8) size 769x921.03 [bgcolor=#FFFFFF]
       LayoutBlockFlow {H1} at (0,0) size 769x37
-        LayoutText {#text} at (0,0) size 358x36
-          text run at (0,0) width 358: "Tests de conformit\x{E9} CSS 2"
+        LayoutText {#text} at (0,0) size 357x36
+          text run at (0,0) width 357: "Tests de conformit\x{E9} CSS 2"
       LayoutBlockFlow {H3} at (0,58.44) size 769x23
         LayoutText {#text} at (0,0) size 154x22
           text run at (0,0) width 154: "Tableaux, test 13.8"
       LayoutBlockFlow {H6} at (0,106.41) size 769x13
-        LayoutText {#text} at (0,0) size 125x13
-          text run at (0,0) width 125: "\x{A9} \x{C9}ditions Eyrolles 1998"
+        LayoutText {#text} at (0,0) size 119x13
+          text run at (0,0) width 119: "\x{A9} \x{C9}ditions Eyrolles 1998"
       LayoutTable (floating) {TABLE} at (193,144.38) size 576x48
         LayoutTableSection {TBODY} at (0,0) size 576x48
           LayoutTableRow {TR} at (0,2) size 576x20
@@ -19,17 +19,17 @@ layer at (0,0) size 785x945 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutBlockFlow {HR} at (1,9) size 572x2 [bgcolor=#808080] [border: (1px solid #808080)]
           LayoutTableRow {TR} at (0,24) size 576x22
             LayoutTableCell {TD} at (2,24) size 142x22 [r=1 c=0 rs=1 cs=1]
-              LayoutInline {A} at (0,0) size 85x19 [color=#0000EE]
-                LayoutText {#text} at (1,1) size 85x19
-                  text run at (1,1) width 85: "test pr\x{E9}c\x{E9}dent"
+              LayoutInline {A} at (0,0) size 86x19 [color=#0000EE]
+                LayoutText {#text} at (1,1) size 86x19
+                  text run at (1,1) width 86: "test pr\x{E9}c\x{E9}dent"
             LayoutTableCell {TD} at (146,24) size 284x22 [r=1 c=1 rs=1 cs=1]
-              LayoutInline {B} at (0,0) size 130x19
-                LayoutText {#text} at (77,1) size 130x19
-                  text run at (77,1) width 130: "Cadres de tableaux"
+              LayoutInline {B} at (0,0) size 132x19
+                LayoutText {#text} at (76,1) size 132x19
+                  text run at (76,1) width 132: "Cadres de tableaux"
             LayoutTableCell {TD} at (432,24) size 142x22 [r=1 c=2 rs=1 cs=1]
-              LayoutInline {A} at (0,0) size 66x19 [color=#0000EE]
-                LayoutText {#text} at (75,1) size 66x19
-                  text run at (75,1) width 66: "test suivant"
+              LayoutInline {A} at (0,0) size 70x19 [color=#0000EE]
+                LayoutText {#text} at (71,1) size 70x19
+                  text run at (71,1) width 70: "test suivant"
       LayoutBlockFlow {P} at (0,144.38) size 769x20
         LayoutText {#text} at (0,0) size 4x19
           text run at (0,0) width 4: " "
@@ -37,8 +37,8 @@ layer at (0,0) size 785x945 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 4x19
           text run at (0,0) width 4: " "
       LayoutBlockFlow {P} at (0,216.38) size 769x20
-        LayoutText {#text} at (0,0) size 360x19
-          text run at (0,0) width 360: "Ce test v\x{E9}rifie que les cadres s'appliquent bien aux tableaux."
+        LayoutText {#text} at (0,0) size 377x19
+          text run at (0,0) width 377: "Ce test v\x{E9}rifie que les cadres s'appliquent bien aux tableaux."
       LayoutBlockFlow {PRE} at (0,252.38) size 769x192
         LayoutText {#text} at (0,0) size 576x192
           text run at (0,0) width 472: ".firsttable { border-width : 10pt ; border-color : yellow ;"
@@ -131,10 +131,11 @@ layer at (0,0) size 785x945 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutText {#text} at (4,4) size 8x19
                 text run at (4,4) width 8: "9"
       LayoutBlockFlow {P} at (0,737.03) size 769x40
-        LayoutText {#text} at (0,0) size 767x39
-          text run at (0,0) width 289: "Si toutes les conditions exprim\x{E9}es par les r\x{E8}gles "
-          text run at (289,0) width 478: "CSS ci-dessus se retrouvent dans le formatage des tableaux ci-dessus, la valeur"
-          text run at (0,20) width 157: "de ce test est 2 et 0 sinon."
+        LayoutText {#text} at (0,0) size 754x39
+          text run at (0,0) width 302: "Si toutes les conditions exprim\x{E9}es par les r\x{E8}gles "
+          text run at (302,0) width 452: "CSS ci-dessus se retrouvent dans le formatage des tableaux ci-dessus, la"
+          text run at (0,20) width 43: "valeur "
+          text run at (43,20) width 160: "de ce test est 2 et 0 sinon."
       LayoutTable (floating) {TABLE} at (193,793.03) size 576x48
         LayoutTableSection {TBODY} at (0,0) size 576x48
           LayoutTableRow {TR} at (0,2) size 576x20
@@ -142,16 +143,16 @@ layer at (0,0) size 785x945 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutBlockFlow {HR} at (1,9) size 572x2 [bgcolor=#808080] [border: (1px solid #808080)]
           LayoutTableRow {TR} at (0,24) size 576x22
             LayoutTableCell {TD} at (2,24) size 142x22 [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 85x19
-                text run at (1,1) width 85: "test pr\x{E9}c\x{E9}dent"
+              LayoutText {#text} at (1,1) size 86x19
+                text run at (1,1) width 86: "test pr\x{E9}c\x{E9}dent"
             LayoutTableCell {TD} at (146,24) size 284x22 [r=1 c=1 rs=1 cs=1]
-              LayoutInline {B} at (0,0) size 130x19
-                LayoutText {#text} at (77,1) size 130x19
-                  text run at (77,1) width 130: "Cadres de tableaux"
+              LayoutInline {B} at (0,0) size 132x19
+                LayoutText {#text} at (76,1) size 132x19
+                  text run at (76,1) width 132: "Cadres de tableaux"
             LayoutTableCell {TD} at (432,24) size 142x22 [r=1 c=2 rs=1 cs=1]
-              LayoutInline {A} at (0,0) size 66x19 [color=#0000EE]
-                LayoutText {#text} at (75,1) size 66x19
-                  text run at (75,1) width 66: "test suivant"
+              LayoutInline {A} at (0,0) size 70x19 [color=#0000EE]
+                LayoutText {#text} at (71,1) size 70x19
+                  text run at (71,1) width 70: "test suivant"
       LayoutBlockFlow {P} at (0,793.03) size 769x20
         LayoutText {#text} at (0,0) size 4x19
           text run at (0,0) width 4: " "
@@ -162,5 +163,5 @@ layer at (0,0) size 785x945 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 4x19
           text run at (0,0) width 4: " "
       LayoutBlockFlow {P} at (0,901.03) size 769x20
-        LayoutText {#text} at (0,0) size 150x19
-          text run at (0,0) width 150: "Auteur : Daniel Glazman."
+        LayoutText {#text} at (0,0) size 163x19
+          text run at (0,0) width 163: "Auteur : Daniel Glazman."

@@ -4,25 +4,25 @@ layer at (0,0) size 800x234
   LayoutBlockFlow {HTML} at (0,0) size 800x234
     LayoutBlockFlow {BODY} at (8,16) size 784x208
       LayoutBlockFlow {P} at (0,0) size 784x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 618x19
-          text run at (0,0) width 369: "Below you should see four blocks side by side followed by a "
-          text run at (369,0) width 249: "matching cross section of the four blocks."
+        LayoutText {#text} at (0,0) size 649x19
+          text run at (0,0) width 388: "Below you should see four blocks side by side followed by a "
+          text run at (388,0) width 261: "matching cross section of the four blocks."
       LayoutBlockFlow (floating) {DIV} at (0,46) size 140x132 [bgcolor=#FFFF00] [border: (20px solid #000000)]
         LayoutBlockFlow {P} at (40,56) size 60x20
-          LayoutText {#text} at (9,0) size 42x19
-            text run at (9,0) width 42: "Yellow"
+          LayoutText {#text} at (7,0) size 46x19
+            text run at (7,0) width 46: "Yellow"
       LayoutBlockFlow (floating) {DIV} at (160,46) size 140x132 [color=#FFFFFF] [bgcolor=#0000FF] [border: (20px solid #000000)]
         LayoutBlockFlow {P} at (40,56) size 60x20
-          LayoutText {#text} at (16,0) size 28x19
-            text run at (16,0) width 28: "Blue"
+          LayoutText {#text} at (15,0) size 30x19
+            text run at (15,0) width 30: "Blue"
       LayoutBlockFlow (floating) {DIV} at (320,46) size 140x132 [bgcolor=#FF0000] [border: (20px solid #000000)]
         LayoutBlockFlow {P} at (40,56) size 60x20
           LayoutText {#text} at (17,0) size 26x19
             text run at (17,0) width 26: "Red"
       LayoutBlockFlow (floating) {DIV} at (480,46) size 140x132 [color=#FFFFFF] [bgcolor=#008000] [border: (20px solid #000000)]
         LayoutBlockFlow {P} at (40,56) size 60x20
-          LayoutText {#text} at (11,0) size 38x19
-            text run at (11,0) width 38: "Green"
+          LayoutText {#text} at (10,0) size 40x19
+            text run at (10,0) width 40: "Green"
       LayoutBlockFlow {DIV} at (0,188) size 784x20
         LayoutTable {TABLE} at (0,0) size 620x20
           LayoutTableSection {TBODY} at (0,0) size 620x20

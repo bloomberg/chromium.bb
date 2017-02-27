@@ -12,14 +12,14 @@ layer at (0,0) size 800x600
                   LayoutTableSection {TBODY} at (0,0) size 444x20
                     LayoutTableRow {TR} at (0,0) size 444x20
                       LayoutTableCell {TD} at (0,0) size 444x20 [r=0 c=0 rs=1 cs=1]
-                        LayoutInline {FONT} at (0,0) size 10x16
-                          LayoutText {#text} at (2,2) size 10x16
-                            text run at (2,2) width 10: "In"
+                        LayoutInline {FONT} at (0,0) size 11x16
+                          LayoutText {#text} at (2,2) size 11x16
+                            text run at (2,2) width 11: "In"
                         LayoutText {#text} at (0,0) size 0x0
                 LayoutBR {BR} at (0,0) size 0x19
               LayoutTable {TABLE} at (1,21) size 439x26 [bgcolor=#FF00FF]
                 LayoutTableSection {TBODY} at (0,0) size 439x26
                   LayoutTableRow {TR} at (0,2) size 439x22
                     LayoutTableCell {TD} at (2,2) size 435x22 [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (1,1) size 118x19
-                        text run at (1,1) width 118: "Shop Till You Drop"
+                      LayoutText {#text} at (1,1) size 126x19
+                        text run at (1,1) width 126: "Shop Till You Drop"

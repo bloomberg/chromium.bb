@@ -19,7 +19,7 @@ layer at (8,8) size 450x155
   LayoutBlockFlow (positioned) {DIV} at (8,8) size 450x155 [bgcolor=#FFFFFF]
 layer at (60,155) size 450x155
   LayoutBlockFlow (positioned) {DIV} at (60,155) size 450x155 [bgcolor=#FFFFFF]
-layer at (0,16) size 384x20
-  LayoutBlockFlow (positioned) {P} at (0,16) size 383.89x20
-    LayoutText {#text} at (0,0) size 384x19
-      text run at (0,0) width 384: "Test passes if the page renders a green box with open right side."
+layer at (0,16) size 401x20
+  LayoutBlockFlow (positioned) {P} at (0,16) size 400.89x20
+    LayoutText {#text} at (0,0) size 401x19
+      text run at (0,0) width 401: "Test passes if the page renders a green box with open right side."

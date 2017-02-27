@@ -4,8 +4,8 @@ layer at (0,0) size 800x255
   LayoutBlockFlow {HTML} at (0,0) size 800x255
     LayoutBlockFlow {BODY} at (8,16) size 784x231
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 275x19
-          text run at (0,0) width 275: "There must be a green box below and no red."
+        LayoutText {#text} at (0,0) size 286x19
+          text run at (0,0) width 286: "There must be a green box below and no red."
       LayoutBlockFlow {DIV} at (0,36) size 784x195
 layer at (8,52) size 100x190
   LayoutEmbeddedObject {OBJECT} at (0,0) size 100x190 [bgcolor=#008000] [border: (20px solid #FF0000)]

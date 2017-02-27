@@ -4,8 +4,8 @@ layer at (0,0) size 785x1649 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1649
     LayoutBlockFlow {BODY} at (8,8) size 769x1633 [bgcolor=#CCCCCC]
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 337x19
-          text run at (0,0) width 337: "The style declarations which apply to the text below are:"
+        LayoutText {#text} at (0,0) size 355x19
+          text run at (0,0) width 355: "The style declarations which apply to the text below are:"
       LayoutBlockFlow {PRE} at (0,36) size 769x160
         LayoutText {#text} at (0,0) size 304x160
           text run at (0,0) width 232: ".one {list-style-type: disc;}"
@@ -31,240 +31,240 @@ layer at (0,0) size 785x1649 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {UL} at (0,227) size 769x60
         LayoutListItem {LI} at (40,0) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-          LayoutText {#text} at (0,0) size 57x19
-            text run at (0,0) width 57: "This list..."
+          LayoutText {#text} at (0,0) size 62x19
+            text run at (0,0) width 62: "This list..."
         LayoutListItem {LI} at (40,20) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-          LayoutText {#text} at (0,0) size 108x19
-            text run at (0,0) width 108: "...should feature..."
+          LayoutText {#text} at (0,0) size 113x19
+            text run at (0,0) width 113: "...should feature..."
         LayoutListItem {LI} at (40,40) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-          LayoutText {#text} at (0,0) size 128x19
-            text run at (0,0) width 128: "...discs for each item."
+          LayoutText {#text} at (0,0) size 133x19
+            text run at (0,0) width 133: "...discs for each item."
       LayoutBlockFlow {UL} at (0,303) size 769x60
         LayoutListItem {LI} at (40,0) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
-          LayoutText {#text} at (0,0) size 57x19
-            text run at (0,0) width 57: "This list..."
+          LayoutText {#text} at (0,0) size 62x19
+            text run at (0,0) width 62: "This list..."
         LayoutListItem {LI} at (40,20) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
-          LayoutText {#text} at (0,0) size 108x19
-            text run at (0,0) width 108: "...should feature..."
+          LayoutText {#text} at (0,0) size 113x19
+            text run at (0,0) width 113: "...should feature..."
         LayoutListItem {LI} at (40,40) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
-          LayoutText {#text} at (0,0) size 136x19
-            text run at (0,0) width 136: "...circles for each item."
+          LayoutText {#text} at (0,0) size 142x19
+            text run at (0,0) width 142: "...circles for each item."
       LayoutBlockFlow {UL} at (0,379) size 769x60
         LayoutListItem {LI} at (40,0) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: black square
-          LayoutText {#text} at (0,0) size 57x19
-            text run at (0,0) width 57: "This list..."
+          LayoutText {#text} at (0,0) size 62x19
+            text run at (0,0) width 62: "This list..."
         LayoutListItem {LI} at (40,20) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: black square
-          LayoutText {#text} at (0,0) size 108x19
-            text run at (0,0) width 108: "...should feature..."
+          LayoutText {#text} at (0,0) size 113x19
+            text run at (0,0) width 113: "...should feature..."
         LayoutListItem {LI} at (40,40) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: black square
-          LayoutText {#text} at (0,0) size 144x19
-            text run at (0,0) width 144: "...squares for each item."
+          LayoutText {#text} at (0,0) size 149x19
+            text run at (0,0) width 149: "...squares for each item."
       LayoutBlockFlow {OL} at (0,455) size 769x60
         LayoutListItem {LI} at (40,0) size 729x20
-          LayoutListMarker (anonymous) at (-11,0) size 11x19: "i"
-          LayoutText {#text} at (0,0) size 57x19
-            text run at (0,0) width 57: "This list..."
+          LayoutListMarker (anonymous) at (-12,0) size 12x19: "i"
+          LayoutText {#text} at (0,0) size 62x19
+            text run at (0,0) width 62: "This list..."
         LayoutListItem {LI} at (40,20) size 729x20
-          LayoutListMarker (anonymous) at (-14,0) size 14x19: "ii"
-          LayoutText {#text} at (0,0) size 108x19
-            text run at (0,0) width 108: "...should feature..."
+          LayoutListMarker (anonymous) at (-16,0) size 16x19: "ii"
+          LayoutText {#text} at (0,0) size 113x19
+            text run at (0,0) width 113: "...should feature..."
         LayoutListItem {LI} at (40,40) size 729x20
-          LayoutListMarker (anonymous) at (-17,0) size 17x19: "iii"
-          LayoutText {#text} at (0,0) size 263x19
-            text run at (0,0) width 263: "...lowercase Roman numerals for each item."
+          LayoutListMarker (anonymous) at (-20,0) size 20x19: "iii"
+          LayoutText {#text} at (0,0) size 276x19
+            text run at (0,0) width 276: "...lowercase Roman numerals for each item."
       LayoutBlockFlow {OL} at (0,531) size 769x60
         LayoutListItem {LI} at (40,0) size 729x20
           LayoutListMarker (anonymous) at (-13,0) size 13x19: "I"
-          LayoutText {#text} at (0,0) size 57x19
-            text run at (0,0) width 57: "This list..."
+          LayoutText {#text} at (0,0) size 62x19
+            text run at (0,0) width 62: "This list..."
         LayoutListItem {LI} at (40,20) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 18x19: "II"
-          LayoutText {#text} at (0,0) size 108x19
-            text run at (0,0) width 108: "...should feature..."
+          LayoutText {#text} at (0,0) size 113x19
+            text run at (0,0) width 113: "...should feature..."
         LayoutListItem {LI} at (40,40) size 729x20
           LayoutListMarker (anonymous) at (-23,0) size 23x19: "III"
-          LayoutText {#text} at (0,0) size 264x19
-            text run at (0,0) width 264: "...uppercase Roman numerals for each item."
+          LayoutText {#text} at (0,0) size 276x19
+            text run at (0,0) width 276: "...uppercase Roman numerals for each item."
       LayoutBlockFlow {OL} at (0,607) size 769x60
         LayoutListItem {LI} at (40,0) size 729x20
           LayoutListMarker (anonymous) at (-15,0) size 15x19: "a"
-          LayoutText {#text} at (0,0) size 57x19
-            text run at (0,0) width 57: "This list..."
+          LayoutText {#text} at (0,0) size 62x19
+            text run at (0,0) width 62: "This list..."
         LayoutListItem {LI} at (40,20) size 729x20
           LayoutListMarker (anonymous) at (-16,0) size 16x19: "b"
-          LayoutText {#text} at (0,0) size 108x19
-            text run at (0,0) width 108: "...should feature..."
+          LayoutText {#text} at (0,0) size 113x19
+            text run at (0,0) width 113: "...should feature..."
         LayoutListItem {LI} at (40,40) size 729x20
           LayoutListMarker (anonymous) at (-15,0) size 15x19: "c"
-          LayoutText {#text} at (0,0) size 199x19
-            text run at (0,0) width 199: "...lowercase letters for each item."
+          LayoutText {#text} at (0,0) size 206x19
+            text run at (0,0) width 206: "...lowercase letters for each item."
       LayoutBlockFlow {OL} at (0,683) size 769x60
         LayoutListItem {LI} at (40,0) size 729x20
-          LayoutListMarker (anonymous) at (-19,0) size 19x19: "A"
-          LayoutText {#text} at (0,0) size 57x19
-            text run at (0,0) width 57: "This list..."
+          LayoutListMarker (anonymous) at (-20,0) size 20x19: "A"
+          LayoutText {#text} at (0,0) size 62x19
+            text run at (0,0) width 62: "This list..."
         LayoutListItem {LI} at (40,20) size 729x20
-          LayoutListMarker (anonymous) at (-18,0) size 18x19: "B"
-          LayoutText {#text} at (0,0) size 108x19
-            text run at (0,0) width 108: "...should feature..."
+          LayoutListMarker (anonymous) at (-19,0) size 19x19: "B"
+          LayoutText {#text} at (0,0) size 113x19
+            text run at (0,0) width 113: "...should feature..."
         LayoutListItem {LI} at (40,40) size 729x20
           LayoutListMarker (anonymous) at (-19,0) size 19x19: "C"
-          LayoutText {#text} at (0,0) size 200x19
-            text run at (0,0) width 200: "...uppercase letters for each item."
+          LayoutText {#text} at (0,0) size 206x19
+            text run at (0,0) width 206: "...uppercase letters for each item."
       LayoutBlockFlow {OL} at (0,759) size 769x60
         LayoutListItem {LI} at (40,0) size 729x20
-          LayoutListMarker (anonymous) at (-19,0) size 19x19: "A"
-          LayoutText {#text} at (0,0) size 145x19
-            text run at (0,0) width 145: "This list should feature..."
+          LayoutListMarker (anonymous) at (-20,0) size 20x19: "A"
+          LayoutText {#text} at (0,0) size 155x19
+            text run at (0,0) width 155: "This list should feature..."
         LayoutListItem {LI} at (40,20) size 729x20
-          LayoutListMarker (anonymous) at (-18,0) size 18x19: "B"
-          LayoutText {#text} at (0,0) size 142x19
-            text run at (0,0) width 142: "...letters for each item..."
+          LayoutListMarker (anonymous) at (-19,0) size 19x19: "B"
+          LayoutText {#text} at (0,0) size 147x19
+            text run at (0,0) width 147: "...letters for each item..."
         LayoutListItem {LI} at (40,40) size 729x20
           LayoutListMarker (anonymous) at (-16,0) size 16x19: "3"
-          LayoutText {#text} at (0,0) size 106x19
-            text run at (0,0) width 106: "...except this one."
+          LayoutText {#text} at (0,0) size 110x19
+            text run at (0,0) width 110: "...except this one."
       LayoutBlockFlow {UL} at (0,835) size 769x60
         LayoutListItem {LI} at (40,0) size 729x20
-          LayoutText {#text} at (0,0) size 57x19
-            text run at (0,0) width 57: "This list..."
+          LayoutText {#text} at (0,0) size 62x19
+            text run at (0,0) width 62: "This list..."
         LayoutListItem {LI} at (40,20) size 729x20
-          LayoutText {#text} at (0,0) size 108x19
-            text run at (0,0) width 108: "...should feature..."
+          LayoutText {#text} at (0,0) size 113x19
+            text run at (0,0) width 113: "...should feature..."
         LayoutListItem {LI} at (40,40) size 729x20
-          LayoutText {#text} at (0,0) size 141x19
-            text run at (0,0) width 141: "...nothing for each item."
-      LayoutTable {TABLE} at (0,911) size 326x722 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 324x720
-          LayoutTableRow {TR} at (0,0) size 324x28
-            LayoutTableCell {TD} at (0,0) size 324x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 157x19
-                LayoutText {#text} at (4,4) size 157x19
-                  text run at (4,4) width 157: "TABLE Testing Section"
-          LayoutTableRow {TR} at (0,28) size 324x692
+          LayoutText {#text} at (0,0) size 150x19
+            text run at (0,0) width 150: "...nothing for each item."
+      LayoutTable {TABLE} at (0,911) size 338x722 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 336x720
+          LayoutTableRow {TR} at (0,0) size 336x28
+            LayoutTableCell {TD} at (0,0) size 336x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
+          LayoutTableRow {TR} at (0,28) size 336x692
             LayoutTableCell {TD} at (0,360) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
                 text run at (4,4) width 4: " "
-            LayoutTableCell {TD} at (12,28) size 312x692 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutBlockFlow {UL} at (4,4) size 304x60
-                LayoutListItem {LI} at (40,0) size 264x20
+            LayoutTableCell {TD} at (12,28) size 324x692 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow {UL} at (4,4) size 316x60
+                LayoutListItem {LI} at (40,0) size 276x20
                   LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-                  LayoutText {#text} at (0,0) size 57x19
-                    text run at (0,0) width 57: "This list..."
-                LayoutListItem {LI} at (40,20) size 264x20
+                  LayoutText {#text} at (0,0) size 62x19
+                    text run at (0,0) width 62: "This list..."
+                LayoutListItem {LI} at (40,20) size 276x20
                   LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-                  LayoutText {#text} at (0,0) size 108x19
-                    text run at (0,0) width 108: "...should feature..."
-                LayoutListItem {LI} at (40,40) size 264x20
+                  LayoutText {#text} at (0,0) size 113x19
+                    text run at (0,0) width 113: "...should feature..."
+                LayoutListItem {LI} at (40,40) size 276x20
                   LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-                  LayoutText {#text} at (0,0) size 128x19
-                    text run at (0,0) width 128: "...discs for each item."
-              LayoutBlockFlow {UL} at (4,80) size 304x60
-                LayoutListItem {LI} at (40,0) size 264x20
+                  LayoutText {#text} at (0,0) size 133x19
+                    text run at (0,0) width 133: "...discs for each item."
+              LayoutBlockFlow {UL} at (4,80) size 316x60
+                LayoutListItem {LI} at (40,0) size 276x20
                   LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
-                  LayoutText {#text} at (0,0) size 57x19
-                    text run at (0,0) width 57: "This list..."
-                LayoutListItem {LI} at (40,20) size 264x20
+                  LayoutText {#text} at (0,0) size 62x19
+                    text run at (0,0) width 62: "This list..."
+                LayoutListItem {LI} at (40,20) size 276x20
                   LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
-                  LayoutText {#text} at (0,0) size 108x19
-                    text run at (0,0) width 108: "...should feature..."
-                LayoutListItem {LI} at (40,40) size 264x20
+                  LayoutText {#text} at (0,0) size 113x19
+                    text run at (0,0) width 113: "...should feature..."
+                LayoutListItem {LI} at (40,40) size 276x20
                   LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
-                  LayoutText {#text} at (0,0) size 136x19
-                    text run at (0,0) width 136: "...circles for each item."
-              LayoutBlockFlow {UL} at (4,156) size 304x60
-                LayoutListItem {LI} at (40,0) size 264x20
-                  LayoutListMarker (anonymous) at (-18,0) size 7x19: black square
-                  LayoutText {#text} at (0,0) size 57x19
-                    text run at (0,0) width 57: "This list..."
-                LayoutListItem {LI} at (40,20) size 264x20
-                  LayoutListMarker (anonymous) at (-18,0) size 7x19: black square
-                  LayoutText {#text} at (0,0) size 108x19
-                    text run at (0,0) width 108: "...should feature..."
-                LayoutListItem {LI} at (40,40) size 264x20
-                  LayoutListMarker (anonymous) at (-18,0) size 7x19: black square
-                  LayoutText {#text} at (0,0) size 144x19
-                    text run at (0,0) width 144: "...squares for each item."
-              LayoutBlockFlow {OL} at (4,232) size 304x60
-                LayoutListItem {LI} at (40,0) size 264x20
-                  LayoutListMarker (anonymous) at (-11,0) size 11x19: "i"
-                  LayoutText {#text} at (0,0) size 57x19
-                    text run at (0,0) width 57: "This list..."
-                LayoutListItem {LI} at (40,20) size 264x20
-                  LayoutListMarker (anonymous) at (-14,0) size 14x19: "ii"
-                  LayoutText {#text} at (0,0) size 108x19
-                    text run at (0,0) width 108: "...should feature..."
-                LayoutListItem {LI} at (40,40) size 264x20
-                  LayoutListMarker (anonymous) at (-17,0) size 17x19: "iii"
-                  LayoutText {#text} at (0,0) size 263x19
-                    text run at (0,0) width 263: "...lowercase Roman numerals for each item."
-              LayoutBlockFlow {OL} at (4,308) size 304x60
-                LayoutListItem {LI} at (40,0) size 264x20
-                  LayoutListMarker (anonymous) at (-13,0) size 13x19: "I"
-                  LayoutText {#text} at (0,0) size 57x19
-                    text run at (0,0) width 57: "This list..."
-                LayoutListItem {LI} at (40,20) size 264x20
-                  LayoutListMarker (anonymous) at (-18,0) size 18x19: "II"
-                  LayoutText {#text} at (0,0) size 108x19
-                    text run at (0,0) width 108: "...should feature..."
-                LayoutListItem {LI} at (40,40) size 264x20
-                  LayoutListMarker (anonymous) at (-23,0) size 23x19: "III"
-                  LayoutText {#text} at (0,0) size 264x19
-                    text run at (0,0) width 264: "...uppercase Roman numerals for each item."
-              LayoutBlockFlow {OL} at (4,384) size 304x60
-                LayoutListItem {LI} at (40,0) size 264x20
-                  LayoutListMarker (anonymous) at (-15,0) size 15x19: "a"
-                  LayoutText {#text} at (0,0) size 57x19
-                    text run at (0,0) width 57: "This list..."
-                LayoutListItem {LI} at (40,20) size 264x20
-                  LayoutListMarker (anonymous) at (-16,0) size 16x19: "b"
-                  LayoutText {#text} at (0,0) size 108x19
-                    text run at (0,0) width 108: "...should feature..."
-                LayoutListItem {LI} at (40,40) size 264x20
-                  LayoutListMarker (anonymous) at (-15,0) size 15x19: "c"
-                  LayoutText {#text} at (0,0) size 199x19
-                    text run at (0,0) width 199: "...lowercase letters for each item."
-              LayoutBlockFlow {OL} at (4,460) size 304x60
-                LayoutListItem {LI} at (40,0) size 264x20
-                  LayoutListMarker (anonymous) at (-19,0) size 19x19: "A"
-                  LayoutText {#text} at (0,0) size 57x19
-                    text run at (0,0) width 57: "This list..."
-                LayoutListItem {LI} at (40,20) size 264x20
-                  LayoutListMarker (anonymous) at (-18,0) size 18x19: "B"
-                  LayoutText {#text} at (0,0) size 108x19
-                    text run at (0,0) width 108: "...should feature..."
-                LayoutListItem {LI} at (40,40) size 264x20
-                  LayoutListMarker (anonymous) at (-19,0) size 19x19: "C"
-                  LayoutText {#text} at (0,0) size 200x19
-                    text run at (0,0) width 200: "...uppercase letters for each item."
-              LayoutBlockFlow {OL} at (4,536) size 304x60
-                LayoutListItem {LI} at (40,0) size 264x20
-                  LayoutListMarker (anonymous) at (-19,0) size 19x19: "A"
-                  LayoutText {#text} at (0,0) size 145x19
-                    text run at (0,0) width 145: "This list should feature..."
-                LayoutListItem {LI} at (40,20) size 264x20
-                  LayoutListMarker (anonymous) at (-18,0) size 18x19: "B"
                   LayoutText {#text} at (0,0) size 142x19
-                    text run at (0,0) width 142: "...letters for each item..."
-                LayoutListItem {LI} at (40,40) size 264x20
+                    text run at (0,0) width 142: "...circles for each item."
+              LayoutBlockFlow {UL} at (4,156) size 316x60
+                LayoutListItem {LI} at (40,0) size 276x20
+                  LayoutListMarker (anonymous) at (-18,0) size 7x19: black square
+                  LayoutText {#text} at (0,0) size 62x19
+                    text run at (0,0) width 62: "This list..."
+                LayoutListItem {LI} at (40,20) size 276x20
+                  LayoutListMarker (anonymous) at (-18,0) size 7x19: black square
+                  LayoutText {#text} at (0,0) size 113x19
+                    text run at (0,0) width 113: "...should feature..."
+                LayoutListItem {LI} at (40,40) size 276x20
+                  LayoutListMarker (anonymous) at (-18,0) size 7x19: black square
+                  LayoutText {#text} at (0,0) size 149x19
+                    text run at (0,0) width 149: "...squares for each item."
+              LayoutBlockFlow {OL} at (4,232) size 316x60
+                LayoutListItem {LI} at (40,0) size 276x20
+                  LayoutListMarker (anonymous) at (-12,0) size 12x19: "i"
+                  LayoutText {#text} at (0,0) size 62x19
+                    text run at (0,0) width 62: "This list..."
+                LayoutListItem {LI} at (40,20) size 276x20
+                  LayoutListMarker (anonymous) at (-16,0) size 16x19: "ii"
+                  LayoutText {#text} at (0,0) size 113x19
+                    text run at (0,0) width 113: "...should feature..."
+                LayoutListItem {LI} at (40,40) size 276x20
+                  LayoutListMarker (anonymous) at (-20,0) size 20x19: "iii"
+                  LayoutText {#text} at (0,0) size 276x19
+                    text run at (0,0) width 276: "...lowercase Roman numerals for each item."
+              LayoutBlockFlow {OL} at (4,308) size 316x60
+                LayoutListItem {LI} at (40,0) size 276x20
+                  LayoutListMarker (anonymous) at (-13,0) size 13x19: "I"
+                  LayoutText {#text} at (0,0) size 62x19
+                    text run at (0,0) width 62: "This list..."
+                LayoutListItem {LI} at (40,20) size 276x20
+                  LayoutListMarker (anonymous) at (-18,0) size 18x19: "II"
+                  LayoutText {#text} at (0,0) size 113x19
+                    text run at (0,0) width 113: "...should feature..."
+                LayoutListItem {LI} at (40,40) size 276x20
+                  LayoutListMarker (anonymous) at (-23,0) size 23x19: "III"
+                  LayoutText {#text} at (0,0) size 276x19
+                    text run at (0,0) width 276: "...uppercase Roman numerals for each item."
+              LayoutBlockFlow {OL} at (4,384) size 316x60
+                LayoutListItem {LI} at (40,0) size 276x20
+                  LayoutListMarker (anonymous) at (-15,0) size 15x19: "a"
+                  LayoutText {#text} at (0,0) size 62x19
+                    text run at (0,0) width 62: "This list..."
+                LayoutListItem {LI} at (40,20) size 276x20
+                  LayoutListMarker (anonymous) at (-16,0) size 16x19: "b"
+                  LayoutText {#text} at (0,0) size 113x19
+                    text run at (0,0) width 113: "...should feature..."
+                LayoutListItem {LI} at (40,40) size 276x20
+                  LayoutListMarker (anonymous) at (-15,0) size 15x19: "c"
+                  LayoutText {#text} at (0,0) size 206x19
+                    text run at (0,0) width 206: "...lowercase letters for each item."
+              LayoutBlockFlow {OL} at (4,460) size 316x60
+                LayoutListItem {LI} at (40,0) size 276x20
+                  LayoutListMarker (anonymous) at (-20,0) size 20x19: "A"
+                  LayoutText {#text} at (0,0) size 62x19
+                    text run at (0,0) width 62: "This list..."
+                LayoutListItem {LI} at (40,20) size 276x20
+                  LayoutListMarker (anonymous) at (-19,0) size 19x19: "B"
+                  LayoutText {#text} at (0,0) size 113x19
+                    text run at (0,0) width 113: "...should feature..."
+                LayoutListItem {LI} at (40,40) size 276x20
+                  LayoutListMarker (anonymous) at (-19,0) size 19x19: "C"
+                  LayoutText {#text} at (0,0) size 206x19
+                    text run at (0,0) width 206: "...uppercase letters for each item."
+              LayoutBlockFlow {OL} at (4,536) size 316x60
+                LayoutListItem {LI} at (40,0) size 276x20
+                  LayoutListMarker (anonymous) at (-20,0) size 20x19: "A"
+                  LayoutText {#text} at (0,0) size 155x19
+                    text run at (0,0) width 155: "This list should feature..."
+                LayoutListItem {LI} at (40,20) size 276x20
+                  LayoutListMarker (anonymous) at (-19,0) size 19x19: "B"
+                  LayoutText {#text} at (0,0) size 147x19
+                    text run at (0,0) width 147: "...letters for each item..."
+                LayoutListItem {LI} at (40,40) size 276x20
                   LayoutListMarker (anonymous) at (-16,0) size 16x19: "3"
-                  LayoutText {#text} at (0,0) size 106x19
-                    text run at (0,0) width 106: "...except this one."
-              LayoutBlockFlow {UL} at (4,612) size 304x60
-                LayoutListItem {LI} at (40,0) size 264x20
-                  LayoutText {#text} at (0,0) size 57x19
-                    text run at (0,0) width 57: "This list..."
-                LayoutListItem {LI} at (40,20) size 264x20
-                  LayoutText {#text} at (0,0) size 108x19
-                    text run at (0,0) width 108: "...should feature..."
-                LayoutListItem {LI} at (40,40) size 264x20
-                  LayoutText {#text} at (0,0) size 141x19
-                    text run at (0,0) width 141: "...nothing for each item."
+                  LayoutText {#text} at (0,0) size 110x19
+                    text run at (0,0) width 110: "...except this one."
+              LayoutBlockFlow {UL} at (4,612) size 316x60
+                LayoutListItem {LI} at (40,0) size 276x20
+                  LayoutText {#text} at (0,0) size 62x19
+                    text run at (0,0) width 62: "This list..."
+                LayoutListItem {LI} at (40,20) size 276x20
+                  LayoutText {#text} at (0,0) size 113x19
+                    text run at (0,0) width 113: "...should feature..."
+                LayoutListItem {LI} at (40,40) size 276x20
+                  LayoutText {#text} at (0,0) size 150x19
+                    text run at (0,0) width 150: "...nothing for each item."

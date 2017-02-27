@@ -14,11 +14,11 @@ layer at (0,0) size 504x104
       LayoutBlockFlow {HTML} at (0,0) size 500x100
         LayoutBlockFlow {BODY} at (8,8) size 484x76
           LayoutBlockFlow {P} at (0,0) size 484x20
-            LayoutText {#text} at (0,0) size 104x19
-              text run at (0,0) width 104: "This is some text."
+            LayoutText {#text} at (0,0) size 110x19
+              text run at (0,0) width 110: "This is some text."
           LayoutBlockFlow {P} at (0,36) size 484x20
-            LayoutText {#text} at (0,0) size 138x19
-              text run at (0,0) width 138: "This text is underneath."
+            LayoutText {#text} at (0,0) size 147x19
+              text run at (0,0) width 147: "This text is underneath."
 layer at (0,109) size 500x100
   LayoutEmbeddedObject {OBJECT} at (0,109) size 500x100
     layer at (0,0) size 500x100
@@ -27,8 +27,8 @@ layer at (0,109) size 500x100
       LayoutBlockFlow {HTML} at (0,0) size 500x100
         LayoutBlockFlow {BODY} at (8,8) size 484x76
           LayoutBlockFlow {P} at (0,0) size 484x20
-            LayoutText {#text} at (0,0) size 104x19
-              text run at (0,0) width 104: "This is some text."
+            LayoutText {#text} at (0,0) size 110x19
+              text run at (0,0) width 110: "This is some text."
           LayoutBlockFlow {P} at (0,36) size 484x20
-            LayoutText {#text} at (0,0) size 138x19
-              text run at (0,0) width 138: "This text is underneath."
+            LayoutText {#text} at (0,0) size 147x19
+              text run at (0,0) width 147: "This text is underneath."

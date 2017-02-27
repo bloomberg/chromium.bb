@@ -408,7 +408,7 @@ deps_os = {
 
     # Note that this is different from Android's freetype repo.
     'src/third_party/freetype2/src':
-      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + 'fc1532a7c4c592f24a4c1a0261d2845524ca5cff',
+      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_android_revision'),
 
     'src/third_party/freetype-android/src':
       Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_android_revision'),

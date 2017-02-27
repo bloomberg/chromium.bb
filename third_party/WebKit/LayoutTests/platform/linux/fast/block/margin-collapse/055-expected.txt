@@ -4,9 +4,9 @@ layer at (0,0) size 800x214
   LayoutBlockFlow {HTML} at (0,0) size 800x214
     LayoutBlockFlow {BODY} at (8,16) size 784x190
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 432x19
-          text run at (0,0) width 379: "All the following should look the same (and all should look like "
-          text run at (379,0) width 53: "the first)."
+        LayoutText {#text} at (0,0) size 461x19
+          text run at (0,0) width 405: "All the following should look the same (and all should look like "
+          text run at (405,0) width 56: "the first)."
       LayoutTable {TABLE} at (0,36) size 450x154
         LayoutTableSection {TBODY} at (0,0) size 450x154
           LayoutTableRow {TR} at (0,2) size 450x150

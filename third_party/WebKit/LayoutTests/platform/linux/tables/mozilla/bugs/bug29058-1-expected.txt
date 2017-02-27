@@ -10,12 +10,12 @@ layer at (0,0) size 800x600
           LayoutTableCol {COL} at (0,0) size 0x0
         LayoutTableSection {TBODY} at (1,1) size 782x28
           LayoutTableRow {TR} at (0,2) size 782x24
-            LayoutTableCell {TD} at (2,2) size 29x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 25x19
-                text run at (2,2) width 25: "Test"
-            LayoutTableCell {TD} at (33,2) size 77x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 25x19
-                text run at (2,2) width 25: "Test"
-            LayoutTableCell {TD} at (112,2) size 668x24 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 25x19
-                text run at (2,2) width 25: "Test"
+            LayoutTableCell {TD} at (2,2) size 30x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 26x19
+                text run at (2,2) width 26: "Test"
+            LayoutTableCell {TD} at (34,2) size 77x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 26x19
+                text run at (2,2) width 26: "Test"
+            LayoutTableCell {TD} at (113,2) size 667x24 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 26x19
+                text run at (2,2) width 26: "Test"

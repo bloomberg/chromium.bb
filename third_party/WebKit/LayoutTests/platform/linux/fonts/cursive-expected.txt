@@ -4,28 +4,28 @@ layer at (0,0) size 785x6601 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x6601
     LayoutBlockFlow {BODY} at (8,8) size 769x6577
       LayoutBlockFlow (anonymous) at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 325x19
-          text run at (0,0) width 325: "This tests font choices and metrics for the cursive font."
+        LayoutText {#text} at (0,0) size 342x19
+          text run at (0,0) width 342: "This tests font choices and metrics for the cursive font."
       LayoutBlockFlow {P} at (0,36) size 769x2185
         LayoutInline {FONT} at (0,0) size 68x2185
-          LayoutText {#text} at (0,0) size 52x23
-            text run at (0,0) width 52: "cursive"
-          LayoutBR {BR} at (52,18) size 0x0
+          LayoutText {#text} at (0,0) size 53x23
+            text run at (0,0) width 53: "cursive"
+          LayoutBR {BR} at (53,18) size 0x0
           LayoutText {#text} at (0,23) size 20x23
             text run at (0,23) width 20: "    "
           LayoutBR {BR} at (20,41) size 0x0
           LayoutText {#text} at (0,46) size 16x23
             text run at (0,46) width 16: "!!!!"
           LayoutBR {BR} at (16,64) size 0x0
-          LayoutText {#text} at (0,69) size 32x23
-            text run at (0,69) width 32: "\"\"\"\""
-          LayoutBR {BR} at (32,87) size 0x0
+          LayoutText {#text} at (0,69) size 28x23
+            text run at (0,69) width 28: "\"\"\"\""
+          LayoutBR {BR} at (28,87) size 0x0
           LayoutText {#text} at (0,92) size 52x23
             text run at (0,92) width 52: "####"
           LayoutBR {BR} at (52,110) size 0x0
-          LayoutText {#text} at (0,115) size 44x23
-            text run at (0,115) width 44: "$$$$"
-          LayoutBR {BR} at (44,133) size 0x0
+          LayoutText {#text} at (0,115) size 48x23
+            text run at (0,115) width 48: "$$$$"
+          LayoutBR {BR} at (48,133) size 0x0
           LayoutText {#text} at (0,138) size 52x23
             text run at (0,138) width 52: "%%%%"
           LayoutBR {BR} at (52,156) size 0x0
@@ -41,9 +41,9 @@ layer at (0,0) size 785x6601 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,230) size 24x23
             text run at (0,230) width 24: "))))"
           LayoutBR {BR} at (24,248) size 0x0
-          LayoutText {#text} at (0,253) size 36x23
-            text run at (0,253) width 36: "****"
-          LayoutBR {BR} at (36,271) size 0x0
+          LayoutText {#text} at (0,253) size 32x23
+            text run at (0,253) width 32: "****"
+          LayoutBR {BR} at (32,271) size 0x0
           LayoutText {#text} at (0,276) size 32x23
             text run at (0,276) width 32: "++++"
           LayoutBR {BR} at (32,294) size 0x0
@@ -56,9 +56,9 @@ layer at (0,0) size 785x6601 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,345) size 16x23
             text run at (0,345) width 16: "...."
           LayoutBR {BR} at (16,363) size 0x0
-          LayoutText {#text} at (0,368) size 36x23
-            text run at (0,368) width 36: "////"
-          LayoutBR {BR} at (36,386) size 0x0
+          LayoutText {#text} at (0,368) size 32x23
+            text run at (0,368) width 32: "////"
+          LayoutBR {BR} at (32,386) size 0x0
           LayoutText {#text} at (0,391) size 40x23
             text run at (0,391) width 40: "0000"
           LayoutBR {BR} at (40,409) size 0x0
@@ -101,12 +101,12 @@ layer at (0,0) size 785x6601 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,690) size 32x23
             text run at (0,690) width 32: "===="
           LayoutBR {BR} at (32,708) size 0x0
-          LayoutText {#text} at (0,713) size 28x23
-            text run at (0,713) width 28: ">>>>"
-          LayoutBR {BR} at (28,731) size 0x0
-          LayoutText {#text} at (0,736) size 36x23
-            text run at (0,736) width 36: "????"
-          LayoutBR {BR} at (36,754) size 0x0
+          LayoutText {#text} at (0,713) size 24x23
+            text run at (0,713) width 24: ">>>>"
+          LayoutBR {BR} at (24,731) size 0x0
+          LayoutText {#text} at (0,736) size 32x23
+            text run at (0,736) width 32: "????"
+          LayoutBR {BR} at (32,754) size 0x0
           LayoutText {#text} at (0,759) size 60x23
             text run at (0,759) width 60: "@@@@"
           LayoutBR {BR} at (60,777) size 0x0
@@ -146,9 +146,9 @@ layer at (0,0) size 785x6601 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,1035) size 36x23
             text run at (0,1035) width 36: "LLLL"
           LayoutBR {BR} at (36,1053) size 0x0
-          LayoutText {#text} at (0,1058) size 60x23
-            text run at (0,1058) width 60: "MMMM"
-          LayoutBR {BR} at (60,1076) size 0x0
+          LayoutText {#text} at (0,1058) size 56x23
+            text run at (0,1058) width 56: "MMMM"
+          LayoutBR {BR} at (56,1076) size 0x0
           LayoutText {#text} at (0,1081) size 52x23
             text run at (0,1081) width 52: "NNNN"
           LayoutBR {BR} at (52,1099) size 0x0
@@ -161,9 +161,9 @@ layer at (0,0) size 785x6601 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,1150) size 56x23
             text run at (0,1150) width 56: "QQQQ"
           LayoutBR {BR} at (56,1168) size 0x0
-          LayoutText {#text} at (0,1173) size 44x23
-            text run at (0,1173) width 44: "RRRR"
-          LayoutBR {BR} at (44,1191) size 0x0
+          LayoutText {#text} at (0,1173) size 40x23
+            text run at (0,1173) width 40: "RRRR"
+          LayoutBR {BR} at (40,1191) size 0x0
           LayoutText {#text} at (0,1196) size 44x23
             text run at (0,1196) width 44: "SSSS"
           LayoutBR {BR} at (44,1214) size 0x0
@@ -182,24 +182,24 @@ layer at (0,0) size 785x6601 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,1311) size 48x23
             text run at (0,1311) width 48: "XXXX"
           LayoutBR {BR} at (48,1329) size 0x0
-          LayoutText {#text} at (0,1334) size 44x23
-            text run at (0,1334) width 44: "YYYY"
-          LayoutBR {BR} at (44,1352) size 0x0
-          LayoutText {#text} at (0,1357) size 48x23
-            text run at (0,1357) width 48: "ZZZZ"
-          LayoutBR {BR} at (48,1375) size 0x0
+          LayoutText {#text} at (0,1334) size 40x23
+            text run at (0,1334) width 40: "YYYY"
+          LayoutBR {BR} at (40,1352) size 0x0
+          LayoutText {#text} at (0,1357) size 44x23
+            text run at (0,1357) width 44: "ZZZZ"
+          LayoutBR {BR} at (44,1375) size 0x0
           LayoutText {#text} at (0,1380) size 24x23
             text run at (0,1380) width 24: "[[[["
           LayoutBR {BR} at (24,1398) size 0x0
-          LayoutText {#text} at (0,1403) size 32x23
-            text run at (0,1403) width 32: "\\\\\\\\"
-          LayoutBR {BR} at (32,1421) size 0x0
+          LayoutText {#text} at (0,1403) size 36x23
+            text run at (0,1403) width 36: "\\\\\\\\"
+          LayoutBR {BR} at (36,1421) size 0x0
           LayoutText {#text} at (0,1426) size 24x23
             text run at (0,1426) width 24: "]]]]"
           LayoutBR {BR} at (24,1444) size 0x0
-          LayoutText {#text} at (0,1449) size 32x23
-            text run at (0,1449) width 32: "^^^^"
-          LayoutBR {BR} at (32,1467) size 0x0
+          LayoutText {#text} at (0,1449) size 36x23
+            text run at (0,1449) width 36: "^^^^"
+          LayoutBR {BR} at (36,1467) size 0x0
           LayoutText {#text} at (0,1472) size 40x23
             text run at (0,1472) width 40: "____"
           LayoutBR {BR} at (40,1490) size 0x0
@@ -218,33 +218,33 @@ layer at (0,0) size 785x6601 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,1587) size 36x23
             text run at (0,1587) width 36: "dddd"
           LayoutBR {BR} at (36,1605) size 0x0
-          LayoutText {#text} at (0,1610) size 32x23
-            text run at (0,1610) width 32: "eeee"
-          LayoutBR {BR} at (32,1628) size 0x0
+          LayoutText {#text} at (0,1610) size 36x23
+            text run at (0,1610) width 36: "eeee"
+          LayoutBR {BR} at (36,1628) size 0x0
           LayoutText {#text} at (0,1633) size 32x23
             text run at (0,1633) width 32: "ffff"
           LayoutBR {BR} at (32,1651) size 0x0
-          LayoutText {#text} at (0,1656) size 32x23
-            text run at (0,1656) width 32: "gggg"
-          LayoutBR {BR} at (32,1674) size 0x0
-          LayoutText {#text} at (0,1679) size 32x23
-            text run at (0,1679) width 32: "hhhh"
-          LayoutBR {BR} at (32,1697) size 0x0
-          LayoutText {#text} at (0,1702) size 20x23
-            text run at (0,1702) width 20: "iiii"
-          LayoutBR {BR} at (20,1720) size 0x0
+          LayoutText {#text} at (0,1656) size 36x23
+            text run at (0,1656) width 36: "gggg"
+          LayoutBR {BR} at (36,1674) size 0x0
+          LayoutText {#text} at (0,1679) size 36x23
+            text run at (0,1679) width 36: "hhhh"
+          LayoutBR {BR} at (36,1697) size 0x0
+          LayoutText {#text} at (0,1702) size 16x23
+            text run at (0,1702) width 16: "iiii"
+          LayoutBR {BR} at (16,1720) size 0x0
           LayoutText {#text} at (0,1725) size 24x23
             text run at (0,1725) width 24: "jjjj"
           LayoutBR {BR} at (24,1743) size 0x0
           LayoutText {#text} at (0,1748) size 36x23
             text run at (0,1748) width 36: "kkkk"
           LayoutBR {BR} at (36,1766) size 0x0
-          LayoutText {#text} at (0,1771) size 20x23
-            text run at (0,1771) width 20: "llll"
-          LayoutBR {BR} at (20,1789) size 0x0
-          LayoutText {#text} at (0,1794) size 44x23
-            text run at (0,1794) width 44: "mmmm"
-          LayoutBR {BR} at (44,1812) size 0x0
+          LayoutText {#text} at (0,1771) size 16x23
+            text run at (0,1771) width 16: "llll"
+          LayoutBR {BR} at (16,1789) size 0x0
+          LayoutText {#text} at (0,1794) size 48x23
+            text run at (0,1794) width 48: "mmmm"
+          LayoutBR {BR} at (48,1812) size 0x0
           LayoutText {#text} at (0,1817) size 32x23
             text run at (0,1817) width 32: "nnnn"
           LayoutBR {BR} at (32,1835) size 0x0
@@ -260,12 +260,12 @@ layer at (0,0) size 785x6601 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,1909) size 32x23
             text run at (0,1909) width 32: "rrrr"
           LayoutBR {BR} at (32,1927) size 0x0
-          LayoutText {#text} at (0,1932) size 28x23
-            text run at (0,1932) width 28: "ssss"
-          LayoutBR {BR} at (28,1950) size 0x0
-          LayoutText {#text} at (0,1955) size 28x23
-            text run at (0,1955) width 28: "tttt"
-          LayoutBR {BR} at (28,1973) size 0x0
+          LayoutText {#text} at (0,1932) size 32x23
+            text run at (0,1932) width 32: "ssss"
+          LayoutBR {BR} at (32,1950) size 0x0
+          LayoutText {#text} at (0,1955) size 32x23
+            text run at (0,1955) width 32: "tttt"
+          LayoutBR {BR} at (32,1973) size 0x0
           LayoutText {#text} at (0,1978) size 32x23
             text run at (0,1978) width 32: "uuuu"
           LayoutBR {BR} at (32,1996) size 0x0
@@ -278,9 +278,9 @@ layer at (0,0) size 785x6601 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,2047) size 36x23
             text run at (0,2047) width 36: "xxxx"
           LayoutBR {BR} at (36,2065) size 0x0
-          LayoutText {#text} at (0,2070) size 36x23
-            text run at (0,2070) width 36: "yyyy"
-          LayoutBR {BR} at (36,2088) size 0x0
+          LayoutText {#text} at (0,2070) size 32x23
+            text run at (0,2070) width 32: "yyyy"
+          LayoutBR {BR} at (32,2088) size 0x0
           LayoutText {#text} at (0,2093) size 36x23
             text run at (0,2093) width 36: "zzzz"
           LayoutBR {BR} at (36,2111) size 0x0

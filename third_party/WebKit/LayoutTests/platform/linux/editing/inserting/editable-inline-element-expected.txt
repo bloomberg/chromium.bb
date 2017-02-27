@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 351x19
-          text run at (0,0) width 351: "This tests InsertParagraph inside an editable inline element."
+        LayoutText {#text} at (0,0) size 371x19
+          text run at (0,0) width 371: "This tests InsertParagraph inside an editable inline element."
       LayoutBlockFlow {DIV} at (0,36) size 784x42 [border: (1px solid #FF0000)]
-        LayoutInline {SPAN} at (0,0) size 20x39
+        LayoutInline {SPAN} at (0,0) size 21x39
           LayoutBR {BR} at (1,1) size 0x19
-          LayoutText {#text} at (1,21) size 20x19
-            text run at (1,21) width 20: "foo"
+          LayoutText {#text} at (1,21) size 21x19
+            text run at (1,21) width 21: "foo"
 caret: position 0 of child 1 {#text} of child 0 {SPAN} of child 2 {DIV} of body

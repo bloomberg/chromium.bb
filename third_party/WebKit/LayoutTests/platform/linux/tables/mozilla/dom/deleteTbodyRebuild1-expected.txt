@@ -4,13 +4,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x80
-        LayoutText {#text} at (0,0) size 774x39
-          text run at (0,0) width 774: "It should never be the case that deleting a tbody causes a rebuild of the cell map since cells cannot span out of tbodies. However,"
-          text run at (0,20) width 78: "this is a bug. "
-        LayoutBR {BR} at (78,35) size 0x0
+        LayoutText {#text} at (0,0) size 741x39
+          text run at (0,0) width 741: "It should never be the case that deleting a tbody causes a rebuild of the cell map since cells cannot span out of tbodies."
+          text run at (0,20) width 150: "However, this is a bug. "
+        LayoutBR {BR} at (149,35) size 1x0
         LayoutBR {BR} at (0,40) size 0x19
-        LayoutText {#text} at (0,60) size 205x19
-          text run at (0,60) width 205: "The 2 tables should look the same"
+        LayoutText {#text} at (0,60) size 214x19
+          text run at (0,60) width 214: "The 2 tables should look the same"
       LayoutTable {TABLE} at (0,80) size 62x56 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 60x54
           LayoutTableRow {TR} at (0,2) size 60x24

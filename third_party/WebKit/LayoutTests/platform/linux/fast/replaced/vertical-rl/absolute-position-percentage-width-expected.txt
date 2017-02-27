@@ -9,5 +9,5 @@ layer at (728,10) size 62x310
   LayoutImage (positioned) {IMG} at (2,2) size 62x310
 layer at (749,15) size 20x300
   LayoutBlockFlow (relative positioned) zI: 1 {P} at (23,7) size 20x300
-    LayoutText zI: 1 {#text} at (0,42) size 19x216
-      text run at (0,42) width 216: "There should be no red on this page"
+    LayoutText zI: 1 {#text} at (0,37) size 19x226
+      text run at (0,37) width 226: "There should be no red on this page"

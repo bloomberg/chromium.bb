@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 344x19
-          text run at (0,0) width 344: "The green box should always obscure the red box below."
+        LayoutText {#text} at (0,0) size 360x19
+          text run at (0,0) width 360: "The green box should always obscure the red box below."
 layer at (8,44) size 402x202 clip at (9,45) size 400x200
   LayoutBlockFlow (relative positioned) {DIV} at (0,36) size 402x202 [border: (1px solid #000000)]
 layer at (9,45) size 200x200

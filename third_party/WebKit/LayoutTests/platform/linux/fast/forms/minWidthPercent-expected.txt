@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
               LayoutTableCell {TD} at (2,2) size 112x24 [r=0 c=0 rs=1 cs=1]
                 LayoutTextControl {INPUT} at (1,1) size 110x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 LayoutText {#text} at (0,0) size 0x0
-layer at (13,14) size 106x16 scrollWidth 122
+layer at (13,14) size 106x16 scrollWidth 123
   LayoutBlockFlow {DIV} at (2,3) size 106x16
-    LayoutText {#text} at (0,0) size 121x16
-      text run at (0,0) width 121: "Should fit in blue box"
+    LayoutText {#text} at (0,0) size 122x16
+      text run at (0,0) width 122: "Should fit in blue box"

@@ -23,17 +23,17 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [10, 33, 41, 22],
+          "rect": [10, 33, 43, 22],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGText text id='text2'",
-          "rect": [10, 33, 41, 22],
+          "rect": [10, 33, 43, 22],
           "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [10, 33, 41, 17],
+          "rect": [10, 33, 43, 17],
           "reason": "full"
         }
       ]

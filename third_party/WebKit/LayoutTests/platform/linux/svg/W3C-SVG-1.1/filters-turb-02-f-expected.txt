@@ -27,9 +27,9 @@ layer at (0,0) size 480x360
           [feTurbulence type="TURBULENCE" baseFrequency="0.01, 0.01" seed="-2.00" numOctaves="1" stitchTiles="0"]
         LayoutSVGResourceFilter {filter} [id="turbneg7"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feTurbulence type="TURBULENCE" baseFrequency="0.01, 0.01" seed="-2.60" numOctaves="1" stitchTiles="0"]
-      LayoutSVGText {text} at (139.94,27) size 200.11x27 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (139.94,27) size 200.11x27
-          chunk 1 (middle anchor) text run 1 at (139.95,48.00) startOffset 0 endOffset 17 width 200.11: "feTurbulence seed"
+      LayoutSVGText {text} at (142.44,27) size 195.11x27 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (142.44,27) size 195.11x27
+          chunk 1 (middle anchor) text run 1 at (142.45,48.00) startOffset 0 endOffset 17 width 195.11: "feTurbulence seed"
       LayoutSVGContainer {g} at (-5,-5) size 360x220 [transform={m=((1.00,0.00)(0.00,1.00)) t=(65.00,80.00)}]
         LayoutSVGRect {rect} at (0,0) size 50x50 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
           [filter="turbneg3"] LayoutSVGResourceFilter {filter} at (0,0) size 50x50
@@ -89,8 +89,8 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (309.50,183) size 31x21
             chunk 1 (middle anchor) text run 1 at (309.50,200.00) startOffset 0 endOffset 4 width 31.00: "-2.6"
         LayoutSVGRect {rect} at (245,115) size 110x100 [stroke={[type=SOLID] [color=#000000]}] [x=245.00] [y=115.00] [width=110.00] [height=100.00]
-    LayoutSVGContainer {g} at (10,311) size 228x36
-      LayoutSVGText {text} at (10,311) size 228x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,311) size 228x36
-          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 228.00: "$Revision: 1.7 $"
+    LayoutSVGContainer {g} at (10,311) size 231x36
+      LayoutSVGText {text} at (10,311) size 231x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311) size 231x36
+          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 231.00: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

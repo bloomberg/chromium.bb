@@ -14,7 +14,7 @@ layer at (0,0) size 800x72
                   LayoutText {#text} at (0,0) size 23x19
                     text run at (0,0) width 23: "bcd"
                 LayoutBlockFlow {SPAN} at (0,20) size 23x20
-                  LayoutText {#text} at (0,0) size 7x19
-                    text run at (0,0) width 7: "x"
+                  LayoutText {#text} at (0,0) size 8x19
+                    text run at (0,0) width 8: "x"
         LayoutText {#text} at (30,0) size 7x19
           text run at (30,0) width 7: "e"

@@ -3,40 +3,40 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x241
   LayoutBlockFlow {HTML} at (0,0) size 800x241
     LayoutBlockFlow {BODY} at (8,8) size 784x225
-      LayoutButton {INPUT} at (4,4) size 33x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-        LayoutBlockFlow (anonymous) at (8,3) size 17x16
-          LayoutText {#text} at (0,0) size 17x16
-            text run at (0,0) width 17: "foo"
-      LayoutText {#text} at (41,5) size 4x19
-        text run at (41,5) width 4: " "
-      LayoutBR {BR} at (45,5) size 0x19
-      LayoutButton {INPUT} at (4,34) size 35x24 [bgcolor=#C0C0C0] [border: (3px solid #00FF00)]
-        LayoutBlockFlow (anonymous) at (9,4) size 17x16
-          LayoutText {#text} at (0,0) size 17x16
-            text run at (0,0) width 17: "foo"
-      LayoutText {#text} at (43,36) size 4x19
-        text run at (43,36) width 4: " "
-      LayoutButton {INPUT} at (51,35) size 33x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-        LayoutBlockFlow (anonymous) at (8,3) size 17x16
-          LayoutText {#text} at (0,0) size 17x16
-            text run at (0,0) width 17: "foo"
-      LayoutText {#text} at (88,36) size 4x19
-        text run at (88,36) width 4: " "
-      LayoutBR {BR} at (92,36) size 0x19
-      LayoutButton {INPUT} at (4,66) size 33x22 [border: (2px outset #C0C0C0)]
-        LayoutBlockFlow (anonymous) at (8,3) size 17x16
-          LayoutText {#text} at (0,0) size 17x16
-            text run at (0,0) width 17: "foo"
-      LayoutText {#text} at (41,67) size 4x19
-        text run at (41,67) width 4: " "
-      LayoutBR {BR} at (45,67) size 0x19
-      LayoutButton {INPUT} at (4,96) size 33x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-        LayoutBlockFlow (anonymous) at (8,3) size 17x16
-          LayoutText {#text} at (0,0) size 17x16
-            text run at (0,0) width 17: "foo"
-      LayoutText {#text} at (41,97) size 4x19
-        text run at (41,97) width 4: " "
-      LayoutBR {BR} at (45,97) size 0x19
+      LayoutButton {INPUT} at (4,4) size 34x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutBlockFlow (anonymous) at (8,3) size 18x16
+          LayoutText {#text} at (0,0) size 18x16
+            text run at (0,0) width 18: "foo"
+      LayoutText {#text} at (42,5) size 4x19
+        text run at (42,5) width 4: " "
+      LayoutBR {BR} at (46,5) size 0x19
+      LayoutButton {INPUT} at (4,34) size 36x24 [bgcolor=#C0C0C0] [border: (3px solid #00FF00)]
+        LayoutBlockFlow (anonymous) at (9,4) size 18x16
+          LayoutText {#text} at (0,0) size 18x16
+            text run at (0,0) width 18: "foo"
+      LayoutText {#text} at (44,36) size 4x19
+        text run at (44,36) width 4: " "
+      LayoutButton {INPUT} at (52,35) size 34x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutBlockFlow (anonymous) at (8,3) size 18x16
+          LayoutText {#text} at (0,0) size 18x16
+            text run at (0,0) width 18: "foo"
+      LayoutText {#text} at (90,36) size 4x19
+        text run at (90,36) width 4: " "
+      LayoutBR {BR} at (94,36) size 0x19
+      LayoutButton {INPUT} at (4,66) size 34x22 [border: (2px outset #C0C0C0)]
+        LayoutBlockFlow (anonymous) at (8,3) size 18x16
+          LayoutText {#text} at (0,0) size 18x16
+            text run at (0,0) width 18: "foo"
+      LayoutText {#text} at (42,67) size 4x19
+        text run at (42,67) width 4: " "
+      LayoutBR {BR} at (46,67) size 0x19
+      LayoutButton {INPUT} at (4,96) size 34x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutBlockFlow (anonymous) at (8,3) size 18x16
+          LayoutText {#text} at (0,0) size 18x16
+            text run at (0,0) width 18: "foo"
+      LayoutText {#text} at (42,97) size 4x19
+        text run at (42,97) width 4: " "
+      LayoutBR {BR} at (46,97) size 0x19
       LayoutButton {INPUT} at (4,132) size 38x25 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
         LayoutBlockFlow (anonymous) at (8,3) size 22x19
           LayoutText {#text} at (0,0) size 22x18
@@ -62,10 +62,10 @@ layer at (0,0) size 800x241
             text run at (0,0) width 28: "foo"
       LayoutText {#text} at (64,189) size 4x19
         text run at (64,189) width 4: " "
-      LayoutButton {INPUT} at (76,172) size 69x45 [bgcolor=#C0C0C0] [border: (4px outset #C0C0C0)]
-        LayoutBlockFlow (anonymous) at (16,6) size 37x33
-          LayoutText {#text} at (0,0) size 37x32
-            text run at (0,0) width 37: "foo"
-      LayoutText {#text} at (153,189) size 4x19
-        text run at (153,189) width 4: " "
-      LayoutBR {BR} at (157,189) size 0x19
+      LayoutButton {INPUT} at (76,172) size 70x45 [bgcolor=#C0C0C0] [border: (4px outset #C0C0C0)]
+        LayoutBlockFlow (anonymous) at (16,6) size 38x33
+          LayoutText {#text} at (0,0) size 38x32
+            text run at (0,0) width 38: "foo"
+      LayoutText {#text} at (154,189) size 4x19
+        text run at (154,189) width 4: " "
+      LayoutBR {BR} at (158,189) size 0x19

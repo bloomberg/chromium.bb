@@ -4,8 +4,8 @@ layer at (0,0) size 800x215
   LayoutBlockFlow {html} at (0,0) size 800x215.19
     LayoutBlockFlow {body} at (8,8) size 784x199.19
       LayoutBlockFlow {div} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 407x19
-          text run at (0,0) width 407: "If no crash while painting, the test passed (requires pixel test mode)."
+        LayoutText {#text} at (0,0) size 426x19
+          text run at (0,0) width 426: "If no crash while painting, the test passed (requires pixel test mode)."
       LayoutBlockFlow (anonymous) at (0,20) size 784x0
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {option} at (0,20) size 784x20.19

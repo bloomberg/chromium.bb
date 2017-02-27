@@ -4,11 +4,11 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x670.16
     LayoutBlockFlow {BODY} at (8,8) size 769x654.16
       LayoutBlockFlow {H3} at (0,0) size 769x23
-        LayoutText {#text} at (0,0) size 189x22
-          text run at (0,0) width 189: "<input type=\"submit\">"
+        LayoutText {#text} at (0,0) size 195x22
+          text run at (0,0) width 195: "<input type=\"submit\">"
       LayoutBlockFlow {P} at (0,41.72) size 769x20
-        LayoutText {#text} at (0,0) size 321x19
-          text run at (0,0) width 321: "This button should have the default submit button title:"
+        LayoutText {#text} at (0,0) size 343x19
+          text run at (0,0) width 343: "This button should have the default submit button title:"
       LayoutBlockFlow (anonymous) at (0,77.72) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,3) size 64x16
@@ -16,8 +16,8 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               text run at (11,0) width 42: "Submit"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,114.72) size 769x20
-        LayoutText {#text} at (0,0) size 274x19
-          text run at (0,0) width 274: "This button should should have the title \"Foo\":"
+        LayoutText {#text} at (0,0) size 295x19
+          text run at (0,0) width 295: "This button should should have the title \"Foo\":"
       LayoutBlockFlow (anonymous) at (0,150.72) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,3) size 64x16
@@ -25,8 +25,8 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               text run at (21,0) width 22: "Foo"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,187.72) size 769x20
-        LayoutText {#text} at (0,0) size 288x19
-          text run at (0,0) width 288: "This button should have a single space in its title:"
+        LayoutText {#text} at (0,0) size 308x19
+          text run at (0,0) width 308: "This button should have a single space in its title:"
       LayoutBlockFlow (anonymous) at (0,223.72) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,3) size 64x16
@@ -34,17 +34,17 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               text run at (30,0) width 4: " "
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,260.72) size 769x20
-        LayoutText {#text} at (0,0) size 189x19
-          text run at (0,0) width 189: "This button should have no title:"
+        LayoutText {#text} at (0,0) size 203x19
+          text run at (0,0) width 203: "This button should have no title:"
       LayoutBlockFlow (anonymous) at (0,296.72) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {H3} at (0,336.44) size 769x23
-        LayoutText {#text} at (0,0) size 175x22
-          text run at (0,0) width 175: "<input type=\"reset\">"
+        LayoutText {#text} at (0,0) size 176x22
+          text run at (0,0) width 176: "<input type=\"reset\">"
       LayoutBlockFlow {P} at (0,378.16) size 769x20
-        LayoutText {#text} at (0,0) size 311x19
-          text run at (0,0) width 311: "This button should have the default reset button title:"
+        LayoutText {#text} at (0,0) size 330x19
+          text run at (0,0) width 330: "This button should have the default reset button title:"
       LayoutBlockFlow (anonymous) at (0,414.16) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,3) size 64x16
@@ -52,8 +52,8 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               text run at (15,0) width 34: "Reset"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,451.16) size 769x20
-        LayoutText {#text} at (0,0) size 274x19
-          text run at (0,0) width 274: "This button should should have the title \"Foo\":"
+        LayoutText {#text} at (0,0) size 295x19
+          text run at (0,0) width 295: "This button should should have the title \"Foo\":"
       LayoutBlockFlow (anonymous) at (0,487.16) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,3) size 64x16
@@ -61,8 +61,8 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               text run at (21,0) width 22: "Foo"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,524.16) size 769x20
-        LayoutText {#text} at (0,0) size 288x19
-          text run at (0,0) width 288: "This button should have a single space in its title:"
+        LayoutText {#text} at (0,0) size 308x19
+          text run at (0,0) width 308: "This button should have a single space in its title:"
       LayoutBlockFlow (anonymous) at (0,560.16) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,3) size 64x16
@@ -70,8 +70,8 @@ layer at (0,0) size 785x670 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               text run at (30,0) width 4: " "
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,597.16) size 769x20
-        LayoutText {#text} at (0,0) size 189x19
-          text run at (0,0) width 189: "This button should have no title:"
+        LayoutText {#text} at (0,0) size 203x19
+          text run at (0,0) width 203: "This button should have no title:"
       LayoutBlockFlow (anonymous) at (0,633.16) size 769x21
         LayoutButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
         LayoutText {#text} at (0,0) size 0x0

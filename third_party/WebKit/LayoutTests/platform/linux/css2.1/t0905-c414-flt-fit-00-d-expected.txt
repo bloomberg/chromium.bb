@@ -4,8 +4,8 @@ layer at (0,0) size 800x140
   LayoutBlockFlow {HTML} at (0,0) size 800x140
     LayoutBlockFlow {BODY} at (8,16) size 784x114
       LayoutBlockFlow {P} at (0,0) size 784x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 648x19
-          text run at (0,0) width 648: "There should be five numbers, in numerical order, below: on the first line 1, 2 and 3, on the second, 4 and 5."
+        LayoutText {#text} at (0,0) size 681x19
+          text run at (0,0) width 681: "There should be five numbers, in numerical order, below: on the first line 1, 2 and 3, on the second, 4 and 5."
       LayoutBlockFlow {DIV} at (10,36) size 262x78 [color=#000080] [border: (3px solid #0000FF)]
         LayoutBlockFlow (floating) {P} at (19,19) size 80x20
           LayoutText {#text} at (0,0) size 8x19

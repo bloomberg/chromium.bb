@@ -4,13 +4,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 395x19
-          text run at (0,0) width 395: "Pixel test for complex text rendering with opacity (Chromium bug "
+        LayoutText {#text} at (0,0) size 419x19
+          text run at (0,0) width 419: "Pixel test for complex text rendering with opacity (Chromium bug "
         LayoutInline {A} at (0,0) size 32x19 [color=#0000EE]
-          LayoutText {#text} at (395,0) size 32x19
-            text run at (395,0) width 32: "8768"
-        LayoutText {#text} at (427,0) size 9x19
-          text run at (427,0) width 9: ")."
+          LayoutText {#text} at (419,0) size 32x19
+            text run at (419,0) width 32: "8768"
+        LayoutText {#text} at (451,0) size 9x19
+          text run at (451,0) width 9: ")."
       LayoutBlockFlow {P} at (0,36) size 784x0
       LayoutBlockFlow {DIV} at (0,36) size 784x44
         LayoutInline {SPAN} at (0,0) size 45x29

@@ -1,7 +1,68 @@
-PASS Size of text scales smoothly and logical width scales with font size as expected.
+FAIL Size of text does not scale smoothly, reported logical widths highlighted in red do not match reference row.
 PASS successfullyParsed is true
 
 TEST COMPLETE
 Font Size Scaling (vertical-rl, Latin)
 Size of the text should scale smoothly. Reported height (logical width) should be within 0.02px of that of the highlighted reference row.
+Font SizeWidthNormalizedDiffContent
+10.00212.33254.79-0.00Flygande bäckasiner söka hwila på mjuka tuvor.
+10.25212.31248.56-6.24Flygande bäckasiner söka hwila på mjuka tuvor.
+10.50233.59266.9612.17Flygande bäckasiner söka hwila på mjuka tuvor.
+10.75233.58260.745.94Flygande bäckasiner söka hwila på mjuka tuvor.
+11.00233.56254.80-0.00Flygande bäckasiner söka hwila på mjuka tuvor.
+11.25233.55249.12-5.68Flygande bäckasiner söka hwila på mjuka tuvor.
+11.50254.83265.9111.11Flygande bäckasiner söka hwila på mjuka tuvor.
+11.75254.81260.235.44Flygande bäckasiner söka hwila på mjuka tuvor.
+12.00254.80254.800.00Flygande bäckasiner söka hwila på mjuka tuvor.
+12.25254.78249.58-5.22Flygande bäckasiner söka hwila på mjuka tuvor.
+12.50276.05265.0010.21Flygande bäckasiner söka hwila på mjuka tuvor.
+12.75276.05259.815.01Flygande bäckasiner söka hwila på mjuka tuvor.
+13.00276.03254.800.00Flygande bäckasiner söka hwila på mjuka tuvor.
+13.25276.02249.98-4.82Flygande bäckasiner söka hwila på mjuka tuvor.
+13.50297.28264.259.45Flygande bäckasiner söka hwila på mjuka tuvor.
+13.75297.28259.454.65Flygande bäckasiner söka hwila på mjuka tuvor.
+14.00297.27254.800.00Flygande bäckasiner söka hwila på mjuka tuvor.
+14.25297.25250.32-4.48Flygande bäckasiner söka hwila på mjuka tuvor.
+14.50318.52263.608.80Flygande bäckasiner söka hwila på mjuka tuvor.
+14.75318.50259.124.32Flygande bäckasiner söka hwila på mjuka tuvor.
+15.00318.50254.800.00Flygande bäckasiner söka hwila på mjuka tuvor.
+15.25318.48250.61-4.19Flygande bäckasiner söka hwila på mjuka tuvor.
+15.50339.75263.038.24Flygande bäckasiner söka hwila på mjuka tuvor.
+15.75339.73258.854.05Flygande bäckasiner söka hwila på mjuka tuvor.
+16.00339.73254.800.00Flygande bäckasiner söka hwila på mjuka tuvor.
+16.25339.72250.87-3.93Flygande bäckasiner söka hwila på mjuka tuvor.
+16.50360.98262.537.74Flygande bäckasiner söka hwila på mjuka tuvor.
+16.75360.97258.603.81Flygande bäckasiner söka hwila på mjuka tuvor.
+17.00360.95254.79-0.01Flygande bäckasiner söka hwila på mjuka tuvor.
+17.25360.95251.10-3.70Flygande bäckasiner söka hwila på mjuka tuvor.
+17.50382.22262.097.30Flygande bäckasiner söka hwila på mjuka tuvor.
+17.75382.20258.393.59Flygande bäckasiner söka hwila på mjuka tuvor.
+18.00382.19254.79-0.01Flygande bäckasiner söka hwila på mjuka tuvor.
+18.25382.17251.29-3.51Flygande bäckasiner söka hwila på mjuka tuvor.
+18.50403.45261.706.90Flygande bäckasiner söka hwila på mjuka tuvor.
+18.75403.44258.203.40Flygande bäckasiner söka hwila på mjuka tuvor.
+19.00403.42254.79-0.00Flygande bäckasiner söka hwila på mjuka tuvor.
+19.25403.41251.47-3.32Flygande bäckasiner söka hwila på mjuka tuvor.
+19.50424.69261.356.55Flygande bäckasiner söka hwila på mjuka tuvor.
+19.75424.67258.033.23Flygande bäckasiner söka hwila på mjuka tuvor.
+20.00424.66254.79-0.00Flygande bäckasiner söka hwila på mjuka tuvor.
+20.25424.64251.64-3.16Flygande bäckasiner söka hwila på mjuka tuvor.
+20.50445.92261.036.23Flygande bäckasiner söka hwila på mjuka tuvor.
+20.75445.91257.873.08Flygande bäckasiner söka hwila på mjuka tuvor.
+21.00445.89254.79-0.00Flygande bäckasiner söka hwila på mjuka tuvor.
+21.25445.88251.79-3.01Flygande bäckasiner söka hwila på mjuka tuvor.
+21.50467.16260.745.94Flygande bäckasiner söka hwila på mjuka tuvor.
+21.75467.14257.732.94Flygande bäckasiner söka hwila på mjuka tuvor.
+22.00467.13254.80-0.00Flygande bäckasiner söka hwila på mjuka tuvor.
+22.25467.11251.92-2.87Flygande bäckasiner söka hwila på mjuka tuvor.
+22.50488.39260.485.68Flygande bäckasiner söka hwila på mjuka tuvor.
+22.75488.38257.602.81Flygande bäckasiner söka hwila på mjuka tuvor.
+23.00488.36254.80-0.00Flygande bäckasiner söka hwila på mjuka tuvor.
+23.25488.34252.05-2.75Flygande bäckasiner söka hwila på mjuka tuvor.
+23.50509.63260.235.44Flygande bäckasiner söka hwila på mjuka tuvor.
+23.75509.61257.492.69Flygande bäckasiner söka hwila på mjuka tuvor.
+24.00509.59254.800.00Flygande bäckasiner söka hwila på mjuka tuvor.
+24.25509.58252.16-2.63Flygande bäckasiner söka hwila på mjuka tuvor.
+24.50530.86260.015.22Flygande bäckasiner söka hwila på mjuka tuvor.
+24.75530.84257.382.58Flygande bäckasiner söka hwila på mjuka tuvor.
 

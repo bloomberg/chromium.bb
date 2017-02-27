@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 588x19
-          text run at (0,0) width 588: "The following textarea elements should all be rendered on the left, with their text aligned to the left."
+        LayoutText {#text} at (0,0) size 624x19
+          text run at (0,0) width 624: "The following textarea elements should all be rendered on the left, with their text aligned to the left."
       LayoutBlockFlow (anonymous) at (0,36) size 784x159
         LayoutText {#text} at (419,21) size 4x19
           text run at (419,21) width 4: " "

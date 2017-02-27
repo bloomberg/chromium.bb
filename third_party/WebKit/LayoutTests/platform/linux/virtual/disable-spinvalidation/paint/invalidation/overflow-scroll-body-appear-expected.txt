@@ -33,17 +33,17 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [118, 52, 370, 19],
+          "rect": [124, 52, 383, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 16, 324, 19],
+          "rect": [8, 16, 341, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 52, 110, 19],
+          "rect": [8, 52, 116, 19],
           "reason": "forced by layout"
         },
         {
@@ -58,7 +58,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [488, 52, 4, 19],
+          "rect": [507, 52, 4, 19],
           "reason": "forced by layout"
         }
       ]

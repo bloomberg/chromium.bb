@@ -13,7 +13,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [112, 193, 171, 19],
+          "rect": [112, 193, 179, 19],
           "reason": "layoutObject removal"
         }
       ]

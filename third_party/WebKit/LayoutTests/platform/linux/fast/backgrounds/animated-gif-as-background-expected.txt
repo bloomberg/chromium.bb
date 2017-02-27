@@ -4,6 +4,6 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 571x19
-          text run at (0,0) width 571: "Div background should animate between red and green. DRT should snapshot when it is green."
+        LayoutText {#text} at (0,0) size 603x19
+          text run at (0,0) width 603: "Div background should animate between red and green. DRT should snapshot when it is green."
       LayoutBlockFlow {DIV} at (0,36) size 200x200 [bgcolor=#0000FF]

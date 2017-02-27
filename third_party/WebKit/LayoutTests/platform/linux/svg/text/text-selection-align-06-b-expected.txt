@@ -2,10 +2,10 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (0,4) size 483.36x363.78
-      LayoutSVGText {text} at (0,4) size 483.36x45 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,4) size 483.36x45
-          chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 31 width 483.37: "Test 'baseline-shift' (vertic.)"
+    LayoutSVGContainer {g} at (0,4) size 483.95x363.78
+      LayoutSVGText {text} at (0,4) size 483.95x45 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,4) size 483.95x45
+          chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 31 width 483.97: "Test 'baseline-shift' (vertic.)"
       LayoutSVGContainer {g} at (72.91,60) size 311.67x307.78
         LayoutSVGContainer {g} at (-17.09,0) size 311.67x307.78 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,60.00)}]
           LayoutSVGText {text} at (-17.09,0) size 41.19x170.98 contains 1 chunk(s)
@@ -61,9 +61,9 @@ layer at (0,0) size 800x600
                 chunk 1 (vertical) text run 1 at (249.50,239.40) startOffset 0 endOffset 1 height 34.20: "x"
             LayoutSVGInlineText {#text} at (242.89,273.59) size 34.19x34.19
               chunk 1 (vertical) text run 1 at (249.50,273.60) startOffset 0 endOffset 1 height 34.20: "t"
-    LayoutSVGText {text} at (10,304) size 265.80x45.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 265.80x45.59
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 265.80: "$Revision: 1.5 $"
+    LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 268.20: "$Revision: 1.5 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
 selection start: position 0 of child 0 {#text} of child 1 {text} of child 13 {g} of child 28 {svg} of document
 selection end:   position 16 of child 0 {#text} of child 15 {text} of child 28 {svg} of document

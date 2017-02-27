@@ -16,23 +16,23 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 488x20
                   LayoutTableRow {TR} at (0,0) size 488x20
                     LayoutTableCell {TD} at (0,0) size 488x20 [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (0,0) size 80x19
-                        text run at (0,0) width 80: "Top Nav Bar"
+                      LayoutText {#text} at (0,0) size 83x19
+                        text run at (0,0) width 83: "Top Nav Bar"
           LayoutTableRow {TR} at (0,84) size 604x162
             LayoutTableCell {TD} at (114,164) size 337x2 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (451,84) size 153x162 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
               LayoutInline {B} at (0,0) size 147x159
                 LayoutText {#text} at (1,1) size 147x159
-                  text run at (1,1) width 121: "\"Freakish animal-"
-                  text run at (1,21) width 122: "things, all sporting"
+                  text run at (1,1) width 124: "\"Freakish animal-"
+                  text run at (1,21) width 125: "things, all sporting"
                   text run at (1,41) width 113: "maniacal smiles, "
                   text run at (114,41) width 29: "race"
                   text run at (1,61) width 147: "around a series of ice-"
-                  text run at (1,81) width 99: "themed tracks,"
-                  text run at (1,101) width 88: "showing their"
-                  text run at (1,121) width 75: "malformed "
-                  text run at (76,121) width 54: "asses to"
-                  text run at (1,141) width 121: "the entire world. \""
+                  text run at (1,81) width 100: "themed tracks,"
+                  text run at (1,101) width 92: "showing their"
+                  text run at (1,121) width 78: "malformed "
+                  text run at (79,121) width 50: "asses to"
+                  text run at (1,141) width 125: "the entire world. \""
               LayoutText {#text} at (0,0) size 0x0
 layer at (144,10) size 468x60 clip at (145,11) size 466x58
   LayoutBlockFlow {DIV} at (0,0) size 468x60 [border: (1px solid #C0C0C0)]

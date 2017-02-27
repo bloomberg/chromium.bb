@@ -52,8 +52,8 @@ layer at (0,0) size 785x734 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 598x28
           LayoutTableRow {TR} at (0,2) size 598x24
             LayoutTableCell {TD} at (2,2) size 594x24 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 204x19
-                text run at (2,2) width 204: "600px table for width comparison"
+              LayoutText {#text} at (2,2) size 213x19
+                text run at (2,2) width 213: "600px table for width comparison"
       LayoutTable {TABLE} at (0,270) size 650x60 [border: (1px solid #FF0000)]
         LayoutTableSection {TBODY} at (1,1) size 648x58
           LayoutTableRow {TR} at (0,2) size 648x54

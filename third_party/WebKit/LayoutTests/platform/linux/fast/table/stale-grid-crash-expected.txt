@@ -4,20 +4,20 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 50x19
-          text run at (0,0) width 50: "Test for "
-        LayoutInline {I} at (0,0) size 717x19
-          LayoutInline {A} at (0,0) size 306x19 [color=#0000EE]
-            LayoutText {#text} at (49,0) size 306x19
-              text run at (49,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=13774"
-          LayoutText {#text} at (354,0) size 412x19
-            text run at (354,0) width 5: " "
-            text run at (358,0) width 408: "REGRESSION: Crash emailing blog entry using Google Reader"
-        LayoutText {#text} at (765,0) size 5x19
-          text run at (765,0) width 5: "."
+        LayoutText {#text} at (0,0) size 52x19
+          text run at (0,0) width 52: "Test for "
+        LayoutInline {I} at (0,0) size 716x19
+          LayoutInline {A} at (0,0) size 302x19 [color=#0000EE]
+            LayoutText {#text} at (51,0) size 302x19
+              text run at (51,0) width 302: "http://bugs.webkit.org/show_bug.cgi?id=13774"
+          LayoutText {#text} at (352,0) size 415x19
+            text run at (352,0) width 5: " "
+            text run at (356,0) width 411: "REGRESSION: Crash emailing blog entry using Google Reader"
+        LayoutText {#text} at (766,0) size 5x19
+          text run at (766,0) width 5: "."
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 69x19
-          text run at (0,0) width 69: "SUCCESS"
+        LayoutText {#text} at (0,0) size 71x19
+          text run at (0,0) width 71: "SUCCESS"
       LayoutBlockFlow (anonymous) at (0,72) size 784x1
         LayoutImage {IMG} at (0,0) size 1x1
         LayoutText {#text} at (0,0) size 0x0

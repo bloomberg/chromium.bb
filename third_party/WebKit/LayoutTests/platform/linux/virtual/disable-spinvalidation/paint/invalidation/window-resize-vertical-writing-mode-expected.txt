@@ -43,7 +43,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [507, 7, 423, 471],
+          "rect": [507, 8, 423, 482],
           "reason": "forced by layout"
         }
       ]
@@ -300,7 +300,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [39, 7, 352, 554],
+          "rect": [39, 7, 352, 563],
           "reason": "forced by layout"
         }
       ]
@@ -374,12 +374,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [439, 7, 352, 554],
+          "rect": [439, 7, 352, 563],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [39, 7, 352, 554],
+          "rect": [39, 7, 352, 563],
           "reason": "forced by layout"
         }
       ]

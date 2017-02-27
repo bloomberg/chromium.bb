@@ -8,8 +8,8 @@ layer at (0,0) size 785x789 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,0) width 378: "crbug.com/35679: Background on 'table-row'"
       LayoutTable {TABLE} at (0,32.20) size 590x457 [color=#FFFFFF] [border: (6px dotted #FFFFFF)]
         LayoutBlockFlow {CAPTION} at (0,0) size 590x23
-          LayoutText {#text} at (149,0) size 292x22
-            text run at (149,0) width 292: "With 'border-collapse: collapse'"
+          LayoutText {#text} at (150,0) size 290x22
+            text run at (150,0) width 290: "With 'border-collapse: collapse'"
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -19,8 +19,8 @@ layer at (0,0) size 785x789 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {THEAD} at (2,29) size 585x105
           LayoutTableRow {TR} at (0,0) size 585x105 [bgcolor=#000000] [border: (5px dashed #FFFFFF)]
             LayoutTableCell {TH} at (0,35) size 137x34 [border: (3px dotted #FFFFFF)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (45,4) size 44x22
-                text run at (45,4) width 44: "TH A"
+              LayoutText {#text} at (44,4) size 46x22
+                text run at (44,4) width 46: "TH A"
             LayoutTableCell {TH} at (137,33) size 207x38 [border: (7px dotted #FFFFFF)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (81,8) size 46x22
                 text run at (81,8) width 46: "TH B"
@@ -33,38 +33,38 @@ layer at (0,0) size 785x789 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TFOOT} at (2,338) size 585x117
           LayoutTableRow {TR} at (0,0) size 585x117
             LayoutTableCell {TD} at (0,42) size 344x33 [border: (7px dotted #FFFFFF)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (3,8) size 49x22
-                text run at (3,8) width 49: "TD M"
+              LayoutText {#text} at (3,8) size 47x22
+                text run at (3,8) width 47: "TD M"
             LayoutTableCell {TD} at (344,44) size 125x29 [border: (3px dotted #FFFFFF)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,4) size 47x22
-                text run at (2,4) width 47: "TD O"
+              LayoutText {#text} at (2,4) size 46x22
+                text run at (2,4) width 46: "TD O"
             LayoutTableCell {TD} at (469,44) size 116x29 [border: (3px dotted #FFFFFF)] [r=0 c=3 rs=1 cs=1]
-              LayoutText {#text} at (2,4) size 45x22
-                text run at (2,4) width 45: "TD P"
+              LayoutText {#text} at (2,4) size 44x22
+                text run at (2,4) width 44: "TD P"
         LayoutTableSection {TBODY} at (2,134) size 585x204
           LayoutTableRow {TR} at (0,0) size 585x115 [bgcolor=#000000] [border: (9px dashed #FFFFFF)]
             LayoutTableCell {TD} at (0,83) size 137x38 [border: (7px dotted #FFFFFF)] [r=0 c=0 rs=2 cs=1]
-              LayoutText {#text} at (8,8) size 45x22
-                text run at (8,8) width 45: "TD E"
-            LayoutTableCell {TD} at (137,39) size 207x36 [border: (7px dotted #FFFFFF)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (8,8) size 44x22
-                text run at (8,8) width 44: "TD F"
+                text run at (8,8) width 44: "TD E"
+            LayoutTableCell {TD} at (137,39) size 207x36 [border: (7px dotted #FFFFFF)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (8,8) size 43x22
+                text run at (8,8) width 43: "TD F"
             LayoutTableCell {TD} at (344,40) size 125x34 [border: (5px dashed #FFFFFF)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (6,6) size 47x22
-                text run at (6,6) width 47: "TD G"
+              LayoutText {#text} at (6,6) size 46x22
+                text run at (6,6) width 46: "TD G"
             LayoutTableCell {TD} at (469,40) size 116x34 [border: (5px dotted #FFFFFF)] [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 45x22
                 text run at (6,6) width 45: "TD H"
           LayoutTableRow {TR} at (0,115) size 585x89 [bgcolor=#000000] [border: (5px dashed #FFFFFF)]
             LayoutTableCell {TD} at (137,143) size 207x32 [border: (5px dotted #FFFFFF)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (8,6) size 43x22
-                text run at (8,6) width 43: "TD J"
+              LayoutText {#text} at (8,6) size 42x22
+                text run at (8,6) width 42: "TD J"
             LayoutTableCell {TD} at (344,143) size 125x32 [border: (5px dashed #FFFFFF)] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (4,6) size 46x22
-                text run at (4,6) width 46: "TD K"
+              LayoutText {#text} at (4,6) size 45x22
+                text run at (4,6) width 45: "TD K"
             LayoutTableCell {TD} at (469,143) size 116x32 [border: (5px dotted #FFFFFF)] [r=1 c=3 rs=1 cs=1]
-              LayoutText {#text} at (4,6) size 44x22
-                text run at (4,6) width 44: "TD L"
+              LayoutText {#text} at (4,6) size 43x22
+                text run at (4,6) width 43: "TD L"
       LayoutBlockFlow {P} at (0,502.20) size 769x16
         LayoutText {#text} at (0,0) size 176x16
           text run at (0,0) width 176: "Three rows are styled."

@@ -5,26 +5,26 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {FORM} at (0,0) size 784x21
         LayoutBlockFlow {INPUT} at (5,3) size 13x13
-        LayoutText {#text} at (21,1) size 31x19
-          text run at (21,1) width 31: "Two "
-        LayoutBlockFlow {INPUT} at (56.88,3) size 13x13
-        LayoutText {#text} at (72,1) size 36x19
-          text run at (72,1) width 36: "Three"
+        LayoutText {#text} at (21,1) size 33x19
+          text run at (21,1) width 33: "Two "
+        LayoutBlockFlow {INPUT} at (58.88,3) size 13x13
+        LayoutText {#text} at (74,1) size 38x19
+          text run at (74,1) width 38: "Three"
       LayoutBlockFlow {FORM} at (0,37) size 784x21
         LayoutBlockFlow {INPUT} at (5,3) size 13x13
-        LayoutText {#text} at (21,1) size 30x19
-          text run at (21,1) width 30: "One "
-        LayoutBlockFlow {INPUT} at (56,3) size 13x13
-        LayoutText {#text} at (72,1) size 31x19
-          text run at (72,1) width 31: "Two "
-        LayoutBlockFlow {INPUT} at (107.88,3) size 13x13
-        LayoutText {#text} at (123,1) size 40x19
-          text run at (123,1) width 40: "Three "
-        LayoutBlockFlow {INPUT} at (167.88,3) size 13x13
-        LayoutText {#text} at (183,1) size 27x19
-          text run at (183,1) width 27: "One"
+        LayoutText {#text} at (21,1) size 31x19
+          text run at (21,1) width 31: "One "
+        LayoutBlockFlow {INPUT} at (57,3) size 13x13
+        LayoutText {#text} at (73,1) size 33x19
+          text run at (73,1) width 33: "Two "
+        LayoutBlockFlow {INPUT} at (110.88,3) size 13x13
+        LayoutText {#text} at (126,1) size 42x19
+          text run at (126,1) width 42: "Three "
+        LayoutBlockFlow {INPUT} at (172.88,3) size 13x13
+        LayoutText {#text} at (188,1) size 28x19
+          text run at (188,1) width 28: "One"
       LayoutBlockFlow (anonymous) at (0,74) size 784x40
-        LayoutText {#text} at (0,0) size 783x39
-          text run at (0,0) width 480: "The count of the # of elements in form 1 should be 2 and in form 2 should be 4. "
-          text run at (480,0) width 303: "The count in form 1 is 2, and the count in form 2 is"
-          text run at (0,20) width 8: "4"
+        LayoutText {#text} at (0,0) size 766x39
+          text run at (0,0) width 505: "The count of the # of elements in form 1 should be 2 and in form 2 should be 4. "
+          text run at (505,0) width 261: "The count in form 1 is 2, and the count in"
+          text run at (0,20) width 68: "form 2 is 4"

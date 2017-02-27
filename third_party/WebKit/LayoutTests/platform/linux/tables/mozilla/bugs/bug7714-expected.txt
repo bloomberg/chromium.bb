@@ -3,12 +3,13 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow {P} at (0,0) size 784x60
-        LayoutText {#text} at (0,0) size 772x59
-          text run at (0,0) width 772: "The table below should have two columns and a total of 7 cells, arranged in an alternating/overlapping fashion. The cellspacing=0"
-          text run at (0,20) width 758: "for this table. In Nav4.5, this example can be viewed. In 5.0 (jun08 win95), this example displays (apparently) as a simple 2x2"
-          text run at (0,40) width 691: "table (i.e., some elements are not displayed at all). (The numbers are the position of each TD in the HTML source)."
-      LayoutTable {TABLE} at (0,76) size 22x126 [border: (1px outset #808080)]
+      LayoutBlockFlow {P} at (0,0) size 784x80
+        LayoutText {#text} at (0,0) size 784x79
+          text run at (0,0) width 727: "The table below should have two columns and a total of 7 cells, arranged in an alternating/overlapping fashion. The"
+          text run at (0,20) width 784: "cellspacing=0 for this table. In Nav4.5, this example can be viewed. In 5.0 (jun08 win95), this example displays (apparently)"
+          text run at (0,40) width 770: "as a simple 2x2 table (i.e., some elements are not displayed at all). (The numbers are the position of each TD in the HTML"
+          text run at (0,60) width 50: "source)."
+      LayoutTable {TABLE} at (0,96) size 22x126 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 20x124
           LayoutTableRow {TR} at (0,0) size 20x22
             LayoutTableCell {TD} at (0,10) size 10x22 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=1]
@@ -37,11 +38,11 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (10,102) size 10x22 [border: (1px inset #808080)] [r=5 c=1 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 8x19
                 text run at (1,1) width 8: "7"
-      LayoutBlockFlow {P} at (0,218) size 784x40
-        LayoutText {#text} at (0,0) size 760x39
-          text run at (0,0) width 760: "This is the same table as above, but cellspacing=5 in this case. For 5.0, (jun08 win95) notice the odd cellspacing overlaps. See"
-          text run at (0,20) width 98: "also bug #6304."
-      LayoutTable {TABLE} at (0,274) size 37x151 [border: (1px outset #808080)]
+      LayoutBlockFlow {P} at (0,238) size 784x40
+        LayoutText {#text} at (0,0) size 766x39
+          text run at (0,0) width 766: "This is the same table as above, but cellspacing=5 in this case. For 5.0, (jun08 win95) notice the odd cellspacing overlaps."
+          text run at (0,20) width 128: "See also bug #6304."
+      LayoutTable {TABLE} at (0,294) size 37x151 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 35x149
           LayoutTableRow {TR} at (0,5) size 35x22
             LayoutTableCell {TD} at (5,16) size 10x22 [border: (1px inset #808080)] [r=0 c=0 rs=2 cs=1]

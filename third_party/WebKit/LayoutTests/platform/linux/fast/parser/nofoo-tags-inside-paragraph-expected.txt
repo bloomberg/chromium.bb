@@ -4,31 +4,31 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {DIV} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 81x19
-          text run at (0,0) width 81: "Test case for "
-        LayoutInline {A} at (0,0) size 61x19 [color=#0000EE]
-          LayoutText {#text} at (80,0) size 61x19
-            text run at (80,0) width 61: "Bug 7265"
-        LayoutText {#text} at (140,0) size 563x19
-          text run at (140,0) width 563: " REGRESSION: noscript, noframes, nolayer, noembed tags insert break inside paragraph tag"
+        LayoutText {#text} at (0,0) size 83x19
+          text run at (0,0) width 83: "Test case for "
+        LayoutInline {A} at (0,0) size 64x19 [color=#0000EE]
+          LayoutText {#text} at (82,0) size 64x19
+            text run at (82,0) width 64: "Bug 7265"
+        LayoutText {#text} at (145,0) size 588x19
+          text run at (145,0) width 588: " REGRESSION: noscript, noframes, nolayer, noembed tags insert break inside paragraph tag"
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 306x19
-          text run at (0,0) width 306: "This sentence contains noscript tags and should be "
-        LayoutText {#text} at (306,0) size 69x19
-          text run at (306,0) width 69: "on one line."
+        LayoutText {#text} at (0,0) size 321x19
+          text run at (0,0) width 321: "This sentence contains noscript tags and should be "
+        LayoutText {#text} at (321,0) size 74x19
+          text run at (321,0) width 74: "on one line."
       LayoutBlockFlow {P} at (0,72) size 784x20
-        LayoutText {#text} at (0,0) size 313x19
-          text run at (0,0) width 313: "This sentence contains noframes tags and should be "
-        LayoutText {#text} at (313,0) size 69x19
-          text run at (313,0) width 69: "on one line."
+        LayoutText {#text} at (0,0) size 329x19
+          text run at (0,0) width 329: "This sentence contains noframes tags and should be "
+        LayoutText {#text} at (329,0) size 74x19
+          text run at (329,0) width 74: "on one line."
       LayoutBlockFlow {P} at (0,108) size 784x20
-        LayoutText {#text} at (0,0) size 302x19
-          text run at (0,0) width 302: "This sentence contains nolayer tags and should be "
+        LayoutText {#text} at (0,0) size 318x19
+          text run at (0,0) width 318: "This sentence contains nolayer tags and should be "
         LayoutInline {NOLAYER} at (0,0) size 0x0
-        LayoutText {#text} at (302,0) size 69x19
-          text run at (302,0) width 69: "on one line."
+        LayoutText {#text} at (318,0) size 74x19
+          text run at (318,0) width 74: "on one line."
       LayoutBlockFlow {P} at (0,144) size 784x20
-        LayoutText {#text} at (0,0) size 314x19
-          text run at (0,0) width 314: "This sentence contains noembed tags and should be "
-        LayoutText {#text} at (314,0) size 69x19
-          text run at (314,0) width 69: "on one line."
+        LayoutText {#text} at (0,0) size 329x19
+          text run at (0,0) width 329: "This sentence contains noembed tags and should be "
+        LayoutText {#text} at (329,0) size 74x19
+          text run at (329,0) width 74: "on one line."

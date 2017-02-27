@@ -10,22 +10,22 @@ layer at (0,0) size 785x489
         LayoutTableSection {TBODY} at (1,207) size 198x122
           LayoutTableRow {TR} at (0,30) size 198x62
             LayoutTableCell {TD} at (30,50) size 54x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 20x19
-                text run at (1,1) width 20: "foo"
+              LayoutText {#text} at (1,1) size 21x19
+                text run at (1,1) width 21: "foo"
             LayoutTableCell {TD} at (114,30) size 54x62 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 20x19
                 text run at (1,1) width 20: "bar"
               LayoutBR {BR} at (21,1) size 0x19
-              LayoutText {#text} at (1,21) size 21x19
-                text run at (1,21) width 21: "baz"
-              LayoutBR {BR} at (22,21) size 0x19
-              LayoutText {#text} at (1,41) size 21x19
-                text run at (1,41) width 21: "zap"
+              LayoutText {#text} at (1,21) size 22x19
+                text run at (1,21) width 22: "baz"
+              LayoutBR {BR} at (23,21) size 0x19
+              LayoutText {#text} at (1,41) size 22x19
+                text run at (1,41) width 22: "zap"
         LayoutTableSection {TBODY} at (1,329) size 198x143
           LayoutTableRow {TR} at (0,0) size 198x113
             LayoutTableCell {TD} at (30,0) size 54x113 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 44x110
-                text run at (1,1) width 42: "foo"
+                text run at (1,1) width 43: "foo"
                 text run at (1,38) width 41: "bar"
                 text run at (1,75) width 44: "baz"
             LayoutTableCell {TD} at (114,59) size 54x54 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]

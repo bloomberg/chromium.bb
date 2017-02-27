@@ -4,8 +4,8 @@ layer at (0,0) size 800x506
   LayoutBlockFlow {HTML} at (0,0) size 800x506
     LayoutBlockFlow {BODY} at (8,16) size 784x482
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 708x19
-          text run at (0,0) width 708: "Test passes if the boxes have rounded corners and show a smooth transition between the thicker and the thinner sides."
+        LayoutText {#text} at (0,0) size 739x19
+          text run at (0,0) width 739: "Test passes if the boxes have rounded corners and show a smooth transition between the thicker and the thinner sides."
       LayoutTable {TABLE} at (0,36) size 700x446
         LayoutTableSection {TBODY} at (0,0) size 700x446
           LayoutTableRow {TR} at (0,2) size 700x442

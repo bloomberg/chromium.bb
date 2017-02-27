@@ -4,8 +4,8 @@ layer at (0,0) size 800x308
   LayoutBlockFlow {HTML} at (0,0) size 800x308
     LayoutBlockFlow {BODY} at (8,16) size 784x284
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 304x19
-          text run at (0,0) width 304: "There must be two green boxes below and no red."
+        LayoutText {#text} at (0,0) size 316x19
+          text run at (0,0) width 316: "There must be two green boxes below and no red."
 layer at (16,52) size 120x120
   LayoutBlockFlow (relative positioned) {DIV} at (8,36) size 120x120 [bgcolor=#008000]
 layer at (26,62) size 60x100

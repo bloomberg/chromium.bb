@@ -4,8 +4,8 @@ layer at (0,0) size 800x80
   LayoutBlockFlow {HTML} at (0,0) size 800x80
     LayoutBlockFlow {BODY} at (8,16) size 784x56
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 660x19
-          text run at (0,0) width 660: "crbug.com/568387: Should not ASSERT and should leave an anonymous block around the two inline-blocks."
+        LayoutText {#text} at (0,0) size 694x19
+          text run at (0,0) width 694: "crbug.com/568387: Should not ASSERT and should leave an anonymous block around the two inline-blocks."
       LayoutTable (anonymous) at (0,36) size 150x20
         LayoutTableSection {DIV} at (0,0) size 150x20
           LayoutTableRow (anonymous) at (0,0) size 150x0

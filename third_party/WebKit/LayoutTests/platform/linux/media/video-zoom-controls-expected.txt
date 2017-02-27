@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (12,12) size 776x543
       LayoutBlockFlow {P} at (0,0) size 776x28
-        LayoutText {#text} at (0,0) size 275x27
-          text run at (0,0) width 275: "Zoomed video with controls."
+        LayoutText {#text} at (0,0) size 280x27
+          text run at (0,0) width 280: "Zoomed video with controls."
 layer at (57,85) size 240x180
   LayoutVideo {VIDEO} at (45,73) size 240x180
 layer at (57,85) size 240x180

@@ -9,5 +9,5 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (0,0) size 600x20 [bgcolor=#000000] [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (0,0) size 600x20 [color=#FFFFFF]
                 LayoutBlockFlow {P} at (0,0) size 600x20
-                  LayoutText {#text} at (0,0) size 48x19
-                    text run at (0,0) width 48: "fooobar"
+                  LayoutText {#text} at (0,0) size 49x19
+                    text run at (0,0) width 49: "fooobar"

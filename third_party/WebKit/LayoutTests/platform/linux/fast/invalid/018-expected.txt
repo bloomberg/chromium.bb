@@ -26,6 +26,6 @@ layer at (0,0) size 800x600
           LayoutInline {A} at (0,0) size 0x0
         LayoutInline {A} at (0,0) size 0x0
           LayoutInline {FONT} at (0,0) size 0x0
-        LayoutInline {FONT} at (0,0) size 348x19
-          LayoutText {#text} at (0,0) size 348x19
-            text run at (0,0) width 348: "This page contains an insanely badly-nested tag sequence."
+        LayoutInline {FONT} at (0,0) size 366x19
+          LayoutText {#text} at (0,0) size 366x19
+            text run at (0,0) width 366: "This page contains an insanely badly-nested tag sequence."

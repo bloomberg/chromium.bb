@@ -13,7 +13,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 58, 37, 19],
+          "rect": [8, 58, 38, 19],
           "reason": "full"
         }
       ]

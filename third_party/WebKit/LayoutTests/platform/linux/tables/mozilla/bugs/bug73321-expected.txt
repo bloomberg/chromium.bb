@@ -4,11 +4,11 @@ layer at (0,0) size 785x1395 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1394.88
     LayoutBlockFlow {BODY} at (8,8) size 769x1378.88 [bgcolor=#555555]
       LayoutBlockFlow {H1} at (16,37.44) size 737x102 [bgcolor=#CCCCCC]
-        LayoutText {#text} at (87,32) size 166x37
-          text run at (87,32) width 166: "Simplified "
-        LayoutInline {A} at (0,0) size 161x37 [color=#0000EE]
-          LayoutText {#text} at (252,32) size 161x37
-            text run at (252,32) width 161: "Linux.com"
+        LayoutText {#text} at (87,32) size 164x37
+          text run at (87,32) width 164: "Simplified "
+        LayoutInline {A} at (0,0) size 163x37 [color=#0000EE]
+          LayoutText {#text} at (250,32) size 163x37
+            text run at (250,32) width 163: "Linux.com"
         LayoutText {#text} at (412,32) size 238x37
           text run at (412,32) width 238: " Table Testcase"
       LayoutTable {TABLE} at (16,160.88) size 737x1202
@@ -40,8 +40,8 @@ layer at (0,0) size 785x1395 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,80) width 108: "blah blah blah blah"
                   text run at (0,96) width 108: "blah blah blah blah"
               LayoutBlockFlow {H2} at (5,335.33) size 125x20
-                LayoutText {#text} at (0,0) size 83x19
-                  text run at (0,0) width 83: "Newsforge"
+                LayoutText {#text} at (0,0) size 82x19
+                  text run at (0,0) width 82: "Newsforge"
               LayoutBlockFlow {P} at (5,368.59) size 125x32
                 LayoutText {#text} at (0,0) size 108x32
                   text run at (0,0) width 108: "blah blah blah blah"
@@ -75,8 +75,8 @@ layer at (0,0) size 785x1395 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,16) width 108: "blah blah blah blah"
             LayoutTableCell {TD} at (139,2) size 459x1198.13 [bgcolor=#FFFFFF] [r=0 c=1 rs=2 cs=1]
               LayoutBlockFlow {H2} at (5,18.27) size 449x20
-                LayoutText {#text} at (0,0) size 187x19
-                  text run at (0,0) width 187: "The Latest of Linux.com!"
+                LayoutText {#text} at (0,0) size 188x19
+                  text run at (0,0) width 188: "The Latest of Linux.com!"
               LayoutBlockFlow {P} at (5,51.53) size 449x240
                 LayoutText {#text} at (0,0) size 444x240
                   text run at (0,0) width 444: "blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"
@@ -112,8 +112,8 @@ layer at (0,0) size 785x1395 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,208) width 444: "blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"
                   text run at (0,224) width 108: "blah blah blah blah"
               LayoutBlockFlow {H2} at (5,557.80) size 449x20
-                LayoutText {#text} at (0,0) size 120x19
-                  text run at (0,0) width 120: "Linux.com Live!"
+                LayoutText {#text} at (0,0) size 121x19
+                  text run at (0,0) width 121: "Linux.com Live!"
               LayoutBlockFlow {P} at (5,591.06) size 449x240
                 LayoutText {#text} at (0,0) size 444x240
                   text run at (0,0) width 444: "blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"
@@ -155,8 +155,8 @@ layer at (0,0) size 785x1395 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 29x19
                   text run at (0,0) width 29: "Poll"
               LayoutBlockFlow {P} at (5,1164.13) size 449x16
-                LayoutText {#text} at (0,0) size 307x16
-                  text run at (0,0) width 307: "This stuff is cropped off in Mozilla for whatever reason"
+                LayoutText {#text} at (0,0) size 315x16
+                  text run at (0,0) width 315: "This stuff is cropped off in Mozilla for whatever reason"
             LayoutTableCell {TD} at (600,2) size 135x402.59 [bgcolor=#FFFFFF] [r=0 c=2 rs=1 cs=1]
               LayoutBlockFlow {H2} at (5,18.27) size 125x20
                 LayoutText {#text} at (0,0) size 47x19

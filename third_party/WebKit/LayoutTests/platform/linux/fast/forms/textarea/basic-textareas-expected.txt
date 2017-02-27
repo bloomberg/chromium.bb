@@ -1,133 +1,133 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1676
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1644
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1676 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x1676
-    LayoutBlockFlow {BODY} at (0,0) size 785x1676
+layer at (0,0) size 785x1644 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x1644
+    LayoutBlockFlow {BODY} at (0,0) size 785x1644
       LayoutText {#text} at (0,0) size 0x0
-layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutIFrame {IFRAME} at (0,0) size 785x861
-    layer at (0,0) size 785x861
-      LayoutView at (0,0) size 785x861
-    layer at (0,0) size 785x861
-      LayoutBlockFlow {HTML} at (0,0) size 785x861
-        LayoutBlockFlow {BODY} at (0,5) size 785x856
+layer at (0,0) size 785x845 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutIFrame {IFRAME} at (0,0) size 785x845
+    layer at (0,0) size 785x845
+      LayoutView at (0,0) size 785x845
+    layer at (0,0) size 785x845
+      LayoutBlockFlow {HTML} at (0,0) size 785x845
+        LayoutBlockFlow {BODY} at (0,5) size 785x840
           LayoutBlockFlow {DIV} at (0,0) size 785x20
-            LayoutText {#text} at (0,0) size 190x19
-              text run at (0,0) width 190: "CompatMode: CSS1Compat"
-          LayoutBlockFlow (anonymous) at (0,25) size 785x831
+            LayoutText {#text} at (0,0) size 196x19
+              text run at (0,0) width 196: "CompatMode: CSS1Compat"
+          LayoutBlockFlow (anonymous) at (0,25) size 785x815
             LayoutBlockFlow {DIV} at (0,32) size 183x60 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,13) size 80x0
               LayoutBR {BR} at (81,1) size 0x15
             LayoutBlockFlow {DIV} at (183,32) size 183x60 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x16
-                LayoutText {#text} at (0,0) size 77x15
-                  text run at (0,0) width 77: "disabled: \"true\","
+                LayoutText {#text} at (0,0) size 76x15
+                  text run at (0,0) width 76: "disabled: \"true\","
               LayoutBR {BR} at (81,1) size 0x15
             LayoutBlockFlow {DIV} at (366,0) size 199x92 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 78x31
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 78: "\"padding:10px\","
               LayoutBR {BR} at (81,17) size 0x15
             LayoutBlockFlow {DIV} at (565,20) size 179x72 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 72x31
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 72: "\"padding:0px\","
               LayoutBR {BR} at (81,17) size 0x15
             LayoutBlockFlow {DIV} at (0,124) size 203x96 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 72x31
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 72: "\"margin:10px\","
+                LayoutText {#text} at (0,0) size 73x31
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 73: "\"margin:10px\","
               LayoutBR {BR} at (81,17) size 0x15
             LayoutBlockFlow {DIV} at (203,144) size 183x76 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 66x31
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 66: "\"margin:0px\","
+                LayoutText {#text} at (0,0) size 67x31
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 67: "\"margin:0px\","
               LayoutBR {BR} at (81,17) size 0x15
             LayoutBlockFlow {DIV} at (386,144) size 82x76 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 68x31
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 68: "\"width:60px\","
+                LayoutText {#text} at (0,0) size 67x31
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 67: "\"width:60px\","
               LayoutBR {BR} at (81,17) size 0x15
             LayoutBlockFlow {DIV} at (468,92) size 104x128 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x48
                 LayoutText {#text} at (0,0) size 73x47
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 63: "\"width:60px;"
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 73: "padding:20px\","
               LayoutBR {BR} at (81,33) size 0x15
             LayoutBlockFlow {DIV} at (572,132) size 82x88 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x48
-                LayoutText {#text} at (0,0) size 63x47
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 63: "\"width:60px;"
+                LayoutText {#text} at (0,0) size 62x47
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 55: "padding:0\","
               LayoutBR {BR} at (81,33) size 0x15
             LayoutBlockFlow {DIV} at (0,252) size 183x104 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 69x31
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 69: "\"height:60px\","
               LayoutBR {BR} at (81,17) size 0x15
             LayoutBlockFlow {DIV} at (183,236) size 82x120 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x48
                 LayoutText {#text} at (0,0) size 64x47
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 63: "\"width:60px;"
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
               LayoutBR {BR} at (81,33) size 0x15
             LayoutBlockFlow {DIV} at (265,280) size 183x76 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 91x31
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 91: "\"overflow:hidden\","
               LayoutBR {BR} at (81,17) size 0x15
             LayoutBlockFlow {DIV} at (448,265) size 183x91 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 85x31
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 85: "\"overflow:scroll\","
               LayoutBR {BR} at (81,17) size 0x15
             LayoutBlockFlow {DIV} at (631,220) size 82x136 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x64
                 LayoutText {#text} at (0,0) size 86x63
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 86: "\"overflow:hidden;"
-                  text run at (0,32) width 58: "width:60px;"
+                  text run at (0,32) width 57: "width:60px;"
                   text run at (0,48) width 64: "height:60px\","
               LayoutBR {BR} at (81,49) size 0x15
             LayoutBlockFlow {DIV} at (0,356) size 82x136 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x64
                 LayoutText {#text} at (0,0) size 80x63
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 80: "\"overflow:scroll;"
-                  text run at (0,32) width 58: "width:60px;"
+                  text run at (0,32) width 57: "width:60px;"
                   text run at (0,48) width 64: "height:60px\","
               LayoutBR {BR} at (81,49) size 0x15
             LayoutBlockFlow {DIV} at (82,372) size 82x120 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x48
-                LayoutText {#text} at (0,0) size 74x47
-                  text run at (0,0) width 74: "cols: \"5\", style:"
-                  text run at (0,16) width 63: "\"width:60px;"
+                LayoutText {#text} at (0,0) size 72x47
+                  text run at (0,0) width 72: "cols: \"5\", style:"
+                  text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
               LayoutBR {BR} at (81,33) size 0x15
             LayoutBlockFlow {DIV} at (164,372) size 82x120 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x48
-                LayoutText {#text} at (0,0) size 79x47
-                  text run at (0,0) width 79: "rows: \"4\", style:"
-                  text run at (0,16) width 63: "\"width:60px;"
+                LayoutText {#text} at (0,0) size 77x47
+                  text run at (0,0) width 77: "rows: \"4\", style:"
+                  text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
               LayoutBR {BR} at (81,33) size 0x15
             LayoutBlockFlow {DIV} at (246,356) size 82x136 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x64
                 LayoutText {#text} at (0,0) size 74x63
                   text run at (0,0) width 74: "cols: \"5\", rows:"
-                  text run at (0,16) width 49: "\"4\", style:"
-                  text run at (0,32) width 63: "\"width:60px;"
+                  text run at (0,16) width 47: "\"4\", style:"
+                  text run at (0,32) width 62: "\"width:60px;"
                   text run at (0,48) width 64: "height:60px\","
               LayoutBR {BR} at (81,49) size 0x15
             LayoutBlockFlow {DIV} at (328,432) size 82x60 [border: (1px solid #0000FF)]
@@ -158,63 +158,62 @@ layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutBR {BR} at (81,17) size 0x15
             LayoutBlockFlow {DIV} at (265,557) size 183x75 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x16
-                LayoutText {#text} at (0,0) size 58x15
-                  text run at (0,0) width 58: "wrap: \"off\","
+                LayoutText {#text} at (0,0) size 57x15
+                  text run at (0,0) width 57: "wrap: \"off\","
               LayoutBR {BR} at (81,1) size 0x15
             LayoutBlockFlow {DIV} at (448,572) size 183x60 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x16
-                LayoutText {#text} at (0,0) size 65x15
-                  text run at (0,0) width 65: "wrap: \"hard\","
+                LayoutText {#text} at (0,0) size 64x15
+                  text run at (0,0) width 64: "wrap: \"hard\","
               LayoutBR {BR} at (81,1) size 0x15
             LayoutBlockFlow {DIV} at (0,648) size 183x60 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x16
-                LayoutText {#text} at (0,0) size 63x15
-                  text run at (0,0) width 63: "wrap: \"soft\","
+                LayoutText {#text} at (0,0) size 61x15
+                  text run at (0,0) width 61: "wrap: \"soft\","
               LayoutBR {BR} at (81,1) size 0x15
             LayoutBlockFlow {DIV} at (183,632) size 183x76 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 71x31
-                  text run at (0,0) width 66: "style: \"white-"
-                  text run at (0,16) width 71: "space:normal\","
+                LayoutText {#text} at (0,0) size 70x31
+                  text run at (0,0) width 63: "style: \"white-"
+                  text run at (0,16) width 70: "space:normal\","
               LayoutBR {BR} at (81,17) size 0x15
             LayoutBlockFlow {DIV} at (366,632) size 183x76 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 66x31
-                  text run at (0,0) width 66: "style: \"white-"
-                  text run at (0,16) width 54: "space:pre\","
+                LayoutText {#text} at (0,0) size 63x31
+                  text run at (0,0) width 63: "style: \"white-"
+                  text run at (0,16) width 52: "space:pre\","
               LayoutBR {BR} at (81,17) size 0x15
             LayoutBlockFlow {DIV} at (549,632) size 183x76 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 79x31
-                  text run at (0,0) width 66: "style: \"white-"
-                  text run at (0,16) width 79: "space:prewrap\","
+                LayoutText {#text} at (0,0) size 76x31
+                  text run at (0,0) width 63: "style: \"white-"
+                  text run at (0,16) width 76: "space:prewrap\","
               LayoutBR {BR} at (81,17) size 0x15
-            LayoutBlockFlow {DIV} at (0,755) size 183x76 [border: (1px solid #0000FF)]
+            LayoutBlockFlow {DIV} at (0,739) size 183x76 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 75x31
-                  text run at (0,0) width 66: "style: \"white-"
-                  text run at (0,16) width 75: "space:nowrap\","
+                LayoutText {#text} at (0,0) size 73x31
+                  text run at (0,0) width 63: "style: \"white-"
+                  text run at (0,16) width 73: "space:nowrap\","
               LayoutBR {BR} at (81,17) size 0x15
-            LayoutBlockFlow {DIV} at (183,755) size 183x76 [border: (1px solid #0000FF)]
+            LayoutBlockFlow {DIV} at (183,739) size 183x76 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 75x31
-                  text run at (0,0) width 66: "style: \"white-"
-                  text run at (0,16) width 75: "space:pre-line\","
+                LayoutText {#text} at (0,0) size 73x31
+                  text run at (0,0) width 63: "style: \"white-"
+                  text run at (0,16) width 73: "space:pre-line\","
               LayoutBR {BR} at (81,17) size 0x15
-            LayoutBlockFlow {DIV} at (366,740) size 183x91 [border: (1px solid #0000FF)]
+            LayoutBlockFlow {DIV} at (366,724) size 183x91 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 69x31
-                  text run at (0,0) width 64: "style: \"word-"
-                  text run at (0,16) width 69: "wrap:normal\","
+                LayoutText {#text} at (0,0) size 68x31
+                  text run at (0,0) width 62: "style: \"word-"
+                  text run at (0,16) width 68: "wrap:normal\","
               LayoutBR {BR} at (81,17) size 0x15
-            LayoutBlockFlow {DIV} at (549,708) size 183x123 [border: (1px solid #0000FF)]
-              LayoutBlockFlow {SPAN} at (1,1) size 80x64
-                LayoutText {#text} at (0,0) size 66x63
-                  text run at (0,0) width 58: "wrap: \"off\","
-                  text run at (0,16) width 66: "style: \"white-"
-                  text run at (0,32) width 50: "space:pre-"
-                  text run at (0,48) width 33: "wrap\","
-              LayoutBR {BR} at (81,49) size 0x15
+            LayoutBlockFlow {DIV} at (549,708) size 183x107 [border: (1px solid #0000FF)]
+              LayoutBlockFlow {SPAN} at (1,1) size 80x48
+                LayoutText {#text} at (0,0) size 80x47
+                  text run at (0,0) width 57: "wrap: \"off\","
+                  text run at (0,16) width 63: "style: \"white-"
+                  text run at (0,32) width 80: "space:pre-wrap\","
+              LayoutBR {BR} at (81,33) size 0x15
     layer at (1,79) size 181x38 clip at (2,80) size 179x36
       LayoutTextControl {TEXTAREA} at (1,17) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow {DIV} at (3,3) size 175x16
@@ -651,12 +650,12 @@ layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (48,32) width 8: " "
             text run at (0,48) width 160: "abcdefghijklmnopqrst"
             text run at (0,64) width 16: "uv"
-    layer at (1,818) size 181x38 clip at (2,819) size 179x21 scrollWidth 546
+    layer at (1,802) size 181x38 clip at (2,803) size 179x21 scrollWidth 546
       LayoutTextControl {TEXTAREA} at (1,33) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow {DIV} at (3,3) size 175x16
           LayoutText {#text} at (0,0) size 544x16
             text run at (0,0) width 544: "Lorem ipsum  dolor ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuv"
-    layer at (184,818) size 181x38 clip at (185,819) size 164x36 scrollHeight 84
+    layer at (184,802) size 181x38 clip at (185,803) size 164x36 scrollHeight 84
       LayoutTextControl {TEXTAREA} at (1,33) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow {DIV} at (3,3) size 160x80
           LayoutText {#text} at (0,0) size 160x80
@@ -667,7 +666,7 @@ layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (48,32) width 8: " "
             text run at (0,48) width 160: "abcdefghijklmnopqrst"
             text run at (0,64) width 16: "uv"
-    layer at (367,803) size 181x53 clip at (368,804) size 164x36 scrollWidth 210 scrollHeight 68
+    layer at (367,787) size 181x53 clip at (368,788) size 164x36 scrollWidth 210 scrollHeight 68
       LayoutTextControl {TEXTAREA} at (1,33) size 181x53 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow {DIV} at (3,3) size 160x64
           LayoutText {#text} at (0,0) size 208x64
@@ -676,8 +675,8 @@ layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (0,16) width 208: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             text run at (0,32) width 8: " "
             text run at (0,48) width 176: "abcdefghijklmnopqrstuv"
-    layer at (550,803) size 181x53 clip at (551,804) size 164x36 scrollWidth 210 scrollHeight 68
-      LayoutTextControl {TEXTAREA} at (1,65) size 181x53 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    layer at (550,787) size 181x53 clip at (551,788) size 164x36 scrollWidth 210 scrollHeight 68
+      LayoutTextControl {TEXTAREA} at (1,49) size 181x53 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow {DIV} at (3,3) size 160x64
           LayoutText {#text} at (0,0) size 208x64
             text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -685,130 +684,130 @@ layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (0,16) width 208: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             text run at (0,32) width 8: " "
             text run at (0,48) width 176: "abcdefghijklmnopqrstuv"
-layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutIFrame {IFRAME} at (0,861) size 785x815
-    layer at (0,0) size 785x815
-      LayoutView at (0,0) size 785x815
-    layer at (0,0) size 785x815
-      LayoutBlockFlow {HTML} at (0,0) size 785x815
-        LayoutBlockFlow {BODY} at (0,5) size 785x810
+layer at (0,845) size 785x799 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutIFrame {IFRAME} at (0,845) size 785x799
+    layer at (0,0) size 785x799
+      LayoutView at (0,0) size 785x799
+    layer at (0,0) size 785x799
+      LayoutBlockFlow {HTML} at (0,0) size 785x799
+        LayoutBlockFlow {BODY} at (0,5) size 785x794
           LayoutBlockFlow {DIV} at (0,0) size 785x20
-            LayoutText {#text} at (0,0) size 188x19
-              text run at (0,0) width 188: "CompatMode: BackCompat"
-          LayoutBlockFlow (anonymous) at (0,25) size 785x785
+            LayoutText {#text} at (0,0) size 193x19
+              text run at (0,0) width 193: "CompatMode: BackCompat"
+          LayoutBlockFlow (anonymous) at (0,25) size 785x769
             LayoutBlockFlow {DIV} at (0,50) size 181x38 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x0
               LayoutBR {BR} at (81,1) size 0x0
             LayoutBlockFlow {DIV} at (181,34) size 181x54 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x16
-                LayoutText {#text} at (0,0) size 77x15
-                  text run at (0,0) width 77: "disabled: \"true\","
+                LayoutText {#text} at (0,0) size 76x15
+                  text run at (0,0) width 76: "disabled: \"true\","
               LayoutBR {BR} at (81,13) size 0x0
             LayoutBlockFlow {DIV} at (362,0) size 199x88 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 78x31
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 78: "\"padding:10px\","
               LayoutBR {BR} at (81,29) size 0x0
             LayoutBlockFlow {DIV} at (561,20) size 179x68 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 72x31
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 72: "\"padding:0px\","
               LayoutBR {BR} at (81,29) size 0x0
             LayoutBlockFlow {DIV} at (0,122) size 201x90 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 72x31
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 72: "\"margin:10px\","
+                LayoutText {#text} at (0,0) size 73x31
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 73: "\"margin:10px\","
               LayoutBR {BR} at (81,29) size 0x0
             LayoutBlockFlow {DIV} at (201,142) size 181x70 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 66x31
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 66: "\"margin:0px\","
+                LayoutText {#text} at (0,0) size 67x31
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 67: "\"margin:0px\","
               LayoutBR {BR} at (81,29) size 0x0
             LayoutBlockFlow {DIV} at (382,142) size 82x70 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 68x31
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 68: "\"width:60px\","
+                LayoutText {#text} at (0,0) size 67x31
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 67: "\"width:60px\","
               LayoutBR {BR} at (81,29) size 0x0
             LayoutBlockFlow {DIV} at (464,88) size 82x124 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x48
                 LayoutText {#text} at (0,0) size 73x47
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 63: "\"width:60px;"
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 73: "padding:20px\","
               LayoutBR {BR} at (81,45) size 0x0
             LayoutBlockFlow {DIV} at (546,128) size 82x84 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x48
-                LayoutText {#text} at (0,0) size 63x47
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 63: "\"width:60px;"
+                LayoutText {#text} at (0,0) size 62x47
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 55: "padding:0\","
               LayoutBR {BR} at (81,45) size 0x0
             LayoutBlockFlow {DIV} at (0,244) size 181x94 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 69x31
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 69: "\"height:60px\","
               LayoutBR {BR} at (81,29) size 0x0
             LayoutBlockFlow {DIV} at (181,228) size 82x110 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x48
                 LayoutText {#text} at (0,0) size 64x47
-                  text run at (0,0) width 27: "style:"
-                  text run at (0,16) width 63: "\"width:60px;"
+                  text run at (0,0) width 25: "style:"
+                  text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
               LayoutBR {BR} at (81,45) size 0x0
             LayoutBlockFlow {DIV} at (263,268) size 181x70 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 91x31
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 91: "\"overflow:hidden\","
               LayoutBR {BR} at (81,29) size 0x0
             LayoutBlockFlow {DIV} at (444,253) size 181x85 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
                 LayoutText {#text} at (0,0) size 85x31
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 85: "\"overflow:scroll\","
               LayoutBR {BR} at (81,29) size 0x0
             LayoutBlockFlow {DIV} at (625,212) size 82x126 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x64
                 LayoutText {#text} at (0,0) size 86x63
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 86: "\"overflow:hidden;"
-                  text run at (0,32) width 58: "width:60px;"
+                  text run at (0,32) width 57: "width:60px;"
                   text run at (0,48) width 64: "height:60px\","
               LayoutBR {BR} at (81,61) size 0x0
             LayoutBlockFlow {DIV} at (0,338) size 82x126 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x64
                 LayoutText {#text} at (0,0) size 80x63
-                  text run at (0,0) width 27: "style:"
+                  text run at (0,0) width 25: "style:"
                   text run at (0,16) width 80: "\"overflow:scroll;"
-                  text run at (0,32) width 58: "width:60px;"
+                  text run at (0,32) width 57: "width:60px;"
                   text run at (0,48) width 64: "height:60px\","
               LayoutBR {BR} at (81,61) size 0x0
             LayoutBlockFlow {DIV} at (82,354) size 82x110 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x48
-                LayoutText {#text} at (0,0) size 74x47
-                  text run at (0,0) width 74: "cols: \"5\", style:"
-                  text run at (0,16) width 63: "\"width:60px;"
+                LayoutText {#text} at (0,0) size 72x47
+                  text run at (0,0) width 72: "cols: \"5\", style:"
+                  text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
               LayoutBR {BR} at (81,45) size 0x0
             LayoutBlockFlow {DIV} at (164,354) size 82x110 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x48
-                LayoutText {#text} at (0,0) size 79x47
-                  text run at (0,0) width 79: "rows: \"4\", style:"
-                  text run at (0,16) width 63: "\"width:60px;"
+                LayoutText {#text} at (0,0) size 77x47
+                  text run at (0,0) width 77: "rows: \"4\", style:"
+                  text run at (0,16) width 62: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
               LayoutBR {BR} at (81,45) size 0x0
             LayoutBlockFlow {DIV} at (246,338) size 82x126 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x64
                 LayoutText {#text} at (0,0) size 74x63
                   text run at (0,0) width 74: "cols: \"5\", rows:"
-                  text run at (0,16) width 49: "\"4\", style:"
-                  text run at (0,32) width 63: "\"width:60px;"
+                  text run at (0,16) width 47: "\"4\", style:"
+                  text run at (0,32) width 62: "\"width:60px;"
                   text run at (0,48) width 64: "height:60px\","
               LayoutBR {BR} at (81,61) size 0x0
             LayoutBlockFlow {DIV} at (328,410) size 82x54 [border: (1px solid #0000FF)]
@@ -839,63 +838,62 @@ layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0)
               LayoutBR {BR} at (81,29) size 0x0
             LayoutBlockFlow {DIV} at (263,529) size 181x69 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x16
-                LayoutText {#text} at (0,0) size 58x15
-                  text run at (0,0) width 58: "wrap: \"off\","
+                LayoutText {#text} at (0,0) size 57x15
+                  text run at (0,0) width 57: "wrap: \"off\","
               LayoutBR {BR} at (81,13) size 0x0
             LayoutBlockFlow {DIV} at (444,544) size 181x54 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x16
-                LayoutText {#text} at (0,0) size 65x15
-                  text run at (0,0) width 65: "wrap: \"hard\","
+                LayoutText {#text} at (0,0) size 64x15
+                  text run at (0,0) width 64: "wrap: \"hard\","
               LayoutBR {BR} at (81,13) size 0x0
             LayoutBlockFlow {DIV} at (0,614) size 181x54 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x16
-                LayoutText {#text} at (0,0) size 63x15
-                  text run at (0,0) width 63: "wrap: \"soft\","
+                LayoutText {#text} at (0,0) size 61x15
+                  text run at (0,0) width 61: "wrap: \"soft\","
               LayoutBR {BR} at (81,13) size 0x0
             LayoutBlockFlow {DIV} at (181,598) size 181x70 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 71x31
-                  text run at (0,0) width 66: "style: \"white-"
-                  text run at (0,16) width 71: "space:normal\","
+                LayoutText {#text} at (0,0) size 70x31
+                  text run at (0,0) width 63: "style: \"white-"
+                  text run at (0,16) width 70: "space:normal\","
               LayoutBR {BR} at (81,29) size 0x0
             LayoutBlockFlow {DIV} at (362,598) size 181x70 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 66x31
-                  text run at (0,0) width 66: "style: \"white-"
-                  text run at (0,16) width 54: "space:pre\","
+                LayoutText {#text} at (0,0) size 63x31
+                  text run at (0,0) width 63: "style: \"white-"
+                  text run at (0,16) width 52: "space:pre\","
               LayoutBR {BR} at (81,29) size 0x0
             LayoutBlockFlow {DIV} at (543,598) size 181x70 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 79x31
-                  text run at (0,0) width 66: "style: \"white-"
-                  text run at (0,16) width 79: "space:prewrap\","
+                LayoutText {#text} at (0,0) size 76x31
+                  text run at (0,0) width 63: "style: \"white-"
+                  text run at (0,16) width 76: "space:prewrap\","
               LayoutBR {BR} at (81,29) size 0x0
-            LayoutBlockFlow {DIV} at (0,715) size 181x70 [border: (1px solid #0000FF)]
+            LayoutBlockFlow {DIV} at (0,699) size 181x70 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 75x31
-                  text run at (0,0) width 66: "style: \"white-"
-                  text run at (0,16) width 75: "space:nowrap\","
+                LayoutText {#text} at (0,0) size 73x31
+                  text run at (0,0) width 63: "style: \"white-"
+                  text run at (0,16) width 73: "space:nowrap\","
               LayoutBR {BR} at (81,29) size 0x0
-            LayoutBlockFlow {DIV} at (181,715) size 181x70 [border: (1px solid #0000FF)]
+            LayoutBlockFlow {DIV} at (181,699) size 181x70 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 75x31
-                  text run at (0,0) width 66: "style: \"white-"
-                  text run at (0,16) width 75: "space:pre-line\","
+                LayoutText {#text} at (0,0) size 73x31
+                  text run at (0,0) width 63: "style: \"white-"
+                  text run at (0,16) width 73: "space:pre-line\","
               LayoutBR {BR} at (81,29) size 0x0
-            LayoutBlockFlow {DIV} at (362,700) size 181x85 [border: (1px solid #0000FF)]
+            LayoutBlockFlow {DIV} at (362,684) size 181x85 [border: (1px solid #0000FF)]
               LayoutBlockFlow {SPAN} at (1,1) size 80x32
-                LayoutText {#text} at (0,0) size 69x31
-                  text run at (0,0) width 64: "style: \"word-"
-                  text run at (0,16) width 69: "wrap:normal\","
+                LayoutText {#text} at (0,0) size 68x31
+                  text run at (0,0) width 62: "style: \"word-"
+                  text run at (0,16) width 68: "wrap:normal\","
               LayoutBR {BR} at (81,29) size 0x0
-            LayoutBlockFlow {DIV} at (543,668) size 181x117 [border: (1px solid #0000FF)]
-              LayoutBlockFlow {SPAN} at (1,1) size 80x64
-                LayoutText {#text} at (0,0) size 66x63
-                  text run at (0,0) width 58: "wrap: \"off\","
-                  text run at (0,16) width 66: "style: \"white-"
-                  text run at (0,32) width 50: "space:pre-"
-                  text run at (0,48) width 33: "wrap\","
-              LayoutBR {BR} at (81,61) size 0x0
+            LayoutBlockFlow {DIV} at (543,668) size 181x101 [border: (1px solid #0000FF)]
+              LayoutBlockFlow {SPAN} at (1,1) size 80x48
+                LayoutText {#text} at (0,0) size 80x47
+                  text run at (0,0) width 57: "wrap: \"off\","
+                  text run at (0,16) width 63: "style: \"white-"
+                  text run at (0,32) width 80: "space:pre-wrap\","
+              LayoutBR {BR} at (81,45) size 0x0
     layer at (1,81) size 179x36 clip at (2,82) size 177x34
       LayoutTextControl {TEXTAREA} at (1,1) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow {DIV} at (3,3) size 175x16
@@ -1382,12 +1380,12 @@ layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (48,32) width 8: " "
             text run at (0,48) width 160: "abcdefghijklmnopqrst"
             text run at (0,64) width 16: "uv"
-    layer at (1,778) size 179x36 clip at (2,779) size 177x19 scrollWidth 546
+    layer at (1,762) size 179x36 clip at (2,763) size 177x19 scrollWidth 546
       LayoutTextControl {TEXTAREA} at (1,33) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow {DIV} at (3,3) size 175x16
           LayoutText {#text} at (0,0) size 544x16
             text run at (0,0) width 544: "Lorem ipsum  dolor ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuv"
-    layer at (182,778) size 179x36 clip at (183,779) size 162x34 scrollHeight 82
+    layer at (182,762) size 179x36 clip at (183,763) size 162x34 scrollHeight 82
       LayoutTextControl {TEXTAREA} at (1,33) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow {DIV} at (3,3) size 160x80
           LayoutText {#text} at (0,0) size 160x80
@@ -1398,7 +1396,7 @@ layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (48,32) width 8: " "
             text run at (0,48) width 160: "abcdefghijklmnopqrst"
             text run at (0,64) width 16: "uv"
-    layer at (363,763) size 179x51 clip at (364,764) size 162x34 scrollWidth 210 scrollHeight 66
+    layer at (363,747) size 179x51 clip at (364,748) size 162x34 scrollWidth 210 scrollHeight 66
       LayoutTextControl {TEXTAREA} at (1,33) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow {DIV} at (3,3) size 160x64
           LayoutText {#text} at (0,0) size 208x64
@@ -1407,8 +1405,8 @@ layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (0,16) width 208: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             text run at (0,32) width 8: " "
             text run at (0,48) width 176: "abcdefghijklmnopqrstuv"
-    layer at (544,763) size 179x51 clip at (545,764) size 162x34 scrollWidth 210 scrollHeight 66
-      LayoutTextControl {TEXTAREA} at (1,65) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    layer at (544,747) size 179x51 clip at (545,748) size 162x34 scrollWidth 210 scrollHeight 66
+      LayoutTextControl {TEXTAREA} at (1,49) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow {DIV} at (3,3) size 160x64
           LayoutText {#text} at (0,0) size 208x64
             text run at (0,0) width 144: "Lorem ipsum  dolor"

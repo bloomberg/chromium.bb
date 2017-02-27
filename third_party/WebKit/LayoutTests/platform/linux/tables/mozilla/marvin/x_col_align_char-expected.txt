@@ -4,8 +4,8 @@ layer at (0,0) size 800x116
   LayoutBlockFlow {html} at (0,0) size 800x116
     LayoutBlockFlow {body} at (8,16) size 784x92
       LayoutBlockFlow {p} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 316x19
-          text run at (0,0) width 316: "Numbers in table should be aligned at decimal points"
+        LayoutText {#text} at (0,0) size 333x19
+          text run at (0,0) width 333: "Numbers in table should be aligned at decimal points"
       LayoutTable {table} at (0,36) size 400x56 [border: (1px outset #808080)]
         LayoutTableCol {colgroup} at (0,0) size 0x0
           LayoutTableCol {col} at (0,0) size 0x0

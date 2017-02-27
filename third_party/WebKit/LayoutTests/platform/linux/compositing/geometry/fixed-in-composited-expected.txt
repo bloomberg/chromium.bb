@@ -4,8 +4,8 @@ layer at (0,0) size 785x1000 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1000
     LayoutBlockFlow {BODY} at (0,0) size 785x1000
       LayoutBlockFlow {P} at (0,210) size 785x20
-        LayoutText {#text} at (0,0) size 180x19
-          text run at (0,0) width 180: "You should see no red above."
+        LayoutText {#text} at (0,0) size 187x19
+          text run at (0,0) width 187: "You should see no red above."
 layer at (20,70) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (20,70) size 100x100 [bgcolor=#FF0000]
 layer at (220,120) size 100x100

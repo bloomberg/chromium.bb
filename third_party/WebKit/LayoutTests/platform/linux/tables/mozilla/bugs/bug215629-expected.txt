@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 198x19
-          text run at (0,0) width 198: "Image URLs intentionally broken"
+        LayoutText {#text} at (0,0) size 212x19
+          text run at (0,0) width 212: "Image URLs intentionally broken"
       LayoutTable {TABLE} at (0,36) size 732x57
         LayoutTableSection {TBODY} at (0,0) size 732x57
           LayoutTableRow {TR} at (0,2) size 732x53
@@ -15,8 +15,8 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {IMG} at (349,1) size 205x51
               LayoutBlockFlow {IMG} at (554,1) size 173x51
       LayoutBlockFlow {P} at (0,109) size 784x20
-        LayoutText {#text} at (0,0) size 434x19
-          text run at (0,0) width 434: "Identical to the above except that width=\"100%\" was removed from TD"
+        LayoutText {#text} at (0,0) size 455x19
+          text run at (0,0) width 455: "Identical to the above except that width=\"100%\" was removed from TD"
       LayoutTable {TABLE} at (0,145) size 732x57
         LayoutTableSection {TBODY} at (0,0) size 732x57
           LayoutTableRow {TR} at (0,2) size 732x53

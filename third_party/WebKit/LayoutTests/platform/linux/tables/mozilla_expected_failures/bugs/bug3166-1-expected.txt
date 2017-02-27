@@ -10,5 +10,5 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (3,29) size 194x26
           LayoutTableRow {TR} at (0,2) size 194x22
             LayoutTableCell {TD} at (2,2) size 190x22 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 29x19
-                text run at (1,1) width 29: "table"
+              LayoutText {#text} at (1,1) size 30x19
+                text run at (1,1) width 30: "table"

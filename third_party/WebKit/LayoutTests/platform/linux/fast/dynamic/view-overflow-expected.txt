@@ -4,20 +4,20 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 50x19
-          text run at (0,0) width 50: "Test for "
-        LayoutInline {I} at (0,0) size 642x19
-          LayoutInline {A} at (0,0) size 306x19 [color=#0000EE]
-            LayoutText {#text} at (49,0) size 306x19
-              text run at (49,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=13145"
-          LayoutText {#text} at (354,0) size 337x19
-            text run at (354,0) width 5: " "
-            text run at (358,0) width 333: "Regression: Scrollbar not resizing after display none"
-        LayoutText {#text} at (690,0) size 5x19
-          text run at (690,0) width 5: "."
+        LayoutText {#text} at (0,0) size 52x19
+          text run at (0,0) width 52: "Test for "
+        LayoutInline {I} at (0,0) size 636x19
+          LayoutInline {A} at (0,0) size 302x19 [color=#0000EE]
+            LayoutText {#text} at (51,0) size 302x19
+              text run at (51,0) width 302: "http://bugs.webkit.org/show_bug.cgi?id=13145"
+          LayoutText {#text} at (352,0) size 335x19
+            text run at (352,0) width 5: " "
+            text run at (356,0) width 331: "Regression: Scrollbar not resizing after display none"
+        LayoutText {#text} at (686,0) size 5x19
+          text run at (686,0) width 5: "."
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 295x19
-          text run at (0,0) width 295: "The window should not have a vertical scroll bar."
+        LayoutText {#text} at (0,0) size 312x19
+          text run at (0,0) width 312: "The window should not have a vertical scroll bar."
 layer at (8,100) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (8,100) size 100x100
     LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#008000]

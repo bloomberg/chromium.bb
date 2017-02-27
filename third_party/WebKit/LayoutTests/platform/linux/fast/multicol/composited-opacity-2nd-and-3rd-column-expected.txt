@@ -4,14 +4,14 @@ layer at (0,0) size 800x288
   LayoutBlockFlow {HTML} at (0,0) size 800x288
     LayoutBlockFlow {BODY} at (8,16) size 784x264
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 203x19
-          text run at (0,0) width 203: "The word 'PASS' should be seen "
-        LayoutInline {EM} at (0,0) size 35x19
-          LayoutText {#text} at (202,0) size 35x19
-            text run at (202,0) width 35: "twice"
-        LayoutText {#text} at (236,0) size 773x39
-          text run at (236,0) width 537: " below. The second PASS is not overlapping the yellow because it is composited with the"
-          text run at (0,20) width 215: "first one, and hence not fragmented."
+        LayoutText {#text} at (0,0) size 211x19
+          text run at (0,0) width 211: "The word 'PASS' should be seen "
+        LayoutInline {EM} at (0,0) size 34x19
+          LayoutText {#text} at (210,0) size 34x19
+            text run at (210,0) width 34: "twice"
+        LayoutText {#text} at (243,0) size 784x39
+          text run at (243,0) width 541: " below. The second PASS is not overlapping the yellow because it is composited with"
+          text run at (0,20) width 249: "the first one, and hence not fragmented."
 layer at (8,72) size 272x208
   LayoutBlockFlow {DIV} at (0,56) size 272x208
     LayoutMultiColumnSet (anonymous) at (0,0) size 272x208
@@ -33,8 +33,8 @@ layer at (0,72) size 800x128
   LayoutBlockFlow (positioned) {DIV} at (0,72) size 800x128 [bgcolor=#FFFF00]
 layer at (16,448) size 64x72 transparent
   LayoutBlockFlow {DIV} at (8,376) size 64x72
-    LayoutText {#text} at (0,6) size 37x19
-      text run at (0,6) width 37: "PASS"
-    LayoutBR {BR} at (36,6) size 1x19
-    LayoutText {#text} at (0,46) size 37x19
-      text run at (0,46) width 37: "PASS"
+    LayoutText {#text} at (0,6) size 38x19
+      text run at (0,6) width 38: "PASS"
+    LayoutBR {BR} at (37,6) size 1x19
+    LayoutText {#text} at (0,46) size 38x19
+      text run at (0,46) width 38: "PASS"

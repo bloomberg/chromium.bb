@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DETAILS} at (0,0) size 784x40
         LayoutBlockFlow {SUMMARY} at (0,0) size 784x20
           LayoutDetailsMarker {DIV} at (0,4) size 10.55x10.55: down
-          LayoutText {#text} at (16,0) size 58x19
-            text run at (16,0) width 58: "Summary"
+          LayoutText {#text} at (16,0) size 62x19
+            text run at (16,0) width 62: "Summary"
         LayoutBlockFlow {DIV} at (0,20) size 784x20
           LayoutBlockFlow {SPAN} at (0,3) size 64x16
             LayoutText {#text} at (0,0) size 64x16

@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,38) size 784x20
-        LayoutText {#text} at (0,0) size 616x19
-          text run at (0,0) width 616: "Tests option-deleting a word. If the test succeeds, the word \"word\" should end up with a space after it."
+        LayoutText {#text} at (0,0) size 643x19
+          text run at (0,0) width 643: "Tests option-deleting a word. If the test succeeds, the word \"word\" should end up with a space after it."
 layer at (10,11) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
     LayoutText {#text} at (0,0) size 31x16

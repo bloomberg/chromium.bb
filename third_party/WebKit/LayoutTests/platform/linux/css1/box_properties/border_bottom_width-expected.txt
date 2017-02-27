@@ -4,8 +4,8 @@ layer at (0,0) size 785x919 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x919
     LayoutBlockFlow {BODY} at (8,8) size 769x903 [bgcolor=#CCCCCC]
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 337x19
-          text run at (0,0) width 337: "The style declarations which apply to the text below are:"
+        LayoutText {#text} at (0,0) size 355x19
+          text run at (0,0) width 355: "The style declarations which apply to the text below are:"
       LayoutBlockFlow {PRE} at (0,36) size 769x96
         LayoutText {#text} at (0,0) size 464x96
           text run at (0,0) width 456: ".zero {background-color: silver; border-bottom-width: 0;}"
@@ -22,82 +22,82 @@ layer at (0,0) size 785x919 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (272,80) width 0: " "
       LayoutBlockFlow {HR} at (0,145) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,163) size 769x20
-        LayoutText {#text} at (0,0) size 145x19
-          text run at (0,0) width 145: "(These will only work if "
+        LayoutText {#text} at (0,0) size 157x19
+          text run at (0,0) width 157: "(These will only work if "
         LayoutInline {CODE} at (0,0) size 96x16
-          LayoutText {#text} at (145,3) size 96x16
-            text run at (145,3) width 96: "border-style"
-        LayoutText {#text} at (241,0) size 87x19
-          text run at (241,0) width 87: " is supported.)"
+          LayoutText {#text} at (157,3) size 96x16
+            text run at (157,3) width 96: "border-style"
+        LayoutText {#text} at (253,0) size 89x19
+          text run at (253,0) width 89: " is supported.)"
       LayoutBlockFlow {P} at (0,199) size 769x20 [bgcolor=#C0C0C0]
-        LayoutText {#text} at (0,0) size 193x19
-          text run at (0,0) width 193: "This element has a class of zero."
+        LayoutText {#text} at (0,0) size 203x19
+          text run at (0,0) width 203: "This element has a class of zero."
       LayoutBlockFlow {P} at (0,235) size 769x73 [border: (3px solid #000000) (50px solid #000000) (3px solid #000000)]
-        LayoutText {#text} at (3,3) size 368x19
-          text run at (3,3) width 368: "This element should have a bottom border width of 50 pixels."
+        LayoutText {#text} at (3,3) size 387x19
+          text run at (3,3) width 387: "This element should have a bottom border width of 50 pixels."
       LayoutBlockFlow {P} at (0,324) size 769x28 [border: (3px solid #000000) (5px solid #000000) (3px solid #000000)]
-        LayoutText {#text} at (3,3) size 327x19
-          text run at (3,3) width 327: "This element should have a thick bottom border width."
+        LayoutText {#text} at (3,3) size 344x19
+          text run at (3,3) width 344: "This element should have a thick bottom border width."
       LayoutBlockFlow {P} at (0,368) size 769x26 [border: (3px solid #000000)]
-        LayoutText {#text} at (3,3) size 345x19
-          text run at (3,3) width 345: "This element should have a medium bottom border width."
+        LayoutText {#text} at (3,3) size 364x19
+          text run at (3,3) width 364: "This element should have a medium bottom border width."
       LayoutBlockFlow {P} at (0,410) size 769x24 [border: (3px solid #000000) (1px solid #000000) (3px solid #000000)]
-        LayoutText {#text} at (3,3) size 319x19
-          text run at (3,3) width 319: "This element should have a thin bottom border width."
+        LayoutText {#text} at (3,3) size 337x19
+          text run at (3,3) width 337: "This element should have a thin bottom border width."
       LayoutBlockFlow {P} at (0,450) size 769x20
-        LayoutText {#text} at (0,0) size 510x19
-          text run at (0,0) width 510: "This element should have no border and no extra \"padding\" on its bottom side, as no "
+        LayoutText {#text} at (0,0) size 537x19
+          text run at (0,0) width 537: "This element should have no border and no extra \"padding\" on its bottom side, as no "
         LayoutInline {CODE} at (0,0) size 96x16
-          LayoutText {#text} at (510,3) size 96x16
-            text run at (510,3) width 96: "border-style"
-        LayoutText {#text} at (606,0) size 53x19
-          text run at (606,0) width 53: " was set."
+          LayoutText {#text} at (537,3) size 96x16
+            text run at (537,3) width 96: "border-style"
+        LayoutText {#text} at (633,0) size 54x19
+          text run at (633,0) width 54: " was set."
       LayoutBlockFlow {P} at (0,486) size 769x20 [bgcolor=#C0C0C0]
-        LayoutText {#text} at (0,0) size 193x19
-          text run at (0,0) width 193: "This element has a class of zero."
-      LayoutTable {TABLE} at (0,522) size 681x381 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 679x379
-          LayoutTableRow {TR} at (0,0) size 679x28
-            LayoutTableCell {TD} at (0,0) size 679x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 157x19
-                LayoutText {#text} at (4,4) size 157x19
-                  text run at (4,4) width 157: "TABLE Testing Section"
-          LayoutTableRow {TR} at (0,28) size 679x351
+        LayoutText {#text} at (0,0) size 203x19
+          text run at (0,0) width 203: "This element has a class of zero."
+      LayoutTable {TABLE} at (0,522) size 709x381 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 707x379
+          LayoutTableRow {TR} at (0,0) size 707x28
+            LayoutTableCell {TD} at (0,0) size 707x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
+          LayoutTableRow {TR} at (0,28) size 707x351
             LayoutTableCell {TD} at (0,189) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
                 text run at (4,4) width 4: " "
-            LayoutTableCell {TD} at (12,28) size 667x351 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutBlockFlow {P} at (4,4) size 659x20
-                LayoutText {#text} at (0,0) size 145x19
-                  text run at (0,0) width 145: "(These will only work if "
+            LayoutTableCell {TD} at (12,28) size 695x351 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow {P} at (4,4) size 687x20
+                LayoutText {#text} at (0,0) size 157x19
+                  text run at (0,0) width 157: "(These will only work if "
                 LayoutInline {CODE} at (0,0) size 96x16
-                  LayoutText {#text} at (145,3) size 96x16
-                    text run at (145,3) width 96: "border-style"
-                LayoutText {#text} at (241,0) size 87x19
-                  text run at (241,0) width 87: " is supported.)"
-              LayoutBlockFlow {P} at (4,40) size 659x20 [bgcolor=#C0C0C0]
-                LayoutText {#text} at (0,0) size 193x19
-                  text run at (0,0) width 193: "This element has a class of zero."
-              LayoutBlockFlow {P} at (4,76) size 659x73 [border: (3px solid #000000) (50px solid #000000) (3px solid #000000)]
-                LayoutText {#text} at (3,3) size 368x19
-                  text run at (3,3) width 368: "This element should have a bottom border width of 50 pixels."
-              LayoutBlockFlow {P} at (4,165) size 659x28 [border: (3px solid #000000) (5px solid #000000) (3px solid #000000)]
-                LayoutText {#text} at (3,3) size 327x19
-                  text run at (3,3) width 327: "This element should have a thick bottom border width."
-              LayoutBlockFlow {P} at (4,209) size 659x26 [border: (3px solid #000000)]
-                LayoutText {#text} at (3,3) size 345x19
-                  text run at (3,3) width 345: "This element should have a medium bottom border width."
-              LayoutBlockFlow {P} at (4,251) size 659x24 [border: (3px solid #000000) (1px solid #000000) (3px solid #000000)]
-                LayoutText {#text} at (3,3) size 319x19
-                  text run at (3,3) width 319: "This element should have a thin bottom border width."
-              LayoutBlockFlow {P} at (4,291) size 659x20
-                LayoutText {#text} at (0,0) size 510x19
-                  text run at (0,0) width 510: "This element should have no border and no extra \"padding\" on its bottom side, as no "
+                  LayoutText {#text} at (157,3) size 96x16
+                    text run at (157,3) width 96: "border-style"
+                LayoutText {#text} at (253,0) size 89x19
+                  text run at (253,0) width 89: " is supported.)"
+              LayoutBlockFlow {P} at (4,40) size 687x20 [bgcolor=#C0C0C0]
+                LayoutText {#text} at (0,0) size 203x19
+                  text run at (0,0) width 203: "This element has a class of zero."
+              LayoutBlockFlow {P} at (4,76) size 687x73 [border: (3px solid #000000) (50px solid #000000) (3px solid #000000)]
+                LayoutText {#text} at (3,3) size 387x19
+                  text run at (3,3) width 387: "This element should have a bottom border width of 50 pixels."
+              LayoutBlockFlow {P} at (4,165) size 687x28 [border: (3px solid #000000) (5px solid #000000) (3px solid #000000)]
+                LayoutText {#text} at (3,3) size 344x19
+                  text run at (3,3) width 344: "This element should have a thick bottom border width."
+              LayoutBlockFlow {P} at (4,209) size 687x26 [border: (3px solid #000000)]
+                LayoutText {#text} at (3,3) size 364x19
+                  text run at (3,3) width 364: "This element should have a medium bottom border width."
+              LayoutBlockFlow {P} at (4,251) size 687x24 [border: (3px solid #000000) (1px solid #000000) (3px solid #000000)]
+                LayoutText {#text} at (3,3) size 337x19
+                  text run at (3,3) width 337: "This element should have a thin bottom border width."
+              LayoutBlockFlow {P} at (4,291) size 687x20
+                LayoutText {#text} at (0,0) size 537x19
+                  text run at (0,0) width 537: "This element should have no border and no extra \"padding\" on its bottom side, as no "
                 LayoutInline {CODE} at (0,0) size 96x16
-                  LayoutText {#text} at (510,3) size 96x16
-                    text run at (510,3) width 96: "border-style"
-                LayoutText {#text} at (606,0) size 53x19
-                  text run at (606,0) width 53: " was set."
-              LayoutBlockFlow {P} at (4,327) size 659x20 [bgcolor=#C0C0C0]
-                LayoutText {#text} at (0,0) size 193x19
-                  text run at (0,0) width 193: "This element has a class of zero."
+                  LayoutText {#text} at (537,3) size 96x16
+                    text run at (537,3) width 96: "border-style"
+                LayoutText {#text} at (633,0) size 54x19
+                  text run at (633,0) width 54: " was set."
+              LayoutBlockFlow {P} at (4,327) size 687x20 [bgcolor=#C0C0C0]
+                LayoutText {#text} at (0,0) size 203x19
+                  text run at (0,0) width 203: "This element has a class of zero."

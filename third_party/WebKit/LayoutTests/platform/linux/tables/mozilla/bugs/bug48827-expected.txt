@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 137x19
-          text run at (0,0) width 137: "A 101 pixel wide table"
+        LayoutText {#text} at (0,0) size 144x19
+          text run at (0,0) width 144: "A 101 pixel wide table"
       LayoutTable {TABLE} at (0,36) size 101x43
         LayoutTableSection {TBODY} at (0,0) size 101x43
           LayoutTableRow {TR} at (0,1) size 101x20
@@ -29,8 +29,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 4x19
                 text run at (0,0) width 4: " "
       LayoutBlockFlow {P} at (0,95) size 784x20
-        LayoutText {#text} at (0,0) size 137x19
-          text run at (0,0) width 137: "A 102 pixel wide table"
+        LayoutText {#text} at (0,0) size 144x19
+          text run at (0,0) width 144: "A 102 pixel wide table"
       LayoutTable {TABLE} at (0,131) size 102x43
         LayoutTableSection {TBODY} at (0,0) size 102x43
           LayoutTableRow {TR} at (0,1) size 102x20
@@ -54,8 +54,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 4x19
                 text run at (0,0) width 4: " "
       LayoutBlockFlow {P} at (0,190) size 784x20
-        LayoutText {#text} at (0,0) size 137x19
-          text run at (0,0) width 137: "A 103 pixel wide table"
+        LayoutText {#text} at (0,0) size 144x19
+          text run at (0,0) width 144: "A 103 pixel wide table"
       LayoutTable {TABLE} at (0,226) size 103x43
         LayoutTableSection {TBODY} at (0,0) size 103x43
           LayoutTableRow {TR} at (0,1) size 103x20
@@ -79,8 +79,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 4x19
                 text run at (0,0) width 4: " "
       LayoutBlockFlow {P} at (0,285) size 784x20
-        LayoutText {#text} at (0,0) size 137x19
-          text run at (0,0) width 137: "A 104 pixel wide table"
+        LayoutText {#text} at (0,0) size 144x19
+          text run at (0,0) width 144: "A 104 pixel wide table"
       LayoutTable {TABLE} at (0,321) size 104x43
         LayoutTableSection {TBODY} at (0,0) size 104x43
           LayoutTableRow {TR} at (0,1) size 104x20

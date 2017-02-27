@@ -5,9 +5,9 @@ layer at (0,0) size 800x578
     LayoutBlockFlow {BODY} at (8,8) size 784x554 [bgcolor=#999999]
       LayoutTable {TABLE} at (0,0) size 152x70 [border: (1px outset #808080)]
         LayoutBlockFlow {CAPTION} at (0,0) size 152x40
-          LayoutText {#text} at (17,0) size 118x39
-            text run at (17,0) width 118: "Table with no width"
-            text run at (51,20) width 50: "attribute"
+          LayoutText {#text} at (12,0) size 128x39
+            text run at (12,0) width 128: "Table with no width"
+            text run at (50,20) width 52: "attribute"
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -16,14 +16,14 @@ layer at (0,0) size 800x578
         LayoutTableSection {TBODY} at (1,41) size 150x28
           LayoutTableRow {TR} at (0,2) size 150x24
             LayoutTableCell {TD} at (2,2) size 50x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 31x19
-                text run at (2,2) width 31: "50px"
+              LayoutText {#text} at (2,2) size 32x19
+                text run at (2,2) width 32: "50px"
             LayoutTableCell {TD} at (54,2) size 20x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "1*"
             LayoutTableCell {TD} at (76,2) size 50x24 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 31x19
-                text run at (2,2) width 31: "50px"
+              LayoutText {#text} at (2,2) size 32x19
+                text run at (2,2) width 32: "50px"
             LayoutTableCell {TD} at (128,2) size 20x24 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "3*"
@@ -32,8 +32,8 @@ layer at (0,0) size 800x578
           text run at (0,0) width 43: "correct"
       LayoutTable {TABLE} at (0,122) size 500x50 [border: (1px outset #808080)]
         LayoutBlockFlow {CAPTION} at (0,0) size 500x20
-          LayoutText {#text} at (131,0) size 238x19
-            text run at (131,0) width 238: "Table with fixed width attribute =500px"
+          LayoutText {#text} at (124,0) size 252x19
+            text run at (124,0) width 252: "Table with fixed width attribute =500px"
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -42,29 +42,29 @@ layer at (0,0) size 800x578
         LayoutTableSection {TBODY} at (1,21) size 498x28
           LayoutTableRow {TR} at (0,2) size 498x24
             LayoutTableCell {TD} at (2,2) size 50x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 31x19
-                text run at (2,2) width 31: "50px"
+              LayoutText {#text} at (2,2) size 32x19
+                text run at (2,2) width 32: "50px"
             LayoutTableCell {TD} at (54,2) size 194x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "1*"
             LayoutTableCell {TD} at (250,2) size 50x24 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 31x19
-                text run at (2,2) width 31: "50px"
+              LayoutText {#text} at (2,2) size 32x19
+                text run at (2,2) width 32: "50px"
             LayoutTableCell {TD} at (302,2) size 194x24 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "3*"
       LayoutBlockFlow {P} at (0,188) size 784x60
-        LayoutText {#text} at (0,0) size 777x59
-          text run at (0,0) width 484: "incorrect: it seems that the * columns start with the same width than the previous "
-          text run at (484,0) width 293: "example, and then all the columnss are expanded"
-          text run at (0,20) width 251: "proportionally to occupy the extra space. "
-          text run at (251,20) width 498: "The * columns should use all the space unused by other columns, so no expand are"
-          text run at (0,40) width 48: "needed "
-          text run at (48,40) width 109: "for other columns."
+        LayoutText {#text} at (0,0) size 775x59
+          text run at (0,0) width 509: "incorrect: it seems that the * columns start with the same width than the previous "
+          text run at (509,0) width 243: "example, and then all the columnss are"
+          text run at (0,20) width 325: "expanded proportionally to occupy the extra space. "
+          text run at (325,20) width 450: "The * columns should use all the space unused by other columns, so no"
+          text run at (0,40) width 122: "expand are needed "
+          text run at (122,40) width 115: "for other columns."
       LayoutTable {TABLE} at (0,264) size 784x50 [border: (1px outset #808080)]
         LayoutBlockFlow {CAPTION} at (0,0) size 784x20
-          LayoutText {#text} at (291,0) size 202x19
-            text run at (291,0) width 202: "Table with width attribute =100%"
+          LayoutText {#text} at (286,0) size 212x19
+            text run at (286,0) width 212: "Table with width attribute =100%"
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -73,24 +73,24 @@ layer at (0,0) size 800x578
         LayoutTableSection {TBODY} at (1,21) size 782x28
           LayoutTableRow {TR} at (0,2) size 782x24
             LayoutTableCell {TD} at (2,2) size 50x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 31x19
-                text run at (2,2) width 31: "50px"
+              LayoutText {#text} at (2,2) size 32x19
+                text run at (2,2) width 32: "50px"
             LayoutTableCell {TD} at (54,2) size 336x24 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "1*"
             LayoutTableCell {TD} at (392,2) size 50x24 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 31x19
-                text run at (2,2) width 31: "50px"
+              LayoutText {#text} at (2,2) size 32x19
+                text run at (2,2) width 32: "50px"
             LayoutTableCell {TD} at (444,2) size 336x24 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "3*"
       LayoutBlockFlow {P} at (0,330) size 784x20
-        LayoutText {#text} at (0,0) size 153x19
-          text run at (0,0) width 153: "incorrect: same as above."
+        LayoutText {#text} at (0,0) size 158x19
+          text run at (0,0) width 158: "incorrect: same as above."
       LayoutTable {TABLE} at (0,366) size 500x50 [border: (1px outset #808080)]
         LayoutBlockFlow {CAPTION} at (0,0) size 500x20
-          LayoutText {#text} at (148,0) size 204x19
-            text run at (148,0) width 204: "Table with width attribute =500px"
+          LayoutText {#text} at (142,0) size 216x19
+            text run at (142,0) width 216: "Table with width attribute =500px"
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -115,8 +115,8 @@ layer at (0,0) size 800x578
           text run at (0,0) width 43: "correct"
       LayoutTable {TABLE} at (0,468) size 784x50 [border: (1px outset #808080)]
         LayoutBlockFlow {CAPTION} at (0,0) size 784x20
-          LayoutText {#text} at (291,0) size 202x19
-            text run at (291,0) width 202: "Table with width attribute =100%"
+          LayoutText {#text} at (286,0) size 212x19
+            text run at (286,0) width 212: "Table with width attribute =100%"
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0

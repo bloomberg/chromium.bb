@@ -4,8 +4,8 @@ layer at (0,0) size 800x309
   LayoutBlockFlow {HTML} at (0,0) size 800x309
     LayoutBlockFlow {BODY} at (8,16) size 784x285
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 293x19
-          text run at (0,0) width 293: "You should see a green triangle and its reflection."
+        LayoutText {#text} at (0,0) size 310x19
+          text run at (0,0) width 310: "You should see a green triangle and its reflection."
       LayoutBlockFlow (anonymous) at (0,36) size 784x249
         LayoutText {#text} at (0,0) size 0x0
 layer at (28,72) size 244x204

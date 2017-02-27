@@ -4,5 +4,5 @@ layer at (0,0) size 800x68
   LayoutBlockFlow {HTML} at (0,0) size 800x68
     LayoutBlockFlow {BODY} at (8,24) size 784x20
       LayoutBlockFlow {P} at (0,0) size 794x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 270x19
-          text run at (0,0) width 270: "This page should have a horizontal scroll bar."
+        LayoutText {#text} at (0,0) size 286x19
+          text run at (0,0) width 286: "This page should have a horizontal scroll bar."

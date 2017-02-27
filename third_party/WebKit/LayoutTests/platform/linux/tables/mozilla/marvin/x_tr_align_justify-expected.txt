@@ -8,17 +8,17 @@ layer at (0,0) size 800x106
           LayoutTableRow {tr} at (0,2) size 598x84
             LayoutTableCell {td} at (2,2) size 296x84 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 292x79
-                text run at (2,2) width 292: "Cell text should be justified which means that the"
-                text run at (2,22) width 60: "right and "
-                text run at (62,22) width 232: "left margins should line up, no matter"
-                text run at (2,42) width 197: "how long the content becomes "
-                text run at (199,42) width 95: "(except the last"
-                text run at (2,62) width 198: "line which should be left aligned)."
+                text run at (2,2) width 292: "Cell text should be justified which means that"
+                text run at (2,22) width 89: "the right and "
+                text run at (91,22) width 203: "left margins should line up, no"
+                text run at (2,42) width 246: "matter how long the content becomes "
+                text run at (248,42) width 46: "(except"
+                text run at (2,62) width 262: "the last line which should be left aligned)."
             LayoutTableCell {td} at (300,2) size 296x84 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 292x79
-                text run at (2,2) width 292: "Cell text should be justified which means that the"
-                text run at (2,22) width 60: "right and "
-                text run at (62,22) width 232: "left margins should line up, no matter"
-                text run at (2,42) width 197: "how long the content becomes "
-                text run at (199,42) width 95: "(except the last"
-                text run at (2,62) width 198: "line which should be left aligned)."
+                text run at (2,2) width 292: "Cell text should be justified which means that"
+                text run at (2,22) width 89: "the right and "
+                text run at (91,22) width 203: "left margins should line up, no"
+                text run at (2,42) width 246: "matter how long the content becomes "
+                text run at (248,42) width 46: "(except"
+                text run at (2,62) width 262: "the last line which should be left aligned)."

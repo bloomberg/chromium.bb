@@ -6,8 +6,8 @@ layer at (0,0) size 785x1294 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {DIV} at (0,0) size 769x614
         LayoutBlockFlow {DIV} at (0,0) size 769x128
           LayoutBlockFlow {P} at (0,0) size 769x20
-            LayoutText {#text} at (0,0) size 27x19
-              text run at (0,0) width 27: "LTR"
+            LayoutText {#text} at (0,0) size 30x19
+              text run at (0,0) width 30: "LTR"
           LayoutBlockFlow (anonymous) at (0,36) size 769x20
             LayoutInline {SPAN} at (0,0) size 43x23 [bgcolor=#008000] [border: (2px solid #FF0000)]
               LayoutText {#text} at (22,0) size 21x19
@@ -24,8 +24,8 @@ layer at (0,0) size 785x1294 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {HR} at (0,144) size 769x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {DIV} at (0,162) size 769x128
           LayoutBlockFlow {P} at (0,0) size 769x20
-            LayoutText {#text} at (0,0) size 140x19
-              text run at (0,0) width 140: "LTR, empty inline after."
+            LayoutText {#text} at (0,0) size 151x19
+              text run at (0,0) width 151: "LTR, empty inline after."
           LayoutBlockFlow (anonymous) at (0,36) size 769x20
             LayoutInline {SPAN} at (0,0) size 43x23 [bgcolor=#008000] [border: (2px solid #FF0000)]
               LayoutText {#text} at (22,0) size 21x19
@@ -40,8 +40,8 @@ layer at (0,0) size 785x1294 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {HR} at (0,306) size 769x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {DIV} at (0,324) size 769x128
           LayoutBlockFlow {P} at (0,0) size 769x20
-            LayoutText {#text} at (0,0) size 153x19
-              text run at (0,0) width 153: "LTR, empty inline before."
+            LayoutText {#text} at (0,0) size 164x19
+              text run at (0,0) width 164: "LTR, empty inline before."
           LayoutBlockFlow (anonymous) at (0,36) size 769x20
             LayoutInline {SPAN} at (0,0) size 22x23 [bgcolor=#008000] [border: (2px solid #FF0000)]
           LayoutBlockFlow (anonymous) at (0,72) size 769x20
@@ -56,8 +56,8 @@ layer at (0,0) size 785x1294 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {HR} at (0,468) size 769x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {DIV} at (0,486) size 769x128
           LayoutBlockFlow {P} at (0,0) size 769x20
-            LayoutText {#text} at (0,0) size 209x19
-              text run at (0,0) width 209: "LTR, empty inline before and after."
+            LayoutText {#text} at (0,0) size 222x19
+              text run at (0,0) width 222: "LTR, empty inline before and after."
           LayoutBlockFlow (anonymous) at (0,36) size 769x20
             LayoutInline {SPAN} at (0,0) size 22x23 [bgcolor=#008000] [border: (2px solid #FF0000)]
           LayoutBlockFlow (anonymous) at (0,72) size 769x20
@@ -71,8 +71,8 @@ layer at (0,0) size 785x1294 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {DIV} at (0,648) size 769x614
         LayoutBlockFlow {DIV} at (0,0) size 769x128
           LayoutBlockFlow {P} at (0,0) size 769x20
-            LayoutText {#text} at (741,0) size 28x19
-              text run at (741,0) width 28: "RTL"
+            LayoutText {#text} at (738,0) size 31x19
+              text run at (738,0) width 31: "RTL"
           LayoutBlockFlow (anonymous) at (0,36) size 769x20
             LayoutInline {SPAN} at (0,0) size 43x23 [bgcolor=#008000] [border: (2px solid #FF0000)]
               LayoutText {#text} at (726,0) size 21x19
@@ -89,9 +89,9 @@ layer at (0,0) size 785x1294 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {HR} at (0,144) size 769x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {DIV} at (0,162) size 769x128
           LayoutBlockFlow {P} at (0,0) size 769x20
-            LayoutText {#text} at (627,0) size 142x19
-              text run at (627,0) width 5 RTL: "."
-              text run at (631,0) width 138: "RTL, empty inline after"
+            LayoutText {#text} at (616,0) size 153x19
+              text run at (616,0) width 5 RTL: "."
+              text run at (620,0) width 149: "RTL, empty inline after"
           LayoutBlockFlow (anonymous) at (0,36) size 769x20
             LayoutInline {SPAN} at (0,0) size 43x23 [bgcolor=#008000] [border: (2px solid #FF0000)]
               LayoutText {#text} at (726,0) size 21x19
@@ -106,9 +106,9 @@ layer at (0,0) size 785x1294 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {HR} at (0,306) size 769x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {DIV} at (0,324) size 769x128
           LayoutBlockFlow {P} at (0,0) size 769x20
-            LayoutText {#text} at (615,0) size 154x19
-              text run at (615,0) width 5 RTL: "."
-              text run at (619,0) width 150: "RTL, empty inline before"
+            LayoutText {#text} at (604,0) size 165x19
+              text run at (604,0) width 5 RTL: "."
+              text run at (608,0) width 161: "RTL, empty inline before"
           LayoutBlockFlow (anonymous) at (0,36) size 769x20
             LayoutInline {SPAN} at (0,0) size 22x23 [bgcolor=#008000] [border: (2px solid #FF0000)]
           LayoutBlockFlow (anonymous) at (0,72) size 769x20
@@ -123,9 +123,9 @@ layer at (0,0) size 785x1294 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {HR} at (0,468) size 769x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {DIV} at (0,486) size 769x128
           LayoutBlockFlow {P} at (0,0) size 769x20
-            LayoutText {#text} at (558,0) size 211x19
-              text run at (558,0) width 5 RTL: "."
-              text run at (562,0) width 207: "RTL, empty inline before and after"
+            LayoutText {#text} at (545,0) size 224x19
+              text run at (545,0) width 5 RTL: "."
+              text run at (549,0) width 220: "RTL, empty inline before and after"
           LayoutBlockFlow (anonymous) at (0,36) size 769x20
             LayoutInline {SPAN} at (0,0) size 22x23 [bgcolor=#008000] [border: (2px solid #FF0000)]
           LayoutBlockFlow (anonymous) at (0,72) size 769x20

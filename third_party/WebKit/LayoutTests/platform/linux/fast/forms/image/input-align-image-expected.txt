@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 547x19
-          text run at (0,0) width 547: "The following 4 images should be all be rendered exactly the same, aligned to the right side."
+        LayoutText {#text} at (0,0) size 579x19
+          text run at (0,0) width 579: "The following 4 images should be all be rendered exactly the same, aligned to the right side."
       LayoutBlockFlow (anonymous) at (0,36) size 784x120
         LayoutImage (floating) {INPUT} at (767,0) size 17x19
         LayoutBR {BR} at (0,0) size 0x19

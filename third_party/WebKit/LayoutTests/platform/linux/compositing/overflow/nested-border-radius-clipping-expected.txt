@@ -4,9 +4,9 @@ layer at (0,0) size 800x456
   LayoutBlockFlow {HTML} at (0,0) size 800x456
     LayoutBlockFlow {BODY} at (8,8) size 784x440
       LayoutBlockFlow (anonymous) at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 780x39
-          text run at (0,0) width 780: "This tests that border-radius is applied with composited scrolling. If the top-left corner is rounded and nothing paints outside of the"
-          text run at (0,20) width 221: "rounded-corner clip, this test passes."
+        LayoutText {#text} at (0,0) size 777x39
+          text run at (0,0) width 777: "This tests that border-radius is applied with composited scrolling. If the top-left corner is rounded and nothing paints outside"
+          text run at (0,20) width 267: "of the rounded-corner clip, this test passes."
 layer at (8,48) size 400x400 clip at (8,48) size 385x385 scrollWidth 500 scrollHeight 700
   LayoutBlockFlow {DIV} at (0,40) size 400x400 [bgcolor=#0000FF]
     LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#008000]

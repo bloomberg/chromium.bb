@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 415x19
-          text run at (0,0) width 211: "There should be only green below. "
-          text run at (210,0) width 205: "If you see RED the test has failed."
+        LayoutText {#text} at (0,0) size 438x19
+          text run at (0,0) width 223: "There should be only green below. "
+          text run at (222,0) width 216: "If you see RED the test has failed."
       LayoutBlockFlow {DIV} at (0,20) size 784x16 [bgcolor=#008000]
       LayoutBlockFlow {DIV} at (0,36) size 784x16 [bgcolor=#008000]
       LayoutBlockFlow {DIV} at (0,52) size 784x16 [bgcolor=#008000]

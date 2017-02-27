@@ -4,8 +4,8 @@ layer at (0,0) size 785x1169 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1168.88
     LayoutBlockFlow {BODY} at (8,21.44) size 769x1131.44
       LayoutBlockFlow {H1} at (0,0) size 769x37
-        LayoutText {#text} at (0,0) size 235x36
-          text run at (0,0) width 235: "Unicode Symbols"
+        LayoutText {#text} at (0,0) size 236x36
+          text run at (0,0) width 236: "Unicode Symbols"
       LayoutBlockFlow {PRE} at (0,58.44) size 769x1017
         LayoutText {#text} at (0,0) size 304x112
           text run at (0,0) width 0: " "
@@ -26,8 +26,8 @@ layer at (0,0) size 785x1169 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,128) width 241: "U+200x \x{2000} \x{2001} \x{2002} \x{2003} \x{2004} \x{2004} \x{2004} \x{2004} \x{2004} \x{2009} \x{200A} \x{200B} \x{200C} \x{200D} \x{200E} "
           text run at (240,128) width 1 RTL: "\x{200F}"
           text run at (240,128) width 1: " "
-          text run at (0,149) width 295: "U+201x \x{2010} \x{2011} \x{2012} \x{2013} \x{2014} \x{2015} \x{2016} \x{2017} \x{2018} \x{2019} \x{201A} \x{201B} \x{201C} \x{201D} \x{201E} \x{201F}"
-          text run at (295,149) width 0: " "
+          text run at (0,149) width 294: "U+201x \x{2010} \x{2011} \x{2012} \x{2013} \x{2014} \x{2015} \x{2016} \x{2017} \x{2018} \x{2019} \x{201A} \x{201B} \x{201C} \x{201D} \x{201E} \x{201F}"
+          text run at (294,149) width 0: " "
           text run at (0,169) width 193: "U+202x \x{2020} \x{2021} \x{2022} \x{2023} \x{2024} \x{2025} \x{2026} \x{2027} \x{2028} \x{2029} "
           text run at (193,169) width 8: "\x{202A} "
           text run at (201,169) width 8 RTL: "\x{202B} "
@@ -65,8 +65,8 @@ layer at (0,0) size 785x1169 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (362,393) width 0: " "
           text run at (0,409) width 351: "U+269x \x{2690} \x{2691} \x{2692} \x{2693} \x{2694} \x{2695} \x{2696} \x{2697} \x{2698} \x{2699} \x{269A} \x{269B} \x{269C} \x{269D} \x{269E} \x{269F}"
           text run at (351,409) width 0: " "
-          text run at (0,425) width 358: "U+26Ax \x{26A0} \x{26A1} \x{26A2} \x{26A3} \x{26A4} \x{26A5} \x{26A6} \x{26A7} \x{26A8} \x{26A9} \x{26AA} \x{26AB} \x{26AC} \x{26AD} \x{26AE} \x{26AF}"
-          text run at (358,425) width 0: " "
+          text run at (0,425) width 361: "U+26Ax \x{26A0} \x{26A1} \x{26A2} \x{26A3} \x{26A4} \x{26A5} \x{26A6} \x{26A7} \x{26A8} \x{26A9} \x{26AA} \x{26AB} \x{26AC} \x{26AD} \x{26AE} \x{26AF}"
+          text run at (361,425) width 0: " "
           text run at (0,441) width 325: "U+26Bx \x{26B0} \x{26B1} \x{26B2} \x{26B3} \x{26B4} \x{26B5} \x{26B6} \x{26B7} \x{26B8} \x{26B9} \x{26BA} \x{26BB} \x{26BC} \x{26BD} \x{26BE} \x{26BF}"
           text run at (325,441) width 0: " "
           text run at (0,457) width 316: "U+26Cx \x{26C0} \x{26C1} \x{26C2} \x{26C3} \x{26C4} \x{26C5} \x{26C6} \x{26C7} \x{26C8} \x{26C9} \x{26CA} \x{26CB} \x{26CC} \x{26CD} \x{26CE} \x{26CF}"
@@ -139,6 +139,6 @@ layer at (0,0) size 785x1169 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (310,985) width 0: " "
           text run at (0,1001) width 64: "        "
       LayoutBlockFlow {P} at (0,1091.44) size 769x40
-        LayoutText {#text} at (0,0) size 728x39
-          text run at (0,0) width 728: "A series of unicode symbols (Runic, General Punctuation, Miscellaneous Symbols, and Mathematical Symbols) should be"
-          text run at (0,20) width 84: "shown above."
+        LayoutText {#text} at (0,0) size 768x39
+          text run at (0,0) width 768: "A series of unicode symbols (Runic, General Punctuation, Miscellaneous Symbols, and Mathematical Symbols) should be"
+          text run at (0,20) width 88: "shown above."

@@ -4,8 +4,8 @@ layer at (0,0) size 800x241
   LayoutBlockFlow {HTML} at (0,0) size 800x241
     LayoutBlockFlow {BODY} at (8,16) size 784x217
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 274x19
-          text run at (0,0) width 274: "The three diagrams below should be identical:"
+        LayoutText {#text} at (0,0) size 290x19
+          text run at (0,0) width 290: "The three diagrams below should be identical:"
       LayoutBlockFlow {P} at (0,36) size 160x48 [color=#FFA500] [bgcolor=#FFFF00]
         LayoutText {#text} at (0,0) size 112x16
           text run at (0,0) width 112: "xxx xxx"

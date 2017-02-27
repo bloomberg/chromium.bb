@@ -4,30 +4,30 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 753x19
-          text run at (0,0) width 753: "Test appearances of spin buttons. Disabled state and read-only state should have appearances different from the normal state."
+        LayoutText {#text} at (0,0) size 782x19
+          text run at (0,0) width 782: "Test appearances of spin buttons. Disabled state and read-only state should have appearances different from the normal state."
       LayoutBlockFlow {DIV} at (0,36) size 784x30
-        LayoutInline {LABEL} at (0,0) size 311x19
+        LayoutInline {LABEL} at (0,0) size 313x19
           LayoutTextControl {INPUT} at (0,0) size 229x30 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutFlexibleBox {DIV} at (2,3) size 225x24
               LayoutBlockFlow {DIV} at (0,0) size 210x24
               LayoutBlockFlow {DIV} at (210,0) size 15x24
-          LayoutText {#text} at (229,7) size 82x19
-            text run at (229,7) width 82: " Normal state"
+          LayoutText {#text} at (229,7) size 84x19
+            text run at (229,7) width 84: " Normal state"
       LayoutBlockFlow {DIV} at (0,66) size 784x30
-        LayoutInline {LABEL} at (0,0) size 318x19
+        LayoutInline {LABEL} at (0,0) size 321x19
           LayoutTextControl {INPUT} at (0,0) size 229x30 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
             LayoutFlexibleBox {DIV} at (2,3) size 225x24
               LayoutBlockFlow {DIV} at (0,0) size 210x24
-          LayoutText {#text} at (229,7) size 89x19
-            text run at (229,7) width 89: " Disabled state"
+          LayoutText {#text} at (229,7) size 92x19
+            text run at (229,7) width 92: " Disabled state"
       LayoutBlockFlow {DIV} at (0,96) size 784x30
-        LayoutInline {LABEL} at (0,0) size 328x19
+        LayoutInline {LABEL} at (0,0) size 331x19
           LayoutTextControl {INPUT} at (0,0) size 229x30 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             LayoutFlexibleBox {DIV} at (2,3) size 225x24
               LayoutBlockFlow {DIV} at (0,0) size 210x24
-          LayoutText {#text} at (229,7) size 99x19
-            text run at (229,7) width 99: " Read-only state"
+          LayoutText {#text} at (229,7) size 102x19
+            text run at (229,7) width 102: " Read-only state"
 layer at (10,47) size 210x24
   LayoutBlockFlow {DIV} at (0,0) size 210x24
     LayoutText {#text} at (0,0) size 11x23

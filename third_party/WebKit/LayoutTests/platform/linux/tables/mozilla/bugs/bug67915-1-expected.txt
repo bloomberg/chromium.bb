@@ -26,8 +26,8 @@ layer at (0,0) size 785x3136 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (37,131) width 222: "test test test test test test test test test"
           LayoutTableRow {TR} at (0,166) size 767x162
             LayoutTableCell {TD} at (2,226) size 36x42 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (13,11) size 10x19
-                text run at (13,11) width 10: "B"
+              LayoutText {#text} at (12,11) size 12x19
+                text run at (12,11) width 12: "B"
             LayoutTableCell {TD} at (40,215) size 427x64 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutImage {IMG} at (198.50,11) size 30x42
             LayoutTableCell {TD} at (469,166) size 296x162 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
@@ -349,8 +349,8 @@ layer at (0,0) size 785x3136 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (37,131) width 222: "test test test test test test test test test"
           LayoutTableRow {TR} at (0,2954) size 767x162
             LayoutTableCell {TD} at (2,3014) size 36x42 [border: (1px inset #808080)] [r=18 c=0 rs=1 cs=1]
-              LayoutText {#text} at (13,11) size 10x19
-                text run at (13,11) width 10: "R"
+              LayoutText {#text} at (12,11) size 12x19
+                text run at (12,11) width 12: "R"
             LayoutTableCell {TD} at (40,2959) size 427x152 [border: (1px inset #808080)] [r=18 c=1 rs=1 cs=1]
               LayoutImage {IMG} at (41.50,11) size 344x130
             LayoutTableCell {TD} at (469,2954) size 296x162 [border: (1px inset #808080)] [r=18 c=2 rs=1 cs=1]

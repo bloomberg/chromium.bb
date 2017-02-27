@@ -188,27 +188,27 @@
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [15, 291, 150, 25],
+          "rect": [15, 291, 151, 25],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [7, 33, 150, 25],
+          "rect": [7, 33, 151, 25],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [7, 33, 150, 25],
+          "rect": [7, 33, 151, 25],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [7, 33, 150, 25],
+          "rect": [7, 33, 151, 25],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [7, 33, 150, 25],
+          "rect": [7, 33, 151, 25],
           "reason": "layoutObject removal"
         },
         {
@@ -218,27 +218,27 @@
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRectTriangle__0'",
-          "rect": [506, 233, 66, 18],
+          "rect": [506, 233, 67, 18],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRound__0'",
-          "rect": [389, 38, 66, 18],
+          "rect": [389, 38, 67, 18],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRectRound__0'",
-          "rect": [362, 279, 64, 63],
+          "rect": [362, 279, 65, 65],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRectTriangle__1'",
-          "rect": [569, 233, 64, 18],
+          "rect": [570, 233, 63, 18],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRound__1'",
-          "rect": [452, 38, 63, 18],
+          "rect": [453, 38, 63, 18],
           "reason": "layoutObject insertion"
         },
         {
@@ -248,52 +248,52 @@
         },
         {
           "object": "LayoutSVGPath path id='tabgroupTriangle__2'",
-          "rect": [125, 256, 55, 31],
+          "rect": [125, 256, 57, 31],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRectTriangle__3'",
-          "rect": [674, 233, 50, 18],
+          "rect": [675, 233, 51, 18],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRound__3'",
-          "rect": [557, 38, 50, 18],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath path id='tabgroupRectTriangle__2'",
-          "rect": [630, 233, 47, 18],
+          "rect": [558, 38, 50, 18],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRound__2'",
-          "rect": [513, 38, 47, 18],
+          "rect": [513, 38, 48, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectTriangle__2'",
+          "rect": [631, 233, 47, 18],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupTriangle__3'",
-          "rect": [177, 256, 42, 31],
+          "rect": [179, 256, 42, 31],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRect__0'",
-          "rect": [178, 6, 19, 66],
+          "rect": [178, 6, 19, 67],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRect__1'",
-          "rect": [178, 69, 19, 64],
+          "rect": [178, 70, 19, 63],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRect__3'",
-          "rect": [178, 174, 19, 50],
+          "rect": [178, 175, 19, 51],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRect__2'",
-          "rect": [178, 130, 19, 47],
+          "rect": [178, 131, 19, 47],
           "reason": "layoutObject insertion"
         }
       ]

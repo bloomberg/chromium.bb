@@ -4,8 +4,8 @@ layer at (0,0) size 800x204
   LayoutBlockFlow {HTML} at (0,0) size 800x204
     LayoutBlockFlow {BODY} at (8,16) size 784x180
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 361x19
-          text run at (0,0) width 361: "The word 'PASS' should be seen below, in the third column."
+        LayoutText {#text} at (0,0) size 380x19
+          text run at (0,0) width 380: "The word 'PASS' should be seen below, in the third column."
 layer at (8,52) size 784x144
   LayoutBlockFlow {DIV} at (0,36) size 784x144
     LayoutMultiColumnSet (anonymous) at (0,0) size 784x144
@@ -25,5 +25,5 @@ layer at (8,292) size 251x16
   LayoutBlockFlow (relative positioned) {DIV} at (0,240) size 250.66x16
     LayoutBR {BR} at (0,6) size 0x19
     LayoutBR {BR} at (0,54) size 0x19
-    LayoutText {#text} at (0,86) size 37x19
-      text run at (0,86) width 37: "PASS"
+    LayoutText {#text} at (0,86) size 38x19
+      text run at (0,86) width 38: "PASS"

@@ -95,13 +95,13 @@ layer at (0,0) size 480x360
         LayoutSVGEllipse {circle} at (55,-20) size 40x40 [stroke={[type=SOLID] [color=#555555]}] [fill={[type=SOLID] [color=#CCCCCC]}] [cx=75.00] [cy=0.00] [r=20.00]
         LayoutSVGEllipse {circle} at (105,-20) size 40x40 [stroke={[type=SOLID] [color=#555555]}] [fill={[type=SOLID] [color=#CCCCCC]}] [cx=125.00] [cy=0.00] [r=20.00]
       LayoutSVGEllipse {circle} at (-20,-20) size 40x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(75.00,0.00)}] [stroke={[type=SOLID] [color=#000000] [stroke width=3.00]}] [fill={[type=SOLID] [color=#CC0066]}] [cx=0.00] [cy=0.00] [r=20.00]
-    LayoutSVGText {text} at (5,209) size 358.05x33 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (5,209) size 358.05x33
-        chunk 1 text run 1 at (5.00,235.00) startOffset 0 endOffset 31 width 358.06: "Test of keyPoints and keyTimes."
-    LayoutSVGText {text} at (4,249) size 386x20 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (4,249) size 386x20
-        chunk 1 text run 1 at (5.00,265.00) startOffset 0 endOffset 54 width 385.00: "Number indicates the circle's passing time in seconds."
-    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 261x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.8 $"
+    LayoutSVGText {text} at (5,209) size 364.05x33 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (5,209) size 364.05x33
+        chunk 1 text run 1 at (5.00,235.00) startOffset 0 endOffset 31 width 364.06: "Test of keyPoints and keyTimes."
+    LayoutSVGText {text} at (4,249) size 393x20 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (4,249) size 393x20
+        chunk 1 text run 1 at (5.00,265.00) startOffset 0 endOffset 54 width 392.00: "Number indicates the circle's passing time in seconds."
+    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 264x46
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 264.00: "$Revision: 1.8 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

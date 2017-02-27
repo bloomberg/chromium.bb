@@ -1,25 +1,25 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x220
-  LayoutBlockFlow {HTML} at (0,0) size 800x220
-    LayoutBlockFlow {BODY} at (8,16) size 784x112
-      LayoutBlockFlow {P} at (0,0) size 784x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 376x19
-          text run at (0,0) width 233: "In the following test, the purple square "
-          text run at (233,0) width 143: "should be on the left (\x{21E6}"
-        LayoutImage {IMG} at (376,0) size 19.19x19.19
-        LayoutText {#text} at (395,0) size 207x19
-          text run at (395,0) width 207: "), and the teal square on the right ("
-        LayoutImage {IMG} at (601.19,0) size 19.19x19.19
-        LayoutText {#text} at (620,0) size 148x19
-          text run at (620,0) width 90: "\x{21E8}) of the blue "
-          text run at (709,0) width 59: "rectangle."
-      LayoutBlockFlow {DIV} at (0,36) size 784x76
+layer at (0,0) size 800x240
+  LayoutBlockFlow {HTML} at (0,0) size 800x240
+    LayoutBlockFlow {BODY} at (8,16) size 784x132
+      LayoutBlockFlow {P} at (0,0) size 784x40 [color=#000080]
+        LayoutText {#text} at (0,0) size 396x19
+          text run at (0,0) width 246: "In the following test, the purple square "
+          text run at (246,0) width 150: "should be on the left (\x{21E6}"
+        LayoutImage {IMG} at (396,0) size 19.19x19.19
+        LayoutText {#text} at (415,0) size 216x19
+          text run at (415,0) width 216: "), and the teal square on the right ("
+        LayoutImage {IMG} at (630.19,0) size 19.19x19.19
+        LayoutText {#text} at (649,0) size 739x39
+          text run at (649,0) width 90: "\x{21E8}) of the blue"
+          text run at (0,20) width 61: "rectangle."
+      LayoutBlockFlow {DIV} at (0,56) size 784x76
         LayoutBlockFlow {DIV} at (16,0) size 752x76 [color=#0000FF] [bgcolor=#000080]
           LayoutImage (floating) {IMG} at (8,8) size 160x160
           LayoutImage (floating) {IMG} at (584,8) size 160x160
-          LayoutText {#text} at (168,8) size 399x59
-            text run at (168,8) width 399: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle. Blue"
-            text run at (168,28) width 155: "rectangle. Blue rectangle. "
-            text run at (323,28) width 213: "Blue rectangle. Blue rectangle. Blue"
-            text run at (168,48) width 337: "rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
+          LayoutText {#text} at (168,8) size 392x59
+            text run at (168,8) width 392: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
+            text run at (168,28) width 198: "Blue rectangle. Blue rectangle. "
+            text run at (366,28) width 194: "Blue rectangle. Blue rectangle."
+            text run at (168,48) width 392: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."

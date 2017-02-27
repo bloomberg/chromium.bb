@@ -4,8 +4,8 @@ layer at (0,0) size 785x1150 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1150
     LayoutBlockFlow {BODY} at (0,150) size 785x1000
       LayoutBlockFlow {P} at (0,250) size 785x20
-        LayoutText {#text} at (0,0) size 518x19
-          text run at (0,0) width 518: "Tests fixed position elements combined with transforms. You should see no red above."
+        LayoutText {#text} at (0,0) size 544x19
+          text run at (0,0) width 544: "Tests fixed position elements combined with transforms. You should see no red above."
 layer at (50,200) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (50,200) size 100x100 [bgcolor=#FF0000]
 layer at (250,200) size 100x100

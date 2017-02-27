@@ -7,17 +7,17 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 252x36
           text run at (0,0) width 252: "setAttribute() Test"
       LayoutBlockFlow {P} at (0,58.44) size 784x20 [color=#008000]
-        LayoutText {#text} at (0,0) size 446x19
-          text run at (0,0) width 446: "This element's Class attribute is set using setAttribute(). It should be green."
+        LayoutText {#text} at (0,0) size 468x19
+          text run at (0,0) width 468: "This element's Class attribute is set using setAttribute(). It should be green."
       LayoutBlockFlow {P} at (0,94.44) size 784x20 [color=#008000]
-        LayoutText {#text} at (0,0) size 429x19
-          text run at (0,0) width 429: "This element's ID attribute is set using setAttribute(). It should be green."
+        LayoutText {#text} at (0,0) size 451x19
+          text run at (0,0) width 451: "This element's ID attribute is set using setAttribute(). It should be green."
       LayoutBlockFlow {P} at (0,130.44) size 784x20 [color=#008000]
-        LayoutText {#text} at (0,0) size 439x19
-          text run at (0,0) width 439: "This element's Title attribute is set using setAttribute(). It should be green."
+        LayoutText {#text} at (0,0) size 463x19
+          text run at (0,0) width 463: "This element's Title attribute is set using setAttribute(). It should be green."
       LayoutBlockFlow {P} at (0,166.44) size 784x20 [color=#008000]
-        LayoutText {#text} at (0,0) size 375x19
-          text run at (0,0) width 375: "This element's Title attribute is hard-coded. It should be green."
+        LayoutText {#text} at (0,0) size 392x19
+          text run at (0,0) width 392: "This element's Title attribute is hard-coded. It should be green."
       LayoutBlockFlow {P} at (0,202.44) size 784x20 [color=#008000]
-        LayoutText {#text} at (0,0) size 443x19
-          text run at (0,0) width 443: "This element's Lang attribute is set using setAttribute(). It should be green."
+        LayoutText {#text} at (0,0) size 467x19
+          text run at (0,0) width 467: "This element's Lang attribute is set using setAttribute(). It should be green."

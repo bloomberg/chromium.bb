@@ -1,73 +1,74 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x247
-  LayoutBlockFlow {HTML} at (0,0) size 800x247
-    LayoutBlockFlow {BODY} at (8,16) size 784x215 [color=#0000FF]
+layer at (0,0) size 800x267
+  LayoutBlockFlow {HTML} at (0,0) size 800x267
+    LayoutBlockFlow {BODY} at (8,16) size 784x235 [color=#0000FF]
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutInline {<pseudo:first-letter>} at (0,0) size 9x19 [color=#008000]
-          LayoutTextFragment (anonymous) at (0,0) size 9x19
-            text run at (0,0) width 9: "T"
-        LayoutTextFragment {#text} at (9,0) size 18x19
-          text run at (9,0) width 18: "he "
-        LayoutInline {STRONG} at (0,0) size 67x19
-          LayoutText {#text} at (27,0) size 67x19
-            text run at (27,0) width 67: "first letter"
-        LayoutText {#text} at (94,0) size 286x19
-          text run at (94,0) width 194: " of this paragraph, and only that "
-          text run at (288,0) width 92: "one, should be "
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 10x19 [color=#008000]
+          LayoutTextFragment (anonymous) at (0,0) size 10x19
+            text run at (0,0) width 10: "T"
+        LayoutTextFragment {#text} at (10,0) size 19x19
+          text run at (10,0) width 19: "he "
+        LayoutInline {STRONG} at (0,0) size 66x19
+          LayoutText {#text} at (29,0) size 66x19
+            text run at (29,0) width 66: "first letter"
+        LayoutText {#text} at (95,0) size 300x19
+          text run at (95,0) width 204: " of this paragraph, and only that "
+          text run at (299,0) width 96: "one, should be "
         LayoutInline {STRONG} at (0,0) size 38x19
-          LayoutText {#text} at (380,0) size 38x19
-            text run at (380,0) width 38: "green"
-        LayoutText {#text} at (417,0) size 761x39
-          text run at (417,0) width 170: ". If this precise combination "
-          text run at (586,0) width 175: "does not occur, then the user"
-          text run at (0,20) width 145: "agent has failed this test."
+          LayoutText {#text} at (395,0) size 38x19
+            text run at (395,0) width 38: "green"
+        LayoutText {#text} at (432,0) size 761x39
+          text run at (432,0) width 179: ". If this precise combination "
+          text run at (610,0) width 151: "does not occur, then the"
+          text run at (0,20) width 183: "user agent has failed this test."
       LayoutBlockFlow {P} at (0,56) size 784x57
-        LayoutInline {<pseudo:first-letter>} at (0,0) size 19x36 [color=#008000]
-          LayoutTextFragment (anonymous) at (0,0) size 19x36
-            text run at (0,0) width 19: "T"
-        LayoutTextFragment {#text} at (19,13) size 18x19
-          text run at (19,13) width 18: "he "
-        LayoutInline {STRONG} at (0,0) size 67x19
-          LayoutText {#text} at (37,13) size 67x19
-            text run at (37,13) width 67: "first letter"
-        LayoutText {#text} at (104,13) size 311x19
-          text run at (104,13) width 194: " of this paragraph, and only that "
-          text run at (298,13) width 117: "one, should be in a "
-        LayoutInline {STRONG} at (0,0) size 40x19
-          LayoutText {#text} at (415,13) size 40x19
-            text run at (415,13) width 40: "larger"
-        LayoutText {#text} at (455,13) size 123x19
-          text run at (455,13) width 123: " font size, as well as "
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 20x36 [color=#008000]
+          LayoutTextFragment (anonymous) at (0,0) size 20x36
+            text run at (0,0) width 20: "T"
+        LayoutTextFragment {#text} at (20,13) size 19x19
+          text run at (20,13) width 19: "he "
+        LayoutInline {STRONG} at (0,0) size 66x19
+          LayoutText {#text} at (39,13) size 66x19
+            text run at (39,13) width 66: "first letter"
+        LayoutText {#text} at (105,13) size 327x19
+          text run at (105,13) width 204: " of this paragraph, and only that "
+          text run at (309,13) width 123: "one, should be in a "
+        LayoutInline {STRONG} at (0,0) size 41x19
+          LayoutText {#text} at (432,13) size 41x19
+            text run at (432,13) width 41: "larger"
+        LayoutText {#text} at (473,13) size 130x19
+          text run at (473,13) width 130: " font size, as well as "
         LayoutInline {STRONG} at (0,0) size 38x19
-          LayoutText {#text} at (578,13) size 38x19
-            text run at (578,13) width 38: "green"
-        LayoutText {#text} at (615,13) size 781x43
-          text run at (615,13) width 166: ". If this precise combination"
-          text run at (0,37) width 98: "does not occur, "
-          text run at (97,37) width 226: "then the user agent has failed this test."
-      LayoutBlockFlow {P} at (0,129) size 784x86
-        LayoutInline {<pseudo:first-letter>} at (0,0) size 58x64 [color=#008000]
-          LayoutTextFragment (anonymous) at (0,1) size 58x64
-            text run at (0,1) width 58: "\"T"
-        LayoutTextFragment {#text} at (58,36) size 18x19
-          text run at (58,36) width 18: "he "
-        LayoutInline {STRONG} at (0,0) size 128x19
-          LayoutText {#text} at (76,36) size 128x19
-            text run at (76,36) width 128: "first two characters"
-        LayoutText {#text} at (204,36) size 434x19
-          text run at (204,36) width 123: " in this paragraph (a "
-          text run at (327,36) width 311: "double-quote mark and a capital 'T') should be in a "
-        LayoutInline {STRONG} at (0,0) size 79x19
-          LayoutText {#text} at (638,36) size 79x19
-            text run at (638,36) width 39: "much "
-            text run at (677,36) width 40: "larger"
-        LayoutText {#text} at (717,36) size 770x49
-          text run at (717,36) width 53: " font size"
-          text run at (0,66) width 210: "than the rest of the paragraph, and "
+          LayoutText {#text} at (603,13) size 38x19
+            text run at (603,13) width 38: "green"
+        LayoutText {#text} at (640,13) size 733x43
+          text run at (640,13) width 93: ". If this precise"
+          text run at (0,37) width 182: "combination does not occur, "
+          text run at (181,37) width 238: "then the user agent has failed this test."
+      LayoutBlockFlow {P} at (0,129) size 784x106
+        LayoutInline {<pseudo:first-letter>} at (0,0) size 57x64 [color=#008000]
+          LayoutTextFragment (anonymous) at (0,1) size 57x64
+            text run at (0,1) width 57: "\"T"
+        LayoutTextFragment {#text} at (57,36) size 19x19
+          text run at (57,36) width 19: "he "
+        LayoutInline {STRONG} at (0,0) size 131x19
+          LayoutText {#text} at (76,36) size 131x19
+            text run at (76,36) width 131: "first two characters"
+        LayoutText {#text} at (207,36) size 452x19
+          text run at (207,36) width 129: " in this paragraph (a "
+          text run at (336,36) width 323: "double-quote mark and a capital 'T') should be in a "
+        LayoutInline {STRONG} at (0,0) size 83x19
+          LayoutText {#text} at (659,36) size 83x19
+            text run at (659,36) width 42: "much "
+            text run at (701,36) width 41: "larger"
+        LayoutText {#text} at (742,36) size 771x49
+          text run at (742,36) width 29: " font"
+          text run at (0,66) width 246: "size than the rest of the paragraph, and "
         LayoutInline {STRONG} at (0,0) size 38x19
-          LayoutText {#text} at (210,66) size 38x19
-            text run at (210,66) width 38: "green"
-        LayoutText {#text} at (247,66) size 493x19
-          text run at (247,66) width 268: ". If this precise combination does not occur, "
-          text run at (514,66) width 226: "then the user agent has failed this test."
+          LayoutText {#text} at (246,66) size 38x19
+            text run at (246,66) width 38: "green"
+        LayoutText {#text} at (283,66) size 770x39
+          text run at (283,66) width 279: ". If this precise combination does not occur, "
+          text run at (561,66) width 209: "then the user agent has failed this"
+          text run at (0,86) width 25: "test."

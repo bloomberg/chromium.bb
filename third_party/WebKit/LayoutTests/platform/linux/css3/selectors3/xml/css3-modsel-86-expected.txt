@@ -6,5 +6,5 @@ layer at (0,0) size 800x52
       LayoutBlockFlow {div} at (0,0) size 720x20
         LayoutBlockFlow {div} at (0,0) size 720x20
           LayoutBlockFlow {p} at (0,0) size 720x20 [color=#008000]
-            LayoutText {#text} at (0,0) size 154x19
-              text run at (0,0) width 154: "This text should be green."
+            LayoutText {#text} at (0,0) size 163x19
+              text run at (0,0) width 163: "This text should be green."

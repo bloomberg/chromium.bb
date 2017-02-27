@@ -1,25 +1,26 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (410,0) size 390x600
-  LayoutBlockFlow {HTML} at (0,0) size 390x600
-    LayoutBlockFlow {BODY} at (16,8) size 342x584
-      LayoutBlockFlow {P} at (0,0) size 40x584
-        LayoutText {#text} at (0,0) size 19x193
-          text run at (0,0) width 193: "The black border below should "
-        LayoutInline {I} at (0,0) size 19x21
-          LayoutText {#text} at (0,193) size 19x21
-            text run at (0,193) width 21: "not"
-        LayoutText {#text} at (0,214) size 39x566
-          text run at (0,214) width 202: " cut through the top left corner of "
-          text run at (0,416) width 150: "the blue border. It would"
-          text run at (20,0) width 230: "cut through with our old behavior, but "
-        LayoutInline {A} at (0,0) size 19x21 [color=#0000EE]
-          LayoutText {#text} at (20,229) size 19x21
-            text run at (20,229) width 20: "this"
-        LayoutText {#text} at (20,249) size 19x293
-          text run at (20,249) width 4: " "
-          text run at (20,253) width 288: "bug fix changed our behavior to match the spec."
-      LayoutBlockFlow {DIV} at (72,32) size 270x520 [border: (1px solid #0000FF)]
+layer at (390,0) size 410x600
+  LayoutBlockFlow {HTML} at (0,0) size 410x600
+    LayoutBlockFlow {BODY} at (16,8) size 362x584
+      LayoutBlockFlow {P} at (0,0) size 60x584
+        LayoutText {#text} at (0,0) size 19x201
+          text run at (0,0) width 201: "The black border below should "
+        LayoutInline {I} at (0,0) size 19x20
+          LayoutText {#text} at (0,201) size 19x20
+            text run at (0,201) width 20: "not"
+        LayoutText {#text} at (0,221) size 39x545
+          text run at (0,221) width 212: " cut through the top left corner of "
+          text run at (0,433) width 112: "the blue border. It"
+          text run at (20,0) width 288: "would cut through with our old behavior, but "
+        LayoutInline {A} at (0,0) size 19x23 [color=#0000EE]
+          LayoutText {#text} at (20,287) size 19x23
+            text run at (20,287) width 22: "this"
+        LayoutText {#text} at (20,309) size 39x581
+          text run at (20,309) width 4: " "
+          text run at (20,313) width 267: "bug fix changed our behavior to match the"
+          text run at (40,0) width 32: "spec."
+      LayoutBlockFlow {DIV} at (92,32) size 270x520 [border: (1px solid #0000FF)]
         LayoutTable {DIV} at (1,1) size 220x115 [border: (1px none #000000)]
           LayoutTableSection (anonymous) at (10,1) size 200x104
             LayoutTableRow {P} at (0,0) size 100x104

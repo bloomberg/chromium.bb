@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 256x19
-          text run at (0,0) width 256: "There should be no dots above the ellipsis."
+        LayoutText {#text} at (0,0) size 268x19
+          text run at (0,0) width 268: "There should be no dots above the ellipsis."
 layer at (8,44) size 220x83 scrollX 14.00 scrollWidth 234
   LayoutBlockFlow {DIV} at (0,36) size 220x83
     LayoutText {#text} at (-14,27) size 234x55
@@ -14,14 +14,14 @@ layer at (8,127) size 220x83 scrollWidth 234
   LayoutBlockFlow {DIV} at (0,119) size 220x83
     LayoutText {#text} at (0,27) size 234x55
       text run at (0,27) width 234 RTL: "\x{647}\x{630}\x{627} \x{647}\x{648} \x{627}\x{644}\x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"
-layer at (8,210) size 220x83 scrollX 24.00 scrollWidth 244
+layer at (8,210) size 220x83 scrollX 29.00 scrollWidth 249
   LayoutBlockFlow {DIV} at (0,202) size 220x83
-    LayoutText {#text} at (-24,27) size 244x55
-      text run at (-24,27) width 244: "abcd efg hijk"
-layer at (8,293) size 220x83 scrollWidth 244
+    LayoutText {#text} at (-29,27) size 249x55
+      text run at (-29,27) width 249: "abcd efg hijk"
+layer at (8,293) size 220x83 scrollWidth 249
   LayoutBlockFlow {DIV} at (0,285) size 220x83
-    LayoutText {#text} at (0,27) size 244x55
-      text run at (0,27) width 244: "abcd efg hijk"
+    LayoutText {#text} at (0,27) size 249x55
+      text run at (0,27) width 249: "abcd efg hijk"
 layer at (8,376) size 220x83 scrollX 71.00 scrollWidth 291
   LayoutBlockFlow {DIV} at (0,368) size 220x83
     LayoutText {#text} at (-71,27) size 291x55

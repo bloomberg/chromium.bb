@@ -4,17 +4,17 @@ layer at (0,0) size 800x196
   LayoutBlockFlow {test} at (0,0) size 800x196
     LayoutBlockFlow {div} at (0,16) size 800x164
       LayoutBlockFlow {p} at (0,0) size 800x20 [bgcolor=#00FF00]
-        LayoutText {#text} at (0,0) size 293x19
-          text run at (0,0) width 293: "This paragraph should have a green background."
+        LayoutText {#text} at (0,0) size 308x19
+          text run at (0,0) width 308: "This paragraph should have a green background."
       LayoutBlockFlow {p} at (0,36) size 800x20
-        LayoutText {#text} at (0,0) size 190x19
-          text run at (0,0) width 190: "But this one should be unstyled."
+        LayoutText {#text} at (0,0) size 202x19
+          text run at (0,0) width 202: "But this one should be unstyled."
       LayoutBlockFlow {p} at (0,72) size 800x20
-        LayoutText {#text} at (0,0) size 223x19
-          text run at (0,0) width 223: "And this one should also be unstyled."
+        LayoutText {#text} at (0,0) size 236x19
+          text run at (0,0) width 236: "And this one should also be unstyled."
       LayoutBlockFlow {address} at (0,108) size 800x20 [bgcolor=#00FF00]
-        LayoutText {#text} at (0,0) size 679x19
-          text run at (0,0) width 679: "This address is only here to fill some space between two paragraphs and should have a green background."
+        LayoutText {#text} at (0,0) size 673x19
+          text run at (0,0) width 673: "This address is only here to fill some space between two paragraphs and should have a green background."
       LayoutBlockFlow {p} at (0,144) size 800x20 [bgcolor=#00FF00]
-        LayoutText {#text} at (0,0) size 317x19
-          text run at (0,0) width 317: "This paragraph should have a green background too."
+        LayoutText {#text} at (0,0) size 332x19
+          text run at (0,0) width 332: "This paragraph should have a green background too."

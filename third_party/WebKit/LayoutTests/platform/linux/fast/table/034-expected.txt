@@ -9,6 +9,6 @@ layer at (0,0) size 800x1276 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutTableCell {TD} at (2,629) size 2x2 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (6,2) size 1048x1256 [r=0 c=1 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,1) size 1046x1254 [bgcolor=#A9AFB8]
-                LayoutText {#text} at (0,0) size 280x19
-                  text run at (0,0) width 96: "This cell should "
-                  text run at (96,0) width 184: "be huge and 1000 pixels wide."
+                LayoutText {#text} at (0,0) size 297x19
+                  text run at (0,0) width 104: "This cell should "
+                  text run at (104,0) width 193: "be huge and 1000 pixels wide."

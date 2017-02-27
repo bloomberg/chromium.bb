@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 205x19
-          text run at (0,0) width 205: "The 2 tables should look the same"
+        LayoutText {#text} at (0,0) size 214x19
+          text run at (0,0) width 214: "The 2 tables should look the same"
       LayoutTable {TABLE} at (0,20) size 91x56 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 89x54
           LayoutTableRow {TR} at (0,2) size 89x24

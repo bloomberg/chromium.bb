@@ -3,27 +3,27 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x160
   LayoutBlockFlow {HTML} at (0,0) size 800x160.19
     LayoutBlockFlow (anonymous) at (0,0) size 800x20
-      LayoutText {#text} at (0,0) size 37x19
-        text run at (0,0) width 37: "PASS"
+      LayoutText {#text} at (0,0) size 38x19
+        text run at (0,0) width 38: "PASS"
     LayoutBlockFlow {BODY} at (8,28) size 784x116.19
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutInline {OBJECT} at (0,0) size 37x19
+        LayoutInline {OBJECT} at (0,0) size 38x19
           LayoutText {#text} at (0,0) size 0x0
-          LayoutText {#text} at (0,0) size 37x19
-            text run at (0,0) width 37: "PASS"
+          LayoutText {#text} at (0,0) size 38x19
+            text run at (0,0) width 38: "PASS"
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,20) size 784x40.19
         LayoutBlockFlow {OPTION} at (0,0) size 784x20.19
         LayoutBlockFlow (anonymous) at (0,20.19) size 784x20
-          LayoutText {#text} at (0,0) size 37x19
-            text run at (0,0) width 37: "PASS"
+          LayoutText {#text} at (0,0) size 38x19
+            text run at (0,0) width 38: "PASS"
         LayoutTable {TABLE} at (0,40.19) size 0x0
       LayoutBlockFlow (anonymous) at (0,60.19) size 784x20
         LayoutInline {OBJECT} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 37x19
-          text run at (0,0) width 37: "PASS"
+        LayoutText {#text} at (0,0) size 38x19
+          text run at (0,0) width 38: "PASS"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,96.19) size 784x20
-        LayoutText {#text} at (0,0) size 693x19
-          text run at (0,0) width 693: "crbug.com/549544: Don't clean up anonymous wrappers when the element's branch or sub-tree is being destroyed."
+        LayoutText {#text} at (0,0) size 722x19
+          text run at (0,0) width 722: "crbug.com/549544: Don't clean up anonymous wrappers when the element's branch or sub-tree is being destroyed."

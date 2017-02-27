@@ -146,8 +146,8 @@ layer at (293,321) size 12x24 clip at (294,322) size 10x22
 layer at (11,351) size 172x48 clip at (12,352) size 170x46 scrollWidth 216
   LayoutTableCell {TD} at (2,2) size 172x48 [bgcolor=#0000FF] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (11,11) size 206x26 [border: (3px solid #000000)]
-      LayoutText {#text} at (3,3) size 18x19
-        text run at (3,3) width 18: "div"
+      LayoutText {#text} at (3,3) size 20x19
+        text run at (3,3) width 20: "div"
 layer at (185,351) size 120x48 clip at (186,352) size 118x46
   LayoutTableCell {TD} at (176,5) size 120x42 [bgcolor=#0000FF] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
     LayoutText {#text} at (11,11) size 4x19

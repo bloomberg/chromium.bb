@@ -4,8 +4,8 @@ layer at (0,0) size 800x227
   LayoutBlockFlow {HTML} at (0,0) size 800x227
     LayoutBlockFlow {BODY} at (8,16) size 784x203
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 349x19
-          text run at (0,0) width 349: "Gray box should be clipped by black border in each case."
+        LayoutText {#text} at (0,0) size 362x19
+          text run at (0,0) width 362: "Gray box should be clipped by black border in each case."
       LayoutBlockFlow (anonymous) at (0,36) size 784x167
         LayoutText {#text} at (162,147) size 4x19
           text run at (162,147) width 4: " "

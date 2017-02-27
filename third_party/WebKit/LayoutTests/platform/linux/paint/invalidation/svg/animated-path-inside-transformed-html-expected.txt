@@ -9,12 +9,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGText text id='text'",
-          "rect": [203, 336, 123, 44],
+          "rect": [203, 336, 126, 44],
           "reason": "full"
         },
         {
           "object": "LayoutSVGText text id='text'",
-          "rect": [247, 90, 122, 43],
+          "rect": [247, 90, 125, 44],
           "reason": "full"
         },
         {

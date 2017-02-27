@@ -17,13 +17,13 @@ layer at (0,0) size 800x488
           text run at (302,408) width 4: " "
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,444) size 784x20
-        LayoutText {#text} at (0,0) size 337x19
-          text run at (0,0) width 337: "Tests that image alt text takes directionality into account."
+        LayoutText {#text} at (0,0) size 354x19
+          text run at (0,0) width 354: "Tests that image alt text takes directionality into account."
 layer at (8,8) size 302x102 clip at (9,9) size 300x100 scrollHeight 134
   LayoutBlockFlow (relative positioned) {SECTION} at (0,0) size 302x102 [border: (1px solid #FF0000)]
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
-      LayoutText {#text} at (0,0) size 164x26
-        text run at (0,0) width 164: "ltr image, rtl alt"
+      LayoutText {#text} at (0,0) size 165x26
+        text run at (0,0) width 165: "ltr image, rtl alt"
 layer at (9,59) size 280x80 backgroundClip at (9,9) size 300x100 clip at (9,9) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (9,59) size 280x80 backgroundClip at (9,59) size 280x50 clip at (10,60) size 278x49
@@ -36,8 +36,8 @@ layer at (27,61) size 260x20
 layer at (314,8) size 302x102 clip at (315,9) size 300x100 scrollHeight 134
   LayoutBlockFlow (relative positioned) {SECTION} at (306,0) size 302x102 [border: (1px solid #FF0000)]
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
-      LayoutText {#text} at (0,0) size 164x26
-        text run at (0,0) width 164: "rtl image, rtl alt"
+      LayoutText {#text} at (0,0) size 165x26
+        text run at (0,0) width 165: "rtl image, rtl alt"
 layer at (315,59) size 280x80 backgroundClip at (315,9) size 300x100 clip at (315,9) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (315,59) size 280x80 backgroundClip at (315,59) size 280x50 clip at (316,60) size 278x49
@@ -50,8 +50,8 @@ layer at (317,61) size 260x20
 layer at (8,115) size 302x102 clip at (9,116) size 300x100 scrollHeight 134
   LayoutBlockFlow (relative positioned) {SECTION} at (0,107) size 302x102 [border: (1px solid #FF0000)]
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
-      LayoutText {#text} at (0,0) size 164x26
-        text run at (0,0) width 164: "ltr image, ltr alt"
+      LayoutText {#text} at (0,0) size 165x26
+        text run at (0,0) width 165: "ltr image, ltr alt"
 layer at (9,166) size 280x80 backgroundClip at (9,116) size 300x100 clip at (9,116) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (9,166) size 280x80 backgroundClip at (9,166) size 280x50 clip at (10,167) size 278x49
@@ -59,13 +59,13 @@ layer at (9,166) size 280x80 backgroundClip at (9,166) size 280x50 clip at (10,1
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (27,168) size 260x20
   LayoutBlockFlow {DIV} at (18,2) size 260x20
-    LayoutText {#text} at (0,0) size 14x19
-      text run at (0,0) width 14: "alt"
+    LayoutText {#text} at (0,0) size 15x19
+      text run at (0,0) width 15: "alt"
 layer at (314,115) size 302x102 clip at (315,116) size 300x100 scrollHeight 134
   LayoutBlockFlow (relative positioned) {SECTION} at (306,107) size 302x102 [border: (1px solid #FF0000)]
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
-      LayoutText {#text} at (0,0) size 164x26
-        text run at (0,0) width 164: "rtl image, ltr alt"
+      LayoutText {#text} at (0,0) size 165x26
+        text run at (0,0) width 165: "rtl image, ltr alt"
 layer at (315,166) size 280x80 backgroundClip at (315,116) size 300x100 clip at (315,116) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (315,166) size 280x80 backgroundClip at (315,166) size 280x50 clip at (316,167) size 278x49
@@ -73,13 +73,13 @@ layer at (315,166) size 280x80 backgroundClip at (315,166) size 280x50 clip at (
     LayoutImage (floating) {IMG} at (262,2) size 16x16
 layer at (317,168) size 260x20
   LayoutBlockFlow {DIV} at (2,2) size 260x20
-    LayoutText {#text} at (246,0) size 14x19
-      text run at (246,0) width 14: "alt"
+    LayoutText {#text} at (245,0) size 15x19
+      text run at (245,0) width 15: "alt"
 layer at (8,222) size 302x102 clip at (9,223) size 300x100 scrollHeight 134
   LayoutBlockFlow (relative positioned) {SECTION} at (0,214) size 302x102 [border: (1px solid #FF0000)]
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
-      LayoutText {#text} at (0,0) size 191x26
-        text run at (0,0) width 191: "ltr image, weak alt"
+      LayoutText {#text} at (0,0) size 192x26
+        text run at (0,0) width 192: "ltr image, weak alt"
 layer at (9,273) size 280x80 backgroundClip at (9,223) size 300x100 clip at (9,223) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (9,273) size 280x80 backgroundClip at (9,273) size 280x50 clip at (10,274) size 278x49
@@ -92,8 +92,8 @@ layer at (27,275) size 260x20
 layer at (314,222) size 302x102 clip at (315,223) size 300x100 scrollHeight 134
   LayoutBlockFlow (relative positioned) {SECTION} at (306,214) size 302x102 [border: (1px solid #FF0000)]
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
-      LayoutText {#text} at (0,0) size 191x26
-        text run at (0,0) width 191: "rtl image, weak alt"
+      LayoutText {#text} at (0,0) size 192x26
+        text run at (0,0) width 192: "rtl image, weak alt"
 layer at (315,273) size 280x80 backgroundClip at (315,223) size 300x100 clip at (315,223) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (315,273) size 280x80 backgroundClip at (315,273) size 280x50 clip at (316,274) size 278x49
@@ -106,8 +106,8 @@ layer at (317,275) size 260x20
 layer at (8,329) size 302x102 clip at (9,330) size 300x100 scrollHeight 134
   LayoutBlockFlow (relative positioned) {SECTION} at (0,321) size 302x102 [border: (1px solid #FF0000)]
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
-      LayoutText {#text} at (0,0) size 200x26
-        text run at (0,0) width 200: "ltr image, mixed alt"
+      LayoutText {#text} at (0,0) size 202x26
+        text run at (0,0) width 202: "ltr image, mixed alt"
 layer at (9,380) size 280x80 backgroundClip at (9,330) size 300x100 clip at (9,330) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (9,380) size 280x80 backgroundClip at (9,380) size 280x50 clip at (10,381) size 278x49
@@ -115,15 +115,15 @@ layer at (9,380) size 280x80 backgroundClip at (9,380) size 280x50 clip at (10,3
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (27,382) size 260x20
   LayoutBlockFlow {DIV} at (18,2) size 260x20
-    LayoutText {#text} at (0,0) size 66x19
+    LayoutText {#text} at (0,0) size 69x19
       text run at (0,0) width 8 RTL: "\x{6CC}\x{627}"
-      text run at (8,0) width 50: "example"
-      text run at (58,0) width 8 RTL: "\x{6CC}\x{627}"
+      text run at (8,0) width 53: "example"
+      text run at (61,0) width 8 RTL: "\x{6CC}\x{627}"
 layer at (314,329) size 302x102 clip at (315,330) size 300x100 scrollHeight 134
   LayoutBlockFlow (relative positioned) {SECTION} at (306,321) size 302x102 [border: (1px solid #FF0000)]
     LayoutBlockFlow {H2} at (1,20.91) size 300x27
-      LayoutText {#text} at (0,0) size 200x26
-        text run at (0,0) width 200: "rtl image, mixed alt"
+      LayoutText {#text} at (0,0) size 202x26
+        text run at (0,0) width 202: "rtl image, mixed alt"
 layer at (315,380) size 280x80 backgroundClip at (315,330) size 300x100 clip at (315,330) size 300x100
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (315,380) size 280x80 backgroundClip at (315,380) size 280x50 clip at (316,381) size 278x49
@@ -131,7 +131,7 @@ layer at (315,380) size 280x80 backgroundClip at (315,380) size 280x50 clip at (
     LayoutImage (floating) {IMG} at (262,2) size 16x16
 layer at (317,382) size 260x20
   LayoutBlockFlow {DIV} at (2,2) size 260x20
-    LayoutText {#text} at (194,0) size 66x19
-      text run at (194,0) width 8 RTL: "\x{6CC}\x{627}"
-      text run at (202,0) width 50: "example"
+    LayoutText {#text} at (191,0) size 69x19
+      text run at (191,0) width 8 RTL: "\x{6CC}\x{627}"
+      text run at (199,0) width 53: "example"
       text run at (252,0) width 8 RTL: "\x{6CC}\x{627}"
