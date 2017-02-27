@@ -158,6 +158,8 @@ void CompositorFrameSinkSupport::ReferencedSurfacesChanged(
   if (!surface_manager_->using_surface_references())
     return;
 
+  SurfaceId last_surface_id = reference_tracker_.current_surface_id();
+
   // Populate list of surface references to add and remove based on reference
   // surfaces in current frame compared with the last frame. The list of
   // surface references includes references from both the pending and active
@@ -166,7 +168,6 @@ void CompositorFrameSinkSupport::ReferencedSurfacesChanged(
                                       active_referenced_surfaces,
                                       pending_referenced_surfaces);
 
-  SurfaceId last_surface_id = reference_tracker_.current_surface_id();
   UpdateSurfaceReferences(last_surface_id, local_surface_id);
 }
 

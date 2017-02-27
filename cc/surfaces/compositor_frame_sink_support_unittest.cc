@@ -23,9 +23,10 @@ namespace cc {
 namespace test {
 namespace {
 
-constexpr FrameSinkId kParentFrameSink(2, 1);
-constexpr FrameSinkId kChildFrameSink1(65563, 1);
-constexpr FrameSinkId kChildFrameSink2(65564, 1);
+constexpr FrameSinkId kDisplayFrameSink(2, 0);
+constexpr FrameSinkId kParentFrameSink(3, 0);
+constexpr FrameSinkId kChildFrameSink1(65563, 0);
+constexpr FrameSinkId kChildFrameSink2(65564, 0);
 constexpr FrameSinkId kArbitraryFrameSink(1337, 7331);
 
 std::vector<SurfaceId> empty_surface_ids() {
@@ -77,7 +78,9 @@ class CompositorFrameSinkSupportTest : public testing::Test,
       : surface_manager_(SurfaceManager::LifetimeType::REFERENCES) {}
   ~CompositorFrameSinkSupportTest() override {}
 
-  CompositorFrameSinkSupport& parent_support() { return *supports_[0]; }
+  CompositorFrameSinkSupport& display_support() { return *supports_[0]; }
+
+  CompositorFrameSinkSupport& parent_support() { return *supports_[1]; }
   Surface* parent_surface() {
     return parent_support().current_surface_for_testing();
   }
@@ -85,12 +88,12 @@ class CompositorFrameSinkSupportTest : public testing::Test,
     return parent_support().ReferenceTrackerForTesting();
   }
 
-  CompositorFrameSinkSupport& child_support1() { return *supports_[1]; }
+  CompositorFrameSinkSupport& child_support1() { return *supports_[2]; }
   Surface* child_surface1() {
     return child_support1().current_surface_for_testing();
   }
 
-  CompositorFrameSinkSupport& child_support2() { return *supports_[2]; }
+  CompositorFrameSinkSupport& child_support2() { return *supports_[3]; }
   Surface* child_surface2() {
     return child_support2().current_surface_for_testing();
   }
@@ -136,6 +139,10 @@ class CompositorFrameSinkSupportTest : public testing::Test,
                                      begin_frame_source_.get()));
     surface_manager_.SetDependencyTracker(std::move(dependency_tracker));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
+        this, &surface_manager_, kDisplayFrameSink, true /* is_root */,
+        true /* handles_frame_sink_id_invalidation */,
+        true /* needs_sync_points */));
+    supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
         this, &surface_manager_, kParentFrameSink, false /* is_root */,
         true /* handles_frame_sink_id_invalidation */,
         true /* needs_sync_points */));
@@ -176,6 +183,38 @@ class CompositorFrameSinkSupportTest : public testing::Test,
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkSupportTest);
 };
+
+// The display root surface should have a surface reference from the top-level
+// root added/removed when a CompositorFrame is submitted with a new SurfaceId.
+TEST_F(CompositorFrameSinkSupportTest, RootSurfaceReceivesReferences) {
+  const SurfaceId display_id_first = MakeSurfaceId(kDisplayFrameSink, 1);
+  const SurfaceId display_id_second = MakeSurfaceId(kDisplayFrameSink, 2);
+
+  // Submit a CompositorFrame for the first display root surface.
+  display_support().SubmitCompositorFrame(
+      display_id_first.local_surface_id(),
+      MakeCompositorFrame({MakeSurfaceId(kParentFrameSink, 1)}));
+
+  // A surface reference from the top-level root is added and there shouldn't be
+  // a temporary reference.
+  EXPECT_THAT(GetTempReferences(kDisplayFrameSink), IsEmpty());
+  EXPECT_THAT(GetChildReferences(surface_manager().GetRootSurfaceId()),
+              UnorderedElementsAre(display_id_first));
+
+  // Submit a CompositorFrame for the second display root surface.
+  display_support().SubmitCompositorFrame(
+      display_id_second.local_surface_id(),
+      MakeCompositorFrame({MakeSurfaceId(kParentFrameSink, 2)}));
+
+  // A surface reference from the top-level root to |display_id_second| should
+  // be added and the reference to |display_root_first| removed.
+  EXPECT_THAT(GetTempReferences(kDisplayFrameSink), IsEmpty());
+  EXPECT_THAT(GetChildReferences(surface_manager().GetRootSurfaceId()),
+              UnorderedElementsAre(display_id_second));
+
+  // Surface |display_id_first| is unreachable and should get deleted.
+  EXPECT_EQ(nullptr, surface_manager().GetSurfaceForId(display_id_first));
+}
 
 // The parent Surface is blocked on |child_id1| and |child_id2|.
 TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedOnTwo) {
