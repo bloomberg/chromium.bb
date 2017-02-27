@@ -628,7 +628,6 @@ modules_dependency_idl_files =
           "vibration/NavigatorVibration.idl",
           "vr/NavigatorVR.idl",
           "wake_lock/ScreenWakeLock.idl",
-          "webaudio/WindowWebAudio.idl",
           "webaudio/WindowAudioWorklet.idl",
           "webauth/NavigatorAuth.idl",
           "webdatabase/WindowWebDatabase.idl",
