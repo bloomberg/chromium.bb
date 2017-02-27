@@ -83,11 +83,8 @@ void ScriptResource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail,
       dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
-NOINLINE const String& ScriptResource::script() {
-  // For investigating https://crbug.com/692856.
-  CHECK(isLoaded() || (isLoading() && hasRevalidated()));
-  CHECK(isLoaded() || (isLoading() && isCacheValidator()));
-  CHECK(isLoaded());
+const String& ScriptResource::script() {
+  DCHECK(isLoaded());
 
   if (m_script.isNull() && data()) {
     String script = decodedText();

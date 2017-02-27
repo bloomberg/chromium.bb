@@ -221,19 +221,13 @@ DEFINE_TRACE(PendingScript) {
   MemoryCoordinatorClient::trace(visitor);
 }
 
-NOINLINE ScriptSourceCode PendingScript::getSource(const KURL& documentURL,
-                                                   bool& errorOccurred) const {
+ScriptSourceCode PendingScript::getSource(const KURL& documentURL,
+                                          bool& errorOccurred) const {
   checkState();
 
   errorOccurred = this->errorOccurred();
   if (resource()) {
-    // For investigating https://crbug.com/692856.
-    CHECK(resource()->isLoaded() ||
-          (resource()->isLoading() && resource()->hasRevalidated()));
-    CHECK(resource()->isLoaded() ||
-          (resource()->isLoading() && resource()->isCacheValidator()));
-    CHECK(resource()->isLoaded());
-
+    DCHECK(resource()->isLoaded());
     if (m_streamer && !m_streamer->streamingSuppressed())
       return ScriptSourceCode(m_streamer, resource());
     return ScriptSourceCode(resource());
