@@ -740,7 +740,7 @@ void Editor::respondToChangedContents(const Position& position) {
       cache->handleEditableTextContentChanged(node);
   }
 
-  spellChecker().updateMarkersForWordsAffectedByEditing(true);
+  spellChecker().respondToChangedContents(endingSelection);
   client().respondToChangedContents();
 }
 

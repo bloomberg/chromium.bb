@@ -923,8 +923,10 @@ static bool shouldCheckOldSelection(const Position& oldSelectionStart) {
 void SpellChecker::respondToChangedSelection(
     const Position& oldSelectionStart,
     FrameSelection::SetSelectionOptions options) {
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+    m_idleSpellCheckCallback->setNeedsInvocation();
     return;
+  }
 
   TRACE_EVENT0("blink", "SpellChecker::respondToChangedSelection");
   if (!isSpellCheckingEnabledFor(oldSelectionStart))
@@ -966,6 +968,12 @@ void SpellChecker::respondToChangedSelection(
   // FIXME(http://crbug.com/382809): if oldSelection is on a textarea
   // element, we cause synchronous layout.
   spellCheckOldSelection(oldSelectionStart, newAdjacentWords);
+}
+
+void SpellChecker::respondToChangedContents(const VisibleSelection& selection) {
+  updateMarkersForWordsAffectedByEditing(true);
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    m_idleSpellCheckCallback->setNeedsInvocation();
 }
 
 void SpellChecker::removeSpellingMarkers() {
@@ -1099,6 +1107,10 @@ void SpellChecker::removeMarkers(const VisibleSelection& selection,
 // checker.
 void SpellChecker::cancelCheck() {
   m_spellCheckRequester->cancelCheck();
+}
+
+void SpellChecker::documentAttached(Document* document) {
+  m_idleSpellCheckCallback->documentAttached(document);
 }
 
 DEFINE_TRACE(SpellChecker) {
