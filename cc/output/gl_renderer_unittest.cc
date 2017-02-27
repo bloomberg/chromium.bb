@@ -1052,7 +1052,7 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
   EXPECT_FALSE(renderer.use_partial_swap());
   renderer.SetVisible(true);
 
-  gfx::Size viewport_size(1, 1);
+  gfx::Size viewport_size(100, 100);
 
   gfx::Rect grand_child_rect(25, 25);
   int grand_child_pass_id = 3;
@@ -1231,7 +1231,7 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
 }
 
 TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
-  gfx::Size viewport_size(1, 1);
+  gfx::Size viewport_size(60, 75);
 
   gfx::Rect child_rect(50, 50);
   int child_pass_id = 2;
@@ -1443,7 +1443,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
   int child_pass_id = 2;
   RenderPass* child_pass;
 
-  gfx::Size viewport_size(1, 1);
+  gfx::Size viewport_size(100, 100);
   int root_pass_id = 1;
   RenderPass* root_pass;
 
