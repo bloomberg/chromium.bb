@@ -1379,6 +1379,9 @@
                   '|third_party/WebKit/LayoutTests/fast/file' \
                   '|third_party/WebKit/public/.*File'
     },
+    'blink_frames': {
+      'filepath': 'third_party/WebKit/Source/core/frame/'
+    },
     'blink_quota': {
       'filepath': 'third_party/WebKit/Source/modules/quota/' \
                   '|third_party/WebKit/Source/web/.*Quota' \
@@ -1646,6 +1649,7 @@
     'blink_fileapi': ['kinuko+fileapi@chromium.org',
                       'nhiroki@chromium.org',
                       'tzik@chromium.org'],
+    'blink_frames': ['blink-reviews-frames@chromium.org'],
     'blink_geolocation': ['mlamouri+watch-blink@chromium.org',
                           'mvanouwerkerk+watch@chromium.org',
                           'timvolodine@chromium.org'],
