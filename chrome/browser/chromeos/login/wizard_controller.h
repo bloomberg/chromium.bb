@@ -211,7 +211,7 @@ class WizardController : public BaseScreenDelegate,
 
   // Overridden from BaseScreenDelegate:
   void OnExit(BaseScreen& screen,
-              ExitCodes exit_code,
+              ScreenExitCode exit_code,
               const ::login::ScreenContext* context) override;
   void ShowCurrentScreen() override;
   ErrorScreen* GetErrorScreen() override;

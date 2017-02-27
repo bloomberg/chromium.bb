@@ -99,7 +99,7 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
     }
     case HostPairingController::STAGE_ENROLLMENT_SUCCESS: {
       remora_controller_->RemoveObserver(this);
-      Finish(WizardController::ENTERPRISE_ENROLLMENT_COMPLETED);
+      Finish(ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED);
       break;
     }
     case HostPairingController::STAGE_ENROLLMENT_ERROR: {

@@ -828,6 +828,8 @@ source_set("chromeos") {
     "login/screens/reset_screen.cc",
     "login/screens/reset_screen.h",
     "login/screens/reset_view.h",
+    "login/screens/screen_exit_code.cc",
+    "login/screens/screen_exit_code.h",
     "login/screens/screen_flow.h",
     "login/screens/terms_of_service_screen.cc",
     "login/screens/terms_of_service_screen.h",

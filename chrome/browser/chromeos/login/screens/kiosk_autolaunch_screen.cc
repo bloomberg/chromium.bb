@@ -32,8 +32,8 @@ void KioskAutolaunchScreen::Show() {
 }
 
 void KioskAutolaunchScreen::OnExit(bool confirmed) {
-  Finish(confirmed ? BaseScreenDelegate::KIOSK_AUTOLAUNCH_CONFIRMED
-                   : BaseScreenDelegate::KIOSK_AUTOLAUNCH_CANCELED);
+  Finish(confirmed ? ScreenExitCode::KIOSK_AUTOLAUNCH_CONFIRMED
+                   : ScreenExitCode::KIOSK_AUTOLAUNCH_CANCELED);
 }
 
 void KioskAutolaunchScreen::OnViewDestroyed(KioskAutolaunchScreenView* view) {

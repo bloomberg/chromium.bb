@@ -116,7 +116,7 @@ void HIDDetectionScreen::OnContinueButtonClicked() {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  Finish(BaseScreenDelegate::HID_DETECTION_COMPLETED);
+  Finish(ScreenExitCode::HID_DETECTION_COMPLETED);
 }
 
 void HIDDetectionScreen::OnViewDestroyed(HIDDetectionView* view) {

@@ -102,7 +102,7 @@ class BaseScreen {
 
   // Screen can call this method to notify framework that it have finished
   // it's work with |outcome|.
-  void Finish(BaseScreenDelegate::ExitCodes exit_code);
+  void Finish(ScreenExitCode exit_code);
 
   // The method is called each time some key in screen context is
   // updated by JS side. Default implementation does nothing, so

@@ -238,16 +238,16 @@ void EnrollmentScreen::OnCancel() {
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeCancel, elapsed_timer_);
 
-  const BaseScreenDelegate::ExitCodes exit_code =
-      config_.is_forced() ? BaseScreenDelegate::ENTERPRISE_ENROLLMENT_BACK
-                          : BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED;
+  const ScreenExitCode exit_code =
+      config_.is_forced() ? ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK
+                          : ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED;
   ClearAuth(
       base::Bind(&EnrollmentScreen::Finish, base::Unretained(this), exit_code));
 }
 
 void EnrollmentScreen::OnConfirmationClosed() {
   ClearAuth(base::Bind(&EnrollmentScreen::Finish, base::Unretained(this),
-                       BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED));
+                       ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED));
 }
 
 void EnrollmentScreen::OnAdJoined(const std::string& realm) {

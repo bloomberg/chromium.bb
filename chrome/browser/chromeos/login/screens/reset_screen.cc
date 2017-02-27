@@ -144,7 +144,7 @@ void ResetScreen::OnCancel() {
   if (context_.GetBoolean(kContextKeyIsRollbackAvailable) &&
       context_.GetBoolean(kContextKeyIsRollbackChecked))
     OnToggleRollback();
-  Finish(BaseScreenDelegate::RESET_CANCELED);
+  Finish(ScreenExitCode::RESET_CANCELED);
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
 }
 

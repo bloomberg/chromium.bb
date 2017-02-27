@@ -315,7 +315,7 @@ void NetworkScreen::NotifyOnConnection() {
   // TODO(nkostylev): Check network connectivity.
   UnsubscribeNetworkNotification();
   connection_timer_.Stop();
-  Finish(BaseScreenDelegate::NETWORK_CONNECTED);
+  Finish(ScreenExitCode::NETWORK_CONNECTED);
 }
 
 void NetworkScreen::OnConnectionTimeout() {

@@ -98,9 +98,9 @@ void EulaScreen::Hide() {
 
 void EulaScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionAcceptButtonClicked)
-    Finish(BaseScreenDelegate::EULA_ACCEPTED);
+    Finish(ScreenExitCode::EULA_ACCEPTED);
   else if (action_id == kUserActionBackButtonClicked)
-    Finish(BaseScreenDelegate::EULA_BACK);
+    Finish(ScreenExitCode::EULA_BACK);
   else
     BaseScreen::OnUserAction(action_id);
 }

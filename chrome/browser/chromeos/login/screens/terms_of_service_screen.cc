@@ -63,11 +63,11 @@ void TermsOfServiceScreen::Hide() {
 }
 
 void TermsOfServiceScreen::OnDecline() {
-  Finish(BaseScreenDelegate::TERMS_OF_SERVICE_DECLINED);
+  Finish(ScreenExitCode::TERMS_OF_SERVICE_DECLINED);
 }
 
 void TermsOfServiceScreen::OnAccept() {
-  Finish(BaseScreenDelegate::TERMS_OF_SERVICE_ACCEPTED);
+  Finish(ScreenExitCode::TERMS_OF_SERVICE_ACCEPTED);
 }
 
 void TermsOfServiceScreen::OnViewDestroyed(TermsOfServiceScreenView* view) {

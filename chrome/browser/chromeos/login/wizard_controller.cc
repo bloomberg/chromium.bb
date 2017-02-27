@@ -1085,9 +1085,9 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, BaseScreenDelegate overrides:
 void WizardController::OnExit(BaseScreen& /* screen */,
-                              ExitCodes exit_code,
+                              ScreenExitCode exit_code,
                               const ::login::ScreenContext* /* context */) {
-  VLOG(1) << "Wizard screen exit code: " << exit_code;
+  VLOG(1) << "Wizard screen exit code: " << ExitCodeToString(exit_code);
   const OobeScreen previous_screen = current_screen_->screen_id();
   if (IsOOBEStepToTrack(previous_screen)) {
     RecordUMAHistogramForOOBEStepCompletionTime(
@@ -1096,78 +1096,78 @@ void WizardController::OnExit(BaseScreen& /* screen */,
             screen_show_times_[GetOobeScreenName(previous_screen)]);
   }
   switch (exit_code) {
-    case HID_DETECTION_COMPLETED:
+    case ScreenExitCode::HID_DETECTION_COMPLETED:
       OnHIDDetectionCompleted();
       break;
-    case NETWORK_CONNECTED:
+    case ScreenExitCode::NETWORK_CONNECTED:
       OnNetworkConnected();
       break;
-    case CONNECTION_FAILED:
+    case ScreenExitCode::CONNECTION_FAILED:
       OnConnectionFailed();
       break;
-    case UPDATE_INSTALLED:
-    case UPDATE_NOUPDATE:
+    case ScreenExitCode::UPDATE_INSTALLED:
+    case ScreenExitCode::UPDATE_NOUPDATE:
       OnUpdateCompleted();
       break;
-    case UPDATE_ERROR_CHECKING_FOR_UPDATE:
+    case ScreenExitCode::UPDATE_ERROR_CHECKING_FOR_UPDATE:
       OnUpdateErrorCheckingForUpdate();
       break;
-    case UPDATE_ERROR_UPDATING:
+    case ScreenExitCode::UPDATE_ERROR_UPDATING:
       OnUpdateErrorUpdating(false /* is_critical_update */);
       break;
-    case UPDATE_ERROR_UPDATING_CRITICAL_UPDATE:
+    case ScreenExitCode::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE:
       OnUpdateErrorUpdating(true /* is_critical_update */);
       break;
-    case USER_IMAGE_SELECTED:
+    case ScreenExitCode::USER_IMAGE_SELECTED:
       OnUserImageSelected();
       break;
-    case EULA_ACCEPTED:
+    case ScreenExitCode::EULA_ACCEPTED:
       OnEulaAccepted();
       break;
-    case EULA_BACK:
+    case ScreenExitCode::EULA_BACK:
       ShowNetworkScreen();
       break;
-    case ENABLE_DEBUGGING_CANCELED:
+    case ScreenExitCode::ENABLE_DEBUGGING_CANCELED:
       OnDeviceModificationCanceled();
       break;
-    case ENABLE_DEBUGGING_FINISHED:
+    case ScreenExitCode::ENABLE_DEBUGGING_FINISHED:
       OnDeviceModificationCanceled();
       break;
-    case ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED:
+    case ScreenExitCode::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED:
       OnAutoEnrollmentCheckCompleted();
       break;
-    case ENTERPRISE_ENROLLMENT_COMPLETED:
+    case ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED:
       OnEnrollmentDone();
       break;
-    case ENTERPRISE_ENROLLMENT_BACK:
+    case ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK:
       retry_auto_enrollment_check_ = true;
       ShowAutoEnrollmentCheckScreen();
       break;
-    case RESET_CANCELED:
+    case ScreenExitCode::RESET_CANCELED:
       OnDeviceModificationCanceled();
       break;
-    case KIOSK_AUTOLAUNCH_CANCELED:
+    case ScreenExitCode::KIOSK_AUTOLAUNCH_CANCELED:
       OnKioskAutolaunchCanceled();
       break;
-    case KIOSK_AUTOLAUNCH_CONFIRMED:
+    case ScreenExitCode::KIOSK_AUTOLAUNCH_CONFIRMED:
       OnKioskAutolaunchConfirmed();
       break;
-    case KIOSK_ENABLE_COMPLETED:
+    case ScreenExitCode::KIOSK_ENABLE_COMPLETED:
       OnKioskEnableCompleted();
       break;
-    case TERMS_OF_SERVICE_DECLINED:
+    case ScreenExitCode::TERMS_OF_SERVICE_DECLINED:
       OnTermsOfServiceDeclined();
       break;
-    case TERMS_OF_SERVICE_ACCEPTED:
+    case ScreenExitCode::TERMS_OF_SERVICE_ACCEPTED:
       OnTermsOfServiceAccepted();
       break;
-    case ARC_TERMS_OF_SERVICE_FINISHED:
+    case ScreenExitCode::ARC_TERMS_OF_SERVICE_FINISHED:
       OnArcTermsOfServiceFinished();
       break;
-    case WRONG_HWID_WARNING_SKIPPED:
+    case ScreenExitCode::WRONG_HWID_WARNING_SKIPPED:
       OnWrongHWIDWarningSkipped();
       break;
-    case CONTROLLER_PAIRING_FINISHED:
+    case ScreenExitCode::CONTROLLER_PAIRING_FINISHED:
       OnControllerPairingFinished();
       break;
     default:

@@ -35,8 +35,8 @@ void EnableDebuggingScreen::Hide() {
 }
 
 void EnableDebuggingScreen::OnExit(bool success) {
-  Finish(success ? BaseScreenDelegate::ENABLE_DEBUGGING_FINISHED :
-                   BaseScreenDelegate::ENABLE_DEBUGGING_CANCELED);
+  Finish(success ? ScreenExitCode::ENABLE_DEBUGGING_FINISHED
+                 : ScreenExitCode::ENABLE_DEBUGGING_CANCELED);
 }
 
 void EnableDebuggingScreen::OnViewDestroyed(EnableDebuggingScreenView* view) {

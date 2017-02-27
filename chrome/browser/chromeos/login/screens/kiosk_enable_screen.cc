@@ -31,7 +31,7 @@ void KioskEnableScreen::Show() {
 }
 
 void KioskEnableScreen::OnExit() {
-  Finish(BaseScreenDelegate::KIOSK_ENABLE_COMPLETED);
+  Finish(ScreenExitCode::KIOSK_ENABLE_COMPLETED);
 }
 
 void KioskEnableScreen::OnViewDestroyed(KioskEnableScreenView* view) {

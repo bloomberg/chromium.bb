@@ -198,7 +198,7 @@ TEST_F(EnrollmentScreenUnitTest, FinishesEnrollmentFlow) {
   // This is how we check that the code finishes and cleanly exits
   // the enterprise enrollment flow.
   EXPECT_CALL(*GetBaseScreenDelegate(),
-              OnExit(_, BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED, _))
+              OnExit(_, ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED, _))
       .Times(1);
 
   // Start zero-touch enrollment.

@@ -116,7 +116,7 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
     }
     case ControllerPairingController::STAGE_WAITING_FOR_CREDENTIALS: {
       shark_controller_->RemoveObserver(this);
-      Finish(WizardController::CONTROLLER_PAIRING_FINISHED);
+      Finish(ScreenExitCode::CONTROLLER_PAIRING_FINISHED);
       desired_page = kPageEnrollmentIntroduction;
       break;
     }

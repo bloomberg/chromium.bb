@@ -34,7 +34,7 @@ void WrongHWIDScreen::Hide() {
 }
 
 void WrongHWIDScreen::OnExit() {
-  Finish(BaseScreenDelegate::WRONG_HWID_WARNING_SKIPPED);
+  Finish(ScreenExitCode::WRONG_HWID_WARNING_SKIPPED);
 }
 
 void WrongHWIDScreen::OnViewDestroyed(WrongHWIDScreenView* view) {

@@ -96,7 +96,7 @@ void BaseScreen::CommitContextChanges() {
   channel_->CommitContextChanges(diff);
 }
 
-void BaseScreen::Finish(BaseScreenDelegate::ExitCodes exit_code) {
+void BaseScreen::Finish(ScreenExitCode exit_code) {
   base_screen_delegate_->OnExit(*this, exit_code, &context_);
 }
 
