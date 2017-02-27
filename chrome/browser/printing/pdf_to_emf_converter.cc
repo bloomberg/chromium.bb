@@ -373,8 +373,7 @@ bool PostScriptMetaFile::SafePlayback(HDC hdc) const {
           reinterpret_cast<const EMRGDICOMMENT*>(emf_record);
       const char* data = reinterpret_cast<const char*>(comment->Data);
       const uint16_t* ptr = reinterpret_cast<const uint16_t*>(data);
-      int ret =
-          ExtEscape(hdc, POSTSCRIPT_PASSTHROUGH, 2 + *ptr, data, 0, nullptr);
+      int ret = ExtEscape(hdc, PASSTHROUGH, 2 + *ptr, data, 0, nullptr);
       DCHECK_EQ(*ptr, ret);
     }
   }

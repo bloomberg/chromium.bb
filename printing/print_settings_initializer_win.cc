@@ -12,7 +12,7 @@ namespace printing {
 
 namespace {
 
-bool HasEscapeSupprt(HDC hdc, DWORD escape) {
+bool HasEscapeSupport(HDC hdc, DWORD escape) {
   const char* ptr = reinterpret_cast<const char*>(&escape);
   return ExtEscape(hdc, QUERYESCSUPPORT, sizeof(escape), ptr, 0, nullptr) > 0;
 }
@@ -21,18 +21,7 @@ bool IsTechnology(HDC hdc, const char* technology) {
   if (::GetDeviceCaps(hdc, TECHNOLOGY) != DT_RASPRINTER)
     return false;
 
-  // If postscript, try to query Postscript Identify and then set to
-  // postscript mode before calling any more ExtEscape functions. Otherwise,
-  // PSLEVEL query will not work.
-  if (strcmp(technology, "PostScript") == 0 &&
-      HasEscapeSupprt(hdc, POSTSCRIPT_IDENTIFY)) {
-    DWORD mode = PSIDENT_PSCENTRIC;
-    const char* ptr = reinterpret_cast<const char*>(&mode);
-    ExtEscape(hdc, POSTSCRIPT_IDENTIFY, sizeof(DWORD), ptr, 0, nullptr);
-    return true;
-  }
-
-  if (!HasEscapeSupprt(hdc, GETTECHNOLOGY))
+  if (!HasEscapeSupport(hdc, GETTECHNOLOGY))
     return false;
 
   char buf[256];
@@ -42,36 +31,59 @@ bool IsTechnology(HDC hdc, const char* technology) {
   return strcmp(buf, technology) == 0;
 }
 
+void SetPrinterToGdiMode(HDC hdc) {
+  // Try to set to GDI centric mode
+  DWORD mode = PSIDENT_GDICENTRIC;
+  const char* ptr = reinterpret_cast<const char*>(&mode);
+  ExtEscape(hdc, POSTSCRIPT_IDENTIFY, sizeof(DWORD), ptr, 0, nullptr);
+}
+
+int GetPrinterPostScriptLevel(HDC hdc) {
+  constexpr int param = FEATURESETTING_PSLEVEL;
+  const char* param_char_ptr = reinterpret_cast<const char*>(&param);
+  int param_out = 0;
+  char* param_out_char_ptr = reinterpret_cast<char*>(&param_out);
+  if (ExtEscape(hdc, GET_PS_FEATURESETTING, sizeof(param), param_char_ptr,
+                sizeof(param_out), param_out_char_ptr) > 0) {
+    return param_out;
+  }
+  return 0;
+}
+
 bool IsPrinterPostScript(HDC hdc, int* level) {
   static constexpr char kPostScriptDriver[] = "PostScript";
-  if (!IsTechnology(hdc, kPostScriptDriver)) {
-    return false;
-  }
 
-  // Query the PS Level if possible.
-  if (HasEscapeSupprt(hdc, GET_PS_FEATURESETTING)) {
-    constexpr int param = FEATURESETTING_PSLEVEL;
-    const char* param_char_ptr = reinterpret_cast<const char*>(&param);
-    int param_out = -1;
-    char* param_out_char_ptr = reinterpret_cast<char*>(&param_out);
-    if (ExtEscape(hdc, GET_PS_FEATURESETTING, sizeof(param), param_char_ptr,
-                  sizeof(param_out), param_out_char_ptr) > 0) {
-      if (param_out < 2 || param_out > 3)
-        return false;
-
-      *level = param_out;
-      return true;
+  // If printer does not support POSTSCRIPT_IDENTIFY, it cannot be set to GDI
+  // mode to check the language level supported. See if it looks like a
+  // postscript printer and supports the postscript functions that are
+  // supported in compatability mode. If so set to level 2 postscript.
+  if (!HasEscapeSupport(hdc, POSTSCRIPT_IDENTIFY)) {
+    if (!IsTechnology(hdc, kPostScriptDriver))
+      return false;
+    if (!HasEscapeSupport(hdc, POSTSCRIPT_PASSTHROUGH) ||
+        !HasEscapeSupport(hdc, POSTSCRIPT_DATA)) {
+      return false;
     }
-  }
-
-  // If it looks like a PS printer.
-  if (HasEscapeSupprt(hdc, POSTSCRIPT_PASSTHROUGH) &&
-      HasEscapeSupprt(hdc, POSTSCRIPT_DATA)) {
     *level = 2;
     return true;
   }
 
-  return false;
+  // Printer supports POSTSCRIPT_IDENTIFY so we can assume it has a postscript
+  // driver. Set the printer to GDI mode in order to query the postscript
+  // level. Use GDI mode instead of PostScript mode so that if level detection
+  // fails or returns language level < 2 we can fall back to normal printing.
+  // Note: This escape must be called before other escapes.
+  SetPrinterToGdiMode(hdc);
+  if (!HasEscapeSupport(hdc, GET_PS_FEATURESETTING)) {
+    // Can't query the level, use level 2 to be safe
+    *level = 2;
+    return true;
+  }
+
+  // Get the language level. If invalid or < 2, return false to set printer to
+  // normal printing mode.
+  *level = GetPrinterPostScriptLevel(hdc);
+  return *level == 2 || *level == 3;
 }
 
 bool IsPrinterXPS(HDC hdc) {
