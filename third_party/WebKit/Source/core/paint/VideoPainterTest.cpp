@@ -81,7 +81,7 @@ class StubWebMediaPlayer : public WebMediaPlayer {
 
 class StubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  // FrameLoaderClient
+  // LocalFrameClient
   std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,

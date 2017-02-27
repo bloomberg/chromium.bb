@@ -17,7 +17,7 @@ namespace blink {
 
 namespace {
 
-// Stub implementation of FrameLoaderClient for the purpose of testing. It will
+// Stub implementation of LocalFrameClient for the purpose of testing. It will
 // alow callers to set the parent/top frames by calling |setParent|. It is used
 // in ElementVisibilityObserverTest in order to mock a RemoteFrame parent of a
 // LocalFrame.

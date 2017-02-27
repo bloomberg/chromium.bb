@@ -145,6 +145,7 @@
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -196,7 +197,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameFetchContext.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ImageLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/loader/PrerendererClient.h"
@@ -5631,7 +5631,7 @@ bool Document::canExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
   DCHECK(frame())
       << "you are querying canExecuteScripts on a non contextDocument.";
 
-  FrameLoaderClient* client = frame()->loader().client();
+  LocalFrameClient* client = frame()->loader().client();
   if (!client)
     return false;
 

@@ -188,7 +188,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
 };
 
 // This test class sets up a mock frame loader client.
-class FrameFetchContextMockedFrameLoaderClientTest
+class FrameFetchContextMockedLocalFrameClientTest
     : public FrameFetchContextTest {
  protected:
   void SetUp() override {
@@ -712,7 +712,7 @@ TEST_F(FrameFetchContextTest, DisabledDataSaver) {
 
 // Tests that the embedder gets correct notification when a resource is loaded
 // from the memory cache.
-TEST_F(FrameFetchContextMockedFrameLoaderClientTest,
+TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        DispatchDidLoadResourceFromMemoryCache) {
   ResourceRequest resourceRequest(url);
   Resource* resource = MockResource::create(resourceRequest);
@@ -732,7 +732,7 @@ TEST_F(FrameFetchContextMockedFrameLoaderClientTest,
 
 // Tests that when a resource with certificate errors is loaded from the memory
 // cache, the embedder is notified.
-TEST_F(FrameFetchContextMockedFrameLoaderClientTest,
+TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        MemoryCacheCertificateError) {
   ResourceRequest resourceRequest(url);
   ResourceResponse response;

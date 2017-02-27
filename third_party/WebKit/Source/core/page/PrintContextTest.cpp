@@ -73,8 +73,8 @@ class MockCanvas : public SkCanvas {
 
 class PrintContextTest : public RenderingTest {
  protected:
-  explicit PrintContextTest(FrameLoaderClient* frameLoaderClient = nullptr)
-      : RenderingTest(frameLoaderClient) {}
+  explicit PrintContextTest(LocalFrameClient* localFrameClient = nullptr)
+      : RenderingTest(localFrameClient) {}
 
   void SetUp() override {
     RenderingTest::SetUp();

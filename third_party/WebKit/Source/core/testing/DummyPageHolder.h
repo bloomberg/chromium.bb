@@ -31,13 +31,13 @@
 #ifndef DummyPageHolder_h
 #define DummyPageHolder_h
 
-#include "core/loader/FrameLoaderClient.h"
+#include <memory>
+#include "core/frame/LocalFrameClient.h"
 #include "core/page/Page.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 
@@ -70,7 +70,7 @@ class DummyPageHolder {
   static std::unique_ptr<DummyPageHolder> create(
       const IntSize& initialViewSize = IntSize(),
       Page::PageClients* = 0,
-      FrameLoaderClient* = nullptr,
+      LocalFrameClient* = nullptr,
       FrameSettingOverrideFunction = nullptr,
       InterfaceProvider* = nullptr);
   ~DummyPageHolder();
@@ -83,7 +83,7 @@ class DummyPageHolder {
  private:
   DummyPageHolder(const IntSize& initialViewSize,
                   Page::PageClients*,
-                  FrameLoaderClient*,
+                  LocalFrameClient*,
                   FrameSettingOverrideFunction settingOverrider,
                   InterfaceProvider* = nullptr);
 
@@ -96,7 +96,7 @@ class DummyPageHolder {
   // TODO: rework the tests to not require cross-thread access.
   CrossThreadPersistent<LocalFrame> m_frame;
 
-  Persistent<FrameLoaderClient> m_frameLoaderClient;
+  Persistent<LocalFrameClient> m_localFrameClient;
 };
 
 }  // namespace blink

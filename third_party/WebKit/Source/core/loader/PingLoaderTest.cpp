@@ -20,7 +20,7 @@ namespace blink {
 
 namespace {
 
-class PingFrameLoaderClient : public EmptyLocalFrameClient {
+class PingLocalFrameClient : public EmptyLocalFrameClient {
  public:
   void dispatchWillSendRequest(ResourceRequest& request) override {
     if (request.httpContentType() == "text/ping")
@@ -36,7 +36,7 @@ class PingFrameLoaderClient : public EmptyLocalFrameClient {
 class PingLoaderTest : public ::testing::Test {
  public:
   void SetUp() override {
-    m_client = new PingFrameLoaderClient;
+    m_client = new PingLocalFrameClient;
     m_pageHolder = DummyPageHolder::create(IntSize(1, 1), nullptr, m_client);
   }
 
@@ -73,7 +73,7 @@ class PingLoaderTest : public ::testing::Test {
   }
 
  private:
-  Persistent<PingFrameLoaderClient> m_client;
+  Persistent<PingLocalFrameClient> m_client;
   std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 

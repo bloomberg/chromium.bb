@@ -36,11 +36,11 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/private/CrossOriginPreflightResultCache.h"
 #include "core/page/ChromeClient.h"
@@ -456,7 +456,7 @@ void DocumentThreadableLoader::cancel() {
   }
 
   // FIXME: This error is sent to the client in didFail(), so it should not be
-  // an internal one. Use FrameLoaderClient::cancelledError() instead.
+  // an internal one. Use LocalFrameClient::cancelledError() instead.
   ResourceError error(errorDomainBlinkInternal, 0, resource()->url(),
                       "Load cancelled");
   error.setIsCancellation(true);
@@ -933,7 +933,7 @@ void DocumentThreadableLoader::didTimeout(TimerBase* timer) {
   DCHECK(m_client);
 
   // Using values from net/base/net_error_list.h ERR_TIMED_OUT, Same as existing
-  // FIXME above - this error should be coming from FrameLoaderClient to be
+  // FIXME above - this error should be coming from LocalFrameClient to be
   // identifiable.
   static const int timeoutError = -7;
   ResourceError error("net", timeoutError, resource()->url(), String());

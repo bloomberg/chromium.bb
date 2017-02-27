@@ -54,6 +54,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -68,7 +69,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormSubmission.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/NavigationScheduler.h"
@@ -236,8 +236,8 @@ void FrameLoader::init() {
   takeObjectSnapshot();
 }
 
-FrameLoaderClient* FrameLoader::client() const {
-  return static_cast<FrameLoaderClient*>(m_frame->client());
+LocalFrameClient* FrameLoader::client() const {
+  return static_cast<LocalFrameClient*>(m_frame->client());
 }
 
 void FrameLoader::setDefersLoading(bool defers) {

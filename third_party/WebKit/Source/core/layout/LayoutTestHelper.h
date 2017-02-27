@@ -33,7 +33,7 @@ class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
     EmptyLocalFrameClient::trace(visitor);
   }
 
-  // FrameLoaderClient overrides:
+  // LocalFrameClient overrides:
   LocalFrame* firstChild() const override { return m_child.get(); }
   LocalFrame* createFrame(const FrameLoadRequest&,
                           const AtomicString& name,
@@ -117,7 +117,7 @@ class RenderingTest : public testing::Test {
   void loadAhem();
 
  private:
-  Persistent<FrameLoaderClient> m_frameLoaderClient;
+  Persistent<LocalFrameClient> m_localFrameClient;
   std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 

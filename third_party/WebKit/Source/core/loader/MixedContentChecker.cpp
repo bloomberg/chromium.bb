@@ -31,12 +31,12 @@
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -315,7 +315,7 @@ bool MixedContentChecker::shouldBlockFetch(
   Settings* settings = mixedFrame->settings();
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
-  FrameLoaderClient* client = frame->loader().client();
+  LocalFrameClient* client = frame->loader().client();
   SecurityOrigin* securityOrigin =
       mixedFrame->securityContext()->getSecurityOrigin();
   bool allowed = false;
@@ -442,7 +442,7 @@ bool MixedContentChecker::shouldBlockWebSocket(
   Settings* settings = mixedFrame->settings();
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
-  FrameLoaderClient* client = frame->loader().client();
+  LocalFrameClient* client = frame->loader().client();
   SecurityOrigin* securityOrigin =
       mixedFrame->securityContext()->getSecurityOrigin();
   bool allowed = false;
@@ -553,7 +553,7 @@ void MixedContentChecker::handleCertificateError(
 
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
-  FrameLoaderClient* client = frame->loader().client();
+  LocalFrameClient* client = frame->loader().client();
   bool strictMixedContentCheckingForPlugin =
       effectiveFrame->settings() &&
       effectiveFrame->settings()->getStrictMixedContentCheckingForPlugin();

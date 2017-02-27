@@ -38,6 +38,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -47,7 +48,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutBox.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/ANGLEInstancedArrays.h"
@@ -699,7 +699,7 @@ WebGLRenderingContextBase::createWebGraphicsContext3DProvider(
   }
   Settings* settings = frame->settings();
 
-  // The FrameLoaderClient might block creation of a new WebGL context despite
+  // The LocalFrameClient might block creation of a new WebGL context despite
   // the page settings; in particular, if WebGL contexts were lost one or more
   // times via the GL_ARB_robustness extension.
   if (!frame->loader().client()->allowWebGL(settings &&

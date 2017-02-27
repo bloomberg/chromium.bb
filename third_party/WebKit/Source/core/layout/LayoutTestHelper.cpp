@@ -41,15 +41,15 @@ ChromeClient& RenderingTest::chromeClient() const {
   return client;
 }
 
-RenderingTest::RenderingTest(FrameLoaderClient* frameLoaderClient)
-    : m_frameLoaderClient(frameLoaderClient) {}
+RenderingTest::RenderingTest(LocalFrameClient* localFrameClient)
+    : m_localFrameClient(localFrameClient) {}
 
 void RenderingTest::SetUp() {
   Page::PageClients pageClients;
   fillWithEmptyClients(pageClients);
   pageClients.chromeClient = &chromeClient();
   m_pageHolder = DummyPageHolder::create(
-      IntSize(800, 600), &pageClients, m_frameLoaderClient, settingOverrider());
+      IntSize(800, 600), &pageClients, m_localFrameClient, settingOverrider());
 
   Settings::setMockScrollbarsEnabled(true);
   RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
