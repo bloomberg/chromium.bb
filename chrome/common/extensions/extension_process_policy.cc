@@ -79,8 +79,8 @@ bool IsIsolateExtensionsEnabled() {
   const std::string group_name =
       base::FieldTrialList::FindFullName("SiteIsolationExtensions");
   // Use StartsWith() for more flexibility (e.g. multiple Enabled groups).
-  return base::StartsWith(group_name, "Enabled",
-                          base::CompareCase::INSENSITIVE_ASCII);
+  return !base::StartsWith(group_name, "Control",
+                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
 }  // namespace extensions
