@@ -376,7 +376,14 @@ class TestImporter(object):
             '--gerrit',
             '-m',
             description,
-        ] + ['--cc=' + email_address for email_address in directory_owners])
+        ] + self._cc_part(directory_owners))
+
+    @staticmethod
+    def _cc_part(directory_owners):
+        cc_part = []
+        for owner_tuple in sorted(directory_owners):
+            cc_part.extend('--cc=' + owner for owner in owner_tuple)
+        return cc_part
 
     def get_directory_owners(self):
         """Returns a mapping of email addresses to owners of changed tests."""

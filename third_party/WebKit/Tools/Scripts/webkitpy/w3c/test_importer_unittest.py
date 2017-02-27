@@ -183,3 +183,12 @@ class TestImporterTest(LoggingTestCase):
             '# external/wpt/foo [ Pass ]\n')
         importer = TestImporter(host)
         self.assertEqual(importer.get_directory_owners(), {})
+
+    def test_cc_part(self):
+        directory_owners = {
+            ('someone@chromium.org',): ['external/wpt/foo', 'external/wpt/bar'],
+            ('x@chromium.org', 'y@chromium.org'): ['external/wpt/baz'],
+        }
+        self.assertEqual(
+            TestImporter._cc_part(directory_owners),
+            ['--cc=someone@chromium.org', '--cc=x@chromium.org', '--cc=y@chromium.org'])
