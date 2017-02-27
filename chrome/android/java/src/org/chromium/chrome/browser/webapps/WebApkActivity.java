@@ -31,6 +31,9 @@ public class WebApkActivity extends WebappActivity {
     /** Manages whether to check update for the WebAPK, and starts update check if needed. */
     private WebApkUpdateManager mUpdateManager;
 
+    /** Indicates whether launching renderer in WebAPK process is enabled. */
+    private boolean mCanLaunchRendererInWebApkProcess;
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -124,6 +127,7 @@ public class WebApkActivity extends WebappActivity {
         super.finishNativeInitialization();
         if (!isInitialized()) return;
         getActivityTab().setWebappManifestScope(mWebappInfo.scopeUri().toString());
+        mCanLaunchRendererInWebApkProcess = ChromeWebApkHost.canLaunchRendererInWebApkProcess();
     }
 
     @Override
@@ -149,20 +153,14 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        // WebAPK hosts Chrome's renderer processes by declaring the Chrome's renderer service in
-        // its AndroidManifest.xml. We set {@link ChildProcessCreationParams} for WebAPK's renderer
-        // process so the {@link ChildProcessLauncher} knows which application's renderer
-        // service to connect.
-        initializeChildProcessCreationParams(true);
-    }
+    public void onResumeWithNative() {
+        super.onResumeWithNative();
 
-    @Override
-    protected void initializeChildProcessCreationParams() {
-        // TODO(hanxi): crbug.com/611842. Investigates whether this function works for multiple
-        // windows or with --site-per-process enabled.
-        initializeChildProcessCreationParams(true);
+        // When launching Chrome renderer in WebAPK process is enabled, WebAPK hosts Chrome's
+        // renderer processes by declaring the Chrome's renderer service in its AndroidManifest.xml
+        // and sets {@link ChildProcessCreationParams} for WebAPK's renderer process so the
+        // {@link ChildProcessLauncher} knows which application's renderer service to connect to.
+        initializeChildProcessCreationParams(mCanLaunchRendererInWebApkProcess);
     }
 
     @Override

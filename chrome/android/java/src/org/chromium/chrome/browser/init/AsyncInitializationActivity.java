@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.metrics.MemoryUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
-import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.lang.reflect.Field;
@@ -125,7 +124,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
 
         // Kick off long running IO tasks that can be done in parallel.
         mNativeInitializationController = new NativeInitializationController(this);
-        initializeChildProcessCreationParams();
         mNativeInitializationController.startBackgroundTasks(shouldAllocateChildConnection());
     }
 
@@ -134,11 +132,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     public boolean shouldAllocateChildConnection() {
         return true;
     }
-
-    /**
-     * Allow derived classes to initialize their own {@link ChildProcessCreationParams}.
-     */
-    protected void initializeChildProcessCreationParams() {}
 
     @Override
     public void postInflationStartup() {

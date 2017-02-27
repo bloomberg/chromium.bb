@@ -133,6 +133,12 @@ public class ChromeWebApkHost {
         return sGooglePlayInstallState;
     }
 
+    /* Returns whether launching renderer in WebAPK process is enabled by Chrome. */
+    public static boolean canLaunchRendererInWebApkProcess() {
+        return isEnabled() && LibraryLoader.isInitialized()
+                && nativeCanLaunchRendererInWebApkProcess();
+    }
+
     /**
      * Check the cached value to figure out if the feature is enabled. We have to use the cached
      * value because native library may not yet been loaded.
@@ -179,5 +185,6 @@ public class ChromeWebApkHost {
     }
 
     private static native boolean nativeCanUseGooglePlayToInstallWebApk();
+    private static native boolean nativeCanLaunchRendererInWebApkProcess();
     private static native boolean nativeCanInstallFromUnknownSources();
 }
