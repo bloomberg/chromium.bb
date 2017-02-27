@@ -293,8 +293,6 @@ void DisplayChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
   const auto& cached_displays = display_configurator_->cached_displays();
   if (!cached_displays.empty())
     OnDisplayModeChanged(cached_displays);
-  else
-    VLOG(1) << "Not updating touchscreen associations";
 }
 
 // static

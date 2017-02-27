@@ -276,7 +276,7 @@ void AssociateTouchscreens(
   AssociateToSingleDisplay(&displays, &devices);
 
   for (const ManagedDisplayInfo* display : displays)
-    LOG(WARNING) << "Unmatched display " << display->name();
+    VLOG(2) << "Unmatched display " << display->name();
   for (const ui::TouchscreenDevice* device : devices)
     LOG(WARNING) << "Unmatched device " << device->name;
 }
