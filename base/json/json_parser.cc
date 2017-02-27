@@ -680,11 +680,7 @@ std::unique_ptr<Value> JSONParser::ConsumeNumber() {
   end_index = index_;
 
   // The optional fraction part.
-  if (*pos_ == '.') {
-    if (!CanConsume(1)) {
-      ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-      return nullptr;
-    }
+  if (CanConsume(1) && *pos_ == '.') {
     NextChar();
     if (!ReadInt(true)) {
       ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
@@ -694,10 +690,15 @@ std::unique_ptr<Value> JSONParser::ConsumeNumber() {
   }
 
   // Optional exponent part.
-  if (*pos_ == 'e' || *pos_ == 'E') {
+  if (CanConsume(1) && (*pos_ == 'e' || *pos_ == 'E')) {
     NextChar();
-    if (*pos_ == '-' || *pos_ == '+')
+    if (!CanConsume(1)) {
+      ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
+      return nullptr;
+    }
+    if (*pos_ == '-' || *pos_ == '+') {
       NextChar();
+    }
     if (!ReadInt(true)) {
       ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
       return nullptr;
@@ -742,13 +743,18 @@ std::unique_ptr<Value> JSONParser::ConsumeNumber() {
 }
 
 bool JSONParser::ReadInt(bool allow_leading_zeros) {
-  char first = *pos_;
-  int len = 0;
+  size_t len = 0;
+  char first = 0;
 
-  char c = first;
-  while (CanConsume(1) && IsAsciiDigit(c)) {
-    c = *NextChar();
+  while (CanConsume(1)) {
+    if (!IsAsciiDigit(*pos_))
+      break;
+
+    if (len == 0)
+      first = *pos_;
+
     ++len;
+    NextChar();
   }
 
   if (len == 0)
