@@ -455,11 +455,12 @@ static const TX_SIZE max_txsize_lookup[BLOCK_SIZES] = {
 #endif  // CONFIG_TX64X64
 };
 
+#if CONFIG_RECT_TX
 static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
   // 2X2,    2X4,      4X2,
   TX_2X2,    TX_2X2,   TX_2X2,
-#endif
+#endif  // CONFIG_CB4X4
   //                   4X4
                        TX_4X4,
   // 4X8,    8X4,      8X8
@@ -486,6 +487,9 @@ static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES] = {
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_TX64X64
 };
+#else
+#define max_txsize_rect_lookup max_txsize_lookup
+#endif  // CONFIG_RECT_TX
 
 #if (CONFIG_VAR_TX || CONFIG_RECT_TX)
 // Same as "max_txsize_lookup[bsize] - TX_8X8", except for rectangular
