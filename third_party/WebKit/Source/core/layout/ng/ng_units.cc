@@ -59,6 +59,16 @@ String NGLogicalRect::ToString() const {
                         size.block_size.toString().ascii().data());
 }
 
+NGPixelSnappedPhysicalRect NGPhysicalRect::SnapToDevicePixels() const {
+  NGPixelSnappedPhysicalRect snappedRect;
+  snappedRect.left = roundToInt(location.left);
+  snappedRect.top = roundToInt(location.top);
+  snappedRect.width = snapSizeToPixel(size.width, location.left);
+  snappedRect.height = snapSizeToPixel(size.height, location.top);
+
+  return snappedRect;
+}
+
 NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
     NGWritingMode mode,
     TextDirection direction,

@@ -17,6 +17,7 @@ class LayoutUnit;
 struct NGPhysicalOffset;
 struct NGPhysicalSize;
 struct NGBoxStrut;
+struct NGPixelSnappedPhysicalRect;
 
 #define NGSizeIndefinite LayoutUnit(-1)
 
@@ -150,12 +151,22 @@ inline std::ostream& operator<<(std::ostream& stream,
 // NGPhysicalLocation is the position of a rect (typically a fragment) relative
 // to the root document.
 struct NGPhysicalLocation {
+  NGPhysicalLocation() {}
+  NGPhysicalLocation(LayoutUnit left, LayoutUnit top) : left(left), top(top) {}
   LayoutUnit left;
   LayoutUnit top;
 };
 
-struct NGPhysicalRect {
-  NGPhysicalOffset offset;
+struct CORE_EXPORT NGPhysicalRect {
+  NGPhysicalRect();
+  NGPhysicalRect(const NGPhysicalLocation& location, const NGPhysicalSize& size)
+      : location(location), size(size) {}
+
+  NGPhysicalLocation Location() const { return location; }
+  NGPhysicalSize Size() const { return size; }
+  NGPixelSnappedPhysicalRect SnapToDevicePixels() const;
+
+  NGPhysicalLocation location;
   NGPhysicalSize size;
 };
 
