@@ -622,9 +622,6 @@ endif ()
 if (CONFIG_UNIT_TESTS)
   # Create test_libaom target and the targets it depends on.
   setup_aom_test_targets()
-
-  # Create aom_dsp test targets and update dependent test targets.
-  setup_aom_dsp_test_targets()
 endif ()
 
 if (XCODE)

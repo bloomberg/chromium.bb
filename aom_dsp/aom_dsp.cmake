@@ -270,11 +270,6 @@ if (CONFIG_MOTION_VAR)
       ${AOM_DSP_ENCODER_INTRIN_SSE4_1}
       "${AOM_ROOT}/aom_dsp/x86/obmc_sad_sse4.c"
       "${AOM_ROOT}/aom_dsp/x86/obmc_variance_sse4.c")
-
-  set(AOM_DSP_ENCODER_UNIT_TEST_INTRIN_SSE4_1
-      ${AOM_DSP_ENCODER_UNIT_TEST_INTRIN_SSE4_1}
-      "${AOM_ROOT}/test/obmc_sad_test.cc"
-      "${AOM_ROOT}/test/obmc_variance_test.cc")
 endif ()
 
 set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_dsp_common)
@@ -368,17 +363,4 @@ function (setup_aom_dsp_targets)
   # Pass the new lib targets up to the parent scope instance of
   # $AOM_LIB_TARGETS.
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} PARENT_SCOPE)
-endfunction ()
-
-# Sets up aom_dsp test targets. The test_libaom target must be created before
-# this function is called.
-function (setup_aom_dsp_test_targets)
-  if (HAVE_SSE_4_1)
-    if (CONFIG_ENCODERS)
-      if (CONFIG_UNIT_TESTS AND AOM_DSP_ENCODER_UNIT_TEST_INTRIN_SSE4_1)
-        add_intrinsics_source_to_target("-msse4.1" "test_libaom"
-          "AOM_DSP_ENCODER_UNIT_TEST_INTRIN_SSE4_1")
-      endif ()
-    endif ()
-  endif ()
 endfunction ()
