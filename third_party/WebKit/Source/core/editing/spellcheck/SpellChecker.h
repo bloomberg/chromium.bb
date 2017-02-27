@@ -36,6 +36,7 @@
 namespace blink {
 
 class CompositeEditCommand;
+class IdleSpellCheckCallback;
 class LocalFrame;
 class ReplaceSelectionCommand;
 class SpellCheckerClient;
@@ -128,9 +129,8 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
 
   Member<LocalFrame> m_frame;
 
-  // TODO(xiaochengh): Move it to IdleSpellCheckCallback after idle time spell
-  // checking reaches status=stable.
   const Member<SpellCheckRequester> m_spellCheckRequester;
+  const Member<IdleSpellCheckCallback> m_idleSpellCheckCallback;
 };
 
 }  // namespace blink

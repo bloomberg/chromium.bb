@@ -37,14 +37,6 @@ class CORE_EXPORT IdleSpellCheckCallback final : public IdleRequestCallback {
   // Exposed for testing only.
   SpellCheckRequester& spellCheckRequester() const;
 
-  // The leak detector will report leaks should queued requests be posted
-  // while it GCs repeatedly, as the requests keep their associated element
-  // alive.
-  //
-  // Hence allow the leak detector to effectively stop the spell checker to
-  // ensure leak reporting stability.
-  void prepareForLeakDetection();
-
   DECLARE_VIRTUAL_TRACE();
 
  private:

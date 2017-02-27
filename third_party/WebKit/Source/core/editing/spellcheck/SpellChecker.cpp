@@ -43,6 +43,7 @@
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"
 #include "core/editing/spellcheck/TextCheckingParagraph.h"
 #include "core/frame/LocalFrame.h"
@@ -169,7 +170,8 @@ TextCheckerClient& SpellChecker::textChecker() const {
 
 SpellChecker::SpellChecker(LocalFrame& frame)
     : m_frame(&frame),
-      m_spellCheckRequester(SpellCheckRequester::create(frame)) {}
+      m_spellCheckRequester(SpellCheckRequester::create(frame)),
+      m_idleSpellCheckCallback(IdleSpellCheckCallback::create(frame)) {}
 
 bool SpellChecker::isSpellCheckingEnabled() const {
   return spellCheckerClient().isSpellCheckingEnabled();
@@ -1102,11 +1104,11 @@ void SpellChecker::cancelCheck() {
 DEFINE_TRACE(SpellChecker) {
   visitor->trace(m_frame);
   visitor->trace(m_spellCheckRequester);
+  visitor->trace(m_idleSpellCheckCallback);
 }
 
 void SpellChecker::prepareForLeakDetection() {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
-    m_spellCheckRequester->prepareForLeakDetection();
+  m_spellCheckRequester->prepareForLeakDetection();
 }
 
 Vector<TextCheckingResult> SpellChecker::findMisspellings(const String& text) {
