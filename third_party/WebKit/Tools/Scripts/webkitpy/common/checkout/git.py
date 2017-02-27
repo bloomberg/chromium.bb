@@ -163,7 +163,7 @@ class Git(object):
         """
         # `git status -z` is a version of `git status -s`, that's recommended
         # for machine parsing. Lines are terminated with NUL rather than LF.
-        change_lines = self._run_git(['status', '-z']).rstrip('\x00')
+        change_lines = self._run_git(['status', '-z', '--untracked-files=all']).rstrip('\x00')
         if not change_lines:
             return {}  # No changes.
         unstaged_changes = {}
