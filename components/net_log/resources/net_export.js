@@ -105,7 +105,7 @@ var NetExportView = (function() {
           $('export-view-send-data').disabled = false;
           if (!exportNetLogInfo.logCaptureModeKnown) {
             $('export-view-send-old-log-text').hidden = false;
-          } else if (exportNetLogInfo.captureMode == 'NORMAL') {
+          } else if (exportNetLogInfo.captureMode != 'STRIP_PRIVATE_DATA') {
             $('export-view-private-data-text').hidden = false;
           }
         }
