@@ -29,14 +29,7 @@ class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    # Only run if BattOr is detected.
-    if not possible_browser.platform.HasBattOrConnected():
-      return True
-
-    # Galaxy S5s have problems with running system health metrics.
-    # http://crbug.com/600463
-    galaxy_s5_type_name = 'SM-G900H'
-    return possible_browser.platform.GetDeviceTypeName() == galaxy_s5_type_name
+    return not possible_browser.platform.HasBattOrConnected()
 
   @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):
