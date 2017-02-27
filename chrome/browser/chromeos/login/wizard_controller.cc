@@ -642,19 +642,6 @@ WizardController::GetSharkConnectionListenerForTesting() {
   return shark_connection_listener_.get();
 }
 
-void WizardController::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void WizardController::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
-}
-
-void WizardController::OnSessionStart() {
-  for (auto& observer : observer_list_)
-    observer.OnSessionStart();
-}
-
 void WizardController::SkipUpdateEnrollAfterEula() {
   skip_update_enroll_after_eula_ = true;
 }
@@ -961,9 +948,6 @@ void WizardController::ShowCurrentScreen() {
   }
 
   smooth_show_timer_.Stop();
-
-  for (auto& observer : observer_list_)
-    observer.OnScreenChanged(current_screen_);
 
   current_screen_->Show();
 }

@@ -539,8 +539,6 @@ void LoginDisplayHostImpl::Finalize() {
       finalize_animation_type_ != ANIMATION_ADD_USER) {
     ash::WmShell::Get()->wallpaper_controller()->MoveToUnlockedContainer();
   }
-  if (wizard_controller_.get())
-    wizard_controller_->OnSessionStart();
 
   switch (finalize_animation_type_) {
     case ANIMATION_NONE:
