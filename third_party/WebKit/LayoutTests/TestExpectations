@@ -134,6 +134,8 @@ crbug.com/664852 virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ 
 crbug.com/664852 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure ]
 crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 
+crbug.com/671048 virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Failure ]
+
 # Added 2016-12-14
 crbug.com/674396 [ Win ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 
@@ -147,6 +149,10 @@ crbug.com/681471 virtual/disable-spinvalidation/paint/invalidation/media-audio-n
 # Added 2017-02-20
 crbug.com/693510 compositing/reflections/nested-reflection-anchor-point.html [ Failure Pass ]
 crbug.com/693510 compositing/reflections/nested-reflection-animated.html [ Failure Pass ]
+
+crbug.com/696724 fast/canvas/canvas-large-pattern.html [ Failure ]
+crbug.com/696724 virtual/display_list_2d_canvas/fast/canvas/canvas-large-pattern.html [ Failure ]
+crbug.com/696724 virtual/gpu/fast/canvas/canvas-large-pattern.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -764,15 +770,8 @@ crbug.com/676432 virtual/android/fullscreen/full-screen-iframe-zIndex.html [ Ski
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [ Skip ]
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-sync.html [ Skip ]
 
-crbug.com/657946 [ Mac ] virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Failure ]
-crbug.com/671048 [ Linux Win ] virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Failure ]
-
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Failure Crash ]
-
-crbug.com/281504 fast/canvas/canvas-large-pattern.html [ Failure ]
-crbug.com/281504 virtual/display_list_2d_canvas/fast/canvas/canvas-large-pattern.html [ Failure ]
-crbug.com/281504 virtual/gpu/fast/canvas/canvas-large-pattern.html [ Failure ]
 
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/492664 [ Linux ] external/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ Failure ]
