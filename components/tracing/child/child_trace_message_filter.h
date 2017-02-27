@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
-#include "base/trace_event/memory_dump_request_args.h"
 #include "components/tracing/tracing_export.h"
 #include "ipc/message_filter.h"
 
@@ -32,10 +31,6 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
   void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   bool OnMessageReceived(const IPC::Message& message) override;
-
-  void SendGlobalMemoryDumpRequest(
-      const base::trace_event::MemoryDumpRequestArgs& args,
-      const base::trace_event::MemoryDumpCallback& callback);
 
   base::SingleThreadTaskRunner* ipc_task_runner() const {
     return ipc_task_runner_;
@@ -58,9 +53,6 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
                        const std::string& event_name);
   void OnCancelWatchEvent();
   void OnWatchEventMatched();
-  void OnProcessMemoryDumpRequest(
-      const base::trace_event::MemoryDumpRequestArgs& args);
-  void OnGlobalMemoryDumpResponse(uint64_t dump_guid, bool success);
   void OnSetUMACallback(const std::string& histogram_name,
                         int histogram_lower_value,
                         int histogram_upper_value,
@@ -79,19 +71,10 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
       const scoped_refptr<base::RefCountedString>& events_str_ptr,
       bool has_more_events);
 
-  void OnProcessMemoryDumpDone(uint64_t dump_guid, bool success);
-
   void SetSenderForTesting(IPC::Sender* sender);
 
   IPC::Sender* sender_;
   base::SingleThreadTaskRunner* ipc_task_runner_;
-
-  // guid of the outstanding request (to the Browser's MemoryDumpManager), if
-  // any. 0 if there is no request pending.
-  uint64_t pending_memory_dump_guid_;
-
-  // callback of the outstanding memory dump request, if any.
-  base::trace_event::MemoryDumpCallback pending_memory_dump_callback_;
 
   base::Time histogram_last_changed_;
 
