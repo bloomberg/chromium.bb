@@ -452,6 +452,50 @@ class IdlFrozenArrayType(IdlArrayOrSequenceType):
 
 
 ################################################################################
+# IdlRecordType
+################################################################################
+
+class IdlRecordType(IdlTypeBase):
+    def __init__(self, key_type, value_type):
+        super(IdlRecordType, self).__init__()
+        self.key_type = key_type
+        self.value_type = value_type
+
+    def __str__(self):
+        return 'record<%s, %s>' % (self.key_type, self.value_type)
+
+    def __getstate__(self):
+        return {
+            'key_type': self.key_type,
+            'value_type': self.value_type,
+        }
+
+    def __setstate__(self, state):
+        self.key_type = state['key_type']
+        self.value_type = state['value_type']
+
+    def idl_types(self):
+        yield self
+        for idl_type in self.key_type.idl_types():
+            yield idl_type
+        for idl_type in self.value_type.idl_types():
+            yield idl_type
+
+    def resolve_typedefs(self, typedefs):
+        self.key_type = self.key_type.resolve_typedefs(typedefs)
+        self.value_type = self.value_type.resolve_typedefs(typedefs)
+        return self
+
+    @property
+    def is_record_type(self):
+        return True
+
+    @property
+    def name(self):
+        return self.key_type.name + self.value_type.name + 'Record'
+
+
+################################################################################
 # IdlNullableType
 ################################################################################
 

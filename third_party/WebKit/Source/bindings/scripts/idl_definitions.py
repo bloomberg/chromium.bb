@@ -26,6 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# pylint: disable=relative-import
+
 """Blink IDL Intermediate Representation (IR) classes.
 
 Classes are primarily constructors, which build an IdlDefinitions object
@@ -64,7 +66,13 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import abc
 
-from idl_types import IdlType, IdlUnionType, IdlArrayType, IdlSequenceType, IdlFrozenArrayType, IdlNullableType
+from idl_types import IdlArrayType
+from idl_types import IdlFrozenArrayType
+from idl_types import IdlNullableType
+from idl_types import IdlRecordType
+from idl_types import IdlSequenceType
+from idl_types import IdlType
+from idl_types import IdlUnionType
 
 SPECIAL_KEYWORD_LIST = ['LEGACYCALLER', 'GETTER', 'SETTER', 'DELETER']
 
@@ -1027,7 +1035,22 @@ def type_node_inner_to_type(node):
         return union_type_node_to_idl_union_type(node)
     elif node_class == 'Promise':
         return IdlType('Promise')
+    elif node_class == 'Record':
+        return record_node_to_type(node)
     raise ValueError('Unrecognized node class: %s' % node_class)
+
+
+def record_node_to_type(node):
+    children = node.GetChildren()
+    if len(children) != 2:
+        raise ValueError('record<K,V> node expects exactly 2 children, got %d' % (len(children)))
+    key_child = children[0]
+    value_child = children[1]
+    if key_child.GetClass() != 'StringType':
+        raise ValueError('Keys in record<K,V> nodes must be string types.')
+    if value_child.GetClass() != 'Type':
+        raise ValueError('Unrecognized node class for record<K,V> value: %s' % value_child.GetClass())
+    return IdlRecordType(IdlType(key_child.GetName()), type_node_to_type(value_child))
 
 
 def sequence_node_to_type(node):
