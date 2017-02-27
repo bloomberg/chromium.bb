@@ -29,47 +29,17 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     return;
   }
   {% endif %}
-  {% set local_dom_window_only = interface_name == 'Window' and not method.is_cross_origin %}
-  {% if local_dom_window_only %}
-  {% if method.is_check_security_for_receiver %}
-  {{cpp_class}}* uncheckedImpl = {{v8_class}}::toImpl(info.Holder());
-  {% else %}
+  {% if interface_name == 'Window' and not method.is_cross_origin %}
   // Same-origin methods are never exposed via the cross-origin interceptors.
   // Since same-origin access requires a LocalDOMWindow, it is safe to downcast
   // here.
   LocalDOMWindow* impl = toLocalDOMWindow({{v8_class}}::toImpl(info.Holder()));
-  {% endif %}{# method.is_check_security_for_receiver #}
   {% else %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-  {% endif %}{# local_dom_window_only #}
+  {% endif %}{# interface_name == 'Window' and not method.is_cross_origin #}
   {% endif %}{# not method.is_static #}
 
   {# Security checks #}
-  {% if method.is_check_security_for_receiver %}
-  {{define_exception_state}}
-  {% if interface_name == 'EventTarget' %}
-  // Performance hack for EventTarget.  Checking whether it's a Window or not
-  // prior to the call to BindingSecurity::shouldAllowAccessTo increases 30%
-  // of speed performance on Android Nexus 7 as of Dec 2015.  ALWAYS_INLINE
-  // didn't work in this case.
-  if (const DOMWindow* window = impl->toDOMWindow()) {
-    if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), window, exceptionState)) {
-      return;
-    }
-  }
-  {% else %}{# interface_name == 'EventTarget' #}
-  {% if local_dom_window_only %}
-  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), uncheckedImpl, exceptionState)) {
-  {% else %}
-  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
-  {% endif %}{# local_dom_window_only #}
-    return;
-  }
-  {% if local_dom_window_only %}
-  LocalDOMWindow* impl = toLocalDOMWindow(uncheckedImpl);
-  {% endif %}{# local_dom_window_only #}
-  {% endif %}{# interface_name == 'EventTarget' #}
-  {% endif %}{# method.is_check_security_for_receiver #}
   {% if method.is_check_security_for_return_value %}
   {{define_exception_state}}
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), {{method.cpp_value}}, exceptionState)) {
@@ -629,7 +599,9 @@ v8SetReturnValue(info, wrapper);
        if method.property_attributes else 'v8::None' %}
 {% set holder_check = 'V8DOMConfiguration::DoNotCheckHolder'
        if method.returns_promise else 'V8DOMConfiguration::CheckHolder' %}
-{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}}
+{% set access_check = 'V8DOMConfiguration::CheckAccess'
+       if method.is_check_security_for_receiver else 'V8DOMConfiguration::DoNotCheckAccess' %}
+{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}}
 {%- endmacro %}
 
 

@@ -1,38 +1,37 @@
-CONSOLE WARNING: line 1: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
 
 ----- tests for calling methods of another frame using Function.call -----
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS window.setTimeout.call(targetWindow, 'void(0);', 0) threw exception SecurityError: Failed to execute 'setTimeout' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.setInterval.call(targetWindow, 'void(0);', 0) threw exception SecurityError: Failed to execute 'setInterval' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.open.call(targetWindow, '') threw exception SecurityError: Failed to execute 'open' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.getSelection.call(targetWindow) threw exception SecurityError: Failed to execute 'getSelection' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.find.call(targetWindow, 'string', false, false, false, false, false, false) threw exception SecurityError: Failed to execute 'find' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.confirm.call(targetWindow, 'message') threw exception SecurityError: Failed to execute 'confirm' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.prompt.call(targetWindow, 'message', 'defaultValue') threw exception SecurityError: Failed to execute 'prompt' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.getComputedStyle.call(targetWindow, document.body, '') threw exception SecurityError: Failed to execute 'getComputedStyle' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.getMatchedCSSRules.call(targetWindow, document.body, '') threw exception SecurityError: Failed to execute 'getMatchedCSSRules' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.openDatabase.call(targetWindow, 'name', '1.0', 'description', 0) threw exception SecurityError: Failed to execute 'openDatabase' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.atob.call(targetWindow, 'string') threw exception SecurityError: Failed to execute 'atob' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.btoa.call(targetWindow, 'string') threw exception SecurityError: Failed to execute 'btoa' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.clearTimeout.call(targetWindow, 0); threw exception SecurityError: Failed to execute 'clearTimeout' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.clearInterval.call(targetWindow, 0); threw exception SecurityError: Failed to execute 'clearInterval' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.print.call(targetWindow); threw exception SecurityError: Failed to execute 'print' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.stop.call(targetWindow); threw exception SecurityError: Failed to execute 'stop' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.alert.call(targetWindow, 'message'); threw exception SecurityError: Failed to execute 'alert' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.scrollBy.call(targetWindow, 0, 0); threw exception SecurityError: Failed to execute 'scrollBy' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.scrollTo.call(targetWindow, 0, 0); threw exception SecurityError: Failed to execute 'scrollTo' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.scroll.call(targetWindow, 0, 0); threw exception SecurityError: Failed to execute 'scroll' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.moveBy.call(targetWindow, 0, 0); threw exception SecurityError: Failed to execute 'moveBy' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.moveTo.call(targetWindow, 0, 0); threw exception SecurityError: Failed to execute 'moveTo' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.resizeBy.call(targetWindow, 0, 0); threw exception SecurityError: Failed to execute 'resizeBy' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.resizeTo.call(targetWindow, 0, 0); threw exception SecurityError: Failed to execute 'resizeTo' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.addEventListener.call(targetWindow, 'load', null, false); threw exception SecurityError: Failed to execute 'addEventListener' on 'EventTarget': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS window.removeEventListener.call(targetWindow, 'load', null, false); threw exception SecurityError: Failed to execute 'removeEventListener' on 'EventTarget': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.setTimeout.call(targetWindow, 'void(0);', 0) threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.setInterval.call(targetWindow, 'void(0);', 0) threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.open.call(targetWindow, '') threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.getSelection.call(targetWindow) threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.find.call(targetWindow, 'string', false, false, false, false, false, false) threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.confirm.call(targetWindow, 'message') threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.prompt.call(targetWindow, 'message', 'defaultValue') threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.getComputedStyle.call(targetWindow, document.body, '') threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.getMatchedCSSRules.call(targetWindow, document.body, '') threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.openDatabase.call(targetWindow, 'name', '1.0', 'description', 0) threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.atob.call(targetWindow, 'string') threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.btoa.call(targetWindow, 'string') threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.clearTimeout.call(targetWindow, 0); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.clearInterval.call(targetWindow, 0); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.print.call(targetWindow); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.stop.call(targetWindow); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.alert.call(targetWindow, 'message'); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.scrollBy.call(targetWindow, 0, 0); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.scrollTo.call(targetWindow, 0, 0); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.scroll.call(targetWindow, 0, 0); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.moveBy.call(targetWindow, 0, 0); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.moveTo.call(targetWindow, 0, 0); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.resizeBy.call(targetWindow, 0, 0); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.resizeTo.call(targetWindow, 0, 0); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.addEventListener.call(targetWindow, 'load', null, false); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.removeEventListener.call(targetWindow, 'load', null, false); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS: window.eval.call(targetWindow, '1+2'); should be '3' and is.
-PASS window.location.toString.call(targetWindow.location) threw exception SecurityError: Failed to execute 'toString' on 'Location': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS window.location.toString.call(targetWindow.location) threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS: successfullyParsed should be 'true' and is.
 
 TEST COMPLETE

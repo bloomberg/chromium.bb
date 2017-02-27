@@ -98,6 +98,10 @@ ScriptPromise GlobalFetch::fetch(ScriptState* scriptState,
                                  const Dictionary& init,
                                  ExceptionState& exceptionState) {
   UseCounter::count(window.getExecutionContext(), UseCounter::Fetch);
+  if (!window.frame()) {
+    exceptionState.throwTypeError("The global scope is shutting down.");
+    return ScriptPromise();
+  }
   return ScopedFetcher::from(window)->fetch(scriptState, input, init,
                                             exceptionState);
 }

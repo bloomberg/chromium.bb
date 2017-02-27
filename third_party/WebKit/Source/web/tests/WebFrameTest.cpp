@@ -8818,9 +8818,8 @@ TEST_F(WebFrameSwapTest, SetTimeoutAfterSwap) {
                         "} catch (e) { e; }"));
     ASSERT_TRUE(!exception.IsEmpty());
     EXPECT_EQ(
-        "SecurityError: Failed to execute 'setTimeout' on 'Window': Blocked a "
-        "frame with origin \"http://internal.test\" from accessing a "
-        "cross-origin frame.",
+        "SecurityError: Blocked a frame with origin \"http://internal.test\" "
+        "from accessing a cross-origin frame.",
         toCoreString(exception
                          ->ToString(ScriptState::forMainWorld(
                                         webView()->mainFrameImpl()->frame())

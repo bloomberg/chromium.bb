@@ -147,11 +147,6 @@ static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetter(co
 static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(info.Holder());
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceCheckSecurity", "voidMethod");
-  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
-    return;
-  }
-
   impl->voidMethod();
 }
 
@@ -466,7 +461,7 @@ const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceCheckSecurityAcce
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterfaceCheckSecurityMethods[] = {
-    {"voidMethod", V8TestInterfaceCheckSecurity::voidMethodMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"voidMethod", V8TestInterfaceCheckSecurity::voidMethodMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::CheckAccess},
 };
 
 static void installV8TestInterfaceCheckSecurityTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

@@ -348,6 +348,8 @@ void installMethodInternal(v8::Isolate* isolate,
         v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(),
                                   signature, method.length);
     functionTemplate->RemovePrototype();
+    if (method.accessCheckConfiguration == V8DOMConfiguration::CheckAccess)
+      functionTemplate->SetAcceptAnyReceiver(false);
     if (method.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)
       instanceTemplate->Set(
           name, functionTemplate,
@@ -358,13 +360,15 @@ void installMethodInternal(v8::Isolate* isolate,
           static_cast<v8::PropertyAttribute>(method.attribute));
   }
   if (method.propertyLocationConfiguration & V8DOMConfiguration::OnInterface) {
-    // Operations installed on the interface object must be static
-    // operations, so no need to specify a signature, i.e. no need to do
-    // type check against a holder.
+    // Operations installed on the interface object must be static methods, so
+    // no need to specify a signature, i.e. no need to do type check against a
+    // holder.
     v8::Local<v8::FunctionTemplate> functionTemplate =
         v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(),
                                   v8::Local<v8::Signature>(), method.length);
     functionTemplate->RemovePrototype();
+    // Similarly, there is no need to do an access check for static methods, as
+    // there is no holder to check against.
     interfaceTemplate->Set(
         name, functionTemplate,
         static_cast<v8::PropertyAttribute>(method.attribute));

@@ -49,15 +49,21 @@ class CORE_EXPORT V8DOMConfiguration final {
   // data table driven setup.
 
   // Bitflags to show where the member will be defined.
-  enum PropertyLocationConfiguration {
+  enum PropertyLocationConfiguration : unsigned {
     OnInstance = 1 << 0,
     OnPrototype = 1 << 1,
     OnInterface = 1 << 2,
   };
 
-  enum HolderCheckConfiguration {
+  // TODO(dcheng): Make these enum classes.
+  enum HolderCheckConfiguration : unsigned {
     CheckHolder,
     DoNotCheckHolder,
+  };
+
+  enum AccessCheckConfiguration : unsigned {
+    CheckAccess,
+    DoNotCheckAccess,
   };
 
   typedef v8::Local<v8::Private> (*CachedAccessorCallback)(v8::Isolate*);
@@ -78,10 +84,12 @@ class CORE_EXPORT V8DOMConfiguration final {
     // The accessor's 'result' is stored in a private property.
     CachedAccessorCallback cachedAccessorCallback;
     const WrapperTypeInfo* data;
-    unsigned attribute : 8;  // v8::PropertyAttribute
-    unsigned
-        propertyLocationConfiguration : 3;  // PropertyLocationConfiguration
-    unsigned holderCheckConfiguration : 1;  // HolderCheckConfiguration
+    // v8::PropertyAttribute
+    unsigned attribute : 8;
+    // PropertyLocationConfiguration
+    unsigned propertyLocationConfiguration : 3;
+    // HolderCheckConfiguration
+    unsigned holderCheckConfiguration : 1;
   };
 
   static void installAttributes(v8::Isolate*,
@@ -130,10 +138,12 @@ class CORE_EXPORT V8DOMConfiguration final {
     // The accessor's 'result' is stored in a private property.
     CachedAccessorCallback cachedAccessorCallback;
     const WrapperTypeInfo* data;
-    unsigned attribute : 8;  // v8::PropertyAttribute
-    unsigned
-        propertyLocationConfiguration : 3;  // PropertyLocationConfiguration
-    unsigned holderCheckConfiguration : 1;  // HolderCheckConfiguration
+    // v8::PropertyAttribute
+    unsigned attribute : 8;
+    // PropertyLocationConfiguration
+    unsigned propertyLocationConfiguration : 3;
+    // HolderCheckConfiguration
+    unsigned holderCheckConfiguration : 1;
   };
 
   static void installAccessors(
@@ -233,10 +243,14 @@ class CORE_EXPORT V8DOMConfiguration final {
     v8::FunctionCallback callback;
     v8::FunctionCallback callbackForMainWorld;
     int length;
-    unsigned attribute : 8;  // v8::PropertyAttribute
-    unsigned
-        propertyLocationConfiguration : 3;  // PropertyLocationConfiguration
-    unsigned holderCheckConfiguration : 1;  // HolderCheckConfiguration
+    // v8::PropertyAttribute
+    unsigned attribute : 8;
+    // PropertyLocationConfiguration
+    unsigned propertyLocationConfiguration : 3;
+    // HolderCheckConfiguration
+    unsigned holderCheckConfiguration : 1;
+    // AccessCheckConfiguration
+    unsigned accessCheckConfiguration : 1;
   };
 
   struct SymbolKeyedMethodConfiguration {
@@ -254,10 +268,14 @@ class CORE_EXPORT V8DOMConfiguration final {
     v8::FunctionCallback callback;
     // SymbolKeyedMethodConfiguration doesn't support per-world bindings.
     int length;
-    unsigned attribute : 8;  // v8::PropertyAttribute
-    unsigned
-        propertyLocationConfiguration : 3;  // PropertyLocationConfiguration
-    unsigned holderCheckConfiguration : 1;  // HolderCheckConfiguration
+    // v8::PropertyAttribute
+    unsigned attribute : 8;
+    // PropertyLocationConfiguration
+    unsigned propertyLocationConfiguration : 3;
+    // HolderCheckConfiguration
+    unsigned holderCheckConfiguration : 1;
+    // AccessCheckConfiguration
+    unsigned accessCheckConfiguration : 1;
   };
 
   static void installMethods(v8::Isolate*,

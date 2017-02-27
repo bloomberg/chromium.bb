@@ -49,6 +49,8 @@ static bool isAllowed(ScriptState* scriptState,
                       bool isEval) {
   if (executionContext->isDocument()) {
     Document* document = static_cast<Document*>(executionContext);
+    if (!document->frame())
+      return false;
     if (isEval &&
         !document->contentSecurityPolicy()->allowEval(
             scriptState, ContentSecurityPolicy::SendReport,

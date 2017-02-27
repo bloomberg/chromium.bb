@@ -49,13 +49,8 @@ test(() => {
     assert_unreached("type mismatch error, case 3: must be a reject promise");
   });
 
-  p = fetch.call(cross, 'resources/dummy.html');
-  assert_equals(
-      p.constructor.constructor,
-      Function,
-      "cross origin access");
-  p.then(() => {
-    assert_unreached("cross origin access: must be a reject promise");
+  assert_throws("SecurityError", function () {
+    fetch.call(cross, 'resources/dummy.html')
   });
 }, "Reject promises must be created in the current realm");
 
