@@ -67,6 +67,7 @@ class ContentAutofillDriver : public AutofillDriver,
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
   void DidInteractWithCreditCardForm() override;
+  void NotifyFirstUserGestureObservedInTab() override;
 
   // mojom::AutofillDriver:
   void FirstUserGestureObserved() override;
@@ -92,10 +93,6 @@ class ContentAutofillDriver : public AutofillDriver,
 
   // Called when the frame has navigated.
   void DidNavigateFrame(content::NavigationHandle* navigation_handle);
-
-  // Tells the render frame that a user gesture was observed
-  // somewhere in the tab (including in a different frame).
-  void NotifyFirstUserGestureObservedInTab();
 
   AutofillExternalDelegate* autofill_external_delegate() {
     return &autofill_external_delegate_;

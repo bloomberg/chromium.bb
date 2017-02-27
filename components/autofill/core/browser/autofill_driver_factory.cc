@@ -20,25 +20,39 @@ AutofillDriver* AutofillDriverFactory::DriverForKey(void* key) {
   return mapping == driver_map_.end() ? nullptr : mapping->second.get();
 }
 
-void AutofillDriverFactory::AddForKey(
-    void* key,
-    base::Callback<std::unique_ptr<AutofillDriver>()> factory_method) {
-  auto insertion_result = driver_map_.insert(std::make_pair(key, nullptr));
-  // This can be called twice for the key representing the main frame.
-  if (insertion_result.second)
-    insertion_result.first->second = factory_method.Run();
-}
-
-void AutofillDriverFactory::DeleteForKey(void* key) {
-  driver_map_.erase(key);
-}
-
 void AutofillDriverFactory::NavigationFinished() {
+  user_gesture_seen_ = false;
   client_->HideAutofillPopup();
 }
 
 void AutofillDriverFactory::TabHidden() {
   client_->HideAutofillPopup();
+}
+
+void AutofillDriverFactory::OnFirstUserGestureObserved() {
+  if (user_gesture_seen_)
+    return;
+
+  for (auto& driver : driver_map_)
+    driver.second->NotifyFirstUserGestureObservedInTab();
+
+  user_gesture_seen_ = true;
+}
+
+void AutofillDriverFactory::AddForKey(
+    void* key,
+    base::Callback<std::unique_ptr<AutofillDriver>()> factory_method) {
+  auto insertion_result = driver_map_.insert(std::make_pair(key, nullptr));
+  // This can be called twice for the key representing the main frame.
+  if (insertion_result.second) {
+    insertion_result.first->second = factory_method.Run();
+    if (user_gesture_seen_)
+      insertion_result.first->second->NotifyFirstUserGestureObservedInTab();
+  }
+}
+
+void AutofillDriverFactory::DeleteForKey(void* key) {
+  driver_map_.erase(key);
 }
 
 }  // namespace autofill
