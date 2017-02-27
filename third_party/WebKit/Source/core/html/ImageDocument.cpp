@@ -24,6 +24,7 @@
 
 #include "core/html/ImageDocument.h"
 
+#include <limits>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/dom/RawDataDocumentParser.h"
@@ -33,6 +34,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
@@ -46,12 +48,10 @@
 #include "core/layout/LayoutObject.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/resource/ImageResource.h"
 #include "core/page/Page.h"
 #include "platform/HostWindow.h"
 #include "wtf/text/StringBuilder.h"
-#include <limits>
 
 using namespace std;
 

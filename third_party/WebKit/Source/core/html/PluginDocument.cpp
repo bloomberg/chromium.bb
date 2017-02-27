@@ -29,6 +29,7 @@
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLEmbedElement.h"
@@ -36,7 +37,6 @@
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/plugins/PluginView.h"
 
 namespace blink {

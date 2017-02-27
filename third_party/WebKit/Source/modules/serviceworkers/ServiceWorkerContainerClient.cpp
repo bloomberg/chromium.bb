@@ -4,13 +4,13 @@
 
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
-#include "core/loader/FrameLoaderClient.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
-#include <memory>
 
 namespace blink {
 

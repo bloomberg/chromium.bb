@@ -26,6 +26,7 @@
 
 #include "core/html/parser/HTMLConstructionSite.h"
 
+#include <limits>
 #include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/HTMLElementFactory.h"
@@ -46,6 +47,7 @@
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/html/FormAssociated.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -58,10 +60,8 @@
 #include "core/html/parser/HTMLStackItem.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/svg/SVGScriptElement.h"
 #include "platform/text/TextBreakIterator.h"
-#include <limits>
 
 namespace blink {
 

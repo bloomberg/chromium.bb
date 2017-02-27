@@ -32,7 +32,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "core/loader/FrameLoaderClient.h"
+#include "core/frame/LocalFrameClient.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCookieJar.h"
 #include "public/platform/WebURL.h"

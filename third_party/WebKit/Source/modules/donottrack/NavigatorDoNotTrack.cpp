@@ -31,8 +31,8 @@
 #include "modules/donottrack/NavigatorDoNotTrack.h"
 
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Navigator.h"
-#include "core/loader/FrameLoaderClient.h"
 
 namespace blink {
 

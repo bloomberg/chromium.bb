@@ -32,10 +32,12 @@
 
 #include "core/loader/NavigationScheduler.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptController.h"
 #include "core/events/Event.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -44,7 +46,6 @@
 #include "core/loader/FormSubmission.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
@@ -56,7 +57,6 @@
 #include "public/platform/WebScheduler.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

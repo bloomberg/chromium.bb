@@ -4,12 +4,13 @@
 
 #include "modules/webgl/WebGL2RenderingContext.h"
 
+#include <memory>
 #include "bindings/modules/v8/OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext.h"
 #include "bindings/modules/v8/RenderingContext.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/EXTColorBufferFloat.h"
 #include "modules/webgl/EXTDisjointTimerQueryWebGL2.h"
@@ -31,7 +32,6 @@
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-#include <memory>
 
 namespace blink {
 
