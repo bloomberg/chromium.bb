@@ -28,7 +28,7 @@ per-file chrome_content_browser_client.h=*
 per-file chrome_content_browser_client_browsertest.cc=*
 per-file chrome_content_browser_client_unittest.cc=*
 
-# Mojo manfiests
+# Mojo manifests
 per-file *manifest_overlay.json=set noparent
 per-file *manifest_overlay.json=file://ipc/SECURITY_OWNERS
 
