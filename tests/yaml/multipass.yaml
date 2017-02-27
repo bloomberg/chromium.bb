@@ -24,3 +24,13 @@ flags: {testmode: forward}
 tests:
   - - foo
     - f=
+
+# A context rule with characters needs to be treated as a translation rule
+table: |
+  include tables/chardefs.cti
+  always oo 136
+  context "o" @123456
+flags: {testmode: forward}
+tests:
+  - - foo
+    - fu
