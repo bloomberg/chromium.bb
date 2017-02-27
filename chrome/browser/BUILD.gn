@@ -2048,6 +2048,8 @@ split_static_library("browser") {
       "safe_browsing/threat_details_history.h",
       "safe_browsing/ui_manager.cc",
       "safe_browsing/ui_manager.h",
+      "safe_browsing/v4_test_utils.cc",
+      "safe_browsing/v4_test_utils.h",
     ]
     deps += [
       "//chrome/browser/safe_browsing:chunk_proto",

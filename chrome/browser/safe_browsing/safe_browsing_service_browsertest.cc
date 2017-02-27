@@ -39,6 +39,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/safe_browsing/v4_test_utils.h"
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -1779,100 +1780,6 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingDatabaseManagerCookieTest,
   observer.Wait();
 }
 
-class TestV4Store : public V4Store {
- public:
-  TestV4Store(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-              const base::FilePath& store_path)
-      : V4Store(task_runner, store_path, 0) {}
-
-  bool HasValidData() const override { return true; }
-
-  void MarkPrefixAsBad(HashPrefix prefix) {
-    hash_prefix_map_[prefix.size()] = prefix;
-  }
-};
-
-class TestV4StoreFactory : public V4StoreFactory {
- public:
-  V4Store* CreateV4Store(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const base::FilePath& store_path) override {
-    V4Store* new_store = new TestV4Store(task_runner, store_path);
-    new_store->Initialize();
-    return new_store;
-  }
-};
-
-class TestV4Database : public V4Database {
- public:
-  TestV4Database(const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
-                 std::unique_ptr<StoreMap> store_map)
-      : V4Database(db_task_runner, std::move(store_map)) {}
-
-  void MarkPrefixAsBad(ListIdentifier list_id, HashPrefix prefix) {
-    V4Store* base_store = store_map_->at(list_id).get();
-    TestV4Store* test_store = static_cast<TestV4Store*>(base_store);
-    test_store->MarkPrefixAsBad(prefix);
-  }
-};
-
-class TestV4DatabaseFactory : public V4DatabaseFactory {
- public:
-  TestV4DatabaseFactory() : v4_db_(nullptr) {}
-
-  std::unique_ptr<V4Database> Create(
-      const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
-      std::unique_ptr<StoreMap> store_map) override {
-    v4_db_ = new TestV4Database(db_task_runner, std::move(store_map));
-    return base::WrapUnique(v4_db_);
-  }
-
-  void MarkPrefixAsBad(ListIdentifier list_id, HashPrefix prefix) {
-    v4_db_->MarkPrefixAsBad(list_id, prefix);
-  }
-
- private:
-  // Owned by V4LocalDatabaseManager. Each test in the V4SafeBrowsingServiceTest
-  // class instantiates a new SafebrowsingService instance, which instantiates a
-  // new V4LocalDatabaseManager, which instantiates a new V4Database using this
-  // method so use-after-free isn't possible.
-  TestV4Database* v4_db_;
-};
-
-class TestV4GetHashProtocolManager : public V4GetHashProtocolManager {
- public:
-  TestV4GetHashProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
-      const StoresToCheck& stores_to_check,
-      const V4ProtocolConfig& config)
-      : V4GetHashProtocolManager(request_context_getter,
-                                 stores_to_check,
-                                 config) {}
-
-  void AddToFullHashCache(FullHashInfo fhi) {
-    full_hash_cache_[fhi.full_hash].full_hash_infos.push_back(fhi);
-  }
-};
-
-class TestV4GetHashProtocolManagerFactory
-    : public V4GetHashProtocolManagerFactory {
- public:
-  std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
-      const StoresToCheck& stores_to_check,
-      const V4ProtocolConfig& config) override {
-    pm_ = new TestV4GetHashProtocolManager(request_context_getter,
-                                           stores_to_check, config);
-    return base::WrapUnique(pm_);
-  }
-
-  void AddToFullHashCache(FullHashInfo fhi) { pm_->AddToFullHashCache(fhi); }
-
- private:
-  // Owned by the SafeBrowsingService.
-  TestV4GetHashProtocolManager* pm_;
-};
-
 // Tests the safe browsing blocking page in a browser.
 class V4SafeBrowsingServiceTest : public SafeBrowsingServiceTest {
  public:
@@ -1909,33 +1816,13 @@ class V4SafeBrowsingServiceTest : public SafeBrowsingServiceTest {
     SafeBrowsingService::RegisterFactory(nullptr);
   }
 
-  // Returns a FullHash for the basic host+path pattern for a given URL after
-  // canonicalization.
-  FullHash GetFullHash(const GURL& url) {
-    std::string host;
-    std::string path;
-    V4ProtocolManagerUtil::CanonicalizeUrl(url, &host, &path, nullptr);
-
-    return crypto::SHA256HashString(host + path);
-  }
-
-  // Returns FullHashInfo object for the basic host+path pattern for a given URL
-  // after canonicalization.
-  FullHashInfo GetFullHashInfo(const GURL& url, const ListIdentifier& list_id) {
-    return FullHashInfo(GetFullHash(url), list_id,
-                        base::Time::Now() + base::TimeDelta::FromMinutes(5));
-  }
-
-  // Returns a FullHashInfo info for the basic host+path pattern for a given URL
-  // after canonicalization. Also adds metadata information to the FullHashInfo
-  // object.
-  FullHashInfo GetFullHashInfoWithMetadata(
-      const GURL& url,
-      const ListIdentifier& list_id,
-      ThreatPatternType threat_pattern_type) {
-    FullHashInfo fhi = GetFullHashInfo(url, list_id);
-    fhi.metadata.threat_pattern_type = threat_pattern_type;
-    return fhi;
+  void MarkUrlForListIdUnexpired(const GURL& bad_url,
+                                 const ListIdentifier& list_id,
+                                 ThreatPatternType threat_pattern_type) {
+    FullHashInfo full_hash_info =
+        GetFullHashInfoWithMetadata(bad_url, list_id, threat_pattern_type);
+    v4_db_factory_->MarkPrefixAsBad(list_id, full_hash_info.full_hash);
+    v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
   }
 
   // Sets up the prefix database and the full hash cache to match one of the
@@ -1943,49 +1830,34 @@ class V4SafeBrowsingServiceTest : public SafeBrowsingServiceTest {
   void MarkUrlForMalwareUnexpired(
       const GURL& bad_url,
       ThreatPatternType threat_pattern_type = ThreatPatternType::NONE) {
-    FullHashInfo full_hash_info = GetFullHashInfoWithMetadata(
-        bad_url, GetUrlMalwareId(), threat_pattern_type);
-
-    v4_db_factory_->MarkPrefixAsBad(GetUrlMalwareId(),
-                                    full_hash_info.full_hash);
-    v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
+    MarkUrlForListIdUnexpired(bad_url, GetUrlMalwareId(), threat_pattern_type);
   }
 
   // Sets up the prefix database and the full hash cache to match one of the
   // prefixes for the given URL in the UwS store.
   void MarkUrlForUwsUnexpired(const GURL& bad_url) {
-    FullHashInfo full_hash_info = GetFullHashInfo(bad_url, GetUrlUwsId());
-    v4_db_factory_->MarkPrefixAsBad(GetUrlUwsId(), full_hash_info.full_hash);
-    v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
+    MarkUrlForListIdUnexpired(bad_url, GetUrlUwsId(), ThreatPatternType::NONE);
   }
 
   // Sets up the prefix database and the full hash cache to match one of the
   // prefixes for the given URL in the phishing store.
   void MarkUrlForPhishingUnexpired(const GURL& bad_url,
                                    ThreatPatternType threat_pattern_type) {
-    FullHashInfo full_hash_info = GetFullHashInfoWithMetadata(
-        bad_url, GetUrlSocEngId(), threat_pattern_type);
-
-    v4_db_factory_->MarkPrefixAsBad(GetUrlSocEngId(), full_hash_info.full_hash);
-    v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
+    MarkUrlForListIdUnexpired(bad_url, GetUrlSocEngId(), threat_pattern_type);
   }
 
   // Sets up the prefix database and the full hash cache to match one of the
   // prefixes for the given URL in the malware binary store.
   void MarkUrlForMalwareBinaryUnexpired(const GURL& bad_url) {
-    FullHashInfo full_hash_info = GetFullHashInfo(bad_url, GetUrlMalBinId());
-    v4_db_factory_->MarkPrefixAsBad(GetUrlMalBinId(), full_hash_info.full_hash);
-    v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
+    MarkUrlForListIdUnexpired(bad_url, GetUrlMalBinId(),
+                              ThreatPatternType::NONE);
   }
 
   // Sets up the prefix database and the full hash cache to match one of the
   // prefixes for the given URL in the client incident store.
   void MarkUrlForResourceUnexpired(const GURL& bad_url) {
-    FullHashInfo full_hash_info =
-        GetFullHashInfo(bad_url, GetChromeUrlClientIncidentId());
-    v4_db_factory_->MarkPrefixAsBad(GetChromeUrlClientIncidentId(),
-                                    full_hash_info.full_hash);
-    v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
+    MarkUrlForListIdUnexpired(bad_url, GetChromeUrlClientIncidentId(),
+                              ThreatPatternType::NONE);
   }
 
  private:
