@@ -4834,6 +4834,7 @@ compileString (const char *inString)
   FileInfo nested;
   if (inString == NULL)
     return 0;
+  memset(&nested, 0, sizeof(nested));
   nested.fileName = inString;
   nested.encoding = noEncoding;
   nested.lineNumber = 1;
@@ -4842,6 +4843,7 @@ compileString (const char *inString)
   for (k = 0; inString[k]; k++)
     nested.line[k] = inString[k];
   nested.line[k] = 0;
+  nested.linelen = k;
   return compileRule (&nested);
 }
 
@@ -5035,7 +5037,7 @@ getTablePath()
  *         could not be resolved.
  *
  */
-static char **
+char **
 defaultTableResolver (const char *tableList, const char *base)
 {
   char * searchPath;

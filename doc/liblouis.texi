@@ -1994,10 +1994,6 @@ where you define the table that is to be tested and any number of
 words or phrases to translate together with their respective expected
 translation.
 
-The YAML based tests replace older methods for testing the translation
-tables which only work with Python and when compiled with UCS4. They
-are deprecated and will be removed in a future release.
-
 @table @asis
 @item YAML tests
 The YAML tests are data driven, i.e. you give the test data, a string
@@ -2042,7 +2038,7 @@ examples in another version of the documentation such as HTML)}
 @example
 # comments start with '#' anywhere on a line
 # first define which tables will be used for your tests
-tables: [unicode.dis, en-ueb-g1.ctb]
+table: [unicode.dis, en-ueb-g1.ctb]
 
 # then optionally define flags such as testmode. If no flags are
 # defined forward translation is assumed
@@ -2079,14 +2075,14 @@ To test the @file{en-ueb-g1.ctb} table using unicode braille you could
 use the following definition:
 
 @example
-tables: [unicode.dis, en-ueb-g1.ctb]
+table: [unicode.dis, en-ueb-g1.ctb]
 @end example
 
 If you wanted to test the @file{eo-g1.ctb} table using brf notation
 then you would use the following definition:
 
 @example
-tables: [en-us-brf.dis, eo-g1.ctb]
+table: [en-us-brf.dis, eo-g1.ctb]
 @end example
 
 @item flags
@@ -2221,6 +2217,52 @@ the expected and the actual braille output.
 For more examples and inspiration please see the YAML tests
 (@file{*.yaml}) in the @file{tests} directory of the source
 distribution.
+
+@subsection Testing multiple tables within the same YAML test file
+Sometimes you are more focused on testing a particular feature across
+several tables rather than just testing one table. For that reason the
+following is also allowed:
+
+@example
+table: ...
+tests:
+  - [..., ...]
+  - [..., ...]
+table: ...
+tests:
+  - [..., ...]
+  - [..., ...]
+@end example
+
+@subsection Inline definition of tables
+When testing very specific opcode combinations it is sometimes tedious
+to create specific test tables just for that. Hence the YAML tests
+allow for specification of table definitions inline. Instead of
+referring to a table by name you just define the table inline as
+follows:
+
+@example
+table: |
+  sign a 1
+  ...
+tests:
+  - ...
+  - ...
+@end example
+
+@subsection Running the same test data on multiple tables
+Sometimes you maintain multiple tables which are very similar and
+basically contain the same test data. Instead of copying the YAML test
+and changing the table name you can also define multiple tables. This
+will cause the YAML tests to be checked against both tables:
+
+@example
+table: nl-NL
+table: nl-BE
+tests:
+  - [..., ...]
+  - [..., ...]
+@end example
 
 @node Doctests
 @section Doctests
