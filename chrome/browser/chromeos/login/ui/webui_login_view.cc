@@ -477,8 +477,8 @@ void WebUILoginView::RequestMediaAccessPermission(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   // Note: This is only needed for SAML logins.
-  MediaStreamDevicesController controller(web_contents, request, callback);
-  DCHECK(!controller.IsAskingForAudio() && !controller.IsAskingForVideo());
+  MediaStreamDevicesController::RequestPermissions(web_contents, request,
+                                                   callback);
 }
 
 bool WebUILoginView::CheckMediaAccessPermission(

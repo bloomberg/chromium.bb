@@ -24,19 +24,22 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace policy {
+class MediaStreamDevicesControllerBrowserTest;
+}
+
 class MediaStreamDevicesController : public PermissionRequest {
  public:
-  MediaStreamDevicesController(content::WebContents* web_contents,
-                               const content::MediaStreamRequest& request,
-                               const content::MediaResponseCallback& callback);
-
-  ~MediaStreamDevicesController() override;
+  static void RequestPermissions(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback);
 
   // Registers the prefs backing the audio and video policies.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  bool IsAllowedForAudio() const;
-  bool IsAllowedForVideo() const;
+  ~MediaStreamDevicesController() override;
+
   bool IsAskingForAudio() const;
   bool IsAskingForVideo() const;
   base::string16 GetMessageText() const;
@@ -63,6 +66,16 @@ class MediaStreamDevicesController : public PermissionRequest {
   PermissionRequestType GetPermissionRequestType() const override;
 
  private:
+  friend class MediaStreamDevicesControllerTest;
+  friend class policy::MediaStreamDevicesControllerBrowserTest;
+
+  MediaStreamDevicesController(content::WebContents* web_contents,
+                               const content::MediaStreamRequest& request,
+                               const content::MediaResponseCallback& callback);
+
+  bool IsAllowedForAudio() const;
+  bool IsAllowedForVideo() const;
+
   // Returns a list of devices available for the request for the given
   // audio/video permission settings.
   content::MediaStreamDevices GetDevices(ContentSetting audio_setting,

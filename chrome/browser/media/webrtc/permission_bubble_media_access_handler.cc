@@ -24,30 +24,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/android/chrome_feature_list.h"
-#include "chrome/browser/media/webrtc/media_stream_infobar_delegate_android.h"
 #include "chrome/browser/media/webrtc/screen_capture_infobar_delegate_android.h"
-#include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_util.h"
-#else
-#include "chrome/browser/permissions/permission_request_manager.h"
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-namespace {
-// Callback for the permission update infobar when the site and Chrome
-// permissions are mismatched on Android.
-void OnPermissionConflictResolved(
-    std::unique_ptr<MediaStreamDevicesController> controller,
-    bool allowed) {
-  if (allowed)
-    controller->PermissionGranted();
-  else
-    controller->ForcePermissionDeniedTemporarily();
-}
-}  // namespace
-
 #endif  // defined(OS_ANDROID)
 
 using content::BrowserThread;
@@ -161,53 +140,10 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
   }
 #endif
 
-  std::unique_ptr<MediaStreamDevicesController> controller(
-      new MediaStreamDevicesController(
-          web_contents, request,
-          base::Bind(
-              &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
-              base::Unretained(this), web_contents)));
-  if (!controller->IsAskingForAudio() && !controller->IsAskingForVideo()) {
-#if defined(OS_ANDROID)
-    // If either audio or video was previously allowed and Chrome no longer has
-    // the necessary permissions, show a infobar to attempt to address this
-    // mismatch.
-    std::vector<ContentSettingsType> content_settings_types;
-    if (controller->IsAllowedForAudio())
-      content_settings_types.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-
-    if (controller->IsAllowedForVideo()) {
-      content_settings_types.push_back(
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-    }
-    if (!content_settings_types.empty() &&
-        PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfobar(
-            web_contents, content_settings_types)) {
-      PermissionUpdateInfoBarDelegate::Create(
-          web_contents, content_settings_types,
-          base::Bind(&OnPermissionConflictResolved, base::Passed(&controller)));
-    }
-#endif
-    return;
-  }
-
-#if defined(OS_ANDROID)
-  PermissionUmaUtil::RecordPermissionPromptShown(
-      controller->GetPermissionRequestType(),
-      PermissionUtil::GetGestureType(request.user_gesture));
-  if (PermissionDialogDelegate::ShouldShowDialog(request.user_gesture)) {
-    PermissionDialogDelegate::CreateMediaStreamDialog(
-        web_contents, request.user_gesture, std::move(controller));
-  } else {
-    MediaStreamInfoBarDelegateAndroid::Create(
-        web_contents, request.user_gesture, std::move(controller));
-  }
-#else
-  PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
-  if (permission_request_manager)
-    permission_request_manager->AddRequest(controller.release());
-#endif
+  MediaStreamDevicesController::RequestPermissions(
+      web_contents, request,
+      base::Bind(&PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
+                 base::Unretained(this), web_contents));
 }
 
 void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(
