@@ -6703,7 +6703,7 @@ static void rd_supertx_sb(const AV1_COMP *const cpi, ThreadData *td,
   MB_MODE_INFO *mbmi;
   TX_TYPE tx_type, best_tx_nostx;
 #if CONFIG_EXT_TX
-  const int ext_tx_set;
+  int ext_tx_set;
 #endif  // CONFIG_EXT_TX
   int tmp_rate_tx = 0, skip_tx = 0;
   int64_t tmp_dist_tx = 0, rd_tx, bestrd_tx = INT64_MAX;
