@@ -70,8 +70,11 @@ ASSERT_SIZE(BorderValue, SameSizeAsBorderValue);
 
 // Since different compilers/architectures pack ComputedStyle differently,
 // re-create the same structure for an accurate size comparison.
-struct SameSizeAsComputedStyle : public ComputedStyleBase,
-                                 public RefCounted<ComputedStyle> {
+struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
+  struct ComputedStyleBase {
+    unsigned m_bitfields[3];
+  } m_base;
+
   void* dataRefs[7];
   void* ownPtrs[1];
   void* dataRefSvgStyle;
@@ -85,6 +88,10 @@ struct SameSizeAsComputedStyle : public ComputedStyleBase,
   } m_nonInheritedData;
 };
 
+// If this assert fails, it means that size of ComputedStyle has changed. Please
+// check that you really *do* what to increase the size of ComputedStyle, then
+// update the SameSizeAsComputedStyle struct to match the updated storage of
+// ComputedStyle.
 ASSERT_SIZE(ComputedStyle, SameSizeAsComputedStyle);
 
 PassRefPtr<ComputedStyle> ComputedStyle::create() {
