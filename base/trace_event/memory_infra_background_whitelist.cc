@@ -19,9 +19,9 @@ namespace {
 const char* const kDumpProviderWhitelist[] = {
     "android::ResourceManagerImpl",
     "BlinkGC",
-    "ChildDiscardableSharedMemoryManager",
+    "ClientDiscardableSharedMemoryManager",
     "DOMStorage",
-    "HostDiscardableSharedMemoryManager",
+    "DiscardableSharedMemoryManager",
     "IndexedDBBackingStore",
     "JavaHeap",
     "LevelDB",
