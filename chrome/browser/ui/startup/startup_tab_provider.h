@@ -93,8 +93,10 @@ class StartupTabProviderImpl : public StartupTabProvider {
   // Determines whether the startup preference requires the contents of
   // |pinned_tabs| to be shown. This is needed to avoid duplicates, as the
   // session restore logic will also resurface pinned tabs on its own.
-  static StartupTabs GetPinnedTabsForState(const SessionStartupPref& pref,
-                                           const StartupTabs& pinned_tabs);
+  static StartupTabs GetPinnedTabsForState(
+      const SessionStartupPref& pref,
+      const StartupTabs& pinned_tabs,
+      bool profile_has_other_tabbed_browser);
 
   // Determines whether preferences and window state indicate that
   // user-specified tabs should be shown as the default new window content, and
