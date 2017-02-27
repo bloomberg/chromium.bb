@@ -28,10 +28,23 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequ
     public void testNoBobPayInstalled() throws InterruptedException, ExecutionException,
             TimeoutException {
         openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"false, false"});
+        expectResultContains(new String[] {"false, false"});
 
         clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"false, QuotaExceededError"});
+        expectResultContains(new String[] {"false, QuotaExceededError"});
+    }
+
+    @MediumTest
+    @Feature({"Payments"})
+    public void testBobPayInstalledLater()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
+        expectResultContains(new String[] {"false, false"});
+
+        installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+
+        clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
+        expectResultContains(new String[] {"true, QuotaExceededError"});
     }
 
     @MediumTest
@@ -40,10 +53,10 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequ
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
         openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"false, false"});
+        expectResultContains(new String[] {"false, false"});
 
         clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"false, QuotaExceededError"});
+        expectResultContains(new String[] {"false, QuotaExceededError"});
     }
 
     @MediumTest
@@ -52,10 +65,10 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequ
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
         openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"false, false"});
+        expectResultContains(new String[] {"false, false"});
 
         clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"false, QuotaExceededError"});
+        expectResultContains(new String[] {"false, QuotaExceededError"});
     }
 
     @MediumTest
@@ -64,10 +77,10 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequ
             TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
         openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"true, true"});
+        expectResultContains(new String[] {"true, true"});
 
         clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"true, QuotaExceededError"});
+        expectResultContains(new String[] {"true, QuotaExceededError"});
     }
 
     @MediumTest
@@ -76,9 +89,9 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequ
             TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
         openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"true, true"});
+        expectResultContains(new String[] {"true, true"});
 
         clickNodeAndWait("otherBuy", mCanMakePaymentQueryResponded);
-        expectResultContains(new String[]{"true, QuotaExceededError"});
+        expectResultContains(new String[] {"true, QuotaExceededError"});
     }
 }

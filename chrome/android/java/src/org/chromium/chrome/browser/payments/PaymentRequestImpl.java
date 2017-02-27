@@ -119,42 +119,51 @@ public class PaymentRequestImpl
         void onPaymentRequestServiceCanMakePaymentQueryResponded();
     }
 
-    /** The object to keep track of cached payment query results. */
+    /** The object to keep track of payment queries. */
     private static class CanMakePaymentQuery {
         private final Set<PaymentRequestImpl> mObservers = new HashSet<>();
-        private final Set<String> mMethods;
-        private Boolean mResponse;
+        private final Map<String, String> mMethods;
 
         /**
          * Keeps track of a payment query.
          *
-         * @param methods The payment methods that are being queried.
+         * @param methods The map of the payment methods that are being queried to the corresponding
+         *                payment method data.
          */
-        public CanMakePaymentQuery(Set<String> methods) {
+        public CanMakePaymentQuery(Map<String, PaymentMethodData> methods) {
             assert methods != null;
-            mMethods = methods;
+            mMethods = new HashMap<>();
+            for (Map.Entry<String, PaymentMethodData> method : methods.entrySet()) {
+                mMethods.put(method.getKey(),
+                        method.getValue() == null ? "" : method.getValue().stringifiedData);
+            }
         }
 
         /**
-         * Checks whether the given payment methods matches the previously queried payment methods.
+         * Checks whether the given payment methods and data match the previously queried payment
+         * methods and data.
          *
-         * @param methods The payment methods that are being queried.
-         * @return True if the given methods match the previously queried payment methods.
+         * @param methods The map of the payment methods that are being queried to the corresponding
+         *                payment method data.
+         * @return True if the given methods and data match the previously queried payment methods
+         *         and data.
          */
-        public boolean matchesPaymentMethods(Set<String> methods) {
-            return mMethods.equals(methods);
-        }
+        public boolean matchesPaymentMethods(Map<String, PaymentMethodData> methods) {
+            if (!mMethods.keySet().equals(methods.keySet())) return false;
 
-        /** @return Whether payment can be made, or null if response is not known yet. */
-        public Boolean getPreviousResponse() {
-            return mResponse;
+            for (Map.Entry<String, String> thisMethod : mMethods.entrySet()) {
+                PaymentMethodData otherMethod = methods.get(thisMethod.getKey());
+                String otherData = otherMethod == null ? "" : otherMethod.stringifiedData;
+                if (!thisMethod.getValue().equals(otherData)) return false;
+            }
+
+            return true;
         }
 
         /** @param response Whether payment can be made. */
-        public void setResponse(boolean response) {
-            if (mResponse == null) mResponse = response;
+        public void notifyObserversOfResponse(boolean response) {
             for (PaymentRequestImpl observer : mObservers) {
-                observer.respondCanMakePaymentQuery(mResponse.booleanValue());
+                observer.respondCanMakePaymentQuery(response);
             }
             mObservers.clear();
         }
@@ -1229,7 +1238,7 @@ public class PaymentRequestImpl
 
         CanMakePaymentQuery query = sCanMakePaymentQueries.get(mSchemelessOriginForPaymentApp);
         if (query == null) {
-            query = new CanMakePaymentQuery(mMethodData.keySet());
+            query = new CanMakePaymentQuery(Collections.unmodifiableMap(mMethodData));
             sCanMakePaymentQueries.put(mSchemelessOriginForPaymentApp, query);
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -1237,9 +1246,7 @@ public class PaymentRequestImpl
                     sCanMakePaymentQueries.remove(mSchemelessOriginForPaymentApp);
                 }
             }, CAN_MAKE_PAYMENT_QUERY_PERIOD_MS);
-        }
-
-        if (!query.matchesPaymentMethods(mMethodData.keySet())) {
+        } else if (!query.matchesPaymentMethods(Collections.unmodifiableMap(mMethodData))) {
             mClient.onCanMakePayment(CanMakePaymentQueryResult.QUERY_QUOTA_EXCEEDED);
             if (sObserverForTest != null) {
                 sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
@@ -1247,22 +1254,15 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (query.getPreviousResponse() != null) {
-            respondCanMakePaymentQuery(query.getPreviousResponse().booleanValue());
-            return;
-        }
-
         query.addObserver(this);
-        if (isFinishedQueryingPaymentApps()) {
-            query.setResponse(mCanMakePayment);
-            mJourneyLogger.setCanMakePaymentValue(mCanMakePayment);
-        }
+        if (isFinishedQueryingPaymentApps()) query.notifyObserversOfResponse(mCanMakePayment);
     }
 
     private void respondCanMakePaymentQuery(boolean response) {
+        if (mClient == null) return;
         mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
                 : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
-        mJourneyLogger.setCanMakePaymentValue(mCanMakePayment);
+        mJourneyLogger.setCanMakePaymentValue(response);
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
         }
@@ -1376,7 +1376,7 @@ public class PaymentRequestImpl
         }
 
         CanMakePaymentQuery query = sCanMakePaymentQueries.get(mSchemelessOriginForPaymentApp);
-        if (query != null) query.setResponse(mCanMakePayment);
+        if (query != null) query.notifyObserversOfResponse(mCanMakePayment);
 
         // The list of payment instruments is ready to display.
         List<PaymentInstrument> sortedInstruments = new ArrayList<>();
