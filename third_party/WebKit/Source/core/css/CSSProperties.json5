@@ -30,7 +30,7 @@
     },
 
     // - api_class: true|"classname"
-    // Specifies the existance (and optionally name) of a CSSPropertyAPI
+    // Specifies the existence (and optionally name) of a CSSPropertyAPI
     // implementation for the property to be used by make_css_property_apis.py.
     // See core/css/properties/CSSPropertyAPI.h for API details.
     // * Add this flag if the API has been implemented for this property.
