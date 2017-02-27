@@ -18,6 +18,10 @@
 
 namespace offline_pages {
 
+namespace {
+long kOfflinePageDelayMs = 2000;
+}  // namespace
+
 BackgroundLoaderOffliner::BackgroundLoaderOffliner(
     content::BrowserContext* browser_context,
     const OfflinerPolicy* policy,
@@ -27,6 +31,7 @@ BackgroundLoaderOffliner::BackgroundLoaderOffliner(
       is_low_end_device_(base::SysInfo::IsLowEndDevice()),
       save_state_(NONE),
       page_load_state_(SUCCESS),
+      page_delay_ms_(kOfflinePageDelayMs),
       weak_ptr_factory_(this) {
   DCHECK(offline_page_model_);
   DCHECK(browser_context_);
@@ -94,6 +99,9 @@ bool BackgroundLoaderOffliner::LoadAndSave(const SavePageRequest& request,
   if (!loader_)
     ResetState();
 
+  // Invalidate ptrs for all delayed/saving tasks.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
   // Track copy of pending request.
   pending_request_.reset(new SavePageRequest(request));
   completion_callback_ = callback;
@@ -135,40 +143,15 @@ void BackgroundLoaderOffliner::DidStopLoading() {
     return;
   }
 
-  SavePageRequest request(*pending_request_.get());
-  // If there was an error navigating to page, return loading failed.
-  if (page_load_state_ != SUCCESS) {
-    Offliner::RequestStatus status =
-        (page_load_state_ == RETRIABLE)
-            ? Offliner::RequestStatus::LOADING_FAILED
-            : Offliner::RequestStatus::LOADING_FAILED_NO_RETRY;
-    completion_callback_.Run(request, status);
-    ResetState();
-    return;
-  }
+  // Invalidate ptrs for any ongoing save operation.
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
-  save_state_ = SAVING;
-  content::WebContents* web_contents(
-      content::WebContentsObserver::web_contents());
-
-  std::unique_ptr<OfflinePageArchiver> archiver(
-      new OfflinePageMHTMLArchiver(web_contents));
-
-  OfflinePageModel::SavePageParams params;
-  params.url = web_contents->GetLastCommittedURL();
-  params.client_id = request.client_id();
-  params.proposed_offline_id = request.request_id();
-  params.is_background = true;
-
-  // Pass in the original URL if it's different from last committed
-  // when redirects occur.
-  if (params.url != request.url())
-    params.original_url = request.url();
-
-  offline_page_model_->SavePage(
-      params, std::move(archiver),
-      base::Bind(&BackgroundLoaderOffliner::OnPageSaved,
-                 weak_ptr_factory_.GetWeakPtr()));
+  // Post SavePage task with 2 second delay.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&BackgroundLoaderOffliner::SavePage,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(page_delay_ms_));
 }
 
 void BackgroundLoaderOffliner::RenderProcessGone(
@@ -236,6 +219,62 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
         page_load_state_ = RETRIABLE;
     }
   }
+
+  // If the page is not the same, invalidate any pending save tasks.
+  //
+  // Downloads or 204/205 response codes do not commit (no new navigation)
+  // Same-Page (committed) navigations are:
+  // - reference fragment navigations
+  // - pushState/replaceState
+  // - same page history navigation
+  if (navigation_handle->HasCommitted() && !navigation_handle->IsSamePage())
+    weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void BackgroundLoaderOffliner::SetPageDelayForTest(long delay_ms) {
+  page_delay_ms_ = delay_ms;
+}
+
+void BackgroundLoaderOffliner::SavePage() {
+  if (!pending_request_.get()) {
+    DVLOG(1) << "Pending request was cleared during delay.";
+    return;
+  }
+
+  SavePageRequest request(*pending_request_.get());
+  // If there was an error navigating to page, return loading failed.
+  if (page_load_state_ != SUCCESS) {
+    Offliner::RequestStatus status =
+        (page_load_state_ == RETRIABLE)
+            ? Offliner::RequestStatus::LOADING_FAILED
+            : Offliner::RequestStatus::LOADING_FAILED_NO_RETRY;
+    completion_callback_.Run(request, status);
+    ResetState();
+    return;
+  }
+
+  save_state_ = SAVING;
+  content::WebContents* web_contents(
+      content::WebContentsObserver::web_contents());
+
+  std::unique_ptr<OfflinePageArchiver> archiver(
+      new OfflinePageMHTMLArchiver(web_contents));
+
+  OfflinePageModel::SavePageParams params;
+  params.url = web_contents->GetLastCommittedURL();
+  params.client_id = request.client_id();
+  params.proposed_offline_id = request.request_id();
+  params.is_background = true;
+
+  // Pass in the original URL if it's different from last committed
+  // when redirects occur.
+  if (params.url != request.url())
+    params.original_url = request.url();
+
+  offline_page_model_->SavePage(
+      params, std::move(archiver),
+      base::Bind(&BackgroundLoaderOffliner::OnPageSaved,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,

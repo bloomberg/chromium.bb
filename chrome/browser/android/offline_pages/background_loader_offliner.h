@@ -47,6 +47,8 @@ class BackgroundLoaderOffliner : public Offliner,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
+  void SetPageDelayForTest(long delay_ms);
+
  protected:
   // Called to reset internal loader and observer state.
   virtual void ResetState();
@@ -56,6 +58,9 @@ class BackgroundLoaderOffliner : public Offliner,
 
   enum SaveState { NONE, SAVING, DELETE_AFTER_SAVE };
   enum PageLoadState { SUCCESS, RETRIABLE, NONRETRIABLE };
+
+  // Called when the page is ready to be saved.
+  void SavePage();
 
   // Called when the page has been saved.
   void OnPageSaved(SavePageResult save_result, int64_t offline_id);
@@ -81,6 +86,8 @@ class BackgroundLoaderOffliner : public Offliner,
   SaveState save_state_;
   // Page load state.
   PageLoadState page_load_state_;
+  // Seconds to delay before taking snapshot.
+  long page_delay_ms_;
 
   base::WeakPtrFactory<BackgroundLoaderOffliner> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BackgroundLoaderOffliner);

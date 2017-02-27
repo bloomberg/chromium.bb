@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offliner_helper.h"
 #include "chrome/browser/net/prediction_options.h"
@@ -73,9 +74,6 @@ class MockOfflinePageModel : public StubOfflinePageModel {
   DISALLOW_COPY_AND_ASSIGN(MockOfflinePageModel);
 };
 
-void PumpLoop() {
-  base::RunLoop().RunUntilIdle();
-}
 }  // namespace
 
 // A BackgroundLoader that we can run tests on.
@@ -145,6 +143,8 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
     offliner()->web_contents_tester()->TestSetIsLoading(true);
   }
 
+  void PumpLoop() { base::RunLoop().RunUntilIdle(); }
+
  private:
   void OnCompletion(const SavePageRequest& request,
                     Offliner::RequestStatus status);
@@ -169,6 +169,7 @@ BackgroundLoaderOfflinerTest::~BackgroundLoaderOfflinerTest() {}
 void BackgroundLoaderOfflinerTest::SetUp() {
   model_ = new MockOfflinePageModel();
   offliner_.reset(new TestBackgroundLoaderOffliner(profile(), nullptr, model_));
+  offliner_->SetPageDelayForTest(0L);
 }
 
 void BackgroundLoaderOfflinerTest::OnCompletion(
@@ -366,6 +367,25 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnErrorPage) {
 
   EXPECT_TRUE(completion_callback_called());
   EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_NO_RETRY, request_status());
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, OnlySavesOnceOnMultipleLoads) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+  // First load
+  CompleteLoading();
+  // Second load
+  offliner()->DidStopLoading();
+  PumpLoop();
+  model()->CompleteSavingAsSuccess();
+  PumpLoop();
+
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::SAVED, request_status());
+  EXPECT_FALSE(offliner()->is_loading());
+  EXPECT_FALSE(SaveInProgress());
 }
 
 }  // namespace offline_pages
