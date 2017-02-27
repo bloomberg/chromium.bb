@@ -812,6 +812,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texelfetchoffset.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/vertexarrays/' +
+        'single_attribute.first.html',
+        ['linux', 'amd'], bug=694877)
 
     self.Fail('deqp/functional/gles3/negativetextureapi.html',
         ['linux', 'amd'], bug=483282)
