@@ -635,16 +635,13 @@ static void adjustEndpointsAtBidiBoundary(
   }
 }
 
+// TODO(yosin): We should make |setNonDirectionalSelectionIfNeeded()| to take
+// |SelectionInFlatTree| instead of |VisibleSelectionInFlatTree|.
 void SelectionController::setNonDirectionalSelectionIfNeeded(
-    const VisibleSelectionInFlatTree& passedNewSelection,
+    const VisibleSelectionInFlatTree& newSelection,
     TextGranularity granularity,
     EndPointsAdjustmentMode endpointsAdjustmentMode,
     HandleVisibility handleVisibility) {
-  VisibleSelectionInFlatTree newSelection = passedNewSelection;
-  bool isDirectional =
-      m_frame->editor().behavior().shouldConsiderSelectionAsDirectional() ||
-      newSelection.isDirectional();
-
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   document().updateStyleAndLayoutIgnorePendingStylesheets();
@@ -664,28 +661,33 @@ void SelectionController::setNonDirectionalSelectionIfNeeded(
   if (endpointsAdjustmentMode == AdjustEndpointsAtBidiBoundary)
     adjustEndpointsAtBidiBoundary(newBase, newExtent);
 
+  SelectionInFlatTree::Builder builder(newSelection.asSelection());
   if (newBase.deepEquivalent() != base.deepEquivalent() ||
       newExtent.deepEquivalent() != extent.deepEquivalent()) {
     m_originalBaseInFlatTree = base;
     setContext(&document());
-    newSelection.setBase(newBase);
-    newSelection.setExtent(newExtent);
+    builder.setBaseAndExtent(newBase.deepEquivalent(),
+                             newExtent.deepEquivalent());
   } else if (originalBase.isNotNull()) {
     if (selection().computeVisibleSelectionInFlatTree().base() ==
-        newSelection.base())
-      newSelection.setBase(originalBase);
+        newSelection.base()) {
+      builder.setBaseAndExtent(originalBase.deepEquivalent(),
+                               newSelection.extent());
+    }
     m_originalBaseInFlatTree = VisiblePositionInFlatTree();
   }
 
-  // Adjusting base and extent will make newSelection always directional
-  newSelection.setIsDirectional(isDirectional);
-  const bool isHandleVisible = handleVisibility == HandleVisibility::Visible;
-  if (selection().computeVisibleSelectionInFlatTree() == newSelection &&
-      selection().isHandleVisible() == isHandleVisible)
+  builder.setIsHandleVisible(handleVisibility == HandleVisibility::Visible)
+      .setIsDirectional(
+          m_frame->editor().behavior().shouldConsiderSelectionAsDirectional() ||
+          newSelection.isDirectional());
+  const SelectionInFlatTree& selectionInFlatTree = builder.build();
+  if (selection().computeVisibleSelectionInFlatTree() ==
+          createVisibleSelection(selectionInFlatTree) &&
+      selection().isHandleVisible() == selectionInFlatTree.isHandleVisible())
     return;
-
   selection().setSelection(
-      newSelection, handleVisibility,
+      selectionInFlatTree,
       FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle,
       CursorAlignOnScroll::IfNeeded, granularity);
 }
