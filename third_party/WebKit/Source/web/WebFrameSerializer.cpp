@@ -96,6 +96,7 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
 
  private:
   bool shouldIgnoreHiddenElement(const Element&);
+  bool shouldIgnoreMetaElement(const Element&);
   bool shouldIgnorePopupOverlayElement(const Element&);
   void getCustomAttributesForImageElement(const HTMLImageElement&,
                                           Vector<Attribute>*);
@@ -111,6 +112,8 @@ MHTMLFrameSerializerDelegate::MHTMLFrameSerializerDelegate(
 
 bool MHTMLFrameSerializerDelegate::shouldIgnoreElement(const Element& element) {
   if (shouldIgnoreHiddenElement(element))
+    return true;
+  if (shouldIgnoreMetaElement(element))
     return true;
   if (m_webDelegate.removePopupOverlay() &&
       shouldIgnorePopupOverlayElement(element)) {
@@ -136,6 +139,23 @@ bool MHTMLFrameSerializerDelegate::shouldIgnoreHiddenElement(
   }
   Element* parent = element.parentElement();
   return parent && !isHTMLHeadElement(parent);
+}
+
+bool MHTMLFrameSerializerDelegate::shouldIgnoreMetaElement(
+    const Element& element) {
+  // Do not include meta elements that declare Content-Security-Policy
+  // directives. They should have already been enforced when the original
+  // document is loaded. Since only the rendered resources are encapsulated in
+  // the saved MHTML page, there is no need to carry the directives. If they
+  // are still kept in the MHTML, child frames that are referred to using cid:
+  // scheme could be prevented from loading.
+  if (!isHTMLMetaElement(element))
+    return false;
+  if (!element.fastHasAttribute(HTMLNames::contentAttr))
+    return false;
+  const AtomicString& httpEquiv =
+      element.fastGetAttribute(HTMLNames::http_equivAttr);
+  return httpEquiv == "Content-Security-Policy";
 }
 
 bool MHTMLFrameSerializerDelegate::shouldIgnorePopupOverlayElement(

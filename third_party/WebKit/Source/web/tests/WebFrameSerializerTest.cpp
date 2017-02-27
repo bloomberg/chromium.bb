@@ -369,9 +369,17 @@ TEST_F(WebFrameSerializerSanitizationTest, KeepPopupOverlayIfNotRequested) {
 TEST_F(WebFrameSerializerSanitizationTest, RemoveElements) {
   String mhtml =
       generateMHTMLParts("http://www.test.com", "remove_elements.html");
+  LOG(ERROR) << mhtml;
 
   EXPECT_EQ(WTF::kNotFound, mhtml.find("<script"));
   EXPECT_EQ(WTF::kNotFound, mhtml.find("<noscript"));
+
+  // Only the meta element containing "Content-Security-Policy" is removed.
+  // Other meta elements should be preserved.
+  EXPECT_EQ(WTF::kNotFound,
+            mhtml.find("<meta http-equiv=3D\"Content-Security-Policy"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<meta name=3D\"description"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<meta http-equiv=3D\"refresh"));
 
   // If an element is removed, its children should also be skipped.
   EXPECT_EQ(WTF::kNotFound, mhtml.find("<select"));
