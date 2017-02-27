@@ -147,6 +147,9 @@ typedef std::vector<history::VisitInfo> VisitInfoVector;
 struct HistoryInfoMapValue {
   HistoryInfoMapValue();
   HistoryInfoMapValue(const HistoryInfoMapValue& other);
+  HistoryInfoMapValue(HistoryInfoMapValue&& other);
+  HistoryInfoMapValue& operator=(const HistoryInfoMapValue& other);
+  HistoryInfoMapValue& operator=(HistoryInfoMapValue&& other);
   ~HistoryInfoMapValue();
 
   // This field is always populated.
@@ -166,6 +169,9 @@ typedef base::hash_map<HistoryID, HistoryInfoMapValue> HistoryInfoMap;
 struct RowWordStarts {
   RowWordStarts();
   RowWordStarts(const RowWordStarts& other);
+  RowWordStarts(RowWordStarts&& other);
+  RowWordStarts& operator=(const RowWordStarts& other);
+  RowWordStarts& operator=(RowWordStarts&& other);
   ~RowWordStarts();
 
   // Clears both url_word_starts_ and title_word_starts_.

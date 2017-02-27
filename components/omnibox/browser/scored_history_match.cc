@@ -320,9 +320,12 @@ ScoredHistoryMatch::ScoredHistoryMatch(
 
 ScoredHistoryMatch::ScoredHistoryMatch(const ScoredHistoryMatch& other) =
     default;
-
-ScoredHistoryMatch::~ScoredHistoryMatch() {
-}
+ScoredHistoryMatch::ScoredHistoryMatch(ScoredHistoryMatch&& other) = default;
+ScoredHistoryMatch& ScoredHistoryMatch::operator=(
+    const ScoredHistoryMatch& other) = default;
+ScoredHistoryMatch& ScoredHistoryMatch::operator=(ScoredHistoryMatch&& other) =
+    default;
+ScoredHistoryMatch::~ScoredHistoryMatch() = default;
 
 // Comparison function for sorting ScoredMatches by their scores with
 // intelligent tie-breaking.

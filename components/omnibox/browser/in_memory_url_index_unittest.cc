@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <numeric>
 
 #include "base/auto_reset.h"
 #include "base/files/file_path.h"
@@ -738,15 +739,13 @@ TEST_F(InMemoryURLIndexTest, TrimHistoryIds) {
   };
 
   auto GetHistoryIdsUpTo = [&](HistoryID max) {
-    HistoryIDSet res;
-    // All ids are inserted in the end so the implicit hint would work.
-    for (HistoryID id = kMinRowId; id < max; ++id)
-      res.insert(id);
+    HistoryIDVector res(max - kMinRowId);
+    std::iota(res.begin(), res.end(), kMinRowId);
     return res;
   };
 
   auto CountGroupElementsInIds = [](const ItemGroup& group,
-                                    const HistoryIDSet& ids) {
+                                    const HistoryIDVector& ids) {
     return std::count_if(ids.begin(), ids.end(), [&](history::URLID id) {
       return group.min_id <= id && id < group.max_id;
     });

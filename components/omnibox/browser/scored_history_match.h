@@ -37,6 +37,9 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // Required for STL, we don't use this directly.
   ScoredHistoryMatch();
   ScoredHistoryMatch(const ScoredHistoryMatch& other);
+  ScoredHistoryMatch(ScoredHistoryMatch&& other);
+  ScoredHistoryMatch& operator=(const ScoredHistoryMatch& other);
+  ScoredHistoryMatch& operator=(ScoredHistoryMatch&& other);
 
   // Initializes the ScoredHistoryMatch with a raw score calculated for the
   // history item given in |row| with recent visits as indicated in |visits|. It

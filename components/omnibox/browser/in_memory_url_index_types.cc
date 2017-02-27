@@ -62,10 +62,9 @@ TermMatches DeoverlapMatches(const TermMatches& sorted_matches) {
 
 std::vector<size_t> OffsetsFromTermMatches(const TermMatches& matches) {
   std::vector<size_t> offsets;
-  for (TermMatches::const_iterator i = matches.begin(); i != matches.end();
-       ++i) {
-    offsets.push_back(i->offset);
-    offsets.push_back(i->offset + i->length);
+  for (const auto& match : matches) {
+    offsets.push_back(match.offset);
+    offsets.push_back(match.offset + match.length);
   }
   return offsets;
 }
@@ -98,11 +97,10 @@ String16Set String16SetFromString16(const base::string16& cleaned_uni_string,
                                     WordStarts* word_starts) {
   String16Vector words =
       String16VectorFromString16(cleaned_uni_string, false, word_starts);
-  String16Set word_set;
-  for (String16Vector::const_iterator iter = words.begin(); iter != words.end();
-       ++iter)
-    word_set.insert(base::i18n::ToLower(*iter).substr(0, kMaxSignificantChars));
-  return word_set;
+  for (auto& word : words)
+    word = base::i18n::ToLower(word).substr(0, kMaxSignificantChars);
+  return String16Set(std::make_move_iterator(words.begin()),
+                     std::make_move_iterator(words.end()));
 }
 
 String16Vector String16VectorFromString16(
@@ -141,25 +139,29 @@ String16Vector String16VectorFromString16(
 }
 
 Char16Set Char16SetFromString16(const base::string16& term) {
-  Char16Set characters;
-  for (base::string16::const_iterator iter = term.begin(); iter != term.end();
-       ++iter)
-    characters.insert(*iter);
-  return characters;
+  return Char16Set(term.begin(), term.end());
 }
 
 // HistoryInfoMapValue ---------------------------------------------------------
 
-HistoryInfoMapValue::HistoryInfoMapValue() {}
+HistoryInfoMapValue::HistoryInfoMapValue() = default;
 HistoryInfoMapValue::HistoryInfoMapValue(const HistoryInfoMapValue& other) =
     default;
-HistoryInfoMapValue::~HistoryInfoMapValue() {}
+HistoryInfoMapValue::HistoryInfoMapValue(HistoryInfoMapValue&& other) = default;
+HistoryInfoMapValue& HistoryInfoMapValue::operator=(
+    const HistoryInfoMapValue& other) = default;
+HistoryInfoMapValue& HistoryInfoMapValue::operator=(
+    HistoryInfoMapValue&& other) = default;
+HistoryInfoMapValue::~HistoryInfoMapValue() = default;
 
 // RowWordStarts ---------------------------------------------------------------
 
-RowWordStarts::RowWordStarts() {}
+RowWordStarts::RowWordStarts() = default;
 RowWordStarts::RowWordStarts(const RowWordStarts& other) = default;
-RowWordStarts::~RowWordStarts() {}
+RowWordStarts::RowWordStarts(RowWordStarts&& other) = default;
+RowWordStarts& RowWordStarts::operator=(const RowWordStarts& other) = default;
+RowWordStarts& RowWordStarts::operator=(RowWordStarts&& other) = default;
+RowWordStarts::~RowWordStarts() = default;
 
 void RowWordStarts::Clear() {
   url_word_starts_.clear();

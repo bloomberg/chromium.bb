@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <set>
+#include <stack>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -205,9 +206,9 @@ class URLIndexPrivateData
 
   // URL History indexing support functions.
 
-  // Composes a set of history item IDs by intersecting the set for each word
+  // Composes a vector of history item IDs by intersecting the set for each word
   // in |unsorted_words|.
-  HistoryIDSet HistoryIDSetFromWords(const String16Vector& unsorted_words);
+  HistoryIDVector HistoryIDsFromWords(const String16Vector& unsorted_words);
 
   // Trims the candidate pool in advance of doing proper substring searching, to
   // cap the cost of such searching. Discards the least-relevant items (based on
@@ -215,7 +216,7 @@ class URLIndexPrivateData
   // minimize the risk of discarding a valuable URL, the candidate pool is still
   // left two orders of magnitude larger than the final number of results
   // returned from the HQP. Returns whether anything was trimmed.
-  bool TrimHistoryIdsPool(HistoryIDSet* history_id_set) const;
+  bool TrimHistoryIdsPool(HistoryIDVector* history_ids) const;
 
   // Helper function to HistoryIDSetFromWords which composes a set of history
   // ids for the given term given in |term|.
@@ -225,13 +226,12 @@ class URLIndexPrivateData
   WordIDSet WordIDSetForTermChars(const Char16Set& term_chars);
 
   // Helper function for HistoryItemsForTerms().  Fills in |scored_items| from
-  // the matches listed in |history_id_set|.
-  void HistoryIdSetToScoredMatches(
-      HistoryIDSet history_id_set,
-      const base::string16& lower_raw_string,
-      const TemplateURLService* template_url_service,
-      bookmarks::BookmarkModel* bookmark_model,
-      ScoredHistoryMatches* scored_items) const;
+  // the matches listed in |history_ids|.
+  void HistoryIdsToScoredMatches(HistoryIDVector history_ids,
+                                 const base::string16& lower_raw_string,
+                                 const TemplateURLService* template_url_service,
+                                 bookmarks::BookmarkModel* bookmark_model,
+                                 ScoredHistoryMatches* scored_items) const;
 
   // Fills in |terms_to_word_starts_offsets| according to where the word starts
   // in each term.  For example, in the term "-foo" the word starts at offset 1.
@@ -262,17 +262,9 @@ class URLIndexPrivateData
   // history item identified by |history_id| to the index.
   void AddWordToIndex(const base::string16& uni_word, HistoryID history_id);
 
-  // Creates a new entry in the word/history map for |word_id| and add
-  // |history_id| as the initial element of the word's set.
-  void AddWordHistory(const base::string16& uni_word, HistoryID history_id);
-
-  // Updates an existing entry in the word/history index by adding the
-  // |history_id| to set for |word_id| in the word_id_history_map_.
-  void UpdateWordHistory(WordID word_id, HistoryID history_id);
-
-  // Adds |word_id| to |history_id|'s entry in the history/word map,
-  // creating a new entry if one does not already exist.
-  void AddToHistoryIDWordMap(HistoryID history_id, WordID word_id);
+  // Adds a new entry to |word_list_|. Uses previously freed positions if
+  // available.
+  WordID AddNewWordToWordList(const base::string16& term);
 
   // Removes |row| and all associated words and characters from the index.
   void RemoveRowFromIndex(const history::URLRow& row);
@@ -353,9 +345,9 @@ class URLIndexPrivateData
   // the index, in which case any available words are used, if any, and then
   // words are added to the end of the word_list_. When URL visits are
   // modified or deleted old words may be removed from the index, in which
-  // case the slots for those words are added to available_words_ for resuse
+  // case the slots for those words are added to available_words_ for reuse
   // by future URL updates.
-  WordIDSet available_words_;
+  std::stack<WordID> available_words_;
 
   // A one-to-one mapping from the a word string to its slot number (i.e.
   // WordID) in the |word_list_|.
