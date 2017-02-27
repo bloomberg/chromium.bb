@@ -1432,6 +1432,19 @@ void PasswordAutofillAgent::GetFillableElementFromFormData(
     if (elements)
       elements->push_back(main_element);
   }
+
+  // This is a fallback, if for some reasons elements for filling were not found
+  // (for example because they were renamed by JavaScript) then add fill data
+  // for |web_input_to_password_info_|. When the user clicks on a password
+  // field which is not a key in |web_input_to_password_info_|, the first
+  // element from |web_input_to_password_info_| will be used in
+  // PasswordAutofillAgent::FindPasswordInfoForElement to propose to fill.
+  if (web_input_to_password_info_.empty()) {
+    PasswordInfo password_info;
+    password_info.fill_data = form_data;
+    password_info.key = key;
+    web_input_to_password_info_[blink::WebInputElement()] = password_info;
+  }
 }
 
 void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {

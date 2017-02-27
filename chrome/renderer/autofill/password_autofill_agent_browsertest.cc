@@ -2516,4 +2516,25 @@ TEST_F(PasswordAutofillAgentTest, ShowAutofillSignaturesFlag) {
   }
 }
 
+// Tests that a suggestion dropdown is shown even if JavaScripts updated field
+// names.
+TEST_F(PasswordAutofillAgentTest, SuggestWhenJavaScriptUpdatesFieldNames) {
+  // Simulate that JavaScript updated field names.
+  auto fill_data = fill_data_;
+  fill_data.username_field.name += ASCIIToUTF16("1");
+  fill_data.password_field.name += ASCIIToUTF16("1");
+  // Simulate the browser sending back the login info.
+  SimulateOnFillPasswordForm(fill_data);
+
+  // Call SimulateElementClick() to produce a user gesture on the page so
+  // autofill will actually fill.
+  SimulateElementClick(kUsernameName);
+
+  // Simulate a user clicking on the password element. This should produce a
+  // dropdown with suggestion of all available usernames.
+  static_cast<PageClickListener*>(autofill_agent_)
+      ->FormControlElementClicked(password_element_, false);
+  CheckSuggestions("", false);
+}
+
 }  // namespace autofill
