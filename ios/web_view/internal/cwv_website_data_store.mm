@@ -13,9 +13,10 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation CWVWebsiteDataStore
-// TODO(crbug.com/690182): CWVWebsiteDataStore should own _browserState.
-ios_web_view::WebViewBrowserState* _browserState;
+@implementation CWVWebsiteDataStore {
+  // TODO(crbug.com/690182): CWVWebsiteDataStore should own _browserState.
+  ios_web_view::WebViewBrowserState* _browserState;
+}
 
 - (BOOL)isPersistent {
   return !_browserState->IsOffTheRecord();
