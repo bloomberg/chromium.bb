@@ -861,6 +861,32 @@ TEST_F('CrSettingsBluetoothPageTest', 'BluetoothPageTest', function() {
   mocha.run();
 });
 
+/**
+ * Test fixture for internet-page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsInternetPageTest() {}
+
+CrSettingsInternetPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/internet_page/internet_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    '../fake_chrome_event.js',
+    'fake_networking_private.js',
+    'internet_page_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsInternetPageTest', 'InternetPageTest', function() {
+  mocha.run();
+});
+
 GEN('#endif');
 
 /**

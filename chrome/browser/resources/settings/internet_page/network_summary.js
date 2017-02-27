@@ -61,11 +61,12 @@ Polymer({
      * The device state for each network device type.
      * @private {DeviceStateObject}
      */
-    deviceStates_: {
+    deviceStates: {
       type: Object,
       value: function() {
         return {};
       },
+      notify: true,
     },
 
     /**
@@ -175,20 +176,6 @@ Polymer({
       return;
     }
     this.fire('show-detail', state);
-  },
-
-  /**
-   * Event triggered when the enabled state of a network-summary-item is
-   * toggled.
-   * @param {!{detail: {enabled: boolean,
-   *                    type: chrome.networkingPrivate.NetworkType}}} event
-   * @private
-   */
-  onDeviceEnabledToggled_: function(event) {
-    if (event.detail.enabled)
-      this.networkingPrivate.enableNetworkType(event.detail.type);
-    else
-      this.networkingPrivate.disableNetworkType(event.detail.type);
   },
 
   /**
@@ -346,7 +333,7 @@ Polymer({
         newDeviceStates[state.Type] = state;
       }
     } else {
-      newDeviceStates = this.deviceStates_;
+      newDeviceStates = this.deviceStates;
     }
 
     // Clear any current networks.
@@ -408,7 +395,7 @@ Polymer({
       this.activeNetworkIds_.add(state.GUID);
     }
 
-    this.deviceStates_ = newDeviceStates;
+    this.deviceStates = newDeviceStates;
     this.networkStateLists_ = newNetworkStateLists;
     // Set activeNetworkStates last to rebuild the dom-repeat.
     this.activeNetworkStates_ = newActiveNetworkStates;

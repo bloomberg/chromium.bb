@@ -29,6 +29,25 @@ Polymer({
     },
 
     /**
+     * The device state for each network device type. Set by network-summary.
+     * @type {!Object<chrome.networkingPrivate.DeviceStateProperties>|undefined}
+     * @private
+     */
+    deviceStates: {
+      type: Object,
+      notify: true,
+    },
+
+    /**
+     * Highest priority connected network or null. Set by network-summary.
+     * @type {?CrOnc.NetworkStateProperties|undefined}
+     */
+    defaultNetwork: {
+      type: Object,
+      notify: true,
+    },
+
+    /**
      * The network type for the known networks subpage.
      * @private
      */
@@ -59,21 +78,38 @@ Polymer({
     },
   },
 
+  // Element event listeners
+  listeners: {
+    'device-enabled-toggled': 'onDeviceEnabledToggled_',
+    'show-detail': 'onShowDetail_',
+    'show-known-networks': 'onShowKnownNetworks_',
+  },
+
+  // chrome.networkingPrivate listeners
+  /** @private {Function} */
+  onExtensionAddedListener_: null,
+
+  /** @private {Function} */
+  onExtensionRemovedListener_: null,
+
+  /** @private {Function} */
+  onExtensionDisabledListener_: null,
+
   /** @override */
   attached: function() {
-    this.boundOnExtensionAdded_ = this.boundOnExtensionAdded_ ||
+    this.onExtensionAddedListener_ = this.onExtensionAddedListener_ ||
         this.onExtensionAdded_.bind(this);
-    chrome.management.onInstalled.addListener(this.boundOnExtensionAdded_);
-    chrome.management.onEnabled.addListener(this.boundOnExtensionAdded_);
+    chrome.management.onInstalled.addListener(this.onExtensionAddedListener_);
+    chrome.management.onEnabled.addListener(this.onExtensionAddedListener_);
 
-    this.boundOnExtensionRemoved_ = this.boundOnExtensionRemoved_ ||
+    this.onExtensionRemovedListener_ = this.onExtensionRemovedListener_ ||
         this.onExtensionRemoved_.bind(this);
     chrome.management.onUninstalled.addListener(
-        this.boundOnExtensionRemoved_);
+        this.onExtensionRemovedListener_);
 
-    this.boundOnExtensionDisabled_ = this.boundOnExtensionDisabled_ ||
+    this.onExtensionDisabledListener_ = this.onExtensionDisabledListener_ ||
         this.onExtensionDisabled_.bind(this);
-    chrome.management.onDisabled.addListener(this.boundOnExtensionDisabled_);
+    chrome.management.onDisabled.addListener(this.onExtensionDisabledListener_);
 
     chrome.management.getAll(this.onGetAllExtensions_.bind(this));
 
@@ -85,32 +121,27 @@ Polymer({
   /** @override */
   detached: function() {
     chrome.management.onInstalled.removeListener(
-        assert(this.boundOnExtensionAdded_));
+        assert(this.onExtensionAddedListener_));
     chrome.management.onEnabled.removeListener(
-        assert(this.boundOnExtensionAdded_));
+        assert(this.onExtensionAddedListener_));
     chrome.management.onUninstalled.removeListener(
-        assert(this.boundOnExtensionRemoved_));
+        assert(this.onExtensionRemovedListener_));
     chrome.management.onDisabled.removeListener(
-        assert(this.boundOnExtensionDisabled_));
+        assert(this.onExtensionDisabledListener_));
   },
 
   /**
-   * Reference to the bound listener, such that it can be removed on detach.
-   * @private {Function}
+   * Event triggered by a device state enabled toggle.
+   * @param {!{detail: {enabled: boolean,
+   *                    type: chrome.networkingPrivate.NetworkType}}} event
+   * @private
    */
-  boundOnExtensionAdded_: null,
-
-  /**
-   * Reference to the bound listener, such that it can be removed on detach.
-   * @private {Function}
-   */
-  boundOnExtensionRemoved_: null,
-
-  /**
-   * Reference to the bound listener, such that it can be removed on detach.
-   * @private {Function}
-   */
-  boundOnExtensionDisabled_: null,
+  onDeviceEnabledToggled_: function(event) {
+    if (event.detail.enabled)
+      this.networkingPrivate.enableNetworkType(event.detail.type);
+    else
+      this.networkingPrivate.disableNetworkType(event.detail.type);
+  },
 
   /**
    * @param {!{detail: !CrOnc.NetworkStateProperties}} event
