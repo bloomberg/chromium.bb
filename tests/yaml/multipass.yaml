@@ -34,3 +34,12 @@ flags: {testmode: forward}
 tests:
   - - foo
     - fu
+
+# _ in a back translation test mustn't be allowed to go below 0
+table: |
+  include tables/chardefs.cti
+  correct _["fu"] "oo"
+flags: {testmode: backward}
+tests:
+  - - fu
+    - oo
