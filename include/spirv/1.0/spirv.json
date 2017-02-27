@@ -52,7 +52,7 @@
             ],
             "MagicNumber": 119734787,
             "Version": 65536,
-            "Revision": 9,
+            "Revision": 10,
             "OpCodeMask": 65535,
             "WordCountShift": 16
         },
@@ -413,7 +413,11 @@
                     "LinkageAttributes": 41,
                     "NoContraction": 42,
                     "InputAttachmentIndex": 43,
-                    "Alignment": 44
+                    "Alignment": 44,
+                    "OverrideCoverageNV": 5248,
+                    "PassthroughNV": 5250,
+                    "ViewportRelativeNV": 5252,
+                    "SecondaryViewportRelativeNV": 5256
                 }
             },
             {
@@ -469,7 +473,14 @@
                     "SubgroupLtMaskKHR": 4420,
                     "BaseVertex": 4424,
                     "BaseInstance": 4425,
-                    "DrawIndex": 4426
+                    "DrawIndex": 4426,
+                    "DeviceIndex": 4438,
+                    "ViewIndex": 4440,
+                    "ViewportMaskNV": 5253,
+                    "SecondaryPositionNV": 5257,
+                    "SecondaryViewportMaskNV": 5258,
+                    "PositionPerViewNV": 5261,
+                    "ViewportMaskPerViewNV": 5262
                 }
             },
             {
@@ -631,7 +642,19 @@
                     "MultiViewport": 57,
                     "SubgroupBallotKHR": 4423,
                     "DrawParameters": 4427,
-                    "SubgroupVoteKHR": 4431
+                    "SubgroupVoteKHR": 4431,
+                    "StorageUniformBufferBlock16": 4433,
+                    "StorageUniform16": 4434,
+                    "StoragePushConstant16": 4435,
+                    "StorageInputOutput16": 4436,
+                    "DeviceGroup": 4437,
+                    "MultiView": 4439,
+                    "SampleMaskOverrideCoverageNV": 5249,
+                    "GeometryShaderPassthroughNV": 5251,
+                    "ShaderViewportIndexLayerNV": 5254,
+                    "ShaderViewportMaskNV": 5255,
+                    "ShaderStereoViewNV": 5259,
+                    "PerViewAttributesNV": 5260
                 }
             },
             {
