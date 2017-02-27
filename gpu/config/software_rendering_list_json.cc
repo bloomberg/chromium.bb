@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.17",
+  "version": "12.18",
   "entries": [
     {
       "id": 1,
@@ -1246,6 +1246,10 @@ LONG_STRING_CONST(
       "exceptions": [
         {
           "vendor_id": "0x10de",
+          "pixel_shader_version": {
+            "op": ">=",
+            "value": "5.0"
+          },
           "device_id": ["0x1340", "0x1341", "0x1344", "0x1346", "0x1347",
                         "0x1348", "0x1349", "0x134d", "0x134e", "0x134f",
                         "0x137a", "0x137d", "0x1380", "0x1381", "0x1382",
@@ -1268,13 +1272,6 @@ LONG_STRING_CONST(
 
         },
         {
-          "os": {
-            "type": "win",
-            "version": {
-              "op": ">=",
-              "value": "8.1"
-            }
-          },
           "vendor_id": "0x8086",
           "pixel_shader_version": {
             "op": ">=",
@@ -1282,14 +1279,11 @@ LONG_STRING_CONST(
           }
         },
         {
-          "os": {
-            "type": "win",
-            "version": {
-              "op": ">=",
-              "value": "8.1"
-            }
-          },
           "vendor_id": "0x1002",
+          "pixel_shader_version": {
+            "op": ">=",
+            "value": "5.0"
+          },
           "device_id": ["0x1309", "0x130a", "0x130b", "0x130c", "0x130d",
                         "0x130e", "0x130f", "0x1313", "0x1315", "0x1316",
                         "0x1318", "0x131b", "0x131c", "0x131d", "0x6600",
