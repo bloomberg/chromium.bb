@@ -39,7 +39,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebString.h"
-#include "wtf/Functional.h"
+#include "wtf/Atomics.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/AtomicString.h"
 
@@ -51,6 +51,7 @@ MessagePort* MessagePort::create(ExecutionContext& executionContext) {
 
 MessagePort::MessagePort(ExecutionContext& executionContext)
     : ContextLifecycleObserver(&executionContext),
+      m_pendingDispatchTask(0),
       m_started(false),
       m_closed(false) {}
 
@@ -118,6 +119,10 @@ WebMessagePortChannelUniquePtr MessagePort::disentangle() {
 // non-threadsafe APIs (i.e. should not call into the entangled channel or
 // access mutable variables).
 void MessagePort::messageAvailable() {
+  // Don't post another task if there's an identical one pending.
+  if (atomicTestAndSetToOne(&m_pendingDispatchTask))
+    return;
+
   DCHECK(getExecutionContext());
   // TODO(tzik): Use ParentThreadTaskRunners instead of ExecutionContext here to
   // avoid touching foreign thread GCed object.
@@ -184,6 +189,11 @@ bool MessagePort::tryGetMessage(RefPtr<SerializedScriptValue>& message,
 }
 
 void MessagePort::dispatchMessages() {
+  // Signal to |messageAvailable()| that there are no ongoing
+  // dispatches of messages. This can cause redundantly posted
+  // tasks, but safely avoids messages languishing.
+  releaseStore(&m_pendingDispatchTask, 0);
+
   // Messages for contexts that are not fully active get dispatched too, but
   // JSAbstractEventListener::handleEvent() doesn't call handlers for these.
   // The HTML5 spec specifies that any messages sent to a document that is not

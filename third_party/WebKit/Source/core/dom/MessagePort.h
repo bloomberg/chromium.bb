@@ -141,6 +141,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
   WebMessagePortChannelUniquePtr m_entangledChannel;
 
+  int m_pendingDispatchTask;
   bool m_started;
   bool m_closed;
 };
