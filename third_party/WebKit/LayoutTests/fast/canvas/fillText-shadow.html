@@ -1,55 +1,47 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <canvas width="600" height="300" style="border: solid 1px gray"></canvas>
+
 <script>
-description('Tests that (vertical) shadow offsets are applied correctly when using fillText() regardless of blur amount.');
+
+// Tests that (vertical) shadow offsets are applied correctly when using fillText() regardless of blur amount.
+
 var ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
 ctx.font = 'bold 128px sans-serif';
 ctx.shadowColor = 'red'
 ctx.shadowOffsetY = 100;
 
 function testWithBlur(blur, belowOffset) {
-  ctx.clearRect(0, 0, 600, 300);
-  ctx.shadowBlur = blur;
-  
-  // Center the I around the Y axis.
-  ctx.fillText('I', -ctx.measureText('I').width/2, 128);
-  
-  debug('Testing with blur of ' + blur + ' pixels');
+    ctx.clearRect(0, 0, 600, 300);
+    ctx.shadowBlur = blur;
+    
+    // Center the I around the Y axis.
+    ctx.fillText('I', -ctx.measureText('I').width/2, 128);
 
-  // Make sure that the shadow doesn't end up above the text...
-  var imageData = ctx.getImageData(0, 0, 1, 1);
-  imgdata = imageData.data;
+    // Make sure that the shadow doesn't end up above the text...
+    var imageData = ctx.getImageData(0, 0, 1, 1).data;
+    assert_array_equals(imageData, [0, 0, 0, 0]);
 
-  shouldBe('imgdata[0]', '0');
-  shouldBe('imgdata[1]', '0');
-  shouldBe('imgdata[2]', '0');
-  shouldBe('imgdata[3]', '0');
-  
-  // ...but below.
-  var imageData = ctx.getImageData(0, belowOffset, 1, 1);
-  imgdata = imageData.data;  
-  shouldBe('imgdata[0]', '255');
-  shouldBe('imgdata[1]', '0');
-  shouldBe('imgdata[2]', '0');
-  shouldBe('imgdata[3]', '255');
+    // ...but below.
+    var imageData = ctx.getImageData(0, belowOffset, 1, 1).data;
+    assert_array_equals(imageData, [255, 0, 0, 255]);
 }
 
-debug('Testing with no transform');
-testWithBlur(0, 150);
-testWithBlur(1, 150);
-testWithBlur(5, 150);
+var testScenariosNoTransform = [
+    ['TestShadowOffsetWithNoTransform 1', 0, 150],
+    ['TestShadowOffsetWithNoTransform 2', 1, 150],
+    ['TestShadowOffsetWithNoTransform 3', 5, 150],
+];
 
-debug('Testing with scale transform');
+var testScenariosScaleTransform = [
+    ['TestShadowOffsetWithScaleTransform 1', 0, 299],
+    ['TestShadowOffsetWithScaleTransform 2', 1, 299],
+    ['TestShadowOffsetWithScaleTransform 3', 5, 299],
+];
+
+generate_tests(testWithBlur, testScenariosNoTransform);
+
 ctx.scale(1, 2);
-testWithBlur(0, 299);
-testWithBlur(1, 299);
-testWithBlur(5, 299);
+generate_tests(testWithBlur, testScenariosScaleTransform);
 
 </script>
-</body>
-</html>

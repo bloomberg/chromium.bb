@@ -1,9 +1,17 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
-<script src="script-tests/gradient-addColorStop-with-invalid-color.js"></script>
-</body>
-</html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function(){
+
+    var gradient = document.createElement('canvas').getContext('2d').createLinearGradient(0, 0, 150, 0);
+
+    assert_throws(null, function(){gradient.addColorStop(0, '');}, '"SyntaxError: Failed to execute \'addColorStop\' on \'CanvasGradient\': The value provided (\'\') could not be parsed as a color."');
+
+    assert_throws(null, function(){gradient.addColorStop(0, '#cc');}, '"SyntaxError: Failed to execute \'addColorStop\' on \'CanvasGradient\': The value provided (\'#cc\') could not be parsed as a color."');
+
+    assert_throws(null, function(){gradient.addColorStop(0, 'rgb(257, 0)');}, '"SyntaxError: Failed to execute \'addColorStop\' on \'CanvasGradient\': The value provided (\'rgb(257, 0)\') could not be parsed as a color."');
+
+    assert_throws(null, function(){gradient.addColorStop(0, 'rgb(257, 0, 5, 0)');}, '"SyntaxError: Failed to execute \'addColorStop\' on \'CanvasGradient\': The value provided (\'rgb(257, 0, 5, 0)\') could not be parsed as a color."');
+
+}, 'This test checks invalid colors on gradients.');
+</script>

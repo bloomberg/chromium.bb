@@ -1,19 +1,21 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
 <style>
 canvas {
     border: 1px solid #000;
     margin: 2px;
 }
 </style>
+<div id="canvases"></div>
+
 <script>
+// Visual result for debugging (test uses text baseline only): You should see sixteen canvases with a green dot (rotated square) in the center.
+
 var img;
 var imgdata;
 
-function imageLoaded() {
+function runTests() {
     var NUM_IMAGE = 16;
     for (var i = 0; i < NUM_IMAGE; i++) {
         var canvases = document.getElementById('canvases')
@@ -34,40 +36,25 @@ function imageLoaded() {
         div.appendChild(canvas);
         canvases.appendChild(div);
 
-        var imageData = ctx.getImageData(4, 4, 1, 1);
-        imgdata = imageData.data;
-        shouldBe("imgdata[0]", "0");
-        shouldBe("imgdata[1]", "255");
-        shouldBe("imgdata[2]", "0");
-    }
-
-    if (window.testRunner) {
-        testRunner.notifyDone();
+        assert_array_equals(ctx.getImageData(4, 4, 1, 1).data.slice(0,3), [0, 255, 0]);
     }
 }
 
-function runTests() {
-    if (window.testRunner) {
-		testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
 
-    var patternCanvas = document.createElement('canvas');
-    patternCanvas.width = 9;
-    patternCanvas.height = 9;
-    var patternCtx = patternCanvas.getContext('2d');
-    patternCtx.fillStyle = '#0F0';
-    patternCtx.fillRect(3, 3, 3, 3);
-    img = new Image();
-    img.onload = imageLoaded;
-    img.src = patternCanvas.toDataURL();
+var patternCanvas = document.createElement('canvas');
+patternCanvas.width = 9;
+patternCanvas.height = 9;
+var patternCtx = patternCanvas.getContext('2d');
+patternCtx.fillStyle = '#0F0';
+patternCtx.fillRect(3, 3, 3, 3);
+img = new Image();
+img.src = patternCanvas.toDataURL();
 
-}
+
+async_test(t => {
+        img.onload = function() {
+            t.step(runTests);
+            t.done();
+        }
+}, "Test image pattern rotation.");
 </script>
-</head>
-<body onload="runTests();">
-Visual result below is for debugging purposes only (test uses text baseline only). You should see sixteen canvases with a green dot (rotated square) in the center.
-<div id="canvases"></div>
-</pre>
-</body>
-</html>

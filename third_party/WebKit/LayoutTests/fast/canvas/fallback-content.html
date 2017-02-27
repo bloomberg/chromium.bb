@@ -1,8 +1,9 @@
-<!DOCTYPE HTML>
 <html>
 <body>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <div id="container">
+
 <div>
   <a id="link1" href="#">Link</a>
   <button id="button1">Button</button>
@@ -34,61 +35,59 @@
 <canvas hidden id="hiddenCanvas" width="300" height="300">
   <a id="linkInHiddenCanvas" href="#">Link</a>
 </canvas>
+
 </div>
-<div id="console"></div>
 <script>
-description("This test makes sure that focusable elements in canvas fallback content are focusable.");
-
-if (window.testRunner)
-    window.testRunner.dumpAsText();
-
 var element;
+var previousFocusedElement;
+
 function checkFocusable(id) {
-    debug(id + " should be focusable.");
     element = document.getElementById(id);
     element.focus();
-    shouldBe("document.activeElement == element", "true");
-    debug("");
+    assert_true(document.activeElement == element);
 }
 
-checkFocusable("link1");
-checkFocusable("button1");
-checkFocusable("text1");
-checkFocusable("checkbox1");
-checkFocusable("radio1");
-checkFocusable("slider1");
-checkFocusable("submit1");
-checkFocusable("combobox1");
-checkFocusable("listbox1");
-checkFocusable("textarea1");
-checkFocusable("focusable1");
-
-checkFocusable("link2");
-checkFocusable("button2");
-checkFocusable("text2");
-checkFocusable("checkbox2");
-checkFocusable("radio2");
-checkFocusable("slider2");
-checkFocusable("submit2");
-checkFocusable("combobox2");
-checkFocusable("listbox2");
-checkFocusable("textarea2");
-checkFocusable("focusable2");
-
-var previousFocusedElement;
 function checkNotFocusable(id) {
-    debug(id + " should not be focusable.");
     previousFocusedElement = document.activeElement;
     element = document.getElementById(id);
     element.focus();
-    shouldBe("document.activeElement == previousFocusedElement", "true");
-    debug("");
+    assert_true(document.activeElement == previousFocusedElement);
 }
 
-checkNotFocusable("linkInHiddenCanvas");
+var focusableTestScenarios = [
+    ['FocusableTestCase1', "link1"],
+    ['FocusableTestCase2', "button1"],
+    ['FocusableTestCase3', "text1"],
+    ['FocusableTestCase4', "checkbox1"],
+    ['FocusableTestCase5', "radio1"],
+    ['FocusableTestCase6', "slider1"],
+    ['FocusableTestCase7', "submit1"],
+    ['FocusableTestCase8', "combobox1"],
+    ['FocusableTestCase9', "listbox1"],
+    ['FocusableTestCase10', "textarea1"],
+    ['FocusableTestCase11', "focusable1"],
 
+    ['FocusableTestCase12', "link2"],
+    ['FocusableTestCase13', "button2"],
+    ['FocusableTestCase14', "text2"],
+    ['FocusableTestCase15', "checkbox2"],
+    ['FocusableTestCase16', "radio2"],
+    ['FocusableTestCase17', "slider2"],
+    ['FocusableTestCase18', "submit2"],
+    ['FocusableTestCase19', "combobox2"],
+    ['FocusableTestCase20', "listbox2"],
+    ['FocusableTestCase21', "textarea2"],
+    ['FocusableTestCase22', "focusable2"]
+];
+
+var notFocusableTestScenarios = [
+    ['NotFocusableTestCase', "linkInHiddenCanvas"],
+];
+
+generate_tests(checkFocusable, focusableTestScenarios);
+generate_tests(checkNotFocusable, notFocusableTestScenarios);
 document.querySelector("#container").remove();
-</script>
 
+</script>
 </body>
 </html>
