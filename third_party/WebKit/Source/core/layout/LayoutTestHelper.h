@@ -22,10 +22,10 @@
 
 namespace blink {
 
-class SingleChildFrameLoaderClient final : public EmptyLocalFrameClient {
+class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
  public:
-  static SingleChildFrameLoaderClient* create() {
-    return new SingleChildFrameLoaderClient();
+  static SingleChildLocalFrameClient* create() {
+    return new SingleChildLocalFrameClient();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
@@ -42,15 +42,15 @@ class SingleChildFrameLoaderClient final : public EmptyLocalFrameClient {
   void didDetachChild() { m_child = nullptr; }
 
  private:
-  explicit SingleChildFrameLoaderClient() {}
+  explicit SingleChildLocalFrameClient() {}
 
   Member<LocalFrame> m_child;
 };
 
-class FrameLoaderClientWithParent final : public EmptyLocalFrameClient {
+class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
-  static FrameLoaderClientWithParent* create(LocalFrame* parent) {
-    return new FrameLoaderClientWithParent(parent);
+  static LocalFrameClientWithParent* create(LocalFrame* parent) {
+    return new LocalFrameClientWithParent(parent);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
@@ -63,7 +63,7 @@ class FrameLoaderClientWithParent final : public EmptyLocalFrameClient {
   LocalFrame* parent() const override { return m_parent.get(); }
 
  private:
-  explicit FrameLoaderClientWithParent(LocalFrame* parent) : m_parent(parent) {}
+  explicit LocalFrameClientWithParent(LocalFrame* parent) : m_parent(parent) {}
 
   Member<LocalFrame> m_parent;
 };

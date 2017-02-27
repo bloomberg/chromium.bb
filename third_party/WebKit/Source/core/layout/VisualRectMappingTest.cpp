@@ -13,7 +13,7 @@ namespace blink {
 class VisualRectMappingTest : public RenderingTest {
  public:
   VisualRectMappingTest()
-      : RenderingTest(SingleChildFrameLoaderClient::create()) {}
+      : RenderingTest(SingleChildLocalFrameClient::create()) {}
 
  protected:
   LayoutView& layoutView() const { return *document().layoutView(); }

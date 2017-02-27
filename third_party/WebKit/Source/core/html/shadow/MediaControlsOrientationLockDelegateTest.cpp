@@ -79,9 +79,9 @@ class MockChromeClient : public EmptyChromeClient {
   MOCK_CONST_METHOD0(screenInfo, WebScreenInfo());
 };
 
-class StubFrameLoaderClient : public EmptyLocalFrameClient {
+class StubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static StubFrameLoaderClient* create() { return new StubFrameLoaderClient; }
+  static StubLocalFrameClient* create() { return new StubLocalFrameClient; }
 
   std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(
       HTMLMediaElement&,
@@ -144,7 +144,7 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
     clients.chromeClient = m_chromeClient.get();
 
     m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &clients,
-                                           StubFrameLoaderClient::create());
+                                           StubLocalFrameClient::create());
 
     document().write("<body><video></body>");
     m_video = toHTMLVideoElement(*document().querySelector("video"));

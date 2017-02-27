@@ -56,10 +56,10 @@
 
 namespace blink {
 
-class StubFrameLoaderClientWithParent final : public EmptyLocalFrameClient {
+class StubLocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
-  static StubFrameLoaderClientWithParent* create(Frame* parent) {
-    return new StubFrameLoaderClientWithParent(parent);
+  static StubLocalFrameClientWithParent* create(Frame* parent) {
+    return new StubLocalFrameClientWithParent(parent);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
@@ -70,14 +70,14 @@ class StubFrameLoaderClientWithParent final : public EmptyLocalFrameClient {
   Frame* parent() const override { return m_parent.get(); }
 
  private:
-  explicit StubFrameLoaderClientWithParent(Frame* parent) : m_parent(parent) {}
+  explicit StubLocalFrameClientWithParent(Frame* parent) : m_parent(parent) {}
 
   Member<Frame> m_parent;
 };
 
-class MockFrameLoaderClient : public EmptyLocalFrameClient {
+class MockLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  MockFrameLoaderClient() : EmptyLocalFrameClient() {}
+  MockLocalFrameClient() : EmptyLocalFrameClient() {}
   MOCK_METHOD1(didDisplayContentWithCertificateErrors, void(const KURL&));
   MOCK_METHOD2(dispatchDidLoadResourceFromMemoryCache,
                void(const ResourceRequest&, const ResourceResponse&));
@@ -118,7 +118,7 @@ class FrameFetchContextTest : public ::testing::Test {
   }
 
   FrameFetchContext* createChildFrame() {
-    childClient = StubFrameLoaderClientWithParent::create(document->frame());
+    childClient = StubLocalFrameClientWithParent::create(document->frame());
     childFrame = LocalFrame::create(childClient.get(),
                                     document->frame()->host(), owner.get());
     childFrame->setView(FrameView::create(*childFrame, IntSize(500, 500)));
@@ -138,7 +138,7 @@ class FrameFetchContextTest : public ::testing::Test {
   Persistent<Document> document;
   Persistent<FrameFetchContext> fetchContext;
 
-  Persistent<StubFrameLoaderClientWithParent> childClient;
+  Persistent<StubLocalFrameClientWithParent> childClient;
   Persistent<LocalFrame> childFrame;
   Persistent<Document> childDocument;
   Persistent<DummyFrameOwner> owner;
@@ -194,7 +194,7 @@ class FrameFetchContextMockedFrameLoaderClientTest
   void SetUp() override {
     url = KURL(KURL(), "https://example.test/foo");
     mainResourceUrl = KURL(KURL(), "https://www.example.test");
-    client = new testing::NiceMock<MockFrameLoaderClient>();
+    client = new testing::NiceMock<MockLocalFrameClient>();
     dummyPageHolder =
         DummyPageHolder::create(IntSize(500, 500), nullptr, client);
     dummyPageHolder->page().setDeviceScaleFactor(1.0);
@@ -209,7 +209,7 @@ class FrameFetchContextMockedFrameLoaderClientTest
   KURL url;
   KURL mainResourceUrl;
 
-  Persistent<testing::NiceMock<MockFrameLoaderClient>> client;
+  Persistent<testing::NiceMock<MockLocalFrameClient>> client;
 };
 
 class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {

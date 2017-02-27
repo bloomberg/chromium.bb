@@ -82,9 +82,9 @@ class MockWebRemotePlaybackClient : public WebRemotePlaybackClient {
       WebRemotePlaybackAvailability::Unknown;
 };
 
-class StubFrameLoaderClient : public EmptyLocalFrameClient {
+class StubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static StubFrameLoaderClient* create() { return new StubFrameLoaderClient; }
+  static StubLocalFrameClient* create() { return new StubLocalFrameClient; }
 
   std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(
       HTMLMediaElement&,
@@ -143,7 +143,7 @@ class MediaControlsTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     m_pageHolder = DummyPageHolder::create(IntSize(800, 600), nullptr,
-                                           StubFrameLoaderClient::create());
+                                           StubLocalFrameClient::create());
     Document& document = this->document();
 
     document.write("<video>");

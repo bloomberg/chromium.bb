@@ -19,7 +19,7 @@ class MapCoordinatesTest
  public:
   MapCoordinatesTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildFrameLoaderClient::create()) {}
+        RenderingTest(SingleChildLocalFrameClient::create()) {}
   FloatPoint mapLocalToAncestor(const LayoutObject*,
                                 const LayoutBoxModelObject* ancestor,
                                 FloatPoint,

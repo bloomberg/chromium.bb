@@ -79,7 +79,7 @@ class StubWebMediaPlayer : public WebMediaPlayer {
   ReadyState m_readyState = ReadyStateHaveNothing;
 };
 
-class StubFrameLoaderClient : public EmptyLocalFrameClient {
+class StubLocalFrameClient : public EmptyLocalFrameClient {
  public:
   // FrameLoaderClient
   std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(
@@ -98,12 +98,12 @@ class VideoPainterTestForSPv2 : public ::testing::Test,
  protected:
   void SetUp() override {
     m_chromeClient = new StubChromeClientForSPv2();
-    m_frameLoaderClient = new StubFrameLoaderClient;
+    m_localFrameClient = new StubLocalFrameClient;
     Page::PageClients clients;
     fillWithEmptyClients(clients);
     clients.chromeClient = m_chromeClient.get();
     m_pageHolder = DummyPageHolder::create(
-        IntSize(800, 600), &clients, m_frameLoaderClient.get(),
+        IntSize(800, 600), &clients, m_localFrameClient.get(),
         [](Settings& settings) {
           settings.setAcceleratedCompositingEnabled(true);
         });
@@ -119,7 +119,7 @@ class VideoPainterTestForSPv2 : public ::testing::Test,
 
  private:
   Persistent<StubChromeClientForSPv2> m_chromeClient;
-  Persistent<StubFrameLoaderClient> m_frameLoaderClient;
+  Persistent<StubLocalFrameClient> m_localFrameClient;
   std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 

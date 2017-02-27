@@ -64,9 +64,9 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
   MOCK_METHOD1(setBufferingStrategy, void(BufferingStrategy));
 };
 
-class StubFrameLoaderClient : public EmptyLocalFrameClient {
+class StubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static StubFrameLoaderClient* create() { return new StubFrameLoaderClient; }
+  static StubLocalFrameClient* create() { return new StubLocalFrameClient; }
 
   std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(
       HTMLMediaElement&,
@@ -84,7 +84,7 @@ class HTMLVideoElementTest : public ::testing::Test {
       : m_dummyPageHolder(
             DummyPageHolder::create(IntSize(640, 360),
                                     nullptr,
-                                    StubFrameLoaderClient::create())) {
+                                    StubLocalFrameClient::create())) {
     // TODO(sandersd): This should be done by a settings initializer.
     networkStateNotifier().setWebConnection(WebConnectionTypeWifi, 54.0);
     m_video = HTMLVideoElement::create(m_dummyPageHolder->document());

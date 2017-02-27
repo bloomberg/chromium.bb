@@ -24,7 +24,7 @@ class PaintPropertyTreeBuilderTest
   PaintPropertyTreeBuilderTest()
       : ScopedSlimmingPaintV2ForTest(true),
         ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildFrameLoaderClient::create()) {}
+        RenderingTest(SingleChildLocalFrameClient::create()) {}
 
  protected:
   void loadTestData(const char* fileName);

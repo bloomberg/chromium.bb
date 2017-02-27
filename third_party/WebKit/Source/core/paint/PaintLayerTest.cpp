@@ -23,7 +23,7 @@ class PaintLayerTest
   PaintLayerTest()
       : ScopedSlimmingPaintV2ForTest(GetParam().first),
         ScopedRootLayerScrollingForTest(GetParam().second),
-        RenderingTest(SingleChildFrameLoaderClient::create()) {}
+        RenderingTest(SingleChildLocalFrameClient::create()) {}
 };
 
 SlimmingPaintAndRootLayerScrolling foo[] = {

@@ -24,7 +24,7 @@ class PaintPropertyTreePrinterTest
   PaintPropertyTreePrinterTest()
       : ScopedSlimmingPaintV2ForTest(true),
         ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildFrameLoaderClient::create()) {}
+        RenderingTest(SingleChildLocalFrameClient::create()) {}
 
  private:
   void SetUp() override {

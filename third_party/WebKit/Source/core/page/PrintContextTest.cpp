@@ -144,7 +144,7 @@ class PrintContextTest : public RenderingTest {
 class PrintContextFrameTest : public PrintContextTest {
  public:
   PrintContextFrameTest()
-      : PrintContextTest(SingleChildFrameLoaderClient::create()) {}
+      : PrintContextTest(SingleChildLocalFrameClient::create()) {}
 };
 
 #define EXPECT_SKRECT_EQ(expectedX, expectedY, expectedWidth, expectedHeight, \

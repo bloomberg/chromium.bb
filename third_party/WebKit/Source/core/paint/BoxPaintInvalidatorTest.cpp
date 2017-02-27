@@ -19,7 +19,7 @@ class BoxPaintInvalidatorTest : public ::testing::WithParamInterface<bool>,
  public:
   BoxPaintInvalidatorTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildFrameLoaderClient::create()) {}
+        RenderingTest(SingleChildLocalFrameClient::create()) {}
 
  protected:
   const RasterInvalidationTracking* getRasterInvalidationTracking() const {

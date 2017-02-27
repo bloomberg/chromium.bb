@@ -24,7 +24,7 @@ class CompositedLayerMappingTest
  public:
   CompositedLayerMappingTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildFrameLoaderClient::create()) {}
+        RenderingTest(SingleChildLocalFrameClient::create()) {}
 
  protected:
   IntRect recomputeInterestRect(const GraphicsLayer* graphicsLayer) {

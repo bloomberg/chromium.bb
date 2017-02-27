@@ -21,7 +21,7 @@ namespace {
 // alow callers to set the parent/top frames by calling |setParent|. It is used
 // in ElementVisibilityObserverTest in order to mock a RemoteFrame parent of a
 // LocalFrame.
-class StubFrameLoaderClient final : public EmptyLocalFrameClient {
+class StubLocalFrameClient final : public EmptyLocalFrameClient {
  public:
   Frame* parent() const override { return m_parent; }
   Frame* top() const override { return m_parent; }
@@ -40,9 +40,9 @@ class StubFrameLoaderClient final : public EmptyLocalFrameClient {
 class ElementVisibilityObserverTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    m_frameLoaderClient = new StubFrameLoaderClient();
+    m_localFrameClient = new StubLocalFrameClient();
     m_dummyPageHolder = DummyPageHolder::create(
-        IntSize(), nullptr, m_frameLoaderClient, nullptr, nullptr);
+        IntSize(), nullptr, m_localFrameClient, nullptr, nullptr);
   }
 
   void TearDown() override {
@@ -51,13 +51,11 @@ class ElementVisibilityObserverTest : public ::testing::Test {
 
   Document& document() { return m_dummyPageHolder->document(); }
   FrameHost& frameHost() { return m_dummyPageHolder->page().frameHost(); }
-  StubFrameLoaderClient* frameLoaderClient() const {
-    return m_frameLoaderClient;
-  }
+  StubLocalFrameClient* localFrameClient() const { return m_localFrameClient; }
 
  private:
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<StubFrameLoaderClient> m_frameLoaderClient;
+  Persistent<StubLocalFrameClient> m_localFrameClient;
 };
 
 TEST_F(ElementVisibilityObserverTest, ObserveElementWithoutDocumentFrame) {
@@ -73,7 +71,7 @@ TEST_F(ElementVisibilityObserverTest, ObserveElementWithoutDocumentFrame) {
 TEST_F(ElementVisibilityObserverTest, ObserveElementInRemoteFrame) {
   Persistent<RemoteFrame> remoteFrame =
       RemoteFrame::create(new EmptyRemoteFrameClient(), &frameHost(), nullptr);
-  frameLoaderClient()->setParent(remoteFrame);
+  localFrameClient()->setParent(remoteFrame);
 
   Persistent<HTMLElement> element = HTMLDivElement::create(document());
   ElementVisibilityObserver* observer =
