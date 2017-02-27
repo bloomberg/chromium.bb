@@ -3972,7 +3972,7 @@ static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
   if (cm->bit_depth > AOM_BITS_8) {
     cm->use_highbitdepth = 1;
   } else {
-#if CONFIG_AOM_LOWBITDEPTH
+#if CONFIG_LOWBITDEPTH
     cm->use_highbitdepth = 0;
 #else
     cm->use_highbitdepth = 1;
