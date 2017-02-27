@@ -30,7 +30,11 @@ the end of a word will not take effect. This is intended to be used
 when translating input typed on a braille keyboard to provide a rough
 idea to the user of the characters they are typing before the word is
 complete.
-
+*** YAML test framework
+The YAML framework has been extended and is much more useful now. You
+can test multiple tables within one YAML file, you can define test
+tables directly inline and you can test multiple tables using the same
+test data. Refer to the documentation for the details
 ** Bug fixes
 - Fixes implicit declaration of 'pattern_check' thanks to  Reiner Dolp
 - Fix a stackoverflow crash on applications with smaller stack size.
@@ -73,7 +77,8 @@ complete.
   useful on other platforms too.
 
 ** Backwards incompatible changes
-None
+- The naming in the YAML test framework has changed slightly from
+  `tables:` to `table:`.
 
 * Noteworthy changes in release 3.0.0 (2016-07-14)
 This is the biggest release of liblouis in years. The major news are
