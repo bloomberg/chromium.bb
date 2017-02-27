@@ -390,6 +390,15 @@ def interface_context(interface, interfaces):
             has_conditional_attributes_on_prototype,
     })
 
+    prepare_prototype_and_interface_object_func = None  # pylint: disable=invalid-name
+    if (unscopables or has_conditional_attributes_on_prototype or
+            v8_methods.filter_conditionally_exposed(methods, interface.is_partial)):
+        prepare_prototype_and_interface_object_func = '%s::preparePrototypeAndInterfaceObject' % v8_class_name_or_partial  # pylint: disable=invalid-name
+
+    context.update({
+        'prepare_prototype_and_interface_object_func': prepare_prototype_and_interface_object_func,
+    })
+
     context.update({
         'legacy_caller': legacy_caller(interface.legacy_caller, interface),
         'indexed_property_getter': property_getter(interface.indexed_property_getter, ['index']),

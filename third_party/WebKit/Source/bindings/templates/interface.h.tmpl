@@ -129,12 +129,12 @@ class {{v8_class}} {
      * a C++ pointer to the DOM object (if the object is not in oilpan) #}
   static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
   {# End custom internal fields #}
-  {% if unscopables or has_conditional_attributes_on_prototype or
-        methods | conditionally_exposed(is_partial) %}
+  {% if prepare_prototype_and_interface_object_func %}
   {{exported}}static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate);
   {% elif has_partial_interface %}
   {{exported}}static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {}
   {% endif %}
+
   {% if has_partial_interface %}
   {{exported}}static void updateWrapperTypeInfo(InstallTemplateFunction, InstallRuntimeEnabledFunction, PreparePrototypeAndInterfaceObjectFunction);
   {{exported}}static void install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
