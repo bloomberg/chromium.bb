@@ -55,7 +55,8 @@ public class AutofillPaymentApp implements PaymentApp {
                     ? null : pdm.getProfile(card.getBillingAddressId());
 
             if (billingAddress != null
-                    && AutofillAddress.checkAddressCompletionStatus(billingAddress)
+                    && AutofillAddress.checkAddressCompletionStatus(
+                               billingAddress, AutofillAddress.IGNORE_PHONE_COMPLETENESS_CHECK)
                             != AutofillAddress.COMPLETE) {
                 billingAddress = null;
             }

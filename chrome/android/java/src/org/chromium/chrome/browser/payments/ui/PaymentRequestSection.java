@@ -1084,6 +1084,12 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 editorIcon.setOnClickListener(OptionSection.this);
                 return editorIcon;
             }
+
+            /** Returns the edit icon for the option row. */
+            @VisibleForTesting
+            public View getEditIconForTest() {
+                return mEditIcon;
+            }
         }
 
         /** Top and bottom margins for each item. */

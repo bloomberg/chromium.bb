@@ -65,9 +65,8 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
                 "jon.doe@gmail.com", "en-US"));
 
         // Incomplete profile (need more information).
-        String profile7 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
-                "Maggie Doe", "Google", "340 Main St", "CA", "", "", "90291", "", "US", "",
-                "jon.doe@gmail.com", "en-US"));
+        String profile7 = helper.setProfile(new AutofillProfile("", "https://example.com", true, "",
+                "Google", "340 Main St", "CA", "", "", "90291", "", "US", "", "", "en-US"));
 
         // Profile with empty street address (should not be presented to user).
         String profile8 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
@@ -76,7 +75,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // This card has no billing address selected.
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jane Doe",
-                "4242424242424242", "1111", "12", "2050", "visa", R.drawable.pr_visa, profile5,
+                "4242424242424242", "1111", "12", "2050", "visa", R.drawable.pr_visa, profile6,
                 "" /* serverId */));
 
         // Assign use stats so that incomplete profiles have the highest frecency, profile2 has the
@@ -319,26 +318,24 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // The incomplete addresses in the dropdown contain edit required messages.
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
-                3).endsWith("Phone number required"));
-        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 4).endsWith("Recipient required"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 5).endsWith("More information required"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 6).endsWith("Invalid address"));
 
-        // Selects the fourth billing addresss that misses phone number brings up the address
+        // Selects the fourth billing addresss that misses recipient brings up the address
         // editor.
-        setSpinnerSelectionsInCardEditorAndWait(new int[] {DECEMBER, NEXT_YEAR, 3}, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"Lisa Doe", "Google", "340 Main St", "Los Angeles",
+        setSpinnerSelectionsInCardEditorAndWait(new int[] {DECEMBER, NEXT_YEAR, 4}, mReadyToEdit);
+        setTextInEditorAndWait(new String[] {"Lisa Doh", "Google", "340 Main St", "Los Angeles",
                 "CA", "90291", "999-999-9999"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToEdit);
 
         // The newly completed address must be selected and put at the top of the dropdown.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
-                .equals("Lisa Doe, 340 Main St, Los Angeles, CA 90291"));
+                           .equals("Lisa Doh, 340 Main St, Los Angeles, CA 90291"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
-                0).equals("Lisa Doe, 340 Main St, Los Angeles, CA 90291"));
+                0).equals("Lisa Doh, 340 Main St, Los Angeles, CA 90291"));
     }
 
     @MediumTest
@@ -355,8 +352,6 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
                 .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
 
         // The incomplete addresses in the dropdown contain edit required messages.
-        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
-                3).endsWith("Phone number required"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 4).endsWith("Recipient required"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,

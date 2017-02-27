@@ -444,6 +444,28 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     }
 
     /**
+     *  Clicks on the edit icon corresponding to the payment method suggestion at the specified
+     *  |suggestionIndex|.
+     */
+    protected void clickOnPaymentMethodSuggestionEditIconAndWait(
+            final int suggestionIndex, CallbackHelper helper)
+            throws ExecutionException, TimeoutException, InterruptedException {
+        assert (suggestionIndex < getNumberOfPaymentInstruments());
+
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ((OptionSection) mUI.getPaymentMethodSectionForTest())
+                        .getOptionRowAtIndex(suggestionIndex)
+                        .getEditIconForTest()
+                        .performClick();
+            }
+        });
+        helper.waitForCallback(callCount);
+    }
+
+    /**
      *  Returns the the number of shipping address suggestions.
      */
     protected int getNumberOfShippingAddressSuggestions() throws ExecutionException {

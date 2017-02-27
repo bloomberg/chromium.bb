@@ -183,7 +183,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             if (TextUtils.isEmpty(profile.getStreetAddress())) continue;
             mProfilesForBillingAddress.add(profile);
             Pair<Integer, Integer> editMessageResIds = AutofillAddress.getEditMessageAndTitleResIds(
-                    AutofillAddress.checkAddressCompletionStatus(profile));
+                    AutofillAddress.checkAddressCompletionStatus(
+                            profile, AutofillAddress.IGNORE_PHONE_COMPLETENESS_CHECK));
             if (editMessageResIds.first.intValue() != 0) {
                 mIncompleteProfilesForBillingAddress.put(
                         profile.getGUID(), editMessageResIds.first);
@@ -194,10 +195,12 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         Collections.sort(mProfilesForBillingAddress, new Comparator<AutofillProfile>() {
             @Override
             public int compare(AutofillProfile a, AutofillProfile b) {
-                boolean isAComplete =
-                        AutofillAddress.checkAddressCompletionStatus(a) == AutofillAddress.COMPLETE;
-                boolean isBComplete =
-                        AutofillAddress.checkAddressCompletionStatus(b) == AutofillAddress.COMPLETE;
+                boolean isAComplete = AutofillAddress.checkAddressCompletionStatus(
+                                              a, AutofillAddress.NORMAL_COMPLETENESS_CHECK)
+                        == AutofillAddress.COMPLETE;
+                boolean isBComplete = AutofillAddress.checkAddressCompletionStatus(
+                                              b, AutofillAddress.NORMAL_COMPLETENESS_CHECK)
+                        == AutofillAddress.COMPLETE;
                 return ApiCompatibilityUtils.compareBoolean(isBComplete, isAComplete);
             }
         });

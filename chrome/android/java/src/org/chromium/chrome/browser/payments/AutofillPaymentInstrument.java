@@ -88,7 +88,8 @@ public class AutofillPaymentInstrument extends PaymentInstrument
             InstrumentDetailsCallback callback) {
         // The billing address should never be null for a credit card at this point.
         assert mBillingAddress != null;
-        assert AutofillAddress.checkAddressCompletionStatus(mBillingAddress)
+        assert AutofillAddress.checkAddressCompletionStatus(
+                mBillingAddress, AutofillAddress.IGNORE_PHONE_COMPLETENESS_CHECK)
                 == AutofillAddress.COMPLETE;
         assert mIsComplete;
         assert mHasValidNumberAndName;
@@ -246,7 +247,8 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         assert card.getBillingAddressId() != null;
         assert card.getBillingAddressId().equals(billingAddress.getGUID());
         assert card.getIssuerIconDrawableId() != 0;
-        assert AutofillAddress.checkAddressCompletionStatus(billingAddress)
+        assert AutofillAddress.checkAddressCompletionStatus(
+                billingAddress, AutofillAddress.IGNORE_PHONE_COMPLETENESS_CHECK)
                 == AutofillAddress.COMPLETE;
 
         mCard = card;
