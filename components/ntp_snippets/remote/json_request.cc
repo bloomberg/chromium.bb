@@ -30,6 +30,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
@@ -431,8 +432,37 @@ std::unique_ptr<net::URLFetcher> JsonRequest::Builder::BuildURLFetcher(
     net::URLFetcherDelegate* delegate,
     const std::string& headers,
     const std::string& body) const {
-  std::unique_ptr<net::URLFetcher> url_fetcher =
-      net::URLFetcher::Create(url_, net::URLFetcher::POST, delegate);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("ntp_snippets_fetch", R"(
+        semantics {
+          sender: "New Tab Page Content Suggestions Fetch"
+          description:
+            "Chromium can show content suggestions (e.g. news articles) on the "
+            "New Tab page. For signed-in users, these may be personalized "
+            "based on the user's synced browsing history."
+          trigger:
+            "Triggered periodically in the background, or upon explicit user "
+            "request."
+          data:
+            "The Chromium UI language, as well as a second language the user "
+            "understands, based on translate::LanguageModel. For signed-in "
+            "users, the requests is authenticated."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled by settings now (but is requested "
+            "to be implemented in crbug.com/695129)."
+          policy {
+            NTPContentSuggestionsEnabled {
+              policy_options {mode: MANDATORY}
+              value: false
+            }
+          }
+        })");
+  std::unique_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
+      url_, net::URLFetcher::POST, delegate, traffic_annotation);
   url_fetcher->SetRequestContext(url_request_context_getter_.get());
   url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                             net::LOAD_DO_NOT_SAVE_COOKIES);

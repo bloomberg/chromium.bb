@@ -13,6 +13,7 @@ include_rules = [
   "+components/variations",
   "+net/base",
   "+net/http",
+  "+net/traffic_annotation",
   "+net/url_request",
   "+google_apis",
   "+ui/base",
