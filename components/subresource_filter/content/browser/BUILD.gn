@@ -10,6 +10,8 @@ static_library("browser") {
     "content_ruleset_service_delegate.h",
     "content_subresource_filter_driver_factory.cc",
     "content_subresource_filter_driver_factory.h",
+    "subframe_navigation_filtering_throttle.cc",
+    "subframe_navigation_filtering_throttle.h",
     "verified_ruleset_dealer.cc",
     "verified_ruleset_dealer.h",
   ]
