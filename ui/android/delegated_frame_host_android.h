@@ -17,7 +17,6 @@
 namespace cc {
 
 class CompositorFrame;
-class Layer;
 class SurfaceManager;
 class SurfaceLayer;
 class LocalSurfaceIdAllocator;
@@ -40,7 +39,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   };
 
   DelegatedFrameHostAndroid(ViewAndroid* view,
-                            SkColor background_color,
                             Client* client,
                             const cc::FrameSinkId& frame_sink_id);
 
@@ -63,10 +61,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   void CompositorFrameSinkChanged();
 
-  void UpdateBackgroundColor(SkColor color);
-
-  void UpdateContainerSizeinDIP(const gfx::Size& size_in_dip);
-
   // Called when this DFH is attached/detached from a parent browser compositor
   // and needs to be attached to the surface hierarchy.
   void AttachToCompositor(WindowAndroidCompositor* compositor);
@@ -76,8 +70,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
-
-  void UpdateBackgroundLayer();
 
   const cc::FrameSinkId frame_sink_id_;
 
@@ -106,10 +98,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   std::unique_ptr<FrameData> current_frame_;
 
   scoped_refptr<cc::SurfaceLayer> content_layer_;
-
-  scoped_refptr<cc::Layer> background_layer_;
-
-  gfx::Size container_size_in_dip_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedFrameHostAndroid);
 };

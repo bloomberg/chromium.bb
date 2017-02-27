@@ -134,7 +134,11 @@ scoped_refptr<cc::Layer> TabContentManager::GetLiveLayer(int tab_id) {
   return live_layer_list_[tab_id];
 }
 
-scoped_refptr<ThumbnailLayer> TabContentManager::GetStaticLayer(
+scoped_refptr<ThumbnailLayer> TabContentManager::GetStaticLayer(int tab_id) {
+  return static_layer_cache_[tab_id];
+}
+
+scoped_refptr<ThumbnailLayer> TabContentManager::GetOrCreateStaticLayer(
     int tab_id,
     bool force_disk_read) {
   Thumbnail* thumbnail = thumbnail_cache_->Get(tab_id, force_disk_read, true);

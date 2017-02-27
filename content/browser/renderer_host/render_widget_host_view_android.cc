@@ -447,8 +447,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   if (using_browser_compositor_) {
     cc::FrameSinkId frame_sink_id =
         host_->AllocateFrameSinkId(false /* is_guest_view_hack */);
-    delegated_frame_host_.reset(new ui::DelegatedFrameHostAndroid(
-        &view_, cached_background_color_, this, frame_sink_id));
+    delegated_frame_host_.reset(
+        new ui::DelegatedFrameHostAndroid(&view_, this, frame_sink_id));
   }
 
   host_->SetView(this);
@@ -515,9 +515,6 @@ RenderWidgetHostViewAndroid::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewAndroid::WasResized() {
-  if (delegated_frame_host_ && content_view_core_)
-    delegated_frame_host_->UpdateContainerSizeinDIP(
-        content_view_core_->GetViewportSizeDip());
   host_->WasResized();
 }
 
@@ -786,9 +783,6 @@ void RenderWidgetHostViewAndroid::UpdateBackgroundColor(SkColor color) {
     return;
 
   cached_background_color_ = color;
-
-  if (delegated_frame_host_)
-    delegated_frame_host_->UpdateBackgroundColor(color);
 
   view_.OnBackgroundColorChanged(color);
 }

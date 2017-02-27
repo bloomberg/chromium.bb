@@ -19,7 +19,6 @@ class Layer;
 namespace android {
 
 class TabContentManager;
-class ThumbnailLayer;
 
 // Sub layer tree representation of the contents of a tab.
 // Contains logic to temporarily display a static thumbnail
@@ -40,14 +39,13 @@ class ContentLayer : public Layer {
 
   scoped_refptr<cc::Layer> layer() override;
 
+  gfx::Size ComputeSize(int id) const;
+
  protected:
   explicit ContentLayer(TabContentManager* tab_content_manager);
   ~ContentLayer() override;
 
  private:
-  void SetContentLayer(scoped_refptr<cc::Layer> layer);
-  void SetStaticLayer(scoped_refptr<ThumbnailLayer> layer);
-
   // This is an intermediate shim layer whose children are
   // both the static and content layers (or either, or none, depending on which
   // is available).

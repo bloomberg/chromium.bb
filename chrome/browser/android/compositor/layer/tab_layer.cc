@@ -554,7 +554,7 @@ void TabLayer::SetProperties(int id,
       // padding_ Transform
       gfx::Size content_bounds;
       if (!back_visible)
-        content_bounds = content_->layer()->bounds();
+        content_bounds = content_->ComputeSize(id);
 
       gfx::Rect side_padding_rect;
       gfx::Rect bottom_padding_rect;

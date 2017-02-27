@@ -318,6 +318,18 @@ scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(
   return layer_tree;
 }
 
+bool TabStripSceneLayer::ShouldShowBackground() {
+  if (content_tree_)
+    return content_tree_->ShouldShowBackground();
+  return SceneLayer::ShouldShowBackground();
+}
+
+SkColor TabStripSceneLayer::GetBackgroundColor() {
+  if (content_tree_)
+    return content_tree_->GetBackgroundColor();
+  return SceneLayer::GetBackgroundColor();
+}
+
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   // This will automatically bind to the Java object and pass ownership there.
   TabStripSceneLayer* scene_layer = new TabStripSceneLayer(env, jobj);

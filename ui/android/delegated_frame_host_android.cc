@@ -53,13 +53,9 @@ void CopyOutputRequestCallback(
 
 DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
     ui::ViewAndroid* view,
-    SkColor background_color,
     Client* client,
     const cc::FrameSinkId& frame_sink_id)
-    : frame_sink_id_(frame_sink_id),
-      view_(view),
-      client_(client),
-      background_layer_(cc::SolidColorLayer::Create()) {
+    : frame_sink_id_(frame_sink_id), view_(view), client_(client) {
   DCHECK(view_);
   DCHECK(client_);
 
@@ -69,10 +65,6 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
   surface_manager_->RegisterFrameSinkId(frame_sink_id_);
   surface_factory_ = base::WrapUnique(
       new cc::SurfaceFactory(frame_sink_id_, surface_manager_, this));
-
-  background_layer_->SetBackgroundColor(background_color);
-  view_->GetLayer()->AddChild(background_layer_);
-  UpdateBackgroundLayer();
 }
 
 DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
@@ -80,7 +72,6 @@ DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
   surface_factory_.reset();
   DetachFromCompositor();
   surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
-  background_layer_->RemoveFromParent();
 }
 
 DelegatedFrameHostAndroid::FrameData::FrameData() = default;
@@ -132,7 +123,6 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
         current_frame_->surface_size,
         !current_frame_->has_transparent_background);
     view_->GetLayer()->AddChild(content_layer_);
-    UpdateBackgroundLayer();
   } else {
     surface_factory_->SubmitCompositorFrame(current_frame_->local_surface_id,
                                             std::move(frame), draw_callback);
@@ -177,8 +167,6 @@ void DelegatedFrameHostAndroid::DestroyDelegatedContent() {
   content_layer_ = nullptr;
   surface_factory_->EvictSurface();
   current_frame_.reset();
-
-  UpdateBackgroundLayer();
 }
 
 bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
@@ -188,20 +176,6 @@ bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
 void DelegatedFrameHostAndroid::CompositorFrameSinkChanged() {
   DestroyDelegatedContent();
   surface_factory_->Reset();
-}
-
-void DelegatedFrameHostAndroid::UpdateBackgroundColor(SkColor color) {
-  background_layer_->SetBackgroundColor(color);
-}
-
-void DelegatedFrameHostAndroid::UpdateContainerSizeinDIP(
-    const gfx::Size& size_in_dip) {
-  container_size_in_dip_ = size_in_dip;
-  float device_scale_factor = display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(view_).device_scale_factor();
-  background_layer_->SetBounds(
-      gfx::ConvertSizeToPixel(device_scale_factor, container_size_in_dip_));
-  UpdateBackgroundLayer();
 }
 
 void DelegatedFrameHostAndroid::AttachToCompositor(
@@ -229,28 +203,6 @@ void DelegatedFrameHostAndroid::ReturnResources(
 void DelegatedFrameHostAndroid::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {
   client_->SetBeginFrameSource(begin_frame_source);
-}
-
-void DelegatedFrameHostAndroid::UpdateBackgroundLayer() {
-  // The background layer draws in 2 cases:
-  // 1) When we don't have any content from the renderer.
-  // 2) When the bounds of the content received from the renderer does not match
-  // the desired content bounds.
-  bool background_is_drawable = false;
-
-  if (current_frame_) {
-    float device_scale_factor = display::Screen::GetScreen()
-        ->GetDisplayNearestWindow(view_).device_scale_factor();
-    gfx::Size content_size_in_dip = gfx::ConvertSizeToDIP(
-        device_scale_factor, current_frame_->surface_size);
-    background_is_drawable =
-        content_size_in_dip.width() < container_size_in_dip_.width() ||
-        content_size_in_dip.height() < container_size_in_dip_.height();
-  } else {
-    background_is_drawable = true;
-  }
-
-  background_layer_->SetIsDrawable(background_is_drawable);
 }
 
 }  // namespace ui

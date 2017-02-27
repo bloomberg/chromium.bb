@@ -111,6 +111,9 @@ class TabStripSceneLayer : public SceneLayer {
       const base::android::JavaParamRef<jobject>& jlayer_title_cache,
       const base::android::JavaParamRef<jobject>& jresource_manager);
 
+  bool ShouldShowBackground() override;
+  SkColor GetBackgroundColor() override;
+
  private:
   scoped_refptr<TabHandleLayer> GetNextLayer(
       LayerTitleCache* layer_title_cache);

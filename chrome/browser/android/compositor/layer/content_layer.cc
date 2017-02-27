@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/layers/surface_layer.h"
 #include "cc/output/filter_operations.h"
 #include "chrome/browser/android/compositor/layer/thumbnail_layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
@@ -32,28 +33,27 @@ static void SetOpacityOnLeaf(scoped_refptr<cc::Layer> layer, float alpha) {
   }
 }
 
-static bool DoesLeafDrawContents(scoped_refptr<cc::Layer> layer) {
+static cc::Layer* GetDrawsContentLeaf(scoped_refptr<cc::Layer> layer) {
   if (!layer.get())
-    return false;
+    return nullptr;
 
   // If the subtree is hidden, then any layers in this tree will not be drawn.
   if (layer->hide_layer_and_subtree())
-    return false;
+    return nullptr;
 
-  // TODO: Remove the need for this logic. We can't really guess from
-  // an opaque layer type whether it has valid live contents, or for example
-  // just a background color placeholder. Need to get this from somewhere else
-  // like ContentViewCore or RWHV.
-  if (layer->DrawsContent() && !layer->background_color()) {
-    return true;
-  }
+  if (layer->opacity() == 0.0f)
+    return nullptr;
+
+  if (layer->DrawsContent())
+    return layer.get();
 
   const cc::LayerList& children = layer->children();
   for (unsigned i = 0; i < children.size(); i++) {
-    if (DoesLeafDrawContents(children[i]))
-      return true;
+    cc::Layer* leaf = GetDrawsContentLeaf(children[i]);
+    if (leaf)
+      return leaf;
   }
-  return false;
+  return nullptr;
 }
 
 void ContentLayer::SetProperties(int id,
@@ -64,33 +64,31 @@ void ContentLayer::SetProperties(int id,
                                  float saturation,
                                  bool should_clip,
                                  const gfx::Rect& clip) {
-  scoped_refptr<cc::Layer> content_layer =
-      tab_content_manager_->GetLiveLayer(id);
-  bool content_layer_draws = DoesLeafDrawContents(content_layer);
+  scoped_refptr<cc::Layer> live_layer;
+  if (can_use_live_layer)
+    live_layer = tab_content_manager_->GetLiveLayer(id);
+  bool live_layer_draws = GetDrawsContentLeaf(live_layer);
 
   scoped_refptr<ThumbnailLayer> static_layer =
-      tab_content_manager_->GetStaticLayer(
-          id, !(can_use_live_layer && content_layer_draws));
+      tab_content_manager_->GetOrCreateStaticLayer(id, !live_layer_draws);
 
   float content_opacity =
       should_override_content_alpha ? content_alpha_override : 1.0f;
   float static_opacity =
       should_override_content_alpha ? content_alpha_override : 1.0f;
-  if (content_layer.get() && can_use_live_layer && content_layer_draws)
+  if (live_layer_draws)
     static_opacity = static_to_view_blend;
-  if (!can_use_live_layer)
-    content_opacity = 0.0f;
 
   const cc::LayerList& layer_children = layer_->children();
   for (unsigned i = 0; i < layer_children.size(); i++)
     layer_children[i]->RemoveFromParent();
 
-  if (content_layer.get()) {
-    content_layer->SetMasksToBounds(should_clip);
-    content_layer->SetBounds(clip.size());
-    SetOpacityOnLeaf(content_layer, content_opacity);
+  if (live_layer.get()) {
+    live_layer->SetMasksToBounds(should_clip);
+    live_layer->SetBounds(clip.size());
+    SetOpacityOnLeaf(live_layer, content_opacity);
 
-    layer_->AddChild(content_layer);
+    layer_->AddChild(live_layer);
   }
   if (static_layer.get()) {
     static_layer->layer()->SetIsDrawable(true);
@@ -109,6 +107,23 @@ void ContentLayer::SetProperties(int id,
 
     layer_->AddChild(static_layer->layer());
   }
+}
+
+gfx::Size ContentLayer::ComputeSize(int id) const {
+  gfx::Size size;
+
+  scoped_refptr<cc::Layer> live_layer = tab_content_manager_->GetLiveLayer(id);
+  cc::SurfaceLayer* surface_layer =
+      static_cast<cc::SurfaceLayer*>(GetDrawsContentLeaf(live_layer));
+  if (surface_layer)
+    size.SetToMax(surface_layer->primary_surface_info().size_in_pixels());
+
+  scoped_refptr<ThumbnailLayer> static_layer =
+      tab_content_manager_->GetStaticLayer(id);
+  if (static_layer.get() && GetDrawsContentLeaf(static_layer->layer()))
+    size.SetToMax(static_layer->layer()->bounds());
+
+  return size;
 }
 
 scoped_refptr<cc::Layer> ContentLayer::layer() {
