@@ -381,7 +381,7 @@ void NetworkStateHandler::AddTetherNetworkState(const std::string& guid,
   }
 
   std::unique_ptr<NetworkState> tether_managed_state =
-      base::MakeUnique<NetworkState>(base::GenerateGUID());
+      base::MakeUnique<NetworkState>(guid);
 
   tether_managed_state->set_name(name);
   tether_managed_state->set_type(kTypeTether);

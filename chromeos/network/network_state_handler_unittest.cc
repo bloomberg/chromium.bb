@@ -597,6 +597,7 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
       network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
   ASSERT_TRUE(tether_network);
   EXPECT_EQ(kTetherName1, tether_network->name());
+  EXPECT_EQ(kTetherGuid1, tether_network->path());
 
   network_state_handler_->RemoveTetherNetworkState(kTetherGuid1);
 
