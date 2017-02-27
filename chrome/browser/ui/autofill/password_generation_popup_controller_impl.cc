@@ -25,6 +25,7 @@
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -94,7 +95,8 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
       base::Bind(&PasswordGenerationPopupControllerImpl::HandleKeyPressEvent,
                  base::Unretained(this)));
 
-  base::string16 link = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_LINK);
+  base::string16 link =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
   size_t offset = 0;
   help_text_ =
       l10n_util::GetStringFUTF16(IDS_PASSWORD_GENERATION_PROMPT, link, &offset);

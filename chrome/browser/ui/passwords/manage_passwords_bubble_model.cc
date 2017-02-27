@@ -258,8 +258,11 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   }
 
   if (state_ == password_manager::ui::CONFIRMATION_STATE) {
-    base::string16 save_confirmation_link =
-        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_LINK);
+    base::string16 save_confirmation_link = base::UTF8ToUTF16(
+        GURL(base::ASCIIToUTF16(
+                 password_manager::kPasswordManagerAccountDashboardURL))
+            .host());
+
     size_t offset;
     save_confirmation_text_ =
         l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT,
