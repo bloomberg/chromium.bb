@@ -4,6 +4,8 @@
 
 static_library("browser") {
   sources = [
+    "activation_state_computing_navigation_throttle.cc",
+    "activation_state_computing_navigation_throttle.h",
     "async_document_subresource_filter.cc",
     "async_document_subresource_filter.h",
     "content_ruleset_service_delegate.cc",
