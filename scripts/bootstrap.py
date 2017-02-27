@@ -83,9 +83,16 @@ def CleanBuildroot(branchname, buildroot):
     # If we are changing branches, clobber the chroot. Note that this chroot
     # clobber is unsafe if the chroot is in use, but since no build is in
     # progress (and we don't use chroot the), this should be okay.
-    logging.info('Unmatched buildroot state, wipe chroot: %s -> %s',
-                 old_state, new_state)
+    logging.info(
+        'Unmatched buildroot state, wipe chroot/Chrome Checkout: %s -> %s',
+        old_state, new_state)
+
+    # Wipe chroot.
     osutils.RmDir(os.path.join(buildroot, 'chroot'),
+                  ignore_missing=True, sudo=True)
+
+    # Wipe Chrome build related files.
+    osutils.RmDir(os.path.join(buildroot, '.cache', 'distfiles'),
                   ignore_missing=True, sudo=True)
 
   # Finished!

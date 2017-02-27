@@ -183,6 +183,7 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
     self.repo = os.path.join(self.tempdir, '.repo/repo')
     self.chroot = os.path.join(self.tempdir, 'chroot/chroot')
     self.general = os.path.join(self.tempdir, 'general/general')
+    # TODO: Add .cache, and distfiles.
 
   def populateBuildroot(self, state=None):
     """Create standard buildroot contents for cleanup."""
