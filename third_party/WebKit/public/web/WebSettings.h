@@ -128,7 +128,7 @@ class WebSettings {
   virtual void setAcceleratedCompositingForTransitionEnabled(bool) {}
   // If set to true, allows frames with an https origin to display passive
   // contents at an insecure URL. Otherwise, disallows it. The
-  // FrameLoaderClient set to the frame may override the value set by this
+  // LocalFrameClient set to the frame may override the value set by this
   // method.
   virtual void setAccessibilityEnabled(bool) = 0;
   virtual void setAccessibilityPasswordValuesEnabled(bool) = 0;
@@ -137,7 +137,7 @@ class WebSettings {
   virtual void setAllowGeolocationOnInsecureOrigins(bool) = 0;
   // If set to true, allows frames with an https origin to run active
   // contents at an insecure URL. This includes WebSockets. Otherwise,
-  // disallows it. The FrameLoaderClient set to the frame may override the
+  // disallows it. The LocalFrameClient set to the frame may override the
   // value set by this method.
   virtual void setAllowRunningOfInsecureContent(bool) = 0;
   virtual void setAllowScriptsToCloseWindows(bool) = 0;

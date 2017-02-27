@@ -30,9 +30,9 @@
 
 #include "web/WebHelperPluginImpl.h"
 
+#include "core/frame/LocalFrameClient.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "public/web/WebPlugin.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
@@ -68,7 +68,7 @@ bool WebHelperPluginImpl::initialize(const String& pluginType,
       toWebPluginContainerImpl(frame->frame()->loader().client()->createPlugin(
           m_objectElement.get(), frame->frame()->document()->url(),
           attributeNames, attributeValues, pluginType, false,
-          FrameLoaderClient::AllowDetachedPlugin));
+          LocalFrameClient::AllowDetachedPlugin));
 
   if (!m_pluginContainer)
     return false;

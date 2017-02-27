@@ -43,6 +43,7 @@
 #include "core/fileapi/FileError.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameTypes.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/CSPSource.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -50,7 +51,6 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
@@ -834,9 +834,9 @@ STATIC_ASSERT_ENUM(WebSandboxFlags::PropagatesToAuxiliaryBrowsingContexts,
                    SandboxPropagatesToAuxiliaryBrowsingContexts);
 STATIC_ASSERT_ENUM(WebSandboxFlags::Modals, SandboxModals);
 
-STATIC_ASSERT_ENUM(FrameLoaderClient::BeforeUnloadHandler,
+STATIC_ASSERT_ENUM(LocalFrameClient::BeforeUnloadHandler,
                    WebFrameClient::BeforeUnloadHandler);
-STATIC_ASSERT_ENUM(FrameLoaderClient::UnloadHandler,
+STATIC_ASSERT_ENUM(LocalFrameClient::UnloadHandler,
                    WebFrameClient::UnloadHandler);
 
 STATIC_ASSERT_ENUM(WebFrameLoadType::Standard, FrameLoadTypeStandard);

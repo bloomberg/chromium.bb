@@ -77,7 +77,6 @@ component("web") {
     "ExternalPopupMenu.h",
     "FindInPageCoordinates.cpp",
     "FindInPageCoordinates.h",
-    "FrameLoaderClientImpl.h",
     "FullscreenController.cpp",
     "FullscreenController.h",
     "IndexedDBClientImpl.cpp",

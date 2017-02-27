@@ -30,7 +30,7 @@ namespace {
 // of null-checking boilerplate code. Since the frame tree is maintained in the
 // web/ layer, the frame tree helpers often have to deal with null WebFrames:
 // for example, a frame with no parent will return null for WebFrame::parent().
-// TODO(dcheng): Remove duplication between FrameLoaderClientImpl and
+// TODO(dcheng): Remove duplication between LocalFrameClientImpl and
 // RemoteFrameClientImpl somehow...
 Frame* toCoreFrame(WebFrame* frame) {
   return frame ? frame->toImplBase()->frame() : nullptr;

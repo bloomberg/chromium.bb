@@ -76,8 +76,8 @@
 // in Frame::detachChildren for each subframe in a pre-order depth-first
 // traversal. Note that child node order may not match DOM node order!
 // detachChildren() (virtually) calls Frame::detach(), which again calls
-// FrameLoaderClient::detached(). This triggers WebFrame to clear its reference
-// to LocalFrame. FrameLoaderClient::detached() also notifies the embedder via
+// LocalFrameClient::detached(). This triggers WebFrame to clear its reference
+// to LocalFrame. LocalFrameClient::detached() also notifies the embedder via
 // WebFrameClient that the frame is detached. Most embedders will invoke
 // close() on the WebFrame at this point, triggering its deletion unless
 // something else is still retaining a reference.
@@ -1493,9 +1493,9 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(
   FrameOwner* tempOwner = DummyFrameOwner::create();
   // TODO(dcheng): This block is very similar to initializeCoreFrame. Try to
   // reuse it here.
-  LocalFrame* frame = LocalFrame::create(
-      webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner,
-      interfaceProvider, interfaceRegistry);
+  LocalFrame* frame = LocalFrame::create(webFrame->m_localFrameClientImpl.get(),
+                                         oldFrame->host(), tempOwner,
+                                         interfaceProvider, interfaceRegistry);
   // Set the name and unique name directly, bypassing any of the normal logic
   // to calculate unique name.
   frame->tree().setPrecalculatedName(
@@ -1522,7 +1522,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
     blink::InterfaceProvider* interfaceProvider,
     blink::InterfaceRegistry* interfaceRegistry)
     : WebLocalFrame(scope),
-      m_frameLoaderClientImpl(FrameLoaderClientImpl::create(this)),
+      m_localFrameClientImpl(LocalFrameClientImpl::create(this)),
       m_frameWidget(0),
       m_client(client),
       m_autofillClient(0),
@@ -1556,7 +1556,7 @@ WebLocalFrameImpl::~WebLocalFrameImpl() {
 }
 
 DEFINE_TRACE(WebLocalFrameImpl) {
-  visitor->trace(m_frameLoaderClientImpl);
+  visitor->trace(m_localFrameClientImpl);
   visitor->trace(m_frame);
   visitor->trace(m_devToolsAgent);
   visitor->trace(m_textFinder);
@@ -1574,7 +1574,7 @@ void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host,
                                             FrameOwner* owner,
                                             const AtomicString& name,
                                             const AtomicString& uniqueName) {
-  setCoreFrame(LocalFrame::create(m_frameLoaderClientImpl.get(), host, owner,
+  setCoreFrame(LocalFrame::create(m_localFrameClientImpl.get(), host, owner,
                                   m_interfaceProvider, m_interfaceRegistry));
   frame()->tree().setPrecalculatedName(name, uniqueName);
   // We must call init() after m_frame is assigned because it is referenced
