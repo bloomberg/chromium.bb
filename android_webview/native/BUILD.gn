@@ -9,13 +9,13 @@ import("//components/spellcheck/spellcheck_build_features.gni")
 source_set("native") {
   deps = [
     ":native_jni",
+    "//android_webview:generate_components_strings",
     "//android_webview/common:version",
     "//base",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//cc:cc",
     "//components/autofill/content/browser:browser",
     "//components/spellcheck:build_features",
-    "//components/strings",
     "//components/web_contents_delegate_android:web_contents_delegate_android",
     "//content/public/common",
     "//device/battery:mojo_bindings",
