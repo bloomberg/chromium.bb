@@ -373,12 +373,14 @@ void Canvas::DrawFocusRect(const RectF& rect) {
   DrawDashedRect(rect, SK_ColorGRAY);
 }
 
-void Canvas::DrawSolidFocusRect(RectF rect, SkColor color, float thickness) {
+void Canvas::DrawSolidFocusRect(RectF rect, SkColor color, int thickness) {
   cc::PaintFlags flags;
   flags.setColor(color);
-  flags.setStrokeWidth(SkFloatToScalar(thickness));
+  const float adjusted_thickness =
+      std::floor(thickness * image_scale_) / image_scale_;
+  flags.setStrokeWidth(SkFloatToScalar(adjusted_thickness));
   flags.setStyle(cc::PaintFlags::kStroke_Style);
-  rect.Inset(gfx::InsetsF(thickness / 2));
+  rect.Inset(gfx::InsetsF(adjusted_thickness / 2));
   DrawRect(rect, flags);
 }
 

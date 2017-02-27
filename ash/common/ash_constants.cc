@@ -17,7 +17,7 @@ const int kResizeInsideBoundsSize = 1;
 const SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 
 const SkColor kFocusBorderColor = SkColorSetA(gfx::kGoogleBlue500, 0x99);
-const float kFocusBorderThickness = 2.f;
+const int kFocusBorderThickness = 2;
 
 const int kDefaultLargeCursorSize = 64;
 

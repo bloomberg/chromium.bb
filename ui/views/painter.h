@@ -87,9 +87,10 @@ class VIEWS_EXPORT Painter {
   static std::unique_ptr<Painter> CreateSolidFocusPainter(
       SkColor color,
       const gfx::Insets& insets);
+  // |thickness| is in dip.
   static std::unique_ptr<Painter> CreateSolidFocusPainter(
       SkColor color,
-      SkScalar thickness,
+      int thickness,
       const gfx::InsetsF& insets);
 
   // Returns the minimum size this painter can paint without obvious graphical

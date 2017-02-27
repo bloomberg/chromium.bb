@@ -424,9 +424,10 @@ class GFX_EXPORT Canvas {
   // Draws a dotted gray rectangle used for focus purposes.
   void DrawFocusRect(const RectF& rect);
 
-  // Draws a |rect| in the specified region with the specified |color| with a
-  // with of one logical pixel which might be more device pixels.
-  void DrawSolidFocusRect(RectF rect, SkColor color, float thickness);
+  // Draws a |rect| in the specified region with the specified |color|. The
+  // width of the stroke is |thickness| dip, but the actual pixel width will be
+  // floored to ensure an integral value.
+  void DrawSolidFocusRect(RectF rect, SkColor color, int thickness);
 
   // Tiles the image in the specified region.
   // Parameters are specified relative to current canvas scale not in pixels.

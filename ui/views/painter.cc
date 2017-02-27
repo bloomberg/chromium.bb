@@ -121,9 +121,7 @@ void DashedFocusPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
 
 class SolidFocusPainter : public Painter {
  public:
-  SolidFocusPainter(SkColor color,
-                    SkScalar thickness,
-                    const gfx::InsetsF& insets);
+  SolidFocusPainter(SkColor color, int thickness, const gfx::InsetsF& insets);
   ~SolidFocusPainter() override;
 
   // Painter:
@@ -132,14 +130,14 @@ class SolidFocusPainter : public Painter {
 
  private:
   const SkColor color_;
-  const SkScalar thickness_;
+  const int thickness_;
   const gfx::InsetsF insets_;
 
   DISALLOW_COPY_AND_ASSIGN(SolidFocusPainter);
 };
 
 SolidFocusPainter::SolidFocusPainter(SkColor color,
-                                     SkScalar thickness,
+                                     int thickness,
                                      const gfx::InsetsF& insets)
     : color_(color), thickness_(thickness), insets_(insets) {}
 
@@ -355,17 +353,15 @@ std::unique_ptr<Painter> Painter::CreateSolidFocusPainter(
   // Subtract that here so it works the same way with the new
   // Canvas::DrawSolidFocusRect.
   const gfx::Insets corrected_insets = insets - gfx::Insets(0, 0, 1, 1);
-  return base::MakeUnique<SolidFocusPainter>(color, SkIntToScalar(1),
-                                             corrected_insets);
+  return base::MakeUnique<SolidFocusPainter>(color, 1, corrected_insets);
 }
 
 // static
 std::unique_ptr<Painter> Painter::CreateSolidFocusPainter(
     SkColor color,
-    float thickness,
+    int thickness,
     const gfx::InsetsF& insets) {
-  return base::MakeUnique<SolidFocusPainter>(color, SkFloatToScalar(thickness),
-                                             insets);
+  return base::MakeUnique<SolidFocusPainter>(color, thickness, insets);
 }
 
 // HorizontalPainter ----------------------------------------------------------

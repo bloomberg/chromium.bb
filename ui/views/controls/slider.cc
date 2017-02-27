@@ -198,7 +198,7 @@ void Slider::OnPaintFocus(gfx::Canvas* canvas) {
       SkColorSetA(GetNativeTheme()->GetSystemColor(
                       ui::NativeTheme::kColorId_FocusedBorderColor),
                   0x99),
-      2.f);
+      2);
 }
 
 void Slider::OnSliderDragStarted() {
