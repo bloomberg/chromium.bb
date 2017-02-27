@@ -1884,10 +1884,6 @@ static bool enabledInEditableText(LocalFrame& frame,
                                   Event* event,
                                   EditorCommandSource) {
   frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  // We should update selection to canonicalize with current layout and style,
-  // before accessing |FrameSelection::selection()|.
-  frame.selection().updateIfNeeded();
   return frame.editor().selectionForCommand(event).rootEditableElement();
 }
 
@@ -1910,10 +1906,6 @@ static bool enabledInRichlyEditableText(LocalFrame& frame,
                                         Event*,
                                         EditorCommandSource) {
   frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  // We should update selection to canonicalize with current layout and style,
-  // before accessing |FrameSelection::selection()|.
-  frame.selection().updateIfNeeded();
   return !frame.selection()
               .computeVisibleSelectionInDOMTreeDeprecated()
               .isNone() &&
@@ -1937,10 +1929,6 @@ static bool enabledRangeInEditableText(LocalFrame& frame,
                                        Event*,
                                        EditorCommandSource) {
   frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  // We should update selection to canonicalize with current layout and style,
-  // before accessing |FrameSelection::selection()|.
-  frame.selection().updateIfNeeded();
   return frame.selection()
              .computeVisibleSelectionInDOMTreeDeprecated()
              .isRange() &&
@@ -1953,10 +1941,6 @@ static bool enabledRangeInRichlyEditableText(LocalFrame& frame,
                                              Event*,
                                              EditorCommandSource) {
   frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  // We should update selection to canonicalize with current layout and style,
-  // before accessing |FrameSelection::selection()|.
-  frame.selection().updateIfNeeded();
   return frame.selection()
              .computeVisibleSelectionInDOMTreeDeprecated()
              .isRange() &&

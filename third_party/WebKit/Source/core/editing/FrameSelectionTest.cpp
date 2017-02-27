@@ -242,31 +242,4 @@ TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
          "after it.";
 }
 
-TEST_F(FrameSelectionTest, updateIfNeededAndFrameCaret) {
-  setBodyContent("<style id=sample></style>");
-  document().setDesignMode("on");
-  updateAllLifecyclePhases();
-  Element* sample = document().getElementById("sample");
-  selection().setSelection(
-      SelectionInDOMTree::Builder().collapse(Position(sample, 0)).build());
-  EXPECT_EQ(Position(document().body(), 0),
-            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
-  EXPECT_EQ(selection().computeVisibleSelectionInDOMTreeDeprecated().start(),
-            caretPosition().position());
-  document().body()->remove();
-  EXPECT_EQ(Position(),
-            selection().computeVisibleSelectionInDOMTreeDeprecated().start())
-      << "Selection has been removed by BODY.remove().";
-  EXPECT_EQ(selection().computeVisibleSelectionInDOMTreeDeprecated().start(),
-            caretPosition().position());
-  document().updateStyleAndLayout();
-  selection().updateIfNeeded();
-
-  EXPECT_EQ(Position(),
-            selection().computeVisibleSelectionInDOMTreeDeprecated().start())
-      << "selection().updateIfNeeded() does nothing.";
-  EXPECT_EQ(selection().computeVisibleSelectionInDOMTreeDeprecated().start(),
-            caretPosition().position());
-}
-
 }  // namespace blink

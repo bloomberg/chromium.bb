@@ -70,10 +70,6 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   void resetLogicalRange();
   void setLogicalRange(Range*);
 
-  // Updates |m_selection| and |m_selectionInFlatTree| with up-to-date
-  // layout if needed.
-  void updateIfNeeded();
-
   void cacheRangeOfDocument(Range*);
   Range* documentCachedRange() const;
   void clearDocumentCachedRange();

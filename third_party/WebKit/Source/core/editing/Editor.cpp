@@ -156,7 +156,6 @@ Editor::RevealSelectionScope::~RevealSelectionScope() {
 // TODO(yosin): We should make |Editor::selectionForCommand()| to return
 // |SelectionInDOMTree| instead of |VisibleSelection|.
 VisibleSelection Editor::selectionForCommand(Event* event) {
-  frame().selection().updateIfNeeded();
   VisibleSelection selection =
       frame().selection().computeVisibleSelectionInDOMTreeDeprecated();
   if (!event)

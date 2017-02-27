@@ -1151,11 +1151,6 @@ void FrameSelection::moveRangeSelection(const VisiblePosition& basePosition,
                CursorAlignOnScroll::IfNeeded, granularity);
 }
 
-void FrameSelection::updateIfNeeded() {
-  DCHECK(!m_frame->document()->needsLayoutTreeUpdate());
-  m_selectionEditor->updateIfNeeded();
-}
-
 void FrameSelection::setCaretVisible(bool caretIsVisible) {
   m_frameCaret->setCaretVisibility(caretIsVisible ? CaretVisibility::Visible
                                                   : CaretVisibility::Hidden);

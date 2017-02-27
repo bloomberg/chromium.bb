@@ -269,12 +269,6 @@ class CORE_EXPORT FrameSelection final
   bool shouldShowBlockCursor() const;
   void setShouldShowBlockCursor(bool);
 
-  // TODO(yosin): We should check DOM tree version and style version in
-  // |FrameSelection::selection()| to make sure we use updated selection,
-  // rather than having |updateIfNeeded()|. Once, we update all layout tests
-  // to use updated selection, we should make |updateIfNeeded()| private.
-  void updateIfNeeded();
-
   void cacheRangeOfDocument(Range*);
   Range* documentCachedRange() const;
   void clearDocumentCachedRange();

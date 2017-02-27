@@ -375,12 +375,6 @@ bool SelectionEditor::shouldAlwaysUseDirectionalSelection() const {
   return frame()->editor().behavior().shouldConsiderSelectionAsDirectional();
 }
 
-void SelectionEditor::updateIfNeeded() {
-  // TODO(yosin): We should unify |SelectionEditor::updateIfNeeded()| and
-  // |updateCachedVisibleSelectionIfNeeded()|
-  updateCachedVisibleSelectionIfNeeded();
-}
-
 bool SelectionEditor::needsUpdateVisibleSelection() const {
   return m_cacheIsDirty || m_styleVersion != document().styleVersion();
 }
