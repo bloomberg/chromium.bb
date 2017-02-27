@@ -228,67 +228,6 @@ int indicators_count;
 // The unknown content type.
 const char* kUnknownContentType = "application/octet-stream";
 
-// Picks a button tint from a set of background colors. While
-// |accent_color| will usually be the same color through a theme, this
-// function will get called with the normal GtkLabel |text_color|/GtkWindow
-// |background_color| pair and the GtkEntry |text_color|/|background_color|
-// pair. While 3/4 of the time the resulting tint will be the same, themes that
-// have a dark window background (with light text) and a light text entry (with
-// dark text) will get better icons with this separated out.
-void PickButtonTintFromColors(SkColor accent_color,
-                              SkColor text_color,
-                              SkColor background_color,
-                              color_utils::HSL* tint) {
-  color_utils::HSL accent_tint, text_tint, background_tint;
-  color_utils::SkColorToHSL(accent_color, &accent_tint);
-  color_utils::SkColorToHSL(text_color, &text_tint);
-  color_utils::SkColorToHSL(background_color, &background_tint);
-
-  // If the accent color is gray, then our normal HSL tomfoolery will bring out
-  // whatever color is oddly dominant (for example, in rgb space [125, 128,
-  // 125] will tint green instead of gray). Slight differences (+/-10 (4%) to
-  // all color components) should be interpreted as this color being gray and
-  // we should switch into a special grayscale mode.
-  int rb_diff = abs(static_cast<int>(SkColorGetR(accent_color)) -
-                    static_cast<int>(SkColorGetB(accent_color)));
-  int rg_diff = abs(static_cast<int>(SkColorGetR(accent_color)) -
-                    static_cast<int>(SkColorGetG(accent_color)));
-  int bg_diff = abs(static_cast<int>(SkColorGetB(accent_color)) -
-                    static_cast<int>(SkColorGetG(accent_color)));
-  if (rb_diff < 10 && rg_diff < 10 && bg_diff < 10) {
-    // Our accent is white/gray/black. Only the luminance of the accent color
-    // matters.
-    tint->h = -1;
-
-    // Use the saturation of the text.
-    tint->s = text_tint.s;
-
-    // Use the luminance of the accent color UNLESS there isn't enough
-    // luminance contrast between the accent color and the base color.
-    if (fabs(accent_tint.l - background_tint.l) > 0.3)
-      tint->l = accent_tint.l;
-    else
-      tint->l = text_tint.l;
-  } else {
-    // Our accent is a color.
-    tint->h = accent_tint.h;
-
-    // Don't modify the saturation; the amount of color doesn't matter.
-    tint->s = -1;
-
-    // If the text wants us to darken the icon, don't change the luminance (the
-    // icons are already dark enough). Otherwise, lighten the icon by no more
-    // than 0.9 since we don't want a pure-white icon even if the text is pure
-    // white.
-    if (text_tint.l < 0.5)
-      tint->l = -1;
-    else if (text_tint.l <= 0.9)
-      tint->l = text_tint.l;
-    else
-      tint->l = 0.9;
-  }
-}
-
 // Returns a gfx::FontRenderParams corresponding to GTK's configuration.
 gfx::FontRenderParams GetGtkFontRenderParams() {
   GtkSettings* gtk_settings = gtk_settings_get_default();
