@@ -132,7 +132,7 @@ void CloudPolicyRefreshScheduler::OnPolicyFetched(CloudPolicyClient* client) {
   error_retry_delay_ms_ = kInitialErrorRetryDelayMs;
 
   // Schedule the next refresh.
-  last_refresh_ = base::Time::NowFromSystemTime();
+  UpdateLastRefresh();
   ScheduleRefresh();
 }
 
@@ -149,7 +149,7 @@ void CloudPolicyRefreshScheduler::OnClientError(CloudPolicyClient* client) {
   DeviceManagementStatus status = client_->status();
 
   // Schedule an error retry if applicable.
-  last_refresh_ = base::Time::NowFromSystemTime();
+  UpdateLastRefresh();
   ScheduleRefresh();
 
   // Update the retry delay.
@@ -178,8 +178,30 @@ void CloudPolicyRefreshScheduler::OnStoreError(CloudPolicyStore* store) {
 }
 
 void CloudPolicyRefreshScheduler::OnIPAddressChanged() {
-  if (client_->status() == DM_STATUS_REQUEST_FAILED)
+  if (client_->status() == DM_STATUS_REQUEST_FAILED) {
     RefreshSoon();
+    return;
+  }
+
+  // If this is triggered by the device wake-up event, the scheduled refresh
+  // that is in the queue is off because it's based on TimeTicks. Check when the
+  // the next refresh should happen based on system time, and if this provides
+  // shorter delay then re-schedule the next refresh. It has to happen sooner,
+  // according to delay based on system time. If we have no information about
+  // the last refresh based on system time, there's nothing we can do in
+  // applying the above logic.
+  if (last_refresh_.is_null())
+    return;
+
+  const base::TimeDelta refresh_delay =
+      base::TimeDelta::FromMilliseconds(GetActualRefreshDelay());
+  const base::TimeDelta system_delta =
+      std::max(last_refresh_ + refresh_delay - base::Time::NowFromSystemTime(),
+               base::TimeDelta());
+  const base::TimeDelta ticks_delta =
+      last_refresh_ticks_ + refresh_delay - base::TimeTicks::Now();
+  if (ticks_delta > system_delta)
+    RefreshAfter(system_delta.InMilliseconds());
 }
 
 void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
@@ -190,7 +212,7 @@ void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
   // that assumption ever breaks, the proper thing to do probably is to move the
   // |last_refresh_| bookkeeping to CloudPolicyClient.
   if (!client_->responses().empty()) {
-    last_refresh_ = base::Time::NowFromSystemTime();
+    UpdateLastRefresh();
     return;
   }
 
@@ -220,6 +242,8 @@ void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
     last_refresh_ =
         base::Time::UnixEpoch() +
         base::TimeDelta::FromMilliseconds(store_->policy()->timestamp());
+    last_refresh_ticks_ = base::TimeTicks::Now() +
+                          (last_refresh_ - base::Time::NowFromSystemTime());
   }
 #else
   // If there is a cached non-managed response, make sure to only re-query the
@@ -230,6 +254,8 @@ void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
     last_refresh_ =
         base::Time::UnixEpoch() +
         base::TimeDelta::FromMilliseconds(store_->policy()->timestamp());
+    last_refresh_ticks_ = base::TimeTicks::Now() +
+                          (last_refresh_ - base::Time::NowFromSystemTime());
   }
 #endif
 }
@@ -295,7 +321,7 @@ void CloudPolicyRefreshScheduler::PerformRefresh() {
 
   if (client_->is_registered()) {
     // Update |last_refresh_| so another fetch isn't triggered inadvertently.
-    last_refresh_ = base::Time::NowFromSystemTime();
+    UpdateLastRefresh();
 
     // The result of this operation will be reported through a callback, at
     // which point the next refresh will be scheduled.
@@ -309,12 +335,19 @@ void CloudPolicyRefreshScheduler::PerformRefresh() {
 }
 
 void CloudPolicyRefreshScheduler::RefreshAfter(int delta_ms) {
-  base::TimeDelta delta(base::TimeDelta::FromMilliseconds(delta_ms));
+  const base::TimeDelta delta(base::TimeDelta::FromMilliseconds(delta_ms));
 
-  // Schedule the callback.
-  base::TimeDelta delay =
+  // Schedule the callback, calculating the delay based on both, system time
+  // and TimeTicks, whatever comes up to become earlier update. This is done to
+  // make sure the refresh is not delayed too much when the system time moved
+  // backward after the last refresh.
+  const base::TimeDelta system_delay =
       std::max((last_refresh_ + delta) - base::Time::NowFromSystemTime(),
                base::TimeDelta());
+  const base::TimeDelta time_ticks_delay =
+      std::max((last_refresh_ticks_ + delta) - base::TimeTicks::Now(),
+               base::TimeDelta());
+  const base::TimeDelta delay = std::min(system_delay, time_ticks_delay);
   refresh_callback_.Reset(
       base::Bind(&CloudPolicyRefreshScheduler::PerformRefresh,
                  base::Unretained(this)));
@@ -324,6 +357,11 @@ void CloudPolicyRefreshScheduler::RefreshAfter(int delta_ms) {
 void CloudPolicyRefreshScheduler::CancelRefresh() {
   refresh_callback_.Cancel();
   is_scheduled_for_soon_ = false;
+}
+
+void CloudPolicyRefreshScheduler::UpdateLastRefresh() {
+  last_refresh_ = base::Time::NowFromSystemTime();
+  last_refresh_ticks_ = base::TimeTicks::Now();
 }
 
 }  // namespace policy
