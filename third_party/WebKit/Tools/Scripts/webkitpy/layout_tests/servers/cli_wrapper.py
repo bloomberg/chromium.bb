@@ -32,16 +32,16 @@ Scripts in Tools/Scripts can use this module to start servers that
 are normally used for layout tests, outside of the layout test runner.
 """
 
-import logging
 import argparse
+import logging
 
 from webkitpy.common.host import Host
 
 
-def main(server_constructor, input_fn=None, argv=None, **kwargs):
+def main(server_constructor, input_fn=None, argv=None, description=None, **kwargs):
     input_fn = input_fn or raw_input
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=description, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--output-dir', type=str, default=None,
                         help='output directory, for log files etc.')
     parser.add_argument('-v', '--verbose', action='store_true',

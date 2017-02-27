@@ -22,7 +22,10 @@ class MockServer(object):
         self.stop_called = True
 
 
-class TestCliWrapper(unittest.TestCase):
+class CliWrapperTest(unittest.TestCase):
+
+    def setUp(self):
+        self.server = None
 
     def test_main(self):
         def mock_server_constructor(*args, **kwargs):

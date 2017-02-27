@@ -27,9 +27,20 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+"""Runs a WebSocket server for WebSocket tests.
+
+Some tests require both an HTTP server and WebSocket server. You can start
+both servers by running both run-blink-httpd and run-blink-websocketserver.
+
+Tests served by the HTTP server have paths relative to LayoutTests/http/tests/.
+For example, to run a test http/tests/websocket/binary-type.html which depends
+on WebSocket, you can navigate to:
+    http://127.0.0.1:8000/websocket/close-unref-websocket.html
+"""
+
 import webkitpy.common.version_check
 
 from webkitpy.layout_tests.servers import cli_wrapper
 from webkitpy.layout_tests.servers import pywebsocket
 
-cli_wrapper.main(pywebsocket.PyWebSocket)
+cli_wrapper.main(pywebsocket.PyWebSocket, description)
