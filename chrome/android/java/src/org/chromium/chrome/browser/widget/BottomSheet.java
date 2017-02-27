@@ -392,11 +392,11 @@ public class BottomSheet
     }
 
     @Override
-    public int loadUrl(LoadUrlParams params) {
+    public int loadUrl(LoadUrlParams params, boolean incognito) {
         for (BottomSheetObserver o : mObservers) o.onLoadUrl(params.getUrl());
 
         // Native page URLs in this context do not need to communicate with the tab.
-        if (NativePageFactory.isNativePageUrl(params.getUrl(), isIncognito())) {
+        if (NativePageFactory.isNativePageUrl(params.getUrl(), incognito)) {
             return TabLoadStatus.PAGE_LOAD_FAILED;
         }
 
@@ -406,13 +406,13 @@ public class BottomSheet
         assert mTabModelSelector != null;
 
         // First try to get the tab behind the sheet.
-        if (mTabModelSelector.getCurrentTab() != null) {
-            return mTabModelSelector.getCurrentTab().loadUrl(params);
+        if (getActiveTab() != null && getActiveTab().isIncognito() == incognito) {
+            return getActiveTab().loadUrl(params);
         }
 
-        // If no tab is active behind the sheet, open a new one.
+        // If no compatible tab is active behind the sheet, open a new one.
         mTabModelSelector.openNewTab(
-                params, TabModel.TabLaunchType.FROM_CHROME_UI, null, isIncognito());
+                params, TabModel.TabLaunchType.FROM_CHROME_UI, getActiveTab(), incognito);
         return TabLoadStatus.DEFAULT_PAGE_LOAD;
     }
 

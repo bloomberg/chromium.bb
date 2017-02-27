@@ -47,7 +47,6 @@ import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.NativePage;
-import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.TabState.WebContentsState;
@@ -128,8 +127,8 @@ import java.util.List;
  *    their own native pointer reference, but Tab#destroy() will handle deleting the native
  *    object.
  */
-public class Tab implements ViewGroup.OnHierarchyChangeListener,
-                            View.OnSystemUiVisibilityChangeListener, NativePageHost {
+public class Tab
+        implements ViewGroup.OnHierarchyChangeListener, View.OnSystemUiVisibilityChangeListener {
     public static final int INVALID_TAB_ID = -1;
 
     /** Return value from {@link #getBookmarkId()} if this tab is not bookmarked. */
@@ -638,7 +637,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return FULL_PRERENDERED_PAGE_LOAD or PARTIAL_PRERENDERED_PAGE_LOAD if the page has been
      *         prerendered. DEFAULT_PAGE_LOAD if it had not.
      */
-    @Override
     public int loadUrl(LoadUrlParams params) {
         try {
             TraceEvent.begin("Tab.loadUrl");
@@ -1009,7 +1007,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         return mId;
     }
 
-    @Override
     public boolean isIncognito() {
         return mIncognito;
     }
@@ -2127,14 +2124,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /**
      * @return The id of the tab that caused this tab to be opened.
      */
-    @Override
     public int getParentId() {
         return mParentId;
-    }
-
-    @Override
-    public Tab getActiveTab() {
-        return this;
     }
 
     /**

@@ -10,11 +10,17 @@ import android.view.Menu;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.SynchronousInitializationActivity;
+import org.chromium.chrome.browser.TabLoadStatus;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.lang.ref.WeakReference;
 
 /**
+ * TODO(dgn): Nuke this class
  * Experimental activity to show content suggestions outside of the New Tab Page.
  */
 public class ContentSuggestionsActivity extends SynchronousInitializationActivity {
@@ -46,7 +52,7 @@ public class ContentSuggestionsActivity extends SynchronousInitializationActivit
         // the surface, some things, like closing the context menu will not work as they would
         // affect the wrong one.
         mBottomSheetContent = new SuggestionsBottomSheetContent(
-                activity, activity.getActivityTab(), activity.getTabModelSelector());
+                activity, new TabShim(activity.getActivityTab()), activity.getTabModelSelector());
         setContentView(mBottomSheetContent.getScrollingContentView());
     }
 
@@ -59,5 +65,41 @@ public class ContentSuggestionsActivity extends SynchronousInitializationActivit
     protected void onDestroy() {
         mBottomSheetContent.destroy();
         super.onDestroy();
+    }
+
+    /** Simple implementation of NativePageHost backed by a {@link Tab} */
+    private static class TabShim implements NativePageHost {
+        private final Tab mTab;
+
+        public TabShim(Tab mTab) {
+            this.mTab = mTab;
+        }
+
+        @Override
+        public int loadUrl(LoadUrlParams urlParams, boolean incognito) {
+            if (incognito && !mTab.isIncognito()) {
+                mTab.getTabModelSelector().openNewTab(urlParams,
+                        TabModel.TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab,
+                        /* incognito = */ true);
+                return TabLoadStatus.DEFAULT_PAGE_LOAD;
+            }
+
+            return mTab.loadUrl(urlParams);
+        }
+
+        @Override
+        public boolean isIncognito() {
+            return mTab.isIncognito();
+        }
+
+        @Override
+        public int getParentId() {
+            return mTab.getParentId();
+        }
+
+        @Override
+        public Tab getActiveTab() {
+            return mTab;
+        }
     }
 }

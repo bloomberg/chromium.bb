@@ -11,6 +11,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.NativePage;
+import org.chromium.chrome.browser.NativePageHost;
+import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.download.DownloadPage;
@@ -18,7 +20,9 @@ import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebDiagnosticsPage;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
  * Creates NativePage objects to show chrome-native:// URLs using the native Android view system.
@@ -33,20 +37,20 @@ public class NativePageFactory {
             if (tab.isIncognito()) {
                 return new IncognitoNewTabPage(activity);
             } else {
-                return new NewTabPage(activity, tab, tabModelSelector);
+                return new NewTabPage(activity, new TabShim(tab), tabModelSelector);
             }
         }
 
         protected NativePage buildBookmarksPage(Activity activity, Tab tab) {
-            return new BookmarkPage(activity, tab);
+            return new BookmarkPage(activity, new TabShim(tab));
         }
 
         protected NativePage buildDownloadsPage(Activity activity, Tab tab) {
-            return new DownloadPage(activity, tab);
+            return new DownloadPage(activity, new TabShim(tab));
         }
 
         protected NativePage buildHistoryPage(Activity activity, Tab tab) {
-            return new HistoryPage(activity, tab);
+            return new HistoryPage(activity, new TabShim(tab));
         }
 
         protected NativePage buildRecentTabsPage(Activity activity, Tab tab) {
@@ -56,7 +60,7 @@ public class NativePageFactory {
         }
 
         protected NativePage buildPhysicalWebDiagnosticsPage(Activity activity, Tab tab) {
-            return new PhysicalWebDiagnosticsPage(activity, tab);
+            return new PhysicalWebDiagnosticsPage(activity, new TabShim(tab));
         }
     }
 
@@ -174,5 +178,41 @@ public class NativePageFactory {
     @VisibleForTesting
     static void setNativePageBuilderForTesting(NativePageBuilder builder) {
         sNativePageBuilder = builder;
+    }
+
+    /** Simple implementation of NativePageHost backed by a {@link Tab} */
+    private static class TabShim implements NativePageHost {
+        private final Tab mTab;
+
+        public TabShim(Tab mTab) {
+            this.mTab = mTab;
+        }
+
+        @Override
+        public int loadUrl(LoadUrlParams urlParams, boolean incognito) {
+            if (incognito && !mTab.isIncognito()) {
+                mTab.getTabModelSelector().openNewTab(urlParams,
+                        TabModel.TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab,
+                        /* incognito = */ true);
+                return TabLoadStatus.DEFAULT_PAGE_LOAD;
+            }
+
+            return mTab.loadUrl(urlParams);
+        }
+
+        @Override
+        public boolean isIncognito() {
+            return mTab.isIncognito();
+        }
+
+        @Override
+        public int getParentId() {
+            return mTab.getParentId();
+        }
+
+        @Override
+        public Tab getActiveTab() {
+            return mTab;
+        }
     }
 }

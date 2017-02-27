@@ -72,7 +72,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     @Override
     public void navigateToRecentTabs() {
         RecordUserAction.record("MobileNTPSwitchToOpenTabs");
-        mHost.loadUrl(new LoadUrlParams(UrlConstants.RECENT_TABS_URL));
+        mHost.loadUrl(new LoadUrlParams(UrlConstants.RECENT_TABS_URL), /* incognito = */ false);
     }
 
     @Override
@@ -147,13 +147,13 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     public void openUrl(int windowOpenDisposition, LoadUrlParams loadUrlParams) {
         switch (windowOpenDisposition) {
             case WindowOpenDisposition.CURRENT_TAB:
-                mHost.loadUrl(loadUrlParams);
+                mHost.loadUrl(loadUrlParams, false);
                 break;
             case WindowOpenDisposition.NEW_BACKGROUND_TAB:
-                openUrlInNewTab(loadUrlParams, false);
+                openUrlInNewTab(loadUrlParams);
                 break;
             case WindowOpenDisposition.OFF_THE_RECORD:
-                openUrlInNewTab(loadUrlParams, true);
+                mHost.loadUrl(loadUrlParams, true);
                 break;
             case WindowOpenDisposition.NEW_WINDOW:
                 openUrlInNewWindow(loadUrlParams);
@@ -180,9 +180,9 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         tabDelegate.createTabInOtherWindow(loadUrlParams, mActivity, mHost.getParentId());
     }
 
-    private void openUrlInNewTab(LoadUrlParams loadUrlParams, boolean incognito) {
+    private void openUrlInNewTab(LoadUrlParams loadUrlParams) {
         mTabModelSelector.openNewTab(loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND,
-                mHost.getActiveTab(), incognito);
+                mHost.getActiveTab(), /* incognito = */ false);
     }
 
     private void saveUrlForOffline(String url) {

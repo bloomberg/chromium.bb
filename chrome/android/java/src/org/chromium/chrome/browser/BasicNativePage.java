@@ -86,6 +86,6 @@ public abstract class BasicNativePage implements NativePage {
      */
     public void onStateChange(String url) {
         if (url.equals(mUrl)) return;
-        mHost.loadUrl(new LoadUrlParams(url));
+        mHost.loadUrl(new LoadUrlParams(url), /* incognito = */ false);
     }
 }

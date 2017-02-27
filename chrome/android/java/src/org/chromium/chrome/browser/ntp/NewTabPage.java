@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
+import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
@@ -194,8 +195,9 @@ public class NewTabPage
             extends SuggestionsUiDelegateImpl implements NewTabPageManager {
         public NewTabPageManagerImpl(SuggestionsSource suggestionsSource,
                 SuggestionsMetricsReporter metricsReporter,
-                SuggestionsNavigationDelegate navigationDelegate, Profile profile, Tab currentTab) {
-            super(suggestionsSource, metricsReporter, navigationDelegate, profile, currentTab);
+                SuggestionsNavigationDelegate navigationDelegate, Profile profile,
+                NativePageHost nativePageHost) {
+            super(suggestionsSource, metricsReporter, navigationDelegate, profile, nativePageHost);
         }
 
         @Override
@@ -370,23 +372,25 @@ public class NewTabPage
     /**
      * Constructs a NewTabPage.
      * @param activity The activity used for context to create the new tab page's View.
-     * @param tab The Tab that is showing this new tab page.
+     * @param nativePageHost The host that is showing this new tab page.
      * @param tabModelSelector The TabModelSelector used to open tabs.
      */
-    public NewTabPage(ChromeActivity activity, Tab tab, TabModelSelector tabModelSelector) {
+    public NewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
+            TabModelSelector tabModelSelector) {
         mConstructedTimeNs = System.nanoTime();
         TraceEvent.begin(TAG);
 
-        mTab = tab;
+        mTab = nativePageHost.getActiveTab();
         mTabModelSelector = tabModelSelector;
-        Profile profile = tab.getProfile();
+        Profile profile = mTab.getProfile();
 
         mSnippetsBridge = new SnippetsBridge(profile);
 
         SuggestionsNavigationDelegateImpl navigationDelegate =
-                new SuggestionsNavigationDelegateImpl(activity, profile, tab, tabModelSelector);
+                new SuggestionsNavigationDelegateImpl(
+                        activity, profile, nativePageHost, tabModelSelector);
         mNewTabPageManager = new NewTabPageManagerImpl(
-                mSnippetsBridge, mSnippetsBridge, navigationDelegate, profile, tab);
+                mSnippetsBridge, mSnippetsBridge, navigationDelegate, profile, nativePageHost);
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(
                 activity, profile, tabModelSelector, navigationDelegate);
 

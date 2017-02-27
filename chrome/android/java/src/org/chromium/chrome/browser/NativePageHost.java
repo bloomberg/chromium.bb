@@ -16,11 +16,12 @@ public interface NativePageHost {
      * the current native page or load external content in a content area (i.e. a tab or web
      * contents).
      * @param urlParams The params describing the URL to be loaded.
+     * @param incognito Whether the URL should be loaded in incognito mode.
      * @return {@link TabLoadStatus.FULL_PRERENDERED_PAGE_LOAD} or
      *         {@link TabLoadStatus.PARTIAL_PRERENDERED_PAGE_LOAD} if the page has been prerendered.
      *         {@link TabLoadStatus.DEFAULT_PAGE_LOAD} if it had not
      */
-    int loadUrl(LoadUrlParams urlParams);
+    int loadUrl(LoadUrlParams urlParams, boolean incognito);
 
     /**
      * Determine if the browser is currently in an incognito context.
