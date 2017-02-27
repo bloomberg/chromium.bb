@@ -55,7 +55,7 @@ class TestImporter(object):
         if not self.checkout_is_okay(options.allow_local_commits):
             return 1
 
-        self.git_cl = GitCL(self.host)
+        self.git_cl = GitCL(self.host, auth_refresh_token_json=options.auth_refresh_token_json)
 
         _log.debug('Noting the current Chromium commit.')
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
@@ -124,7 +124,9 @@ class TestImporter(object):
         parser.add_argument('--auto-update', action='store_true',
                             help='uploads CL and initiates commit queue.')
         parser.add_argument('--auth-refresh-token-json',
-                            help='Auth refresh JSON token (ignored, deprecated)')
+                            help='authentication refresh token JSON file, '
+                                 'used for authentication for try jobs, '
+                                 'generally not necessary on developer machines')
         parser.add_argument('--ignore-exportable-commits', action='store_true',
                             help='Continue even if there are exportable commits that may be overwritten.')
         return parser.parse_args(argv)
