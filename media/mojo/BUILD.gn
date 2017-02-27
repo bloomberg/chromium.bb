@@ -14,7 +14,6 @@ source_set("unit_tests") {
     "common/mojo_decoder_buffer_converter_unittest.cc",
     "common/mojo_shared_buffer_video_frame_unittest.cc",
     "services/mojo_cdm_allocator_unittest.cc",
-    "services/strong_binding_set_unittest.cc",
   ]
 
   deps = [
