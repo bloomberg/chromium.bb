@@ -6,7 +6,6 @@
 
 #include <iterator>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
@@ -808,9 +807,6 @@ bool NavigationHandleImpl::MaybeTransferAndProceedInternal() {
   if (!render_frame_host_->is_active()) {
     // This will cause the deletion of this NavigationHandle and the
     // cancellation of the navigation.
-    // TODO(clamy): Remove the logging code once we understand better how we can
-    // get there.
-    base::debug::DumpWithoutCrashing();
     render_frame_host_->SetNavigationHandle(nullptr);
     return false;
   }
