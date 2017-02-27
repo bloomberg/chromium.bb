@@ -441,18 +441,9 @@ void FontCache::invalidate() {
   gGeneration++;
 
   HeapVector<Member<FontCacheClient>> clients;
-  size_t numClients = fontCacheClients().size();
-  clients.reserveInitialCapacity(numClients);
-  HeapHashSet<WeakMember<FontCacheClient>>::iterator end =
-      fontCacheClients().end();
-  for (HeapHashSet<WeakMember<FontCacheClient>>::iterator it =
-           fontCacheClients().begin();
-       it != end; ++it)
-    clients.push_back(*it);
-
-  ASSERT(numClients == clients.size());
-  for (size_t i = 0; i < numClients; ++i)
-    clients[i]->fontCacheInvalidated();
+  copyToVector(fontCacheClients(), clients);
+  for (const auto& client : clients)
+    client->fontCacheInvalidated();
 
   purge(ForcePurge);
 }
