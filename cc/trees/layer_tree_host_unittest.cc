@@ -45,7 +45,6 @@
 #include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_internals_for_test.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/push_properties_counting_layer.h"
 #include "cc/test/push_properties_counting_layer_impl.h"
@@ -1404,6 +1403,9 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
 
     root_->SetBounds(gfx::Size(50, 50));
 
+    // Make sure child is registerd for animation.
+    child_->SetElementId(ElementId(2, 0));
+
     // Make sure child and grand_child have transform nodes.
     gfx::Transform rotation;
     rotation.RotateAboutZAxis(45.0);
@@ -1422,7 +1424,8 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
     if (layer_tree_host()->SourceFrameNumber() == 1) {
       gfx::Transform scale;
       scale.Scale(2.0, 2.0);
-      LayerInternalsForTest(child_.get()).OnTransformAnimated(scale);
+      layer_tree_host()->SetElementTransformMutated(
+          child_->element_id(), ElementListType::ACTIVE, scale);
     }
   }
 

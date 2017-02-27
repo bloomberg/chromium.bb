@@ -156,11 +156,6 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     host->SetNeedsCommit();
 }
 
-void Layer::SetNeedsUpdate() {
-  if (layer_tree_host_ && !ignore_set_needs_commit_)
-    layer_tree_host_->SetNeedsUpdateLayers();
-}
-
 void Layer::SetNeedsCommit() {
   if (!layer_tree_host_)
     return;
@@ -1061,8 +1056,8 @@ void Layer::SetNeedsDisplayRect(const gfx::Rect& dirty_rect) {
   SetNeedsPushProperties();
   inputs_.update_rect.Union(dirty_rect);
 
-  if (DrawsContent())
-    SetNeedsUpdate();
+  if (DrawsContent() && layer_tree_host_ && !ignore_set_needs_commit_)
+    layer_tree_host_->SetNeedsUpdateLayers();
 }
 
 bool Layer::DescendantIsFixedToContainerLayer() const {
@@ -1334,49 +1329,11 @@ void Layer::OnFilterAnimated(const FilterOperations& filters) {
 }
 
 void Layer::OnOpacityAnimated(float opacity) {
-  DCHECK_GE(opacity, 0.f);
-  DCHECK_LE(opacity, 1.f);
-
-  if (inputs_.opacity == opacity)
-    return;
   inputs_.opacity = opacity;
-  // Changing the opacity may make a previously hidden layer visible, so a new
-  // recording may be needed.
-  SetNeedsUpdate();
-  if (layer_tree_host_) {
-    PropertyTrees* property_trees = layer_tree_host_->property_trees();
-    if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT,
-                                         id())) {
-      DCHECK_EQ(effect_tree_index(),
-                property_trees->layer_id_to_effect_node_index[id()]);
-      EffectNode* node = property_trees->effect_tree.Node(effect_tree_index());
-      node->opacity = opacity;
-      property_trees->effect_tree.set_needs_update(true);
-    }
-  }
 }
 
 void Layer::OnTransformAnimated(const gfx::Transform& transform) {
-  if (inputs_.transform == transform)
-    return;
   inputs_.transform = transform;
-  // Changing the transform may change the visible part of this layer, so a new
-  // recording may be needed.
-  SetNeedsUpdate();
-  if (layer_tree_host_) {
-    PropertyTrees* property_trees = layer_tree_host_->property_trees();
-    if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
-                                         id())) {
-      DCHECK_EQ(transform_tree_index(),
-                property_trees->layer_id_to_transform_node_index[id()]);
-      TransformNode* node =
-          property_trees->transform_tree.Node(transform_tree_index());
-      node->local = transform;
-      node->needs_local_transform_update = true;
-      node->has_potential_animation = true;
-      property_trees->transform_tree.set_needs_update(true);
-    }
-  }
 }
 
 void Layer::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
@@ -1565,14 +1522,6 @@ void Layer::SetMutableProperties(uint32_t properties) {
                "Layer::SetMutableProperties", "properties", properties);
   inputs_.mutable_properties = properties;
   SetNeedsCommit();
-}
-
-void Layer::DidBeginTracing() {
-  // We'll be dumping layer trees as part of trace, so make sure
-  // PushPropertiesTo() propagates layer debug info to the impl
-  // side -- otherwise this won't happen for the the layers that
-  // remain unchanged since tracing started.
-  SetNeedsPushProperties();
 }
 
 int Layer::num_copy_requests_in_target_subtree() {

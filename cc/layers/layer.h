@@ -347,6 +347,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return paint_properties_;
   }
 
+  // Mark the layer as needing to push its properties to the LayerImpl during
+  // commit.
   void SetNeedsPushProperties();
   void ResetNeedsPushPropertiesForTesting();
 
@@ -407,8 +409,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetMayContainVideo(bool yes);
 
-  void DidBeginTracing();
-
   int num_copy_requests_in_target_subtree();
 
   void SetElementId(ElementId id);
@@ -456,19 +456,16 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // These SetNeeds functions are in order of severity of update:
   //
-  // Called when this layer has been modified in some way, but isn't sure
-  // that it needs a commit yet.  It needs CalcDrawProperties and UpdateLayers
-  // before it knows whether or not a commit is required.
-  void SetNeedsUpdate();
-  // Called when a property has been modified in a way that the layer
-  // knows immediately that a commit is required.  This implies SetNeedsUpdate
-  // as well as SetNeedsPushProperties to push that property.
+  // Called when a property has been modified in a way that the layer knows
+  // immediately that a commit is required.  This implies SetNeedsPushProperties
+  // to push that property.
   void SetNeedsCommit();
   // This is identical to SetNeedsCommit, but the former requests a rebuild of
   // the property trees.
   void SetNeedsCommitNoRebuild();
-  // Called when there's been a change in layer structure.  Implies both
-  // SetNeedsUpdate and SetNeedsCommit, but not SetNeedsPushProperties.
+  // Called when there's been a change in layer structure.  Implies
+  // SetNeedsCommit and property tree rebuld, but not SetNeedsPushProperties
+  // (the full tree is synced over).
   void SetNeedsFullTreeSync();
 
   // Called when the next commit should wait until the pending tree is activated

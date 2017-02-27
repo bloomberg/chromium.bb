@@ -322,7 +322,8 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   size_t NumLayers() const;
 
-  bool UpdateLayers(const LayerList& update_layer_list,
+  bool in_update_property_trees() const { return in_update_property_trees_; }
+  bool PaintContent(const LayerList& update_layer_list,
                     bool* content_is_suitable_for_gpu);
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
@@ -594,6 +595,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   std::unordered_map<ElementId, Layer*, ElementIdHash> element_layers_map_;
 
   bool in_paint_layer_contents_ = false;
+  bool in_update_property_trees_ = false;
 
   MutatorHost* mutator_host_;
 

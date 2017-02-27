@@ -23,7 +23,6 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_internals_for_test.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -1382,25 +1381,31 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
 }
 
 TEST_F(LayerTest, AnimationSchedulesLayerUpdate) {
+  // TODO(weiliangc): This is really a LayerTreeHost unittest by this point,
+  // though currently there is no good place for this unittest to go. Move to
+  // LayerTreeHost unittest when there is a good setup.
   scoped_refptr<Layer> layer = Layer::Create();
+  layer->SetElementId(ElementId(2, 0));
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(layer));
-
-  LayerInternalsForTest layer_internals(layer.get());
+  auto element_id = layer->element_id();
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsUpdateLayers()).Times(1);
-  layer_internals.OnOpacityAnimated(0.5f);
+  layer_tree_host_->SetElementOpacityMutated(element_id,
+                                             ElementListType::ACTIVE, 0.5f);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsUpdateLayers()).Times(1);
   gfx::Transform transform;
   transform.Rotate(45.0);
-  layer_internals.OnTransformAnimated(transform);
+  layer_tree_host_->SetElementTransformMutated(
+      element_id, ElementListType::ACTIVE, transform);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 
   // Scroll offset animation should not schedule a layer update since it is
   // handled similarly to normal compositor scroll updates.
   EXPECT_CALL(*layer_tree_host_, SetNeedsUpdateLayers()).Times(0);
-  layer_internals.OnScrollOffsetAnimated(gfx::ScrollOffset(10, 10));
+  layer_tree_host_->SetElementScrollOffsetMutated(
+      element_id, ElementListType::ACTIVE, gfx::ScrollOffset(10, 10));
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 }
 
