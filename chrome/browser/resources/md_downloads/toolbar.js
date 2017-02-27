@@ -27,8 +27,12 @@ cr.define('downloads', function() {
 
     /** @return {boolean} Whether "Clear all" should be allowed. */
     canClearAll: function() {
-      return !this.$.toolbar.getSearchField().getValue() &&
-          this.downloadsShowing;
+      return this.getSearchText().length == 0 && this.downloadsShowing;
+    },
+
+    /** @return {string} The full text being searched. */
+    getSearchText: function() {
+      return this.$.toolbar.getSearchField().getValue();
     },
 
     onFindCommand: function() {

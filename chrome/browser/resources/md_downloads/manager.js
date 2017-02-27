@@ -89,6 +89,16 @@ cr.define('downloads', function() {
     /** @private */
     itemsChanged_: function() {
       this.hasDownloads_ = this.items_.length > 0;
+
+      if (this.inSearchMode_) {
+        Polymer.IronA11yAnnouncer.requestAvailability();
+        this.fire('iron-announce', {
+          text: this.hasDownloads_ ?
+              loadTimeData.getStringF(
+                  'searchResultsFor', this.$.toolbar.getSearchText()) :
+              this.noDownloadsText_()
+        });
+      }
     },
 
     /**
