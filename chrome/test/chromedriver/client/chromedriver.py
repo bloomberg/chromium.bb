@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import sys
 import platform
+import sys
+import util
 
 import command_executor
 from command_executor import Command
@@ -133,12 +134,13 @@ class ChromeDriver(object):
     elif chrome_binary:
       options['binary'] = chrome_binary
 
-    # TODO(samuong): speculative fix for crbug.com/611886
-    if (sys.platform.startswith('linux') and
-        platform.architecture()[0] == '32bit'):
+    if sys.platform.startswith('linux') and not util.Is64Bit():
       if chrome_switches is None:
         chrome_switches = []
+      # Workaround for crbug.com/611886.
       chrome_switches.append('no-sandbox')
+      # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1695
+      chrome_switches.append('disable-gpu')
 
     if chrome_switches:
       assert type(chrome_switches) is list
