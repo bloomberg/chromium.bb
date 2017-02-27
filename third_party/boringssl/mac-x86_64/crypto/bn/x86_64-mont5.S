@@ -8,8 +8,10 @@
 
 .p2align	6
 _bn_mul_mont_gather5:
+
 	movl	%r9d,%r9d
 	movq	%rsp,%rax
+
 	testl	$7,%r9d
 	jnz	L$mul_enter
 	jmp	L$mul4x_enter
@@ -18,11 +20,17 @@ _bn_mul_mont_gather5:
 L$mul_enter:
 	movd	8(%rsp),%xmm5
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 
 	negq	%r9
 	movq	%rsp,%r11
@@ -55,6 +63,7 @@ L$mul_page_walk_done:
 
 	leaq	L$inc(%rip),%r10
 	movq	%rax,8(%rsp,%r9,8)
+
 L$mul_body:
 
 	leaq	128(%rdx),%r12
@@ -411,30 +420,47 @@ L$copy:
 	jnz	L$copy
 
 	movq	8(%rsp,%r9,8),%rsi
+
 	movq	$1,%rax
 
 	movq	-48(%rsi),%r15
+
 	movq	-40(%rsi),%r14
+
 	movq	-32(%rsi),%r13
+
 	movq	-24(%rsi),%r12
+
 	movq	-16(%rsi),%rbp
+
 	movq	-8(%rsi),%rbx
+
 	leaq	(%rsi),%rsp
+
 L$mul_epilogue:
 	.byte	0xf3,0xc3
 
 
+
 .p2align	5
 bn_mul4x_mont_gather5:
+
 .byte	0x67
 	movq	%rsp,%rax
+
 L$mul4x_enter:
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 L$mul4x_prologue:
 
 .byte	0x67
@@ -490,22 +516,32 @@ L$mul4x_page_walk_done:
 	negq	%r9
 
 	movq	%rax,40(%rsp)
+
 L$mul4x_body:
 
 	call	mul4x_internal
 
 	movq	40(%rsp),%rsi
+
 	movq	$1,%rax
 
 	movq	-48(%rsi),%r15
+
 	movq	-40(%rsi),%r14
+
 	movq	-32(%rsi),%r13
+
 	movq	-24(%rsi),%r12
+
 	movq	-16(%rsi),%rbp
+
 	movq	-8(%rsi),%rbx
+
 	leaq	(%rsi),%rsp
+
 L$mul4x_epilogue:
 	.byte	0xf3,0xc3
+
 
 
 
@@ -1038,13 +1074,21 @@ L$inner4x:
 
 .p2align	5
 _bn_power5:
+
 	movq	%rsp,%rax
+
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 L$power5_prologue:
 
 	shll	$3,%r9d
@@ -1109,6 +1153,7 @@ L$pwr_page_walk_done:
 
 	movq	%r8,32(%rsp)
 	movq	%rax,40(%rsp)
+
 L$power5_body:
 .byte	102,72,15,110,207
 .byte	102,72,15,110,209
@@ -1135,16 +1180,25 @@ L$power5_body:
 	call	mul4x_internal
 
 	movq	40(%rsp),%rsi
+
 	movq	$1,%rax
 	movq	-48(%rsi),%r15
+
 	movq	-40(%rsi),%r14
+
 	movq	-32(%rsi),%r13
+
 	movq	-24(%rsi),%r12
+
 	movq	-16(%rsi),%rbp
+
 	movq	-8(%rsi),%rbx
+
 	leaq	(%rsi),%rsp
+
 L$power5_epilogue:
 	.byte	0xf3,0xc3
+
 
 
 .globl	_bn_sqr8x_internal
@@ -1997,14 +2051,22 @@ _bn_from_montgomery:
 
 .p2align	5
 bn_from_mont8x:
+
 .byte	0x67
 	movq	%rsp,%rax
+
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 L$from_prologue:
 
 	shll	$3,%r9d
@@ -2069,6 +2131,7 @@ L$from_page_walk_done:
 
 	movq	%r8,32(%rsp)
 	movq	%rax,40(%rsp)
+
 L$from_body:
 	movq	%r9,%r11
 	leaq	48(%rsp),%rax
@@ -2104,11 +2167,12 @@ L$mul_by_1:
 
 	pxor	%xmm0,%xmm0
 	leaq	48(%rsp),%rax
-	movq	40(%rsp),%rsi
 	jmp	L$from_mont_zero
 
 .p2align	5
 L$from_mont_zero:
+	movq	40(%rsp),%rsi
+
 	movdqa	%xmm0,0(%rax)
 	movdqa	%xmm0,16(%rax)
 	movdqa	%xmm0,32(%rax)
@@ -2119,14 +2183,22 @@ L$from_mont_zero:
 
 	movq	$1,%rax
 	movq	-48(%rsi),%r15
+
 	movq	-40(%rsi),%r14
+
 	movq	-32(%rsi),%r13
+
 	movq	-24(%rsi),%r12
+
 	movq	-16(%rsi),%rbp
+
 	movq	-8(%rsi),%rbx
+
 	leaq	(%rsi),%rsp
+
 L$from_epilogue:
 	.byte	0xf3,0xc3
+
 
 .globl	_bn_scatter5
 .private_extern _bn_scatter5

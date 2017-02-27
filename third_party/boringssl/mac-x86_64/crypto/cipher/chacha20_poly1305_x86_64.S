@@ -44,7 +44,7 @@ chacha20_poly1305_constants:
 
 .p2align	6
 poly_hash_ad_internal:
-.cfi_startproc	
+
 	xorq	%r10,%r10
 	xorq	%r11,%r11
 	xorq	%r12,%r12
@@ -207,7 +207,7 @@ hash_ad_tail_loop:
 
 1:
 	.byte	0xf3,0xc3
-.cfi_endproc	
+
 
 
 .globl	_chacha20_poly1305_open
@@ -215,7 +215,7 @@ hash_ad_tail_loop:
 
 .p2align	6
 _chacha20_poly1305_open:
-.cfi_startproc	
+
 	pushq	%rbp
 
 	pushq	%rbx
@@ -2086,7 +2086,7 @@ open_sse_128:
 	jmp	1b
 	jmp	open_sse_tail_16
 
-.cfi_endproc	
+
 
 
 
@@ -2096,7 +2096,7 @@ open_sse_128:
 
 .p2align	6
 _chacha20_poly1305_seal:
-.cfi_startproc	
+
 	pushq	%rbp
 
 	pushq	%rbx
@@ -8783,5 +8783,5 @@ seal_avx2_short_tail:
 1:
 	vzeroupper
 	jmp	seal_sse_tail_16
-.cfi_endproc	
+
 #endif

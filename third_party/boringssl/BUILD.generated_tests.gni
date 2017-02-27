@@ -19,7 +19,9 @@ crypto_test_sources = [
   "src/crypto/chacha/chacha_test.cc",
   "src/crypto/dh/dh_test.cc",
   "src/crypto/dsa/dsa_test.cc",
+  "src/crypto/ec/ec_test.cc",
   "src/crypto/err/err_test.cc",
+  "src/crypto/rsa/rsa_test.cc",
   "src/crypto/test/gtest_main.cc",
 ]
 
@@ -188,18 +190,6 @@ template("create_tests") {
   executable("boringssl_digest_test") {
     sources = [
       "src/crypto/digest/digest_test.cc",
-    ]
-    sources += test_support_sources
-    if (defined(invoker.configs_exclude)) {
-      configs -= invoker.configs_exclude
-    }
-    configs += invoker.configs
-    deps = invoker.deps
-  }
-
-  executable("boringssl_ec_test") {
-    sources = [
-      "src/crypto/ec/ec_test.cc",
     ]
     sources += test_support_sources
     if (defined(invoker.configs_exclude)) {
@@ -437,18 +427,6 @@ template("create_tests") {
     deps = invoker.deps
   }
 
-  executable("boringssl_rsa_test") {
-    sources = [
-      "src/crypto/rsa/rsa_test.cc",
-    ]
-    sources += test_support_sources
-    if (defined(invoker.configs_exclude)) {
-      configs -= invoker.configs_exclude
-    }
-    configs += invoker.configs
-    deps = invoker.deps
-  }
-
   executable("boringssl_thread_test") {
     sources = [
       "src/crypto/thread_test.c",
@@ -522,7 +500,6 @@ template("create_tests") {
       ":boringssl_cmac_test",
       ":boringssl_constant_time_test",
       ":boringssl_digest_test",
-      ":boringssl_ec_test",
       ":boringssl_ecdh_test",
       ":boringssl_ecdsa_sign_test",
       ":boringssl_ecdsa_test",
@@ -544,7 +521,6 @@ template("create_tests") {
       ":boringssl_poly1305_test",
       ":boringssl_pool_test",
       ":boringssl_refcount_test",
-      ":boringssl_rsa_test",
       ":boringssl_spake25519_test",
       ":boringssl_tab_test",
       ":boringssl_thread_test",

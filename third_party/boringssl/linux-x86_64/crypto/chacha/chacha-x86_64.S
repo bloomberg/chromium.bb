@@ -51,6 +51,7 @@ ChaCha20_ctr32:
 	pushq	%r14
 	pushq	%r15
 	subq	$64+24,%rsp
+.Lctr32_body:
 
 
 	movdqu	(%rcx),%xmm1
@@ -288,13 +289,14 @@ ChaCha20_ctr32:
 	jnz	.Loop_tail
 
 .Ldone:
-	addq	$64+24,%rsp
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
-	popq	%rbp
-	popq	%rbx
+	leaq	64+24+48(%rsp),%rsi
+	movq	-48(%rsi),%r15
+	movq	-40(%rsi),%r14
+	movq	-32(%rsi),%r13
+	movq	-24(%rsi),%r12
+	movq	-16(%rsi),%rbp
+	movq	-8(%rsi),%rbx
+	leaq	(%rsi),%rsp
 .Lno_data:
 	.byte	0xf3,0xc3
 .size	ChaCha20_ctr32,.-ChaCha20_ctr32
@@ -302,18 +304,12 @@ ChaCha20_ctr32:
 .align	32
 ChaCha20_ssse3:
 .LChaCha20_ssse3:
+	movq	%rsp,%r9
 	cmpq	$128,%rdx
 	ja	.LChaCha20_4x
 
 .Ldo_sse3_after_all:
-	pushq	%rbx
-	pushq	%rbp
-	pushq	%r12
-	pushq	%r13
-	pushq	%r14
-	pushq	%r15
-
-	subq	$64+24,%rsp
+	subq	$64+8,%rsp
 	movdqa	.Lsigma(%rip),%xmm0
 	movdqu	(%rcx),%xmm1
 	movdqu	16(%rcx),%xmm2
@@ -433,13 +429,15 @@ ChaCha20_ssse3:
 	jnz	.Loop_tail_ssse3
 
 .Ldone_ssse3:
-	addq	$64+24+48,%rsp
+	leaq	(%r9),%rsp
+.Lssse3_epilogue:
 	.byte	0xf3,0xc3
 .size	ChaCha20_ssse3,.-ChaCha20_ssse3
 .type	ChaCha20_4x,@function
 .align	32
 ChaCha20_4x:
 .LChaCha20_4x:
+	movq	%rsp,%r9
 	movq	%r10,%r11
 	shrq	$32,%r10
 	testq	$32,%r10
@@ -452,8 +450,7 @@ ChaCha20_4x:
 	je	.Ldo_sse3_after_all
 
 .Lproceed4x:
-	leaq	-120(%rsp),%r11
-	subq	$0x148+0,%rsp
+	subq	$0x140+8,%rsp
 	movdqa	.Lsigma(%rip),%xmm11
 	movdqu	(%rcx),%xmm15
 	movdqu	16(%rcx),%xmm7
@@ -980,18 +977,18 @@ ChaCha20_4x:
 	jnz	.Loop_tail4x
 
 .Ldone4x:
-	addq	$0x148+0,%rsp
+	leaq	(%r9),%rsp
+.L4x_epilogue:
 	.byte	0xf3,0xc3
 .size	ChaCha20_4x,.-ChaCha20_4x
 .type	ChaCha20_8x,@function
 .align	32
 ChaCha20_8x:
 .LChaCha20_8x:
-	movq	%rsp,%r10
+	movq	%rsp,%r9
 	subq	$0x280+8,%rsp
 	andq	$-32,%rsp
 	vzeroupper
-	movq	%r10,640(%rsp)
 
 
 
@@ -1582,7 +1579,8 @@ ChaCha20_8x:
 
 .Ldone8x:
 	vzeroall
-	movq	640(%rsp),%rsp
+	leaq	(%r9),%rsp
+.L8x_epilogue:
 	.byte	0xf3,0xc3
 .size	ChaCha20_8x,.-ChaCha20_8x
 #endif

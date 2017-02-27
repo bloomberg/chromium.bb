@@ -68,6 +68,7 @@ $L$SEH_begin_ChaCha20_ctr32:
 	push	r14
 	push	r15
 	sub	rsp,64+24
+$L$ctr32_body:
 
 
 	movdqu	xmm1,XMMWORD[rcx]
@@ -305,13 +306,14 @@ $L$oop_tail:
 	jnz	NEAR $L$oop_tail
 
 $L$done:
-	add	rsp,64+24
-	pop	r15
-	pop	r14
-	pop	r13
-	pop	r12
-	pop	rbp
-	pop	rbx
+	lea	rsi,[((64+24+48))+rsp]
+	mov	r15,QWORD[((-48))+rsi]
+	mov	r14,QWORD[((-40))+rsi]
+	mov	r13,QWORD[((-32))+rsi]
+	mov	r12,QWORD[((-24))+rsi]
+	mov	rbp,QWORD[((-16))+rsi]
+	mov	rbx,QWORD[((-8))+rsi]
+	lea	rsp,[rsi]
 $L$no_data:
 	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
 	mov	rsi,QWORD[16+rsp]
@@ -332,20 +334,15 @@ $L$SEH_begin_ChaCha20_ssse3:
 
 
 $L$ChaCha20_ssse3:
+	mov	r9,rsp
 	cmp	rdx,128
 	ja	NEAR $L$ChaCha20_4x
 
 $L$do_sse3_after_all:
-	push	rbx
-	push	rbp
-	push	r12
-	push	r13
-	push	r14
-	push	r15
-
-	sub	rsp,64+72
-	movaps	XMMWORD[(64+32)+rsp],xmm6
-	movaps	XMMWORD[(64+48)+rsp],xmm7
+	sub	rsp,64+40
+	movaps	XMMWORD[(-40)+r9],xmm6
+	movaps	XMMWORD[(-24)+r9],xmm7
+$L$ssse3_body:
 	movdqa	xmm0,XMMWORD[$L$sigma]
 	movdqu	xmm1,XMMWORD[rcx]
 	movdqu	xmm2,XMMWORD[16+rcx]
@@ -465,9 +462,10 @@ $L$oop_tail_ssse3:
 	jnz	NEAR $L$oop_tail_ssse3
 
 $L$done_ssse3:
-	movaps	xmm6,XMMWORD[((64+32))+rsp]
-	movaps	xmm7,XMMWORD[((64+48))+rsp]
-	add	rsp,64+72+48
+	movaps	xmm6,XMMWORD[((-40))+r9]
+	movaps	xmm7,XMMWORD[((-24))+r9]
+	lea	rsp,[r9]
+$L$ssse3_epilogue:
 	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
 	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
@@ -487,6 +485,7 @@ $L$SEH_begin_ChaCha20_4x:
 
 
 $L$ChaCha20_4x:
+	mov	r9,rsp
 	mov	r11,r10
 	shr	r10,32
 	test	r10,32
@@ -499,18 +498,18 @@ $L$ChaCha20_4x:
 	je	NEAR $L$do_sse3_after_all
 
 $L$proceed4x:
-	lea	r11,[((-120))+rsp]
-	sub	rsp,0x148+160
-	movaps	XMMWORD[(-48)+r11],xmm6
-	movaps	XMMWORD[(-32)+r11],xmm7
-	movaps	XMMWORD[(-16)+r11],xmm8
-	movaps	XMMWORD[r11],xmm9
-	movaps	XMMWORD[16+r11],xmm10
-	movaps	XMMWORD[32+r11],xmm11
-	movaps	XMMWORD[48+r11],xmm12
-	movaps	XMMWORD[64+r11],xmm13
-	movaps	XMMWORD[80+r11],xmm14
-	movaps	XMMWORD[96+r11],xmm15
+	sub	rsp,0x140+168
+	movaps	XMMWORD[(-168)+r9],xmm6
+	movaps	XMMWORD[(-152)+r9],xmm7
+	movaps	XMMWORD[(-136)+r9],xmm8
+	movaps	XMMWORD[(-120)+r9],xmm9
+	movaps	XMMWORD[(-104)+r9],xmm10
+	movaps	XMMWORD[(-88)+r9],xmm11
+	movaps	XMMWORD[(-72)+r9],xmm12
+	movaps	XMMWORD[(-56)+r9],xmm13
+	movaps	XMMWORD[(-40)+r9],xmm14
+	movaps	XMMWORD[(-24)+r9],xmm15
+$L$4x_body:
 	movdqa	xmm11,XMMWORD[$L$sigma]
 	movdqu	xmm15,XMMWORD[rcx]
 	movdqu	xmm7,XMMWORD[16+rcx]
@@ -1037,18 +1036,18 @@ $L$oop_tail4x:
 	jnz	NEAR $L$oop_tail4x
 
 $L$done4x:
-	lea	r11,[((320+48))+rsp]
-	movaps	xmm6,XMMWORD[((-48))+r11]
-	movaps	xmm7,XMMWORD[((-32))+r11]
-	movaps	xmm8,XMMWORD[((-16))+r11]
-	movaps	xmm9,XMMWORD[r11]
-	movaps	xmm10,XMMWORD[16+r11]
-	movaps	xmm11,XMMWORD[32+r11]
-	movaps	xmm12,XMMWORD[48+r11]
-	movaps	xmm13,XMMWORD[64+r11]
-	movaps	xmm14,XMMWORD[80+r11]
-	movaps	xmm15,XMMWORD[96+r11]
-	add	rsp,0x148+160
+	movaps	xmm6,XMMWORD[((-168))+r9]
+	movaps	xmm7,XMMWORD[((-152))+r9]
+	movaps	xmm8,XMMWORD[((-136))+r9]
+	movaps	xmm9,XMMWORD[((-120))+r9]
+	movaps	xmm10,XMMWORD[((-104))+r9]
+	movaps	xmm11,XMMWORD[((-88))+r9]
+	movaps	xmm12,XMMWORD[((-72))+r9]
+	movaps	xmm13,XMMWORD[((-56))+r9]
+	movaps	xmm14,XMMWORD[((-40))+r9]
+	movaps	xmm15,XMMWORD[((-24))+r9]
+	lea	rsp,[r9]
+$L$4x_epilogue:
 	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
 	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
@@ -1068,22 +1067,21 @@ $L$SEH_begin_ChaCha20_8x:
 
 
 $L$ChaCha20_8x:
-	mov	r10,rsp
-	sub	rsp,0x280+176
+	mov	r9,rsp
+	sub	rsp,0x280+168
 	and	rsp,-32
-	lea	r11,[((656+48))+rsp]
-	movaps	XMMWORD[(-48)+r11],xmm6
-	movaps	XMMWORD[(-32)+r11],xmm7
-	movaps	XMMWORD[(-16)+r11],xmm8
-	movaps	XMMWORD[r11],xmm9
-	movaps	XMMWORD[16+r11],xmm10
-	movaps	XMMWORD[32+r11],xmm11
-	movaps	XMMWORD[48+r11],xmm12
-	movaps	XMMWORD[64+r11],xmm13
-	movaps	XMMWORD[80+r11],xmm14
-	movaps	XMMWORD[96+r11],xmm15
+	movaps	XMMWORD[(-168)+r9],xmm6
+	movaps	XMMWORD[(-152)+r9],xmm7
+	movaps	XMMWORD[(-136)+r9],xmm8
+	movaps	XMMWORD[(-120)+r9],xmm9
+	movaps	XMMWORD[(-104)+r9],xmm10
+	movaps	XMMWORD[(-88)+r9],xmm11
+	movaps	XMMWORD[(-72)+r9],xmm12
+	movaps	XMMWORD[(-56)+r9],xmm13
+	movaps	XMMWORD[(-40)+r9],xmm14
+	movaps	XMMWORD[(-24)+r9],xmm15
+$L$8x_body:
 	vzeroupper
-	mov	QWORD[640+rsp],r10
 
 
 
@@ -1674,19 +1672,220 @@ $L$oop_tail8x:
 
 $L$done8x:
 	vzeroall
-	lea	r11,[((656+48))+rsp]
-	movaps	xmm6,XMMWORD[((-48))+r11]
-	movaps	xmm7,XMMWORD[((-32))+r11]
-	movaps	xmm8,XMMWORD[((-16))+r11]
-	movaps	xmm9,XMMWORD[r11]
-	movaps	xmm10,XMMWORD[16+r11]
-	movaps	xmm11,XMMWORD[32+r11]
-	movaps	xmm12,XMMWORD[48+r11]
-	movaps	xmm13,XMMWORD[64+r11]
-	movaps	xmm14,XMMWORD[80+r11]
-	movaps	xmm15,XMMWORD[96+r11]
-	mov	rsp,QWORD[640+rsp]
+	movaps	xmm6,XMMWORD[((-168))+r9]
+	movaps	xmm7,XMMWORD[((-152))+r9]
+	movaps	xmm8,XMMWORD[((-136))+r9]
+	movaps	xmm9,XMMWORD[((-120))+r9]
+	movaps	xmm10,XMMWORD[((-104))+r9]
+	movaps	xmm11,XMMWORD[((-88))+r9]
+	movaps	xmm12,XMMWORD[((-72))+r9]
+	movaps	xmm13,XMMWORD[((-56))+r9]
+	movaps	xmm14,XMMWORD[((-40))+r9]
+	movaps	xmm15,XMMWORD[((-24))+r9]
+	lea	rsp,[r9]
+$L$8x_epilogue:
 	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
 	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
 $L$SEH_end_ChaCha20_8x:
+EXTERN	__imp_RtlVirtualUnwind
+
+ALIGN	16
+se_handler:
+	push	rsi
+	push	rdi
+	push	rbx
+	push	rbp
+	push	r12
+	push	r13
+	push	r14
+	push	r15
+	pushfq
+	sub	rsp,64
+
+	mov	rax,QWORD[120+r8]
+	mov	rbx,QWORD[248+r8]
+
+	mov	rsi,QWORD[8+r9]
+	mov	r11,QWORD[56+r9]
+
+	lea	r10,[$L$ctr32_body]
+	cmp	rbx,r10
+	jb	NEAR $L$common_seh_tail
+
+	mov	rax,QWORD[152+r8]
+
+	lea	r10,[$L$no_data]
+	cmp	rbx,r10
+	jae	NEAR $L$common_seh_tail
+
+	lea	rax,[((64+24+48))+rax]
+
+	mov	rbx,QWORD[((-8))+rax]
+	mov	rbp,QWORD[((-16))+rax]
+	mov	r12,QWORD[((-24))+rax]
+	mov	r13,QWORD[((-32))+rax]
+	mov	r14,QWORD[((-40))+rax]
+	mov	r15,QWORD[((-48))+rax]
+	mov	QWORD[144+r8],rbx
+	mov	QWORD[160+r8],rbp
+	mov	QWORD[216+r8],r12
+	mov	QWORD[224+r8],r13
+	mov	QWORD[232+r8],r14
+	mov	QWORD[240+r8],r15
+
+$L$common_seh_tail:
+	mov	rdi,QWORD[8+rax]
+	mov	rsi,QWORD[16+rax]
+	mov	QWORD[152+r8],rax
+	mov	QWORD[168+r8],rsi
+	mov	QWORD[176+r8],rdi
+
+	mov	rdi,QWORD[40+r9]
+	mov	rsi,r8
+	mov	ecx,154
+	DD	0xa548f3fc
+
+	mov	rsi,r9
+	xor	rcx,rcx
+	mov	rdx,QWORD[8+rsi]
+	mov	r8,QWORD[rsi]
+	mov	r9,QWORD[16+rsi]
+	mov	r10,QWORD[40+rsi]
+	lea	r11,[56+rsi]
+	lea	r12,[24+rsi]
+	mov	QWORD[32+rsp],r10
+	mov	QWORD[40+rsp],r11
+	mov	QWORD[48+rsp],r12
+	mov	QWORD[56+rsp],rcx
+	call	QWORD[__imp_RtlVirtualUnwind]
+
+	mov	eax,1
+	add	rsp,64
+	popfq
+	pop	r15
+	pop	r14
+	pop	r13
+	pop	r12
+	pop	rbp
+	pop	rbx
+	pop	rdi
+	pop	rsi
+	DB	0F3h,0C3h		;repret
+
+
+
+ALIGN	16
+ssse3_handler:
+	push	rsi
+	push	rdi
+	push	rbx
+	push	rbp
+	push	r12
+	push	r13
+	push	r14
+	push	r15
+	pushfq
+	sub	rsp,64
+
+	mov	rax,QWORD[120+r8]
+	mov	rbx,QWORD[248+r8]
+
+	mov	rsi,QWORD[8+r9]
+	mov	r11,QWORD[56+r9]
+
+	mov	r10d,DWORD[r11]
+	lea	r10,[r10*1+rsi]
+	cmp	rbx,r10
+	jb	NEAR $L$common_seh_tail
+
+	mov	rax,QWORD[192+r8]
+
+	mov	r10d,DWORD[4+r11]
+	lea	r10,[r10*1+rsi]
+	cmp	rbx,r10
+	jae	NEAR $L$common_seh_tail
+
+	lea	rsi,[((-40))+rax]
+	lea	rdi,[512+r8]
+	mov	ecx,4
+	DD	0xa548f3fc
+
+	jmp	NEAR $L$common_seh_tail
+
+
+
+ALIGN	16
+full_handler:
+	push	rsi
+	push	rdi
+	push	rbx
+	push	rbp
+	push	r12
+	push	r13
+	push	r14
+	push	r15
+	pushfq
+	sub	rsp,64
+
+	mov	rax,QWORD[120+r8]
+	mov	rbx,QWORD[248+r8]
+
+	mov	rsi,QWORD[8+r9]
+	mov	r11,QWORD[56+r9]
+
+	mov	r10d,DWORD[r11]
+	lea	r10,[r10*1+rsi]
+	cmp	rbx,r10
+	jb	NEAR $L$common_seh_tail
+
+	mov	rax,QWORD[192+r8]
+
+	mov	r10d,DWORD[4+r11]
+	lea	r10,[r10*1+rsi]
+	cmp	rbx,r10
+	jae	NEAR $L$common_seh_tail
+
+	lea	rsi,[((-168))+rax]
+	lea	rdi,[512+r8]
+	mov	ecx,20
+	DD	0xa548f3fc
+
+	jmp	NEAR $L$common_seh_tail
+
+
+section	.pdata rdata align=4
+ALIGN	4
+	DD	$L$SEH_begin_ChaCha20_ctr32 wrt ..imagebase
+	DD	$L$SEH_end_ChaCha20_ctr32 wrt ..imagebase
+	DD	$L$SEH_info_ChaCha20_ctr32 wrt ..imagebase
+
+	DD	$L$SEH_begin_ChaCha20_ssse3 wrt ..imagebase
+	DD	$L$SEH_end_ChaCha20_ssse3 wrt ..imagebase
+	DD	$L$SEH_info_ChaCha20_ssse3 wrt ..imagebase
+
+	DD	$L$SEH_begin_ChaCha20_4x wrt ..imagebase
+	DD	$L$SEH_end_ChaCha20_4x wrt ..imagebase
+	DD	$L$SEH_info_ChaCha20_4x wrt ..imagebase
+	DD	$L$SEH_begin_ChaCha20_8x wrt ..imagebase
+	DD	$L$SEH_end_ChaCha20_8x wrt ..imagebase
+	DD	$L$SEH_info_ChaCha20_8x wrt ..imagebase
+section	.xdata rdata align=8
+ALIGN	8
+$L$SEH_info_ChaCha20_ctr32:
+DB	9,0,0,0
+	DD	se_handler wrt ..imagebase
+
+$L$SEH_info_ChaCha20_ssse3:
+DB	9,0,0,0
+	DD	ssse3_handler wrt ..imagebase
+	DD	$L$ssse3_body wrt ..imagebase,$L$ssse3_epilogue wrt ..imagebase
+
+$L$SEH_info_ChaCha20_4x:
+DB	9,0,0,0
+	DD	full_handler wrt ..imagebase
+	DD	$L$4x_body wrt ..imagebase,$L$4x_epilogue wrt ..imagebase
+$L$SEH_info_ChaCha20_8x:
+DB	9,0,0,0
+	DD	full_handler wrt ..imagebase
+	DD	$L$8x_body wrt ..imagebase,$L$8x_epilogue wrt ..imagebase
