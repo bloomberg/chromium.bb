@@ -81,10 +81,10 @@ void UpdateCodecParameters(SdpMessage* sdp_message, bool incoming) {
     }
   }
 
-  // Update SDP format to use stereo for opus codec.
+  // Update SDP format to use 160kbps stereo for opus codec.
   if (sdp_message->has_audio() &&
       !sdp_message->AddCodecParameter("opus",
-                                      "stereo=1; x-google-min-bitrate=160")) {
+                                      "stereo=1; maxaveragebitrate=163840")) {
     if (incoming) {
       LOG(WARNING) << "Opus not found in an incoming SDP.";
     } else {

@@ -234,12 +234,14 @@ class FakeAudioPlayer : public AudioStub {
         ++right;
       }
     }
+
+    const int kMaxErrorHz = 50;
     int left_hz = (left * kAudioSampleRate / (num_samples - skipped_samples));
-    EXPECT_LE(kTestAudioSignalFrequencyLeftHz - 50, left_hz);
-    EXPECT_GE(kTestAudioSignalFrequencyLeftHz + 50, left_hz);
+    EXPECT_LE(kTestAudioSignalFrequencyLeftHz - kMaxErrorHz, left_hz);
+    EXPECT_GE(kTestAudioSignalFrequencyLeftHz + kMaxErrorHz, left_hz);
     int right_hz = (right * kAudioSampleRate / (num_samples - skipped_samples));
-    EXPECT_LE(kTestAudioSignalFrequencyRightHz - 50, right_hz);
-    EXPECT_GE(kTestAudioSignalFrequencyRightHz + 50, right_hz);
+    EXPECT_LE(kTestAudioSignalFrequencyRightHz - kMaxErrorHz, right_hz);
+    EXPECT_GE(kTestAudioSignalFrequencyRightHz + kMaxErrorHz, right_hz);
   }
 
   base::WeakPtr<AudioStub> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
@@ -622,10 +624,6 @@ TEST_P(ConnectionTest, VideoStats) {
   EXPECT_LE(stats.client_stats.time_rendered, finish_time);
 }
 
-// Flaky on Linux/ChromeOS, crbug.com/685910.
-// Note: Apparently it's not possible to use the common MAYBE_ prefix with
-// TEST_P, so ifdef it out completely.
-#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 TEST_P(ConnectionTest, Audio) {
   Connect();
 
@@ -636,7 +634,6 @@ TEST_P(ConnectionTest, Audio) {
   client_audio_player_.WaitForSamples(kAudioSampleRate * 2);
   client_audio_player_.Verify();
 }
-#endif
 
 TEST_P(ConnectionTest, FirstCaptureFailed) {
   Connect();
