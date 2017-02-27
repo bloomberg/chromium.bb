@@ -54,9 +54,10 @@ class WindowProxyManagerBase : public GarbageCollected<WindowProxyManagerBase> {
 
 template <typename FrameType, typename ProxyType>
 class WindowProxyManagerImplHelper : public WindowProxyManagerBase {
- protected:
+ private:
   using Base = WindowProxyManagerBase;
 
+ public:
   FrameType* frame() const { return static_cast<FrameType*>(Base::frame()); }
   ProxyType* mainWorldProxy() const {
     return static_cast<ProxyType*>(Base::mainWorldProxy());
@@ -65,6 +66,7 @@ class WindowProxyManagerImplHelper : public WindowProxyManagerBase {
     return static_cast<ProxyType*>(Base::windowProxy(world));
   }
 
+ protected:
   explicit WindowProxyManagerImplHelper(Frame& frame)
       : WindowProxyManagerBase(frame) {}
 };
@@ -96,10 +98,6 @@ class RemoteWindowProxyManager
   }
 
  private:
-  // TODO(dcheng): Ideally, remove this friend declaration once WindowProxy
-  // initialization details are better encapsulated.
-  friend class RemoteFrame;
-
   explicit RemoteWindowProxyManager(RemoteFrame& frame)
       : WindowProxyManagerImplHelper<RemoteFrame, RemoteWindowProxy>(frame) {}
 };

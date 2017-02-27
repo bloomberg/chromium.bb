@@ -62,11 +62,6 @@ class LocalWindowProxy final : public WindowProxy {
   // (e.g., after setting docoument.domain).
   void updateSecurityOrigin(SecurityOrigin*);
 
-  ScriptState* getScriptState() const { return m_scriptState.get(); }
-  v8::Local<v8::Context> contextIfInitialized() const {
-    return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>();
-  }
-
  private:
   LocalWindowProxy(v8::Isolate*, LocalFrame&, RefPtr<DOMWrapperWorld>);
 
@@ -79,10 +74,6 @@ class LocalWindowProxy final : public WindowProxy {
   // wrapper is not yet associated with the native DOMWindow object.
   void createContext();
 
-  // Associates the window wrapper and its prototype chain with the native
-  // DOMWindow object. Also does some more Window-specific initialization.
-  void setupWindowPrototypeChain();
-
   void setSecurityToken(SecurityOrigin*);
 
   // The JavaScript wrapper for the document object is cached on the global
@@ -94,8 +85,6 @@ class LocalWindowProxy final : public WindowProxy {
   void updateActivityLogger();
 
   LocalFrame* frame() const { return toLocalFrame(WindowProxy::frame()); }
-
-  RefPtr<ScriptState> m_scriptState;
 };
 
 }  // namespace blink

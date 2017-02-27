@@ -31,10 +31,9 @@
 #ifndef RemoteWindowProxy_h
 #define RemoteWindowProxy_h
 
-#include <v8.h>
 #include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/WindowProxy.h"
 #include "core/frame/RemoteFrame.h"
+#include <v8.h>
 
 namespace blink {
 
@@ -43,6 +42,7 @@ class RemoteWindowProxy final : public WindowProxy {
  public:
   static RemoteWindowProxy* create(v8::Isolate* isolate,
                                    RemoteFrame& frame,
+
                                    RefPtr<DOMWrapperWorld> world) {
     return new RemoteWindowProxy(isolate, frame, std::move(world));
   }
@@ -58,8 +58,6 @@ class RemoteWindowProxy final : public WindowProxy {
   // prototype chain do not get fully initialized yet, e.g. the window
   // wrapper is not yet associated with the native DOMWindow object.
   void createContext();
-
-  void setupWindowPrototypeChain();
 };
 
 }  // namespace blink

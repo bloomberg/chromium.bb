@@ -28,15 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/RemoteWindowProxy.h"
+#include "bindings/core/v8/WindowProxy.h"
 
+#include <v8-debug.h>
+#include <v8.h>
+#include <algorithm>
+#include <utility>
+#include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
+#include "bindings/core/v8/V8Document.h"
+#include "bindings/core/v8/V8GCForContextDispose.h"
+#include "bindings/core/v8/V8HTMLCollection.h"
+#include "bindings/core/v8/V8HTMLDocument.h"
+#include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8Initializer.h"
+#include "bindings/core/v8/V8ObjectConstructor.h"
+#include "bindings/core/v8/V8PagePopupControllerBinding.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8Window.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/html/DocumentNameCollection.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/HTMLIFrameElement.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/MainThreadDebugger.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "platform/Histogram.h"
+#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/ScriptForbiddenScope.h"
+#include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "v8/include/v8.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
+#include "wtf/StringExtras.h"
+#include "wtf/text/CString.h"
 
 namespace blink {
 
@@ -49,16 +83,7 @@ void RemoteWindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
   if (m_lifecycle != Lifecycle::ContextInitialized)
     return;
 
-  if (behavior == DetachGlobal && !m_globalProxy.isEmpty()) {
-    m_globalProxy.get().SetWrapperClassId(0);
-    V8DOMWrapper::clearNativeInfo(isolate(), m_globalProxy.newLocal(isolate()));
-#if DCHECK_IS_ON()
-    didDetachGlobalProxy();
-#endif
-  }
-
-  DCHECK_EQ(Lifecycle::ContextInitialized, m_lifecycle);
-  m_lifecycle = Lifecycle::ContextDetached;
+  WindowProxy::disposeContext(behavior);
 }
 
 void RemoteWindowProxy::initialize() {
@@ -68,11 +93,23 @@ void RemoteWindowProxy::initialize() {
       frame()->isMainFrame() ? "Blink.Binding.InitializeMainWindowProxy"
                              : "Blink.Binding.InitializeNonMainWindowProxy");
 
+  ScriptForbiddenScope::AllowUserAgentScript allowScript;
+
   v8::HandleScope handleScope(isolate());
 
   createContext();
 
+  ScriptState::Scope scope(m_scriptState.get());
+  v8::Local<v8::Context> context = m_scriptState->context();
+  if (m_globalProxy.isEmpty()) {
+    m_globalProxy.set(isolate(), context->Global());
+    CHECK(!m_globalProxy.isEmpty());
+  }
+
   setupWindowPrototypeChain();
+
+  // Remote frames always require a full canAccess() check.
+  context->UseDefaultSecurityToken();
 }
 
 void RemoteWindowProxy::createContext() {
@@ -85,41 +122,22 @@ void RemoteWindowProxy::createContext() {
       V8Window::domTemplate(isolate(), *m_world)->InstanceTemplate();
   CHECK(!globalTemplate.IsEmpty());
 
-  v8::Local<v8::Object> globalProxy =
-      v8::Context::NewRemoteContext(isolate(), globalTemplate,
-                                    m_globalProxy.newLocal(isolate()))
-          .ToLocalChecked();
-  if (m_globalProxy.isEmpty())
-    m_globalProxy.set(isolate(), globalProxy);
-  else
-    DCHECK(m_globalProxy.get() == globalProxy);
-  CHECK(!m_globalProxy.isEmpty());
+  v8::Local<v8::Context> context;
+  {
+    V8PerIsolateData::UseCounterDisabledScope useCounterDisabled(
+        V8PerIsolateData::from(isolate()));
+    context = v8::Context::New(isolate(), nullptr, globalTemplate,
+                               m_globalProxy.newLocal(isolate()));
+  }
+  CHECK(!context.IsEmpty());
+
+  m_scriptState = ScriptState::create(context, m_world);
 
   // TODO(haraken): Currently we cannot enable the following DCHECK because
   // an already detached window proxy can be re-initialized. This is wrong.
   // DCHECK(m_lifecycle == Lifecycle::ContextUninitialized);
   m_lifecycle = Lifecycle::ContextInitialized;
-}
-
-void RemoteWindowProxy::setupWindowPrototypeChain() {
-  DOMWindow* window = frame()->domWindow();
-  const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
-  // The global proxy object.  Note this is not the global object.
-  v8::Local<v8::Object> globalProxy = m_globalProxy.newLocal(isolate());
-  V8DOMWrapper::setNativeInfo(isolate(), globalProxy, wrapperTypeInfo, window);
-  // Mark the handle to be traced by Oilpan, since the global proxy has a
-  // reference to the DOMWindow.
-  m_globalProxy.get().SetWrapperClassId(wrapperTypeInfo->wrapperClassId);
-
-#if DCHECK_IS_ON()
-  didAttachGlobalProxy();
-#endif
-
-  // The global object, aka window wrapper object.
-  v8::Local<v8::Object> windowWrapper =
-      globalProxy->GetPrototype().As<v8::Object>();
-  V8DOMWrapper::setNativeInfo(isolate(), windowWrapper, wrapperTypeInfo,
-                              window);
+  DCHECK(m_scriptState->contextIsValid());
 }
 
 }  // namespace blink

@@ -347,7 +347,8 @@ void GuestViewInternalCustomBindings::GetContentWindow(
   if (frame->isWebLocalFrame()) {
     window = frame->mainWorldScriptContext()->Global();
   } else {
-    window = frame->toWebRemoteFrame()->globalProxy();
+    window =
+        frame->toWebRemoteFrame()->deprecatedMainWorldScriptContext()->Global();
   }
   args.GetReturnValue().Set(window);
 }
