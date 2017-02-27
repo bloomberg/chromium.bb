@@ -9,13 +9,13 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/dom/Range.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class Document;
 class ExceptionState;
-class Range;
 
 class CORE_EXPORT StaticRange final : public GarbageCollected<StaticRange>,
                                       public ScriptWrappable {
@@ -32,6 +32,11 @@ class CORE_EXPORT StaticRange final : public GarbageCollected<StaticRange>,
                              int endOffset) {
     return new StaticRange(document, startContainer, startOffset, endContainer,
                            endOffset);
+  }
+  static StaticRange* create(const Range* range) {
+    return new StaticRange(range->ownerDocument(), range->startContainer(),
+                           range->startOffset(), range->endContainer(),
+                           range->endOffset());
   }
 
   Node* startContainer() const { return m_startContainer.get(); }
@@ -55,7 +60,7 @@ class CORE_EXPORT StaticRange final : public GarbageCollected<StaticRange>,
   void setStart(Node* container, int offset);
   void setEnd(Node* container, int offset);
 
-  Range* toRange(ExceptionState&) const;
+  Range* toRange(ExceptionState& = ASSERT_NO_EXCEPTION) const;
 
   DECLARE_TRACE();
 

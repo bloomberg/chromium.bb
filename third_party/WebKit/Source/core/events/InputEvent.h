@@ -82,16 +82,16 @@ class InputEvent final : public UIEvent {
                                        const String& data,
                                        EventCancelable,
                                        EventIsComposing,
-                                       const RangeVector*);
+                                       const StaticRangeVector*);
   static InputEvent* createBeforeInput(InputType,
                                        DataTransfer*,
                                        EventCancelable,
                                        EventIsComposing,
-                                       const RangeVector*);
+                                       const StaticRangeVector*);
   static InputEvent* createInput(InputType,
                                  const String& data,
                                  EventIsComposing,
-                                 const RangeVector*);
+                                 const StaticRangeVector*);
 
   String inputType() const;
   const String& data() const { return m_data; }

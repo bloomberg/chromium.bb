@@ -168,7 +168,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
     // Returns target ranges for the command, currently only supports delete
     // related commands. Used by InputEvent.
-    const RangeVector* getTargetRanges() const;
+    const StaticRangeVector* getTargetRanges() const;
 
     const EditorInternalCommand* m_command;
     EditorCommandSource m_source;

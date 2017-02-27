@@ -15,9 +15,9 @@ namespace blink {
 
 StaticRange::StaticRange(Document& document)
     : m_ownerDocument(document),
-      m_startContainer(nullptr),
+      m_startContainer(document),
       m_startOffset(0),
-      m_endContainer(nullptr),
+      m_endContainer(document),
       m_endOffset(0) {}
 
 StaticRange::StaticRange(Document& document,

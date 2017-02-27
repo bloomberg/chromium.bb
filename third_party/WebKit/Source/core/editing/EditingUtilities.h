@@ -415,11 +415,11 @@ const String& nonBreakingSpaceString();
 // -------------------------------------------------------------------------
 
 // Functions dispatch InputEvent
-const RangeVector* targetRangesForInputEvent(const Node&);
+const StaticRangeVector* targetRangesForInputEvent(const Node&);
 DispatchEventResult dispatchBeforeInputInsertText(Node*, const String& data);
 DispatchEventResult dispatchBeforeInputEditorCommand(Node*,
                                                      InputEvent::InputType,
-                                                     const RangeVector*);
+                                                     const StaticRangeVector*);
 DispatchEventResult dispatchBeforeInputDataTransfer(Node*,
                                                     InputEvent::InputType,
                                                     DataTransfer*);

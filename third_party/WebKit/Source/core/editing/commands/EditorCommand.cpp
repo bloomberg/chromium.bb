@@ -191,7 +191,7 @@ InputEvent::InputType InputTypeFromCommandType(
   }
 }
 
-RangeVector* RangesFromCurrentSelectionOrExtendCaret(
+StaticRangeVector* RangesFromCurrentSelectionOrExtendCaret(
     const LocalFrame& frame,
     SelectionDirection direction,
     TextGranularity granularity) {
@@ -201,11 +201,12 @@ RangeVector* RangesFromCurrentSelectionOrExtendCaret(
   if (selectionModifier.selection().isCaret())
     selectionModifier.modify(FrameSelection::AlterationExtend, direction,
                              granularity);
-  RangeVector* ranges = new RangeVector;
+  StaticRangeVector* ranges = new StaticRangeVector;
   // We only supports single selections.
   if (selectionModifier.selection().isNone())
     return ranges;
-  ranges->push_back(firstRangeOf(selectionModifier.selection()));
+  ranges->push_back(
+      StaticRange::create(firstRangeOf(selectionModifier.selection())));
   return ranges;
 }
 
@@ -2720,7 +2721,7 @@ int Editor::Command::idForHistogram() const {
   return isSupported() ? static_cast<int>(m_command->commandType) : 0;
 }
 
-const RangeVector* Editor::Command::getTargetRanges() const {
+const StaticRangeVector* Editor::Command::getTargetRanges() const {
   const Node* target = eventTargetNodeForDocument(m_frame->document());
   if (!isSupported() || !m_frame || !target || !hasRichlyEditableStyle(*target))
     return nullptr;

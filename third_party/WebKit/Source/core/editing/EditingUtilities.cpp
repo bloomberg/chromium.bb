@@ -2069,14 +2069,15 @@ bool isTextSecurityNode(const Node* node) {
          node->layoutObject()->style()->textSecurity() != TSNONE;
 }
 
-const RangeVector* targetRangesForInputEvent(const Node& node) {
+const StaticRangeVector* targetRangesForInputEvent(const Node& node) {
   if (!hasRichlyEditableStyle(node))
     return nullptr;
-  return new RangeVector(
-      1, firstRangeOf(node.document()
-                          .frame()
-                          ->selection()
-                          .computeVisibleSelectionInDOMTreeDeprecated()));
+  return new StaticRangeVector(
+      1, StaticRange::create(
+             firstRangeOf(node.document()
+                              .frame()
+                              ->selection()
+                              .computeVisibleSelectionInDOMTreeDeprecated())));
 }
 
 DispatchEventResult dispatchBeforeInputInsertText(Node* target,
@@ -2098,7 +2099,7 @@ DispatchEventResult dispatchBeforeInputInsertText(Node* target,
 DispatchEventResult dispatchBeforeInputEditorCommand(
     Node* target,
     InputEvent::InputType inputType,
-    const RangeVector* ranges) {
+    const StaticRangeVector* ranges) {
   if (!RuntimeEnabledFeatures::inputEventEnabled())
     return DispatchEventResult::NotCanceled;
   if (!target)

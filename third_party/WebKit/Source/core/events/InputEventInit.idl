@@ -11,5 +11,5 @@ dictionary InputEventInit : UIEventInit {
     DOMString? data;
     DataTransfer? dataTransfer;
     boolean isComposing = false;
-    sequence<Range> ranges = [];
+    sequence<StaticRange> targetRanges = [];
 };
