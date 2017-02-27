@@ -14,6 +14,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/mock_translate_driver.h"
+#include "components/translate/core/browser/mock_translate_ranker.h"
 #include "components/translate/core/browser/translate_browser_metrics.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -164,7 +165,7 @@ class TranslateManagerTest : public ::testing::Test {
   void PrepareTranslateManager() {
     TranslateManager::SetIgnoreMissingKeyForTesting(true);
     translate_manager_.reset(new translate::TranslateManager(
-        &mock_translate_client_, kAcceptLanguages));
+        &mock_translate_client_, &mock_translate_ranker_, kAcceptLanguages));
   }
 
   // Prepare the test for ULP related tests.
@@ -230,6 +231,7 @@ class TranslateManagerTest : public ::testing::Test {
 
   TestNetworkChangeNotifier network_notifier_;
   translate::testing::MockTranslateDriver driver_;
+  translate::testing::MockTranslateRanker mock_translate_ranker_;
   ::testing::NiceMock<MockTranslateClient> mock_translate_client_;
   std::unique_ptr<TranslateManager> translate_manager_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
@@ -281,7 +283,7 @@ TEST_F(TranslateManagerTest, GetTargetLanguageAcceptLangFallback) {
 TEST_F(TranslateManagerTest, DontTranslateOffline) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
   translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, kAcceptLanguages));
+      &mock_translate_client_, &mock_translate_ranker_, kAcceptLanguages));
 
   // The test measures that the "Translate was disabled" exit can only be
   // reached after the early-out tests including IsOffline() passed.
@@ -313,7 +315,7 @@ TEST_F(TranslateManagerTest,
        DontTranslateZhTraditionalPageForZhSimplifiedLocale) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
   translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, kAcceptLanguages));
+      &mock_translate_client_, &mock_translate_ranker_, kAcceptLanguages));
 
   const char kMetricName[] = "Translate.InitiationStatus.v2";
   base::HistogramTester histogram_tester;
@@ -342,7 +344,7 @@ TEST_F(TranslateManagerTest,
        DontTranslateZhSimplifiedPageForZhTraditionalLocale) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
   translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, kAcceptLanguages));
+      &mock_translate_client_, &mock_translate_ranker_, kAcceptLanguages));
 
   const char kMetricName[] = "Translate.InitiationStatus.v2";
   base::HistogramTester histogram_tester;
