@@ -36,6 +36,9 @@ complete.
 - Fix a stackoverflow crash on applications with smaller stack size.
   Thanks to Victor Montalvão.
 - Fix the \v escape sequence. Thanks to Davy Kager.
+- The Python bindings now give a helpful error if liblouis has been
+  compiled with a different character size than Python. Thanks to Matt
+  Wenn.
 ** Other changes
 - Improvements to the emacs mode for editing liblouis tables thanks to
   Christian Egli
