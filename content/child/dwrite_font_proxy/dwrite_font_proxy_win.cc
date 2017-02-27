@@ -202,7 +202,7 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
   }
 
   std::vector<HANDLE> handles;
-  file_handles.reserve(file_names.size() + file_handles.size());
+  handles.reserve(file_names.size() + file_handles.size());
   for (const base::string16& file_name : file_names) {
     // This leaks the handles, since they are used as the reference key to
     // CreateStreamFromKey, and DirectWrite requires the reference keys to
