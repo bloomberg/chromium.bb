@@ -7,12 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/web_view/public/cwv_ui_delegate.h"
 #import "ios/web_view/public/cwv_web_view_delegate.h"
 
 // Implements the main UI for web_view_shell, including the toolbar and web
 // view.
-@interface ShellViewController
-    : UIViewController<CWVWebViewDelegate, UITextFieldDelegate>
+@interface ShellViewController : UIViewController
 
 @end
 

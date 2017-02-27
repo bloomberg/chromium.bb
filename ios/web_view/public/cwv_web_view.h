@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 @class CWVWebViewConfiguration;
+@protocol CWVUIDelegate;
 @protocol CWVWebViewDelegate;
 
 // A web view component (like WKWebView) which uses iOS Chromium's web view
@@ -23,6 +24,9 @@
 
 // This web view's delegate.
 @property(nonatomic, weak) id<CWVWebViewDelegate> delegate;
+
+// This web view's UI delegate
+@property(nonatomic, weak) id<CWVUIDelegate> UIDelegate;
 
 // Whether or not this web view can go backwards or forwards.
 @property(nonatomic, readonly) BOOL canGoBack;

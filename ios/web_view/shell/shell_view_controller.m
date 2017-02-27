@@ -4,7 +4,10 @@
 
 #import "ios/web_view/shell/shell_view_controller.h"
 
+#import <MobileCoreServices/MobileCoreServices.h>
+
 #import "ios/web_view/public/cwv.h"
+#import "ios/web_view/public/cwv_html_element.h"
 #import "ios/web_view/public/cwv_web_view.h"
 #import "ios/web_view/shell/translate_controller.h"
 
@@ -12,7 +15,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ShellViewController ()
+@interface ShellViewController ()<CWVUIDelegate,
+                                  CWVWebViewDelegate,
+                                  UITextFieldDelegate>
 // Container for |webView|.
 @property(nonatomic, strong) UIView* containerView;
 // Text field used for navigating to URLs.
@@ -122,6 +127,7 @@
 
   self.webView = [CWV webViewWithFrame:[_containerView bounds]];
   [_webView setDelegate:self];
+  [_webView setUIDelegate:self];
   [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                 UIViewAutoresizingFlexibleHeight];
   [_containerView addSubview:_webView];
@@ -170,6 +176,44 @@
   }
 
   [_field setText:[[_webView visibleURL] absoluteString]];
+}
+
+#pragma mark CWVUIDelegate methods
+
+- (void)webView:(CWVWebView*)webView
+    runContextMenuWithTitle:(NSString*)menuTitle
+             forHTMLElement:(CWVHTMLElement*)element
+                     inView:(UIView*)view
+        userGestureLocation:(CGPoint)location {
+  if (!element.hyperlink) {
+    return;
+  }
+
+  UIAlertController* alert = [UIAlertController
+      alertControllerWithTitle:menuTitle
+                       message:nil
+                preferredStyle:UIAlertControllerStyleActionSheet];
+  alert.popoverPresentationController.sourceView = view;
+  alert.popoverPresentationController.sourceRect =
+      CGRectMake(location.x, location.y, 1.0, 1.0);
+
+  void (^copyHandler)(UIAlertAction*) = ^(UIAlertAction* action) {
+    NSDictionary* item = @{
+      (NSString*)(kUTTypeURL) : element.hyperlink,
+      (NSString*)(kUTTypeUTF8PlainText) : [[element.hyperlink absoluteString]
+          dataUsingEncoding:NSUTF8StringEncoding],
+    };
+    [[UIPasteboard generalPasteboard] setItems:@[ item ]];
+  };
+  [alert addAction:[UIAlertAction actionWithTitle:@"Copy Link"
+                                            style:UIAlertActionStyleDefault
+                                          handler:copyHandler]];
+
+  [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                            style:UIAlertActionStyleCancel
+                                          handler:nil]];
+
+  [self presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark CWVWebViewDelegate methods

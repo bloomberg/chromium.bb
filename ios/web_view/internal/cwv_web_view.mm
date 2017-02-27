@@ -12,14 +12,17 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web_view/internal/cwv_html_element_internal.h"
 #import "ios/web_view/internal/cwv_website_data_store_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
+#import "ios/web_view/public/cwv_ui_delegate.h"
 #import "ios/web_view/public/cwv_web_view_configuration.h"
 #import "ios/web_view/public/cwv_web_view_delegate.h"
 #import "ios/web_view/public/cwv_website_data_store.h"
@@ -45,6 +48,7 @@
 
 @synthesize delegate = _delegate;
 @synthesize loadProgress = _loadProgress;
+@synthesize UIDelegate = _UIDelegate;
 
 - (instancetype)initWithFrame:(CGRect)frame
                 configuration:(CWVWebViewConfiguration*)configuration {
@@ -183,6 +187,27 @@
 - (void)webState:(web::WebState*)webState
     didChangeLoadingProgress:(double)progress {
   [self notifyDidUpdateWithChanges:CRIWVWebViewUpdateTypeProgress];
+}
+
+- (BOOL)webState:(web::WebState*)webState
+    handleContextMenu:(const web::ContextMenuParams&)params {
+  SEL selector = @selector(webView:runContextMenuWithTitle:forHTMLElement:inView
+                                  :userGestureLocation:);
+  if (![_UIDelegate respondsToSelector:selector]) {
+    return NO;
+  }
+  NSURL* hyperlink = net::NSURLWithGURL(params.link_url);
+  NSURL* mediaSource = net::NSURLWithGURL(params.src_url);
+  CWVHTMLElement* HTMLElement =
+      [[CWVHTMLElement alloc] initWithHyperlink:hyperlink
+                                    mediaSource:mediaSource
+                                           text:params.link_text];
+  [_UIDelegate webView:self
+      runContextMenuWithTitle:params.menu_title
+               forHTMLElement:HTMLElement
+                       inView:params.view
+          userGestureLocation:params.location];
+  return YES;
 }
 
 @end
