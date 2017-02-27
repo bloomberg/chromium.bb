@@ -371,11 +371,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->disable_filter_search_var_thresh = 0;
   sf->adaptive_interp_filter_search = 0;
   sf->allow_partition_search_skip = 0;
-#if CONFIG_EXT_TILE
-  sf->use_upsampled_references = 0;
-#else
   sf->use_upsampled_references = 1;
-#endif  // CONFIG_EXT_TILE
 #if CONFIG_EXT_INTER
   sf->disable_wedge_search_var_thresh = 0;
   sf->fast_wedge_sign_estimate = 0;
@@ -406,12 +402,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->partition_search_breakout_rate_thr = 0;
   sf->simple_model_rd_from_var = 0;
 
-// Set this at the appropriate speed levels
-#if CONFIG_EXT_TILE
-  sf->use_transform_domain_distortion = 1;
-#else
+  // Set this at the appropriate speed levels
   sf->use_transform_domain_distortion = 0;
-#endif  // CONFIG_EXT_TILE
 
   if (oxcf->mode == GOOD
 #if CONFIG_XIPHRC

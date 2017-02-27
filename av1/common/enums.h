@@ -55,6 +55,9 @@ extern "C" {
 
 // Maximum number of tile rows and tile columns
 #if CONFIG_EXT_TILE
+#define TILE_NORMAL 0
+#define TILE_VR 1
+
 #define MAX_TILE_ROWS 1024
 #define MAX_TILE_COLS 1024
 #else

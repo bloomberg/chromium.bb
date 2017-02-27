@@ -267,6 +267,9 @@ typedef struct AV1EncoderConfig {
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
   int ans_window_size_log2;
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
+#if CONFIG_EXT_TILE
+  unsigned int tile_encoding_mode;
+#endif  // CONFIG_EXT_TILE
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {

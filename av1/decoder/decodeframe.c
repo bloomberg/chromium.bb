@@ -2934,6 +2934,7 @@ static void read_tile_info(AV1Decoder *const pbi,
                            struct aom_read_bit_buffer *const rb) {
   AV1_COMMON *const cm = &pbi->common;
 #if CONFIG_EXT_TILE
+  cm->tile_encoding_mode = aom_rb_read_literal(rb, 1);
 // Read the tile width/height
 #if CONFIG_EXT_PARTITION
   if (cm->sb_size == BLOCK_128X128) {
@@ -3051,7 +3052,8 @@ static void get_tile_buffer(const uint8_t *const data_end,
                             const uint8_t **data, aom_decrypt_cb decrypt_cb,
                             void *decrypt_state,
                             TileBufferDec (*const tile_buffers)[MAX_TILE_COLS],
-                            int tile_size_bytes, int col, int row) {
+                            int tile_size_bytes, int col, int row,
+                            unsigned int tile_encoding_mode) {
   size_t size;
 
   size_t copy_size = 0;
@@ -3070,8 +3072,9 @@ static void get_tile_buffer(const uint8_t *const data_end,
     size = mem_get_varsize(*data, tile_size_bytes);
   }
 
-  // The top bit indicates copy mode
-  if ((size >> (tile_size_bytes * 8 - 1)) == 1) {
+  // If cm->tile_encoding_mode = 1 (i.e. TILE_VR), then the top bit of the tile
+  // header indicates copy mode.
+  if (tile_encoding_mode && (size >> (tile_size_bytes * 8 - 1)) == 1) {
     // The remaining bits in the top byte signal the row offset
     int offset = (size >> (tile_size_bytes - 1) * 8) & 0x7f;
 
@@ -3167,7 +3170,7 @@ static void get_tile_buffers(
 
         get_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
                         pbi->decrypt_cb, pbi->decrypt_state, tile_buffers,
-                        tile_size_bytes, c, r);
+                        tile_size_bytes, c, r, cm->tile_encoding_mode);
       }
     }
 
@@ -3182,7 +3185,7 @@ static void get_tile_buffers(
 
         get_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
                         pbi->decrypt_cb, pbi->decrypt_state, tile_buffers,
-                        tile_size_bytes, c, r);
+                        tile_size_bytes, c, r, cm->tile_encoding_mode);
       }
     }
   }
@@ -3548,7 +3551,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 // after the entire frame is decoded.
 #if !CONFIG_VAR_TX && !CONFIG_PARALLEL_DEBLOCKING && !CONFIG_CB4X4
     // Loopfilter one tile row.
-    if (cm->lf.filter_level && !cm->skip_loop_filter) {
+    // Note: If out-of-order tile decoding is used(for example, inv_row_order
+    // = 1), the loopfiltering has be done after all tile rows are decoded.
+    if (!inv_row_order && cm->lf.filter_level && !cm->skip_loop_filter) {
       LFWorkerData *const lf_data = (LFWorkerData *)pbi->lf_worker.data1;
       const int lf_start = AOMMAX(0, tile_info.mi_row_start - cm->mib_size);
       const int lf_end = tile_info.mi_row_end - cm->mib_size;
@@ -4842,6 +4847,17 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 
   first_partition_size = read_uncompressed_header(
       pbi, init_read_bit_buffer(pbi, &rb, data, data_end, clear_data));
+
+#if CONFIG_EXT_TILE
+  // If cm->tile_encoding_mode == TILE_NORMAL, the independent decoding of a
+  // single tile or a section of a frame is not allowed.
+  if (!cm->tile_encoding_mode &&
+      (pbi->dec_tile_row >= 0 || pbi->dec_tile_col >= 0)) {
+    pbi->dec_tile_row = -1;
+    pbi->dec_tile_col = -1;
+  }
+#endif  // CONFIG_EXT_TILE
+
 #if CONFIG_TILE_GROUPS
   pbi->first_partition_size = first_partition_size;
   pbi->uncomp_hdr_size = aom_rb_bytes_read(&rb);

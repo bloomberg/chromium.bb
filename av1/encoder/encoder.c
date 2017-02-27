@@ -4824,6 +4824,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   }
 #endif
 
+#if CONFIG_EXT_TILE
+  cm->tile_encoding_mode = cpi->oxcf.tile_encoding_mode;
+#endif  // CONFIG_EXT_TILE
+
 #if CONFIG_XIPHRC
   if (drop_this_frame) {
     av1_rc_postencode_update_drop_frame(cpi);

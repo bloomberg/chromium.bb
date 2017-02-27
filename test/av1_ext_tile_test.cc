@@ -30,6 +30,8 @@ const int kTIleSizeInPixels = (kTileSize << 6);
 const int kImgWidth = 704;
 const int kImgHeight = 576;
 
+// This test tests "tile_encoding_mode = TILE_VR" case. The TILE_NORMAL case is
+// tested by the tile_independence test.
 class AV1ExtTileTest
     : public ::libaom_test::EncoderTest,
       public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int> {
@@ -81,6 +83,7 @@ class AV1ExtTileTest
       // The tile size is 64x64.
       encoder->Control(AV1E_SET_TILE_COLUMNS, kTileSize);
       encoder->Control(AV1E_SET_TILE_ROWS, kTileSize);
+      encoder->Control(AV1E_SET_TILE_ENCODING_MODE, 1);  // TILE_VR
 #if CONFIG_EXT_PARTITION
       // Always use 64x64 max partition.
       encoder->Control(AV1E_SET_SUPERBLOCK_SIZE, AOM_SUPERBLOCK_SIZE_64X64);

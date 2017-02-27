@@ -861,11 +861,7 @@ int av1_is_intra_filter_switchable(int angle);
 #endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
-#if CONFIG_EXT_TILE
-#define FIXED_TX_TYPE 1
-#else
 #define FIXED_TX_TYPE 0
-#endif
 
 // Converts block_index for given transform size to index of the block in raster
 // order.

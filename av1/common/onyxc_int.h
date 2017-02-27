@@ -356,6 +356,9 @@ typedef struct AV1Common {
 #endif  // !CONFIG_EXT_TILE
   int tile_cols, tile_rows;
   int tile_width, tile_height;  // In MI units
+#if CONFIG_EXT_TILE
+  unsigned int tile_encoding_mode;
+#endif  // CONFIG_EXT_TILE
 
 #if CONFIG_DEPENDENT_HORZTILES
   int dependent_horz_tiles;

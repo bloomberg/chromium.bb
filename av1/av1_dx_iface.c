@@ -759,7 +759,8 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           yuvconfig2image(&ctx->img, &sd, frame_worker_data->user_priv);
 
 #if CONFIG_EXT_TILE
-          if (frame_worker_data->pbi->dec_tile_row >= 0) {
+          if (cm->tile_encoding_mode &&
+              frame_worker_data->pbi->dec_tile_row >= 0) {
             const int tile_row =
                 AOMMIN(frame_worker_data->pbi->dec_tile_row, cm->tile_rows - 1);
             const int mi_row = tile_row * cm->tile_height;
@@ -774,7 +775,8 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                 AOMMIN(cm->tile_height, cm->mi_rows - mi_row) * MI_SIZE;
           }
 
-          if (frame_worker_data->pbi->dec_tile_col >= 0) {
+          if (cm->tile_encoding_mode &&
+              frame_worker_data->pbi->dec_tile_col >= 0) {
             const int tile_col =
                 AOMMIN(frame_worker_data->pbi->dec_tile_col, cm->tile_cols - 1);
             const int mi_col = tile_col * cm->tile_width;

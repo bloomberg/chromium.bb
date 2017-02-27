@@ -75,6 +75,9 @@ struct av1_extracfg {
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
   int ans_window_size_log2;
 #endif
+#if CONFIG_EXT_TILE
+  unsigned int tile_encoding_mode;
+#endif  // CONFIG_EXT_TILE
 };
 
 static struct av1_extracfg default_extra_cfg = {
@@ -134,6 +137,9 @@ static struct av1_extracfg default_extra_cfg = {
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
   23,  // ans_window_size_log2
 #endif
+#if CONFIG_EXT_TILE
+  0,    // Tile encoding mode is TILE_NORMAL by default.
+#endif  // CONFIG_EXT_TILE
 };
 
 struct aom_codec_alg_priv {
@@ -270,6 +276,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
     if (extra_cfg->tile_rows != UINT_MAX)
       RANGE_CHECK(extra_cfg, tile_rows, 1, 64);
   }
+  RANGE_CHECK_HI(extra_cfg, tile_encoding_mode, 1);
 #else
   RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
   RANGE_CHECK_HI(extra_cfg, tile_rows, 2);
@@ -520,6 +527,7 @@ static aom_codec_err_t set_encoder_config(
 #endif  // CONFIG_EXT_PARTITION
     oxcf->tile_columns = AOMMIN(extra_cfg->tile_columns, max);
     oxcf->tile_rows = AOMMIN(extra_cfg->tile_rows, max);
+    oxcf->tile_encoding_mode = extra_cfg->tile_encoding_mode;
   }
 #else
   oxcf->tile_columns = extra_cfg->tile_columns;
@@ -821,6 +829,15 @@ static aom_codec_err_t ctrl_set_frame_parallel_decoding_mode(
       CAST(AV1E_SET_FRAME_PARALLEL_DECODING, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
+
+#if CONFIG_EXT_TILE
+static aom_codec_err_t ctrl_set_tile_encoding_mode(aom_codec_alg_priv_t *ctx,
+                                                   va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.tile_encoding_mode = CAST(AV1E_SET_TILE_ENCODING_MODE, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+#endif  // CONFIG_EXT_TILE
 
 static aom_codec_err_t ctrl_set_aq_mode(aom_codec_alg_priv_t *ctx,
                                         va_list args) {
@@ -1449,6 +1466,9 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
   { AV1E_SET_ANS_WINDOW_SIZE_LOG2, ctrl_set_ans_window_size_log2 },
 #endif
+#if CONFIG_EXT_TILE
+  { AV1E_SET_TILE_ENCODING_MODE, ctrl_set_tile_encoding_mode },
+#endif  // CONFIG_EXT_TILE
 
   // Getters
   { AOME_GET_LAST_QUANTIZER, ctrl_get_quantizer },

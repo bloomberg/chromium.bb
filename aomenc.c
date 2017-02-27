@@ -370,6 +370,12 @@ static const arg_def_t tile_cols =
 static const arg_def_t tile_rows =
     ARG_DEF(NULL, "tile-rows", 1,
             "Number of tile rows to use, log2 (set to 0 while threads > 1)");
+#if CONFIG_EXT_TILE
+static const arg_def_t tile_encoding_mode =
+    ARG_DEF(NULL, "tile-encoding-mode", 1,
+            "Tile encoding mode (0: normal"
+            " (default), 1: vr)");
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
 static const arg_def_t tile_dependent_rows =
     ARG_DEF(NULL, "tile-dependent-rows", 1, "Enable dependent Tile rows");
@@ -474,6 +480,9 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &static_thresh,
                                        &tile_cols,
                                        &tile_rows,
+#if CONFIG_EXT_TILE
+                                       &tile_encoding_mode,
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
                                        &tile_dependent_rows,
 #endif
@@ -522,6 +531,9 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AOME_SET_STATIC_THRESHOLD,
                                         AV1E_SET_TILE_COLUMNS,
                                         AV1E_SET_TILE_ROWS,
+#if CONFIG_EXT_TILE
+                                        AV1E_SET_TILE_ENCODING_MODE,
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
                                         AV1E_SET_TILE_DEPENDENT_ROWS,
 #endif

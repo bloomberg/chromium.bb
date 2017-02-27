@@ -502,6 +502,15 @@ enum aome_enc_control_id {
    * Experiment: LOOPFILTERING_ACROSS_TILES
    */
   AV1E_SET_TILE_LOOPFILTER,
+
+  /*!\brief Codec control function to set the tile encoding mode to 0 or 1.
+   *
+   * 0 means that the tile encoding mode is TILE_NORMAL, and 1 means that the
+   * tile encoding mode is TILE_VR.
+   *
+   * Experiment: EXT_TILE
+   */
+  AV1E_SET_TILE_ENCODING_MODE,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -703,6 +712,9 @@ AOM_CTRL_USE_TYPE(AV1E_GET_LEVEL, int *)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ANS_WINDOW_SIZE_LOG2, unsigned int)
 #define AOM_CTRL_AV1E_SET_ANS_WINDOW_SIZE_LOG2
+
+AOM_CTRL_USE_TYPE(AV1E_SET_TILE_ENCODING_MODE, unsigned int)
+#define AOM_CTRL_AV1E_SET_TILE_ENCODING_MODE
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */
 #ifdef __cplusplus
