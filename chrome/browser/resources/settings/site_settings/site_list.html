@@ -85,7 +85,7 @@
 
             <paper-icon-button id="dots" icon="cr:more-vert"
                 hidden="[[isActionMenuHidden_(item.source)]]"
-                on-tap="onShowActionMenuTap_">
+                on-tap="onShowActionMenuTap_" title="$i18n{moreActions}">
             </paper-icon-button>
             <template is="dom-if" if="[[enableSiteSettings_]]">
               <div on-tap="onOriginTap_" actionable>

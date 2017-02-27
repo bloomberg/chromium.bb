@@ -33,7 +33,7 @@
       <span hidden$="[[!device.connecting]]">$i18n{bluetoothConnecting}</span>
       <div hidden$="[[!device.paired]]">
         <paper-icon-button icon="cr:more-vert" on-tap="onMenuButtonTap_"
-            tabindex$="[[tabindex]]">
+            tabindex$="[[tabindex]]" title="$i18n{moreActions}">
         </paper-icon-button>
         <dialog id="dotsMenu" is="cr-action-menu">
           <button class="dropdown-item" role="option"

@@ -77,7 +77,7 @@
             </div>
             <template is="dom-if" if="[[item.metadata.isLocal]]">
               <paper-icon-button id="addressMenu" icon="cr:more-vert"
-                  on-tap="onAddressMenuTap_" alt="$i18n{overflowMenu}">
+                  on-tap="onAddressMenuTap_" title="$i18n{moreActions}">
               </paper-icon-button>
             </template>
             <template is="dom-if" if="[[!item.metadata.isLocal]]">
@@ -135,7 +135,7 @@
                   class="expiration-date">[[expiration_(item)]]</div>
               <template is="dom-if" if="[[item.metadata.isLocal]]">
                 <paper-icon-button id="creditCardMenu" icon="cr:more-vert"
-                    on-tap="onCreditCardMenuTap_" alt="$i18n{overflowMenu}">
+                    on-tap="onCreditCardMenuTap_" title="$i18n{moreActions}">
                 </paper-icon-button>
               </template>
               <template is="dom-if" if="[[!item.metadata.isLocal]]">

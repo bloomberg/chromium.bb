@@ -82,6 +82,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
       {"edit", IDS_SETTINGS_EDIT},
       {"learnMore", IDS_LEARN_MORE},
       {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
+      {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
       {"ok", IDS_OK},
       {"restart", IDS_SETTINGS_RESTART},
       {"save", IDS_SAVE},
@@ -1042,7 +1043,6 @@ void AddOnStartupStrings(content::WebUIDataSource* html_source) {
 
 void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"overflowMenu", IDS_SETTINGS_OVERFLOW_MENU},
       {"passwordsAndAutofillPageTitle",
        IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE},
       {"autofill", IDS_SETTINGS_AUTOFILL},
