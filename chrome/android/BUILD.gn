@@ -505,7 +505,7 @@ android_library("chrome_test_vr_java") {
   ]
 
   data = [
-    "//chrome/test/data/android",
+    "//chrome/test/data/android/",
     "//third_party/WebKit/LayoutTests/resources/testharness.js",
   ]
 }
