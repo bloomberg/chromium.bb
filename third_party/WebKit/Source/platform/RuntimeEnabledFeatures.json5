@@ -217,6 +217,10 @@
       status: "experimental",
     },
     {
+      name: "CSSLineBreak",
+      status: "test",
+    },
+    {
       name: "CSSMaskSourceType",
       status: "experimental",
     },
