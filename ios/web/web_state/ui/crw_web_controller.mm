@@ -746,8 +746,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action;
 // Returns whether external URL navigation action should be opened.
 - (BOOL)shouldOpenExternalURLForNavigationAction:(WKNavigationAction*)action;
-// Called when a page updates its history stack using pushState or replaceState.
-- (void)didUpdateHistoryStateWithPageURL:(const GURL&)url;
 // Updates SSL status for the current navigation item based on the information
 // provided by web view.
 - (void)updateSSLStatusForCurrentNavigationItem;
@@ -1336,15 +1334,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [[self sessionController] pushNewItemWithURL:pageURL
                                    stateObject:stateObject
                                     transition:transition];
-  [self didUpdateHistoryStateWithPageURL:pageURL];
+  _webStateImpl->OnSamePageNavigation(pageURL);
   self.userInteractionRegistered = NO;
 }
 
-- (void)replaceStateWithPageURL:(const GURL&)pageUrl
+- (void)replaceStateWithPageURL:(const GURL&)pageURL
                     stateObject:(NSString*)stateObject {
-  [[self sessionController] updateCurrentItemWithURL:pageUrl
+  [[self sessionController] updateCurrentItemWithURL:pageURL
                                          stateObject:stateObject];
-  [self didUpdateHistoryStateWithPageURL:pageUrl];
+  _webStateImpl->OnSamePageNavigation(pageURL);
 }
 
 - (void)setDocumentURL:(const GURL&)newURL {
@@ -4026,11 +4024,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (![_delegate respondsToSelector:@selector(headerHeightForWebController:)])
     return 0.0f;
   return [_delegate headerHeightForWebController:self];
-}
-
-- (void)didUpdateHistoryStateWithPageURL:(const GURL&)url {
-  _webStateImpl->OnSamePageNavigation(url);
-  [_delegate webDidUpdateHistoryStateWithPageURL:url];
 }
 
 - (void)updateSSLStatusForCurrentNavigationItem {

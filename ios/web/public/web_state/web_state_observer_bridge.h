@@ -29,6 +29,10 @@ class GURL;
     didCommitNavigationWithDetails:
         (const web::LoadCommittedDetails&)load_details;
 
+// Invoked by WebStateObserverBridge::DidFinishNavigation.
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation;
+
 // Invoked by WebStateObserverBridge::PageLoaded.
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success;
 
@@ -94,6 +98,7 @@ class WebStateObserverBridge : public web::WebStateObserver {
   void ProvisionalNavigationStarted(const GURL& url) override;
   void NavigationItemCommitted(
       const LoadCommittedDetails& load_details) override;
+  void DidFinishNavigation(NavigationContext* navigation_context) override;
   void PageLoaded(
       web::PageLoadCompletionStatus load_completion_status) override;
   void InterstitialDismissed() override;

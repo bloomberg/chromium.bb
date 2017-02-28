@@ -8,14 +8,22 @@
 #include "ios/web/public/favicon_url.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
-#import "ios/web/public/web_state/web_state.h"
 
 namespace web {
+
+class NavigationContext;
+class WebState;
 
 // Arguments passed to |webState:didStartProvisionalNavigationForURL:|.
 struct TestStartProvisionalNavigationInfo {
   WebState* web_state;
   GURL url;
+};
+
+// Arguments passed to |webState:didFinishNavigation:|.
+struct TestDidFinishNavigationInfo {
+  WebState* web_state;
+  web::NavigationContext* context;
 };
 
 // Arguments passed to |webState:didCommitNavigationWithDetails:|.
@@ -107,6 +115,9 @@ struct TestStartLoadingInfo {
 // Arguments passed to |webState:didStartProvisionalNavigationForURL:|.
 @property(nonatomic, readonly)
     web::TestStartProvisionalNavigationInfo* startProvisionalNavigationInfo;
+// Arguments passed to |webState:didFinishNavigation:|.
+@property(nonatomic, readonly)
+    web::TestDidFinishNavigationInfo* didFinishNavigationInfo;
 // Arguments passed to |webState:didCommitNavigationWithDetails:|.
 @property(nonatomic, readonly)
     web::TestCommitNavigationInfo* commitNavigationInfo;

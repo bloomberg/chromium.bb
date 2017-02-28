@@ -10,6 +10,7 @@
 #import "ios/web/public/test/fakes/crw_test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+#include "ios/web/web_state/navigation_context_impl.h"
 #include "testing/platform_test.h"
 
 namespace web {
@@ -38,6 +39,21 @@ TEST_F(WebStateObserverBridgeTest, ProvisionalNavigationStarted) {
   EXPECT_EQ(&test_web_state_,
             [observer_ startProvisionalNavigationInfo]->web_state);
   EXPECT_EQ(url, [observer_ startProvisionalNavigationInfo]->url);
+}
+
+// Tests |webState:didFinishNavigation:| forwarding.
+TEST_F(WebStateObserverBridgeTest, DidFinishNavigation) {
+  ASSERT_FALSE([observer_ didFinishNavigationInfo]);
+
+  GURL url("https://chromium.test/");
+  std::unique_ptr<web::NavigationContext> context =
+      web::NavigationContextImpl::CreateNavigationContext(&test_web_state_,
+                                                          url);
+  bridge_->DidFinishNavigation(context.get());
+
+  ASSERT_TRUE([observer_ didFinishNavigationInfo]);
+  EXPECT_EQ(&test_web_state_, [observer_ didFinishNavigationInfo]->web_state);
+  EXPECT_EQ(context.get(), [observer_ didFinishNavigationInfo]->context);
 }
 
 // Tests |webState:didCommitNavigationWithDetails:| forwarding.

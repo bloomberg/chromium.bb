@@ -18,6 +18,8 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   // Arguments passed to |webState:didStartProvisionalNavigationForURL:|.
   std::unique_ptr<web::TestStartProvisionalNavigationInfo>
       _startProvisionalNavigationInfo;
+  // Arguments passed to |webState:didFinishNavigationForURL:|.
+  std::unique_ptr<web::TestDidFinishNavigationInfo> _didFinishNavigationInfo;
   // Arguments passed to |webState:didCommitNavigationWithDetails:|.
   std::unique_ptr<web::TestCommitNavigationInfo> _commitNavigationInfo;
   // Arguments passed to |webState:didLoadPageWithSuccess:|.
@@ -52,6 +54,10 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 
 - (web::TestStartProvisionalNavigationInfo*)startProvisionalNavigationInfo {
   return _startProvisionalNavigationInfo.get();
+}
+
+- (web::TestDidFinishNavigationInfo*)didFinishNavigationInfo {
+  return _didFinishNavigationInfo.get();
 }
 
 - (web::TestCommitNavigationInfo*)commitNavigationInfo {
@@ -122,6 +128,14 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   _commitNavigationInfo = base::MakeUnique<web::TestCommitNavigationInfo>();
   _commitNavigationInfo->web_state = webState;
   _commitNavigationInfo->load_details = load_details;
+}
+
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
+  _didFinishNavigationInfo =
+      base::MakeUnique<web::TestDidFinishNavigationInfo>();
+  _didFinishNavigationInfo->web_state = webState;
+  _didFinishNavigationInfo->context = navigation;
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {

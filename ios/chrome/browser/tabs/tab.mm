@@ -136,6 +136,7 @@
 #include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#include "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_generic_content_view.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -1396,12 +1397,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [parentTabModel_ notifyTabChanged:self];
 }
 
-- (void)webDidUpdateHistoryStateWithPageURL:(const GURL&)pageUrl {
-  favicon::FaviconDriver* faviconDriver =
-      favicon::WebFaviconDriver::FromWebState(self.webState);
-  if (faviconDriver) {
-    // Fetch the favicon for the new URL.
-    faviconDriver->FetchFavicon(pageUrl);
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
+  if (navigation->IsSamePage()) {
+    auto faviconDriver = favicon::WebFaviconDriver::FromWebState(webState);
+    if (faviconDriver) {
+      // Fetch the favicon for the new URL.
+      faviconDriver->FetchFavicon(navigation->GetUrl());
+    }
   }
   [parentTabModel_ notifyTabChanged:self];
 }

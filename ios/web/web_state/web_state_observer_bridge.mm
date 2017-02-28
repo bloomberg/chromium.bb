@@ -30,6 +30,13 @@ void WebStateObserverBridge::NavigationItemCommitted(
   }
 }
 
+void WebStateObserverBridge::DidFinishNavigation(
+    web::NavigationContext* navigation_context) {
+  if ([observer_ respondsToSelector:@selector(webState:didFinishNavigation:)]) {
+    [observer_ webState:web_state() didFinishNavigation:navigation_context];
+  }
+}
+
 void WebStateObserverBridge::DidStartLoading() {
   SEL selector = @selector(webStateDidStartLoading:);
   if ([observer_ respondsToSelector:selector]) {

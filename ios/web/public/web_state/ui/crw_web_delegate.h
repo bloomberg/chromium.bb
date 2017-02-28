@@ -53,9 +53,6 @@ class GURL;
 // Called when the page load was cancelled by page activity (before a success /
 // failure state is known). Phase will be PAGE_LOADED.
 - (void)webLoadCancelled:(const GURL&)url;
-// Called when a page updates its history stack using pushState or replaceState.
-// TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
-- (void)webDidUpdateHistoryStateWithPageURL:(const GURL&)pageUrl;
 // Called when a placeholder image should be displayed instead of the WebView.
 - (void)webController:(CRWWebController*)webController
     retrievePlaceholderOverlayImage:(void (^)(UIImage*))block;
