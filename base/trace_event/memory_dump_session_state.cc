@@ -7,7 +7,8 @@
 namespace base {
 namespace trace_event {
 
-MemoryDumpSessionState::MemoryDumpSessionState() {}
+MemoryDumpSessionState::MemoryDumpSessionState()
+    : heap_profiler_breakdown_threshold_bytes_(0) {}
 MemoryDumpSessionState::~MemoryDumpSessionState() {}
 
 void MemoryDumpSessionState::SetStackFrameDeduplicator(
