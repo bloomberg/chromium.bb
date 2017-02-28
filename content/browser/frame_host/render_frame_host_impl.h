@@ -80,7 +80,6 @@ class Range;
 
 namespace content {
 class AssociatedInterfaceProviderImpl;
-class CrossProcessFrameConnector;
 class FeaturePolicy;
 class FrameTree;
 class FrameTreeNode;
@@ -311,18 +310,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderWidgetHostImpl* GetRenderWidgetHost();
 
   GlobalFrameRoutingId GetGlobalFrameRoutingId();
-
-  // This function is called when this is a swapped out RenderFrameHost that
-  // lives in the same process as the parent frame. The
-  // |cross_process_frame_connector| allows the non-swapped-out
-  // RenderFrameHost for a frame to communicate with the parent process
-  // so that it may composite drawing data.
-  //
-  // Ownership is not transfered.
-  void set_cross_process_frame_connector(
-      CrossProcessFrameConnector* cross_process_frame_connector) {
-    cross_process_frame_connector_ = cross_process_frame_connector;
-  }
 
   void set_render_frame_proxy_host(RenderFrameProxyHost* proxy) {
     render_frame_proxy_host_ = proxy;
@@ -912,18 +899,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // method has the side effect of creating the process if it doesn't exist.
   // Cache a pointer to avoid unnecessary process creation.
   RenderProcessHost* process_;
-
-  // |cross_process_frame_connector_| passes messages from an out-of-process
-  // child frame to the parent process for compositing.
-  //
-  // This is only non-NULL when this is the swapped out RenderFrameHost in
-  // the same site instance as this frame's parent.
-  //
-  // See the class comment above CrossProcessFrameConnector for more
-  // information.
-  //
-  // This will move to RenderFrameProxyHost when that class is created.
-  CrossProcessFrameConnector* cross_process_frame_connector_;
 
   // The proxy created for this RenderFrameHost. It is used to send and receive
   // IPC messages while in swapped out state.
