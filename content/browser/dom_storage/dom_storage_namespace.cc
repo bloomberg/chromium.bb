@@ -118,8 +118,8 @@ void DOMStorageNamespace::DeleteSessionStorageOrigin(const GURL& origin) {
 }
 
 void DOMStorageNamespace::PurgeMemory(bool aggressively) {
-  if (directory_.empty())
-    return;  // We can't purge w/o backing on disk.
+  if (namespace_id_ == kLocalStorageNamespaceId && directory_.empty())
+    return;  // We can't purge local storage w/o backing on disk.
 
   AreaMap::iterator it = areas_.begin();
   while (it != areas_.end()) {
