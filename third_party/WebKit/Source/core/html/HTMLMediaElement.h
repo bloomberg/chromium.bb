@@ -615,7 +615,7 @@ class CORE_EXPORT HTMLMediaElement
     ExecuteOnStopDelayingLoadEventTask
   };
   DeferredLoadState m_deferredLoadState;
-  Timer<HTMLMediaElement> m_deferredLoadTimer;
+  TaskRunnerTimer<HTMLMediaElement> m_deferredLoadTimer;
 
   std::unique_ptr<WebMediaPlayer> m_webMediaPlayer;
   WebLayer* m_webLayer;

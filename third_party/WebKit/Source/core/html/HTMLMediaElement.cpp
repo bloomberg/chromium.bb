@@ -428,7 +428,10 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_defaultPlaybackStartPosition(0),
       m_loadState(WaitingForSource),
       m_deferredLoadState(NotDeferred),
-      m_deferredLoadTimer(this, &HTMLMediaElement::deferredLoadTimerFired),
+      m_deferredLoadTimer(
+          TaskRunnerHelper::get(TaskType::Unthrottled, &document),
+          this,
+          &HTMLMediaElement::deferredLoadTimerFired),
       m_webLayer(nullptr),
       m_displayMode(Unknown),
       m_officialPlaybackPosition(0),
@@ -516,6 +519,8 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument) {
   m_viewportFillDebouncerTimer.moveToNewTaskRunner(
       TaskRunnerHelper::get(TaskType::Unthrottled, &document()));
   m_checkViewportIntersectionTimer.moveToNewTaskRunner(
+      TaskRunnerHelper::get(TaskType::Unthrottled, &document()));
+  m_deferredLoadTimer.moveToNewTaskRunner(
       TaskRunnerHelper::get(TaskType::Unthrottled, &document()));
 
   m_autoplayUmaHelper->didMoveToNewDocument(oldDocument);
