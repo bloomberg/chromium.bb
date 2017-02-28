@@ -61,6 +61,45 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
             browser_context->GetAllWebContents().size());
 }
 
+IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Focus) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  HeadlessBrowserContext* browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
+          .Build();
+  EXPECT_TRUE(WaitForLoad(web_contents));
+
+  bool result;
+  EXPECT_TRUE(EvaluateScript(web_contents, "document.hasFocus()")
+                  ->GetResult()
+                  ->GetValue()
+                  ->GetAsBoolean(&result));
+  EXPECT_TRUE(result);
+
+  HeadlessWebContents* web_contents2 =
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
+          .Build();
+  EXPECT_TRUE(WaitForLoad(web_contents2));
+
+  // TODO(irisu): Focus of two web contents should be independent of the other.
+  // Both web_contents and web_contents2 should be focused at this point.
+  EXPECT_TRUE(EvaluateScript(web_contents, "document.hasFocus()")
+                  ->GetResult()
+                  ->GetValue()
+                  ->GetAsBoolean(&result));
+  EXPECT_FALSE(result);
+  EXPECT_TRUE(EvaluateScript(web_contents2, "document.hasFocus()")
+                  ->GetResult()
+                  ->GetValue()
+                  ->GetAsBoolean(&result));
+  EXPECT_TRUE(result);
+}
+
 namespace {
 bool DecodePNG(std::string base64_data, SkBitmap* bitmap) {
   std::string png_data;

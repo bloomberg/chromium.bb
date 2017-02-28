@@ -19,6 +19,12 @@
 
 #if defined(USE_AURA)
 #include "headless/lib/browser/headless_window_tree_host.h"
+
+namespace aura {
+namespace client {
+class FocusClient;
+}
+}
 #endif
 
 namespace headless {
@@ -81,7 +87,9 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   // is used for all web contents. We should probably use one
   // window per web contents, but additional investigation is needed.
   std::unique_ptr<HeadlessWindowTreeHost> window_tree_host_;
+  std::unique_ptr<aura::client::FocusClient> focus_client_;
 #endif
+
   base::Callback<void(HeadlessBrowser*)> on_start_callback_;
   HeadlessBrowser::Options options_;
   HeadlessBrowserMainParts* browser_main_parts_;  // Not owned.

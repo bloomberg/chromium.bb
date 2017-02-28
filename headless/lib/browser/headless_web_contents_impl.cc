@@ -21,6 +21,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/bindings_policy.h"
@@ -95,6 +96,10 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
         base::Bind(&content::IsOriginSecure), &security_info);
     return security_state::GetSecurityStyle(security_info,
                                             security_style_explanations);
+  }
+
+  void ActivateContents(content::WebContents* contents) override {
+    contents->GetRenderViewHost()->GetWidget()->Focus();
   }
 
  private:
